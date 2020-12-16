@@ -1597,21 +1597,15 @@ public class ClientFormController implements AsyncListener {
         public BindingMode bindEditing;
         public BindingMode bindShowing;
         public BindingMode bindPanel;
-        public boolean panel;
         public Function<EventObject, Boolean> isSuitable;
 
         public Binding(ClientGroupObject groupObject, int priority) {
-            this(groupObject, priority, true);
+            this(groupObject, priority, null);
         }
 
-        public Binding(ClientGroupObject groupObject, int priority, boolean panel) {
-            this(groupObject, priority, panel, null);
-        }
-
-        public Binding(ClientGroupObject groupObject, int priority, boolean panel, Function<EventObject, Boolean> isSuitable) {
+        public Binding(ClientGroupObject groupObject, int priority, Function<EventObject, Boolean> isSuitable) {
             this.groupObject = groupObject;
             this.priority = priority;
-            this.panel = panel;
             this.isSuitable = isSuitable;
         }
 

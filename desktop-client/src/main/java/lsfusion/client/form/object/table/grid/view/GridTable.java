@@ -434,7 +434,7 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
     }
 
     private ClientFormController.Binding getQuickSearchFilterBinding() {
-        ClientFormController.Binding binding = new ClientFormController.Binding(groupObject, -200, true, KeyStrokes::isSuitableStartFilteringEvent) {
+        ClientFormController.Binding binding = new ClientFormController.Binding(groupObject, -200, KeyStrokes::isSuitableStartFilteringEvent) {
             @Override
             public boolean pressed(KeyEvent ke) {
                 if(!editPerformed) {
@@ -593,7 +593,7 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
             boolean samePropAsPrevious = i != 0 && property == model.getColumnProperty(i - 1);
             final int index = i;
             if (!samePropAsPrevious)
-                form.addPropertyBindings(property, () -> new ClientFormController.Binding(property.groupObject, 0, false) {
+                form.addPropertyBindings(property, () -> new ClientFormController.Binding(property.groupObject, 0) {
                     @Override
                     public boolean pressed(KeyEvent ke) {
                         int leadRow = getSelectionModel().getLeadSelectionIndex();
