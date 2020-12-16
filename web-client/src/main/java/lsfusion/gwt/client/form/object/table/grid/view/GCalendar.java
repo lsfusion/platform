@@ -94,8 +94,10 @@ public class GCalendar extends GTippySimpleStateTableView {
 
         function changeProperty(info, position) {
             var currentEvent = info.event;
-            var oldEvent = info.oldEvent; // oldEvent[position] can be null due to property dateTo(dateTimeTo) can be null
-            if (currentEvent[position] !== null && oldEvent[position] !== null && currentEvent[position].getTime() !== oldEvent[position].getTime()) {
+            var oldEvent = info.oldEvent;
+            // oldEvent[position] can be null due to property dateTo(dateTimeTo) can be null
+            if ((currentEvent[position] != null && oldEvent[position] == null)
+                || (currentEvent[position] !== null && oldEvent[position] !== null && currentEvent[position].getTime() !== oldEvent[position].getTime())) {
                 var propertyName = currentEvent.extendedProps[position + 'FieldName'];
                 var controllerFunction = propertyName.includes('dateTime') ? 'changeDateTimeProperty' : 'changeDateProperty';
                 var eventElement = parseCalendarDateElement(currentEvent[position]);
