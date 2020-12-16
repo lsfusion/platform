@@ -308,13 +308,15 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
         }
 
         marker.on('click', function (e) {
-            var oldKey = thisObject.@GMap::getCurrentKey()();
-            
-            thisObject.@GMap::changeSimpleGroupObject(*)(key, false, marker); // we want "full rerender", at least for now
-            
-            if (oldKey !== key) {
-                thisObject.@GMap::updateIconFilter(*)(oldKey);
-                thisObject.@GMap::updateIconFilter(*)(key);
+            if(e.originalEvent.detail === 1) {
+                var oldKey = thisObject.@GMap::getCurrentKey()();
+
+                thisObject.@GMap::changeSimpleGroupObject(*)(key, false, marker); // we want "full rerender", at least for now
+
+                if (oldKey !== key) {
+                    thisObject.@GMap::updateIconFilter(*)(oldKey);
+                    thisObject.@GMap::updateIconFilter(*)(key);
+                }
             }
 
         });
