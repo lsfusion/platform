@@ -95,15 +95,18 @@ public class GCalendar extends GTippySimpleStateTableView {
         function changeProperty(info, position) {
             var currentEvent = info.event;
             var oldEvent = info.oldEvent;
-            // oldEvent[position] can be null due to property dateTo(dateTimeTo) can be null
-            if ((currentEvent[position] != null && oldEvent[position] == null)
-                || (currentEvent[position] !== null && oldEvent[position] !== null && currentEvent[position].getTime() !== oldEvent[position].getTime())) {
+            if (@GCalendar::changeProperty && getTime(currentEvent[position]) !== getTime(oldEvent[position])) {
                 var propertyName = currentEvent.extendedProps[position + 'FieldName'];
                 var controllerFunction = propertyName.includes('dateTime') ? 'changeDateTimeProperty' : 'changeDateProperty';
                 var eventElement = parseCalendarDateElement(currentEvent[position]);
                 controller[controllerFunction](propertyName, info.event.extendedProps.object, eventElement.year,
                     eventElement.month, eventElement.day, eventElement.hour, eventElement.minute, eventElement.second);
             }
+        }
+
+        function getTime(eventTime) {
+            //eventTime can be null due to property dateTo(dateTimeTo) can be null
+            return eventTime != null ? eventTime.getTime() : null;
         }
 
         function parseCalendarDateElement(element) {
@@ -132,6 +135,7 @@ public class GCalendar extends GTippySimpleStateTableView {
         public final int index;
         public final GGroupObjectValue key;
         public JavaScriptObject object;
+        public String classNames;
 
         public Event(JavaScriptObject object, int index) {
             String endEventFieldName = calendarDateType.contains("From") ? calendarDateType.replace("From", "To") : null;
@@ -147,8 +151,12 @@ public class GCalendar extends GTippySimpleStateTableView {
             this.index = index;
             this.key = getKey(object);
             this.object = object;
+            classNames = isCurrentObjectKey(object) ? "event-highlight" : null;
         }
     }
+
+    @SuppressWarnings("FieldCanBeLocal")
+    private static boolean changeProperty = true;
 
     private void updateEvents(JsArray<JavaScriptObject> list) {
         NativeHashMap<GGroupObjectValue, Event> oldEvents = new NativeHashMap<>();
@@ -170,7 +178,7 @@ public class GCalendar extends GTippySimpleStateTableView {
 
             Event oldEvent = oldEvents.remove(key);
             if (oldEvent == null)
-                eventsToAdd.add(() -> addSingleCalendarEvent(calendar, getJsEvent(event)));
+                eventsToAdd.add(() -> addSingleCalendarEvent(calendar, getJsEvent(event, calendar)));
             else
                 updateActionMap(eventsToUpdate, key, event, oldEvent);
         }
@@ -187,11 +195,12 @@ public class GCalendar extends GTippySimpleStateTableView {
             }
             setCalendarEvents(calendar, createCalendarEventsObject(events));
         } else {
+            changeProperty = false;
             eventsToAdd.forEach(Runnable::run);
             processUpdateEvents(eventsToUpdate);
+            changeProperty = true;
+            highlightEvent(calendar, getCurrentKey());
         }
-
-        highlightEvent(calendar, getCurrentKey());
     }
 
     private void processUpdateEvents(NativeHashMap<GGroupObjectValue, Consumer<JavaScriptObject>> eventsToUpdate) {
@@ -228,6 +237,9 @@ public class GCalendar extends GTippySimpleStateTableView {
         if (!oldEvent.object.equals(event.object))
             updateAction = addUpdateAction(calendarEvent -> updateCalendarExtendedProperty("object", event.object, calendarEvent), updateAction);
 
+        if ((oldEvent.classNames == null && event.classNames != null) || (oldEvent.classNames != null && !oldEvent.classNames.equals(event.classNames)))
+            updateAction = addUpdateAction(calendarEvent -> updateCalendarProperty("classNames", event.classNames, calendarEvent), updateAction);
+
         if (updateAction != null)
             eventsToUpdate.put(key, updateAction);
     }
@@ -238,7 +250,7 @@ public class GCalendar extends GTippySimpleStateTableView {
 
     private JsArray<JavaScriptObject> createCalendarEventsObject(NativeHashMap<GGroupObjectValue, Event> events){
         JsArray<JavaScriptObject> calendarEvents = JavaScriptObject.createArray().cast();
-        events.foreachValue(event -> calendarEvents.push(getJsEvent(event)));
+        events.foreachValue(event -> calendarEvents.push(getJsEvent(event, calendar)));
         return calendarEvents;
     }
 
@@ -295,13 +307,17 @@ public class GCalendar extends GTippySimpleStateTableView {
         event.setEnd(end);
     }-*/;
 
-    private JavaScriptObject getJsEvent(Event event){
-        return getEventAsJs(event.title, event.start, event.end, event.editable, event.durationEditable,
-                event.allDay, event.key, event.startFieldName, event.endFieldName, event.index, event.object);
+    private JavaScriptObject getJsEvent(Event event, JavaScriptObject calendar){
+        return getEventAsJs(calendar, event.title, event.start, event.end, event.editable, event.durationEditable,
+                event.allDay, event.key, event.startFieldName, event.endFieldName, event.index, event.object, event.classNames);
     }
 
-    protected native JavaScriptObject getEventAsJs(String title, String start, String end, boolean editable, boolean durationEditable,
-                                                 boolean allDay, GGroupObjectValue key, String startFieldName, String endFieldName, int index, JavaScriptObject object)/*-{
+    protected native JavaScriptObject getEventAsJs(JavaScriptObject calendar, String title, String start, String end, boolean editable, boolean durationEditable,
+                                                 boolean allDay, GGroupObjectValue key, String startFieldName, String endFieldName, int index,
+                                                   JavaScriptObject object, String classNames )/*-{
+        if (classNames != null)
+            calendar.currentEventId = key;
+
         return {
             title: title,
             start: start,
@@ -313,7 +329,8 @@ public class GCalendar extends GTippySimpleStateTableView {
             endFieldName: endFieldName,
             index: index,
             key: key,
-            object: object
+            object: object,
+            classNames: classNames
         };
     }-*/;
 
