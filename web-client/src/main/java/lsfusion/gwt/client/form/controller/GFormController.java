@@ -1520,7 +1520,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     public ArrayList<Integer> addPropertyBindings(GPropertyDraw propertyDraw, BindingExec bindingExec, Widget widget) {
         ArrayList<Integer> result = new ArrayList<>();
         for(GInputBindingEvent bindingEvent : propertyDraw.bindingEvents) // supplier for optimization
-            result.add(addBinding(bindingEvent.inputEvent::isEvent, bindingEvent.env, null, bindingExec, widget, propertyDraw.groupObject));
+            result.add(addBinding(bindingEvent.inputEvent, bindingEvent.env, bindingExec, widget, propertyDraw.groupObject));
         return result;
     }
     public void removePropertyBindings(ArrayList<Integer> indices) {
