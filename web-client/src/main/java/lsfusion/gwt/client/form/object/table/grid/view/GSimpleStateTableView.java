@@ -130,8 +130,8 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
     
     protected final static String keysFieldName = "#__key";
 
-    protected void changeSimpleGroupObject(JavaScriptObject object, boolean rendered, P elementClicked) {
-        GGroupObjectValue key = toObject(object);
+    protected void changeSimpleGroupObject(Object object, boolean rendered, P elementClicked) {
+        GGroupObjectValue key = getKey(fromObject(object));
         long requestIndex = changeGroupObject(key, rendered);
 
         Widget recordView;
@@ -214,16 +214,16 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         return map;        
     }
 
-    protected void changeObjectProperty(String property, GGroupObjectValue key, Serializable newValue) {
-        changeProperty(property, newValue, fromObject(key));
+    protected void changeObjectProperty(String property, Object object, Serializable newValue) {
+        changeProperty(property, newValue, fromObject(getKey(fromObject(object))));
     }
 
-    protected void changeDateTimeProperty(String property, GGroupObjectValue key, int year, int month, int day, int hour, int minute, int second) {
-        changeObjectProperty(property, key, new GDateTimeDTO(year, month, day, hour, minute, second));
+    protected void changeDateTimeProperty(String property, Object object, int year, int month, int day, int hour, int minute, int second) {
+        changeObjectProperty(property, object, new GDateTimeDTO(year, month, day, hour, minute, second));
     }
 
-    protected void changeDateProperty(String property, GGroupObjectValue key, int year, int month, int day) {
-        changeObjectProperty(property, key, new GDateDTO(year, month, day));
+    protected void changeDateProperty(String property, Object object, int year, int month, int day) {
+        changeObjectProperty(property, object, new GDateDTO(year, month, day));
     }
 
     protected void setViewFilter(int startYear, int startMonth, int startDay, int endYear, int endMonth, int endDay, String property, boolean isDateTimeFilter, int pageSize) {
@@ -247,14 +247,14 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
     protected native JavaScriptObject getController()/*-{
         var thisObj = this;
         return {
-            changeProperty: function (property, key, newValue) {
-                return thisObj.@GSimpleStateTableView::changeObjectProperty(*)(property, key, newValue);
+            changeProperty: function (property, object, newValue) {
+                return thisObj.@GSimpleStateTableView::changeObjectProperty(*)(property, object, newValue);
             },
-            changeDateTimeProperty: function (property, key, year, month, day, hour, minute, second) {
-                return thisObj.@GSimpleStateTableView::changeDateTimeProperty(*)(property, key, year, month, day, hour, minute, second);
+            changeDateTimeProperty: function (property, object, year, month, day, hour, minute, second) {
+                return thisObj.@GSimpleStateTableView::changeDateTimeProperty(*)(property, object, year, month, day, hour, minute, second);
             },
-            changeDateProperty: function (property, key, year, month, day) {
-                return thisObj.@GSimpleStateTableView::changeDateProperty(*)(property, key, year, month, day);
+            changeDateProperty: function (property, object, year, month, day) {
+                return thisObj.@GSimpleStateTableView::changeDateProperty(*)(property, object, year, month, day);
             },
             isCurrent: function (object) {
                 return thisObj.@GSimpleStateTableView::isCurrentObjectKey(*)(object);
@@ -262,8 +262,8 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             isPropertyReadOnly: function (property, object) {
                 return thisObj.@GSimpleStateTableView::isReadOnly(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(property, object);
             },
-            changeSimpleGroupObject: function (key, rendered, elementClicked) {
-                return thisObj.@GSimpleStateTableView::changeSimpleGroupObject(*)(key, rendered, elementClicked);
+            changeSimpleGroupObject: function (object, rendered, elementClicked) {
+                return thisObj.@GSimpleStateTableView::changeSimpleGroupObject(*)(object, rendered, elementClicked);
             },
             setViewFilter: function (startYear, startMonth, startDay, endYear, endMonth, endDay,property, isDateTimeFilter, pageSize) {
                 thisObj.@GSimpleStateTableView::setViewFilter(*)(startYear, startMonth, startDay, endYear, endMonth, endDay, property, isDateTimeFilter, pageSize);
