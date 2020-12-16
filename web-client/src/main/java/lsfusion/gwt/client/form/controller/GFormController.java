@@ -1600,6 +1600,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         }
 
         Event event = handler.event;
+        boolean isMouse = GMouseStroke.isEvent(event);
         TreeMap<Integer, Binding> orderedBindings = new TreeMap<>(); // descending sorting by priority
 
         GGroupObject groupObject = getGroupObject(Element.as(target));
@@ -1614,8 +1615,8 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
                     bindGroup(bindingEnv, groupObject, equalGroup = nullEquals(groupObject, binding.groupObject)) &&
                     bindEditing(bindingEnv) &&
                     bindShowing(bindingEnv, binding.showing()) &&
-                    bindPanel(bindingEnv, panel) &&
-                    bindCell(bindingEnv, GMouseStroke.isEvent(event), cellParent != null))
+                    bindPanel(bindingEnv, isMouse, panel) &&
+                    bindCell(bindingEnv, isMouse, cellParent != null))
                 orderedBindings.put(-(GwtClientUtils.nvl(bindingEnv.priority, i) + (equalGroup ? 100 : 0)), binding); // increasing priority for group object
             }
         }
@@ -1711,11 +1712,12 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         }
     }
 
-    private boolean bindPanel(GBindingEnv binding, boolean panel) {
+    private boolean bindPanel(GBindingEnv binding, boolean isMouse, boolean panel) {
         switch (binding.bindPanel) {
             case ALL:
-            case AUTO:
                 return true;
+            case AUTO:
+                return !isMouse || !panel;
             case ONLY:
                 return panel;
             case NO:

@@ -1660,7 +1660,7 @@ public class ClientFormController implements AsyncListener {
         }
     }
 
-    public boolean processBinding(InputEvent ks, KeyEvent ke, Supplier<ClientGroupObject> groupObjectSupplier) {
+    public boolean processBinding(InputEvent ks, KeyEvent ke, Supplier<ClientGroupObject> groupObjectSupplier, boolean panel) {
         List<Binding> keyBinding = bindings.getOrDefault(ks, keySetBindings);
         if(keyBinding != null && !keyBinding.isEmpty()) { // optimization
             if(ks instanceof MouseInputEvent) // not sure that it should be done only for mouse events, but it's been working like this for a long time
@@ -1672,7 +1672,7 @@ public class ClientFormController implements AsyncListener {
             ClientGroupObject groupObject = groupObjectSupplier.get();
             for(Binding binding : keyBinding) // descending sorting by priority
                 if((binding.isSuitable == null || binding.isSuitable.apply(ke)) && bindDialog(binding) && bindGroup(groupObject, binding)
-                        && bindEditing(binding, ke) && bindShowing(binding) && bindPanel(binding))
+                        && bindEditing(binding, ke) && bindShowing(binding) && bindPanel(binding, panel))
                         orderedBindings.put(-(binding.priority + (equalGroup(groupObject, binding) ? 100 : 0)), binding);
 
             for(Binding binding : orderedBindings.values())
@@ -1761,15 +1761,15 @@ public class ClientFormController implements AsyncListener {
         return true;
     }
 
-    private boolean bindPanel(Binding binding) {
+    private boolean bindPanel(Binding binding, boolean panel) {
         switch (binding.bindPanel) {
             case ALL:
             case AUTO:
                 return true;
             case ONLY:
-                return binding.panel;
+                return panel;
             case NO:
-                return !binding.panel;
+                return !panel;
         }
         return true;
     }
