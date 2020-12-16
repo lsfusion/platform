@@ -453,7 +453,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
                 handler -> selectionHandler.onCellBefore(handler, cell, rowChanged -> isChangeOnSingleClick(cell, (Boolean) rowChanged)),
                 handler -> column.onEditEvent(handler, false, cell, parent),
                 handler -> selectionHandler.onCellAfter(handler, cell),
-                handler -> CopyPasteUtils.putIntoClipboard(parent), handler -> CopyPasteUtils.getFromClipboard(handler, line -> pasteData(GwtClientUtils.getClipboardTable(line))));
+                handler -> CopyPasteUtils.putIntoClipboard(parent), handler -> CopyPasteUtils.getFromClipboard(handler, line -> pasteData(GwtClientUtils.getClipboardTable(line))), false);
     }
 
     protected boolean isFocusable(GPropertyDraw property) {

@@ -902,7 +902,7 @@ public class GwtClientUtils {
 
     public static Element getParentWithAttribute(Element element, String property) {
         while (element != null) {
-            if (element.getAttribute(property) != null) {
+            if (!element.getAttribute(property).isEmpty()) {
                 return element;
             }
             element = element.getParentElement();

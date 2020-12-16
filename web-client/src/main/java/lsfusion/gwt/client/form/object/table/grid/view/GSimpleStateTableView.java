@@ -57,7 +57,8 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
                 handler -> {}, // no outer context
                 handler -> {}, // no edit
                 handler -> {}, // no outer context
-                handler -> {}, handler -> {} // no copy / paste for now
+                handler -> {}, handler -> {}, // no copy / paste for now
+                false
         );
     }
 

@@ -118,7 +118,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
                                 fireCollapseNode(node);
                             }
                         }
-                    }, this, groupObject, false);
+                    }, this, groupObject);
     }
 
     private static boolean isSelectedNodeExpandable(GTreeTableNode node) {

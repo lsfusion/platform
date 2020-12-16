@@ -101,7 +101,7 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
             controller.changeSimpleGroupObject(newObject, true, elementClicked); // we're rerendering current event below
 
             if(elementClicked != null) {
-                elementClicked[@lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder::COLUMN_ATTRIBUTE] = "true";
+                elementClicked.setAttribute(@lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder::COLUMN_ATTRIBUTE, "true");
             }
 
             var oldEvent = calendar.currentEventIndex != null ? calendar.getEvents()[calendar.currentEventIndex] : null;
