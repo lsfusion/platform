@@ -3380,7 +3380,6 @@ internalActionDefinitionBody[List<TypedParameter> context] returns [LA action, L
 externalActionDefinitionBody [List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
 @init {
     List<LPWithParams> params = new ArrayList<>();
-    List<LPWithParams> bodyParamNames = new ArrayList<>();
 }
 @after {
 	if (inMainParseState()) {
@@ -3404,12 +3403,12 @@ externalActionDefinitionBody [List<TypedParameter> context, boolean dynamic] ret
 	    ('TO' tl = nonEmptyPropertyUsageList)?
 	;
 
-externalFormat [List<TypedParameter> context, boolean dynamic] returns [ExternalFormat format, ExternalHttpMethod method, boolean clientAction, LPWithParams conStr, LPWithParams bodyUrl, LPWithParams exec, NamedPropertyUsage bodyParamNames, NamedPropertyUsage headers, NamedPropertyUsage cookies, NamedPropertyUsage headersTo, NamedPropertyUsage cookiesTo, boolean eval = false, boolean action = false, String charset]
+externalFormat [List<TypedParameter> context, boolean dynamic] returns [ExternalFormat format, ExternalHttpMethod method, boolean clientAction, LPWithParams conStr, LPWithParams bodyUrl, LPWithParams exec, List<String> bodyParamNames = new ArrayList<>(), NamedPropertyUsage headers, NamedPropertyUsage cookies, NamedPropertyUsage headersTo, NamedPropertyUsage cookiesTo, boolean eval = false, boolean action = false, String charset]
 	:	'SQL'	{ $format = ExternalFormat.DB; } conStrVal = propertyExpression[context, dynamic] { $conStr = $conStrVal.property; } 'EXEC' execVal = propertyExpression[context, dynamic] { $exec = $execVal.property; }
 	|	'HTTP'	{ $format = ExternalFormat.HTTP; } ('CLIENT' { $clientAction = true; })?
 	            (methodVal = externalHttpMethod { $method = $methodVal.method; })? conStrVal = propertyExpression[context, dynamic] { $conStr = $conStrVal.property; }
 	            ('BODYURL' bodyUrlVal = propertyExpression[context, dynamic] { $bodyUrl = $bodyUrlVal.property; })?
-	            ('BODYPARAMNAMES' bodyParamNamesVal = propertyUsage { $bodyParamNames = $bodyParamNamesVal.propUsage; })?
+	            ('BODYPARAMNAMES' firstName=stringLiteral { $bodyParamNames.add($firstName.val); } (',' nextName=stringLiteral { $bodyParamNames.add($nextName.val); })*)?
 	            ('HEADERS' headersVal = propertyUsage { $headers = $headersVal.propUsage; })?
 	            ('COOKIES' cookiesVal = propertyUsage { $cookies = $cookiesVal.propUsage; })?
 	            ('HEADERSTO' headersToVal = propertyUsage { $headersTo = $headersToVal.propUsage; })?

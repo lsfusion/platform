@@ -1879,17 +1879,16 @@ public class ScriptingLogicsModule extends LogicsModule {
                 BaseUtils.addList(connectionString, params));
     }
 
-    public LAWithParams addScriptedExternalHTTPAction(boolean clientAction, ExternalHttpMethod method, LPWithParams connectionString, LPWithParams bodyUrl, NamedPropertyUsage bodyParamNames,
+    public LAWithParams addScriptedExternalHTTPAction(boolean clientAction, ExternalHttpMethod method, LPWithParams connectionString, LPWithParams bodyUrl, List<String> bodyParamNames,
                                                       NamedPropertyUsage headers, NamedPropertyUsage cookies, NamedPropertyUsage headersTo, NamedPropertyUsage cookiesTo,
                                                       List<LPWithParams> params, List<TypedParameter> context, List<NamedPropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
-        LP bodyParamNamesProperty = bodyParamNames != null ? findLPIntegerParamByPropertyUsage(bodyParamNames) : null;
         LP headersProperty = headers != null ? findLPStringParamByPropertyUsage(headers) : null;
         LP cookiesProperty = cookies != null ? findLPStringParamByPropertyUsage(cookies) : null;
         LP headersToProperty = headersTo != null ? findLPStringParamByPropertyUsage(headersTo) : null;
         LP cookiesToProperty = cookiesTo != null ? findLPStringParamByPropertyUsage(cookiesTo) : null;
         return addScriptedJoinAProp(addAProp(new ExternalHTTPAction(clientAction, method != null ? method : ExternalHttpMethod.POST,
                         getTypesForExternalAction(params, context), findLPsNoParamsByPropertyUsage(toPropertyUsageList),
-                        bodyParamNamesProperty, headersProperty, cookiesProperty, headersToProperty, cookiesToProperty, bodyUrl != null)),
+                        bodyParamNames, headersProperty, cookiesProperty, headersToProperty, cookiesToProperty, bodyUrl != null)),
                 bodyUrl != null ? BaseUtils.mergeList(Arrays.asList(connectionString, bodyUrl), params) : BaseUtils.addList(connectionString, params));
     }
 

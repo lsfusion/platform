@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -123,7 +124,7 @@ public class ExternalUtils {
 
         if (execResult != null) {
             Result<String> singleFileExtension = new Result<>();
-            entity = getInputStreamFromList(execResult.results, getBodyUrl(execResult.results, returnBodyUrl), MapFact.EMPTY(), singleFileExtension);
+            entity = getInputStreamFromList(execResult.results, getBodyUrl(execResult.results, returnBodyUrl), new ArrayList<>(), singleFileExtension);
 
             if (singleFileExtension.result != null) // если возвращается один файл, задаем ему имя
                 contentDisposition = "filename=" + (returns.isEmpty() ? filename : returns.get(0)).replace(',', '_') + "." + singleFileExtension.result;
@@ -238,7 +239,7 @@ public class ExternalUtils {
     }
 
     // results byte[] || String, можно было бы попровать getRequestResult (по аналогии с getRequestParam) выделить общий, но там возвращаемые классы разные, нужны будут generic'и и оно того не стоит
-    public static HttpEntity getInputStreamFromList(Object[] results, String bodyUrl, ImMap<Integer, String> bodyParamNames, Result<String> singleFileExtension) {
+    public static HttpEntity getInputStreamFromList(Object[] results, String bodyUrl, List<String> bodyParamNames, Result<String> singleFileExtension) {
         HttpEntity entity;
         int paramCount = results.length;
         if (paramCount > 1 || !bodyParamNames.isEmpty()) {
@@ -246,7 +247,7 @@ public class ExternalUtils {
             builder.setContentType(ExternalUtils.MULTIPART_MIXED);
             for (int i = 0; i < paramCount; i++) {
                 Object value = results[i];
-                String bodyPartName = nvl(bodyParamNames.get(i), "param" + i);
+                String bodyPartName = nvl(i < bodyParamNames.size() ? bodyParamNames.get(i) : null, "param" + i);
                 if (value instanceof FileData) {
                     String extension = ((FileData) value).getExtension();
                     builder.addPart(bodyPartName, new ByteArrayBody(((FileData) value).getRawFile().getBytes(), getContentType(extension), "filename"));

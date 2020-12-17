@@ -46,21 +46,21 @@ public class ExternalHTTPAction extends ExternalAction {
     private ExternalHttpMethod method;
     private PropertyInterface queryInterface;
     private PropertyInterface bodyUrlInterface;
-    private LP bodyParamNamesProperty;
+    private List<String> bodyParamNames;
     private LP<?> headersProperty;
     private LP<?> cookiesProperty;
     private LP headersToProperty;
     private LP cookiesToProperty;
 
     public ExternalHTTPAction(boolean clientAction, ExternalHttpMethod method, ImList<Type> params, ImList<LP> targetPropList,
-                              LP bodyParamNamesProperty, LP headersProperty, LP cookiesProperty, LP headersToProperty, LP cookiesToProperty, boolean hasBodyUrl) {
+                              List<String> bodyParamNames, LP headersProperty, LP cookiesProperty, LP headersToProperty, LP cookiesToProperty, boolean hasBodyUrl) {
         super(hasBodyUrl ? 2 : 1, params, targetPropList);
 
         this.clientAction = clientAction;
         this.method = method;
         this.queryInterface = getOrderInterfaces().get(0);
         this.bodyUrlInterface = hasBodyUrl ? getOrderInterfaces().get(1) : null;
-        this.bodyParamNamesProperty = bodyParamNamesProperty;
+        this.bodyParamNames = bodyParamNames;
         this.headersProperty = headersProperty;
         this.cookiesProperty = cookiesProperty;
         this.headersToProperty = headersToProperty;
@@ -96,7 +96,6 @@ public class ExternalHTTPAction extends ExternalAction {
                 if(bodyUrl != null && !rNotUsedParams.result.isEmpty()) {
                     throw new RuntimeException("All params should be used in BODYURL");
                 }
-                ImMap<Integer, String> bodyParamNames = bodyParamNamesProperty != null ? readIntegerPropertyValues(context.getEnv(), bodyParamNamesProperty) : MapFact.EMPTY();
                 Map<String, String> headers = new HashMap<>();
                 if(headersProperty != null) {
                     MapFact.addJavaAll(headers, readPropertyValues(context.getEnv(), headersProperty));
@@ -189,10 +188,6 @@ public class ExternalHTTPAction extends ExternalAction {
 
             targetProp.change(value == null ? null : targetProp.property.getType().parseHTTP(value, charset), context);
         }
-    }
-
-    public static ImMap<Integer, String> readIntegerPropertyValues(ExecutionEnvironment env, LP<?> property) throws SQLException, SQLHandledException {
-        return BaseUtils.immutableCast(property.readAll(env).mapKeys(value -> (Integer) value.single()));
     }
 
     public static ImMap<String, String> readPropertyValues(ExecutionEnvironment env, LP<?> property) throws SQLException, SQLHandledException {
