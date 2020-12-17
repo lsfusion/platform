@@ -106,6 +106,7 @@ import static lsfusion.gwt.client.base.GwtClientUtils.*;
 import static lsfusion.gwt.client.base.GwtSharedUtils.putToDoubleNativeMap;
 import static lsfusion.gwt.client.base.GwtSharedUtils.removeFromDoubleMap;
 import static lsfusion.gwt.client.base.view.ColorUtils.getDisplayColor;
+import static lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder.COLUMN_ATTRIBUTE;
 import static lsfusion.gwt.client.form.property.cell.GEditBindingMap.CHANGE;
 
 public class GFormController extends ResizableSimplePanel implements ServerMessageProvider, EditManager {
@@ -211,7 +212,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
         super.onBrowserEvent(event);
 
-        checkFormEvent(event, this::checkMouseEvent);
+        checkFormEvent(event, (handler, preview) -> checkMouseEvent(handler, preview, GwtClientUtils.getParentWithAttribute(target, COLUMN_ATTRIBUTE), false));
     }
 
     private interface CheckEvent {
@@ -227,33 +228,33 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         preview.accept(handler, false);
     }
 
-    public void checkMouseEvent(EventHandler handler, boolean preview) {
+    public void checkMouseEvent(EventHandler handler, boolean preview, Element cellParent, boolean panel) {
         if(GMouseStroke.isDblDownEvent(handler.event))
             handler.event.preventDefault(); //need to prevent selection by double mousedown event
         else if(GMouseStroke.isChangeEvent(handler.event) || GMouseStroke.isDoubleChangeEvent(handler.event))
-            processBinding(handler, preview);
+            processBinding(handler, preview, cellParent, panel);
     }
-    public void checkKeyEvent(EventHandler handler, boolean preview) {
+    public void checkKeyEvent(EventHandler handler, boolean preview, Element cellParent, boolean panel) {
         if(GKeyStroke.isKeyEvent(handler.event))
-            processBinding(handler, preview);
+            processBinding(handler, preview, cellParent, panel);
     }
     private static void checkGlobalKeyEvent(DomEvent event, Supplier<GFormController> currentForm) {
         NativeEvent nativeEvent = event.getNativeEvent();
         if(nativeEvent instanceof Event) { // just in case
             GFormController form = currentForm.get();
             if(form != null)
-                checkFormEvent((Event) nativeEvent, form::checkKeyEvent);
+                checkFormEvent((Event) nativeEvent, (handler, preview) -> form.checkKeyEvent(handler, preview, null, false));
         }
     }
-    public void checkPreviewEvent(EventHandler handler) {
+    public void checkPreviewEvent(EventHandler handler, Element cellParent, boolean panel) {
         if(MainFrame.isModalPopup())
             return;
 
-        checkMouseEvent(handler, true);
+        checkMouseEvent(handler, true, cellParent, panel);
         if(handler.consumed)
             return;
 
-        checkKeyEvent(handler, true);
+        checkKeyEvent(handler, true, cellParent, panel);
     }
 
     public static void checkKeyEvents(DomEvent event, FormsController formsController) {
@@ -798,7 +799,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     public GPropertyController getPropertyController(GPropertyDraw property) {
-        if(property.grid) {
+        if(property.isList) {
             return getGroupObjectController(property.groupObject);
         } else
             return panelController;
@@ -1032,7 +1033,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
     public void changeProperty(GPropertyDraw property, GGroupObjectValue columnKey, Serializable value, Object oldValue, Long changeRequestIndex) {
         GGroupObjectValue rowKey = GGroupObjectValue.EMPTY;
-        if(property.grid) {
+        if(property.isList) {
             rowKey = getGroupObjectController(property.groupObject).getCurrentKey();
             if(rowKey.isEmpty())
                 return;
@@ -1540,7 +1541,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         return addBinding(new GBindingEvent(event, env), new Binding(groupObject) {
             @Override
             public boolean showing() {
-                return component != null ? isShowing(component) : true;
+                return component == null || isShowing(component);
             }
 
             @Override
@@ -1572,7 +1573,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
     private void addEnterBinding(boolean shiftPressed, GBindingMode bindGroup, Consumer<Boolean> selectNextElement, GGroupObject groupObject) {
         addBinding(new GKeyInputEvent(new GKeyStroke(KeyCodes.KEY_ENTER, false, false, shiftPressed)),
-                new GBindingEnv(-100, null, null, bindGroup, GBindingMode.NO, null),  // bindEditing - NO, because we don't want for example when editing text in grid to catch enter
+                new GBindingEnv(-100, null, null, bindGroup, GBindingMode.NO, null, null, null),  // bindEditing - NO, because we don't want for example when editing text in grid to catch enter
                 event -> selectNextElement.accept(!shiftPressed),
                 null,
                 groupObject);
@@ -1592,13 +1593,14 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         GGroupObject get();
     }
 
-    public void processBinding(EventHandler handler, boolean preview) {
+    public void processBinding(EventHandler handler, boolean preview, Element cellParent, boolean panel) {
         final EventTarget target = handler.event.getEventTarget();
         if (!Element.is(target)) {
             return;
         }
 
         Event event = handler.event;
+        boolean isMouse = GMouseStroke.isEvent(event);
         TreeMap<Integer, Binding> orderedBindings = new TreeMap<>(); // descending sorting by priority
 
         GGroupObject groupObject = getGroupObject(Element.as(target));
@@ -1612,7 +1614,9 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
                     bindDialog(bindingEnv) &&
                     bindGroup(bindingEnv, groupObject, equalGroup = nullEquals(groupObject, binding.groupObject)) &&
                     bindEditing(bindingEnv) &&
-                    bindShowing(bindingEnv, binding.showing()))
+                    bindShowing(bindingEnv, binding.showing()) &&
+                    bindPanel(bindingEnv, isMouse, panel) &&
+                    bindCell(bindingEnv, isMouse, cellParent != null))
                 orderedBindings.put(-(GwtClientUtils.nvl(bindingEnv.priority, i) + (equalGroup ? 100 : 0)), binding); // increasing priority for group object
             }
         }
@@ -1705,6 +1709,38 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             case INPUT:
             default:
                 throw new UnsupportedOperationException("Unsupported bindingMode " + binding.bindShowing);
+        }
+    }
+
+    private boolean bindPanel(GBindingEnv binding, boolean isMouse, boolean panel) {
+        switch (binding.bindPanel) {
+            case ALL:
+                return true;
+            case AUTO:
+                return !isMouse || !panel;
+            case ONLY:
+                return panel;
+            case NO:
+                return !panel;
+            case INPUT:
+            default:
+                throw new UnsupportedOperationException("Unsupported bindingMode " + binding.bindPanel);
+        }
+    }
+
+    private boolean bindCell(GBindingEnv binding, boolean isMouse, boolean isCell) {
+        switch (binding.bindCell) {
+            case ALL:
+                return true;
+            case AUTO:
+                return !isMouse || isCell;
+            case ONLY:
+                return isCell;
+            case NO:
+                return !isCell;
+            case INPUT:
+            default:
+                throw new UnsupportedOperationException("Unsupported bindingMode " + binding.bindCell);
         }
     }
 
@@ -1862,7 +1898,9 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
                 "", null, true);
     }
 
-    public void onPropertyBrowserEvent(EventHandler handler, Element cellParent, Element focusElement, Consumer<EventHandler> onOuterEditBefore, Consumer<EventHandler> onEdit, Consumer<EventHandler> onOuterEditAfter, Consumer<EventHandler> onCut, Consumer<EventHandler> onPaste) {
+    public void onPropertyBrowserEvent(EventHandler handler, Element cellParent, Element focusElement, Consumer<EventHandler> onOuterEditBefore,
+                                       Consumer<EventHandler> onEdit, Consumer<EventHandler> onOuterEditAfter, Consumer<EventHandler> onCut,
+                                       Consumer<EventHandler> onPaste, boolean panel) {
         boolean isPropertyEditing = cellEditor != null && getEditElement() == cellParent;
         if(isPropertyEditing)
             cellEditor.onBrowserEvent(getEditElement(), handler);
@@ -1876,7 +1914,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         if(GMouseStroke.isChangeEvent(handler.event))
             focusElement.focus(); // it should be done on CLICK, but also on MOUSEDOWN, since we want to focus even if mousedown is later consumed
 
-        checkPreviewEvent(handler);
+        checkPreviewEvent(handler, cellParent, panel);
 
         if(handler.consumed)
             return;
