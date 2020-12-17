@@ -309,7 +309,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
             propertyDraw.bindingEvents.add(convertBinding(clientPropertyDraw.changeMouse, clientPropertyDraw.changeMousePriority, clientPropertyDraw.changeMouse.bindingModes));
         propertyDraw.showChangeKey = clientPropertyDraw.showChangeKey;
 
-        propertyDraw.grid = clientPropertyDraw.isList;
+        propertyDraw.isList = clientPropertyDraw.isList;
 
         propertyDraw.drawAsync = clientPropertyDraw.drawAsync;
 
@@ -376,7 +376,9 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
                         convertOrCast(bindingModes != null ? bindingModes.get("dialog") : null),
                         convertOrCast(bindingModes != null ? bindingModes.get("group") : null),
                         convertOrCast(bindingModes != null ? bindingModes.get("editing") : null),
-                        convertOrCast(bindingModes != null ? bindingModes.get("showing") : null)
+                        convertOrCast(bindingModes != null ? bindingModes.get("showing") : null),
+                        convertOrCast(bindingModes != null ? bindingModes.get("panel") : null),
+                        convertOrCast(bindingModes != null ? bindingModes.get("cell") : null)
                         ));
     }
 

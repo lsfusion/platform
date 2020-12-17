@@ -131,7 +131,7 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
                 handler -> {}, // no outer context
                 this::onEditEvent,
                 handler -> {}, // no outer context
-                handler -> CopyPasteUtils.putIntoClipboard(getRenderElement()), handler -> CopyPasteUtils.getFromClipboard(handler, line -> pasteValue(line)));
+                handler -> CopyPasteUtils.putIntoClipboard(getRenderElement()), handler -> CopyPasteUtils.getFromClipboard(handler, line -> pasteValue(line)), true);
     }
 
     protected void onFocus(EventHandler handler) {
