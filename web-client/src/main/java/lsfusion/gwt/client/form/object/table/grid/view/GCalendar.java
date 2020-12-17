@@ -250,10 +250,6 @@ public class GCalendar extends GTippySimpleStateTableView {
         return calendarEvents;
     }
 
-    protected native void setCalendarCurrentEventId(JavaScriptObject calendar, GGroupObjectValue currentEventId)/*-{
-        calendar.currentEventId = currentEventId;
-    }-*/;
-
     protected native JsArray<JavaScriptObject> getCalendarEvents(JavaScriptObject calendar)/*-{
         return calendar.getEvents();
     }-*/;
@@ -286,7 +282,10 @@ public class GCalendar extends GTippySimpleStateTableView {
     }-*/;
 
     protected native void setCalendarEvents(JavaScriptObject calendar, JsArray<JavaScriptObject> events, GGroupObjectValue id)/*-{
-        calendar.setOption('events', events);
+        calendar.getEventSources().forEach(function (source) {
+            source.remove();
+        })
+        calendar.addEventSource(events);
         calendar.currentEventId = id;
     }-*/;
 
