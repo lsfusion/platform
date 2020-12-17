@@ -195,7 +195,7 @@ public class GCalendar extends GTippySimpleStateTableView {
                 JavaScriptObject object = list.get(i);
                 events.put(getKey(object), new Event(object, i));
             }
-            setCalendarEvents(calendar, createCalendarEventsObject(events));
+            setCalendarEvents(calendar, createCalendarEventsObject(events), currentKey);
         } else {
             isUpdating = true;
             eventsToAdd.forEach(Runnable::run);
@@ -203,8 +203,6 @@ public class GCalendar extends GTippySimpleStateTableView {
             highlightEvent(calendar, currentKey);
             isUpdating = false;
         }
-
-        setCalendarCurrentEventId(calendar, currentKey);
     }
 
     private void processUpdateEvents(NativeHashMap<GGroupObjectValue, Consumer<JavaScriptObject>> eventsToUpdate) {
@@ -287,8 +285,9 @@ public class GCalendar extends GTippySimpleStateTableView {
         calendar.currentEventId = id;
     }-*/;
 
-    protected native void setCalendarEvents(JavaScriptObject calendar, JsArray<JavaScriptObject> events)/*-{
+    protected native void setCalendarEvents(JavaScriptObject calendar, JsArray<JavaScriptObject> events, GGroupObjectValue id)/*-{
         calendar.setOption('events', events);
+        calendar.currentEventId = id;
     }-*/;
 
     protected native void updateCalendarProperty(String propertyName, Object property, JavaScriptObject event)/*-{
