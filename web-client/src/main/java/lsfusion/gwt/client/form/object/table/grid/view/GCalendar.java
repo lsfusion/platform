@@ -17,6 +17,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
+import static lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder.COLUMN_CLASS;
+
 public class GCalendar extends GTippySimpleStateTableView implements ColorThemeChangeListener {
 
     private final String calendarDateType;
@@ -297,13 +299,13 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
             var calendarEvent = calendarEvents[i];
             var key = calendarEvent.extendedProps.key;
             if (calendar.currentEventId != null && @lsfusion.gwt.client.base.GwtClientUtils::nullEquals(*)(key, calendar.currentEventId)) {
-                calendarEvent.setProp('classNames', '');
+                calendarEvent.setProp('classNames', @GCalendar::getClassNames(*)(false));
                 calendarEvent.setProp('backgroundColor', @GSimpleStateTableView::getDisplayBackgroundColor(*)(calendarEvent.extendedProps.sourceBackgroundColor, false))
                 calendarEvent.setProp('borderColor', null);
             }
 
             if (@lsfusion.gwt.client.base.GwtClientUtils::nullEquals(*)(key, id)) {
-                calendarEvent.setProp('classNames', 'event-highlight');
+                calendarEvent.setProp('classNames', @GCalendar::getClassNames(*)(true));
                 calendarEvent.setProp('backgroundColor', @GSimpleStateTableView::getDisplayBackgroundColor(*)(calendarEvent.extendedProps.sourceBackgroundColor, true))
                 calendarEvent.setProp('borderColor', @lsfusion.gwt.client.view.StyleDefaults::getFocusedCellBorderColor()());
             }
@@ -339,6 +341,14 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
                 event.allDay, event.key, event.startFieldName, event.endFieldName, event.index, event.object, isCurrentKey, event.backgroundColor, event.foregroundColor);
     }
 
+    protected Element getCellParent(Element target) {
+        return GwtClientUtils.getParentWithClass(target, COLUMN_CLASS);
+    }
+
+    private static String getClassNames(boolean isCurrentKey) {
+        return COLUMN_CLASS + (isCurrentKey ? " event-highlight" : "");
+    }
+
     protected native JavaScriptObject createEventAsJs(String title, String start, String end, boolean editable, boolean durationEditable, boolean allDay, GGroupObjectValue key,
                                                       String startFieldName, String endFieldName, int index, JavaScriptObject object, boolean  isCurrentKey,
                                                       String backgroundColor, String foregroundColor)/*-{
@@ -357,7 +367,7 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
             sourceBackgroundColor: backgroundColor,
             sourceTextColor: foregroundColor,
 
-            classNames: isCurrentKey ? 'event-highlight' : '',
+            classNames: @GCalendar::getClassNames(*)(isCurrentKey),
             backgroundColor: @GSimpleStateTableView::getDisplayBackgroundColor(*)(backgroundColor, isCurrentKey),
             textColor: @lsfusion.gwt.client.base.view.ColorUtils::getDisplayColor(Ljava/lang/String;)(foregroundColor),
             borderColor: isCurrentKey ? @lsfusion.gwt.client.view.StyleDefaults::getFocusedCellBorderColor()() : null

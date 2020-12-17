@@ -60,7 +60,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
 
         super.onBrowserEvent(event);
 
-        form.onPropertyBrowserEvent(new EventHandler(event), GwtClientUtils.getParentWithAttribute(target, COLUMN_ATTRIBUTE), getElement(),
+        form.onPropertyBrowserEvent(new EventHandler(event), getCellParent(target), getElement(),
                 handler -> {}, // no outer context
                 handler -> {}, // no edit
                 handler -> {}, // no outer context
@@ -68,6 +68,8 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
                 false
         );
     }
+
+    protected abstract Element getCellParent(Element target);
 
     private NativeHashMap<String, Column> columnMap;
 

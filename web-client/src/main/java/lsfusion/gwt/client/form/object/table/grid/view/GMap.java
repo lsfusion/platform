@@ -26,6 +26,7 @@ import java.util.Objects;
 import static java.lang.Math.pow;
 import static lsfusion.gwt.client.base.view.ColorUtils.correctSB;
 import static lsfusion.gwt.client.base.view.ColorUtils.mixColors;
+import static lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder.COLUMN_ATTRIBUTE;
 import static lsfusion.gwt.client.view.StyleDefaults.getFocusColor;
 import static lsfusion.gwt.client.view.StyleDefaults.getFocusedCellBackgroundColor;
 
@@ -479,6 +480,10 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
         else
             marker.setLatLng([latitude != null ? latitude : 0, longitude != null ? longitude : 0]);
     }-*/;
+
+    protected Element getCellParent(Element target) {
+        return GwtClientUtils.getParentWithAttribute(target, COLUMN_ATTRIBUTE);
+    }
 
     protected native void updateIcon(JavaScriptObject marker, String icon, String filterStyle)/*-{
         var L = $wnd.L;
