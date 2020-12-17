@@ -24,7 +24,9 @@ public class StyleDefaults {
     public static final int DEFAULT_FONT_PT_SIZE = 9;
 
     private static String selectedRowBackgroundColor;
+    private static String selectedRowBackgroundColorMixed;
     private static String focusedCellBackgroundColor;
+    private static String focusedCellBackgroundColorMixed;
     private static String focusedCellBorderColor;
     private static String tableGridColor;
 
@@ -54,29 +56,45 @@ public class StyleDefaults {
             return "var(--selection-color)";
     }
 
+    public static String calculateSelectedRowBackgroundColor(boolean canBeMixed) {
+        ColorDTO preferredColor = MainFrame.colorPreferences.getSelectedRowBackground();
+        if (preferredColor != null)
+            return getDisplayColor(preferredColor.toString());
+
+        // should be the same as '--selection-color' in <theme>.css.
+        // can't use 'var(--selection-color)' because this color may be mixed with background color (converted to int)
+        return getSelectedColor(canBeMixed);
+    }
+
+    public static String calculateFocusedCellBackgroundColor(boolean canBeMixed) {
+        ColorDTO preferredColor = MainFrame.colorPreferences.getFocusedCellBackground();
+        if (preferredColor != null)
+            return getDisplayColor(preferredColor.toString());
+
+        return getSelectedColor(canBeMixed);
+    }
+
     public static String getSelectedRowBackgroundColor(boolean canBeMixed) {
-        if (selectedRowBackgroundColor == null) {
-            ColorDTO preferredColor = MainFrame.colorPreferences.getSelectedRowBackground();
-            if (preferredColor != null) {
-                selectedRowBackgroundColor = getDisplayColor(preferredColor.toString());
-            } else {
-                // should be the same as '--selection-color' in <theme>.css. 
-                // can't use 'var(--selection-color)' because this color may be mixed with background color (converted to int)
-                selectedRowBackgroundColor = getSelectedColor(canBeMixed);
-            }
+        if(canBeMixed) {
+            if (selectedRowBackgroundColorMixed == null)
+                selectedRowBackgroundColorMixed = calculateSelectedRowBackgroundColor(true);
+            return selectedRowBackgroundColorMixed;
         }
+
+        if (selectedRowBackgroundColor == null)
+            selectedRowBackgroundColor = calculateSelectedRowBackgroundColor(false);
         return selectedRowBackgroundColor;
     }
 
     public static String getFocusedCellBackgroundColor(boolean canBeMixed) {
-        if (focusedCellBackgroundColor == null) {
-            ColorDTO preferredColor = MainFrame.colorPreferences.getFocusedCellBackground();
-            if (preferredColor != null) {
-                focusedCellBackgroundColor = getDisplayColor(preferredColor.toString());
-            } else {
-                focusedCellBackgroundColor = getSelectedColor(canBeMixed);
-            }
+        if(canBeMixed) {
+            if (focusedCellBackgroundColorMixed == null)
+                focusedCellBackgroundColorMixed = calculateFocusedCellBackgroundColor(true);
+            return focusedCellBackgroundColorMixed;
         }
+
+        if (focusedCellBackgroundColor == null)
+            focusedCellBackgroundColor = calculateFocusedCellBackgroundColor(false);
         return focusedCellBackgroundColor;
     }
 
