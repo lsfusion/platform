@@ -359,8 +359,8 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
 
             classNames: isCurrentKey ? 'event-highlight' : '',
             backgroundColor: @GSimpleStateTableView::getDisplayBackgroundColor(*)(backgroundColor, isCurrentKey),
-            textColor: @lsfusion.gwt.client.base.view.ColorUtils.getDisplayColor(foregroundColor),
-            borderColor: isCurrentKey ? @lsfusion.gwt.client.view.StyleDefaults::getFocusedCellBorderColor()() : null,
+            textColor: @lsfusion.gwt.client.base.view.ColorUtils::getDisplayColor(Ljava/lang/String;)(foregroundColor),
+            borderColor: isCurrentKey ? @lsfusion.gwt.client.view.StyleDefaults::getFocusedCellBorderColor()() : null
         };
     }-*/;
 
