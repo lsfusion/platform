@@ -899,4 +899,14 @@ public class GwtClientUtils {
     public static <T> T nvl(T value1, T value2) {
         return value1 == null ? value2 : value1;
     }
+
+    public static Element getParentWithAttribute(Element element, String property) {
+        while (element != null) {
+            if (!element.getAttribute(property).isEmpty()) {
+                return element;
+            }
+            element = element.getParentElement();
+        }
+        return null;
+    }
 }

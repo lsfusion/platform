@@ -309,13 +309,14 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
 
         marker.on('click', function (e) {
             var oldKey = thisObject.@GMap::getCurrentKey()();
-            
-            thisObject.@GMap::changeSimpleGroupObject(*)(key, false, marker); // we want "full rerender", at least for now
-            
-            if (oldKey !== key) {
+
+            thisObject.@GMap::changeSimpleGroupObject(*)(key, true, marker); // we want "full rerender", at least for now
+
+            if (!@Objects::equals(Ljava/lang/Object;Ljava/lang/Object;)(oldKey, key)) {
                 thisObject.@GMap::updateIconFilter(*)(oldKey);
                 thisObject.@GMap::updateIconFilter(*)(key);
             }
+
         });
 
 //        marker = marker.addTo(map);
@@ -485,7 +486,9 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
             iconUrl = L.Icon.Default.prototype._getIconUrl('icon'); 
         }
         var myIcon = L.divIcon({
-            html: "<img class=\"" + (filterStyle ? filterStyle : "") + "\" src=" + iconUrl + " alt=\"\" tabindex=\"0\">",
+            html: "<img class=\"" + (filterStyle ? filterStyle : "") + "\" src=" + iconUrl + " alt=\"\" tabindex=\"0\" " +
+                @lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder::COLUMN_ATTRIBUTE + "=\"true\" " +
+                @lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder::IGNORE_DBLCLICK_CHECK + "=\"true\">",
             className: ''
         });
         marker.setIcon(myIcon);
