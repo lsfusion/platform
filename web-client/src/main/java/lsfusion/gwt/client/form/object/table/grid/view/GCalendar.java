@@ -8,12 +8,14 @@ import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
+import lsfusion.gwt.client.view.ColorThemeChangeListener;
+import lsfusion.gwt.client.view.MainFrame;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-public class GCalendar extends GTippySimpleStateTableView {
+public class GCalendar extends GTippySimpleStateTableView implements ColorThemeChangeListener {
 
     private final String calendarDateType;
     private JavaScriptObject calendar;
@@ -21,6 +23,8 @@ public class GCalendar extends GTippySimpleStateTableView {
     public GCalendar(GFormController form, GGridController grid, String calendarDateType) {
         super(form, grid);
         this.calendarDateType = calendarDateType;
+
+        MainFrame.addColorThemeChangeListener(this);
     }
 
     @Override
@@ -69,6 +73,7 @@ public class GCalendar extends GTippySimpleStateTableView {
             dayMaxEvents: true,
             //to prevent the expand of a single event without "end"-param to the next day "nextDayThreshold" should be equal to "defaultTimedEventDuration", which by default is 01:00:00
             nextDayThreshold: '01:00:00',
+            eventDisplay: 'block', // no dots and correct work of backgroundColor/borderColor
             eventOrder: 'start,index',
             eventChange: function (info) {
                 if (!@GCalendar::isUpdating) {
@@ -91,7 +96,7 @@ public class GCalendar extends GTippySimpleStateTableView {
 
         function changeCurrentEvent(newEvent, elementClicked) {
             controller.changeSimpleGroupObject(newEvent.extendedProps.object, true, elementClicked); // we're rerendering current event below
-            @GCalendar::highlightEvent(*)(calendar, newEvent.extendedProps.key);
+            @GCalendar::highlightEvent(*)(calendar, newEvent.extendedProps.key, controller);
         }
 
         function changeProperty(info, position) {
@@ -195,14 +200,16 @@ public class GCalendar extends GTippySimpleStateTableView {
                 JavaScriptObject object = list.get(i);
                 events.put(getKey(object), new Event(object, i));
             }
-            setCalendarEvents(calendar, createCalendarEventsObject(events), currentKey);
+            setCalendarEvents(calendar, createCalendarEventsObject(events));
         } else {
             isUpdating = true;
             eventsToAdd.forEach(Runnable::run);
             processUpdateEvents(eventsToUpdate);
-            highlightEvent(calendar, currentKey);
+            highlightEvent(calendar, currentKey, controller);
             isUpdating = false;
         }
+
+        setCalendarCurrentEventId(calendar, currentKey);
     }
 
     private void processUpdateEvents(NativeHashMap<GGroupObjectValue, Consumer<JavaScriptObject>> eventsToUpdate) {
@@ -250,6 +257,10 @@ public class GCalendar extends GTippySimpleStateTableView {
         return calendarEvents;
     }
 
+    protected native void setCalendarCurrentEventId(JavaScriptObject calendar, GGroupObjectValue currentEventId)/*-{
+        calendar.currentEventId = currentEventId;
+    }-*/;
+
     protected native JsArray<JavaScriptObject> getCalendarEvents(JavaScriptObject calendar)/*-{
         return calendar.getEvents();
     }-*/;
@@ -259,14 +270,14 @@ public class GCalendar extends GTippySimpleStateTableView {
     }-*/;
 
     protected native void removeSingleCalendarEvent(JavaScriptObject event)/*-{
-            event.remove();
+        event.remove();
     }-*/;
 
     protected native void addSingleCalendarEvent(JavaScriptObject calendar, JavaScriptObject event)/*-{
         calendar.addEvent(event, true); //true, assign event to the first event source
     }-*/;
 
-    protected static native void highlightEvent(JavaScriptObject calendar, GGroupObjectValue id)/*-{
+    protected static native void highlightEvent(JavaScriptObject calendar, GGroupObjectValue id, JavaScriptObject controller)/*-{
         var calendarEvents = calendar.getEvents();
 
         for (var i = 0; i < calendarEvents.length; i++) {
@@ -274,19 +285,19 @@ public class GCalendar extends GTippySimpleStateTableView {
             var key = calendarEvent.extendedProps.key;
             if (calendar.currentEventId != null && @lsfusion.gwt.client.base.GwtClientUtils::nullEquals(*)(key, calendar.currentEventId))
                 calendarEvent.setProp('classNames', '');
+            calendarEvent.setProp('backgroundColor', controller.getDisplayBackgroundColor(calendarEvent.extendedProps.sourceBackgroundColor, false))
+            calendarEvent.setProp('borderColor', null);
 
             if (@lsfusion.gwt.client.base.GwtClientUtils::nullEquals(*)(key, id))
                 calendarEvent.setProp('classNames', 'event-highlight');
+            calendarEvent.setProp('backgroundColor', controller.getDisplayBackgroundColor(calendarEvent.extendedProps.sourceBackgroundColor, true))
+            calendarEvent.setProp('borderColor', @lsfusion.gwt.client.view.StyleDefaults::getFocusedCellBorderColor()());
         }
         calendar.currentEventId = id;
     }-*/;
 
-    protected native void setCalendarEvents(JavaScriptObject calendar, JsArray<JavaScriptObject> events, GGroupObjectValue id)/*-{
-        calendar.getEventSources().forEach(function (source) {
-            source.remove();
-        })
-        calendar.addEventSource(events);
-        calendar.currentEventId = id;
+    protected native void setCalendarEvents(JavaScriptObject calendar, JsArray<JavaScriptObject> events)/*-{
+        calendar.setOption('events', events);
     }-*/;
 
     protected native void updateCalendarProperty(String propertyName, Object property, JavaScriptObject event)/*-{
@@ -361,5 +372,47 @@ public class GCalendar extends GTippySimpleStateTableView {
 
     protected native boolean isDurationEditable(JavaScriptObject object, JavaScriptObject controller, String endEventFieldName)/*-{
         return endEventFieldName !== null && !controller.isPropertyReadOnly(endEventFieldName, object);
+    }-*/;
+
+    protected native boolean getBackgroundColor(JavaScriptObject object, JavaScriptObject controller, boolean isCurrentKey)/*-{
+        var color = object.color
+        if (!color) {
+            color = controller.getGroupObjectBackgroundColor(object);
+        }
+        return {
+            'source': color,
+            'display': controller.getDisplayBackgroundColor(color, isCurrentKey)
+        };
+    }-*/;
+
+    protected native boolean getForegroundColor(JavaScriptObject object, JavaScriptObject controller)/*-{
+        var color = controller.getGroupObjectForegroundColor(object);
+        return {
+            'source': color,
+            'display': color ? @lsfusion.gwt.client.base.view.ColorUtils::getDisplayColor(Ljava/lang/String;)(color) : null
+        };
+    }-*/;
+
+    @Override
+    public void colorThemeChanged() {
+        updateEventsColors(calendar, controller);
+    }
+
+    protected native void updateEventsColors(JavaScriptObject calendar, JavaScriptObject controller)/*-{
+        var events = calendar.getEvents();
+        for (var i = 0; i < events.length; i++) {
+            var event = events[i];
+            var isCurrentKey = calendar.currentEventIndex === i;
+            var displayBackgroundColor = controller.getDisplayBackgroundColor(event.extendedProps.sourceBackgroundColor, isCurrentKey);
+            if (displayBackgroundColor) {
+                event.setProp('backgroundColor', displayBackgroundColor)
+            }
+            if (event.extendedProps.sourceTextColor) {
+                event.setProp('textColor', @lsfusion.gwt.client.base.view.ColorUtils::getDisplayColor(Ljava/lang/String;)(event.extendedProps.sourceTextColor))
+            }
+            if (isCurrentKey) {
+                event.setProp('borderColor', @lsfusion.gwt.client.view.StyleDefaults::getFocusedCellBorderColor()());
+            }
+        }
     }-*/;
 }

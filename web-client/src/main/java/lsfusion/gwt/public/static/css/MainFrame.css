@@ -649,6 +649,11 @@ input[type=checkbox]:focus {
     transform: translateX(-50%);
 }
 
+.leaflet-edit-marker-selected {
+    border-color: transparent;
+    background: none;
+}
+
 .leaflet-marker-cluster {
     border-radius: 50%;
     width: 40px;

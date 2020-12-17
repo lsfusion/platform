@@ -201,7 +201,8 @@ public class EmailSender {
                             throw new RuntimeException(localize("{mail.error.send.mail}") + " : " + messageInfo, e);
                         }
                     } else {
-                        throw new RuntimeException(e.getMessage());
+                        logger.error(localize("{mail.failed.to.send.mail}") + " : " + messageInfo, e);
+                        throw new RuntimeException(localize("{mail.error.send.mail}") + " : " + messageInfo, e);
                     }
                 }
             }

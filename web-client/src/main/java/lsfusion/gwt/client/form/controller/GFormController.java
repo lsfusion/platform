@@ -1094,10 +1094,8 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         pendingModifyObjectRequests.put(requestIndex, new ModifyObject(object, add, value, position));
     }
 
-    public void changePropertyOrder(GPropertyDraw property, GGroupObjectValue columnKey, GOrder modiType, boolean alreadySet) {
-        if (!alreadySet) {
-            syncDispatch(new ChangePropertyOrder(property.ID, columnKey, modiType), new ServerResponseCallback());
-        }
+    public void changePropertyOrder(GPropertyDraw property, GGroupObjectValue columnKey, GOrder modiType) {
+        syncDispatch(new ChangePropertyOrder(property.ID, columnKey, modiType), new ServerResponseCallback());
     }
 
     public void setPropertyOrders(GGroupObject groupObject, List<Integer> propertyList, List<GGroupObjectValue> columnKeyList, List<Boolean> orderList) {
@@ -1826,7 +1824,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     public void render(GPropertyDraw property, Element element, RenderContext renderContext) {
-        if(editContext != null && editContext.getRenderElement() == element) { // is edited
+        if(isEditedOrAsync(property, element)) {
             assert false;
             return;
         }
@@ -1834,10 +1832,14 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         property.getCellRenderer().renderStatic(element, renderContext);
     }
     public void update(GPropertyDraw property, Element element, Object value, UpdateContext updateContext) {
-        if(editContext != null && editContext.getRenderElement() == element) // is edited
+        if(isEditedOrAsync(property, element))
             return;
 
         property.getCellRenderer().renderDynamic(element, value, updateContext);
+    }
+
+    public boolean isEditedOrAsync(GPropertyDraw property, Element element) {
+        return (editContext != null && editContext.getRenderElement() == element) || (property.drawAsync && asyncCount > 0);
     }
 
     public static void setBackgroundColor(Element element, String color) {

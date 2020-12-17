@@ -1,6 +1,5 @@
 package lsfusion.server.physics.dev.integration.external.to.file;
 
-import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
@@ -10,7 +9,6 @@ import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.dev.integration.external.to.file.client.LoadDownloadedFontClientAction;
 import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
-import java.sql.SQLException;
 import java.util.Iterator;
 
 public class LoadDownloadedFontAction extends InternalAction {
@@ -19,7 +17,7 @@ public class LoadDownloadedFontAction extends InternalAction {
     public LoadDownloadedFontAction(BaseLogicsModule LM, ValueClass... classes) {
         super(LM, classes);
 
-        Iterator<ClassPropertyInterface> i = interfaces.iterator();
+        Iterator<ClassPropertyInterface> i = getOrderInterfaces().iterator();
         pathInterface = i.next();
     }
 

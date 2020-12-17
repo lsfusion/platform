@@ -28,7 +28,7 @@ public class TranslateAction extends InternalAction {
     public TranslateAction(ScriptingLogicsModule LM, ValueClass... classes) {
         super(LM, classes);
 
-        Iterator<ClassPropertyInterface> i = interfaces.iterator();
+        Iterator<ClassPropertyInterface> i = getOrderInterfaces().iterator();
         translationInterface = i.next();
         languageFromInterface = i.next();
         languageToInterface = i.next();

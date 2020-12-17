@@ -195,9 +195,9 @@ public class GFilterView extends ResizableFocusPanel implements GFilterCondition
     private void updateWidth() {
         int compareWidth = 0;
         int valueWidth = 0;
-        for(GPropertyFilter condition : conditionViews.keySet()) {
-            compareWidth = Math.max(compareWidth, getCompareViewWidth(condition.property));
-            valueWidth = Math.max(valueWidth, condition.property.getValueWidth(null));
+        for(Map.Entry<GPropertyFilter, GFilterConditionView> condition : conditionViews.entrySet()) {
+            compareWidth = Math.max(compareWidth, getCompareViewWidth(condition.getKey().property));
+            valueWidth = Math.max(valueWidth, condition.getValue().getValueViewWidth());
         }
         if(compareWidth > 0) {
             for (GFilterConditionView conditionView : conditionViews.values()) {

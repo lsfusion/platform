@@ -9,7 +9,7 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.setupFillParent;
 
-public class ResizableSimplePanel extends SimplePanel implements RequiresResize, ProvidesResize, HasMaxPreferredSize {
+public class ResizableSimplePanel extends SimplePanel implements RequiresResize, ProvidesResize, HasMaxPreferredSize, ResizableMainPanel {
     public ResizableSimplePanel() {
     }
 
@@ -45,5 +45,15 @@ public class ResizableSimplePanel extends SimplePanel implements RequiresResize,
     @Override
     public Dimension getMaxPreferredSize() {
         return GwtClientUtils.calculateMaxPreferredSize(getWidget());
+    }
+
+    @Override
+    public void setMain(Widget main) {
+        add(main);
+    }
+
+    @Override
+    public Widget getPanelWidget() {
+        return this;
     }
 }

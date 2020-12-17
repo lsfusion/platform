@@ -1,5 +1,6 @@
 package lsfusion.interop.logics;
 
+import com.google.common.base.Throwables;
 import lsfusion.base.ExceptionUtils;
 import lsfusion.base.remote.RMIUtils;
 import lsfusion.interop.base.exception.AppServerNotAvailableException;
@@ -81,6 +82,7 @@ public abstract class AbstractLogicsProviderImpl {
         try {
             return runRequest(connection, sessionObject -> sessionObject.getServerSettings(sessionInfo, contextPath, noCache));
         } catch (Throwable t) {
+//            throw Throwables.propagate(t);
             return null;
         }
     }

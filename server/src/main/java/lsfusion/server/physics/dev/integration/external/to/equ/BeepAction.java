@@ -2,14 +2,12 @@ package lsfusion.server.physics.dev.integration.external.to.equ;
 
 import lsfusion.base.file.FileData;
 import lsfusion.interop.action.BeepClientAction;
-import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
-import java.sql.SQLException;
 import java.util.Iterator;
 
 public class BeepAction extends InternalAction {
@@ -20,7 +18,7 @@ public class BeepAction extends InternalAction {
     public BeepAction(ScriptingLogicsModule LM, ValueClass... valueClasses) {
         super(LM, valueClasses);
 
-        Iterator<ClassPropertyInterface> i = interfaces.iterator();
+        Iterator<ClassPropertyInterface> i = getOrderInterfaces().iterator();
         fileInterface = i.next();
         asyncInterface = i.next();
     }

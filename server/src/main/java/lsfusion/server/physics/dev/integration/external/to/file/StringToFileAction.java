@@ -19,7 +19,7 @@ public class StringToFileAction extends InternalAction {
     public StringToFileAction(UtilsLogicsModule LM, ValueClass... classes) {
         super(LM, classes);
 
-        Iterator<ClassPropertyInterface> i = interfaces.iterator();
+        Iterator<ClassPropertyInterface> i = getOrderInterfaces().iterator();
         inputValueInterface = i.next();
         charsetInterface = i.next();
         extensionInterface = i.next();

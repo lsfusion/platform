@@ -1,6 +1,5 @@
 package lsfusion.server.physics.dev.integration.external.to.file;
 
-import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
@@ -9,7 +8,6 @@ import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.dev.integration.external.to.file.client.LoadDownloadedLibraryClientAction;
 import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
-import java.sql.SQLException;
 import java.util.Iterator;
 
 public class LoadDownloadedLibraryAction extends InternalAction {
@@ -18,7 +16,7 @@ public class LoadDownloadedLibraryAction extends InternalAction {
     public LoadDownloadedLibraryAction(BaseLogicsModule LM, ValueClass... classes) {
         super(LM, classes);
 
-        Iterator<ClassPropertyInterface> i = interfaces.iterator();
+        Iterator<ClassPropertyInterface> i = getOrderInterfaces().iterator();
         pathInterface = i.next();
     }
 

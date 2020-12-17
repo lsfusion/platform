@@ -26,7 +26,7 @@ public class ReadResourcesAction extends InternalAction {
     public ReadResourcesAction(UtilsLogicsModule LM, ValueClass... classes) {
         super(LM, classes);
 
-        Iterator<ClassPropertyInterface> i = interfaces.iterator();
+        Iterator<ClassPropertyInterface> i = getOrderInterfaces().iterator();
         resourcePathInterface = i.next();
     }
 
@@ -35,13 +35,10 @@ public class ReadResourcesAction extends InternalAction {
         String resourcePath = (String) context.getKeyValue(resourcePathInterface).getValue();
         List<String> allResources = ResourceUtils.getResources(Pattern.compile(resourcePath));
         allResources
-                .stream()
-                .filter(r -> ResourceUtils.getResource(r) != null)
                 .forEach(r -> {
                     try {
-                        File file = new File(ResourceUtils.getResource(r).getPath());
-                        RawFileData fileData = new RawFileData(file);
-                        findProperty("resourceFiles[STRING]").change(fileData, context, new DataObject(file.getParentFile().getName() + "/" + file.getName(), StringClass.text));
+                        RawFileData fileData = new RawFileData(ResourceUtils.getResourceAsStream(r));
+                        findProperty("resourceFiles[STRING]").change(fileData, context, new DataObject(r, StringClass.text));
                     } catch (ScriptingErrorLog.SemanticErrorException | IOException | SQLException | SQLHandledException e) {
                         throw Throwables.propagate(e);
                     }

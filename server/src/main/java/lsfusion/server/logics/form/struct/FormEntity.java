@@ -1103,6 +1103,19 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     }
 
     public void finalizeAroundInit() {
+
+        for(GroupObjectEntity group : getGroupsIt()) {
+            if(group.listViewType.isMap() && !isMap(group)) {
+                throw new RuntimeException(getCreationPath() + " none of required MAP propertyDraws found (longitude, latitude or polygon)");
+            }
+        }
+
+        for(GroupObjectEntity group : getGroupsIt()) {
+            if(group.listViewType.isCalendar() && !isCalendarDate(group) && !isCalendarDateTime(group)) {
+                throw new RuntimeException(getCreationPath() + " none of required CALENDAR propertyDraws found (date, dateFrom, dateTime or dateTimeFrom)");
+            }
+        }
+
         groups.finalizeChanges();
         treeGroups.finalizeChanges();
         propertyDraws.finalizeChanges();

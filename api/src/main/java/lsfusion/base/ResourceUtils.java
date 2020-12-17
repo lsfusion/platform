@@ -73,7 +73,9 @@ public class ResourceUtils {
             final ZipEntry ze = (ZipEntry) e.nextElement();
             final String fileName = ze.getName();
             assert !fileName.startsWith("/");
-            fillResourcesResult("/" + fileName, patterns, retval);
+            if (!ze.isDirectory()) {
+                fillResourcesResult("/" + fileName, patterns, retval);
+            }
         }
         try {
             zf.close();

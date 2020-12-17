@@ -19,7 +19,7 @@
 
 .event-highlight {
     background-color: var(--selection-color);
-    border: 1px solid var(--component-border-color);
+    border: 1px solid var(--focus-color);
 }
 
 .fc-h-event .fc-event-main, .fc-v-event .fc-event-main {
@@ -194,6 +194,15 @@ a.fc-daygrid-day-number, a.fc-daygrid-day-number:hover {
     font-size: inherit;
 }
 
+.fc-daygrid-block-event .fc-event-time {
+    font-weight: normal;
+}
+
+.fc-direction-ltr .fc-daygrid-event .fc-event-time {
+    flex: 0 0 auto;
+    margin-right: 0;
+}
+
 .fc .fc-daygrid-day-number {
     text-decoration: none;
     padding: 3px 4px;
@@ -201,10 +210,6 @@ a.fc-daygrid-day-number, a.fc-daygrid-day-number:hover {
 
 .fc-direction-ltr .fc-daygrid-event .fc-event-time {
     color: var(--text-color);
-}
-
-.fc-daygrid-event-dot {
-    display: none;
 }
 
 .fc .fc-daygrid-day-bottom {

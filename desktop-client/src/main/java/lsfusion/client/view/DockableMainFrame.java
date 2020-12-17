@@ -6,13 +6,15 @@ import bibliothek.extension.gui.dock.theme.eclipse.stack.EclipseTabPane;
 import bibliothek.extension.gui.dock.theme.eclipse.stack.tab.*;
 import bibliothek.gui.DockController;
 import bibliothek.gui.Dockable;
-import bibliothek.gui.dock.common.CContentArea;
-import bibliothek.gui.dock.common.CControl;
-import bibliothek.gui.dock.common.CGrid;
-import bibliothek.gui.dock.common.SingleCDockable;
-import bibliothek.gui.dock.common.intern.CSetting;
+import bibliothek.gui.dock.common.*;
+import bibliothek.gui.dock.common.intern.*;
 import bibliothek.gui.dock.common.mode.ExtendedMode;
 import bibliothek.gui.dock.common.theme.ThemeMap;
+import bibliothek.gui.dock.control.ControllerSetupCollection;
+import bibliothek.gui.dock.control.DefaultDockControllerFactory;
+import bibliothek.gui.dock.control.DockRelocator;
+import bibliothek.gui.dock.control.relocator.DefaultDockRelocator;
+import bibliothek.gui.dock.title.DockTitle;
 import bibliothek.gui.dock.util.color.ColorManager;
 import com.google.common.base.Throwables;
 import lsfusion.base.ReflectionUtils;
@@ -135,7 +137,29 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
 
         navigatorController = new NavigatorController(mainNavigator);
 
-        mainControl = new CControl(this);
+        mainControl = new CControl(this, new EfficientControlFactory() {
+            @Override
+            public DockController createController(CControl owner) {
+                return new CDockController(owner, new DefaultDockControllerFactory() {
+                    @Override
+                    public DockRelocator createRelocator(DockController controller, ControllerSetupCollection setup) {
+                        return new DefaultDockRelocator(controller, setup) {
+                            @Override
+                            protected void dragMousePressed(MouseEvent e, DockTitle title, Dockable dockable) {
+                                boolean forbidDragAndDrop = false;
+                                if (dockable instanceof CommonDockable) {
+                                    CDockable window = ((CommonDockable) dockable).getDockable();
+                                    forbidDragAndDrop = window instanceof SingleCDockable && windowDockables.containsKey(window);
+                                }
+                                if (!forbidDragAndDrop) {
+                                    super.dragMousePressed(e, title, dockable);
+                                }
+                            }
+                        };
+                    }
+                });
+            }
+        });
         
         ReflectionUtils.setPrivateFieldValue(DockController.class, mainControl.getController(), "colors", new ColorManager(mainControl.getController()) {
             @Override

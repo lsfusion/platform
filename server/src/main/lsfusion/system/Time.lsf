@@ -66,6 +66,9 @@ sumSeconds(DATETIME dateTime, LONG secs) = [ FORMULA DATETIME PG '(($1)+($2)*CAS
 subtractSeconds(DATETIME dateTime, LONG secs) = [ FORMULA DATETIME PG '(($1)-($2)*CAST(\'1 seconds\' AS INTERVAL))', MS 'DATEADD(ss, -($2), $1)'](dateTime AS DATETIME, secs AS LONG);
 subtractSeconds(DATETIME dateTimeFrom, DATETIME dateTimeTo) = [ FORMULA INTEGER PG 'extract (\'epoch\' from (($1)-($2)))', MS 'DATEDIFF(s, $2, $1)'](dateTimeTo AS DATETIME, dateTimeFrom AS DATETIME);
 
+getMilliSeconds(ZDATETIME dateTime) = [ FORMULA LONG PG 'extract (\'epoch\' from ($1)) * 1000'](dateTime AS ZDATETIME);
+getSeconds(ZDATETIME dateTime) = getMilliSeconds(dateTime) / 1000;
+
 sumDay(ZDATETIME dateTime, LONG days) = [ FORMULA ZDATETIME PG '(($1)+($2)*CAST(\'1 days\' AS INTERVAL))', MS 'DATEADD(dd, $2, $1)'](dateTime AS ZDATETIME, days AS LONG);
 subtractDay(ZDATETIME dateTime, LONG days) = [ FORMULA ZDATETIME PG '(($1)-($2)*CAST(\'1 days\' AS INTERVAL))', MS 'DATEADD(dd, -($2), $1)'](dateTime AS ZDATETIME, days AS LONG);
 sumMinutes(ZDATETIME dateTime, LONG mins) = [ FORMULA ZDATETIME PG '(($1)+($2)*CAST(\'1 minutes\' AS INTERVAL))', MS 'DATEADD(mm, $2, $1)'](dateTime AS ZDATETIME, mins AS LONG);
