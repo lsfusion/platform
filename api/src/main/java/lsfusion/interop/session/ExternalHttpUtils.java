@@ -63,7 +63,7 @@ public class ExternalHttpUtils {
         HttpResponse response = (HttpResponse) BaseUtils.executeWithTimeout(() -> requestBuilder.build().execute(httpRequest), timeout);
         HttpEntity responseEntity = response.getEntity();
         ContentType responseContentType = ContentType.get(responseEntity);
-        byte[] responseBytes = responseEntity != null ? IOUtils.readBytesFromStream(responseEntity.getContent()) : null;
+        byte[] responseBytes = responseEntity != null ? IOUtils.readBytesFromHttpEntity(responseEntity) : null;
         StatusLine statusLine = response.getStatusLine();
         return new ExternalHttpResponse(responseContentType != null ? responseContentType.toString() : null, responseBytes, getResponseHeaders(response), statusLine.getStatusCode(), statusLine.getReasonPhrase());
     }
