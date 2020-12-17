@@ -7,6 +7,7 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
+import lsfusion.gwt.client.base.view.ColorUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.classes.data.GImageType;
@@ -21,6 +22,7 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.classes.GDateDTO;
 import lsfusion.gwt.client.form.property.cell.classes.GDateTimeDTO;
 import lsfusion.gwt.client.form.view.Column;
+import lsfusion.gwt.client.view.StyleDefaults;
 
 import java.io.Serializable;
 import java.util.*;
@@ -277,6 +279,17 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         return value != null ? value.toString() : null;
     }
 
+    protected static String getDisplayBackgroundColor(String color, boolean isCurrentKey) {
+        if (isCurrentKey) {
+            if (color != null) {
+                return ColorUtils.mixColors(color, StyleDefaults.getFocusedCellBackgroundColor(true));
+            } else {
+                return StyleDefaults.getFocusedCellBackgroundColor(false);
+            }
+        } else
+            return ColorUtils.getDisplayColor(color);
+    }
+
     protected native JavaScriptObject getController()/*-{
         var thisObj = this;
         return {
@@ -306,23 +319,25 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
                 return thisObj.@GSimpleStateTableView::getPropertyValue(*)(propertyName);
             },
             getGroupObjectBackgroundColor: function(object) {
-                var color = thisObj.@GStateTableView::getRowBackgroundColor(*)(thisObj.@GSimpleStateTableView::getKey(*)(object));
-                return color ? color.toString() : null;
+                var color = object.color;
+                if (color)
+                    return color.toString();
+                color = thisObj.@GStateTableView::getRowBackgroundColor(*)(thisObj.@GSimpleStateTableView::getKey(*)(object));
+                if (color)
+                    return color.toString();
+                return null;
             },
             getDisplayBackgroundColor: function (color, isCurrentKey) {
-                if (isCurrentKey) {
-                    if (color) {
-                        return @lsfusion.gwt.client.base.view.ColorUtils::mixColors(*)(color, @lsfusion.gwt.client.view.StyleDefaults::getFocusedCellBackgroundColor(*)(true))
-                    } else {
-                        return @lsfusion.gwt.client.view.StyleDefaults::getFocusedCellBackgroundColor(*)(false)
-                    }
-                } else {
-                    return color ? @lsfusion.gwt.client.base.view.ColorUtils::getDisplayColor(Ljava/lang/String;)(color) : null
-                }
+                return @GSimpleStateTableView::getDisplayBackgroundColor(*)(color, isCurrentKey);
+            },
+            getDisplayForegroundColor: function (color) {
+                return @lsfusion.gwt.client.base.view.ColorUtils::getDisplayColor(Ljava/lang/String;)(color);
             },
             getGroupObjectForegroundColor: function(object) {
                 var color = thisObj.@GStateTableView::getRowForegroundColor(*)(thisObj.@GSimpleStateTableView::getKey(*)(object));
-                return color ? color.toString() : null;
+                if (color)
+                    return color.toString();
+                return null;
             }
         };
     }-*/;

@@ -4,7 +4,9 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.i18n.client.LocaleInfo;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
+import lsfusion.gwt.client.base.view.ColorUtils;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
@@ -13,7 +15,6 @@ import lsfusion.gwt.client.view.MainFrame;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.Consumer;
 
 public class GCalendar extends GTippySimpleStateTableView implements ColorThemeChangeListener {
@@ -97,7 +98,7 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
 
         function changeCurrentEvent(newEvent, elementClicked) {
             controller.changeSimpleGroupObject(newEvent.extendedProps.object, true, elementClicked); // we're rerendering current event below
-            @GCalendar::highlightEvent(*)(calendar, newEvent.extendedProps.key, controller);
+            @GCalendar::highlightEvent(*)(calendar, newEvent.extendedProps.key);
         }
 
         function changeProperty(info, position) {
@@ -132,19 +133,19 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
     private final NativeHashMap<GGroupObjectValue, Event> events = new NativeHashMap<>();
     private class Event {
 
-        public String title;
-        public String start;
-        public String end;
-        public boolean editable;
-        public boolean durationEditable;
+        public final String title;
+        public final String start;
+        public final String end;
+        public final boolean editable;
+        public final boolean durationEditable;
         public final boolean allDay;
         public final String startFieldName;
         public final String endFieldName;
         public final int index;
         public final GGroupObjectValue key;
         public final JavaScriptObject object;
-        public JavaScriptObject backgroundColor;
-        public JavaScriptObject foregroundColor;
+        public final String backgroundColor;
+        public final String foregroundColor;
 
         public Event(JavaScriptObject object, int index) {
             String endEventFieldName = calendarDateType.contains("From") ? calendarDateType.replace("From", "To") : null;
@@ -160,7 +161,7 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
             this.index = index;
             this.key = getKey(object);
             this.object = object;
-            backgroundColor = getBackgroundColor(object, controller, isCurrentObjectKey(object));
+            backgroundColor = getBackgroundColor(object, controller);
             foregroundColor = getForegroundColor(object, controller);
         }
     }
@@ -210,7 +211,7 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
             isUpdating = true;
             eventsToAdd.forEach(Runnable::run);
             processUpdateEvents(eventsToUpdate);
-            highlightEvent(calendar, currentKey, controller);
+            highlightEvent(calendar, currentKey);
             isUpdating = false;
         }
 
@@ -248,11 +249,11 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
         if (oldEvent.index != event.index)
             updateAction = addUpdateAction(calendarEvent -> updateCalendarExtendedProperty("index", event.index, calendarEvent), updateAction);
 
-        if (!Objects.deepEquals(oldEvent.backgroundColor, event.backgroundColor))
-            updateAction = addUpdateAction(calendarEvent -> updateCalendarProperty("backgroundColor", event.backgroundColor, calendarEvent), updateAction);
+        if (!GwtClientUtils.nullEquals(oldEvent.backgroundColor, event.backgroundColor))
+            updateAction = addUpdateAction(calendarEvent -> updateCalendarProperty("backgroundColor", getDisplayBackgroundColor(event.backgroundColor, false), calendarEvent), updateAction);
 
-        if (!Objects.deepEquals(oldEvent.foregroundColor, event.foregroundColor))
-            updateAction = addUpdateAction(calendarEvent -> updateCalendarExtendedProperty("foregroundColor", event.foregroundColor, calendarEvent), updateAction);
+        if (!GwtClientUtils.nullEquals(oldEvent.foregroundColor, event.foregroundColor))
+            updateAction = addUpdateAction(calendarEvent -> updateCalendarExtendedProperty("foregroundColor", ColorUtils.getDisplayColor(event.foregroundColor), calendarEvent), updateAction);
 
         if (updateAction != null)
             eventsToUpdate.put(key, updateAction);
@@ -288,7 +289,7 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
         calendar.addEvent(event, true); //true, assign event to the first event source
     }-*/;
 
-    protected static native void highlightEvent(JavaScriptObject calendar, GGroupObjectValue id, JavaScriptObject controller)/*-{
+    protected static native void highlightEvent(JavaScriptObject calendar, GGroupObjectValue id)/*-{
         @GCalendar::isUpdating = true;
         var calendarEvents = calendar.getEvents();
 
@@ -297,13 +298,13 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
             var key = calendarEvent.extendedProps.key;
             if (calendar.currentEventId != null && @lsfusion.gwt.client.base.GwtClientUtils::nullEquals(*)(key, calendar.currentEventId)) {
                 calendarEvent.setProp('classNames', '');
-                calendarEvent.setProp('backgroundColor', controller.getDisplayBackgroundColor(calendarEvent.extendedProps.sourceBackgroundColor, false))
+                calendarEvent.setProp('backgroundColor', @GSimpleStateTableView::getDisplayBackgroundColor(*)(calendarEvent.extendedProps.sourceBackgroundColor, false))
                 calendarEvent.setProp('borderColor', null);
             }
 
             if (@lsfusion.gwt.client.base.GwtClientUtils::nullEquals(*)(key, id)) {
                 calendarEvent.setProp('classNames', 'event-highlight');
-                calendarEvent.setProp('backgroundColor', controller.getDisplayBackgroundColor(calendarEvent.extendedProps.sourceBackgroundColor, true))
+                calendarEvent.setProp('backgroundColor', @GSimpleStateTableView::getDisplayBackgroundColor(*)(calendarEvent.extendedProps.sourceBackgroundColor, true))
                 calendarEvent.setProp('borderColor', @lsfusion.gwt.client.view.StyleDefaults::getFocusedCellBorderColor()());
             }
         }
@@ -340,7 +341,7 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
 
     protected native JavaScriptObject createEventAsJs(String title, String start, String end, boolean editable, boolean durationEditable, boolean allDay, GGroupObjectValue key,
                                                       String startFieldName, String endFieldName, int index, JavaScriptObject object, boolean  isCurrentKey,
-                                                      JavaScriptObject backgroundColor, JavaScriptObject foregroundColor)/*-{
+                                                      String backgroundColor, String foregroundColor)/*-{
         return {
             title: title,
             start: start,
@@ -353,12 +354,13 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
             index: index,
             key: key,
             object: object,
+            sourceBackgroundColor: backgroundColor,
+            sourceTextColor: foregroundColor,
+
             classNames: isCurrentKey ? 'event-highlight' : '',
-            backgroundColor: backgroundColor.display,
-            sourceBackgroundColor: backgroundColor.source,
-            textColor: foregroundColor.display,
-            sourceTextColor: foregroundColor.source,
-            borderColor: isCurrentKey ? @lsfusion.gwt.client.view.StyleDefaults::getFocusedCellBorderColor()() : null
+            backgroundColor: @GSimpleStateTableView::getDisplayBackgroundColor(*)(backgroundColor, isCurrentKey),
+            textColor: @lsfusion.gwt.client.base.view.ColorUtils.getDisplayColor(foregroundColor),
+            borderColor: isCurrentKey ? @lsfusion.gwt.client.view.StyleDefaults::getFocusedCellBorderColor()() : null,
         };
     }-*/;
 
@@ -395,36 +397,25 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
         return endEventFieldName !== null && !controller.isPropertyReadOnly(endEventFieldName, object);
     }-*/;
 
-    protected native JavaScriptObject getBackgroundColor(JavaScriptObject object, JavaScriptObject controller, boolean isCurrentKey)/*-{
-        var color = object.color
-        if (!color) {
-            color = controller.getGroupObjectBackgroundColor(object);
-        }
-        return {
-            'source': color,
-            'display': controller.getDisplayBackgroundColor(color, isCurrentKey)
-        };
+    protected native String getBackgroundColor(JavaScriptObject object, JavaScriptObject controller)/*-{
+        return controller.getGroupObjectBackgroundColor(object);
     }-*/;
 
-    protected native JavaScriptObject getForegroundColor(JavaScriptObject object, JavaScriptObject controller)/*-{
-        var color = controller.getGroupObjectForegroundColor(object);
-        return {
-            'source': color,
-            'display': color ? @lsfusion.gwt.client.base.view.ColorUtils::getDisplayColor(Ljava/lang/String;)(color) : null
-        };
+    protected native String getForegroundColor(JavaScriptObject object, JavaScriptObject controller)/*-{
+        return controller.getGroupObjectForegroundColor(object);
     }-*/;
 
     @Override
     public void colorThemeChanged() {
-        updateEventsColors(calendar, controller);
+        updateEventThemeColors(calendar);
     }
 
-    protected native void updateEventsColors(JavaScriptObject calendar, JavaScriptObject controller)/*-{
+    protected native void updateEventThemeColors(JavaScriptObject calendar)/*-{
         var events = calendar.getEvents();
         for (var i = 0; i < events.length; i++) {
             var event = events[i];
-            var isCurrentKey = calendar.currentEventIndex === i;
-            var displayBackgroundColor = controller.getDisplayBackgroundColor(event.extendedProps.sourceBackgroundColor, isCurrentKey);
+            var isCurrentKey = @lsfusion.gwt.client.base.GwtClientUtils::nullEquals(*)(calendar.currentEventId, event.extendedProps.id);
+            var displayBackgroundColor = @GSimpleStateTableView::getDisplayBackgroundColor(*)(event.extendedProps.sourceBackgroundColor, isCurrentKey);
             if (displayBackgroundColor) {
                 event.setProp('backgroundColor', displayBackgroundColor)
             }
