@@ -33,6 +33,7 @@ public abstract class AbstractDataGridBuilder<T> {
      * The attribute used to indicate that an element contains a cell.
      */
     public static final String COLUMN_ATTRIBUTE = "__gwt_column";
+    public static final String COLUMN_CLASS = "class__gwt_column";
 
     /**
      * The attribute used to specify the logical row index.

@@ -111,6 +111,7 @@ public class MainDispatchServlet extends net.customware.gwt.dispatch.server.stan
         registry.addHandler(new SetTabVisibleHandler(this));
         registry.addHandler(new SetUserFiltersHandler(this));
         registry.addHandler(new ThrowInInvocationHandler(this));
+        registry.addHandler(new SetViewFiltersHandler(this));
     }
 
     public FormProvider getFormProvider() {

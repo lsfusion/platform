@@ -308,7 +308,7 @@ DESIGN connections{
 FORM  exceptions '{system.events.form.exceptions}'
 
     OBJECTS e=Exception LAST
-    PROPERTIES(e) FOREGROUND foregroundNonFatal(e) BACKGROUND backgroundNonFatal(e) READONLY objectClassName, message, client , login , type, date, reqId PANEL, count PANEL, abandoned PANEL
+    PROPERTIES(e) FOREGROUND foregroundNonFatal(e) BACKGROUND backgroundNonFatal(e) READONLY objectClassName, message, client , login , type, dateTime = date, reqId PANEL, count PANEL, abandoned PANEL
     PROPERTIES(e) READONLY PANEL javaStackTrace, lsfStackTrace
 ;
 
@@ -340,7 +340,7 @@ DESIGN exceptions {
 FORM launches '{system.events.form.launches}'
 
    OBJECTS l=Launch
-   PROPERTIES(l) READONLY hostname, time, revision
+   PROPERTIES(l) READONLY hostname, dateTime = time, revision
 ;
 
 FORM changes '{system.events.form.changes}'

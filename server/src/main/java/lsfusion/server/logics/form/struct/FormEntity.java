@@ -1066,31 +1066,36 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
     @IdentityLazy
     public boolean isMap(GroupObjectEntity entity) {
-        return hasField(entity, "longitude", "latitude", "polygon");
+        return getField(entity, "longitude", "latitude", "polygon") != null;
     }
 
     @IdentityLazy
     public boolean isCalendarDate(GroupObjectEntity entity) {
-        return hasField(entity, "date", "dateFrom");
+        return getField(entity, "date", "dateFrom") != null;
     }
 
     @IdentityLazy
     public boolean isCalendarDateTime(GroupObjectEntity entity) {
-        return hasField(entity, "dateTime", "dateTimeFrom");
+        return getField(entity, "dateTime", "dateTimeFrom") != null;
     }
 
-    private boolean hasField(GroupObjectEntity entity, String... fields) {
+    @IdentityLazy
+    public boolean isCalendarPeriod(GroupObjectEntity entity) {
+        return getField(entity, "dateFrom", "dateTimeFrom") != null;
+    }
+
+    public PropertyDrawEntity getField(GroupObjectEntity entity, String... fields) {
         List<String> fieldsList = Arrays.asList(fields);
         Iterable<PropertyDrawEntity> propertyDrawsIt = getPropertyDrawsIt();
         for (PropertyDrawEntity property : propertyDrawsIt) {
             if (property.isList(this) && entity.equals(property.getToDraw(this))) {
                 String name = property.getIntegrationSID();
                 if (name != null && fieldsList.contains(name)) {
-                    return true;
+                    return property;
                 }
             }
         }
-        return false;
+        return null;
     }
 
     @IdentityLazy

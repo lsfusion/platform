@@ -84,9 +84,10 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
         initPageSizeWidget();
     }
 
+    private final Label messageLabel = new Label();
+
     public void initPageSizeWidget() {
         FlexPanel messageAndButton = new FlexPanel();
-        Label messageLabel = new Label(ClientMessages.Instance.get().formGridPageSizeHit(pageSize));
         messageLabel.getElement().getStyle().setPaddingRight(4, Style.Unit.PX);
         messageAndButton.addCentered(messageLabel);
 
@@ -134,10 +135,19 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
             dataUpdated = true;
     }
 
+    private int pageSize = getDefaultPageSize();
+
     // should correspond FormInstance.constructor - changePageSize method
-    private int pageSize = 1000;
+    public int getDefaultPageSize() {
+        return 1000;
+    }
+
     public int getPageSize() {
         return pageSize;
+    }
+
+    public void setPageSize(int pageSize) {
+        this.pageSize = pageSize;
     }
 
     protected boolean isPageSizeHit() {
@@ -221,9 +231,8 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
             this.updateState = updateState;
 
         if(dataUpdated || rerender) {
-            updatePageSizeState(isPageSizeHit());
-
             updateView();
+            updatePageSizeState(isPageSizeHit());
             rerender = false;
         }
 
@@ -232,6 +241,7 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
 
     protected abstract void updateView();
     protected void updatePageSizeState(boolean hit) {
+        messageLabel.setText(ClientMessages.Instance.get().formGridPageSizeHit(keys == null ? getPageSize() : keys.size() )); //need to show current objects size
         getPageSizeWidget().setVisible(hit);
     }
     protected abstract Element getRendererAreaElement();

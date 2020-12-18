@@ -212,7 +212,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
         super.onBrowserEvent(event);
 
-        checkFormEvent(event, (handler, preview) -> checkMouseEvent(handler, preview, GwtClientUtils.getParentWithAttribute(target, COLUMN_ATTRIBUTE), false));
+        checkFormEvent(event, (handler, preview) -> checkMouseEvent(handler, preview, null, false));
     }
 
     private interface CheckEvent {
@@ -1169,6 +1169,16 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         });
 
         dispatcher.execute(new SetUserFilters(filters), new ServerResponseCallback());
+    }
+
+    public void setViewFilters(ArrayList<GPropertyFilter> conditions, int pageSize) {
+        ArrayList<GPropertyFilterDTO> filters = new ArrayList<>();
+
+        for (GPropertyFilter filter : conditions) {
+            filters.add(filter.getFilterDTO());
+        }
+
+        dispatcher.execute(new SetViewFilters(filters, pageSize), new ServerResponseCallback());
     }
 
     public void quickFilter(Event event, int initialFilterPropertyID) {

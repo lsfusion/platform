@@ -42,6 +42,7 @@ public class GGroupObject implements Serializable, HasNativeSID {
     public boolean isMap;
     public boolean isCalendarDate;
     public boolean isCalendarDateTime;
+    public boolean isCalendarPeriod;
 
     public boolean hasFooters;
 

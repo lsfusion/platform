@@ -331,7 +331,7 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
 //            return null;
 //        }
         Element target = Element.as(eventTarget);
-//        if (!element.isOrHasChild(Element.as(eventTarget))) {
+//        if (!element.isOrHasChild(target)) {
 //            return null;
 //        }
         return target;

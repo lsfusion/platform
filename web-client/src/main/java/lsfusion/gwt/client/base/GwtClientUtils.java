@@ -909,4 +909,13 @@ public class GwtClientUtils {
         }
         return null;
     }
+    public static Element getParentWithClass(Element element, String className) {
+        while (element != null) {
+            if (element.hasClassName(className)) {
+                return element;
+            }
+            element = element.getParentElement();
+        }
+        return null;
+    }
 }
