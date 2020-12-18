@@ -1,8 +1,10 @@
 package lsfusion.server.base.version.impl;
 
+import lsfusion.server.base.version.Version;
+import lsfusion.server.base.version.impl.changes.NFAdd;
 import lsfusion.server.base.version.interfaces.NFCol;
 
-public abstract class NFColChangeImpl<T, CH, F extends Iterable<T>> extends NFChangeImpl<T, CH, F> implements NFCol<T> {
+public abstract class NFColChangeImpl<T, CH, F extends Iterable<T>> extends NFChangeImpl<CH, F> implements NFCol<T> {
 
     public NFColChangeImpl() {
     }
@@ -25,5 +27,9 @@ public abstract class NFColChangeImpl<T, CH, F extends Iterable<T>> extends NFCh
 
     protected boolean checkFinal(Object object) {
         return object instanceof Iterable;
+    }
+
+    public void add(T element, Version version) {
+        addChange((CH) new NFAdd<>(element), version);
     }
 }
