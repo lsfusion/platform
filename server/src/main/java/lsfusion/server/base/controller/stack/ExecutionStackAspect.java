@@ -331,10 +331,15 @@ public class ExecutionStackAspect {
         }
         threadLocalExceptionStack.set(exceptionStackString);
     }
-    
+
     public static String getExceptionStackTrace() {
+        return getExceptionStackTrace(true);
+    }
+
+    public static String getExceptionStackTrace(boolean drop) {
         String result = threadLocalExceptionStack.get();
-        threadLocalExceptionStack.set(null);
+        if (drop)
+            threadLocalExceptionStack.set(null);
         return result != null ? result : getStackString();
     }
     
