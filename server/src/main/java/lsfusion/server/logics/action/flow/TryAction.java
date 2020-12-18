@@ -125,16 +125,16 @@ public class TryAction extends KeepContextAction {
             // since we want to catch all exceptions
             result = tryAction.execute(context.override(true));
         } catch(Throwable e) {
+            String lsfStack = ExecutionStackAspect.getExceptionStackTrace(finallyAction == null); // drop exception stack string if no finally
             if(catchAction != null) {
                 context.getBL().LM.messageCaughtException.change(String.valueOf(e), context);
                 context.getBL().LM.javaStackTraceCaughtException.change(ExceptionUtils.toString(e), context);
-                context.getBL().LM.lsfStackTraceCaughtException.change(ExecutionStackAspect.getStackString(), context);
+                context.getBL().LM.lsfStackTraceCaughtException.change(lsfStack, context);
                 catchResult = catchAction.execute(context);
             }
 
             //ignore exception if finallyAction == null
             if (finallyAction == null) {
-                ExecutionStackAspect.getExceptionStackTrace(); // drop exception stack string
                 result = catchResult;
             } else {
                 throw Throwables.propagate(e);
