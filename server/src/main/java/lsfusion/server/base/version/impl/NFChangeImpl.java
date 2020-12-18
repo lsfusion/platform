@@ -3,12 +3,11 @@ package lsfusion.server.base.version.impl;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.server.base.version.Version;
-import lsfusion.server.base.version.impl.changes.NFAdd;
 
 import java.util.Map;
 import java.util.TreeMap;
 
-public abstract class NFChangeImpl<T, CH, F> extends NFImpl<TreeMap<Version, MList<CH>>, F> {
+public abstract class NFChangeImpl<CH, F> extends NFImpl<TreeMap<Version, MList<CH>>, F> {
     
     protected NFChangeImpl() {
         super();
@@ -26,11 +25,11 @@ public abstract class NFChangeImpl<T, CH, F> extends NFImpl<TreeMap<Version, MLi
         return new TreeMap<>();
     }
 
-    protected interface ChangeProcessor<T, CH> {
+    protected interface ChangeProcessor<CH> {
         void proceed(CH change);
     }
     
-    protected void proceedChanges(ChangeProcessor<T, CH> processor, Version version) {
+    protected void proceedChanges(ChangeProcessor<CH> processor, Version version) {
         if(version != Version.last()) {
             synchronized (this) {
                 syncProceedChanges(processor, version);
@@ -39,7 +38,7 @@ public abstract class NFChangeImpl<T, CH, F> extends NFImpl<TreeMap<Version, MLi
             syncProceedChanges(processor, version);
     }
 
-    private void syncProceedChanges(ChangeProcessor<T, CH> processor, Version version) {
+    private void syncProceedChanges(ChangeProcessor<CH> processor, Version version) {
         for(Map.Entry<Version, MList<CH>> change : getChanges().entrySet()) {
             if(change.getKey().compareTo(version) > 0) // если более поздняя версия
                 break;
@@ -60,9 +59,5 @@ public abstract class NFChangeImpl<T, CH, F> extends NFImpl<TreeMap<Version, MLi
             mChanges.put(version, mList);
         }
         mList.add(change);
-    }
-
-    public void add(T element, Version version) {
-        addChange((CH) new NFAdd<>(element), version);
     }
 }

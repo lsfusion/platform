@@ -1336,6 +1336,10 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         defaultOrders.add(property, ascending, version);
     }
 
+    public void addDefaultOrderFirst(PropertyDrawEntity property, boolean ascending, Version version) {
+        defaultOrders.addFirst(property, ascending, version);
+    }
+
     public void addDefaultOrderView(PropertyDrawEntity property, boolean ascending, Version version) {
         FormView richDesign = getNFRichDesign(version);
         if(richDesign !=null)
