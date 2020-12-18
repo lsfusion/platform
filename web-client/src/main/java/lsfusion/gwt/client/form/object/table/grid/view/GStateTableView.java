@@ -231,9 +231,8 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
             this.updateState = updateState;
 
         if(dataUpdated || rerender) {
-            updatePageSizeState(isPageSizeHit());
-
             updateView();
+            updatePageSizeState(isPageSizeHit());
             rerender = false;
         }
 
