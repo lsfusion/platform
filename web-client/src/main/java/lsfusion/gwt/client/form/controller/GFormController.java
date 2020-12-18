@@ -212,7 +212,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
         super.onBrowserEvent(event);
 
-        checkFormEvent(event, (handler, preview) -> checkMouseEvent(handler, preview, GwtClientUtils.getParentWithAttribute(target, COLUMN_ATTRIBUTE), false));
+        checkFormEvent(event, (handler, preview) -> checkMouseEvent(handler, preview, null, false));
     }
 
     private interface CheckEvent {

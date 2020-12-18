@@ -53,7 +53,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
     @Override
     public void onBrowserEvent(Event event) {
         Element target = DataGrid.getTargetAndCheck(getElement(), event);
-        if(target == null)
+        if(target == null || (popupObject != null && getPopupElement().isOrHasChild(target))) // if there is a popupElement we'll consider it not to be part of this view (otherwise on mouse change event focusElement.focus works, and popup panel elements looses focus)
             return;
         if(!form.previewEvent(target, event))
             return;
@@ -189,10 +189,14 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
     }
 
     private void showPopup() {
-        popupObject = showPopup(popupElementClicked, grid.recordView.getElement());
+        popupObject = showPopup(popupElementClicked, getPopupElement());
 
         popupRequestIndex = -2; // we are no longer waiting for popup
         popupElementClicked = null; // in theory it's better to do it on popupObject close, but this way is also ok
+    }
+
+    private Element getPopupElement() {
+        return grid.recordView.getElement();
     }
 
     private void hidePopup() {
