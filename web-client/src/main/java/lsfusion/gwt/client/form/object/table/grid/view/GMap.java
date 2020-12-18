@@ -329,7 +329,9 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
     
     protected void updateIconFilter(JavaScriptObject keyObject) {
         GGroupObjectValue key = toObject(keyObject);
-        updateIcon(markers.get(key), groupMarkers.get(key).icon, getDisplayColorFilter(key));
+        GroupMarker groupMarker = groupMarkers.get(key);
+        if(groupMarker.polygon == null)
+            updateIcon(markers.get(key), groupMarker.icon, getDisplayColorFilter(key));
     }
 
     protected String getDisplayColorFilter(GGroupObjectValue key) {
@@ -405,7 +407,7 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
     }-*/;
 
     protected native static String getName(JavaScriptObject element)/*-{
-        return element.name.toString();
+        return element.name ? element.name.toString() : null;
     }-*/;
 
     protected native JavaScriptObject createLine(JavaScriptObject map, JsArray<JavaScriptObject> markers)/*-{
@@ -511,7 +513,7 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
                 var L = $wnd.L;
                 marker.editing = new L.Edit.Poly(marker); // there is a bug in plugin (with editing after setLatLngs) https://github.com/Leaflet/Leaflet.draw/issues/650
             }
-            marker.editing.enable()
+            marker.editing.enable();
         }
     }-*/;
 
