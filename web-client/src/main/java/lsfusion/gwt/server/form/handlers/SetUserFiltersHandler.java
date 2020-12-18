@@ -8,8 +8,6 @@ import lsfusion.gwt.client.form.filter.user.GPropertyFilterDTO;
 import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.server.convert.GwtToClientConverter;
 import lsfusion.gwt.server.form.FormServerResponseActionHandler;
-import lsfusion.interop.action.ServerResponse;
-import lsfusion.interop.form.remote.RemoteFormInterface;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 
 import java.io.ByteArrayOutputStream;
@@ -26,44 +24,46 @@ public class SetUserFiltersHandler extends FormServerResponseActionHandler<SetUs
 
     @Override
     public ServerResponseResult executeEx(final SetUserFilters action, ExecutionContext context) throws RemoteException {
-        return getServerResponseResult(action, new RemoteCall() {
-            public ServerResponse call(RemoteFormInterface remoteForm) throws RemoteException {
-                List<byte[]> filters = new ArrayList<>();
-                try {
-                    GwtToClientConverter converter = GwtToClientConverter.getInstance();
+        return getServerResponseResult(action, remoteForm ->
+                remoteForm.setUserFilters(action.requestIndex, action.lastReceivedRequestIndex, serializeFilters(action.filters)));
+    }
 
-                    for (GPropertyFilterDTO filter : action.filters) {
-                        ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
-                        DataOutputStream outStream = new DataOutputStream(byteStream);
-                        outStream.writeInt(filter.propertyID);
-                        outStream.writeBoolean(filter.columnKey != null);
-                        if (filter.columnKey != null)
-                            converter.serializeGroupObjectValue(outStream, filter.columnKey);
-                        outStream.writeBoolean(filter.negation);
-                        outStream.writeByte(filter.compareByte);
-                        outStream.writeByte(filter.filterValue.typeID);
+    protected static byte[][] serializeFilters(ArrayList<GPropertyFilterDTO> filtersDTO) {
 
-                        switch (filter.filterValue.typeID) {
-                            case 0:
-                                Object convertedValue = converter.convertOrCast(filter.filterValue.content);
-                                BaseUtils.serializeObject(outStream, convertedValue);
-                                break;
-                            case 1:
-                                outStream.writeInt((Integer) filter.filterValue.content);
-                                break;
-                            case 2:
-                                outStream.writeInt((Integer) filter.filterValue.content);
-                        }
+        List<byte[]> filters = new ArrayList<>();
+        try {
+            GwtToClientConverter converter = GwtToClientConverter.getInstance();
 
-                        outStream.writeBoolean(filter.junction);
-                        filters.add(byteStream.toByteArray());
-                    }
-                } catch (IOException e) {
-                    throw Throwables.propagate(e);
+            for (GPropertyFilterDTO filter : filtersDTO) {
+                ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+                DataOutputStream outStream = new DataOutputStream(byteStream);
+                outStream.writeInt(filter.propertyID);
+                outStream.writeBoolean(filter.columnKey != null);
+                if (filter.columnKey != null)
+                    converter.serializeGroupObjectValue(outStream, filter.columnKey);
+                outStream.writeBoolean(filter.negation);
+                outStream.writeByte(filter.compareByte);
+                outStream.writeByte(filter.filterValue.typeID);
+
+                switch (filter.filterValue.typeID) {
+                    case 0:
+                        Object convertedValue = converter.convertOrCast(filter.filterValue.content);
+                        BaseUtils.serializeObject(outStream, convertedValue);
+                        break;
+                    case 1:
+                        outStream.writeInt((Integer) filter.filterValue.content);
+                        break;
+                    case 2:
+                        outStream.writeInt((Integer) filter.filterValue.content);
                 }
 
-                return remoteForm.setUserFilters(action.requestIndex, action.lastReceivedRequestIndex, filters.toArray(new byte[filters.size()][]));
+                outStream.writeBoolean(filter.junction);
+                filters.add(byteStream.toByteArray());
             }
-        });
+        } catch (IOException e) {
+            throw Throwables.propagate(e);
+        }
+
+        return filters.toArray(new byte[filters.size()][]);
     }
 }

@@ -7,21 +7,25 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
+import lsfusion.gwt.client.base.view.ColorUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.classes.data.GImageType;
 import lsfusion.gwt.client.classes.data.GIntegralType;
 import lsfusion.gwt.client.classes.data.GLogicalType;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.filter.user.GCompare;
+import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.classes.GDateDTO;
 import lsfusion.gwt.client.form.property.cell.classes.GDateTimeDTO;
 import lsfusion.gwt.client.form.view.Column;
+import lsfusion.gwt.client.view.StyleDefaults;
 
 import java.io.Serializable;
-import java.util.List;
+import java.util.*;
 import java.util.function.Predicate;
 
 import static lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder.COLUMN_ATTRIBUTE;
@@ -31,10 +35,13 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
 
     protected final JavaScriptObject controller;
 
+    private final GFormController formController;
+
     public GSimpleStateTableView(GFormController form, GGridController grid) {
         super(form, grid);
 
         this.controller = getController();
+        this.formController = form;
         getDrawElement().getStyle().setProperty("zIndex", "0"); // need this because views like leaflet and some others uses z-indexes and therefore dialogs for example are shown below layers
 
         getElement().setTabIndex(0);
@@ -46,14 +53,14 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
     @Override
     public void onBrowserEvent(Event event) {
         Element target = DataGrid.getTargetAndCheck(getElement(), event);
-        if(target == null)
+        if(target == null || (popupObject != null && getPopupElement().isOrHasChild(target))) // if there is a popupElement we'll consider it not to be part of this view (otherwise on mouse change event focusElement.focus works, and popup panel elements looses focus)
             return;
         if(!form.previewEvent(target, event))
             return;
 
         super.onBrowserEvent(event);
 
-        form.onPropertyBrowserEvent(new EventHandler(event), GwtClientUtils.getParentWithAttribute(target, COLUMN_ATTRIBUTE), getElement(),
+        form.onPropertyBrowserEvent(new EventHandler(event), getCellParent(target), getElement(),
                 handler -> {}, // no outer context
                 handler -> {}, // no edit
                 handler -> {}, // no outer context
@@ -61,6 +68,8 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
                 false
         );
     }
+
+    protected abstract Element getCellParent(Element target);
 
     private NativeHashMap<String, Column> columnMap;
 
@@ -180,10 +189,14 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
     }
 
     private void showPopup() {
-        popupObject = showPopup(popupElementClicked, grid.recordView.getElement());
+        popupObject = showPopup(popupElementClicked, getPopupElement());
 
         popupRequestIndex = -2; // we are no longer waiting for popup
         popupElementClicked = null; // in theory it's better to do it on popupObject close, but this way is also ok
+    }
+
+    private Element getPopupElement() {
+        return grid.recordView.getElement();
     }
 
     private void hidePopup() {
@@ -256,6 +269,35 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         changeObjectProperty(property, object, new GDateDTO(year, month, day));
     }
 
+    protected void setViewFilter(int startYear, int startMonth, int startDay, int endYear, int endMonth, int endDay, String property, boolean isDateTimeFilter, int pageSize) {
+        ArrayList<GPropertyFilter> filters = new ArrayList<>();
+        Object leftBorder = isDateTimeFilter ? new GDateTimeDTO(startYear, startMonth, startDay, 0, 0, 0) : new GDateDTO(startYear, startMonth, startDay) ;
+        Object rightBorder = isDateTimeFilter ? new GDateTimeDTO(endYear, endMonth, endDay, 0, 0, 0) : new GDateDTO(endYear, endMonth, endMonth);
+
+        Column column = columnMap.get(property);
+        filters.add(new GPropertyFilter(grid.groupObject, column.property, column.columnKey, leftBorder, GCompare.GREATER_EQUALS));
+        filters.add(new GPropertyFilter(grid.groupObject, column.property, column.columnKey, rightBorder, GCompare.LESS_EQUALS));
+        formController.setViewFilters(filters, pageSize);
+        setPageSize(pageSize);
+    }
+
+    private String getPropertyValue(String property) {
+        Column column = columnMap.get(property);
+        Object value = column != null ? getValue(column.property, getCurrentKey(), column.columnKey) : null;
+        return value != null ? value.toString() : null;
+    }
+
+    protected static String getDisplayBackgroundColor(String color, boolean isCurrentKey) {
+        if (isCurrentKey) {
+            if (color != null) {
+                return ColorUtils.mixColors(color, StyleDefaults.getFocusedCellBackgroundColor(true));
+            } else {
+                return StyleDefaults.getFocusedCellBackgroundColor(false);
+            }
+        } else
+            return ColorUtils.getDisplayColor(color);
+    }
+
     protected native JavaScriptObject getController()/*-{
         var thisObj = this;
         return {
@@ -278,24 +320,32 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
                 var jsObject = thisObj.@GSimpleStateTableView::fromObject(*)(thisObj.@GSimpleStateTableView::getKey(*)(object));
                 return thisObj.@GSimpleStateTableView::changeSimpleGroupObject(*)(jsObject, rendered, elementClicked);
             },
+            setViewFilter: function (startYear, startMonth, startDay, endYear, endMonth, endDay,property, isDateTimeFilter, pageSize) {
+                thisObj.@GSimpleStateTableView::setViewFilter(*)(startYear, startMonth, startDay, endYear, endMonth, endDay, property, isDateTimeFilter, pageSize);
+            },
+            getCurrentDay: function (propertyName) {
+                return thisObj.@GSimpleStateTableView::getPropertyValue(*)(propertyName);
+            },
             getGroupObjectBackgroundColor: function(object) {
-                var color = thisObj.@GStateTableView::getRowBackgroundColor(*)(thisObj.@GSimpleStateTableView::getKey(*)(object));
-                return color ? color.toString() : null;
+                var color = object.color;
+                if (color)
+                    return color.toString();
+                color = thisObj.@GStateTableView::getRowBackgroundColor(*)(thisObj.@GSimpleStateTableView::getKey(*)(object));
+                if (color)
+                    return color.toString();
+                return null;
             },
             getDisplayBackgroundColor: function (color, isCurrentKey) {
-                if (isCurrentKey) {
-                    if (color) {
-                        return @lsfusion.gwt.client.base.view.ColorUtils::mixColors(*)(color, @lsfusion.gwt.client.view.StyleDefaults::getFocusedCellBackgroundColor(*)(true))
-                    } else {
-                        return @lsfusion.gwt.client.view.StyleDefaults::getFocusedCellBackgroundColor(*)(false)
-                    }
-                } else {
-                    return color ? @lsfusion.gwt.client.base.view.ColorUtils::getDisplayColor(Ljava/lang/String;)(color) : null
-                }
+                return @GSimpleStateTableView::getDisplayBackgroundColor(*)(color, isCurrentKey);
+            },
+            getDisplayForegroundColor: function (color) {
+                return @lsfusion.gwt.client.base.view.ColorUtils::getDisplayColor(Ljava/lang/String;)(color);
             },
             getGroupObjectForegroundColor: function(object) {
                 var color = thisObj.@GStateTableView::getRowForegroundColor(*)(thisObj.@GSimpleStateTableView::getKey(*)(object));
-                return color ? color.toString() : null;
+                if (color)
+                    return color.toString();
+                return null;
             }
         };
     }-*/;

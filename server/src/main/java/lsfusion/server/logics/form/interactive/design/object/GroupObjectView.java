@@ -114,6 +114,7 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
         outStream.writeBoolean(pool.context.view.entity.isMap(entity));
         outStream.writeBoolean(pool.context.view.entity.isCalendarDate(entity));
         outStream.writeBoolean(pool.context.view.entity.isCalendarDateTime(entity));
+        outStream.writeBoolean(pool.context.view.entity.isCalendarPeriod(entity));
 
         outStream.writeBoolean(pool.context.view.entity.hasFooters(entity));
 

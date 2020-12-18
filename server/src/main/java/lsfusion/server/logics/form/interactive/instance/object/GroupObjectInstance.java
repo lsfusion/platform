@@ -228,7 +228,10 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         if(setFilters==null) {
             FilterInstance userComboFilter = combineUserFilters(userFilters);
             ImSet<FilterInstance> userComboSet = userComboFilter != null ? SetFact.singleton(userComboFilter) : userFilters.immutableOrder().getSet();
-            setFilters = fixedFilters.merge(userComboSet).merge(SetFact.fromJavaSet(regularFilters)).merge(SetFact.fromJavaSet(tempFilters));
+            setFilters = fixedFilters.merge(userComboSet).merge(SetFact.fromJavaSet(regularFilters));
+
+            if (listViewType == ListViewType.CALENDAR)
+                setFilters = setFilters.merge(SetFact.fromJavaSet(viewFilters));
         }
         return setFilters;
     }
@@ -287,7 +290,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         updated |= UPDATED_FILTER;
     }
 
-    private Set<FilterInstance> regularFilters = new HashSet<>();
+    private final Set<FilterInstance> regularFilters = new HashSet<>();
     public void addRegularFilter(FilterInstance filter) {
         regularFilters.add(filter);
 
@@ -302,15 +305,11 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         updated |= UPDATED_FILTER;
     }
 
-    private Set<FilterInstance> tempFilters = new HashSet<>();
-    public void clearTempFilters() {
-        tempFilters.clear();
-
-        setFilters = null;
-        updated |= UPDATED_FILTER;
-    }
-    public void addTempFilter(FilterInstance addFilter) {
-        tempFilters.add(addFilter);
+    private final Set<FilterInstance> viewFilters = new HashSet<>();
+    public void setViewFilters(List<FilterInstance> filters, int pageSize) {
+        viewFilters.clear();
+        viewFilters.addAll(filters);
+        setPageSize(pageSize);
 
         setFilters = null;
         updated |= UPDATED_FILTER;
@@ -321,11 +320,17 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
     public ImOrderMap<OrderInstance, Boolean> fixedOrders = MapFact.EMPTYORDER();
 
+    private PropertyDrawInstance calendarDateProperty;
+    public void setCalendarDateProperty(PropertyDrawInstance calendarDateProperty) {
+        this.calendarDateProperty = calendarDateProperty;
+    }
+
     // обертку потому как сложный assertion
     private ImOrderMap<OrderInstance,Boolean> setOrders = null;
     public ImOrderMap<OrderInstance,Boolean> getSetOrders() {
         if(setOrders==null)
             setOrders = userOrders.mergeOrder(fixedOrders).mergeOrder(getOrderObjects().toOrderMap(false));
+
         return setOrders;
     }
     private ImOrderMap<OrderInstance,Boolean> userOrders = MapFact.EMPTYORDER();
@@ -1235,6 +1240,10 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
     public ListViewType listViewType;
     public void changeListViewType(ExecutionEnvironment execEnv, ConcreteCustomClass listViewType, ListViewType value) throws SQLException, SQLHandledException {
+        //to remove view filters when switch between views
+        setFilters = null;
+        viewFilters.clear();
+
         this.listViewType = value;
         execEnv.change(entity.getListViewType(listViewType).property, new PropertyChange<>(listViewType.getDataObject(value.getObjectName())));
     }

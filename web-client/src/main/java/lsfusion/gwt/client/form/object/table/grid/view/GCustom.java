@@ -19,6 +19,11 @@ public class GCustom extends GTippySimpleStateTableView {
         runFunction(element, list, renderFunction, controller);
     }
 
+    @Override
+    protected Element getCellParent(Element target) {
+        return null;
+    }
+
     protected native void runFunction(Element element, JavaScriptObject list, String renderFunction, JavaScriptObject controller)/*-{
         $wnd[renderFunction](element, list, controller);
     }-*/;

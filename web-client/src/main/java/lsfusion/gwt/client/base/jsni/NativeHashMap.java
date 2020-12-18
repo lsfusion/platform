@@ -133,6 +133,10 @@ public class NativeHashMap<K, V> {
             jsForeachEntry(f);
     }
 
+    public int size() {
+        return jsSize();
+    }
+
     /**
      * Bridge methods from JSNI that keeps us from having to make polymorphic calls in JSNI.
      * By putting the polymorphism in Java code, the compiler can do a better job of optimizing in most cases.
@@ -286,5 +290,14 @@ public class NativeHashMap<K, V> {
                 }
             }
         }
+    }-*/;
+
+    private native int jsSize() /*-{
+        var hashCodeMap = this.@lsfusion.gwt.client.base.jsni.NativeHashMap::hashCodeMap;
+        var size = 0;
+        for (var hashCode in hashCodeMap) {
+            size++;
+        }
+        return size;
     }-*/;
 }
