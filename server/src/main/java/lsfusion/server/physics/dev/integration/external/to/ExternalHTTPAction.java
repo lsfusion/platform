@@ -46,19 +46,21 @@ public class ExternalHTTPAction extends ExternalAction {
     private ExternalHttpMethod method;
     private PropertyInterface queryInterface;
     private PropertyInterface bodyUrlInterface;
+    private List<String> bodyParamNames;
     private LP<?> headersProperty;
     private LP<?> cookiesProperty;
     private LP headersToProperty;
     private LP cookiesToProperty;
 
     public ExternalHTTPAction(boolean clientAction, ExternalHttpMethod method, ImList<Type> params, ImList<LP> targetPropList,
-                              LP headersProperty, LP cookiesProperty, LP headersToProperty, LP cookiesToProperty, boolean hasBodyUrl) {
+                              List<String> bodyParamNames, LP headersProperty, LP cookiesProperty, LP headersToProperty, LP cookiesToProperty, boolean hasBodyUrl) {
         super(hasBodyUrl ? 2 : 1, params, targetPropList);
 
         this.clientAction = clientAction;
         this.method = method;
         this.queryInterface = getOrderInterfaces().get(0);
         this.bodyUrlInterface = hasBodyUrl ? getOrderInterfaces().get(1) : null;
+        this.bodyParamNames = bodyParamNames;
         this.headersProperty = headersProperty;
         this.cookiesProperty = cookiesProperty;
         this.headersToProperty = headersToProperty;
@@ -112,8 +114,8 @@ public class ExternalHTTPAction extends ExternalAction {
 
                 byte[] body = null;
                 if (method.hasBody()) {
-                    HttpEntity entity = ExternalUtils.getInputStreamFromList(paramList, bodyUrl, null);
-                    body = IOUtils.readBytesFromStream(entity.getContent());
+                    HttpEntity entity = ExternalUtils.getInputStreamFromList(paramList, bodyUrl, bodyParamNames, null);
+                    body = IOUtils.readBytesFromHttpEntity(entity);
                     if (!headers.containsKey("Content-Type")) {
                         headers.put("Content-Type", entity.getContentType().getValue());
                     }

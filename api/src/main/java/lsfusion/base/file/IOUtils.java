@@ -1,10 +1,23 @@
 package lsfusion.base.file;
 
+import org.apache.http.HttpEntity;
+
 import java.io.*;
 
 public class IOUtils {
     public static final int BUFFER_SIZE = 16384;
     public static final String lineSeparator = System.getProperty("line.separator", "\n");
+
+    public static byte[] readBytesFromHttpEntity(HttpEntity entity) throws IOException {
+        //there is restriction in MultipartFormEntity: max contentLength = 25 * 1024 bytes
+        if(entity.getContentType().getValue().startsWith("multipart/")) {
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            entity.writeTo(out);
+            return out.toByteArray();
+        } else {
+            return readBytesFromStream(entity.getContent());
+        }
+    }
 
     public static byte[] readBytesFromStream(InputStream in) throws IOException {
         return readBytesFromStream(in, Integer.MAX_VALUE);
