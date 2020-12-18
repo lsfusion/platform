@@ -716,10 +716,17 @@ public class ScriptingFormEntity {
         return form.addPropertyObject((LA)prop.property, prop.mapping);
     }
 
-    public void addScriptedDefaultOrder(List<PropertyDrawEntity> properties, List<Boolean> orders, Version version) {
-        for (int i = 0; i < properties.size(); ++i) {
-            form.addDefaultOrder(properties.get(i), orders.get(i), version);
-            form.addDefaultOrderView(properties.get(i), orders.get(i), version);
+    public void addScriptedDefaultOrder(List<PropertyDrawEntity> properties, List<Boolean> orders, boolean first, Version version) {
+        if(first) {
+            for (int i = properties.size() - 1; i >= 0; --i) {
+                form.addDefaultOrderFirst(properties.get(i), orders.get(i), version);
+                form.addDefaultOrderView(properties.get(i), orders.get(i), version);
+            }
+        } else {
+            for (int i = 0; i < properties.size(); ++i) {
+                form.addDefaultOrder(properties.get(i), orders.get(i), version);
+                form.addDefaultOrderView(properties.get(i), orders.get(i), version);
+            }
         }
     }
 

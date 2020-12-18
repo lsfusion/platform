@@ -1237,13 +1237,16 @@ formOrderByList
 	boolean ascending = true;
 	List<PropertyDrawEntity> properties = new ArrayList<>();
 	List<Boolean> orders = new ArrayList<>();
+	boolean addFirst = false;
 }
 @after {
 	if (inMainParseState()) {
-		$formStatement::form.addScriptedDefaultOrder(properties, orders, self.getVersion());
+		$formStatement::form.addScriptedDefaultOrder(properties, orders, addFirst, self.getVersion());
 	}
 }
-	:	'ORDERS' orderedProp=formPropertyDrawWithOrder { properties.add($orderedProp.property); orders.add($orderedProp.order); }
+	:	'ORDERS'
+	    ('FIRST' { addFirst = true; })?
+	    orderedProp=formPropertyDrawWithOrder { properties.add($orderedProp.property); orders.add($orderedProp.order); }
 		(',' orderedProp=formPropertyDrawWithOrder { properties.add($orderedProp.property); orders.add($orderedProp.order); } )*
 	;
 	
