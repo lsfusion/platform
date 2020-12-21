@@ -103,21 +103,21 @@
                 <%--        <script type="text/javascript" src="https://www.google.com/jsapi"></script>--%>
 
                 <!--  map  -->
-                'https://unpkg.com/leaflet@1.6.0/dist/leaflet.css',
+                'https://unpkg.com/leaflet@1.7.1/dist/leaflet.css',
                 'https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css',
                 'https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/MarkerCluster.css',
                 'https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/MarkerCluster.Default.css',
-                'https://unpkg.com/leaflet@1.6.0/dist/leaflet.js',
+                'https://unpkg.com/leaflet@1.7.1/dist/leaflet.js',
                 'https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js',
                 'https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/leaflet.markercluster.js',
                 'https://cdnjs.cloudflare.com/ajax/libs/leaflet-polylinedecorator/1.1.0/leaflet.polylineDecorator.min.js',
                 'static/css/gMap.css',
 
                 <!-- calendar-->
-                ['https://cdn.jsdelivr.net/npm/fullcalendar@5.3.2/main.js', 'fullCalendar.js'],
-                ['https://cdn.jsdelivr.net/npm/fullcalendar@5.3.2/main.css', 'fullCalendar.css'],
+                ['https://cdn.jsdelivr.net/npm/fullcalendar@5.5.0/main.js', 'fullCalendar.js'],
+                ['https://cdn.jsdelivr.net/npm/fullcalendar@5.5.0/main.css', 'fullCalendar.css'],
                 'static/css/gCalendar.css',
-                ['https://cdn.jsdelivr.net/npm/fullcalendar@5.3.2/locales-all.js', 'fullcalendar-locales-all.js'],
+                ['https://cdn.jsdelivr.net/npm/fullcalendar@5.5.0/locales-all.js', 'fullcalendar-locales-all.js'],
                 'static/js/fullcalendar-locale-be.js',
                 'https://unpkg.com/@popperjs/core@2.5.3/dist/umd/popper.min.js',
                 'https://unpkg.com/tippy.js@6.2.7/dist/tippy-bundle.umd.min.js'
