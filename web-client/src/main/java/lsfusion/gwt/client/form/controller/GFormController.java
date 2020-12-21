@@ -1619,7 +1619,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
                 Binding binding = bindings.get(i);
                 boolean equalGroup;
                 GBindingEnv bindingEnv = bindingEvent.env;
-                if(bindPreview(bindingEnv, preview) &&
+                if(bindPreview(bindingEnv, isMouse, preview) &&
                     bindDialog(bindingEnv) &&
                     bindGroup(bindingEnv, groupObject, equalGroup = nullEquals(groupObject, binding.groupObject)) &&
                     bindEditing(bindingEnv) &&
@@ -1646,9 +1646,10 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             cellEditor.commitEditing(getEditElement());
     }
 
-    private boolean bindPreview(GBindingEnv binding, boolean preview) {
+    private boolean bindPreview(GBindingEnv binding, boolean isMouse, boolean preview) {
         switch (binding.bindPreview) {
             case AUTO:
+                return isMouse || !preview;
             case NO:
                 return !preview;
             case ALL: // actually makes no since if previewed, than will be consumed so equivalent to only
