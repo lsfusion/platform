@@ -50,7 +50,12 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
         public final Double longitude;
         public final String polygon;
 
+        public boolean isCurrent;
         public boolean isReadOnly;
+
+        public boolean isEditing() {
+            return isCurrent && !isReadOnly;
+        }
 
         public GroupMarker(JavaScriptObject object) {
             name = getName(object);
@@ -132,6 +137,7 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
                     groupMarker.color = rowBackgroundColor.toString();
                 }
             }
+            groupMarker.isCurrent = isCurrentKey(key);
             groupMarker.isReadOnly = getReadOnly(key, groupMarker);
 
             GroupMarker oldGroupMarker = groupMarkers.put(key, groupMarker);
@@ -145,25 +151,23 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
 
             boolean isPoly = groupMarker.polygon != null;
 
-            if(oldGroupMarker != null && !oldGroupMarker.isReadOnly)
+            if(oldGroupMarker != null && oldGroupMarker.isEditing())
                 disableEditing(marker, isPoly);
 
             if(oldGroupMarker == null || !(GwtClientUtils.nullEquals(groupMarker.latitude, oldGroupMarker.latitude) && GwtClientUtils.nullEquals(groupMarker.longitude, oldGroupMarker.longitude) && GwtClientUtils.nullEquals(groupMarker.polygon, oldGroupMarker.polygon)))
                 updateLatLng(marker, groupMarker.latitude, groupMarker.longitude, getLatLngs(groupMarker.polygon));
 
-            if(!isPoly && (oldGroupMarker == null || !(GwtClientUtils.nullEquals(groupMarker.icon, oldGroupMarker.icon) && GwtClientUtils.nullEquals(groupMarker.color, oldGroupMarker.color)))) {
-                updateIcon(marker, groupMarker.icon, getDisplayColorFilter(key));
-            }
+            if(!isPoly && (oldGroupMarker == null || !(GwtClientUtils.nullEquals(groupMarker.icon, oldGroupMarker.icon) && GwtClientUtils.nullEquals(groupMarker.color, oldGroupMarker.color) && groupMarker.isCurrent == oldGroupMarker.isCurrent)))
+                updateIcon(marker, groupMarker.icon, getDisplayColorFilter(groupMarker));
 
             if(oldGroupMarker == null || !(GwtClientUtils.nullEquals(groupMarker.color, oldGroupMarker.color)))
                 updateColor(marker, groupMarker.color, getDisplayClusterColor(groupMarker.color));
 
-            if(!groupMarker.isReadOnly)
+            if(groupMarker.isEditing())
                 updateEditing(marker, isPoly);
 
-            if (oldGroupMarker == null || !(GwtClientUtils.nullEquals(groupMarker.name, oldGroupMarker.name))) {
+            if (oldGroupMarker == null || !(GwtClientUtils.nullEquals(groupMarker.name, oldGroupMarker.name)))
                 updateName(marker, groupMarker.name);
-            }
 
             if(groupMarker.line != null)
                 routes.computeIfAbsent(groupMarker.line, o -> JavaScriptObject.createArray().cast()).push(marker);
@@ -186,13 +190,10 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
     }
 
     private boolean getReadOnly(GGroupObjectValue key, GroupMarker groupMarker) {
-        if(Objects.equals(key, getCurrentKey())) {
-            if (groupMarker.polygon != null)
-                return isReadOnly("polygon", key);
-            else
-                return isReadOnly("latitude", key) && isReadOnly("longitude", key);
-        }
-        return true;
+        if (groupMarker.polygon != null)
+            return isReadOnly("polygon", key);
+        else
+            return isReadOnly("latitude", key) && isReadOnly("longitude", key);
     }
 
     protected native JavaScriptObject createMap(com.google.gwt.dom.client.Element element, JavaScriptObject markerClusters)/*-{
@@ -315,8 +316,9 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
             thisObject.@GMap::changeSimpleGroupObject(*)(key, true, marker); // we want "full rerender", at least for now
 
             if (!@Objects::equals(Ljava/lang/Object;Ljava/lang/Object;)(oldKey, key)) {
-                thisObject.@GMap::updateIconFilter(*)(oldKey);
-                thisObject.@GMap::updateIconFilter(*)(key);
+                thisObject.@GMap::updateCurrent(*)(oldKey, false);
+
+                thisObject.@GMap::updateCurrent(*)(key, true);
             }
 
         });
@@ -327,28 +329,39 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
         return marker;
     }-*/;
     
-    protected void updateIconFilter(JavaScriptObject keyObject) {
-        GGroupObjectValue key = toObject(keyObject);
-        GroupMarker groupMarker = groupMarkers.get(key);
-        if(groupMarker.polygon == null)
-            updateIcon(markers.get(key), groupMarker.icon, getDisplayColorFilter(key));
+    protected void updateCurrent(JavaScriptObject keyObject, boolean isCurrent) {
+        if(keyObject != null) {
+            GGroupObjectValue key = toObject(keyObject);
+            GroupMarker groupMarker = groupMarkers.get(key);
+            JavaScriptObject marker = markers.get(key);
+            boolean isPoly = groupMarker.polygon != null;
+
+            if (groupMarker.isEditing())
+                disableEditing(marker, isPoly);
+
+            groupMarker.isCurrent = isCurrent;
+            if (!isPoly)
+                updateIcon(marker, groupMarker.icon, getDisplayColorFilter(groupMarker));
+
+            if(groupMarker.isEditing())
+                updateEditing(marker, isPoly);
+        }
     }
 
-    protected String getDisplayColorFilter(GGroupObjectValue key) {
-        GroupMarker groupMarker = groupMarkers.get(key);
-        String color = groupMarker.color;
-        
+    private String getDisplayColorFilter(GroupMarker marker) {
+        String color = marker.color;
+        boolean isCurrent = marker.isCurrent;
         if (color == null) {
-            if (groupMarker.icon == null) {
+            if (marker.icon == null) {
                 color = getFocusColor(true);
-                if (isCurrentKey(key)) {
+                if (isCurrent) {
                     color = darken(mixColors(color, getFocusedCellBackgroundColor(true)));
                 }
-            } else if (isCurrentKey(key)) {
+            } else if (isCurrent) {
                 color = darken(getFocusedCellBackgroundColor(true));
             }
         } else {
-            if (isCurrentKey(key)) {
+            if (isCurrent) {
                 color = darken(mixColors(color, getFocusedCellBackgroundColor(true)), 2);
             } else {
                 color = darken(color);
@@ -508,13 +521,16 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
     }-*/;
 
     protected native void updateEditing(JavaScriptObject marker, boolean poly)/*-{
-        if (poly || marker.dragging != null) {
-            if (poly) {
-                var L = $wnd.L;
-                marker.editing = new L.Edit.Poly(marker); // there is a bug in plugin (with editing after setLatLngs) https://github.com/Leaflet/Leaflet.draw/issues/650
+        run = function () { // we need to enable editing after timeout, since when marker is in cluster, after setLatLng move event is fired, which occasionally drops dragging and other fields (scheduleDeferred/Finally looks better in this case but somewhy doesn't work)
+            if (poly || marker.dragging != null) {
+                if (poly) {
+                    var L = $wnd.L;
+                    marker.editing = new L.Edit.Poly(marker); // there is a bug in plugin (with editing after setLatLngs) https://github.com/Leaflet/Leaflet.draw/issues/650
+                }
+                marker.editing.enable();
             }
-            marker.editing.enable();
         }
+        setTimeout(run, 0);
     }-*/;
 
     protected native void updateName(JavaScriptObject marker, String name)/*-{
