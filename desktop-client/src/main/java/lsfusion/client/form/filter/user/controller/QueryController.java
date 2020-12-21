@@ -130,6 +130,7 @@ public abstract class QueryController {
     public void addConditionPressed(ClientPropertyDraw propertyDraw, ClientGroupObjectValue columnKey) {
         if (addNewCondition(false, propertyDraw, columnKey)) {
             setState(State.EXPANDED);
+            view.startEditing(null, null);
         }
     }
 
