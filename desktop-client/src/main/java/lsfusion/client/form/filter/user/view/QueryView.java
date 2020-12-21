@@ -140,8 +140,7 @@ public abstract class QueryView extends JComponentPanel implements QueryConditio
     }
 
     public void addActionsToPanelInputMap(final JComponent comp) {
-        //кто-то съедает pressed F2, поэтому ловим released
-        comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, InputEvent.ALT_DOWN_MASK, true), "newFilter");
+        comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(getKeyStroke(InputEvent.ALT_DOWN_MASK), "newFilter");
         comp.getActionMap().put("newFilter", new AbstractAction() {
             public void actionPerformed(ActionEvent ae) {
                 if(comp instanceof DataPanelView)
@@ -149,7 +148,8 @@ public abstract class QueryView extends JComponentPanel implements QueryConditio
             }
         });
 
-        comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(getKeyStroke(0), "addFilter");
+        //кто-то съедает pressed F2, поэтому ловим released
+        comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0, true), "addFilter");
         comp.getActionMap().put("addFilter", new AbstractAction() {
             public void actionPerformed(ActionEvent ae) {
                 controller.addConditionPressed(((DataPanelView) comp).getProperty(), ((DataPanelView) comp).getColumnKey());
