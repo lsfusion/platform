@@ -106,7 +106,6 @@ import static lsfusion.gwt.client.base.GwtClientUtils.*;
 import static lsfusion.gwt.client.base.GwtSharedUtils.putToDoubleNativeMap;
 import static lsfusion.gwt.client.base.GwtSharedUtils.removeFromDoubleMap;
 import static lsfusion.gwt.client.base.view.ColorUtils.getDisplayColor;
-import static lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder.COLUMN_ATTRIBUTE;
 import static lsfusion.gwt.client.form.property.cell.GEditBindingMap.CHANGE;
 
 public class GFormController extends ResizableSimplePanel implements ServerMessageProvider, EditManager {
@@ -246,15 +245,15 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
                 checkFormEvent((Event) nativeEvent, (handler, preview) -> form.checkKeyEvent(handler, preview, null, false));
         }
     }
-    public void checkPreviewEvent(EventHandler handler, Element cellParent, boolean panel) {
+    public void checkMouseKeyEvent(EventHandler handler, boolean preview, Element cellParent, boolean panel) {
         if(MainFrame.isModalPopup())
             return;
 
-        checkMouseEvent(handler, true, cellParent, panel);
+        checkMouseEvent(handler, preview, cellParent, panel);
         if(handler.consumed)
             return;
 
-        checkKeyEvent(handler, true, cellParent, panel);
+        checkKeyEvent(handler, preview, cellParent, panel);
     }
 
     public static void checkKeyEvents(DomEvent event, FormsController formsController) {
@@ -1924,7 +1923,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         if(GMouseStroke.isChangeEvent(handler.event))
             focusElement.focus(); // it should be done on CLICK, but also on MOUSEDOWN, since we want to focus even if mousedown is later consumed
 
-        checkPreviewEvent(handler, cellParent, panel);
+        checkMouseKeyEvent(handler, true, cellParent, panel);
 
         if(handler.consumed)
             return;
@@ -1955,6 +1954,8 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         // if we consume mouse down we disable "text selection" feature
 //        if(GMouseStroke.isDownEvent(handler.event)) // we want to cancel focusing (to avoid blinking if change event IS CLICK) + native selection odd behaviour (when some events are consumed, and some - not)
 //            handler.consume(false, true); // but we want to propagate event upper (to GFormController to proceed bindings)
+
+        checkMouseKeyEvent(handler, false, cellParent, panel);
     }
     
     public void resetWindowsLayout() {
