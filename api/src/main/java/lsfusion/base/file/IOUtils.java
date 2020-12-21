@@ -1,5 +1,6 @@
 package lsfusion.base.file;
 
+import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 
 import java.io.*;
@@ -10,7 +11,8 @@ public class IOUtils {
 
     public static byte[] readBytesFromHttpEntity(HttpEntity entity) throws IOException {
         //there is restriction in MultipartFormEntity: max contentLength = 25 * 1024 bytes
-        if(entity.getContentType().getValue().startsWith("multipart/")) {
+        Header contentType = entity.getContentType();
+        if(contentType != null && contentType.getValue() != null && contentType.getValue().startsWith("multipart/")) {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             entity.writeTo(out);
             return out.toByteArray();
