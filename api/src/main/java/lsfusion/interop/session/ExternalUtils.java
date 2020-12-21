@@ -242,7 +242,7 @@ public class ExternalUtils {
     public static HttpEntity getInputStreamFromList(Object[] results, String bodyUrl, List<String> bodyParamNames, Result<String> singleFileExtension) {
         HttpEntity entity;
         int paramCount = results.length;
-        if (paramCount > 1 || !bodyParamNames.isEmpty()) {
+        if (paramCount > 1 || (bodyParamNames != null && !bodyParamNames.isEmpty())) {
             MultipartEntityBuilder builder = MultipartEntityBuilder.create();
             builder.setContentType(ExternalUtils.MULTIPART_MIXED);
             for (int i = 0; i < paramCount; i++) {
