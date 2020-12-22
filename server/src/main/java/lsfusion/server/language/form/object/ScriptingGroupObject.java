@@ -3,6 +3,7 @@ package lsfusion.server.language.form.object;
 import lsfusion.interop.form.object.table.grid.ListViewType;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.PivotOptions;
+import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.form.interactive.UpdateType;
 import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
@@ -35,8 +36,8 @@ public class ScriptingGroupObject {
     public GroupObjectEntity neighbourGroupObject;
     public LogicsModule.InsertType insertType;
 
-    public PropertyObjectEntity background;
-    public PropertyObjectEntity foreground;
+    public ScriptingLogicsModule.FormLPUsage background;
+    public ScriptingLogicsModule.FormLPUsage foreground;
 
     public String customRenderFunction;
 
@@ -81,11 +82,11 @@ public class ScriptingGroupObject {
         this.insertType = insertType;
     }
 
-    public void setBackground(PropertyObjectEntity background) {
+    public void setBackground(ScriptingLogicsModule.FormLPUsage background) {
         this.background = background;
     }
 
-    public void setForeground(PropertyObjectEntity foreground) {
+    public void setForeground(ScriptingLogicsModule.FormLPUsage foreground) {
         this.foreground = foreground;
     }
 
