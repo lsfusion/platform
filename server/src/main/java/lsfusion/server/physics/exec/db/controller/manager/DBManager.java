@@ -1477,7 +1477,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         // with apply outside transaction
         try (DataSession session = createSession()) {
             setDefaultUserLocalePreferences(session);
-            setLogicsCaption(session);
+            setLogicsParams(session);
 
             initSystemUser(session);
 
@@ -1522,7 +1522,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         apply(session);
     }
 
-    private void setLogicsCaption(DataSession session) throws SQLException, SQLHandledException {
+    private void setLogicsParams(DataSession session) throws SQLException, SQLHandledException {
         String logicsCaption = businessLogics.logicsCaption;
         String topModule = businessLogics.topModule;
         LM.logicsCaption.change(isRedundantString(logicsCaption) ? null : logicsCaption, session);
