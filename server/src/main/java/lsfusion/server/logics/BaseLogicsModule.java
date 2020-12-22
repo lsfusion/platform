@@ -206,6 +206,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public LP fillingIDs;
 
     public LP logicsCaption;
+    public LP topModule;
 
     public ConcreteCustomClass listViewType;
     public LP count;
@@ -524,7 +525,8 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         networkPath = findProperty("networkPath[]");
 
         logicsCaption = findProperty("logicsCaption[]");
-        
+        topModule = findProperty("topModule[]");
+
         fillingIDs = findProperty("fillingIDs[]");
 
         // Настройка форм
