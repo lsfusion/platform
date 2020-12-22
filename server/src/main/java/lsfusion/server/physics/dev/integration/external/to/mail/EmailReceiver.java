@@ -386,10 +386,7 @@ public class EmailReceiver {
                 }
             } else {
                 try {
-                    Object content = bp instanceof IMAPBodyPart ? getIMAPBodyPartContent((IMAPBodyPart) bp) : null;
-                    if(content == null) {
-                        content = bp.getContent();
-                    }
+                    Object content = getBodyPartContent(bp);
                     if (content instanceof FilterInputStream) {
                         RawFileData byteArray = new RawFileData((FilterInputStream) content);
                         String fileName = decodeFileName(bp.getFileName());
@@ -408,13 +405,20 @@ public class EmailReceiver {
         return new MultipartBody(body, attachments);
     }
 
-    private Object getIMAPBodyPartContent(IMAPBodyPart bp) throws MessagingException, IOException {
+    private Object getBodyPartContent(BodyPart bp) throws MessagingException, IOException {
         Object content = null;
-        String encoding = bp.getEncoding();
-        if(encoding != null) {
-            content = MimeUtility.decode(bp.getInputStream(), encoding);
+        if(bp instanceof IMAPBodyPart) {
+            String encoding = ((IMAPBodyPart) bp).getEncoding();
+            if (encoding != null) {
+                Object plainContent = null;
+                try {
+                    plainContent = bp.getContent();
+                } catch (Exception ignored) {
+                }
+                content = plainContent instanceof String ? plainContent : MimeUtility.decode(bp.getInputStream(), encoding);
+            }
         }
-        return content;
+        return content != null ? content : bp.getContent();
     }
 
     private MultipartBody extractWinMail(File winMailFile) throws IOException {
