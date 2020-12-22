@@ -164,9 +164,9 @@ public class ScriptingFormEntity {
             setSubReport(groupObj, groupObject.subReportPath);
 
         if(groupObject.background != null)
-            groupObj.setPropertyBackground(groupObject.background);
+            groupObj.setPropertyBackground(addPropertyObject(groupObject.background));
         if(groupObject.foreground != null)
-            groupObj.setPropertyForeground(groupObject.foreground);
+            groupObj.setPropertyForeground(addPropertyObject(groupObject.foreground));
 
         return groupObj;
     }

@@ -544,12 +544,18 @@ formGroupObjectDeclaration returns [ScriptingGroupObject groupObject]
 	; 
 
 formGroupObjectOptions[ScriptingGroupObject groupObject]
+@init {
+   List<TypedParameter> extraContext = new ArrayList<>();
+   for(int i = 0; i < groupObject.objects.size(); i++) {
+         extraContext.add(self.new TypedParameter(groupObject.classes.get(i), groupObject.objects.get(i)));
+   }
+}
 	:	(	viewType=formGroupObjectViewType { $groupObject.setViewType($viewType.type, $viewType.listType); $groupObject.setPivotOptions($viewType.options); $groupObject.setCustomTypeRenderFunction($viewType.customRenderFunction); }
 		|	pageSize=formGroupObjectPageSize { $groupObject.setPageSize($pageSize.value); }
 		|	update=formGroupObjectUpdate { $groupObject.setUpdateType($update.updateType); }
 		|	relative=formGroupObjectRelativePosition { $groupObject.setNeighbourGroupObject($relative.groupObject, $relative.insertType); }
-		|	background=formGroupObjectBackground { $groupObject.setBackground($background.background); }
-		|	foreground=formGroupObjectForeground { $groupObject.setForeground($foreground.foreground); }
+		|	background=formGroupObjectBackground[extraContext] { $groupObject.setBackground($background.background); }
+		|	foreground=formGroupObjectForeground[extraContext] { $groupObject.setForeground($foreground.foreground); }
 		|	group=formGroupObjectGroup { $groupObject.setPropertyGroupName($group.formObjectGroup); }
 		|   extID=formExtID { $groupObject.setIntegrationSID($extID.extID); }
 		|   formExtKey { $groupObject.setIntegrationKey(true); }
@@ -587,6 +593,9 @@ formTreeGroupObject returns [ScriptingGroupObject groupObject, List<LP> properti
 
 	|	mdecl=formMultiGroupObjectDeclaration
 		{
+            for(int i = 0; i < $mdecl.objectNames.size(); i++) {
+                extraContext.add(self.new TypedParameter($mdecl.classNames.get(i), $mdecl.objectNames.get(i)));
+            }
 			$groupObject = new ScriptingGroupObject($mdecl.groupName, $mdecl.objectNames, $mdecl.classNames, $mdecl.captions, $mdecl.events, $mdecl.extIDs);
 		}
 
@@ -656,12 +665,12 @@ formGroupObjectRelativePosition returns [GroupObjectEntity groupObject, InsertTy
 	|	'FIRST' { $insertType = InsertType.FIRST; }
 	;
 
-formGroupObjectBackground returns [PropertyObjectEntity background]
-    :	'BACKGROUND' propObj=formPropertyObject { background = $propObj.property; }
+formGroupObjectBackground[List<TypedParameter> extraContext] returns [FormLPUsage background]
+    :	'BACKGROUND' propObj=formPropertyObjectContext[extraContext]{ background = $propObj.propUsage; }
     ;
 
-formGroupObjectForeground returns [PropertyObjectEntity foreground]
-    :	'FOREGROUND' propObj=formPropertyObject { foreground = $propObj.property; }
+formGroupObjectForeground[List<TypedParameter> extraContext] returns [FormLPUsage foreground]
+    :	'FOREGROUND' propObj=formPropertyObjectContext[extraContext] { foreground = $propObj.propUsage; }
     ;
 
 formGroupObjectUpdate returns [UpdateType updateType]
@@ -913,6 +922,14 @@ designOrFormPropertyObject[ScriptingFormView design] returns [PropertyObjectEnti
 				    $property = $formStatement::form.addPropertyObject(propUsage);
 			}
 		}
+	;
+
+formPropertyObjectContext[List<TypedParameter> extraContext] returns [FormLPUsage propUsage]
+	:   fd = designOrFormPropertyObjectContext[null, extraContext] { $propUsage = $fd.propUsage; }
+	;
+
+designOrFormPropertyObjectContext[ScriptingFormView design, List<TypedParameter> extraContext] returns [FormLPUsage propUsage]
+	:	expr=designOrFormExprDeclaration[design, extraContext] { propUsage = new FormLPUsage($expr.property, $expr.mapping); }
 	;
 
 formActionObject returns [ActionObjectEntity action = null]
