@@ -541,25 +541,32 @@ formTreeGroupObjectList
 formGroupObjectDeclaration returns [ScriptingGroupObject groupObject]
 	:	object=formGroupObject { $groupObject = $object.groupObject; }
 	    formGroupObjectOptions[$groupObject]
+	    formGroupObjectOptionsContext[$groupObject]
 	; 
 
 formGroupObjectOptions[ScriptingGroupObject groupObject]
-@init {
-   List<TypedParameter> extraContext = new ArrayList<>();
-   for(int i = 0; i < groupObject.objects.size(); i++) {
-         extraContext.add(self.new TypedParameter(groupObject.classes.get(i), groupObject.objects.get(i)));
-   }
-}
 	:	(	viewType=formGroupObjectViewType { $groupObject.setViewType($viewType.type, $viewType.listType); $groupObject.setPivotOptions($viewType.options); $groupObject.setCustomTypeRenderFunction($viewType.customRenderFunction); }
 		|	pageSize=formGroupObjectPageSize { $groupObject.setPageSize($pageSize.value); }
 		|	update=formGroupObjectUpdate { $groupObject.setUpdateType($update.updateType); }
 		|	relative=formGroupObjectRelativePosition { $groupObject.setNeighbourGroupObject($relative.groupObject, $relative.insertType); }
-		|	background=formGroupObjectBackground[extraContext] { $groupObject.setBackground($background.background); }
-		|	foreground=formGroupObjectForeground[extraContext] { $groupObject.setForeground($foreground.foreground); }
 		|	group=formGroupObjectGroup { $groupObject.setPropertyGroupName($group.formObjectGroup); }
 		|   extID=formExtID { $groupObject.setIntegrationSID($extID.extID); }
 		|   formExtKey { $groupObject.setIntegrationKey(true); }
 		|   formSubReport { $groupObject.setSubReport($formSubReport.pathProperty);  }
+		)*
+	;
+
+formGroupObjectOptionsContext[ScriptingGroupObject groupObject]
+@init {
+    List<TypedParameter> extraContext = new ArrayList<>();
+    if (inMainParseState()) {
+        for(int i = 0; i < groupObject.objects.size(); i++) {
+            extraContext.add(self.new TypedParameter(groupObject.classes.get(i), groupObject.objects.get(i)));
+        }
+    }
+   }
+	:	(	background=formGroupObjectBackground[extraContext] { $groupObject.setBackground($background.background); }
+		|	foreground=formGroupObjectForeground[extraContext] { $groupObject.setForeground($foreground.foreground); }
 		)*
 	;
 	
@@ -585,7 +592,9 @@ formTreeGroupObject returns [ScriptingGroupObject groupObject, List<LP> properti
 }
 	:	( sdecl=formSingleGroupObjectDeclaration
 		{
-		    extraContext.add(self.new TypedParameter($sdecl.className, $sdecl.name));
+		    if (inMainParseState()) {
+		        extraContext.add(self.new TypedParameter($sdecl.className, $sdecl.name));
+		    }
 			$groupObject = new ScriptingGroupObject(null, asList($sdecl.name), asList($sdecl.className), asList($sdecl.caption), asList($sdecl.event), asList($sdecl.extID));
 		}
 
@@ -593,8 +602,10 @@ formTreeGroupObject returns [ScriptingGroupObject groupObject, List<LP> properti
 
 	|	mdecl=formMultiGroupObjectDeclaration
 		{
-            for(int i = 0; i < $mdecl.objectNames.size(); i++) {
-                extraContext.add(self.new TypedParameter($mdecl.classNames.get(i), $mdecl.objectNames.get(i)));
+		    if (inMainParseState()) {
+                for(int i = 0; i < $mdecl.objectNames.size(); i++) {
+                    extraContext.add(self.new TypedParameter($mdecl.classNames.get(i), $mdecl.objectNames.get(i)));
+                }
             }
 			$groupObject = new ScriptingGroupObject($mdecl.groupName, $mdecl.objectNames, $mdecl.classNames, $mdecl.captions, $mdecl.events, $mdecl.extIDs);
 		}
