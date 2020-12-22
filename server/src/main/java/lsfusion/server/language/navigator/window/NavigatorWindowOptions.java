@@ -1,6 +1,6 @@
 package lsfusion.server.language.navigator.window;
 
-import lsfusion.interop.form.design.Alignment;
+import lsfusion.interop.base.view.FlexAlignment;
 
 public class NavigatorWindowOptions {
 
@@ -13,11 +13,11 @@ public class NavigatorWindowOptions {
 
     private DockPosition dockPosition;
 
-    private Alignment vAlign;
-    private Alignment hAlign;
+    private FlexAlignment vAlign;
+    private FlexAlignment hAlign;
 
-    private Alignment textVAlign;
-    private Alignment textHAlign;
+    private FlexAlignment textVAlign;
+    private FlexAlignment textHAlign;
 
     public Boolean getDrawTitle() {
         return drawTitle;
@@ -67,35 +67,35 @@ public class NavigatorWindowOptions {
         this.dockPosition = dockPosition;
     }
 
-    public Alignment getVAlign() {
+    public FlexAlignment getVAlign() {
         return vAlign;
     }
 
-    public void setVAlign(Alignment vAlign) {
+    public void setVAlign(FlexAlignment vAlign) {
         this.vAlign = vAlign;
     }
 
-    public Alignment getHAlign() {
+    public FlexAlignment getHAlign() {
         return hAlign;
     }
 
-    public void setHAlign(Alignment hAlign) {
+    public void setHAlign(FlexAlignment hAlign) {
         this.hAlign = hAlign;
     }
 
-    public Alignment getTextVAlign() {
+    public FlexAlignment getTextVAlign() {
         return textVAlign;
     }
 
-    public void setTextVAlign(Alignment textVAlign) {
+    public void setTextVAlign(FlexAlignment textVAlign) {
         this.textVAlign = textVAlign;
     }
 
-    public Alignment getTextHAlign() {
+    public FlexAlignment getTextHAlign() {
         return textHAlign;
     }
 
-    public void setTextHAlign(Alignment textHAlign) {
+    public void setTextHAlign(FlexAlignment textHAlign) {
         this.textHAlign = textHAlign;
     }
 

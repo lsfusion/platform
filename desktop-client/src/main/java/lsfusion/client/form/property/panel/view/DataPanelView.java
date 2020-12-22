@@ -12,7 +12,6 @@ import lsfusion.client.view.MainFrame;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.base.view.FlexConstraints;
 import lsfusion.interop.base.view.FlexLayout;
-import lsfusion.interop.form.design.Alignment;
 import lsfusion.interop.form.design.CachableLayout;
 import lsfusion.interop.form.event.ValueEvent;
 import lsfusion.interop.form.event.ValueEventListener;
@@ -48,7 +47,7 @@ public class DataPanelView extends JPanel implements PanelView {
         columnKey = icolumnKey;
         simpleDispatcher = form.getSimpleChangePropertyDispatcher();
 
-        setLayout(new FlexLayout(this, property.panelCaptionVertical, Alignment.CENTER));
+        setLayout(new FlexLayout(this, property.panelCaptionVertical, FlexAlignment.CENTER));
 
         //игнорируем key.readOnly, чтобы разрешить редактирование,
         //readOnly будет проверяться на уровне сервера и обрезаться возвратом пустого changeType

@@ -1,14 +1,12 @@
 package lsfusion.client.form.design;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.controller.remote.serialization.ClientSerializationPool;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.object.table.controller.TableController;
-import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.ClientPropertyReader;
-import lsfusion.interop.form.design.Alignment;
+import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.design.ContainerType;
 import lsfusion.interop.form.property.PropertyReadType;
 
@@ -27,7 +25,7 @@ public class ClientContainer extends ClientComponent {
 
     private ContainerType type = ContainerType.CONTAINERH;
 
-    public Alignment childrenAlignment = Alignment.START;
+    public FlexAlignment childrenAlignment = FlexAlignment.START;
 
     public int columns = 4;
 

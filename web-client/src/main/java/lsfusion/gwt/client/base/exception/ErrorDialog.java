@@ -46,8 +46,8 @@ public class ErrorDialog extends ResizableSystemModalWindow {
             
             mainPane.addFill(stacksPanel, 1);
         }
-        
-        FlexPanel buttonsPanel = new FlexPanel(false, FlexPanel.Justify.CENTER);
+
+        FlexPanel buttonsPanel = new FlexPanel(false, GFlexAlignment.CENTER);
 
         closeButton = new Button(messages.close(), new ClickHandler() {
             @Override

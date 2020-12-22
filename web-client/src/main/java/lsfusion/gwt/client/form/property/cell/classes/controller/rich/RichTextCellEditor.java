@@ -57,7 +57,7 @@ public class RichTextCellEditor extends DialogBasedCellEditor {
         contentsContainer.addStretched(toolbar);
         contentsContainer.addFill(textArea);
 
-        FlexPanel bottomPane = new FlexPanel(false, FlexPanel.Justify.CENTER);
+        FlexPanel bottomPane = new FlexPanel(false, GFlexAlignment.CENTER);
         bottomPane.getElement().getStyle().setPadding(5, Style.Unit.PX);
         bottomPane.add(btnOk);
         bottomPane.add(GwtClientUtils.createHorizontalStrut(5));

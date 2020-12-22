@@ -7,8 +7,6 @@ import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.DOM;
 import lsfusion.gwt.client.form.design.view.flex.FlexTabbedPanel;
 
-import static lsfusion.gwt.client.base.view.FlexPanel.Justify;
-
 public class FlexPanelImpl {
 
     private static FlexPanelImpl impl;
@@ -42,15 +40,6 @@ public class FlexPanelImpl {
 
     protected String getJustifyContentAttrName() {
         return "justifyContent";
-    }
-
-    protected String getJustifyValue(Justify justify) {
-        switch (justify) {
-            case START: return getStartAlignmentValue();
-            case CENTER: return getCenterAlignmentValue();
-            case END: return getEndAlignmentValue();
-        }
-        throw new IllegalStateException("Unknown alignment");
     }
 
     protected String getStartAlignmentValue() {
@@ -87,11 +76,11 @@ public class FlexPanelImpl {
         return "flex";
     }
 
-    public void setupParentDiv(DivElement parent, boolean vertical, Justify justify) {
+    public void setupParentDiv(DivElement parent, boolean vertical, GFlexAlignment justify) {
         parent.getStyle().setOverflow(Style.Overflow.HIDDEN);
         parent.getStyle().setProperty("display", getDisplayFlexValue());
         parent.getStyle().setProperty(getDirectionAttrName(), getDirectionValue(vertical));
-        parent.getStyle().setProperty(getJustifyContentAttrName(), getJustifyValue(justify));
+        parent.getStyle().setProperty(getJustifyContentAttrName(), getAlignmentValue(justify));
     }
 
     public void setVisible(DivElement parent, boolean visible) {

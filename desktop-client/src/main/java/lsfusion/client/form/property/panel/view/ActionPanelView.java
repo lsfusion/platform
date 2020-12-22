@@ -16,9 +16,9 @@ import lsfusion.client.form.property.cell.controller.EditPropertyHandler;
 import lsfusion.client.form.property.cell.controller.dispatch.EditPropertyDispatcher;
 import lsfusion.client.form.property.table.view.ClientPropertyContextMenuPopup;
 import lsfusion.interop.action.ServerResponse;
+import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.base.view.FlexConstraints;
 import lsfusion.interop.base.view.FlexLayout;
-import lsfusion.interop.form.design.Alignment;
 import lsfusion.interop.form.event.KeyInputEvent;
 import lsfusion.interop.form.event.KeyStrokes;
 
@@ -121,7 +121,7 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
         });
 
         panel = new JPanel(null);
-        panel.setLayout(new FlexLayout(panel, true, Alignment.CENTER));
+        panel.setLayout(new FlexLayout(panel, true, FlexAlignment.CENTER));
         panel.add(this, new FlexConstraints(property.getAlignment(), 1));
         property.installMargins(panel);
 

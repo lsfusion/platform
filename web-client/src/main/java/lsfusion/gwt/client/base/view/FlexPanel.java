@@ -21,23 +21,23 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
 
     private final boolean vertical;
 
-    private final Justify justify;
+    private final GFlexAlignment justify;
 
     private boolean visible = true;
 
     public FlexPanel() {
-        this(Justify.START);
+        this(GFlexAlignment.START);
     }
 
-    public FlexPanel(Justify justify) {
+    public FlexPanel(GFlexAlignment justify) {
         this(false, justify);
     }
 
     public FlexPanel(boolean vertical) {
-        this(vertical, Justify.START);
+        this(vertical, GFlexAlignment.START);
     }
 
-    public FlexPanel(boolean vertical, Justify justify) {
+    public FlexPanel(boolean vertical, GFlexAlignment justify) {
         this.vertical = vertical;
         this.justify = justify;
 
@@ -48,7 +48,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
         setElement(parentElement);
     }
 
-    public Justify getJustify() {
+    public GFlexAlignment getJustify() {
         return justify;
     }
 
@@ -229,10 +229,6 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
     @Override
     public Dimension getMaxPreferredSize() {
         return calculateStackMaxPreferredSize(this.iterator(), isVertical());
-    }
-
-    public enum Justify {
-        START, CENTER, END
     }
 
     public static final class LayoutData {

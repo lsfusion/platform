@@ -7,8 +7,8 @@ import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.design.ClientContainer;
 import lsfusion.client.form.object.table.grid.view.GridTable;
+import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.base.view.FlexConstraints;
-import lsfusion.interop.form.design.Alignment;
 import lsfusion.interop.form.design.CachableLayout;
 import lsfusion.interop.form.event.KeyStrokes;
 
@@ -206,7 +206,7 @@ public class TabbedClientContainerView extends AbstractClientContainerView {
 
         public void addTab(int index, ClientComponent child, Component childView) {
             // добавляем не сам компонент, а proxyPanel, чтобы TabbedPane не управляла его видимостью и не мешала логике autohide'ов
-            JComponentPanel proxyPanel = new JComponentPanel(true, Alignment.START) {
+            JComponentPanel proxyPanel = new JComponentPanel(true, FlexAlignment.START) {
                 @Override
                 public void validate() {
                     super.validate();

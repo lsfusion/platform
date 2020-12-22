@@ -2,7 +2,7 @@ package lsfusion.server.logics.form.interactive.design;
 
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
-import lsfusion.interop.form.design.Alignment;
+import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.design.ContainerType;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.version.NFFact;
@@ -28,7 +28,7 @@ public class ContainerView extends ComponentView {
 
     private ContainerType type = ContainerType.CONTAINERV;
 
-    public Alignment childrenAlignment = Alignment.START;
+    public FlexAlignment childrenAlignment = FlexAlignment.START;
 
     public int columns = 4;
     
@@ -126,7 +126,7 @@ public class ContainerView extends ComponentView {
         this.type = type;
     }
 
-    public void setChildrenAlignment(Alignment childrenAlignment) {
+    public void setChildrenAlignment(FlexAlignment childrenAlignment) {
         this.childrenAlignment = childrenAlignment;
     }
 
