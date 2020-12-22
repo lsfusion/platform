@@ -108,6 +108,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 import static java.util.Arrays.asList;
+import static lsfusion.base.BaseUtils.isRedundantString;
 import static lsfusion.base.SystemUtils.getRevision;
 import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
 import static lsfusion.server.logics.classes.data.time.DateTimeConverter.getWriteDateTime;
@@ -1476,6 +1477,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         // with apply outside transaction
         try (DataSession session = createSession()) {
             setDefaultUserLocalePreferences(session);
+            setLogicsParams(session);
 
             initSystemUser(session);
 
@@ -1517,6 +1519,14 @@ public class DBManager extends LogicsManager implements InitializingBean {
         businessLogics.authenticationLM.serverTimezone.change(TimeZone.getDefault().getID(), session);
         businessLogics.authenticationLM.serverTwoDigitYearStart.change(serverTwoDigitYearStart, session);
 
+        apply(session);
+    }
+
+    private void setLogicsParams(DataSession session) throws SQLException, SQLHandledException {
+        String logicsCaption = businessLogics.logicsCaption;
+        String topModule = businessLogics.topModule;
+        LM.logicsCaption.change(isRedundantString(logicsCaption) ? null : logicsCaption, session);
+        LM.topModule.change(isRedundantString(topModule) ? null : topModule, session);
         apply(session);
     }
 

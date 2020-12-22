@@ -866,6 +866,7 @@
         <property name="initTask" ref="initBLTask"/>
 
         <property name="topModule" value="${logics.topModule:}"/>
+        <property name="logicsCaption" value="${logics.caption:}"/>
         <property name="orderDependencies" value="${logics.orderDependencies:}"/>
         <property name="lsfStrLiteralsLanguage" value="${logics.lsfStrLiteralsLanguage:#{null}}"/>
         <property name="lsfStrLiteralsCountry" value="${logics.lsfStrLiteralsCountry:#{null}}"/>
