@@ -169,6 +169,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     public UtilsLogicsModule utilsLM;
 
     private String topModule;
+    public String logicsCaption;
 
     private String orderDependencies;
 
@@ -276,6 +277,10 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 
     public void setTopModule(String topModule) {
         this.topModule = topModule;
+    }
+
+    public void setLogicsCaption(String logicsCaption) {
+        this.logicsCaption = logicsCaption.isEmpty() ? null : logicsCaption;
     }
 
     public void setOrderDependencies(String orderDependencies) {

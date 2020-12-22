@@ -205,6 +205,8 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
     public LP fillingIDs;
 
+    public LP logicsCaption;
+
     public ConcreteCustomClass listViewType;
     public LP count;
     public LP isPivot;
@@ -520,6 +522,8 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         reportToStretch = findProperty("reportToStretch[]");
 
         networkPath = findProperty("networkPath[]");
+
+        logicsCaption = findProperty("logicsCaption[]");
         
         fillingIDs = findProperty("fillingIDs[]");
 

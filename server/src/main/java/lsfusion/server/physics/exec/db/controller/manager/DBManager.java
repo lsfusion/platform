@@ -1510,6 +1510,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         businessLogics.authenticationLM.defaultCountry.change(defaultUserCountry, session);
         businessLogics.authenticationLM.defaultTimezone.change(defaultUserTimezone, session);
         businessLogics.authenticationLM.defaultTwoDigitYearStart.change(defaultUserTwoDigitYearStart, session);
+        LM.logicsCaption.change(businessLogics.logicsCaption, session);
 
         Locale locale = Locale.getDefault();
         businessLogics.authenticationLM.serverLanguage.change(locale.getLanguage(), session);
