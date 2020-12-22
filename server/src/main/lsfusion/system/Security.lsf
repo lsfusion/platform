@@ -240,6 +240,14 @@ defaultNumber (User user, NavigatorElement navigatorElement) =
     GROUP MIN defaultNumber(UserRole userRole, navigatorElement) IF has(user, userRole);
 defaultForms '{security.default.forms}' (UserRole userRole) = GROUP CONCAT caption(NavigatorElement e) IF defaultNumber(userRole, e), ', ' ORDER defaultNumber(userRole, e) CHARWIDTH 50;
 
+mobileOnly = DATA YesNo (UserRole, NavigatorElement);
+captionMobileOnly'{security.default.forms.mobile.only}' (UserRole ur, NavigatorElement e) = staticCaption(mobileOnly(ur, e)) CHARWIDTH 5; 
+    
+showMobileOnly (User u, NavigatorElement e) = GROUP MAX has(u, UserRole ur) AND mobileOnly(ur, e) == YesNo.yes;
+showDesktopOnly (User u, NavigatorElement e) = GROUP MAX has(u, UserRole ur) AND mobileOnly(ur, e) == YesNo.no;
+checkShowDefaultForm(User u, NavigatorElement e) = 
+    (NOT showMobileOnly(u, e) AND NOT showDesktopOnly(u, e)) OR (isMobile() AND showMobileOnly(u, e)) OR (isDesktop() AND NOT showMobileOnly(u, e) AND showDesktopOnly(u, e));    
+
 maximizeDefaultForms '{security.default.forms.maximize}' = DATA BOOLEAN (UserRole) CHARWIDTH 10;
 maximizeDefaultFormsCurrentUser() = GROUP MAX maximizeDefaultForms(UserRole ur) IF has(currentUser(), ur);
 maximizeForm  INTERNAL 'lsfusion.server.logics.form.interactive.action.MaximizeFormAction' ();
@@ -248,13 +256,14 @@ copy (UserRole from, UserRole to) + {
     forbidDuplicateForms(to) <- forbidDuplicateForms(from);
     showDetailedInfo(to) <- showDetailedInfo(from);
     defaultNumber(to, NavigatorElement navigatorElement) <- defaultNumber(from, navigatorElement);
+    mobileOnly(to, NavigatorElement navigatorElement) <- mobileOnly(from, navigatorElement);
     maximizeDefaultForms(to) <- maximizeDefaultForms(from);
 }
 
 showDefaultForms()  { 
     LOCAL formFound = BOOLEAN ();
     
-    FOR actionName = canonicalName(action(NavigatorAction e)) AND defaultNumber(currentUser(), e) ORDER defaultNumber(currentUser(), e) DO {
+    FOR actionName = canonicalName(action(NavigatorAction e)) AND defaultNumber(currentUser(), e) AND checkShowDefaultForm(currentUser(), e) ORDER defaultNumber(currentUser(), e) DO {
         LOCAL NESTED action = TEXT ();
         LOCAL NESTED maximize = BOOLEAN();
         FOR formName = canonicalName(form(e)) DO { 
@@ -411,13 +420,13 @@ FORM securityPolicy '{security.form.policy}'
     TREE navigatorElements te = NavigatorElement PARENT parent(te)
     PROPERTIES(te) READONLY caption, canonicalName
     PROPERTIES(ur, te) captionPermission FOREGROUND foregroundPermission(ur, te) BACKGROUND backgroundPermission(ur, te)
-    PROPERTIES(ur, te) defaultNumber
+    PROPERTIES(ur, te) defaultNumber, captionMobileOnly
     PROPERTIES(te) READONLY number
     ORDERS number(te)
 
     OBJECTS f = NavigatorElement
     PROPERTIES(f) READONLY caption, canonicalName
-    PROPERTIES(ur, f) captionPermission FOREGROUND foregroundPermission(ur, f), defaultNumber
+    PROPERTIES(ur, f) captionPermission FOREGROUND foregroundPermission(ur, f), defaultNumber, captionMobileOnly
 
     // Properties
     TREE properties tprs = PropertyGroup PARENT parent(tprs), prs = ActionOrProperty 
