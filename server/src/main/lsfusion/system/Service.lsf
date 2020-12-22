@@ -279,7 +279,7 @@ NAVIGATOR {
 FORM settings '{service.form.settings}'
     PROPERTIES() currentDate, currentDateTime, currentDateTimeSnapshot, defaultBackgroundColor, defaultForegroundColor, 
                  reportCharWidth, reportRowHeight, reportNotToStretch, hostnameServerComputer, 
-                 dataLogicsName, displayName, loadLogicsLogo, openLogicsLogo, resetLogicsLogo, loadLogicsIcon, openLogicsIcon, resetLogicsIcon
+                 dataLogicsName, dataDisplayName, loadLogicsLogo, openLogicsLogo, resetLogicsLogo, loadLogicsIcon, openLogicsIcon, resetLogicsIcon
 ;
 
 DESIGN settings {
@@ -308,7 +308,7 @@ DESIGN settings {
                     NEW logoContainer {
                         caption = '{system.logics.gui.preferences}';
                         MOVE PROPERTY(dataLogicsName());
-                        MOVE PROPERTY(displayName());
+                        MOVE PROPERTY(dataDisplayName());
                         MOVE PROPERTY(loadLogicsLogo());
                         MOVE PROPERTY(openLogicsLogo());
                         MOVE PROPERTY(resetLogicsLogo());

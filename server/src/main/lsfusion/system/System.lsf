@@ -324,7 +324,10 @@ formDelete(Object o)  {
 // ------------------ GUI Preferences ---------------- //
 dataLogicsName '{system.logics.name}' = DATA STRING[100]();
 logicsName = OVERRIDE dataLogicsName(), 'default';
-displayName '{system.logics.display.name}' = DATA STRING[100]();
+dataDisplayName '{system.logics.display.name}' = DATA STRING[100]();
+logicsCaption '{system.logics.caption}' = DATA STRING[100]();
+topModule '{system.logics.top.module}' = DATA STRING[100]();
+displayName = OVERRIDE dataDisplayName(), logicsCaption(), topModule();
 
 logicsLogo = DATA IMAGEFILE ();
 loadLogicsLogo '{system.logics.logo.load}'()  { INPUT=logicsLogo() CHANGE; }
