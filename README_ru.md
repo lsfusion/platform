@@ -154,13 +154,13 @@
 
 ## Демонстрационные примеры
 - [Турнирная таблица](https://demo.lsfusion.org/hockeystats) 
-  - [описание](https://documentation.lsfusion.org/display/LSFUS/Score+table) 
+  - [описание](https://ru-documentation.lsfusion.org/pages/viewpage.action?pageId=2228240) 
   - [github](https://github.com/lsfusion/samples/tree/master/hockeystats) 
   - логин: guest
   - пароль: guest 
 
 - [Управление материальными потоками](https://demo.lsfusion.org/mm)
-  - [описание](https://documentation.lsfusion.org/display/LSFUS/Materials+management)
+  - [описание](https://ru-documentation.lsfusion.org/pages/viewpage.action?pageId=2228636)
   - [github](https://github.com/lsfusion/samples/tree/master/mm) 
   - логин: guest
   - пароль: guest 
