@@ -530,7 +530,7 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
                 marker.editing.enable();
             }
         }
-        setTimeout(run, 0);
+        setTimeout(run, 5);
     }-*/;
 
     protected native void updateName(JavaScriptObject marker, String name)/*-{
