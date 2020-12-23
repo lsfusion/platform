@@ -9,11 +9,13 @@ lsFusion is a free open-source information systems development platform based on
 
 Incremental computing, function-level, reactive, and event-based programming, the ability to write and iterate over all function values, multiple inheritance and polymorphism, no encapsulation, and lots of other fundamentally new ideas greatly improve the development speed, quality, and performance of created systems compared to traditional approaches.
 
+---
+
 <p align="center">
 <a href="#main-features">Main Features</a> •
   <a href="#installation">Installation</a> •
-  <a href="#try-online">Try online</a> •
   <a href="#code-examples">Code examples</a> •
+  <a href="#try-online">Try online</a> •
   <a href="#online-demos">Online demos</a> •
   <a href="#links">Links</a> •
   <a href="#feedback">Feedback</a> •
