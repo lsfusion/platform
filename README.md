@@ -87,9 +87,9 @@ For a more complete list see [lsfusion website](https://lsfusion.org/opportuniti
 ### Windows 
 - **Development**
 
-    Single-click .exe installers of **lsFusion 3.1** (OpenJDK 1.8.212, PostgreSQL 10.8, Tomcat 9.0.21, IntelliJ IDEA Community Edition 2019.1.3)  
-    - [x32](http://download.lsfusion.org/exe/lsfusion-dev-3.1.exe)  
-    - [x64](http://download.lsfusion.org/exe/lsfusion-dev-3.1-x64.exe)
+    Single-click .exe installers of **lsFusion 4.0** (OpenJDK 1.8.212, PostgreSQL 10.8, Tomcat 9.0.21, IntelliJ IDEA Community Edition 2019.1.3)  
+    - [x32](http://download.lsfusion.org/exe/lsfusion-dev-4.0.exe)  
+    - [x64](http://download.lsfusion.org/exe/lsfusion-dev-4.0-x64.exe)
 
     In addition to **lsFusion**, these installers also install **OpenJDK**, **PostgreSQL**, **Tomcat**, and **IntelliJ IDEA Community Edition** with the built-in **lsFusion plugin**. If any of these programs are already on your computer, you can exclude them during the installation process.
 
@@ -97,9 +97,9 @@ For a more complete list see [lsfusion website](https://lsfusion.org/opportuniti
 
 - **Production**
 
-    Single-click .exe installers of **lsFusion 3.1 Server & Client** (OpenJDK 1.8.212, PostgreSQL 10.8, Tomcat 9.0.21)  
-    - [x32](http://download.lsfusion.org/exe/lsfusion-3.1.exe)  
-    - [x64](http://download.lsfusion.org/exe/lsfusion-3.1-x64.exe)
+    Single-click .exe installers of **lsFusion 4.0 Server & Client** (OpenJDK 1.8.212, PostgreSQL 10.8, Tomcat 9.0.21)  
+    - [x32](http://download.lsfusion.org/exe/lsfusion-4.0.exe)  
+    - [x64](http://download.lsfusion.org/exe/lsfusion-4.0-x64.exe)
 
     In addition to **lsFusion**, these installers also install **OpenJDK**, **PostgreSQL**, and **Tomcat**. **Tomcat** is embedded into the **lsFusion Client** installation, and **OpenJDK** and **PostgreSQL** are installed separately (in particular, in separate folders).
 
@@ -118,15 +118,15 @@ For a more complete list see [lsfusion website](https://lsfusion.org/opportuniti
    
 - **Production**
 
-    **lsFusion 3 Server & Client** (OpenJDK 1.8, PostgreSQL 11, Tomcat 9.0.21).
+    **lsFusion 4 Server & Client** (OpenJDK 1.8, PostgreSQL 11, Tomcat 9.0.21).
 
     - RHEL 7 / CentOS 7 / Fedora 29
 
-          source <(curl -s https://download.lsfusion.org/yum/install-lsfusion3)
+          source <(curl -s https://download.lsfusion.org/yum/install-lsfusion4)
 
     - Ubuntu 18 / Debian 9
 
-          source <(curl -s https://download.lsfusion.org/apt/install-lsfusion3)
+          source <(curl -s https://download.lsfusion.org/apt/install-lsfusion4)
 
 For more detailed information about installation process please refer to [install section](https://documentation.lsfusion.org/display/LSFUS/Install) of documentation.
 
