@@ -25,13 +25,13 @@ services:
 # available variables names: DB_SERVER, DB_PASSWORD, DB_USER, DB_NAME, JAVA_OPTS
 # environment variables can be used separately
 # priority: default -> settings.properties -> environment variables
-# for example
-#    environment:
-#      DB_PASSWORD: 11111
-#      DB_SERVER: localhost
-#      DB_USER: postgres
-#      DB_NAME: lsfusion
-#      JAVA_OPTS: -Xmx4000m
+    environment:
+      - LANG=${LANG} # set locale from the host because the image openjdk from lsfusion/server uses C.UTF-8 locale
+#      - DB_PASSWORD=11111
+#      - DB_SERVER=localhost
+#      - DB_USER=postgres
+#      - DB_NAME=lsfusion
+#      - JAVA_OPTS=-Xmx4000m
 
   client:
 # jenkins use regex for replace image version in next line before build. Check jenkins branch on change
@@ -47,8 +47,8 @@ services:
 # available variables names: SERVER_HOST, SERVER_PORT, JAVA_OPTS
 # if use environment variables - use SERVER_HOST and SERVER_PORT both
 # priority: default -> ROOT.xml -> environment variables
-# for example
-#    environment:
-#      SERVER_HOST: localhost
-#      SERVER_PORT: 7652
-#      JAVA_OPTS: -Xmx4000m
+    environment:
+      - LANG=${LANG} # set locale from the host because the image tomcat from lsfusion/client uses C.UTF-8 locale
+#      - SERVER_HOST=localhost
+#      - SERVER_PORT=7652
+#      - JAVA_OPTS=-Xmx4000m
