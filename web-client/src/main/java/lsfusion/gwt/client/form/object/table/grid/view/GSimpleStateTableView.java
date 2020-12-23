@@ -272,7 +272,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
     protected void setViewFilter(int startYear, int startMonth, int startDay, int endYear, int endMonth, int endDay, String property, boolean isDateTimeFilter, int pageSize) {
         ArrayList<GPropertyFilter> filters = new ArrayList<>();
         Object leftBorder = isDateTimeFilter ? new GDateTimeDTO(startYear, startMonth, startDay, 0, 0, 0) : new GDateDTO(startYear, startMonth, startDay) ;
-        Object rightBorder = isDateTimeFilter ? new GDateTimeDTO(endYear, endMonth, endDay, 0, 0, 0) : new GDateDTO(endYear, endMonth, endMonth);
+        Object rightBorder = isDateTimeFilter ? new GDateTimeDTO(endYear, endMonth, endDay, 0, 0, 0) : new GDateDTO(endYear, endMonth, endDay);
 
         Column column = columnMap.get(property);
         filters.add(new GPropertyFilter(grid.groupObject, column.property, column.columnKey, leftBorder, GCompare.GREATER_EQUALS));
