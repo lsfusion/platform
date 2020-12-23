@@ -1,28 +1,22 @@
-## 4.0-beta3 (2020-10-16)
+## 4.0 (2020-12-23)
+##### Implemented major enhancements:
+ - Extended list view support (i.e. pivot, map, diagram) [#70](https://github.com/lsfusion/platform/issues/70)
 ##### Implemented enhancements:
+ - Support LIST clause for ATTACH and SUBJECT clauses in EMAIL operator [#326](https://github.com/lsfusion/platform/issues/326)
+ - Implement ROUND as an operator (not system property) [#376](https://github.com/lsfusion/platform/issues/376)
+ - Fix the absence of localization in swing text strings [#43](https://github.com/lsfusion/platform/issues/43)
  - Support of FOOTERS clause in interactive form view in web-client [#473](https://github.com/lsfusion/platform/issues/473)
  - Support of \n in property headers [#472](https://github.com/lsfusion/platform/issues/472)
  - Make libraries to be downloaded directly from the web-client when internet is unavailable [#267](https://github.com/lsfusion/platform/issues/267)
  - Calendar view support [#240](https://github.com/lsfusion/platform/issues/240)
  - Support username and password parameters authentication in UI url [#462](https://github.com/lsfusion/platform/issues/462)
-## ----- PREVIOUS RELEASES --------
-## 4.0-beta2 (2020-09-10)
-##### Implemented enhancements:
  - Custom javascript list view support [#195](https://github.com/lsfusion/platform/issues/195)
  - Implement reversed internationalization [#247](https://github.com/lsfusion/platform/issues/247)
-##### Fixed bugs:
- - Low performance when there is a very complex filter / order with a lot of prereads / materialized changes [#430](https://github.com/lsfusion/platform/issues/430)
-## 4.0-beta1 (2020-08-21)
-##### Implemented enhancements:
  - Implement support of edit object on double click and in "link mode" [#420](https://github.com/lsfusion/platform/issues/420)
  - Implement WAIT / NOWAIT options for EMAIL operator [#424](https://github.com/lsfusion/platform/issues/424)
  - Allow action images to be dynamic (calculated and not set with literal) [#418](https://github.com/lsfusion/platform/issues/418)
  - Add "register" and "forget password" functionality to login form [#279](https://github.com/lsfusion/platform/issues/279)
  - Timeout for EXTERNAL HTTP [#415](https://github.com/lsfusion/platform/issues/415)
-## 4.0-beta0 (2020-07-24)
-##### Implemented major enhancements:
- - Extended list view support (i.e. pivot, map, diagram) [#70](https://github.com/lsfusion/platform/issues/70)
-##### Implemented enhancements:
  - Implement printServerFile in Printer.lsf [#409](https://github.com/lsfusion/platform/issues/409)
  - Support PROPERTIES clause for CONSTRAINT operator [#311](https://github.com/lsfusion/platform/issues/311)
  - Pivot table: support column ordering not only by totals [#261](https://github.com/lsfusion/platform/issues/261)
@@ -72,6 +66,7 @@
  - Implement manual list view update / refresh [#196](https://github.com/lsfusion/platform/issues/196)
  - Pivot list view support [#193](https://github.com/lsfusion/platform/issues/193)
 ##### Fixed bugs:
+ - Low performance when there is a very complex filter / order with a lot of prereads / materialized changes [#430](https://github.com/lsfusion/platform/issues/430)
  - Component should be not focusable when there is assigned CHANGEKEY [#325](https://github.com/lsfusion/platform/issues/325)
  - Bug when client exception is raised during dispatching response [#410](https://github.com/lsfusion/platform/issues/410)
  - Unable to send email if address contains apostrophe [#375](https://github.com/lsfusion/platform/issues/375)
@@ -101,6 +96,7 @@
  - OK should be shown only when form manages session or in dialog mode [#200](https://github.com/lsfusion/platform/issues/200)
  - Unable to shutdown specific connection [#221](https://github.com/lsfusion/platform/issues/221)
  - Exception in IMPORT XLS [#207](https://github.com/lsfusion/platform/issues/207)
+## ----- PREVIOUS RELEASES --------
 ## 3.0 (2020-01-16)
 ##### Implemented enhancements:
  - Create an action for finding forms by name [#203](https://github.com/lsfusion/platform/issues/203)
