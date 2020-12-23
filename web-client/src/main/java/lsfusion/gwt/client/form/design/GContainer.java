@@ -37,7 +37,7 @@ public class GContainer extends GComponent {
     }
 
     public GFlexAlignment getFlexJustify() {
-        return alignment;
+        return childrenAlignment;
     }
 
     public boolean isTabbed() {
