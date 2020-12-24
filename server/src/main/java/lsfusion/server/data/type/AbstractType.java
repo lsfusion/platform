@@ -160,7 +160,7 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
                 if(DateUtil.isCellDateFormatted(cell)) {
                     cellValue = DateClass.instance.formatString(cell.getLocalDateTimeCellValue().toLocalDate());
                 } else {
-                    cellValue = new BigDecimal(formulaValue.getNumberValue()).toPlainString();
+                    cellValue = BigDecimal.valueOf(formulaValue.getNumberValue()).toPlainString();
                 }
                 break;        
             default:
