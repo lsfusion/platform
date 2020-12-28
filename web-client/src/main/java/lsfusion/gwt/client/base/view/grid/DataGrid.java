@@ -45,6 +45,8 @@ import static lsfusion.gwt.client.view.StyleDefaults.*;
 // we need resizesimplepanel for "scroller" padding in headers (we don't know if there gonna be vertival scroller)
 public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusable, ColorThemeChangeListener {
 
+    public static final String DATA_GRID_CLASS = "dataGridTableWrapperWidget";
+
     private static GridStyle DEFAULT_STYLE;
 
     protected static GridStyle getDefaultStyle() {
@@ -1531,7 +1533,7 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
         public TableWrapperWidget(String extraClass) {
             tableElement = Document.get().createTableElement();
 
-            tableElement.addClassName("dataGridTableWrapperWidget");
+            tableElement.addClassName(DATA_GRID_CLASS);
             if(extraClass != null)
                 tableElement.addClassName(extraClass);
 

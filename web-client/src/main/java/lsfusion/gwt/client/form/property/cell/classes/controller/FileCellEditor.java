@@ -103,6 +103,13 @@ public class FileCellEditor implements CellEditor {
             needToCancel = !instance.@FileCellEditor::addFilesToUploader(*)(this.files);
         }
 
+
+        //in grid focus returns to DataGrid, not cell
+        var dataGrid = @GwtClientUtils::getParentWithClass(*)(parent, @lsfusion.gwt.client.base.view.grid.DataGrid::DATA_GRID_CLASS);
+        if(dataGrid != null) {
+            parent = dataGrid.parentElement;
+        }
+
         parent.onfocus = function () {
             setTimeout(function () {//onfocus event fires before onchange event, so we need a timeout
                 if (needToCancel) {
