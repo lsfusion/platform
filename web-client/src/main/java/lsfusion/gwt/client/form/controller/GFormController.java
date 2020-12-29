@@ -1037,16 +1037,26 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             if(rowKey.isEmpty())
                 return;
         }
-        changeProperty(property, rowKey, columnKey, value, oldValue, changeRequestIndex);
+        changeProperties(new GPropertyDraw[]{property}, rowKey, new GGroupObjectValue[]{columnKey}, new Serializable[]{value}, new Object[]{oldValue}, changeRequestIndex);
     }
 
-    public void changeProperty(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey, Serializable value, Object oldValue, Long changeRequestIndex) {
-        GGroupObjectValue fullKey = GGroupObjectValue.getFullKey(rowKey, columnKey);
+    public void changeProperties(GPropertyDraw[] properties, GGroupObjectValue rowKey, GGroupObjectValue[] columnKeys, Serializable[] values, Object[] oldValues, Long changeRequestIndex) {
+        int[] IDs = new int[properties.length];
+        GGroupObjectValue[] fullCurrentKeys = new GGroupObjectValue[properties.length];
+
+        for (int i = 0; i < properties.length; i++) {
+            GGroupObjectValue fullKey = GGroupObjectValue.getFullKey(rowKey, columnKeys[i]);
+            IDs[i] = properties[i].ID;
+            fullCurrentKeys[i] = getFullCurrentKey(fullKey);
+        }
 
         if(changeRequestIndex == null)
-            changeRequestIndex = dispatcher.execute(new ChangeProperty(property.ID, getFullCurrentKey(fullKey), value, null), new ServerResponseCallback());
+            changeRequestIndex = dispatcher.execute(new ChangeProperties(IDs, fullCurrentKeys, values, null), new ServerResponseCallback());
 
-        putToDoubleNativeMap(pendingChangePropertyRequests, property, fullKey, new Change(changeRequestIndex, value, oldValue, property.canUseChangeValueForRendering()));
+        for (int i = 0; i < properties.length; i++) {
+            GGroupObjectValue fullKey = GGroupObjectValue.getFullKey(rowKey, columnKeys[i]);
+            putToDoubleNativeMap(pendingChangePropertyRequests, properties[i], fullKey, new Change(changeRequestIndex, values[i], oldValues[i], properties[i].canUseChangeValueForRendering()));
+        }
     }
 
     public boolean isAsyncModifyObject(GPropertyDraw property) {
@@ -1089,7 +1099,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
         controllers.get(object.groupObject).modifyGroupObject(value, add, -1);
 
-        long requestIndex = dispatcher.execute(new ChangeProperty(property.ID, fullCurrentKey, null, add ? ID : null), new ServerResponseCallback());
+        long requestIndex = dispatcher.execute(new ChangeProperties(new int[]{property.ID}, new GGroupObjectValue[]{fullCurrentKey}, null, add ? ID : null), new ServerResponseCallback());
         pendingChangeCurrentObjectsRequests.put(object.groupObject, requestIndex);
         pendingModifyObjectRequests.put(requestIndex, new ModifyObject(object, add, value, position));
     }

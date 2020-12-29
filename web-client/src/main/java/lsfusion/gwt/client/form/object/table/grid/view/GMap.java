@@ -18,6 +18,7 @@ import org.vectomatic.dom.svg.OMSVGFilterElement;
 import org.vectomatic.dom.svg.OMSVGSVGElement;
 import org.vectomatic.dom.svg.utils.OMSVGParser;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -70,8 +71,7 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
     }
 
     protected void changePointProperty(JavaScriptObject object, Double lat, Double lng) {
-        changeProperty("latitude", lat, object);
-        changeProperty("longitude", lng, object);
+        changeProperties(new String[]{"latitude", "longitude"}, new Serializable[]{lat, lng}, object);
     }
 
     protected void changePolygonProperty(JavaScriptObject object, JsArray<WrapperObject> latlngs) {

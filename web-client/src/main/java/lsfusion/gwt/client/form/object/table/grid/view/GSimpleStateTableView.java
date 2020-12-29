@@ -28,7 +28,6 @@ import java.io.Serializable;
 import java.util.*;
 import java.util.function.Predicate;
 
-import static lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder.COLUMN_ATTRIBUTE;
 import static lsfusion.gwt.client.base.view.grid.DataGrid.initSinkEvents;
 
 public abstract class GSimpleStateTableView<P> extends GStateTableView {
@@ -228,8 +227,21 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
     }
 
     protected void changeProperty(String property, Serializable newValue, JavaScriptObject object) {
-        Column column = columnMap.get(property);
-        changeProperty(column.property, toObject(object), column.columnKey, newValue);
+        changeProperties(new String[]{property}, new Serializable[]{newValue}, object);
+    }
+
+    protected void changeProperties(String[] properties, Serializable[] newValues, JavaScriptObject object) {
+        int length = properties.length;
+        GPropertyDraw[] gProperties = new GPropertyDraw[length];
+        GGroupObjectValue[] columnKeys = new GGroupObjectValue[length];
+
+        for (int i = 0; i < properties.length; i++) {
+            Column column = columnMap.get(properties[i]);
+            gProperties[i] = column.property;
+            columnKeys[i] = column.columnKey;
+        }
+
+        changeProperties(gProperties, toObject(object), columnKeys, newValues);
     }
 
     protected boolean isReadOnly(String property, GGroupObjectValue object) {
