@@ -1099,7 +1099,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
         controllers.get(object.groupObject).modifyGroupObject(value, add, -1);
 
-        long requestIndex = dispatcher.execute(new ChangeProperties(new int[]{property.ID}, new GGroupObjectValue[]{fullCurrentKey}, null, add ? ID : null), new ServerResponseCallback());
+        long requestIndex = dispatcher.execute(new ChangeProperties(new int[]{property.ID}, new GGroupObjectValue[]{fullCurrentKey}, null, add ? new Long[]{ID} : null), new ServerResponseCallback());
         pendingChangeCurrentObjectsRequests.put(object.groupObject, requestIndex);
         pendingModifyObjectRequests.put(requestIndex, new ModifyObject(object, add, value, position));
     }

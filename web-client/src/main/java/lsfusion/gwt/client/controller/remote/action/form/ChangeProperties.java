@@ -8,15 +8,15 @@ public class ChangeProperties extends FormRequestCountingAction<ServerResponseRe
     public int[] propertyIds;
     public GGroupObjectValue[] fullKeys;
     public Serializable[] values;
-    public Long addedObjectId;
+    public Long[] addedObjectsIds;
 
     public ChangeProperties() {
     }
 
-    public ChangeProperties(int[] propertyIds, GGroupObjectValue[] fullKeys, Serializable[] values, Long addedObjectId) {
+    public ChangeProperties(int[] propertyIds, GGroupObjectValue[] fullKeys, Serializable[] values, Long[] addedObjectsIds) {
         this.propertyIds = propertyIds;
         this.fullKeys = fullKeys;
         this.values = values;
-        this.addedObjectId = addedObjectId;
+        this.addedObjectsIds = addedObjectsIds;
     }
 }

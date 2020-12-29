@@ -269,16 +269,24 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         return map;        
     }
 
-    protected void changeObjectProperty(String property, JavaScriptObject object, Serializable newValue) {
-        changeProperty(property, newValue, fromObject(getKey(object)));
+    protected void changeObjectProperties(String[] properties, JavaScriptObject object, Serializable[] newValues) {
+        changeProperties(properties, newValues, fromObject(getKey(object)));
     }
 
-    protected void changeDateTimeProperty(String property, JavaScriptObject object, int year, int month, int day, int hour, int minute, int second) {
-        changeObjectProperty(property, object, new GDateTimeDTO(year, month, day, hour, minute, second));
+    protected void changeDateTimeProperties(String[] properties, JavaScriptObject object, int[] years, int[] months, int[] days, int[] hours, int[] minutes, int[] seconds) {
+        GDateTimeDTO[] gDateTimeDTOs = new GDateTimeDTO[years.length];
+        for (int i = 0; i < years.length; i++) {
+            gDateTimeDTOs[i] = new GDateTimeDTO(years[i], months[i], days[i], hours[i], minutes[i], seconds[i]);
+        }
+        changeObjectProperties(properties, object, gDateTimeDTOs);
     }
 
-    protected void changeDateProperty(String property, JavaScriptObject object, int year, int month, int day) {
-        changeObjectProperty(property, object, new GDateDTO(year, month, day));
+    protected void changeDateProperties(String[] properties, JavaScriptObject object, int[] years, int[] months, int[] days) {
+        GDateDTO[] gDateDTOs = new GDateDTO[years.length];
+        for (int i = 0; i < years.length; i++) {
+            gDateDTOs[i] = new GDateDTO(years[i], months[i], days[i]);
+        }
+        changeObjectProperties(properties, object, gDateDTOs);
     }
 
     protected void setViewFilter(int startYear, int startMonth, int startDay, int endYear, int endMonth, int endDay, String property, boolean isDateTimeFilter, int pageSize) {
@@ -313,14 +321,14 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
     protected native JavaScriptObject getController()/*-{
         var thisObj = this;
         return {
-            changeProperty: function (property, object, newValue) {
-                return thisObj.@GSimpleStateTableView::changeObjectProperty(*)(property, object, newValue);
+            changeProperties: function (properties, object, newValues) {
+                return thisObj.@GSimpleStateTableView::changeObjectProperties(*)(properties, object, newValues);
             },
-            changeDateTimeProperty: function (property, object, year, month, day, hour, minute, second) {
-                return thisObj.@GSimpleStateTableView::changeDateTimeProperty(*)(property, object, year, month, day, hour, minute, second);
+            changeDateTimeProperties: function (properties, object, years, months, days, hours, minutes, seconds) {
+                return thisObj.@GSimpleStateTableView::changeDateTimeProperties(*)(properties, object, years, months, days, hours, minutes, seconds);
             },
-            changeDateProperty: function (property, object, year, month, day) {
-                return thisObj.@GSimpleStateTableView::changeDateProperty(*)(property, object, year, month, day);
+            changeDateProperties: function (properties, object, years, months, days) {
+                return thisObj.@GSimpleStateTableView::changeDateProperties(*)(properties, object, years, months, days);
             },
             isCurrent: function (object) {
                 return thisObj.@GSimpleStateTableView::isCurrentObjectKey(*)(object);

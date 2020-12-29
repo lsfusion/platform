@@ -34,22 +34,24 @@ public class ChangePropertiesHandler extends FormServerResponseActionHandler<Cha
             public ServerResponse call(RemoteFormInterface remoteForm) throws RemoteException {
                 GGroupObjectValue[] fullKeys = action.fullKeys;
                 List<byte[]> convertedFullKeys = new ArrayList<>();
-                for (int i = 0; i < fullKeys.length; i++) {
-                    convertedFullKeys.add(gwtConverter.convertOrCast(fullKeys[i]));
+                for (GGroupObjectValue fullKey : fullKeys) {
+                    convertedFullKeys.add(gwtConverter.convertOrCast(fullKey));
                 }
 
                 Serializable[] values = action.values;
                 List<byte[]> pushChanges = new ArrayList<>();
 
-                for (int i = 0; i < values.length; i++) {
-                    Object value = gwtConverter.convertOrCast(values[i]);
-                    byte[] pushChange;
-                    try {
-                        pushChange = serializeObject(gwtConverter.convertOrCast(value));
-                    } catch (IOException e) {
-                        throw Throwables.propagate(e);
+                if (values != null) {
+                    for (Serializable serializable : values) {
+                        Object value = gwtConverter.convertOrCast(serializable);
+                        byte[] pushChange;
+                        try {
+                            pushChange = serializeObject(gwtConverter.convertOrCast(value));
+                        } catch (IOException e) {
+                            throw Throwables.propagate(e);
+                        }
+                        pushChanges.add(pushChange);
                     }
-                    pushChanges.add(pushChange);
                 }
 
                 return remoteForm.changeProperties(
@@ -58,7 +60,7 @@ public class ChangePropertiesHandler extends FormServerResponseActionHandler<Cha
                         action.propertyIds,
                         convertedFullKeys.toArray(new byte[convertedFullKeys.size()][]),
                         pushChanges.toArray(new byte[pushChanges.size()][]),
-                        action.addedObjectId
+                        action.addedObjectsIds
                 );
             }
         });

@@ -661,18 +661,19 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> form.refreshUPHiddenProperties(groupObjectSID, propSids));
     }
 
-    public ServerResponse changeProperties(final long requestIndex, long lastReceivedRequestIndex, final int[] propertyIDs, final byte[][] fullKeys, final byte[][] pushChanges, final Long pushAdd) throws RemoteException {
+    public ServerResponse changeProperties(final long requestIndex, long lastReceivedRequestIndex, final int[] propertyIDs, final byte[][] fullKeys, final byte[][] pushChanges, final Long[] pushAdds) throws RemoteException {
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
             for (int j = 0; j < propertyIDs.length; j++) {
+                byte[] pushChange = pushChanges.length != 0 ? pushChanges[j] : null;
 
                 PropertyDrawInstance propertyDraw = form.getPropertyDraw(propertyIDs[j]);
                 ImMap<ObjectInstance, DataObject> keys = deserializePropertyKeys(propertyDraw, fullKeys[j]);
 
                 ObjectValue pushChangeObject = null;
                 DataClass pushChangeType = null;
-                if (pushChanges[j] != null) {
+                if (pushChange != null) {
                     pushChangeType = propertyDraw.getEntity().getRequestInputType(form.entity, form.securityPolicy);
-                    Object objectPushChange = deserializeObject(pushChanges[j]);
+                    Object objectPushChange = deserializeObject(pushChange);
                     if (pushChangeType == null) // веб почему-то при асинхронном удалении шлет не null, а [0] который deserialize'ся в null а потом превращается в NullValue.instance и падают ошибки
                         ServerLoggers.assertLog(objectPushChange == null, "PROPERTY CANNOT BE CHANGED -> PUSH CHANGE SHOULD BE NULL");
                     else
@@ -680,8 +681,8 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                 }
 
                 DataObject pushAddObject = null;
-                if (pushAdd != null) {
-                    pushAddObject = new DataObject(pushAdd, form.session.baseClass.unknown);
+                if (pushAdds != null) {
+                    pushAddObject = new DataObject(pushAdds[j], form.session.baseClass.unknown);
                 }
 
                 form.executeEventAction(propertyDraw, ServerResponse.CHANGE, keys, pushChangeObject, pushChangeType, pushAddObject, true, stack);

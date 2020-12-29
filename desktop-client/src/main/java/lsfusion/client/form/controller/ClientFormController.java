@@ -941,7 +941,7 @@ public class ClientFormController implements AsyncListener {
 
             @Override
             protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                return remoteForm.changeProperties(requestIndex, lastReceivedRequestIndex, new int[]{property.getID()}, new byte[][]{fullCurrentKey}, null, add ? ID : null);
+                return remoteForm.changeProperties(requestIndex, lastReceivedRequestIndex, new int[]{property.getID()}, new byte[][]{fullCurrentKey}, null, add ? new Long[]{ID} : null);
             }
         });
     }
