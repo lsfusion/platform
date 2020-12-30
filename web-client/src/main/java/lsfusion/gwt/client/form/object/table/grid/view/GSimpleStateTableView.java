@@ -269,6 +269,10 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         return map;        
     }
 
+    protected void changeObjectProperty(String property, JavaScriptObject object, Serializable newValue) {
+        changeProperty(property, newValue, fromObject(getKey(object)));
+    }
+
     protected void changeObjectProperties(String[] properties, JavaScriptObject object, Serializable[] newValues) {
         changeProperties(properties, newValues, fromObject(getKey(object)));
     }
@@ -321,6 +325,9 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
     protected native JavaScriptObject getController()/*-{
         var thisObj = this;
         return {
+            changeProperty: function (property, object, newValue) {
+                return thisObj.@GSimpleStateTableView::changeObjectProperty(*)(property, object, newValue);
+            },
             changeProperties: function (properties, object, newValues) {
                 return thisObj.@GSimpleStateTableView::changeObjectProperties(*)(properties, object, newValues);
             },

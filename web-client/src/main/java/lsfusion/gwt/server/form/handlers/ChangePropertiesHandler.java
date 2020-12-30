@@ -39,9 +39,10 @@ public class ChangePropertiesHandler extends FormServerResponseActionHandler<Cha
                 }
 
                 Serializable[] values = action.values;
-                List<byte[]> pushChanges = new ArrayList<>();
+                List<byte[]> pushChanges = null;
 
                 if (values != null) {
+                    pushChanges = new ArrayList<>();
                     for (Serializable serializable : values) {
                         Object value = gwtConverter.convertOrCast(serializable);
                         byte[] pushChange;
@@ -59,7 +60,7 @@ public class ChangePropertiesHandler extends FormServerResponseActionHandler<Cha
                         action.lastReceivedRequestIndex,
                         action.propertyIds,
                         convertedFullKeys.toArray(new byte[convertedFullKeys.size()][]),
-                        pushChanges.toArray(new byte[pushChanges.size()][]),
+                        pushChanges != null ? pushChanges.toArray(new byte[pushChanges.size()][]) : null,
                         action.addedObjectsIds
                 );
             }

@@ -664,14 +664,14 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
     public ServerResponse changeProperties(final long requestIndex, long lastReceivedRequestIndex, final int[] propertyIDs, final byte[][] fullKeys, final byte[][] pushChanges, final Long[] pushAdds) throws RemoteException {
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
             for (int j = 0; j < propertyIDs.length; j++) {
-                byte[] pushChange = pushChanges.length != 0 ? pushChanges[j] : null;
 
                 PropertyDrawInstance propertyDraw = form.getPropertyDraw(propertyIDs[j]);
                 ImMap<ObjectInstance, DataObject> keys = deserializePropertyKeys(propertyDraw, fullKeys[j]);
 
                 ObjectValue pushChangeObject = null;
                 DataClass pushChangeType = null;
-                if (pushChange != null) {
+                if (pushChanges != null) {
+                    byte[] pushChange = pushChanges[j];
                     pushChangeType = propertyDraw.getEntity().getRequestInputType(form.entity, form.securityPolicy);
                     Object objectPushChange = deserializeObject(pushChange);
                     if (pushChangeType == null) // веб почему-то при асинхронном удалении шлет не null, а [0] который deserialize'ся в null а потом превращается в NullValue.instance и падают ошибки
