@@ -670,8 +670,8 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
 
                 ObjectValue pushChangeObject = null;
                 DataClass pushChangeType = null;
-                if (pushChanges != null) { //
-                    byte[] pushChange = pushChanges[j];
+                byte[] pushChange = pushChanges[j];
+                if (pushChange != null) {
                     pushChangeType = propertyDraw.getEntity().getRequestInputType(form.entity, form.securityPolicy);
                     Object objectPushChange = deserializeObject(pushChange);
                     if (pushChangeType == null) // веб почему-то при асинхронном удалении шлет не null, а [0] который deserialize'ся в null а потом превращается в NullValue.instance и падают ошибки
@@ -681,9 +681,9 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                 }
 
                 DataObject pushAddObject = null;
-                if (pushAdds != null) { //
-                    pushAddObject = new DataObject(pushAdds[j], form.session.baseClass.unknown);
-                }
+                Long pushAdd = pushAdds[j];
+                if (pushAdd != null)
+                    pushAddObject = new DataObject(pushAdd, form.session.baseClass.unknown);
 
                 form.executeEventAction(propertyDraw, ServerResponse.CHANGE, keys, pushChangeObject, pushChangeType, pushAddObject, true, stack);
 

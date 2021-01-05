@@ -240,7 +240,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             Column column = columnMap.get(properties[i]);
             gProperties[i] = column.property;
             columnKeys[i] = column.columnKey;
-            rowKeys[i] = toObject(objects[i]);
+            rowKeys[i] = getKey(objects[i]);
         }
 
         changeProperties(gProperties, rowKeys, columnKeys, newValues);
@@ -271,16 +271,12 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         return map;        
     }
 
-    protected void changeObjectProperty(String property, JavaScriptObject object, Serializable newValue) {
-        changeProperty(property, newValue, fromObject(getKey(object)));
-    }
-
     protected void changeDateTimeProperty(String property, JavaScriptObject object, int year, int month, int day, int hour, int minute, int second) {
-        changeObjectProperty(property, object, new GDateTimeDTO(year, month, day, hour, minute, second));
+        changeProperty(property, new GDateTimeDTO(year, month, day, hour, minute, second), object);
     }
 
     protected void changeDateProperty(String property, JavaScriptObject object, int year, int month, int day) {
-        changeObjectProperty(property, object, new GDateDTO(year, month, day));
+        changeProperty(property, new GDateDTO(year, month, day), object);
     }
 
     protected void changeDateTimeProperties(String[] properties, JavaScriptObject[] objects, int[] years, int[] months, int[] days, int[] hours, int[] minutes, int[] seconds) {
@@ -334,7 +330,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         var thisObj = this;
         return {
             changeProperty: function (property, object, newValue) {
-                return thisObj.@GSimpleStateTableView::changeObjectProperty(*)(property, object, newValue);
+                return thisObj.@GSimpleStateTableView::changeProperty(*)(property, newValue, object);
             },
             changeDateTimeProperty: function (property, object, year, month, day, hour, minute, second) {
                 return thisObj.@GSimpleStateTableView::changeDateTimeProperty(*)(property, object, year, month, day, hour, minute, second);
@@ -387,10 +383,6 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
                 if (color)
                     return color.toString();
                 return null;
-            }, getKey: function (object) {
-                return thisObj.@GSimpleStateTableView::getKey(*)(object);
-            }, fromObject: function (object) {
-                return thisObj.@GStateTableView::fromObject(*)(object);
             }
         };
     }-*/;

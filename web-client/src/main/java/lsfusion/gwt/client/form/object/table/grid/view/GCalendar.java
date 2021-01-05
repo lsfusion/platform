@@ -81,7 +81,7 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
             eventOrder: 'start,index',
             eventChange: function (info) {
                 if (!@GCalendar::isUpdating) {
-                    changeProperties(info);
+                    changeDateProperties(info);
                 }
             },
             datesSet: function () {
@@ -102,7 +102,7 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
             @GCalendar::highlightEvent(*)(calendar, newEvent.extendedProps.key);
         }
 
-        function changeProperties(info) {
+        function changeDateProperties(info) {
             var currentEvent = info.event;
             var oldEvent = info.oldEvent;
             var currentEventStart = currentEvent.start;
@@ -117,7 +117,7 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
 
                 var controllerFunction = startFieldName.includes('dateTime') ? 'changeDateTimeProperties' : 'changeDateProperties';
 
-                var object = controller.fromObject(controller.getKey(info.event.extendedProps.object)); // из карты приходит GGroupObjectValue, из календаря JavaScriptObject. для того, чтобы приходило одинаково
+                var object = info.event.extendedProps.object;
                 controller[controllerFunction](endEventElement != null ? [startFieldName, endFieldName] : [startFieldName], endEventElement != null ? [object, object] : [object],
                     getChangeProperty(startEventElement, endEventElement, 'year'), getChangeProperty(startEventElement, endEventElement, 'month'),
                     getChangeProperty(startEventElement, endEventElement, 'day'), getChangeProperty(startEventElement, endEventElement, 'hour'),

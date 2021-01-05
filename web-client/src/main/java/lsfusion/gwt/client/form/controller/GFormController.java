@@ -1051,7 +1051,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         }
 
         if(changeRequestIndex == null)
-            changeRequestIndex = dispatcher.execute(new ChangeProperties(IDs, fullCurrentKeys, values, null), new ServerResponseCallback());
+            changeRequestIndex = dispatcher.execute(new ChangeProperties(IDs, fullCurrentKeys, values, new Long[propertiesLength]), new ServerResponseCallback());
 
         for (int i = 0; i < propertiesLength; i++) {
             GGroupObjectValue fullKey = GGroupObjectValue.getFullKey(rowKeys[i], columnKeys[i]);
@@ -1099,7 +1099,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
         controllers.get(object.groupObject).modifyGroupObject(value, add, -1);
 
-        long requestIndex = dispatcher.execute(new ChangeProperties(new int[]{property.ID}, new GGroupObjectValue[]{fullCurrentKey}, null, add ? new Long[]{ID} : null), new ServerResponseCallback());
+        long requestIndex = dispatcher.execute(new ChangeProperties(new int[]{property.ID}, new GGroupObjectValue[]{fullCurrentKey}, null, new Long[]{add ? ID : null}), new ServerResponseCallback());
         pendingChangeCurrentObjectsRequests.put(object.groupObject, requestIndex);
         pendingModifyObjectRequests.put(requestIndex, new ModifyObject(object, add, value, position));
     }

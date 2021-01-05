@@ -887,7 +887,7 @@ public class ClientFormController implements AsyncListener {
     }
 
     private ServerResponse changeProperty(RemoteFormInterface remoteForm, long requestIndex, long lastReceivedRequestIndex, int propertyID, byte[] fullCurrentKey, byte[] pushChange, Long pushAdd) throws RemoteException {
-        return remoteForm.changeProperties(requestIndex, lastReceivedRequestIndex, new int[]{propertyID}, new byte[][]{fullCurrentKey}, pushChange != null ? new byte[][]{pushChange} : null, pushAdd != null ? new Long[]{pushAdd} : null);
+        return remoteForm.changeProperties(requestIndex, lastReceivedRequestIndex, new int[]{propertyID}, new byte[][]{fullCurrentKey}, new byte[][]{pushChange}, new Long[]{pushAdd});
     }
 
     public boolean isAsyncModifyObject(ClientPropertyDraw property) {

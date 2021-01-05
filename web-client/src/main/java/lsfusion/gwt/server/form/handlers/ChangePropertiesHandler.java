@@ -60,7 +60,7 @@ public class ChangePropertiesHandler extends FormServerResponseActionHandler<Cha
                         action.lastReceivedRequestIndex,
                         action.propertyIds,
                         convertedFullKeys.toArray(new byte[convertedFullKeys.size()][]),
-                        pushChanges != null ? pushChanges.toArray(new byte[pushChanges.size()][]) : null,
+                        pushChanges != null ? pushChanges.toArray(new byte[pushChanges.size()][]) : new byte[][]{null},
                         action.addedObjectsIds
                 );
             }
