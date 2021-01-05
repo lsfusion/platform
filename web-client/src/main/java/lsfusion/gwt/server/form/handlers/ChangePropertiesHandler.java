@@ -33,34 +33,30 @@ public class ChangePropertiesHandler extends FormServerResponseActionHandler<Cha
         return getServerResponseResult(action, new RemoteCall() {
             public ServerResponse call(RemoteFormInterface remoteForm) throws RemoteException {
                 GGroupObjectValue[] fullKeys = action.fullKeys;
-                List<byte[]> convertedFullKeys = new ArrayList<>();
-                for (GGroupObjectValue fullKey : fullKeys) {
-                    convertedFullKeys.add(gwtConverter.convertOrCast(fullKey));
-                }
+                byte[][] convertedFullKeys = new byte[fullKeys.length][];
 
                 Serializable[] values = action.values;
-                List<byte[]> pushChanges = null;
+                byte[][] pushChanges = new byte[values.length][];
+                for (int i = 0; i < values.length; i++) {
+                    convertedFullKeys[i] = gwtConverter.convertOrCast(fullKeys[i]);
 
-                if (values != null) {
-                    pushChanges = new ArrayList<>();
-                    for (Serializable serializable : values) {
-                        Object value = gwtConverter.convertOrCast(serializable);
-                        byte[] pushChange;
-                        try {
-                            pushChange = serializeObject(gwtConverter.convertOrCast(value));
-                        } catch (IOException e) {
-                            throw Throwables.propagate(e);
-                        }
-                        pushChanges.add(pushChange);
+                    Serializable value = values[i];
+                    Object objectValue = gwtConverter.convertOrCast(value);
+                    byte[] pushChange;
+                    try {
+                        pushChange = serializeObject(gwtConverter.convertOrCast(objectValue));
+                    } catch (IOException e) {
+                        throw Throwables.propagate(e);
                     }
+                    pushChanges[i] = pushChange;
                 }
 
                 return remoteForm.changeProperties(
                         action.requestIndex,
                         action.lastReceivedRequestIndex,
                         action.propertyIds,
-                        convertedFullKeys.toArray(new byte[convertedFullKeys.size()][]),
-                        pushChanges != null ? pushChanges.toArray(new byte[pushChanges.size()][]) : new byte[][]{null},
+                        convertedFullKeys,
+                        pushChanges,
                         action.addedObjectsIds
                 );
             }

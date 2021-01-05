@@ -71,11 +71,11 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
     }
 
     protected void changePointProperty(JavaScriptObject object, Double lat, Double lng) {
-        changeProperties(new String[]{"latitude", "longitude"}, new Serializable[]{lat, lng}, new JavaScriptObject[]{object, object});
+        changeProperties(new String[]{"latitude", "longitude"}, new JavaScriptObject[]{object, object}, new Serializable[]{lat, lng});
     }
 
     protected void changePolygonProperty(JavaScriptObject object, JsArray<WrapperObject> latlngs) {
-        changeProperty("polygon", getPolygon(latlngs), object);
+        changeProperty("polygon", object, getPolygon(latlngs));
     }
 
     private static String getPolygon(JsArray<WrapperObject> latlngs) {
