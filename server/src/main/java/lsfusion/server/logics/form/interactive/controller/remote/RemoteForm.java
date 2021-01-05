@@ -670,7 +670,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
 
                 ObjectValue pushChangeObject = null;
                 DataClass pushChangeType = null;
-                if (pushChanges != null) {
+                if (pushChanges != null) { //
                     byte[] pushChange = pushChanges[j];
                     pushChangeType = propertyDraw.getEntity().getRequestInputType(form.entity, form.securityPolicy);
                     Object objectPushChange = deserializeObject(pushChange);
@@ -681,7 +681,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                 }
 
                 DataObject pushAddObject = null;
-                if (pushAdds != null) {
+                if (pushAdds != null) { //
                     pushAddObject = new DataObject(pushAdds[j], form.session.baseClass.unknown);
                 }
 

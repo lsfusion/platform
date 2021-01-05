@@ -71,7 +71,7 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
     }
 
     protected void changePointProperty(JavaScriptObject object, Double lat, Double lng) {
-        changeProperties(new String[]{"latitude", "longitude"}, new Serializable[]{lat, lng}, object);
+        changeProperties(new String[]{"latitude", "longitude"}, new Serializable[]{lat, lng}, new JavaScriptObject[]{object, object});
     }
 
     protected void changePolygonProperty(JavaScriptObject object, JsArray<WrapperObject> latlngs) {

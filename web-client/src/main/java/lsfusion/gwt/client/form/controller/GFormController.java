@@ -1037,15 +1037,15 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             if(rowKey.isEmpty())
                 return;
         }
-        changeProperties(new GPropertyDraw[]{property}, rowKey, new GGroupObjectValue[]{columnKey}, new Serializable[]{value}, new Object[]{oldValue}, changeRequestIndex);
+        changeProperties(new GPropertyDraw[]{property}, new GGroupObjectValue[]{rowKey}, new GGroupObjectValue[]{columnKey}, new Serializable[]{value}, new Object[]{oldValue}, changeRequestIndex);
     }
 
-    public void changeProperties(GPropertyDraw[] properties, GGroupObjectValue rowKey, GGroupObjectValue[] columnKeys, Serializable[] values, Object[] oldValues, Long changeRequestIndex) {
-        int[] IDs = new int[properties.length];
-        GGroupObjectValue[] fullCurrentKeys = new GGroupObjectValue[properties.length];
-
-        for (int i = 0; i < properties.length; i++) {
-            GGroupObjectValue fullKey = GGroupObjectValue.getFullKey(rowKey, columnKeys[i]);
+    public void changeProperties(GPropertyDraw[] properties, GGroupObjectValue[] rowKeys, GGroupObjectValue[] columnKeys, Serializable[] values, Object[] oldValues, Long changeRequestIndex) {
+        int propertiesLength = properties.length;
+        int[] IDs = new int[propertiesLength];
+        GGroupObjectValue[] fullCurrentKeys = new GGroupObjectValue[propertiesLength];
+        for (int i = 0; i < propertiesLength; i++) {
+            GGroupObjectValue fullKey = GGroupObjectValue.getFullKey(rowKeys[i], columnKeys[i]);
             IDs[i] = properties[i].ID;
             fullCurrentKeys[i] = getFullCurrentKey(fullKey);
         }
@@ -1053,8 +1053,8 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         if(changeRequestIndex == null)
             changeRequestIndex = dispatcher.execute(new ChangeProperties(IDs, fullCurrentKeys, values, null), new ServerResponseCallback());
 
-        for (int i = 0; i < properties.length; i++) {
-            GGroupObjectValue fullKey = GGroupObjectValue.getFullKey(rowKey, columnKeys[i]);
+        for (int i = 0; i < propertiesLength; i++) {
+            GGroupObjectValue fullKey = GGroupObjectValue.getFullKey(rowKeys[i], columnKeys[i]);
             putToDoubleNativeMap(pendingChangePropertyRequests, properties[i], fullKey, new Change(changeRequestIndex, values[i], oldValues[i], properties[i].canUseChangeValueForRendering()));
         }
     }

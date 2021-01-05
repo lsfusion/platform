@@ -117,7 +117,8 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
 
                 var controllerFunction = startFieldName.includes('dateTime') ? 'changeDateTimeProperties' : 'changeDateProperties';
 
-                controller[controllerFunction](endEventElement != null ? [startFieldName, endFieldName] : [startFieldName], info.event.extendedProps.object,
+                var object = controller.fromObject(controller.getKey(info.event.extendedProps.object)); // из карты приходит GGroupObjectValue, из календаря JavaScriptObject. для того, чтобы приходило одинаково
+                controller[controllerFunction](endEventElement != null ? [startFieldName, endFieldName] : [startFieldName], endEventElement != null ? [object, object] : [object],
                     getChangeProperty(startEventElement, endEventElement, 'year'), getChangeProperty(startEventElement, endEventElement, 'month'),
                     getChangeProperty(startEventElement, endEventElement, 'day'), getChangeProperty(startEventElement, endEventElement, 'hour'),
                     getChangeProperty(startEventElement, endEventElement, 'minute'), getChangeProperty(startEventElement, endEventElement, 'second'));
