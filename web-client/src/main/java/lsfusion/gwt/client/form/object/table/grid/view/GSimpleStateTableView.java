@@ -231,12 +231,12 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
     }
 
     protected void changeProperties(String[] properties, JavaScriptObject[] objects, Serializable[] newValues) {
-        int propertiesLength = properties.length;
-        GPropertyDraw[] gProperties = new GPropertyDraw[propertiesLength];
-        GGroupObjectValue[] columnKeys = new GGroupObjectValue[propertiesLength];
-        GGroupObjectValue[] rowKeys = new GGroupObjectValue[propertiesLength];
+        int length = properties.length;
+        GPropertyDraw[] gProperties = new GPropertyDraw[length];
+        GGroupObjectValue[] columnKeys = new GGroupObjectValue[length];
+        GGroupObjectValue[] rowKeys = new GGroupObjectValue[length];
 
-        for (int i = 0; i < propertiesLength; i++) {
+        for (int i = 0; i < length; i++) {
             Column column = columnMap.get(properties[i]);
             gProperties[i] = column.property;
             columnKeys[i] = column.columnKey;
@@ -280,18 +280,18 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
     }
 
     protected void changeDateTimeProperties(String[] properties, JavaScriptObject[] objects, int[] years, int[] months, int[] days, int[] hours, int[] minutes, int[] seconds) {
-        int objectsLength = objects.length;
-        GDateTimeDTO[] gDateTimeDTOs = new GDateTimeDTO[objectsLength];
-        for (int i = 0; i < objectsLength; i++) {
+        int length = objects.length;
+        GDateTimeDTO[] gDateTimeDTOs = new GDateTimeDTO[length];
+        for (int i = 0; i < length; i++) {
             gDateTimeDTOs[i] = new GDateTimeDTO(years[i], months[i], days[i], hours[i], minutes[i], seconds[i]);
         }
         changeProperties(properties, objects, gDateTimeDTOs);
     }
 
     protected void changeDateProperties(String[] properties, JavaScriptObject[] objects, int[] years, int[] months, int[] days) {
-        int objectsLength = objects.length;
-        GDateDTO[] gDateDTOs = new GDateDTO[objectsLength];
-        for (int i = 0; i < objectsLength; i++) {
+        int length = objects.length;
+        GDateDTO[] gDateDTOs = new GDateDTO[length];
+        for (int i = 0; i < length; i++) {
             gDateDTOs[i] = new GDateDTO(years[i], months[i], days[i]);
         }
         changeProperties(properties, objects, gDateDTOs);

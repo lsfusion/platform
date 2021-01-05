@@ -15,8 +15,6 @@ import net.customware.gwt.dispatch.server.ExecutionContext;
 import java.io.IOException;
 import java.io.Serializable;
 import java.rmi.RemoteException;
-import java.util.ArrayList;
-import java.util.List;
 
 import static lsfusion.base.BaseUtils.serializeObject;
 
@@ -32,13 +30,14 @@ public class ChangePropertiesHandler extends FormServerResponseActionHandler<Cha
     public ServerResponseResult executeEx(ChangeProperties action, ExecutionContext context) throws RemoteException, AppServerNotAvailableDispatchException {
         return getServerResponseResult(action, new RemoteCall() {
             public ServerResponse call(RemoteFormInterface remoteForm) throws RemoteException {
-                GGroupObjectValue[] fullKeys = action.fullKeys;
-                byte[][] convertedFullKeys = new byte[fullKeys.length][];
+                GGroupObjectValue[] actionFullKeys = action.fullKeys;
+                int length = actionFullKeys.length;
+                byte[][] fullKeys = new byte[length][];
 
                 Serializable[] values = action.values;
-                byte[][] pushChanges = new byte[values.length][];
-                for (int i = 0; i < values.length; i++) {
-                    convertedFullKeys[i] = gwtConverter.convertOrCast(fullKeys[i]);
+                byte[][] pushChanges = new byte[length][];
+                for (int i = 0; i < length; i++) {
+                    fullKeys[i] = gwtConverter.convertOrCast(actionFullKeys[i]);
 
                     Serializable value = values[i];
                     Object objectValue = gwtConverter.convertOrCast(value);
@@ -55,7 +54,7 @@ public class ChangePropertiesHandler extends FormServerResponseActionHandler<Cha
                         action.requestIndex,
                         action.lastReceivedRequestIndex,
                         action.propertyIds,
-                        convertedFullKeys,
+                        fullKeys,
                         pushChanges,
                         action.addedObjectsIds
                 );

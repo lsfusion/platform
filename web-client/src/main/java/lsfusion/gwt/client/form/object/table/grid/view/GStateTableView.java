@@ -433,9 +433,9 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     }
 
     protected void changeProperties(GPropertyDraw[] properties, GGroupObjectValue[] rowKeys, GGroupObjectValue[] columnKeys, Serializable[] newValues) {
-        int propertiesLength = properties.length;
-        Object[] oldValues = new Object[propertiesLength];
-        for (int i = 0; i < propertiesLength; i++) {
+        int length = properties.length;
+        Object[] oldValues = new Object[length];
+        for (int i = 0; i < length; i++) {
             oldValues[i] = getValue(properties[i], rowKeys[i], columnKeys[i]);
         }
 

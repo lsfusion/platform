@@ -1041,19 +1041,19 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     public void changeProperties(GPropertyDraw[] properties, GGroupObjectValue[] rowKeys, GGroupObjectValue[] columnKeys, Serializable[] values, Object[] oldValues, Long changeRequestIndex) {
-        int propertiesLength = properties.length;
-        int[] IDs = new int[propertiesLength];
-        GGroupObjectValue[] fullCurrentKeys = new GGroupObjectValue[propertiesLength];
-        for (int i = 0; i < propertiesLength; i++) {
+        int length = properties.length;
+        int[] IDs = new int[length];
+        GGroupObjectValue[] fullCurrentKeys = new GGroupObjectValue[length];
+        for (int i = 0; i < length; i++) {
             GGroupObjectValue fullKey = GGroupObjectValue.getFullKey(rowKeys[i], columnKeys[i]);
             IDs[i] = properties[i].ID;
             fullCurrentKeys[i] = getFullCurrentKey(fullKey);
         }
 
         if(changeRequestIndex == null)
-            changeRequestIndex = dispatcher.execute(new ChangeProperties(IDs, fullCurrentKeys, values, new Long[propertiesLength]), new ServerResponseCallback());
+            changeRequestIndex = dispatcher.execute(new ChangeProperties(IDs, fullCurrentKeys, values, new Long[length]), new ServerResponseCallback());
 
-        for (int i = 0; i < propertiesLength; i++) {
+        for (int i = 0; i < length; i++) {
             GGroupObjectValue fullKey = GGroupObjectValue.getFullKey(rowKeys[i], columnKeys[i]);
             putToDoubleNativeMap(pendingChangePropertyRequests, properties[i], fullKey, new Change(changeRequestIndex, values[i], oldValues[i], properties[i].canUseChangeValueForRendering()));
         }
