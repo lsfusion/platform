@@ -4738,8 +4738,12 @@ setObjectPropertyStatement[Object propertyReceiver] returns [String id, Object v
 	:	ID EQ componentPropertyValue ';'  { setObjectProperty($propertyReceiver, $ID.text, $componentPropertyValue.value); }
 	;
 
-componentPropertyValue returns [Object value]
-	:   dim=dimensionLiteral { $value = $dim.val; }
+componentPropertyValue returns [Object value] //commented literals are in designPropertyObject
+	:   //c=colorLiteral { $value = $c.val; }
+	//|   i=intLiteral { $value = $i.val; }
+	//|   l=longLiteral { $value = $l.val; }
+	//|   d=doubleLiteral { $value = $d.val; }
+	|   dim=dimensionLiteral { $value = $dim.val; }
 	|   b=booleanLiteral { $value = $b.val; }
 	|   intB=boundsIntLiteral { $value = $intB.val; }
 	|   doubleB=boundsDoubleLiteral { $value = $doubleB.val; }
