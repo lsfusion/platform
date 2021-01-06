@@ -916,32 +916,16 @@ formPropertyObject returns [PropertyObjectEntity property = null]
 	:   fd = designOrFormPropertyObject[null] { $property = $fd.property; }	
 	;
 
-designPropertyObjectOrLiteral returns [PropertyObjectEntity property = null, Object literal]
-	:   fd = designOrFormPropertyObjectOrLiteral[$designStatement::design] { $property = $fd.property; $literal = $fd.literal; }
+designPropertyObject returns [PropertyObjectEntity property = null, Object literal]
+	:   fd = designOrFormPropertyObject[$designStatement::design] { $property = $fd.property; $literal = $fd.literal; }
 	;
 
 // may be used in design
-designOrFormPropertyObject[ScriptingFormView design] returns [PropertyObjectEntity property = null]
+designOrFormPropertyObject[ScriptingFormView design] returns [PropertyObjectEntity property = null, Object literal]
 @init {
     AbstractFormPropertyUsage propUsage = null;
 }
-	:	expr=designOrFormExprDeclaration[design, null] { propUsage = new FormLPUsage($expr.property, $expr.mapping); }
-		{
-			if (inMainParseState()) {
-			    if(design != null)
-			        $property = design.addPropertyObject(propUsage);
-                else
-				    $property = $formStatement::form.addPropertyObject(propUsage);
-			}
-		}
-	;
-
-// may be used in design
-designOrFormPropertyObjectOrLiteral[ScriptingFormView design] returns [PropertyObjectEntity property = null, Object literal]
-@init {
-    AbstractFormPropertyUsage propUsage = null;
-}
-	:	expr=designOrFormExprDeclarationOrLiteral[design, null] { propUsage = new FormLPUsage($expr.property, $expr.mapping); $literal = $expr.literal; }
+	:	expr=designOrFormExprDeclaration[design, null] { propUsage = new FormLPUsage($expr.property, $expr.mapping); $literal = $expr.literal; }
 		{
 			if (inMainParseState()) {
 			    if(design != null)
@@ -1215,28 +1199,7 @@ formExprDeclaration[List<TypedParameter> extraContext] returns [LP property, ImO
     :   dfe = designOrFormExprDeclaration[null, extraContext] { $property = $dfe.property; $mapping = $dfe.mapping; $signature = $dfe.signature; }
     ;
 
-designOrFormExprDeclaration[ScriptingFormView design, List<TypedParameter> extraContext] returns [LP property, ImOrderSet<String> mapping, List<ResolveClassSet> signature]
-@init {
-	List<TypedParameter> context = new ArrayList<>();
-	if (inMainParseState()) {
-	    if(design != null)
-	        context = design.getTypedObjectsNames(self.getVersion());
-	    else
-		    context = $formStatement::form.getTypedObjectsNames(self.getVersion());
-	}
-	if(extraContext != null)
-	    context.addAll(extraContext);
-}
-@after {
-	if (inMainParseState()) {
-		$mapping = self.getUsedNames(context, $expr.property.usedParams);
-		$signature = self.getUsedClasses(context, $expr.property.usedParams);
-	}	
-}
-	:	expr=propertyExpression[context, false] { if (inMainParseState()) { $property = self.checkSingleParam($expr.property).getLP(); } }
-	;
-
-designOrFormExprDeclarationOrLiteral[ScriptingFormView design, List<TypedParameter> extraContext] returns [LP property, ImOrderSet<String> mapping, List<ResolveClassSet> signature, Object literal]
+designOrFormExprDeclaration[ScriptingFormView design, List<TypedParameter> extraContext] returns [LP property, ImOrderSet<String> mapping, List<ResolveClassSet> signature, Object literal]
 @init {
 	List<TypedParameter> context = new ArrayList<>();
 	if (inMainParseState()) {
@@ -1472,7 +1435,7 @@ propertyExpressionOrTrivialLA[List<TypedParameter> context] returns [LPWithParam
 
 propertyExpressionOrLiteral[List<TypedParameter> context] returns [LPWithParams property, LPLiteral literal]
     :   exprOrNotExpr=propertyExpressionOrNot[context, false, false] { $property = $exprOrNotExpr.property;  }
-        { if(inMainParseState()) { $literal = (LPLiteral) $exprOrNotExpr.ci; } }
+        { if(inMainParseState()) { $literal = self.checkLiteralInExpr($exprOrNotExpr.ci); } }
 ;
 
 propertyExpressionOrNot[List<TypedParameter> context, boolean dynamic, boolean needFullContext] returns [LPWithParams property, LPNotExpr ci]
@@ -4787,7 +4750,7 @@ componentPropertyValue returns [Object value]
 	|   doubleB=boundsDoubleLiteral { $value = $doubleB.val; }
 	|   contType=containerTypeLiteral { $value = $contType.val; }
 	|   alignment=flexAlignmentLiteral { $value = $alignment.val; }
-	|   prop=designPropertyObjectOrLiteral { $value = BaseUtils.nvl($prop.literal, $prop.property); }
+	|   prop=designPropertyObject { $value = BaseUtils.nvl($prop.literal, $prop.property); }
 	;
 
 

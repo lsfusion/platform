@@ -4751,8 +4751,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         checks.checkCIInExpr(ci);
         return ci instanceof LPTrivialLA ? (LPTrivialLA)ci : null;
     }
-    public LPLiteral checkNotLiteralInExpr(LPNotExpr ci) {
-        return (LPLiteral)ci;
+    public LPLiteral checkLiteralInExpr(LPNotExpr ci) {
+        return ci instanceof LPLiteral ? (LPLiteral)ci : null;
     }
     public LPContextIndependent checkTLAInExpr(LPWithParams lp, LPNotExpr ci) throws ScriptingErrorLog.SemanticErrorException {
         if(lp == null) // checking action
