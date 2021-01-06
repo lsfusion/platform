@@ -37,7 +37,6 @@ import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
 import lsfusion.gwt.client.form.property.*;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.interop.base.view.FlexAlignment;
-import lsfusion.interop.form.design.Alignment;
 import lsfusion.interop.form.design.ContainerType;
 import lsfusion.interop.form.design.FontInfo;
 import lsfusion.interop.form.event.BindingMode;
@@ -103,26 +102,15 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         return component;
     }
 
-    private GAlignment convertAlignment(Alignment alignment) {
-        switch (alignment) {
-            case START: return GAlignment.START;
-            case CENTER: return GAlignment.CENTER;
-            case END: return GAlignment.END;
-        }
-        throw new IllegalStateException("Unknown alignment");
-    }
-
     private GFlexAlignment convertFlexAlignment(FlexAlignment alignment) {
         if (alignment == null) {
             return null;
         }
-        switch (alignment) {
-            case START: return GFlexAlignment.START;
-            case CENTER: return GFlexAlignment.CENTER;
-            case END: return GFlexAlignment.END;
-            case STRETCH: return GFlexAlignment.STRETCH;
+        try {
+            return GFlexAlignment.valueOf(alignment.name());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalStateException("Unknown alignment");
         }
-        throw new IllegalStateException("Unknown alignment");
     }
 
     public GFont convertFont(FontInfo clientFont) {
@@ -156,7 +144,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
 
         container.caption = clientContainer.caption;
         container.type = convertContainerType(clientContainer.getType());
-        container.childrenAlignment = convertAlignment(clientContainer.childrenAlignment);
+        container.childrenAlignment = convertFlexAlignment(clientContainer.childrenAlignment);
         container.columns = clientContainer.columns;
 
         for (ClientComponent child : clientContainer.children) {

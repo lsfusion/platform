@@ -3,7 +3,7 @@
     <parent>
         <groupId>lsfusion.platform.build</groupId>
         <artifactId>platform-base</artifactId>
-        <version>4.0-SNAPSHOT</version>
+        <version>5.0-SNAPSHOT</version>
         <relativePath>../build/platform-base/pom.xml</relativePath>
     </parent>
 
@@ -130,6 +130,14 @@
         <dependency>
             <groupId>jakarta.activation</groupId>
             <artifactId>jakarta.activation-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.google.zxing</groupId>
+            <artifactId>core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.google.zxing</groupId>
+            <artifactId>javase</artifactId>
         </dependency>
     </dependencies>
 </project>

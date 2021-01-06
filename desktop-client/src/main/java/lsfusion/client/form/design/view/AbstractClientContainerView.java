@@ -3,7 +3,7 @@ package lsfusion.client.form.design.view;
 import lsfusion.base.BaseUtils;
 import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.design.ClientContainer;
-import lsfusion.interop.form.design.Alignment;
+import lsfusion.interop.base.view.FlexAlignment;
 
 import javax.swing.*;
 import java.awt.*;
@@ -100,7 +100,7 @@ public abstract class AbstractClientContainerView implements ClientContainerView
     }
 
     public class ContainerViewPanel extends JComponentPanel {
-        public ContainerViewPanel(boolean vertical, Alignment alignment) {
+        public ContainerViewPanel(boolean vertical, FlexAlignment alignment) {
             super(vertical, alignment);
             initBorder();
         }

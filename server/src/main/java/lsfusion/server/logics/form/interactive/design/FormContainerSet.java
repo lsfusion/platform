@@ -1,12 +1,10 @@
 package lsfusion.server.logics.form.interactive.design;
 
 import lsfusion.interop.base.view.FlexAlignment;
-import lsfusion.interop.form.design.Alignment;
 import lsfusion.interop.form.design.ContainerFactory;
 import lsfusion.interop.form.design.ContainerType;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
-import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 public class FormContainerSet {
     public static final String BOX_CONTAINER = "BOX";
@@ -89,14 +87,14 @@ public class FormContainerSet {
         set.toolbarLeftContainer = contFactory.createContainer();
         set.toolbarLeftContainer.setSID(DefaultFormView.getToolbarLeftContainerSID());
         set.toolbarLeftContainer.setType(ContainerType.CONTAINERH);
-        set.toolbarLeftContainer.childrenAlignment = Alignment.START;
+        set.toolbarLeftContainer.childrenAlignment = FlexAlignment.START;
         set.toolbarLeftContainer.setFlex(0);
         set.toolbarLeftContainer.setAlignment(FlexAlignment.STRETCH);
 
         set.toolbarRightContainer = contFactory.createContainer();
         set.toolbarRightContainer.setSID(DefaultFormView.getToolbarRightContainerSID());
         set.toolbarRightContainer.setType(ContainerType.CONTAINERH);
-        set.toolbarRightContainer.childrenAlignment = Alignment.END;
+        set.toolbarRightContainer.childrenAlignment = FlexAlignment.END;
         set.toolbarRightContainer.setFlex(1);
         set.toolbarRightContainer.setAlignment(FlexAlignment.STRETCH);
 

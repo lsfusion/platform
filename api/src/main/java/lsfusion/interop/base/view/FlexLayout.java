@@ -1,23 +1,19 @@
 package lsfusion.interop.base.view;
 
-import lsfusion.interop.form.design.Alignment;
 import lsfusion.interop.form.design.CachableLayout;
 
 import java.awt.*;
 import java.util.HashMap;
 import java.util.Map;
 
-import static lsfusion.interop.form.design.Alignment.CENTER;
-import static lsfusion.interop.form.design.Alignment.START;
-
 public class FlexLayout extends CachableLayout<FlexConstraints> {
 
     private final boolean vertical;
-    private final Alignment alignment;
+    private final FlexAlignment alignment;
 
     protected final Map<Component, FlexConstraints> constraintsMap;
 
-    public FlexLayout(Container target, boolean vertical, Alignment alignment) {
+    public FlexLayout(Container target, boolean vertical, FlexAlignment alignment) {
         super(target);
         this.vertical = vertical;
         this.alignment = alignment;
@@ -86,8 +82,8 @@ public class FlexLayout extends CachableLayout<FlexConstraints> {
         int fillSpace = Math.max(0, vertical ? parentHeight - totalSize : parentWidth - totalSize);
 
         //All alignment
-        if (totalFlex == 0 && alignment != START && fillSpace > 0) {
-            int alignmentOffset = alignment == CENTER ? fillSpace / 2 : fillSpace;
+        if (totalFlex == 0 && alignment != FlexAlignment.START && fillSpace > 0) {
+            int alignmentOffset = alignment == FlexAlignment.CENTER ? fillSpace / 2 : fillSpace;
             if (vertical) {
                 in.top += alignmentOffset;
             } else {

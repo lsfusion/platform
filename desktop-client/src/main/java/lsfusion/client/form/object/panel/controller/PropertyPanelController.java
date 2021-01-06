@@ -8,8 +8,8 @@ import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.cell.classes.view.ImagePropertyRenderer;
 import lsfusion.client.form.property.panel.view.PanelView;
+import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.base.view.FlexConstraints;
-import lsfusion.interop.form.design.Alignment;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
@@ -50,7 +50,7 @@ public class PropertyPanelController {
             }
         });
 
-        viewsPanel = new JComponentPanel(property.panelColumnVertical, Alignment.START);
+        viewsPanel = new JComponentPanel(property.panelColumnVertical, FlexAlignment.START);
     }
 
     public boolean forceEdit() {

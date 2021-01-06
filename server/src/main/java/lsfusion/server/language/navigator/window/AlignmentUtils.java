@@ -1,12 +1,12 @@
 package lsfusion.server.language.navigator.window;
 
-import lsfusion.interop.form.design.Alignment;
+import lsfusion.interop.base.view.FlexAlignment;
 
 import javax.swing.*;
 
 public class AlignmentUtils {
 
-    public static float asVerticalToolbarAlign(Alignment vAlign) {
+    public static float asVerticalToolbarAlign(FlexAlignment vAlign) {
         switch (vAlign) {
             case START: return JToolBar.TOP_ALIGNMENT;
             case CENTER: return JToolBar.CENTER_ALIGNMENT;
@@ -15,7 +15,7 @@ public class AlignmentUtils {
         throw new IllegalStateException("wrong enum value");
     }
 
-    public static int asVerticalTextPosition(Alignment vAlign) {
+    public static int asVerticalTextPosition(FlexAlignment vAlign) {
         switch (vAlign) {
             case START: return SwingConstants.TOP;
             case CENTER: return SwingConstants.CENTER;
@@ -24,7 +24,7 @@ public class AlignmentUtils {
         throw new IllegalStateException("wrong enum value");
     }
 
-    public static float asHorizontalToolbarAlign(Alignment hAlign) {
+    public static float asHorizontalToolbarAlign(FlexAlignment hAlign) {
         switch (hAlign) {
             case START: return JToolBar.LEFT_ALIGNMENT;
             case CENTER: return JToolBar.CENTER_ALIGNMENT;
@@ -33,7 +33,7 @@ public class AlignmentUtils {
         throw new IllegalStateException("wrong enum value");
     }
 
-    public static int asHorizontalTextPosition(Alignment hAlign) {
+    public static int asHorizontalTextPosition(FlexAlignment hAlign) {
         switch (hAlign) {
             case START: return SwingUtilities.LEADING;
             case CENTER: return SwingConstants.CENTER;

@@ -5,7 +5,6 @@ import lsfusion.client.form.object.table.ClientToolbar;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.base.view.FlexConstraints;
 import lsfusion.interop.base.view.FlexLayout;
-import lsfusion.interop.form.design.Alignment;
 
 import javax.swing.*;
 import java.awt.*;
@@ -14,7 +13,7 @@ public class ToolbarView extends JComponentPanel {
     private JPanel mainPanel;
 
     public ToolbarView(ClientToolbar toolbar) {
-        setLayout(new FlexLayout(this, false, Alignment.START));
+        setLayout(new FlexLayout(this, false, FlexAlignment.START));
         initBottomContainer();
         toolbar.installMargins(this);
     }

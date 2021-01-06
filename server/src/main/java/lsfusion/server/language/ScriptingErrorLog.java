@@ -153,6 +153,10 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, format("can't insert '%s' after or before '%s' in '%s'", element, anchorElement, parentElement));
     }
 
+    public void emitIllegalGridPropertyMoveError(ScriptParser parser, String element) throws SemanticErrorException {
+        emitSimpleError(parser, format("can't move '%s' because it should be in panel instead of grid", element));
+    }
+
     public void emitIllegalNavigatorElementMoveError(ScriptParser parser, String element, String parentElement) throws SemanticErrorException {
         emitSimpleError(parser, format("can't move '%s' because it's not a direct child of '%s'", element, parentElement));
     }
