@@ -1435,7 +1435,7 @@ propertyExpressionOrTrivialLA[List<TypedParameter> context] returns [LPWithParam
 
 propertyExpressionOrLiteral[List<TypedParameter> context] returns [LPWithParams property, LPLiteral literal]
     :   exprOrNotExpr=propertyExpressionOrNot[context, false, false] { $property = $exprOrNotExpr.property;  }
-        { if(inMainParseState()) { $literal = self.checkLiteralInExpr($exprOrNotExpr.ci); } }
+        { if(inMainParseState()) { $literal = self.checkLiteralInExpr($exprOrNotExpr.property, $exprOrNotExpr.ci); } }
 ;
 
 propertyExpressionOrNot[List<TypedParameter> context, boolean dynamic, boolean needFullContext] returns [LPWithParams property, LPNotExpr ci]
@@ -4739,12 +4739,7 @@ setObjectPropertyStatement[Object propertyReceiver] returns [String id, Object v
 	;
 
 componentPropertyValue returns [Object value]
-	:   c=colorLiteral { $value = $c.val; }
-	//|   s=localizedStringLiteral { $value = $s.val; }
-	|   i=intLiteral { $value = $i.val; }
-	|   l=longLiteral { $value = $l.val; }
-	|   d=doubleLiteral { $value = $d.val; }
-	|   dim=dimensionLiteral { $value = $dim.val; }
+	:   dim=dimensionLiteral { $value = $dim.val; }
 	|   b=booleanLiteral { $value = $b.val; }
 	|   intB=boundsIntLiteral { $value = $intB.val; }
 	|   doubleB=boundsDoubleLiteral { $value = $doubleB.val; }

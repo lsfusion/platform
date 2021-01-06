@@ -4743,7 +4743,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LPNotExpr checkNotExprInExpr(LPWithParams lp, LPNotExpr ci) throws ScriptingErrorLog.SemanticErrorException {
-        //checkCIInExpr(ci);
+        checkCIInExpr(ci);
         checkTLAInExpr(lp, ci);
         return null; // dropping notExpr
     }
@@ -4751,7 +4751,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         checks.checkCIInExpr(ci);
         return ci instanceof LPTrivialLA ? (LPTrivialLA)ci : null;
     }
-    public LPLiteral checkLiteralInExpr(LPNotExpr ci) {
+    public LPLiteral checkLiteralInExpr(LPWithParams lp, LPNotExpr ci) throws ScriptingErrorLog.SemanticErrorException {
+        checkNotExprInExpr(lp, ci);
         return ci instanceof LPLiteral ? (LPLiteral)ci : null;
     }
     public LPContextIndependent checkTLAInExpr(LPWithParams lp, LPNotExpr ci) throws ScriptingErrorLog.SemanticErrorException {
