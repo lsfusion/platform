@@ -308,10 +308,10 @@ public class RemoteFormProxy extends RemoteRequestObjectProxy<RemoteFormInterfac
         return result;
     }
 
-    public ServerResponse changeProperty(long requestIndex, long lastReceivedRequestIndex, int propertyID, byte[] fullKey, byte[] pushChange, Long pushAdd) throws RemoteException {
-        logRemoteMethodStartCall("changeProperty");
-        ServerResponse result = target.changeProperty(requestIndex, lastReceivedRequestIndex, propertyID, fullKey, pushChange, pushAdd);
-        logRemoteMethodEndCall("changeProperty", result);
+    public ServerResponse changeProperties(long requestIndex, long lastReceivedRequestIndex, int[] propertyIDs, byte[][] fullKeys, byte[][] pushChanges, Long[] pushAdds) throws RemoteException {
+        logRemoteMethodStartCall("changeProperties");
+        ServerResponse result = target.changeProperties(requestIndex, lastReceivedRequestIndex, propertyIDs, fullKeys, pushChanges, pushAdds);
+        logRemoteMethodEndCall("changeProperties", result);
         return result;
     }
 }

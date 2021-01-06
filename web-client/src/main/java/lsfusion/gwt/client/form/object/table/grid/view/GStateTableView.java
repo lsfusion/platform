@@ -432,8 +432,14 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
         return values.get(properties.indexOf(property)).get(GGroupObjectValue.getFullKey(rowKey, columnKey));
     }
 
-    protected void changeProperty(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey, Serializable newValue) {
-        form.changeProperty(property, rowKey, columnKey, newValue, getValue(property, rowKey, columnKey), null);
+    protected void changeProperties(GPropertyDraw[] properties, GGroupObjectValue[] rowKeys, GGroupObjectValue[] columnKeys, Serializable[] newValues) {
+        int length = properties.length;
+        Object[] oldValues = new Object[length];
+        for (int i = 0; i < length; i++) {
+            oldValues[i] = getValue(properties[i], rowKeys[i], columnKeys[i]);
+        }
+
+        form.changeProperties(properties, rowKeys, columnKeys, newValues, oldValues, null);
     }
 
     protected boolean isReadOnly(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {
