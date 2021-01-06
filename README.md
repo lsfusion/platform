@@ -5,7 +5,7 @@
 
 # lsFusion <a href="http://lsfusion.org" target="_blank"><img src="https://lsfusion.org/themes/lsfusion/assets/images/i-logo-lsfusion.svg" align="right"/></a>  
 
-lsFusion is a free open-source information systems development platform based on the fifth-generation programming language of the same name.
+lsFusion is a free open-source platform for information systems development based on the fifth-generation programming language of the same name.
 
 Incremental computing, function-level, reactive, and event-based programming, the ability to write and iterate over all function values, multiple inheritance and polymorphism, no encapsulation, and lots of other fundamentally new ideas greatly improve the development speed, quality, and performance of created systems compared to traditional approaches.
 
