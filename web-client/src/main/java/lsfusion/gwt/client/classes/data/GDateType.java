@@ -59,18 +59,11 @@ public class GDateType extends GFormatType<DateTimeFormat> {
     public static Date parseDate(String value, DateTimeFormat... formats) throws ParseException {
         for (DateTimeFormat format : formats) {
             try {
-                Date date = format.parse(value);
-                if(isValidDate(date))
-                    return date;
+                return format.parseStrict(value);
             } catch (IllegalArgumentException ignore) {
             }
         }
         throw new ParseException("string " + value + "can not be converted to date", 0);
     }
-
-    private static native boolean isValidDate(Date d)/*-{
-        var date = new Date(d);
-        return date instanceof Date && !isNaN(date);
-    }-*/;
 
 }
