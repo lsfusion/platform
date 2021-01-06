@@ -1073,6 +1073,14 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
+    public static class LPLiteral extends LPNotExpr {
+        public final Object value;
+
+        public LPLiteral(Object value) {
+            this.value = value;
+        }
+    }
+
     private List<String> getParamNamesFromTypedParams(List<TypedParameter> params) {
         List<String> paramNames = new ArrayList<>();
         for (TypedParameter param : params) {
@@ -3030,22 +3038,23 @@ public class ScriptingLogicsModule extends LogicsModule {
         return StringClass.getv(new ExtInt(value.getSourceString().length()));
     }
 
-    public LP addConstantProp(ConstType type, Object value) throws ScriptingErrorLog.SemanticErrorException {
+    public Pair<LP, LPLiteral> addConstantProp(ConstType type, Object value) throws ScriptingErrorLog.SemanticErrorException {
+        LP lp = null;
         switch (type) {
-            case INT: return addUnsafeCProp(IntegerClass.instance, value);
-            case LONG: return addUnsafeCProp(LongClass.instance, value);
-            case NUMERIC: return addNumericConst((String) value);
-            case REAL: return addUnsafeCProp(DoubleClass.instance, value);
-            case STRING: return addUnsafeCProp(getStringConstClass((LocalizedString)value), value);
-            case LOGICAL: return addUnsafeCProp(LogicalClass.instance, value);
-            case DATE: return addUnsafeCProp(DateClass.instance, value);
-            case DATETIME: return addUnsafeCProp(DateTimeClass.instance, value);
-            case TIME: return addUnsafeCProp(TimeClass.instance, value);
-            case STATIC: return addStaticClassConst((String) value);
-            case COLOR: return addUnsafeCProp(ColorClass.instance, value);
-            case NULL: return baseLM.vnull;
+            case INT: lp = addUnsafeCProp(IntegerClass.instance, value); break;
+            case LONG: lp =  addUnsafeCProp(LongClass.instance, value); break;
+            case NUMERIC: lp =  addNumericConst((String) value); break;
+            case REAL: lp =  addUnsafeCProp(DoubleClass.instance, value); break;
+            case STRING: lp =  addUnsafeCProp(getStringConstClass((LocalizedString)value), value); break;
+            case LOGICAL: lp =  addUnsafeCProp(LogicalClass.instance, value); break;
+            case DATE: lp =  addUnsafeCProp(DateClass.instance, value); break;
+            case DATETIME: lp =  addUnsafeCProp(DateTimeClass.instance, value); break;
+            case TIME: lp =  addUnsafeCProp(TimeClass.instance, value); break;
+            case STATIC: lp =  addStaticClassConst((String) value); break;
+            case COLOR: lp =  addUnsafeCProp(ColorClass.instance, value); break;
+            case NULL: lp =  baseLM.vnull; break;
         }
-        return null;
+        return Pair.create(lp, new LPLiteral(value));
     }
 
     private LP addNumericConst(String value) {
@@ -4734,13 +4743,16 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LPNotExpr checkNotExprInExpr(LPWithParams lp, LPNotExpr ci) throws ScriptingErrorLog.SemanticErrorException {
-        checkCIInExpr(ci);
+        //checkCIInExpr(ci);
         checkTLAInExpr(lp, ci);
         return null; // dropping notExpr
     }
     public LPTrivialLA checkCIInExpr(LPNotExpr ci) throws ScriptingErrorLog.SemanticErrorException {
         checks.checkCIInExpr(ci);
-        return (LPTrivialLA)ci;
+        return ci instanceof LPTrivialLA ? (LPTrivialLA)ci : null;
+    }
+    public LPLiteral checkNotLiteralInExpr(LPNotExpr ci) {
+        return (LPLiteral)ci;
     }
     public LPContextIndependent checkTLAInExpr(LPWithParams lp, LPNotExpr ci) throws ScriptingErrorLog.SemanticErrorException {
         if(lp == null) // checking action
