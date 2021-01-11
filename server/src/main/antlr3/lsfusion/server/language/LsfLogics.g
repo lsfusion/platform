@@ -3,6 +3,7 @@ grammar LsfLogics;
 @header {
 	package lsfusion.server.language;
 
+    import lsfusion.base.BaseUtils;
     import lsfusion.base.Pair;
     import lsfusion.base.col.heavy.OrderedMap;
     import lsfusion.base.col.interfaces.immutable.ImOrderSet;
@@ -914,16 +915,16 @@ formPropertyObject returns [PropertyObjectEntity property = null]
 	:   fd = designOrFormPropertyObject[null] { $property = $fd.property; }	
 	;
 
-designPropertyObject returns [PropertyObjectEntity property = null]
-	:   fd = designOrFormPropertyObject[$designStatement::design] { $property = $fd.property; }
+designPropertyObject returns [PropertyObjectEntity property = null, Object literal]
+	:   fd = designOrFormPropertyObject[$designStatement::design] { $property = $fd.property; $literal = $fd.literal; }
 	;
 
 // may be used in design
-designOrFormPropertyObject[ScriptingFormView design] returns [PropertyObjectEntity property = null]
+designOrFormPropertyObject[ScriptingFormView design] returns [PropertyObjectEntity property = null, Object literal]
 @init {
     AbstractFormPropertyUsage propUsage = null;
 }
-	:	expr=designOrFormExprDeclaration[design, null] { propUsage = new FormLPUsage($expr.property, $expr.mapping); }
+	:	expr=designOrFormExprDeclaration[design, null] { propUsage = new FormLPUsage($expr.property, $expr.mapping); $literal = $expr.literal; }
 		{
 			if (inMainParseState()) {
 			    if(design != null)
@@ -1197,7 +1198,7 @@ formExprDeclaration[List<TypedParameter> extraContext] returns [LP property, ImO
     :   dfe = designOrFormExprDeclaration[null, extraContext] { $property = $dfe.property; $mapping = $dfe.mapping; $signature = $dfe.signature; }
     ;
 
-designOrFormExprDeclaration[ScriptingFormView design, List<TypedParameter> extraContext] returns [LP property, ImOrderSet<String> mapping, List<ResolveClassSet> signature]
+designOrFormExprDeclaration[ScriptingFormView design, List<TypedParameter> extraContext] returns [LP property, ImOrderSet<String> mapping, List<ResolveClassSet> signature, Object literal]
 @init {
 	List<TypedParameter> context = new ArrayList<>();
 	if (inMainParseState()) {
@@ -1211,11 +1212,14 @@ designOrFormExprDeclaration[ScriptingFormView design, List<TypedParameter> extra
 }
 @after {
 	if (inMainParseState()) {
+		if($expr.literal != null)
+		    $literal = $expr.literal.value;
+
 		$mapping = self.getUsedNames(context, $expr.property.usedParams);
 		$signature = self.getUsedClasses(context, $expr.property.usedParams);
 	}	
 }
-	:	expr=propertyExpression[context, false] { if (inMainParseState()) { $property = self.checkSingleParam($expr.property).getLP(); } }
+	:	expr=propertyExpressionOrLiteral[context] { if (inMainParseState()) { $property = self.checkSingleParam($expr.property).getLP(); } }
 	;
 
 formExprOrTrivialLADeclaration returns [LP property, ImOrderSet<String> mapping, List<ResolveClassSet> signature, FormActionOrPropertyUsage fu]
@@ -1428,19 +1432,22 @@ propertyExpressionOrTrivialLA[List<TypedParameter> context] returns [LPWithParam
         { if(inMainParseState()) { $la = self.checkCIInExpr($exprOrNotExpr.ci); } }
 ;
 
+propertyExpressionOrLiteral[List<TypedParameter> context] returns [LPWithParams property, LPLiteral literal]
+    :   exprOrNotExpr=propertyExpressionOrNot[context, false, false] { $property = $exprOrNotExpr.property;  }
+        { if(inMainParseState()) { $literal = self.checkLiteralInExpr($exprOrNotExpr.property, $exprOrNotExpr.ci); } }
+;
+
 propertyExpressionOrNot[List<TypedParameter> context, boolean dynamic, boolean needFullContext] returns [LPWithParams property, LPNotExpr ci]
 @init {
 	DebugInfo.DebugPoint point = getCurrentDebugPoint();
 }
 @after{
     if (inMainParseState()) {
-        if($ci == null)
-            $property = self.propertyExpressionCreated($property, context, needFullContext);
-
         LP propertyCreated = null;
-        if($property != null)
+        if($property != null) {
+            $property = self.propertyExpressionCreated($property, context, needFullContext);
             propertyCreated = $property.getLP();
-        else if(!($ci instanceof LPTrivialLA))
+        } else if(!($ci instanceof LPTrivialLA))
             propertyCreated = ((LPContextIndependent)$ci).property;
         self.propertyDefinitionCreated(propertyCreated, point);
     }
@@ -1725,7 +1732,7 @@ expressionFriendlyPD[List<TypedParameter> context, boolean dynamic] returns [LPW
 	|	signDef=signaturePropertyDefinition[context, dynamic] { $property = $signDef.property; }
 	|	activeTabDef=activeTabPropertyDefinition[context, dynamic] { $property = $activeTabDef.property; }
 	|	roundProp=roundPropertyDefinition[context, dynamic] { $property = $roundProp.property; }
-	|	constDef=constantProperty { $property = new LPWithParams($constDef.property); }
+	|	constDef=constantProperty { $property = new LPWithParams($constDef.property); $ci = $constDef.literal; }
 	;
 
 contextIndependentPD[List<TypedParameter> context, boolean dynamic, boolean innerPD] returns [LP property, List<ResolveClassSet> signature, List<Integer> usedContext = Collections.emptyList()]
@@ -4730,19 +4737,18 @@ setObjectPropertyStatement[Object propertyReceiver] returns [String id, Object v
 	:	ID EQ componentPropertyValue ';'  { setObjectProperty($propertyReceiver, $ID.text, $componentPropertyValue.value); }
 	;
 
-componentPropertyValue returns [Object value]
-	:   c=colorLiteral { $value = $c.val; }
-	|   s=localizedStringLiteral { $value = $s.val; }
-	|   i=intLiteral { $value = $i.val; }
-	|   l=longLiteral { $value = $l.val; }
-	|   d=doubleLiteral { $value = $d.val; }
+componentPropertyValue returns [Object value] //commented literals are in designPropertyObject
+	:   //c=colorLiteral { $value = $c.val; }
+	//|   i=intLiteral { $value = $i.val; }
+	//|   l=longLiteral { $value = $l.val; }
+	//|   d=doubleLiteral { $value = $d.val; }
 	|   dim=dimensionLiteral { $value = $dim.val; }
 	|   b=booleanLiteral { $value = $b.val; }
 	|   intB=boundsIntLiteral { $value = $intB.val; }
 	|   doubleB=boundsDoubleLiteral { $value = $doubleB.val; }
 	|   contType=containerTypeLiteral { $value = $contType.val; }
 	|   alignment=flexAlignmentLiteral { $value = $alignment.val; }
-	|   prop=designPropertyObject { $value = $prop.property; }
+	|   prop=designPropertyObject { $value = BaseUtils.nvl($prop.literal, $prop.property); }
 	;
 
 
@@ -4996,14 +5002,16 @@ nonEmptyPropertyExpressionList[List<TypedParameter> context, boolean dynamic] re
 		(',' next=propertyExpression[context, dynamic] { $props.add($next.property); })* 
 	;
 	
-constantProperty returns [LP property]
+constantProperty returns [LP property, LPLiteral literal]
 @init {
 	ScriptingLogicsModule.ConstType cls = null;
 	Object value = null;
 }
 @after {
 	if (inMainParseState()) {
-		$property = self.addConstantProp(cls, value);	
+		Pair<LP, LPLiteral> constantProp = self.addConstantProp(cls, value);
+		$property = constantProp.first;
+		$literal = constantProp.second;
 	}
 }
 	:	lit = literal { cls = $lit.cls; value = $lit.value; }
