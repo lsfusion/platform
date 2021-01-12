@@ -85,9 +85,10 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean 
     private NavigatorSessionObject createNavigatorSessionObject(LogicsSessionObject sessionObject, HttpServletRequest request, ConnectionInfo connectionInfo) throws RemoteException {
         AuthenticationToken lsfToken = LSFAuthenticationToken.getAppServerToken();
 
-        RemoteNavigatorInterface remoteNavigator = sessionObject.remoteLogics.createNavigator(lsfToken, getNavigatorInfo(request, connectionInfo));
+        NavigatorInfo navigatorInfo = getNavigatorInfo(request, connectionInfo);
+        RemoteNavigatorInterface remoteNavigator = sessionObject.remoteLogics.createNavigator(lsfToken, navigatorInfo);
 
-        ServerSettings serverSettings = sessionObject.getServerSettings(getSessionInfo(request), null, false);
+        ServerSettings serverSettings = sessionObject.getServerSettings(navigatorInfo.session, null, false);
         if (serverSettings.sessionConfigTimeout > 0)
             request.getSession().setMaxInactiveInterval(serverSettings.sessionConfigTimeout);
         return new NavigatorSessionObject(remoteNavigator, serverSettings.logicsName);
