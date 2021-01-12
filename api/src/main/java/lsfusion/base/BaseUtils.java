@@ -2287,10 +2287,15 @@ public class BaseUtils {
     }
 
     private static String getSystemDateFormat(int style, boolean date)  {
-        DateFormatProvider provider = ReflectionUtils.getMethodValue(ReflectionUtils.classForName("sun.util.locale.provider.HostLocaleProviderAdapterImpl"),
-                null, "getDateFormatProvider", new Class[]{}, new Object[]{});
-        Locale locale = Locale.getDefault(Locale.Category.FORMAT);
-        return ((SimpleDateFormat) (date ? provider.getDateInstance(style, locale) : provider.getTimeInstance(style, locale))).toPattern();
+        try {
+            DateFormatProvider provider = ReflectionUtils.getMethodValue(ReflectionUtils.classForName("sun.util.locale.provider.HostLocaleProviderAdapterImpl"),
+                    null, "getDateFormatProvider", new Class[]{}, new Object[]{});
+            Locale locale = Locale.getDefault(Locale.Category.FORMAT);
+            return ((SimpleDateFormat) (date ? provider.getDateInstance(style, locale) : provider.getTimeInstance(style, locale))).toPattern();
+        } catch(Exception e) {
+            //openJDK has no getDateFormatProvider method
+            return ((SimpleDateFormat) (date ? DateFormat.getDateInstance(DateFormat.SHORT) : DateFormat.getTimeInstance(DateFormat.MEDIUM))).toPattern();
+        }
     }
 
     public static String getFileExtension(File file) {
