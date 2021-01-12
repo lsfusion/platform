@@ -73,18 +73,12 @@ public class BaseUtils {
     }
 
     public static String checkClientVersion(String serverPlatformVersion, Integer serverApiVersion, String clientPlatformVersion, Integer clientApiVersion) {
-        String serverVersion = null;
-        String clientVersion = null;
-        if(clientPlatformVersion != null && !clientPlatformVersion.equals(serverPlatformVersion)) {
-            serverVersion = serverPlatformVersion;
-            clientVersion = clientPlatformVersion;
-        } else {
-            if(!clientApiVersion.equals(serverApiVersion)) {
-                serverVersion = serverPlatformVersion + " [" + serverApiVersion + "]";
-                clientVersion = clientPlatformVersion + " [" + clientApiVersion + "]";
-            }
-        }
-        return serverVersion != null ? getString("check.client.version", serverVersion, clientVersion) : null;
+        if (!clientApiVersion.equals(serverApiVersion)) {
+            String serverVersion = serverPlatformVersion + " [" + serverApiVersion + "]";
+            String clientVersion = clientPlatformVersion + " [" + clientApiVersion + "]";
+            String needUpdate = clientApiVersion < serverApiVersion ? getString("check.client.version.client") : getString("check.client.version.server");
+            return getString("check.client.version", serverVersion, clientVersion) + " " + needUpdate;
+        } else return null;
     }
 
     public static boolean nullEquals(Object obj1, Object obj2) {
