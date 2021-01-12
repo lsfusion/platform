@@ -56,6 +56,7 @@ public abstract class FormContainer<W extends Widget> {
     }
 
     public void onBlur(boolean remove) {
+        form.lostFocus();
         focusedElement = remove ? null : GwtClientUtils.getFocusedChild(contentWidget.getElement());
 
         assert MainFrame.getAssertCurrentForm() == this;
