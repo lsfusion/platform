@@ -98,7 +98,7 @@ public abstract class MainFrame extends JFrame {
 
             ClientSettings clientSettings = remoteNavigator.getClientSettings();
 
-            LocalePreferences userPreferences = clientSettings.localePreferences;
+            LocalePreferences localePreferences = clientSettings.localePreferences;
             fontSize = clientSettings.fontSize;
             MainController.busyDialog = clientSettings.busyDialog;
             MainController.busyDialogTimeout = Math.max(clientSettings.busyDialogTimeout, 1000); //минимальный таймаут 1000мс
@@ -110,7 +110,7 @@ public abstract class MainFrame extends JFrame {
             SwingDefaults.resetClientSettingsProperties();
             MainController.setClientSettingsDependentUIDefaults();
 
-            Locale userLocale = userPreferences.locale;
+            Locale userLocale = localePreferences.locale;
             Locale.setDefault(userLocale);
                 
             UIManager.getDefaults().setDefaultLocale(userLocale);
@@ -119,7 +119,7 @@ public abstract class MainFrame extends JFrame {
             JFileChooser.setDefaultLocale(userLocale);
             JColorChooser.setDefaultLocale(userLocale);
 
-            setupTimePreferences(userPreferences.timeZone, userPreferences.twoDigitYearStart);
+            setupTimePreferences(localePreferences);
 
             setUIFontSize();
 
@@ -167,29 +167,30 @@ public abstract class MainFrame extends JFrame {
     public static Date wideFormattableDate;
     public static Date wideFormattableDateTime;
 
-    private static void setupTimePreferences(String userTimeZone, Integer twoDigitYearStart) throws RemoteException {
+    private static void setupTimePreferences(LocalePreferences localePreferences) {
 
-        TimeZone timeZone = userTimeZone == null ? null : TimeZone.getTimeZone(userTimeZone);
+        TimeZone timeZone = localePreferences.timeZone == null ? null : TimeZone.getTimeZone(localePreferences.timeZone);
         if (timeZone != null) {
             TimeZone.setDefault(timeZone);
         }
 
         Date twoDigitYearStartDate = null;
-        if (twoDigitYearStart != null) {
-            GregorianCalendar c = new GregorianCalendar(twoDigitYearStart, Calendar.JANUARY, 1);
+        if (localePreferences.twoDigitYearStart != null) {
+            GregorianCalendar c = new GregorianCalendar(localePreferences.twoDigitYearStart, Calendar.JANUARY, 1);
             twoDigitYearStartDate = c.getTime();
         }
-        
-        dateFormat = DateFormat.getDateInstance(DateFormat.SHORT);
+
+        //dateFormat = DateFormat.getDateInstance(DateFormat.SHORT);
+        dateFormat = new SimpleDateFormat(localePreferences.dateFormat);
         if (twoDigitYearStartDate != null) {
             ((SimpleDateFormat) dateFormat).set2DigitYearStart(twoDigitYearStartDate);
         }
 
-//        timeFormat = new SimpleDateFormat("HH:mm:ss");
-        timeFormat = DateFormat.getTimeInstance(DateFormat.MEDIUM);
+        //timeFormat = DateFormat.getTimeInstance(DateFormat.MEDIUM);
+        timeFormat = new SimpleDateFormat(localePreferences.timeFormat);
 
-//        dateTimeFormat = new SimpleDateFormat("dd.MM.yy HH:mm:ss");
-        dateTimeFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM);
+        //dateTimeFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM);
+        dateTimeFormat = new SimpleDateFormat(localePreferences.dateFormat + " " + localePreferences.timeFormat);
         if (twoDigitYearStartDate != null) {
             ((SimpleDateFormat) dateTimeFormat).set2DigitYearStart(twoDigitYearStartDate);
         }

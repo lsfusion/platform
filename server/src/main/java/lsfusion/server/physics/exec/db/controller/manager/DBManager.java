@@ -155,6 +155,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
     private String defaultUserCountry;
     private String defaultUserTimezone;
     private Integer defaultUserTwoDigitYearStart;
+    private String defaultUserDateFormat;
+    private String defaultUserTimeFormat;
 
     private Integer serverTwoDigitYearStart;
 
@@ -1512,12 +1514,16 @@ public class DBManager extends LogicsManager implements InitializingBean {
         businessLogics.authenticationLM.defaultCountry.change(defaultUserCountry, session);
         businessLogics.authenticationLM.defaultTimezone.change(defaultUserTimezone, session);
         businessLogics.authenticationLM.defaultTwoDigitYearStart.change(defaultUserTwoDigitYearStart, session);
+        businessLogics.authenticationLM.defaultDateFormat.change(defaultUserDateFormat, session);
+        businessLogics.authenticationLM.defaultTimeFormat.change(defaultUserTimeFormat, session);
 
         Locale locale = Locale.getDefault();
         businessLogics.authenticationLM.serverLanguage.change(locale.getLanguage(), session);
         businessLogics.authenticationLM.serverCountry.change(locale.getCountry(), session);
         businessLogics.authenticationLM.serverTimezone.change(TimeZone.getDefault().getID(), session);
         businessLogics.authenticationLM.serverTwoDigitYearStart.change(serverTwoDigitYearStart, session);
+        businessLogics.authenticationLM.serverDateFormat.change(BaseUtils.getDatePattern(), session);
+        businessLogics.authenticationLM.serverTimeFormat.change(BaseUtils.getTimePattern(), session);
 
         apply(session);
     }
@@ -2497,6 +2503,14 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
     public void setDefaultUserTwoDigitYearStart(Integer defaultUserTwoDigitYearStart) {
         this.defaultUserTwoDigitYearStart = defaultUserTwoDigitYearStart;
+    }
+
+    public void setDefaultUserDateFormat(String defaultUserDateFormat) {
+        this.defaultUserDateFormat = defaultUserDateFormat;
+    }
+
+    public void setDefaultUserTimeFormat(String defaultUserTimeFormat) {
+        this.defaultUserTimeFormat = defaultUserTimeFormat;
     }
 
     public void setServerTwoDigitYearStart(Integer serverTwoDigitYearStart) {
