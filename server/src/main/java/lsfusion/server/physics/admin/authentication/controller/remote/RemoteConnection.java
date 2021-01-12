@@ -71,7 +71,7 @@ public abstract class RemoteConnection extends RemoteRequestObject {
             String hostName = connectionInfo.hostName;
             computer = dbManager.getComputer(hostName, session, stack); // can apply session
 
-            initUserContext(hostName, connectionInfo.hostAddress, connectionInfo.language, connectionInfo.country, stack, session);
+            initUserContext(hostName, connectionInfo.hostAddress, connectionInfo.language, connectionInfo.country, connectionInfo.dateFormat, connectionInfo.timeFormat, stack, session);
         }
     }
 
@@ -83,9 +83,9 @@ public abstract class RemoteConnection extends RemoteRequestObject {
 
     // in theory its possible to cache all this
     // locale + log info
-    protected void initUserContext(String hostName, String remoteAddress, String clientLanguage, String clientCountry, ExecutionStack stack, DataSession session) throws SQLException, SQLHandledException {
+    protected void initUserContext(String hostName, String remoteAddress, String clientLanguage, String clientCountry, String clientDateFormat, String clientTimeFormat, ExecutionStack stack, DataSession session) throws SQLException, SQLHandledException {
         logInfo = readLogInfo(session, user, businessLogics, hostName, remoteAddress);
-        locale = readLocale(session, user, businessLogics, clientLanguage, clientCountry, stack);
+        locale = readLocale(session, user, businessLogics, clientLanguage, clientCountry, clientDateFormat, clientTimeFormat, stack);
         userRole = (Long) businessLogics.securityLM.firstRoleUser.read(session, user);
         transactionTimeout = (Integer) businessLogics.serviceLM.transactTimeoutUser.read(session, user);
     }
@@ -93,7 +93,7 @@ public abstract class RemoteConnection extends RemoteRequestObject {
     public boolean changeCurrentUser(DataObject user, ExecutionStack stack) throws SQLException, SQLHandledException {
         this.user = user;
         try(DataSession session = createSession()) {
-            initUserContext(logInfo.hostnameComputer, logInfo.remoteAddress, null, null, stack, session);
+            initUserContext(logInfo.hostnameComputer, logInfo.remoteAddress, null, null, null, null, stack, session);
         }
         return true;
     }
@@ -202,18 +202,20 @@ public abstract class RemoteConnection extends RemoteRequestObject {
         return transactionTimeout != null ? transactionTimeout : 0;
     }
 
-    public static Locale readLocale(DataSession session, DataObject user, BusinessLogics businessLogics, String clientLanguage, String clientCountry, ExecutionStack stack) throws SQLException, SQLHandledException {
-        saveClientLanguage(session, user, businessLogics, clientLanguage, clientCountry, stack);
+    public static Locale readLocale(DataSession session, DataObject user, BusinessLogics businessLogics, String clientLanguage, String clientCountry, String clientDateFormat, String clientTimeFormat, ExecutionStack stack) throws SQLException, SQLHandledException {
+        saveClientLanguage(session, user, businessLogics, clientLanguage, clientCountry, clientDateFormat, clientTimeFormat, stack);
 
         String language = (String) businessLogics.authenticationLM.language.read(session, user);
         String country = (String) businessLogics.authenticationLM.country.read(session, user);
         return LocalePreferences.getLocale(language, country);
     }
 
-    public static void saveClientLanguage(DataSession session, DataObject user, BusinessLogics businessLogics, String clientLanguage, String clientCountry, ExecutionStack stack) throws SQLException, SQLHandledException {
+    public static void saveClientLanguage(DataSession session, DataObject user, BusinessLogics businessLogics, String clientLanguage, String clientCountry, String clientDateFormat, String clientTimeFormat, ExecutionStack stack) throws SQLException, SQLHandledException {
         if (clientLanguage != null) {
             businessLogics.authenticationLM.clientLanguage.change(clientLanguage, session, user);
             businessLogics.authenticationLM.clientCountry.change(clientCountry, session, user);
+            businessLogics.authenticationLM.clientDateFormat.change(clientDateFormat, session, user);
+            businessLogics.authenticationLM.clientTimeFormat.change(clientTimeFormat, session, user);
             session.applyException(businessLogics, stack);
         }
     }

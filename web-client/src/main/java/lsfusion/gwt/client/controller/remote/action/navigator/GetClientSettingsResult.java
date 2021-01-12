@@ -14,13 +14,15 @@ public class GetClientSettingsResult implements Result {
     public boolean pivotOnlySelectedColumn;
     public GColorTheme colorTheme;
     public GColorPreferences colorPreferences;
+    public String dateFormat;
+    public String timeFormat;
 
     public GetClientSettingsResult() {
     }
 
     public GetClientSettingsResult(boolean busyDialog, long busyDialogTimeout, boolean devMode, boolean showDetailedInfo,
                                    boolean forbidDuplicateForms, boolean showNotDefinedStrings, boolean pivotOnlySelectedColumn,
-                                   GColorTheme colorTheme, GColorPreferences colorPreferences) {
+                                   GColorTheme colorTheme, GColorPreferences colorPreferences, String dateFormat, String timeFormat) {
         this.busyDialog = busyDialog;
         this.busyDialogTimeout = busyDialogTimeout;
         this.devMode = devMode;
@@ -30,5 +32,7 @@ public class GetClientSettingsResult implements Result {
         this.pivotOnlySelectedColumn = pivotOnlySelectedColumn;
         this.colorTheme = colorTheme;
         this.colorPreferences = colorPreferences;
+        this.dateFormat = dateFormat;
+        this.timeFormat = timeFormat;
     }
 }

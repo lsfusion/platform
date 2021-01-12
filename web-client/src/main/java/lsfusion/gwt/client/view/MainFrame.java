@@ -87,6 +87,9 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
     
     public static GColorPreferences colorPreferences;
 
+    public static String dateFormat;
+    public static String timeFormat;
+
     private LoadingManager loadingManager;
 
     @Override
@@ -210,6 +213,8 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
                 changeColorTheme(result.colorTheme);
                 colorPreferences = result.colorPreferences;
                 StyleDefaults.appendClientSettingsCSS();
+                dateFormat = result.dateFormat;
+                timeFormat = result.timeFormat;
             }
         });
 

@@ -7,11 +7,15 @@ public class LocalePreferences implements Serializable {
     public Locale locale;
     public String timeZone;
     public Integer twoDigitYearStart;
-    
-    public LocalePreferences(Locale locale, String timeZone, Integer twoDigitYearStart) {
+    public String dateFormat;
+    public String timeFormat;
+
+    public LocalePreferences(Locale locale, String timeZone, Integer twoDigitYearStart, String dateFormat, String timeFormat) {
         this.locale = locale;
         this.timeZone = timeZone;
         this.twoDigitYearStart = twoDigitYearStart;
+        this.dateFormat = dateFormat;
+        this.timeFormat = timeFormat;
     }
 
     public static Locale getLocale(String language, String country) {

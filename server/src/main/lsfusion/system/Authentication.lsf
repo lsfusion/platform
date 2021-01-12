@@ -304,25 +304,38 @@ userLanguage '{authentication.user.language.user}' = DATA STRING[3] (CustomUser)
 userCountry '{authentication.user.country.user}' = DATA STRING[3] (CustomUser) CHARWIDTH 5;
 userTimeZone '{authentication.user.time.zone.user}' = DATA STRING[30] (CustomUser);
 userTwoDigitYearStart '{authentication.user.two.digit.year.start.user}' = DATA INTEGER (CustomUser);
+userDateFormat '{authentication.user.date.format.user}' = DATA STRING (CustomUser);
+userTimeFormat '{authentication.user.time.format.user}' = DATA STRING (CustomUser);
 
 clientLanguage '{authentication.client.language.user}' = DATA STRING[3] (CustomUser) CHARWIDTH 5;
 clientCountry '{authentication.client.country.user}' = DATA STRING[3] (CustomUser) CHARWIDTH 5;
 useClientLocale '{authentication.use.client.locale.user}' = DATA BOOLEAN (CustomUser) CHARWIDTH 12;
 
+clientDateFormat '{authentication.client.date.format.user}' = DATA STRING (CustomUser);
+clientTimeFormat '{authentication.client.time.format.user}' = DATA STRING (CustomUser);
+useClientDateTimeFormat '{authentication.use.client.date.time.format.user}' = DATA BOOLEAN (CustomUser);
+
 defaultUserLanguage '{authentication.default.user.language}' = DATA STRING[3] ();
 defaultUserCountry '{authentication.default.user.country}' = DATA STRING[3] ();
 defaultUserTimezone '{authentication.default.user.time.zone}' = DATA STRING[30] ();
 defaultUserTwoDigitYearStart '{authentication.default.user.two.digit.year.start}' = DATA INTEGER ();
+defaultUserDateFormat '{authentication.default.user.date.format}' = DATA STRING ();
+defaultUserTimeFormat '{authentication.default.user.time.format}' = DATA STRING ();
 
 serverLanguage '{authentication.server.language}' = DATA STRING[3] ();
 serverCountry '{authentication.server.country}' = DATA STRING[3] ();
 serverTimezone '{authentication.server.time.zone}' = DATA STRING[30] ();
 serverTwoDigitYearStart '{authentication.server.two.digit.year.start}' = DATA INTEGER ();
+serverDateFormat '{authentication.server.date.format}' = DATA STRING ();
+serverTimeFormat '{authentication.server.time.format}' = DATA STRING ();
 
 language '{authentication.language.user}' (CustomUser user) = OVERRIDE (clientLanguage(user) IF useClientLocale(user)), userLanguage(user), defaultUserLanguage(), serverLanguage();
 country '{authentication.country.user}' (CustomUser user) = IF useClientLocale(user) AND clientLanguage(user) 
                                                                 THEN clientCountry(user)
                                                                 ELSE IF userLanguage(user) THEN userCountry(user) ELSE IF defaultUserLanguage() THEN defaultUserCountry() ELSE serverCountry();
+
+dateFormat '{authentication.date.format.user}' (CustomUser user) = OVERRIDE (clientDateFormat(user) IF useClientDateTimeFormat(user)), userDateFormat(user), defaultUserDateFormat(), serverDateFormat();
+timeFormat '{authentication.time.format.user}' (CustomUser user) = OVERRIDE (clientTimeFormat(user) IF useClientDateTimeFormat(user)), userTimeFormat(user), defaultUserTimeFormat(), serverTimeFormat();
 
 // "duplicate" of loadLocalePreferences, but web-client needs this data just right after authentication
 getCurrentUserLocale() {
@@ -376,7 +389,8 @@ FORM customUser '{authentication.custom.user}'
     PROPERTIES(u) login, sha256Password ON CHANGE changeSHA256Password(u), isLocked ,
                   firstName, lastName, email, phone, postAddress, birthday,
                   useClientLocale, userLanguage SHOWIF NOT useClientLocale(u), userCountry SHOWIF NOT useClientLocale(u), 
-                  userTimeZone, userTwoDigitYearStart
+                  userTimeZone, userTwoDigitYearStart,
+                  useClientDateTimeFormat, userDateFormat SHOWIF NOT useClientDateTimeFormat(u), userTimeFormat SHOWIF NOT useClientDateTimeFormat(u)
 
     EDIT CustomUser OBJECT u
 ;
@@ -413,6 +427,9 @@ DESIGN customUser {
                     MOVE PROPERTY(userCountry(u));
                     MOVE PROPERTY(userTimeZone(u));
                     MOVE PROPERTY(userTwoDigitYearStart(u));
+                    MOVE PROPERTY(useClientDateTimeFormat(u));
+                    MOVE PROPERTY(userDateFormat(u));
+                    MOVE PROPERTY(userTimeFormat(u));
                 }
                 NEW security {
                     alignment = STRETCH;
@@ -452,11 +469,14 @@ FORM customUsers '{authentication.users}'
     PROPERTIES(lu) READONLYIF isReadonly() userLanguage BACKGROUND RGB(232,232,255), 
                                            userCountry BACKGROUND RGB(232,232,255), 
                                            useClientLocale, clientLanguage READONLY, clientCountry READONLY,
-                                           userTimeZone BACKGROUND RGB(232,232,255), userTwoDigitYearStart BACKGROUND RGB(232,232,255) 
+                                           userTimeZone BACKGROUND RGB(232,232,255), userTwoDigitYearStart BACKGROUND RGB(232,232,255),
+                                           userDateFormat BACKGROUND RGB(232,232,255), 
+                                           userTimeFormat BACKGROUND RGB(232,232,255), 
+                                           useClientDateTimeFormat, clientDateFormat READONLY, clientTimeFormat READONLY 
     PROPERTIES(lu) NEWSESSION EDIT
 
-    PROPERTIES() READONLY defaultUserLanguage, defaultUserCountry, defaultUserTimezone, defaultUserTwoDigitYearStart
-    PROPERTIES() READONLY serverLanguage, serverCountry, serverTimezone, serverTwoDigitYearStart
+    PROPERTIES() READONLY defaultUserLanguage, defaultUserCountry, defaultUserTimezone, defaultUserTwoDigitYearStart, defaultUserDateFormat, defaultUserTimeFormat
+    PROPERTIES() READONLY serverLanguage, serverCountry, serverTimezone, serverTwoDigitYearStart, serverDateFormat, serverTimeFormat
 
     PROPERTIES() useLDAP, serverLDAP, portLDAP, baseDNLDAP, userDNSuffixLDAP
     
@@ -493,10 +513,14 @@ DESIGN customUsers {
                     MOVE PROPERTY(defaultUserCountry());
                     MOVE PROPERTY(defaultUserTimezone());
                     MOVE PROPERTY(defaultUserTwoDigitYearStart());
+                    MOVE PROPERTY(defaultUserDateFormat());
+                    MOVE PROPERTY(defaultUserTimeFormat());
                     MOVE PROPERTY(serverLanguage());
                     MOVE PROPERTY(serverCountry());
                     MOVE PROPERTY(serverTimezone());
                     MOVE PROPERTY(serverTwoDigitYearStart());
+                    MOVE PROPERTY(serverDateFormat());
+                    MOVE PROPERTY(serverTimeFormat());
                 }
                 MOVE BOX(lu) {
                     GRID(lu) { headerHeight = 50; }

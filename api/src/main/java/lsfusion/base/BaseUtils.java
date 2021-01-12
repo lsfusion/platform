@@ -35,8 +35,10 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.text.spi.DateFormatProvider;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -2280,6 +2282,21 @@ public class BaseUtils {
         Calendar calendar = new GregorianCalendar(year, month - 1, 1, 0, 0, 0);
         calendar.roll(Calendar.DAY_OF_MONTH, -1);
         return calendar.getTime();
+    }
+
+    public static String getDatePattern() {
+        return getSystemDateFormat(DateFormat.SHORT, true);
+    }
+
+    public static String getTimePattern() {
+        return getSystemDateFormat(DateFormat.MEDIUM, false);
+    }
+
+    private static String getSystemDateFormat(int style, boolean date)  {
+        DateFormatProvider provider = ReflectionUtils.getMethodValue(ReflectionUtils.classForName("sun.util.locale.provider.HostLocaleProviderAdapterImpl"),
+                null, "getDateFormatProvider", new Class[]{}, new Object[]{});
+        Locale locale = Locale.getDefault(Locale.Category.FORMAT);
+        return ((SimpleDateFormat) (date ? provider.getDateInstance(style, locale) : provider.getTimeInstance(style, locale))).toPattern();
     }
 
     public static String getFileExtension(File file) {

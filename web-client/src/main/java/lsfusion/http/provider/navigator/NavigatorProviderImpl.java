@@ -34,11 +34,12 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean 
     
     public static SessionInfo getSessionInfo(Authentication auth) {
         Locale clientLocale = LocaleContextHolder.getLocale();
-        return new SessionInfo(SystemUtils.getLocalHostName(), ((WebAuthenticationDetails) auth.getDetails()).getRemoteAddress(), clientLocale.getLanguage(), clientLocale.getCountry());
+        return new SessionInfo(SystemUtils.getLocalHostName(), ((WebAuthenticationDetails) auth.getDetails()).getRemoteAddress(), clientLocale.getLanguage(), clientLocale.getCountry(),
+                BaseUtils.getDatePattern(), BaseUtils.getTimePattern());
     }
 
     public static SessionInfo getSessionInfo(HttpServletRequest request) {
-        return new SessionInfo(request.getRemoteHost(), request.getRemoteAddr(), null, null, request.getQueryString()); // we don't need client language and country because they were already provided when authenticating (see method above)
+        return new SessionInfo(request.getRemoteHost(), request.getRemoteAddr(), null, null, null, null, request.getQueryString()); // we don't need client language and country because they were already provided when authenticating (see method above)
     }
 
     private static NavigatorInfo getNavigatorInfo(HttpServletRequest request, ConnectionInfo connectionInfo) {

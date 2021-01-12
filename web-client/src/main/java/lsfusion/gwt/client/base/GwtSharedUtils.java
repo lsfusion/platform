@@ -9,6 +9,7 @@ import lsfusion.gwt.client.base.jsni.HasNativeSID;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.base.jsni.NativeStringMap;
+import lsfusion.gwt.client.view.MainFrame;
 
 import java.util.*;
 
@@ -80,17 +81,19 @@ public class GwtSharedUtils {
     }
 
     public static DateTimeFormat getDefaultDateFormat() {
-        String currentLocale = LocaleInfo.getCurrentLocale().getLocaleName();
-        //in gwt 2.9.0 default DATE_SHORT format for "ru" locale is dd.MM.y
-        if(currentLocale.equals("ru")) {
-            return DateTimeFormat.getFormat("dd.MM.yy");
-        } else {
-            return DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.DATE_SHORT);
-        }
+        return DateTimeFormat.getFormat(MainFrame.dateFormat);
+//        String currentLocale = LocaleInfo.getCurrentLocale().getLocaleName();
+//        //in gwt 2.9.0 default DATE_SHORT format for "ru" locale is dd.MM.y
+//        if(currentLocale.equals("ru")) {
+//            return DateTimeFormat.getFormat("dd.MM.yy");
+//        } else {
+//            return DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.DATE_SHORT);
+//        }
     }
 
     public static DateTimeFormat getDefaultTimeFormat() {
-        return DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.TIME_MEDIUM);
+        return DateTimeFormat.getFormat(MainFrame.timeFormat);
+        //return DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.TIME_MEDIUM);
     }
 
     public static DateTimeFormat getDefaultTimeShortFormat() {
@@ -98,8 +101,9 @@ public class GwtSharedUtils {
     }
 
     public static DateTimeFormat getDefaultDateTimeFormat() {
-        DateTimeFormatInfo info = LocaleInfo.getCurrentLocale().getDateTimeFormatInfo();
-        return DateTimeFormat.getFormat(info.dateTime(info.timeFormatMedium(), info.dateFormatShort()).replace(",", ""));
+        return DateTimeFormat.getFormat(MainFrame.dateFormat + " " + MainFrame.timeFormat);
+        //DateTimeFormatInfo info = LocaleInfo.getCurrentLocale().getDateTimeFormatInfo();
+        //return DateTimeFormat.getFormat(info.dateTime(info.timeFormatMedium(), info.dateFormatShort()).replace(",", ""));
     }
 
     public static DateTimeFormat getDefaultDateTimeShortFormat() {
