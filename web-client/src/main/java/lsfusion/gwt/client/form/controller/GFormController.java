@@ -601,8 +601,15 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         dispatcher.execute(new GetRemoteChanges(), new ServerResponseCallback());
     }
 
+    private boolean formVisible = false;
+
     public void gainedFocus() {
         dispatcher.execute(new GainedFocus(), new ServerResponseCallback());
+        formVisible = true;
+    }
+
+    public void lostFocus() {
+        formVisible = false;
     }
 
     public void hidePopup() {
@@ -1397,7 +1404,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
     @Override
     public void onResize() {
-        if (!formHidden) {
+        if (!formHidden && formVisible) {
             super.onResize();
         }
     }
