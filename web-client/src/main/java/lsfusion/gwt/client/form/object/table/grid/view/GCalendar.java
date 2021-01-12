@@ -252,7 +252,11 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
             updateAction = addUpdateAction(calendarEvent -> updateCalendarExtendedProperty("index", event.index, calendarEvent), updateAction);
 
         if (!GwtClientUtils.nullEquals(oldEvent.backgroundColor, event.backgroundColor))
-            updateAction = addUpdateAction(calendarEvent -> updateCalendarProperty("backgroundColor", getDisplayBackgroundColor(event.backgroundColor, false), calendarEvent), updateAction);
+            updateAction = addUpdateAction(calendarEvent -> {
+                String displayBackgroundColor = getDisplayBackgroundColor(event.backgroundColor, false);
+                updateCalendarProperty("backgroundColor", displayBackgroundColor, calendarEvent);
+                updateCalendarExtendedProperty("sourceBackgroundColor", displayBackgroundColor, calendarEvent);
+            }, updateAction);
 
         if (!GwtClientUtils.nullEquals(oldEvent.foregroundColor, event.foregroundColor))
             updateAction = addUpdateAction(calendarEvent -> updateCalendarExtendedProperty("foregroundColor", ColorUtils.getDisplayColor(event.foregroundColor), calendarEvent), updateAction);
