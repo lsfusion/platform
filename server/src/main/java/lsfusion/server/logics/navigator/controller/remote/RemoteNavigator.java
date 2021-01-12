@@ -116,8 +116,8 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
     }
 
     @Override
-    protected void initUserContext(String hostName, String remoteAddress, String clientLanguage, String clientCountry, ExecutionStack stack, DataSession session) throws SQLException, SQLHandledException {
-        super.initUserContext(hostName, remoteAddress, clientLanguage, clientCountry, stack, session);
+    protected void initUserContext(String hostName, String remoteAddress, String clientLanguage, String clientCountry, String clientDateFormat, String clientTimeFormat, ExecutionStack stack, DataSession session) throws SQLException, SQLHandledException {
+        super.initUserContext(hostName, remoteAddress, clientLanguage, clientCountry, clientDateFormat, clientTimeFormat, stack, session);
         
         localePreferences = readLocalePreferences(session, user, businessLogics, clientLanguage, clientCountry, stack);
         securityPolicy = logicsInstance.getSecurityManager().getSecurityPolicy(session, user);
@@ -126,7 +126,9 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
     private LocalePreferences readLocalePreferences(DataSession session, DataObject user, BusinessLogics businessLogics, String clientLanguage, String clientCountry, ExecutionStack stack) throws SQLException, SQLHandledException {
         return new LocalePreferences(locale,
                 (String) businessLogics.authenticationLM.timeZone.read(session, user),
-                (Integer) businessLogics.authenticationLM.twoDigitYearStart.read(session, user));
+                (Integer) businessLogics.authenticationLM.twoDigitYearStart.read(session, user),
+                (String) businessLogics.authenticationLM.dateFormat.read(session, user),
+                (String) businessLogics.authenticationLM.timeFormat.read(session, user));
     }
 
     public void logClientException(String hostname, Throwable t) {

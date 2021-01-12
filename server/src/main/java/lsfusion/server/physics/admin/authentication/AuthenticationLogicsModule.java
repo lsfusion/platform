@@ -75,25 +75,31 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
     public LP oauth2UserNameAttributeName;
     public LP oauth2ClientName;
 
-    public LP devMode;
-
     public LP language;
     public LP country;
     public LP timeZone;
     public LP twoDigitYearStart;
-    
+    public LP dateFormat;
+    public LP timeFormat;
+
     public LP clientLanguage;
     public LP clientCountry;
+    public LP clientDateFormat;
+    public LP clientTimeFormat;
 
     public LP defaultLanguage;
     public LP defaultCountry;
     public LP defaultTimezone;
     public LP defaultTwoDigitYearStart;
+    public LP defaultDateFormat;
+    public LP defaultTimeFormat;
 
     public LP serverLanguage;
     public LP serverCountry;
     public LP serverTimezone;
     public LP serverTwoDigitYearStart;
+    public LP serverDateFormat;
+    public LP serverTimeFormat;
 
     public LP userFontSize;
     
@@ -181,20 +187,28 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
         country = findProperty("country[CustomUser]");
         timeZone = findProperty("timeZone[CustomUser]");
         twoDigitYearStart = findProperty("twoDigitYearStart[CustomUser]");
-        
+        dateFormat = findProperty("dateFormat[CustomUser]");
+        timeFormat = findProperty("timeFormat[CustomUser]");
+
         clientCountry = findProperty("clientCountry[CustomUser]");
         clientLanguage = findProperty("clientLanguage[CustomUser]");
+        clientDateFormat = findProperty("clientDateFormat[CustomUser]");
+        clientTimeFormat = findProperty("clientTimeFormat[CustomUser]");
 
         defaultLanguage = findProperty("defaultUserLanguage[]");
         defaultCountry = findProperty("defaultUserCountry[]");
         defaultTimezone = findProperty("defaultUserTimezone[]");
         defaultTwoDigitYearStart = findProperty("defaultUserTwoDigitYearStart[]");
+        defaultDateFormat = findProperty("defaultUserDateFormat[]");
+        defaultTimeFormat = findProperty("defaultUserTimeFormat[]");
 
         serverLanguage = findProperty("serverLanguage[]");
         serverCountry = findProperty("serverCountry[]");
         serverTimezone = findProperty("serverTimezone[]");
         serverTwoDigitYearStart = findProperty("serverTwoDigitYearStart[]");
-        
+        serverDateFormat = findProperty("serverDateFormat[]");
+        serverTimeFormat = findProperty("serverTimeFormat[]");
+
         userFontSize = findProperty("fontSize[CustomUser]");
         colorThemeStaticName = findProperty("colorThemeStaticName[CustomUser]");
         
