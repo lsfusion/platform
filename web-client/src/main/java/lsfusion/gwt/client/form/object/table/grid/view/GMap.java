@@ -127,10 +127,8 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
         boolean markerCreated = false;
         Map<GGroupObjectValue, JavaScriptObject> oldMarkers = new HashMap<>(markers);
         JsArray<JavaScriptObject> markersToRefresh = JavaScriptObject.createArray().cast();
-        boolean refreshMarkers;
 
         for(int i=0,size=listObjects.length();i<size;i++) {
-            refreshMarkers = false;
             JavaScriptObject object = listObjects.get(i);
             GGroupObjectValue key = getKey(object);
 
@@ -158,6 +156,8 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
             if(oldGroupMarker != null && oldGroupMarker.isEditing())
                 disableEditing(marker, isPoly);
 
+            boolean refreshMarkers = false;
+
             if(oldGroupMarker == null || !(GwtClientUtils.nullEquals(groupMarker.color, oldGroupMarker.color))) {
                 updateColor(marker, groupMarker.color, getDisplayClusterColor(groupMarker.color));
                 refreshMarkers = true;
@@ -165,7 +165,7 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
 
             if(oldGroupMarker == null || !(GwtClientUtils.nullEquals(groupMarker.latitude, oldGroupMarker.latitude) && GwtClientUtils.nullEquals(groupMarker.longitude, oldGroupMarker.longitude) && GwtClientUtils.nullEquals(groupMarker.polygon, oldGroupMarker.polygon))) {
                 updateLatLng(marker, groupMarker.latitude, groupMarker.longitude, getLatLngs(groupMarker.polygon));
-                refreshMarkers = false;
+                refreshMarkers = false; //false because "updateLatLng" implicitly makes refresh
             }
 
             if (refreshMarkers)
