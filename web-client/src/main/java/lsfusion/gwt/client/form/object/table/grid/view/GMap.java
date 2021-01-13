@@ -126,6 +126,9 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
 
         boolean markerCreated = false;
         Map<GGroupObjectValue, JavaScriptObject> oldMarkers = new HashMap<>(markers);
+        JsArray<JavaScriptObject> markersToRefresh = JavaScriptObject.createArray().cast();
+        boolean refreshMarkers = false;
+
         for(int i=0,size=listObjects.length();i<size;i++) {
             JavaScriptObject object = listObjects.get(i);
             GGroupObjectValue key = getKey(object);
@@ -156,11 +159,16 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
 
             if(oldGroupMarker == null || !(GwtClientUtils.nullEquals(groupMarker.color, oldGroupMarker.color))) {
                 updateColor(marker, groupMarker.color, getDisplayClusterColor(groupMarker.color));
-                refreshMarkerClusters(markerClusters);
+                refreshMarkers = true;
             }
 
-            if(oldGroupMarker == null || !(GwtClientUtils.nullEquals(groupMarker.latitude, oldGroupMarker.latitude) && GwtClientUtils.nullEquals(groupMarker.longitude, oldGroupMarker.longitude) && GwtClientUtils.nullEquals(groupMarker.polygon, oldGroupMarker.polygon)))
+            if(oldGroupMarker == null || !(GwtClientUtils.nullEquals(groupMarker.latitude, oldGroupMarker.latitude) && GwtClientUtils.nullEquals(groupMarker.longitude, oldGroupMarker.longitude) && GwtClientUtils.nullEquals(groupMarker.polygon, oldGroupMarker.polygon))) {
                 updateLatLng(marker, groupMarker.latitude, groupMarker.longitude, getLatLngs(groupMarker.polygon));
+                refreshMarkers = false;
+            }
+
+            if (refreshMarkers)
+                markersToRefresh.push(marker);
 
             if(!isPoly && (oldGroupMarker == null || !(GwtClientUtils.nullEquals(groupMarker.icon, oldGroupMarker.icon) && GwtClientUtils.nullEquals(groupMarker.color, oldGroupMarker.color) && groupMarker.isCurrent == oldGroupMarker.isCurrent)))
                 updateIcon(marker, groupMarker.icon, getDisplayColorFilter(groupMarker));
@@ -174,6 +182,9 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
             if(groupMarker.line != null)
                 routes.computeIfAbsent(groupMarker.line, o -> JavaScriptObject.createArray().cast()).push(marker);
         }
+
+        refreshMarkerClusters(markerClusters, markersToRefresh);
+
         for(Map.Entry<GGroupObjectValue, JavaScriptObject> oldMarker : oldMarkers.entrySet()) {
             removeMarker(oldMarker.getValue(), markerClusters);
             markers.remove(oldMarker.getKey());
@@ -213,8 +224,9 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
         return map;
     }-*/;
 
-    protected native JavaScriptObject refreshMarkerClusters(JavaScriptObject markerClusters)/*-{
-        markerClusters.refreshClusters();
+    protected native JavaScriptObject refreshMarkerClusters(JavaScriptObject markerClusters, JsArray<JavaScriptObject> markers)/*-{
+        if (markers.length > 0)
+            markerClusters.refreshClusters(markers);
     }-*/;
 
     protected native JavaScriptObject createMarkerClusters()/*-{
