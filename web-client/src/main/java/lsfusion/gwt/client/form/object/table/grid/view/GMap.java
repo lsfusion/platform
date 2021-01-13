@@ -127,9 +127,10 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
         boolean markerCreated = false;
         Map<GGroupObjectValue, JavaScriptObject> oldMarkers = new HashMap<>(markers);
         JsArray<JavaScriptObject> markersToRefresh = JavaScriptObject.createArray().cast();
-        boolean refreshMarkers = false;
+        boolean refreshMarkers;
 
         for(int i=0,size=listObjects.length();i<size;i++) {
+            refreshMarkers = false;
             JavaScriptObject object = listObjects.get(i);
             GGroupObjectValue key = getKey(object);
 
