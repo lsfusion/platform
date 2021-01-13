@@ -154,14 +154,16 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
             if(oldGroupMarker != null && oldGroupMarker.isEditing())
                 disableEditing(marker, isPoly);
 
+            if(oldGroupMarker == null || !(GwtClientUtils.nullEquals(groupMarker.color, oldGroupMarker.color))) {
+                updateColor(marker, groupMarker.color, getDisplayClusterColor(groupMarker.color));
+                refreshMarkerClusters(markerClusters);
+            }
+
             if(oldGroupMarker == null || !(GwtClientUtils.nullEquals(groupMarker.latitude, oldGroupMarker.latitude) && GwtClientUtils.nullEquals(groupMarker.longitude, oldGroupMarker.longitude) && GwtClientUtils.nullEquals(groupMarker.polygon, oldGroupMarker.polygon)))
                 updateLatLng(marker, groupMarker.latitude, groupMarker.longitude, getLatLngs(groupMarker.polygon));
 
             if(!isPoly && (oldGroupMarker == null || !(GwtClientUtils.nullEquals(groupMarker.icon, oldGroupMarker.icon) && GwtClientUtils.nullEquals(groupMarker.color, oldGroupMarker.color) && groupMarker.isCurrent == oldGroupMarker.isCurrent)))
                 updateIcon(marker, groupMarker.icon, getDisplayColorFilter(groupMarker));
-
-            if(oldGroupMarker == null || !(GwtClientUtils.nullEquals(groupMarker.color, oldGroupMarker.color)))
-                updateColor(marker, groupMarker.color, getDisplayClusterColor(groupMarker.color));
 
             if(groupMarker.isEditing())
                 updateEditing(marker, isPoly);
@@ -209,6 +211,10 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
         map.addLayer(markerClusters);
 
         return map;
+    }-*/;
+
+    protected native JavaScriptObject refreshMarkerClusters(JavaScriptObject markerClusters)/*-{
+        markerClusters.refreshClusters();
     }-*/;
 
     protected native JavaScriptObject createMarkerClusters()/*-{
