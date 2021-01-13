@@ -180,8 +180,8 @@
         <property name="defaultUserCountry" value="${user.defaultCountry:#{null}}"/>
         <property name="defaultUserTimezone" value="${user.defaultTimezone:#{null}}"/>
         <property name="defaultUserTwoDigitYearStart" value="${user.defaultTwoDigitYearStart:#{null}}"/>
-        <property name="defaultUserDateFormat" value="${user.defaultUserDateFormat:#{null}}"/>
-        <property name="defaultUserTimeFormat" value="${user.defaultUserTimeFormat:#{null}}"/>
+        <property name="defaultUserDateFormat" value="${user.defaultDateFormat:#{null}}"/>
+        <property name="defaultUserTimeFormat" value="${user.defaultTimeFormat:#{null}}"/>
         <property name="serverTwoDigitYearStart" value="${user.serverTwoDigitYearStart:#{null}}"/>
     </bean>
 
