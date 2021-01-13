@@ -1,5 +1,6 @@
 package lsfusion.http.authentication;
 
+import lsfusion.base.ServerUtils;
 import lsfusion.http.provider.logics.LogicsProvider;
 import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.logics.ServerSettings;
@@ -15,7 +16,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Locale;
 
 public class LSFAuthAnonymousFilter extends OncePerRequestFilter {
 
@@ -37,7 +37,7 @@ public class LSFAuthAnonymousFilter extends OncePerRequestFilter {
         // if there is no authentication and server supports anonymous UI, give "anonymous authentication"
         ServerSettings serverSettings;
         if ((existingAuth == null || !existingAuth.isAuthenticated() || existingAuth instanceof AnonymousAuthenticationToken) && (serverSettings = logicsProvider.getServerSettings(request, false)) != null && serverSettings.anonymousUI) {
-            LSFAuthenticationToken auth = new LSFAuthenticationToken("", "", AuthenticationToken.ANONYMOUS, Locale.getDefault());
+            LSFAuthenticationToken auth = new LSFAuthenticationToken("", "", AuthenticationToken.ANONYMOUS, ServerUtils.getLocale(request));
             Authentication authResult = authenticationManager.authenticate(auth);
 
             SecurityContextHolder.getContext().setAuthentication(authResult);
