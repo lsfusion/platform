@@ -249,8 +249,9 @@ public class MainController {
     }
 
     private String getJNLPUrls(HttpServletRequest request, ServerSettings serverSettings) {
-        return serverSettings != null ? serverSettings.jnlpUrls.replaceAll("\\{run.desktop.client}", ServerMessages.getString(request, "run.desktop.client"))
-                : "<a href=" + getDirectUrl("/exec", "action=Security.generateJnlp", request) + ">" + ServerMessages.getString(request, "run.desktop.client") + "</a>";
+        String localizedString = ServerMessages.getString(request, "run.desktop.client");
+        return serverSettings != null ? serverSettings.jnlpUrls.replaceAll("\\{run.desktop.client}", localizedString)
+                : "<a href=" + getDirectUrl("/exec", "action=Security.generateJnlp", request) + ">" + localizedString + "</a>";
     }
 
     private String getFileUrl(RawFileData file) {
