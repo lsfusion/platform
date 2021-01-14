@@ -9,10 +9,7 @@ import lsfusion.client.form.property.cell.view.PropertyRenderer;
 import lsfusion.client.view.MainFrame;
 import lsfusion.interop.classes.DataType;
 
-import java.text.DateFormat;
-import java.text.Format;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.Date;
 
@@ -27,11 +24,6 @@ public class ClientZDateTimeClass extends ClientDateTimeClass {
 
     public PropertyRenderer getRendererComponent(ClientPropertyDraw property) {
         return new ZDateTimePropertyRenderer(property);
-    }
-
-    @Override
-    protected SimpleDateFormat getEditFormat(Format format) {
-        return createDateTimeEditFormat((DateFormat) format);
     }
 
     public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property) {

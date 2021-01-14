@@ -1,5 +1,6 @@
 package lsfusion.client.classes.data;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.classes.ClientTypeClass;
 import lsfusion.client.form.property.ClientPropertyDraw;
@@ -55,8 +56,21 @@ public class ClientDateClass extends ClientFormatClass<SimpleDateFormat> impleme
     }
 
     @Override
-    protected SimpleDateFormat getEditFormat(Format format) {
-        return createDateEditFormat((DateFormat) format);
+    protected SimpleDateFormat getEditFormat(Format format, boolean width) {
+        SimpleDateFormat result;
+        if (!(format instanceof SimpleDateFormat)) {
+            //use default pattern
+            result = new SimpleDateFormat("dd.MM.yy");
+        } else {
+            if (!width) {
+                String pattern = BaseUtils.getValidEditDateFormat(((SimpleDateFormat) format).toPattern(), false);
+                format = pattern != null ? new SimpleDateFormat(pattern) : DateFormat.getDateInstance(DateFormat.SHORT);
+            }
+            result = createDateEditFormat((SimpleDateFormat) format);
+            result.set2DigitYearStart(((SimpleDateFormat) format).get2DigitYearStart());
+        }
+
+        return result;
     }
 
     public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property) {

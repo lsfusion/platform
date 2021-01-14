@@ -4,9 +4,11 @@ import org.apache.http.ParseException;
 
 import java.sql.Time;
 import java.sql.Timestamp;
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.time.*;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.HashMap;
@@ -42,41 +44,6 @@ public class DateConverter {
         if (date == null) return null;
 
         return new Timestamp(date.getTime());
-    }
-
-    public static SimpleDateFormat createTimeEditFormat(DateFormat dateFormat) {
-        if (!(dateFormat instanceof SimpleDateFormat)) {
-            //используем паттерн по умолчанию
-            return new SimpleDateFormat("HH:mm:ss");
-        }
-        return createDateEditFormat((SimpleDateFormat)dateFormat);
-    }
-
-
-    public static SimpleDateFormat createDateEditFormat(DateFormat dateFormat) {
-        SimpleDateFormat result;
-        if (!(dateFormat instanceof SimpleDateFormat)) {
-            //используем паттерн по умолчанию
-            result = new SimpleDateFormat("dd.MM.yy");
-        } else {
-            result = createDateEditFormat((SimpleDateFormat) dateFormat);
-            result.set2DigitYearStart(((SimpleDateFormat) dateFormat).get2DigitYearStart());
-        }
-        
-        return result;
-    }
-
-    public static SimpleDateFormat createDateTimeEditFormat(DateFormat dateFormat) {
-        SimpleDateFormat result;
-        if (!(dateFormat instanceof SimpleDateFormat)) {
-            //используем паттерн по умолчанию
-            result = new SimpleDateFormat("dd.MM.yy HH:mm:ss");
-        } else {
-            result = createDateEditFormat((SimpleDateFormat) dateFormat);
-            result.set2DigitYearStart(((SimpleDateFormat) dateFormat).get2DigitYearStart());
-        }
-        
-        return result;
     }
 
     public static SimpleDateFormat createDateEditFormat(SimpleDateFormat simpleFormat) {

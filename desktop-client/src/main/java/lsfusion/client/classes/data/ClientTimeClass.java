@@ -1,6 +1,5 @@
 package lsfusion.client.classes.data;
 
-import lsfusion.base.DateConverter;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.classes.ClientTypeClass;
 import lsfusion.client.form.property.ClientPropertyDraw;
@@ -13,12 +12,12 @@ import lsfusion.interop.classes.DataType;
 
 import java.sql.Date;
 import java.sql.Time;
-import java.text.DateFormat;
 import java.text.Format;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalTime;
 
+import static lsfusion.base.DateConverter.createDateEditFormat;
 import static lsfusion.base.TimeConverter.localTimeToSqlTime;
 import static lsfusion.base.TimeConverter.sqlTimeToLocalTime;
 import static lsfusion.client.form.property.cell.EditBindingMap.EditEventFilter;
@@ -33,8 +32,12 @@ public class ClientTimeClass extends ClientFormatClass<SimpleDateFormat> impleme
     }
 
     @Override
-    protected SimpleDateFormat getEditFormat(Format format) {
-        return DateConverter.createTimeEditFormat((DateFormat)format);
+    protected SimpleDateFormat getEditFormat(Format format, boolean width) {
+        if (!(format instanceof SimpleDateFormat)) {
+            //use default pattern
+            return new SimpleDateFormat("HH:mm:ss");
+        }
+        return createDateEditFormat((SimpleDateFormat) format);
     }
 
     protected PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property) {

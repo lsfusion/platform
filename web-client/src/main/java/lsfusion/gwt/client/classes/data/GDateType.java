@@ -2,7 +2,6 @@ package lsfusion.gwt.client.classes.data;
 
 import com.google.gwt.i18n.client.DateTimeFormat;
 import lsfusion.gwt.client.ClientMessages;
-import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.classes.GDateDTO;
@@ -23,7 +22,7 @@ public class GDateType extends GFormatType<DateTimeFormat> {
 
     @Override
     public DateTimeFormat getFormat(String pattern) {
-        return GwtSharedUtils.getDateFormat(pattern);
+        return getDateFormat(pattern, false);
     }
 
     @Override
@@ -33,7 +32,7 @@ public class GDateType extends GFormatType<DateTimeFormat> {
 
     @Override
     public GDateDTO parseString(String value, String pattern) throws ParseException {
-        return value.isEmpty() ? null : GDateDTO.fromDate(parseDate(value, getDateFormat(pattern)));
+        return value.isEmpty() ? null : GDateDTO.fromDate(parseDate(value, getDateFormat(pattern, true)));
     }
 
     @Override

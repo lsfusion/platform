@@ -11,14 +11,18 @@ public abstract class ClientFormatClass<F extends Format> extends ClientDataClas
     public abstract F createUserFormat(String pattern);
 
     protected F getEditFormat(ClientPropertyDraw propertyDraw) {
-        return getEditFormat(propertyDraw.getFormat());
+        return getEditFormat(propertyDraw.getFormat(), false);
+    }
+
+    protected F getEditFormat(ClientPropertyDraw propertyDraw, boolean edit) {
+        return getEditFormat(propertyDraw.getFormat(), edit);
     }
 
     @Override
     protected String getDefaultWidthString(ClientPropertyDraw propertyDraw) {
         Object defaultWidthValue = getDefaultWidthValue();
         if(defaultWidthValue != null)
-            return getEditFormat(propertyDraw).format(defaultWidthValue);
+            return getEditFormat(propertyDraw, true).format(defaultWidthValue);
         return super.getDefaultWidthString(propertyDraw);
     }
 
@@ -26,7 +30,7 @@ public abstract class ClientFormatClass<F extends Format> extends ClientDataClas
         return null;
     }
 
-    protected F getEditFormat(Format format) {
+    protected F getEditFormat(Format format, boolean width) {
         return (F) format;
     }
 }
