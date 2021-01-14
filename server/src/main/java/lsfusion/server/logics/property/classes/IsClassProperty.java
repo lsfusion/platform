@@ -31,6 +31,7 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.LogicalClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
+import lsfusion.server.logics.classes.user.ConcreteObjectClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.UnknownClass;
 import lsfusion.server.logics.event.ChangeEvent;
@@ -261,8 +262,17 @@ public class IsClassProperty extends SimpleIncrementProperty<ClassPropertyInterf
     @Override
     public ActionMapImplement<?, ClassPropertyInterface> getSetNotNullAction(boolean notNull) {
         ValueClass valueClass = getInterfaceClass();
-        if(valueClass instanceof ConcreteCustomClass) {
-            Action<PropertyInterface> changeClassAction = (notNull ? (ConcreteCustomClass) valueClass : ((ConcreteCustomClass) valueClass).getBaseClass().unknown).getChangeClassAction();
+        ConcreteObjectClass newClass = null;
+        if(notNull) {
+            if (valueClass instanceof ConcreteCustomClass)
+                newClass = (ConcreteCustomClass) valueClass;
+        } else {
+            if (valueClass instanceof CustomClass)
+                newClass = ((CustomClass) valueClass).getBaseClass().unknown;
+        }
+
+        if(newClass != null) {
+            Action<PropertyInterface> changeClassAction = newClass.getChangeClassAction();
             return new ActionMapImplement<>(changeClassAction, MapFact.singletonRev(changeClassAction.interfaces.single(), interfaces.single()));
         }
         return null;
