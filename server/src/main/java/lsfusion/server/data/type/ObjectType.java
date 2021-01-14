@@ -145,7 +145,7 @@ public class ObjectType extends AbstractType<Long> {
     }
 
     @Override
-    public Long parseJSON(Object value) throws JSONException {
+    public Long parseJSON(Object value) throws JSONException, ParseException {
         return idClass.parseJSON(value);
     }
 
