@@ -633,13 +633,13 @@ generateJnlpUrls () {
             urlEncode(vmargs(ml), 'UTF-8');
             exportText() <- CONCAT '', exportText(), '&p=', urlEncoded();
         }
-        exportText() <- CONCAT '', exportText(), '">{security.run.desktop.client} ', name(ml), '</a><br/>';   
+        exportText() <- CONCAT '', exportText(), '">\{run.desktop.client\} ', name(ml), '</a><br/>';   
     }
     
    IF(exportText()) THEN {  
-        exportText() <- CONCAT '', '<details><summary>', '<a href="', execURL(), '">{security.run.desktop.client}</a>', '</summary>', exportText(), '</details>';
+        exportText() <- CONCAT '', '<details><summary>', '<a href="', execURL(), '">\{run.desktop.client\}</a>', '</summary>', exportText(), '</details>';
    } ELSE {
-        exportText() <- CONCAT '', '<a href="', execURL(), '">{security.run.desktop.client}</a>';     
+        exportText() <- CONCAT '', '<a href="', execURL(), '">\{run.desktop.client\}</a>';     
    }
 }
 
