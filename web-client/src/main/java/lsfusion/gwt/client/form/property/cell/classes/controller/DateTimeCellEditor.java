@@ -12,7 +12,7 @@ import java.text.ParseException;
 import java.util.Date;
 
 public class DateTimeCellEditor extends DateCellEditor {
-    private static final DateTimeFormat format = GwtSharedUtils.getDefaultDateTimeFormat();
+    private static final DateTimeFormat format = GwtSharedUtils.getDefaultDateTimeFormat(true);
 
     public DateTimeCellEditor(EditManager editManager, GPropertyDraw property) {
         super(editManager, property);

@@ -2,14 +2,13 @@ package lsfusion.gwt.client.classes.data;
 
 import com.google.gwt.i18n.shared.DateTimeFormat;
 import lsfusion.gwt.client.ClientMessages;
-import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.classes.GDateTimeDTO;
 import lsfusion.gwt.client.form.property.cell.classes.controller.DateTimeCellEditor;
 import lsfusion.gwt.client.form.property.cell.classes.view.DateCellRenderer;
-import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.controller.CellEditor;
+import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 
 import java.text.ParseException;
@@ -22,7 +21,7 @@ public class GDateTimeType extends GFormatType<com.google.gwt.i18n.client.DateTi
 
     @Override
     public com.google.gwt.i18n.client.DateTimeFormat getFormat(String pattern) {
-        return GwtSharedUtils.getDateTimeFormat(pattern);
+        return getDateTimeFormat(pattern, false);
     }
 
     @Override
@@ -37,7 +36,7 @@ public class GDateTimeType extends GFormatType<com.google.gwt.i18n.client.DateTi
 
     @Override
     public Object parseString(String value, String pattern) throws ParseException {
-        return value.isEmpty() ? null : GDateTimeDTO.fromDate(GDateType.parseDate(value, getDefaultDateTimeFormat(), getDefaultDateTimeShortFormat(), getDefaultDateFormat()));
+        return value.isEmpty() ? null : GDateTimeDTO.fromDate(GDateType.parseDate(value, getDateTimeFormat(pattern, true), getDefaultDateTimeShortFormat(), getDefaultDateFormat(true)));
     }
 
     private static Date wideFormattableDateTime = null;

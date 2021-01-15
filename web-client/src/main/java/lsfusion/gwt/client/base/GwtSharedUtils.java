@@ -12,6 +12,7 @@ import lsfusion.gwt.client.base.jsni.NativeStringMap;
 import lsfusion.gwt.client.view.MainFrame;
 
 import java.util.*;
+import java.util.stream.Stream;
 
 public class GwtSharedUtils {
     public static <K> int relativePosition(K element, List<K> comparatorList, List<K> insertList) {
@@ -68,27 +69,35 @@ public class GwtSharedUtils {
         return count;
     }
 
-    public static DateTimeFormat getDateFormat(String pattern) {
-        return pattern != null ? DateTimeFormat.getFormat(pattern) : getDefaultDateFormat();
+    public static DateTimeFormat getDateFormat(String pattern, boolean edit) {
+        return pattern != null ? DateTimeFormat.getFormat(pattern) : getDefaultDateFormat(edit);
     }
 
     public static DateTimeFormat getTimeFormat(String pattern) {
         return pattern != null ? DateTimeFormat.getFormat(pattern) : getDefaultTimeFormat();
     }
 
-    public static DateTimeFormat getDateTimeFormat(String pattern) {
-        return pattern != null ? DateTimeFormat.getFormat(pattern) : getDefaultDateTimeFormat();
+    public static DateTimeFormat getDateTimeFormat(String pattern, boolean edit) {
+        return pattern != null ? DateTimeFormat.getFormat(pattern) : getDefaultDateTimeFormat(edit);
     }
 
-    public static DateTimeFormat getDefaultDateFormat() {
-        return DateTimeFormat.getFormat(MainFrame.dateFormat);
-//        String currentLocale = LocaleInfo.getCurrentLocale().getLocaleName();
-//        //in gwt 2.9.0 default DATE_SHORT format for "ru" locale is dd.MM.y
-//        if(currentLocale.equals("ru")) {
-//            return DateTimeFormat.getFormat("dd.MM.yy");
-//        } else {
-//            return DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.DATE_SHORT);
-//        }
+    public static DateTimeFormat getDefaultDateFormat(boolean edit) {
+        if(edit) {
+            String pattern = getValidEditDateFormat(MainFrame.dateFormat, false);
+            if(pattern != null) {
+                return DateTimeFormat.getFormat(pattern);
+            } else {
+                String currentLocale = LocaleInfo.getCurrentLocale().getLocaleName();
+                //in gwt 2.9.0 default DATE_SHORT format for "ru" locale is dd.MM.y
+                if(currentLocale.equals("ru")) {
+                    return DateTimeFormat.getFormat("dd.MM.yy");
+                } else {
+                    return DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.DATE_SHORT);
+                }
+            }
+        } else {
+            return DateTimeFormat.getFormat(MainFrame.dateFormat);
+        }
     }
 
     public static DateTimeFormat getDefaultTimeFormat() {
@@ -100,20 +109,31 @@ public class GwtSharedUtils {
         return DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.TIME_SHORT);
     }
 
-    public static DateTimeFormat getDefaultDateTimeFormat() {
-        return DateTimeFormat.getFormat(MainFrame.dateFormat + " " + MainFrame.timeFormat);
-        //DateTimeFormatInfo info = LocaleInfo.getCurrentLocale().getDateTimeFormatInfo();
-        //return DateTimeFormat.getFormat(info.dateTime(info.timeFormatMedium(), info.dateFormatShort()).replace(",", ""));
+    public static DateTimeFormat getDefaultDateTimeFormat(boolean edit) {
+        if(edit) {
+            String pattern = getValidEditDateFormat(MainFrame.dateFormat + " " + MainFrame.timeFormat, true);
+            if(pattern != null) {
+                return DateTimeFormat.getFormat(pattern);
+            } else {
+                DateTimeFormatInfo info = LocaleInfo.getCurrentLocale().getDateTimeFormatInfo();
+                return DateTimeFormat.getFormat(info.dateTime(info.timeFormatMedium(), info.dateFormatShort()).replace(",", ""));
+            }
+        } else {
+            return DateTimeFormat.getFormat(MainFrame.dateFormat + " " + MainFrame.timeFormat);
+        }
+    }
+
+    //equal to BaseUtils.getValidEditDateFormat
+    public static String getValidEditDateFormat(String pattern, boolean dateTime) {
+        String regexp = dateTime ? "[^dMyHm\\s\\\\/.,\\-:]|M{3,}" : "[^dMy\\s\\\\/.,\\-:]|M{3,}";
+        Stream<String> requiredSymbols = dateTime ? Stream.of("d", "M", "y", "H", "m") : Stream.of("d", "M", "y");
+        pattern = pattern.replaceAll(regexp, "").trim();
+        return requiredSymbols.allMatch(pattern::contains) ? pattern : null;
     }
 
     public static DateTimeFormat getDefaultDateTimeShortFormat() {
         DateTimeFormatInfo info = LocaleInfo.getCurrentLocale().getDateTimeFormatInfo();
         return DateTimeFormat.getFormat(info.dateTime(info.timeFormatShort(), info.dateFormatShort()).replace(",", ""));
-    }
-
-
-    public static String formatDate(Date date) {
-        return getDefaultDateFormat().format(date);
     }
 
     public static <B, K1 extends B, K2 extends B, V> NativeHashMap<B, V> override(NativeHashMap<K1, ? extends V> map1, NativeHashMap<K2, ? extends V> map2) {

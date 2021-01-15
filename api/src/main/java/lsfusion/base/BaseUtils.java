@@ -47,6 +47,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.stream.Stream;
 
 import static lsfusion.base.ApiResourceBundle.getString;
 
@@ -61,7 +62,7 @@ public class BaseUtils {
     private static final int STRING_SERIALIZATION_CHUNK_SIZE = 65535/3;
 
     public static Integer getApiVersion() {
-        return 141;
+        return 142;
     }
 
     public static String getPlatformVersion() {
@@ -2286,16 +2287,27 @@ public class BaseUtils {
         return getSystemDateFormat(DateFormat.MEDIUM, false);
     }
 
+    public static Locale defaultFormatLocale;
     private static String getSystemDateFormat(int style, boolean date)  {
         try {
             DateFormatProvider provider = ReflectionUtils.getMethodValue(ReflectionUtils.classForName("sun.util.locale.provider.HostLocaleProviderAdapterImpl"),
                     null, "getDateFormatProvider", new Class[]{}, new Object[]{});
-            Locale locale = Locale.getDefault(Locale.Category.FORMAT);
+            Locale locale = nvl(defaultFormatLocale, Locale.getDefault(Locale.Category.FORMAT));
             return ((SimpleDateFormat) (date ? provider.getDateInstance(style, locale) : provider.getTimeInstance(style, locale))).toPattern();
         } catch(Exception e) {
             //openJDK has no getDateFormatProvider method
             return ((SimpleDateFormat) (date ? DateFormat.getDateInstance(DateFormat.SHORT) : DateFormat.getTimeInstance(DateFormat.MEDIUM))).toPattern();
         }
+    }
+
+    //date pattern allows only "d" (day), "M" (month), "y" (year) symbols and "\", "/", ".", "-", ",", ":", " " (delimiters)
+    //at least one "d", "M" and "y" symbol is required
+    //dateTime pattern also allow "H" (hour) and "m" (minute), and this symbols are required
+    public static String getValidEditDateFormat(String pattern, boolean dateTime) {
+        String regexp = dateTime ? "[^dMyHm\\s\\\\/.,\\-:]|M{3,}" : "[^dMy\\s\\\\/.,\\-:]|M{3,}";
+        Stream<String> requiredSymbols = dateTime ? Stream.of("d", "M", "y", "H", "m") : Stream.of("d", "M", "y");
+        pattern = pattern.replaceAll(regexp, "").trim();
+        return requiredSymbols.allMatch(pattern::contains) ? pattern : null;
     }
 
     public static String getFileExtension(File file) {

@@ -29,7 +29,7 @@ import java.util.Date;
 
 public class DateCellEditor extends PopupBasedCellEditor {
 
-    private static final DateTimeFormat format = GwtSharedUtils.getDefaultDateFormat();
+    private static final DateTimeFormat format = GwtSharedUtils.getDefaultDateFormat(true);
 
     protected GDatePicker datePicker;
     protected TextBox editBox;

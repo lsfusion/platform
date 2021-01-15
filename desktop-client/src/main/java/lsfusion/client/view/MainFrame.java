@@ -3,7 +3,6 @@ package lsfusion.client.view;
 import com.google.common.base.Throwables;
 import com.jhlabs.image.BlurFilter;
 import lsfusion.base.BaseUtils;
-import lsfusion.base.DateConverter;
 import lsfusion.base.SystemUtils;
 import lsfusion.client.SplashScreen;
 import lsfusion.client.base.view.SwingDefaults;
@@ -54,8 +53,6 @@ import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static lsfusion.base.DateConverter.createDateTimeEditFormat;
-import static lsfusion.base.DateConverter.createTimeEditFormat;
 import static lsfusion.client.ClientResourceBundle.getString;
 
 public abstract class MainFrame extends JFrame {
@@ -110,6 +107,11 @@ public abstract class MainFrame extends JFrame {
             SwingDefaults.resetClientSettingsProperties();
             MainController.setClientSettingsDependentUIDefaults();
 
+            //we need original OS locale and Locale.setDefault overrides it (in case of relogin we re-execute Locale.getDefault)
+            if(BaseUtils.defaultFormatLocale == null) {
+                BaseUtils.defaultFormatLocale = Locale.getDefault(Locale.Category.FORMAT);
+            }
+
             Locale userLocale = localePreferences.locale;
             Locale.setDefault(userLocale);
                 
@@ -159,11 +161,8 @@ public abstract class MainFrame extends JFrame {
     // time
     
     public static DateFormat dateFormat;
-    public static DateFormat dateEditFormat;
     public static DateFormat timeFormat;
-    public static DateFormat timeEditFormat;
     public static DateFormat dateTimeFormat;
-    public static DateFormat dateTimeEditFormat;
     public static Date wideFormattableDate;
     public static Date wideFormattableDateTime;
 
@@ -194,10 +193,6 @@ public abstract class MainFrame extends JFrame {
         if (twoDigitYearStartDate != null) {
             ((SimpleDateFormat) dateTimeFormat).set2DigitYearStart(twoDigitYearStartDate);
         }
-
-        timeEditFormat = createTimeEditFormat(timeFormat);
-        dateEditFormat = DateConverter.createDateEditFormat(dateFormat);
-        dateTimeEditFormat = createDateTimeEditFormat(dateTimeFormat);
 
         wideFormattableDate = createWideFormattableDate();
         wideFormattableDateTime = createWideFormattableDate();

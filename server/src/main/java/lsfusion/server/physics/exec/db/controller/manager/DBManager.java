@@ -159,6 +159,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
     private String defaultUserTimeFormat;
 
     private Integer serverTwoDigitYearStart;
+    private String serverDateFormat;
+    private String serverTimeFormat;
 
     public DBManager() {
         super(DBMANAGER_ORDER);
@@ -1522,8 +1524,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
         businessLogics.authenticationLM.serverCountry.change(locale.getCountry(), session);
         businessLogics.authenticationLM.serverTimezone.change(TimeZone.getDefault().getID(), session);
         businessLogics.authenticationLM.serverTwoDigitYearStart.change(serverTwoDigitYearStart, session);
-        businessLogics.authenticationLM.serverDateFormat.change(BaseUtils.getDatePattern(), session);
-        businessLogics.authenticationLM.serverTimeFormat.change(BaseUtils.getTimePattern(), session);
+        businessLogics.authenticationLM.serverDateFormat.change(serverDateFormat != null ? serverDateFormat : BaseUtils.getDatePattern(), session);
+        businessLogics.authenticationLM.serverTimeFormat.change(serverTimeFormat != null ? serverTimeFormat : BaseUtils.getTimePattern(), session);
 
         apply(session);
     }
@@ -2515,5 +2517,13 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
     public void setServerTwoDigitYearStart(Integer serverTwoDigitYearStart) {
         this.serverTwoDigitYearStart = serverTwoDigitYearStart;
+    }
+
+    public void setServerDateFormat(String serverDateFormat) {
+        this.serverDateFormat = serverDateFormat;
+    }
+
+    public void setServerTimeFormat(String serverTimeFormat) {
+        this.serverTimeFormat = serverTimeFormat;
     }
 }

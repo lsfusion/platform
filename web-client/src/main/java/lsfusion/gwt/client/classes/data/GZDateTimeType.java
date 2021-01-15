@@ -21,7 +21,7 @@ public class GZDateTimeType extends GDateTimeType {
 
     @Override
     public Object parseString(String value, String pattern) throws ParseException {
-        return value.isEmpty() ? null : GZDateTimeDTO.fromDate(GDateType.parseDate(value, getDefaultDateTimeFormat(), getDefaultDateTimeShortFormat(), getDefaultDateFormat()));
+        return value.isEmpty() ? null : GZDateTimeDTO.fromDate(GDateType.parseDate(value, getDateTimeFormat(pattern, true), getDefaultDateTimeShortFormat(), getDefaultDateFormat(true)));
     }
 
     @Override
