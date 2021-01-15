@@ -63,7 +63,7 @@ public class ImportCSVIterator extends ImportMatrixIterator {
         try {
             return type.parseCSV(line.get(fieldIndex));
         } catch (ParseException e) {
-            throw new ParseException(e.getMessage() + String.format(" (row %s, column %s)", csvReader.getLinesRead(), fieldIndex + 1), e);
+            throw ParseException.propagateWithMessage(String.format(" (row %s, column %s)", csvReader.getLinesRead(), fieldIndex + 1), e);
         }
     }
 

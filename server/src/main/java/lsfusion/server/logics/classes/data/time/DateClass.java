@@ -154,7 +154,7 @@ public class DateClass extends DataClass<LocalDate> {
             LocalDateTime result = DateConverter.smartParse(s);
             return result != null ? result.toLocalDate() : null;
         } catch (Exception e) {
-            throw new ParseException("error parsing date: " + s, e);
+            throw ParseException.propagateWithMessage("Error parsing date: " + s, e);
         }
     }
 
