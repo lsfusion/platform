@@ -146,7 +146,7 @@ public class XMLNode implements Node<XMLNode> {
         try {
             return type.parseXML(stringValue);
         } catch (ParseException e) {
-            throw new ParseException(e.getMessage() + String.format(" (tag %s)", key), e);
+            throw ParseException.propagateWithMessage(String.format(" (tag %s)", key), e);
         }
     }
 

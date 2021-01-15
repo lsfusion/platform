@@ -79,7 +79,7 @@ public class ColorClass extends DataClass<Color> {
         try {
             return Color.decode("#" + s.substring(s.length() - 6, s.length()));
         } catch (Exception e) {
-            throw new ParseException("error parsing string to color: " + s, e);
+            throw ParseException.propagateWithMessage("Error parsing string to color: " + s, e);
         }
     }
 

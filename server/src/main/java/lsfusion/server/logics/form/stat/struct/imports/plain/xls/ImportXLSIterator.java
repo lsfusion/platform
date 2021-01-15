@@ -123,7 +123,7 @@ public class ImportXLSIterator extends ImportMatrixIterator {
         try {
             return type.parseXLS(cell, cellValue);
         } catch (ParseException e) {
-            throw new ParseException(e.getMessage() + String.format(" (row %s, column %s)", cell.getRowIndex() + 1, cell.getColumnIndex() + 1), e);
+            throw ParseException.propagateWithMessage(String.format(" (row %s, column %s)", cell.getRowIndex() + 1, cell.getColumnIndex() + 1), e);
         }
     }
 

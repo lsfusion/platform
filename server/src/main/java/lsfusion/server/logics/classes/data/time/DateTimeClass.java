@@ -165,7 +165,7 @@ public class DateTimeClass extends DataClass<LocalDateTime> {
             }
             return DateConverter.smartParse(s);
         } catch (Exception e) {
-            throw new ParseException("error parsing datetime: " + s, e);
+            throw ParseException.propagateWithMessage("Error parsing datetime: " + s, e);
         }
     }
 

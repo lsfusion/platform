@@ -165,7 +165,7 @@ public class NumericClass extends IntegralClass<BigDecimal> {
         try {
             return isEmptyString(s) ? null : new BigDecimal(BaseUtils.replaceCommaSeparator(s));
         } catch (Exception e) {
-            throw new ParseException("error parsing numeric: " + s, e);
+            throw ParseException.propagateWithMessage("Error parsing numeric: " + s, e);
         }
     }
 

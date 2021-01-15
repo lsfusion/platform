@@ -72,7 +72,7 @@ public class TimeClass extends DataClass<LocalTime> {
             }
             return TimeConverter.smartParse(s);
         } catch (Exception e) {
-            throw new ParseException("error parsing time: " + s, e);
+            throw ParseException.propagateWithMessage("Error parsing time: " + s, e);
         }
     }
 
