@@ -38,7 +38,9 @@ public class StyleDefaults {
 
     public static void reset() {
         selectedRowBackgroundColor = null;
+        selectedRowBackgroundColorMixed = null;
         focusedCellBackgroundColor = null;
+        focusedCellBackgroundColorMixed = null;
         focusedCellBorderColor = null;
         tableGridColor = null;
         componentBackgroundRGB = null;
