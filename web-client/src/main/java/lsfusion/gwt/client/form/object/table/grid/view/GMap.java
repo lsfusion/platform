@@ -237,6 +237,8 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
                 var colors = [];
                 cluster.getAllChildMarkers().forEach(function (marker) {
                     colors.push(marker.clusterColor);
+
+                    marker.fromClusterGroup = true;
                 });
                 var colorsSetArray = Array.from(new Set(colors));
 
@@ -339,15 +341,15 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
         });
 
         // on add / remove need because there is a bug in the leaflet, when markers are added to the cluster draggable becomes true when we expect false
-        marker.on('add', function (map) {
-            if (@Objects::equals(Ljava/lang/Object;Ljava/lang/Object;)(thisObject.@GMap::getCurrentKey()(), key) && map.target.dragging)
-                thisObject.@GMap::updateEditing(*)(map.target, false);
+        marker.on('add', function () {
+            if (marker.fromClusterGroup && @Objects::equals(Ljava/lang/Object;Ljava/lang/Object;)(thisObject.@GMap::getCurrentKey()(), key))
+                thisObject.@GMap::updateCurrent(*)(thisObject.@GMap::getCurrentKey()(), true);
+
+            marker.fromClusterGroup = false;
         });
 
         marker.on('remove', function () {
-            if (!@Objects::equals(Ljava/lang/Object;Ljava/lang/Object;)(thisObject.@GMap::getCurrentKey()(), key))
-                this.options.draggable = false;
-
+            marker.options.draggable = false;
         });
 
         markerClusters.addLayer(marker);
@@ -513,8 +515,6 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
     protected native void disableEditing(JavaScriptObject marker, boolean poly)/*-{
         if(poly || marker.dragging != null)
             marker.editing.disable();
-        else // because dragging is not disabled when the marker is in the cluster
-            marker.options.draggable = false;
     }-*/;
 
     protected native void updateLatLng(JavaScriptObject marker, Double latitude, Double longitude, JsArray<JavaScriptObject> poly)/*-{
