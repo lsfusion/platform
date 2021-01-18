@@ -78,6 +78,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public ClientType changeType;
     public ClientType changeWYSType;
     public Pair<ClientObject, Boolean> addRemove;
+    public String asyncOpenForm;
     public boolean askConfirm;
     public String askConfirmMessage;
 
@@ -493,6 +494,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         if(inStream.readBoolean()) {
             addRemove = new Pair<>(pool.deserializeObject(inStream), inStream.readBoolean());
         }
+
+        asyncOpenForm = pool.readString(inStream);
 
         askConfirm = inStream.readBoolean();
         if(askConfirm)

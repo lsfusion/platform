@@ -177,4 +177,10 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
 //                filterOrder((PropertyDrawEntity element) -> element.getValueActionOrProperty() instanceof ActionObjectEntity).getSet().
 //                mapSetValues(propertyDrawEntity -> (Action)propertyDrawEntity.getValueActionOrProperty().property);
 //    }
+
+
+    @Override
+    public String getOpenForm() {
+        return form.getNFStaticForm().getCaption().toString();
+    }
 }

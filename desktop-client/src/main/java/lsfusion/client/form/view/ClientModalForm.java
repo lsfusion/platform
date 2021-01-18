@@ -38,7 +38,7 @@ public class ClientModalForm extends JDialog {
 
         setLayout(new BorderLayout());
 
-        form = new ClientFormController(canonicalName, formSID, ClientModalForm.this.remoteForm, firstChanges, null, true, isDialog) {
+        form = new ClientFormController(canonicalName, formSID, ClientModalForm.this.remoteForm, ClientFormController.deserializeClientForm(ClientModalForm.this.remoteForm), firstChanges, null, true, isDialog) {
             @Override
             public void onFormHidden() {
                 hideDialog();

@@ -535,6 +535,10 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
         return null;
     }
 
+    public String getOpenForm() {
+        return null;
+    }
+
     protected ActionClassImplement<P> createClassImplement(ImOrderSet<ValueClassWrapper> classes, ImOrderSet<P> mapping) {
         return new ActionClassImplement<>(this, classes, mapping);
     }

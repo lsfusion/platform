@@ -64,6 +64,11 @@ public class ActionObjectEntity<P extends PropertyInterface> extends ActionOrPro
         return null;
     }
 
+    @IdentityLazy
+    public String getOpenForm() {
+        return property.getOpenForm();
+    }
+
 //    @IdentityInstanceLazy
 //    private <X extends PropertyInterface> PropertyObjectEntity<?> getFullDrawProperty(PropertyObjectEntity<X> readOnly) {
 //        ImSet<ObjectEntity> allObjects = mapping.valuesSet().merge(readOnly.mapping.valuesSet());

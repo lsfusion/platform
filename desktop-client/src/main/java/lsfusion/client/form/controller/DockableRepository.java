@@ -1,19 +1,27 @@
 package lsfusion.client.form.controller;
 
 
+import lsfusion.client.form.view.ClientFormDockable;
 import lsfusion.interop.form.remote.serialization.SerializationUtil;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class DockableRepository {
     /**
      * the formsList in this repository
      */
     private List<String> formsList = new ArrayList<>();
+
+    /**
+     * opened async forms
+     */
+    private Map<String, ClientFormDockable> asyncForms = new HashMap<>();
 
     /**
      * Writes the formsList of this repository into <code>out</code>.
@@ -63,5 +71,13 @@ public class DockableRepository {
 
     public List<String> getFormsList() {
         return new ArrayList<>(formsList);
+    }
+
+    public void addAsyncForm(String caption, ClientFormDockable asyncForm) {
+        asyncForms.put(caption, asyncForm);
+    }
+
+    public ClientFormDockable removeAsyncForm(String caption) {
+        return asyncForms.remove(caption);
     }
 }

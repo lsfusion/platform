@@ -29,7 +29,9 @@ import lsfusion.gwt.client.view.MainFrame;
 import lsfusion.gwt.client.view.StyleDefaults;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.findInList;
 
@@ -41,6 +43,8 @@ public abstract class FormsController {
     private final List<FormDockable> forms = new ArrayList<>();
     private final List<Integer> formFocusOrder = new ArrayList<>();
     private int focusOrderCount;
+
+    private Map<String, FormContainer> asyncForms = new HashMap<>();
 
     private final WindowsController windowsController;
 
@@ -154,13 +158,29 @@ public abstract class FormsController {
             return null;
         }
 
-        FormContainer formContainer = modalityType.isModalWindow() ? new ModalForm(this) : new FormDockable(this);
-
-        initForm(formContainer, form, hiddenHandler, modalityType.isDialog(), initFilterEvent);
-
-        formContainer.show();
+        FormContainer formContainer = removeAsyncForm(form.getCaption());
+        if(formContainer != null) {
+            initForm(formContainer, form, hiddenHandler, modalityType.isDialog(), initFilterEvent);
+        } else {
+            formContainer = modalityType.isModalWindow() ? new ModalForm(this) : new FormDockable(this, form.getCaption(), false);
+            initForm(formContainer, form, hiddenHandler, modalityType.isDialog(), initFilterEvent);
+            formContainer.show();
+        }
 
         return formContainer;
+    }
+
+    public void asyncOpenForm(String caption, GModalityType modalityType) {
+        FormContainer formContainer = modalityType.isModalWindow() ? new ModalForm(this) : new FormDockable(this, caption, true);
+
+        formContainer.asyncInitForm();
+
+        formContainer.show();
+        asyncForms.put(caption, formContainer);
+    }
+
+    public FormContainer removeAsyncForm(String caption) {
+        return asyncForms.remove(caption);
     }
 
     public void addContextMenuHandler(FormDockable formContainer) {
@@ -199,7 +219,7 @@ public abstract class FormsController {
     }
 
     public FormDockable findForm(String formCanonicalName) {
-        return findInList(forms, dockable -> dockable.getForm().getForm().sID.equals(formCanonicalName));
+        return findInList(forms, dockable -> !dockable.async && dockable.getForm().getForm().sID.equals(formCanonicalName));
     }
 
     public void addDockable(FormDockable dockable) {

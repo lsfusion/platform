@@ -234,6 +234,13 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return null;
     }
 
+    public <A extends PropertyInterface> String getOpenForm(FormEntity form, SecurityPolicy policy) {
+        ActionObjectEntity<A> changeAction = (ActionObjectEntity<A>) getEventAction(CHANGE, form, policy);
+        if(changeAction!=null)
+            return changeAction.getOpenForm();
+        return null;
+    }
+
     private boolean isChange(String eventActionSID) {
         // GROUP_CHANGE can also be in context menu binding (see Property constructor)
         boolean isEdit = CHANGE.equals(eventActionSID) || CHANGE_WYS.equals(eventActionSID) || GROUP_CHANGE.equals(eventActionSID);

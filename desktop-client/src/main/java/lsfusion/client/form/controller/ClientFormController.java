@@ -48,6 +48,8 @@ import lsfusion.client.form.property.cell.controller.dispatch.SimpleChangeProper
 import lsfusion.client.form.property.panel.view.PanelView;
 import lsfusion.client.form.view.ClientFormDockable;
 import lsfusion.client.navigator.ClientNavigator;
+import lsfusion.client.view.DockableMainFrame;
+import lsfusion.client.view.MainFrame;
 import lsfusion.interop.action.*;
 import lsfusion.interop.base.remote.RemoteRequestInterface;
 import lsfusion.interop.form.UpdateMode;
@@ -160,7 +162,7 @@ public class ClientFormController implements AsyncListener {
 
     private ScheduledExecutorService autoRefreshScheduler;
 
-    public ClientFormController(String icanonicalName, String iformSID, RemoteFormInterface iremoteForm, byte[] firstChanges, ClientNavigator iclientNavigator, boolean iisModal, boolean iisDialog) {
+    public ClientFormController(String icanonicalName, String iformSID, RemoteFormInterface iremoteForm, ClientForm iform, byte[] firstChanges, ClientNavigator iclientNavigator, boolean iisModal, boolean iisDialog) {
         formSID = iformSID + (iisModal ? "(modal)" : "") + "(" + System.identityHashCode(this) + ")";
         canonicalName = icanonicalName;
         isDialog = iisDialog;
@@ -175,7 +177,7 @@ public class ClientFormController implements AsyncListener {
         clientNavigator = iclientNavigator;
 
         try {
-            form = new ClientSerializationPool().deserializeObject(new DataInputStream(new ByteArrayInputStream(remoteForm.getRichDesignByteArray())));
+            form = iform;
 
             rmiQueue = new RmiQueue(tableManager, serverMessageProvider, serverMessageListProvider, this);
 
@@ -196,6 +198,14 @@ public class ClientFormController implements AsyncListener {
 
             initializeForm(firstChanges);
         } catch (Exception e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
+    public static ClientForm deserializeClientForm(RemoteFormInterface remoteForm) {
+        try {
+            return new ClientSerializationPool().deserializeObject(new DataInputStream(new ByteArrayInputStream(remoteForm.getRichDesignByteArray())));
+        } catch (IOException e) {
             throw Throwables.propagate(e);
         }
     }
@@ -950,6 +960,15 @@ public class ClientFormController implements AsyncListener {
         });
     }
 
+    public boolean isAsyncOpenForm(ClientPropertyDraw property) {
+        return property.asyncOpenForm != null;
+    }
+
+    public void asyncOpenForm(final ClientPropertyDraw property) throws IOException {
+        assert isAsyncOpenForm(property);
+        ((DockableMainFrame) MainFrame.instance).asyncOpenForm(property.asyncOpenForm);
+    }
+
     public ClientGroupObjectValue getFullCurrentKey() {
         ClientGroupObjectValue fullKey = new ClientGroupObjectValue();
 
@@ -1382,7 +1401,7 @@ public class ClientFormController implements AsyncListener {
     }
 
     public void updateFormCaption() {
-        String caption = form.mainContainer.caption;
+        String caption = form.getCaption();
         setFormCaption(caption, form.getTooltip(caption));
     }
 

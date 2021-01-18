@@ -13,6 +13,7 @@ import bibliothek.gui.dock.support.lookandfeel.LookAndFeelUtilities;
 import lsfusion.client.base.view.ClientDockable;
 import lsfusion.client.base.view.ColorThemeChangeListener;
 import lsfusion.client.controller.MainController;
+import lsfusion.client.form.ClientForm;
 import lsfusion.client.form.print.view.ClientReportDockable;
 import lsfusion.client.form.print.view.EditReportInvoker;
 import lsfusion.client.form.view.ClientFormDockable;
@@ -118,11 +119,27 @@ public class FormsController implements ColorThemeChangeListener {
             page.toFront();
             page.requestFocusInWindow();
         } else {
-            page = new ClientFormDockable(navigator, canonicalName, formSID, remoteForm, this, closeListener, firstChanges);
-            openForm(page);
+
+            ClientForm form = ClientFormController.deserializeClientForm(remoteForm);
+            page = forms.removeAsyncForm(form.getCaption());
+            if(page != null) {
+                page.init(navigator, canonicalName, formSID, remoteForm, form, closeListener, firstChanges);
+            } else {
+                page = new ClientFormDockable(form.getCaption(), this, false);
+                page.init(navigator, canonicalName, formSID, remoteForm, form, closeListener, firstChanges);
+                openForm(page);
+            }
         }
         page.addAction(new CloseAllAction(openedForms));
         return page;
+    }
+
+    public void asyncOpenForm(String caption) {
+        ClientFormDockable page = new ClientFormDockable(caption, this, true);
+        page.asyncInit();
+        openForm(page);
+        page.addAction(new CloseAllAction(openedForms));
+        forms.addAsyncForm(caption, page);
     }
 
     public Integer openReport(ReportGenerationData generationData, String formCaption, String printerName, EditReportInvoker editInvoker) throws IOException, ClassNotFoundException {

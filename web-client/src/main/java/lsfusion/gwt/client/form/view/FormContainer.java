@@ -4,6 +4,7 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.base.Dimension;
@@ -28,6 +29,8 @@ public abstract class FormContainer<W extends Widget> {
 
     protected GFormController form;
 
+    public boolean async;
+
     public FormContainer(FormsController formsController) {
         this.formsController = formsController;
 
@@ -44,24 +47,34 @@ public abstract class FormContainer<W extends Widget> {
 
     private Element focusedElement;
     public void onFocus(boolean add) {
-        form.gainedFocus();
+        if(!async) {
+            form.gainedFocus();
+        }
+
         MainFrame.setCurrentForm(this);
         assert !MainFrame.isModalPopup();
 
-        if(add || focusedElement == null)
-            form.focusFirstWidget();
-        else
-            focusedElement.focus();
-        form.restorePopup();
+        if(!async) {
+            if(add || focusedElement == null)
+                form.focusFirstWidget();
+            else
+                focusedElement.focus();
+            form.restorePopup();
+        }
     }
 
     public void onBlur(boolean remove) {
-        form.lostFocus();
-        focusedElement = remove ? null : GwtClientUtils.getFocusedChild(contentWidget.getElement());
+        if(!async) {
+            form.lostFocus();
+            focusedElement = remove ? null : GwtClientUtils.getFocusedChild(contentWidget.getElement());
+        }
 
         assert MainFrame.getAssertCurrentForm() == this;
         MainFrame.setCurrentForm(null);
-        form.hidePopup();
+
+        if(!async) {
+            form.hidePopup();
+        }
     }
 
     public void initForm(FormsController formsController, GForm gForm, WindowHiddenHandler hiddenHandler, boolean isDialog, Event initFilterEvent) {
@@ -84,6 +97,11 @@ public abstract class FormContainer<W extends Widget> {
         setContent(form);
 
         Scheduler.get().scheduleDeferred(this::initQuickFilter);
+        async = false;
+    }
+
+    public void asyncInitForm() {
+        GwtClientUtils.setThemeImage("loading.gif", imageUrl -> setContent(new Image(imageUrl)), false);
     }
 
     protected abstract void setCaption(String caption, String tooltip);

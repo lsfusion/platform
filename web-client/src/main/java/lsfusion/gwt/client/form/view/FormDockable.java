@@ -17,10 +17,11 @@ public final class FormDockable extends FormContainer<FormDockable.ContentWidget
     private TabWidget tabWidget;
     private FormDockable blockingForm; //GFormController
 
-    public FormDockable(FormsController formsController) {
+    public FormDockable(FormsController formsController, String caption, boolean async) {
         super(formsController);
+        this.async = async;
 
-        tabWidget = new TabWidget("");
+        tabWidget = new TabWidget(caption);
         tabWidget.setBlocked(false);
         formsController.addContextMenuHandler(this);
     }
@@ -65,7 +66,13 @@ public final class FormDockable extends FormContainer<FormDockable.ContentWidget
     }
 
     public void closePressed() {
-        form.closePressed();
+        if(async) {
+            formsController.removeAsyncForm(tabWidget.getTitle());
+            formsController.removeDockable(this);
+            formsController.ensureTabSelected();
+        } else {
+            form.closePressed();
+        }
     }
 
     public Widget getTabWidget() {

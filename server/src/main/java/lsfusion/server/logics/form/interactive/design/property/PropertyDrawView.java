@@ -150,6 +150,10 @@ public class PropertyDrawView extends ComponentView {
         return entity.getAddRemove(context.entity, context.securityPolicy);
     }
 
+    public String getOpenForm(ServerContext context) {
+        return entity.getOpenForm(context.entity, context.securityPolicy);
+    }
+
     public LocalizedString getCaption() {
         return caption != null
                 ? caption
@@ -302,6 +306,8 @@ public class PropertyDrawView extends ComponentView {
             pool.serializeObject(outStream, pool.context.view.getObject(addRemove.first));
             outStream.writeBoolean(addRemove.second);
         }
+
+        pool.writeString(outStream, getOpenForm(pool.context));
 
         outStream.writeBoolean(entity.askConfirm);
         if(entity.askConfirm)

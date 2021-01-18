@@ -86,6 +86,11 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
                         return internalRequestValue(property.changeType);
                     }
                 }
+                boolean isAsyncOpenForm = form.isAsyncOpenForm(property);
+                if (isAsyncOpenForm) {
+                    form.asyncOpenForm(property);
+                    //return true; //comment
+                }
             }
 
             editPerformed = true;

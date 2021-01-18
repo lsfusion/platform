@@ -272,6 +272,8 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
             propertyDraw.addRemove = new GPropertyDraw.AddRemove(addRemoveObject, clientPropertyDraw.addRemove.second);
         }
 
+        propertyDraw.asyncOpenForm = clientPropertyDraw.asyncOpenForm;
+
         propertyDraw.askConfirm = clientPropertyDraw.askConfirm;
         propertyDraw.askConfirmMessage = clientPropertyDraw.askConfirmMessage;
 

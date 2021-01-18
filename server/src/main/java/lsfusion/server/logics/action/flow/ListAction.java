@@ -192,6 +192,22 @@ public class ListAction extends ListCaseAction {
     }
 
     @Override
+    public String getOpenForm() {
+        String result = null;
+        for (ActionMapImplement<?, PropertyInterface> action : getListActions()) {
+            String openForm = action.action.getOpenForm();
+            if (openForm != null) {
+                if (result == null) {
+                    result = openForm;
+                } else {
+                    return null;
+                }
+            }
+        }
+        return result;
+    }
+
+    @Override
     public ActionDelegationType getDelegationType(boolean modifyContext) {
         if(modifyContext || hasDebugLocals())
             return ActionDelegationType.BEFORE_DELEGATE;

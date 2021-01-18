@@ -297,6 +297,14 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
         formsController.getForms().clear();
     }
 
+    public void asyncOpenForm(String caption) {
+        formsController.asyncOpenForm(caption);
+    }
+
+    public void removeOpenForm(String caption) {
+        formsController.getForms().removeAsyncForm(caption);
+    }
+
     @Override
     public void clean() {
         formsController.clean();

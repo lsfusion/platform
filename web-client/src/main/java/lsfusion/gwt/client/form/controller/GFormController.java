@@ -966,6 +966,11 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
                     }
                     return;
                 }
+                final boolean asyncOpenForm = isAsyncOpenForm(property);
+                if (asyncOpenForm) {
+                    formsController.asyncOpenForm(property.asyncOpenForm, GModalityType.DOCKED);
+                    return;
+                }
             }
 
             actionDispatcher.executePropertyActionSID(event, actionSID, editContext);
@@ -1074,6 +1079,10 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             }
         }
         return false;
+    }
+
+    public boolean isAsyncOpenForm(GPropertyDraw property) {
+        return property.asyncOpenForm != null;
     }
 
     public void modifyObject(final GPropertyDraw property, final GGroupObjectValue columnKey) {
@@ -1367,7 +1376,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     public void updateFormCaption() {
-        String caption = form.mainContainer.caption;
+        String caption = form.getCaption();
         setFormCaption(caption, form.getTooltip(caption));
     }
 
