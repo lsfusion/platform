@@ -17,9 +17,8 @@ import java.io.PrintStream;
 import java.util.*;
 
 public class GExceptionManager {
-    private final static List<Throwable> unreportedThrowables = new ArrayList<>();
-    private final static Map<Throwable, Integer> unreportedThrowablesTryCount = new HashMap<>();
-    
+    private final static Set<Throwable> unreportedThrowables = new HashSet<>();
+
     public static void logClientError(Throwable throwable) {
         logClientError(new LogClientExceptionAction(throwable), throwable);
     }
@@ -56,36 +55,30 @@ public class GExceptionManager {
     }
 
     public static void flushUnreportedThrowables() {
+        final List<Throwable> stillUnreported;
         synchronized (unreportedThrowables) {
-            final List<Throwable> stillUnreported = new ArrayList<>(unreportedThrowables);
-            for (final Throwable t : unreportedThrowables) {
-                Integer tryCount = unreportedThrowablesTryCount.get(t);
-                try {
-                    NavigatorDispatchAsync dispatcher = MainFrame.navigatorDispatchAsync;
-                    if(dispatcher != null) { // dispatcher may be not initialized yet (at first look up logics call)
-                        dispatcher.execute(new LogClientExceptionAction(t), new ErrorHandlingCallback<VoidResult>() {
-                            @Override
-                            public void failure(Throwable caught) {
-                                Log.error("Error logging unreported client exception", caught);
-                            }
+            stillUnreported = new ArrayList<>(unreportedThrowables);
+        }
+        for (final Throwable t : stillUnreported) {
+            try {
+                NavigatorDispatchAsync dispatcher = MainFrame.navigatorDispatchAsync;
+                if(dispatcher != null) { // dispatcher may be not initialized yet (at first look up logics call)
+                    dispatcher.execute(new LogClientExceptionAction(t), new ErrorHandlingCallback<VoidResult>() {
+                        @Override
+                        public void failure(Throwable caught) {
+                            Log.error("Error logging unreported client exception", caught);
+                        }
 
-                            @Override
-                            public void success(VoidResult result) {
-                                stillUnreported.remove(t);
-                                unreportedThrowablesTryCount.remove(t);
+                        @Override
+                        public void success(VoidResult result) {
+                            synchronized (unreportedThrowables) {
+                                unreportedThrowables.remove(t);
                             }
-                        });
-                    }
-                } catch (Throwable caught) {
-                    Log.error("Error logging unreported client exception", caught);
+                        }
+                    });
                 }
-            }
-            unreportedThrowables.clear();
-            for(Throwable throwable : stillUnreported) {
-                unreportedThrowables.add(throwable);
-
-                Integer prevCount = unreportedThrowablesTryCount.get(throwable);
-                unreportedThrowablesTryCount.put(throwable, prevCount == null ? 1 : prevCount + 1);
+            } catch (Throwable caught) {
+                Log.error("Error logging unreported client exception", caught);
             }
         }
     }
