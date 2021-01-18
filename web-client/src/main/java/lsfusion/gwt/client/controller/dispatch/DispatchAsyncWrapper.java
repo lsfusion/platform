@@ -83,7 +83,7 @@ public class DispatchAsyncWrapper extends AbstractDispatchAsync {
                     timer.schedule(1000);
                 } else {
                     if (maxTries > -1) // some connection problem
-                        GConnectionLostManager.connectionLost(true, isAuthException);
+                        GConnectionLostManager.connectionLost(isAuthException);
                     DispatchAsyncWrapper.this.onFailure(action, caught, callback);
                 }
             }

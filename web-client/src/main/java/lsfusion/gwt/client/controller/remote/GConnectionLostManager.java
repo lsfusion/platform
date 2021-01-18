@@ -61,8 +61,8 @@ public class GConnectionLostManager {
         };
     }
 
-    public static void connectionLost(boolean lost, boolean auth) {
-        connectionLost.set(lost);
+    public static void connectionLost(boolean auth) {
+        connectionLost.set(true);
         authException.set(auth);
     }
 
@@ -95,7 +95,9 @@ public class GConnectionLostManager {
 
     public static void unregisterFailedRmiRequest() {
         failedRequests.decrementAndGet();
-        connectionLost(false, false);
+        // we don't want to drop connection lost flag, since some requests were dropped (because of their failure), so if we continue working results will be unpredictable
+        // plus succeeded request can be an accident (for example count < 20 check in LogClientActionHandler)
+//        connectionLost(false, false);
     }
 
     private static boolean hasFailedRequest() {
@@ -107,7 +109,7 @@ public class GConnectionLostManager {
     }
 
     public static void invalidate() {
-        connectionLost(true, false);
+        connectionLost(false);
 
         failedRequests.set(0);
 
