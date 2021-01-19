@@ -311,7 +311,9 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
                 thisObject.@GMap::changePolygonProperty(*)(key, marker.getLatLngs()[0]); // https://github.com/Leaflet/Leaflet/issues/5212
             });
         } else {
-            marker = L.marker([0, 0]);
+            marker = L.marker([0, 0],{
+                autoPan: true //Whether to pan the map when dragging this marker near its edge or not.
+            });
 
             var superDragEnd = marker.editing._onDragEnd; // there is a bug with clustering, when you drag marker to cluster, nullpointer happens
             marker.editing._onDragEnd = function(t) {
