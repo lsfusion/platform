@@ -175,7 +175,7 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
                 updateIcon(marker, groupMarker.icon, getDisplayColorFilter(groupMarker));
 
             if(groupMarker.isEditing())
-                updateEditing(marker, isPoly);
+                enableEditing(marker, isPoly);
 
             if (oldGroupMarker == null || !(GwtClientUtils.nullEquals(groupMarker.name, oldGroupMarker.name)))
                 updateName(marker, groupMarker.name);
@@ -237,8 +237,6 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
                 var colors = [];
                 cluster.getAllChildMarkers().forEach(function (marker) {
                     colors.push(marker.clusterColor);
-
-                    marker.fromClusterGroup = true;
                 });
                 var colorsSetArray = Array.from(new Set(colors));
 
@@ -340,18 +338,6 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
 
         });
 
-        // on add / remove need because there is a bug in the leaflet, when markers are added to the cluster draggable becomes true when we expect false
-        marker.on('add', function () {
-            if (marker.fromClusterGroup && @Objects::equals(Ljava/lang/Object;Ljava/lang/Object;)(thisObject.@GMap::getCurrentKey()(), key))
-                thisObject.@GMap::updateCurrent(*)(thisObject.@GMap::getCurrentKey()(), true);
-
-            marker.fromClusterGroup = false;
-        });
-
-        marker.on('remove', function () {
-            marker.options.draggable = false;
-        });
-
         markerClusters.addLayer(marker);
         
         return marker;
@@ -372,7 +358,7 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
                 updateIcon(marker, groupMarker.icon, getDisplayColorFilter(groupMarker));
 
             if(groupMarker.isEditing())
-                updateEditing(marker, isPoly);
+                enableEditing(marker, isPoly);
         }
     }
 
@@ -512,9 +498,16 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
     }
 
     // we need to disable editing before changing icon + check for dragging because of clustering (when there is no dragging which is used by editing)
-    protected native void disableEditing(JavaScriptObject marker, boolean poly)/*-{
-        if(poly || marker.dragging != null)
-            marker.editing.disable();
+    protected native void disableEditing(JavaScriptObject object, boolean poly)/*-{
+        if (poly) {
+            object.editing.disable();
+            object.options.editable = false;
+        } else {
+            if (object.dragging != null)
+                object.dragging.disable();
+
+            object.options.draggable = false;
+        }
     }-*/;
 
     protected native void updateLatLng(JavaScriptObject marker, Double latitude, Double longitude, JsArray<JavaScriptObject> poly)/*-{
@@ -548,17 +541,18 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
         marker.clusterColor = clusterColor;
     }-*/;
 
-    protected native void updateEditing(JavaScriptObject marker, boolean poly)/*-{
-        run = function () { // we need to enable editing after timeout, since when marker is in cluster, after setLatLng move event is fired, which occasionally drops dragging and other fields (scheduleDeferred/Finally looks better in this case but somewhy doesn't work)
-            if (poly || marker.dragging != null) {
-                if (poly) {
-                    var L = $wnd.L;
-                    marker.editing = new L.Edit.Poly(marker); // there is a bug in plugin (with editing after setLatLngs) https://github.com/Leaflet/Leaflet.draw/issues/650
-                }
-                marker.editing.enable();
-            }
+    protected native void enableEditing(JavaScriptObject object, boolean poly)/*-{
+        if (poly) {
+            var L = $wnd.L;
+            object.editing = new L.Edit.Poly(object); // there is a bug in plugin (with editing after setLatLngs) https://github.com/Leaflet/Leaflet.draw/issues/650
+            object.editing.enable();
+            object.options.editable = true;
+        } else {
+            if (object.dragging != null)
+                object.dragging.enable();
+
+            object.options.draggable = true;
         }
-        setTimeout(run, 5);
     }-*/;
 
     protected native void updateName(JavaScriptObject marker, String name)/*-{
