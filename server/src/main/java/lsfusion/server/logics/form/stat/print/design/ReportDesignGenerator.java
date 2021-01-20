@@ -284,7 +284,8 @@ public class ReportDesignGenerator {
         for (ReportFieldExtraType type : ReportFieldExtraType.values()) {
             if (field.hasExtraType(type)) {
                 String fieldId = field.sID + type.getReportFieldNameSuffix();
-                addDesignField(design, fieldId, field.getExtraTypeClass(type).getName());
+                Class cls = field.getExtraTypeClass(type);
+                addDesignField(design, fieldId, cls != null ? cls.getName() : null);
             }
         }
     }
