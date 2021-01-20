@@ -6,7 +6,10 @@ import bibliothek.extension.gui.dock.theme.eclipse.stack.EclipseTabPane;
 import bibliothek.extension.gui.dock.theme.eclipse.stack.tab.*;
 import bibliothek.gui.DockController;
 import bibliothek.gui.Dockable;
-import bibliothek.gui.dock.common.*;
+import bibliothek.gui.dock.common.CContentArea;
+import bibliothek.gui.dock.common.CControl;
+import bibliothek.gui.dock.common.CGrid;
+import bibliothek.gui.dock.common.SingleCDockable;
 import bibliothek.gui.dock.common.intern.*;
 import bibliothek.gui.dock.common.mode.ExtendedMode;
 import bibliothek.gui.dock.common.theme.ThemeMap;
@@ -43,6 +46,7 @@ import lsfusion.client.navigator.controller.dispatch.ClientNavigatorActionDispat
 import lsfusion.client.navigator.window.ClientAbstractWindow;
 import lsfusion.client.navigator.window.view.ClientWindowDockable;
 import lsfusion.interop.action.*;
+import lsfusion.interop.form.ModalityType;
 import lsfusion.interop.form.print.ReportGenerationData;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
@@ -513,7 +517,7 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
     }
 
     @Override
-    public ClientFormDockable runForm(String canonicalName, String formSID, boolean forbidDuplicate, RemoteFormInterface remoteForm, byte[] firstChanges, FormCloseListener closeListener) {
+    public ClientFormDockable runForm(ModalityType modalityType, String canonicalName, String formSID, boolean forbidDuplicate, RemoteFormInterface remoteForm, byte[] firstChanges, FormCloseListener closeListener) {
         try {
             return formsController.openForm(mainNavigator, canonicalName, formSID, forbidDuplicate, remoteForm, firstChanges, closeListener);
         } catch (Exception e) {

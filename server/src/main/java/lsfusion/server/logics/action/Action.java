@@ -10,6 +10,7 @@ import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.interop.action.ServerResponse;
+import lsfusion.interop.form.ModalityType;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
@@ -536,6 +537,10 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
     }
 
     public String getOpenForm() {
+        return null;
+    }
+
+    public ModalityType getModalityType() {
         return null;
     }
 

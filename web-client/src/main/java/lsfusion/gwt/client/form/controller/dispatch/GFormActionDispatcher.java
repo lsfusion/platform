@@ -42,7 +42,7 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
         if (action.modalityType.isModal()) {
             pauseDispatching();
         }
-        form.openForm(action.form, action.modalityType, action.forbidDuplicate, getEditEvent(), () -> {
+        form.openForm(getDispatchingIndex(), action.form, action.modalityType, action.forbidDuplicate, getEditEvent(), () -> {
             if (action.modalityType.isModal()) {
                 continueDispatching();
             }

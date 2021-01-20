@@ -811,12 +811,12 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             return panelController;
     }
 
-    public void openForm(GForm form, GModalityType modalityType, boolean forbidDuplicate, Event initFilterEvent, final WindowHiddenHandler handler) {
+    public void openForm(Long requestIndex, GForm form, GModalityType modalityType, boolean forbidDuplicate, Event initFilterEvent, final WindowHiddenHandler handler) {
         boolean isDockedModal = modalityType == GModalityType.DOCKED_MODAL;
         if (isDockedModal)
             ((FormDockable)formContainer).block();
 
-        FormContainer blockingForm = formsController.openForm(form, modalityType, forbidDuplicate, initFilterEvent, () -> {
+        FormContainer blockingForm = formsController.openForm(requestIndex, form, modalityType, forbidDuplicate, initFilterEvent, () -> {
             if(isDockedModal) {
                 ((FormDockable)formContainer).unblock();
 
@@ -968,8 +968,8 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
                 }
                 final boolean asyncOpenForm = isAsyncOpenForm(property);
                 if (asyncOpenForm) {
-                    formsController.asyncOpenForm(property.asyncOpenForm, GModalityType.DOCKED);
-                    return;
+                    formsController.asyncOpenForm(dispatcher.getNextRequestIndex(), property.asyncOpenForm, property.modalityType);
+                    //return; //comment
                 }
             }
 

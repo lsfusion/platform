@@ -117,6 +117,11 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
         return context.hasMoreSessionUsages || ((formInstance = context.getFormInstance(false, false)) != null && formInstance.isFloat()) || (windowType != null && windowType.equals(WindowFormType.FLOAT));
     }
 
+    //todo: same as above
+    private boolean heuristicSyncType() {
+        return true;
+    }
+
     @Override
     protected void executeInternal(FormEntity form, ImMap<ObjectEntity, ? extends ObjectValue> mapObjectValues, ExecutionContext<ClassPropertyInterface> context, ImRevMap<ObjectEntity, O> mapObjects, ImSet<ContextFilterInstance> contextFilters) throws SQLException, SQLHandledException {
         ImRevMap<O, ObjectEntity> mapRevObjects = mapObjects.reverse();
@@ -181,6 +186,18 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
 
     @Override
     public String getOpenForm() {
-        return form.getNFStaticForm().getCaption().toString();
+        FormEntity staticForm = form.getNFStaticForm();
+        return staticForm != null ? staticForm.getCaption().toString() : null;
+    }
+
+    @Override
+    public ModalityType getModalityType() {
+        boolean syncType;
+        if(this.syncType != null)
+            syncType = this.syncType;
+        else
+            syncType = heuristicSyncType();
+
+        return getModalityType(syncType);
     }
 }

@@ -21,7 +21,6 @@ import lsfusion.client.navigator.ClientNavigator;
 import lsfusion.client.view.MainFrame;
 import lsfusion.interop.form.print.ReportGenerationData;
 import lsfusion.interop.form.remote.RemoteFormInterface;
-import net.sf.jasperreports.engine.JRException;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -107,7 +106,7 @@ public class FormsController implements ColorThemeChangeListener {
         openedForms.add(page);
     }
 
-    public ClientFormDockable openForm(ClientNavigator navigator, String canonicalName, String formSID, boolean forbidDuplicate, RemoteFormInterface remoteForm, byte[] firstChanges, MainFrame.FormCloseListener closeListener) throws IOException, ClassNotFoundException, JRException {
+    public ClientFormDockable openForm(ClientNavigator navigator, String canonicalName, String formSID, boolean forbidDuplicate, RemoteFormInterface remoteForm, byte[] firstChanges, MainFrame.FormCloseListener closeListener) {
         ClientFormDockable page = null;
         if (MainController.forbidDuplicateForms && forbidDuplicate && forms.getFormsList().contains(formSID)) {
             ClientDockable dockable = (ClientDockable) control.getCDockable(control.getCDockableCount() - forms.getFormsList().size() + forms.getFormsList().indexOf(formSID));
@@ -120,25 +119,27 @@ public class FormsController implements ColorThemeChangeListener {
             page.requestFocusInWindow();
         } else {
 
-            ClientForm form = ClientFormController.deserializeClientForm(remoteForm);
-            page = forms.removeAsyncForm(form.getCaption());
-            if(page != null) {
-                page.init(navigator, canonicalName, formSID, remoteForm, form, closeListener, firstChanges);
+            ClientForm clientForm = ClientFormController.deserializeClientForm(remoteForm);
+            page = forms.removeAsyncForm(clientForm.getCaption());
+
+            boolean asyncOpened = page != null;
+            if (!asyncOpened) {
+                page = new ClientFormDockable(clientForm.getCaption(), this, openedForms, false);
             } else {
-                page = new ClientFormDockable(form.getCaption(), this, false);
-                page.init(navigator, canonicalName, formSID, remoteForm, form, closeListener, firstChanges);
+                page.getContentPane().removeAll(); //remove loading
+            }
+            page.init(navigator, canonicalName, formSID, remoteForm, clientForm, closeListener, firstChanges);
+            if (!asyncOpened) {
                 openForm(page);
             }
         }
-        page.addAction(new CloseAllAction(openedForms));
         return page;
     }
 
     public void asyncOpenForm(String caption) {
-        ClientFormDockable page = new ClientFormDockable(caption, this, true);
+        ClientFormDockable page = new ClientFormDockable(caption, this, openedForms, true);
         page.asyncInit();
         openForm(page);
-        page.addAction(new CloseAllAction(openedForms));
         forms.addAsyncForm(caption, page);
     }
 

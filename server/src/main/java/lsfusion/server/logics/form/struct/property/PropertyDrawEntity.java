@@ -10,6 +10,7 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.identity.IdentityObject;
+import lsfusion.interop.form.ModalityType;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.PropertyEditType;
 import lsfusion.interop.form.property.PropertyGroupType;
@@ -238,6 +239,13 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         ActionObjectEntity<A> changeAction = (ActionObjectEntity<A>) getEventAction(CHANGE, form, policy);
         if(changeAction!=null)
             return changeAction.getOpenForm();
+        return null;
+    }
+
+    public <A extends PropertyInterface> ModalityType getModalityType(FormEntity form, SecurityPolicy policy) {
+        ActionObjectEntity<A> changeAction = (ActionObjectEntity<A>) getEventAction(CHANGE, form, policy);
+        if(changeAction!=null)
+            return changeAction.getModalityType();
         return null;
     }
 

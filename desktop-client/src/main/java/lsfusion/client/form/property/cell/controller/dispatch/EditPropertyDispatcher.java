@@ -87,7 +87,8 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
                     }
                 }
                 boolean isAsyncOpenForm = form.isAsyncOpenForm(property);
-                if (isAsyncOpenForm) {
+                //ignore async modal windows in desktop
+                if (isAsyncOpenForm && !property.modalityType.isModalWindow()) {
                     form.asyncOpenForm(property);
                     //return true; //comment
                 }

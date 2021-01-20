@@ -24,6 +24,7 @@ import lsfusion.client.form.property.cell.classes.view.FormatPropertyRenderer;
 import lsfusion.client.form.property.cell.view.PropertyRenderer;
 import lsfusion.client.form.property.panel.view.PanelView;
 import lsfusion.interop.base.view.FlexAlignment;
+import lsfusion.interop.form.ModalityType;
 import lsfusion.interop.form.event.KeyInputEvent;
 import lsfusion.interop.form.event.MouseInputEvent;
 import lsfusion.interop.form.property.Compare;
@@ -79,6 +80,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public ClientType changeWYSType;
     public Pair<ClientObject, Boolean> addRemove;
     public String asyncOpenForm;
+    public ModalityType modalityType;
     public boolean askConfirm;
     public String askConfirmMessage;
 
@@ -496,6 +498,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         }
 
         asyncOpenForm = pool.readString(inStream);
+        modalityType = ModalityType.deserialize(inStream.readByte());
 
         askConfirm = inStream.readBoolean();
         if(askConfirm)

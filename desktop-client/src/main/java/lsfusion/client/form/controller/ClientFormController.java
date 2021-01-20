@@ -964,7 +964,7 @@ public class ClientFormController implements AsyncListener {
         return property.asyncOpenForm != null;
     }
 
-    public void asyncOpenForm(final ClientPropertyDraw property) throws IOException {
+    public void asyncOpenForm(ClientPropertyDraw property) throws IOException {
         assert isAsyncOpenForm(property);
         ((DockableMainFrame) MainFrame.instance).asyncOpenForm(property.asyncOpenForm);
     }

@@ -5,11 +5,13 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.base.EscapeUtils;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.TooltipManager;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.navigator.window.GModalityType;
 
 import static lsfusion.gwt.client.view.StyleDefaults.VALUE_HEIGHT;
 
@@ -17,9 +19,8 @@ public final class FormDockable extends FormContainer<FormDockable.ContentWidget
     private TabWidget tabWidget;
     private FormDockable blockingForm; //GFormController
 
-    public FormDockable(FormsController formsController, String caption, boolean async) {
-        super(formsController);
-        this.async = async;
+    public FormDockable(FormsController formsController, Long requestIndex, String caption, GModalityType modalityType, boolean async) {
+        super(formsController, requestIndex, modalityType, async);
 
         tabWidget = new TabWidget(caption);
         tabWidget.setBlocked(false);
@@ -28,7 +29,11 @@ public final class FormDockable extends FormContainer<FormDockable.ContentWidget
 
     @Override
     protected ContentWidget initContentWidget() {
-        return new ContentWidget(null);
+        ContentWidget contentWidget = new ContentWidget(null);
+        if(async) {
+            GwtClientUtils.setThemeImage("loading.gif", imageUrl -> contentWidget.setContent(createLoadingWidget(imageUrl)), false);
+        }
+        return contentWidget;
     }
 
     @Override
@@ -67,7 +72,7 @@ public final class FormDockable extends FormContainer<FormDockable.ContentWidget
 
     public void closePressed() {
         if(async) {
-            formsController.removeAsyncForm(tabWidget.getTitle());
+            formsController.removeAsyncForm(requestIndex);
             formsController.removeDockable(this);
             formsController.ensureTabSelected();
         } else {

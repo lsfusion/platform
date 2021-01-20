@@ -7,6 +7,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MList;
+import lsfusion.interop.form.ModalityType;
 import lsfusion.server.base.caches.IdentityStartLazy;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
@@ -199,6 +200,22 @@ public class ListAction extends ListCaseAction {
             if (openForm != null) {
                 if (result == null) {
                     result = openForm;
+                } else {
+                    return null;
+                }
+            }
+        }
+        return result;
+    }
+
+    @Override
+    public ModalityType getModalityType() {
+        ModalityType result = null;
+        for (ActionMapImplement<?, PropertyInterface> action : getListActions()) {
+            ModalityType modalityType = action.action.getModalityType();
+            if (modalityType != null) {
+                if (result == null) {
+                    result = modalityType;
                 } else {
                     return null;
                 }

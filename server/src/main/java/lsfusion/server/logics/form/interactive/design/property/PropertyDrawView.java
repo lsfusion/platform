@@ -7,6 +7,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.classes.DataType;
+import lsfusion.interop.form.ModalityType;
 import lsfusion.interop.form.event.KeyInputEvent;
 import lsfusion.interop.form.event.MouseInputEvent;
 import lsfusion.interop.form.print.ReportFieldExtraType;
@@ -46,6 +47,7 @@ import java.text.DecimalFormat;
 import java.text.Format;
 import java.text.SimpleDateFormat;
 
+import static lsfusion.base.BaseUtils.nvl;
 import static lsfusion.interop.action.ServerResponse.CHANGE;
 import static lsfusion.interop.action.ServerResponse.EDIT_OBJECT;
 import static lsfusion.server.logics.form.struct.property.PropertyDrawExtraType.*;
@@ -152,6 +154,10 @@ public class PropertyDrawView extends ComponentView {
 
     public String getOpenForm(ServerContext context) {
         return entity.getOpenForm(context.entity, context.securityPolicy);
+    }
+
+    public ModalityType getModalityType(ServerContext context) {
+        return entity.getModalityType(context.entity, context.securityPolicy);
     }
 
     public LocalizedString getCaption() {
@@ -308,6 +314,9 @@ public class PropertyDrawView extends ComponentView {
         }
 
         pool.writeString(outStream, getOpenForm(pool.context));
+
+        ModalityType modalityType = getModalityType(pool.context);
+        outStream.writeByte(nvl(modalityType, ModalityType.DOCKED).serialize());
 
         outStream.writeBoolean(entity.askConfirm);
         if(entity.askConfirm)

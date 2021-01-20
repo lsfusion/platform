@@ -4,23 +4,26 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.Image;
-import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.ui.*;
+import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.base.Dimension;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.exception.ErrorHandlingCallback;
 import lsfusion.gwt.client.base.result.NumberResult;
+import lsfusion.gwt.client.base.view.ResizableWindow;
 import lsfusion.gwt.client.base.view.WindowHiddenHandler;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.event.GKeyStroke;
+import lsfusion.gwt.client.navigator.window.GModalityType;
 import lsfusion.gwt.client.view.MainFrame;
 
 import static java.lang.Math.min;
 
 // multiple inheritance
 public abstract class FormContainer<W extends Widget> {
+    private static final ClientMessages messages = ClientMessages.Instance.get();
 
     protected final FormsController formsController;
     protected final W contentWidget;
@@ -29,10 +32,15 @@ public abstract class FormContainer<W extends Widget> {
 
     protected GFormController form;
 
+    public Long requestIndex;
+    public GModalityType modalityType;
     public boolean async;
 
-    public FormContainer(FormsController formsController) {
+    public FormContainer(FormsController formsController, Long requestIndex, GModalityType modalityType, boolean async) {
         this.formsController = formsController;
+        this.requestIndex = requestIndex;
+        this.modalityType = modalityType;
+        this.async = async;
 
         this.contentWidget = initContentWidget();
     }
@@ -100,10 +108,6 @@ public abstract class FormContainer<W extends Widget> {
         async = false;
     }
 
-    public void asyncInitForm() {
-        GwtClientUtils.setThemeImage("loading.gif", imageUrl -> setContent(new Image(imageUrl)), false);
-    }
-
     protected abstract void setCaption(String caption, String tooltip);
 
     public GFormController getForm() {
@@ -111,16 +115,18 @@ public abstract class FormContainer<W extends Widget> {
     }
 
     protected void initMaxPreferredSize() {
-        Dimension size = form.getMaxPreferredSize();
-        if (size.width > 0) {
-            int wndWidth = Window.getClientWidth();
-            size.width = min(size.width + 20, wndWidth - 20);
-            form.setWidth(size.width + "px");
-        }
-        if (size.height > 0) {
-            int wndHeight = Window.getClientHeight();
-            size.height = min(size.height, wndHeight - 100);
-            form.setHeight(size.height + "px");
+        if(!async) {
+            Dimension size = form.getMaxPreferredSize();
+            if (size.width > 0) {
+                int wndWidth = Window.getClientWidth();
+                size.width = min(size.width + 20, wndWidth - 20);
+                form.setWidth(size.width + "px");
+            }
+            if (size.height > 0) {
+                int wndHeight = Window.getClientHeight();
+                size.height = min(size.height, wndHeight - 100);
+                form.setHeight(size.height + "px");
+            }
         }
     }
 
@@ -140,5 +146,26 @@ public abstract class FormContainer<W extends Widget> {
                 });
             }
         }
+    }
+
+    protected Widget createLoadingWidget(String imageUrl) {
+        VerticalPanel loadingWidget = new VerticalPanel();
+        loadingWidget.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+        loadingWidget.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
+
+        HorizontalPanel topPanel = new HorizontalPanel();
+        topPanel.setSpacing(5);
+        Image image = new Image(imageUrl);
+        image.setSize("16px", "16px");
+        topPanel.add(image);
+        topPanel.add(new HTML(messages.loading()));
+
+        loadingWidget.add(topPanel);
+
+        return loadingWidget;
+    }
+
+    public void clearMainPanel() {
+        ((ResizableWindow)contentWidget).clearMainPanel();
     }
 }

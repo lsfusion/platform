@@ -30,6 +30,7 @@ import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.classes.view.FormatCellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.panel.view.PanelRenderer;
+import lsfusion.gwt.client.navigator.window.GModalityType;
 import lsfusion.gwt.client.view.MainFrame;
 import lsfusion.gwt.client.view.StyleDefaults;
 
@@ -75,6 +76,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
     public AddRemove addRemove;
     public String asyncOpenForm;
+    public GModalityType modalityType;
     public boolean askConfirm;
     public String askConfirmMessage;
 

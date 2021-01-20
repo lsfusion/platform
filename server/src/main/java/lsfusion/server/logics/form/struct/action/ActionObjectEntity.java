@@ -3,6 +3,7 @@ package lsfusion.server.logics.form.struct.action;
 import lsfusion.base.Pair;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
+import lsfusion.interop.form.ModalityType;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.logics.action.Action;
@@ -67,6 +68,11 @@ public class ActionObjectEntity<P extends PropertyInterface> extends ActionOrPro
     @IdentityLazy
     public String getOpenForm() {
         return property.getOpenForm();
+    }
+
+    @IdentityLazy
+    public ModalityType getModalityType() {
+        return property.getModalityType();
     }
 
 //    @IdentityInstanceLazy

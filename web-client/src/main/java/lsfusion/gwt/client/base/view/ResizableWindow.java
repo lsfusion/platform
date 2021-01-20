@@ -75,9 +75,10 @@ public class ResizableWindow extends Composite {
             throw new NullPointerException("Content widget should not be null.");
         }
 
-        if (contentWidget != null) {
-            throw new IllegalStateException("Content widget should only be set once");
-        }
+        //todo: reset contentWidget if asyncOpened
+        //if (contentWidget != null) {
+        //    throw new IllegalStateException("Content widget should only be set once");
+        //}
 
         contentWidget = icontentWidget;
         initLayout();
@@ -297,5 +298,16 @@ public class ResizableWindow extends Composite {
                 }
             }
         }
+    }
+
+    //todo: calculate size
+    public void setDefaultSize() {
+        headerWidget.setSize("790px", "20px");
+        contentWidget.setSize("790px", "580px");
+    }
+
+    //reset main panel
+    public void clearMainPanel() {
+        mainPanel.clear();
     }
 }
