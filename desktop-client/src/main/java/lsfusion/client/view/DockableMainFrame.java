@@ -46,8 +46,8 @@ import lsfusion.client.navigator.controller.dispatch.ClientNavigatorActionDispat
 import lsfusion.client.navigator.window.ClientAbstractWindow;
 import lsfusion.client.navigator.window.view.ClientWindowDockable;
 import lsfusion.interop.action.*;
-import lsfusion.interop.form.ModalityType;
 import lsfusion.interop.form.print.ReportGenerationData;
+import lsfusion.interop.form.property.OpenForm;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
 import lsfusion.interop.navigator.window.WindowType;
@@ -301,8 +301,8 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
         formsController.getForms().clear();
     }
 
-    public void asyncOpenForm(String caption) {
-        formsController.asyncOpenForm(caption);
+    public void asyncOpenForm(OpenForm openForm) {
+        formsController.asyncOpenForm(openForm);
     }
 
     public void removeOpenForm(String caption) {
@@ -517,7 +517,7 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
     }
 
     @Override
-    public ClientFormDockable runForm(ModalityType modalityType, String canonicalName, String formSID, boolean forbidDuplicate, RemoteFormInterface remoteForm, byte[] firstChanges, FormCloseListener closeListener) {
+    public ClientFormDockable runForm(String canonicalName, String formSID, boolean forbidDuplicate, RemoteFormInterface remoteForm, byte[] firstChanges, FormCloseListener closeListener) {
         try {
             return formsController.openForm(mainNavigator, canonicalName, formSID, forbidDuplicate, remoteForm, firstChanges, closeListener);
         } catch (Exception e) {

@@ -27,6 +27,7 @@ import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.ModalityType;
 import lsfusion.interop.form.event.KeyInputEvent;
 import lsfusion.interop.form.event.MouseInputEvent;
+import lsfusion.interop.form.property.OpenForm;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.form.property.PropertyEditType;
 import lsfusion.interop.form.property.PropertyReadType;
@@ -81,6 +82,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public Pair<ClientObject, Boolean> addRemove;
     public String asyncOpenForm;
     public ModalityType modalityType;
+    public OpenForm openForm;
     public boolean askConfirm;
     public String askConfirmMessage;
 
@@ -497,8 +499,9 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
             addRemove = new Pair<>(pool.deserializeObject(inStream), inStream.readBoolean());
         }
 
-        asyncOpenForm = pool.readString(inStream);
-        modalityType = ModalityType.deserialize(inStream.readByte());
+        if(inStream.readBoolean()) {
+            openForm = new OpenForm(pool.readString(inStream), pool.readBoolean(inStream));
+        }
 
         askConfirm = inStream.readBoolean();
         if(askConfirm)

@@ -75,8 +75,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public GType changeType;
 
     public AddRemove addRemove;
-    public String asyncOpenForm;
-    public GModalityType modalityType;
+    public GOpenForm openForm;
     public boolean askConfirm;
     public String askConfirmMessage;
 

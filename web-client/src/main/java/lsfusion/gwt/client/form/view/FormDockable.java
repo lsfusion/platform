@@ -11,7 +11,6 @@ import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
-import lsfusion.gwt.client.navigator.window.GModalityType;
 
 import static lsfusion.gwt.client.view.StyleDefaults.VALUE_HEIGHT;
 
@@ -19,21 +18,21 @@ public final class FormDockable extends FormContainer<FormDockable.ContentWidget
     private TabWidget tabWidget;
     private FormDockable blockingForm; //GFormController
 
-    public FormDockable(FormsController formsController, Long requestIndex, String caption, GModalityType modalityType, boolean async) {
-        super(formsController, requestIndex, modalityType, async);
+    public FormDockable(FormsController formsController, Long requestIndex, String caption, boolean async) {
+        super(formsController, requestIndex, async);
 
         tabWidget = new TabWidget(caption);
         tabWidget.setBlocked(false);
         formsController.addContextMenuHandler(this);
+
+        if(async) {
+            GwtClientUtils.setThemeImage("loading.gif", imageUrl -> contentWidget.setContent(createLoadingWidget(imageUrl)), false);
+        }
     }
 
     @Override
     protected ContentWidget initContentWidget() {
-        ContentWidget contentWidget = new ContentWidget(null);
-        if(async) {
-            GwtClientUtils.setThemeImage("loading.gif", imageUrl -> contentWidget.setContent(createLoadingWidget(imageUrl)), false);
-        }
-        return contentWidget;
+        return new ContentWidget(null);
     }
 
     @Override

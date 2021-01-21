@@ -44,6 +44,7 @@ import lsfusion.interop.form.design.FontInfo;
 import lsfusion.interop.form.event.BindingMode;
 import lsfusion.interop.form.event.KeyInputEvent;
 import lsfusion.interop.form.event.MouseInputEvent;
+import lsfusion.interop.form.property.OpenForm;
 import lsfusion.interop.form.property.PivotOptions;
 import lsfusion.interop.form.property.PropertyEditType;
 import lsfusion.interop.form.property.PropertyGroupType;
@@ -274,8 +275,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
             propertyDraw.addRemove = new GPropertyDraw.AddRemove(addRemoveObject, clientPropertyDraw.addRemove.second);
         }
 
-        propertyDraw.asyncOpenForm = clientPropertyDraw.asyncOpenForm;
-        propertyDraw.modalityType = convertOrCast(clientPropertyDraw.modalityType);
+        propertyDraw.openForm = convertOrCast(clientPropertyDraw.openForm);
 
         propertyDraw.askConfirm = clientPropertyDraw.askConfirm;
         propertyDraw.askConfirmMessage = clientPropertyDraw.askConfirmMessage;
@@ -558,6 +558,12 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         groupObject.rowForegroundReader = convertRowForegroundReader(clientGroupObject.rowForegroundReader);
 
         return groupObject;
+    }
+
+    @Cached
+    @Converter(from = OpenForm.class)
+    public GOpenForm convertOpenForm(OpenForm openForm) {
+        return new GOpenForm(openForm.caption, openForm.modal);
     }
 
     @Cached

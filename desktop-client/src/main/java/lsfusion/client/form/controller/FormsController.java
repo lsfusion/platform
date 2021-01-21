@@ -20,6 +20,7 @@ import lsfusion.client.form.view.ClientFormDockable;
 import lsfusion.client.navigator.ClientNavigator;
 import lsfusion.client.view.MainFrame;
 import lsfusion.interop.form.print.ReportGenerationData;
+import lsfusion.interop.form.property.OpenForm;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 
 import java.io.IOException;
@@ -136,11 +137,11 @@ public class FormsController implements ColorThemeChangeListener {
         return page;
     }
 
-    public void asyncOpenForm(String caption) {
-        ClientFormDockable page = new ClientFormDockable(caption, this, openedForms, true);
+    public void asyncOpenForm(OpenForm openForm) {
+        ClientFormDockable page = new ClientFormDockable(openForm.caption, this, openedForms, true);
         page.asyncInit();
         openForm(page);
-        forms.addAsyncForm(caption, page);
+        forms.addAsyncForm(openForm.caption, page);
     }
 
     public Integer openReport(ReportGenerationData generationData, String formCaption, String printerName, EditReportInvoker editInvoker) throws IOException, ClassNotFoundException {

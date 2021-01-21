@@ -961,12 +961,12 @@ public class ClientFormController implements AsyncListener {
     }
 
     public boolean isAsyncOpenForm(ClientPropertyDraw property) {
-        return property.asyncOpenForm != null;
+        return property.openForm != null;
     }
 
     public void asyncOpenForm(ClientPropertyDraw property) throws IOException {
         assert isAsyncOpenForm(property);
-        ((DockableMainFrame) MainFrame.instance).asyncOpenForm(property.asyncOpenForm);
+        ((DockableMainFrame) MainFrame.instance).asyncOpenForm(property.openForm);
     }
 
     public ClientGroupObjectValue getFullCurrentKey() {

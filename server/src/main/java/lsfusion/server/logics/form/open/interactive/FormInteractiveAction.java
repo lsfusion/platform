@@ -5,6 +5,7 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.interop.form.ModalityType;
 import lsfusion.interop.form.WindowFormType;
+import lsfusion.interop.form.property.OpenForm;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.ObjectValue;
@@ -185,13 +186,13 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
 
 
     @Override
-    public String getOpenForm() {
+    public OpenForm getOpenForm() {
         FormEntity staticForm = form.getNFStaticForm();
-        return staticForm != null ? staticForm.getCaption().toString() : null;
+        String caption = staticForm != null ? staticForm.getCaption().toString() : null;
+        return new OpenForm(caption, getModalityType().isModalWindow());
     }
 
-    @Override
-    public ModalityType getModalityType() {
+    private ModalityType getModalityType() {
         boolean syncType;
         if(this.syncType != null)
             syncType = this.syncType;

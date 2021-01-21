@@ -11,12 +11,10 @@ import lsfusion.gwt.client.base.Dimension;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.exception.ErrorHandlingCallback;
 import lsfusion.gwt.client.base.result.NumberResult;
-import lsfusion.gwt.client.base.view.ResizableWindow;
 import lsfusion.gwt.client.base.view.WindowHiddenHandler;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.event.GKeyStroke;
-import lsfusion.gwt.client.navigator.window.GModalityType;
 import lsfusion.gwt.client.view.MainFrame;
 
 import static java.lang.Math.min;
@@ -33,13 +31,11 @@ public abstract class FormContainer<W extends Widget> {
     protected GFormController form;
 
     public Long requestIndex;
-    public GModalityType modalityType;
     public boolean async;
 
-    public FormContainer(FormsController formsController, Long requestIndex, GModalityType modalityType, boolean async) {
+    public FormContainer(FormsController formsController, Long requestIndex, boolean async) {
         this.formsController = formsController;
         this.requestIndex = requestIndex;
-        this.modalityType = modalityType;
         this.async = async;
 
         this.contentWidget = initContentWidget();
@@ -77,7 +73,8 @@ public abstract class FormContainer<W extends Widget> {
             focusedElement = remove ? null : GwtClientUtils.getFocusedChild(contentWidget.getElement());
         }
 
-        assert MainFrame.getAssertCurrentForm() == this;
+        //todo
+        //assert MainFrame.getAssertCurrentForm() == this;
         MainFrame.setCurrentForm(null);
 
         if(!async) {
@@ -163,9 +160,5 @@ public abstract class FormContainer<W extends Widget> {
         loadingWidget.add(topPanel);
 
         return loadingWidget;
-    }
-
-    public void clearMainPanel() {
-        ((ResizableWindow)contentWidget).clearMainPanel();
     }
 }

@@ -968,7 +968,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
                 }
                 final boolean asyncOpenForm = isAsyncOpenForm(property);
                 if (asyncOpenForm) {
-                    formsController.asyncOpenForm(dispatcher.getNextRequestIndex(), property.asyncOpenForm, property.modalityType);
+                    formsController.asyncOpenForm(dispatcher.getNextRequestIndex(), property.openForm);
                     //return; //comment
                 }
             }
@@ -1082,7 +1082,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     public boolean isAsyncOpenForm(GPropertyDraw property) {
-        return property.asyncOpenForm != null;
+        return property.openForm != null;
     }
 
     public void modifyObject(final GPropertyDraw property, final GGroupObjectValue columnKey) {

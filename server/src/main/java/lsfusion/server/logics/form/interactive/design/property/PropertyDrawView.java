@@ -7,11 +7,11 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.classes.DataType;
-import lsfusion.interop.form.ModalityType;
 import lsfusion.interop.form.event.KeyInputEvent;
 import lsfusion.interop.form.event.MouseInputEvent;
 import lsfusion.interop.form.print.ReportFieldExtraType;
 import lsfusion.interop.form.property.Compare;
+import lsfusion.interop.form.property.OpenForm;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.TypeSerializer;
@@ -152,12 +152,8 @@ public class PropertyDrawView extends ComponentView {
         return entity.getAddRemove(context.entity, context.securityPolicy);
     }
 
-    public String getOpenForm(ServerContext context) {
+    public OpenForm getOpenForm(ServerContext context) {
         return entity.getOpenForm(context.entity, context.securityPolicy);
-    }
-
-    public ModalityType getModalityType(ServerContext context) {
-        return entity.getModalityType(context.entity, context.securityPolicy);
     }
 
     public LocalizedString getCaption() {
@@ -313,10 +309,12 @@ public class PropertyDrawView extends ComponentView {
             outStream.writeBoolean(addRemove.second);
         }
 
-        pool.writeString(outStream, getOpenForm(pool.context));
-
-        ModalityType modalityType = getModalityType(pool.context);
-        outStream.writeByte(nvl(modalityType, ModalityType.DOCKED).serialize());
+        OpenForm openForm = getOpenForm(pool.context);
+        pool.writeBoolean(outStream, openForm != null);
+        if(openForm != null) {
+            pool.writeString(outStream, openForm.caption);
+            pool.writeBoolean(outStream, openForm.modal);
+        }
 
         outStream.writeBoolean(entity.askConfirm);
         if(entity.askConfirm)

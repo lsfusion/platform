@@ -207,7 +207,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
         if (modalityType == ModalityType.DOCKED_MODAL) {
             pauseDispatching();
             beforeModalActionInSameEDT(true);
-            ClientFormDockable blockingForm = MainFrame.instance.runForm(action.modalityType, action.canonicalName, action.formSID, false, remoteForm, action.firstChanges, openFailed -> {
+            ClientFormDockable blockingForm = MainFrame.instance.runForm(action.canonicalName, action.formSID, false, remoteForm, action.firstChanges, openFailed -> {
                 afterModalActionInSameEDT(true);
                 if (!openFailed) {
                     continueDispatching();
@@ -228,7 +228,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
             form.init(action.canonicalName, action.formSID, remoteForm, clientForm, action.firstChanges, modalityType.isDialog(), editEvent);
             form.showDialog(false);
         } else {
-            MainFrame.instance.runForm(action.modalityType, action.canonicalName, action.formSID, action.forbidDuplicate, remoteForm, action.firstChanges, null);
+            MainFrame.instance.runForm(action.canonicalName, action.formSID, action.forbidDuplicate, remoteForm, action.firstChanges, null);
         }
     }
 

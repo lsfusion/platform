@@ -7,6 +7,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.ContextMenuEvent;
 import com.google.gwt.event.dom.client.ContextMenuHandler;
 import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.RootPanel;
@@ -15,11 +16,11 @@ import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.PopupDialogPanel;
-import lsfusion.gwt.client.base.view.ResizableWindow;
 import lsfusion.gwt.client.base.view.WindowHiddenHandler;
 import lsfusion.gwt.client.form.design.view.flex.FlexTabbedPanel;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
 import lsfusion.gwt.client.form.object.table.view.GToolbarView;
+import lsfusion.gwt.client.form.property.GOpenForm;
 import lsfusion.gwt.client.form.view.FormContainer;
 import lsfusion.gwt.client.form.view.FormDockable;
 import lsfusion.gwt.client.form.view.ModalForm;
@@ -159,30 +160,52 @@ public abstract class FormsController {
             return null;
         }
 
+        boolean modal = modalityType.isModalWindow();
         FormContainer formContainer = removeAsyncForm(requestIndex);
         boolean hasAsyncForm = formContainer != null;
-        boolean asyncOpened = hasAsyncForm && formContainer.modalityType == modalityType;
+        boolean asyncOpened = hasAsyncForm && formContainer instanceof ModalForm == modal;
         if(hasAsyncForm && !asyncOpened) {
             formContainer.hide();
             ensureTabSelected();
         }
 
-        if (!asyncOpened)
-            formContainer = modalityType.isModalWindow() ? new ModalForm(this, requestIndex, form.getCaption(), modalityType, false) : new FormDockable(this, requestIndex, form.getCaption(), modalityType, false);
-        if(asyncOpened && modalityType.isModalWindow()) {
-            formContainer.clearMainPanel();;
+        if (!asyncOpened) {
+            if(modal) {
+                if(openFormTimer != null) {
+                    openFormTimer.cancel();
+                    openFormTimer = null;
+                }
+                formContainer = new ModalForm(this, requestIndex, form.getCaption(), false);
+            } else {
+                formContainer = new FormDockable(this, requestIndex, form.getCaption(), false);
+            }
+
         }
         initForm(formContainer, form, hiddenHandler, modalityType.isDialog(), initFilterEvent);
-        if (!asyncOpened || modalityType.isModalWindow())
+        if (!asyncOpened || modal)
             formContainer.show();
 
         return formContainer;
     }
 
-    public void asyncOpenForm(Long requestIndex, String caption, GModalityType modalityType) {
-        FormContainer formContainer = modalityType.isModalWindow() ? new ModalForm(this, requestIndex, caption, modalityType, true) : new FormDockable(this, requestIndex, caption, modalityType, true);
-        formContainer.show();
-        asyncForms.put(requestIndex, formContainer);
+    Timer openFormTimer;
+    public void asyncOpenForm(Long requestIndex, GOpenForm openForm) {
+        if(openForm.modal) {
+            FormContainer formContainer = new ModalForm(this, requestIndex, openForm.caption, true);
+            openFormTimer = new Timer() {
+                @Override
+                public void run() {
+                    formContainer.show();
+                    asyncForms.put(requestIndex, formContainer);
+                    openFormTimer = null;
+                }
+            };
+            openFormTimer.schedule(100);
+        } else {
+            FormContainer formContainer = new FormDockable(this, requestIndex, openForm.caption, true);
+            formContainer.show();
+            asyncForms.put(requestIndex, formContainer);
+        }
     }
 
     public FormContainer removeAsyncForm(Long requestIndex) {

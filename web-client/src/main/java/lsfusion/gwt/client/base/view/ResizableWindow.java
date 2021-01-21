@@ -3,10 +3,6 @@ package lsfusion.gwt.client.base.view;
 import com.allen_sauer.gwt.dnd.client.DragContext;
 import com.allen_sauer.gwt.dnd.client.util.Location;
 import com.allen_sauer.gwt.dnd.client.util.WidgetLocation;
-import com.google.gwt.event.logical.shared.CloseEvent;
-import com.google.gwt.event.logical.shared.CloseHandler;
-import com.google.gwt.event.logical.shared.HasCloseHandlers;
-import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.base.TooltipManager;
@@ -32,7 +28,8 @@ public class ResizableWindow extends Composite {
 
     private FocusPanel mainPanel;
 
-    private Widget contentWidget;
+    private Panel contentWidget;
+    private Widget innerContentWidget;
 
     private HeaderWidget headerWidget;
 
@@ -70,19 +67,25 @@ public class ResizableWindow extends Composite {
         this.tooltip = tooltip;
     }
 
-    public void setContentWidget(Widget icontentWidget) {
-        if (icontentWidget == null) {
-            throw new NullPointerException("Content widget should not be null.");
+    public void setContentWidget(Widget innerContentWidget) {
+        setOuterContentWidget();
+        setInnerContentWidget(innerContentWidget);
+    }
+
+    public void setOuterContentWidget() {
+        if (contentWidget != null) {
+            throw new IllegalStateException("Content widget should only be set once");
         }
 
-        //todo: reset contentWidget if asyncOpened
-        //if (contentWidget != null) {
-        //    throw new IllegalStateException("Content widget should only be set once");
-        //}
-
-        contentWidget = icontentWidget;
+        contentWidget = new FlexPanel();
         initLayout();
         initUIHandlers();
+    }
+
+    public void setInnerContentWidget(Widget innerContentWidget) {
+        this.innerContentWidget = innerContentWidget;
+        contentWidget.clear();
+        contentWidget.add(innerContentWidget);
     }
 
     private void initLayout() {
@@ -176,10 +179,10 @@ public class ResizableWindow extends Composite {
             westEdge.setPixelSize(BORDER_THICKNESS, contentHeight + headerHeight);
             eastEdge.setPixelSize(BORDER_THICKNESS, contentHeight + headerHeight);
         }
-        contentWidget.setPixelSize(contentWidth, contentHeight);
+        innerContentWidget.setPixelSize(contentWidth, contentHeight);
         
-        if (contentWidget instanceof RequiresResize) {
-            ((RequiresResize) contentWidget).onResize();
+        if (innerContentWidget instanceof RequiresResize) {
+            ((RequiresResize) innerContentWidget).onResize();
         }
     }
 
@@ -190,7 +193,7 @@ public class ResizableWindow extends Composite {
     protected void onShow() {
         headerWidget.setPixelSize(headerWidget.getOffsetWidth(), headerWidget.getOffsetHeight());
 
-        setContentSize(contentWidget.getOffsetWidth(), contentWidget.getOffsetHeight());
+        setContentSize(innerContentWidget.getOffsetWidth(), innerContentWidget.getOffsetHeight());
     }
 
     public void show() {
@@ -302,12 +305,7 @@ public class ResizableWindow extends Composite {
 
     //todo: calculate size
     public void setDefaultSize() {
-        headerWidget.setSize("790px", "20px");
-        contentWidget.setSize("790px", "580px");
-    }
-
-    //reset main panel
-    public void clearMainPanel() {
-        mainPanel.clear();
+        headerWidget.setPixelSize(790, 20);
+        innerContentWidget.setPixelSize(790, 580);
     }
 }

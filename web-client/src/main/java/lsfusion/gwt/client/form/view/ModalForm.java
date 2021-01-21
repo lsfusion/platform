@@ -4,15 +4,18 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.ResizableModalWindow;
 import lsfusion.gwt.client.form.controller.FormsController;
-import lsfusion.gwt.client.navigator.window.GModalityType;
 import lsfusion.gwt.client.view.MainFrame;
 
 public class ModalForm extends FormContainer<ResizableModalWindow> {
 
 
-    public ModalForm(FormsController formsController, Long requestIndex, String caption, GModalityType modalityType, boolean async) {
-        super(formsController, requestIndex, modalityType, async);
+    public ModalForm(FormsController formsController, Long requestIndex, String caption, boolean async) {
+        super(formsController, requestIndex, async);
 
+        if(async) {
+            GwtClientUtils.setThemeImage("loading.gif", imageUrl -> setContent(createLoadingWidget(imageUrl)), false);
+            contentWidget.setDefaultSize();
+        }
         contentWidget.setCaption(caption);
     }
 
@@ -26,16 +29,13 @@ public class ModalForm extends FormContainer<ResizableModalWindow> {
                 super.onShow();
             }
         };
-        if(async) {
-            GwtClientUtils.setThemeImage("loading.gif", imageUrl -> window.setContentWidget(createLoadingWidget(imageUrl)), false);
-            window.setDefaultSize();
-        }
+        window.setOuterContentWidget();
         return window;
     }
 
     @Override
     protected void setContent(Widget widget) {
-        contentWidget.setContentWidget(widget);
+        contentWidget.setInnerContentWidget(widget);
     }
 
     private FormContainer prevForm;

@@ -11,10 +11,7 @@ import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.identity.IdentityObject;
 import lsfusion.interop.form.ModalityType;
-import lsfusion.interop.form.property.ClassViewType;
-import lsfusion.interop.form.property.PropertyEditType;
-import lsfusion.interop.form.property.PropertyGroupType;
-import lsfusion.interop.form.property.PropertyReadType;
+import lsfusion.interop.form.property.*;
 import lsfusion.server.base.caches.IdentityStartLazy;
 import lsfusion.server.base.caches.IdentityStrongLazy;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
@@ -235,17 +232,10 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return null;
     }
 
-    public <A extends PropertyInterface> String getOpenForm(FormEntity form, SecurityPolicy policy) {
+    public <A extends PropertyInterface> OpenForm getOpenForm(FormEntity form, SecurityPolicy policy) {
         ActionObjectEntity<A> changeAction = (ActionObjectEntity<A>) getEventAction(CHANGE, form, policy);
         if(changeAction!=null)
             return changeAction.getOpenForm();
-        return null;
-    }
-
-    public <A extends PropertyInterface> ModalityType getModalityType(FormEntity form, SecurityPolicy policy) {
-        ActionObjectEntity<A> changeAction = (ActionObjectEntity<A>) getEventAction(CHANGE, form, policy);
-        if(changeAction!=null)
-            return changeAction.getModalityType();
         return null;
     }
 
