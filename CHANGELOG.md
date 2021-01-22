@@ -1,3 +1,21 @@
+## 4.1 (2021-01-22)
+##### Implemented enhancements:
+ - Unobvious behavior of calendar control in web-client [#522](https://github.com/lsfusion/platform/issues/522)
+##### Fixed bugs:
+ - PGSQLException "Zero bytes may not occur in string parameters" on IMPORT JSON [#542](https://github.com/lsfusion/platform/issues/542)
+ - Bug in the map view: the editing / dragging option is reset when adding markers to clusters [#539](https://github.com/lsfusion/platform/issues/539)
+ - Bug in client exception logging [#540](https://github.com/lsfusion/platform/issues/540)
+ - Incorrect grid selection colors after color theme change [#538](https://github.com/lsfusion/platform/issues/538)
+ - Bug in NONULL DELETE when parameter is of an abstract class [#537](https://github.com/lsfusion/platform/issues/537)
+ - Bug with the login page localization [#535](https://github.com/lsfusion/platform/issues/535)
+ - Incorrect date-time patterns [#528](https://github.com/lsfusion/platform/issues/528)
+ - Bug with cluster colors in map view [#533](https://github.com/lsfusion/platform/issues/533)
+ - bug in calendar view: the background color is updated incorrectly [#531](https://github.com/lsfusion/platform/issues/531)
+ - Incorrect apiVersion check [#530](https://github.com/lsfusion/platform/issues/530)
+ - Bug in parsing literal expression in property object [#524](https://github.com/lsfusion/platform/issues/524)
+ - Enormous year in calendar control leads to a fatal error in web-client [#521](https://github.com/lsfusion/platform/issues/521)
+ - Incorrect paste from excel to filter [#520](https://github.com/lsfusion/platform/issues/520)
+## ----- PREVIOUS RELEASES --------
 ## 4.0 (2020-12-23)
 ##### Implemented major enhancements:
  - Extended list view support (i.e. pivot, map, diagram) [#70](https://github.com/lsfusion/platform/issues/70)
@@ -96,7 +114,6 @@
  - OK should be shown only when form manages session or in dialog mode [#200](https://github.com/lsfusion/platform/issues/200)
  - Unable to shutdown specific connection [#221](https://github.com/lsfusion/platform/issues/221)
  - Exception in IMPORT XLS [#207](https://github.com/lsfusion/platform/issues/207)
-## ----- PREVIOUS RELEASES --------
 ## 3.0 (2020-01-16)
 ##### Implemented enhancements:
  - Create an action for finding forms by name [#203](https://github.com/lsfusion/platform/issues/203)
