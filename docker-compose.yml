@@ -13,7 +13,7 @@ services:
 
   server:
 # jenkins use regex for replace image version in next line before build. Check jenkins branch on change
-    image: lsfusion/server:4.1
+    image: lsfusion/server:4.2
     depends_on:
       - db
     volumes:
@@ -35,7 +35,7 @@ services:
 
   client:
 # jenkins use regex for replace image version in next line before build. Check jenkins branch on change
-    image: lsfusion/client:4.1
+    image: lsfusion/client:4.2
     depends_on:
       - server
     volumes:
