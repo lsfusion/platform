@@ -20,7 +20,7 @@ import lsfusion.gwt.client.base.view.WindowHiddenHandler;
 import lsfusion.gwt.client.form.design.view.flex.FlexTabbedPanel;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
 import lsfusion.gwt.client.form.object.table.view.GToolbarView;
-import lsfusion.gwt.client.form.property.GOpenForm;
+import lsfusion.gwt.client.form.property.async.GAsyncOpenForm;
 import lsfusion.gwt.client.form.view.FormContainer;
 import lsfusion.gwt.client.form.view.FormDockable;
 import lsfusion.gwt.client.form.view.ModalForm;
@@ -189,7 +189,7 @@ public abstract class FormsController {
     }
 
     Timer openFormTimer;
-    public void asyncOpenForm(Long requestIndex, GOpenForm openForm) {
+    public void asyncOpenForm(Long requestIndex, GAsyncOpenForm openForm) {
         if(openForm.modal) {
             FormContainer formContainer = new ModalForm(this, requestIndex, openForm.caption, true);
             openFormTimer = new Timer() {

@@ -50,7 +50,6 @@ import lsfusion.server.logics.form.struct.filter.FilterEntity;
 import lsfusion.server.logics.form.struct.filter.FilterEntityInstance;
 import lsfusion.server.logics.form.struct.filter.RegularFilterEntity;
 import lsfusion.server.logics.form.struct.filter.RegularFilterGroupEntity;
-import lsfusion.server.logics.form.struct.group.AbstractNode;
 import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
@@ -59,6 +58,7 @@ import lsfusion.server.logics.form.struct.order.OrderEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawExtraType;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
+import lsfusion.server.logics.form.struct.property.async.AsyncAddRemove;
 import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyClassImplement;
 import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyObjectEntity;
 import lsfusion.server.logics.property.Property;
@@ -574,8 +574,8 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
                 return new GroupMetaExternal(properties.getSet().mapValues(new Function<PropertyDrawEntity, PropMetaExternal>() {
                     public PropMetaExternal apply(PropertyDrawEntity value) {
-                        Pair<ObjectEntity, Boolean> newDelete = ((PropertyDrawEntity<?>) value).getAddRemove(FormEntity.this, policy);
-                        return new PropMetaExternal(ThreadLocalContext.localize(value.getCaption()), value.isProperty() ? value.getType().getJSONType() : "action", newDelete != null ? newDelete.second : null);
+                        AsyncAddRemove newDelete = ((PropertyDrawEntity<?>) value).getAddRemove(FormEntity.this, policy);
+                        return new PropMetaExternal(ThreadLocalContext.localize(value.getCaption()), value.isProperty() ? value.getType().getJSONType() : "action", newDelete != null ? newDelete.add : null);
                     }
                 }));
             }

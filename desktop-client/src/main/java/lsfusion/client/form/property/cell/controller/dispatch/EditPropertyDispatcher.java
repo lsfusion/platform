@@ -10,6 +10,7 @@ import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.controller.dispatch.ClientFormActionDispatcher;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.property.ClientPropertyDraw;
+import lsfusion.client.form.property.async.ClientAsyncOpenForm;
 import lsfusion.client.form.property.cell.controller.EditPropertyHandler;
 import lsfusion.interop.action.EditNotPerformedClientAction;
 import lsfusion.interop.action.RequestUserInputClientAction;
@@ -66,7 +67,8 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
 
             if (actionSID.equals(ServerResponse.CHANGE)) { // асинхронные обработки
                 boolean asyncModifyObject = form.isAsyncModifyObject(property);
-                if (asyncModifyObject || property.changeType != null) {
+                boolean asyncChange = property.getAsyncChange() != null;
+                if (asyncModifyObject || asyncChange) {
                     if (property.askConfirm) {
                         String msg = property.askConfirmMessage;
 
@@ -83,12 +85,12 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
 //                      т.е. property.changeType != null
                         editColumnKey = columnKey;
                         simpleChangeProperty = property;
-                        return internalRequestValue(property.changeType);
+                        return internalRequestValue(property.getChangeType());
                     }
                 }
-                boolean isAsyncOpenForm = form.isAsyncOpenForm(property);
+                ClientAsyncOpenForm asyncOpenForm = property.getAsyncOpenForm();
                 //ignore async modal windows in desktop
-                if (isAsyncOpenForm && !property.openForm.modal) {
+                if (asyncOpenForm != null && !asyncOpenForm.modal) {
                     form.asyncOpenForm(property);
                     //return true; //comment
                 }

@@ -17,6 +17,9 @@ import lsfusion.client.form.object.table.grid.ClientGrid;
 import lsfusion.client.form.object.table.grid.user.toolbar.ClientCalculations;
 import lsfusion.client.form.object.table.tree.ClientTreeGroup;
 import lsfusion.client.form.property.ClientPropertyDraw;
+import lsfusion.client.form.property.async.ClientAsyncAddRemove;
+import lsfusion.client.form.property.async.ClientAsyncChange;
+import lsfusion.client.form.property.async.ClientAsyncOpenForm;
 import lsfusion.client.form.property.cell.EditBindingMap;
 import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
@@ -35,6 +38,9 @@ import lsfusion.gwt.client.form.object.table.grid.user.toolbar.GCalculations;
 import lsfusion.gwt.client.form.object.table.grid.view.GListViewType;
 import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
 import lsfusion.gwt.client.form.property.*;
+import lsfusion.gwt.client.form.property.async.GAsyncAddRemove;
+import lsfusion.gwt.client.form.property.async.GAsyncChange;
+import lsfusion.gwt.client.form.property.async.GAsyncOpenForm;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.navigator.window.GModalityType;
 import lsfusion.interop.base.view.FlexAlignment;
@@ -44,7 +50,6 @@ import lsfusion.interop.form.design.FontInfo;
 import lsfusion.interop.form.event.BindingMode;
 import lsfusion.interop.form.event.KeyInputEvent;
 import lsfusion.interop.form.event.MouseInputEvent;
-import lsfusion.interop.form.property.OpenForm;
 import lsfusion.interop.form.property.PivotOptions;
 import lsfusion.interop.form.property.PropertyEditType;
 import lsfusion.interop.form.property.PropertyGroupType;
@@ -266,16 +271,10 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         }
 
         propertyDraw.baseType = typeConverter.convertOrCast(clientPropertyDraw.baseType);
-        propertyDraw.changeType = typeConverter.convertOrCast(clientPropertyDraw.changeType);
         propertyDraw.changeWYSType = typeConverter.convertOrCast(clientPropertyDraw.changeWYSType);
         propertyDraw.returnClass = typeConverter.convertOrCast(clientPropertyDraw.returnClass);
 
-        if (clientPropertyDraw.addRemove != null) {
-            GObject addRemoveObject = convertOrCast(clientPropertyDraw.addRemove.first);
-            propertyDraw.addRemove = new GPropertyDraw.AddRemove(addRemoveObject, clientPropertyDraw.addRemove.second);
-        }
-
-        propertyDraw.openForm = convertOrCast(clientPropertyDraw.openForm);
+        propertyDraw.asyncExec = convertOrCast(clientPropertyDraw.asyncExec);
 
         propertyDraw.askConfirm = clientPropertyDraw.askConfirm;
         propertyDraw.askConfirmMessage = clientPropertyDraw.askConfirmMessage;
@@ -561,9 +560,21 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
     }
 
     @Cached
-    @Converter(from = OpenForm.class)
-    public GOpenForm convertOpenForm(OpenForm openForm) {
-        return new GOpenForm(openForm.caption, openForm.modal);
+    @Converter(from = ClientAsyncAddRemove.class)
+    public GAsyncAddRemove convertOpenForm(ClientAsyncAddRemove clientAddRemove) {
+        return new GAsyncAddRemove(convertOrCast(clientAddRemove.object), clientAddRemove.add);
+    }
+
+    @Cached
+    @Converter(from = ClientAsyncChange.class)
+    public GAsyncChange convertOpenForm(ClientAsyncChange clientChangeType) {
+        return new GAsyncChange(typeConverter.convertOrCast(clientChangeType.changeType));
+    }
+
+    @Cached
+    @Converter(from = ClientAsyncOpenForm.class)
+    public GAsyncOpenForm convertOpenForm(ClientAsyncOpenForm clientOpenForm) {
+        return new GAsyncOpenForm(clientOpenForm.caption, clientOpenForm.modal);
     }
 
     @Cached

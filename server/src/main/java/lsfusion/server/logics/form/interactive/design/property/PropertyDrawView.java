@@ -1,6 +1,5 @@
 package lsfusion.server.logics.form.interactive.design.property;
 
-import lsfusion.base.Pair;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -11,7 +10,6 @@ import lsfusion.interop.form.event.KeyInputEvent;
 import lsfusion.interop.form.event.MouseInputEvent;
 import lsfusion.interop.form.print.ReportFieldExtraType;
 import lsfusion.interop.form.property.Compare;
-import lsfusion.interop.form.property.OpenForm;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.TypeSerializer;
@@ -29,6 +27,10 @@ import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawExtraType;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
+import lsfusion.server.logics.form.struct.property.async.AsyncAddRemove;
+import lsfusion.server.logics.form.struct.property.async.AsyncChange;
+import lsfusion.server.logics.form.struct.property.async.AsyncExec;
+import lsfusion.server.logics.form.struct.property.async.AsyncOpenForm;
 import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyObjectEntity;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.infer.ClassType;
@@ -148,12 +150,26 @@ public class PropertyDrawView extends ComponentView {
         return super.getBaseDefaultAlignment(formEntity);
     }
 
-    public Pair<ObjectEntity, Boolean> getAddRemove(ServerContext context) {
+    public AsyncAddRemove getAddRemove(ServerContext context) {
         return entity.getAddRemove(context.entity, context.securityPolicy);
     }
 
-    public OpenForm getOpenForm(ServerContext context) {
+    public AsyncOpenForm getOpenForm(ServerContext context) {
         return entity.getOpenForm(context.entity, context.securityPolicy);
+    }
+
+    public AsyncExec getAsyncExec(ServerContext context) {
+        AsyncExec asyncExec = getAddRemove(context);
+        if(asyncExec == null) {
+            Type changeType = getChangeType(context);
+            if (changeType != null) {
+                asyncExec = new AsyncChange(changeType);
+            }
+        }
+        if (asyncExec == null) {
+            asyncExec = getOpenForm(context);
+        }
+        return asyncExec;
     }
 
     public LocalizedString getCaption() {
@@ -290,31 +306,14 @@ public class PropertyDrawView extends ComponentView {
 
         // асинхронные интерфейсы
 
-        Type changeType = getChangeType(pool.context);
-        outStream.writeBoolean(changeType != null);
-        if (changeType != null) {
-            TypeSerializer.serializeType(outStream, changeType);
-        }
-
         Type changeWYSType = getChangeWYSType(pool.context);
         outStream.writeBoolean(changeWYSType != null);
         if (changeWYSType != null) {
             TypeSerializer.serializeType(outStream, changeWYSType);
         }
 
-        Pair<ObjectEntity, Boolean> addRemove = getAddRemove(pool.context);
-        outStream.writeBoolean(addRemove != null);
-        if(addRemove!=null) {
-            pool.serializeObject(outStream, pool.context.view.getObject(addRemove.first));
-            outStream.writeBoolean(addRemove.second);
-        }
-
-        OpenForm openForm = getOpenForm(pool.context);
-        pool.writeBoolean(outStream, openForm != null);
-        if(openForm != null) {
-            pool.writeString(outStream, openForm.caption);
-            pool.writeBoolean(outStream, openForm.modal);
-        }
+        AsyncExec asyncExec = getAsyncExec(pool.context);
+        pool.serializeObject(outStream, asyncExec);
 
         outStream.writeBoolean(entity.askConfirm);
         if(entity.askConfirm)

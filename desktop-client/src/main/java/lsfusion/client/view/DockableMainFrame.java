@@ -36,6 +36,7 @@ import lsfusion.client.controller.remote.RmiRequest;
 import lsfusion.client.form.controller.FormsController;
 import lsfusion.client.form.print.view.EditReportInvoker;
 import lsfusion.client.form.print.view.ReportDialog;
+import lsfusion.client.form.property.async.ClientAsyncOpenForm;
 import lsfusion.client.form.property.cell.classes.controller.EditorEventQueue;
 import lsfusion.client.form.view.ClientFormDockable;
 import lsfusion.client.navigator.ClientNavigator;
@@ -47,7 +48,6 @@ import lsfusion.client.navigator.window.ClientAbstractWindow;
 import lsfusion.client.navigator.window.view.ClientWindowDockable;
 import lsfusion.interop.action.*;
 import lsfusion.interop.form.print.ReportGenerationData;
-import lsfusion.interop.form.property.OpenForm;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
 import lsfusion.interop.navigator.window.WindowType;
@@ -301,8 +301,8 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
         formsController.getForms().clear();
     }
 
-    public void asyncOpenForm(OpenForm openForm) {
-        formsController.asyncOpenForm(openForm);
+    public void asyncOpenForm(ClientAsyncOpenForm clientOpenForm) {
+        formsController.asyncOpenForm(clientOpenForm);
     }
 
     public void removeOpenForm(String caption) {

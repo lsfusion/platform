@@ -77,6 +77,8 @@ import lsfusion.gwt.client.form.property.GExtraPropertyReader;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.GPropertyGroupType;
 import lsfusion.gwt.client.form.property.GPropertyReader;
+import lsfusion.gwt.client.form.property.async.GAsyncAddRemove;
+import lsfusion.gwt.client.form.property.async.GAsyncOpenForm;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.classes.view.ActionCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.*;
@@ -953,8 +955,9 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             handler.consume();
 
             if (GEditBindingMap.CHANGE.equals(actionSID)) {
-                final boolean asyncModifyObject = isAsyncModifyObject(property);
-                if (asyncModifyObject || property.changeType != null) {
+                boolean asyncModifyObject = isAsyncModifyObject(property);
+                boolean asyncChange = property.getAsyncChange() != null;
+                if (asyncModifyObject || asyncChange) {
                     if (property.askConfirm) {
                         blockingConfirm("lsFusion", property.askConfirmMessage, false, chosenOption -> {
                             if (chosenOption == DialogBoxHelper.OptionType.YES) {
@@ -966,9 +969,9 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
                     }
                     return;
                 }
-                final boolean asyncOpenForm = isAsyncOpenForm(property);
-                if (asyncOpenForm) {
-                    formsController.asyncOpenForm(dispatcher.getNextRequestIndex(), property.openForm);
+                GAsyncOpenForm asyncOpenForm = property.getAsyncOpenForm();
+                if (asyncOpenForm != null) {
+                    formsController.asyncOpenForm(dispatcher.getNextRequestIndex(), asyncOpenForm);
                     //return; //comment
                 }
             }
@@ -982,7 +985,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         if (asyncModifyObject)
             modifyObject(property, editContext.getColumnKey());
         else {
-            GType changeType = property.changeType;
+            GType changeType = property.getChangeType();
             edit(changeType, event, false, null,
                 value -> changeEditPropertyValue(editContext, changeType, value, null),
                 value -> {}, () -> {}, editContext);
@@ -1072,8 +1075,9 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     public boolean isAsyncModifyObject(GPropertyDraw property) {
-        if (property.addRemove != null) {
-            GGridController controller = controllers.get(property.addRemove.object.groupObject);
+        GAsyncAddRemove asyncAddRemove = property.getAsyncAddRemove();
+        if (asyncAddRemove != null) {
+            GGridController controller = controllers.get(asyncAddRemove.object.groupObject);
             if (controller != null && controller.isList()) {
                 return true;
             }
@@ -1081,17 +1085,14 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         return false;
     }
 
-    public boolean isAsyncOpenForm(GPropertyDraw property) {
-        return property.openForm != null;
-    }
-
     public void modifyObject(final GPropertyDraw property, final GGroupObjectValue columnKey) {
         assert isAsyncModifyObject(property);
 
-        final GObject object = property.addRemove.object;
-        final boolean add = property.addRemove.add;
+        GAsyncAddRemove asyncAddRemove = property.getAsyncAddRemove();
+        final GObject object = asyncAddRemove.object;
+        final boolean add = asyncAddRemove.add;
 
-        GGridController controller = getGridController(property.addRemove.object.groupObject);
+        GGridController controller = getGridController(asyncAddRemove.object.groupObject);
         final int position = controller.getSelectedRow();
 
         if (add) {

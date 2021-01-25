@@ -44,6 +44,7 @@ import lsfusion.client.form.object.table.grid.user.design.GridUserPreferences;
 import lsfusion.client.form.object.table.tree.ClientTreeGroup;
 import lsfusion.client.form.object.table.tree.controller.TreeGroupController;
 import lsfusion.client.form.property.ClientPropertyDraw;
+import lsfusion.client.form.property.async.ClientAsyncAddRemove;
 import lsfusion.client.form.property.cell.controller.dispatch.SimpleChangePropertyDispatcher;
 import lsfusion.client.form.property.panel.view.PanelView;
 import lsfusion.client.form.view.ClientFormDockable;
@@ -901,8 +902,9 @@ public class ClientFormController implements AsyncListener {
     }
 
     public boolean isAsyncModifyObject(ClientPropertyDraw property) {
-        if (property.addRemove != null) {
-            GridController controller = controllers.get(property.addRemove.first.groupObject);
+        ClientAsyncAddRemove addRemove = property.getAsyncAddRemove();
+        if (addRemove != null) {
+            GridController controller = controllers.get(addRemove.object.groupObject);
             if (controller != null && controller.isList()) {
                 return true;
             }
@@ -915,8 +917,9 @@ public class ClientFormController implements AsyncListener {
 
         commitOrCancelCurrentEditing();
 
-        final ClientObject object = property.addRemove.first;
-        final boolean add = property.addRemove.second;
+        ClientAsyncAddRemove addRemove = property.getAsyncAddRemove();
+        final ClientObject object = addRemove.object;
+        final boolean add = addRemove.add;
 
         final GridController controller = controllers.get(object.groupObject);
 
@@ -961,12 +964,12 @@ public class ClientFormController implements AsyncListener {
     }
 
     public boolean isAsyncOpenForm(ClientPropertyDraw property) {
-        return property.openForm != null;
+        return property.getAsyncOpenForm() != null;
     }
 
     public void asyncOpenForm(ClientPropertyDraw property) throws IOException {
         assert isAsyncOpenForm(property);
-        ((DockableMainFrame) MainFrame.instance).asyncOpenForm(property.openForm);
+        ((DockableMainFrame) MainFrame.instance).asyncOpenForm(property.getAsyncOpenForm());
     }
 
     public ClientGroupObjectValue getFullCurrentKey() {

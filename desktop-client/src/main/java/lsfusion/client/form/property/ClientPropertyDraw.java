@@ -1,7 +1,6 @@
 package lsfusion.client.form.property;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.Pair;
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.base.view.ClientImages;
 import lsfusion.client.base.view.SwingDefaults;
@@ -16,18 +15,19 @@ import lsfusion.client.form.controller.remote.serialization.ClientSerializationP
 import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientGroupObjectValue;
-import lsfusion.client.form.object.ClientObject;
 import lsfusion.client.form.object.table.controller.TableController;
+import lsfusion.client.form.property.async.ClientAsyncAddRemove;
+import lsfusion.client.form.property.async.ClientAsyncChange;
+import lsfusion.client.form.property.async.ClientAsyncExec;
+import lsfusion.client.form.property.async.ClientAsyncOpenForm;
 import lsfusion.client.form.property.cell.EditBindingMap;
 import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
 import lsfusion.client.form.property.cell.classes.view.FormatPropertyRenderer;
 import lsfusion.client.form.property.cell.view.PropertyRenderer;
 import lsfusion.client.form.property.panel.view.PanelView;
 import lsfusion.interop.base.view.FlexAlignment;
-import lsfusion.interop.form.ModalityType;
 import lsfusion.interop.form.event.KeyInputEvent;
 import lsfusion.interop.form.event.MouseInputEvent;
-import lsfusion.interop.form.property.OpenForm;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.form.property.PropertyEditType;
 import lsfusion.interop.form.property.PropertyReadType;
@@ -77,12 +77,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public ClientClass returnClass;
 
     // асинхронные интерфейсы
-    public ClientType changeType;
     public ClientType changeWYSType;
-    public Pair<ClientObject, Boolean> addRemove;
-    public String asyncOpenForm;
-    public ModalityType modalityType;
-    public OpenForm openForm;
+    public ClientAsyncExec asyncExec;
     public boolean askConfirm;
     public String askConfirmMessage;
 
@@ -391,6 +387,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     }
 
     public boolean canUseChangeValueForRendering() {
+        ClientType changeType = getChangeType();
         return changeType != null && baseType.getTypeClass() == changeType.getTypeClass();
     }
 
@@ -489,19 +486,10 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         baseType = ClientTypeSerializer.deserializeClientType(inStream);
         if (inStream.readBoolean()) {
-            changeType = ClientTypeSerializer.deserializeClientType(inStream);
-        }
-        if (inStream.readBoolean()) {
             changeWYSType = ClientTypeSerializer.deserializeClientType(inStream);
         }
 
-        if(inStream.readBoolean()) {
-            addRemove = new Pair<>(pool.deserializeObject(inStream), inStream.readBoolean());
-        }
-
-        if(inStream.readBoolean()) {
-            openForm = new OpenForm(pool.readString(inStream), pool.readBoolean(inStream));
-        }
+        asyncExec = pool.deserializeObject(inStream);
 
         askConfirm = inStream.readBoolean();
         if(askConfirm)
@@ -591,6 +579,23 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         }
         
         notNull = inStream.readBoolean();
+    }
+
+    public ClientAsyncAddRemove getAsyncAddRemove() {
+        return asyncExec instanceof ClientAsyncAddRemove ? (ClientAsyncAddRemove) asyncExec : null;
+    }
+
+    public ClientAsyncChange getAsyncChange() {
+        return asyncExec instanceof ClientAsyncChange ? (ClientAsyncChange) asyncExec : null;
+    }
+
+    public ClientType getChangeType() {
+        ClientAsyncChange changeType = getAsyncChange();
+        return changeType != null ? changeType.changeType : null;
+    }
+
+    public ClientAsyncOpenForm getAsyncOpenForm() {
+        return asyncExec instanceof ClientAsyncOpenForm ? (ClientAsyncOpenForm) asyncExec : null;
     }
 
     private void initEditBindingMap() {

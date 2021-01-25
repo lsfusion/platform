@@ -7,7 +7,6 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MList;
-import lsfusion.interop.form.property.OpenForm;
 import lsfusion.server.base.caches.IdentityStartLazy;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
@@ -20,6 +19,7 @@ import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.user.CustomClass;
+import lsfusion.server.logics.form.struct.property.async.AsyncOpenForm;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
@@ -193,10 +193,10 @@ public class ListAction extends ListCaseAction {
     }
 
     @Override
-    public OpenForm getOpenForm() {
-        OpenForm result = null;
+    public AsyncOpenForm getOpenForm() {
+        AsyncOpenForm result = null;
         for (ActionMapImplement<?, PropertyInterface> action : getListActions()) {
-            OpenForm openForm = action.action.getOpenForm();
+            AsyncOpenForm openForm = action.action.getOpenForm();
             if (openForm != null) {
                 if (result == null) {
                     result = openForm;

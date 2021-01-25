@@ -10,7 +10,6 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.identity.IdentityObject;
-import lsfusion.interop.form.ModalityType;
 import lsfusion.interop.form.property.*;
 import lsfusion.server.base.caches.IdentityStartLazy;
 import lsfusion.server.base.caches.IdentityStrongLazy;
@@ -35,6 +34,8 @@ import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.order.OrderEntity;
+import lsfusion.server.logics.form.struct.property.async.AsyncAddRemove;
+import lsfusion.server.logics.form.struct.property.async.AsyncOpenForm;
 import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyObjectEntity;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -225,14 +226,14 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return null;
     }
 
-    public <A extends PropertyInterface> Pair<ObjectEntity, Boolean> getAddRemove(FormEntity form, SecurityPolicy policy) {
+    public <A extends PropertyInterface> AsyncAddRemove getAddRemove(FormEntity form, SecurityPolicy policy) {
         ActionObjectEntity<A> changeAction = (ActionObjectEntity<A>) getEventAction(CHANGE, form, policy);
         if(changeAction!=null)
             return changeAction.getAddRemove(form);
         return null;
     }
 
-    public <A extends PropertyInterface> OpenForm getOpenForm(FormEntity form, SecurityPolicy policy) {
+    public <A extends PropertyInterface> AsyncOpenForm getOpenForm(FormEntity form, SecurityPolicy policy) {
         ActionObjectEntity<A> changeAction = (ActionObjectEntity<A>) getEventAction(CHANGE, form, policy);
         if(changeAction!=null)
             return changeAction.getOpenForm();
