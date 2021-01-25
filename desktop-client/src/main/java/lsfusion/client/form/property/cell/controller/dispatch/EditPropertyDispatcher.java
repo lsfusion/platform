@@ -91,7 +91,7 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
                     } else {
                         //asyncOpenForm != null
                         if(!asyncOpenForm.modal) { //ignore async modal windows in desktop
-                            form.asyncOpenForm(asyncOpenForm);
+                            form.asyncOpenForm(form.getRmiQueue().getNextRmiRequestIndex(), asyncOpenForm);
                         }
                     }
                 }

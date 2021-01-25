@@ -19,10 +19,11 @@ public class ClientFormDockable extends ClientDockable {
 
     private ClientFormController form;
 
-    public ClientFormDockable(String caption, FormsController formsController, List<ClientDockable> openedForms, boolean async) {
+    public ClientFormDockable(String caption, FormsController formsController, List<ClientDockable> openedForms, Long requestIndex, boolean async) {
         super(null, formsController);
         setCaption(caption, null);
         addAction(new CloseAllAction(openedForms));
+        this.requestIndex = requestIndex;
         this.async = async;
     }
 
@@ -87,7 +88,7 @@ public class ClientFormDockable extends ClientDockable {
     @Override
     public void onClosing() {
         if(async) {
-            ((DockableMainFrame) MainFrame.instance).removeOpenForm(getTitleText());
+            ((DockableMainFrame) MainFrame.instance).removeOpenForm(requestIndex);
             super.onClosing();
         } else {
             RmiQueue.runAction(new Runnable() {

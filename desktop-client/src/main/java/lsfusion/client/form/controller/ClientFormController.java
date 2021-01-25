@@ -961,8 +961,8 @@ public class ClientFormController implements AsyncListener {
         });
     }
 
-    public void asyncOpenForm(ClientAsyncOpenForm asyncOpenForm) throws IOException {
-        ((DockableMainFrame) MainFrame.instance).asyncOpenForm(asyncOpenForm);
+    public void asyncOpenForm(Long requestIndex, ClientAsyncOpenForm asyncOpenForm) throws IOException {
+        ((DockableMainFrame) MainFrame.instance).asyncOpenForm(requestIndex, asyncOpenForm);
     }
 
     public ClientGroupObjectValue getFullCurrentKey() {

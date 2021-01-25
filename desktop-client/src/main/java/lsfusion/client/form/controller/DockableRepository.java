@@ -21,7 +21,7 @@ public class DockableRepository {
     /**
      * opened async forms
      */
-    private Map<String, ClientFormDockable> asyncForms = new HashMap<>();
+    private Map<Long, ClientFormDockable> asyncForms = new HashMap<>();
 
     /**
      * Writes the formsList of this repository into <code>out</code>.
@@ -73,11 +73,11 @@ public class DockableRepository {
         return new ArrayList<>(formsList);
     }
 
-    public void addAsyncForm(String caption, ClientFormDockable asyncForm) {
-        asyncForms.put(caption, asyncForm);
+    public void addAsyncForm(Long requestIndex, ClientFormDockable asyncForm) {
+        asyncForms.put(requestIndex, asyncForm);
     }
 
-    public ClientFormDockable removeAsyncForm(String caption) {
-        return asyncForms.remove(caption);
+    public ClientFormDockable removeAsyncForm(Long requestIndex) {
+        return asyncForms.remove(requestIndex);
     }
 }

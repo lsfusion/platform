@@ -95,6 +95,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
                         ClientAction action = actions[i];
                         Object dispatchResult;
                         try {
+                            dispatchingIndex = serverResponse.requestIndex;
                             dispatchResult = action.dispatch(this);
                         } catch (Throwable t) {
                             actionThrowable = t;
@@ -180,6 +181,15 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
         }
     }
 
+    //copy from GwtActionDispatcher
+    protected long dispatchingIndex = -1;
+    public long getDispatchingIndex() {
+        if (currentServerResponse == null) // means that we continueDispatching before exiting to dispatchResponse cycle (for example LogicalCellRenderer commits editing immediately)
+            return dispatchingIndex;
+        else
+            return currentServerResponse.requestIndex;
+    }
+
     @Override
     public boolean isDispatchingPaused() {
         return dispatchingPaused;
@@ -207,7 +217,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
         if (modalityType == ModalityType.DOCKED_MODAL) {
             pauseDispatching();
             beforeModalActionInSameEDT(true);
-            ClientFormDockable blockingForm = MainFrame.instance.runForm(action.canonicalName, action.formSID, false, remoteForm, action.firstChanges, openFailed -> {
+            ClientFormDockable blockingForm = MainFrame.instance.runForm(getDispatchingIndex(), action.canonicalName, action.formSID, false, remoteForm, action.firstChanges, openFailed -> {
                 afterModalActionInSameEDT(true);
                 if (!openFailed) {
                     continueDispatching();
@@ -228,7 +238,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
             form.init(action.canonicalName, action.formSID, remoteForm, clientForm, action.firstChanges, modalityType.isDialog(), editEvent);
             form.showDialog(false);
         } else {
-            MainFrame.instance.runForm(action.canonicalName, action.formSID, action.forbidDuplicate, remoteForm, action.firstChanges, null);
+            MainFrame.instance.runForm(getDispatchingIndex(), action.canonicalName, action.formSID, action.forbidDuplicate, remoteForm, action.firstChanges, null);
         }
     }
 

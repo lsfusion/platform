@@ -107,7 +107,7 @@ public class FormsController implements ColorThemeChangeListener {
         openedForms.add(page);
     }
 
-    public ClientFormDockable openForm(ClientNavigator navigator, String canonicalName, String formSID, boolean forbidDuplicate, RemoteFormInterface remoteForm, byte[] firstChanges, MainFrame.FormCloseListener closeListener) {
+    public ClientFormDockable openForm(Long requestIndex, ClientNavigator navigator, String canonicalName, String formSID, boolean forbidDuplicate, RemoteFormInterface remoteForm, byte[] firstChanges, MainFrame.FormCloseListener closeListener) {
         ClientFormDockable page = null;
         if (MainController.forbidDuplicateForms && forbidDuplicate && forms.getFormsList().contains(formSID)) {
             ClientDockable dockable = (ClientDockable) control.getCDockable(control.getCDockableCount() - forms.getFormsList().size() + forms.getFormsList().indexOf(formSID));
@@ -121,11 +121,11 @@ public class FormsController implements ColorThemeChangeListener {
         } else {
 
             ClientForm clientForm = ClientFormController.deserializeClientForm(remoteForm);
-            page = forms.removeAsyncForm(clientForm.getCaption());
+            page = forms.removeAsyncForm(requestIndex);
 
             boolean asyncOpened = page != null;
             if (!asyncOpened) {
-                page = new ClientFormDockable(clientForm.getCaption(), this, openedForms, false);
+                page = new ClientFormDockable(clientForm.getCaption(), this, openedForms, null, false);
             } else {
                 page.getContentPane().removeAll(); //remove loading
             }
@@ -137,11 +137,11 @@ public class FormsController implements ColorThemeChangeListener {
         return page;
     }
 
-    public void asyncOpenForm(ClientAsyncOpenForm clientOpenForm) {
-        ClientFormDockable page = new ClientFormDockable(clientOpenForm.caption, this, openedForms, true);
+    public void asyncOpenForm(Long requestIndex, ClientAsyncOpenForm clientOpenForm) {
+        ClientFormDockable page = new ClientFormDockable(clientOpenForm.caption, this, openedForms, requestIndex, true);
         page.asyncInit();
         openForm(page);
-        forms.addAsyncForm(clientOpenForm.caption, page);
+        forms.addAsyncForm(requestIndex, page);
     }
 
     public Integer openReport(ReportGenerationData generationData, String formCaption, String printerName, EditReportInvoker editInvoker) throws IOException, ClassNotFoundException {

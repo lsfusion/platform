@@ -33,6 +33,7 @@ public abstract class ClientDockable extends DefaultMultipleCDockable {
 
     private final CustomCloseAction closeAction;
 
+    protected Long requestIndex;
     protected boolean async;
 
     protected ClientDockable(String canonicalName, FormsController formsController) {
