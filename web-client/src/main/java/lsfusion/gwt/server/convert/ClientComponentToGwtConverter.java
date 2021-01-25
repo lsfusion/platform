@@ -19,6 +19,7 @@ import lsfusion.client.form.object.table.tree.ClientTreeGroup;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.async.ClientAsyncAddRemove;
 import lsfusion.client.form.property.async.ClientAsyncChange;
+import lsfusion.client.form.property.async.ClientAsyncExec;
 import lsfusion.client.form.property.async.ClientAsyncOpenForm;
 import lsfusion.client.form.property.cell.EditBindingMap;
 import lsfusion.gwt.client.GForm;
@@ -274,7 +275,10 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.changeWYSType = typeConverter.convertOrCast(clientPropertyDraw.changeWYSType);
         propertyDraw.returnClass = typeConverter.convertOrCast(clientPropertyDraw.returnClass);
 
-        propertyDraw.asyncExecMap = convertOrCast(clientPropertyDraw.asyncExecMap);
+        propertyDraw.asyncExecMap = new HashMap<>();
+        for(Map.Entry<String, ClientAsyncExec> entry : clientPropertyDraw.asyncExecMap.entrySet()) {
+            propertyDraw.asyncExecMap.put(entry.getKey(), convertOrCast(entry.getValue()));
+        }
 
         propertyDraw.askConfirm = clientPropertyDraw.askConfirm;
         propertyDraw.askConfirmMessage = clientPropertyDraw.askConfirmMessage;
