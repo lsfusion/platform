@@ -160,19 +160,22 @@ public class PropertyDrawView extends ComponentView {
     }
 
     public Map<String, AsyncExec> getAsyncExec(ServerContext context) {
-        AsyncExec asyncExec = getAddRemove(context);
-        if(asyncExec == null) {
+        Map<String, AsyncExec> asyncExecMap = new HashMap<>();
+        AsyncAddRemove addRemove = getAddRemove(context);
+        if (addRemove != null) {
+            asyncExecMap.put(CHANGE, addRemove);
+        } else {
             Type changeType = getChangeType(context);
             if (changeType != null) {
-                asyncExec = new AsyncChange(changeType);
+                asyncExecMap.put(CHANGE, new AsyncChange(changeType));
+            } else {
+                AsyncOpenForm openForm = getOpenForm(context);
+                if (openForm != null) {
+                    asyncExecMap.put(CHANGE, openForm);
+                    asyncExecMap.put(EDIT_OBJECT, openForm);
+                }
+
             }
-        }
-        if (asyncExec == null) {
-            asyncExec = getOpenForm(context);
-        }
-        Map<String, AsyncExec> asyncExecMap = new HashMap<>();
-        if(asyncExec != null) {
-            asyncExecMap.put(CHANGE, asyncExec);
         }
         return asyncExecMap;
     }

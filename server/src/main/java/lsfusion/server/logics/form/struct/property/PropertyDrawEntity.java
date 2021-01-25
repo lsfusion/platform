@@ -235,7 +235,9 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     public <A extends PropertyInterface> AsyncOpenForm getOpenForm(FormEntity form, SecurityPolicy policy) {
         ActionObjectEntity<A> changeAction = (ActionObjectEntity<A>) getEventAction(CHANGE, form, policy);
-        if(changeAction!=null)
+        if (changeAction == null)
+            changeAction = (ActionObjectEntity<A>) getEventAction(EDIT_OBJECT, form, policy);
+        if (changeAction != null)
             return changeAction.getOpenForm();
         return null;
     }

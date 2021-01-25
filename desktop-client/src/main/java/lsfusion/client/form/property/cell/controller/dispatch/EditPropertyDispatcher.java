@@ -67,32 +67,31 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
         try {
             ClientFormController form = getFormController();
 
-            if (actionSID.equals(ServerResponse.CHANGE)) { // асинхронные обработки
-                ClientAsyncAddRemove asyncAddRemove = form.getAsyncAddRemove(property, actionSID);
-                ClientAsyncChange asyncChange = property.getAsyncChange(actionSID);
-                ClientAsyncOpenForm asyncOpenForm = property.getAsyncOpenForm(actionSID);
-                if (asyncAddRemove != null || asyncChange != null || asyncOpenForm != null) {
-                    if (property.askConfirm) {
-                        String msg = property.askConfirmMessage;
+            //async actions
+            ClientAsyncAddRemove asyncAddRemove = form.getAsyncAddRemove(property, actionSID);
+            ClientAsyncChange asyncChange = property.getAsyncChange(actionSID);
+            ClientAsyncOpenForm asyncOpenForm = property.getAsyncOpenForm(actionSID);
+            if (asyncAddRemove != null || asyncChange != null || asyncOpenForm != null) {
+                if (property.askConfirm) {
+                    String msg = property.askConfirmMessage;
 
-                        int result = SwingUtils.showConfirmDialog(getDialogParentContainer(), msg, "lsFusion", JOptionPane.QUESTION_MESSAGE, false);
-                        if (result != JOptionPane.YES_OPTION) {
-                            return true;
-                        }
-                    }
-
-                    if (asyncAddRemove != null) {
-                        form.modifyObject(property, columnKey, asyncAddRemove);
+                    int result = SwingUtils.showConfirmDialog(getDialogParentContainer(), msg, "lsFusion", JOptionPane.QUESTION_MESSAGE, false);
+                    if (result != JOptionPane.YES_OPTION) {
                         return true;
-                    } else if(asyncChange != null) {
-                        editColumnKey = columnKey;
-                        simpleChangeProperty = property;
-                        return internalRequestValue(asyncChange.changeType);
-                    } else {
-                        //asyncOpenForm != null
-                        if(!asyncOpenForm.modal) { //ignore async modal windows in desktop
-                            form.asyncOpenForm(form.getRmiQueue().getNextRmiRequestIndex(), asyncOpenForm);
-                        }
+                    }
+                }
+
+                if (asyncAddRemove != null) {
+                    form.modifyObject(property, columnKey, asyncAddRemove);
+                    return true;
+                } else if(asyncChange != null) {
+                    editColumnKey = columnKey;
+                    simpleChangeProperty = property;
+                    return internalRequestValue(asyncChange.changeType);
+                } else {
+                    //asyncOpenForm != null
+                    if(!asyncOpenForm.modal) { //ignore async modal windows in desktop
+                        form.asyncOpenForm(form.getRmiQueue().getNextRmiRequestIndex(), asyncOpenForm);
                     }
                 }
             }

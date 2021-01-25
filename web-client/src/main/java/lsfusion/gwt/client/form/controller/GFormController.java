@@ -955,24 +955,22 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
             handler.consume();
 
-            if (GEditBindingMap.CHANGE.equals(actionSID)) {
-                GAsyncAddRemove asyncAddRemove = getAsyncModifyObject(property, actionSID);
-                GAsyncChange asyncChange = property.getAsyncChange(actionSID);
-                GAsyncOpenForm asyncOpenForm = property.getAsyncOpenForm(actionSID);
-                boolean continueExecution = asyncOpenForm != null;
-                if (asyncAddRemove != null || asyncChange != null || asyncOpenForm != null) {
-                    if (property.askConfirm) {
-                        blockingConfirm("lsFusion", property.askConfirmMessage, false, chosenOption -> {
-                            if (chosenOption == DialogBoxHelper.OptionType.YES) {
-                                executeSimpleChange(property, asyncAddRemove, asyncChange, asyncOpenForm, event, editContext);
-                            }
-                        });
-                    } else {
-                        executeSimpleChange(property, asyncAddRemove, asyncChange, asyncOpenForm, event, editContext);
-                    }
-                    if (!continueExecution)
-                        return;
+            GAsyncAddRemove asyncAddRemove = getAsyncModifyObject(property, actionSID);
+            GAsyncChange asyncChange = property.getAsyncChange(actionSID);
+            GAsyncOpenForm asyncOpenForm = property.getAsyncOpenForm(actionSID);
+            boolean continueExecution = asyncOpenForm != null;
+            if (asyncAddRemove != null || asyncChange != null || asyncOpenForm != null) {
+                if (property.askConfirm) {
+                    blockingConfirm("lsFusion", property.askConfirmMessage, false, chosenOption -> {
+                        if (chosenOption == DialogBoxHelper.OptionType.YES) {
+                            executeSimpleChange(property, asyncAddRemove, asyncChange, asyncOpenForm, event, editContext);
+                        }
+                    });
+                } else {
+                    executeSimpleChange(property, asyncAddRemove, asyncChange, asyncOpenForm, event, editContext);
                 }
+                if (!continueExecution)
+                    return;
             }
 
             actionDispatcher.executePropertyActionSID(event, actionSID, editContext);

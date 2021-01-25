@@ -15,6 +15,7 @@ import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.implement.ActionImplement;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.classes.user.CustomClass;
+import lsfusion.server.logics.form.struct.property.async.AsyncOpenForm;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
@@ -71,6 +72,14 @@ public class JoinAction<T extends PropertyInterface> extends KeepContextAction {
                 return (PropertyInterface) mapRemove;
         }
         return super.getSimpleDelete();
+    }
+
+    @Override
+    public AsyncOpenForm getOpenForm() {
+        if (!isRecursive) { // recursion guard
+            return action.action.getOpenForm();
+        }
+        return super.getOpenForm();
     }
 
     @Override
