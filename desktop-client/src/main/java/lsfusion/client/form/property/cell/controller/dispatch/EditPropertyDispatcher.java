@@ -10,6 +10,8 @@ import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.controller.dispatch.ClientFormActionDispatcher;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.property.ClientPropertyDraw;
+import lsfusion.client.form.property.async.ClientAsyncAddRemove;
+import lsfusion.client.form.property.async.ClientAsyncChange;
 import lsfusion.client.form.property.async.ClientAsyncOpenForm;
 import lsfusion.client.form.property.cell.controller.EditPropertyHandler;
 import lsfusion.interop.action.EditNotPerformedClientAction;
@@ -66,9 +68,10 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
             ClientFormController form = getFormController();
 
             if (actionSID.equals(ServerResponse.CHANGE)) { // асинхронные обработки
-                boolean asyncModifyObject = form.isAsyncModifyObject(property);
-                boolean asyncChange = property.getAsyncChange() != null;
-                if (asyncModifyObject || asyncChange) {
+                ClientAsyncAddRemove asyncAddRemove = form.getAsyncAddRemove(property, actionSID);
+                ClientAsyncChange asyncChange = property.getAsyncChange(actionSID);
+                ClientAsyncOpenForm asyncOpenForm = property.getAsyncOpenForm(actionSID);
+                if (asyncAddRemove != null || asyncChange != null || asyncOpenForm != null) {
                     if (property.askConfirm) {
                         String msg = property.askConfirmMessage;
 
@@ -78,21 +81,19 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
                         }
                     }
 
-                    if (asyncModifyObject) {
-                        form.modifyObject(property, columnKey);
+                    if (asyncAddRemove != null) {
+                        form.modifyObject(property, columnKey, asyncAddRemove);
                         return true;
-                    } else {
-//                      т.е. property.changeType != null
+                    } else if(asyncChange != null) {
                         editColumnKey = columnKey;
                         simpleChangeProperty = property;
-                        return internalRequestValue(property.getChangeType());
+                        return internalRequestValue(asyncChange.changeType);
+                    } else {
+                        //asyncOpenForm != null
+                        if(!asyncOpenForm.modal) { //ignore async modal windows in desktop
+                            form.asyncOpenForm(asyncOpenForm);
+                        }
                     }
-                }
-                ClientAsyncOpenForm asyncOpenForm = property.getAsyncOpenForm();
-                //ignore async modal windows in desktop
-                if (asyncOpenForm != null && !asyncOpenForm.modal) {
-                    form.asyncOpenForm(property);
-                    //return true; //comment
                 }
             }
 

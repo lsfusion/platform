@@ -48,8 +48,9 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.Format;
 import java.text.SimpleDateFormat;
+import java.util.HashMap;
+import java.util.Map;
 
-import static lsfusion.base.BaseUtils.nvl;
 import static lsfusion.interop.action.ServerResponse.CHANGE;
 import static lsfusion.interop.action.ServerResponse.EDIT_OBJECT;
 import static lsfusion.server.logics.form.struct.property.PropertyDrawExtraType.*;
@@ -158,7 +159,7 @@ public class PropertyDrawView extends ComponentView {
         return entity.getOpenForm(context.entity, context.securityPolicy);
     }
 
-    public AsyncExec getAsyncExec(ServerContext context) {
+    public Map<String, AsyncExec> getAsyncExec(ServerContext context) {
         AsyncExec asyncExec = getAddRemove(context);
         if(asyncExec == null) {
             Type changeType = getChangeType(context);
@@ -169,7 +170,11 @@ public class PropertyDrawView extends ComponentView {
         if (asyncExec == null) {
             asyncExec = getOpenForm(context);
         }
-        return asyncExec;
+        Map<String, AsyncExec> asyncExecMap = new HashMap<>();
+        if(asyncExec != null) {
+            asyncExecMap.put(CHANGE, asyncExec);
+        }
+        return asyncExecMap;
     }
 
     public LocalizedString getCaption() {
@@ -312,8 +317,12 @@ public class PropertyDrawView extends ComponentView {
             TypeSerializer.serializeType(outStream, changeWYSType);
         }
 
-        AsyncExec asyncExec = getAsyncExec(pool.context);
-        pool.serializeObject(outStream, asyncExec);
+        Map<String, AsyncExec> asyncExecMap = getAsyncExec(pool.context);
+        outStream.writeInt(asyncExecMap.size());
+        for (Map.Entry<String, AsyncExec> entry : asyncExecMap.entrySet()) {
+            pool.writeString(outStream, entry.getKey());
+            pool.serializeObject(outStream, entry.getValue());
+        }
 
         outStream.writeBoolean(entity.askConfirm);
         if(entity.askConfirm)

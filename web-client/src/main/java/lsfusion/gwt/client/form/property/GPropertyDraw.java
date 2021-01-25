@@ -35,11 +35,13 @@ import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.panel.view.PanelRenderer;
 import lsfusion.gwt.client.view.MainFrame;
 import lsfusion.gwt.client.view.StyleDefaults;
+import lsfusion.interop.action.ServerResponse;
 
 import java.io.Serializable;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.Map;
 
 import static lsfusion.gwt.client.base.EscapeUtils.escapeLineBreakHTML;
 import static lsfusion.gwt.client.base.GwtClientUtils.createTooltipHorizontalSeparator;
@@ -75,22 +77,25 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
     public GType changeWYSType;
 
-    public GAsyncExec asyncExec;
+    public Map<String, GAsyncExec> asyncExecMap;
 
-    public GAsyncAddRemove getAsyncAddRemove() {
+    public GAsyncAddRemove getAsyncAddRemove(String actionSID) {
+        GAsyncExec asyncExec = asyncExecMap.get(actionSID);
         return asyncExec instanceof GAsyncAddRemove ? (GAsyncAddRemove) asyncExec : null;
     }
 
-    public GAsyncChange getAsyncChange() {
+    public GAsyncChange getAsyncChange(String actionSID) {
+        GAsyncExec asyncExec = asyncExecMap.get(actionSID);
         return asyncExec instanceof GAsyncChange ? (GAsyncChange) asyncExec : null;
     }
 
-    public GType getChangeType() {
-        GAsyncChange asyncChange = getAsyncChange();
+    public GType getChangeType() { //todo: check
+        GAsyncChange asyncChange = getAsyncChange(ServerResponse.CHANGE);
         return asyncChange != null ? asyncChange.changeType : null;
     }
 
-    public GAsyncOpenForm getAsyncOpenForm() {
+    public GAsyncOpenForm getAsyncOpenForm(String actionSID) {
+        GAsyncExec asyncExec = asyncExecMap.get(actionSID);
         return asyncExec instanceof GAsyncOpenForm ? (GAsyncOpenForm) asyncExec : null;
     }
 

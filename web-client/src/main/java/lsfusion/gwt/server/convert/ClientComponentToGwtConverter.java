@@ -274,7 +274,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.changeWYSType = typeConverter.convertOrCast(clientPropertyDraw.changeWYSType);
         propertyDraw.returnClass = typeConverter.convertOrCast(clientPropertyDraw.returnClass);
 
-        propertyDraw.asyncExec = convertOrCast(clientPropertyDraw.asyncExec);
+        propertyDraw.asyncExecMap = convertOrCast(clientPropertyDraw.asyncExecMap);
 
         propertyDraw.askConfirm = clientPropertyDraw.askConfirm;
         propertyDraw.askConfirmMessage = clientPropertyDraw.askConfirmMessage;

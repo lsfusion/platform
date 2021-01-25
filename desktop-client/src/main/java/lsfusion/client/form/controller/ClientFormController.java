@@ -45,6 +45,7 @@ import lsfusion.client.form.object.table.tree.ClientTreeGroup;
 import lsfusion.client.form.object.table.tree.controller.TreeGroupController;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.async.ClientAsyncAddRemove;
+import lsfusion.client.form.property.async.ClientAsyncOpenForm;
 import lsfusion.client.form.property.cell.controller.dispatch.SimpleChangePropertyDispatcher;
 import lsfusion.client.form.property.panel.view.PanelView;
 import lsfusion.client.form.view.ClientFormDockable;
@@ -901,23 +902,20 @@ public class ClientFormController implements AsyncListener {
         return remoteForm.changeProperties(requestIndex, lastReceivedRequestIndex, new int[]{propertyID}, new byte[][]{fullCurrentKey}, new byte[][]{pushChange}, new Long[]{pushAdd});
     }
 
-    public boolean isAsyncModifyObject(ClientPropertyDraw property) {
-        ClientAsyncAddRemove addRemove = property.getAsyncAddRemove();
-        if (addRemove != null) {
-            GridController controller = controllers.get(addRemove.object.groupObject);
+    public ClientAsyncAddRemove getAsyncAddRemove(ClientPropertyDraw property, String actionSID) {
+        ClientAsyncAddRemove asyncAddRemove = property.getAsyncAddRemove(actionSID);
+        if (asyncAddRemove != null) {
+            GridController controller = controllers.get(asyncAddRemove.object.groupObject);
             if (controller != null && controller.isList()) {
-                return true;
+                return asyncAddRemove;
             }
         }
-        return false;
+        return null;
     }
 
-    public void modifyObject(final ClientPropertyDraw property, ClientGroupObjectValue columnKey) throws IOException {
-        assert isAsyncModifyObject(property);
-
+    public void modifyObject(final ClientPropertyDraw property, ClientGroupObjectValue columnKey, ClientAsyncAddRemove addRemove) throws IOException {
         commitOrCancelCurrentEditing();
 
-        ClientAsyncAddRemove addRemove = property.getAsyncAddRemove();
         final ClientObject object = addRemove.object;
         final boolean add = addRemove.add;
 
@@ -963,13 +961,8 @@ public class ClientFormController implements AsyncListener {
         });
     }
 
-    public boolean isAsyncOpenForm(ClientPropertyDraw property) {
-        return property.getAsyncOpenForm() != null;
-    }
-
-    public void asyncOpenForm(ClientPropertyDraw property) throws IOException {
-        assert isAsyncOpenForm(property);
-        ((DockableMainFrame) MainFrame.instance).asyncOpenForm(property.getAsyncOpenForm());
+    public void asyncOpenForm(ClientAsyncOpenForm asyncOpenForm) throws IOException {
+        ((DockableMainFrame) MainFrame.instance).asyncOpenForm(asyncOpenForm);
     }
 
     public ClientGroupObjectValue getFullCurrentKey() {

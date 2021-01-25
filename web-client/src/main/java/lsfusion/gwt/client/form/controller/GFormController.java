@@ -78,6 +78,7 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.GPropertyGroupType;
 import lsfusion.gwt.client.form.property.GPropertyReader;
 import lsfusion.gwt.client.form.property.async.GAsyncAddRemove;
+import lsfusion.gwt.client.form.property.async.GAsyncChange;
 import lsfusion.gwt.client.form.property.async.GAsyncOpenForm;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.classes.view.ActionCellRenderer;
@@ -955,24 +956,22 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             handler.consume();
 
             if (GEditBindingMap.CHANGE.equals(actionSID)) {
-                boolean asyncModifyObject = isAsyncModifyObject(property);
-                boolean asyncChange = property.getAsyncChange() != null;
-                if (asyncModifyObject || asyncChange) {
+                GAsyncAddRemove asyncAddRemove = getAsyncModifyObject(property, actionSID);
+                GAsyncChange asyncChange = property.getAsyncChange(actionSID);
+                GAsyncOpenForm asyncOpenForm = property.getAsyncOpenForm(actionSID);
+                boolean continueExecution = asyncOpenForm != null;
+                if (asyncAddRemove != null || asyncChange != null || asyncOpenForm != null) {
                     if (property.askConfirm) {
                         blockingConfirm("lsFusion", property.askConfirmMessage, false, chosenOption -> {
                             if (chosenOption == DialogBoxHelper.OptionType.YES) {
-                                executeSimpleChange(asyncModifyObject, event, editContext);
+                                executeSimpleChange(property, asyncAddRemove, asyncChange, asyncOpenForm, event, editContext);
                             }
                         });
                     } else {
-                        executeSimpleChange(asyncModifyObject, event, editContext);
+                        executeSimpleChange(property, asyncAddRemove, asyncChange, asyncOpenForm, event, editContext);
                     }
-                    return;
-                }
-                GAsyncOpenForm asyncOpenForm = property.getAsyncOpenForm();
-                if (asyncOpenForm != null) {
-                    formsController.asyncOpenForm(dispatcher.getNextRequestIndex(), asyncOpenForm);
-                    //return; //comment
+                    if (!continueExecution)
+                        return;
                 }
             }
 
@@ -980,15 +979,16 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         }
     }
 
-    private void executeSimpleChange(boolean asyncModifyObject, Event event, ExecuteEditContext editContext) {
-        GPropertyDraw property = editContext.getProperty();
-        if (asyncModifyObject)
-            modifyObject(property, editContext.getColumnKey());
-        else {
-            GType changeType = property.getChangeType();
+    private void executeSimpleChange(GPropertyDraw property, GAsyncAddRemove asyncAddRemove, GAsyncChange asyncChange, GAsyncOpenForm asyncOpenForm, Event event, ExecuteEditContext editContext) {
+        if (asyncAddRemove != null) {
+            modifyObject(property, editContext.getColumnKey(), asyncAddRemove);
+        } else if (asyncChange != null) {
+            GType changeType = asyncChange.changeType;
             edit(changeType, event, false, null,
-                value -> changeEditPropertyValue(editContext, changeType, value, null),
-                value -> {}, () -> {}, editContext);
+                    value -> changeEditPropertyValue(editContext, changeType, value, null),
+                    value -> {}, () -> {}, editContext);
+        } else if (asyncOpenForm != null) {
+            formsController.asyncOpenForm(dispatcher.getNextRequestIndex(), asyncOpenForm);
         }
     }
 
@@ -1074,21 +1074,18 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         }
     }
 
-    public boolean isAsyncModifyObject(GPropertyDraw property) {
-        GAsyncAddRemove asyncAddRemove = property.getAsyncAddRemove();
+    public GAsyncAddRemove getAsyncModifyObject(GPropertyDraw property, String actionSID) {
+        GAsyncAddRemove asyncAddRemove = property.getAsyncAddRemove(actionSID);
         if (asyncAddRemove != null) {
             GGridController controller = controllers.get(asyncAddRemove.object.groupObject);
             if (controller != null && controller.isList()) {
-                return true;
+                return asyncAddRemove;
             }
         }
-        return false;
+        return null;
     }
 
-    public void modifyObject(final GPropertyDraw property, final GGroupObjectValue columnKey) {
-        assert isAsyncModifyObject(property);
-
-        GAsyncAddRemove asyncAddRemove = property.getAsyncAddRemove();
+    public void modifyObject(final GPropertyDraw property, final GGroupObjectValue columnKey, GAsyncAddRemove asyncAddRemove) {
         final GObject object = asyncAddRemove.object;
         final boolean add = asyncAddRemove.add;
 

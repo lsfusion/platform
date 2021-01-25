@@ -25,6 +25,7 @@ import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
 import lsfusion.client.form.property.cell.classes.view.FormatPropertyRenderer;
 import lsfusion.client.form.property.cell.view.PropertyRenderer;
 import lsfusion.client.form.property.panel.view.PanelView;
+import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.event.KeyInputEvent;
 import lsfusion.interop.form.event.MouseInputEvent;
@@ -38,10 +39,8 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.text.*;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 import static lsfusion.base.BaseUtils.isRedundantString;
 import static lsfusion.base.BaseUtils.nullTrim;
@@ -78,7 +77,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     // асинхронные интерфейсы
     public ClientType changeWYSType;
-    public ClientAsyncExec asyncExec;
+    public Map<String, ClientAsyncExec> asyncExecMap;
     public boolean askConfirm;
     public String askConfirmMessage;
 
@@ -489,7 +488,13 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
             changeWYSType = ClientTypeSerializer.deserializeClientType(inStream);
         }
 
-        asyncExec = pool.deserializeObject(inStream);
+        asyncExecMap = new HashMap<>();
+        int asyncExecSize = inStream.readInt();
+        for (int i = 0; i < asyncExecSize; ++i) {
+            String key = pool.readString(inStream);
+            ClientAsyncExec value = pool.deserializeObject(inStream);
+            asyncExecMap.put(key, value);
+        }
 
         askConfirm = inStream.readBoolean();
         if(askConfirm)
@@ -581,20 +586,23 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         notNull = inStream.readBoolean();
     }
 
-    public ClientAsyncAddRemove getAsyncAddRemove() {
+    public ClientAsyncAddRemove getAsyncAddRemove(String actionSID) {
+        ClientAsyncExec asyncExec = asyncExecMap.get(actionSID);
         return asyncExec instanceof ClientAsyncAddRemove ? (ClientAsyncAddRemove) asyncExec : null;
     }
 
-    public ClientAsyncChange getAsyncChange() {
+    public ClientAsyncChange getAsyncChange(String actionSID) {
+        ClientAsyncExec asyncExec = asyncExecMap.get(actionSID);
         return asyncExec instanceof ClientAsyncChange ? (ClientAsyncChange) asyncExec : null;
     }
 
-    public ClientType getChangeType() {
-        ClientAsyncChange changeType = getAsyncChange();
+    public ClientType getChangeType() { //todo: check
+        ClientAsyncChange changeType = getAsyncChange(ServerResponse.CHANGE);
         return changeType != null ? changeType.changeType : null;
     }
 
-    public ClientAsyncOpenForm getAsyncOpenForm() {
+    public ClientAsyncOpenForm getAsyncOpenForm(String actionSID) {
+        ClientAsyncExec asyncExec = asyncExecMap.get(actionSID);
         return asyncExec instanceof ClientAsyncOpenForm ? (ClientAsyncOpenForm) asyncExec : null;
     }
 
