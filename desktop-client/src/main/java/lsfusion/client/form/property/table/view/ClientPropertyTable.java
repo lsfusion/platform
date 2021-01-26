@@ -16,6 +16,7 @@ import lsfusion.client.form.property.cell.controller.ClientAbstractCellEditor;
 import lsfusion.client.form.property.cell.controller.dispatch.EditPropertyDispatcher;
 import lsfusion.client.form.property.cell.view.ClientAbstractCellRenderer;
 import lsfusion.client.form.property.cell.view.PropertyRenderer;
+import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.event.BindingMode;
 import lsfusion.interop.form.event.KeyInputEvent;
 import lsfusion.interop.form.event.KeyStrokes;
@@ -135,6 +136,9 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
         }
 
         if (isEditableAwareEditEvent(actionSID) && !isCellEditable(row, column)) {
+            return false;
+        }
+        if(ServerResponse.EDIT_OBJECT.equals(actionSID) && !property.hasEditObjectAction) {
             return false;
         }
 
