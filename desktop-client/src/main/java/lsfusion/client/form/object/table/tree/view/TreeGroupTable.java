@@ -28,6 +28,7 @@ import lsfusion.client.form.property.cell.view.ClientAbstractCellRenderer;
 import lsfusion.client.form.property.table.view.CellTableContextMenuHandler;
 import lsfusion.client.form.property.table.view.CellTableInterface;
 import lsfusion.client.form.property.table.view.InternalEditEvent;
+import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.event.BindingMode;
 import lsfusion.interop.form.event.KeyInputEvent;
 import lsfusion.interop.form.event.KeyStrokes;
@@ -809,6 +810,9 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         }
 
         if (isEditableAwareEditEvent(actionSID) && !isCellEditable(row, column)) {
+            return false;
+        }
+        if(ServerResponse.EDIT_OBJECT.equals(actionSID) && !property.hasEditObjectAction) {
             return false;
         }
 
