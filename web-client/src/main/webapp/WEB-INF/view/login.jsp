@@ -14,7 +14,7 @@
         <script type="text/javascript" src="static/noauth/js/loadResources.js"></script>
         <script>
             loadResources([
-                'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css'
+                'static/noauth/css/fontAwesome/css/font-awesome.min.css'
             ]);
         </script>
     </head>
