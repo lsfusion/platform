@@ -15,7 +15,7 @@
         <link id="themeCss" rel="stylesheet" type="text/css" href="static/css/light.css"/>
 
         <style>
-            @import url('https://fonts.googleapis.com/css?family=Open+Sans:400,400i,700,700i&display=swap&subset=cyrillic');
+            @import url('/static/css/fontsGoogle/fonts_googleapis_OpenSans.css');
         </style>
         
         <style type="text/css">

@@ -14,7 +14,11 @@ function loadResources(resources) {
 }
 
 function getElement(src, alternativeName) {
-    if (!src.startsWith('http') || window.navigator.onLine) {
+    // load local scripts due to "window.navigator.onLine" does not work as we need
+    // let onlineStatus = window.navigator.onLine;
+    let onlineStatus = false;
+
+    if (!src.startsWith('http') || onlineStatus) {
         if (src.endsWith('.js')) {
             return `<script type=\"text/javascript\" src=\"${src}\"></script>`;
         } else {
