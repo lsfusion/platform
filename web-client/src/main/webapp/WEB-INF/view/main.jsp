@@ -15,7 +15,7 @@
         <link id="themeCss" rel="stylesheet" type="text/css" href="static/css/light.css"/>
 
         <style>
-            @import url('https://fonts.googleapis.com/css?family=Open+Sans:400,400i,700,700i&display=swap&subset=cyrillic');
+            @import url('/static/css/fontsGoogle/fonts_googleapis_OpenSans.css');
         </style>
         
         <style type="text/css">
@@ -51,7 +51,7 @@
             }
         </style>
 
-        <%--<script type="text/javascript" src="static/noauth/js/loadResources.js"></script>
+        <script type="text/javascript" src="static/noauth/js/loadResources.js"></script>
         <script>
             loadResources([
 
@@ -67,6 +67,7 @@
 
                 <!-- pivot table -->
                 'static/css/pivot.css',
+                <%--        <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/pivot.min.css">--%>
                 'static/js/pivot.js',
                 'static/js/pivot.ru.js',
 
@@ -76,19 +77,30 @@
 
                 <!-- subtotal.js libs : subtotal_renderers -->
                 'static/css/subtotal.css',
+                <%--        <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/subtotal@1.11.0-alpha.0/dist/subtotal.min.js"></script>--%>
                 'static/js/subtotal.js',
 
                 <!--  plotly libs : plotly_renderers  -->
                 'https://cdnjs.cloudflare.com/ajax/libs/plotly.js/1.55.2/plotly-basic.min.js',
                 'https://cdnjs.cloudflare.com/ajax/libs/plotly.js/1.55.2/plotly-locale-ru.js',
 
-                <!-- will patch plotly_renderers with reverse parameter, since it's makes more sense to show rows on x axis, and columns on y axis -->
-                <!-- + horizontal moved to the end -->
+                <%-- will patch plotly_renderers with reverse parameter, since it's makes more sense to show rows on x axis, and columns on y axis --%>
+                <%-- + horizontal moved to the end --%>
                 'static/js/plotly_renderers.js',
+                <%--        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/plotly_renderers.min.js"></script>--%>
 
                 <!--  c3 / d3 libs : d3_renderers -->
+                <%--        <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/c3/0.7.11/c3.min.css">--%>
+                <%--  because d3_renderers doesn't work with v4+ d3 versions --%>
                 'https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js',
+                <%--        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/c3/0.7.11/c3.min.js"></script>--%>
+                <%--        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/c3_renderers.min.js"></script>--%>
+                <%--        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/d3_renderers.min.js"></script>--%>
                 'static/js/d3_renderers.js',
+
+                <%--        <!--  google charts: gchart_renderers  -->--%>
+                <%--        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/gchart_renderers.min.js"></script>--%>
+                <%--        <script type="text/javascript" src="https://www.google.com/jsapi"></script>--%>
 
                 <!--  map  -->
                 'https://unpkg.com/leaflet@1.7.1/dist/leaflet.css',
@@ -112,71 +124,7 @@
 
             ]);
 
-        </script>--%>
-
-
-        <%-- need jquery for pivot table --%>
-        <script type="text/javascript" src="static/js/external/jquery.min.js"></script>
-        <script type="text/javascript" src="static/js/external/jquery-ui.min.js"></script>
-
-        <%-- export pivot to excel --%>
-        <script type="text/javascript" src="static/js/tableToExcel.js"></script>
-
-        <%-- optional: mobile support with jqueryui-touch-punch --%>
-        <script type="text/javascript" src="static/js/external/jquery.ui.touch-punch.min.js"></script>
-
-        <%-- pivot table --%>
-        <link rel="stylesheet" type="text/css" href="static/css/pivot.css">
-        <%--        <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/pivot.min.css">--%>
-        <script type="text/javascript" src="static/js/pivot.js"></script>
-        <script type="text/javascript" src="static/js/pivot.ru.js"></script>
-
-        <%-- math for formulas in pivoting --%>
-        <script type="text/javascript" src="static/js/external/math.min.js"></script>
-        <script type="text/javascript" src="static/js/utils.js"></script>
-
-        <%-- subtotal.js libs : subtotal_renderers --%>
-        <link rel="stylesheet" type="text/css" href="static/css/subtotal.css">
-        <%--        <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/subtotal@1.11.0-alpha.0/dist/subtotal.min.js"></script>--%>
-        <script type="text/javascript" src="static/js/subtotal.js"></script>
-
-        <%--  plotly libs : plotly_renderers  --%>
-        <script type="text/javascript" src="static/js/external/plotly-basic.min.js"></script>
-        <script type="text/javascript" src="static/js/external/plotly-locale-ru.js"></script>
-
-        <%-- will patch plotly_renderers with reverse parameter, since it's makes more sense to show rows on x axis, and columns on y axis --%>
-        <%-- + horizontal moved to the end --%>
-        <script type="text/javascript" src="static/js/plotly_renderers.js"></script>
-        <%--        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/plotly_renderers.min.js"></script>--%>
-
-        <%--  c3 / d3 libs : d3_renderers --%>
-        <%--        <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/c3/0.7.11/c3.min.css">--%>
-        <%--  because d3_renderers doesn't work with v4+ d3 versions --%>
-        <script type="text/javascript" src="static/js/external/d3.min.js"></script>
-        <%--        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/c3/0.7.11/c3.min.js"></script>--%>
-        <%--        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/c3_renderers.min.js"></script>--%>
-        <%--        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/d3_renderers.min.js"></script>--%>
-        <script type="text/javascript" src="static/js/d3_renderers.js"></script>
-
-        <%--  map  --%>
-        <link rel="stylesheet" href="static/css/external/leaflet.css"/>
-        <link rel="stylesheet" href="static/css/external/leaflet.draw.css"/>
-        <link rel="stylesheet" type="text/css" href="static/css/external/MarkerCluster.css" />
-        <link rel="stylesheet" type="text/css" href="static/css/external/MarkerCluster.Default.css" />
-        <script type="text/javascript" src="static/js/external/leaflet.js"></script>
-        <script type="text/javascript" src="static/js/external/leaflet.draw.js"></script>
-        <script type='text/javascript' src="static/js/external/leaflet.markercluster.js"></script>
-        <script type="text/javascript" src="static/js/external/leaflet.polylineDecorator.min.js"></script>
-        <link rel="stylesheet" type="text/css" href="static/css/gMap.css">
-
-        <%-- calendar --%>
-        <script type="text/javascript" src="static/js/external/fullCalendar.js"></script>
-        <link rel="stylesheet" type="text/css" href="static/css/external/fullCalendar.css">
-        <link rel="stylesheet" type="text/css" href="static/css/gCalendar.css">
-        <script type="text/javascript" src="static/js/external/fullcalendar-locales-all.js"></script>
-        <script type="text/javascript" src="static/js/fullcalendar-locale-be.js"></script>
-        <script type="text/javascript" src="static/js/external/popper.min.js"></script>
-        <script type="text/javascript" src="static/js/external/tippy-bundle.umd.min.js"></script>
+        </script>
 
         <c:forEach items="${filesUrls}" var="fileUrl">
             <c:if test="${fileUrl.endsWith('js')}">
