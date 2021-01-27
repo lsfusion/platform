@@ -15,7 +15,7 @@
         <link id="themeCss" rel="stylesheet" type="text/css" href="static/css/light.css"/>
 
         <style>
-            @import url('/static/css/fontsGoogle/fonts_googleapis_OpenSans.css');
+            @import url('static/css/fontsGoogle/fonts_googleapis_OpenSans.css');
         </style>
         
         <style type="text/css">
