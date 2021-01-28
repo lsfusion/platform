@@ -35,6 +35,8 @@ import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.order.OrderEntity;
 import lsfusion.server.logics.form.struct.property.async.AsyncAddRemove;
+import lsfusion.server.logics.form.struct.property.async.AsyncChange;
+import lsfusion.server.logics.form.struct.property.async.AsyncEventExec;
 import lsfusion.server.logics.form.struct.property.async.AsyncOpenForm;
 import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyObjectEntity;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
@@ -199,8 +201,8 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         this.inheritedProperty = inheritedProperty;
     }
 
-    public DataClass getRequestInputType(FormEntity form, SecurityPolicy policy) {
-        return getRequestInputType(CHANGE, form, policy, optimisticAsync);
+    public DataClass getRequestInputType(FormEntity form, SecurityPolicy policy, String actionSID) {
+        return getRequestInputType(actionSID, form, policy, optimisticAsync);
     }
 
     public DataClass getWYSRequestInputType(FormEntity form, SecurityPolicy policy) {
@@ -226,19 +228,16 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return null;
     }
 
-    public <A extends PropertyInterface> AsyncAddRemove getAddRemove(FormEntity form, SecurityPolicy policy) {
-        ActionObjectEntity<A> changeAction = (ActionObjectEntity<A>) getEventAction(CHANGE, form, policy);
-        if(changeAction!=null)
-            return changeAction.getAddRemove(form);
-        return null;
+    public AsyncAddRemove getAddRemove(FormEntity form, SecurityPolicy policy, String actionSID) { //todo: check
+        AsyncEventExec asyncEventExec = getAsyncEventExec(form, policy, actionSID);
+        return asyncEventExec instanceof AsyncAddRemove ? (AsyncAddRemove) asyncEventExec : null;
     }
 
-    public <A extends PropertyInterface> AsyncOpenForm getOpenForm(FormEntity form, SecurityPolicy policy) {
-        ActionObjectEntity<A> changeAction = (ActionObjectEntity<A>) getEventAction(CHANGE, form, policy);
-        if (changeAction == null)
-            changeAction = (ActionObjectEntity<A>) getEventAction(EDIT_OBJECT, form, policy);
-        if (changeAction != null)
-            return changeAction.getOpenForm();
+    public AsyncEventExec getAsyncEventExec(FormEntity form, SecurityPolicy policy, String actionSID) {
+        ActionObjectEntity<?> changeAction = getEventAction(actionSID, form, policy);
+        if (changeAction != null) {
+            return changeAction.getAsyncEventExec(form, optimisticAsync);
+        }
         return null;
     }
 

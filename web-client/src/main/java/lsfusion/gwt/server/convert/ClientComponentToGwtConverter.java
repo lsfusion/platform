@@ -23,6 +23,7 @@ import lsfusion.client.form.property.async.ClientAsyncExec;
 import lsfusion.client.form.property.async.ClientAsyncOpenForm;
 import lsfusion.client.form.property.cell.EditBindingMap;
 import lsfusion.gwt.client.GForm;
+import lsfusion.gwt.client.base.jsni.NativeStringMap;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.classes.GClass;
 import lsfusion.gwt.client.form.design.*;

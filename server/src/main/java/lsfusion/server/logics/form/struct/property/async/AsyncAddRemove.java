@@ -7,7 +7,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public class AsyncAddRemove implements AsyncExec {
+public class AsyncAddRemove implements AsyncInputExec {
     public ObjectEntity object;
     public boolean add;
 

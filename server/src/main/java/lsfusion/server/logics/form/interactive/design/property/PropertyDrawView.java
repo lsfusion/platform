@@ -27,10 +27,7 @@ import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawExtraType;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
-import lsfusion.server.logics.form.struct.property.async.AsyncAddRemove;
-import lsfusion.server.logics.form.struct.property.async.AsyncChange;
-import lsfusion.server.logics.form.struct.property.async.AsyncExec;
-import lsfusion.server.logics.form.struct.property.async.AsyncOpenForm;
+import lsfusion.server.logics.form.struct.property.async.AsyncEventExec;
 import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyObjectEntity;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.infer.ClassType;
@@ -51,8 +48,7 @@ import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
 
-import static lsfusion.interop.action.ServerResponse.CHANGE;
-import static lsfusion.interop.action.ServerResponse.EDIT_OBJECT;
+import static lsfusion.interop.action.ServerResponse.*;
 import static lsfusion.server.logics.form.struct.property.PropertyDrawExtraType.*;
 
 public class PropertyDrawView extends ComponentView {
@@ -126,10 +122,6 @@ public class PropertyDrawView extends ComponentView {
     public boolean isProperty() {
         return entity.isProperty();
     }
-
-    public Type getChangeType(ServerContext context) {
-        return entity.getRequestInputType(context.entity, context.securityPolicy);
-    }
     
     public Type getChangeWYSType(ServerContext context) {
         return entity.getWYSRequestInputType(context.entity, context.securityPolicy);
@@ -151,30 +143,12 @@ public class PropertyDrawView extends ComponentView {
         return super.getBaseDefaultAlignment(formEntity);
     }
 
-    public AsyncAddRemove getAddRemove(ServerContext context) {
-        return entity.getAddRemove(context.entity, context.securityPolicy);
-    }
-
-    public AsyncOpenForm getOpenForm(ServerContext context) {
-        return entity.getOpenForm(context.entity, context.securityPolicy);
-    }
-
-    public Map<String, AsyncExec> getAsyncExec(ServerContext context) {
-        Map<String, AsyncExec> asyncExecMap = new HashMap<>();
-        AsyncAddRemove addRemove = getAddRemove(context);
-        if (addRemove != null) {
-            asyncExecMap.put(CHANGE, addRemove);
-        } else {
-            Type changeType = getChangeType(context);
-            if (changeType != null) {
-                asyncExecMap.put(CHANGE, new AsyncChange(changeType));
-            } else {
-                AsyncOpenForm openForm = getOpenForm(context);
-                if (openForm != null) {
-                    asyncExecMap.put(CHANGE, openForm);
-                    asyncExecMap.put(EDIT_OBJECT, openForm);
-                }
-
+    public Map<String, AsyncEventExec> getAsyncExec(ServerContext context) {
+        Map<String, AsyncEventExec> asyncExecMap = new HashMap<>();
+        for (String actionId : new String[]{CHANGE, GROUP_CHANGE, EDIT_OBJECT}) {
+            AsyncEventExec asyncEventExec = entity.getAsyncEventExec(context.entity, context.securityPolicy, actionId);
+            if (asyncEventExec != null) {
+                asyncExecMap.put(actionId, asyncEventExec);
             }
         }
         return asyncExecMap;
@@ -320,9 +294,9 @@ public class PropertyDrawView extends ComponentView {
             TypeSerializer.serializeType(outStream, changeWYSType);
         }
 
-        Map<String, AsyncExec> asyncExecMap = getAsyncExec(pool.context);
+        Map<String, AsyncEventExec> asyncExecMap = getAsyncExec(pool.context);
         outStream.writeInt(asyncExecMap.size());
-        for (Map.Entry<String, AsyncExec> entry : asyncExecMap.entrySet()) {
+        for (Map.Entry<String, AsyncEventExec> entry : asyncExecMap.entrySet()) {
             pool.writeString(outStream, entry.getKey());
             pool.serializeObject(outStream, entry.getValue());
         }

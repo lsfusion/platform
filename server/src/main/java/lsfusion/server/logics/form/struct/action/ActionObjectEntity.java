@@ -4,6 +4,7 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.base.caches.IdentityLazy;
+import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.form.interactive.controller.init.InstanceFactory;
@@ -15,6 +16,8 @@ import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyObjectInterfaceEntity;
 import lsfusion.server.logics.form.struct.property.async.AsyncAddRemove;
+import lsfusion.server.logics.form.struct.property.async.AsyncChange;
+import lsfusion.server.logics.form.struct.property.async.AsyncEventExec;
 import lsfusion.server.logics.form.struct.property.async.AsyncOpenForm;
 import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyObjectEntity;
 import lsfusion.server.logics.property.PropertyFact;
@@ -66,8 +69,28 @@ public class ActionObjectEntity<P extends PropertyInterface> extends ActionOrPro
     }
 
     @IdentityLazy
+    public AsyncChange getChange(boolean optimistic) {
+        Type changeType = property.getSimpleRequestInputType(optimistic);
+        if(changeType!=null) {
+            return new AsyncChange(changeType);
+        }
+        return null;
+    }
+
+    @IdentityLazy
     public AsyncOpenForm getOpenForm() {
         return property.getOpenForm();
+    }
+
+    public AsyncEventExec getAsyncEventExec(FormEntity form, boolean optimistic) {
+        AsyncEventExec asyncEventExec = getAddRemove(form);
+        if (asyncEventExec == null) {
+            asyncEventExec = getChange(optimistic);
+        }
+        if (asyncEventExec == null) {
+            asyncEventExec = getOpenForm();
+        }
+        return asyncEventExec;
     }
 
 //    @IdentityInstanceLazy

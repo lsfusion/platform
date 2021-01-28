@@ -25,10 +25,8 @@ import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.controller.GPropertyController;
-import lsfusion.gwt.client.form.property.async.GAsyncAddRemove;
 import lsfusion.gwt.client.form.property.async.GAsyncChange;
-import lsfusion.gwt.client.form.property.async.GAsyncExec;
-import lsfusion.gwt.client.form.property.async.GAsyncOpenForm;
+import lsfusion.gwt.client.form.property.async.GAsyncEventExec;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.classes.view.FormatCellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
@@ -77,26 +75,16 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
     public GType changeWYSType;
 
-    public Map<String, GAsyncExec> asyncExecMap;
-
-    public GAsyncAddRemove getAsyncAddRemove(String actionSID) {
-        GAsyncExec asyncExec = asyncExecMap.get(actionSID);
-        return asyncExec instanceof GAsyncAddRemove ? (GAsyncAddRemove) asyncExec : null;
-    }
-
-    public GAsyncChange getAsyncChange(String actionSID) {
-        GAsyncExec asyncExec = asyncExecMap.get(actionSID);
-        return asyncExec instanceof GAsyncChange ? (GAsyncChange) asyncExec : null;
-    }
+    public Map<String, GAsyncEventExec> asyncExecMap;
 
     public GType getChangeType() { //todo: check
-        GAsyncChange asyncChange = getAsyncChange(ServerResponse.CHANGE);
-        return asyncChange != null ? asyncChange.changeType : null;
+        GAsyncEventExec asyncExec = asyncExecMap.get(ServerResponse.CHANGE);
+        return asyncExec instanceof GAsyncChange ? ((GAsyncChange) asyncExec).changeType : null;
     }
 
-    public GAsyncOpenForm getAsyncOpenForm(String actionSID) {
-        GAsyncExec asyncExec = asyncExecMap.get(actionSID);
-        return asyncExec instanceof GAsyncOpenForm ? (GAsyncOpenForm) asyncExec : null;
+    public GAsyncEventExec getAsyncEventExec(String actionSID) {
+        GAsyncEventExec result = asyncExecMap.get(actionSID);
+        return result;
     }
 
     public boolean askConfirm;
