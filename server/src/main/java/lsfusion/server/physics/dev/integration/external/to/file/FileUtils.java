@@ -16,9 +16,8 @@ import java.nio.file.Files;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
+import java.util.function.BiFunction;
 
 import static lsfusion.base.DateConverter.sqlTimestampToLocalDateTime;
 import static lsfusion.base.file.WriteUtils.appendExtension;
@@ -287,7 +286,7 @@ public class FileUtils {
         }
     }
 
-    public static boolean checkFileExists(String sourcePath) throws IOException {
+    public static boolean checkFileExists(String sourcePath) {
         Path path = Path.parsePath(sourcePath);
         boolean exists;
         switch (path.type) {
@@ -298,13 +297,15 @@ public class FileUtils {
                 exists = checkFileExistsFTP(path.path);
                 break;
             case "sftp":
+                exists = checkFileExistsSFTP(path.path);
+                break;
             default:
-                throw new RuntimeException("FileExists is supported only for file and ftp");
+                throw new RuntimeException("FileExists unsupported type " + path.type);
         }
         return exists;
     }
 
-    private static boolean checkFileExistsFTP(String path) throws IOException {
+    private static boolean checkFileExistsFTP(String path) {
         FTPPath ftpPath = FTPPath.parseFTPPath(path);
         FTPClient ftpClient = new FTPClient();
         try {
@@ -330,6 +331,22 @@ public class FileUtils {
         }
     }
 
+    private static boolean checkFileExistsSFTP(String path) {
+        return actionSFTP(path, (ftpPath, channelSftp) -> {
+            try {
+                String remoteFile = ftpPath.remoteFile;
+                remoteFile = (!remoteFile.startsWith("/") ? "/" : "") + remoteFile;
+                channelSftp.ls(remoteFile); //list files throws exception if file/directory not found
+                return true;
+            } catch (SftpException exception) {
+                if(exception.id == ChannelSftp.SSH_FX_NO_SUCH_FILE)
+                    return false;
+                else
+                    throw Throwables.propagate(exception);
+            }
+        });
+    }
+
     public static List<Object> listFiles(String sourcePath, String charset) throws IOException {
         Path path = Path.parsePath(sourcePath);
         List<Object> filesList;
@@ -341,8 +358,10 @@ public class FileUtils {
                 filesList = listFilesFTP(path.path, charset);
                 break;
             case "sftp":
+                filesList = listFilesSFTP(path.path);
+                break;
             default:
-                throw new RuntimeException("ListFiles supported only for file and ftp");
+                throw new RuntimeException("ListFiles unsupported type " + path.type);
         }
         return filesList;
     }
@@ -400,6 +419,35 @@ public class FileUtils {
         }
     }
 
+    private static List<Object> listFilesSFTP(String path) {
+        return actionSFTP(path, (ftpPath, channelSftp) -> {
+            try {
+                String remoteFile = ftpPath.remoteFile;
+                remoteFile = (!remoteFile.startsWith("/") ? "/" : "") + remoteFile;
+                Vector result = channelSftp.ls(remoteFile); //list files throws exception if file/directory not found
+                List<String> nameValues = new ArrayList<>();
+                List<Boolean> isDirectoryValues = new ArrayList<>();
+                List<LocalDateTime> modifiedDateTimeValues = new ArrayList<>();
+                for (int i = 0; i < result.size(); i++) {
+                    ChannelSftp.LsEntry file = (ChannelSftp.LsEntry) result.elementAt(i);
+                    String fileName = file.getFilename();
+                    if (!fileName.equals(".") && !fileName.equals("..")) {
+                        nameValues.add(file.getFilename());
+                        SftpATTRS attrs = file.getAttrs();
+                        isDirectoryValues.add(attrs.isDir() ? true : null);
+                        modifiedDateTimeValues.add(sqlTimestampToLocalDateTime(new Timestamp(attrs.getMTime() * 1000L)));
+                    }
+                }
+                return Arrays.asList((Object) nameValues.toArray(new String[0]), isDirectoryValues.toArray(new Boolean[0]), modifiedDateTimeValues.toArray(new LocalDateTime[0]));
+            } catch (SftpException exception) {
+                if(exception.id == ChannelSftp.SSH_FX_NO_SUCH_FILE)
+                    throw new RuntimeException(String.format("Path '%s' not found for %s", ftpPath.remoteFile, path));
+                else
+                    throw Throwables.propagate(exception);
+            }
+        });
+    }
+
     public static void safeDelete(File file) {
         if (file != null && !file.delete()) {
             file.deleteOnExit();
@@ -436,6 +484,39 @@ public class FileUtils {
                     e.printStackTrace();
                 }
 //            }).start();
+        }
+    }
+
+    public static <R> R actionSFTP(String path, BiFunction<FTPPath, ChannelSftp, R> function) {
+        FTPPath ftpPath = FTPPath.parseSFTPPath(path);
+
+        Session session = null;
+        Channel channel = null;
+        ChannelSftp channelSftp = null;
+        try {
+            JSch jsch = new JSch();
+            session = jsch.getSession(ftpPath.username, ftpPath.server, ftpPath.port);
+            session.setPassword(ftpPath.password);
+            Properties config = new Properties();
+            config.put("StrictHostKeyChecking", "no");
+            session.setConfig(config);
+            session.connect();
+            channel = session.openChannel("sftp");
+            channel.connect();
+            channelSftp = (ChannelSftp) channel;
+            if (ftpPath.charset != null)
+                channelSftp.setFilenameEncoding(ftpPath.charset);
+
+            return function.apply(ftpPath, channelSftp);
+        } catch (JSchException | SftpException e) {
+            throw Throwables.propagate(e);
+        } finally {
+            if (channelSftp != null)
+                channelSftp.exit();
+            if (channel != null)
+                channel.disconnect();
+            if (session != null)
+                session.disconnect();
         }
     }
 }
