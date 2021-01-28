@@ -4,6 +4,8 @@ import bibliothek.gui.dock.common.event.CKeyboardListener;
 import bibliothek.gui.dock.common.intern.CDockable;
 import com.google.common.base.Throwables;
 import lsfusion.client.base.view.ClientDockable;
+import lsfusion.client.controller.MainController;
+import lsfusion.client.controller.remote.ClientRMIClassLoaderSpi;
 import lsfusion.client.form.controller.FormsController;
 import lsfusion.interop.form.print.FormPrintType;
 import lsfusion.interop.form.print.ReportGenerationData;
@@ -17,7 +19,10 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.rmi.RemoteException;
 
 public class ClientReportDockable extends ClientDockable {
     public Integer pageCount;
@@ -25,12 +30,44 @@ public class ClientReportDockable extends ClientDockable {
         super(null, formsController);
 
         try {
+            ClassLoader oldClassloader = Thread.currentThread().getContextClassLoader();
+
+            ClassLoader classLoader = new ClassLoader() {
+
+                @Override
+                public InputStream getResourceAsStream(String name) {
+                    InputStream resourceAsStream = super.getResourceAsStream(name);
+                    if (resourceAsStream == null) {
+                        try {
+                            resourceAsStream = new ByteArrayInputStream(MainController.remoteLogics.findClass(name.replace(".class", "")));
+                        } catch (IllegalArgumentException | RemoteException e) {
+                            return null;
+                        }
+                    }
+                    return resourceAsStream;
+                }
+
+                @Override
+                protected Class<?> findClass(String name) throws ClassNotFoundException {
+                    try {
+                        return super.findClass(name);
+                    } catch (ClassNotFoundException ex) {
+                        return ClientRMIClassLoaderSpi.remoteLoader.findClass(name);
+                    }
+                }
+            };
+
+            Thread.currentThread().setContextClassLoader(classLoader);
+
             final JasperPrint print = new ReportGenerator(generationData).createReport(FormPrintType.PRINT);
             print.setProperty(XlsReportConfiguration.PROPERTY_DETECT_CELL_TYPE, "true");
             this.pageCount = print.getPages().size();
             final ReportViewer reportViewer = new ReportViewer(print, printerName, editInvoker);
             setContent(prepareViewer(reportViewer));
             setTitleText(formCaption);
+
+            Thread.currentThread().setContextClassLoader(oldClassloader);
+
             addKeyboardListener(new CKeyboardListener() {
                 @Override
                 public boolean keyPressed(CDockable cDockable, KeyEvent keyEvent) {

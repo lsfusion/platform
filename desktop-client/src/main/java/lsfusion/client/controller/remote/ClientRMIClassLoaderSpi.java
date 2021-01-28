@@ -20,23 +20,28 @@ import java.rmi.server.RMIClassLoaderSpi;
 // Сейчас проблема решена таким образом, что всем загруженным классам сервера выставляется в качестве ClassLoader - ClientRMIClassLoaderSpi.RemoteClassLoader
 // Таким образом все классы полей загруженных с сервера проходят через него и спрашивают свою реализацию у сервера
 public class ClientRMIClassLoaderSpi extends RMIClassLoaderSpi {
-    private static class RemoteClassLoader extends ClassLoader {
+    public static class RemoteClassLoader extends ClassLoader {
         public RemoteClassLoader(ClassLoader original) {
             super(original);
         }
 
         @Override
-        protected Class<?> findClass(String name) throws ClassNotFoundException {
+        public Class<?> findClass(String name) throws ClassNotFoundException {
             try {
-                byte[] classBytes = MainController.remoteLogics.findClass(name);
-                return defineClass(name, classBytes, 0, classBytes.length);
+                Class<?> aClass = findLoadedClass(name);
+                byte[] classBytes;
+                if (aClass == null) {
+                    classBytes = MainController.remoteLogics.findClass(name);
+                    aClass = defineClass(name, classBytes, 0, classBytes.length);
+                }
+                return aClass;
             } catch (RemoteException remote) {
                 throw new ClassNotFoundException(ClientResourceBundle.getString("errors.error.loading.class.on.the.client"), remote);
             }
         }
     }
     
-    private static ClassLoader remoteLoader = new RemoteClassLoader(ClientRMIClassLoaderSpi.class.getClassLoader());
+    public static RemoteClassLoader remoteLoader = new RemoteClassLoader(ClientRMIClassLoaderSpi.class.getClassLoader());
 
     @Override
     public Class<?> loadClass(String codebase, String name, ClassLoader defaultLoader) throws MalformedURLException, ClassNotFoundException {
