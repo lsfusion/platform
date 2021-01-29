@@ -24,10 +24,6 @@ public class ServerResponse implements Serializable {
         this(requestIndex, actions, true);
     }
 
-    public ServerResponse(ClientAction[] actions, boolean resumeInvocation) {
-        this(-1, actions, resumeInvocation);
-    }
-
     public ServerResponse(long requestIndex, ClientAction[] actions, boolean resumeInvocation) {
         this.requestIndex = requestIndex;
         this.actions = actions;

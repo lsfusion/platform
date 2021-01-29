@@ -15,6 +15,7 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.view.PopupDialogPanel;
 import lsfusion.gwt.client.base.view.WindowHiddenHandler;
 import lsfusion.gwt.client.form.design.view.flex.FlexTabbedPanel;
@@ -46,7 +47,7 @@ public abstract class FormsController {
     private final List<Integer> formFocusOrder = new ArrayList<>();
     private int focusOrderCount;
 
-    private Map<Long, FormContainer> asyncForms = new HashMap<>();
+    private NativeHashMap<Long, FormContainer> asyncForms = new NativeHashMap<>();
 
     private final WindowsController windowsController;
 

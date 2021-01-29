@@ -2,11 +2,13 @@ package lsfusion.gwt.client.navigator.controller;
 
 import com.google.gwt.dom.client.NativeEvent;
 import lsfusion.gwt.client.form.controller.FormsController;
+import lsfusion.gwt.client.form.property.async.GAsyncOpenForm;
 import lsfusion.gwt.client.navigator.GNavigatorAction;
 import lsfusion.gwt.client.navigator.GNavigatorElement;
 import lsfusion.gwt.client.navigator.view.GNavigatorView;
 import lsfusion.gwt.client.navigator.window.GAbstractWindow;
 import lsfusion.gwt.client.navigator.window.GNavigatorWindow;
+import lsfusion.gwt.client.view.MainFrame;
 
 import java.util.*;
 
@@ -87,6 +89,8 @@ public abstract class GNavigatorController implements GINavigatorController {
     @Override
     public void openElement(GNavigatorElement element, NativeEvent nativeEvent) {
         if (element instanceof GNavigatorAction) {
+            GAsyncOpenForm asyncOpenForm = new GAsyncOpenForm(element.caption, false);
+            formsController.asyncOpenForm(MainFrame.navigatorDispatchAsync.getNextRequestIndex(), asyncOpenForm);
             formsController.executeNavigatorAction((GNavigatorAction) element, nativeEvent);
         }
     }

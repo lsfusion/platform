@@ -468,7 +468,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
 
     @Override
     protected ServerResponse prepareResponse(long requestIndex, List<ClientAction> pendingActions, ExecutionStack stack) {
-        return new ServerResponse(pendingActions.toArray(new ClientAction[pendingActions.size()]), false);
+        return new ServerResponse(requestIndex, pendingActions.toArray(new ClientAction[pendingActions.size()]), false);
     }
 
     @Override
