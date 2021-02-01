@@ -198,6 +198,7 @@
             </exclusions>
         </dependency>
 
+        <!--required for correct Jasper report generation-->
         <dependency>
             <groupId>org.eclipse.jdt.core.compiler</groupId>
             <artifactId>ecj</artifactId>

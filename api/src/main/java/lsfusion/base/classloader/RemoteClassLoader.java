@@ -11,6 +11,16 @@ import java.rmi.server.RMIClassLoaderSpi;
 
 import static lsfusion.base.ApiResourceBundle.getString;
 
+// The class is needed in order to pass its classes from the server not through codeBase, but directly through the RMI interface
+
+// It turned out that the deserialization mechanism in RMI works very interestingly when paired with the standard serialization mechanism
+// First, a chunk of the class descriptor (ObjectStreamClass) is loaded from the stream, containing the name, SUID, etc.
+// Then the name goes resolveClass for the ObjectInputStream, which ends up in RMIClassLoaderSpi
+// After that, from the resulting Class, a full descriptor of the localDesc class is compiled, which is compared with the serialized one in the stream
+// At the same time, when the full class descriptor is loaded, the field classes are loaded without using the resolveClass of the ObjectInputStream
+// Thus, NoClassDefFoundException immediately falls
+// Accordingly, you need to either completely make your own ClassLoader or immediately load the implementation of all classes related by fields from the server
+
 public class RemoteClassLoader extends RMIClassLoaderSpi {
     public static class ExternalClassLoader extends ClassLoader {
 
@@ -37,6 +47,7 @@ public class RemoteClassLoader extends RMIClassLoaderSpi {
             }
         }
 
+        // used in JasperCompileManager not in the desktop-client
         @Override
         public InputStream getResourceAsStream(String name) {
             InputStream resourceAsStream = super.getResourceAsStream(name);

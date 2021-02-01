@@ -75,16 +75,18 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean 
         return new NavigatorInfo(getSessionInfo(request), osVersion, processor, architecture, cores, physicalMemory, totalMemory,
                 maximumMemory, freeMemory, javaVersion, screenSize, clientType, BaseUtils.getPlatformVersion(), BaseUtils.getApiVersion());
     }
-    public LogicsSessionObject sessionObject;
+
+    // required for correct Jasper report generation
+    private RemoteLogicsInterface remoteLogics;
 
     @Override
     public RemoteLogicsInterface getRemoteLogics() {
-        return sessionObject.remoteLogics;
+        return remoteLogics;
     }
 
     @Override
     public String createNavigator(LogicsSessionObject sessionObject, HttpServletRequest request, ConnectionInfo connectionInfo) throws RemoteException {
-        this.sessionObject = sessionObject;
+        this.remoteLogics = sessionObject.remoteLogics;
         String sessionID = nextSessionID();
         addLogicsAndNavigatorSessionObject(sessionID, createNavigatorSessionObject(sessionObject, request, connectionInfo));
         return sessionID;
