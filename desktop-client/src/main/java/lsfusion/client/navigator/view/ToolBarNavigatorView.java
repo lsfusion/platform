@@ -10,7 +10,6 @@ import lsfusion.client.navigator.window.ClientToolBarNavigatorWindow;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.base.view.FlexConstraints;
 import lsfusion.interop.base.view.FlexLayout;
-import lsfusion.interop.form.design.Alignment;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -34,7 +33,7 @@ public class ToolBarNavigatorView extends NavigatorView {
         window = iWindow;
 
         toolBarPanel = (JPanel) getComponent();
-        toolBarPanel.setLayout(new FlexLayout(toolBarPanel, iWindow.isVertical(), Alignment.START));
+        toolBarPanel.setLayout(new FlexLayout(toolBarPanel, iWindow.isVertical(), FlexAlignment.START));
     }
 
     @Override

@@ -15,7 +15,7 @@
         <link id="themeCss" rel="stylesheet" type="text/css" href="static/css/light.css"/>
 
         <style>
-            @import url('https://fonts.googleapis.com/css?family=Open+Sans:400,400i,700,700i&display=swap&subset=cyrillic');
+            @import url('static/css/fontsGoogle/fonts_googleapis_OpenSans.css');
         </style>
         
         <style type="text/css">
@@ -81,8 +81,8 @@
                 'static/js/subtotal.js',
 
                 <!--  plotly libs : plotly_renderers  -->
-                'https://cdnjs.cloudflare.com/ajax/libs/plotly.js/1.55.2/plotly-basic.min.js',
-                'https://cdnjs.cloudflare.com/ajax/libs/plotly.js/1.55.2/plotly-locale-ru.js',
+                'https://cdnjs.cloudflare.com/ajax/libs/plotly.js/1.58.4/plotly-basic.min.js',
+                'https://cdnjs.cloudflare.com/ajax/libs/plotly.js/1.58.4/plotly-locale-ru.js',
 
                 <%-- will patch plotly_renderers with reverse parameter, since it's makes more sense to show rows on x axis, and columns on y axis --%>
                 <%-- + horizontal moved to the end --%>

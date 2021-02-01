@@ -2,12 +2,13 @@ package lsfusion.server.logics.form.interactive.design;
 
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
-import lsfusion.interop.form.design.Alignment;
+import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.design.ContainerType;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFOrderSet;
+import lsfusion.server.language.ScriptParsingException;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.interactive.design.object.GridView;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
@@ -27,7 +28,7 @@ public class ContainerView extends ComponentView {
 
     private ContainerType type = ContainerType.CONTAINERV;
 
-    public Alignment childrenAlignment = Alignment.START;
+    public FlexAlignment childrenAlignment = FlexAlignment.START;
 
     public int columns = 4;
     
@@ -125,7 +126,7 @@ public class ContainerView extends ComponentView {
         this.type = type;
     }
 
-    public void setChildrenAlignment(Alignment childrenAlignment) {
+    public void setChildrenAlignment(FlexAlignment childrenAlignment) {
         this.childrenAlignment = childrenAlignment;
     }
 
@@ -250,6 +251,20 @@ public class ContainerView extends ComponentView {
         
         for(ComponentView child : getChildrenIt())
             child.finalizeAroundInit();
+
+        ImList<ComponentView> childrenList = getChildrenList();
+        if (isSplit() && childrenList.size() != 2) {
+            StringBuilder childrenString = new StringBuilder("");
+            for (int i = 0; i < childrenList.size(); i++) {
+                childrenString.append(childrenList.get(i).getSID());
+                if (i != childrenList.size() - 1) {
+                    childrenString.append(", ");
+                }
+            }
+            throw new ScriptParsingException("Split container is allowed to have exactly two children:\n" +
+                    "\tcontainer: " + getSID() + "\n" +
+                    "\tchildren: " + childrenString.toString());
+        }
     }
 
     @Override

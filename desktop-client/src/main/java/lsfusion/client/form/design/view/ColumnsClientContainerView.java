@@ -6,7 +6,6 @@ import lsfusion.client.form.design.ClientContainer;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.base.view.FlexConstraints;
 import lsfusion.interop.base.view.FlexLayout;
-import lsfusion.interop.form.design.Alignment;
 
 import javax.swing.*;
 import java.awt.*;
@@ -25,7 +24,7 @@ public class ColumnsClientContainerView extends AbstractClientContainerView {
         super(formLayout, container);
         assert container.isColumns();
 
-        panel = new ContainerViewPanel(false, Alignment.START);
+        panel = new ContainerViewPanel(false, FlexAlignment.START);
 
         columnsCount = container.columns;
 
@@ -34,7 +33,7 @@ public class ColumnsClientContainerView extends AbstractClientContainerView {
         double columnFlex = getColumnFlex(container);
         for (int i = 0; i < columnsCount; ++i) {
             JPanel column = new JPanel();
-            column.setLayout(new FlexLayout(column, true, Alignment.START));
+            column.setLayout(new FlexLayout(column, true, FlexAlignment.START));
             column.setBorder(BorderFactory.createEmptyBorder(0,0,0,4));
             panel.add(column, new FlexConstraints(FlexAlignment.START, columnFlex));
 

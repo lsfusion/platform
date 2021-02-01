@@ -12,9 +12,9 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.file.IOUtils;
 import lsfusion.base.lambda.set.FunctionSet;
+import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.ModalityType;
 import lsfusion.interop.form.WindowFormType;
-import lsfusion.interop.form.design.Alignment;
 import lsfusion.interop.form.event.BindingMode;
 import lsfusion.interop.form.print.FormPrintType;
 import lsfusion.interop.form.property.ClassViewType;
@@ -4407,10 +4407,10 @@ public class ScriptingLogicsModule extends LogicsModule {
             window = new ToolBarNavigatorWindow(orientation.asToolbarOrientation(), elementCanonicalName(name), caption);
         }
 
-        Alignment hAlign = options.getHAlign();
-        Alignment vAlign = options.getVAlign();
-        Alignment thAlign = options.getTextHAlign();
-        Alignment tvAlign = options.getTextVAlign();
+        FlexAlignment hAlign = options.getHAlign();
+        FlexAlignment vAlign = options.getVAlign();
+        FlexAlignment thAlign = options.getTextHAlign();
+        FlexAlignment tvAlign = options.getTextVAlign();
         if (hAlign != null) {
             window.alignmentX = asHorizontalToolbarAlign(hAlign);
         }

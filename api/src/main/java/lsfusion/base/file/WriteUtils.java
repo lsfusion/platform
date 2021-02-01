@@ -1,17 +1,16 @@
 package lsfusion.base.file;
 
-import com.jcraft.jsch.*;
+import com.jcraft.jsch.SftpException;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.*;
-import java.util.Properties;
 
 public class WriteUtils {
 
-    public static void write(RawFileData fileData, String path, String extension, boolean client, boolean append) throws IOException, SftpException, JSchException {
+    public static void write(RawFileData fileData, String path, String extension, boolean client, boolean append) throws IOException {
         Path filePath = Path.parsePath(path);
 
         switch (filePath.type) {
@@ -120,37 +119,17 @@ public class WriteUtils {
         }
     }
 
-    public static void storeFileToSFTP(String path, RawFileData file, String extension) throws JSchException, SftpException {
-        FTPPath properties = FTPPath.parseSFTPPath(path);
-        String remoteFilePath = appendExtension(properties.remoteFile, extension);
-        File remoteFile = new File((!remoteFilePath.startsWith("/") ? "/" : "") + remoteFilePath);
-
-        Session session = null;
-        Channel channel = null;
-        ChannelSftp channelSftp = null;
-        try {
-            JSch jsch = new JSch();
-            session = jsch.getSession(properties.username, properties.server, properties.port);
-            session.setPassword(properties.password);
-            Properties config = new Properties();
-            config.put("StrictHostKeyChecking", "no");
-            session.setConfig(config);
-            session.connect();
-            channel = session.openChannel("sftp");
-            channel.connect();
-            channelSftp = (ChannelSftp) channel;
-            if (properties.charset != null)
-                channelSftp.setFilenameEncoding(properties.charset);
-            channelSftp.cd(remoteFile.getParent().replace("\\", "/"));
-            channelSftp.put(file.getInputStream(), remoteFile.getName());
-        } finally {
-            if (channelSftp != null)
-                channelSftp.exit();
-            if (channel != null)
-                channel.disconnect();
-            if (session != null)
-                session.disconnect();
-        }
+    public static void storeFileToSFTP(String path, RawFileData file, String extension) {
+        IOUtils.sftpAction(path, (ftpPath, channelSftp) -> {
+            try {
+                File f = new File(appendExtension(ftpPath.remoteFile, extension));
+                channelSftp.cd(f.getParent().replace("\\", "/"));
+                channelSftp.put(file.getInputStream(), f.getName());
+            } catch (SftpException e) {
+                throw new RuntimeException("Failed to write '" + path + "'", e);
+            }
+            return null;
+        });
     }
 
     public static String appendExtension(String path, String extension) {

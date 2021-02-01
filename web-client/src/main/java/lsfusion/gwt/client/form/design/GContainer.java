@@ -1,10 +1,9 @@
 package lsfusion.gwt.client.form.design;
 
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
-import lsfusion.gwt.client.base.view.FlexPanel;
+import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
-import lsfusion.gwt.client.form.object.table.controller.GPropertyController;
 import lsfusion.gwt.client.form.object.table.grid.GGrid;
 import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -21,7 +20,7 @@ public class GContainer extends GComponent {
     public boolean main;
 
     public GContainerType type;
-    public GAlignment childrenAlignment;
+    public GFlexAlignment childrenAlignment;
 
     public int columns;
 
@@ -37,13 +36,8 @@ public class GContainer extends GComponent {
                 '}';
     }
 
-    public FlexPanel.Justify getFlexJustify() {
-        switch (childrenAlignment) {
-            case START: return FlexPanel.Justify.START;
-            case CENTER: return FlexPanel.Justify.CENTER;
-            case END: return FlexPanel.Justify.END;
-        }
-        throw new IllegalStateException("Unknown alignment");
+    public GFlexAlignment getFlexJustify() {
+        return childrenAlignment;
     }
 
     public boolean isTabbed() {

@@ -81,8 +81,7 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
             eventOrder: 'start,index',
             eventChange: function (info) {
                 if (!@GCalendar::isUpdating) {
-                    changeProperty(info, 'start');
-                    changeProperty(info, 'end');
+                    changeDateProperties(info);
                 }
             },
             datesSet: function () {
@@ -103,16 +102,31 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
             @GCalendar::highlightEvent(*)(calendar, newEvent.extendedProps.key);
         }
 
-        function changeProperty(info, position) {
+        function changeDateProperties(info) {
             var currentEvent = info.event;
             var oldEvent = info.oldEvent;
-            if (getTime(currentEvent[position]) !== getTime(oldEvent[position])) {
-                var propertyName = currentEvent.extendedProps[position + 'FieldName'];
-                var controllerFunction = propertyName.includes('dateTime') ? 'changeDateTimeProperty' : 'changeDateProperty';
-                var eventElement = parseCalendarDateElement(currentEvent[position]);
-                controller[controllerFunction](propertyName, info.event.extendedProps.object, eventElement.year,
-                    eventElement.month, eventElement.day, eventElement.hour, eventElement.minute, eventElement.second);
+            var currentEventStart = currentEvent.start;
+            var currentEventEnd = currentEvent.end;
+
+            if ((getTime(currentEventStart) !== getTime(oldEvent.start)) || (getTime(currentEventEnd) !== getTime(oldEvent.end))) {
+                var startFieldName = currentEvent.extendedProps.startFieldName;
+                var endFieldName = currentEvent.extendedProps.endFieldName;
+
+                var startEventElement = parseCalendarDateElement(currentEventStart);
+                var endEventElement = currentEventEnd != null ? parseCalendarDateElement(currentEventEnd) : null;
+
+                var controllerFunction = startFieldName.includes('dateTime') ? 'changeDateTimeProperties' : 'changeDateProperties';
+
+                var object = info.event.extendedProps.object;
+                controller[controllerFunction](endEventElement != null ? [startFieldName, endFieldName] : [startFieldName], endEventElement != null ? [object, object] : [object],
+                    getChangeProperty(startEventElement, endEventElement, 'year'), getChangeProperty(startEventElement, endEventElement, 'month'),
+                    getChangeProperty(startEventElement, endEventElement, 'day'), getChangeProperty(startEventElement, endEventElement, 'hour'),
+                    getChangeProperty(startEventElement, endEventElement, 'minute'), getChangeProperty(startEventElement, endEventElement, 'second'));
             }
+        }
+
+        function getChangeProperty(startEventElement, endEventElement, property) {
+            return endEventElement != null ? [startEventElement[property], endEventElement[property]] : [startEventElement[property]];
         }
 
         function getTime(eventTime) {

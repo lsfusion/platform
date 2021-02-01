@@ -1,12 +1,11 @@
 package lsfusion.base.file;
 
 import com.google.common.base.Throwables;
-import com.jcraft.jsch.*;
+import com.jcraft.jsch.SftpException;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.MIMETypeUtils;
 import lsfusion.base.SystemUtils;
 import org.apache.commons.httpclient.util.URIUtil;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPConnectionClosedException;
@@ -22,13 +21,12 @@ import java.nio.channels.FileChannel;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public abstract class ReadUtils {
 
-    public static ReadResult readFile(String sourcePath, boolean isDynamicFormatFileClass, boolean isBlockingFileRead, boolean isDialog, ExtraReadInterface extraReadProcessor) throws IOException, SftpException, JSchException, SQLException {
+    public static ReadResult readFile(String sourcePath, boolean isDynamicFormatFileClass, boolean isBlockingFileRead, boolean isDialog, ExtraReadInterface extraReadProcessor) throws IOException, SQLException {
         if (isDialog) {
             sourcePath = showReadFileDialog(sourcePath);
             if(sourcePath == null) {
@@ -37,7 +35,7 @@ public abstract class ReadUtils {
         }
 
         Path filePath = Path.parsePath(sourcePath, true);
-        
+
         File localFile = null;
         if(!filePath.type.equals("file"))
             localFile = File.createTempFile("downloaded", ".tmp");
@@ -68,11 +66,11 @@ public abstract class ReadUtils {
                         extraReadProcessor.copyToFile(filePath.type, sourcePath, localFile);
                         extension = filePath.type;
                     } else {
-                        throw new RuntimeException(String.format("READ CLIENT %s is not supported", filePath.type));
+                        throw new RuntimeException(String.format("READ %s is not supported", filePath.type));
                     }
             }
             Object fileBytes; // RawFileData or FileData
-            if (file != null && file.exists()) {
+            if (file.exists()) {
                 if (isBlockingFileRead) {
                     try (FileChannel channel = new RandomAccessFile(file, "rw").getChannel()) {
                         try (java.nio.channels.FileLock lock = channel.lock()) {
@@ -95,7 +93,7 @@ public abstract class ReadUtils {
             }
             return new ReadResult(fileBytes, filePath.type);
         } finally {
-            if (localFile != null && !localFile.delete()) 
+            if (localFile != null && !localFile.delete())
                 localFile.deleteOnExit();
         }
     }
@@ -146,9 +144,9 @@ public abstract class ReadUtils {
                 }
             });
             URL httpUrl = new URL(URIUtil.encodeQuery(path.type + "://" + pathToFile));
-            FileUtils.copyInputStreamToFile(httpUrl.openConnection().getInputStream(), file);
+            org.apache.commons.io.FileUtils.copyInputStreamToFile(httpUrl.openConnection().getInputStream(), file);
         } else {
-            FileUtils.copyURLToFile(new URL(path.type + "://" + path.path), file);
+            org.apache.commons.io.FileUtils.copyURLToFile(new URL(path.type + "://" + path.path), file);
         }
     }
 
@@ -203,34 +201,15 @@ public abstract class ReadUtils {
         }
     }
 
-    private static void copySFTPToFile(String path, File file) throws JSchException, SftpException {
-        FTPPath properties = FTPPath.parseSFTPPath(path);
-        String remoteFile = properties.remoteFile;
-        remoteFile = (!remoteFile.startsWith("/") ? "/" : "") + remoteFile;
-
-        Session session = null;
-        Channel channel = null;
-        ChannelSftp channelSftp = null;
-        try {
-            JSch jsch = new JSch();
-            session = jsch.getSession(properties.username, properties.server, properties.port);
-            session.setPassword(properties.password);
-            Properties config = new Properties();
-            config.put("StrictHostKeyChecking", "no");
-            session.setConfig(config);
-            session.connect();
-            channel = session.openChannel("sftp");
-            channel.connect();
-            channelSftp = (ChannelSftp) channel;
-            channelSftp.get(remoteFile, file.getAbsolutePath());
-        } finally {
-            if (channelSftp != null)
-                channelSftp.exit();
-            if (channel != null)
-                channel.disconnect();
-            if (session != null)
-                session.disconnect();
-        }
+    private static void copySFTPToFile(String path, File file) {
+        IOUtils.sftpAction(path, (ftpPath, channelSftp) -> {
+            try {
+                channelSftp.get(ftpPath.remoteFile, file.getAbsolutePath());
+            } catch (SftpException e) {
+                throw new RuntimeException("Failed to read '" + path + "'", e);
+            }
+            return null;
+        });
     }
 
     private static RawFileData readBytesFromChannel(FileChannel channel) throws IOException {

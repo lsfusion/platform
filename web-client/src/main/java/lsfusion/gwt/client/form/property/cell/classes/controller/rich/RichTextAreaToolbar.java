@@ -14,6 +14,7 @@ import com.google.gwt.user.client.ui.*;
 import com.google.gwt.user.client.ui.impl.RichTextAreaImpl;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.FlexPanel;
+import lsfusion.gwt.client.base.view.GFlexAlignment;
 
 public class RichTextAreaToolbar extends Composite {
     private Images images = GWT.create(Images.class);
@@ -25,7 +26,7 @@ public class RichTextAreaToolbar extends Composite {
     
     private boolean textAreaReady = false;
 
-    private FlexPanel toolbarPanel = new FlexPanel(false, FlexPanel.Justify.START);
+    private FlexPanel toolbarPanel = new FlexPanel(false, GFlexAlignment.START);
     
     private PushButton undo;
     private PushButton redo;

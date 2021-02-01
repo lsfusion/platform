@@ -11,7 +11,6 @@ grammar LsfLogics;
     import lsfusion.interop.form.ModalityType;
     import lsfusion.interop.form.WindowFormType;
     import lsfusion.interop.form.event.FormEventType;
-    import lsfusion.interop.form.design.Alignment;
     import lsfusion.interop.form.design.ContainerType;
     import lsfusion.interop.base.view.FlexAlignment;
     import lsfusion.interop.form.object.table.grid.ListViewType;
@@ -543,7 +542,7 @@ formGroupObjectDeclaration returns [ScriptingGroupObject groupObject]
 	:	object=formGroupObject { $groupObject = $object.groupObject; }
 	    formGroupObjectOptions[$groupObject]
 	    formGroupObjectOptionsContext[$groupObject]
-	; 
+	;
 
 formGroupObjectOptions[ScriptingGroupObject groupObject]
 	:	(	viewType=formGroupObjectViewType { $groupObject.setViewType($viewType.type, $viewType.listType); $groupObject.setPivotOptions($viewType.options); $groupObject.setCustomTypeRenderFunction($viewType.customRenderFunction); }
@@ -570,7 +569,7 @@ formGroupObjectOptionsContext[ScriptingGroupObject groupObject]
 		|	foreground=formGroupObjectForeground[extraContext] { $groupObject.setForeground($foreground.foreground); }
 		)*
 	;
-	
+
 formTreeGroupObjectOptions returns [GroupObjectEntity neighbourObject, InsertType insertType]
 	:	(	relative=formGroupObjectRelativePosition { $neighbourObject = $relative.groupObject; $insertType = $relative.insertType; }
 		)*
@@ -1218,7 +1217,7 @@ designOrFormExprDeclaration[ScriptingFormView design, List<TypedParameter> extra
 
 		$mapping = self.getUsedNames(context, $expr.property.usedParams);
 		$signature = self.getUsedClasses(context, $expr.property.usedParams);
-	}
+	}	
 }
 	:	expr=propertyExpressionOrLiteral[context] { if (inMainParseState()) { $property = self.checkSingleParam($expr.property).getLP(); } }
 	;
@@ -4442,10 +4441,10 @@ windowOptions returns [NavigatorWindowOptions options]
 		|	o=orientation { $options.setOrientation($o.val); }
 		|	dp=dockPosition { $options.setDockPosition($dp.val); }
 		|	bp=borderPosition { $options.setBorderPosition($bp.val); }
-		|	'HALIGN' '(' ha=alignmentLiteral ')' { $options.setHAlign($ha.val); }
-		|	'VALIGN' '(' va=alignmentLiteral ')' { $options.setVAlign($va.val); }
-		|	'TEXTHALIGN' '(' tha=alignmentLiteral ')' { $options.setTextHAlign($tha.val); }
-		|	'TEXTVALIGN' '(' tva=alignmentLiteral ')' { $options.setTextVAlign($tva.val); }
+		|	'HALIGN' '(' ha=flexAlignmentLiteral ')' { $options.setHAlign($ha.val); }
+		|	'VALIGN' '(' va=flexAlignmentLiteral ')' { $options.setVAlign($va.val); }
+		|	'TEXTHALIGN' '(' tha=flexAlignmentLiteral ')' { $options.setTextHAlign($tha.val); }
+		|	'TEXTVALIGN' '(' tva=flexAlignmentLiteral ')' { $options.setTextVAlign($tva.val); }
 		)*
 	;
 
@@ -5207,12 +5206,6 @@ containerTypeLiteral returns [ContainerType val]
 	|	'SPLITV' { $val = ContainerType.VERTICAL_SPLIT_PANE; }
 	|   'SCROLL' { $val = ContainerType.SCROLL; }
 	;
-
-alignmentLiteral returns [Alignment val]
-    :   'START' { $val = Alignment.START; }
-    |   'CENTER' { $val = Alignment.CENTER; }
-    |   'END' { $val = Alignment.END; }
-    ;
 
 flexAlignmentLiteral returns [FlexAlignment val]
     :   'START' { $val = FlexAlignment.START; }

@@ -1,7 +1,7 @@
 package lsfusion.client.form.design.view;
 
+import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.base.view.FlexLayout;
-import lsfusion.interop.form.design.Alignment;
 
 import javax.swing.*;
 import java.awt.*;
@@ -11,7 +11,7 @@ import static lsfusion.client.base.SwingUtils.overrideSize;
 // выполняет роль FlexPanel в web
 public class JComponentPanel extends JPanel {
 
-    public JComponentPanel(boolean vertical, Alignment alignment) {
+    public JComponentPanel(boolean vertical, FlexAlignment alignment) {
         super(null);
         setLayout(new FlexLayout(this, vertical, alignment));
     }

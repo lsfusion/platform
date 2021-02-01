@@ -875,7 +875,7 @@ public class ClientFormController implements AsyncListener {
 
             @Override
             protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                return remoteForm.changeProperty(requestIndex, lastReceivedRequestIndex, property.getID(), fullCurrentKey, newValueBytes, null);
+                return changeProperty(remoteForm, requestIndex, lastReceivedRequestIndex, property.getID(), fullCurrentKey, newValueBytes, null);
             }
 
             @Override
@@ -884,6 +884,10 @@ public class ClientFormController implements AsyncListener {
                 processServerResponse(result);
             }
         });
+    }
+
+    private ServerResponse changeProperty(RemoteFormInterface remoteForm, long requestIndex, long lastReceivedRequestIndex, int propertyID, byte[] fullCurrentKey, byte[] pushChange, Long pushAdd) throws RemoteException {
+        return remoteForm.changeProperties(requestIndex, lastReceivedRequestIndex, new int[]{propertyID}, new byte[][]{fullCurrentKey}, new byte[][]{pushChange}, new Long[]{pushAdd});
     }
 
     public boolean isAsyncModifyObject(ClientPropertyDraw property) {
@@ -941,7 +945,7 @@ public class ClientFormController implements AsyncListener {
 
             @Override
             protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                return remoteForm.changeProperty(requestIndex, lastReceivedRequestIndex, property.getID(), fullCurrentKey, null, add ? ID : null);
+                return changeProperty(remoteForm, requestIndex, lastReceivedRequestIndex, property.getID(), fullCurrentKey, null, add ? ID : null);
             }
         });
     }

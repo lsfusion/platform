@@ -661,43 +661,47 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> form.refreshUPHiddenProperties(groupObjectSID, propSids));
     }
 
-    public ServerResponse changeProperty(final long requestIndex, long lastReceivedRequestIndex, final int propertyID, final byte[] fullKey, final byte[] pushChange, final Long pushAdd) throws RemoteException {
+    public ServerResponse changeProperties(final long requestIndex, long lastReceivedRequestIndex, final int[] propertyIDs, final byte[][] fullKeys, final byte[][] pushChanges, final Long[] pushAdds) throws RemoteException {
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
-            PropertyDrawInstance propertyDraw = form.getPropertyDraw(propertyID);
-            ImMap<ObjectInstance, DataObject> keys = deserializePropertyKeys(propertyDraw, fullKey);
+            for (int j = 0; j < propertyIDs.length; j++) {
 
-            ObjectValue pushChangeObject = null;
-            DataClass pushChangeType = null;
-            if (pushChange != null) {
-                pushChangeType = propertyDraw.getEntity().getRequestInputType(form.entity, form.securityPolicy);
-                Object objectPushChange = deserializeObject(pushChange);
-                if(pushChangeType == null) // веб почему-то при асинхронном удалении шлет не null, а [0] который deserialize'ся в null а потом превращается в NullValue.instance и падают ошибки
-                    ServerLoggers.assertLog(objectPushChange == null, "PROPERTY CANNOT BE CHANGED -> PUSH CHANGE SHOULD BE NULL");
-                else
-                    pushChangeObject = DataObject.getValue(objectPushChange, pushChangeType);
-            }
+                PropertyDrawInstance propertyDraw = form.getPropertyDraw(propertyIDs[j]);
+                ImMap<ObjectInstance, DataObject> keys = deserializePropertyKeys(propertyDraw, fullKeys[j]);
 
-            DataObject pushAddObject = null;
-            if (pushAdd != null) {
-                pushAddObject = new DataObject(pushAdd, form.session.baseClass.unknown);
-            }
+                ObjectValue pushChangeObject = null;
+                DataClass pushChangeType = null;
+                byte[] pushChange = pushChanges[j];
+                if (pushChange != null) {
+                    pushChangeType = propertyDraw.getEntity().getRequestInputType(form.entity, form.securityPolicy);
+                    Object objectPushChange = deserializeObject(pushChange);
+                    if (pushChangeType == null) // веб почему-то при асинхронном удалении шлет не null, а [0] который deserialize'ся в null а потом превращается в NullValue.instance и падают ошибки
+                        ServerLoggers.assertLog(objectPushChange == null, "PROPERTY CANNOT BE CHANGED -> PUSH CHANGE SHOULD BE NULL");
+                    else
+                        pushChangeObject = DataObject.getValue(objectPushChange, pushChangeType);
+                }
 
-            form.executeEventAction(propertyDraw, ServerResponse.CHANGE, keys, pushChangeObject, pushChangeType, pushAddObject, true, stack);
+                DataObject pushAddObject = null;
+                Long pushAdd = pushAdds[j];
+                if (pushAdd != null)
+                    pushAddObject = new DataObject(pushAdd, form.session.baseClass.unknown);
 
-            if (logger.isTraceEnabled()) {
-                logger.trace(String.format("changeProperty: [ID: %1$d, SID: %2$s]", propertyDraw.getID(), propertyDraw.getSID()));
-                if (keys.size() > 0) {
-                    logger.trace("   columnKeys: ");
-                    for (int i = 0, size = keys.size(); i < size; i++) {
-                        logger.trace(String.format("     %1$s == %2$s", keys.getKey(i), keys.getValue(i)));
+                form.executeEventAction(propertyDraw, ServerResponse.CHANGE, keys, pushChangeObject, pushChangeType, pushAddObject, true, stack);
+
+                if (logger.isTraceEnabled()) {
+                    logger.trace(String.format("changeProperty: [ID: %1$d, SID: %2$s]", propertyDraw.getID(), propertyDraw.getSID()));
+                    if (keys.size() > 0) {
+                        logger.trace("   columnKeys: ");
+                        for (int i = 0, size = keys.size(); i < size; i++) {
+                            logger.trace(String.format("     %1$s == %2$s", keys.getKey(i), keys.getValue(i)));
+                        }
+                    }
+                    if (logger.isTraceEnabled()) {
+                        logger.trace("   current object's values: ");
+                        for (ObjectInstance obj : form.getObjects()) {
+                            logger.trace(String.format("     %1$s == %2$s", obj, obj.getObjectValue()));
+                        }
                     }
                 }
-                if (logger.isTraceEnabled()) {
-                    logger.trace("   current object's values: ");
-                    for (ObjectInstance obj : form.getObjects()) {
-                        logger.trace(String.format("     %1$s == %2$s", obj, obj.getObjectValue()));
-                    }
-                }        
             }
         });
     }

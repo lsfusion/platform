@@ -18,6 +18,7 @@ import org.vectomatic.dom.svg.OMSVGFilterElement;
 import org.vectomatic.dom.svg.OMSVGSVGElement;
 import org.vectomatic.dom.svg.utils.OMSVGParser;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -70,12 +71,11 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
     }
 
     protected void changePointProperty(JavaScriptObject object, Double lat, Double lng) {
-        changeProperty("latitude", lat, object);
-        changeProperty("longitude", lng, object);
+        changeProperties(new String[]{"latitude", "longitude"}, new JavaScriptObject[]{object, object}, new Serializable[]{lat, lng});
     }
 
     protected void changePolygonProperty(JavaScriptObject object, JsArray<WrapperObject> latlngs) {
-        changeProperty("polygon", getPolygon(latlngs), object);
+        changeProperty("polygon", object, getPolygon(latlngs));
     }
 
     private static String getPolygon(JsArray<WrapperObject> latlngs) {
@@ -146,7 +146,7 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
 
             JavaScriptObject marker = oldMarkers.remove(key);
             if(marker == null) {
-                marker = createMarker(map, groupMarker.polygon != null, fromObject(key), markerClusters);
+                marker = createMarker(map, groupMarker.polygon != null, fromObject(key), markerClusters, object);
                 markers.put(key, marker);
                 markerCreated = true;
             }
@@ -298,7 +298,7 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
     }-*/;
 
 
-    protected native JavaScriptObject createMarker(JavaScriptObject map, boolean polygon, JavaScriptObject key, JavaScriptObject markerClusters)/*-{
+    protected native JavaScriptObject createMarker(JavaScriptObject map, boolean polygon, JavaScriptObject key, JavaScriptObject markerClusters, JavaScriptObject object)/*-{
         var L = $wnd.L;
 
         var thisObject = this;
@@ -308,7 +308,7 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
             marker = L.polygon([L.latLng(0, 1), L.latLng(1, -1), L.latLng(-1, -1)]);
 
             marker.on('edit', function (e) {
-                thisObject.@GMap::changePolygonProperty(*)(key, marker.getLatLngs()[0]); // https://github.com/Leaflet/Leaflet/issues/5212
+                thisObject.@GMap::changePolygonProperty(*)(object, marker.getLatLngs()[0]); // https://github.com/Leaflet/Leaflet/issues/5212
             });
         } else {
             marker = L.marker([0, 0],{
@@ -323,7 +323,7 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
 
             marker.on('dragend', function (e) {
                 var latlng = marker.getLatLng();
-                thisObject.@GMap::changePointProperty(*)(key, latlng.lat, latlng.lng);
+                thisObject.@GMap::changePointProperty(*)(object, latlng.lat, latlng.lng);
             });
         }
 

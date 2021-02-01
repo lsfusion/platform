@@ -457,6 +457,12 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return form.getApplyObject(getObjectInstances(), excludeGroupObjects);
     }
 
+    public GroupObjectEntity getNFApplyObject(FormEntity form, ImSet<GroupObjectEntity> excludeGroupObjects, boolean supportGroupColumns, Version version) {
+        if(supportGroupColumns)
+            excludeGroupObjects = excludeGroupObjects.merge(getColumnGroupObjects().getSet());
+        return form.getNFApplyObject(getObjectInstances(), excludeGroupObjects, version);
+    }
+
     @IdentityStartLazy
     public ImSet<ObjectEntity> getObjectInstances() { 
         MAddSet<ActionOrPropertyObjectEntity<?, ?>> propertyObjects = SetFact.mAddSet();
@@ -479,7 +485,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     public GroupObjectEntity getNFToDraw(FormEntity form, Version version) {
-        return toDraw==null?form.getNFApplyObject(getObjectInstances(), version):toDraw;
+        return toDraw == null ? getNFApplyObject(form, SetFact.EMPTY(), true, version) : toDraw;
     }
 
     public boolean isToolbar(FormEntity formEntity) {
@@ -492,6 +498,11 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     public boolean isList(FormEntity formEntity) {
         GroupObjectEntity toDraw = getToDraw(formEntity);
+        return toDraw != null && toDraw.viewType.isList() && (viewType == null || viewType.isList());
+    }
+
+    public boolean isNFList(FormEntity formEntity, Version version) {
+        GroupObjectEntity toDraw = getNFToDraw(formEntity, version);
         return toDraw != null && toDraw.viewType.isList() && (viewType == null || viewType.isList());
     }
 
