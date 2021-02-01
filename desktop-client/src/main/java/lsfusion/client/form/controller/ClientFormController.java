@@ -1418,7 +1418,7 @@ public class ClientFormController implements AsyncListener {
             @Override
             public void onResponse(long requestIndex, ReportGenerationData generationData) throws Exception {
                 if (generationData != null) {
-                    ReportGenerator.exportAndOpen(generationData, FormPrintType.XLSX, true);
+                    ReportGenerator.exportAndOpen(generationData, FormPrintType.XLSX, true, MainController.remoteLogics);
                 }
             }
         });

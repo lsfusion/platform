@@ -258,7 +258,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
                     }
                 }
                 if (editChoice == JOptionPane.NO_OPTION) {
-                    ReportGenerator.exportAndOpen(action.generationData, action.printType, action.sheetName, action.password);
+                    ReportGenerator.exportAndOpen(action.generationData, action.printType, action.sheetName, action.password, MainController.remoteLogics);
                 }
             } else {
                 if (action.inDevMode) {

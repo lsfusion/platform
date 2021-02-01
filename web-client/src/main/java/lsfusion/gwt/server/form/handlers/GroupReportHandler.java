@@ -28,7 +28,7 @@ public class GroupReportHandler extends FormActionHandler<GroupReport, GroupRepo
         FormPrintType printType = FormPrintType.XLSX;
         ReportGenerationData reportData = form.remoteForm.getReportData(action.requestIndex, action.lastReceivedRequestIndex, action.groupObjectID, printType, converter.convertFormUserPreferences(action.preferences));
 
-        Pair<String, String> report = FileUtils.exportReport(printType, reportData);
+        Pair<String, String> report = FileUtils.exportReport(printType, reportData, servlet.getNavigatorProvider().getRemoteLogics());
         return new GroupReportResult(report.first, report.second);
     }
 
