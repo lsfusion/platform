@@ -1,8 +1,6 @@
 package lsfusion.server.physics.dev.integration.external.to.file;
 
 import com.google.common.base.Throwables;
-import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.SftpException;
 import lsfusion.server.logics.UtilsLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
@@ -38,7 +36,7 @@ public class DeleteAction extends InternalAction {
                     FileUtils.delete(sourcePath);
                 }
             }
-        } catch (IOException | JSchException | SftpException e) {
+        } catch (IOException e) {
             throw Throwables.propagate(e);
         }
     }

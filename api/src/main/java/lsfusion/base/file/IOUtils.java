@@ -1,9 +1,13 @@
 package lsfusion.base.file;
 
+import com.google.common.base.Throwables;
+import com.jcraft.jsch.*;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 
 import java.io.*;
+import java.util.Properties;
+import java.util.function.BiFunction;
 
 public class IOUtils {
     public static final int BUFFER_SIZE = 16384;
@@ -129,5 +133,41 @@ public class IOUtils {
         }
 
         return tempFile;
+    }
+
+    public static <R> R sftpAction(String path, BiFunction<FTPPath, ChannelSftp, R> function) {
+        FTPPath ftpPath = FTPPath.parseSFTPPath(path);
+
+        ftpPath.remoteFile = ftpPath.remoteFile.replace("\\", "/");
+        ftpPath.remoteFile = (!ftpPath.remoteFile.startsWith("/") ? "/" : "") + ftpPath.remoteFile;
+
+        Session session = null;
+        Channel channel = null;
+        ChannelSftp channelSftp = null;
+        try {
+            JSch jsch = new JSch();
+            session = jsch.getSession(ftpPath.username, ftpPath.server, ftpPath.port);
+            session.setPassword(ftpPath.password);
+            Properties config = new Properties();
+            config.put("StrictHostKeyChecking", "no");
+            session.setConfig(config);
+            session.connect();
+            channel = session.openChannel("sftp");
+            channel.connect();
+            channelSftp = (ChannelSftp) channel;
+            if (ftpPath.charset != null)
+                channelSftp.setFilenameEncoding(ftpPath.charset);
+
+            return function.apply(ftpPath, channelSftp);
+        } catch (JSchException | SftpException e) {
+            throw Throwables.propagate(e);
+        } finally {
+            if (channelSftp != null)
+                channelSftp.exit();
+            if (channel != null)
+                channel.disconnect();
+            if (session != null)
+                session.disconnect();
+        }
     }
 }

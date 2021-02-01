@@ -1,7 +1,9 @@
 package lsfusion.server.physics.dev.integration.external.to.file;
 
 import com.google.common.base.Throwables;
-import com.jcraft.jsch.*;
+import com.jcraft.jsch.ChannelSftp;
+import com.jcraft.jsch.SftpATTRS;
+import com.jcraft.jsch.SftpException;
 import lsfusion.base.ExceptionUtils;
 import lsfusion.base.file.*;
 import org.apache.commons.net.ftp.FTP;
@@ -16,23 +18,25 @@ import java.nio.file.Files;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.util.*;
-import java.util.function.BiFunction;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Vector;
 
 import static lsfusion.base.DateConverter.sqlTimestampToLocalDateTime;
 import static lsfusion.base.file.WriteUtils.appendExtension;
 
 public class FileUtils {
 
-    public static void moveFile(String sourcePath, String destinationPath) throws SQLException, JSchException, SftpException, IOException {
+    public static void moveFile(String sourcePath, String destinationPath) throws SQLException, IOException {
         copyFile(sourcePath, destinationPath, true);
     }
 
-    public static void copyFile(String sourcePath, String destinationPath) throws SQLException, JSchException, SftpException, IOException {
+    public static void copyFile(String sourcePath, String destinationPath) throws SQLException, IOException {
         copyFile(sourcePath, destinationPath, false);
     }
 
-    private static void copyFile(String sourcePath, String destinationPath, boolean move) throws IOException, SftpException, JSchException, SQLException {
+    private static void copyFile(String sourcePath, String destinationPath, boolean move) throws IOException, SQLException {
         Path srcPath = Path.parsePath(sourcePath);
         Path destPath = Path.parsePath(destinationPath);
 
@@ -112,11 +116,11 @@ public class FileUtils {
         }
     }
 
-    public static void delete(String sourcePath) throws IOException, SftpException, JSchException {
+    public static void delete(String sourcePath) throws IOException {
         delete(Path.parsePath(sourcePath));
     }
 
-    public static void delete(Path path) throws IOException, SftpException, JSchException {
+    public static void delete(Path path) throws IOException {
         switch (path.type) {
             case "file":
                 deleteFile(path.path);
@@ -164,37 +168,25 @@ public class FileUtils {
         }
     }
 
-    private static void deleteSFTPFile(String path) throws JSchException, SftpException {
-        FTPPath properties = FTPPath.parseSFTPPath(path);
-        String remoteFile = properties.remoteFile;
-        remoteFile = (!remoteFile.startsWith("/") ? "/" : "") + remoteFile;
-
-        Session session = null;
-        Channel channel = null;
-        ChannelSftp channelSftp = null;
-        try {
-            JSch jsch = new JSch();
-            session = jsch.getSession(properties.username, properties.server, properties.port);
-            session.setPassword(properties.password);
-            Properties config = new Properties();
-            config.put("StrictHostKeyChecking", "no");
-            session.setConfig(config);
-            session.connect();
-            channel = session.openChannel("sftp");
-            channel.connect();
-            channelSftp = (ChannelSftp) channel;
-            channelSftp.rm(remoteFile);
-        } finally {
-            if (channelSftp != null)
-                channelSftp.exit();
-            if (channel != null)
-                channel.disconnect();
-            if (session != null)
-                session.disconnect();
-        }
+    private static void deleteSFTPFile(String path) {
+        IOUtils.sftpAction(path, (ftpPath, channelSftp) -> {
+            try {
+                if(ftpPath.remoteFile.endsWith("/")) {
+                    channelSftp.rmdir(ftpPath.remoteFile);
+                } else {
+                    channelSftp.rm(ftpPath.remoteFile);
+                }
+                return null;
+            } catch (SftpException e) {
+                if(e.id == ChannelSftp.SSH_FX_NO_SUCH_FILE)
+                    throw new RuntimeException(String.format("Path '%s' not found for %s", ftpPath.remoteFile, path));
+                else
+                    throw new RuntimeException("Failed to delete '" + path + "'", e);
+            }
+        });
     }
 
-    public static void mkdir(String directory) throws SftpException, JSchException, IOException {
+    public static void mkdir(String directory) throws IOException {
         Path path = Path.parsePath(directory);
         String result = null;
         switch (path.type) {
@@ -205,9 +197,7 @@ public class FileUtils {
                 result = mkdirFTP(path.path);
                 break;
             case "sftp":
-                if (!mkdirSFTP(path.path)) {
-                    result = "Failed to create directory '" + directory + "'";
-                }
+                result = mkdirSFTP(path.path);
                 break;
         }
         if (result != null) {
@@ -255,35 +245,18 @@ public class FileUtils {
         return result;
     }
 
-    private static boolean mkdirSFTP(String path) throws JSchException, SftpException {
-        FTPPath ftpPath = FTPPath.parseSFTPPath(path);
-
-        Session session = null;
-        Channel channel = null;
-        ChannelSftp channelSftp = null;
-        try {
-            JSch jsch = new JSch();
-            session = jsch.getSession(ftpPath.username, ftpPath.server, ftpPath.port);
-            session.setPassword(ftpPath.password);
-            java.util.Properties config = new java.util.Properties();
-            config.put("StrictHostKeyChecking", "no");
-            session.setConfig(config);
-            session.connect();
-            channel = session.openChannel("sftp");
-            channel.connect();
-            channelSftp = (ChannelSftp) channel;
-            if (ftpPath.charset != null)
-                channelSftp.setFilenameEncoding(ftpPath.charset);
-            channelSftp.mkdir(ftpPath.remoteFile.replace("\\", "/"));
-            return true;
-        } finally {
-            if (channelSftp != null)
-                channelSftp.exit();
-            if (channel != null)
-                channel.disconnect();
-            if (session != null)
-                session.disconnect();
-        }
+    private static String mkdirSFTP(String path) {
+        return IOUtils.sftpAction(path, (ftpPath, channelSftp) -> {
+            try {
+                channelSftp.mkdir(ftpPath.remoteFile);
+                return null;
+            } catch (SftpException e) {
+                if(e.id == ChannelSftp.SSH_FX_NO_SUCH_FILE)
+                    return String.format("Path '%s' not found for %s", ftpPath.remoteFile, path);
+                else
+                    return String.format("Failed to create directory '%s' (%s)", path, e.getMessage());
+            }
+        });
     }
 
     public static boolean checkFileExists(String sourcePath) {
@@ -332,11 +305,9 @@ public class FileUtils {
     }
 
     private static boolean checkFileExistsSFTP(String path) {
-        return actionSFTP(path, (ftpPath, channelSftp) -> {
+        return IOUtils.sftpAction(path, (ftpPath, channelSftp) -> {
             try {
-                String remoteFile = ftpPath.remoteFile;
-                remoteFile = (!remoteFile.startsWith("/") ? "/" : "") + remoteFile;
-                channelSftp.ls(remoteFile); //list files throws exception if file/directory not found
+                channelSftp.ls(ftpPath.remoteFile); //list files throws exception if file/directory not found
                 return true;
             } catch (SftpException exception) {
                 if(exception.id == ChannelSftp.SSH_FX_NO_SUCH_FILE)
@@ -420,11 +391,9 @@ public class FileUtils {
     }
 
     private static List<Object> listFilesSFTP(String path) {
-        return actionSFTP(path, (ftpPath, channelSftp) -> {
+        return IOUtils.sftpAction(path, (ftpPath, channelSftp) -> {
             try {
-                String remoteFile = ftpPath.remoteFile;
-                remoteFile = (!remoteFile.startsWith("/") ? "/" : "") + remoteFile;
-                Vector result = channelSftp.ls(remoteFile); //list files throws exception if file/directory not found
+                Vector result = channelSftp.ls(ftpPath.remoteFile); //list files throws exception if file/directory not found
                 List<String> nameValues = new ArrayList<>();
                 List<Boolean> isDirectoryValues = new ArrayList<>();
                 List<LocalDateTime> modifiedDateTimeValues = new ArrayList<>();
@@ -439,11 +408,11 @@ public class FileUtils {
                     }
                 }
                 return Arrays.asList((Object) nameValues.toArray(new String[0]), isDirectoryValues.toArray(new Boolean[0]), modifiedDateTimeValues.toArray(new LocalDateTime[0]));
-            } catch (SftpException exception) {
-                if(exception.id == ChannelSftp.SSH_FX_NO_SUCH_FILE)
+            } catch (SftpException e) {
+                if(e.id == ChannelSftp.SSH_FX_NO_SUCH_FILE)
                     throw new RuntimeException(String.format("Path '%s' not found for %s", ftpPath.remoteFile, path));
                 else
-                    throw Throwables.propagate(exception);
+                    throw Throwables.propagate(e);
             }
         });
     }
@@ -484,39 +453,6 @@ public class FileUtils {
                     e.printStackTrace();
                 }
 //            }).start();
-        }
-    }
-
-    public static <R> R actionSFTP(String path, BiFunction<FTPPath, ChannelSftp, R> function) {
-        FTPPath ftpPath = FTPPath.parseSFTPPath(path);
-
-        Session session = null;
-        Channel channel = null;
-        ChannelSftp channelSftp = null;
-        try {
-            JSch jsch = new JSch();
-            session = jsch.getSession(ftpPath.username, ftpPath.server, ftpPath.port);
-            session.setPassword(ftpPath.password);
-            Properties config = new Properties();
-            config.put("StrictHostKeyChecking", "no");
-            session.setConfig(config);
-            session.connect();
-            channel = session.openChannel("sftp");
-            channel.connect();
-            channelSftp = (ChannelSftp) channel;
-            if (ftpPath.charset != null)
-                channelSftp.setFilenameEncoding(ftpPath.charset);
-
-            return function.apply(ftpPath, channelSftp);
-        } catch (JSchException | SftpException e) {
-            throw Throwables.propagate(e);
-        } finally {
-            if (channelSftp != null)
-                channelSftp.exit();
-            if (channel != null)
-                channel.disconnect();
-            if (session != null)
-                session.disconnect();
         }
     }
 }
