@@ -119,8 +119,8 @@ public class ClientActionToGwtConverter extends ObjectConverter {
     }
 
     @Converter(from = ReportClientAction.class)
-    public GReportAction convertAction(ReportClientAction action, FormSessionObject form) throws IOException {
-        Pair<String, String> report = FileUtils.exportReport(action.printType, action.generationData);
+    public GReportAction convertAction(ReportClientAction action, MainDispatchServlet servlet) throws IOException {
+        Pair<String, String> report = FileUtils.exportReport(action.printType, action.generationData, servlet.getNavigatorProvider().getRemoteLogics());
         return new GReportAction(report.first, report.second);
     }
 

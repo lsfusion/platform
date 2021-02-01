@@ -11,6 +11,7 @@ import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.connection.ClientType;
 import lsfusion.interop.logics.LogicsSessionObject;
 import lsfusion.interop.logics.ServerSettings;
+import lsfusion.interop.logics.remote.RemoteLogicsInterface;
 import lsfusion.interop.navigator.NavigatorInfo;
 import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
 import lsfusion.interop.session.SessionInfo;
@@ -74,9 +75,16 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean 
         return new NavigatorInfo(getSessionInfo(request), osVersion, processor, architecture, cores, physicalMemory, totalMemory,
                 maximumMemory, freeMemory, javaVersion, screenSize, clientType, BaseUtils.getPlatformVersion(), BaseUtils.getApiVersion());
     }
+    public LogicsSessionObject sessionObject;
+
+    @Override
+    public RemoteLogicsInterface getRemoteLogics() {
+        return sessionObject.remoteLogics;
+    }
 
     @Override
     public String createNavigator(LogicsSessionObject sessionObject, HttpServletRequest request, ConnectionInfo connectionInfo) throws RemoteException {
+        this.sessionObject = sessionObject;
         String sessionID = nextSessionID();
         addLogicsAndNavigatorSessionObject(sessionID, createNavigatorSessionObject(sessionObject, request, connectionInfo));
         return sessionID;

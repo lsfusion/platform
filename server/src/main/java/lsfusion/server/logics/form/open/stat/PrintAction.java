@@ -105,7 +105,7 @@ public class PrintAction<O extends ObjectSelector> extends FormStaticAction<O, F
             String password = passwordInterface != null ? (String) context.getKeyObject(passwordInterface) : null;
 
             if (exportFile != null)
-                writeResult(exportFile, staticType, context, ReportGenerator.exportToFileByteArray(reportData, staticType, sheetName, password));
+                writeResult(exportFile, staticType, context, ReportGenerator.exportToFileByteArray(reportData, staticType, sheetName, password, null)); // не знаю где взять remoteLogics
             else {
                 String formCaption = staticType == FormPrintType.PRINT ? formReportManager.readFormCaption() : null;
                 //printer and sheet/password options doesn't intersect
