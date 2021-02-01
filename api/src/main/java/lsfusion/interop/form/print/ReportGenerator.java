@@ -102,7 +102,8 @@ public class ReportGenerator {
         ClassLoader originalClassloader = Thread.currentThread().getContextClassLoader();
         JasperPrint print;
         try {
-            setContextClassLoader(new RemoteClassLoader.ExternalClassLoader(remoteLogics));
+            if (remoteLogics != null)
+                Thread.currentThread().setContextClassLoader(new RemoteClassLoader.ExternalClassLoader(remoteLogics));
 
             iterateChildReport(rootID, params, virtualizer);
 
@@ -111,11 +112,9 @@ public class ReportGenerator {
             Map<String, Object> childParams = (Map<String, Object>) params.get(rootID + ReportConstants.paramsSuffix);
 
             print = JasperFillManager.fillReport(report, childParams, source);
-        } catch (Exception e) {
-            setContextClassLoader(originalClassloader);
-            throw Throwables.propagate(e);
         } finally {
-            setContextClassLoader(originalClassloader);
+            if (remoteLogics != null)
+                Thread.currentThread().setContextClassLoader(originalClassloader);
         }
 
         JasperDesign rootDesign = designs.get(rootID);
@@ -124,11 +123,6 @@ public class ReportGenerator {
         print.setProperty(SHEET_COLLATE_PROPERTY_NAME, rootDesign.getProperty(SHEET_COLLATE_PROPERTY_NAME));
 
         return print;
-    }
-
-    private void setContextClassLoader(ClassLoader classLoader) {
-        if (!Thread.currentThread().getContextClassLoader().equals(classLoader))
-            Thread.currentThread().setContextClassLoader(classLoader);
     }
 
     private ReportDataSource iterateChildReport(String reportID, Map<String, Object> params, JRVirtualizer virtualizer) throws JRException {
