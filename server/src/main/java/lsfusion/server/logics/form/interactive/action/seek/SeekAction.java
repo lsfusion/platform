@@ -18,7 +18,9 @@ public abstract class SeekAction extends SystemExplicitAction {
     
     protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         FormInstance formInstance = context.getFormInstance(false, true);
-        executeForm(formInstance, context);
+        if(formInstance != null) {
+            executeForm(formInstance, context);
+        }
     }
 
     protected abstract void executeForm(FormInstance form, ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException;
