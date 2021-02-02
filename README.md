@@ -87,9 +87,9 @@ For a more complete list see [lsfusion website](https://lsfusion.org/opportuniti
 ### Windows 
 - **Development**
 
-    Single-click .exe installers of **lsFusion 4.0** (OpenJDK 1.8.212, PostgreSQL 10.8, Tomcat 9.0.21, IntelliJ IDEA Community Edition 2019.1.3)  
-    - [x32](http://download.lsfusion.org/exe/lsfusion-dev-4.0.exe)  
-    - [x64](http://download.lsfusion.org/exe/lsfusion-dev-4.0-x64.exe)
+    Single-click .exe installers of **lsFusion 4.1** (OpenJDK 11.0.9, PostgreSQL 13.1(x64)/10.8(x32), Tomcat 9.0.21, IntelliJ IDEA Community Edition 2020.3.1)  
+    - [x32](http://download.lsfusion.org/exe/lsfusion-dev-4.1.exe)  
+    - [x64](http://download.lsfusion.org/exe/lsfusion-dev-4.1-x64.exe)
 
     In addition to **lsFusion**, these installers also install **OpenJDK**, **PostgreSQL**, **Tomcat**, and **IntelliJ IDEA Community Edition** with the built-in **lsFusion plugin**. If any of these programs are already on your computer, you can exclude them during the installation process.
 
@@ -97,9 +97,9 @@ For a more complete list see [lsfusion website](https://lsfusion.org/opportuniti
 
 - **Production**
 
-    Single-click .exe installers of **lsFusion 4.0 Server & Client** (OpenJDK 1.8.212, PostgreSQL 10.8, Tomcat 9.0.21)  
-    - [x32](http://download.lsfusion.org/exe/lsfusion-4.0.exe)  
-    - [x64](http://download.lsfusion.org/exe/lsfusion-4.0-x64.exe)
+    Single-click .exe installers of **lsFusion 4.1 Server & Client** (OpenJDK 11.0.9, PostgreSQL 13.1(x64)/10.8(x32), Tomcat 9.0.21)  
+    - [x32](http://download.lsfusion.org/exe/lsfusion-4.1.exe)  
+    - [x64](http://download.lsfusion.org/exe/lsfusion-4.1-x64.exe)
 
     In addition to **lsFusion**, these installers also install **OpenJDK**, **PostgreSQL**, and **Tomcat**. **Tomcat** is embedded into the **lsFusion Client** installation, and **OpenJDK** and **PostgreSQL** are installed separately (in particular, in separate folders).
 
