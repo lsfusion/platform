@@ -26,6 +26,7 @@ import lsfusion.interop.form.print.ReportGenerationData;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 import lsfusion.interop.logics.LogicsRunnable;
 import lsfusion.interop.logics.LogicsSessionObject;
+import lsfusion.interop.logics.remote.RemoteLogicsInterface;
 import lsfusion.interop.navigator.ClientSettings;
 import lsfusion.interop.navigator.NavigatorInfo;
 import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
@@ -70,7 +71,9 @@ public abstract class MainFrame extends JFrame {
                                 try {
                                     return MainController.runRequest(new LogicsRunnable<RemoteNavigatorInterface>() {
                                         public RemoteNavigatorInterface run(LogicsSessionObject sessionObject) throws RemoteException {
-                                            MainController.remoteLogics = sessionObject.remoteLogics;
+                                            RemoteLogicsInterface remoteLogics = sessionObject.remoteLogics;
+                                            MainController.remoteLogics = remoteLogics;
+                                            MainController.initRmiClassLoader(remoteLogics);
                                             return MainController.remoteLogics.createNavigator(MainController.authToken, getNavigatorInfo());
                                         }
                                     });
