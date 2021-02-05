@@ -10,4 +10,8 @@ public class TreeGroupViewProxy extends ComponentViewProxy<TreeGroupView> {
     public void setExpandOnClick(boolean expandOnClick) {
         target.expandOnClick = expandOnClick;
     }
+
+    public void setHeaderHeight(int headerHeight) {
+        target.headerHeight = headerHeight;
+    }
 }

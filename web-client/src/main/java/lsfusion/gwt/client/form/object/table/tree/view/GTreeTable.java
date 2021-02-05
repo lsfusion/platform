@@ -50,6 +50,8 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     private TreeTableSelectionHandler treeSelectionHandler;
 
     private GTreeGroupController treeGroupController;
+
+    private GTreeGroup treeGroup;
     
     private boolean autoSize;
 
@@ -59,6 +61,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         super(iformController, lastGroupObject(treeGroup), treeGroupController.getFont());
 
         this.treeGroupController = treeGroupController;
+        this.treeGroup = treeGroup;
         this.autoSize = autoSize;
 
         tree = new GTreeTableTree(iform);
@@ -534,6 +537,11 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     }
 
     @Override
+    protected int getHeaderHeight() {
+        return treeGroup.headerHeight;
+    }
+
+    @Override
     protected boolean isColumnFlex(int i) {
         if(i == 0)
             return true;
@@ -578,13 +586,14 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
             int rowHeight = 0;
             for (int i = 1, size = getColumnCount(); i < size; i++) {
                 GPropertyDraw property = getColumnPropertyDraw(i);
+                GGridPropertyTableHeader header = getGridHeader(i);
                 NativeHashMap<GGroupObjectValue, Object> captions = propertyCaptions.get(property);
                 if (captions != null) { // asserting that there is only one value columnKeys is EMPTY
                     String value = GwtSharedUtils.nullTrim(captions.firstValue());
-                    GGridPropertyTableHeader header = getGridHeader(i);
                     header.setCaption(value, false, false);
                     header.setToolTip(property.getTooltipText(value));
                 }
+                header.setHeaderHeight(getHeaderHeight());
                 rowHeight = Math.max(rowHeight, property.getValueHeightWithPadding(font));
             }
             setCellHeight(rowHeight);
