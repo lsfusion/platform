@@ -28,7 +28,7 @@ public class NavigatorAction extends NavigatorElement {
     }
 
     @Override
-    public AsyncOpenForm getAsyncOpenForm() {
+    public AsyncOpenForm getAsyncExec() {
         return action.getOpenForm();
     }
 

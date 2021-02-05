@@ -1,5 +1,6 @@
 package lsfusion.server.logics.form.struct.property.async;
 
+import lsfusion.interop.form.remote.serialization.SerializationUtil;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 
 import java.io.DataInputStream;
@@ -24,5 +25,16 @@ public class AsyncOpenForm extends AsyncExec {
     @Override
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
         throw new UnsupportedOperationException("not supported");
+    }
+
+    @Override
+    public int getType() {
+        return 0;
+    }
+
+    @Override
+    public void serialize(DataOutputStream outStream) throws IOException {
+        SerializationUtil.writeString(outStream, caption);
+        outStream.writeBoolean(modal);
     }
 }

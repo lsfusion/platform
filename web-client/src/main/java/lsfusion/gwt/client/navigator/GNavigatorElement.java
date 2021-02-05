@@ -4,7 +4,7 @@ import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.ImageDescription;
 import lsfusion.gwt.client.base.ImageHolder;
-import lsfusion.gwt.client.form.property.async.GAsyncOpenForm;
+import lsfusion.gwt.client.form.property.async.GAsyncExec;
 import lsfusion.gwt.client.navigator.window.GNavigatorWindow;
 import lsfusion.gwt.client.view.MainFrame;
 
@@ -21,7 +21,7 @@ public abstract class GNavigatorElement implements Serializable {
     public String creationPath;
     public ImageHolder image;
 
-    public GAsyncOpenForm asyncOpenForm;
+    public GAsyncExec asyncExec;
 
     public ArrayList<GNavigatorElement> children;
     public HashSet<GNavigatorElement> parents = new HashSet<>();

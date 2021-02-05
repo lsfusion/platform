@@ -37,7 +37,7 @@ public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
 
         element.image = createImage(clientElement.imageHolder, "navigator", false);
 
-        element.asyncOpenForm = convertOrCast(clientElement.asyncOpenForm);
+        element.asyncExec = convertOrCast(clientElement.asyncExec);
 
         for (ClientNavigatorElement child : clientElement.children) {
             GNavigatorElement childElement = convertOrCast(child);

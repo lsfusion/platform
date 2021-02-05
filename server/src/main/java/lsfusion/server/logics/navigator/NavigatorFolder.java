@@ -21,7 +21,7 @@ public class NavigatorFolder extends NavigatorElement {
     }
 
     @Override
-    public AsyncOpenForm getAsyncOpenForm() {
+    public AsyncOpenForm getAsyncExec() {
         return null;
     }
 }
