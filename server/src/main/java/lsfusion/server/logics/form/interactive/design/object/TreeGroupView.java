@@ -31,6 +31,8 @@ public class TreeGroupView extends ComponentView implements ServerIdentitySerial
     
     public boolean expandOnClick = true;
 
+    public int headerHeight = -1;
+
     @Override
     public String getPropertyGroupContainerSID() {
         return TREE_PREFIX + " " + entity.getSID();
@@ -87,6 +89,8 @@ public class TreeGroupView extends ComponentView implements ServerIdentitySerial
         outStream.writeBoolean(entity.plainTreeMode);
         
         outStream.writeBoolean(expandOnClick);
+
+        outStream.writeInt(headerHeight);
     }
 
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
@@ -97,6 +101,8 @@ public class TreeGroupView extends ComponentView implements ServerIdentitySerial
         userFilter = pool.deserializeObject(inStream);
 
         expandOnClick = inStream.readBoolean();
+
+        headerHeight = inStream.readInt();
         
         entity = pool.context.entity.getTreeGroup(ID);
     }
