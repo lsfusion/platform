@@ -59,6 +59,7 @@ import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawExtraType;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.form.struct.property.async.AsyncAddRemove;
+import lsfusion.server.logics.form.struct.property.async.AsyncEventExec;
 import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyClassImplement;
 import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyObjectEntity;
 import lsfusion.server.logics.property.Property;
@@ -576,8 +577,9 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
                 return new GroupMetaExternal(properties.getSet().mapValues(new Function<PropertyDrawEntity, PropMetaExternal>() {
                     public PropMetaExternal apply(PropertyDrawEntity value) {
-                        AsyncAddRemove newDelete = ((PropertyDrawEntity<?>) value).getAddRemove(FormEntity.this, policy, CHANGE);
-                        return new PropMetaExternal(ThreadLocalContext.localize(value.getCaption()), value.isProperty() ? value.getType().getJSONType() : "action", newDelete != null ? newDelete.add : null);
+                        AsyncEventExec asyncEventExec = ((PropertyDrawEntity<?>) value).getAsyncEventExec(FormEntity.this, policy, CHANGE);
+                        Boolean newDelete = asyncEventExec instanceof AsyncAddRemove ? ((AsyncAddRemove) asyncEventExec).add : null;
+                        return new PropMetaExternal(ThreadLocalContext.localize(value.getCaption()), value.isProperty() ? value.getType().getJSONType() : "action", newDelete);
                     }
                 }));
             }
@@ -1454,10 +1456,9 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return new Pair<>(this, getObjects().toRevMap());
     }
 
-    private static final ImList<String> changeEvents = ListFact.toList(CHANGE, ServerResponse.CHANGE_WYS, ServerResponse.GROUP_CHANGE, ServerResponse.EDIT_OBJECT);
     public void proceedAllEventActions(BiConsumer<ActionObjectEntity<?>, PropertyDrawEntity<?>> consumer) {
         for(PropertyDrawEntity<?> propertyDraw : getPropertyDrawsIt()) {
-            for(String changeEvent : BaseUtils.mergeIterables(changeEvents, propertyDraw.getContextMenuBindings().keySet())) {
+            for(String changeEvent : BaseUtils.mergeIterables(ServerResponse.changeEvents, propertyDraw.getContextMenuBindings().keySet())) {
                 ActionObjectEntity<?> editAction = propertyDraw.getEventAction(changeEvent, this);
                 if (editAction != null)
                     consumer.accept(editAction, changeEvent.equals(CHANGE) && !propertyDraw.isProperty() ? propertyDraw : null);

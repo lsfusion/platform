@@ -961,7 +961,7 @@ public class ClientFormController implements AsyncListener {
         });
     }
 
-    public void asyncOpenForm(Long requestIndex, ClientAsyncOpenForm asyncOpenForm) throws IOException {
+    public void asyncOpenForm(Long requestIndex, ClientAsyncOpenForm asyncOpenForm) {
         ((DockableMainFrame) MainFrame.instance).asyncOpenForm(requestIndex, asyncOpenForm);
     }
 

@@ -4,6 +4,7 @@ import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
+import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.classes.DataType;
 import lsfusion.interop.form.event.KeyInputEvent;
@@ -145,7 +146,7 @@ public class PropertyDrawView extends ComponentView {
 
     public Map<String, AsyncEventExec> getAsyncExec(ServerContext context) {
         Map<String, AsyncEventExec> asyncExecMap = new HashMap<>();
-        for (String actionId : new String[]{CHANGE, GROUP_CHANGE, EDIT_OBJECT}) {
+        for (String actionId : ServerResponse.changeEvents) {
             AsyncEventExec asyncEventExec = entity.getAsyncEventExec(context.entity, context.securityPolicy, actionId);
             if (asyncEventExec != null) {
                 asyncExecMap.put(actionId, asyncEventExec);

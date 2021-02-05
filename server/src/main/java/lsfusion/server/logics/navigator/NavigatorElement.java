@@ -15,6 +15,7 @@ import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFOrderSet;
 import lsfusion.server.base.version.interfaces.NFProperty;
 import lsfusion.server.logics.BaseLogicsModule;
+import lsfusion.server.logics.form.struct.property.async.AsyncOpenForm;
 import lsfusion.server.logics.navigator.window.NavigatorWindow;
 import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 import lsfusion.server.physics.dev.debug.DebugInfo;
@@ -194,7 +195,9 @@ public abstract class NavigatorElement {
 
     public abstract boolean isLeafElement();
 
-    public abstract byte getTypeID(); 
+    public abstract byte getTypeID();
+
+    public abstract AsyncOpenForm getAsyncOpenForm();
 
     public void setImage(String icon) {
         setImage(icon, null);
@@ -244,6 +247,13 @@ public abstract class NavigatorElement {
         }
 
         IOUtils.writeImageIcon(outStream, imageHolder);
+
+        AsyncOpenForm asyncOpenForm = getAsyncOpenForm();
+        outStream.writeBoolean(asyncOpenForm != null);
+        if(asyncOpenForm != null) {
+            SerializationUtil.writeString(outStream, asyncOpenForm.caption);
+            outStream.writeBoolean(asyncOpenForm.modal);
+        }
     }
 
     public void setDebugPoint(DebugInfo.DebugPoint debugPoint) {

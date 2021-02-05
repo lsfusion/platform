@@ -8,7 +8,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public class AsyncChange implements AsyncInputExec {
+public class AsyncChange extends AsyncInputExec {
     public Type changeType;
 
     public AsyncChange(Type changeType) {

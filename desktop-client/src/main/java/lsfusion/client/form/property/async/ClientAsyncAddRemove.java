@@ -7,7 +7,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public class ClientAsyncAddRemove implements ClientAsyncExec {
+public class ClientAsyncAddRemove extends ClientAsyncInputExec {
     public ClientObject object;
     public Boolean add;
 

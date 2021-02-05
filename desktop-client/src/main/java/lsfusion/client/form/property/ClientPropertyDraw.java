@@ -18,7 +18,7 @@ import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.object.table.controller.TableController;
 import lsfusion.client.form.property.async.ClientAsyncAddRemove;
 import lsfusion.client.form.property.async.ClientAsyncChange;
-import lsfusion.client.form.property.async.ClientAsyncExec;
+import lsfusion.client.form.property.async.ClientAsyncEventExec;
 import lsfusion.client.form.property.async.ClientAsyncOpenForm;
 import lsfusion.client.form.property.cell.EditBindingMap;
 import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
@@ -77,7 +77,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     // асинхронные интерфейсы
     public ClientType changeWYSType;
-    public Map<String, ClientAsyncExec> asyncExecMap;
+    public Map<String, ClientAsyncEventExec> asyncExecMap;
     public boolean askConfirm;
     public String askConfirmMessage;
 
@@ -492,7 +492,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         int asyncExecSize = inStream.readInt();
         for (int i = 0; i < asyncExecSize; ++i) {
             String key = pool.readString(inStream);
-            ClientAsyncExec value = pool.deserializeObject(inStream);
+            ClientAsyncEventExec value = pool.deserializeObject(inStream);
             asyncExecMap.put(key, value);
         }
 
@@ -587,22 +587,22 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     }
 
     public ClientAsyncAddRemove getAsyncAddRemove(String actionSID) {
-        ClientAsyncExec asyncExec = asyncExecMap.get(actionSID);
+        ClientAsyncEventExec asyncExec = asyncExecMap.get(actionSID);
         return asyncExec instanceof ClientAsyncAddRemove ? (ClientAsyncAddRemove) asyncExec : null;
     }
 
     public ClientAsyncChange getAsyncChange(String actionSID) {
-        ClientAsyncExec asyncExec = asyncExecMap.get(actionSID);
+        ClientAsyncEventExec asyncExec = asyncExecMap.get(actionSID);
         return asyncExec instanceof ClientAsyncChange ? (ClientAsyncChange) asyncExec : null;
     }
 
-    public ClientType getChangeType() { //todo: check
+    public ClientType getChangeType() {
         ClientAsyncChange changeType = getAsyncChange(ServerResponse.CHANGE);
         return changeType != null ? changeType.changeType : null;
     }
 
     public ClientAsyncOpenForm getAsyncOpenForm(String actionSID) {
-        ClientAsyncExec asyncExec = asyncExecMap.get(actionSID);
+        ClientAsyncEventExec asyncExec = asyncExecMap.get(actionSID);
         return asyncExec instanceof ClientAsyncOpenForm ? (ClientAsyncOpenForm) asyncExec : null;
     }
 

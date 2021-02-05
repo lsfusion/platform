@@ -6,12 +6,17 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public class ClientAsyncOpenForm implements ClientAsyncExec {
+public class ClientAsyncOpenForm extends ClientAsyncExec {
     public String caption;
     public boolean modal;
 
     @SuppressWarnings("UnusedDeclaration")
     public ClientAsyncOpenForm() {
+    }
+
+    public ClientAsyncOpenForm(String caption, boolean modal) {
+        this.caption = caption;
+        this.modal = modal;
     }
 
     @Override

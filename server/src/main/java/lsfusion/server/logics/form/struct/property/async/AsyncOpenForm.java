@@ -6,7 +6,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public class AsyncOpenForm implements AsyncExec {
+public class AsyncOpenForm extends AsyncExec {
     public String caption;
     public boolean modal;
 

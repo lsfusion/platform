@@ -8,7 +8,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public class ClientAsyncChange implements ClientAsyncExec {
+public class ClientAsyncChange extends ClientAsyncInputExec {
     public ClientType changeType;
 
     @SuppressWarnings("UnusedDeclaration")

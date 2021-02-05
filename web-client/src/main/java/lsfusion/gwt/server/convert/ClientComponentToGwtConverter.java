@@ -19,11 +19,10 @@ import lsfusion.client.form.object.table.tree.ClientTreeGroup;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.async.ClientAsyncAddRemove;
 import lsfusion.client.form.property.async.ClientAsyncChange;
-import lsfusion.client.form.property.async.ClientAsyncExec;
+import lsfusion.client.form.property.async.ClientAsyncEventExec;
 import lsfusion.client.form.property.async.ClientAsyncOpenForm;
 import lsfusion.client.form.property.cell.EditBindingMap;
 import lsfusion.gwt.client.GForm;
-import lsfusion.gwt.client.base.jsni.NativeStringMap;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.classes.GClass;
 import lsfusion.gwt.client.form.design.*;
@@ -277,7 +276,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.returnClass = typeConverter.convertOrCast(clientPropertyDraw.returnClass);
 
         propertyDraw.asyncExecMap = new HashMap<>();
-        for(Map.Entry<String, ClientAsyncExec> entry : clientPropertyDraw.asyncExecMap.entrySet()) {
+        for(Map.Entry<String, ClientAsyncEventExec> entry : clientPropertyDraw.asyncExecMap.entrySet()) {
             propertyDraw.asyncExecMap.put(entry.getKey(), convertOrCast(entry.getValue()));
         }
 
