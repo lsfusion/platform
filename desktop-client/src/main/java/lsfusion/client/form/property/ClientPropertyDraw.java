@@ -142,6 +142,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public String eventID;
     public Boolean changeOnSingleClick;
     public boolean hide;
+    
+    public String customRenderFunction;
 
     public String creationScript;
     public String creationPath;
@@ -549,6 +551,9 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         }
 
         returnClass = ClientTypeSerializer.deserializeClientClass(inStream);
+        
+        customRenderFunction = pool.readString(inStream);
+        
         eventID = pool.readString(inStream);
 
         creationScript = pool.readString(inStream);

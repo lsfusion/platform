@@ -23,13 +23,15 @@ import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController;
 import lsfusion.gwt.client.form.order.user.GGridSortableHeaderManager;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTable;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 import static java.lang.Math.max;
-import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
 
 public abstract class GGridPropertyTable<T extends GridDataRecord> extends GPropertyTable<T> implements HasMaxPreferredSize {
     public static int DEFAULT_PREFERRED_WIDTH = 130; // должно соответствовать значению в gridResizePanel в MainFrame.css
@@ -486,7 +488,30 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         public void updateDom(Cell cell, Element cellElement) {
             GPropertyDraw property = getProperty(cell);
             if (property != null) // in tree there can be no property in groups other than last
-                form.update(property, cellElement, getValue(property, (T) cell.getRow()), GGridPropertyTable.this);
+            {
+                Object oldValue = getValue(property, (T) cell.getRow());
+                form.update(property, cellElement, oldValue, new UpdateContext() {
+                    @Override
+                    public Consumer<Object> getCustomRendererPropertyChange() {
+                        return value -> form.changeProperty(property, GGridPropertyTable.this.getColumnKey(cell), (Serializable) value, oldValue, null);
+                    }
+
+                    @Override
+                    public boolean isPropertyReadOnly() {
+                        return GGridPropertyTable.this.isReadOnly(cell);
+                    }
+
+                    @Override
+                    public boolean isStaticHeight() {
+                        return GGridPropertyTable.this.isStaticHeight();
+                    }
+
+                    @Override
+                    public boolean globalCaptionIsDrawn() {
+                        return GGridPropertyTable.this.globalCaptionIsDrawn();
+                    }
+                });
+            }
         }
     }
 }

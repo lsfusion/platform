@@ -21,7 +21,10 @@ import lsfusion.client.form.property.cell.EditBindingMap;
 import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.classes.GClass;
-import lsfusion.gwt.client.form.design.*;
+import lsfusion.gwt.client.form.design.GComponent;
+import lsfusion.gwt.client.form.design.GContainer;
+import lsfusion.gwt.client.form.design.GContainerType;
+import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.event.*;
 import lsfusion.gwt.client.form.filter.GRegularFilter;
 import lsfusion.gwt.client.form.filter.GRegularFilterGroup;
@@ -240,6 +243,8 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.canonicalName = clientPropertyDraw.getCanonicalName();
         propertyDraw.propertyFormName = clientPropertyDraw.getPropertyFormName();
         propertyDraw.integrationSID = clientPropertyDraw.getIntegrationSID();
+        
+        propertyDraw.customRenderFunction = clientPropertyDraw.customRenderFunction;
 
         propertyDraw.toolTip = clientPropertyDraw.toolTip;
         propertyDraw.tableName = clientPropertyDraw.tableName;

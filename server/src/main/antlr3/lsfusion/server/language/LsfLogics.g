@@ -634,6 +634,10 @@ propertyClassViewType returns [ClassViewType type]
 	|   'TOOLBAR' {$type = ClassViewType.TOOLBAR;}
 	;
 
+propertyCustomView returns [String customRenderFunction]
+	:	'CUSTOM' fun=stringLiteral { $customRenderFunction = $fun.val; }
+	;
+
 listViewType returns [ListViewType type, PivotOptions options, String customRenderFunction]
 	:   'PIVOT' {$type = ListViewType.PIVOT;} ('DEFAULT' | 'NODEFAULT' {$type = null;})? opt = pivotOptions {$options = $opt.options; }
 	|   'MAP' {$type = ListViewType.MAP;}
@@ -792,6 +796,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|	'HEADER' propObj=formPropertyObject { $options.setHeader($propObj.property); }
 		|	'FOOTER' propObj=formPropertyObject { $options.setFooter($propObj.property); }
 		|	viewType=propertyClassViewType { $options.setViewType($viewType.type); }
+		|	customView=propertyCustomView { $options.setCustomRenderFunction($customView.customRenderFunction); }
 		|	pgt=propertyGroupType { $options.setAggrFunc($pgt.type); }
 		|	pla=propertyLastAggr { $options.setLastAggr($pla.properties, $pla.desc); }
 		|	pf=propertyFormula { $options.setFormula($pf.formula, $pf.operands); }

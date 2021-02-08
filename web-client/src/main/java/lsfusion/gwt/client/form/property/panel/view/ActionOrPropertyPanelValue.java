@@ -9,6 +9,9 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.controller.ExecuteEditContext;
 import lsfusion.gwt.client.view.MainFrame;
 
+import java.io.Serializable;
+import java.util.function.Consumer;
+
 import static lsfusion.gwt.client.base.view.ColorUtils.getDisplayColor;
 
 public class ActionOrPropertyPanelValue extends ActionOrPropertyValue implements ExecuteEditContext {
@@ -57,6 +60,11 @@ public class ActionOrPropertyPanelValue extends ActionOrPropertyValue implements
     @Override
     public boolean isReadOnly() {
         return readOnly;
+    }
+
+    @Override
+    public boolean isPropertyReadOnly() {
+        return isReadOnly();
     }
 
     @Override
@@ -125,5 +133,12 @@ public class ActionOrPropertyPanelValue extends ActionOrPropertyValue implements
 
     public void setForeground(String color) {
         GFormController.setForegroundColor(getRenderElement(), getDisplayColor(color));
+    }
+
+    @Override
+    public Consumer<Object> getCustomRendererPropertyChange() {
+        return value -> {
+              form.changeProperty(property, getColumnKey(), (Serializable) value, getValue(), null);
+        };
     }
 }

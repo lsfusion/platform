@@ -491,6 +491,9 @@ public class ScriptingFormEntity {
         if (options.getViewType() != null) {
             property.viewType = options.getViewType();
         }
+        if (options.getCustomRenderFunction() != null) {
+            property.customRenderFunction = options.getCustomRenderFunction();
+        }
         if (options.getToDraw() != null) {
             property.toDraw = options.getToDraw();
         }

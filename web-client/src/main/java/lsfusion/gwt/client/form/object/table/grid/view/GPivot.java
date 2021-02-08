@@ -44,6 +44,7 @@ import lsfusion.gwt.client.view.StyleDefaults;
 
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.function.Consumer;
 
 import static java.lang.Integer.decode;
 import static lsfusion.gwt.client.base.GwtSharedUtils.nullEmpty;
@@ -1119,6 +1120,16 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
     @Override
     public GFont getFont() {
         return font;
+    }
+
+    @Override
+    public Consumer<Object> getCustomRendererPropertyChange() {
+        return null;
+    }
+
+    @Override
+    public boolean isPropertyReadOnly() {
+        return true;
     }
 
     @Override

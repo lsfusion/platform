@@ -21,6 +21,7 @@ import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<T> implements RenderContext, UpdateContext {
 
@@ -187,6 +188,16 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
     @Override
     public boolean isStaticHeight() {
         return true;
+    }
+
+    @Override
+    public Consumer<Object> getCustomRendererPropertyChange() {
+        return null;
+    }
+
+    @Override
+    public boolean isPropertyReadOnly() {
+        return false;
     }
 
     public abstract GFont getFont();

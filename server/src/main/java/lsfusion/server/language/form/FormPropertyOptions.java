@@ -37,6 +37,7 @@ public class FormPropertyOptions {
     private PropertyObjectEntity header;
     private PropertyObjectEntity footer;
     private ClassViewType viewType;
+    private String customRenderFunction;
     private GroupObjectEntity toDraw;
     private OrderedMap<String, LocalizedString> contextMenuBindings;
     private Map<KeyStroke, String> keyBindings;
@@ -191,6 +192,14 @@ public class FormPropertyOptions {
 
     public void setViewType(ClassViewType viewType) {
         this.viewType = viewType;
+    }
+    
+    public String getCustomRenderFunction() {
+        return customRenderFunction;
+    }
+    
+    public void setCustomRenderFunction(String customRenderFunction) {
+        this.customRenderFunction = customRenderFunction;
     }
 
     public void setToDraw(GroupObjectEntity toDraw) {
@@ -419,6 +428,7 @@ public class FormPropertyOptions {
         merged.setHeader(nvl(overrides.getHeader(), header));
         merged.setFooter(nvl(overrides.getFooter(), footer));
         merged.setViewType(nvl(overrides.getViewType(), viewType));
+        merged.setCustomRenderFunction(nvl(overrides.getCustomRenderFunction(), customRenderFunction));
         merged.setToDraw(nvl(overrides.getToDraw(), toDraw));
         merged.setEventActions(nvl(overrides.getEventActions(), eventActions));
         merged.setContextMenuBindings(nvl(overrides.getContextMenuBindings(), contextMenuBindings));
