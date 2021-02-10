@@ -117,6 +117,15 @@ public class ImportXLSIterator extends ImportMatrixIterator {
         Cell cell = row.getCell(fieldIndex);
         if(cell == null)
             return null;
+
+        //hack: some files has formulas starting with "=" - apache.poi can not parse it, so we remove "="
+        if (cell.getCellType() == CellType.FORMULA) {
+            String formula = cell.getCellFormula();
+            if (formula != null && formula.startsWith("=")) {
+                cell.setCellFormula(formula.substring(1));
+            }
+        }
+
         CellValue cellValue = formulaEvaluator.evaluate(cell);
         if(cellValue == null)
             return null;
