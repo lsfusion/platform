@@ -22,6 +22,8 @@ import org.jdom.output.XMLOutputter;
 import java.io.IOException;
 import java.io.PrintWriter;
 
+import static lsfusion.base.BaseUtils.nvl;
+
 public class ExportXMLAction<O extends ObjectSelector> extends ExportHierarchicalAction<XMLNode, O> {
     
     public ExportXMLAction(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls,
@@ -31,7 +33,7 @@ public class ExportXMLAction<O extends ObjectSelector> extends ExportHierarchica
     }
 
     protected XMLNode createRootNode(String root, String tag) {
-        String elementName = root != null ? root : getForm().getIntegrationSID();
+        String elementName = nvl(root != null ? root : getForm().getIntegrationSID(), "export");
         Result<String> shortKey = new Result<>();
         Namespace namespace = XMLNode.addXMLNamespace(null, elementName, shortKey, false);
         return new XMLNode(new Element(shortKey.result, namespace), tag);
