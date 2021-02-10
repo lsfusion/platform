@@ -1147,7 +1147,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     private String integrationSID;
     
     public String getIntegrationSID() {
-        return integrationSID != null ? integrationSID : getName();
+        return integrationSID != null ? integrationSID : canonicalName != null ? getName() : null;
     }
 
     public void setIntegrationSID(String integrationSID) {
