@@ -136,7 +136,7 @@ public class ActionOrPropertyPanelValue extends ActionOrPropertyValue implements
     }
 
     @Override
-    public Consumer<Object> getCustomRendererPropertyChange() {
+    public Consumer<Object> getCustomRendererValueChangeConsumer() {
         return value -> {
               form.changeProperty(property, getColumnKey(), (Serializable) value, getValue(), null);
         };

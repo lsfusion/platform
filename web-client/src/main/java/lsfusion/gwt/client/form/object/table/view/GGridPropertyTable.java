@@ -492,8 +492,13 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
                 Object oldValue = getValue(property, (T) cell.getRow());
                 form.update(property, cellElement, oldValue, new UpdateContext() {
                     @Override
-                    public Consumer<Object> getCustomRendererPropertyChange() {
-                        return value -> form.changeProperty(property, GGridPropertyTable.this.getColumnKey(cell), (Serializable) value, oldValue, null);
+                    public Consumer<Object> getCustomRendererValueChangeConsumer() {
+                        return value -> form.changeProperty(property,
+                                GGridPropertyTable.this.getColumnKey(cell),
+                                getRowValue(cell.getRowIndex()).getKey(),
+                                (Serializable) value,
+                                oldValue,
+                                null);
                     }
 
                     @Override

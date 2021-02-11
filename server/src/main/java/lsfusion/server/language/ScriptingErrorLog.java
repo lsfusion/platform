@@ -294,6 +294,13 @@ public class ScriptingErrorLog {
     public void emitAlreadyDefinedPropertyDrawError(ScriptParser parser, String formName, String propertyDrawName, String oldPosition) throws SemanticErrorException {
         emitSimpleError(parser, format("property '%s' in form '%s' was already defined at %s", propertyDrawName, formName, oldPosition));
     }
+    
+    public void emitCustomPropertyRenderFunctionsError(ScriptParser parser, String propertyDrawName, String customRenderFunctions) throws SemanticErrorException {
+        emitSimpleError(parser,
+                format("Incorrect custom render functions definition for %s:\n\texpected format: '<render_function_name>:<set_value_function_name>:<clear_function_name>',\n\tprovided: '%s'",
+                        propertyDrawName,
+                        customRenderFunctions));                                                        
+    }
 
     public void emitNamedParamsError(ScriptParser parser, List<String> paramNames, int actualParameters) throws SemanticErrorException {
         emitSimpleError(parser, format("number of actual property parameters (%d) differs from number of named parameters (%d: %s)",

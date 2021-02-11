@@ -2,50 +2,64 @@ package lsfusion.gwt.client.form.property.cell.view;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.NativeEvent;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
 import java.util.function.Consumer;
 
 public class CustomCellRenderer extends CellRenderer<Object> {
-    private final String customRenderFunction;
+    private final String renderFunction;
+    private final String setValueFunction;
+    private final String clearFunction;
 
     public CustomCellRenderer(GPropertyDraw property, String customRenderFunction) {
         super(property);
-        this.customRenderFunction = customRenderFunction;
+        
+        int firstColonIndex = customRenderFunction.indexOf(":");
+        int secondColonIndex = customRenderFunction.lastIndexOf(":");
+        renderFunction = customRenderFunction.substring(0, firstColonIndex);
+        setValueFunction = customRenderFunction.substring(firstColonIndex + 1, secondColonIndex);
+        clearFunction = customRenderFunction.substring(secondColonIndex + 1);
     }
 
     @Override
     public void renderStaticContent(Element element, RenderContext renderContext) {
-        updateRenderer(element,
-                getController(null, null),
-                null,
-                customRenderFunction,
-                false);
+        render(element);
     }
+
+    protected native void render(Element element)/*-{
+        $wnd[this.@CustomCellRenderer::renderFunction](element);
+    }-*/;
 
     @Override
     public void renderDynamicContent(Element element, Object value, UpdateContext updateContext) {
-        updateRenderer(element,
-                getController(fromObject(updateContext.getCustomRendererPropertyChange()), updateContext.isPropertyReadOnly()),
-                fromObject(value),
-                customRenderFunction,
-                true);
+        setRendererValue(element,
+                getController(fromObject(updateContext.getCustomRendererValueChangeConsumer()), updateContext.isPropertyReadOnly()),
+                fromObject(value));
     }
 
-    protected native void updateRenderer(Element element, JavaScriptObject controller, JavaScriptObject value, String renderFunction, boolean dynamicContent)/*-{
-        $wnd[renderFunction](element, value, controller, dynamicContent);
+    protected native void setRendererValue(Element element, JavaScriptObject controller, JavaScriptObject value)/*-{
+        $wnd[this.@CustomCellRenderer::setValueFunction](element, value, controller);
     }-*/;
 
     @Override
     public void clearRenderContent(Element element, RenderContext renderContext) {
+        clear(element);
     }
+    
+    protected native void clear(Element element)/*-{
+        $wnd[this.@CustomCellRenderer::clearFunction](element);
+    }-*/;
 
     @Override
     public String format(Object value) {
         return value == null ? "" : value.toString();
     }
     
-    protected void changeValue(JavaScriptObject valueChangeConsumerObject, JavaScriptObject value) {
+    protected void changeValue(JavaScriptObject event, JavaScriptObject valueChangeConsumerObject, JavaScriptObject value) {
+        GwtClientUtils.stopPropagation(this.<NativeEvent>toObject(event)); 
+        
         Consumer<Object> valueChangeConsumer = this.toObject(valueChangeConsumerObject);
         if (valueChangeConsumer != null) {
             valueChangeConsumer.accept(toObject(value));
@@ -55,8 +69,8 @@ public class CustomCellRenderer extends CellRenderer<Object> {
     protected native JavaScriptObject getController(JavaScriptObject valueChangeConsumer, Boolean isReadOnly)/*-{
         var thisObj = this;
         return {
-            changeValue: function (value) {
-                return thisObj.@CustomCellRenderer::changeValue(*)(valueChangeConsumer, value);
+            changeValue: function (event, value) {
+                return thisObj.@CustomCellRenderer::changeValue(*)(event, valueChangeConsumer, value);
             },
             isReadOnly: function () {
                 return isReadOnly;

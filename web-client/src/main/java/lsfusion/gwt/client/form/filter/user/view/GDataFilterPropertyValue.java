@@ -87,7 +87,7 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
     }
 
     @Override
-    public Consumer<Object> getCustomRendererPropertyChange() {
+    public Consumer<Object> getCustomRendererValueChangeConsumer() {
         return value -> {
             setValue(value);
             form.update(property, getRenderElement(), value, this);

@@ -634,8 +634,8 @@ propertyClassViewType returns [ClassViewType type]
 	|   'TOOLBAR' {$type = ClassViewType.TOOLBAR;}
 	;
 
-propertyCustomView returns [String customRenderFunction]
-	:	'CUSTOM' fun=stringLiteral { $customRenderFunction = $fun.val; }
+propertyCustomView returns [String customRenderFunctions]
+	:	'CUSTOM' fun=stringLiteral { $customRenderFunctions = $fun.val; }
 	;
 
 listViewType returns [ListViewType type, PivotOptions options, String customRenderFunction]
@@ -796,7 +796,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|	'HEADER' propObj=formPropertyObject { $options.setHeader($propObj.property); }
 		|	'FOOTER' propObj=formPropertyObject { $options.setFooter($propObj.property); }
 		|	viewType=propertyClassViewType { $options.setViewType($viewType.type); }
-		|	customView=propertyCustomView { $options.setCustomRenderFunction($customView.customRenderFunction); }
+		|	customView=propertyCustomView { $options.setCustomRenderFunctions($customView.customRenderFunctions); }
 		|	pgt=propertyGroupType { $options.setAggrFunc($pgt.type); }
 		|	pla=propertyLastAggr { $options.setLastAggr($pla.properties, $pla.desc); }
 		|	pf=propertyFormula { $options.setFormula($pf.formula, $pf.operands); }
@@ -2584,6 +2584,7 @@ recursiveActionOptions[LA action, String actionName, LocalizedString caption, Ac
 semiActionOrPropertyOption[LAP property, String propertyName, LocalizedString caption, ActionOrPropertySettings ps, List<TypedParameter> context]
     :	inSetting [ps]
 	|	viewTypeSetting [property]
+	|	customViewSetting [property]
 	|	flexCharWidthSetting [property]
 	|	charWidthSetting [property]
 	|	changeKeySetting [property]
@@ -2719,6 +2720,15 @@ viewTypeSetting [LAP property]
 	}
 }
 	:	viewType=propertyClassViewType
+	;
+
+customViewSetting [LAP property]
+@after {
+	if (inMainParseState()) {
+		self.setCustomRenderFunctions(property, $customView.customRenderFunctions);
+	}
+}
+	:	customView=propertyCustomView
 	;
 
 flexCharWidthSetting [LAP property]

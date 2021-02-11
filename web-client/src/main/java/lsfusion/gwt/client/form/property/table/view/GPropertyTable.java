@@ -191,7 +191,7 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
     }
 
     @Override
-    public Consumer<Object> getCustomRendererPropertyChange() {
+    public Consumer<Object> getCustomRendererValueChangeConsumer() {
         return null;
     }
 

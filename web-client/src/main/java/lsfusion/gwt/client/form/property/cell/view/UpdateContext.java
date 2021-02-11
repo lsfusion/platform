@@ -4,7 +4,7 @@ import java.util.function.Consumer;
 
 public interface UpdateContext {
     
-    Consumer<Object> getCustomRendererPropertyChange();
+    Consumer<Object> getCustomRendererValueChangeConsumer();
     
     boolean isPropertyReadOnly();
 

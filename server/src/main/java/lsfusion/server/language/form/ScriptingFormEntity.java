@@ -491,8 +491,14 @@ public class ScriptingFormEntity {
         if (options.getViewType() != null) {
             property.viewType = options.getViewType();
         }
-        if (options.getCustomRenderFunction() != null) {
-            property.customRenderFunction = options.getCustomRenderFunction();
+        String customRenderFunctions = options.getCustomRenderFunctions();
+        if (customRenderFunctions != null) {
+            String pattern = "[a-zA-Z]+\\w*:[a-zA-Z]+\\w*:[a-zA-Z]+\\w*";
+            if (customRenderFunctions.matches(pattern)) {
+                property.customRenderFunctions = customRenderFunctions;
+            } else {
+                LM.getErrLog().emitCustomPropertyRenderFunctionsError(LM.getParser(), property.getSID(), customRenderFunctions);
+            }
         }
         if (options.getToDraw() != null) {
             property.toDraw = options.getToDraw();

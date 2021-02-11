@@ -1044,6 +1044,10 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             if(rowKey.isEmpty())
                 return;
         }
+        changeProperty(property, columnKey, rowKey, value, oldValue, changeRequestIndex);
+    }
+
+    public void changeProperty(GPropertyDraw property, GGroupObjectValue columnKey, GGroupObjectValue rowKey, Serializable value, Object oldValue, Long changeRequestIndex) {
         changeProperties(new GPropertyDraw[]{property}, new GGroupObjectValue[]{rowKey}, new GGroupObjectValue[]{columnKey}, new Serializable[]{value}, new Object[]{oldValue}, changeRequestIndex);
     }
 

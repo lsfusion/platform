@@ -1123,7 +1123,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
     }
 
     @Override
-    public Consumer<Object> getCustomRendererPropertyChange() {
+    public Consumer<Object> getCustomRendererValueChangeConsumer() {
         return null;
     }
 

@@ -146,6 +146,10 @@ public abstract class LAP<T extends PropertyInterface, P extends ActionOrPropert
     public void setViewType(ClassViewType viewType) {
         getActionOrProperty().drawOptions.setViewType(viewType);
     }
+    
+    public void setCustomRenderFunctions(String customRenderFunctions) {
+        getActionOrProperty().drawOptions.setCustomRenderFunctions(customRenderFunctions);
+    }
 
     public void setPivotOptions(PivotOptions pivotOptions) {
         getActionOrProperty().drawOptions.setPivotOptions(pivotOptions);
