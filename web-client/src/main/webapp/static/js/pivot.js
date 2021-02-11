@@ -1510,12 +1510,12 @@
           attrElem = $("<div>").addClass('pvtAttr').data("attrName", attr).appendTo(listItem);
           attrElemText = $("<span>").addClass('pvtAttrText').text(attr).prop("title", attr).appendTo(attrElem);
           attrElem.append(triangleLink);
+          attrElem.bind("dblclick", function() {
+            return opts.callbacks.elementDblClickHandler(attr);
+          });
           if (hasExcludedItem) {
             attrElemText.addClass('pvtFilteredAttribute');
           }
-          listItem.get(0).ondblclick = function(attrName) {
-            return opts.callbacks.elementDblClickHandler(attr);
-          };
           unusedDiv.append(listItem);
           return pvtUiContainer.append(valueList);
         };
