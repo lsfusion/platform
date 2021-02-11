@@ -1199,7 +1199,7 @@
     Pivot Table UI: calls Pivot Table core above with options set by user
      */
     $.fn.pivotUI = function(input, inputOpts, overwrite, locale) {
-      var a, aggrSelector, aggregator, attr, attrLength, attrValues, c, colOrderArrow, createPaxis, defaults, e, existingOpts, fillPaxis, fn1, i, initialRender, l, lastUsedElementsChild, len1, len2, localeDefaults, localeStrings, materializedInput, n, opts, ordering, pivotRendererBody, pivotRendererFooter, pivotRendererHeader, pivotScrollDiv, pivotTable, plotlyDefaults, pvtColumns, pvtColumnsDiv, pvtColumnsRow, pvtColumnsTable, pvtRows, pvtRowsDiv, pvtRowsTable, pvtUiContainer, recordsProcessed, ref, ref1, ref2, refresh, refreshDelayed, refreshPaxis, renderer, rendererControl, rendererControlDiv, shownAttributes, shownInAggregators, shownInDragDrop, tr1, tr2, uiTable, unused, unusedAttrsVerticalAutoCutoff, unusedAttrsVerticalAutoOverride, unusedDblClickFunction, unusedDiv, unusedDivWrapper, unusedElement, unusedElementsParent, usedDblClickFunction, usedElementsParent, x;
+      var a, aggrSelector, aggregator, attr, attrLength, attrValues, c, colOrderArrow, createPaxis, defaults, e, existingOpts, fillPaxis, fn1, i, initialRender, l, len1, localeDefaults, localeStrings, materializedInput, opts, ordering, pivotRendererBody, pivotRendererFooter, pivotRendererHeader, pivotScrollDiv, pivotTable, plotlyDefaults, pvtColumns, pvtColumnsDiv, pvtColumnsRow, pvtColumnsTable, pvtRows, pvtRowsDiv, pvtRowsTable, pvtUiContainer, recordsProcessed, ref, ref1, refresh, refreshDelayed, refreshPaxis, renderer, rendererControl, rendererControlDiv, shownAttributes, shownInAggregators, shownInDragDrop, tr1, tr2, uiTable, unused, unusedAttrsVerticalAutoCutoff, unusedAttrsVerticalAutoOverride, unusedDiv, unusedDivWrapper, x;
       if (overwrite == null) {
         overwrite = false;
       }
@@ -1513,6 +1513,9 @@
           if (hasExcludedItem) {
             attrElemText.addClass('pvtFilteredAttribute');
           }
+          listItem.get(0).ondblclick = function(attrName) {
+            return opts.callbacks.elementDblClickHandler(attr);
+          };
           unusedDiv.append(listItem);
           return pvtUiContainer.append(valueList);
         };
@@ -1618,34 +1621,6 @@
         })(this);
         fillPaxis(true);
         fillPaxis(false);
-        unusedElementsParent = this.find("div.pvtUiCellVDiv.pvtUnusedCellDiv").get(0);
-        usedElementsParent = this.find("td.pvtRows.pvtUiCell table tbody").get(0);
-        lastUsedElementsChild = this.find('td.pvtRows.pvtUiCell table tbody').get(0);
-        unusedDblClickFunction = (function(_this) {
-          return function() {
-            return function() {
-              if ((usedElementsParent != null) && unusedElementsParent.contains(this)) {
-                usedElementsParent.insertBefore(($("<tr>").append($("<td>").addClass("paxis pvtAxisContainer").addClass("pvtHorizList").addClass("ui-sortable"))).get(0), lastUsedElementsChild.lastChild);
-                usedElementsParent.insertBefore(($("<tr>").append($("<td>").addClass("paxis pvtAxisContainer").addClass("pvtHorizList").addClass("ui-sortable").append(this))).get(0), lastUsedElementsChild.lastChild);
-                refresh();
-              }
-            };
-          };
-        })(this);
-        usedDblClickFunction = (function(_this) {
-          return function() {
-            return function() {
-              unusedElementsParent.appendChild(this);
-              this.ondblclick = unusedDblClickFunction();
-              refresh();
-            };
-          };
-        })(this);
-        ref2 = this.find("div.pvtUiCellVDiv.pvtUnusedCellDiv li");
-        for (n = 0, len2 = ref2.length; n < len2; n++) {
-          unusedElement = ref2[n];
-          unusedElement.ondblclick = unusedDblClickFunction();
-        }
         if (opts.aggregatorName != null) {
           this.find(".pvtAggregator").val(opts.aggregatorName);
         }
@@ -1659,22 +1634,15 @@
         initialRender = true;
         refreshPaxis = (function(_this) {
           return function(columns) {
-            var axisCount, child, childContainer, children, childs, element, itemsContainer, len3, newSplitPaxis, o, paxis, paxisCount, prevEmpty, ref3, t;
+            var axisCount, child, childContainer, children, itemsContainer, n, newSplitPaxis, paxis, paxisCount, prevEmpty, ref2;
             itemsContainer = columns ? pvtColumnsRow : pvtRowsTable;
             newSplitPaxis = [];
             axisCount = -1;
             paxisCount = 0;
             prevEmpty = false;
             children = itemsContainer.find("td");
-            for (i = o = 0, ref3 = children.length; 0 <= ref3 ? o < ref3 : o > ref3; i = 0 <= ref3 ? ++o : --o) {
+            for (i = n = 0, ref2 = children.length; 0 <= ref2 ? n < ref2 : n > ref2; i = 0 <= ref2 ? ++n : --n) {
               child = children[i];
-              childs = child.children;
-              if (childs.length > 0) {
-                for (t = 0, len3 = childs.length; t < len3; t++) {
-                  element = childs[t];
-                  element.ondblclick = usedDblClickFunction();
-                }
-              }
               if (child.classList.contains("paxis")) {
                 child.classList.remove("stretch");
                 childContainer = columns ? child : child.parentElement;
@@ -1711,7 +1679,7 @@
         })(this);
         refreshDelayed = (function(_this) {
           return function() {
-            var colIndex, columnAttr, drawSize, exclusions, inclusions, len3, newDropdown, numInputsToProcess, o, pivotUIOptions, pvtVals, ref3, ref4, rowIndex, subopts, t, unusedAttrsContainer, vals;
+            var colIndex, columnAttr, drawSize, exclusions, inclusions, len2, n, newDropdown, numInputsToProcess, o, pivotUIOptions, pvtVals, ref2, ref3, rowIndex, subopts, unusedAttrsContainer, vals;
             refreshPaxis(true);
             refreshPaxis(false);
             _this.find(".pvtAxisContainer").sortable({
@@ -1750,7 +1718,7 @@
             };
             subopts.rendererOptions.getDisplayColor = opts.getDisplayColor;
             subopts.rendererOptions.hideColAxisHeadersColumn = opts.splitCols.length === 1;
-            numInputsToProcess = (ref3 = opts.aggregators[aggregator.val()]([])().numInputs) != null ? ref3 : 0;
+            numInputsToProcess = (ref2 = opts.aggregators[aggregator.val()]([])().numInputs) != null ? ref2 : 0;
             vals = [];
             _this.find(".pvtRows li div.pvtAttr").each(function() {
               return subopts.rows.push($(this).data("attrName"));
@@ -1770,12 +1738,12 @@
             });
             if (numInputsToProcess !== 0) {
               pvtVals = _this.find(".pvtVals");
-              for (x = o = 0, ref4 = numInputsToProcess; 0 <= ref4 ? o < ref4 : o > ref4; x = 0 <= ref4 ? ++o : --o) {
+              for (x = n = 0, ref3 = numInputsToProcess; 0 <= ref3 ? n < ref3 : n > ref3; x = 0 <= ref3 ? ++n : --n) {
                 newDropdown = $("<select>").addClass('pvtAttrDropdown').append($("<option>")).bind("change", function() {
                   return refresh();
                 });
-                for (t = 0, len3 = shownInAggregators.length; t < len3; t++) {
-                  attr = shownInAggregators[t];
+                for (o = 0, len2 = shownInAggregators.length; o < len2; o++) {
+                  attr = shownInAggregators[o];
                   newDropdown.append($("<option>").val(attr).text(attr));
                 }
                 pvtVals.append(newDropdown);
@@ -1824,13 +1792,13 @@
               }
             });
             subopts.filter = function(record) {
-              var excludedItems, k, ref5, ref6;
+              var excludedItems, k, ref4, ref5;
               if (!opts.filter(record)) {
                 return false;
               }
               for (k in exclusions) {
                 excludedItems = exclusions[k];
-                if (ref5 = "" + ((ref6 = record[k]) != null ? ref6 : 'null'), indexOf.call(excludedItems, ref5) >= 0) {
+                if (ref4 = "" + ((ref5 = record[k]) != null ? ref5 : 'null'), indexOf.call(excludedItems, ref4) >= 0) {
                   return false;
                 }
               }

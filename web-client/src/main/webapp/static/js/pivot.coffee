@@ -897,6 +897,7 @@ callWithJQuery ($) ->
                     attrElem.append(triangleLink)
 
                     attrElemText.addClass('pvtFilteredAttribute') if hasExcludedItem
+                    listItem.get(0).ondblclick = (attrName) -> opts.callbacks.elementDblClickHandler attr
                     unusedDiv.append(listItem)
                     pvtUiContainer.append(valueList)
 
@@ -1015,25 +1016,6 @@ callWithJQuery ($) ->
             fillPaxis(true)
             fillPaxis(false)
 
-            unusedElementsParent = @find("div.pvtUiCellVDiv.pvtUnusedCellDiv").get(0)
-            usedElementsParent = @find("td.pvtRows.pvtUiCell table tbody").get(0)
-            lastUsedElementsChild = @find('td.pvtRows.pvtUiCell table tbody').get(0)
-
-            unusedDblClickFunction = => () ->
-                if usedElementsParent? and unusedElementsParent.contains this
-                    usedElementsParent.insertBefore(($("<tr>").append $("<td>").addClass("paxis pvtAxisContainer").addClass("pvtHorizList").addClass("ui-sortable")).get(0), lastUsedElementsChild.lastChild)
-                    usedElementsParent.insertBefore(($("<tr>").append $("<td>").addClass("paxis pvtAxisContainer").addClass("pvtHorizList").addClass("ui-sortable").append this).get(0), lastUsedElementsChild.lastChild)
-                    refresh()
-                return
-
-            usedDblClickFunction = => () ->
-                unusedElementsParent.appendChild this
-                this.ondblclick = unusedDblClickFunction()
-                refresh()
-                return
-
-            unusedElement.ondblclick = unusedDblClickFunction() for unusedElement in @find("div.pvtUiCellVDiv.pvtUnusedCellDiv li")
-
             if opts.aggregatorName?
                 @find(".pvtAggregator").val opts.aggregatorName
             if opts.rendererName?
@@ -1054,9 +1036,6 @@ callWithJQuery ($) ->
                 children = itemsContainer.find("td")
                 for i in [0...children.length]
                     child = children[i]
-                    childs = child.children
-                    if childs.length > 0
-                        element.ondblclick = usedDblClickFunction() for element in childs
                     if child.classList.contains("paxis")
                         child.classList.remove("stretch")
                         childContainer = if columns then child else child.parentElement #td for columns, tr for rows
