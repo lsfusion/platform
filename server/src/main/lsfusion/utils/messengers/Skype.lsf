@@ -12,9 +12,10 @@ serviceUrl = DATA LOCAL STRING();
 action = DATA LOCAL STRING();
 fromName = DATA LOCAL STRING();
 conversationId = DATA LOCAL STRING();
+text = DATA LOCAL STRING();
 
 FORM webHookSkype
-    PROPERTIES() serviceUrl, action
+    PROPERTIES() serviceUrl, action, text
     PROPERTIES() IN from fromName EXTID 'name'
     PROPERTIES() IN conversation conversationId EXTID 'id';
 
@@ -38,6 +39,12 @@ webHookSkype(JSONFILE f) {
         name(chat()) <-fromName();
         baseUrlSkype(chat()) <- serviceUrl();
         chatType(chat()) <- ChatType.private;
+        NEW message = Message {
+            chat(message) <- chat();
+            message(message) <- text();
+            dateTime(message) <- currentDateTime();
+            from(message) <- OVERRIDE fromName();
+        }
     } ELSE IF action() == 'remove' THEN {
         DELETE Chat c WHERE id(c) == conversationId() AND account(c) == account(LONG(params('botid')));
     }
@@ -80,7 +87,14 @@ sendMessageSkype(Chat chat, STRING message) {
         
     LOCAL message = STRING();
     IMPORT FROM result() TO() message;
-    sendMessageSkypeResult() <- message();     
+    sendMessageSkypeResult() <- message();
+    NEW botMessage = Message {
+        chat(botMessage) <- chat;
+        message(botMessage) <- message;
+        dateTime(botMessage) <- currentDateTime();
+        from(botMessage) <- 'YOU';
+    }
+    APPLY;     
 }
 
 sendMessage(Chat chat, STRING message) + WHEN isSkype(account(chat)) AND message IS STRING THEN {

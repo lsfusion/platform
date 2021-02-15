@@ -118,7 +118,15 @@ sendMessageSlack(Chat chat, STRING message) {
     IMPORT FROM result() TO() ok, error; 
     IF NOT ok() THEN {
         sendMessageSlackResult() <- error();
-    }        
+    } ELSE {
+        NEW botMessage = Message {
+            chat(botMessage) <- chat;
+            message(botMessage) <- message;
+            dateTime(botMessage) <- currentDateTime();
+            from(botMessage) <- 'YOU';
+        }
+    }  
+    APPLY;
 }
 
 sendMessage(Chat chat, STRING message) + WHEN isSlack(account(chat)) AND message IS STRING THEN {
