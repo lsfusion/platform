@@ -619,6 +619,10 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return getString("logics.undefined.property");
     }
 
+    public String getFilterCaption(ClientGroupObject group) {
+        return caption + " (" + (groupObject != null ? groupObject.getCaption() : "") + ")";
+    }
+
     public static final String TOOL_TIP_FORMAT =
             "<html><b>%1$s</b><br>" +
                     "%2$s";

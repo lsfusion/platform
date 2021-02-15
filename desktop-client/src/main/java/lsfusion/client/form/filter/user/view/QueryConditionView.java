@@ -2,6 +2,7 @@ package lsfusion.client.form.filter.user.view;
 
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.base.view.ItemAdapter;
+import lsfusion.client.classes.ClientActionClass;
 import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.form.filter.user.*;
 import lsfusion.client.form.object.table.controller.TableController;
@@ -59,7 +60,11 @@ public class QueryConditionView extends JPanel implements FilterValueListener {
         setLayout(new BorderLayout());
 
         Vector<ClientPropertyDraw> sources = new Vector<>();
-        sources.addAll(logicsSupplier.getGroupObjectProperties());
+        for (ClientPropertyDraw propertyDraw : logicsSupplier.getGroupObjectProperties()) {
+            if (!(propertyDraw.baseType instanceof ClientActionClass)) {
+                sources.add(propertyDraw);
+            }
+        }
 
         propertyView = new QueryConditionComboBox(sources);
         centerPanel.add(propertyView);
