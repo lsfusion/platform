@@ -11,6 +11,8 @@ toTime(DATETIME dateTime) = TIME(dateTime AS DATETIME);
 toDateTime(DATE date) = DATETIME(date AS DATE);
 toZDateTime(DATE date) = ZDATETIME(date AS DATE);
 
+fromEpochMSToTimestamp = FORMULA DATETIME PG 'SELECT to_timestamp(CAST($1 AS NUMERIC))';
+
 currentTime '{time.current.time}' = toTime(currentDateTime());
 
 extractHour = FORMULA INTEGER PG '(extract(hour from ($1)))', MS 'datepart(hh, $1)'; 

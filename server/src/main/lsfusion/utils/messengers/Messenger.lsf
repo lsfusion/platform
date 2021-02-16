@@ -73,6 +73,7 @@ FORM messengers '{messenger.messengers}' AUTOREFRESH 20
     OBJECTS m = Message
     PROPERTIES(m) READONLY from, dateTime, message 
     FILTERS chat(m) == c 
+    ORDERS dateTime(m) DESC
 
     FILTERS account(c) == a;
 
