@@ -1,7 +1,11 @@
 package lsfusion.client.form.property.async;
 
+import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.controller.remote.serialization.ClientSerializationPool;
+import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.object.ClientObject;
+import lsfusion.client.form.property.ClientPropertyDraw;
+import lsfusion.client.form.property.cell.controller.dispatch.EditPropertyDispatcher;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -24,5 +28,11 @@ public class ClientAsyncAddRemove extends ClientAsyncInputExec {
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
         this.object = pool.deserializeObject(inStream);
         this.add = inStream.readBoolean();
+    }
+
+    @Override
+    public boolean exec(ClientFormController form, EditPropertyDispatcher dispatcher, ClientPropertyDraw property, ClientGroupObjectValue columnKey) throws IOException {
+        form.asyncAddRemove(property, columnKey, this);
+        return true;
     }
 }

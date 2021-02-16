@@ -15,10 +15,7 @@ import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyObjectInterfaceEntity;
-import lsfusion.server.logics.form.struct.property.async.AsyncAddRemove;
-import lsfusion.server.logics.form.struct.property.async.AsyncChange;
-import lsfusion.server.logics.form.struct.property.async.AsyncEventExec;
-import lsfusion.server.logics.form.struct.property.async.AsyncOpenForm;
+import lsfusion.server.logics.form.struct.property.async.*;
 import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyObjectEntity;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -78,8 +75,8 @@ public class ActionObjectEntity<P extends PropertyInterface> extends ActionOrPro
     }
 
     @IdentityLazy
-    public AsyncOpenForm getOpenForm() {
-        return property.getOpenForm();
+    public AsyncExec getAsyncExec() {
+        return property.getAsyncExec();
     }
 
     public AsyncEventExec getAsyncEventExec(FormEntity form, boolean optimistic) {
@@ -88,7 +85,7 @@ public class ActionObjectEntity<P extends PropertyInterface> extends ActionOrPro
             asyncEventExec = getChange(optimistic);
         }
         if (asyncEventExec == null) {
-            asyncEventExec = getOpenForm();
+            asyncEventExec = getAsyncExec();
         }
         return asyncEventExec;
     }

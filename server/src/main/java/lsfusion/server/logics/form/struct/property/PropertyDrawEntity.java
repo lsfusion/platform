@@ -7,10 +7,16 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.col.interfaces.immutable.*;
-import lsfusion.base.col.interfaces.mutable.*;
+import lsfusion.base.col.interfaces.mutable.LongMutable;
+import lsfusion.base.col.interfaces.mutable.MExclSet;
+import lsfusion.base.col.interfaces.mutable.MMap;
+import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.identity.IdentityObject;
-import lsfusion.interop.form.property.*;
+import lsfusion.interop.form.property.ClassViewType;
+import lsfusion.interop.form.property.PropertyEditType;
+import lsfusion.interop.form.property.PropertyGroupType;
+import lsfusion.interop.form.property.PropertyReadType;
 import lsfusion.server.base.caches.IdentityStartLazy;
 import lsfusion.server.base.caches.IdentityStrongLazy;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
@@ -35,9 +41,7 @@ import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.order.OrderEntity;
 import lsfusion.server.logics.form.struct.property.async.AsyncAddRemove;
-import lsfusion.server.logics.form.struct.property.async.AsyncChange;
 import lsfusion.server.logics.form.struct.property.async.AsyncEventExec;
-import lsfusion.server.logics.form.struct.property.async.AsyncOpenForm;
 import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyObjectEntity;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -226,11 +230,6 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
             }
         }
         return null;
-    }
-
-    public AsyncAddRemove getAddRemove(FormEntity form, SecurityPolicy policy, String actionSID) { //todo: check
-        AsyncEventExec asyncEventExec = getAsyncEventExec(form, policy, actionSID);
-        return asyncEventExec instanceof AsyncAddRemove ? (AsyncAddRemove) asyncEventExec : null;
     }
 
     public AsyncEventExec getAsyncEventExec(FormEntity form, SecurityPolicy policy, String actionSID) {

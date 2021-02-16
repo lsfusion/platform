@@ -301,8 +301,12 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
         formsController.getForms().clear();
     }
 
-    public void asyncOpenForm(Long requestIndex, ClientAsyncOpenForm clientOpenForm) {
-        formsController.asyncOpenForm(requestIndex, clientOpenForm);
+    public void asyncOpenForm(ClientAsyncOpenForm asyncOpenForm) {
+        asyncOpenForm(rmiQueue.getNextRmiRequestIndex(), asyncOpenForm);
+    }
+
+    public void asyncOpenForm(Long requestIndex, ClientAsyncOpenForm asyncOpenForm) {
+        formsController.asyncOpenForm(requestIndex, asyncOpenForm);
     }
 
     public void removeOpenForm(Long requestIndex) {

@@ -189,16 +189,21 @@ public abstract class FormsController {
         return formContainer;
     }
 
+    //size of modal window may change, we don't want flashing, so we use timer
     Timer openFormTimer;
     public void asyncOpenForm(Long requestIndex, GAsyncOpenForm openForm) {
         if(openForm.modal) {
-            FormContainer formContainer = new ModalForm(this, requestIndex, openForm.caption, true);
             openFormTimer = new Timer() {
                 @Override
                 public void run() {
-                    formContainer.show();
-                    asyncForms.put(requestIndex, formContainer);
-                    openFormTimer = null;
+                    Scheduler.get().scheduleDeferred(() -> {
+                        if(openFormTimer != null) {
+                            FormContainer formContainer = new ModalForm(FormsController.this, requestIndex, openForm.caption, true);
+                            formContainer.show();
+                            asyncForms.put(requestIndex, formContainer);
+                            openFormTimer = null;
+                        }
+                    });
                 }
             };
             openFormTimer.schedule(100);

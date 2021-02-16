@@ -902,15 +902,13 @@ public class ClientFormController implements AsyncListener {
         return remoteForm.changeProperties(requestIndex, lastReceivedRequestIndex, new int[]{propertyID}, new byte[][]{fullCurrentKey}, new byte[][]{pushChange}, new Long[]{pushAdd});
     }
 
-    public ClientAsyncAddRemove getAsyncAddRemove(ClientPropertyDraw property, String actionSID) {
-        ClientAsyncAddRemove asyncAddRemove = property.getAsyncAddRemove(actionSID);
-        if (asyncAddRemove != null) {
-            GridController controller = controllers.get(asyncAddRemove.object.groupObject);
+    public void asyncAddRemove(ClientPropertyDraw property, ClientGroupObjectValue columnKey, ClientAsyncAddRemove addRemove) throws IOException {
+        if (addRemove != null) {
+            GridController controller = controllers.get(addRemove.object.groupObject);
             if (controller != null && controller.isList()) {
-                return asyncAddRemove;
+                modifyObject(property, columnKey, addRemove);
             }
         }
-        return null;
     }
 
     public void modifyObject(final ClientPropertyDraw property, ClientGroupObjectValue columnKey, ClientAsyncAddRemove addRemove) throws IOException {
@@ -959,10 +957,6 @@ public class ClientFormController implements AsyncListener {
                 return changeProperty(remoteForm, requestIndex, lastReceivedRequestIndex, property.getID(), fullCurrentKey, null, add ? ID : null);
             }
         });
-    }
-
-    public void asyncOpenForm(Long requestIndex, ClientAsyncOpenForm asyncOpenForm) {
-        ((DockableMainFrame) MainFrame.instance).asyncOpenForm(requestIndex, asyncOpenForm);
     }
 
     public ClientGroupObjectValue getFullCurrentKey() {

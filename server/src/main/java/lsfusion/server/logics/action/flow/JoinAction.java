@@ -15,7 +15,7 @@ import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.implement.ActionImplement;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.classes.user.CustomClass;
-import lsfusion.server.logics.form.struct.property.async.AsyncOpenForm;
+import lsfusion.server.logics.form.struct.property.async.AsyncExec;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
@@ -75,11 +75,11 @@ public class JoinAction<T extends PropertyInterface> extends KeepContextAction {
     }
 
     @Override
-    public AsyncOpenForm getOpenForm() {
+    public AsyncExec getAsyncExec() {
         if (!isRecursive) { // recursion guard
-            return action.action.getOpenForm();
+            return action.action.getAsyncExec();
         }
-        return super.getOpenForm();
+        return super.getAsyncExec();
     }
 
     @Override

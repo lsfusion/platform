@@ -16,7 +16,7 @@ import lsfusion.server.logics.action.flow.FlowResult;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.user.CustomClass;
-import lsfusion.server.logics.form.struct.property.async.AsyncOpenForm;
+import lsfusion.server.logics.form.struct.property.async.AsyncExec;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.classes.IsClassProperty;
@@ -143,8 +143,8 @@ public class NewSessionAction extends AroundAspectAction {
     }
 
     @Override
-    public AsyncOpenForm getOpenForm() {
-        return aspectActionImplement.action.getOpenForm();
+    public AsyncExec getAsyncExec() {
+        return aspectActionImplement.action.getAsyncExec();
     }
 
     @Override

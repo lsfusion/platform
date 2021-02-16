@@ -586,24 +586,14 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         notNull = inStream.readBoolean();
     }
 
-    public ClientAsyncAddRemove getAsyncAddRemove(String actionSID) {
-        ClientAsyncEventExec asyncExec = asyncExecMap.get(actionSID);
-        return asyncExec instanceof ClientAsyncAddRemove ? (ClientAsyncAddRemove) asyncExec : null;
-    }
-
-    public ClientAsyncChange getAsyncChange(String actionSID) {
-        ClientAsyncEventExec asyncExec = asyncExecMap.get(actionSID);
-        return asyncExec instanceof ClientAsyncChange ? (ClientAsyncChange) asyncExec : null;
+    public ClientAsyncEventExec getAsyncEventExec(String actionSID) {
+        return asyncExecMap.get(actionSID);
     }
 
     public ClientType getChangeType() {
-        ClientAsyncChange changeType = getAsyncChange(ServerResponse.CHANGE);
+        ClientAsyncEventExec asyncExec = asyncExecMap.get(ServerResponse.CHANGE);
+        ClientAsyncChange changeType = asyncExec instanceof ClientAsyncChange ? (ClientAsyncChange) asyncExec : null;
         return changeType != null ? changeType.changeType : null;
-    }
-
-    public ClientAsyncOpenForm getAsyncOpenForm(String actionSID) {
-        ClientAsyncEventExec asyncExec = asyncExecMap.get(actionSID);
-        return asyncExec instanceof ClientAsyncOpenForm ? (ClientAsyncOpenForm) asyncExec : null;
     }
 
     private void initEditBindingMap() {

@@ -13,4 +13,6 @@ public abstract class ClientAsyncExec extends ClientAsyncEventExec {
             return new ClientAsyncOpenForm(SerializationUtil.readString(inStream), inStream.readBoolean());
         else return null;
     }
+
+    public abstract void exec();
 }

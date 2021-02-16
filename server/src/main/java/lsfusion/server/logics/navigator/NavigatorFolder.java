@@ -1,6 +1,6 @@
 package lsfusion.server.logics.navigator;
 
-import lsfusion.server.logics.form.struct.property.async.AsyncOpenForm;
+import lsfusion.server.logics.form.struct.property.async.AsyncExec;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 public class NavigatorFolder extends NavigatorElement {
@@ -21,7 +21,7 @@ public class NavigatorFolder extends NavigatorElement {
     }
 
     @Override
-    public AsyncOpenForm getAsyncExec() {
+    public AsyncExec getAsyncExec() {
         return null;
     }
 }

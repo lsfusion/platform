@@ -23,6 +23,7 @@ import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.filter.ContextFilterInstance;
 import lsfusion.server.logics.form.struct.filter.ContextFilterSelector;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
+import lsfusion.server.logics.form.struct.property.async.AsyncExec;
 import lsfusion.server.logics.form.struct.property.async.AsyncOpenForm;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
@@ -186,7 +187,7 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
 
 
     @Override
-    public AsyncOpenForm getOpenForm() {
+    public AsyncExec getAsyncExec() {
         FormEntity staticForm = form.getNFStaticForm();
         String caption = staticForm != null ? staticForm.getCaption().toString() : null;
         return new AsyncOpenForm(caption, getModalityType().isModalWindow());

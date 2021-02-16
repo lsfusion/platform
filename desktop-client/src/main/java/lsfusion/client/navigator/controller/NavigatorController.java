@@ -1,6 +1,8 @@
 package lsfusion.client.navigator.controller;
 
 import bibliothek.gui.dock.common.SingleCDockable;
+import lsfusion.base.lambda.ERunnable;
+import lsfusion.client.base.SwingUtils;
 import lsfusion.client.navigator.ClientNavigator;
 import lsfusion.client.navigator.ClientNavigatorAction;
 import lsfusion.client.navigator.ClientNavigatorElement;
@@ -63,7 +65,10 @@ public class NavigatorController implements INavigatorController {
 
     public void openElement(ClientNavigatorElement element, int modifiers) {
         if (element instanceof ClientNavigatorAction) {
-            mainNavigator.openAction((ClientNavigatorAction) element, modifiers);
+            if(element.asyncExec != null) {
+                element.asyncExec.exec();
+            }
+            SwingUtils.invokeLater(() -> mainNavigator.openAction((ClientNavigatorAction) element, modifiers));
         }
     }
 

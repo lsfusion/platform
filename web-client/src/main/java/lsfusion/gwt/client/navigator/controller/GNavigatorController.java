@@ -89,8 +89,8 @@ public abstract class GNavigatorController implements GINavigatorController {
     @Override
     public void openElement(GNavigatorElement element, NativeEvent nativeEvent) {
         if (element instanceof GNavigatorAction) {
-            if(element.asyncExec instanceof GAsyncOpenForm) {
-                formsController.asyncOpenForm(MainFrame.navigatorDispatchAsync.getNextRequestIndex(), (GAsyncOpenForm) element.asyncExec);
+            if(element.asyncExec != null) {
+                element.asyncExec.exec(formsController);
             }
             formsController.executeNavigatorAction((GNavigatorAction) element, nativeEvent);
         }
