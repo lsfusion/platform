@@ -66,8 +66,7 @@ FORM messengers '{messenger.messengers}' AUTOREFRESH 20
     PROPERTIES(a) READONLY name, captionMessenger, token 
     PROPERTIES(a) NEWSESSION synchronizeChatsAction TOOLBAR SHOWIF isSynchronize(messenger(a)), NEW, EDIT, DELETE 
     OBJECTS c = Chat
-    PROPERTIES(c) READONLY id, captionChatType, name, title SHOWIF showTitle(messenger(a))
-    PROPERTIES(c) DELETE
+    PROPERTIES(c) READONLY id, captionChatType, name, title SHOWIF showTitle(messenger(a)), DELETE CHANGEABLE
     PROPERTIES(c) PANEL newMessage, sendMessage
     
     OBJECTS m = Message
