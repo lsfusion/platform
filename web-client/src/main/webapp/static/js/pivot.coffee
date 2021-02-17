@@ -896,6 +896,7 @@ callWithJQuery ($) ->
                     attrElemText = $("<span>").addClass('pvtAttrText').text(attr).prop("title", attr).appendTo(attrElem)
                     attrElem.append(triangleLink)
 
+                    attrElem.bind "dblclick", () -> opts.callbacks.elementDblClickHandler attr
                     attrElemText.addClass('pvtFilteredAttribute') if hasExcludedItem
                     unusedDiv.append(listItem)
                     pvtUiContainer.append(valueList)
