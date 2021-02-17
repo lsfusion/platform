@@ -42,6 +42,11 @@ FORM conversationsList
     PROPERTIES(channels) channelId EXTID 'id', channelName EXTID 'name', is_channel, is_group, is_im, user
     PROPERTIES(channels) IN purpose value;
 
+CLASS User;
+userName = DATA STRING(User); 
+userId = DATA STRING(User); 
+user = GROUP AGGR User u BY userId(u);
+
 synchronizeChatsSlack (Account a) {
     LOCAL result = JSONFILE();
     
@@ -51,12 +56,14 @@ synchronizeChatsSlack (Account a) {
     //get user names
     LOCAL usernames = STRING(STRING);
     LOCAL realnames = STRING(STRING);
+    LOCAL userIds = STRING(STRING);
     EXTERNAL HTTP POST 'https://slack.com/api/users.list' HEADERS httpHeaders TO result;
     IMPORT usersList FROM result();
     IF ok() THEN {
         FOR userId(INTEGER user) DO {
             usernames(userId(user)) <- userName(user);
             realnames(userId(user)) <- realName(user);
+            userIds(userId(user)) <- userId(user);
         }
    
         LOCAL synchronized = BOOLEAN (Chat);
@@ -73,6 +80,13 @@ synchronizeChatsSlack (Account a) {
                        chat() <- chat;
                        account(chat) <- a;
                        id(chat()) <- channelId(channel);
+                   }
+               }
+               
+               IF NOT user(userIds(user(channel))) AND usernames(user(channel)) THEN {
+                   NEW user = User {
+                        userName(user) <- usernames(user(channel));
+                        userId(user) <- userIds(user(channel));       
                    }
                }
                
@@ -101,6 +115,69 @@ synchronizeChatsSlack (Account a) {
 }
 synchronizeChats(Account a) + { IF isSlack(a) THEN synchronizeChatsSlack(a); }
 
+ts = DATA STRING(Message);
+lastTS(Chat chat) = GROUP MAX ts(Message m) BY chat(m);   
+
+GROUP messages;
+text = DATA LOCAL STRING(INTEGER);
+userMessage = DATA LOCAL STRING(INTEGER);
+ts = DATA LOCAL STRING(INTEGER);
+okMessage = DATA LOCAL BOOLEAN();
+errorMessage = DATA LOCAL STRING();
+
+FORM messages
+    OBJECTS messages = INTEGER
+    PROPERTIES(messages) text, userMessage EXTID 'user', ts
+    PROPERTIES () okMessage EXTID 'ok', errorMessage EXTID 'error';
+
+receiveMessages '{messenger.receive.messages}' (Chat chat) {
+    synchronizeChatsSlack(account(chat));
+    LOCAL result = JSONFILE();
+    LOCAL httpHeaders = STRING(STRING);
+    LOCAL lastTS = STRING();
+    lastTS() <- CONCAT '', '&oldest=', lastTS(chat);
+
+    FOR isSlack(Account account) AND account(chat) == account DO {
+        httpHeaders('Authorization') <- 'Bearer ' + token(account);
+        EXTERNAL HTTP GET 'https://slack.com/api/conversations.history?channel=' + id(chat) + lastTS() HEADERS httpHeaders TO result;
+        IMPORT messages JSON FROM result();
+        IF NOT okMessage() THEN {
+             MESSAGE 'Receiving failed from' + id(chat) + ' : ' + errorMessage() NOWAIT;
+             okMessage() <- TRUE;
+        } ELSE {
+            LOCAL exist = BOOLEAN();
+            FOR text(INTEGER i) DO {
+                exist() <- NULL;
+                FOR Message m IS Message DO {
+                    IF ts(m) == ts(i) THEN {
+                        exist() <- TRUE;
+                    }
+                }
+                IF NOT exist() THEN {
+                    NEW message = Message {
+                        chat(message) <- chat;
+                        message(message) <- text(i);
+                        ts(message) <- ts(i);
+                        dateTime(message) <- fromEpochMSToTimestamp(ts(message));
+                        LOCAL user = User();
+                        user() <- user(userMessage(i));
+                        IF user() THEN {
+                            from(message) <- userName(user());
+                        } ELSE {
+                            from(message) <- 'YOU';
+                        }
+                    }
+                }
+            }
+        }
+    }
+    APPLY;
+    printToLog(STRING(result()));
+}
+
+EXTEND FORM messengers
+    PROPERTIES receiveMessages(c) TOOLBAR DRAW m SHOWIF isSlack(a);
+    
 sendMessageSlackResult = DATA LOCAL STRING();
 sendMessageSlack(Chat chat, STRING message) {
     sendMessageSlackResult() <- NULL;
@@ -115,13 +192,24 @@ sendMessageSlack(Chat chat, STRING message) {
             
     LOCAL ok = BOOLEAN();
     LOCAL error = STRING();
-    IMPORT FROM result() TO() ok, error; 
+    LOCAL ts = STRING();
+    IMPORT FROM result() TO() ok, error, ts; 
     IF NOT ok() THEN {
         sendMessageSlackResult() <- error();
-    }        
+    } ELSE {
+        NEW botMessage = Message {
+            chat(botMessage) <- chat;
+            message(botMessage) <- message;
+            dateTime(botMessage) <- currentDateTime();
+            from(botMessage) <- 'YOU';
+            ts(botMessage) <- ts();
+        }
+    }  
+    APPLY;
 }
 
 sendMessage(Chat chat, STRING message) + WHEN isSlack(account(chat)) AND message IS STRING THEN {
+    receiveMessages(chat);
     sendMessageSlack(chat, message);
     sendMessageResult() <- sendMessageSlackResult();
 }

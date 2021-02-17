@@ -32,21 +32,26 @@ GROUP privateMessage EXTID 'message';
 GROUP privateChat EXTID 'chat': privateMessage;
 GROUP channelPost EXTID 'channel_post';
 GROUP channelChat EXTID 'chat' : channelPost;
+GROUP from EXTID 'from' : privateMessage;
 id = DATA LOCAL STRING();
 type = DATA LOCAL STRING();
 first_name = DATA LOCAL STRING();
 username = DATA LOCAL STRING();
 title = DATA LOCAL STRING();
+text = DATA LOCAL STRING();
+senderUsername = DATA LOCAL STRING();
+senderFirstName = DATA LOCAL STRING();
 channelId = DATA LOCAL STRING();
 channelUsername = DATA LOCAL STRING();
 channelTitle = DATA LOCAL STRING();
 
 FORM webHookTelegram
+PROPERTIES() IN privateMessage text
+PROPERTIES() IN from senderFirstName EXTID 'first_name', senderUsername EXTID 'username'
 PROPERTIES() IN privateChat id, type, first_name, username, title
 PROPERTIES() IN channelChat channelId EXTID 'id', channelUsername EXTID 'username', channelTitle EXTID 'title';
 
 webHookTelegram(JSONFILE f) {
-    printToLog(STRING(f));
     
     IMPORT webHookTelegram JSON FROM f;
     
@@ -66,7 +71,14 @@ webHookTelegram(JSONFILE f) {
     chatType(chat()) <- CASE WHEN type() == 'private' THEN ChatType.private 
                              WHEN type() == 'group' THEN ChatType.group
                              WHEN channelId() THEN ChatType.channel;
- 
+
+    NEW message = Message {
+        chat(message) <- chat();
+        message(message) <- text();
+        dateTime(message) <- currentDateTime();
+        from(message) <- OVERRIDE senderUsername(), senderFirstName();
+    }
+
     APPLY;
 } @@noauth;
 
@@ -82,7 +94,15 @@ sendMessageTelegram(Chat chat, STRING message) {
     IMPORT FROM result() TO() ok, description;
     IF NOT ok() THEN {
         sendMessageTelegramResult() <- description();
+    } ELSE {
+        NEW botMessage = Message {
+            chat(botMessage) <- chat;
+            message(botMessage) <- message;
+            dateTime(botMessage) <- currentDateTime();
+            from(botMessage) <- 'YOU';
+        }
     }
+    APPLY;
 }
 
 sendMessage(Chat chat, STRING message) + WHEN isTelegram(account(chat)) AND message IS STRING THEN {
