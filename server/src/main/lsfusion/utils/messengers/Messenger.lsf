@@ -24,6 +24,13 @@ token '{messenger.token}' = DATA STRING (Account) NONULL CHARWIDTH 50;
 CLASS Chat '{messenger.chat}';
 TABLE chat (Chat);
 
+CLASS Message '{messenger.messages}';
+TABLE messages (Message);
+
+chat = DATA Chat (Message);
+message '{messenger.message}' = DATA STRING (Message);
+from '{messenger.from}' = DATA STRING (Message);
+dateTime '{messenger.datetime}' = DATA DATETIME (Message);
 account = DATA Account (Chat);
 chatType = DATA ChatType (Chat);
 captionChatType '{messenger.chat.type}' (Chat c) = staticCaption(chatType(c)) CHARWIDTH 10 IN id;
@@ -54,14 +61,19 @@ synchronizeChatsAction '{messenger.account.synchronize}' (Account a) {
     APPLY;
 }
 
-FORM messengers '{messenger.messengers}'
+FORM messengers '{messenger.messengers}' AUTOREFRESH 20
     OBJECTS a = Account
     PROPERTIES(a) READONLY name, captionMessenger, token 
     PROPERTIES(a) NEWSESSION synchronizeChatsAction TOOLBAR SHOWIF isSynchronize(messenger(a)), NEW, EDIT, DELETE 
     OBJECTS c = Chat
-    PROPERTIES(c) READONLY id, captionChatType, name, title SHOWIF showTitle(messenger(a))
+    PROPERTIES(c) READONLY id, captionChatType, name, title SHOWIF showTitle(messenger(a)), DELETE CHANGEABLE
     PROPERTIES(c) PANEL newMessage, sendMessage
     
+    OBJECTS m = Message
+    PROPERTIES(m) READONLY from, dateTime, message 
+    FILTERS chat(m) == c 
+    ORDERS dateTime(m) DESC
+
     FILTERS account(c) == a;
 
 FORM messenger '{messenger.messenger}'
@@ -69,7 +81,17 @@ FORM messenger '{messenger.messenger}'
     PROPERTIES(a) name, captionMessenger, token     
     EDIT Account OBJECT a;
 
-DESIGN messengers {                   
+DESIGN messengers {
+    NEW accounts {
+        fill = 1;
+        MOVE BOX(a);
+    }
+    NEW chat {
+        fill = 3;
+        type = SPLITH;
+        MOVE BOX(c);
+        MOVE BOX(m);
+    }
     MOVE PROPERTY(newMessage(c)) {
         panelCaptionVertical = TRUE;
     }
