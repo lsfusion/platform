@@ -59,24 +59,19 @@ public class FormImportData implements ImportData {
     }
 
     public void addProperty(PropertyDrawEntity<?> entity, ImMap<ObjectEntity, Object> upKeyValues, Object value, boolean isExclusive) {
-        PropertyObjectEntity importProperty = entity.getImportProperty();
-        addProperty(importProperty, importProperty, upKeyValues, value, isExclusive);
+        addProperty(entity, entity.getImportProperty(), upKeyValues, value, isExclusive);
     }
 
     public void addProperty(Object filterOrPropertyEntity, PropertyObjectEntity<?> entity, ImMap<ObjectEntity, Object> upKeyValues, Object value, boolean isExclusive) {
         ImMap<ObjectEntity, Object> paramObjects = upKeyValues.filterIncl(entity.getObjectInstances());
-        MMap<ImMap<ObjectEntity, Object>, Object> propertyValues = addProperty(filterOrPropertyEntity, entity, paramObjects, isExclusive);
+        MMap<ImMap<ObjectEntity, Object>, Object> propertyValues = addProperty(filterOrPropertyEntity, entity, isExclusive);
         Object currentFilterOrPropertyEntity = currentFilterOrPropertyEntities.get(entity);
         if(currentFilterOrPropertyEntity == null || filterOrPropertyEntity.equals(currentFilterOrPropertyEntity)) {
             propertyValues.add(paramObjects, value);
         }
     }
 
-    public MMap<ImMap<ObjectEntity, Object>, Object> addProperty(PropertyObjectEntity<?> entity, boolean isExclusive) {
-        return addProperty(entity, entity, null, isExclusive);
-    }
-
-    public MMap<ImMap<ObjectEntity, Object>, Object> addProperty(Object filterOrPropertyEntity, PropertyObjectEntity<?> entity, ImMap<ObjectEntity, Object> paramObjects, boolean isExclusive) {
+    public MMap<ImMap<ObjectEntity, Object>, Object> addProperty(Object filterOrPropertyEntity, PropertyObjectEntity<?> entity, boolean isExclusive) {
         Set<Object> fop = filterOrPropertyEntities.getOrDefault(entity, new HashSet<>());
         if (!fop.contains(filterOrPropertyEntity)) {
             fop.add(filterOrPropertyEntity);
