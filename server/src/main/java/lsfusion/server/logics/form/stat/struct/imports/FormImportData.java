@@ -38,6 +38,7 @@ public class FormImportData implements ImportData {
     }
 
     private final Map<PropertyObjectEntity, MMap<ImMap<ObjectEntity, Object>, Object>> properties = MapFact.mAddRemoveMap();
+    //can be more than one PropertyDrawEntity / FilterEntity for PropertyObjectEntity, prior will be the last
     private Map<PropertyObjectEntity, Set<Object>> filterOrPropertyEntities = MapFact.mAddRemoveMap();
     private Map<PropertyObjectEntity, Object> currentFilterOrPropertyEntities = MapFact.mAddRemoveMap();
 
@@ -64,9 +65,9 @@ public class FormImportData implements ImportData {
 
     public void addProperty(Object filterOrPropertyEntity, PropertyObjectEntity<?> entity, ImMap<ObjectEntity, Object> upKeyValues, Object value, boolean isExclusive) {
         ImMap<ObjectEntity, Object> paramObjects = upKeyValues.filterIncl(entity.getObjectInstances());
+
         MMap<ImMap<ObjectEntity, Object>, Object> propertyValues = addProperty(filterOrPropertyEntity, entity, isExclusive);
-        Object currentFilterOrPropertyEntity = currentFilterOrPropertyEntities.get(entity);
-        if(currentFilterOrPropertyEntity == null || filterOrPropertyEntity.equals(currentFilterOrPropertyEntity)) {
+        if(filterOrPropertyEntity.equals(currentFilterOrPropertyEntities.get(entity))) {
             propertyValues.add(paramObjects, value);
         }
     }
