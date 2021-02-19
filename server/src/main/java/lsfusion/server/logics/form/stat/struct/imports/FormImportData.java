@@ -23,6 +23,9 @@ import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 import java.sql.SQLException;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 public class FormImportData implements ImportData {
 
@@ -34,10 +37,13 @@ public class FormImportData implements ImportData {
         session = context.getSession();
     }
 
-    private final MExclMap<PropertyObjectEntity, MMap<ImMap<ObjectEntity, Object>, Object>> properties = MapFact.mExclMap();
-    
-    public final ImMap<PropertyObjectEntity, ImMap<ImMap<ObjectEntity, Object>, Object>> result() {
-        return MapFact.immutableMapMap(properties);
+    private final Map<PropertyObjectEntity, MMap<ImMap<ObjectEntity, Object>, Object>> properties = MapFact.mAddRemoveMap();
+    //can be more than one PropertyDrawEntity / FilterEntity for PropertyObjectEntity, prior will be the last
+    private Map<PropertyObjectEntity, Set<Object>> filterOrPropertyEntities = MapFact.mAddRemoveMap();
+    private Map<PropertyObjectEntity, Object> currentFilterOrPropertyEntities = MapFact.mAddRemoveMap();
+
+    public final Map<PropertyObjectEntity, MMap<ImMap<ObjectEntity, Object>, Object>> result() {
+        return properties;
     }
     
     public void addObject(GroupObjectEntity group, ImMap<ObjectEntity, Object> upKeyValues, boolean isExclusive) {
@@ -48,25 +54,37 @@ public class FormImportData implements ImportData {
         if(groupFilters != null) {
             for(FilterEntity<?> filter : groupFilters) {
                 PropertyObjectEntity<?> importProperty = filter.getImportProperty();
-                addProperty(importProperty, upKeyValues, ((DataClass)importProperty.property.getType()).getDefaultValue(), isExclusive);
+                addProperty(filter, importProperty, upKeyValues, ((DataClass)importProperty.property.getType()).getDefaultValue(), isExclusive);
             }
         }
     }
 
     public void addProperty(PropertyDrawEntity<?> entity, ImMap<ObjectEntity, Object> upKeyValues, Object value, boolean isExclusive) {
-        addProperty(entity.getImportProperty(), upKeyValues, value, isExclusive);
+        addProperty(entity, entity.getImportProperty(), upKeyValues, value, isExclusive);
     }
 
-    public void addProperty(PropertyObjectEntity<?> entity, ImMap<ObjectEntity, Object> upKeyValues, Object value, boolean isExclusive) {
+    public void addProperty(Object filterOrPropertyEntity, PropertyObjectEntity<?> entity, ImMap<ObjectEntity, Object> upKeyValues, Object value, boolean isExclusive) {
         ImMap<ObjectEntity, Object> paramObjects = upKeyValues.filterIncl(entity.getObjectInstances());
-        addProperty(entity, isExclusive).add(paramObjects, value);
+
+        MMap<ImMap<ObjectEntity, Object>, Object> propertyValues = addProperty(filterOrPropertyEntity, entity, isExclusive);
+        if(filterOrPropertyEntity.equals(currentFilterOrPropertyEntities.get(entity))) {
+            propertyValues.add(paramObjects, value);
+        }
     }
 
-    public MMap<ImMap<ObjectEntity, Object>, Object> addProperty(PropertyObjectEntity<?> entity, boolean isExclusive) {
+    public MMap<ImMap<ObjectEntity, Object>, Object> addProperty(Object filterOrPropertyEntity, PropertyObjectEntity<?> entity, boolean isExclusive) {
+        Set<Object> fop = filterOrPropertyEntities.getOrDefault(entity, new HashSet<>());
+        if (!fop.contains(filterOrPropertyEntity)) {
+            fop.add(filterOrPropertyEntity);
+            filterOrPropertyEntities.put(entity, fop);
+            currentFilterOrPropertyEntities.put(entity, filterOrPropertyEntity);
+            properties.remove(entity);
+        }
+
         MMap<ImMap<ObjectEntity, Object>, Object> propertyValues = properties.get(entity);
-        if(propertyValues == null) {
+        if (propertyValues == null) {
             propertyValues = MapFact.mMap(isExclusive);
-            properties.exclAdd(entity, propertyValues);
+            properties.put(entity, propertyValues);
         }
         return propertyValues;
     }

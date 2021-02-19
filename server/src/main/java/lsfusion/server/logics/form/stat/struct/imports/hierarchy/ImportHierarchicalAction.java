@@ -48,7 +48,7 @@ public abstract class ImportHierarchicalAction<T extends Node<T>> extends Import
         // filling properties that were not imported (to drop their changes too)
         for(ImOrderSet<PropertyDrawEntity> properties : hierarchy.getAllProperties())
             for(PropertyDrawEntity<?> property : properties)
-                importData.addProperty(property.getImportProperty(), true); // isExclusive can be false, it doesn't matter        
+                importData.addProperty(property, property.getImportProperty(), true); // isExclusive can be false, it doesn't matter
         return importData;
     }
 
