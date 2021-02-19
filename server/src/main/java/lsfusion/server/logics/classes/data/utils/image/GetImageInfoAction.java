@@ -33,8 +33,12 @@ public class GetImageInfoAction extends InternalAction {
             RawFileData inputFile = (RawFileData) context.getKeyValue(imageInterface).getValue();
             if (inputFile != null) {
                 BufferedImage image = ImageIO.read(inputFile.getInputStream());
-                findProperty("widthImageInfo[]").change(image.getWidth(), context);
-                findProperty("heightImageInfo[]").change(image.getHeight(), context);
+                if(image != null) {
+                    findProperty("widthImageInfo[]").change(image.getWidth(), context);
+                    findProperty("heightImageInfo[]").change(image.getHeight(), context);
+                } else {
+                    throw new RuntimeException("Failed to read image");
+                }
             }
         } catch (IOException | ScriptingErrorLog.SemanticErrorException e) {
             throw Throwables.propagate(e);
