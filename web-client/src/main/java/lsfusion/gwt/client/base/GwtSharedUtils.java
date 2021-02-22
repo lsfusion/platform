@@ -125,7 +125,7 @@ public class GwtSharedUtils {
 
     //equal to BaseUtils.getValidEditDateFormat
     public static String getValidEditDateFormat(String pattern, boolean dateTime) {
-        String regexp = dateTime ? "[^dMyHm\\s\\\\/.,\\-:]|M{3,}" : "[^dMy\\s\\\\/.,\\-:]|M{3,}";
+        String regexp = dateTime ? "[^dMyHmsS\\s\\\\/.,\\-:]|M{3,}" : "[^dMy\\s\\\\/.,\\-:]|M{3,}";
         Stream<String> requiredSymbols = dateTime ? Stream.of("d", "M", "y", "H", "m") : Stream.of("d", "M", "y");
         pattern = pattern.replaceAll(regexp, "").trim();
         return requiredSymbols.allMatch(pattern::contains) ? pattern : null;
