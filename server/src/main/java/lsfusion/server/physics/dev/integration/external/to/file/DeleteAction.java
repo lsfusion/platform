@@ -24,20 +24,16 @@ public class DeleteAction extends InternalAction {
     }
 
     public void executeInternal(ExecutionContext<ClassPropertyInterface> context) {
-        try {
-            String sourcePath = (String) context.getKeyValue(sourceInterface).getValue();
-            boolean isClient = context.getKeyValue(isClientInterface).getValue() != null;
-            if (sourcePath != null) {
-                if (isClient) {
-                    String result = (String) context.requestUserInteraction(new DeleteFileClientAction(sourcePath));
-                    if (result != null)
-                        throw new RuntimeException(result);
-                } else {
-                    FileUtils.delete(sourcePath);
-                }
+        String sourcePath = (String) context.getKeyValue(sourceInterface).getValue();
+        boolean isClient = context.getKeyValue(isClientInterface).getValue() != null;
+        if (sourcePath != null) {
+            if (isClient) {
+                String result = (String) context.requestUserInteraction(new DeleteFileClientAction(sourcePath));
+                if (result != null)
+                    throw new RuntimeException(result);
+            } else {
+                FileUtils.delete(sourcePath);
             }
-        } catch (IOException e) {
-            throw Throwables.propagate(e);
         }
     }
 
