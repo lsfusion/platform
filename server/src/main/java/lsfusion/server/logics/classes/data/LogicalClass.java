@@ -148,7 +148,7 @@ public class LogicalClass extends DataClass<Boolean> {
     }
     @Override
     public Boolean parseXLS(Cell cell, CellValue formulaValue) throws ParseException {
-        if(formulaValue.getCellTypeEnum().equals(CellType.BOOLEAN))
+        if(formulaValue.getCellType().equals(CellType.BOOLEAN))
             return readXLS(formulaValue.getBooleanValue());
         return super.parseXLS(cell, formulaValue);
     }

@@ -140,7 +140,7 @@ public abstract class IntegralClass<T extends Number> extends DataClass<T> {
 
     @Override
     public T parseXLS(Cell cell, CellValue formulaValue) throws ParseException {
-        if(formulaValue.getCellTypeEnum().equals(CellType.NUMERIC))
+        if(formulaValue.getCellType().equals(CellType.NUMERIC))
             return readXLS(formulaValue.getNumberValue());
         return super.parseXLS(cell, formulaValue); 
     }

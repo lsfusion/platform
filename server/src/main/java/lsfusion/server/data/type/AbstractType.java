@@ -152,7 +152,7 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
     @Override
     public T parseXLS(Cell cell, CellValue formulaValue) throws ParseException {
         String cellValue;
-        switch (formulaValue.getCellTypeEnum()) {
+        switch (formulaValue.getCellType()) {
             case STRING:
                 cellValue = formulaValue.getStringValue();
                 break;
