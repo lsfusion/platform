@@ -87,6 +87,7 @@ public final class ClassCanonicalNameUtils {
         put("DATETIME", DateTimeClass.instance );
         put("ZDATETIME", ZDateTimeClass.instance );
         put("TIME", TimeClass.instance);
+        put("INTERVAL", DateTimeIntervalClass.instance);
         put("YEAR", YearClass.instance);
         put("WORDFILE", WordClass.get());
         put("IMAGEFILE", ImageClass.get());
@@ -152,6 +153,7 @@ public final class ClassCanonicalNameUtils {
         put("DATETIME", DateTimeClass.instance);
         put("ZDATETIME", ZDateTimeClass.instance);
         put("TIME", TimeClass.instance);
+        put("INTERVAL", DateTimeIntervalClass.instance);
         put("YEAR", YearClass.instance);
         put("WORDFILE", WordClass.get());
         put("IMAGEFILE", ImageClass.get());

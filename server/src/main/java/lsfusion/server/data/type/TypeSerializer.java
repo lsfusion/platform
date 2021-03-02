@@ -78,6 +78,7 @@ public class TypeSerializer {
         if (type == DataType.DATETIME) return DateTimeClass.instance;
         if (type == DataType.ZDATETIME) return ZDateTimeClass.instance;
         if (type == DataType.TIME) return TimeClass.instance;
+        if (type == DataType.INTERVAL) return DateTimeIntervalClass.instance;
         if (type == DataType.COLOR) return ColorClass.instance;
 
         if (type == DataType.STRING || type == DataType.TEXT) {
