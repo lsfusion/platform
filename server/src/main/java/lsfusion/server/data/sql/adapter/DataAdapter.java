@@ -42,6 +42,7 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
     public final SQLSyntax syntax;
 
     public String server;
+    public Integer port;
     public String instance;
     public String dataBase;
     public String userID;
@@ -50,13 +51,14 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
 
     protected abstract void ensureDB(boolean cleanDB) throws Exception;
 
-    protected DataAdapter(SQLSyntax syntax, String dataBase, String server, String instance, String userID, String password, Long connectTimeout, boolean cleanDB) throws Exception {
+    protected DataAdapter(SQLSyntax syntax, String dataBase, String server, Integer port, String instance, String userID, String password, Long connectTimeout, boolean cleanDB) throws Exception {
 
         Class.forName(syntax.getClassName());
 
         this.syntax = syntax;
         
         this.dataBase = dataBase;
+        this.port = port;
         this.server = server;
         this.userID = userID;
         this.password = password;

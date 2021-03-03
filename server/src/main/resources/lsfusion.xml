@@ -144,6 +144,7 @@
     <bean id="dataAdapter" class="lsfusion.server.data.sql.adapter.PostgreDataAdapter">
         <constructor-arg value="${db.name:lsfusion}"/>
         <constructor-arg value="${db.server:localhost}"/>
+        <constructor-arg value="${db.port:5432}"/>
         <constructor-arg value="${db.user:postgres}"/>
         <constructor-arg value="${db.password:}"/>
         <constructor-arg value="${db.connectTimeout:1000}"/>

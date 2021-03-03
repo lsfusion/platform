@@ -37,20 +37,20 @@ public class PostgreDataAdapter extends DataAdapter {
     private String binPath;
     private String dumpDir;
 
-    public PostgreDataAdapter(String dataBase, String server, String userID, String password) throws Exception {
-        this(dataBase, server, userID, password, false);
+    public PostgreDataAdapter(String dataBase, String server, Integer port, String userID, String password) throws Exception {
+        this(dataBase, server, port, userID, password, false);
     }
 
-    public PostgreDataAdapter(String dataBase, String server, String userID, String password, boolean cleanDB) throws Exception{
-        this(dataBase, server, userID, password, null, null, null, cleanDB);
+    public PostgreDataAdapter(String dataBase, String server, Integer port, String userID, String password, boolean cleanDB) throws Exception{
+        this(dataBase, server, port, userID, password, null, null, null, cleanDB);
     }
 
-    public PostgreDataAdapter(String dataBase, String server, String userID, String password, Long connectTimeout, String binPath, String dumpDir) throws Exception {
-        this(dataBase, server, userID, password, connectTimeout, binPath, dumpDir, false);
+    public PostgreDataAdapter(String dataBase, String server, Integer port, String userID, String password, Long connectTimeout, String binPath, String dumpDir) throws Exception {
+        this(dataBase, server, port, userID, password, connectTimeout, binPath, dumpDir, false);
     }
 
-    public PostgreDataAdapter(String dataBase, String server, String userID, String password, Long connectTimeout, String binPath, String dumpDir, boolean cleanDB) throws Exception {
-        super(PostgreSQLSyntax.instance, dataBase, server, null, userID, password, connectTimeout, cleanDB);
+    public PostgreDataAdapter(String dataBase, String server, Integer port, String userID, String password, Long connectTimeout, String binPath, String dumpDir, boolean cleanDB) throws Exception {
+        super(PostgreSQLSyntax.instance, dataBase, server, port, null, userID, password, connectTimeout, cleanDB);
 
         this.defaultBinPath = binPath;
         this.defaultDumpDir = dumpDir;
@@ -71,7 +71,7 @@ public class PostgreDataAdapter extends DataAdapter {
         Connection connect = null;
         while(connect == null) {
             try {
-                connect = DriverManager.getConnection("jdbc:postgresql://" + server + "/postgres?user=" + userID + "&password=" + password);
+                connect = DriverManager.getConnection("jdbc:postgresql://" + server + ":" + port + "/postgres?user=" + userID + "&password=" + password);
             } catch (PSQLException e) {
                 ServerLoggers.startLogger.error(String.format("%s (host: %s, user: %s)", e.getMessage(), server, userID));
                 logger.error("EnsureDB error: ", e);
@@ -129,7 +129,7 @@ public class PostgreDataAdapter extends DataAdapter {
     public Connection startConnection() throws SQLException {
         long started = System.currentTimeMillis();
         try {
-            return DriverManager.getConnection("jdbc:postgresql://" + server + "/" + dataBase.toLowerCase() + "?user=" + userID + "&password=" + password + "&connectTimeout=" + (int) (connectTimeout / 1000));
+            return DriverManager.getConnection("jdbc:postgresql://" + server + ":" + port + "/" + dataBase.toLowerCase() + "?user=" + userID + "&password=" + password + "&connectTimeout=" + (int) (connectTimeout / 1000));
         } finally {
             long elapsed = System.currentTimeMillis() - started;
             if(elapsed > connectTimeout)
@@ -318,7 +318,7 @@ public class PostgreDataAdapter extends DataAdapter {
     public List<List<List<Object>>> readCustomRestoredColumns(String dbName, String table, List<String> keys, List<String> columns) throws SQLException {
         List<List<Object>> dataKeys = new ArrayList<>();
         List<List<Object>> dataColumns = new ArrayList<>();
-        try(Connection connection = DriverManager.getConnection("jdbc:postgresql://" + server + "/" + dbName.toLowerCase() + "?user=" + userID + "&password=" + password)) {
+        try(Connection connection = DriverManager.getConnection("jdbc:postgresql://" + server + ":" + port + "/" + dbName.toLowerCase() + "?user=" + userID + "&password=" + password)) {
             try (Statement statement = connection.createStatement()) {
                 String column = "";
                 for(String k : keys)
