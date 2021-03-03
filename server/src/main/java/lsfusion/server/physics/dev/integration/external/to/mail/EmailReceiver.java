@@ -258,7 +258,7 @@ public class EmailReceiver {
                         if (!skipEmails.contains(idEmail)) {
                             message.setFlag(deleteMessagesAccount ? Flags.Flag.DELETED : Flags.Flag.SEEN, true);
                             Object messageContent = getEmailContent(message);
-                            MultipartBody messageEmail = messageContent instanceof Multipart ? getMultipartBody(subjectEmail, (Multipart) messageContent, unpack) : messageContent instanceof FilterInputStream ? getMultipartBodyStream(subjectEmail, (FilterInputStream) messageContent, decodeFileName(message.getFileName()), unpack) : messageContent instanceof String ? new MultipartBody((String) messageContent, null) : null;
+                            MultipartBody messageEmail = messageContent instanceof Multipart ? getMultipartBody(subjectEmail, (Multipart) messageContent, unpack) : messageContent instanceof FilterInputStream ? getMultipartBodyStream(subjectEmail, (FilterInputStream) messageContent, decodeFileName(message.getFileName()), unpack) : messageContent instanceof String ? new MultipartBody(((String) messageContent).replace("\0", ""), null) : null;
                             if (messageEmail == null) {
                                 messageEmail = new MultipartBody(messageContent == null ? null : String.valueOf(messageContent), null);
                                 ServerLoggers.mailLogger.error("Warning: missing attachment '" + messageContent + "' from email '" + subjectEmail + "'");
