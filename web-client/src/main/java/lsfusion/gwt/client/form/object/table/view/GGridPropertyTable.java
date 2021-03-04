@@ -29,7 +29,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static java.lang.Math.max;
-import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
 
 public abstract class GGridPropertyTable<T extends GridDataRecord> extends GPropertyTable<T> implements HasMaxPreferredSize {
     public static int DEFAULT_PREFERRED_WIDTH = 130; // должно соответствовать значению в gridResizePanel в MainFrame.css
@@ -107,7 +106,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
             addFilterBinding(nativeEvent -> {
                         if (GKeyStroke.isEscapeKeyEvent(nativeEvent) && GKeyStroke.isPlainKeyEvent(nativeEvent)) {
                             GAbstractTableController goController = getGroupController();
-                            return goController.filter != null && goController.filter.hasConditions();
+                            return goController.userFilters != null && goController.userFilters.hasConditions();
                         }
                         return false;
                     }, removeFilters);

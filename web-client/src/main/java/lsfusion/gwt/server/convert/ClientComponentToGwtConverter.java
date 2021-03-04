@@ -21,7 +21,10 @@ import lsfusion.client.form.property.cell.EditBindingMap;
 import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.classes.GClass;
-import lsfusion.gwt.client.form.design.*;
+import lsfusion.gwt.client.form.design.GComponent;
+import lsfusion.gwt.client.form.design.GContainer;
+import lsfusion.gwt.client.form.design.GContainerType;
+import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.event.*;
 import lsfusion.gwt.client.form.filter.GRegularFilter;
 import lsfusion.gwt.client.form.filter.GRegularFilterGroup;
@@ -199,6 +202,9 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
     public GFilter convertFilter(ClientFilter clientFilter) {
         GFilter filter = initGwtComponent(clientFilter, new GFilter());
         filter.visible = clientFilter.visible;
+        for (ClientPropertyDraw property : clientFilter.properties) {
+            filter.properties.add(convertOrCast(property));
+        }        
         return filter;
     }
     
@@ -516,7 +522,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         }
         groupObject.grid = convertOrCast(clientGroupObject.grid);
         groupObject.toolbar = convertOrCast(clientGroupObject.toolbar);
-        groupObject.filter = convertOrCast(clientGroupObject.filter);
+        groupObject.userFilter = convertOrCast(clientGroupObject.userFilter);
 
         groupObject.viewType = GClassViewType.valueOf(clientGroupObject.viewType.name());
         groupObject.listViewType = GListViewType.valueOf(clientGroupObject.listViewType.name());

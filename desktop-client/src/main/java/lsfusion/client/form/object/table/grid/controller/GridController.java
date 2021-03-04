@@ -83,8 +83,8 @@ public class GridController extends AbstractTableController {
             calculationsView = new CalculationsView();
             formLayout.add(groupObject.calculations, calculationsView);
             
-            if (groupObject.filter.visible) {
-                filter = new FilterController(this, groupObject.filter) {
+            if (groupObject.userFilter.visible) {
+                filter = new FilterController(this, groupObject.userFilter) {
                     protected void remoteApplyQuery() {
                         RmiQueue.runAction(() -> {
                             try {

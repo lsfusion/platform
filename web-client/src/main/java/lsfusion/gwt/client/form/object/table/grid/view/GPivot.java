@@ -1881,7 +1881,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
                 filters.addAll(getFilters(config.getArrayString("cols"), colKeyValues));
 
                 config.getArrayString("rows").push(caption);
-                grid.filter.applyFilters(filters, false);
+                grid.userFilters.applyFilters(filters, false);
 //                updateView(true, null);
             });
             menuBar.addItem(menuItem);

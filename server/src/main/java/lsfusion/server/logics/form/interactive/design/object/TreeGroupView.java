@@ -8,6 +8,7 @@ import lsfusion.server.logics.form.interactive.controller.remote.serialization.S
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.interactive.design.filter.FilterView;
+import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyGroupContainerView;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
@@ -77,6 +78,10 @@ public class TreeGroupView extends ComponentView implements ServerIdentitySerial
 
     public void add(GroupObjectView group) {
         groups.add(group);
+    }
+
+    public void addUserFilter(PropertyDrawView property, Version version) {
+        userFilter.addProperty(property, version);
     }
 
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream) throws IOException {

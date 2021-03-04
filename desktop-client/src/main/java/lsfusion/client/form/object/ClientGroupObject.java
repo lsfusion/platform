@@ -52,7 +52,7 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
 
     public ClientGrid grid;
     public ClientToolbar toolbar;
-    public ClientFilter filter;
+    public ClientFilter userFilter;
     public ClientCalculations calculations;
 
     public List<ClientObject> objects = new ArrayList<>();
@@ -109,7 +109,7 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
 
     @Override
     public ClientComponent getUserFilter() {
-        return filter;
+        return userFilter;
     }
 
     @Override
@@ -121,7 +121,7 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
         pool.serializeCollection(outStream, objects);
         pool.serializeObject(outStream, grid);
         pool.serializeObject(outStream, toolbar);
-        pool.serializeObject(outStream, filter);
+        pool.serializeObject(outStream, userFilter);
         pool.serializeObject(outStream, calculations);
         outStream.writeBoolean(needVerticalScroll);
     }
@@ -140,7 +140,7 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
 
         grid = pool.deserializeObject(inStream);
         toolbar = pool.deserializeObject(inStream);
-        filter = pool.deserializeObject(inStream);
+        userFilter = pool.deserializeObject(inStream);
         calculations = pool.deserializeObject(inStream);
 
         isRecursive = inStream.readBoolean();

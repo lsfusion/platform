@@ -9,6 +9,9 @@ import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
+import lsfusion.gwt.client.form.event.GBindingEnv;
+import lsfusion.gwt.client.form.event.GInputEvent;
+import lsfusion.gwt.client.form.filter.user.GFilter;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.filter.user.controller.GUserFilters;
 import lsfusion.gwt.client.form.object.GGroupObject;
@@ -24,7 +27,7 @@ import java.util.List;
 
 public abstract class GAbstractTableController extends GPropertyController implements GTableController {
     protected final GToolbarView toolbarView;
-    public GUserFilters filter;
+    public GUserFilters userFilters;
 
     public GAbstractTableController(GFormController formController, GToolbar toolbar, boolean isList) {
         super(formController);
@@ -64,25 +67,29 @@ public abstract class GAbstractTableController extends GPropertyController imple
         }
     }
 
-    public void addFilterButton() {
-        filter = new GUserFilters(this) {
+    public abstract GFilter getFilterComponent();
+
+    public void addUserFilterComponent() {
+        userFilters = new GUserFilters(this, getFilterComponent()) {
             @Override
-            public void remoteApplyQuery() {
+            public void applyQuery() {
                 changeFilter(new ArrayList<>(getConditions()));
+                focusFirstWidget();
             }
 
-                @Override
-                public void filterClosed() {
-                    focusFirstWidget();
-                }
+            @Override
+            public void checkCommitEditing() {
+                formController.checkCommitEditing();
+            }
 
-                @Override
-                public void checkCommitEditing() {
-                    formController.checkCommitEditing();
-                }
-            };
-
-        addToToolbar(filter.getToolbarButton());
+            @Override
+            public void addBinding(GInputEvent event, GBindingEnv env, GFormController.BindingExec pressed, Widget component) {
+                formController.addBinding(event, env, pressed, component, getSelectedGroupObject());
+            }
+        };
+        getFormLayout().addBaseComponent(getFilterComponent(), userFilters.getView(), null);
+        
+        addToToolbar(userFilters.getToolbarButton());
     }
 
     @Override
@@ -100,21 +107,27 @@ public abstract class GAbstractTableController extends GPropertyController imple
     }
 
     public void quickEditFilter(Event editEvent, GPropertyDraw propertyDraw, GGroupObjectValue columnKey) {
-        filter.quickEditFilter(editEvent, propertyDraw, columnKey);
+        if (userFilters != null) {
+            userFilters.quickEditFilter(editEvent, propertyDraw, columnKey);
+        }
     }
 
     public void replaceFilter() {
-        if (filter != null) {
-            filter.addConditionPressed(true);
+        if (userFilters != null) {
+            userFilters.addConditionPressed(true);
         }
     }
 
     public void addFilter() {
-        filter.addConditionPressed(false);
+        if (userFilters != null) {
+            userFilters.addConditionPressed(false);
+        }
     }
 
     public void removeFilters() {
-        filter.allRemovedPressed();
+        if (userFilters != null) {
+            userFilters.allRemovedPressed();
+        }
     }
 
     protected abstract void changeFilter(ArrayList<GPropertyFilter> conditions);

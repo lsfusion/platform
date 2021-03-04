@@ -53,9 +53,4 @@ public class GDataFilterValueView extends GFilterValueView {
     public void startEditing(Event keyEvent) {
         cell.onEditEvent(new EventHandler(keyEvent));
     }
-
-    @Override
-    public int getWidth(GPropertyDraw property) {
-        return property.getValueWidth(null);
-    }
 }

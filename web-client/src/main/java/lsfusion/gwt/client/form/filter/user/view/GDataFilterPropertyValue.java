@@ -1,11 +1,10 @@
 package lsfusion.gwt.client.form.filter.user.view;
 
-import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.panel.view.ActionOrPropertyValue;
 
@@ -29,18 +28,18 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
     }
 
     // it's a hacky hack, however when filter will become docked it will go away
+    // todo 
     @Override
     public EventHandler createEventHandler(Event event) {
         return new EventHandler(event) {
             @Override
             public void consume(boolean propagateToNative, boolean propagateToUpper) {
-                if(BrowserEvents.KEYDOWN.equals(event.getType())) {
-                    int keyCode = event.getKeyCode();
-                    if (keyCode == KeyCodes.KEY_ESCAPE || keyCode == KeyCodes.KEY_ENTER)
-                        return;
+                if (GKeyStroke.isEnterKeyEvent(event)) {
+                    super.consume(false, true);
+//                    return;
+                } else {
+                    super.consume(propagateToNative, propagateToUpper);
                 }
-
-                super.consume(propagateToNative, propagateToUpper);
             }
         };
     }
@@ -84,5 +83,12 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
             handler.consume();
             form.edit(property.baseType, handler.event, false, null, this::setValue, afterCommit, () -> {}, this);
         }
+    }
+
+    @Override
+    protected void onBlur(EventHandler handler) {
+        form.previewBlurEvent(handler.event);
+        
+        super.onBlur(handler);
     }
 }

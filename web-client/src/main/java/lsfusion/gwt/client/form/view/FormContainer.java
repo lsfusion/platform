@@ -52,7 +52,6 @@ public abstract class FormContainer<W extends Widget> {
             form.focusFirstWidget();
         else
             focusedElement.focus();
-        form.restorePopup();
     }
 
     public void onBlur(boolean remove) {
@@ -61,7 +60,6 @@ public abstract class FormContainer<W extends Widget> {
 
         assert MainFrame.getAssertCurrentForm() == this;
         MainFrame.setCurrentForm(null);
-        form.hidePopup();
     }
 
     public void initForm(FormsController formsController, GForm gForm, WindowHiddenHandler hiddenHandler, boolean isDialog, Event initFilterEvent) {

@@ -9,7 +9,7 @@ import lsfusion.gwt.client.base.view.ResizableSimplePanel;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GFont;
-import lsfusion.gwt.client.form.object.table.view.GridPanel;
+import lsfusion.gwt.client.form.filter.user.GFilter;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
@@ -18,10 +18,13 @@ import lsfusion.gwt.client.form.object.table.grid.user.design.view.GExpandTreeBu
 import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
 import lsfusion.gwt.client.form.object.table.tree.view.GTreeGridRecord;
 import lsfusion.gwt.client.form.object.table.tree.view.GTreeTable;
+import lsfusion.gwt.client.form.object.table.view.GridPanel;
 import lsfusion.gwt.client.form.property.*;
 import lsfusion.gwt.client.form.view.Column;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.isShowing;
 
@@ -55,7 +58,7 @@ public class GTreeGroupController extends GAbstractTableController {
 
         getFormLayout().addBaseComponent(treeGroup, treeView, getDefaultFocusReceiver());
 
-        addFilterButton();
+        addUserFilterComponent();
 
         addToolbarSeparator();
         
@@ -64,7 +67,12 @@ public class GTreeGroupController extends GAbstractTableController {
         expandTreeButton = new GExpandTreeButton(this, false);
         addToToolbar(expandTreeButton);
     }
-    
+
+    @Override
+    public GFilter getFilterComponent() {
+        return treeGroup.filter;
+    }
+
     public GFont getFont() {
         return treeGroup.font;
     }
