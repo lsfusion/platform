@@ -120,7 +120,10 @@
                 ['https://cdn.jsdelivr.net/npm/fullcalendar@5.5.0/locales-all.js', 'fullcalendar-locales-all.js'],
                 'static/js/fullcalendar-locale-be.js',
                 'https://unpkg.com/@popperjs/core@2.5.3/dist/umd/popper.min.js',
-                'https://unpkg.com/tippy.js@6.2.7/dist/tippy-bundle.umd.min.js'
+                'https://unpkg.com/tippy.js@6.2.7/dist/tippy-bundle.umd.min.js',
+
+                <%-- dateRangePicker - https://github.com/wakirin/litepicker/--%>
+                ['https://cdn.jsdelivr.net/npm/litepicker/dist/bundle.js', 'litePicker.js']
 
             ]);
 

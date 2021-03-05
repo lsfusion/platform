@@ -46,9 +46,14 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.rmi.RemoteException;
 import java.text.DateFormat;
+import java.text.FieldPosition;
+import java.text.Format;
+import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.Callable;
@@ -166,8 +171,38 @@ public abstract class MainFrame extends JFrame {
     public static DateFormat dateFormat;
     public static DateFormat timeFormat;
     public static DateFormat dateTimeFormat;
+    public static DateTimeIntervalFormat dateTimeIntervalFormat;
     public static Date wideFormattableDate;
     public static Date wideFormattableDateTime;
+    public static BigDecimal wideFormattableDateTimeInterval;
+
+    public static class DateTimeIntervalFormat extends Format {
+        @Override
+        public StringBuffer format(Object o, StringBuffer stringBuffer, FieldPosition fieldPosition) {
+            if (o instanceof BigDecimal) {
+                return getDateTimeIntervalDefaultFormat(o);
+            }
+            return null;
+        }
+
+        @Override
+        public Object parseObject(String s, ParsePosition parsePosition) {
+            return null; // todo не знаю что возвращать
+        }
+    }
+
+    public static StringBuffer getDateTimeIntervalDefaultFormat(Object o) {
+        return new StringBuffer(dateTimeFormat.format(getDateFromInterval(o, true))
+                + " - " + dateTimeFormat.format(getDateFromInterval(o, false)));
+    }
+
+    public static Date getDateFromInterval(Object o, boolean from) {
+        String object = String.valueOf(o);
+        int indexOfDecimal = object.indexOf(".");
+        String dateValue = from ? object.substring(0, indexOfDecimal) : object.substring(indexOfDecimal + 1);
+
+        return Date.from(Instant.ofEpochSecond(Long.parseLong(dateValue)));
+    }
 
     private static void setupTimePreferences(LocalePreferences localePreferences) {
 
@@ -197,8 +232,15 @@ public abstract class MainFrame extends JFrame {
             ((SimpleDateFormat) dateTimeFormat).set2DigitYearStart(twoDigitYearStartDate);
         }
 
+        dateTimeIntervalFormat = new DateTimeIntervalFormat();
+
         wideFormattableDate = createWideFormattableDate();
         wideFormattableDateTime = createWideFormattableDate();
+        wideFormattableDateTimeInterval = createWideFormattableDateTimeInterval();
+    }
+
+    private static BigDecimal createWideFormattableDateTimeInterval() {
+        return new BigDecimal(wideFormattableDateTime.getTime() + "." + wideFormattableDateTime.getTime());
     }
 
     private static Date createWideFormattableDate() {

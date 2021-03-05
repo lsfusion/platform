@@ -1,6 +1,5 @@
 package lsfusion.server.logics.classes.data.time;
 
-import lsfusion.base.BaseUtils;
 import lsfusion.interop.classes.DataType;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.exec.TypeEnvironment;
@@ -12,6 +11,8 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.time.Instant;
+import java.util.Date;
 
 public class DateTimeIntervalClass extends DataClass<BigDecimal> {
 
@@ -67,16 +68,15 @@ public class DateTimeIntervalClass extends DataClass<BigDecimal> {
 
     @Override
     public BigDecimal parseString(String s) throws ParseException {
-        try {
-            return s.trim().isEmpty() ? null : new BigDecimal(BaseUtils.replaceCommaSeparator(s));
-        } catch (Exception e) {
-            throw ParseException.propagateWithMessage("Error parsing numeric: " + s, e);
-        }
+        throw new ParseException("Error parsing interval");
     }
 
     @Override
     public String formatString(BigDecimal value) {
-        return value == null ? null : String.valueOf(value);
+        String object = String.valueOf(value);
+        int indexOfDecimal = object.indexOf(".");
+        return Date.from(Instant.ofEpochSecond(Long.parseLong(object.substring(0, indexOfDecimal))))
+                + " - " + Date.from(Instant.ofEpochSecond(Long.parseLong(object.substring(indexOfDecimal + 1))));
     }
 
     @Override

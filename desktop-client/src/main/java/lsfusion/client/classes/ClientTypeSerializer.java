@@ -76,6 +76,7 @@ public class ClientTypeSerializer {
         if (type == DataType.YEAR) return ClientIntegerClass.instance;
         if (type == DataType.DATETIME) return ClientDateTimeClass.instance;
         if (type == DataType.ZDATETIME) return ClientZDateTimeClass.instance;
+        if (type == DataType.INTERVAL) return ClientDateTimeIntervalClass.instance;
         if (type == DataType.TIME) return ClientTimeClass.instance;
         if (type == DataType.COLOR) return ClientColorClass.instance;
 

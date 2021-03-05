@@ -73,6 +73,11 @@ public class ClientTypeToGwtConverter extends ObjectConverter {
         return GDateTimeType.instance;
     }
 
+    @Converter(from = ClientDateTimeIntervalClass.class)
+    public GDateTimeIntervalType convertDateTimeIntervalClass(ClientDateTimeIntervalClass clientDateTimeIntervalClass) {
+        return GDateTimeIntervalType.instance;
+    }
+
     @Converter(from = ClientZDateTimeClass.class)
     public GZDateTimeType convertDateTimeClass(ClientZDateTimeClass clientDateTimeClass) {
         return GZDateTimeType.instance;
