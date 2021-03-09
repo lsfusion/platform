@@ -6,7 +6,6 @@ import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.form.controller.GFormController;
-import lsfusion.gwt.client.form.design.view.flex.FlexCaptionPanel;
 import lsfusion.gwt.client.form.event.GBindingEnv;
 import lsfusion.gwt.client.form.event.GInputEvent;
 import lsfusion.gwt.client.form.filter.user.GFilter;
@@ -32,14 +31,12 @@ public abstract class GUserFilters {
     private GFilter filter;
 
     public GFilterView filterView;
-    public FlexCaptionPanel captionFilterPanel; 
 
     public GUserFilters(GTableController logicsSupplier, GFilter filter) {
         this.logicsSupplier = logicsSupplier;
         this.filter = filter;
 
         filterView = new GFilterView(this, filter);
-        captionFilterPanel = new FlexCaptionPanel("USERFILTER", filterView);
 
 //        addBinding(new GKeyInputEvent(new GKeyStroke(KeyCodes.KEY_ENTER)), event -> applyFilter(), filterView);
 //        addBinding(new GKeyInputEvent(new GKeyStroke(KeyCodes.KEY_ESCAPE)), event -> allRemovedPressed(), filterView);
@@ -49,6 +46,7 @@ public abstract class GUserFilters {
             public ClickHandler getClickHandler() {
                 return event -> {
                     filterView.toggleToolsVisible();
+                    updateToolbarButton();
                 };
             }
         };
@@ -73,14 +71,12 @@ public abstract class GUserFilters {
     }
 
     public Widget getView() {
-        return captionFilterPanel;
+        return filterView;
     }
 
     private void updateToolbarButton() {
-//        boolean hasConditions = hasConditions();
-//        toolbarButton.setTitle(hasConditions ? messages.expandFilterWindow() : (messages.formQueriesFilter() + " (F2)"));
-        toolbarButton.setTitle(messages.expandFilterWindow());
-//        toolbarButton.showBackground(hasConditions);
+        toolbarButton.setTitle(filterView.isToolsVisible() ? messages.hideUserFilterTools() : messages.showUserFilterTools());
+        toolbarButton.showBackground(filterView.isToolsVisible());
     }
 
     public void addConditionPressed(boolean replace) {

@@ -52,6 +52,7 @@ public interface ClientMessages extends Messages {
     String formQueriesSumResult();
     String formQueriesUnableToCalculateSum();
     String formQueriesFilter();
+    String formQueriesFilterApply();
     String formQueriesFilterAddCondition();
     String formQueriesFilterRemoveCondition();
     String formQueriesFilterResetConditions();
@@ -90,7 +91,6 @@ public interface ClientMessages extends Messages {
     String formFilterConditionViewNot();
     String formFilterConditionViewAnd();
     String formFilterConditionViewOr();
-    String formFilterDialogHeader();
 
     String tooltipPath();
 
@@ -104,8 +104,8 @@ public interface ClientMessages extends Messages {
     String busyDialogLoading();
     String busyDialogReconnect();
 
-    String expandFilterWindow();
-    String hideFilterWindow();
+    String showUserFilterTools();
+    String hideUserFilterTools();
     String uncaughtGWTException();
     String formGridSureToPasteMultivalue();
 

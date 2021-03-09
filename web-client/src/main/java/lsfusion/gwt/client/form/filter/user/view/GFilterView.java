@@ -1,12 +1,11 @@
 package lsfusion.gwt.client.form.filter.user.view;
 
 import com.google.gwt.dom.client.NativeEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.ui.Button;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.view.FlexPanel;
-import lsfusion.gwt.client.base.view.UnFocusableImageButton;
 import lsfusion.gwt.client.form.event.GBindingEnv;
 import lsfusion.gwt.client.form.event.GKeyInputEvent;
 import lsfusion.gwt.client.form.event.GKeyStroke;
@@ -14,6 +13,7 @@ import lsfusion.gwt.client.form.filter.user.GFilter;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.filter.user.controller.GUserFilters;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
+import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
 import java.util.ArrayList;
@@ -21,45 +21,68 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
-import static lsfusion.gwt.client.view.StyleDefaults.COMPONENT_HEIGHT_STRING;
 
 public class GFilterView extends FlexPanel implements GFilterConditionView.UIHandler {
     private static final ClientMessages messages = ClientMessages.Instance.get();
     private static final String ADD_ICON_PATH = "filtadd.png";
     private static final String APPLY_ICON_PATH = "filtapply.png";
+    private static final String RESET_ICON_PATH = "filtreset.png";
 
     private FlexPanel filterContainer;
+
+    private GToolbarButton addConditionButton;
+    private GToolbarButton applyButton;
+    private GToolbarButton resetConditionsButton;
 
     private GUserFilters controller;
 
     private Map<GPropertyFilter, GFilterConditionView> conditionViews = new LinkedHashMap<>();
 
-    public boolean toolsVisible = false;
+    private boolean toolsVisible = false;
 
     public GFilterView(GUserFilters iController, GFilter filter) {
         controller = iController;
 
         FlexPanel mainContainer = new FlexPanel();
         add(mainContainer);
+        setChildFlex(mainContainer, 1);
         addStyleName("noOutline");
 
         filterContainer = new FlexPanel();
 
         mainContainer.add(filterContainer);
+        mainContainer.setChildFlex(filterContainer, 1);
+        
+        FlexPanel buttonsPanel = new FlexPanel(); 
 
-        Button addConditionButton = new UnFocusableImageButton(null, ADD_ICON_PATH);
-        addConditionButton.setSize(COMPONENT_HEIGHT_STRING, COMPONENT_HEIGHT_STRING);
-        addConditionButton.addClickHandler(event -> addCondition());
-        mainContainer.add(addConditionButton);
+        addConditionButton = new GToolbarButton(ADD_ICON_PATH, messages.formQueriesFilterAddCondition()) {
+            @Override
+            public ClickHandler getClickHandler() {
+                return event -> addCondition();
+            }
+        };
+        addConditionButton.setVisible(toolsVisible);
+        buttonsPanel.add(addConditionButton);
 
-        Button applyButton = new UnFocusableImageButton(null, APPLY_ICON_PATH);
-        applyButton.setSize(COMPONENT_HEIGHT_STRING, COMPONENT_HEIGHT_STRING);
-        applyButton.addClickHandler(event -> applyFilter());
-        mainContainer.add(applyButton);
+        applyButton = new GToolbarButton(APPLY_ICON_PATH, messages.formQueriesFilterApply()) {
+            @Override
+            public ClickHandler getClickHandler() {
+                return event -> applyFilter();
+            }
+        };
+        applyButton.setVisible(toolsVisible);
+        buttonsPanel.add(applyButton);
 
-        Button resetConditionsButton = new UnFocusableImageButton(messages.formQueriesFilterResetConditions(), null);
-        resetConditionsButton.addClickHandler(event -> allRemovedPressed());
-        mainContainer.add(resetConditionsButton);
+        resetConditionsButton = new GToolbarButton(RESET_ICON_PATH, messages.formQueriesFilterResetConditions()) {
+            @Override
+            public ClickHandler getClickHandler() {
+                return event -> allRemovedPressed();
+            }
+        };
+        resetConditionsButton.setVisible(toolsVisible);
+        buttonsPanel.add(resetConditionsButton);
+        
+        mainContainer.add(buttonsPanel);
 
         // todo: not working with two grids (applyQuery() with empty conditions?) / EDIT 
         controller.addBinding(new GKeyInputEvent(new GKeyStroke(KeyCodes.KEY_ENTER)), new GBindingEnv(100, null, null, null, null, null, null, null), event -> processBinding(event, this::applyFilter), this);
@@ -128,12 +151,20 @@ public class GFilterView extends FlexPanel implements GFilterConditionView.UIHan
         conditionChanged();
         focusLastValue();
     }
+    
+    public boolean isToolsVisible() {
+        return toolsVisible;
+    }
 
     public void toggleToolsVisible() {
         toolsVisible = !toolsVisible;
         for (GFilterConditionView view : conditionViews.values()) {
             view.setToolsVisible(toolsVisible);
         }
+        
+        addConditionButton.setVisible(toolsVisible);
+        applyButton.setVisible(toolsVisible);
+        resetConditionsButton.setVisible(toolsVisible);
     }
 
     @Override
@@ -162,7 +193,9 @@ public class GFilterView extends FlexPanel implements GFilterConditionView.UIHan
     }
 
     public void applyFilter() {
-        controller.applyFilters(new ArrayList<>(conditionViews.keySet()), true);
+//        if (!conditionViews.isEmpty()) {
+            controller.applyFilters(new ArrayList<>(conditionViews.keySet()), true);
+//        }
     }
 
     public boolean hasConditions() {
