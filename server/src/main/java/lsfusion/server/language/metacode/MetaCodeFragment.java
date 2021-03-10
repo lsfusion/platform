@@ -15,18 +15,14 @@ import static lsfusion.server.physics.dev.i18n.LocalizedString.OPEN_CH;
 
 public class MetaCodeFragment {
     public List<String> parameters;
-    public List<String> tokens;
-    public List<Pair<Integer,Boolean>> metaTokens;
+    public List<Pair<String, Boolean>> tokens;
     private String canonicalName;
-    private String code;
     private String moduleName;
     private int lineNumber;
 
-    public MetaCodeFragment(String canonicalName, List<String> params, List<String> tokens, List<Pair<Integer,Boolean>> metaTokens, String code, String moduleName, int lineNumber) {
+    public MetaCodeFragment(String canonicalName, List<String> params, List<Pair<String, Boolean>> tokens, String moduleName, int lineNumber) {
         this.parameters = params;
         this.tokens = tokens;
-        this.metaTokens = metaTokens;
-        this.code = code;
         this.moduleName = moduleName;
         this.lineNumber = lineNumber;
         this.canonicalName = canonicalName;
@@ -34,38 +30,14 @@ public class MetaCodeFragment {
 
     public String getCode(List<String> params, Function<String, String> getIdFromReversedI18NDictionary, Consumer<String> appendEntry) {
         assert params.size() == parameters.size();
-        ArrayList<String> newTokens = new ArrayList<>(tokens);
-        for (Pair<Integer, Boolean> metaToken : metaTokens) {
-            Integer metaIndex = metaToken.first;
-            newTokens.set(metaIndex, transformToken(params, tokens.get(metaIndex), metaToken.second, getIdFromReversedI18NDictionary, appendEntry));
-        }
 
-        return getTransformedCode(newTokens, tokens, code);
-    }
-
-    private int getUncommentedIndexOf(String code, String token, int startPos) {
-        while (true) {
-            int tokenPos = code.indexOf(token, startPos);
-            int nearestSlashesPos = code.lastIndexOf("//", tokenPos);
-            if (nearestSlashesPos == -1 || nearestSlashesPos < startPos || code.lastIndexOf('\n', tokenPos) > nearestSlashesPos) {
-                return tokenPos;
-            }
-            startPos = tokenPos + 1;
-        }
-    }
-
-    private String getTransformedCode(ArrayList<String> newTokens, List<String> oldTokens, String code) {
         StringBuilder transformedCode = new StringBuilder();
-        int codePos = getUncommentedIndexOf(code, ")", 0) + 1;
-        transformedCode.append(code, 0, codePos);
-
-        for (int i = 0; i < newTokens.size(); i++) {
-            int tokenStartPos = getUncommentedIndexOf(code, oldTokens.get(i), codePos);
-            transformedCode.append(code, codePos, tokenStartPos);
-            codePos = tokenStartPos + oldTokens.get(i).length();
-            transformedCode.append(newTokens.get(i));
+        for (Pair<String, Boolean> token : tokens) {
+            String resultToken = token.first;
+            if(token.second) // it is id or string literal
+                resultToken = transformToken(params, resultToken, getIdFromReversedI18NDictionary, appendEntry);
+            transformedCode.append(resultToken);
         }
-        transformedCode.append(code.substring(codePos));
         return transformedCode.toString();
     }
 
@@ -74,11 +46,9 @@ public class MetaCodeFragment {
         return index >= 0 ? actualParams.get(index) : token;
     }
     
-    private String transformToken(List<String> actualParams, String token, boolean isMeta, Function<String, String> getIdFromReversedI18NDictionary, Consumer<String> appendEntry) {
-        if (!isMeta) { // optimization;
-            assert !token.contains("##");
+    private String transformToken(List<String> actualParams, String token, Function<String, String> getIdFromReversedI18NDictionary, Consumer<String> appendEntry) {
+        if (!token.contains("##")) // optimization;
             return transformParamToken(actualParams, token);
-        }
         
         String[] parts = token.split("##");
         boolean isStringLiteral = false;
