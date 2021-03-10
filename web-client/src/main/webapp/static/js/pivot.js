@@ -1507,12 +1507,20 @@
           listItem.css({
             lineHeight: opts.valueHeight + "px"
           });
+          listItem.bind("dblclick", function() {
+            var element;
+            if (unusedDiv.has(attrElem).length > 0) {
+              element = createPaxis(false);
+              listItem.appendTo(element.children());
+              element.prependTo(pvtRowsTable.children());
+            } else {
+              listItem.prependTo(unusedDiv);
+            }
+            return refresh();
+          });
           attrElem = $("<div>").addClass('pvtAttr').data("attrName", attr).appendTo(listItem);
           attrElemText = $("<span>").addClass('pvtAttrText').text(attr).prop("title", attr).appendTo(attrElem);
           attrElem.append(triangleLink);
-          attrElem.bind("dblclick", function() {
-            return opts.callbacks.elementDblClickHandler(attr);
-          });
           if (hasExcludedItem) {
             attrElemText.addClass('pvtFilteredAttribute');
           }
