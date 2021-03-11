@@ -6,13 +6,13 @@ import lsfusion.client.view.MainFrame;
 
 import java.text.SimpleDateFormat;
 
-public class DateTimeIntervalPropertyEditor extends IntervalPropertyEditor {
+public class DateIntervalPropertyEditor extends IntervalPropertyEditor {
 
-    public DateTimeIntervalPropertyEditor(Object value, ClientPropertyDraw property) {
+    public DateIntervalPropertyEditor(Object value, ClientPropertyDraw property) {
         super(property);
         defaultValue = value;
 
-        editingFormat = (SimpleDateFormat) MainFrame.dateTimeFormat;
+        editingFormat = (SimpleDateFormat) MainFrame.dateFormat;
         setText(editingFormat.format(ClientDateIntervalClass.getDateFromInterval(value, true))
                 + " - " + editingFormat.format(ClientDateIntervalClass.getDateFromInterval(value, false)));
     }

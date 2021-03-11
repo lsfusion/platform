@@ -45,5 +45,7 @@ public class DataType {
     public final static byte TXTLINK = 42;
     public final static byte ZDATETIME = 43;
     public final static byte JDBC = 44;
-    public final static byte INTERVAL = 45;
+    public final static byte DATEINTERVAL = 45;
+    public final static byte DATETIMEINTERVAL = 46;
+    public final static byte TIMEINTERVAL = 47;
 }

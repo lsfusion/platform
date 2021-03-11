@@ -3,29 +3,30 @@ package lsfusion.gwt.client.classes.data;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
-import static lsfusion.gwt.client.base.GwtSharedUtils.*;
+import static lsfusion.gwt.client.base.GwtSharedUtils.getDateFormat;
 
-public class GDateTimeIntervalType extends GIntervalType{
+public class GDateIntervalType extends GIntervalType{
 
-    public static GDateTimeIntervalType instance = new GDateTimeIntervalType();
+    public static GDateIntervalType instance = new GDateIntervalType();
 
     @Override
     public DateTimeFormat getFormat(String pattern) {
-        return getDateTimeFormat(pattern, false);
+        return getDateFormat(pattern, false);
     }
 
     @Override
     protected Object getDefaultWidthValue() {
-        return getWidthString(null, getDateTimeFormat(null, false));
+        return getWidthString(null, getDateFormat(null, false));
     }
 
     @Override
     public String getDefaultWidthString(GPropertyDraw propertyDraw) {
-        return getWidthString(null, getDateTimeFormat(null, false));
+        return getWidthString(null, getDateFormat(null, false));
     }
+
 
     @Override
     public String getIntervalType() {
-        return "dateTime";
+        return "date";
     }
 }

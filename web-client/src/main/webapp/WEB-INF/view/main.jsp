@@ -56,8 +56,8 @@
             loadResources([
 
                 <!-- need jquery for pivot table -->
-                'https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.2/jquery.min.js',
-                'https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js',
+                'https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js',
+                'https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js',
 
                 <!-- export pivot to excel -->
                 'static/js/tableToExcel.js',
@@ -122,8 +122,10 @@
                 'https://unpkg.com/@popperjs/core@2.5.3/dist/umd/popper.min.js',
                 'https://unpkg.com/tippy.js@6.2.7/dist/tippy-bundle.umd.min.js',
 
-                <%-- dateRangePicker - https://github.com/wakirin/litepicker/--%>
-                ['https://cdn.jsdelivr.net/npm/litepicker/dist/bundle.js', 'litePicker.js']
+                <!-- dateRangePicker -->
+                'https://cdn.jsdelivr.net/momentjs/latest/moment.min.js',
+                'https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js',
+                'https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css'
 
             ]);
 

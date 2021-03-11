@@ -1,7 +1,7 @@
 package lsfusion.client.classes.data;
 
 import lsfusion.client.form.property.ClientPropertyDraw;
-import lsfusion.client.form.property.cell.classes.controller.DateTimeIntervalPropertyEditor;
+import lsfusion.client.form.property.cell.classes.controller.DateIntervalPropertyEditor;
 import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
 import lsfusion.client.view.MainFrame;
 import lsfusion.interop.classes.DataType;
@@ -12,35 +12,35 @@ import java.text.Format;
 import java.text.ParseException;
 import java.text.ParsePosition;
 
-public class ClientDateTimeIntervalClass extends ClientIntervalClass {
+public class ClientDateIntervalClass extends ClientIntervalClass {
 
-    public final static ClientDateTimeIntervalClass instance = new ClientDateTimeIntervalClass();
+    public final static ClientDateIntervalClass instance = new ClientDateIntervalClass();
 
     @Override
     public byte getTypeId() {
-        return DataType.DATETIMEINTERVAL;
+        return DataType.DATEINTERVAL;
     }
 
     @Override
     public String formatString(Object obj) throws ParseException {
-        return getDateTimeIntervalDefaultFormat(obj).toString();
+        return getDateIntervalDefaultFormat(obj).toString();
     }
 
     @Override
     protected PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
-        return new DateTimeIntervalPropertyEditor(value, property);
+        return new DateIntervalPropertyEditor(value, property);
     }
 
     @Override
     public Format getDefaultFormat() {
-        return MainFrame.dateTimeIntervalFormat;
+        return MainFrame.dateIntervalFormat;
     }
 
-    public static class DateTimeIntervalFormat extends Format {
+    public static class DateIntervalFormat extends Format {
         @Override
         public StringBuffer format(Object o, StringBuffer stringBuffer, FieldPosition fieldPosition) {
             if (o instanceof BigDecimal) {
-                return getDateTimeIntervalDefaultFormat(o);
+                return getDateIntervalDefaultFormat(o);
             }
             return null;
         }
@@ -51,8 +51,8 @@ public class ClientDateTimeIntervalClass extends ClientIntervalClass {
         }
     }
 
-    public static StringBuffer getDateTimeIntervalDefaultFormat(Object o) {
-        return new StringBuffer(MainFrame.dateTimeFormat.format(getDateFromInterval(o, true))
-                + " - " + MainFrame.dateTimeFormat.format(getDateFromInterval(o, false)));
+    public static StringBuffer getDateIntervalDefaultFormat(Object o) {
+        return new StringBuffer(MainFrame.dateFormat.format(getDateFromInterval(o, true))
+                + " - " + MainFrame.dateFormat.format(getDateFromInterval(o, false)));
     }
 }

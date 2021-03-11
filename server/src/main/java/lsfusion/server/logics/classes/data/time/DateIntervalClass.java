@@ -9,22 +9,22 @@ import java.math.BigDecimal;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 
-public class DateTimeIntervalClass extends IntervalClass{
+public class DateIntervalClass extends IntervalClass {
 
-    public final static DateTimeIntervalClass instance = new DateTimeIntervalClass();
+    public final static DateIntervalClass instance = new DateIntervalClass();
 
-    private DateTimeIntervalClass() {
-        super(LocalizedString.create("{classes.date.time.interval}"));
+    private DateIntervalClass() {
+        super(LocalizedString.create("{classes.date.interval}"));
     }
 
     @Override
     public String getSID() {
-        return "DATETIMEINTERVAL";
+        return "DATEINTERVAL";
     }
 
     @Override
     public DataClass getCompatible(DataClass compClass, boolean or) {
-        return compClass instanceof DateTimeIntervalClass ? this : null;
+        return compClass instanceof DateIntervalClass ? this : null;
     }
 
     @Override
@@ -34,12 +34,12 @@ public class DateTimeIntervalClass extends IntervalClass{
 
     @Override
     public String formatString(BigDecimal value) {
-        return getLocalDateTime(value, true).format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT, FormatStyle.MEDIUM))
-                + " - " + getLocalDateTime(value, false).format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT, FormatStyle.MEDIUM));
+        return getLocalDateTime(value, true).format(DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT))
+                + " - " + getLocalDateTime(value, false).format(DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT));
     }
 
     @Override
     public byte getTypeID() {
-        return DataType.DATETIMEINTERVAL;
+        return DataType.DATEINTERVAL;
     }
 }
