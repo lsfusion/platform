@@ -33,10 +33,10 @@ public class IntervalCellEditor implements CellEditor {
         int indexOfDecimal = object.indexOf(".");
 
         createPicker(parent, GIntervalType.getTimestamp(object.substring(0, indexOfDecimal)),
-                GIntervalType.getTimestamp(object.substring(indexOfDecimal + 1)), intervalType);
+                GIntervalType.getTimestamp(object.substring(indexOfDecimal + 1)), intervalType, false);
     }
 
-    protected native void createPicker(Element parent, Date startDate, Date endDate, String intervalType)/*-{
+    protected native void createPicker(Element parent, Date startDate, Date endDate, String intervalType, boolean singleDatePicker)/*-{
         window.$ = $wnd.jQuery;
         var parentEl = $(parent);
         var thisObj = this;
@@ -57,7 +57,7 @@ public class IntervalCellEditor implements CellEditor {
                 'This Month': [$wnd.moment().startOf('month'), $wnd.moment().endOf('month')],
                 'Last Month': [$wnd.moment().subtract(1, 'month').startOf('month'), $wnd.moment().subtract(1, 'month').endOf('month')]
             } : undefined,
-//            singleDatePicker: true
+            singleDatePicker: singleDatePicker,
             alwaysShowCalendars: true // need to use with ranges
         });
 
