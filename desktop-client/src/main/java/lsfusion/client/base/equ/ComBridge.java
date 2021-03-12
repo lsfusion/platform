@@ -10,7 +10,7 @@ public class ComBridge {
 
     public static void loadJacobLibraries() throws IOException {
         try {
-            System.setProperty(LibraryLoader.JACOB_DLL_PATH, SystemUtils.getLibraryPath("jacob-1.15-M3", "/lsfusion/client/", ComBridge.class));
+            System.setProperty(LibraryLoader.JACOB_DLL_PATH, SystemUtils.getLibraryPath("jacob-1.20", "/lsfusion/client/", ComBridge.class));
         } catch (FileNotFoundException ignored) {
         }
     }
