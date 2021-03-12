@@ -34,7 +34,7 @@ public class MultiplyFormulaImpl extends ScaleFormulaImpl {
 
             Type type = conversion.getType(type1, type2);
             if (type != null) {
-                return type.getSafeCast("(" + src1 + "*" + src2 + ")", syntax, env, null); // since type can be limited by max values + double / int / long
+                return type.getSafeCast("(" + src1 + "*" + src2 + ")", syntax, env, null, true); // since type can be limited by max values + double / int / long
             }
             return null;
         }

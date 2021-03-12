@@ -53,8 +53,8 @@ public abstract class DefaultSQLSyntax implements SQLSyntax {
         return result;
     }
 
-    public static String genSafeCastName(Type type) {
-        return "scast_" + type.getSID();
+    public static String genSafeCastName(Type type, boolean isInt) {
+        return "scast_" + type.getSID() + (isInt ? "_int" : "");
     }
 
     public String getBPTextType() {
@@ -342,8 +342,8 @@ public abstract class DefaultSQLSyntax implements SQLSyntax {
         throw new UnsupportedOperationException();
     }
 
-    public String getSafeCastNameFnc(Type type) {
-        return genSafeCastName(type);
+    public String getSafeCastNameFnc(Type type, boolean isInt) {
+        return genSafeCastName(type, isInt);
     }
 
     public boolean isDeadLock(SQLException e) {
