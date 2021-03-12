@@ -23,6 +23,7 @@ import lsfusion.server.data.type.exec.TypePool;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.data.ArrayClass;
+import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import org.apache.log4j.Logger;
 import org.springframework.util.PropertyPlaceholderHelper;
@@ -130,7 +131,7 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
             throw new UnsupportedOperationException();
         }
 
-        public void addNeedSafeCast(Type type) {
+        public void addNeedSafeCast(Type type, Boolean isInt) {
             throw new UnsupportedOperationException();
         }
     };
@@ -193,24 +194,26 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
     }
 
     protected String safeCastString;
+    protected String safeCastIntString;
 
-    private LRUSVSMap<Type, Boolean> ensuredSafeCasts = new LRUSVSMap<>(LRUUtil.G2);
+    private LRUSVSMap<Pair<Type, Boolean>, Boolean> ensuredSafeCasts = new LRUSVSMap<>(LRUUtil.G2);
 
-    public synchronized void ensureSafeCast(Type type) throws SQLException {
-        Boolean ensured = ensuredSafeCasts.get(type);
+    public synchronized void ensureSafeCast(Pair<Type, Boolean> castType) throws SQLException {
+        Boolean ensured = ensuredSafeCasts.get(castType);
         if(ensured != null)
             return;
 
         // assert type.hasSafeCast;
         Properties properties = new Properties();
-        properties.put("function.name", DefaultSQLSyntax.genSafeCastName(type));
-        properties.put("param.type", type.getDB(syntax, recTypes));
-        properties.put("param.minvalue", type.getInfiniteValue(true).toString());
-        properties.put("param.maxvalue", type.getInfiniteValue(false).toString());
+        properties.put("function.name", DefaultSQLSyntax.genSafeCastName(castType.first, castType.second));
+        properties.put("param.type", castType.first.getDB(syntax, recTypes));
+        properties.put("param.minvalue", castType.first.getInfiniteValue(true).toString());
+        properties.put("param.maxvalue", castType.first.getInfiniteValue(false).toString());
 
-        executeEnsure(stringResolver.replacePlaceholders(safeCastString, properties));
+        executeEnsure(stringResolver.replacePlaceholders(
+                castType.second && Settings.get().getSafeCastIntType() == 1 ? safeCastIntString : safeCastString, properties));
 
-        ensuredSafeCasts.put(type, true);
+        ensuredSafeCasts.put(castType, true);
     }
 
     public void ensureGroupAggOrder(Pair<GroupType, ImList<Type>> groupAggOrder) {

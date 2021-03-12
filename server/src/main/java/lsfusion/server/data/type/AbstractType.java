@@ -8,10 +8,12 @@ import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.data.type.reader.AbstractReader;
 import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.logics.classes.data.integral.IntegerClass;
+import lsfusion.server.logics.classes.data.integral.IntegralClass;
 import lsfusion.server.logics.classes.data.time.DateClass;
 import lsfusion.server.logics.form.stat.struct.export.plain.dbf.OverJDBField;
 import lsfusion.server.logics.form.stat.struct.export.plain.xls.ExportXLSWriter;
 import lsfusion.server.logics.form.stat.struct.imports.plain.dbf.CustomDbfRecord;
+import lsfusion.server.physics.admin.Settings;
 import net.iryndin.jdbf.core.DbfFieldTypeEnum;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellValue;
@@ -40,10 +42,13 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
     }
 
     // CAST который возвращает NULL, если не может этого сделать 
-    public String getSafeCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv, Type typeFrom) {
+    public String getSafeCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv, Type typeFrom, boolean isArith) {
         if(hasSafeCast()) {
-            typeEnv.addNeedSafeCast(this);
-            return syntax.getSafeCastNameFnc(this) + "(" + value + ")";
+            boolean isInt = isArith || typeFrom instanceof IntegralClass;
+            if(!(isInt && Settings.get().getSafeCastIntType() == 2)) {
+                typeEnv.addNeedSafeCast(this, isInt);
+                return syntax.getSafeCastNameFnc(this, isInt) + "(" + value + ")";
+            }
         }
         return getCast(value, syntax, typeEnv, typeFrom);
     }

@@ -15,7 +15,7 @@ public interface TypePool {
     void ensureRecursion(Object types) throws SQLException;
     void ensureConcType(ConcatenateType concType) throws SQLException;
     
-    void ensureSafeCast(Type type) throws SQLException;
+    void ensureSafeCast(Pair<Type, Boolean> type) throws SQLException;
 
     void ensureGroupAggOrder(Pair<GroupType, ImList<Type>> groupAggOrder);
 

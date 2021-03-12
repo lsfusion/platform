@@ -1317,7 +1317,21 @@ public class Settings implements Cloneable {
     public void setUseSafeStringAgg(boolean useSafeStringAgg) {
         this.useSafeStringAgg = useSafeStringAgg;
     }
-    
+
+    // safe cast type for integral (arithmetic casts)
+    // 0 - (default) using pl/sql function with try catch clause - the problem that there seems to be a bug in PostgreSQL 2013 when canceling this statement
+    // 1 - using sql function that compares with maximum minimum values
+    // 2 - do not use any function at all (exceptions will be thrown in that case)
+    private int safeCastIntType = 0;
+
+    public int getSafeCastIntType() {
+        return safeCastIntType;
+    }
+
+    public void setSafeCastIntType(int safeCastIntType) {
+        this.safeCastIntType = safeCastIntType;
+    }
+
     private int remoteLogTime = 3000; // millisectonds
 
     public int getRemoteLogTime() {
