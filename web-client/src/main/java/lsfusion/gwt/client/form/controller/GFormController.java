@@ -1350,7 +1350,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     public boolean previewEvent(Element target, Event event) {
         checkLinkEditModeEvents(formsController, event);
 
-        return MainFrame.previewEvent(target, event);
+        return MainFrame.previewEvent(target, event, isEditing());
     }
 
     protected void onFormHidden(int closeDelay) {
