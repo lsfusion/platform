@@ -3,10 +3,7 @@ package lsfusion.gwt.client.view;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.dom.client.Document;
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.NativeEvent;
-import com.google.gwt.dom.client.Style;
+import com.google.gwt.dom.client.*;
 import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.event.logical.shared.ResizeEvent;
@@ -167,7 +164,29 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
             return true;
         }
         return false;
-    } 
+    }
+
+    public static boolean previewEvent(Element target, Event event) {
+        return previewFocusEvent(event) && previewClickEvent(target, event);
+    }
+
+    private static boolean switchedToAnotherWindow;
+    private static boolean previewFocusEvent(Event event) {
+        if (BrowserEvents.FOCUS.equals(event.getType())) {
+            if (switchedToAnotherWindow) {
+                switchedToAnotherWindow = false;
+                return false;
+            }
+        } else if (BrowserEvents.BLUR.equals(event.getType())) {
+            switchedToAnotherWindow = isSwitchedToAnotherWindow(event);
+            return !switchedToAnotherWindow;
+        }
+        return true;
+    }
+
+    private static native boolean isSwitchedToAnotherWindow(Event event) /*-{
+        return event.relatedTarget == null && event.sourceCapabilities == null;
+    }-*/;
 
     // it's odd, but dblclk works even when the first click was on different target
     // for example double clicking on focused property, causes first mousedown/click on that property, after that its handler dialog is shown
@@ -176,7 +195,7 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
     private static Element beforeLastClickedTarget;
     private static Element lastClickedTarget;
     private static Event lastClickedEvent;
-    public static boolean previewClickEvent(Element target, Event event) {
+    private static boolean previewClickEvent(Element target, Event event) {
         if (GMouseStroke.isClickEvent(event))
             if (event != lastClickedEvent) { // checking lastClickedEvent since it can be propagated (or not)
                 lastClickedEvent = event;
