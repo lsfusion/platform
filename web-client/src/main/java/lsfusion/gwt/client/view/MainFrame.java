@@ -166,20 +166,22 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
         return false;
     }
 
-    public static boolean previewEvent(Element target, Event event) {
-        return previewFocusEvent(event) && previewClickEvent(target, event);
+    public static boolean previewEvent(Element target, Event event, boolean isEditing) {
+        return previewFocusEvent(event, isEditing) && previewClickEvent(target, event);
     }
 
     private static boolean switchedToAnotherWindow;
-    private static boolean previewFocusEvent(Event event) {
-        if (BrowserEvents.FOCUS.equals(event.getType())) {
-            if (switchedToAnotherWindow) {
-                switchedToAnotherWindow = false;
-                return false;
+    private static boolean previewFocusEvent(Event event, boolean isEditing) {
+        if (isEditing) {
+            if (BrowserEvents.FOCUS.equals(event.getType())) {
+                if (switchedToAnotherWindow) {
+                    switchedToAnotherWindow = false;
+                    return false;
+                }
+            } else if (BrowserEvents.BLUR.equals(event.getType())) {
+                switchedToAnotherWindow = isSwitchedToAnotherWindow(event);
+                return !switchedToAnotherWindow;
             }
-        } else if (BrowserEvents.BLUR.equals(event.getType())) {
-            switchedToAnotherWindow = isSwitchedToAnotherWindow(event);
-            return !switchedToAnotherWindow;
         }
         return true;
     }
