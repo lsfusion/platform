@@ -11,10 +11,10 @@ import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
 // сейчас полный клон TreeGroupContainerSet, потом надо рефакторить
 public class GroupObjectContainerSet {
     public static final String BOX_CONTAINER = "BOX";
+        public static final String USERFILTER_COMPONENT = "USERFILTER";
         public static final String GRIDBOX_CONTAINER = "GRIDBOX";
             public static final String CLASSCHOOSER_COMPONENT = "CLASSCHOOSER";
             public static final String GRID_COMPONENT = "GRID";
-        public static final String USERFILTER_COMPONENT = "USERFILTER";
         public static final String TOOLBARBOX_CONTAINER = "TOOLBARBOX";
             public static final String TOOLBARLEFT_CONTAINER = "TOOLBARLEFT";
                 public static final String TOOLBAR_SYSTEM_COMPONENT = "TOOLBARSYSTEM";
@@ -108,8 +108,8 @@ public class GroupObjectContainerSet {
         set.boxContainer.setChildrenAlignment(FlexAlignment.START);
         set.boxContainer.setAlignment(FlexAlignment.STRETCH);
         set.boxContainer.setFlex(1);
-        set.boxContainer.add(set.gridBoxContainer, version);
         set.boxContainer.add(group.getUserFilter(), version);
+        set.boxContainer.add(set.gridBoxContainer, version);
         set.boxContainer.add(set.toolbarBoxContainer, version);
         set.boxContainer.add(set.panelContainer, version);
 
