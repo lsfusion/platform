@@ -1,6 +1,7 @@
 package lsfusion.server.data.type;
 
 import com.hexiong.jdbf.JDBFException;
+import lsfusion.base.file.FileData;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
@@ -108,7 +109,7 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
 
     @Override
     public T parseHTTP(Object o, Charset charset) throws ParseException {
-        String s = (String) o;
+        String s = o instanceof FileData ? new String(((FileData) o).getRawFile().getBytes(), charset) :  (String) o;
         if(isParseNullValue(s))
             return null;
         return parseString(s);
