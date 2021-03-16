@@ -112,7 +112,7 @@ public class DoubleClass extends IntegralClass<Double> {
 
     @Override
     public Double getInfiniteValue(boolean min) {
-        return min ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;
+        return min ? Double.MIN_VALUE : Double.MAX_VALUE;
     }
 
     public ExtInt getCharLength() {
