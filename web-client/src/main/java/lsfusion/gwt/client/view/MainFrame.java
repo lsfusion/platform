@@ -186,6 +186,9 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
         return true;
     }
 
+    //heuristic
+    //'visibilitychange' will not work, because 'focus' event is caught by editor earlier then by whole document
+    //(https://stackoverflow.com/questions/28993157/visibilitychange-event-is-not-triggered-when-switching-program-window-with-altt)
     private static native boolean isSwitchedToAnotherWindow(Event event) /*-{
         return event.relatedTarget == null && event.sourceCapabilities == null;
     }-*/;
