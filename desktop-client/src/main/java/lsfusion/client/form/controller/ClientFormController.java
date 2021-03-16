@@ -160,6 +160,9 @@ public class ClientFormController implements AsyncListener {
 
     private ScheduledExecutorService autoRefreshScheduler;
 
+    private List<ClientComponent> firstTabsToActivate;
+    private List<ClientPropertyDraw> firstPropsToActivate;
+
     public ClientFormController(String icanonicalName, String iformSID, RemoteFormInterface iremoteForm, byte[] firstChanges, ClientNavigator iclientNavigator, boolean iisModal, boolean iisDialog) {
         formSID = iformSID + (iisModal ? "(modal)" : "") + "(" + System.identityHashCode(this) + ")";
         canonicalName = icanonicalName;
@@ -257,7 +260,7 @@ public class ClientFormController implements AsyncListener {
         initializeDefaultOrders(); // now it doesn't matter, because NavigatorForm will be removed, and first changes will always be not null, but still
 
         if(firstChanges != null) {
-            applyFormChanges(-1, firstChanges);
+            applyFormChanges(-1, firstChanges, true);
         } else {
             getRemoteChanges(false);
         }
@@ -491,10 +494,11 @@ public class ClientFormController implements AsyncListener {
         }
     }
 
-    public void focusProperty(ClientPropertyDraw propertyDraw) {
+    public boolean focusProperty(ClientPropertyDraw propertyDraw) {
         if (controllers.containsKey(propertyDraw.groupObject)) {
-            controllers.get(propertyDraw.groupObject).focusProperty(propertyDraw);
+            return controllers.get(propertyDraw.groupObject).focusProperty(propertyDraw);
         }
+        return false;
     }
 
     public TableController getGroupObjectLogicsSupplier(ClientGroupObject group) {
@@ -630,7 +634,7 @@ public class ClientFormController implements AsyncListener {
         }
     }
 
-    public void applyFormChanges(long requestIndex, byte[] bFormChanges) throws IOException {
+    public void applyFormChanges(long requestIndex, byte[] bFormChanges, boolean firstChanges) throws IOException {
         if (bFormChanges == null) {
             return;
         }
@@ -655,7 +659,7 @@ public class ClientFormController implements AsyncListener {
         
         formLayout.preValidateMainContainer();
         
-        activateElements(formChanges);
+        activateElements(formChanges, firstChanges);
 
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
@@ -664,12 +668,42 @@ public class ClientFormController implements AsyncListener {
         });
     }
     
-    private void activateElements(ClientFormChanges formChanges) {
-        for(ClientComponent tab : formChanges.activateTabs)
-            activateTab(tab);
+    private void activateElements(ClientFormChanges formChanges, boolean firstChanges) {
+        if (firstChanges) {
+            firstTabsToActivate = formChanges.activateTabs;
+            firstPropsToActivate = formChanges.activateProps;
+        } else {
+            activateTabs(formChanges.activateTabs);
+            activateProperties(formChanges.activateProps);
+        }
+    }
+    
+    public boolean activateFirstComponents() {
+        if (firstTabsToActivate != null) {
+            activateTabs(firstTabsToActivate);
+            firstTabsToActivate = null;
+        }
+        
+        boolean focused = false;
+        if (firstPropsToActivate != null) {
+            focused = activateProperties(firstPropsToActivate);
+            firstPropsToActivate = null;
+        }
+        return focused;
+    }
 
-        for(ClientPropertyDraw prop : formChanges.activateProps)
-            focusProperty(prop);
+    private void activateTabs(List<ClientComponent> tabs) {
+        for (ClientComponent tab : tabs) {
+            activateTab(tab);
+        }
+    }
+
+    private boolean activateProperties(List<ClientPropertyDraw> properties) {
+        boolean focused = false;
+        for (ClientPropertyDraw prop : properties) {
+            focused = focused || focusProperty(prop);
+        }
+        return focused;
     }
 
     private void modifyFormChangesWithChangeCurrentObjectAsyncs(long currentDispatchingRequestIndex, ClientFormChanges formChanges) {
