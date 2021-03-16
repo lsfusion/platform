@@ -129,12 +129,14 @@ public class ClientModalForm extends JDialog {
                 @Override
                 public void windowActivated(WindowEvent e) {
                     Component defaultComponent = form.getLayout().getFocusTraversalPolicy().getDefaultComponent(form.getLayout());
-                    if (defaultComponent != null) {
-                        defaultComponent.requestFocusInWindow();
-                    } else {
-                        form.focusFirstComponent();
-                    }
-
+                    SwingUtilities.invokeLater(() -> {
+                        if (defaultComponent != null) {
+                            defaultComponent.requestFocusInWindow();
+                        } else if (!form.activateFirstComponents()) {
+                            form.focusFirstComponent();
+                        }
+                    });
+                    
                     removeWindowListener(this);
                 }
             });
