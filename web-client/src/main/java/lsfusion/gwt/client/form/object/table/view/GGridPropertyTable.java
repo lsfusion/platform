@@ -211,13 +211,13 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     }
 
     public GPropertyDraw getSelectedProperty() {
-        if(getSelectedRow() >= 0)
+        if(getSelectedRow() >= 0 && getSelectedColumn() >= 0)
             return getProperty(getSelectedCell());
         return null;
     }
 
     public GGroupObjectValue getSelectedColumnKey() {
-        if(getSelectedRow() >= 0)
+        if(getSelectedRow() >= 0 && getSelectedColumn() >= 0)
             return getColumnKey(getSelectedCell());
         return null;
     }
