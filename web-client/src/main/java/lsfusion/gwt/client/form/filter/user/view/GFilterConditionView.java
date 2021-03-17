@@ -5,7 +5,8 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Label;
 import lsfusion.gwt.client.ClientMessages;
-import lsfusion.gwt.client.base.view.ResizableHorizontalPanel;
+import lsfusion.gwt.client.base.view.FlexPanel;
+import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.form.filter.user.*;
 import lsfusion.gwt.client.form.object.table.controller.GTableController;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
@@ -13,7 +14,7 @@ import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButt
 import java.util.HashMap;
 import java.util.Map;
 
-public class GFilterConditionView extends ResizableHorizontalPanel implements GFilterValueView.GFilterValueListener {
+public class GFilterConditionView extends FlexPanel implements GFilterValueView.GFilterValueListener {
     private static final ClientMessages messages = ClientMessages.Instance.get();
     public interface UIHandler {
         void conditionChanged();
@@ -42,10 +43,9 @@ public class GFilterConditionView extends ResizableHorizontalPanel implements GF
     public GFilterConditionView(GPropertyFilter iCondition, GTableController logicsSupplier, final UIHandler handler, boolean toolsVisible) {
         this.condition = iCondition;
         this.handler = handler;
-        setVerticalAlignment(ALIGN_MIDDLE);
 
         propertyLabel = new Label(condition.property.getNotEmptyCaption());
-        add(propertyLabel);
+        addCentered(propertyLabel);
 
         negationView = new CheckBox(messages.formFilterConditionViewNot());
         negationView.addStyleName("checkBoxFilter");
@@ -64,7 +64,7 @@ public class GFilterConditionView extends ResizableHorizontalPanel implements GF
             condition.compare = (GCompare) compareView.getSelectedItem();
             handler.conditionChanged();
         });
-        add(compareView);
+        addCentered(compareView);
         compareView.setItems(condition.property.baseType.getFilterCompares());
         compareView.setSelectedItem(condition.compare);
 
@@ -90,7 +90,7 @@ public class GFilterConditionView extends ResizableHorizontalPanel implements GF
             condition.value = (GFilterValue) filterValues.getSelectedItem();
             filterChanged();
         });
-        add(filterValues);
+        addCentered(filterValues);
         filterValues.setSelectedItem(condition.value);
 
         junctionView = new GFilterConditionListBox();
@@ -100,7 +100,7 @@ public class GFilterConditionView extends ResizableHorizontalPanel implements GF
             condition.junction = junctionView.getSelectedIndex() == 0;
             handler.conditionChanged();
         });
-        add(junctionView);
+        addCentered(junctionView);
         junctionView.setSelectedIndex(condition.junction ? 0 : 1);
 
         deleteButton = new GToolbarButton(DELETE, messages.formQueriesFilterRemoveCondition()) {
@@ -110,11 +110,11 @@ public class GFilterConditionView extends ResizableHorizontalPanel implements GF
             }
         };
         deleteButton.addStyleName("filterDialogButton");
-        add(deleteButton);
+        addCentered(deleteButton);
 
         valueView = valueViews.get(condition.value);
         if (valueView != null) {
-            insert(valueView, getWidgetIndex(junctionView));
+            add(valueView, getWidgetIndex(junctionView), GFlexAlignment.CENTER);
             valueView.propertySet(condition);
         }
         
@@ -127,7 +127,7 @@ public class GFilterConditionView extends ResizableHorizontalPanel implements GF
         }
         valueView = valueViews.get(condition.value);
         if (valueView != null) {
-            insert(valueView, getWidgetIndex(junctionView));
+            add(valueView, getWidgetIndex(junctionView), GFlexAlignment.CENTER);
             valueView.propertyChanged(condition);
         }
         compareView.setItems(condition.property.baseType.getFilterCompares());
