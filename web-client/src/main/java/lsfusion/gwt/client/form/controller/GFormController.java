@@ -1933,6 +1933,11 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         if(GMouseStroke.isChangeEvent(handler.event))
             focusElement.focus(); // it should be done on CLICK, but also on MOUSEDOWN, since we want to focus even if mousedown is later consumed
 
+        //need to be after focus(), because focus() finishes editing
+        if(loadingManager.isVisible() && DataGrid.checkSinkEvents(handler.event)) {
+            return;
+        }
+
         checkMouseKeyEvent(handler, true, cellParent, panel);
 
         if(handler.consumed)
