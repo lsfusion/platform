@@ -130,8 +130,8 @@ public class ClientFormDockable extends ClientDockable {
 
     @Override
     protected boolean activateFirstComponents() {
-        if (clientForm != null) {
-            return clientForm.activateFirstComponents();
+        if (form != null) {
+            return form.activateFirstComponents();
         }
         return false;
     }
