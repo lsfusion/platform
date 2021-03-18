@@ -11,7 +11,7 @@ import java.time.format.FormatStyle;
 
 public class DateIntervalClass extends IntervalClass {
 
-    public final static DateIntervalClass instance = new DateIntervalClass();
+    public final static IntervalClass instance = new DateIntervalClass();
 
     private DateIntervalClass() {
         super(LocalizedString.create("{classes.date.interval}"));

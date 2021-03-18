@@ -1,5 +1,6 @@
 package lsfusion.server.logics.classes.data.time;
 
+import lsfusion.interop.classes.DataType;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.logics.classes.data.DataClass;
@@ -14,6 +15,30 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 
 public abstract class IntervalClass extends DataClass<BigDecimal> {
+
+    public static IntervalClass getInstance(String type) {
+        switch (type) {
+            case "DATE":
+                return DateIntervalClass.instance;
+            case "TIME":
+                return TimeIntervalClass.instance;
+            case "DATETIME":
+                return DateTimeIntervalClass.instance;
+        }
+        return null;
+    }
+
+    public static IntervalClass getInstance(byte type) {
+        switch (type) {
+            case DataType.DATEINTERVAL:
+                return DateIntervalClass.instance;
+            case DataType.TIMEINTERVAL:
+                return TimeIntervalClass.instance;
+            case DataType.DATETIMEINTERVAL:
+                return DateTimeIntervalClass.instance;
+        }
+        return null;
+    }
 
     protected IntervalClass(LocalizedString caption) {
         super(caption);

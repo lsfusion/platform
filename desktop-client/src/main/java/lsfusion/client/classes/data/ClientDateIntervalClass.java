@@ -1,7 +1,7 @@
 package lsfusion.client.classes.data;
 
 import lsfusion.client.form.property.ClientPropertyDraw;
-import lsfusion.client.form.property.cell.classes.controller.DateIntervalPropertyEditor;
+import lsfusion.client.form.property.cell.classes.controller.IntervalPropertyEditor;
 import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
 import lsfusion.client.view.MainFrame;
 import lsfusion.interop.classes.DataType;
@@ -11,10 +11,11 @@ import java.text.FieldPosition;
 import java.text.Format;
 import java.text.ParseException;
 import java.text.ParsePosition;
+import java.text.SimpleDateFormat;
 
 public class ClientDateIntervalClass extends ClientIntervalClass {
 
-    public final static ClientDateIntervalClass instance = new ClientDateIntervalClass();
+    public final static ClientIntervalClass instance = new ClientDateIntervalClass();
 
     @Override
     public byte getTypeId() {
@@ -28,12 +29,17 @@ public class ClientDateIntervalClass extends ClientIntervalClass {
 
     @Override
     protected PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
-        return new DateIntervalPropertyEditor(value, property);
+        return new IntervalPropertyEditor(value, (SimpleDateFormat) MainFrame.dateFormat, true);
     }
 
     @Override
     public Format getDefaultFormat() {
         return MainFrame.dateIntervalFormat;
+    }
+
+    @Override
+    public String getIntervalType() {
+        return "DATE";
     }
 
     public static class DateIntervalFormat extends Format {

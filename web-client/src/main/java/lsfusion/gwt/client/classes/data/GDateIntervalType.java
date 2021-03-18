@@ -27,6 +27,6 @@ public class GDateIntervalType extends GIntervalType{
 
     @Override
     public String getIntervalType() {
-        return "date";
+        return "DATE";
     }
 }

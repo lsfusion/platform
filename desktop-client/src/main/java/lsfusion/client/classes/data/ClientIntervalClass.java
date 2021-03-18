@@ -14,6 +14,20 @@ import java.util.Date;
 
 public abstract class ClientIntervalClass extends ClientFormatClass<SimpleDateFormat> implements ClientTypeClass {
 
+    public static ClientIntervalClass getInstance(String type) {
+        switch (type) {
+            case "DATE":
+                return ClientDateIntervalClass.instance;
+            case "TIME":
+                return ClientTimeIntervalClass.instance;
+            case "DATETIME":
+                return ClientDateTimeIntervalClass.instance;
+        }
+        return null;
+    }
+
+    public abstract String getIntervalType();
+
     @Override
     public PropertyRenderer getRendererComponent(ClientPropertyDraw property) {
         return new FormatPropertyRenderer(property){};

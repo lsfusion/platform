@@ -5,7 +5,7 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 
 import static lsfusion.gwt.client.base.GwtSharedUtils.*;
 
-public class GDateTimeIntervalType extends GIntervalType{
+public class GDateTimeIntervalType extends GIntervalType {
 
     public static GDateTimeIntervalType instance = new GDateTimeIntervalType();
 
@@ -26,6 +26,6 @@ public class GDateTimeIntervalType extends GIntervalType{
 
     @Override
     public String getIntervalType() {
-        return "dateTime";
+        return "DATETIME";
     }
 }

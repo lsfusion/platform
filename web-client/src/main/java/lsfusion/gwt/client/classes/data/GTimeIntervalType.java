@@ -26,6 +26,6 @@ public class GTimeIntervalType extends GIntervalType {
 
     @Override
     public String getIntervalType() {
-        return "time";
+        return "TIME";
     }
 }

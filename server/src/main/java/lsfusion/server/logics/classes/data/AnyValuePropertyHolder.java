@@ -89,9 +89,9 @@ public class AnyValuePropertyHolder {
                 && yearProperty.property.getType() == YearClass.instance
                 && dateTimeProperty.property.getType() == DateTimeClass.instance
                 && zDateTimeProperty.property.getType() == ZDateTimeClass.instance
-                && intervalDateProperty.property.getType().getCompatible(DateIntervalClass.instance) != null
-                && intervalDateTimeProperty.property.getType().getCompatible(DateTimeIntervalClass.instance) != null
-                && intervalTimeProperty.property.getType().getCompatible(TimeIntervalClass.instance) != null
+                && intervalDateProperty.property.getType().getCompatible(IntervalClass.getInstance("DATE")) != null
+                && intervalDateTimeProperty.property.getType().getCompatible(IntervalClass.getInstance("DATETIME")) != null
+                && intervalTimeProperty.property.getType().getCompatible(IntervalClass.getInstance("TIME")) != null
                 && logicalProperty.property.getType() == LogicalClass.instance
                 && dateProperty.property.getType() == DateClass.instance
                 && timeProperty.property.getType() == TimeClass.instance

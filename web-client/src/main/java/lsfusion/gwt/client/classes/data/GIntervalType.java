@@ -13,6 +13,18 @@ import java.text.ParseException;
 
 public abstract class GIntervalType extends GFormatType<com.google.gwt.i18n.client.DateTimeFormat> {
 
+    public static GIntervalType getInstance(String type) {
+        switch (type) {
+            case "DATE":
+                return GDateIntervalType.instance;
+            case "TIME":
+                return GTimeIntervalType.instance;
+            case "DATETIME":
+                return GDateTimeIntervalType.instance;
+        }
+        return null;
+    }
+
     @Override
     public CellRenderer createGridCellRenderer(GPropertyDraw property) {
         return new FormatCellRenderer<Object, DateTimeFormat>(property) {

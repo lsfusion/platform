@@ -9,9 +9,9 @@ import java.math.BigDecimal;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 
-public class DateTimeIntervalClass extends IntervalClass{
+public class DateTimeIntervalClass extends IntervalClass {
 
-    public final static DateTimeIntervalClass instance = new DateTimeIntervalClass();
+    public final static IntervalClass instance = new DateTimeIntervalClass();
 
     private DateTimeIntervalClass() {
         super(LocalizedString.create("{classes.date.time.interval}"));

@@ -3,7 +3,7 @@
   color: inherit;
   background-color: #fff;
   border-radius: 4px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--dialog-outer-border-color);
   width: 278px;
   max-width: none;
   padding: 0;
@@ -189,7 +189,7 @@
 }
 
 .daterangepicker td.in-range {
-  background-color: #ebf4f8;
+  background-color: var(--date-picker-day-is-value-background-color);
   border-color: transparent;
   color: #000;
   border-radius: 0;
@@ -267,7 +267,7 @@
   clear: both;
   text-align: right;
   padding: 8px;
-  border-top: 1px solid #ddd;
+  border-top: 1px solid var(--dialog-outer-border-color);
   display: none;
   line-height: 12px;
   vertical-align: middle;
@@ -287,19 +287,19 @@
 }
 
 .daterangepicker.show-ranges.single.rtl .drp-calendar.left {
-  border-right: 1px solid #ddd;
+  border-right: 1px solid var(--dialog-outer-border-color);
 }
 
 .daterangepicker.show-ranges.single.ltr .drp-calendar.left {
-  border-left: 1px solid #ddd;
+  border-left: 1px solid var(--dialog-outer-border-color);
 }
 
 .daterangepicker.show-ranges.rtl .drp-calendar.right {
-  border-right: 1px solid #ddd;
+  border-right: 1px solid var(--dialog-outer-border-color);
 }
 
 .daterangepicker.show-ranges.ltr .drp-calendar.left {
-  border-left: 1px solid #ddd;
+  border-left: 1px solid var(--dialog-outer-border-color);
 }
 
 .daterangepicker .ranges {
@@ -326,7 +326,7 @@
 }
 
 .daterangepicker .ranges li:hover {
-  background-color: #eee;
+  background-color: var(--date-picker-day-is-value-background-color);
 }
 
 .daterangepicker .ranges li.active {
