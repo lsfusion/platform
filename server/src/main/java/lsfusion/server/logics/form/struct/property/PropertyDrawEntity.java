@@ -7,7 +7,10 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.col.interfaces.immutable.*;
-import lsfusion.base.col.interfaces.mutable.*;
+import lsfusion.base.col.interfaces.mutable.LongMutable;
+import lsfusion.base.col.interfaces.mutable.MExclSet;
+import lsfusion.base.col.interfaces.mutable.MMap;
+import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.identity.IdentityObject;
 import lsfusion.interop.form.property.ClassViewType;
@@ -37,6 +40,8 @@ import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.order.OrderEntity;
+import lsfusion.server.logics.form.struct.property.async.AsyncAddRemove;
+import lsfusion.server.logics.form.struct.property.async.AsyncEventExec;
 import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyObjectEntity;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -200,8 +205,8 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         this.inheritedProperty = inheritedProperty;
     }
 
-    public DataClass getRequestInputType(FormEntity form, SecurityPolicy policy) {
-        return getRequestInputType(CHANGE, form, policy, optimisticAsync);
+    public DataClass getRequestInputType(FormEntity form, SecurityPolicy policy, String actionSID) {
+        return getRequestInputType(actionSID, form, policy, optimisticAsync);
     }
 
     public DataClass getWYSRequestInputType(FormEntity form, SecurityPolicy policy) {
@@ -227,10 +232,11 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return null;
     }
 
-    public <A extends PropertyInterface> Pair<ObjectEntity, Boolean> getAddRemove(FormEntity form, SecurityPolicy policy) {
-        ActionObjectEntity<A> changeAction = (ActionObjectEntity<A>) getEventAction(CHANGE, form, policy);
-        if(changeAction!=null)
-            return changeAction.getAddRemove(form);
+    public AsyncEventExec getAsyncEventExec(FormEntity form, SecurityPolicy policy, String actionSID) {
+        ActionObjectEntity<?> changeAction = getEventAction(actionSID, form, policy);
+        if (changeAction != null) {
+            return changeAction.getAsyncEventExec(form, optimisticAsync);
+        }
         return null;
     }
 

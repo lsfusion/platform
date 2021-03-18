@@ -70,6 +70,7 @@ import java.sql.SQLException;
 import java.util.*;
 
 import static lsfusion.base.BaseUtils.deserializeObject;
+import static lsfusion.interop.action.ServerResponse.CHANGE;
 
 // фасад для работы с клиентом
 public class RemoteForm<F extends FormInstance> extends RemoteRequestObject implements RemoteFormInterface {
@@ -672,7 +673,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                 DataClass pushChangeType = null;
                 byte[] pushChange = pushChanges[j];
                 if (pushChange != null) {
-                    pushChangeType = propertyDraw.getEntity().getRequestInputType(form.entity, form.securityPolicy);
+                    pushChangeType = propertyDraw.getEntity().getRequestInputType(form.entity, form.securityPolicy, ServerResponse.CHANGE);
                     Object objectPushChange = deserializeObject(pushChange);
                     if (pushChangeType == null) // веб почему-то при асинхронном удалении шлет не null, а [0] который deserialize'ся в null а потом превращается в NullValue.instance и падают ошибки
                         ServerLoggers.assertLog(objectPushChange == null, "PROPERTY CANNOT BE CHANGED -> PUSH CHANGE SHOULD BE NULL");
@@ -1045,7 +1046,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                 // see comment above
                 newDelete.first.groupTo.forceUpdateKeys();
             }
-            eventAction = ServerResponse.CHANGE;
+            eventAction = CHANGE;
         }
         form.executeEventAction(propertyDraw, eventAction, currentObjects, pushChangeObject, pushChangeType, pushAdd, false, stack);
     }

@@ -1,10 +1,10 @@
 package lsfusion.server.logics.form.struct.action;
 
-import lsfusion.base.Pair;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.base.caches.IdentityLazy;
+import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.form.interactive.controller.init.InstanceFactory;
@@ -15,6 +15,7 @@ import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyObjectInterfaceEntity;
+import lsfusion.server.logics.form.struct.property.async.*;
 import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyObjectEntity;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -46,22 +47,47 @@ public class ActionObjectEntity<P extends PropertyInterface> extends ActionOrPro
     }
 
     @IdentityLazy
-    public Pair<ObjectEntity, Boolean> getAddRemove(FormEntity form) {
+    public AsyncAddRemove getAddRemove(FormEntity form) {
         CustomClass simpleAdd = property.getSimpleAdd();
         if(simpleAdd!=null) {
             for(ObjectEntity object : form.getObjects())
                 if (object.baseClass instanceof CustomClass && simpleAdd.isChild((CustomClass) object.baseClass) && object.groupTo.getObjects().size()==1) {
-                    return new Pair<>(object, true);
+                    return new AsyncAddRemove(object, true);
                 }
         }
 
         P simpleDelete = property.getSimpleDelete();
         PropertyObjectInterfaceEntity object;
         if(simpleDelete!=null && (object = mapping.get(simpleDelete)) instanceof ObjectEntity && ((ObjectEntity)object).groupTo.getObjects().size()==1) {
-            return new Pair<>((ObjectEntity) object, false);
+            return new AsyncAddRemove((ObjectEntity) object, false);
         }
 
         return null;
+    }
+
+    @IdentityLazy
+    public AsyncChange getChange(boolean optimistic) {
+        Type changeType = property.getSimpleRequestInputType(optimistic);
+        if(changeType!=null) {
+            return new AsyncChange(changeType);
+        }
+        return null;
+    }
+
+    @IdentityLazy
+    public AsyncExec getAsyncExec() {
+        return property.getAsyncExec();
+    }
+
+    public AsyncEventExec getAsyncEventExec(FormEntity form, boolean optimistic) {
+        AsyncEventExec asyncEventExec = getAddRemove(form);
+        if (asyncEventExec == null) {
+            asyncEventExec = getChange(optimistic);
+        }
+        if (asyncEventExec == null) {
+            asyncEventExec = getAsyncExec();
+        }
+        return asyncEventExec;
     }
 
 //    @IdentityInstanceLazy

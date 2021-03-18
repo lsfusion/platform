@@ -24,19 +24,22 @@ import lsfusion.gwt.client.form.event.GKeyInputEvent;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
-import lsfusion.gwt.client.form.object.GObject;
 import lsfusion.gwt.client.form.object.table.controller.GPropertyController;
+import lsfusion.gwt.client.form.property.async.GAsyncChange;
+import lsfusion.gwt.client.form.property.async.GAsyncEventExec;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.classes.view.FormatCellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.panel.view.PanelRenderer;
 import lsfusion.gwt.client.view.MainFrame;
 import lsfusion.gwt.client.view.StyleDefaults;
+import lsfusion.interop.action.ServerResponse;
 
 import java.io.Serializable;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.Map;
 
 import static lsfusion.gwt.client.base.EscapeUtils.escapeLineBreakHTML;
 import static lsfusion.gwt.client.base.GwtClientUtils.createTooltipHorizontalSeparator;
@@ -71,9 +74,18 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public GClass returnClass;
 
     public GType changeWYSType;
-    public GType changeType;
 
-    public AddRemove addRemove;
+    public Map<String, GAsyncEventExec> asyncExecMap;
+
+    public GType getChangeType() {
+        GAsyncEventExec asyncExec = asyncExecMap.get(ServerResponse.CHANGE);
+        return asyncExec instanceof GAsyncChange ? ((GAsyncChange) asyncExec).changeType : null;
+    }
+
+    public GAsyncEventExec getAsyncEventExec(String actionSID) {
+        return asyncExecMap.get(actionSID);
+    }
+
     public boolean askConfirm;
     public String askConfirmMessage;
 
@@ -173,24 +185,13 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 //            return GEditBindingMap.CHANGE;
 //        }
         if (actionSID == null) {
+            GType changeType = getChangeType();
             actionSID = GEditBindingMap.getDefaultEventSID(editEvent, changeType == null ? null : changeType.getEditEventFilter(), hasEditObjectAction);
         }
         return actionSID;
     }
     public boolean isFilterChange(Event editEvent) {
         return GEditBindingMap.isDefaultFilterChange(editEvent, baseType.getEditEventFilter());
-    }
-
-    public static class AddRemove implements Serializable {
-        public GObject object;
-        public boolean add;
-
-        public AddRemove() {}
-
-        public AddRemove(GObject object, boolean add) {
-            this.object = object;
-            this.add = add;
-        }
     }
 
     public GPropertyDraw(){}
@@ -238,7 +239,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     }
 
     public boolean canUseChangeValueForRendering() {
-        return canUseChangeValueForRendering(changeType);
+        return canUseChangeValueForRendering(getChangeType());
     }
 
     public String getCaptionOrEmpty() {

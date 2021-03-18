@@ -26,6 +26,7 @@ import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
 import lsfusion.server.logics.classes.user.set.OrObjectClassSet;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
+import lsfusion.server.logics.form.struct.property.async.AsyncExec;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.cases.*;
@@ -312,6 +313,22 @@ public class CaseAction extends ListCaseAction {
         }
         
         return super.getSimpleDelete();
+    }
+
+    @Override
+    public AsyncExec getAsyncExec() {
+        AsyncExec result = null;
+        for (ActionMapImplement<?, PropertyInterface> action : getListActions()) {
+            AsyncExec asyncExec = action.action.getAsyncExec();
+            if (asyncExec != null) {
+                if (result == null) {
+                    result = asyncExec;
+                } else {
+                    return null;
+                }
+            }
+        }
+        return result;
     }
 
     /*

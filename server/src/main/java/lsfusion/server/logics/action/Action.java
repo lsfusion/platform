@@ -50,6 +50,7 @@ import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
+import lsfusion.server.logics.form.struct.property.async.AsyncExec;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.classes.IsClassProperty;
@@ -532,6 +533,10 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
     public P getSimpleDelete() {
         if(isSimpleDelete)
             return interfaces.single();
+        return null;
+    }
+
+    public AsyncExec getAsyncExec() {
         return null;
     }
 

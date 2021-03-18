@@ -1,21 +1,27 @@
 package lsfusion.gwt.client.form.view;
 
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.ResizableModalWindow;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.view.MainFrame;
 
-import static java.lang.Math.min;
-
 public class ModalForm extends FormContainer<ResizableModalWindow> {
 
-    public ModalForm(FormsController formsController) {
-        super(formsController);
+
+    public ModalForm(FormsController formsController, Long requestIndex, String caption, boolean async) {
+        super(formsController, requestIndex, async);
+
+        if(async) {
+            GwtClientUtils.setThemeImage("loading.gif", imageUrl -> setContent(createLoadingWidget(imageUrl)), false);
+            contentWidget.setDefaultSize();
+        }
+        contentWidget.setCaption(caption);
     }
 
     @Override
     protected ResizableModalWindow initContentWidget() {
-        return new ResizableModalWindow() {
+        ResizableModalWindow window = new ResizableModalWindow() {
             @Override
             protected void onShow() {
                 initMaxPreferredSize(); // we need after attach to have correct sizes
@@ -23,11 +29,13 @@ public class ModalForm extends FormContainer<ResizableModalWindow> {
                 super.onShow();
             }
         };
+        window.setOuterContentWidget();
+        return window;
     }
 
     @Override
     protected void setContent(Widget widget) {
-        contentWidget.setContentWidget(widget);
+        contentWidget.setInnerContentWidget(widget);
     }
 
     private FormContainer prevForm;

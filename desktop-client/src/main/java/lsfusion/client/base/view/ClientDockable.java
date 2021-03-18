@@ -33,6 +33,9 @@ public abstract class ClientDockable extends DefaultMultipleCDockable {
 
     private final CustomCloseAction closeAction;
 
+    protected Long requestIndex;
+    protected boolean async;
+
     protected ClientDockable(String canonicalName, FormsController formsController) {
         super(formsController.getDockableFactory());
 
@@ -82,7 +85,7 @@ public abstract class ClientDockable extends DefaultMultipleCDockable {
     }
 
     private void initDefaultComponent() {
-        if (defaultComponent == null) {
+        if (!async && defaultComponent == null) {
             FocusTraversalPolicy traversalPolicy = contentContainer.getFocusTraversalPolicy();
             if (traversalPolicy != null) {
                 defaultComponent = traversalPolicy.getDefaultComponent(contentContainer);

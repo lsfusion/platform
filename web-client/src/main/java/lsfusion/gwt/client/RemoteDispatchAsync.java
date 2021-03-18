@@ -120,4 +120,8 @@ public abstract class RemoteDispatchAsync {
             });
         }
     }
+
+    public long getNextRequestIndex() {
+        return nextRequestIndex;
+    }
 }

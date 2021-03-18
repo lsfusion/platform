@@ -6,7 +6,10 @@ import bibliothek.extension.gui.dock.theme.eclipse.stack.EclipseTabPane;
 import bibliothek.extension.gui.dock.theme.eclipse.stack.tab.*;
 import bibliothek.gui.DockController;
 import bibliothek.gui.Dockable;
-import bibliothek.gui.dock.common.*;
+import bibliothek.gui.dock.common.CContentArea;
+import bibliothek.gui.dock.common.CControl;
+import bibliothek.gui.dock.common.CGrid;
+import bibliothek.gui.dock.common.SingleCDockable;
 import bibliothek.gui.dock.common.intern.*;
 import bibliothek.gui.dock.common.mode.ExtendedMode;
 import bibliothek.gui.dock.common.theme.ThemeMap;
@@ -33,6 +36,7 @@ import lsfusion.client.controller.remote.RmiRequest;
 import lsfusion.client.form.controller.FormsController;
 import lsfusion.client.form.print.view.EditReportInvoker;
 import lsfusion.client.form.print.view.ReportDialog;
+import lsfusion.client.form.property.async.ClientAsyncOpenForm;
 import lsfusion.client.form.property.cell.classes.controller.EditorEventQueue;
 import lsfusion.client.form.view.ClientFormDockable;
 import lsfusion.client.navigator.ClientNavigator;
@@ -297,6 +301,18 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
         formsController.getForms().clear();
     }
 
+    public void asyncOpenForm(ClientAsyncOpenForm asyncOpenForm) {
+        asyncOpenForm(rmiQueue.getNextRmiRequestIndex(), asyncOpenForm);
+    }
+
+    public void asyncOpenForm(Long requestIndex, ClientAsyncOpenForm asyncOpenForm) {
+        formsController.asyncOpenForm(requestIndex, asyncOpenForm);
+    }
+
+    public void removeOpenForm(Long requestIndex) {
+        formsController.getForms().removeAsyncForm(requestIndex);
+    }
+
     @Override
     public void clean() {
         formsController.clean();
@@ -505,9 +521,9 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
     }
 
     @Override
-    public ClientFormDockable runForm(String canonicalName, String formSID, boolean forbidDuplicate, RemoteFormInterface remoteForm, byte[] firstChanges, FormCloseListener closeListener) {
+    public ClientFormDockable runForm(Long requestIndex, String canonicalName, String formSID, boolean forbidDuplicate, RemoteFormInterface remoteForm, byte[] firstChanges, FormCloseListener closeListener) {
         try {
-            return formsController.openForm(mainNavigator, canonicalName, formSID, forbidDuplicate, remoteForm, firstChanges, closeListener);
+            return formsController.openForm(requestIndex, mainNavigator, canonicalName, formSID, forbidDuplicate, remoteForm, firstChanges, closeListener);
         } catch (Exception e) {
             if(closeListener != null)
                 closeListener.formClosed(true);

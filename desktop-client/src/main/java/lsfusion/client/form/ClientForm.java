@@ -144,6 +144,10 @@ public class ClientForm extends ContextIdentityObject implements ClientCustomSer
         return null;
     }
 
+    public String getCaption() {
+        return mainContainer.caption;
+    }
+
     public String getTooltip(String caption) {
         return MainController.showDetailedInfo ?
                 String.format("<html><body>" +

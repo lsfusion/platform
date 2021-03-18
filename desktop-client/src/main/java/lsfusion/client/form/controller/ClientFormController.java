@@ -44,10 +44,14 @@ import lsfusion.client.form.object.table.grid.user.design.GridUserPreferences;
 import lsfusion.client.form.object.table.tree.ClientTreeGroup;
 import lsfusion.client.form.object.table.tree.controller.TreeGroupController;
 import lsfusion.client.form.property.ClientPropertyDraw;
+import lsfusion.client.form.property.async.ClientAsyncAddRemove;
+import lsfusion.client.form.property.async.ClientAsyncOpenForm;
 import lsfusion.client.form.property.cell.controller.dispatch.SimpleChangePropertyDispatcher;
 import lsfusion.client.form.property.panel.view.PanelView;
 import lsfusion.client.form.view.ClientFormDockable;
 import lsfusion.client.navigator.ClientNavigator;
+import lsfusion.client.view.DockableMainFrame;
+import lsfusion.client.view.MainFrame;
 import lsfusion.interop.action.*;
 import lsfusion.interop.base.remote.RemoteRequestInterface;
 import lsfusion.interop.form.UpdateMode;
@@ -163,7 +167,7 @@ public class ClientFormController implements AsyncListener {
     private List<ClientComponent> firstTabsToActivate;
     private List<ClientPropertyDraw> firstPropsToActivate;
 
-    public ClientFormController(String icanonicalName, String iformSID, RemoteFormInterface iremoteForm, byte[] firstChanges, ClientNavigator iclientNavigator, boolean iisModal, boolean iisDialog) {
+    public ClientFormController(String icanonicalName, String iformSID, RemoteFormInterface iremoteForm, ClientForm iform, byte[] firstChanges, ClientNavigator iclientNavigator, boolean iisModal, boolean iisDialog) {
         formSID = iformSID + (iisModal ? "(modal)" : "") + "(" + System.identityHashCode(this) + ")";
         canonicalName = icanonicalName;
         isDialog = iisDialog;
@@ -178,7 +182,7 @@ public class ClientFormController implements AsyncListener {
         clientNavigator = iclientNavigator;
 
         try {
-            form = new ClientSerializationPool().deserializeObject(new DataInputStream(new ByteArrayInputStream(remoteForm.getRichDesignByteArray())));
+            form = iform;
 
             rmiQueue = new RmiQueue(tableManager, serverMessageProvider, serverMessageListProvider, this);
 
@@ -202,7 +206,15 @@ public class ClientFormController implements AsyncListener {
             throw Throwables.propagate(e);
         }
     }
-    
+
+    public static ClientForm deserializeClientForm(RemoteFormInterface remoteForm) {
+        try {
+            return new ClientSerializationPool().deserializeObject(new DataInputStream(new ByteArrayInputStream(remoteForm.getRichDesignByteArray())));
+        } catch (IOException e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
     public boolean hasCanonicalName() {
         return canonicalName != null;
     }
@@ -677,13 +689,13 @@ public class ClientFormController implements AsyncListener {
             activateProperties(formChanges.activateProps);
         }
     }
-    
+
     public boolean activateFirstComponents() {
         if (firstTabsToActivate != null) {
             activateTabs(firstTabsToActivate);
             firstTabsToActivate = null;
         }
-        
+
         boolean focused = false;
         if (firstPropsToActivate != null) {
             focused = activateProperties(firstPropsToActivate);
@@ -924,23 +936,20 @@ public class ClientFormController implements AsyncListener {
         return remoteForm.changeProperties(requestIndex, lastReceivedRequestIndex, new int[]{propertyID}, new byte[][]{fullCurrentKey}, new byte[][]{pushChange}, new Long[]{pushAdd});
     }
 
-    public boolean isAsyncModifyObject(ClientPropertyDraw property) {
-        if (property.addRemove != null) {
-            GridController controller = controllers.get(property.addRemove.first.groupObject);
+    public void asyncAddRemove(ClientPropertyDraw property, ClientGroupObjectValue columnKey, ClientAsyncAddRemove addRemove) throws IOException {
+        if (addRemove != null) {
+            GridController controller = controllers.get(addRemove.object.groupObject);
             if (controller != null && controller.isList()) {
-                return true;
+                modifyObject(property, columnKey, addRemove);
             }
         }
-        return false;
     }
 
-    public void modifyObject(final ClientPropertyDraw property, ClientGroupObjectValue columnKey) throws IOException {
-        assert isAsyncModifyObject(property);
-
+    public void modifyObject(final ClientPropertyDraw property, ClientGroupObjectValue columnKey, ClientAsyncAddRemove addRemove) throws IOException {
         commitOrCancelCurrentEditing();
 
-        final ClientObject object = property.addRemove.first;
-        final boolean add = property.addRemove.second;
+        final ClientObject object = addRemove.object;
+        final boolean add = addRemove.add;
 
         final GridController controller = controllers.get(object.groupObject);
 
@@ -1416,7 +1425,7 @@ public class ClientFormController implements AsyncListener {
     }
 
     public void updateFormCaption() {
-        String caption = form.mainContainer.caption;
+        String caption = form.getCaption();
         setFormCaption(caption, form.getTooltip(caption));
     }
 

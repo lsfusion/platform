@@ -10,6 +10,7 @@ import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.controller.dispatch.ClientFormActionDispatcher;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.property.ClientPropertyDraw;
+import lsfusion.client.form.property.async.*;
 import lsfusion.client.form.property.cell.controller.EditPropertyHandler;
 import lsfusion.interop.action.EditNotPerformedClientAction;
 import lsfusion.interop.action.RequestUserInputClientAction;
@@ -64,31 +65,30 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
         try {
             ClientFormController form = getFormController();
 
-            if (actionSID.equals(ServerResponse.CHANGE)) { // асинхронные обработки
-                boolean asyncModifyObject = form.isAsyncModifyObject(property);
-                if (asyncModifyObject || property.changeType != null) {
-                    if (property.askConfirm) {
-                        String msg = property.askConfirmMessage;
+            //async actions
+            ClientAsyncEventExec asyncEventExec = property.getAsyncEventExec(actionSID);
+            boolean continueExecution = asyncEventExec instanceof ClientAsyncExec;
 
-                        int result = SwingUtils.showConfirmDialog(getDialogParentContainer(), msg, "lsFusion", JOptionPane.QUESTION_MESSAGE, false);
-                        if (result != JOptionPane.YES_OPTION) {
-                            return true;
-                        }
-                    }
+            if (asyncEventExec != null) {
+                if (property.askConfirm) {
+                    String msg = property.askConfirmMessage;
 
-                    if (asyncModifyObject) {
-                        form.modifyObject(property, columnKey);
+                    int result = SwingUtils.showConfirmDialog(getDialogParentContainer(), msg, "lsFusion", JOptionPane.QUESTION_MESSAGE, false);
+                    if (result != JOptionPane.YES_OPTION) {
                         return true;
-                    } else {
-//                      т.е. property.changeType != null
-                        editColumnKey = columnKey;
-                        simpleChangeProperty = property;
-                        return internalRequestValue(property.changeType);
                     }
+                }
+
+                asyncEventExec.exec(form, this, property, columnKey);
+
+                if(!continueExecution) {
+                    return true;
                 }
             }
 
+
             editPerformed = true;
+            //todo: executeEventAction block EDT, async open form not shown
             ServerResponse response = form.executeEventAction(property, columnKey, actionSID);
             try {
                 return internalDispatchResponse(response);
@@ -101,6 +101,12 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
         } finally {
             setEditEvent(null);
         }
+    }
+
+    public boolean asyncChange(ClientPropertyDraw property, ClientGroupObjectValue columnKey, ClientAsyncChange asyncChange) throws IOException {
+        editColumnKey = columnKey;
+        simpleChangeProperty = property;
+        return internalRequestValue(asyncChange.changeType);
     }
 
     @Override
