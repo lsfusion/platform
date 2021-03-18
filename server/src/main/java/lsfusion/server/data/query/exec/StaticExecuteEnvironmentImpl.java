@@ -80,7 +80,7 @@ public class StaticExecuteEnvironmentImpl extends TwinImmutableObject implements
 
     private ImOrderSet<Object> recursions;
     private ImSet<ConcatenateType> concTypes;
-    private ImSet<Type> safeCastTypes;
+    private ImSet<Pair<Type, Boolean>> safeCastTypes;
     private ImSet<Pair<GroupType, ImList<Type>>> groupAggOrders;
 
     private ImSet<NotMaterializable> usedNotMaterializables;
@@ -164,10 +164,10 @@ public class StaticExecuteEnvironmentImpl extends TwinImmutableObject implements
         throw new UnsupportedOperationException();
     }
 
-    public void addNeedSafeCast(Type type) {
+    public void addNeedSafeCast(Type type, Boolean isInt) {
         assert !finalized;
 
-        safeCastTypes = safeCastTypes.merge(type);
+        safeCastTypes = safeCastTypes.merge(new Pair<>(type, isInt));
     }
 
     public void addNeedAggOrder(GroupType groupType, ImList<Type> types) {
@@ -214,7 +214,7 @@ public class StaticExecuteEnvironmentImpl extends TwinImmutableObject implements
             typePool.ensureArrayClass(arrayClass);
         for(Object recursion : recursions)
             typePool.ensureRecursion(recursion);
-        for(Type type : safeCastTypes)
+        for(Pair<Type, Boolean> type : safeCastTypes)
             typePool.ensureSafeCast(type);
         for(Pair<GroupType, ImList<Type>> gaOrder : groupAggOrders)
             typePool.ensureGroupAggOrder(gaOrder);
@@ -291,8 +291,8 @@ public class StaticExecuteEnvironmentImpl extends TwinImmutableObject implements
             assert arrayClasses.contains(tableType);
         }
 
-        public void addNeedSafeCast(Type type) {
-            assert safeCastTypes.contains(type);
+        public void addNeedSafeCast(Type type, Boolean isInt) {
+            assert safeCastTypes.contains(new Pair<>(type, isInt));
         }
 
         public void addNeedAggOrder(GroupType groupType, ImList<Type> types) {

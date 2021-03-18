@@ -20,7 +20,9 @@ class ReportUtils {
 
     public static JRDesignExpression createExpression(String text, Class cls) {
         JRDesignExpression expr = new JRDesignExpression();
-        expr.setValueClass(cls);
+        if(cls != null) {
+            expr.setValueClass(cls);
+        }
         expr.setText(text);
         return expr;
     }

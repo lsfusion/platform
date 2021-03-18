@@ -228,7 +228,10 @@ public class PropertyDrawView extends ComponentView {
 
     private Class getPropertyClass(PropertyObjectEntity<?> property) {
         ReportDrawField field = new ReportDrawField("", "", charWidth);
-        property.property.getType().fillReportDrawField(field);
+        Type type = property.property.getType();
+        if (type != null) {
+            type.fillReportDrawField(field);
+        }
         return field.valueClass;
     }
 

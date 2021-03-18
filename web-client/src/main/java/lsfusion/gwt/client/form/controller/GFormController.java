@@ -708,11 +708,13 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     private void activateElements(GFormChanges fc) {
-        for(GComponent component : fc.activateTabs)
-            activateTab(component);
+        Scheduler.get().scheduleDeferred(() -> {
+            for(GComponent component : fc.activateTabs)
+                activateTab(component);
 
-        for(GPropertyDraw propertyDraw : fc.activateProps)
-            focusProperty(propertyDraw);
+            for(GPropertyDraw propertyDraw : fc.activateProps)
+                focusProperty(propertyDraw);
+        });
     }
 
     private void modifyFormChangesWithModifyObjectAsyncs(final int currentDispatchingRequestIndex, GFormChanges fc) {
@@ -1349,7 +1351,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     public boolean previewEvent(Element target, Event event) {
         checkLinkEditModeEvents(formsController, event);
 
-        return MainFrame.previewClickEvent(target, event);
+        return MainFrame.previewEvent(target, event, isEditing());
     }
 
     protected void onFormHidden(int closeDelay) {

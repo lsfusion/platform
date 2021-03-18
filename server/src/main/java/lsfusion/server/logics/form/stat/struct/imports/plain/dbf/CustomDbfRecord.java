@@ -231,7 +231,7 @@ public class CustomDbfRecord {
         try {
             return new BigDecimal(s);
         } catch (Exception e) {
-            throw new ParseException(String.format("error parsing numeric %s (row %s, column %s)", s, recordNumber, fieldName), e);
+            throw ParseException.propagateWithMessage(String.format("Error parsing numeric %s (row %s, column %s)", s, recordNumber, fieldName), e);
         }
     }
 
@@ -243,7 +243,7 @@ public class CustomDbfRecord {
                 return stream.readDouble();
             }
         } catch (Exception e) {
-            throw new ParseException(String.format("error parsing double (row %s, column %s)", fieldName, recordNumber), e);
+            throw ParseException.propagateWithMessage(String.format("Error parsing double (row %s, column %s)", fieldName, recordNumber), e);
         }
     }
 
@@ -301,7 +301,7 @@ public class CustomDbfRecord {
             byte[] bytes = getBytes(fieldName);
             return BitUtils.makeInt(bytes[0], bytes[1], bytes[2], bytes[3]);
         } catch (Exception e) {
-            throw new ParseException(String.format("error parsing integer (row %s, column %s)", fieldName, recordNumber), e);
+            throw ParseException.propagateWithMessage(String.format("Error parsing integer (row %s, column %s)", fieldName, recordNumber), e);
         }
     }
 

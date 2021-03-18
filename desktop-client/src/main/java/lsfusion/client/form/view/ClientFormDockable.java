@@ -129,6 +129,14 @@ public class ClientFormDockable extends ClientDockable {
     }
 
     @Override
+    protected boolean activateFirstComponents() {
+        if (clientForm != null) {
+            return clientForm.activateFirstComponents();
+        }
+        return false;
+    }
+
+    @Override
     protected boolean focusDefaultComponent() {
         boolean focusReceived = super.focusDefaultComponent();
         if (!focusReceived && form != null) {

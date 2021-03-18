@@ -7,6 +7,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.ResourceUtils;
 import lsfusion.base.SystemUtils;
+import lsfusion.base.classloader.RemoteClassLoader;
 import lsfusion.base.file.RawFileData;
 import lsfusion.base.remote.ZipClientSocketFactory;
 import lsfusion.client.SingleInstance;
@@ -21,7 +22,6 @@ import lsfusion.client.base.log.Log;
 import lsfusion.client.base.view.ClientImages;
 import lsfusion.client.base.view.ColorThemeChangeListener;
 import lsfusion.client.base.view.SwingDefaults;
-import lsfusion.client.controller.remote.ClientRMIClassLoaderSpi;
 import lsfusion.client.controller.remote.ConnectionLostManager;
 import lsfusion.client.form.print.SavingThread;
 import lsfusion.client.form.property.cell.classes.controller.rich.RichEditorPane;
@@ -116,8 +116,6 @@ public class MainController {
 
             loadLibraries();
 
-            initRmiClassLoader();
-
             ZipClientSocketFactory.timeout = StartupProperties.rmiTimeout;
 
             initSwing();
@@ -207,14 +205,7 @@ public class MainController {
             public void actionPerformed(ActionEvent e) {
                 clean();
                 //Перегружаем classLoader. Возможно, следует выполнять и другие действия из MainController.start()
-                try {
-                    initRmiClassLoader();
-                } catch (Exception ex) {
-                    logger.error("Error during startup: ", ex);
-                    ex.printStackTrace();
-                    removeSingleInstanceListener();
-                    System.exit(1);
-                }
+                initRmiClassLoader(remoteLogics);
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
@@ -287,25 +278,32 @@ public class MainController {
         ComBridge.loadJsscLibraries();
     }
 
-    private static void initRmiClassLoader() throws IllegalAccessException, NoSuchFieldException {
-        // приходится извращаться, так как RMIClassLoader использует для загрузки Spi Class.forname,
-        // а это работает некорректно, поскольку JWS использует свой user-class loader,
-        // а сами jar-файлы не добавляются в java.class.path
-        // необходимо, чтобы ClientRMIClassLoaderSpi запускался с родным ClassLoader JWS
+    public static void initRmiClassLoader(RemoteLogicsInterface remoteLogics) {
+        // since RMIClassLoader uses Spi Class.forname to load,
+        // and this does not work correctly, since JWS uses its own user-class loader,
+        // and the jar-files are not added to java.class.path
+        // requires RemoteClassLoader to run with native JWS ClassLoader
 
-        Field field = RMIClassLoader.class.getDeclaredField("provider");
-        field.setAccessible(true);
+        try {
+            Field field = RMIClassLoader.class.getDeclaredField("provider");
+            field.setAccessible(true);
 
-        Field modifiersField = Field.class.getDeclaredField("modifiers");
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
+            Field modifiersField = Field.class.getDeclaredField("modifiers");
+            modifiersField.setAccessible(true);
+            modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
 
-        field.set(null, new ClientRMIClassLoaderSpi());
+            field.set(null, new RemoteClassLoader(remoteLogics));
 
-        // сбрасываем SecurityManager, который устанавливает JavaWS,
-        // поскольку он не дает ничего делать классу ClientRMIClassLoaderSpi,
-        // так как он load'ится из временного директория
-        System.setSecurityManager(null);
+            // reset the SecurityManager that installs JavaWS,
+            // since it doesn't let the RemoteClassLoader class do anything,
+            // since it is loaded from a temporary directory
+            System.setSecurityManager(null);
+        } catch (Exception ex) {
+            logger.error("Error during startup: ", ex);
+            ex.printStackTrace();
+            removeSingleInstanceListener();
+            System.exit(1);
+        }
     }
     
     private static void initSwing() throws ClassNotFoundException, InstantiationException, IllegalAccessException, UnsupportedLookAndFeelException {

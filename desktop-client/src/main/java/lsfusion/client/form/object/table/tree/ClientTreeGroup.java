@@ -26,6 +26,8 @@ public class ClientTreeGroup extends ClientComponent implements ClientIdentitySe
     
     public boolean expandOnClick;
 
+    public int headerHeight;
+
     public ClientTreeGroup() {
     }
 
@@ -47,6 +49,8 @@ public class ClientTreeGroup extends ClientComponent implements ClientIdentitySe
         pool.serializeObject(outStream, filter);
         
         outStream.writeBoolean(expandOnClick);
+
+        outStream.writeInt(headerHeight);
     }
 
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
@@ -59,6 +63,8 @@ public class ClientTreeGroup extends ClientComponent implements ClientIdentitySe
         plainTreeMode = inStream.readBoolean();
         
         expandOnClick = inStream.readBoolean();
+
+        headerHeight = inStream.readInt();
 
         List<ClientGroupObject> upGroups = new ArrayList<>();
         for (ClientGroupObject group : groups) {
@@ -90,5 +96,9 @@ public class ClientTreeGroup extends ClientComponent implements ClientIdentitySe
             size += groupObject.isRecursive ? 20 * 4 : 20;
         }
         return size;
+    }
+
+    public int getHeaderHeight() {
+        return headerHeight;
     }
 }

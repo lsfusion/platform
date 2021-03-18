@@ -158,7 +158,7 @@ public class ZDateTimeClass extends DataClass<Instant> {
                 return ZonedDateTime.parse(s, DateTimeFormatter.ISO_DATE_TIME).toInstant();
             }
         } catch (Exception e) {
-            throw new ParseException("error parsing datetime: " + s, e);
+            throw ParseException.propagateWithMessage("Error parsing datetime: " + s, e);
         }
     }
 

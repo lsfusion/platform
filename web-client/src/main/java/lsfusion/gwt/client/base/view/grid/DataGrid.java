@@ -559,9 +559,9 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
         // Increment the keyboard selected column.
         int selectedColumn = getSelectedColumn();
         if(selectedColumn == -1)
-            setSelectedColumn(0);
+            changeSelectedColumn(columns.size() - 1);
         else if (beforeIndex <= selectedColumn)
-            setSelectedColumn(selectedColumn + 1);
+            changeSelectedColumn(selectedColumn + 1);
     }
 
     public void moveColumn(int oldIndex, int newIndex) {

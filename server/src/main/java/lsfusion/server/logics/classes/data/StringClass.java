@@ -70,7 +70,7 @@ public class StringClass extends DataClass<String> {
     }
 
     public String parseString(String s) {
-        return s;
+        return s.replace("\u0000", "");
     }
 
     @Override

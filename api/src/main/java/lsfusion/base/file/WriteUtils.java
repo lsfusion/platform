@@ -1,17 +1,16 @@
 package lsfusion.base.file;
 
-import com.jcraft.jsch.*;
-import org.apache.commons.net.ftp.FTP;
-import org.apache.commons.net.ftp.FTPClient;
+import com.google.common.base.Throwables;
+import com.jcraft.jsch.ChannelSftp;
+import com.jcraft.jsch.SftpException;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.*;
-import java.util.Properties;
 
 public class WriteUtils {
 
-    public static void write(RawFileData fileData, String path, String extension, boolean client, boolean append) throws IOException, SftpException, JSchException {
+    public static void write(RawFileData fileData, String path, String extension, boolean client, boolean append) throws IOException {
         Path filePath = Path.parsePath(path);
 
         switch (filePath.type) {
@@ -79,78 +78,36 @@ public class WriteUtils {
         return new File(parent, filePath);
     }
 
-    public static void storeFileToFTP(String path, RawFileData file, String extension) throws IOException {
-        FTPPath properties = FTPPath.parseFTPPath(path);
-        String remoteFile = appendExtension(properties.remoteFile, extension);
-        FTPClient ftpClient = new FTPClient();
-        ftpClient.setConnectTimeout(60000); //1 minute = 60 sec
-        if (properties.charset != null)
-            ftpClient.setControlEncoding(properties.charset);
-        try {
-
-            ftpClient.connect(properties.server, properties.port);
-            if (ftpClient.login(properties.username, properties.password)) {
-                if(properties.passiveMode) {
-                    ftpClient.enterLocalPassiveMode();
-                }
-                ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
-                if(properties.binaryTransferMode) {
-                    ftpClient.setFileTransferMode(FTP.BINARY_FILE_TYPE);
-                }
-
-                InputStream inputStream = file.getInputStream();
-                boolean done = ftpClient.storeFile(remoteFile, inputStream);
-                inputStream.close();
-                if (!done) {
-                    throw new RuntimeException("Error occurred while writing file to ftp : " + ftpClient.getReplyCode());
-                }
-            } else {
-                throw new RuntimeException("Incorrect login or password. Writing file from ftp failed");
-            }
-        } finally {
+    public static void storeFileToFTP(String path, RawFileData file, String extension) {
+        IOUtils.ftpAction(path, (ftpPath, ftpClient) -> {
             try {
-                if (ftpClient.isConnected()) {
-                    ftpClient.setSoTimeout(10000);
-                    ftpClient.logout();
-                    ftpClient.disconnect();
+                String remoteFile = appendExtension(ftpPath.remoteFile, extension);
+                try(InputStream inputStream = file.getInputStream()) {
+                    if (!ftpClient.storeFile(remoteFile, inputStream)) {
+                        throw new RuntimeException("Failed to write ftp file: " + ftpClient.getReplyString());
+                    }
                 }
+                return null;
             } catch (IOException e) {
-                e.printStackTrace();
+                throw Throwables.propagate(e);
             }
-        }
+        });
     }
 
-    public static void storeFileToSFTP(String path, RawFileData file, String extension) throws JSchException, SftpException {
-        FTPPath properties = FTPPath.parseSFTPPath(path);
-        String remoteFilePath = appendExtension(properties.remoteFile, extension);
-        File remoteFile = new File((!remoteFilePath.startsWith("/") ? "/" : "") + remoteFilePath);
-
-        Session session = null;
-        Channel channel = null;
-        ChannelSftp channelSftp = null;
-        try {
-            JSch jsch = new JSch();
-            session = jsch.getSession(properties.username, properties.server, properties.port);
-            session.setPassword(properties.password);
-            Properties config = new Properties();
-            config.put("StrictHostKeyChecking", "no");
-            session.setConfig(config);
-            session.connect();
-            channel = session.openChannel("sftp");
-            channel.connect();
-            channelSftp = (ChannelSftp) channel;
-            if (properties.charset != null)
-                channelSftp.setFilenameEncoding(properties.charset);
-            channelSftp.cd(remoteFile.getParent().replace("\\", "/"));
-            channelSftp.put(file.getInputStream(), remoteFile.getName());
-        } finally {
-            if (channelSftp != null)
-                channelSftp.exit();
-            if (channel != null)
-                channel.disconnect();
-            if (session != null)
-                session.disconnect();
-        }
+    public static void storeFileToSFTP(String path, RawFileData file, String extension) {
+        IOUtils.sftpAction(path, (ftpPath, channelSftp) -> {
+            try {
+                File f = new File(appendExtension(ftpPath.remoteFile, extension));
+                channelSftp.cd(f.getParent().replace("\\", "/"));
+                channelSftp.put(file.getInputStream(), f.getName());
+            } catch (SftpException e) {
+                if(e.id == ChannelSftp.SSH_FX_NO_SUCH_FILE)
+                    throw new RuntimeException(String.format("Path '%s' not found for %s", ftpPath.remoteFile, path), e);
+                else
+                    throw Throwables.propagate(e);
+            }
+            return null;
+        });
     }
 
     public static String appendExtension(String path, String extension) {

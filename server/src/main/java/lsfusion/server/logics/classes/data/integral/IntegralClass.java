@@ -131,16 +131,16 @@ public abstract class IntegralClass<T extends Number> extends DataClass<T> {
 
     @Override
     public T parseJSON(Object value) throws JSONException, ParseException {
-        if(value == JSONObject.NULL || (value instanceof String && (value.equals("NaN") || value.equals("Infinity") || value.equals("-NaN") || value.equals("-Infinity"))))
+        if(value == null || value == JSONObject.NULL || (value instanceof String && (value.equals("NaN") || value.equals("Infinity") || value.equals("-NaN") || value.equals("-Infinity"))))
             return null;
         if(!(value instanceof Number))
             throw new ParseException("Number is required");
-        return readJSON((Number) value);
+        return readJSON(value);
     }
 
     @Override
     public T parseXLS(Cell cell, CellValue formulaValue) throws ParseException {
-        if(formulaValue.getCellTypeEnum().equals(CellType.NUMERIC))
+        if(formulaValue.getCellType().equals(CellType.NUMERIC))
             return readXLS(formulaValue.getNumberValue());
         return super.parseXLS(cell, formulaValue); 
     }

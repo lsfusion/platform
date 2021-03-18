@@ -1,8 +1,6 @@
 package lsfusion.server.physics.dev.integration.external.to.file;
 
 import com.google.common.base.Throwables;
-import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.SftpException;
 import lsfusion.server.logics.UtilsLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
@@ -26,20 +24,16 @@ public class DeleteAction extends InternalAction {
     }
 
     public void executeInternal(ExecutionContext<ClassPropertyInterface> context) {
-        try {
-            String sourcePath = (String) context.getKeyValue(sourceInterface).getValue();
-            boolean isClient = context.getKeyValue(isClientInterface).getValue() != null;
-            if (sourcePath != null) {
-                if (isClient) {
-                    String result = (String) context.requestUserInteraction(new DeleteFileClientAction(sourcePath));
-                    if (result != null)
-                        throw new RuntimeException(result);
-                } else {
-                    FileUtils.delete(sourcePath);
-                }
+        String sourcePath = (String) context.getKeyValue(sourceInterface).getValue();
+        boolean isClient = context.getKeyValue(isClientInterface).getValue() != null;
+        if (sourcePath != null) {
+            if (isClient) {
+                String result = (String) context.requestUserInteraction(new DeleteFileClientAction(sourcePath));
+                if (result != null)
+                    throw new RuntimeException(result);
+            } else {
+                FileUtils.delete(sourcePath);
             }
-        } catch (IOException | JSchException | SftpException e) {
-            throw Throwables.propagate(e);
         }
     }
 

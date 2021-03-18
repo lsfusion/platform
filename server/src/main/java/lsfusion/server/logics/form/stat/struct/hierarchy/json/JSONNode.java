@@ -69,7 +69,7 @@ public class JSONNode implements Node<JSONNode> {
         } catch (JSONException e) {
             throw Throwables.propagate(e);
         } catch (ParseException e) {
-            throw new ParseException(e.getMessage() + String.format(" (tag %s)", key), e);
+            throw ParseException.propagateWithMessage(String.format(" (tag %s)", key), e);
         }
     }
 

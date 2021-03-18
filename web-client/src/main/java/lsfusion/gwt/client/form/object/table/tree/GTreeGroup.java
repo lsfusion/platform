@@ -16,6 +16,8 @@ public class GTreeGroup extends GComponent {
     
     public boolean expandOnClick;
 
+    public int headerHeight;
+
     public int calculateSize() {
         int size = 0;
         for (GGroupObject groupObject : groups) {

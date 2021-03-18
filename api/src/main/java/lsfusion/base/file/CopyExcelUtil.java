@@ -104,7 +104,7 @@ public final class CopyExcelUtil {
                 newCell.setCellStyle(newCellStyle);
             }
         }
-        switch (oldCell.getCellTypeEnum()) {
+        switch (oldCell.getCellType()) {
             case STRING:
                 newCell.setCellValue(oldCell.getStringCellValue());
                 break;
@@ -118,7 +118,7 @@ public final class CopyExcelUtil {
                 newCell.setCellValue(oldCell.getBooleanCellValue());
                 break;
             case ERROR:
-                newCell.setCellErrorValue(oldCell.getErrorCellValue());
+                newCell.setCellErrorValue(FormulaError.forInt(oldCell.getErrorCellValue()));
                 break;
             case FORMULA:
                 newCell.setCellFormula(oldCell.getCellFormula());
@@ -282,7 +282,7 @@ public final class CopyExcelUtil {
                 newCell.setCellStyle(newCellStyle);
             }
         }
-        switch (oldCell.getCellTypeEnum()) {
+        switch (oldCell.getCellType()) {
             case STRING:
                 newCell.setCellValue(oldCell.getStringCellValue());
                 break;

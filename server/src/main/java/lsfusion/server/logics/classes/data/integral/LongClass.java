@@ -104,7 +104,7 @@ public class LongClass extends IntClass<Long> {
         try {
             return isEmptyString(s) ? null : Long.parseLong(s);
         } catch (Exception e) {
-            throw new ParseException("error parsing long: " + s, e);
+            throw ParseException.propagateWithMessage("Error parsing long: " + s, e);
         }
     }
 

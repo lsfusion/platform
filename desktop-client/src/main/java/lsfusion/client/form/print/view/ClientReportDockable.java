@@ -4,6 +4,7 @@ import bibliothek.gui.dock.common.event.CKeyboardListener;
 import bibliothek.gui.dock.common.intern.CDockable;
 import com.google.common.base.Throwables;
 import lsfusion.client.base.view.ClientDockable;
+import lsfusion.client.controller.MainController;
 import lsfusion.client.form.controller.FormsController;
 import lsfusion.interop.form.print.FormPrintType;
 import lsfusion.interop.form.print.ReportGenerationData;
@@ -25,12 +26,13 @@ public class ClientReportDockable extends ClientDockable {
         super(null, formsController);
 
         try {
-            final JasperPrint print = new ReportGenerator(generationData).createReport(FormPrintType.PRINT);
+            final JasperPrint print = new ReportGenerator(generationData).createReport(FormPrintType.PRINT, MainController.remoteLogics);
             print.setProperty(XlsReportConfiguration.PROPERTY_DETECT_CELL_TYPE, "true");
             this.pageCount = print.getPages().size();
             final ReportViewer reportViewer = new ReportViewer(print, printerName, editInvoker);
             setContent(prepareViewer(reportViewer));
             setTitleText(formCaption);
+
             addKeyboardListener(new CKeyboardListener() {
                 @Override
                 public boolean keyPressed(CDockable cDockable, KeyEvent keyEvent) {

@@ -272,6 +272,10 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         }
     }
 
+    public String getFilterCaption() {
+        return getNotEmptyCaption() + " (" + (groupObject != null ? groupObject.getCaption() : "") + ")";
+    }
+
     private static ClientMessages getMessages() {
         return ClientMessages.Instance.get();
     }

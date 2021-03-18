@@ -62,7 +62,7 @@ public class BaseUtils {
     private static final int STRING_SERIALIZATION_CHUNK_SIZE = 65535/3;
 
     public static Integer getApiVersion() {
-        return 142;
+        return 146;
     }
 
     public static String getPlatformVersion() {
@@ -2302,9 +2302,9 @@ public class BaseUtils {
 
     //date pattern allows only "d" (day), "M" (month), "y" (year) symbols and "\", "/", ".", "-", ",", ":", " " (delimiters)
     //at least one "d", "M" and "y" symbol is required
-    //dateTime pattern also allow "H" (hour) and "m" (minute), and this symbols are required
+    //dateTime pattern also allow "H" (hour), "m" (minute), "s" (second), "S" (millisecond). At least one "H" and "m" symbols are required
     public static String getValidEditDateFormat(String pattern, boolean dateTime) {
-        String regexp = dateTime ? "[^dMyHm\\s\\\\/.,\\-:]|M{3,}" : "[^dMy\\s\\\\/.,\\-:]|M{3,}";
+        String regexp = dateTime ? "[^dMyHmsS\\s\\\\/.,\\-:]|M{3,}" : "[^dMy\\s\\\\/.,\\-:]|M{3,}";
         Stream<String> requiredSymbols = dateTime ? Stream.of("d", "M", "y", "H", "m") : Stream.of("d", "M", "y");
         pattern = pattern.replaceAll(regexp, "").trim();
         return requiredSymbols.allMatch(pattern::contains) ? pattern : null;

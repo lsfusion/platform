@@ -1,18 +1,16 @@
 package lsfusion.server.logics.classes.data;
 
+import lsfusion.base.ExceptionUtils;
+
 public class ParseException extends Exception {
-    public ParseException() {
-    }
 
     public ParseException(String message) {
         super(message);
     }
 
-    public ParseException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    public ParseException(Throwable cause) {
-        super(cause);
+    public static ParseException propagateWithMessage(String message, Throwable throwable) throws ParseException {
+        ParseException propagatedMessage = new ParseException(ExceptionUtils.copyMessage(throwable) + ' ' + message);
+        ExceptionUtils.copyStackTraces(throwable, propagatedMessage);
+        throw propagatedMessage;
     }
 }

@@ -65,7 +65,11 @@ public abstract class ClientDockable extends DefaultMultipleCDockable {
             @Override
             public void focusGained(CDockable dockable) {
                 initDefaultComponent();
-                SwingUtilities.invokeLater(ClientDockable.this::focusDefaultComponent);
+                SwingUtilities.invokeLater(() -> {
+                    if (!activateFirstComponents()) {
+                        focusDefaultComponent();
+                    }
+                });
                 if (defaultComponent != null) {
                     removeFocusListener(this);
                 }
@@ -74,6 +78,10 @@ public abstract class ClientDockable extends DefaultMultipleCDockable {
             @Override
             public void focusLost(CDockable dockable) {}
         });
+    }
+    
+    protected boolean activateFirstComponents() {
+        return false;
     }
 
     private void initDefaultComponent() {

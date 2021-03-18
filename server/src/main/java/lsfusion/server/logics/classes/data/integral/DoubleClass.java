@@ -97,7 +97,7 @@ public class DoubleClass extends IntegralClass<Double> {
         try {
             return isEmptyString(s) ? null : Double.parseDouble(BaseUtils.replaceCommaSeparator(s));
         } catch (Exception e) {
-            throw new ParseException("error parsing double: " + s, e);
+            throw ParseException.propagateWithMessage("Error parsing double: " + s, e);
         }
     }
 
@@ -112,7 +112,7 @@ public class DoubleClass extends IntegralClass<Double> {
 
     @Override
     public Double getInfiniteValue(boolean min) {
-        return min ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;
+        return min ? -Double.MAX_VALUE : Double.MAX_VALUE;
     }
 
     public ExtInt getCharLength() {

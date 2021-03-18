@@ -206,7 +206,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         errLog = new ScriptingErrorLog();
         errLog.setModuleId(getIdentifier());
         
-        parser = new ScriptParser(errLog);
+        parser = new ScriptParser();
         checks = new ScriptingLogicsModuleChecks(this);
     }
 
@@ -3668,11 +3668,11 @@ public class ScriptingLogicsModule extends LogicsModule {
         return result;
     }
 
-    public void addScriptedMetaCodeFragment(String name, List<String> params, List<String> tokens, List<Pair<Integer, Boolean>> metaTokens, String code, int lineNumber) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedMetaCodeFragment(String name, List<String> params, List<Pair<String, Boolean>> tokens, int lineNumber) throws RecognitionException {
         checks.checkDuplicateMetaCodeFragment(name, params.size());
         checks.checkDistinctParameters(params);
 
-        MetaCodeFragment fragment = new MetaCodeFragment(elementCanonicalName(name), params, tokens, metaTokens, code, getName(), lineNumber);
+        MetaCodeFragment fragment = new MetaCodeFragment(elementCanonicalName(name), params, tokens, getName(), lineNumber);
         addMetaCodeFragment(fragment);
     }
 
@@ -3681,11 +3681,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         checks.checkMetaCodeParamCount(metaCode, params.size());
 
         String code = metaCode.getCode(params, BL.getIdFromReversedI18NDictionaryMethod(), BL::appendEntryToBundle);
-        parser.runMetaCode(this, code, metaCode, MetaCodeFragment.metaCodeCallString(name, metaCode, params), lineNumber, enabledMeta);
-    }
-
-    public Pair<List<String>, List<Pair<Integer, Boolean>>> grabMetaCode(String metaCodeName) throws ScriptingErrorLog.SemanticErrorException {
-        return parser.grabMetaCode(metaCodeName);
+        parser.runMetaCode(this, code, metaCode.getLineNumber(), metaCode.getModuleName(), MetaCodeFragment.metaCodeCallString(name, metaCode, params), lineNumber, enabledMeta);
     }
 
     private LP addStaticClassConst(String name) throws ScriptingErrorLog.SemanticErrorException {

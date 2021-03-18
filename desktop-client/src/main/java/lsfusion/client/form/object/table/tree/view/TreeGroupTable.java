@@ -28,6 +28,7 @@ import lsfusion.client.form.property.cell.view.ClientAbstractCellRenderer;
 import lsfusion.client.form.property.table.view.CellTableContextMenuHandler;
 import lsfusion.client.form.property.table.view.CellTableInterface;
 import lsfusion.client.form.property.table.view.InternalEditEvent;
+import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.event.BindingMode;
 import lsfusion.interop.form.event.KeyInputEvent;
 import lsfusion.interop.form.event.KeyStrokes;
@@ -61,7 +62,6 @@ import java.util.*;
 import static java.lang.Math.max;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
-import static lsfusion.client.base.view.SwingDefaults.getTableHeaderHeight;
 import static lsfusion.client.form.controller.ClientFormController.PasteData;
 import static lsfusion.client.form.property.cell.EditBindingMap.getPropertyEventActionSID;
 import static lsfusion.client.form.property.cell.EditBindingMap.isEditableAwareEditEvent;
@@ -811,6 +811,9 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         if (isEditableAwareEditEvent(actionSID) && !isCellEditable(row, column)) {
             return false;
         }
+        if(ServerResponse.EDIT_OBJECT.equals(actionSID) && !property.hasEditObjectAction) {
+            return false;
+        }
 
         if (isHierarchical(column)) {
             return false;
@@ -951,13 +954,22 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         return sortableHeaderManager.changeOrders(groupObject, orders, alreadySet);
     }
 
+    public int getHeaderHeight() {
+        // set in DESIGN
+        int predefinedHeaderHeight = treeGroup.getHeaderHeight();
+        if (predefinedHeaderHeight >= 0) {
+            return predefinedHeaderHeight;
+        }
+        return SwingDefaults.getTableHeaderHeight();
+    }
+
     @Override
     protected JTableHeader createDefaultTableHeader() {
         JXTableHeader jxTableHeader = new JXTableHeader(columnModel) {
             @Override
             public Dimension getPreferredSize() {
                 Dimension pref = super.getPreferredSize();
-                return new Dimension(pref.width, getTableHeaderHeight());
+                return new Dimension(pref.width, getHeaderHeight());
             }
         };
         jxTableHeader.setReorderingAllowed(false);

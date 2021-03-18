@@ -55,6 +55,7 @@ public class ReceiveEmailAction extends InternalAction {
             accountQuery.addProperty("lastDaysAccount", emailLM.lastDaysAccount.getExpr(accountExpr));
             accountQuery.addProperty("maxMessagesAccount", emailLM.maxMessagesAccount.getExpr(accountExpr));
             accountQuery.and(emailLM.receiveHostAccount.getExpr(accountExpr).getWhere());
+            accountQuery.and(emailLM.disableAccount.getExpr(accountExpr).getWhere().not());
 
             ImOrderMap<ImMap<Object, DataObject>, ImMap<Object, ObjectValue>> accountResult = accountQuery.executeClasses(context);
 
