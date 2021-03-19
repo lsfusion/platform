@@ -2,7 +2,6 @@ package lsfusion.gwt.client.form.property.cell.classes.controller;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
-import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.classes.data.GIntervalType;
 import lsfusion.gwt.client.form.property.cell.controller.CellEditor;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
@@ -14,7 +13,6 @@ public class IntervalCellEditor implements CellEditor {
 
     private final EditManager editManager;
     private final String intervalType;
-    private static final ClientMessages messages = ClientMessages.Instance.get();
 
     public IntervalCellEditor(EditManager editManager, String intervalType) {
         this.editManager = editManager;
@@ -42,20 +40,6 @@ public class IntervalCellEditor implements CellEditor {
         return indexOfDecimal < 0 ? new Date() : GIntervalType.getTimestamp(from ? object.substring(0, indexOfDecimal) : object.substring(indexOfDecimal + 1));
     }
 
-    protected static native void getLocalizedString(String string)/*-{
-        var name;
-        var prototype = Object.getPrototypeOf(@IntervalCellEditor::messages);
-        var ownPropertyNames = Object.getOwnPropertyNames(prototype);
-        for (var i = 0; i < ownPropertyNames.length; i++) {
-            var property = ownPropertyNames[i];
-            if (property.includes(string)) {
-                name = property;
-                break;
-            }
-        }
-        return name != null ? prototype[name]() : name;
-    }-*/;
-
     protected native void createPicker(Element parent, Date startDate, Date endDate, String intervalType, boolean singleDatePicker)/*-{
         window.$ = $wnd.jQuery;
         var parentEl = $(parent);
@@ -65,31 +49,31 @@ public class IntervalCellEditor implements CellEditor {
 
         parentEl.daterangepicker({
             locale: {
-                applyLabel: @IntervalCellEditor::getLocalizedString(*)("applyLabel"),
-                cancelLabel: @IntervalCellEditor::getLocalizedString(*)("cancelLabel"),
-                customRangeLabel: @IntervalCellEditor::getLocalizedString(*)("customRangeLabel"),
+                applyLabel: @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("applyLabel"),
+                cancelLabel: @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("cancelLabel"),
+                customRangeLabel: @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("customRangeLabel"),
                 daysOfWeek: [
-                    @IntervalCellEditor::getLocalizedString(*)("daysOfWeekSU"),
-                    @IntervalCellEditor::getLocalizedString(*)("daysOfWeekMO"),
-                    @IntervalCellEditor::getLocalizedString(*)("daysOfWeekTU"),
-                    @IntervalCellEditor::getLocalizedString(*)("daysOfWeekWE"),
-                    @IntervalCellEditor::getLocalizedString(*)("daysOfWeekTH"),
-                    @IntervalCellEditor::getLocalizedString(*)("daysOfWeekFR"),
-                    @IntervalCellEditor::getLocalizedString(*)("daysOfWeekSA")
+                    @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("daysOfWeekSU"),
+                    @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("daysOfWeekMO"),
+                    @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("daysOfWeekTU"),
+                    @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("daysOfWeekWE"),
+                    @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("daysOfWeekTH"),
+                    @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("daysOfWeekFR"),
+                    @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("daysOfWeekSA")
                 ],
                 monthNames: [
-                    @IntervalCellEditor::getLocalizedString(*)("monthJanuary"),
-                    @IntervalCellEditor::getLocalizedString(*)("monthFebruary"),
-                    @IntervalCellEditor::getLocalizedString(*)("monthMarch"),
-                    @IntervalCellEditor::getLocalizedString(*)("monthApril"),
-                    @IntervalCellEditor::getLocalizedString(*)("monthMay"),
-                    @IntervalCellEditor::getLocalizedString(*)("monthJune"),
-                    @IntervalCellEditor::getLocalizedString(*)("monthJuly"),
-                    @IntervalCellEditor::getLocalizedString(*)("monthAugust"),
-                    @IntervalCellEditor::getLocalizedString(*)("monthSeptember"),
-                    @IntervalCellEditor::getLocalizedString(*)("monthOctober"),
-                    @IntervalCellEditor::getLocalizedString(*)("monthNovember"),
-                    @IntervalCellEditor::getLocalizedString(*)("monthDecember")
+                    @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("monthJanuary"),
+                    @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("monthFebruary"),
+                    @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("monthMarch"),
+                    @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("monthApril"),
+                    @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("monthMay"),
+                    @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("monthJune"),
+                    @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("monthJuly"),
+                    @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("monthAugust"),
+                    @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("monthSeptember"),
+                    @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("monthOctober"),
+                    @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("monthNovember"),
+                    @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("monthDecember")
                 ],
                 "firstDay": 1
             },
@@ -98,13 +82,13 @@ public class IntervalCellEditor implements CellEditor {
             timePicker: !date,
             timePicker24Hour: true,
             autoApply: false,
-            ranges: !time ? $wnd.getRanges($wnd, @IntervalCellEditor::getLocalizedString(*)("today"),
-                @IntervalCellEditor::getLocalizedString(*)("yesterday"),
-                @IntervalCellEditor::getLocalizedString(*)("last7Days"),
-                @IntervalCellEditor::getLocalizedString(*)("last30Days"),
-                @IntervalCellEditor::getLocalizedString(*)("thisMonth"),
-                @IntervalCellEditor::getLocalizedString(*)("lastMonth"),
-                @IntervalCellEditor::getLocalizedString(*)("clear")): undefined,
+            ranges: !time ? $wnd.getRanges($wnd, @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("today"),
+                @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("yesterday"),
+                @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("last7Days"),
+                @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("last30Days"),
+                @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("thisMonth"),
+                @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("lastMonth"),
+                @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("clear")): undefined,
             singleDatePicker: singleDatePicker,
             alwaysShowCalendars: true // need to use with ranges
         });

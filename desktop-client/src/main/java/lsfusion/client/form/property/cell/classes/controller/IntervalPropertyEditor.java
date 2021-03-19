@@ -112,7 +112,9 @@ public class IntervalPropertyEditor extends JDateChooser implements PropertyEdit
                 long l = date.getTime() / 1000;
                 String[] split = s.split("\\.");
 
-                if (left)
+                if (split.length < 2) //there is no interval, only one date or there are some errors on input
+                    s = String.valueOf(l);
+                else if (left)
                     s = s.replaceFirst(split[0], String.valueOf(l));
                 else if (right)
                     s = s.replaceAll("." + split[1], "." + l);
