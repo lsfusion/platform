@@ -26,8 +26,8 @@ public class ObjectValueProperty extends NoIncrementProperty<ClassPropertyInterf
 
     private final ObjectEntity object; 
             
-    public ObjectValueProperty(ValueClass valueClass, ObjectEntity object) { // LocalizedString.create("{logics.object}")
-        super(object.getCaption(), IsClassProperty.getInterfaces(new ValueClass[]{valueClass}));
+    public ObjectValueProperty(ObjectEntity object) { // LocalizedString.create("{logics.object}")
+        super(object.getCaption(), IsClassProperty.getInterfaces(new ValueClass[]{object.baseClass}));
 
         this.object = object;
         
@@ -60,7 +60,7 @@ public class ObjectValueProperty extends NoIncrementProperty<ClassPropertyInterf
     @Override
     @IdentityStrongLazy // STRONG пришлось поставить из-за использования в политике безопасности
     public ActionMapImplement<?, ClassPropertyInterface> getDefaultEventAction(String eventActionSID, ImList<Property> viewProperties) {
-        return new DefaultChangeObjectAction(getInterface().interfaceClass, object).getImplement(SetFact.singletonOrder(getInterface()));
+        return object.getChangeAction().getImplement(SetFact.singletonOrder(getInterface()));
     }
 
     private ClassPropertyInterface getInterface() {
