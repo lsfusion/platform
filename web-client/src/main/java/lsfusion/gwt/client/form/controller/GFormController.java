@@ -1341,8 +1341,13 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
     public boolean previewEvent(Element target, Event event) {
         checkLinkEditModeEvents(formsController, event);
+        return previewLoadingManagerSinkEvents(event) && MainFrame.previewEvent(target, event, isEditing());
+    }
 
-        return MainFrame.previewEvent(target, event, isEditing());
+    private boolean previewLoadingManagerSinkEvents(Event event) {
+        //focus() can trigger blur event, blur finishes editing. New editing calls syncDispatch.
+        //If isEditing() and loadingManager isVisible() then flushCompletedRequests is not executed and syncDispatch is blocked.
+        return !(loadingManager.isVisible() && DataGrid.checkSinkEvents(event));
     }
 
     protected void onFormHidden(int closeDelay) {
@@ -1933,8 +1938,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         if(GMouseStroke.isChangeEvent(handler.event))
             focusElement.focus(); // it should be done on CLICK, but also on MOUSEDOWN, since we want to focus even if mousedown is later consumed
 
-        //need to be after focus(), because focus() finishes editing
-        if(loadingManager.isVisible() && DataGrid.checkSinkEvents(handler.event)) {
+        if(!previewLoadingManagerSinkEvents(handler.event)) {
             return;
         }
 
