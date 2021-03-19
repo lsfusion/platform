@@ -41,7 +41,7 @@ public abstract class ClientIntervalClass extends ClientFormatClass<SimpleDateFo
     public static Date getDateFromInterval(Object o, boolean from) {
         String object = String.valueOf(o);
         int indexOfDecimal = object.indexOf(".");
-        String dateValue = from ? object.substring(0, indexOfDecimal) : object.substring(indexOfDecimal + 1);
+        String dateValue = indexOfDecimal < 0 ? object : from ? object.substring(0, indexOfDecimal) : object.substring(indexOfDecimal + 1);
 
         return Date.from(Instant.ofEpochSecond(Long.parseLong(dateValue)));
     }

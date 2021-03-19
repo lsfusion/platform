@@ -30,12 +30,16 @@ public class IntervalCellEditor implements CellEditor {
 
     @Override
     public void startEditing(Event event, Element parent, Object oldValue) {
+        createPicker(parent, getObjectDate(oldValue, true), getObjectDate(oldValue, false), intervalType, false);
+    }
+
+    private Date getObjectDate(Object oldValue, boolean from) {
         String object = String.valueOf(oldValue);
         int indexOfDecimal = object.indexOf(".");
 
-        createPicker(parent, GIntervalType.getTimestamp(object.substring(0, indexOfDecimal)),
-                GIntervalType.getTimestamp(object.substring(indexOfDecimal + 1)), intervalType, false);
+        return indexOfDecimal < 0 ? new Date() : GIntervalType.getTimestamp(from ? object.substring(0, indexOfDecimal) : object.substring(indexOfDecimal + 1));
     }
+
     protected static native void getLocalizedString(String string)/*-{
         var name;
         var prototype = Object.getPrototypeOf(@IntervalCellEditor::messages);

@@ -56,8 +56,9 @@ public class IntervalPropertyEditor extends JDateChooser implements PropertyEdit
         try {
             IntervalPropertyEditorComponent dateEditor = (IntervalPropertyEditorComponent) getDateEditor();
             String[] dates = dateEditor.getText().split(" - ");
-            return new BigDecimal(format.parse(dates[0]).getTime() / 1000
-                    + "." + format.parse(dates[1]).getTime() / 1000);
+            long timeFrom = format.parse(dates[0]).getTime();
+            long timeTo = format.parse(dates[1]).getTime();
+            return timeTo >= timeFrom ? new BigDecimal(timeFrom / 1000 + "." + timeTo / 1000) : defaultValue;
         } catch (Exception e) {
             return defaultValue;
         }
@@ -92,11 +93,12 @@ public class IntervalPropertyEditor extends JDateChooser implements PropertyEdit
 
         @Override
         public Date getDate() {
-            if (left)
-                return ClientDateIntervalClass.getDateFromInterval(defaultValue, true);
-            else if (right)
-                return ClientDateIntervalClass.getDateFromInterval(defaultValue, false);
-
+            if (defaultValue != null) {
+                if (left)
+                    return ClientDateIntervalClass.getDateFromInterval(defaultValue, true);
+                else if (right)
+                    return ClientDateIntervalClass.getDateFromInterval(defaultValue, false);
+            }
             return null;
         }
 
@@ -108,15 +110,15 @@ public class IntervalPropertyEditor extends JDateChooser implements PropertyEdit
                 String[] split = s.split("\\.");
 
                 if (left)
-                    s = s.replaceAll(split[0], String.valueOf(l));
+                    s = s.replaceFirst(split[0], String.valueOf(l));
                 else if (right)
-                    s = s.replaceAll(split[1], String.valueOf(l));
+                    s = s.replaceAll("." + split[1], "." + l);
 
                 defaultValue = s;
             }
 
-            setValue(editingFormat.format(ClientDateIntervalClass.getDateFromInterval(defaultValue, true))
-                    + " - " + editingFormat.format(ClientDateIntervalClass.getDateFromInterval(defaultValue, false)));
+            setValue(defaultValue != null ? editingFormat.format(ClientDateIntervalClass.getDateFromInterval(defaultValue, true))
+                    + " - " + editingFormat.format(ClientDateIntervalClass.getDateFromInterval(defaultValue, false)) : "");
 
             left = right = false;
         }
