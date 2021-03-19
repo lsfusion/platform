@@ -24,6 +24,8 @@ public class IntervalCellEditor implements CellEditor {
     public void validateAndCommit(Long dateFrom, Long dateTo) {
         if (dateFrom != null && dateTo != null)
             editManager.commitEditing(new BigDecimal(dateFrom + "." + dateTo));
+        else if (dateFrom == null && dateTo == null)
+            editManager.commitEditing(null);
         else
             editManager.cancelEditing();
     }
@@ -101,7 +103,8 @@ public class IntervalCellEditor implements CellEditor {
                 @IntervalCellEditor::getLocalizedString(*)("last7Days"),
                 @IntervalCellEditor::getLocalizedString(*)("last30Days"),
                 @IntervalCellEditor::getLocalizedString(*)("thisMonth"),
-                @IntervalCellEditor::getLocalizedString(*)("lastMonth")) : undefined,
+                @IntervalCellEditor::getLocalizedString(*)("lastMonth"),
+                @IntervalCellEditor::getLocalizedString(*)("clear")): undefined,
             singleDatePicker: singleDatePicker,
             alwaysShowCalendars: true // need to use with ranges
         });
@@ -117,8 +120,8 @@ public class IntervalCellEditor implements CellEditor {
         parentEl.on('hide.daterangepicker', function (ev, picker) {
             var startDate = picker.startDate;
             var endDate = picker.endDate;
-            var dateFrom = startDate != null ? startDate.unix() : null;
-            var dateTo = endDate != null ? endDate.unix() : null;
+            var dateFrom = startDate.isValid() ? startDate.unix() : null;
+            var dateTo = endDate.isValid() != null ? endDate.unix() : null;
             thisObj.@lsfusion.gwt.client.form.property.cell.classes.controller.IntervalCellEditor::validateAndCommit(*)(dateFrom, dateTo);
         });
 

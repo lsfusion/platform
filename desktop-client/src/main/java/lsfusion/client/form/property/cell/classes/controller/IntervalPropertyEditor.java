@@ -55,7 +55,10 @@ public class IntervalPropertyEditor extends JDateChooser implements PropertyEdit
     public Object getCellEditorValue() {
         try {
             IntervalPropertyEditorComponent dateEditor = (IntervalPropertyEditorComponent) getDateEditor();
-            String[] dates = dateEditor.getText().split(" - ");
+            String text = dateEditor.getText();
+            if (text.isEmpty())
+                return null;
+            String[] dates = text.split(" - ");
             long timeFrom = format.parse(dates[0]).getTime();
             long timeTo = format.parse(dates[1]).getTime();
             return timeTo >= timeFrom ? new BigDecimal(timeFrom / 1000 + "." + timeTo / 1000) : defaultValue;

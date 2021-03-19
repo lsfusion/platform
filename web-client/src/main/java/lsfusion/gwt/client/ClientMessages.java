@@ -240,6 +240,7 @@ public interface ClientMessages extends Messages {
     String last30Days();
     String thisMonth();
     String lastMonth();
+    String clear();
 
     class Instance {
         private static final ClientMessages instance = GWT.create(ClientMessages.class);
