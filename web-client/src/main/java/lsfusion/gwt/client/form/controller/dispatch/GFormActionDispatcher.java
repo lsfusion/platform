@@ -67,12 +67,8 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
         pauseDispatching();
 
         Result<Object> result = new Result<>();
-        form.blockingConfirm(action.caption, action.message, action.cancel, action.timeout, action.initialValue, new DialogBoxHelper.CloseCallback() {
-            @Override
-            public void closed(DialogBoxHelper.OptionType chosenOption) {
-                continueDispatching(chosenOption.asInteger(), result);
-            }
-        });
+        form.blockingConfirm(action.caption, action.message, action.cancel, action.timeout, action.initialValue,
+                chosenOption -> continueDispatching(chosenOption.asInteger(), result));
         return result.result;
     }
 
