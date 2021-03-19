@@ -1345,7 +1345,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     private boolean previewLoadingManagerSinkEvents(Event event) {
-        //focus() can trigger blur event, blur finishes editing. New editing calls syncDispatch.
+        //focus() can trigger blur event, blur finishes editing. Editing calls syncDispatch.
         //If isEditing() and loadingManager isVisible() then flushCompletedRequests is not executed and syncDispatch is blocked.
         return !(loadingManager.isVisible() && DataGrid.checkSinkEvents(event));
     }
