@@ -662,7 +662,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> form.refreshUPHiddenProperties(groupObjectSID, propSids));
     }
 
-    public ServerResponse changeProperties(final long requestIndex, long lastReceivedRequestIndex, final int[] propertyIDs, final byte[][] fullKeys, final byte[][] pushChanges, final Long[] pushAdds) throws RemoteException {
+    public ServerResponse changeProperties(final long requestIndex, long lastReceivedRequestIndex, String actionSID, final int[] propertyIDs, final byte[][] fullKeys, final byte[][] pushChanges, final Long[] pushAdds) throws RemoteException {
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
             for (int j = 0; j < propertyIDs.length; j++) {
 
@@ -673,7 +673,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                 DataClass pushChangeType = null;
                 byte[] pushChange = pushChanges[j];
                 if (pushChange != null) {
-                    pushChangeType = propertyDraw.getEntity().getRequestInputType(form.entity, form.securityPolicy, ServerResponse.CHANGE);
+                    pushChangeType = propertyDraw.getEntity().getRequestInputType(form.entity, form.securityPolicy, actionSID);
                     Object objectPushChange = deserializeObject(pushChange);
                     if (pushChangeType == null) // веб почему-то при асинхронном удалении шлет не null, а [0] который deserialize'ся в null а потом превращается в NullValue.instance и падают ошибки
                         ServerLoggers.assertLog(objectPushChange == null, "PROPERTY CANNOT BE CHANGED -> PUSH CHANGE SHOULD BE NULL");
@@ -686,7 +686,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                 if (pushAdd != null)
                     pushAddObject = new DataObject(pushAdd, form.session.baseClass.unknown);
 
-                form.executeEventAction(propertyDraw, ServerResponse.CHANGE, keys, pushChangeObject, pushChangeType, pushAddObject, true, stack);
+                form.executeEventAction(propertyDraw, actionSID, keys, pushChangeObject, pushChangeType, pushAddObject, true, stack);
 
                 if (logger.isTraceEnabled()) {
                     logger.trace(String.format("changeProperty: [ID: %1$d, SID: %2$s]", propertyDraw.getID(), propertyDraw.getSID()));

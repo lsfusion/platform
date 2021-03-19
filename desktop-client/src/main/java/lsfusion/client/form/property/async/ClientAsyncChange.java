@@ -30,7 +30,7 @@ public class ClientAsyncChange extends ClientAsyncInputExec {
     }
 
     @Override
-    public boolean exec(ClientFormController form, EditPropertyDispatcher dispatcher, ClientPropertyDraw property, ClientGroupObjectValue columnKey) throws IOException {
-        return dispatcher.asyncChange(property, columnKey, this);
+    public boolean exec(ClientFormController form, EditPropertyDispatcher dispatcher, ClientPropertyDraw property, ClientGroupObjectValue columnKey, String actionSID) throws IOException {
+        return dispatcher.asyncChange(property, columnKey, actionSID, this);
     }
 }

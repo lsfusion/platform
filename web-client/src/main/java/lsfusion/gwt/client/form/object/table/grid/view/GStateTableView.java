@@ -20,6 +20,7 @@ import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGroupObjectUserPreferences;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.view.Column;
 import lsfusion.gwt.client.view.MainFrame;
 
@@ -439,7 +440,7 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
             oldValues[i] = getValue(properties[i], rowKeys[i], columnKeys[i]);
         }
 
-        form.changeProperties(properties, rowKeys, columnKeys, newValues, oldValues, null);
+        form.changeProperties(properties, GEditBindingMap.CHANGE, rowKeys, columnKeys, newValues, oldValues, null);
     }
 
     protected boolean isReadOnly(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {

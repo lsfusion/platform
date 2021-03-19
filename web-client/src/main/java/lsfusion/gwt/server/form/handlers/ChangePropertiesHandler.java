@@ -53,6 +53,7 @@ public class ChangePropertiesHandler extends FormServerResponseActionHandler<Cha
                 return remoteForm.changeProperties(
                         action.requestIndex,
                         action.lastReceivedRequestIndex,
+                        action.actionSID,
                         action.propertyIds,
                         fullKeys,
                         pushChanges,

@@ -38,7 +38,7 @@ public class ClientAsyncOpenForm extends ClientAsyncExec {
     }
 
     @Override
-    public boolean exec(ClientFormController form, EditPropertyDispatcher dispatcher, ClientPropertyDraw property, ClientGroupObjectValue columnKey) {
+    public boolean exec(ClientFormController form, EditPropertyDispatcher dispatcher, ClientPropertyDraw property, ClientGroupObjectValue columnKey, String actionSID) {
         if(!modal) { //ignore async modal windows in desktop
             ((DockableMainFrame) MainFrame.instance).asyncOpenForm(form.getRmiQueue().getNextRmiRequestIndex(), this);
         }

@@ -34,6 +34,7 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
 
     private ClientGroupObjectValue editColumnKey;
     private ClientPropertyDraw simpleChangeProperty;
+    private String actionSID;
 
     private ClientType readType;
     private Object oldValue;
@@ -79,7 +80,7 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
                     }
                 }
 
-                asyncEventExec.exec(form, this, property, columnKey);
+                asyncEventExec.exec(form, this, property, columnKey, actionSID);
 
                 if(!continueExecution) {
                     return true;
@@ -103,9 +104,10 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
         }
     }
 
-    public boolean asyncChange(ClientPropertyDraw property, ClientGroupObjectValue columnKey, ClientAsyncChange asyncChange) throws IOException {
-        editColumnKey = columnKey;
-        simpleChangeProperty = property;
+    public boolean asyncChange(ClientPropertyDraw property, ClientGroupObjectValue columnKey, String actionSID, ClientAsyncChange asyncChange) throws IOException {
+        this.editColumnKey = columnKey;
+        this.simpleChangeProperty = property;
+        this.actionSID = actionSID;
         return internalRequestValue(asyncChange.changeType);
     }
 
@@ -156,7 +158,7 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
                             updateEditValueCallback.done(inputResult.getValue());
                         }
                     }
-                    getFormController().changeProperty(simpleChangeProperty, editColumnKey, inputResult.getValue(), oldValueRequested);
+                    getFormController().changeProperty(simpleChangeProperty, editColumnKey, actionSID, inputResult.getValue(), oldValueRequested);
                 } catch (IOException e) {
                     throw Throwables.propagate(e);
                 }

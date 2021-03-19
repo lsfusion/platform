@@ -10,6 +10,6 @@ import java.io.IOException;
 
 public abstract class ClientAsyncEventExec implements ClientCustomSerializable {
 
-    public abstract boolean exec(ClientFormController form, EditPropertyDispatcher dispatcher, ClientPropertyDraw property, ClientGroupObjectValue columnKey) throws IOException;
+    public abstract boolean exec(ClientFormController form, EditPropertyDispatcher dispatcher, ClientPropertyDraw property, ClientGroupObjectValue columnKey, String actionSID) throws IOException;
 
 }

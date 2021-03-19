@@ -9,14 +9,16 @@ public class ChangeProperties extends FormRequestCountingAction<ServerResponseRe
     public GGroupObjectValue[] fullKeys;
     public Serializable[] values;
     public Long[] addedObjectsIds;
+    public String actionSID;
 
     public ChangeProperties() {
     }
 
-    public ChangeProperties(int[] propertyIds, GGroupObjectValue[] fullKeys, Serializable[] values, Long[] addedObjectsIds) {
+    public ChangeProperties(int[] propertyIds, GGroupObjectValue[] fullKeys, Serializable[] values, Long[] addedObjectsIds, String actionSID) {
         this.propertyIds = propertyIds;
         this.fullKeys = fullKeys;
         this.values = values;
         this.addedObjectsIds = addedObjectsIds;
+        this.actionSID = actionSID;
     }
 }
