@@ -138,7 +138,9 @@ public class XMLNode implements Node<XMLNode> {
         else {
             if(key.equals("value"))
                 stringValue = element.getText(); // array and objects will be ignored (see getText implementation)
-            else {
+            else if(key.equals("value:full")) {
+                stringValue = getFullText(element);
+            } else {
                 Element childElement = getXMLChild(key);
                 stringValue = childElement != null ? getFullText(childElement) : null; // array and objects will be ignored (see getText implementation)
             }
@@ -154,7 +156,7 @@ public class XMLNode implements Node<XMLNode> {
     public Iterable<Pair<Object, XMLNode>> getMap(String key, boolean isIndex) {
         MList<Pair<Object, XMLNode>> mResult = ListFact.mList();
         if(isIndex) {
-            List children = key.equals("value") ? element.getChildren() : getXMLChildren(key);
+            List children = key.equals("value") || key.equals("value:full") ? element.getChildren() : getXMLChildren(key);
             for (int i = 0; i < children.size(); i++)
                 mResult.add(new Pair<>(i, new XMLNode((Element) children.get(i))));
         } else {
@@ -187,7 +189,7 @@ public class XMLNode implements Node<XMLNode> {
     }
 
     private static void addXMLChild(Element element, String key, List<Content> content) {
-        if(key.equals("value")) {
+        if(key.equals("value") || key.equals("value:full")) {
             element.addContent(content);
         } else {
             Result<String> shortKey = new Result<>();
@@ -200,7 +202,7 @@ public class XMLNode implements Node<XMLNode> {
 
     //check if it's XML inside
     private static List<Content> parseObject(String str) {
-        if (str.matches(".*<.*/.*>.*")) {
+        if (str.contains("<") && str.contains("/") && str.contains(">")) {
             try {
                 List<Content> children = new ArrayList<>(new SAXBuilder().build(IOUtils.toInputStream("<wrap>" + str + "</wrap>")).getRootElement().getContent());
                 children.forEach(Content::detach);
