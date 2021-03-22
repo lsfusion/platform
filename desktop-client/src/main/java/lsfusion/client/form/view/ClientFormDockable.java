@@ -17,12 +17,14 @@ import java.util.List;
 
 public class ClientFormDockable extends ClientDockable {
 
+    private FormsController formsController;
     private ClientFormController form;
 
-    public ClientFormDockable(String caption, FormsController formsController, List<ClientDockable> openedForms, Long requestIndex, boolean async) {
-        super(null, formsController);
+    public ClientFormDockable(String canonicalName, String caption, FormsController formsController, List<ClientDockable> openedForms, Long requestIndex, boolean async) {
+        super(canonicalName, formsController);
         setCaption(caption, null);
         addAction(new CloseAllAction(openedForms));
+        this.formsController = formsController;
         this.requestIndex = requestIndex;
         this.async = async;
     }
@@ -78,6 +80,7 @@ public class ClientFormDockable extends ClientDockable {
 
         setContent(this.form.getLayout());
         async = false;
+        formsController.getForms().add(canonicalName);
     }
 
     public void setCaption(String caption, String tooltip) {

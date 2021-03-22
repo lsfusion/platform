@@ -155,9 +155,9 @@ public abstract class FormsController {
     }
 
     public FormContainer openForm(Long requestIndex, GForm form, GModalityType modalityType, boolean forbidDuplicate, Event initFilterEvent, WindowHiddenHandler hiddenHandler) {
-        FormDockable duplForm;
-        if(forbidDuplicate && MainFrame.forbidDuplicateForms && (duplForm = findForm(form.sID)) != null) {
-            selectTab(duplForm);
+        FormDockable duplicateForm = getDuplicateForm(form.sID, forbidDuplicate);
+        if(duplicateForm != null) {
+            selectTab(duplicateForm);
             return null;
         }
 
@@ -192,26 +192,36 @@ public abstract class FormsController {
     //size of modal window may change, we don't want flashing, so we use timer
     Timer openFormTimer;
     public void asyncOpenForm(Long requestIndex, GAsyncOpenForm openForm) {
-        if(openForm.modal) {
-            openFormTimer = new Timer() {
-                @Override
-                public void run() {
-                    Scheduler.get().scheduleDeferred(() -> {
-                        if(openFormTimer != null) {
-                            FormContainer formContainer = new ModalForm(FormsController.this, requestIndex, openForm.caption, true);
-                            formContainer.show();
-                            asyncForms.put(requestIndex, formContainer);
-                            openFormTimer = null;
-                        }
-                    });
-                }
-            };
-            openFormTimer.schedule(100);
-        } else {
-            FormContainer formContainer = new FormDockable(this, requestIndex, openForm.caption, true);
-            formContainer.show();
-            asyncForms.put(requestIndex, formContainer);
+        FormDockable duplicateForm = getDuplicateForm(openForm.canonicalName, openForm.forbidDuplicate);
+        if (duplicateForm == null) {
+            if (openForm.modal) {
+                openFormTimer = new Timer() {
+                    @Override
+                    public void run() {
+                        Scheduler.get().scheduleDeferred(() -> {
+                            if (openFormTimer != null) {
+                                FormContainer formContainer = new ModalForm(FormsController.this, requestIndex, openForm.caption, true);
+                                formContainer.show();
+                                asyncForms.put(requestIndex, formContainer);
+                                openFormTimer = null;
+                            }
+                        });
+                    }
+                };
+                openFormTimer.schedule(100);
+            } else {
+                FormContainer formContainer = new FormDockable(this, requestIndex, openForm.caption, true);
+                formContainer.show();
+                asyncForms.put(requestIndex, formContainer);
+            }
         }
+    }
+
+    private FormDockable getDuplicateForm(String canonicalName, boolean forbidDuplicate) {
+        if(forbidDuplicate && MainFrame.forbidDuplicateForms) {
+            return findForm(canonicalName);
+        }
+        return null;
     }
 
     public FormContainer removeAsyncForm(Long requestIndex) {

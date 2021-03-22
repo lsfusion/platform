@@ -8,15 +8,19 @@ import lsfusion.gwt.client.form.property.cell.controller.ExecuteEditContext;
 import lsfusion.gwt.client.view.MainFrame;
 
 public class GAsyncOpenForm extends GAsyncExec {
+    public String canonicalName;
     public String caption;
+    public  boolean forbidDuplicate;
     public boolean modal;
 
     @SuppressWarnings("UnusedDeclaration")
     public GAsyncOpenForm() {
     }
 
-    public GAsyncOpenForm(String caption, boolean modal) {
+    public GAsyncOpenForm(String canonicalName, String caption, boolean forbidDuplicate, boolean modal) {
+        this.canonicalName = canonicalName;
         this.caption = caption;
+        this.forbidDuplicate = forbidDuplicate;
         this.modal = modal;
     }
 

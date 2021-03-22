@@ -579,8 +579,8 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
 
     @Cached
     @Converter(from = ClientAsyncOpenForm.class)
-    public GAsyncOpenForm convertOpenForm(ClientAsyncOpenForm clientOpenForm) {
-        return new GAsyncOpenForm(clientOpenForm.caption, clientOpenForm.modal);
+    public GAsyncOpenForm convertOpenForm(ClientAsyncOpenForm asyncOpenForm) {
+        return new GAsyncOpenForm(asyncOpenForm.canonicalName, asyncOpenForm.caption, asyncOpenForm.forbidDuplicate, asyncOpenForm.modal);
     }
 
     @Cached

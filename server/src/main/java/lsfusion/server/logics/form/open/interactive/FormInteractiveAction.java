@@ -189,8 +189,9 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
     @Override
     public AsyncExec getAsyncExec() {
         FormEntity staticForm = form.getNFStaticForm();
+        String canonicalName = staticForm != null ? staticForm.getCanonicalName() : null;
         String caption = staticForm != null ? staticForm.getCaption().toString() : null;
-        return new AsyncOpenForm(caption, getModalityType().isModalWindow());
+        return new AsyncOpenForm(canonicalName, caption, forbidDuplicate, getModalityType().isModalWindow());
     }
 
     private ModalityType getModalityType() {

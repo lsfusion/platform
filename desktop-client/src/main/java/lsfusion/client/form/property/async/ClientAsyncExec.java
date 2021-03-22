@@ -10,7 +10,7 @@ public abstract class ClientAsyncExec extends ClientAsyncEventExec {
     public static ClientAsyncExec deserialize(DataInputStream inStream) throws IOException {
         int asyncType = inStream.readInt();
         if (asyncType == 0)
-            return new ClientAsyncOpenForm(SerializationUtil.readString(inStream), inStream.readBoolean());
+            return new ClientAsyncOpenForm(SerializationUtil.readString(inStream), SerializationUtil.readString(inStream), inStream.readBoolean(), inStream.readBoolean());
         else return null;
     }
 

@@ -8,17 +8,23 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 public class AsyncOpenForm extends AsyncExec {
+    public String canonicalName;
     public String caption;
+    public boolean forbidDuplicate;
     public boolean modal;
 
-    public AsyncOpenForm(String caption, boolean modal) {
+    public AsyncOpenForm(String canonicalName, String caption, boolean forbidDuplicate, boolean modal) {
+        this.canonicalName = canonicalName;
         this.caption = caption;
+        this.forbidDuplicate = forbidDuplicate;
         this.modal = modal;
     }
 
     @Override
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream) throws IOException {
+        pool.writeString(outStream, canonicalName);
         pool.writeString(outStream, caption);
+        pool.writeBoolean(outStream, forbidDuplicate);
         pool.writeBoolean(outStream, modal);
     }
 
@@ -34,7 +40,9 @@ public class AsyncOpenForm extends AsyncExec {
 
     @Override
     public void serialize(DataOutputStream outStream) throws IOException {
+        SerializationUtil.writeString(outStream, canonicalName);
         SerializationUtil.writeString(outStream, caption);
+        outStream.writeBoolean(forbidDuplicate);
         outStream.writeBoolean(modal);
     }
 }

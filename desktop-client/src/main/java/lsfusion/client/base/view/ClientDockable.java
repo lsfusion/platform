@@ -34,7 +34,7 @@ public abstract class ClientDockable extends DefaultMultipleCDockable {
     private final CustomCloseAction closeAction;
 
     protected Long requestIndex;
-    protected boolean async;
+    public boolean async;
 
     protected ClientDockable(String canonicalName, FormsController formsController) {
         super(formsController.getDockableFactory());
