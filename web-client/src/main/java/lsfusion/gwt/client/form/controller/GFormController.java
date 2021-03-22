@@ -965,11 +965,11 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
                 if (property.askConfirm) {
                     blockingConfirm("lsFusion", property.askConfirmMessage, false, chosenOption -> {
                         if (chosenOption == DialogBoxHelper.OptionType.YES) {
-                            asyncEventExec.exec(this, property, event, editContext);
+                            asyncEventExec.exec(this, property, event, editContext, actionSID);
                         }
                     });
                 } else {
-                        asyncEventExec.exec(this, property, event, editContext);
+                        asyncEventExec.exec(this, property, event, editContext, actionSID);
                 }
                 if (!continueExecution)
                     return;
@@ -979,17 +979,17 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         }
     }
 
-    public void asyncAddRemove(GPropertyDraw property, ExecuteEditContext editContext, GAsyncAddRemove asyncAddRemove) {
+    public void asyncAddRemove(GPropertyDraw property, ExecuteEditContext editContext, String actionSID, GAsyncAddRemove asyncAddRemove) {
         GGridController controller = controllers.get(asyncAddRemove.object.groupObject);
         if (controller != null && controller.isList()) {
-            modifyObject(property, editContext.getColumnKey(), asyncAddRemove);
+            modifyObject(property, editContext.getColumnKey(), actionSID, asyncAddRemove);
         }
     }
 
-    public void asyncChange(Event event, ExecuteEditContext editContext, GAsyncChange asyncChange) {
+    public void asyncChange(Event event, ExecuteEditContext editContext, String actionSID, GAsyncChange asyncChange) {
         GType changeType = asyncChange.changeType;
         edit(changeType, event, false, null,
-                value -> changeEditPropertyValue(editContext, changeType, value, null),
+                value -> changeEditPropertyValue(editContext, actionSID, changeType, value, null),
                 value -> {}, () -> {}, editContext);
     }
 
@@ -997,14 +997,14 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         formsController.asyncOpenForm(getNextRequestIndex(), asyncOpenForm);
     }
 
-    public void changeEditPropertyValue(ExecuteEditContext editContext, GType changeType, Object value, Long changeRequestIndex) {
+    public void changeEditPropertyValue(ExecuteEditContext editContext, String actionSID, GType changeType, Object value, Long changeRequestIndex) {
         Object oldValue = editContext.getValue();
 
         GPropertyDraw property = editContext.getProperty();
         if(property.canUseChangeValueForRendering(changeType)) // changing model, to rerender new value
             editContext.setValue(value);
 
-        changeProperty(property, editContext.getColumnKey(), (Serializable) value, oldValue, changeRequestIndex);
+        changeProperty(property, editContext.getColumnKey(), actionSID, (Serializable) value, oldValue, changeRequestIndex);
     }
 
     public void continueServerInvocation(long requestIndex, Object[] actionResults, int continueIndex, AsyncCallback<ServerResponseResult> callback) {
@@ -1050,17 +1050,17 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         return fullKey.toGroupObjectValue();
     }
 
-    public void changeProperty(GPropertyDraw property, GGroupObjectValue columnKey, Serializable value, Object oldValue, Long changeRequestIndex) {
+    public void changeProperty(GPropertyDraw property, GGroupObjectValue columnKey, String actionSID, Serializable value, Object oldValue, Long changeRequestIndex) {
         GGroupObjectValue rowKey = GGroupObjectValue.EMPTY;
         if(property.isList) {
             rowKey = getGroupObjectController(property.groupObject).getCurrentKey();
             if(rowKey.isEmpty())
                 return;
         }
-        changeProperties(new GPropertyDraw[]{property}, new GGroupObjectValue[]{rowKey}, new GGroupObjectValue[]{columnKey}, new Serializable[]{value}, new Object[]{oldValue}, changeRequestIndex);
+        changeProperties(new GPropertyDraw[]{property}, actionSID, new GGroupObjectValue[]{rowKey}, new GGroupObjectValue[]{columnKey}, new Serializable[]{value}, new Object[]{oldValue}, changeRequestIndex);
     }
 
-    public void changeProperties(GPropertyDraw[] properties, GGroupObjectValue[] rowKeys, GGroupObjectValue[] columnKeys, Serializable[] values, Object[] oldValues, Long changeRequestIndex) {
+    public void changeProperties(GPropertyDraw[] properties, String actionSID, GGroupObjectValue[] rowKeys, GGroupObjectValue[] columnKeys, Serializable[] values, Object[] oldValues, Long changeRequestIndex) {
         int length = properties.length;
         int[] IDs = new int[length];
         GGroupObjectValue[] fullCurrentKeys = new GGroupObjectValue[length];
@@ -1071,7 +1071,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         }
 
         if(changeRequestIndex == null)
-            changeRequestIndex = dispatcher.execute(new ChangeProperties(IDs, fullCurrentKeys, values, new Long[length]), new ServerResponseCallback());
+            changeRequestIndex = dispatcher.execute(new ChangeProperties(IDs, fullCurrentKeys, values, new Long[length], actionSID), new ServerResponseCallback());
 
         for (int i = 0; i < length; i++) {
             GGroupObjectValue fullKey = GGroupObjectValue.getFullKey(rowKeys[i], columnKeys[i]);
@@ -1079,7 +1079,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         }
     }
 
-    public void modifyObject(final GPropertyDraw property, final GGroupObjectValue columnKey, GAsyncAddRemove asyncAddRemove) {
+    public void modifyObject(final GPropertyDraw property, final GGroupObjectValue columnKey, String actionSID, GAsyncAddRemove asyncAddRemove) {
         final GObject object = asyncAddRemove.object;
         final boolean add = asyncAddRemove.add;
 
@@ -1090,7 +1090,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             MainFrame.logicsDispatchAsync.execute(new GenerateID(), new ErrorHandlingCallback<GenerateIDResult>() {
                 @Override
                 public void success(GenerateIDResult result) {
-                    executeModifyObject(property, columnKey, object, add, result.ID, new GGroupObjectValue(object.ID, result.ID), position);
+                    executeModifyObject(property, columnKey, actionSID, object, add, result.ID, new GGroupObjectValue(object.ID, result.ID), position);
                 }
             });
         } else {
@@ -1098,16 +1098,16 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             if(value.isEmpty())
                 return;
             final long ID = (Long) value.getValue(0);
-            executeModifyObject(property, columnKey, object, add, ID, value, position);
+            executeModifyObject(property, columnKey, actionSID, object, add, ID, value, position);
         }
     }
 
-    private void executeModifyObject(GPropertyDraw property, GGroupObjectValue columnKey, GObject object, boolean add, long ID, GGroupObjectValue value, int position) {
+    private void executeModifyObject(GPropertyDraw property, GGroupObjectValue columnKey, String actionSID, GObject object, boolean add, long ID, GGroupObjectValue value, int position) {
         final GGroupObjectValue fullCurrentKey = getFullCurrentKey(columnKey); // чтобы не изменился
 
         controllers.get(object.groupObject).modifyGroupObject(value, add, -1);
 
-        long requestIndex = dispatcher.execute(new ChangeProperties(new int[]{property.ID}, new GGroupObjectValue[]{fullCurrentKey}, new Serializable[]{null}, new Long[]{add ? ID : null}), new ServerResponseCallback());
+        long requestIndex = dispatcher.execute(new ChangeProperties(new int[]{property.ID}, new GGroupObjectValue[]{fullCurrentKey}, new Serializable[]{null}, new Long[]{add ? ID : null}, actionSID), new ServerResponseCallback());
         pendingChangeCurrentObjectsRequests.put(object.groupObject, requestIndex);
         pendingModifyObjectRequests.put(requestIndex, new ModifyObject(object, add, value, position));
     }

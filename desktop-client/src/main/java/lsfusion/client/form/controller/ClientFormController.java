@@ -887,7 +887,7 @@ public class ClientFormController implements AsyncListener {
         return fullCurrentKey.serialize();
     }
 
-    public void changeProperty(final ClientPropertyDraw property, final ClientGroupObjectValue columnKey,
+    public void changeProperty(final ClientPropertyDraw property, final ClientGroupObjectValue columnKey, String actionSID,
                                final Object newValue, final Object oldValue) throws IOException {
         assert !isEditing();
 
@@ -921,7 +921,7 @@ public class ClientFormController implements AsyncListener {
 
             @Override
             protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                return changeProperty(remoteForm, requestIndex, lastReceivedRequestIndex, property.getID(), fullCurrentKey, newValueBytes, null);
+                return changeProperty(remoteForm, requestIndex, lastReceivedRequestIndex, actionSID, property.getID(), fullCurrentKey, newValueBytes, null);
             }
 
             @Override
@@ -932,20 +932,20 @@ public class ClientFormController implements AsyncListener {
         });
     }
 
-    private ServerResponse changeProperty(RemoteFormInterface remoteForm, long requestIndex, long lastReceivedRequestIndex, int propertyID, byte[] fullCurrentKey, byte[] pushChange, Long pushAdd) throws RemoteException {
-        return remoteForm.changeProperties(requestIndex, lastReceivedRequestIndex, new int[]{propertyID}, new byte[][]{fullCurrentKey}, new byte[][]{pushChange}, new Long[]{pushAdd});
+    private ServerResponse changeProperty(RemoteFormInterface remoteForm, long requestIndex, long lastReceivedRequestIndex, String actionSID, int propertyID, byte[] fullCurrentKey, byte[] pushChange, Long pushAdd) throws RemoteException {
+        return remoteForm.changeProperties(requestIndex, lastReceivedRequestIndex, actionSID, new int[]{propertyID}, new byte[][]{fullCurrentKey}, new byte[][]{pushChange}, new Long[]{pushAdd});
     }
 
-    public void asyncAddRemove(ClientPropertyDraw property, ClientGroupObjectValue columnKey, ClientAsyncAddRemove addRemove) throws IOException {
+    public void asyncAddRemove(ClientPropertyDraw property, ClientGroupObjectValue columnKey, String actionSID, ClientAsyncAddRemove addRemove) throws IOException {
         if (addRemove != null) {
             GridController controller = controllers.get(addRemove.object.groupObject);
             if (controller != null && controller.isList()) {
-                modifyObject(property, columnKey, addRemove);
+                modifyObject(property, columnKey, actionSID, addRemove);
             }
         }
     }
 
-    public void modifyObject(final ClientPropertyDraw property, ClientGroupObjectValue columnKey, ClientAsyncAddRemove addRemove) throws IOException {
+    public void modifyObject(final ClientPropertyDraw property, ClientGroupObjectValue columnKey, String actionSID, ClientAsyncAddRemove addRemove) throws IOException {
         commitOrCancelCurrentEditing();
 
         final ClientObject object = addRemove.object;
@@ -988,7 +988,7 @@ public class ClientFormController implements AsyncListener {
 
             @Override
             protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                return changeProperty(remoteForm, requestIndex, lastReceivedRequestIndex, property.getID(), fullCurrentKey, null, add ? ID : null);
+                return changeProperty(remoteForm, requestIndex, lastReceivedRequestIndex, actionSID, property.getID(), fullCurrentKey, null, add ? ID : null);
             }
         });
     }
