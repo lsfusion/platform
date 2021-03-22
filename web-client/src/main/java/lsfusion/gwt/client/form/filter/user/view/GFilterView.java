@@ -4,7 +4,9 @@ import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.form.event.GBindingEnv;
 import lsfusion.gwt.client.form.event.GKeyInputEvent;
@@ -15,6 +17,7 @@ import lsfusion.gwt.client.form.filter.user.controller.GUserFilters;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.view.StyleDefaults;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -33,6 +36,7 @@ public class GFilterView extends FlexPanel implements GFilterConditionView.UIHan
     private GToolbarButton addConditionButton;
     private GToolbarButton applyButton;
     private GToolbarButton resetConditionsButton;
+    private Widget buttonsReplacement;
 
     private GUserFilters controller;
 
@@ -81,6 +85,10 @@ public class GFilterView extends FlexPanel implements GFilterConditionView.UIHan
         };
         resetConditionsButton.setVisible(toolsVisible);
         buttonsPanel.add(resetConditionsButton);
+
+        buttonsReplacement = GwtClientUtils.createHorizontalStrut(StyleDefaults.COMPONENT_HEIGHT * 3); // to prevent container from changing size on showing tools
+        buttonsReplacement.setVisible(!toolsVisible);
+        buttonsPanel.add(buttonsReplacement);
         
         mainContainer.add(buttonsPanel);
 
@@ -165,6 +173,8 @@ public class GFilterView extends FlexPanel implements GFilterConditionView.UIHan
         addConditionButton.setVisible(toolsVisible);
         applyButton.setVisible(toolsVisible);
         resetConditionsButton.setVisible(toolsVisible);
+        
+        buttonsReplacement.setVisible(!toolsVisible);
     }
 
     @Override
