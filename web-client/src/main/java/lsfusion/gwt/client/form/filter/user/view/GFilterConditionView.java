@@ -99,6 +99,7 @@ public class GFilterConditionView extends FlexPanel implements GFilterValueView.
                 return clickEvent -> {
                     popup.show();
                     GwtClientUtils.setPopupPosition(popup, settingsButton.getAbsoluteLeft(), settingsButton.getAbsoluteTop() + COMPONENT_HEIGHT);
+                    settingsButton.showBackground(true);
                 };                                       
             }
         };
@@ -111,6 +112,7 @@ public class GFilterConditionView extends FlexPanel implements GFilterValueView.
         popup = new PopupDialogPanel();
         FlexPanel popupContent = new FlexPanel();
         popup.add(popupContent);
+        popup.addCloseHandler(closeEvent -> settingsButton.showBackground(false));
 
         propertyView = new GFilterConditionListBox();
         propertyView.addStyleName("customFontPresenter");
