@@ -17,11 +17,12 @@ import lsfusion.gwt.client.form.object.table.controller.GTableController;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.view.Column;
-import lsfusion.gwt.client.view.StyleDefaults;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+
+import static lsfusion.gwt.client.view.StyleDefaults.COMPONENT_HEIGHT;
 
 public class GFilterConditionView extends FlexPanel implements GFilterValueView.GFilterValueListener {
     private static final ClientMessages messages = ClientMessages.Instance.get();
@@ -96,14 +97,14 @@ public class GFilterConditionView extends FlexPanel implements GFilterValueView.
             @Override
             public ClickHandler getClickHandler() {
                 return clickEvent -> {
-                    popup.setPopupPosition(settingsButton.getAbsoluteLeft(), settingsButton.getAbsoluteTop() + StyleDefaults.COMPONENT_HEIGHT);
                     popup.show();
-                };
+                    GwtClientUtils.setPopupPosition(popup, settingsButton.getAbsoluteLeft(), settingsButton.getAbsoluteTop() + COMPONENT_HEIGHT);
+                };                                       
             }
         };
         addCentered(settingsButton);
         
-        settingsReplacement = GwtClientUtils.createHorizontalStrut(StyleDefaults.COMPONENT_HEIGHT);
+        settingsReplacement = GwtClientUtils.createHorizontalStrut(COMPONENT_HEIGHT);
         addCentered(settingsReplacement);
         
         
