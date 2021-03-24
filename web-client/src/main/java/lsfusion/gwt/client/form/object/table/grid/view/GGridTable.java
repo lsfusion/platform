@@ -335,6 +335,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         setRequestIndex = index;
     }
 
+    @Override
     protected GPropertyDraw getColumnPropertyDraw(int i) {
         return getGridColumn(i).property;
     }
@@ -366,28 +367,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
             Collections.sort(result, getCurrentPreferences().getUserOrderComparator());
         }
         return result;
-    }
-
-    public void updateCaptions() {
-        if (captionsUpdated) {
-            for (int i = 0, size = getColumnCount(); i < size; ++i) {
-                GridColumn gridColumn = getGridColumn(i);
-                updatePropertyHeader(gridColumn.columnKey, gridColumn.property, i);
-            }
-            headersChanged();
-            captionsUpdated = false;
-        }
-    }
-
-    public void updateFooters() {
-        if (footersUpdated) {
-            for (int i = 0, size = getColumnCount(); i < size; ++i) {
-                GridColumn gridColumn = getGridColumn(i);
-                updatePropertyFooter(gridColumn.columnKey, gridColumn.property, i);
-            }
-            headersChanged();
-            footersUpdated = false;
-        }
     }
 
     public void columnsPreferencesChanged() {
@@ -768,6 +747,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         return getGridColumn(cell).columnKey;
     }
 
+    @Override
     public GGroupObjectValue getColumnKey(int column) {
         return getGridColumn(column).columnKey;
     }

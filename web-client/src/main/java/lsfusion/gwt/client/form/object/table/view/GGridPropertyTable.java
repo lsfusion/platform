@@ -372,6 +372,27 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     protected abstract Integer getUserWidth(GPropertyDraw property);
 
     protected abstract GPropertyDraw getColumnPropertyDraw(int i);
+    protected abstract GGroupObjectValue getColumnKey(int i);
+
+    protected void updateCaptions() {
+        if (captionsUpdated) {
+            for (int i = 0, size = getColumnCount(); i < size; ++i) {
+                updatePropertyHeader(getColumnKey(i), getColumnPropertyDraw(i), i);
+            }
+            columnsChanged();
+            captionsUpdated = false;
+        }
+    }
+
+    protected void updateFooters() {
+        if (footersUpdated) {
+            for (int i = 0, size = getColumnCount(); i < size; ++i) {
+                updatePropertyFooter(getColumnKey(i), getColumnPropertyDraw(i), i);
+            }
+            columnsChanged();
+            footersUpdated = false;
+        }
+    }
 
     private double[] prefs;  // mutable
     private int[] basePrefs;

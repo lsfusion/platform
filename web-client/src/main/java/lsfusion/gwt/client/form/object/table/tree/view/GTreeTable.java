@@ -490,18 +490,6 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         dataUpdated = true;
     }
 
-    @Override
-    public void updatePropertyCaptions(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, Object> values) {
-        super.updatePropertyCaptions(propertyDraw, values);
-        captionsUpdated = true;
-    }
-
-    @Override
-    public void updatePropertyFooters(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, Object> values) {
-        super.updatePropertyFooters(propertyDraw, values);
-        footersUpdated = true;
-    }
-
     private Integer hierarchicalUserWidth = null;
     private final NativeSIDMap<GPropertyDraw, Integer> userWidths = new NativeSIDMap<>();
     @Override
@@ -545,6 +533,11 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     @Override
     protected GPropertyDraw getColumnPropertyDraw(int i) {
         return getGridColumn(i).getColumnProperty();
+    }
+
+    @Override
+    protected GGroupObjectValue getColumnKey(int i) {
+        return GGroupObjectValue.EMPTY;
     }
 
     @Override
@@ -600,8 +593,8 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
             int rowHeight = 0;
             for (int i = 1, size = getColumnCount(); i < size; i++) {
                 GPropertyDraw property = getColumnPropertyDraw(i);
-                updatePropertyHeader(GGroupObjectValue.EMPTY, property, i);
-                updatePropertyFooter(GGroupObjectValue.EMPTY, property, i);
+                updatePropertyHeader(getColumnKey(i), property, i);
+                updatePropertyFooter(getColumnKey(i), property, i);
 
                 rowHeight = Math.max(rowHeight, property.getValueHeightWithPadding(font));
             }
@@ -613,26 +606,6 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
             columnsUpdated = false;
             captionsUpdated = false;
-            footersUpdated = false;
-        }
-    }
-
-    public void updateCaptions() {
-        if (captionsUpdated) {
-            for (int i = 1, size = getColumnCount(); i < size; i++) {
-                updatePropertyHeader(GGroupObjectValue.EMPTY, getColumnPropertyDraw(i), i);
-            }
-            columnsChanged();
-            captionsUpdated = false;
-        }
-    }
-
-    public void updateFooters() {
-        if (footersUpdated) {
-            for (int i = 1, size = getColumnCount(); i < size; i++) {
-                updatePropertyFooter(GGroupObjectValue.EMPTY, getColumnPropertyDraw(i), i);
-            }
-            columnsChanged();
             footersUpdated = false;
         }
     }
