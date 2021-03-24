@@ -600,8 +600,8 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
             int rowHeight = 0;
             for (int i = 1, size = getColumnCount(); i < size; i++) {
                 GPropertyDraw property = getColumnPropertyDraw(i);
-                updatePropertyHeader(property, getGridHeader(i));
-                updatePropertyFooter(property, getGridFooter(i));
+                updatePropertyHeader(GGroupObjectValue.EMPTY, property, i);
+                updatePropertyFooter(GGroupObjectValue.EMPTY, property, i);
 
                 rowHeight = Math.max(rowHeight, property.getValueHeightWithPadding(font));
             }
@@ -620,37 +620,20 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     public void updateCaptions() {
         if (captionsUpdated) {
             for (int i = 1, size = getColumnCount(); i < size; i++) {
-                updatePropertyHeader(getColumnPropertyDraw(i), getGridHeader(i));
+                updatePropertyHeader(GGroupObjectValue.EMPTY, getColumnPropertyDraw(i), i);
             }
             columnsChanged();
             captionsUpdated = false;
         }
     }
 
-    private void updatePropertyHeader(GPropertyDraw property, GGridPropertyTableHeader header) {
-        NativeHashMap<GGroupObjectValue, Object> captions = propertyCaptions.get(property);
-        if (captions != null) { // asserting that there is only one value columnKeys is EMPTY
-            String value = GwtSharedUtils.nullTrim(captions.firstValue());
-            header.setCaption(value, false, false);
-            header.setToolTip(property.getTooltipText(value));
-        }
-        header.setHeaderHeight(getHeaderHeight());
-    }
-
     public void updateFooters() {
         if (footersUpdated) {
             for (int i = 1, size = getColumnCount(); i < size; i++) {
-                updatePropertyFooter(getColumnPropertyDraw(i), getGridFooter(i));
+                updatePropertyFooter(GGroupObjectValue.EMPTY, getColumnPropertyDraw(i), i);
             }
             columnsChanged();
             footersUpdated = false;
-        }
-    }
-
-    private void updatePropertyFooter(GPropertyDraw property, GGridPropertyTableFooter footer) {
-        NativeHashMap<GGroupObjectValue, Object> footers = propertyFooters.get(property);
-        if (footers != null) {
-            footer.setValue(GwtSharedUtils.nullTrim(footers.firstValue()));
         }
     }
 
