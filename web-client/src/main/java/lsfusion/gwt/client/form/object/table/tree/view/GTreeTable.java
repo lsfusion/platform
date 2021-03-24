@@ -42,6 +42,8 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     
     private boolean dataUpdated;
     private boolean columnsUpdated = true; //could be no properties on init
+    private boolean captionsUpdated = false;
+    private boolean footersUpdated = false;
 
     private GTreeTableTree tree;
 
@@ -491,6 +493,18 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         dataUpdated = true;
     }
 
+    @Override
+    public void updatePropertyCaptions(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, Object> values) {
+        super.updatePropertyCaptions(propertyDraw, values);
+        captionsUpdated = true;
+    }
+
+    @Override
+    public void updatePropertyFooters(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, Object> values) {
+        super.updatePropertyFooters(propertyDraw, values);
+        footersUpdated = true;
+    }
+
     private Integer hierarchicalUserWidth = null;
     private final NativeSIDMap<GPropertyDraw, Integer> userWidths = new NativeSIDMap<>();
     @Override
@@ -558,6 +572,9 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     public void update() {
         updateColumns();
 
+        updateCaptions();
+        updateFooters();
+
         updateData();
     }
 
@@ -586,14 +603,9 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
             int rowHeight = 0;
             for (int i = 1, size = getColumnCount(); i < size; i++) {
                 GPropertyDraw property = getColumnPropertyDraw(i);
-                GGridPropertyTableHeader header = getGridHeader(i);
-                NativeHashMap<GGroupObjectValue, Object> captions = propertyCaptions.get(property);
-                if (captions != null) { // asserting that there is only one value columnKeys is EMPTY
-                    String value = GwtSharedUtils.nullTrim(captions.firstValue());
-                    header.setCaption(value, false, false);
-                    header.setToolTip(property.getTooltipText(value));
-                }
-                header.setHeaderHeight(getHeaderHeight());
+                updatePropertyHeader(property, getGridHeader(i));
+                updatePropertyFooter(property, getGridFooter(i));
+
                 rowHeight = Math.max(rowHeight, property.getValueHeightWithPadding(font));
             }
             setCellHeight(rowHeight);
@@ -603,6 +615,45 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
             columnsChanged();
 
             columnsUpdated = false;
+            captionsUpdated = false;
+            footersUpdated = false;
+        }
+    }
+
+    public void updateCaptions() {
+        if (captionsUpdated) {
+            for (int i = 1, size = getColumnCount(); i < size; i++) {
+                updatePropertyHeader(getColumnPropertyDraw(i), getGridHeader(i));
+            }
+            columnsChanged();
+            captionsUpdated = false;
+        }
+    }
+
+    private void updatePropertyHeader(GPropertyDraw property, GGridPropertyTableHeader header) {
+        NativeHashMap<GGroupObjectValue, Object> captions = propertyCaptions.get(property);
+        if (captions != null) { // asserting that there is only one value columnKeys is EMPTY
+            String value = GwtSharedUtils.nullTrim(captions.firstValue());
+            header.setCaption(value, false, false);
+            header.setToolTip(property.getTooltipText(value));
+        }
+        header.setHeaderHeight(getHeaderHeight());
+    }
+
+    public void updateFooters() {
+        if (footersUpdated) {
+            for (int i = 1, size = getColumnCount(); i < size; i++) {
+                updatePropertyFooter(getColumnPropertyDraw(i), getGridFooter(i));
+            }
+            columnsChanged();
+            footersUpdated = false;
+        }
+    }
+
+    private void updatePropertyFooter(GPropertyDraw property, GGridPropertyTableFooter footer) {
+        NativeHashMap<GGroupObjectValue, Object> footers = propertyFooters.get(property);
+        if (footers != null) {
+            footer.setValue(GwtSharedUtils.nullTrim(footers.firstValue()));
         }
     }
 
