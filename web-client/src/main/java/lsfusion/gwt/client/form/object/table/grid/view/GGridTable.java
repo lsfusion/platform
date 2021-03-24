@@ -62,9 +62,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     private NativeSIDMap<GPropertyDraw, ArrayList<GGroupObjectValue>> columnKeys = new NativeSIDMap<>();
 
     private boolean rowsUpdated = false;
-    private boolean columnsUpdated = true;  //could be no properties on init
-    private boolean captionsUpdated = false;
-    private boolean footersUpdated = false;
     private boolean dataUpdated = false;
 
     private GGroupObject groupObject;
@@ -641,18 +638,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         this.rowKeys = keys;
 
         rowsUpdated = true;
-    }
-
-    @Override
-    public void updatePropertyCaptions(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, Object> values) {
-        super.updatePropertyCaptions(propertyDraw, values);
-        captionsUpdated = true;
-    }
-
-    @Override
-    public void updatePropertyFooters(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, Object> values) {
-        super.updatePropertyFooters(propertyDraw, values);
-        footersUpdated = true;
     }
 
     public void updateShowIfValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, Object> values) {

@@ -36,6 +36,10 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     public static int DEFAULT_PREFERRED_HEIGHT = 70; // должно соответствовать значению в gridResizePanel в MainFrame.css
     public static int DEFAULT_MAX_PREFERRED_HEIGHT = 140;
 
+    protected boolean columnsUpdated = true; //could be no properties on init
+    protected boolean captionsUpdated = false;
+    protected boolean footersUpdated = false;
+
     protected ArrayList<T> rows = new ArrayList<>();
 
     // we have to keep it until updateDataImpl to have rows order
@@ -244,10 +248,12 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
 
     public void updatePropertyCaptions(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, Object> values) {
         propertyCaptions.put(propertyDraw, values);
+        captionsUpdated = true;
     }
 
     public void updatePropertyFooters(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, Object> values) {
         propertyFooters.put(propertyDraw, values);
+        footersUpdated = true;
     }
 
     public void headerClicked(GGridPropertyTableHeader header, boolean ctrlDown, boolean shiftDown) {
