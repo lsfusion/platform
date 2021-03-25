@@ -606,11 +606,10 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         if(columnsUpdated) {
             int rowHeight = 0;
             for (int i = 1, size = getColumnCount(); i < size; i++) {
-                GPropertyDraw property = getColumnPropertyDraw(i);
-                updatePropertyHeader(getColumnKey(i), property, i);
-                updatePropertyFooter(getColumnKey(i), property, i);
+                updatePropertyHeader(i);
+                updatePropertyFooter(i);
 
-                rowHeight = Math.max(rowHeight, property.getValueHeightWithPadding(font));
+                rowHeight = Math.max(rowHeight, getColumnPropertyDraw(i).getValueHeightWithPadding(font));
             }
             setCellHeight(rowHeight);
 
