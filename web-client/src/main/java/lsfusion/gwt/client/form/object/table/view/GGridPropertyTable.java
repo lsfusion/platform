@@ -376,20 +376,20 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
 
     protected void updateCaptions() {
         if (captionsUpdated) {
-            for (int i = 0, size = getColumnCount(); i < size; ++i) {
-                updatePropertyHeader(getColumnKey(i), getColumnPropertyDraw(i), i);
+            for (int i = 0, size = getColumnCount(); i < size; i++) {
+                updatePropertyHeader(i);
             }
-            columnsChanged();
+            headersChanged();
             captionsUpdated = false;
         }
     }
 
     protected void updateFooters() {
         if (footersUpdated) {
-            for (int i = 0, size = getColumnCount(); i < size; ++i) {
-                updatePropertyFooter(getColumnKey(i), getColumnPropertyDraw(i), i);
+            for (int i = 0, size = getColumnCount(); i < size; i++) {
+                updatePropertyFooter(i);
             }
-            columnsChanged();
+            headersChanged();
             footersUpdated = false;
         }
     }
@@ -416,12 +416,20 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         updateLayoutWidthColumns();
     }
 
+    protected void updatePropertyHeader(int index) {
+        updatePropertyHeader(getColumnKey(index), getColumnPropertyDraw(index), index);
+    }
+
     protected void updatePropertyHeader(GGroupObjectValue columnKey, GPropertyDraw property, int index) {
         String columnCaption = getPropertyCaption(property, columnKey);
         GGridPropertyTableHeader header = getGridHeader(index);
         header.setCaption(columnCaption, property.notNull, property.hasChangeAction);
         header.setToolTip(property.getTooltipText(columnCaption));
         header.setHeaderHeight(getHeaderHeight());
+    }
+
+    protected void updatePropertyFooter(int index) {
+        updatePropertyFooter(getColumnKey(index), getColumnPropertyDraw(index), index);
     }
 
     protected void updatePropertyFooter(GGroupObjectValue columnKey, GPropertyDraw property, int index) {

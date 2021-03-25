@@ -541,6 +541,20 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     }
 
     @Override
+    protected void updatePropertyHeader(int index) {
+        if(index > 0) {
+            super.updatePropertyHeader(index);
+        }
+    }
+
+    @Override
+    public void updatePropertyFooter(int index) {
+        if(index > 0) {
+            super.updatePropertyFooter(index);
+        }
+    }
+
+    @Override
     protected int getHeaderHeight() {
         return treeGroup.headerHeight;
     }
