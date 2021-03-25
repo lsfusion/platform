@@ -222,12 +222,10 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     public DataClass getRequestInputType(String actionSID, FormEntity form, SecurityPolicy securityPolicy, boolean optimistic) {
-        if (isProperty()) { // optimization
-            ActionObjectEntity<?> changeAction = getEventAction(actionSID, form, securityPolicy);
+        ActionObjectEntity<?> changeAction = getEventAction(actionSID, form, securityPolicy);
 
-            if (changeAction != null) {
-                return (DataClass)changeAction.property.getSimpleRequestInputType(optimistic);
-            }
+        if (changeAction != null) {
+            return (DataClass)changeAction.property.getSimpleRequestInputType(optimistic);
         }
         return null;
     }
