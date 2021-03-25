@@ -62,9 +62,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     private NativeSIDMap<GPropertyDraw, ArrayList<GGroupObjectValue>> columnKeys = new NativeSIDMap<>();
 
     private boolean rowsUpdated = false;
-    private boolean columnsUpdated = true;  //could be no properties on init
-    private boolean captionsUpdated = false;
-    private boolean footersUpdated = false;
     private boolean dataUpdated = false;
 
     private GGroupObject groupObject;
@@ -338,6 +335,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         setRequestIndex = index;
     }
 
+    @Override
     protected GPropertyDraw getColumnPropertyDraw(int i) {
         return getGridColumn(i).property;
     }
@@ -369,28 +367,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
             Collections.sort(result, getCurrentPreferences().getUserOrderComparator());
         }
         return result;
-    }
-
-    public void updateCaptions() {
-        if (captionsUpdated) {
-            for (int i = 0, size = getColumnCount(); i < size; ++i) {
-                GridColumn gridColumn = getGridColumn(i);
-                updatePropertyHeader(gridColumn.columnKey, gridColumn.property, i);
-            }
-            headersChanged();
-            captionsUpdated = false;
-        }
-    }
-
-    public void updateFooters() {
-        if (footersUpdated) {
-            for (int i = 0, size = getColumnCount(); i < size; ++i) {
-                GridColumn gridColumn = getGridColumn(i);
-                updatePropertyFooter(gridColumn.columnKey, gridColumn.property, i);
-            }
-            headersChanged();
-            footersUpdated = false;
-        }
     }
 
     public void columnsPreferencesChanged() {
@@ -643,18 +619,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         rowsUpdated = true;
     }
 
-    @Override
-    public void updatePropertyCaptions(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, Object> values) {
-        super.updatePropertyCaptions(propertyDraw, values);
-        captionsUpdated = true;
-    }
-
-    @Override
-    public void updatePropertyFooters(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, Object> values) {
-        super.updatePropertyFooters(propertyDraw, values);
-        footersUpdated = true;
-    }
-
     public void updateShowIfValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, Object> values) {
         NativeHashMap<GGroupObjectValue, Object> oldValues = showIfs.get(propertyDraw);
         if (!nullEquals(oldValues, values)) {
@@ -783,6 +747,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         return getGridColumn(cell).columnKey;
     }
 
+    @Override
     public GGroupObjectValue getColumnKey(int column) {
         return getGridColumn(column).columnKey;
     }

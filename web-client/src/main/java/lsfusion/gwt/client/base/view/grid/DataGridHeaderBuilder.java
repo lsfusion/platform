@@ -108,6 +108,8 @@ public abstract class DataGridHeaderBuilder<T> implements HeaderBuilder<T> {
      * Renders a given Header into a given TableCellElement.
      */
     protected final <H> void updateHeader(TableCellElement th, Header<H> header) {
-        header.updateDom(th);
+        if(header != null) { //footer can be null
+            header.updateDom(th);
+        }
     }
 }
