@@ -19,6 +19,7 @@ import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.GFormChanges;
 import lsfusion.gwt.client.GFormChangesDTO;
 import lsfusion.gwt.client.action.GAction;
+import lsfusion.gwt.client.action.GFormAction;
 import lsfusion.gwt.client.action.GLogMessageAction;
 import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.base.busy.GBusyDialogDisplayer;
@@ -925,7 +926,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
     public void executeEventAction(GPropertyDraw property, GGroupObjectValue columnKey, String actionSID) {
         DeferredRunner.get().commitDelayedGroupObjectChange(property.groupObject);
-        syncDispatch(new ExecuteEventAction(property.ID, getFullCurrentKey(columnKey), actionSID), new ServerResponseCallback());
+        syncDispatch(new ExecuteEventAction(property.ID, getFullCurrentKey(columnKey), actionSID), new ServerResponseEventActionCallback());
     }
 
     public void executePropertyEventAction(EventHandler handler, boolean isBinding, ExecuteEditContext editContext) {
@@ -1522,6 +1523,27 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         @Override
         public void success(ServerResponseResult response) {
             actionDispatcher.dispatchResponse(response);
+        }
+    }
+
+    private class ServerResponseEventActionCallback extends ErrorHandlingCallback<ServerResponseResult> {
+
+        @Override
+        public void success(ServerResponseResult response) {
+            actionDispatcher.dispatchResponse(response);
+            if (formsController.hasAsyncForm(response.requestIndex)) {
+                boolean noOpenForm = true;
+                for (GAction action : response.actions) {
+                    if (action instanceof GFormAction) {
+                        noOpenForm = false;
+                        break;
+                    }
+                }
+                if (noOpenForm) {
+                    FormContainer formContainer = formsController.removeAsyncForm(response.requestIndex);
+                    formContainer.hide();
+                }
+            }
         }
     }
 

@@ -224,6 +224,10 @@ public abstract class FormsController {
         return null;
     }
 
+    public boolean hasAsyncForm(Long requestIndex) {
+        return asyncForms.containsKey(requestIndex);
+    }
+
     public FormContainer removeAsyncForm(Long requestIndex) {
         return asyncForms.remove(requestIndex);
     }
