@@ -41,7 +41,6 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     private static final ClientMessages messages = ClientMessages.Instance.get();
     
     private boolean dataUpdated;
-    private boolean columnsUpdated = true; //could be no properties on init
 
     private GTreeTableTree tree;
 
@@ -537,6 +536,25 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     }
 
     @Override
+    protected GGroupObjectValue getColumnKey(int i) {
+        return GGroupObjectValue.EMPTY;
+    }
+
+    @Override
+    protected void updatePropertyHeader(int index) {
+        if(index > 0) {
+            super.updatePropertyHeader(index);
+        }
+    }
+
+    @Override
+    public void updatePropertyFooter(int index) {
+        if(index > 0) {
+            super.updatePropertyFooter(index);
+        }
+    }
+
+    @Override
     protected int getHeaderHeight() {
         return treeGroup.headerHeight;
     }
@@ -557,6 +575,9 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
     public void update() {
         updateColumns();
+
+        updateCaptions();
+        updateFooters();
 
         updateData();
     }
@@ -585,16 +606,10 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         if(columnsUpdated) {
             int rowHeight = 0;
             for (int i = 1, size = getColumnCount(); i < size; i++) {
-                GPropertyDraw property = getColumnPropertyDraw(i);
-                GGridPropertyTableHeader header = getGridHeader(i);
-                NativeHashMap<GGroupObjectValue, Object> captions = propertyCaptions.get(property);
-                if (captions != null) { // asserting that there is only one value columnKeys is EMPTY
-                    String value = GwtSharedUtils.nullTrim(captions.firstValue());
-                    header.setCaption(value, false, false);
-                    header.setToolTip(property.getTooltipText(value));
-                }
-                header.setHeaderHeight(getHeaderHeight());
-                rowHeight = Math.max(rowHeight, property.getValueHeightWithPadding(font));
+                updatePropertyHeader(i);
+                updatePropertyFooter(i);
+
+                rowHeight = Math.max(rowHeight, getColumnPropertyDraw(i).getValueHeightWithPadding(font));
             }
             setCellHeight(rowHeight);
 
@@ -603,6 +618,8 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
             columnsChanged();
 
             columnsUpdated = false;
+            captionsUpdated = false;
+            footersUpdated = false;
         }
     }
 
