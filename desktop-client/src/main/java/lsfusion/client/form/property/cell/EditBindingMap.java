@@ -83,7 +83,7 @@ public class EditBindingMap {
     }
 
     public static boolean isEditableAwareEditEvent(String actionSID) {
-        return ServerResponse.changeEvents.indexOf(actionSID) >= 0;
+        return ServerResponse.editableChangeEvents.indexOf(actionSID) >= 0;
     }
 
     public static String getPropertyEventActionSID(EventObject e, ClientPropertyDraw property, EditBindingMap overrideMap) {
