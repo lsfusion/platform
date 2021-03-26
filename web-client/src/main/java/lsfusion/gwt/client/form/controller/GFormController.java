@@ -19,6 +19,7 @@ import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.GFormChanges;
 import lsfusion.gwt.client.GFormChangesDTO;
 import lsfusion.gwt.client.action.GAction;
+import lsfusion.gwt.client.action.GFormAction;
 import lsfusion.gwt.client.action.GLogMessageAction;
 import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.base.busy.GBusyDialogDisplayer;
@@ -108,6 +109,7 @@ import static lsfusion.gwt.client.base.GwtSharedUtils.putToDoubleNativeMap;
 import static lsfusion.gwt.client.base.GwtSharedUtils.removeFromDoubleMap;
 import static lsfusion.gwt.client.base.view.ColorUtils.getDisplayColor;
 import static lsfusion.gwt.client.form.property.cell.GEditBindingMap.CHANGE;
+import static lsfusion.gwt.client.form.property.cell.GEditBindingMap.isEditableAwareEditEvent;
 
 public class GFormController extends ResizableSimplePanel implements ServerMessageProvider, EditManager {
     private static final int ASYNC_TIME_OUT = 20;
@@ -925,7 +927,26 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
     public void executeEventAction(GPropertyDraw property, GGroupObjectValue columnKey, String actionSID) {
         DeferredRunner.get().commitDelayedGroupObjectChange(property.groupObject);
-        syncDispatch(new ExecuteEventAction(property.ID, getFullCurrentKey(columnKey), actionSID), new ServerResponseCallback());
+        syncDispatch(new ExecuteEventAction(property.ID, getFullCurrentKey(columnKey), actionSID),
+                new ServerResponseCallback() {
+                    @Override
+                    public void success(ServerResponseResult response) {
+                        super.success(response);
+                        formsController.setLastCompletedRequest(response.requestIndex);
+                        //GFormAction will close asyncForm, if there is no GFormAction in response,
+                        //we should close this erroneous asyncForm
+                        if (formsController.hasAsyncForm(response.requestIndex)) {
+                            if (Arrays.stream(response.actions).noneMatch(a -> a instanceof GFormAction)) {
+                                FormContainer formContainer = formsController.removeAsyncForm(response.requestIndex);
+                                if(formContainer instanceof FormDockable) {
+                                    ((FormDockable) formContainer).closePressed();
+                                } else {
+                                    formContainer.hide();
+                                }
+                            }
+                        }
+                    }
+                });
     }
 
     public void executePropertyEventAction(EventHandler handler, boolean isBinding, ExecuteEditContext editContext) {
@@ -951,8 +972,8 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
                     return;
             }
 
-            if ((GEditBindingMap.CHANGE.equals(actionSID) || GEditBindingMap.CHANGE_WYS.equals(actionSID) || GEditBindingMap.GROUP_CHANGE.equals(actionSID)) &&
-                (editContext.isReadOnly() || !property.hasChangeAction)) // hasChangeAction check is important for quickfilter not to consume event (however with propertyReadOnly, checkCanBeChanged there will be still some problems)
+            // hasChangeAction check is important for quickfilter not to consume event (however with propertyReadOnly, checkCanBeChanged there will be still some problems)
+            if (isEditableAwareEditEvent(actionSID) && (editContext.isReadOnly() || !property.hasChangeAction))
                     return;
             if(GEditBindingMap.EDIT_OBJECT.equals(actionSID) && !property.hasEditObjectAction)
                 return;

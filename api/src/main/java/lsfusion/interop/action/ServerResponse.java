@@ -13,7 +13,8 @@ public class ServerResponse implements Serializable {
     public static final String EDIT_OBJECT = "editObject";
     public static final String CHANGE_WYS = "change_wys";
 
-    public static final ImList<String> changeEvents = ListFact.toList(CHANGE, CHANGE_WYS, GROUP_CHANGE, EDIT_OBJECT);
+    public static final ImList<String> changeEvents = ListFact.toList(CHANGE, CHANGE_WYS, GROUP_CHANGE);
+    public static final ImList<String> events = ListFact.toList(CHANGE, CHANGE_WYS, GROUP_CHANGE, EDIT_OBJECT);
 
     public final ClientAction[] actions;
     public final boolean resumeInvocation;

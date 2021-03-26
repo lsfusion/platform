@@ -47,6 +47,7 @@ public abstract class FormsController {
     private final List<Integer> formFocusOrder = new ArrayList<>();
     private int focusOrderCount;
 
+    private Long lastCompletedRequest;
     private NativeHashMap<Long, FormContainer> asyncForms = new NativeHashMap<>();
 
     private final WindowsController windowsController;
@@ -194,15 +195,17 @@ public abstract class FormsController {
     public void asyncOpenForm(Long requestIndex, GAsyncOpenForm openForm) {
         FormDockable duplicateForm = getDuplicateForm(openForm.canonicalName, openForm.forbidDuplicate);
         if (duplicateForm == null) {
-            if (openForm.modal) {
+            if (openForm.isModal()) {
                 openFormTimer = new Timer() {
                     @Override
                     public void run() {
                         Scheduler.get().scheduleDeferred(() -> {
                             if (openFormTimer != null) {
-                                FormContainer formContainer = new ModalForm(FormsController.this, requestIndex, openForm.caption, true);
-                                formContainer.show();
-                                asyncForms.put(requestIndex, formContainer);
+                                if(requestIndex > lastCompletedRequest) { //request is not completed yet
+                                    FormContainer formContainer = new ModalForm(FormsController.this, requestIndex, openForm.caption, true);
+                                    formContainer.show();
+                                    asyncForms.put(requestIndex, formContainer);
+                                }
                                 openFormTimer = null;
                             }
                         });
@@ -222,6 +225,18 @@ public abstract class FormsController {
             return findForm(canonicalName);
         }
         return null;
+    }
+
+    public boolean hasAsyncForm(Long requestIndex) {
+        return asyncForms.containsKey(requestIndex);
+    }
+
+    public Long getLastCompletedRequest() {
+        return lastCompletedRequest;
+    }
+
+    public void setLastCompletedRequest(Long lastCompletedRequest) {
+        this.lastCompletedRequest = lastCompletedRequest;
     }
 
     public FormContainer removeAsyncForm(Long requestIndex) {

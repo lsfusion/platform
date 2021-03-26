@@ -5,6 +5,7 @@ import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.controller.ExecuteEditContext;
+import lsfusion.gwt.client.form.view.ModalForm;
 import lsfusion.gwt.client.view.MainFrame;
 
 public class GAsyncOpenForm extends GAsyncExec {
@@ -27,6 +28,11 @@ public class GAsyncOpenForm extends GAsyncExec {
     @Override
     public void exec(GFormController formController, GPropertyDraw property, Event event, ExecuteEditContext editContext, String actionSID) {
         formController.asyncOpenForm(this);
+    }
+
+    public boolean isModal() {
+        //if current form is modal, new async form can't be non-modal
+        return modal || MainFrame.getCurrentForm() instanceof ModalForm;
     }
 
     @Override

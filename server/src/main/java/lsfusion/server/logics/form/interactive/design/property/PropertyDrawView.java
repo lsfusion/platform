@@ -146,7 +146,7 @@ public class PropertyDrawView extends ComponentView {
 
     public Map<String, AsyncEventExec> getAsyncExec(ServerContext context) {
         Map<String, AsyncEventExec> asyncExecMap = new HashMap<>();
-        for (String actionId : ServerResponse.changeEvents) {
+        for (String actionId : ServerResponse.events) {
             AsyncEventExec asyncEventExec = entity.getAsyncEventExec(context.entity, context.securityPolicy, actionId);
             if (asyncEventExec != null) {
                 asyncExecMap.put(actionId, asyncEventExec);
