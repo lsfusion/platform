@@ -631,39 +631,37 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     }
 
     protected void updatePropertyReaders() {
-        if (!rowBackgroundValues.isEmpty() || !rowForegroundValues.isEmpty() || !cellBackgroundValues.isEmpty() || !cellForegroundValues.isEmpty()) { // optimization
-            for (GTreeGridRecord record : rows) {
-                GGroupObjectValue key = record.getKey();
+        for (GTreeGridRecord record : rows) {
+            GGroupObjectValue key = record.getKey();
 
-                Object rBackground = rowBackgroundValues.get(key);
-                Object rForeground = rowForegroundValues.get(key);
+            Object rBackground = rowBackgroundValues.get(key);
+            Object rForeground = rowForegroundValues.get(key);
 
-                for (int i = 1, size = getColumnCount(); i < size; i++) {
-                    GPropertyDraw readerProperty = tree.getProperty(record.getGroup(), i);
+            for (int i = 1, size = getColumnCount(); i < size; i++) {
+                GPropertyDraw readerProperty = tree.getProperty(record.getGroup(), i);
 
-                    Object background = rBackground;
-                    if (background == null) {
-                        NativeHashMap<GGroupObjectValue, Object> propBackgrounds = cellBackgroundValues.get(readerProperty);
-                        if (propBackgrounds != null) {
-                            background = propBackgrounds.get(key);
-                        }
+                Object background = rBackground;
+                if (background == null) {
+                    NativeHashMap<GGroupObjectValue, Object> propBackgrounds = cellBackgroundValues.get(readerProperty);
+                    if (propBackgrounds != null) {
+                        background = propBackgrounds.get(key);
                     }
+                }
 
-                    Object foreground = rForeground;
-                    if (foreground == null) {
-                        NativeHashMap<GGroupObjectValue, Object> propForegrounds = cellForegroundValues.get(readerProperty);
-                        if (propForegrounds != null) {
-                            foreground = propForegrounds.get(key);
-                        }
+                Object foreground = rForeground;
+                if (foreground == null) {
+                    NativeHashMap<GGroupObjectValue, Object> propForegrounds = cellForegroundValues.get(readerProperty);
+                    if (propForegrounds != null) {
+                        foreground = propForegrounds.get(key);
                     }
+                }
 
-                    String columnSID = getColumnSID(i);
-                    record.setBackground(columnSID, background == null ? readerProperty.background : background);
-                    record.setForeground(columnSID, foreground == null ? readerProperty.foreground : foreground);
-                    if(readerProperty.hasDynamicImage()) {
-                        NativeHashMap<GGroupObjectValue, Object> actionImages = cellImages.get(readerProperty);
-                        record.setImage(columnSID, actionImages == null ? null : actionImages.get(key));
-                    }
+                String columnSID = getColumnSID(i);
+                record.setBackground(columnSID, background == null ? readerProperty.background : background);
+                record.setForeground(columnSID, foreground == null ? readerProperty.foreground : foreground);
+                if(readerProperty.hasDynamicImage()) {
+                    NativeHashMap<GGroupObjectValue, Object> actionImages = cellImages.get(readerProperty);
+                    record.setImage(columnSID, actionImages == null ? null : actionImages.get(key));
                 }
             }
         }
