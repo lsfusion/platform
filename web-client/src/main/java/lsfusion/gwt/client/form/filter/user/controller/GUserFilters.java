@@ -28,13 +28,11 @@ public abstract class GUserFilters {
     private List<GPropertyFilter> conditions = new ArrayList<>();
 
     private GTableController logicsSupplier;
-    private GFilter filter;
 
     public GFilterView filterView;
 
     public GUserFilters(GTableController logicsSupplier, GFilter filter) {
         this.logicsSupplier = logicsSupplier;
-        this.filter = filter;
 
         filterView = new GFilterView(this, filter);
 

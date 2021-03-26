@@ -3,6 +3,7 @@ package lsfusion.gwt.client.form.filter.user.view;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.CheckBox;
+import com.google.gwt.user.client.ui.FocusPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
@@ -11,6 +12,7 @@ import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.base.view.PopupDialogPanel;
+import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.filter.user.*;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.controller.GTableController;
@@ -45,6 +47,7 @@ public class GFilterConditionView extends FlexPanel implements GFilterValueView.
     private Widget settingsReplacement;
 
     private PopupDialogPanel popup;
+    private FocusPanel popupFocusPanel;
     private GFilterConditionListBox propertyView;
     private CheckBox negationView;
     private GFilterConditionListBox compareView;
@@ -113,9 +116,25 @@ public class GFilterConditionView extends FlexPanel implements GFilterValueView.
     
     private PopupDialogPanel getPopup() {
         if (popup == null) {
-            popup = new PopupDialogPanel();
+            popup = new PopupDialogPanel() {
+                @Override
+                public void show() {
+                    super.show();
+                    popupFocusPanel.setFocus(true);
+                }
+            };
+            
             FlexPanel popupContent = new FlexPanel();
-            popup.add(popupContent);
+
+            popupFocusPanel = new FocusPanel(popupContent);
+            popupFocusPanel.addKeyDownHandler(event -> {
+                if (GKeyStroke.isEscapeKeyEvent(event.getNativeEvent())) {
+                    GwtClientUtils.stopPropagation(event);
+                    popup.hide();
+                }
+            });
+            
+            popup.add(popupFocusPanel);
             popup.addCloseHandler(closeEvent -> settingsButton.showBackground(false));
 
             propertyView = new GFilterConditionListBox();
