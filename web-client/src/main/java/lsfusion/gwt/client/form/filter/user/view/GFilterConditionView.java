@@ -19,7 +19,7 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.view.Column;
 
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static lsfusion.gwt.client.view.StyleDefaults.COMPONENT_HEIGHT;
@@ -50,21 +50,21 @@ public class GFilterConditionView extends FlexPanel implements GFilterValueView.
     private GFilterConditionListBox compareView;
     private GFilterConditionListBox filterValues;
     private GFilterConditionListBox junctionView;
-    private GToolbarButton deleteButton;
-    
-    private boolean toolsVisible;
+
     private boolean junctionVisible = false;
 
     public GPropertyFilter condition;
+    private final GTableController logicsSupplier;
     private UIHandler handler;
 
     private Map<GFilterValue, GFilterValueView> valueViews;
 
     public GFilterConditionView(GPropertyFilter iCondition, GTableController logicsSupplier, final UIHandler handler, boolean toolsVisible) {
         this.condition = iCondition;
+        this.logicsSupplier = logicsSupplier;
         this.handler = handler;
 
-        valueViews = new HashMap<>();
+        valueViews = new LinkedHashMap<>();
         GDataFilterValue dataValue = condition.value instanceof GDataFilterValue ? (GDataFilterValue) condition.value : new GDataFilterValue();
         valueViews.put(dataValue, new GDataFilterValueView(this, dataValue, condition.property, logicsSupplier));
         GObjectFilterValue objectValue = condition.value instanceof GObjectFilterValue ? (GObjectFilterValue) condition.value : new GObjectFilterValue();
@@ -97,8 +97,8 @@ public class GFilterConditionView extends FlexPanel implements GFilterValueView.
             @Override
             public ClickHandler getClickHandler() {
                 return clickEvent -> {
-                    popup.show();
-                    GwtClientUtils.setPopupPosition(popup, settingsButton.getAbsoluteLeft(), settingsButton.getAbsoluteTop() + COMPONENT_HEIGHT);
+                    getPopup().show();
+                    GwtClientUtils.setPopupPosition(getPopup(), settingsButton.getAbsoluteLeft(), settingsButton.getAbsoluteTop() + COMPONENT_HEIGHT);
                     settingsButton.showBackground(true);
                 };                                       
             }
@@ -108,95 +108,101 @@ public class GFilterConditionView extends FlexPanel implements GFilterValueView.
         settingsReplacement = GwtClientUtils.createHorizontalStrut(COMPONENT_HEIGHT);
         addCentered(settingsReplacement);
         
-        
-        popup = new PopupDialogPanel();
-        FlexPanel popupContent = new FlexPanel();
-        popup.add(popupContent);
-        popup.addCloseHandler(closeEvent -> settingsButton.showBackground(false));
-
-        propertyView = new GFilterConditionListBox();
-        propertyView.addStyleName("customFontPresenter");
-        for (Pair<Column, String> column : logicsSupplier.getSelectedColumns())
-            propertyView.add(column.first, column.second);
-        propertyView.addChangeHandler(event -> {
-            Column selectedItem = (Column)propertyView.getSelectedItem();
-            condition.property = selectedItem.property;
-            condition.columnKey = selectedItem.columnKey;
-
-            propertyLabel.setText(selectedItem.property.getNotEmptyCaption());
-
-            filterChanged();
-        });
-
-        if (condition.property != null) {
-            setSelectedPropertyDraw(condition.property, condition.columnKey);
-        }
-        popupContent.addCentered(propertyView);
-
-        negationView = new CheckBox(messages.formFilterConditionViewNot());
-        negationView.addStyleName("checkBoxFilter");
-        negationView.addValueChangeHandler(event -> {
-            condition.negation = negationView.getValue();
-
-            negationLabel.setVisible(condition.negation);
-            updateCompareLabelVisibility();
-
-            handler.conditionChanged();
-        });
-        negationView.addClickHandler(event -> handler.conditionChanged());
-        negationView.setValue(condition.negation);
-        popupContent.addCentered(negationView);
-
-        compareView = new GFilterConditionListBox();
-        compareView.addStyleName("customFontPresenter");
-        compareView.add((Object[]) GCompare.values());
-        compareView.addChangeHandler(event -> {
-            condition.compare = (GCompare) compareView.getSelectedItem();
-
-            compareLabel.setText(condition.compare.toString());
-            updateCompareLabelVisibility();
-
-            handler.conditionChanged();
-        });
-        compareView.setItems(condition.property.baseType.getFilterCompares());
-        compareView.setSelectedItem(condition.compare);
-        popupContent.addCentered(compareView);
-
-        filterValues = new GFilterConditionListBox();
-        filterValues.addStyleName("customFontPresenter");
-        filterValues.add(dataValue, objectValue, propertyValue);
-        filterValues.addChangeHandler(event -> {
-            condition.value = (GFilterValue) filterValues.getSelectedItem();
-            filterChanged();
-        });
-        filterValues.setSelectedItem(condition.value);
-        popupContent.addCentered(filterValues);
-
-        junctionView = new GFilterConditionListBox();
-        junctionView.addStyleName("customFontPresenter");
-        junctionView.add(new Object[]{messages.formFilterConditionViewAnd(), messages.formFilterConditionViewOr()});
-        junctionView.addChangeHandler(event -> {
-            condition.junction = junctionView.getSelectedIndex() == 0;
-
-            junctionLabel.setText(junctionView.getSelectedItemText());
-
-            handler.conditionChanged();
-        });
-        junctionView.setSelectedIndex(condition.junction ? 0 : 1);
-        popupContent.addCentered(junctionView);
-
-        deleteButton = new GToolbarButton(DELETE, messages.formQueriesFilterRemoveCondition()) {
-            @Override
-            public ClickHandler getClickHandler() {
-                return event -> {
-                    popup.hide();
-                    handler.conditionRemoved(condition);
-                };
-            }
-        };
-        popupContent.addCentered(deleteButton);
-        
         setToolsVisible(toolsVisible);
+    }
+    
+    private PopupDialogPanel getPopup() {
+        if (popup == null) {
+            popup = new PopupDialogPanel();
+            FlexPanel popupContent = new FlexPanel();
+            popup.add(popupContent);
+            popup.addCloseHandler(closeEvent -> settingsButton.showBackground(false));
+
+            propertyView = new GFilterConditionListBox();
+            propertyView.addStyleName("customFontPresenter");
+            for (Pair<Column, String> column : logicsSupplier.getSelectedColumns())
+                propertyView.add(column.first, column.second);
+            propertyView.addChangeHandler(event -> {
+                Column selectedItem = (Column) propertyView.getSelectedItem();
+                condition.property = selectedItem.property;
+                condition.columnKey = selectedItem.columnKey;
+
+                propertyLabel.setText(selectedItem.property.getNotEmptyCaption());
+
+                filterChanged();
+            });
+
+            if (condition.property != null) {
+                setSelectedPropertyDraw(condition.property, condition.columnKey);
+            }
+            popupContent.addCentered(propertyView);
+
+            negationView = new CheckBox(messages.formFilterConditionViewNot());
+            negationView.addStyleName("checkBoxFilter");
+            negationView.addValueChangeHandler(event -> {
+                condition.negation = negationView.getValue();
+
+                negationLabel.setVisible(condition.negation);
+                updateCompareLabelVisibility();
+
+                handler.conditionChanged();
+            });
+            negationView.addClickHandler(event -> handler.conditionChanged());
+            negationView.setValue(condition.negation);
+            popupContent.addCentered(negationView);
+
+            compareView = new GFilterConditionListBox();
+            compareView.addStyleName("customFontPresenter");
+            compareView.add((Object[]) GCompare.values());
+            compareView.addChangeHandler(event -> {
+                condition.compare = (GCompare) compareView.getSelectedItem();
+
+                compareLabel.setText(condition.compare.toString());
+                updateCompareLabelVisibility();
+
+                handler.conditionChanged();
+            });
+            compareView.setItems(condition.property.baseType.getFilterCompares());
+            compareView.setSelectedItem(condition.compare);
+            popupContent.addCentered(compareView);
+
+            filterValues = new GFilterConditionListBox();
+            filterValues.addStyleName("customFontPresenter");
+            filterValues.add(valueViews.keySet());
+            filterValues.addChangeHandler(event -> {
+                condition.value = (GFilterValue) filterValues.getSelectedItem();
+                filterChanged();
+            });
+            filterValues.setSelectedItem(condition.value);
+            popupContent.addCentered(filterValues);
+
+            junctionView = new GFilterConditionListBox();
+            junctionView.addStyleName("customFontPresenter");
+            junctionView.add(new Object[]{messages.formFilterConditionViewAnd(), messages.formFilterConditionViewOr()});
+            junctionView.addChangeHandler(event -> {
+                condition.junction = junctionView.getSelectedIndex() == 0;
+
+                junctionLabel.setText(junctionView.getSelectedItemText());
+                junctionLabel.setVisible(junctionVisible && junctionView.getSelectedIndex() != 0);
+
+                handler.conditionChanged();
+            });
+            junctionView.setVisible(junctionVisible);
+            junctionView.setSelectedIndex(condition.junction ? 0 : 1);
+            popupContent.addCentered(junctionView);
+
+            GToolbarButton deleteButton = new GToolbarButton(DELETE, messages.formQueriesFilterRemoveCondition()) {
+                @Override
+                public ClickHandler getClickHandler() {
+                    return event -> {
+                        popup.hide();
+                        handler.conditionRemoved(condition);
+                    };
+                }
+            };
+            popupContent.addCentered(deleteButton);
+        }
+        return popup;
     }
 
     private void filterChanged() {
@@ -231,16 +237,12 @@ public class GFilterConditionView extends FlexPanel implements GFilterValueView.
 
     public void setJunctionVisible(boolean visible) {
         junctionVisible = visible;
-        junctionView.setVisible(visible && toolsVisible);
+        if (junctionView != null) {
+            junctionView.setVisible(visible);
+        }
     }
 
     public void setToolsVisible(boolean visible) {
-        toolsVisible = visible;
-        negationView.setVisible(visible);
-        compareView.setVisible(visible);
-        filterValues.setVisible(visible);
-        junctionView.setVisible(junctionVisible && visible);
-        deleteButton.setVisible(visible);
         settingsButton.setVisible(visible);
         settingsReplacement.setVisible(!visible);
     }
