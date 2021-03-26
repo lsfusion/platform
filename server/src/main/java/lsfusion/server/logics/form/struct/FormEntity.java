@@ -1458,7 +1458,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
     public void proceedAllEventActions(BiConsumer<ActionObjectEntity<?>, PropertyDrawEntity<?>> consumer) {
         for(PropertyDrawEntity<?> propertyDraw : getPropertyDrawsIt()) {
-            for(String changeEvent : BaseUtils.mergeIterables(ServerResponse.changeEvents, propertyDraw.getContextMenuBindings().keySet())) {
+            for(String changeEvent : BaseUtils.mergeIterables(ServerResponse.events, propertyDraw.getContextMenuBindings().keySet())) {
                 ActionObjectEntity<?> editAction = propertyDraw.getEventAction(changeEvent, this);
                 if (editAction != null)
                     consumer.accept(editAction, changeEvent.equals(CHANGE) && !propertyDraw.isProperty() ? propertyDraw : null);
