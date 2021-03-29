@@ -9,5 +9,5 @@ import java.io.Serializable;
 
 public abstract class GAsyncEventExec implements Serializable {
 
-    public abstract void exec(GFormController formController, GPropertyDraw property, Event event, ExecuteEditContext editContext, String actionSID);
+    public abstract void exec(GFormController formController, GPropertyDraw property, Event event, ExecuteEditContext editContext, String actionSID, long requestIndex);
 }

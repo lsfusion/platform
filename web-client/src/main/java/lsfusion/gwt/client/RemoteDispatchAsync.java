@@ -6,6 +6,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import lsfusion.gwt.client.base.AsyncCallbackEx;
 import lsfusion.gwt.client.controller.dispatch.DispatchAsyncWrapper;
 import lsfusion.gwt.client.controller.remote.action.RequestAction;
+import lsfusion.gwt.client.controller.remote.action.form.FormRequestAction;
 import lsfusion.gwt.client.form.controller.dispatch.QueuedAction;
 import net.customware.gwt.dispatch.client.DefaultExceptionHandler;
 import net.customware.gwt.dispatch.shared.Action;
@@ -24,9 +25,14 @@ public abstract class RemoteDispatchAsync {
     protected abstract <A extends RequestAction<R>, R extends Result> void fillQueuedAction(A action);
     protected abstract <A extends RequestAction<R>, R extends Result> void fillAction(A action);
 
-    public <A extends RequestAction<R>, R extends Result> void execute(A action, AsyncCallback<R> callback, boolean direct) {
+    public <A extends RequestAction<R>, R extends Result> long execute(A action, AsyncCallback<R> callback, boolean direct) {
         fillAction(action);
         queueAction(action, callback, direct);
+        if(action instanceof FormRequestAction) {
+            return ((FormRequestAction<?>) action).requestIndex;
+        } else {
+            return -1;
+        }
     }
 
     public <A extends RequestAction<R>, R extends Result> void executePriority(final A action, final AsyncCallback<R> callback) {

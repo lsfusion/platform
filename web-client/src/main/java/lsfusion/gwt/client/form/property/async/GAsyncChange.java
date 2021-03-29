@@ -18,7 +18,7 @@ public class GAsyncChange extends GAsyncInputExec {
     }
 
     @Override
-    public void exec(GFormController formController, GPropertyDraw property, Event event, ExecuteEditContext editContext, String actionSID) {
+    public void exec(GFormController formController, GPropertyDraw property, Event event, ExecuteEditContext editContext, String actionSID, long requestIndex) {
         formController.asyncChange(event, editContext, actionSID, this);
 
     }

@@ -125,12 +125,12 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
     private ExecuteEditContext editContext;
     private String actionSID;
 
-    public void executePropertyActionSID(Event event, String actionSID, ExecuteEditContext editContext) {
+    public long executePropertyActionSID(Event event, String actionSID, ExecuteEditContext editContext) {
         this.editEvent = event;
         this.editContext = editContext;
         this.actionSID = actionSID;
 
-        form.executeEventAction(editContext.getProperty(), editContext.getColumnKey(), actionSID);
+        return form.executeEventAction(editContext.getProperty(), editContext.getColumnKey(), actionSID);
     }
 
     protected Event getEditEvent() {
