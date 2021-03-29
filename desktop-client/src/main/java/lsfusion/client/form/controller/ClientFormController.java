@@ -1048,7 +1048,17 @@ public class ClientFormController implements AsyncListener {
                     @Override
                     protected void onResponse(long requestIndex, ServerResponse result) throws Exception {
 //                        if(remoteForm != null) // when there is hide in changeProperty and some button is clicked - breaks assertion in dispatchingEnded  
-                        rmiQueue.postponeDispatchingEnded();                       
+                        rmiQueue.postponeDispatchingEnded();
+
+                        //FormClientAction closes asyncForm, if there is no GFormAction in response,
+                        //we should close this erroneous asyncForm
+                        DockableRepository forms = ((DockableMainFrame) MainFrame.instance).getForms();
+                        if (forms.hasAsyncForm(requestIndex)) {
+                            if (Arrays.stream(result.actions).noneMatch(a -> a instanceof FormClientAction)) {
+                                ClientFormDockable formContainer = forms.removeAsyncForm(requestIndex);
+                                formContainer.onClosing();
+                            }
+                        }
                     }
                 });
         return result == null ? ServerResponse.EMPTY : result;

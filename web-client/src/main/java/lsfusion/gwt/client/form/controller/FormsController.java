@@ -231,10 +231,6 @@ public abstract class FormsController {
         return asyncForms.containsKey(requestIndex);
     }
 
-    public Long getLastCompletedRequest() {
-        return lastCompletedRequest;
-    }
-
     public void setLastCompletedRequest(Long lastCompletedRequest) {
         this.lastCompletedRequest = lastCompletedRequest;
     }

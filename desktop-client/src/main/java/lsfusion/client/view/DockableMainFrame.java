@@ -33,6 +33,7 @@ import lsfusion.client.controller.MainController;
 import lsfusion.client.controller.remote.AsyncListener;
 import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.controller.remote.RmiRequest;
+import lsfusion.client.form.controller.DockableRepository;
 import lsfusion.client.form.controller.FormsController;
 import lsfusion.client.form.print.view.EditReportInvoker;
 import lsfusion.client.form.print.view.ReportDialog;
@@ -295,6 +296,10 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
                 }
             }
         });
+    }
+
+    public DockableRepository getForms() {
+        return formsController.getForms();
     }
 
     public void clearForms() {

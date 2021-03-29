@@ -77,6 +77,10 @@ public class DockableRepository {
         asyncForms.put(requestIndex, asyncForm);
     }
 
+    public boolean hasAsyncForm(Long requestIndex) {
+        return asyncForms.containsKey(requestIndex);
+    }
+
     public ClientFormDockable removeAsyncForm(Long requestIndex) {
         return asyncForms.remove(requestIndex);
     }
