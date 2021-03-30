@@ -925,9 +925,9 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         syncDispatch(new ScrollToEnd(group.ID, toEnd), new ServerResponseCallback());
     }
 
-    public void executeEventAction(GPropertyDraw property, GGroupObjectValue columnKey, String actionSID) {
+    public long executeEventAction(GPropertyDraw property, GGroupObjectValue columnKey, String actionSID) {
         DeferredRunner.get().commitDelayedGroupObjectChange(property.groupObject);
-        syncDispatch(new ExecuteEventAction(property.ID, getFullCurrentKey(columnKey), actionSID),
+        return syncDispatch(new ExecuteEventAction(property.ID, getFullCurrentKey(columnKey), actionSID),
                 new ServerResponseCallback() {
                     @Override
                     public void success(ServerResponseResult response) {
@@ -981,22 +981,20 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             handler.consume();
 
             GAsyncEventExec asyncEventExec = property.getAsyncEventExec(actionSID);
-            boolean continueExecution = asyncEventExec instanceof GAsyncExec;
+
+            long requestIndex = asyncEventExec == null || asyncEventExec instanceof GAsyncExec ? actionDispatcher.executePropertyActionSID(event, actionSID, editContext) : -1;
+
             if (asyncEventExec != null) {
                 if (property.askConfirm) {
                     blockingConfirm("lsFusion", property.askConfirmMessage, false, chosenOption -> {
                         if (chosenOption == DialogBoxHelper.OptionType.YES) {
-                            asyncEventExec.exec(this, property, event, editContext, actionSID);
+                            asyncEventExec.exec(this, property, event, editContext, actionSID, requestIndex);
                         }
                     });
                 } else {
-                        asyncEventExec.exec(this, property, event, editContext, actionSID);
+                        asyncEventExec.exec(this, property, event, editContext, actionSID, requestIndex);
                 }
-                if (!continueExecution)
-                    return;
             }
-
-            actionDispatcher.executePropertyActionSID(event, actionSID, editContext);
         }
     }
 
@@ -1014,8 +1012,8 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
                 value -> {}, () -> {}, editContext);
     }
 
-    public void asyncOpenForm(GAsyncOpenForm asyncOpenForm) {
-        formsController.asyncOpenForm(getNextRequestIndex(), asyncOpenForm);
+    public void asyncOpenForm(GAsyncOpenForm asyncOpenForm, long requestIndex) {
+        formsController.asyncOpenForm(requestIndex, asyncOpenForm);
     }
 
     public void changeEditPropertyValue(ExecuteEditContext editContext, String actionSID, GType changeType, Object value, Long changeRequestIndex) {
@@ -1036,15 +1034,15 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         syncDispatch(new ThrowInInvocation(requestIndex, throwable, continueIndex), callback, true);
     }
 
-    public <T extends Result> void syncDispatch(final FormAction<T> action, AsyncCallback<T> callback) {
-        syncDispatch(action, callback, false);
+    public <T extends Result> long syncDispatch(final FormAction<T> action, AsyncCallback<T> callback) {
+        return syncDispatch(action, callback, false);
     }
 
-    public <T extends Result> void syncDispatch(final FormAction<T> action, AsyncCallback<T> callback, boolean direct) {
+    public <T extends Result> long syncDispatch(final FormAction<T> action, AsyncCallback<T> callback, boolean direct) {
         //todo: возможно понадобится сделать чтото более сложное как в
         //todo: http://stackoverflow.com/questions/2061699/disable-user-interaction-in-a-gwt-container
         loadingManager.start();
-        dispatcher.execute(action, new WrapperAsyncCallbackEx<T>(callback) {
+        return dispatcher.execute(action, new WrapperAsyncCallbackEx<T>(callback) {
             @Override
             public void preProcess() {
                 loadingManager.stop();

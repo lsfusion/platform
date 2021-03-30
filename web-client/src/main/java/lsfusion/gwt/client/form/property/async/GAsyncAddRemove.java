@@ -20,7 +20,7 @@ public class GAsyncAddRemove extends GAsyncInputExec {
     }
 
     @Override
-    public void exec(GFormController formController, GPropertyDraw property, Event event, ExecuteEditContext editContext, String actionSID) {
+    public void exec(GFormController formController, GPropertyDraw property, Event event, ExecuteEditContext editContext, String actionSID, long requestIndex) {
         formController.asyncAddRemove(property, editContext, actionSID, this);
     }
 }
