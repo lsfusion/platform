@@ -77,13 +77,16 @@ public class GFilterConditionView extends FlexPanel implements GFilterValueView.
         
 
         propertyLabel = new Label(condition.property.getNotEmptyCaption());
+        propertyLabel.addStyleName("userFilterLabel");
         addCentered(propertyLabel);
         
         negationLabel = new Label(messages.formFilterConditionViewNot());
+        negationLabel.addStyleName("userFilterLabel");
         negationLabel.setVisible(false);
         addCentered(negationLabel);
         
         compareLabel = new Label(condition.compare.toString());
+        compareLabel.addStyleName("userFilterLabel");
         compareLabel.setVisible(false);
         addCentered(compareLabel);
 
@@ -94,6 +97,8 @@ public class GFilterConditionView extends FlexPanel implements GFilterValueView.
         }
 
         junctionLabel = new Label();
+        junctionLabel.addStyleName("userFilterLabel");
+        junctionLabel.setVisible(junctionVisible);
         addCentered(junctionLabel);
         
         settingsButton = new GToolbarButton(SETTINGS, "settings") {
@@ -106,9 +111,10 @@ public class GFilterConditionView extends FlexPanel implements GFilterValueView.
                 };                                       
             }
         };
+        settingsButton.addStyleName("userFilterButton");
         addCentered(settingsButton);
         
-        settingsReplacement = GwtClientUtils.createHorizontalStrut(COMPONENT_HEIGHT);
+        settingsReplacement = GwtClientUtils.createHorizontalStrut(COMPONENT_HEIGHT + 4); // 4 - margin
         addCentered(settingsReplacement);
         
         setToolsVisible(toolsVisible);
@@ -157,7 +163,7 @@ public class GFilterConditionView extends FlexPanel implements GFilterValueView.
             popupContent.addCentered(propertyView);
 
             negationView = new CheckBox(messages.formFilterConditionViewNot());
-            negationView.addStyleName("checkBoxFilter");
+            negationView.addStyleName("userFilterCheckBox");
             negationView.addValueChangeHandler(event -> {
                 condition.negation = negationView.getValue();
 
@@ -219,6 +225,7 @@ public class GFilterConditionView extends FlexPanel implements GFilterValueView.
                     };
                 }
             };
+            deleteButton.addStyleName("userFilterButton");
             popupContent.addCentered(deleteButton);
         }
         return popup;

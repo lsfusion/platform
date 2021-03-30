@@ -20,6 +20,8 @@ public class GDataFilterValueView extends GFilterValueView {
         this.filterValue = filterValue;
         this.logicsSupplier = logicsSupplier;
 
+        addStyleName("userFilterDataPropertyValue");
+        
         cell = new GDataFilterPropertyValue(property, logicsSupplier.getForm(), value -> valueChanged(value));
         cell.setStatic(this, true);
     }

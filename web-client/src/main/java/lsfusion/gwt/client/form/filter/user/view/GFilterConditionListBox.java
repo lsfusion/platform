@@ -9,7 +9,7 @@ import java.util.List;
 
 public class GFilterConditionListBox extends ListBox {
     public GFilterConditionListBox() {
-        addStyleName("filterListBox");
+        addStyleName("userFilterListBox");
         setHeight(StyleDefaults.COMPONENT_HEIGHT_STRING);
     }
     

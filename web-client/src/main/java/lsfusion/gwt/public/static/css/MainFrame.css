@@ -404,7 +404,7 @@ input[type=checkbox]:focus {
     margin: 0 2px;
 }
 
-.checkBoxFilter label {
+.checkBoxFilter label, .userFilterCheckBox label {
     vertical-align: middle;
 }
 
@@ -412,31 +412,16 @@ input[type=checkbox]:focus {
     margin: auto 2px;
 }
 
-.dataFilterValueTablePanel {
-    border: 1px solid var(--component-border-color);
-    border-radius: var(--textfield-border-radius);
-    margin: 2px 2px 2px 0;
-    min-height: 16px !important;
+.userFiltersPanel {
+    margin-top: 2px;
 }
 
-.dataFilterValueTablePanelFocused {
-    border: 1px solid var(--focus-color);
-    border-radius: var(--textfield-border-radius);
+.userFilterLabel, .userFilterListBox, .userFilterCheckBox, .userFilterDataPropertyValue {
+    margin: 0 0 0 2px;
 }
 
-.filterDialogHeader {
-    position: relative;
-    padding: 1px 5px 1px 4px !important;
-}
-
-.filterDialogCaption {
-    position: absolute;
-    top: 50%;
-    transform: translate(0, -50%);
-}
-
-.filterListBox {
-    margin: 0 2px 0 0;
+.userFilterButton {
+    margin: 0 2px;
 }
 
 .gwt-ProgressBar-shell {

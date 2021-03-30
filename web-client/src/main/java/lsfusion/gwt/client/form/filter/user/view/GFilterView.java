@@ -50,7 +50,7 @@ public class GFilterView extends FlexPanel implements GFilterConditionView.UIHan
         FlexPanel mainContainer = new FlexPanel();
         add(mainContainer);
         setChildFlex(mainContainer, 1);
-        addStyleName("noOutline");
+        addStyleName("userFiltersPanel");
 
         filterContainer = new FlexPanel();
 
@@ -65,6 +65,7 @@ public class GFilterView extends FlexPanel implements GFilterConditionView.UIHan
                 return event -> addCondition();
             }
         };
+        addConditionButton.addStyleName("userFilterButton");
         addConditionButton.setVisible(toolsVisible);
         buttonsPanel.add(addConditionButton);
 
@@ -74,6 +75,7 @@ public class GFilterView extends FlexPanel implements GFilterConditionView.UIHan
                 return event -> applyFilter();
             }
         };
+        applyButton.addStyleName("userFilterButton");
         applyButton.setVisible(toolsVisible);
         buttonsPanel.add(applyButton);
 
@@ -83,10 +85,11 @@ public class GFilterView extends FlexPanel implements GFilterConditionView.UIHan
                 return event -> allRemovedPressed();
             }
         };
+        resetConditionsButton.addStyleName("userFilterButton");
         resetConditionsButton.setVisible(toolsVisible);
         buttonsPanel.add(resetConditionsButton);
 
-        buttonsReplacement = GwtClientUtils.createHorizontalStrut(StyleDefaults.COMPONENT_HEIGHT * 3); // to prevent container from changing size on showing tools
+        buttonsReplacement = GwtClientUtils.createHorizontalStrut((StyleDefaults.COMPONENT_HEIGHT + 4) * 3); // to prevent container from changing size on showing tools, 4 - margin
         buttonsReplacement.setVisible(!toolsVisible);
         buttonsPanel.add(buttonsReplacement);
         
