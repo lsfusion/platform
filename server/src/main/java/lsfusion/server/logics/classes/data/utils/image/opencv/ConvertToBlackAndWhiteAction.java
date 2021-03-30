@@ -40,8 +40,12 @@ public class ConvertToBlackAndWhiteAction extends InternalAction {
 
             try {
                 BufferedImage coloredImage = ImageIO.read(new ByteArrayInputStream(imageFile.getBytes()));
-                BufferedImage blackNWhite = thresholdImage(coloredImage, threshold);
-                findProperty("convertToBlackAndWhiteResult[]").change(getFileData(blackNWhite, extension), context);
+                if (coloredImage != null) {
+                    BufferedImage blackNWhite = thresholdImage(coloredImage, threshold);
+                    findProperty("convertToBlackAndWhiteResult[]").change(getFileData(blackNWhite, extension), context);
+                } else {
+                    throw new RuntimeException("Failed to read image");
+                }
 
             } catch (Throwable t) {
                 throw Throwables.propagate(t);
