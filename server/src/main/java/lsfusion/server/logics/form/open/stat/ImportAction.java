@@ -45,6 +45,8 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public abstract class ImportAction extends SystemAction {
@@ -213,9 +215,9 @@ public abstract class ImportAction extends SystemAction {
 
     @Override
     protected ImMap<Property, Boolean> aspectChangeExtProps() {
-        MSet<Property> mProps = SetFact.mSet();
+        List<Property> properties = new ArrayList<>();
         for(PropertyDrawEntity propertyDraw : formEntity.getStaticPropertyDrawsList())
-            mProps.add((Property) propertyDraw.getImportProperty().property);
-        return mProps.immutable().toMap(false);
+            properties.add((Property) propertyDraw.getImportProperty().property);
+        return getChangeProps(properties.toArray(new Property[0]));
     }
 }

@@ -75,8 +75,13 @@ public class XMLNode implements Node<XMLNode> {
             return Namespace.getNamespace(nsName, uri.result);
         
         Namespace namespace = element != null ? element.getNamespace(nsName) : null;
-        if(namespace == null)
-            return Namespace.getNamespace(nsName,"http://www.w3.org/"+nsName);
+        if(namespace == null) {
+            if(nsName.equals("xmlns")) {
+                return null; //it's namespace declaration
+            } else {
+                return Namespace.getNamespace(nsName, "http://www.w3.org/" + nsName);
+            }
+        }
         return namespace;
     }
 
@@ -96,7 +101,7 @@ public class XMLNode implements Node<XMLNode> {
     public String getXMLAttributeValue(String key) {
         Result<String> shortKey = new Result<>();
         Namespace namespace = getXMLNamespace(key, shortKey, false); // attributes don't inherit tags namespaces
-        return element.getAttributeValue(shortKey.result, namespace);
+        return namespace != null ? element.getAttributeValue(shortKey.result, namespace) : element.getAttributeValue(shortKey.result);
     }
 
     public Element getXMLChild(String key) {
