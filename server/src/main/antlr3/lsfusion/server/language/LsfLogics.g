@@ -1664,7 +1664,7 @@ unaryMinusPE[List<TypedParameter> context, boolean dynamic] returns [LPWithParam
 		$property = self.addScriptedUnaryMinusProp($expr.property);
 	} 
 }
-	:	MINUS expr=unaryMinusPE[context, dynamic] { minusWas = true; } { if(inMainParseState()) { self.checkNotExprInExpr($expr.property, $expr.ci); } }
+	:	MINUS expr=unaryMinusPE[context, dynamic] { minusWas = true; } { if(inMainParseState()) { $ci = self.checkNumericLiteralInExpr($expr.property, $expr.ci); } }
 	|	simpleExpr=postfixUnaryPE[context, dynamic] { $property = $simpleExpr.property; $ci = $simpleExpr.ci; }
 	;
 
