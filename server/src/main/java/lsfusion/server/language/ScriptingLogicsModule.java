@@ -4754,19 +4754,24 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public LPNotExpr checkNumericLiteralInExpr(LPWithParams lp, LPNotExpr ci) throws ScriptingErrorLog.SemanticErrorException {
         checkNotExprInExpr(lp, ci);
-        if (ci instanceof LPLiteral && ((LPLiteral) ci).value instanceof Number) {
-            Number value = ((LPLiteral) ci).value instanceof Number ? (Number) ((LPLiteral) ci).value : null;
-            if (value instanceof Integer && value.intValue() > 0) {
-                return new LPLiteral(-value.intValue());
-            } else if (value instanceof Long && value.longValue() > 0) {
-                return new LPLiteral(-value.longValue());
-            } else if (value instanceof BigDecimal && ((BigDecimal) value).compareTo(BigDecimal.ZERO) > 0) {
-                return new LPLiteral(((BigDecimal) value).negate());
-            } else if (value instanceof Double && value.doubleValue() > 0) {
-                return new LPLiteral(-value.doubleValue());
+        if (ci instanceof LPLiteral) {
+            if (((LPLiteral) ci).value instanceof Number) {
+                Number value = (Number) ((LPLiteral) ci).value;
+                if (value instanceof Integer && value.intValue() > 0) {
+                    return new LPLiteral(-value.intValue());
+                } else if (value instanceof Long && value.longValue() > 0) {
+                    return new LPLiteral(-value.longValue());
+                } else if (value instanceof Double && value.doubleValue() > 0) {
+                    return new LPLiteral(-value.doubleValue());
+                }
+            } else if (((LPLiteral) ci).value instanceof String) {
+                BigDecimal value = BigDecimal.valueOf(Double.parseDouble((String) ((LPLiteral) ci).value));
+                if(value.compareTo(BigDecimal.ZERO) > 0) {
+                    return new LPLiteral(value.negate());
+                }
             }
         }
-        return ci;
+        return null;
     }
     public LPContextIndependent checkTLAInExpr(LPWithParams lp, LPNotExpr ci) throws ScriptingErrorLog.SemanticErrorException {
         if(lp == null) // checking action
