@@ -26,10 +26,9 @@ import java.util.Map;
 
 import static lsfusion.gwt.client.view.StyleDefaults.COMPONENT_HEIGHT;
 
-public class GFilterConditionView extends FlexPanel implements GFilterValueView.GFilterValueListener {
+public class GFilterConditionView extends FlexPanel {
     private static final ClientMessages messages = ClientMessages.Instance.get();
     public interface UIHandler {
-        void conditionChanged();
         void conditionRemoved(GPropertyFilter condition);
         void applyFilter();
     }
@@ -69,11 +68,11 @@ public class GFilterConditionView extends FlexPanel implements GFilterValueView.
 
         valueViews = new LinkedHashMap<>();
         GDataFilterValue dataValue = condition.value instanceof GDataFilterValue ? (GDataFilterValue) condition.value : new GDataFilterValue();
-        valueViews.put(dataValue, new GDataFilterValueView(this, dataValue, condition.property, logicsSupplier));
+        valueViews.put(dataValue, new GDataFilterValueView(dataValue, condition.property, logicsSupplier));
         GObjectFilterValue objectValue = condition.value instanceof GObjectFilterValue ? (GObjectFilterValue) condition.value : new GObjectFilterValue();
-        valueViews.put(objectValue, new GObjectFilterValueView(this, objectValue, logicsSupplier));
+        valueViews.put(objectValue, new GObjectFilterValueView(objectValue, logicsSupplier));
         GPropertyFilterValue propertyValue = condition.value instanceof GPropertyFilterValue ? (GPropertyFilterValue) condition.value : new GPropertyFilterValue();
-        valueViews.put(propertyValue, new GPropertyFilterValueView(this, propertyValue, logicsSupplier));
+        valueViews.put(propertyValue, new GPropertyFilterValueView(propertyValue, logicsSupplier));
         
 
         propertyLabel = new Label(condition.property.getNotEmptyCaption());
@@ -82,23 +81,22 @@ public class GFilterConditionView extends FlexPanel implements GFilterValueView.
         
         negationLabel = new Label(messages.formFilterConditionViewNot());
         negationLabel.addStyleName("userFilterLabel");
-        negationLabel.setVisible(false);
+        negationLabel.setVisible(condition.negation);
         addCentered(negationLabel);
         
         compareLabel = new Label(condition.compare.toString());
         compareLabel.addStyleName("userFilterLabel");
-        compareLabel.setVisible(false);
+        updateCompareLabelVisibility();
         addCentered(compareLabel);
 
         valueView = valueViews.get(condition.value);
         if (valueView != null) {
             addCentered(valueView);
-            valueView.propertySet(condition);
         }
 
         junctionLabel = new Label();
         junctionLabel.addStyleName("userFilterLabel");
-        junctionLabel.setVisible(junctionVisible);
+        junctionLabel.setVisible(!condition.junction);
         addCentered(junctionLabel);
         
         settingsButton = new GToolbarButton(SETTINGS, "settings") {
@@ -117,7 +115,7 @@ public class GFilterConditionView extends FlexPanel implements GFilterValueView.
         settingsReplacement = GwtClientUtils.createHorizontalStrut(COMPONENT_HEIGHT + 4); // 4 - margin
         addCentered(settingsReplacement);
         
-        setToolsVisible(toolsVisible);
+        setSettingsVisible(toolsVisible);
     }
     
     private PopupDialogPanel getPopup() {
@@ -169,10 +167,7 @@ public class GFilterConditionView extends FlexPanel implements GFilterValueView.
 
                 negationLabel.setVisible(condition.negation);
                 updateCompareLabelVisibility();
-
-                handler.conditionChanged();
             });
-            negationView.addClickHandler(event -> handler.conditionChanged());
             negationView.setValue(condition.negation);
             popupContent.addCentered(negationView);
 
@@ -184,8 +179,6 @@ public class GFilterConditionView extends FlexPanel implements GFilterValueView.
 
                 compareLabel.setText(condition.compare.toString());
                 updateCompareLabelVisibility();
-
-                handler.conditionChanged();
             });
             compareView.setItems(condition.property.baseType.getFilterCompares());
             compareView.setSelectedItem(condition.compare);
@@ -209,8 +202,6 @@ public class GFilterConditionView extends FlexPanel implements GFilterValueView.
 
                 junctionLabel.setText(junctionView.getSelectedItemText());
                 junctionLabel.setVisible(junctionVisible && junctionView.getSelectedIndex() != 0);
-
-                handler.conditionChanged();
             });
             junctionView.setVisible(junctionVisible);
             junctionView.setSelectedIndex(condition.junction ? 0 : 1);
@@ -247,14 +238,13 @@ public class GFilterConditionView extends FlexPanel implements GFilterValueView.
         if (Arrays.asList(filterCompares).contains(oldCompare)) {
             compareView.setSelectedItem(oldCompare);
         } else {
-            compareView.setSelectedItem(condition.property.getDefaultCompare());
-            condition.compare = (GCompare) compareView.getSelectedItem();
+            GCompare defaultCompare = condition.property.getDefaultCompare();
+            compareView.setSelectedItem(defaultCompare);
+            condition.compare = defaultCompare;
 
-            compareLabel.setText(condition.compare.toString());
+            compareLabel.setText(defaultCompare.toString());
             updateCompareLabelVisibility();
         }
-
-        handler.conditionChanged();
     }
     
     private void updateCompareLabelVisibility() {
@@ -268,7 +258,7 @@ public class GFilterConditionView extends FlexPanel implements GFilterValueView.
         }
     }
 
-    public void setToolsVisible(boolean visible) {
+    public void setSettingsVisible(boolean visible) {
         settingsButton.setVisible(visible);
         settingsReplacement.setVisible(!visible);
     }
@@ -276,11 +266,6 @@ public class GFilterConditionView extends FlexPanel implements GFilterValueView.
     public void setSelectedPropertyDraw(GPropertyDraw propertyDraw, GGroupObjectValue columnKey) {
         if (propertyDraw != null)
             propertyView.setSelectedItem(new Column(propertyDraw, columnKey));
-    }
-
-    @Override
-    public void valueChanged() {
-        handler.conditionChanged();
     }
 
     public void focusOnValue() {

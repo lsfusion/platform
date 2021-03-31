@@ -8,8 +8,7 @@ import lsfusion.gwt.client.form.object.table.controller.GTableController;
 
 public class GObjectFilterValueView extends GFilterValueView {
 
-    public GObjectFilterValueView(final GFilterValueListener listener, final GObjectFilterValue filterValue, GTableController logicsSupplier) {
-        super(listener);
+    public GObjectFilterValueView(final GObjectFilterValue filterValue, GTableController logicsSupplier) {
         final GFilterConditionListBox objectView = new GFilterConditionListBox();
         objectView.addStyleName("customFontPresenter");
 
@@ -19,7 +18,6 @@ public class GObjectFilterValueView extends GFilterValueView {
             @Override
             public void onChange(ChangeEvent event) {
                 filterValue.object = (GObject) objectView.getSelectedItem();
-                listener.valueChanged();
             }
         });
 

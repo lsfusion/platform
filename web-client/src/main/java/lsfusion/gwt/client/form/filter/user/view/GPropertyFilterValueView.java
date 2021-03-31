@@ -10,9 +10,7 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 import java.util.List;
 
 public class GPropertyFilterValueView extends GFilterValueView {
-    public GPropertyFilterValueView(final GFilterValueListener listener, final GPropertyFilterValue propertyValue, GTableController logicsSupplier) {
-        super(listener);
-
+    public GPropertyFilterValueView(final GPropertyFilterValue propertyValue, GTableController logicsSupplier) {
         final GFilterConditionListBox propertyView = new GFilterConditionListBox();
 
         propertyView.addStyleName("customFontPresenter");
@@ -35,7 +33,6 @@ public class GPropertyFilterValueView extends GFilterValueView {
             @Override
             public void onChange(ChangeEvent event) {
                 propertyValue.property = (GPropertyDraw) propertyView.getSelectedItem();
-                listener.valueChanged();
             }
         });
 

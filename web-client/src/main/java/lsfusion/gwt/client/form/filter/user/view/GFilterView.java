@@ -112,9 +112,7 @@ public class GFilterView extends FlexPanel implements GFilterConditionView.UIHan
     }
     
     private void clearConditions() {
-        for (GFilterConditionView filter : conditionViews.values()) {
-            filterContainer.remove(filter);
-        }
+        filterContainer.clear();
         conditionViews.clear();
     }
 
@@ -147,7 +145,7 @@ public class GFilterView extends FlexPanel implements GFilterConditionView.UIHan
             GFilterConditionView conditionView = new GFilterConditionView(condition, controller.getLogicsSupplier(), this, toolsVisible);
             conditionViews.put(condition, conditionView);
             filterContainer.add(conditionView);
-            conditionChanged();
+            updateJunctionVisibility();
             focusLastValue();
 
             if (keyEvent != null) {
@@ -157,9 +155,9 @@ public class GFilterView extends FlexPanel implements GFilterConditionView.UIHan
     }
 
     public void removeCondition(GPropertyFilter condition) {
-        filterContainer.remove(conditionViews.get(condition));
+        GFilterConditionView view = conditionViews.get(condition);
+        filterContainer.remove(view);
         conditionViews.remove(condition);
-        conditionChanged();
         focusLastValue();
     }
     
@@ -170,7 +168,7 @@ public class GFilterView extends FlexPanel implements GFilterConditionView.UIHan
     public void toggleToolsVisible() {
         toolsVisible = !toolsVisible;
         for (GFilterConditionView view : conditionViews.values()) {
-            view.setToolsVisible(toolsVisible);
+            view.setSettingsVisible(toolsVisible);
         }
         
         addConditionButton.setVisible(toolsVisible);
@@ -181,17 +179,17 @@ public class GFilterView extends FlexPanel implements GFilterConditionView.UIHan
     }
 
     @Override
-    public void conditionChanged() {
+    public void conditionRemoved(GPropertyFilter condition) {
+        removeCondition(condition);
+        updateJunctionVisibility();
+    }
+    
+    private void updateJunctionVisibility() {
         int i = 0;
         for (GFilterConditionView cView : conditionViews.values()) {
             i++;
             cView.setJunctionVisible(i < conditionViews.size());
         }
-    }
-
-    @Override
-    public void conditionRemoved(GPropertyFilter condition) {
-        removeCondition(condition);
     }
 
     public void focusLastValue() {

@@ -61,7 +61,6 @@ public abstract class GUserFilters {
 
     public boolean hasConditions() {
         return filterView.hasConditions();
-//        return !conditions.isEmpty();
     }
 
     public GTableController getLogicsSupplier() {

@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.form.filter.user.view;
 
-import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.form.controller.GFormController;
@@ -42,19 +41,6 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
                 }
             }
         };
-    }
-
-    // there is some architecture bug in filters so for now will do this hack (later filter should rerender all GDataFilterValue)
-    public void changeProperty(GPropertyDraw property) {
-        Element renderElement = getRenderElement();
-
-        this.property.getCellRenderer().clearRender(renderElement, this);
-
-        this.property = property;
-
-        setBaseSize(true);
-
-        property.getCellRenderer().renderStatic(renderElement, this);
     }
 
     @Override
