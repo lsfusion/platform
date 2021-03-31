@@ -535,6 +535,10 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, format("double constant '%s' is out of range", literalText));
     }
 
+    public void emitNumericValueError(ScriptParser parser, String literalText) throws SemanticErrorException {
+        emitSimpleError(parser, format("numeric constant '%s' is out of range", literalText));
+    }
+
     public void emitDateDayError(ScriptParser parser, int y, int m, int d) throws SemanticErrorException {
         emitSimpleError(parser, format("wrong date %04d-%02d-%02d", y, m, d));
     }
