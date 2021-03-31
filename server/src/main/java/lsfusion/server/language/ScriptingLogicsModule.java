@@ -4765,18 +4765,16 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public LPNotExpr checkNumericLiteralInExpr(LPWithParams lp, LPNotExpr ci) throws ScriptingErrorLog.SemanticErrorException {
         checkNotExprInExpr(lp, ci);
-        if (ci instanceof LPLiteral) {
-            if (((LPLiteral) ci).value instanceof Number) {
-                Number value = (Number) ((LPLiteral) ci).value;
-                if (value instanceof Integer && value.intValue() > 0) {
-                    return new LPLiteral(-value.intValue());
-                } else if (value instanceof Long && value.longValue() > 0) {
-                    return new LPLiteral(-value.longValue());
-                } else if (value instanceof Double && value.doubleValue() > 0) {
-                    return new LPLiteral(-value.doubleValue());
-                } else if (value instanceof BigDecimal && ((BigDecimal) value).signum() > 0) {
-                    return new LPLiteral(((BigDecimal) value).negate());
-                }
+        if (ci instanceof LPLiteral && ((LPLiteral) ci).value instanceof Number) {
+            Number value = (Number) ((LPLiteral) ci).value;
+            if (value instanceof Integer && value.intValue() > 0) {
+                return new LPLiteral(-value.intValue());
+            } else if (value instanceof Long && value.longValue() > 0) {
+                return new LPLiteral(-value.longValue());
+            } else if (value instanceof Double && value.doubleValue() > 0) {
+                return new LPLiteral(-value.doubleValue());
+            } else if (value instanceof BigDecimal && ((BigDecimal) value).signum() > 0) {
+                return new LPLiteral(((BigDecimal) value).negate());
             }
         }
         return null;
