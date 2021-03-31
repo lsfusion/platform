@@ -500,6 +500,17 @@ public class ScriptingFormEntity {
                 LM.getErrLog().emitCustomPropertyRenderFunctionsError(LM.getParser(), property.getSID(), customRenderFunctions);
             }
         }
+        String customEditorFunctions = options.getCustomEditorFunctions();
+        property.customTextEdit = options.isCustomTextEdit();
+        if (customEditorFunctions != null) {
+            String pattern = "[a-zA-Z]+\\w*:[a-zA-Z]+\\w*";
+            if (customEditorFunctions.matches(pattern)) {
+                property.customEditorFunctions = customEditorFunctions;
+            } else {
+                LM.getErrLog().emitCustomPropertyEditorFunctionsError(LM.getParser(), property.getSID(), customEditorFunctions, options.isCustomTextEdit());
+            }
+        }
+
         if (options.getToDraw() != null) {
             property.toDraw = options.getToDraw();
         }

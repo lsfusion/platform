@@ -634,8 +634,13 @@ propertyClassViewType returns [ClassViewType type]
 	|   'TOOLBAR' {$type = ClassViewType.TOOLBAR;}
 	;
 
-propertyCustomView returns [String customRenderFunctions]
-	:	'CUSTOM' fun=stringLiteral { $customRenderFunctions = $fun.val; }
+propertyCustomView returns [String customRenderFunctions, String customEditorFunctions, boolean textEdit]
+@init {
+    boolean isEditText = false;
+}
+	:	'CUSTOM' ('RENDER' renderFun=stringLiteral { $customRenderFunctions = $renderFun.val;})? 
+		(('EDITTEXT' {isEditText = true;}
+		| 'EDIT' ) editFun=stringLiteral {$customEditorFunctions = $editFun.val; $textEdit = isEditText;})?
 	;
 
 listViewType returns [ListViewType type, PivotOptions options, String customRenderFunction]
@@ -796,7 +801,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|	'HEADER' propObj=formPropertyObject { $options.setHeader($propObj.property); }
 		|	'FOOTER' propObj=formPropertyObject { $options.setFooter($propObj.property); }
 		|	viewType=propertyClassViewType { $options.setViewType($viewType.type); }
-		|	customView=propertyCustomView { $options.setCustomRenderFunctions($customView.customRenderFunctions); }
+		|	customView=propertyCustomView { $options.setCustomRenderFunctions($customView.customRenderFunctions); $options.setCustomEditorFunctions($customView.customEditorFunctions); $options.setCustomTextEdit($customView.textEdit);}
 		|	pgt=propertyGroupType { $options.setAggrFunc($pgt.type); }
 		|	pla=propertyLastAggr { $options.setLastAggr($pla.properties, $pla.desc); }
 		|	pf=propertyFormula { $options.setFormula($pf.formula, $pf.operands); }
@@ -2726,6 +2731,8 @@ customViewSetting [LAP property]
 @after {
 	if (inMainParseState()) {
 		self.setCustomRenderFunctions(property, $customView.customRenderFunctions);
+		self.setCustomEditorFunctions(property, $customView.customEditorFunctions);
+		self.setCustomTextEdit(property, $customView.textEdit);
 	}
 }
 	:	customView=propertyCustomView

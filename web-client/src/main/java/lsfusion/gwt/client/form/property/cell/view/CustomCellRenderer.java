@@ -58,7 +58,8 @@ public class CustomCellRenderer extends CellRenderer<Object> {
     }
     
     protected void changeValue(JavaScriptObject event, JavaScriptObject valueChangeConsumerObject, JavaScriptObject value) {
-        GwtClientUtils.stopPropagation(this.<NativeEvent>toObject(event)); 
+        if (event != null)
+            GwtClientUtils.stopPropagation(this.<NativeEvent>toObject(event));
         
         Consumer<Object> valueChangeConsumer = this.toObject(valueChangeConsumerObject);
         if (valueChangeConsumer != null) {

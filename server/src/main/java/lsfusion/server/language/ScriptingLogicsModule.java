@@ -1297,6 +1297,14 @@ public class ScriptingLogicsModule extends LogicsModule {
         property.setCustomRenderFunctions(customRenderFunctions);
     }
 
+    public void setCustomEditorFunctions(LAP property, String customEditorFunctions) {
+        property.setCustomEditorFunctions(customEditorFunctions);
+    }
+
+    public void setCustomTextEdit(LAP property, boolean customTextEdit) {
+        property.setCustomTextEdit(customTextEdit);
+    }
+
     public void setPivotOptions(LAP property, PivotOptions pivotOptions) {
         property.setPivotOptions(pivotOptions);
     }

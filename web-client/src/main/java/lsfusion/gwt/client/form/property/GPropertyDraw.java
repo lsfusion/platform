@@ -53,6 +53,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public String integrationSID;
     
     public String customRenderFunction;
+    public String customEditorFunctions;
+    public boolean customTextEdit;
 
     public String toolTip;
     public String tableName;
@@ -209,7 +211,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public CellRenderer getCellRenderer() {
         if (cellRenderer == null) {
             if (customRenderFunction != null) {
-                cellRenderer = new CustomCellRenderer(this, customRenderFunction);
+                cellRenderer = new CustomCellRenderer(this, customRenderFunction); //+
             } else {
                 cellRenderer = baseType.createGridCellRenderer(this);
             }

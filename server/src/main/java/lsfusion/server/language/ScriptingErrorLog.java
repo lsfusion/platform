@@ -302,6 +302,14 @@ public class ScriptingErrorLog {
                         customRenderFunctions));                                                        
     }
 
+    public void emitCustomPropertyEditorFunctionsError(ScriptParser parser, String propertyDrawName, String customEditorFunctions, boolean isTextEditor) throws SemanticErrorException {
+        String expectedFormat = isTextEditor ? "'<render_function_name>:<clear_render_function_name>'" : "'<commit_editing_function_name>:<start_editing_function_name>'";
+        emitSimpleError(parser,
+                format(isTextEditor ? "Incorrect custom editor functions definition for %s:\n\texpected format: " + expectedFormat + ",\n\tprovided: '%s'" :
+                        propertyDrawName,
+                        customEditorFunctions));
+    }
+
     public void emitNamedParamsError(ScriptParser parser, List<String> paramNames, int actualParameters) throws SemanticErrorException {
         emitSimpleError(parser, format("number of actual property parameters (%d) differs from number of named parameters (%d: %s)",
                 actualParameters, paramNames.size(), paramNames.toString()));
