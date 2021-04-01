@@ -303,11 +303,15 @@ public class ScriptingErrorLog {
     }
 
     public void emitCustomPropertyEditorFunctionsError(ScriptParser parser, String propertyDrawName, String customEditorFunctions, boolean isTextEditor) throws SemanticErrorException {
-        String expectedFormat = isTextEditor ? "'<render_function_name>:<clear_render_function_name>'" : "'<commit_editing_function_name>:<start_editing_function_name>'";
+        String expectedFormat = isTextEditor ? "'<render_function_name>:<clear_render_function_name>'" : "'<start_editing_function_name>:<commit_editing_function_name>'";
         emitSimpleError(parser,
                 format(isTextEditor ? "Incorrect custom editor functions definition for %s:\n\texpected format: " + expectedFormat + ",\n\tprovided: '%s'" :
                         propertyDrawName,
                         customEditorFunctions));
+    }
+
+    public void emitCustomPropertyWrongEditType(ScriptParser parser, String editType) throws SemanticErrorException {
+        emitSimpleError(parser, format("Incorrect CUSTOM EDIT type definition. \n\texpected type: TEXT or none,\n\tprovided: '%s'", editType));
     }
 
     public void emitNamedParamsError(ScriptParser parser, List<String> paramNames, int actualParameters) throws SemanticErrorException {

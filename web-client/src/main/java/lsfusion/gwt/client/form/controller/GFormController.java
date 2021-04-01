@@ -83,6 +83,7 @@ import lsfusion.gwt.client.form.property.cell.classes.controller.CustomTextCellE
 import lsfusion.gwt.client.form.property.cell.classes.view.ActionCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.*;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
+import lsfusion.gwt.client.form.property.cell.view.CustomCellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 import lsfusion.gwt.client.form.property.panel.view.ActionPanelRenderer;
@@ -1799,6 +1800,8 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     public void edit(GType type, Event event, boolean hasOldValue, Object oldValue, Consumer<Object> beforeCommit, Consumer<Object> afterCommit, Runnable cancel, EditContext editContext) {
         assert this.editContext == null;
         GPropertyDraw property = editContext.getProperty();
+        if (property.getCellRenderer() instanceof CustomCellRenderer)
+            return;
         CellEditor cellEditor;
         String customEditorFunctions = property.customEditorFunctions;
         if (customEditorFunctions != null) {
@@ -1841,13 +1844,15 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
     @Override
     public void commitEditing(Object value, boolean blurred) {
-        editBeforeCommit.accept(value);
-        editBeforeCommit = null;
+        if (editBeforeCommit != null && editAfterCommit != null) {
+            editBeforeCommit.accept(value);
+            editBeforeCommit = null;
 
-        finishEditing(blurred);
+            finishEditing(blurred);
 
-        editAfterCommit.accept(value);
-        editAfterCommit = null;
+            editAfterCommit.accept(value);
+            editAfterCommit = null;
+        }
     }
 
     @Override

@@ -9,7 +9,7 @@ import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 public class CustomCellEditor implements CellEditor {
 
     private final EditManager editManager;
-    protected final GPropertyDraw property;
+    private final GPropertyDraw property;
     private final String startEditingFunction;
     private final String commitEditingFunction;
 

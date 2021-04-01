@@ -147,8 +147,7 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
         }
     }
 
-    @Override
-    public void render(Element cellParent, RenderContext renderContext, Pair<Integer, Integer> renderedSize) {
+    protected Element setupInputElement(Element cellParent, RenderContext renderContext, Pair<Integer, Integer> renderedSize){
         Element inputElement = createInputElement();
         // without setting boxSized class textarea and input behaviour is pretty odd when text is very large or inside td (position of textarea / input is really unpredictable)
         inputElement.addClassName("boxSized");
@@ -168,7 +167,12 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
             cellParent.getStyle().setWidth(renderedSize.first, Style.Unit.PX);
         }
 
-        cellParent.appendChild(inputElement);
+        return inputElement;
+    }
+
+    @Override
+    public void render(Element cellParent, RenderContext renderContext, Pair<Integer, Integer> renderedSize) {
+        cellParent.appendChild(setupInputElement(cellParent, renderContext, renderedSize));
     }
 
     @Override

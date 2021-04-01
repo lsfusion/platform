@@ -1297,6 +1297,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         property.setCustomRenderFunctions(customRenderFunctions);
     }
 
+    public void checkCustomPropertyViewTextOption(String editType) throws ScriptingErrorLog.SemanticErrorException {
+        checks.checkCustomPropertyEditType(editType);
+    }
+
     public void setCustomEditorFunctions(LAP property, String customEditorFunctions) {
         property.setCustomEditorFunctions(customEditorFunctions);
     }

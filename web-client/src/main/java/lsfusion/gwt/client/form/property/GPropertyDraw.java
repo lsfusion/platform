@@ -211,7 +211,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public CellRenderer getCellRenderer() {
         if (cellRenderer == null) {
             if (customRenderFunction != null) {
-                cellRenderer = new CustomCellRenderer(this, customRenderFunction); //+
+                cellRenderer = new CustomCellRenderer(this, customRenderFunction);
             } else {
                 cellRenderer = baseType.createGridCellRenderer(this);
             }

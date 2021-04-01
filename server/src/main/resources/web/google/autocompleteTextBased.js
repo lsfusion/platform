@@ -1,5 +1,6 @@
+$.getScript('');
 
-renderAutocompleteTextBased = function (element) {
+createAutocompleteTextBased = function (element, controller) {
     let autocompleteOptions = {
         types: ['address'],
         componentRestrictions: {
@@ -7,14 +8,12 @@ renderAutocompleteTextBased = function (element) {
         }
     };
 
-    let input = document.createElement("input");
-    input.setAttribute('type', 'text');
-    element.appendChild(input);
+    controller.setDeferredCommitOnBlur(true);
 
-    new google.maps.places.Autocomplete(input, autocompleteOptions);
+    new google.maps.places.Autocomplete(element, autocompleteOptions);
 }
 
 clearRenderAutocompleteTextBased = function (element) {
-    element.innerHtml = '';
-    $(".pac-container").remove(); // remove autocomplete elements from <body>
+    // remove autocomplete elements from <body>. https://stackoverflow.com/questions/33049322/no-way-to-remove-google-places-autocomplete
+    $(".pac-container").remove();
 }

@@ -1,7 +1,9 @@
 package lsfusion.gwt.client.form.property.cell.classes.controller;
 
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
@@ -13,6 +15,7 @@ public class CustomTextCellEditor extends TextBasedCellEditor {
 
     private final String renderFunction;
     private final String clearRenderFunction;
+    private boolean deferredCommitOnBlur = false;
 
     public CustomTextCellEditor(EditManager editManager, GPropertyDraw property, String customEditorFunctions) {
         super(editManager, property);
@@ -24,21 +27,38 @@ public class CustomTextCellEditor extends TextBasedCellEditor {
 
     @Override
     protected Object tryParseInputText(String inputText, boolean onCommit) throws ParseException {
-        return inputText.isEmpty() ? null : inputText;
+        return inputText == null || inputText.isEmpty() ? null : inputText;
     }
 
     @Override
-    public void render(Element cellParent, RenderContext renderContext, Pair<Integer, Integer> renderedSize) {
-        render(cellParent);
+    protected Element setupInputElement(Element cellParent, RenderContext renderContext, Pair<Integer, Integer> renderedSize) {
+        Element input = super.setupInputElement(cellParent, renderContext, renderedSize);
+        render(input, getController());
+
+        return input;
     }
 
-    protected native void render(Element element)/*-{
-        $wnd[this.@CustomTextCellEditor::renderFunction](element);
+    public void setDeferredCommitOnBlur(boolean deferredCommitOnBlur) {
+        this.deferredCommitOnBlur = deferredCommitOnBlur;
+    }
+
+    protected native JavaScriptObject getController()/*-{
+        var thisObj = this;
+        return {
+            setDeferredCommitOnBlur: function (deferredCommitOnBlur) {
+                return thisObj.@CustomTextCellEditor::setDeferredCommitOnBlur(*)(deferredCommitOnBlur);
+            }
+        }
+    }-*/;
+
+    protected native void render(Element element, JavaScriptObject controller)/*-{
+        $wnd[this.@CustomTextCellEditor::renderFunction](element, controller);
     }-*/;
 
     @Override
     public void clearRender(Element cellParent, RenderContext renderContext) {
         clearRender(cellParent);
+        GwtClientUtils.removeAllChildren(cellParent);
     }
 
     protected native void clearRender(Element element)/*-{
@@ -47,6 +67,10 @@ public class CustomTextCellEditor extends TextBasedCellEditor {
 
     @Override
     public void validateAndCommit(Element parent, boolean cancelIfInvalid, boolean blurred) {
-        Scheduler.get().scheduleDeferred(() -> super.validateAndCommit(parent, cancelIfInvalid, blurred)); //scheduler because autocomplete works with minimal timeout
+        //some libraries set values after the blur. to solve this there is a scheduleDeferred that sets the values in the field before the event
+        if (deferredCommitOnBlur)
+            Scheduler.get().scheduleDeferred(() -> super.validateAndCommit(parent, cancelIfInvalid, blurred)); //scheduler because autocomplete works with minimal timeout
+        else
+            super.validateAndCommit(parent, cancelIfInvalid, blurred);
     }
 }

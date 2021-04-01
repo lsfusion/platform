@@ -639,8 +639,7 @@ propertyCustomView returns [String customRenderFunctions, String customEditorFun
     boolean isEditText = false;
 }
 	:	'CUSTOM' ('RENDER' renderFun=stringLiteral { $customRenderFunctions = $renderFun.val;})? 
-		(('EDITTEXT' {isEditText = true;}
-		| 'EDIT' ) editFun=stringLiteral {$customEditorFunctions = $editFun.val; $textEdit = isEditText;})?
+		('EDIT' (type=PRIMITIVE_TYPE {self.checkCustomPropertyViewTextOption($type.text); isEditText = true;})? editFun=stringLiteral {$customEditorFunctions = $editFun.val; $textEdit = isEditText;})?
 	;
 
 listViewType returns [ListViewType type, PivotOptions options, String customRenderFunction]
