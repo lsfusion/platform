@@ -2,12 +2,9 @@ package lsfusion.server.language.proxy;
 
 import lsfusion.base.col.heavy.SoftHashMap;
 import lsfusion.interop.form.design.FontInfo;
-import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.converters.FontInfoConverter;
 import lsfusion.server.language.converters.KeyStrokeConverter;
-import org.apache.commons.beanutils.BeanUtils;
-import org.apache.commons.beanutils.ConvertUtils;
-import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.commons.beanutils.*;
 
 import javax.swing.*;
 
@@ -15,6 +12,7 @@ public class ViewProxyUtil {
     static {
         ConvertUtils.register(new FontInfoConverter(), FontInfo.class);
         ConvertUtils.register(new KeyStrokeConverter(), KeyStroke.class);
+        BeanUtilsBean.getInstance().getConvertUtils().register(true, false, -1); //all converters will throw exceptions
     }
 
     private static final SoftHashMap<Object, ViewProxy> viewProxies = new SoftHashMap<>();

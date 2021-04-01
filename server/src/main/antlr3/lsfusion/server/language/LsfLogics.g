@@ -85,6 +85,7 @@ grammar LsfLogics;
     
     import javax.mail.Message;
     import java.awt.*;
+    import java.math.BigDecimal;
     import java.util.List;
     import java.util.*;
     import java.time.*;
@@ -1663,7 +1664,7 @@ unaryMinusPE[List<TypedParameter> context, boolean dynamic] returns [LPWithParam
 		$property = self.addScriptedUnaryMinusProp($expr.property);
 	} 
 }
-	:	MINUS expr=unaryMinusPE[context, dynamic] { minusWas = true; } { if(inMainParseState()) { self.checkNotExprInExpr($expr.property, $expr.ci); } }
+	:	MINUS expr=unaryMinusPE[context, dynamic] { minusWas = true; } { if(inMainParseState()) { $ci = self.checkNumericLiteralInExpr($expr.property, $expr.ci); } }
 	|	simpleExpr=postfixUnaryPE[context, dynamic] { $property = $simpleExpr.property; $ci = $simpleExpr.ci; }
 	;
 
@@ -5043,7 +5044,7 @@ constantProperty returns [LP property, LPLiteral literal]
 literal returns [ScriptingLogicsModule.ConstType cls, Object value]
 	: 	vint=uintLiteral	{ $cls = ScriptingLogicsModule.ConstType.INT; $value = $vint.val; }
 	|	vlong=ulongLiteral	{ $cls = ScriptingLogicsModule.ConstType.LONG; $value = $vlong.val; }
-	|	vnum=UNUMERIC_LITERAL	{ $cls = ScriptingLogicsModule.ConstType.NUMERIC; $value = $vnum.text; }
+	|	vnum=unumericLiteral   { $cls = ScriptingLogicsModule.ConstType.NUMERIC; $value = $vnum.val; }
 	|	vdouble=udoubleLiteral { $cls = ScriptingLogicsModule.ConstType.REAL; $value = $vdouble.val; }
 	|	vstr=localizedStringLiteralNoID	{ $cls = ScriptingLogicsModule.ConstType.STRING; $value = $vstr.val; }
 	|	vbool=booleanLiteral	{ $cls = ScriptingLogicsModule.ConstType.LOGICAL; $value = $vbool.val;  { if (inMainParseState()) self.getChecks().checkBooleanUsage($vbool.val); }}
@@ -5269,6 +5270,10 @@ udoubleLiteral returns [double val]
 	:	d=UDOUBLE_LITERAL { $val = self.createScriptedDouble($d.text.substring(0, $d.text.length() - 1)); }
 	;	
 		
+unumericLiteral returns [BigDecimal val]
+	:	u=UNUMERIC_LITERAL { $val = self.createScriptedNumeric($u.text); }
+	;
+
 uintLiteral returns [int val]
 	:	u=UINT_LITERAL { $val = self.createScriptedInteger($u.text); }
 	;		

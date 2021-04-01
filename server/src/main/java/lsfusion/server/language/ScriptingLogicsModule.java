@@ -3043,7 +3043,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         switch (type) {
             case INT: lp = addUnsafeCProp(IntegerClass.instance, value); break;
             case LONG: lp =  addUnsafeCProp(LongClass.instance, value); break;
-            case NUMERIC: lp =  addNumericConst((String) value); break;
+            case NUMERIC: lp =  addUnsafeCProp(NumericClass.get(((BigDecimal) value).precision(), ((BigDecimal) value).scale()), value); break;
             case REAL: lp =  addUnsafeCProp(DoubleClass.instance, value); break;
             case STRING: lp =  addUnsafeCProp(getStringConstClass((LocalizedString)value), value); break;
             case LOGICAL: lp =  addUnsafeCProp(LogicalClass.instance, value); break;
@@ -3055,10 +3055,6 @@ public class ScriptingLogicsModule extends LogicsModule {
             case NULL: lp =  baseLM.vnull; break;
         }
         return Pair.create(lp, new LPLiteral(value));
-    }
-
-    private LP addNumericConst(String value) {
-        return addUnsafeCProp(NumericClass.get(value.length(), value.length() - value.indexOf('.') - 1), new BigDecimal(value));
     }
 
     public Color createScriptedColor(int r, int g, int b) throws ScriptingErrorLog.SemanticErrorException {
@@ -3094,6 +3090,16 @@ public class ScriptingLogicsModule extends LogicsModule {
             res = Double.parseDouble(literalText);
         } catch (NumberFormatException e) {
             errLog.emitDoubleValueError(parser, literalText);
+        }
+        return res;
+    }
+
+    public BigDecimal createScriptedNumeric(String literalText) throws ScriptingErrorLog.SemanticErrorException {
+        BigDecimal res = BigDecimal.ZERO;
+        try {
+            res = new BigDecimal(literalText);
+        } catch (NumberFormatException e) {
+            errLog.emitNumericValueError(parser, literalText);
         }
         return res;
     }
@@ -4751,6 +4757,24 @@ public class ScriptingLogicsModule extends LogicsModule {
         checkNotExprInExpr(lp, ci);
         return ci instanceof LPLiteral ? (LPLiteral)ci : null;
     }
+
+    public LPNotExpr checkNumericLiteralInExpr(LPWithParams lp, LPNotExpr ci) throws ScriptingErrorLog.SemanticErrorException {
+        checkNotExprInExpr(lp, ci);
+        if (ci instanceof LPLiteral && ((LPLiteral) ci).value instanceof Number) {
+            Number value = (Number) ((LPLiteral) ci).value;
+            if (value instanceof Integer && value.intValue() > 0) {
+                return new LPLiteral(-value.intValue());
+            } else if (value instanceof Long && value.longValue() > 0) {
+                return new LPLiteral(-value.longValue());
+            } else if (value instanceof Double && value.doubleValue() > 0) {
+                return new LPLiteral(-value.doubleValue());
+            } else if (value instanceof BigDecimal && ((BigDecimal) value).signum() > 0) {
+                return new LPLiteral(((BigDecimal) value).negate());
+            }
+        }
+        return null;
+    }
+
     public LPContextIndependent checkTLAInExpr(LPWithParams lp, LPNotExpr ci) throws ScriptingErrorLog.SemanticErrorException {
         if(lp == null) // checking action
             checks.checkTLAInExpr(ci);
