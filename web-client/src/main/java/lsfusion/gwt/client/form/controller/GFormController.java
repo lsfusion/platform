@@ -927,26 +927,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
     public long executeEventAction(GPropertyDraw property, GGroupObjectValue columnKey, String actionSID) {
         DeferredRunner.get().commitDelayedGroupObjectChange(property.groupObject);
-        return syncDispatch(new ExecuteEventAction(property.ID, getFullCurrentKey(columnKey), actionSID),
-                new ServerResponseCallback() {
-                    @Override
-                    public void success(ServerResponseResult response) {
-                        super.success(response);
-                        formsController.setLastCompletedRequest(response.requestIndex);
-                        //GFormAction will close asyncForm, if there is no GFormAction in response,
-                        //we should close this erroneous asyncForm
-                        if (formsController.hasAsyncForm(response.requestIndex)) {
-                            if (Arrays.stream(response.actions).noneMatch(a -> a instanceof GFormAction)) {
-                                FormContainer formContainer = formsController.removeAsyncForm(response.requestIndex);
-                                if(formContainer instanceof FormDockable) {
-                                    ((FormDockable) formContainer).closePressed();
-                                } else {
-                                    formContainer.hide();
-                                }
-                            }
-                        }
-                    }
-                });
+        return syncDispatch(new ExecuteEventAction(property.ID, getFullCurrentKey(columnKey), actionSID), new ServerResponseCallback());
     }
 
     public void executePropertyEventAction(EventHandler handler, boolean isBinding, ExecuteEditContext editContext) {
@@ -1014,7 +995,26 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     public void asyncOpenForm(GAsyncOpenForm asyncOpenForm, Event event, ExecuteEditContext editContext, String actionSID) {
-        long requestIndex = actionDispatcher.executePropertyActionSID(event, actionSID, editContext);
+        long requestIndex = dispatcher.execute(new ExecuteEventAction(editContext.getProperty().ID, getFullCurrentKey(editContext.getColumnKey()), actionSID),
+                new ServerResponseCallback() {
+                    @Override
+                    public void success(ServerResponseResult response) {
+                        super.success(response);
+                        formsController.setLastCompletedRequest(response.requestIndex);
+                        //GFormAction will close asyncForm, if there is no GFormAction in response,
+                        //we should close this erroneous asyncForm
+                        if (formsController.hasAsyncForm(response.requestIndex)) {
+                            if (Arrays.stream(response.actions).noneMatch(a -> a instanceof GFormAction)) {
+                                FormContainer formContainer = formsController.removeAsyncForm(response.requestIndex);
+                                if(formContainer instanceof FormDockable) {
+                                    ((FormDockable) formContainer).closePressed();
+                                } else {
+                                    formContainer.hide();
+                                }
+                            }
+                        }
+                    }
+                });
         formsController.asyncOpenForm(requestIndex, asyncOpenForm);
     }
 
