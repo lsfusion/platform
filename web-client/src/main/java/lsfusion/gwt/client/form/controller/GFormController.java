@@ -994,7 +994,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
                 value -> {}, () -> {}, editContext);
     }
 
-    public void asyncOpenForm(GAsyncOpenForm asyncOpenForm, Event event, ExecuteEditContext editContext, String actionSID) {
+    public void asyncOpenForm(GAsyncOpenForm asyncOpenForm, ExecuteEditContext editContext, String actionSID) {
         long requestIndex = dispatcher.execute(new ExecuteEventAction(editContext.getProperty().ID, getFullCurrentKey(editContext.getColumnKey()), actionSID),
                 new ServerResponseCallback() {
                     @Override
