@@ -3043,7 +3043,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         switch (type) {
             case INT: lp = addUnsafeCProp(IntegerClass.instance, value); break;
             case LONG: lp =  addUnsafeCProp(LongClass.instance, value); break;
-            case NUMERIC: lp =  addUnsafeCProp(NumericClass.get(((BigDecimal) value).precision(), ((BigDecimal) value).scale()), value); break;
+            case NUMERIC: lp =  addNumericConst((BigDecimal) value); break;
             case REAL: lp =  addUnsafeCProp(DoubleClass.instance, value); break;
             case STRING: lp =  addUnsafeCProp(getStringConstClass((LocalizedString)value), value); break;
             case LOGICAL: lp =  addUnsafeCProp(LogicalClass.instance, value); break;
@@ -3055,6 +3055,12 @@ public class ScriptingLogicsModule extends LogicsModule {
             case NULL: lp =  baseLM.vnull; break;
         }
         return Pair.create(lp, new LPLiteral(value));
+    }
+
+    private LP addNumericConst(BigDecimal value) {
+        //precision() of bigDecimal 0.x is incorrect
+        int precision = value.abs().compareTo(BigDecimal.ONE) < 1 ? (value.scale() + 1) : value.precision();
+        return addUnsafeCProp(NumericClass.get(precision, value.scale()), value);
     }
 
     public Color createScriptedColor(int r, int g, int b) throws ScriptingErrorLog.SemanticErrorException {
