@@ -982,19 +982,20 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
             GAsyncEventExec asyncEventExec = property.getAsyncEventExec(actionSID);
 
-            long requestIndex = asyncEventExec == null || asyncEventExec instanceof GAsyncExec ? actionDispatcher.executePropertyActionSID(event, actionSID, editContext) : -1;
-
             if (asyncEventExec != null) {
                 if (property.askConfirm) {
                     blockingConfirm("lsFusion", property.askConfirmMessage, false, chosenOption -> {
                         if (chosenOption == DialogBoxHelper.OptionType.YES) {
-                            asyncEventExec.exec(this, property, event, editContext, actionSID, requestIndex);
+                            asyncEventExec.exec(this, property, event, editContext, actionSID);
                         }
                     });
                 } else {
-                        asyncEventExec.exec(this, property, event, editContext, actionSID, requestIndex);
+                    asyncEventExec.exec(this, property, event, editContext, actionSID);
                 }
+                return;
             }
+
+            actionDispatcher.executePropertyActionSID(event, actionSID, editContext);
         }
     }
 
@@ -1012,7 +1013,8 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
                 value -> {}, () -> {}, editContext);
     }
 
-    public void asyncOpenForm(GAsyncOpenForm asyncOpenForm, long requestIndex) {
+    public void asyncOpenForm(GAsyncOpenForm asyncOpenForm, Event event, ExecuteEditContext editContext, String actionSID) {
+        long requestIndex = actionDispatcher.executePropertyActionSID(event, actionSID, editContext);
         formsController.asyncOpenForm(requestIndex, asyncOpenForm);
     }
 

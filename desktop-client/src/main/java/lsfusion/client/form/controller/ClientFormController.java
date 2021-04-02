@@ -1010,6 +1010,36 @@ public class ClientFormController implements AsyncListener {
         return fullKey;
     }
 
+    public void asyncOpenForm(ClientPropertyDraw property, ClientGroupObjectValue columnKey, String actionSID, ClientAsyncOpenForm asyncOpenForm) throws IOException {
+        if(!asyncOpenForm.isModal()) { //ignore async modal windows in desktop
+            ((DockableMainFrame) MainFrame.instance).asyncOpenForm(rmiQueue.getNextRmiRequestIndex(), asyncOpenForm);
+        }
+
+        commitOrCancelCurrentEditing();
+
+        final byte[] fullCurrentKey = getFullCurrentKey(columnKey);
+
+        rmiQueue.asyncRequest(new ProcessServerResponseRmiRequest("openForm") {
+            @Override
+            protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
+                return remoteForm.executeEventAction(requestIndex, lastReceivedRequestIndex, property.getID(), fullCurrentKey, actionSID);
+            }
+            @Override
+            protected void onResponse(long requestIndex, ServerResponse result) throws Exception {
+                super.onResponse(requestIndex, result);
+                //FormClientAction closes asyncForm, if there is no GFormAction in response,
+                //we should close this erroneous asyncForm
+                DockableRepository forms = ((DockableMainFrame) MainFrame.instance).getForms();
+                if (forms.hasAsyncForm(requestIndex)) {
+                    if (Arrays.stream(result.actions).noneMatch(a -> a instanceof FormClientAction)) {
+                        ClientFormDockable formContainer = forms.removeAsyncForm(requestIndex);
+                        formContainer.onClosing();
+                    }
+                }
+            }
+        });
+    }
+
     public ServerResponse executeEventAction(final ClientPropertyDraw property, final ClientGroupObjectValue columnKey, final String actionSID) throws IOException {
         // При выполнение синхронных запросов, EDT блокируется. Если перед этим синхр. запросом был послан асинхронный, который возвращает DockedModal-FormAction,
         // то получается dead-lock: executeEventAction ждёт окончания предыдущего async-запроса и значит закрытия DockedModal формы,

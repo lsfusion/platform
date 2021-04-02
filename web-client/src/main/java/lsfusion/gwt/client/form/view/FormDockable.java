@@ -26,7 +26,7 @@ public final class FormDockable extends FormContainer<FormDockable.ContentWidget
         formsController.addContextMenuHandler(this);
 
         if(async) {
-            GwtClientUtils.setThemeImage("loading.gif", imageUrl -> contentWidget.setContent(createLoadingWidget(imageUrl)), false);
+            GwtClientUtils.setThemeImage(loadingAsyncImage, imageUrl -> contentWidget.setContent(createLoadingWidget(imageUrl)), false);
         }
     }
 

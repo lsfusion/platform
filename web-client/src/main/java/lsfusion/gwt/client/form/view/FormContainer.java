@@ -145,15 +145,19 @@ public abstract class FormContainer<W extends Widget> {
         }
     }
 
+    protected String loadingAsyncImage = "loading_async.gif";
     protected Widget createLoadingWidget(String imageUrl) {
         VerticalPanel loadingWidget = new VerticalPanel();
         loadingWidget.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
         loadingWidget.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
+        loadingWidget.setSize("100%", "100%");
 
         HorizontalPanel topPanel = new HorizontalPanel();
+        topPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+        topPanel.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
         topPanel.setSpacing(5);
         Image image = new Image(imageUrl);
-        image.setSize("16px", "16px");
+        image.setSize("32px", "32px");
         topPanel.add(image);
         topPanel.add(new HTML(messages.loading()));
 

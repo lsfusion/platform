@@ -13,7 +13,7 @@ public class ModalForm extends FormContainer<ResizableModalWindow> {
         super(formsController, requestIndex, async);
 
         if(async) {
-            GwtClientUtils.setThemeImage("loading.gif", imageUrl -> setContent(createLoadingWidget(imageUrl)), false);
+            GwtClientUtils.setThemeImage(loadingAsyncImage, imageUrl -> setContent(createLoadingWidget(imageUrl)), false);
             contentWidget.setDefaultSize();
         }
         contentWidget.setCaption(caption);

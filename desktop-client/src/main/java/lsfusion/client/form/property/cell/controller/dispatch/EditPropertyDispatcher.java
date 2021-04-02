@@ -68,8 +68,6 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
 
             //async actions
             ClientAsyncEventExec asyncEventExec = property.getAsyncEventExec(actionSID);
-            boolean continueExecution = asyncEventExec instanceof ClientAsyncExec;
-
             if (asyncEventExec != null) {
                 if (property.askConfirm) {
                     String msg = property.askConfirmMessage;
@@ -80,16 +78,10 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
                     }
                 }
 
-                asyncEventExec.exec(form, this, property, columnKey, actionSID);
-
-                if(!continueExecution) {
-                    return true;
-                }
+                return asyncEventExec.exec(form, this, property, columnKey, actionSID);
             }
 
-
             editPerformed = true;
-            //todo: executeEventAction block EDT, async open form not shown
             ServerResponse response = form.executeEventAction(property, columnKey, actionSID);
             try {
                 return internalDispatchResponse(response);

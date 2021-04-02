@@ -26,8 +26,8 @@ public class GAsyncOpenForm extends GAsyncExec {
     }
 
     @Override
-    public void exec(GFormController formController, GPropertyDraw property, Event event, ExecuteEditContext editContext, String actionSID, long requestIndex) {
-        formController.asyncOpenForm(this, requestIndex);
+    public void exec(GFormController formController, GPropertyDraw property, Event event, ExecuteEditContext editContext, String actionSID) {
+        formController.asyncOpenForm(this, event, editContext, actionSID);
     }
 
     public boolean isModal() {

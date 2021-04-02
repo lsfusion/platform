@@ -207,13 +207,17 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
     }
 
     private void executeNavigatorAction(ClientNavigatorAction action, boolean suppressForbidDuplicate) {
-        executeNavigatorAction(action.getCanonicalName(), 1, null, suppressForbidDuplicate);
+        executeNavigatorAction(action.getCanonicalName(), 1, null, suppressForbidDuplicate, action.asyncExec == null);
     }
 
     public void executeNavigatorAction(final String actionSID, final int type, final Runnable action, Boolean suppressForbidDuplicate) {
+        executeNavigatorAction(actionSID, type, action, suppressForbidDuplicate, true);
+    }
+
+    private void executeNavigatorAction(final String actionSID, final int type, final Runnable action, Boolean suppressForbidDuplicate, boolean sync) {
         if (action != null) {
             if (lock.tryLock()) {
-                tryExecuteNavigatorAction(actionSID, type, suppressForbidDuplicate);
+                tryExecuteNavigatorAction(actionSID, type, suppressForbidDuplicate, sync);
             } else {
                 SwingUtils.invokeLater(new ERunnable() {
                     @Override
@@ -231,7 +235,7 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
             }
         } else {
             lock.lock();
-            tryExecuteNavigatorAction(actionSID, type, suppressForbidDuplicate);
+            tryExecuteNavigatorAction(actionSID, type, suppressForbidDuplicate, sync);
         }
     }
 
@@ -250,9 +254,9 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
         });
     }
 
-    private void tryExecuteNavigatorAction(final String actionSID, final int type, final Boolean suppressForbidDuplicate) {
+    private void tryExecuteNavigatorAction(final String actionSID, final int type, final Boolean suppressForbidDuplicate, boolean sync) {
         try {
-            rmiQueue.syncRequest(new RmiRequest<ServerResponse>("executeNavigatorAction") {
+            RmiRequest<ServerResponse> request = new RmiRequest<ServerResponse>("executeNavigatorAction") {
                 @Override
                 protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex) throws RemoteException {
                     return remoteNavigator.executeNavigatorAction(requestIndex, lastReceivedRequestIndex, actionSID, type);
@@ -272,7 +276,12 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
                     }
                     processServerResponse(result);
                 }
-            });
+            };
+            if(sync) {
+                rmiQueue.syncRequest(request);
+            } else {
+                rmiQueue.asyncRequest(request);
+            }
         } finally {
             lock.unlock();
         }
