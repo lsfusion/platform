@@ -15,6 +15,7 @@ import lsfusion.gwt.client.base.view.HasMaxPreferredSize;
 import lsfusion.gwt.client.base.view.grid.Column;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
+import lsfusion.gwt.client.controller.SmartScheduler;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.event.*;
@@ -197,6 +198,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
 
     @Override
     protected boolean previewEvent(Element target, Event event) {
+        SmartScheduler.getInstance().executeAll(true);
         return form.previewEvent(target, event);
     }
 

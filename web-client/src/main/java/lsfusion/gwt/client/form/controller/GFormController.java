@@ -79,11 +79,11 @@ import lsfusion.gwt.client.form.property.GPropertyGroupType;
 import lsfusion.gwt.client.form.property.GPropertyReader;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.classes.controller.CustomCellEditor;
+import lsfusion.gwt.client.form.property.cell.classes.controller.CustomReplaceCellEditor;
 import lsfusion.gwt.client.form.property.cell.classes.controller.CustomTextCellEditor;
 import lsfusion.gwt.client.form.property.cell.classes.view.ActionCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.*;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
-import lsfusion.gwt.client.form.property.cell.view.CustomCellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 import lsfusion.gwt.client.form.property.panel.view.ActionPanelRenderer;
@@ -1800,12 +1800,12 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     public void edit(GType type, Event event, boolean hasOldValue, Object oldValue, Consumer<Object> beforeCommit, Consumer<Object> afterCommit, Runnable cancel, EditContext editContext) {
         assert this.editContext == null;
         GPropertyDraw property = editContext.getProperty();
-        if (property.getCellRenderer() instanceof CustomCellRenderer)
-            return;
         CellEditor cellEditor;
         String customEditorFunctions = property.customEditorFunctions;
         if (customEditorFunctions != null) {
-            cellEditor = property.customTextEdit ? new CustomTextCellEditor(this, property, customEditorFunctions) : new CustomCellEditor(this, property, customEditorFunctions);
+            cellEditor = property.customTextEdit ? new CustomTextCellEditor(this, property, customEditorFunctions) :
+                    (property.customReplaceEdit ? new CustomReplaceCellEditor(this, property, customEditorFunctions) :
+                            new CustomCellEditor(this, property, customEditorFunctions));
         } else
             cellEditor = type.createGridCellEditor(this, property);
 
@@ -1844,15 +1844,13 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
     @Override
     public void commitEditing(Object value, boolean blurred) {
-        if (editBeforeCommit != null && editAfterCommit != null) {
-            editBeforeCommit.accept(value);
-            editBeforeCommit = null;
+        editBeforeCommit.accept(value);
+        editBeforeCommit = null;
 
-            finishEditing(blurred);
+        finishEditing(blurred);
 
-            editAfterCommit.accept(value);
-            editAfterCommit = null;
-        }
+        editAfterCommit.accept(value);
+        editAfterCommit = null;
     }
 
     @Override

@@ -40,6 +40,7 @@ public class FormPropertyOptions {
     private String customRenderFunctions;
     private String customEditorFunctions;
     private boolean customTextEdit;
+    private boolean customReplaceEdit;
     private GroupObjectEntity toDraw;
     private OrderedMap<String, LocalizedString> contextMenuBindings;
     private Map<KeyStroke, String> keyBindings;
@@ -212,12 +213,20 @@ public class FormPropertyOptions {
         this.customTextEdit = customTextEdit;
     }
 
+    public void setCustomReplaceEdit(boolean customReplaceEdit) {
+        this.customReplaceEdit = customReplaceEdit;
+    }
+
     public String getCustomEditorFunctions() {
         return customEditorFunctions;
     }
 
     public boolean isCustomTextEdit() {
         return customTextEdit;
+    }
+
+    public boolean isCustomReplaceEdit() {
+        return customReplaceEdit;
     }
 
     public void setToDraw(GroupObjectEntity toDraw) {
@@ -449,6 +458,7 @@ public class FormPropertyOptions {
         merged.setCustomRenderFunctions(nvl(overrides.getCustomRenderFunctions(), customRenderFunctions));
         merged.setCustomEditorFunctions(nvl(overrides.getCustomEditorFunctions(), customEditorFunctions));
         merged.setCustomTextEdit(nvl(overrides.isCustomTextEdit(), customTextEdit));
+        merged.setCustomReplaceEdit(nvl(overrides.isCustomReplaceEdit(), customReplaceEdit));
         merged.setToDraw(nvl(overrides.getToDraw(), toDraw));
         merged.setEventActions(nvl(overrides.getEventActions(), eventActions));
         merged.setContextMenuBindings(nvl(overrides.getContextMenuBindings(), contextMenuBindings));

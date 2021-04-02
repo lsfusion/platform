@@ -1309,6 +1309,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         property.setCustomTextEdit(customTextEdit);
     }
 
+    public void setCustomReplaceEdit(LAP property, boolean customReplaceEdit) {
+        property.setCustomReplaceEdit(customReplaceEdit);
+    }
+
     public void setPivotOptions(LAP property, PivotOptions pivotOptions) {
         property.setPivotOptions(pivotOptions);
     }

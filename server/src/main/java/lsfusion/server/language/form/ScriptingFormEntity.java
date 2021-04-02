@@ -502,12 +502,17 @@ public class ScriptingFormEntity {
         }
         String customEditorFunctions = options.getCustomEditorFunctions();
         property.customTextEdit = options.isCustomTextEdit();
+        property.customReplaceEdit = options.isCustomReplaceEdit();
         if (customEditorFunctions != null) {
-            String pattern = "[a-zA-Z]+\\w*:[a-zA-Z]+\\w*";
-            if (customEditorFunctions.matches(pattern)) {
+            String customTextEditPattern = "[a-zA-Z]+\\w*:[a-zA-Z]+\\w*";
+            String customReplaceEditPattern = "[a-zA-Z]+\\w*:[a-zA-Z]+\\w*:[a-zA-Z]+\\w*:[a-zA-Z]+\\w*:([a-zA-Z]+\\w*)?";
+            String customEditPattern = "[a-zA-Z]+\\w*:[a-zA-Z]+\\w*:([a-zA-Z]+\\w*)?";
+            if ((customEditorFunctions.matches(customTextEditPattern) && options.isCustomTextEdit()) ||
+                    (customEditorFunctions.matches(customReplaceEditPattern) && options.isCustomReplaceEdit()) ||
+                    (customEditorFunctions.matches(customEditPattern) && !options.isCustomTextEdit() && !options.isCustomReplaceEdit())) {
                 property.customEditorFunctions = customEditorFunctions;
             } else {
-                LM.getErrLog().emitCustomPropertyEditorFunctionsError(LM.getParser(), property.getSID(), customEditorFunctions, options.isCustomTextEdit());
+                LM.getErrLog().emitCustomPropertyEditorFunctionsError(LM.getParser(), property.getSID(), customEditorFunctions, options.isCustomTextEdit(), options.isCustomReplaceEdit());
             }
         }
 

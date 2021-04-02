@@ -1,6 +1,6 @@
 $.getScript('');
 
-createAutocompleteTextBased = function (element, controller) {
+createAutocompleteTextBased = function (element, editor) {
     let autocompleteOptions = {
         types: ['address'],
         componentRestrictions: {
@@ -8,7 +8,8 @@ createAutocompleteTextBased = function (element, controller) {
         }
     };
 
-    controller.setDeferredCommitOnBlur(true);
+
+    editor.setDeferredCommitOnBlur(true);
 
     new google.maps.places.Autocomplete(element, autocompleteOptions);
 }
