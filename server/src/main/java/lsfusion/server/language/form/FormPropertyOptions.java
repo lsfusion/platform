@@ -37,6 +37,10 @@ public class FormPropertyOptions {
     private PropertyObjectEntity header;
     private PropertyObjectEntity footer;
     private ClassViewType viewType;
+    private String customRenderFunctions;
+    private String customEditorFunctions;
+    private boolean customTextEdit;
+    private boolean customReplaceEdit;
     private GroupObjectEntity toDraw;
     private OrderedMap<String, LocalizedString> contextMenuBindings;
     private Map<KeyStroke, String> keyBindings;
@@ -191,6 +195,38 @@ public class FormPropertyOptions {
 
     public void setViewType(ClassViewType viewType) {
         this.viewType = viewType;
+    }
+    
+    public String getCustomRenderFunctions() {
+        return customRenderFunctions;
+    }
+    
+    public void setCustomRenderFunctions(String customRenderFunctions) {
+        this.customRenderFunctions = customRenderFunctions;
+    }
+
+    public void setCustomEditorFunctions(String customEditorFunctions) {
+        this.customEditorFunctions = customEditorFunctions;
+    }
+
+    public void setCustomTextEdit(boolean customTextEdit) {
+        this.customTextEdit = customTextEdit;
+    }
+
+    public void setCustomReplaceEdit(boolean customReplaceEdit) {
+        this.customReplaceEdit = customReplaceEdit;
+    }
+
+    public String getCustomEditorFunctions() {
+        return customEditorFunctions;
+    }
+
+    public boolean isCustomTextEdit() {
+        return customTextEdit;
+    }
+
+    public boolean isCustomReplaceEdit() {
+        return customReplaceEdit;
     }
 
     public void setToDraw(GroupObjectEntity toDraw) {
@@ -419,6 +455,10 @@ public class FormPropertyOptions {
         merged.setHeader(nvl(overrides.getHeader(), header));
         merged.setFooter(nvl(overrides.getFooter(), footer));
         merged.setViewType(nvl(overrides.getViewType(), viewType));
+        merged.setCustomRenderFunctions(nvl(overrides.getCustomRenderFunctions(), customRenderFunctions));
+        merged.setCustomEditorFunctions(nvl(overrides.getCustomEditorFunctions(), customEditorFunctions));
+        merged.setCustomTextEdit(nvl(overrides.isCustomTextEdit(), customTextEdit));
+        merged.setCustomReplaceEdit(nvl(overrides.isCustomReplaceEdit(), customReplaceEdit));
         merged.setToDraw(nvl(overrides.getToDraw(), toDraw));
         merged.setEventActions(nvl(overrides.getEventActions(), eventActions));
         merged.setContextMenuBindings(nvl(overrides.getContextMenuBindings(), contextMenuBindings));

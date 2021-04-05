@@ -645,4 +645,8 @@ public class ScriptingLogicsModuleChecks {
             errLog.emitSignatureParamError(parser);
         }
     }
+    public void checkCustomPropertyEditType(String editType) throws ScriptingErrorLog.SemanticErrorException {
+        if (!editType.equals("TEXT"))
+            errLog.emitCustomPropertyWrongEditType(parser, editType);
+    }
 }

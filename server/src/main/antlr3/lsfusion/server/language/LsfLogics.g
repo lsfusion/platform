@@ -643,6 +643,18 @@ propertyClassViewType returns [ClassViewType type]
 	|   'TOOLBAR' {$type = ClassViewType.TOOLBAR;}
 	;
 
+propertyCustomView returns [String customRenderFunctions, String customEditorFunctions, boolean textEdit, boolean replaceEdit]
+@init {
+    boolean isEditText = false;
+    boolean isReplaceEditor = false;
+}
+	:	'CUSTOM' ('RENDER' renderFun=stringLiteral { $customRenderFunctions = $renderFun.val;})? 
+		('EDIT' (
+		    type=PRIMITIVE_TYPE {self.checkCustomPropertyViewTextOption($type.text); isEditText = true;}
+		    | 'REPLACE' {isReplaceEditor = true;})?
+		editFun=stringLiteral {$customEditorFunctions = $editFun.val; $textEdit = isEditText; $replaceEdit = isReplaceEditor;})?
+	;
+
 listViewType returns [ListViewType type, PivotOptions options, String customRenderFunction]
 	:   'PIVOT' {$type = ListViewType.PIVOT;} ('DEFAULT' | 'NODEFAULT' {$type = null;})? opt = pivotOptions {$options = $opt.options; }
 	|   'MAP' {$type = ListViewType.MAP;}
@@ -801,6 +813,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|	'HEADER' propObj=formPropertyObject { $options.setHeader($propObj.property); }
 		|	'FOOTER' propObj=formPropertyObject { $options.setFooter($propObj.property); }
 		|	viewType=propertyClassViewType { $options.setViewType($viewType.type); }
+		|	customView=propertyCustomView { $options.setCustomRenderFunctions($customView.customRenderFunctions); $options.setCustomEditorFunctions($customView.customEditorFunctions); $options.setCustomTextEdit($customView.textEdit); $options.setCustomReplaceEdit($customView.replaceEdit);}
 		|	pgt=propertyGroupType { $options.setAggrFunc($pgt.type); }
 		|	pla=propertyLastAggr { $options.setLastAggr($pla.properties, $pla.desc); }
 		|	pf=propertyFormula { $options.setFormula($pf.formula, $pf.operands); }
@@ -2588,6 +2601,7 @@ recursiveActionOptions[LA action, String actionName, LocalizedString caption, Ac
 semiActionOrPropertyOption[LAP property, String propertyName, LocalizedString caption, ActionOrPropertySettings ps, List<TypedParameter> context]
     :	inSetting [ps]
 	|	viewTypeSetting [property]
+	|	customViewSetting [property]
 	|	flexCharWidthSetting [property]
 	|	charWidthSetting [property]
 	|	changeKeySetting [property]
@@ -2723,6 +2737,18 @@ viewTypeSetting [LAP property]
 	}
 }
 	:	viewType=propertyClassViewType
+	;
+
+customViewSetting [LAP property]
+@after {
+	if (inMainParseState()) {
+		self.setCustomRenderFunctions(property, $customView.customRenderFunctions);
+		self.setCustomEditorFunctions(property, $customView.customEditorFunctions);
+		self.setCustomTextEdit(property, $customView.textEdit);
+		self.setCustomReplaceEdit(property, $customView.replaceEdit);
+	}
+}
+	:	customView=propertyCustomView
 	;
 
 flexCharWidthSetting [LAP property]

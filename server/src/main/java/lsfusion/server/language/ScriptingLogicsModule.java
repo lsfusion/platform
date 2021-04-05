@@ -101,7 +101,10 @@ import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.navigator.DefaultIcon;
 import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.logics.navigator.window.*;
-import lsfusion.server.logics.property.*;
+import lsfusion.server.logics.property.AggregateProperty;
+import lsfusion.server.logics.property.Property;
+import lsfusion.server.logics.property.PropertyFact;
+import lsfusion.server.logics.property.Union;
 import lsfusion.server.logics.property.cases.CaseUnionProperty;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.classes.IsClassProperty;
@@ -1288,6 +1291,26 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public void setViewType(LAP property, ClassViewType viewType) {
         property.setViewType(viewType);
+    }
+    
+    public void setCustomRenderFunctions(LAP property, String customRenderFunctions) {
+        property.setCustomRenderFunctions(customRenderFunctions);
+    }
+
+    public void checkCustomPropertyViewTextOption(String editType) throws ScriptingErrorLog.SemanticErrorException {
+        checks.checkCustomPropertyEditType(editType);
+    }
+
+    public void setCustomEditorFunctions(LAP property, String customEditorFunctions) {
+        property.setCustomEditorFunctions(customEditorFunctions);
+    }
+
+    public void setCustomTextEdit(LAP property, boolean customTextEdit) {
+        property.setCustomTextEdit(customTextEdit);
+    }
+
+    public void setCustomReplaceEdit(LAP property, boolean customReplaceEdit) {
+        property.setCustomReplaceEdit(customReplaceEdit);
     }
 
     public void setPivotOptions(LAP property, PivotOptions pivotOptions) {
