@@ -85,4 +85,18 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
             form.edit(property.baseType, handler.event, false, null, this::setValue, afterCommit, () -> {}, this);
         }
     }
+
+    @Override
+    public Consumer<Object> getCustomRendererValueChangeConsumer() {
+        return value -> {
+            setValue(value);
+            form.update(property, getRenderElement(), value, this);
+            afterCommit.accept(value);
+        };
+    }
+
+    @Override
+    public boolean isPropertyReadOnly() {
+        return false;
+    }
 }

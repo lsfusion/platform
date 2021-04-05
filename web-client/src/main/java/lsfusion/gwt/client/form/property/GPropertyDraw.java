@@ -30,6 +30,7 @@ import lsfusion.gwt.client.form.property.async.GAsyncEventExec;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.classes.view.FormatCellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
+import lsfusion.gwt.client.form.property.cell.view.CustomCellRenderer;
 import lsfusion.gwt.client.form.property.panel.view.PanelRenderer;
 import lsfusion.gwt.client.view.MainFrame;
 import lsfusion.gwt.client.view.StyleDefaults;
@@ -53,6 +54,11 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public String canonicalName;
     public String propertyFormName;
     public String integrationSID;
+    
+    public String customRenderFunction;
+    public String customEditorFunctions;
+    public boolean customTextEdit;
+    public boolean customReplaceEdit;
 
     public String toolTip;
     public String tableName;
@@ -206,7 +212,11 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
     public CellRenderer getCellRenderer() {
         if (cellRenderer == null) {
-            cellRenderer = baseType.createGridCellRenderer(this);
+            if (customRenderFunction != null) {
+                cellRenderer = new CustomCellRenderer(this, customRenderFunction);
+            } else {
+                cellRenderer = baseType.createGridCellRenderer(this);
+            }
         }
         return cellRenderer;
     }

@@ -80,6 +80,9 @@ import lsfusion.gwt.client.form.property.GPropertyGroupType;
 import lsfusion.gwt.client.form.property.GPropertyReader;
 import lsfusion.gwt.client.form.property.async.*;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
+import lsfusion.gwt.client.form.property.cell.classes.controller.CustomCellEditor;
+import lsfusion.gwt.client.form.property.cell.classes.controller.CustomReplaceCellEditor;
+import lsfusion.gwt.client.form.property.cell.classes.controller.CustomTextCellEditor;
 import lsfusion.gwt.client.form.property.cell.classes.view.ActionCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.*;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
@@ -1824,7 +1827,15 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     public void edit(GType type, Event event, boolean hasOldValue, Object oldValue, Consumer<Object> beforeCommit, Consumer<Object> afterCommit, Runnable cancel, EditContext editContext) {
         assert this.editContext == null;
         GPropertyDraw property = editContext.getProperty();
-        CellEditor cellEditor = type.createGridCellEditor(this, property);
+        CellEditor cellEditor;
+        String customEditorFunctions = property.customEditorFunctions;
+        if (customEditorFunctions != null) {
+            cellEditor = property.customTextEdit ? new CustomTextCellEditor(this, property, customEditorFunctions) :
+                    (property.customReplaceEdit ? new CustomReplaceCellEditor(this, property, customEditorFunctions) :
+                            new CustomCellEditor(this, property, customEditorFunctions));
+        } else
+            cellEditor = type.createGridCellEditor(this, property);
+
         if (cellEditor != null) {
             editBeforeCommit = beforeCommit;
             editAfterCommit = afterCommit;

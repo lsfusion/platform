@@ -146,6 +146,22 @@ public abstract class LAP<T extends PropertyInterface, P extends ActionOrPropert
     public void setViewType(ClassViewType viewType) {
         getActionOrProperty().drawOptions.setViewType(viewType);
     }
+    
+    public void setCustomRenderFunctions(String customRenderFunctions) {
+        getActionOrProperty().drawOptions.setCustomRenderFunctions(customRenderFunctions);
+    }
+
+    public void setCustomEditorFunctions(String customEditorFunctions) {
+        getActionOrProperty().drawOptions.setCustomEditorFunctions(customEditorFunctions);
+    }
+
+    public void setCustomTextEdit(boolean customTextEdit) {
+        getActionOrProperty().drawOptions.setCustomTextEdit(customTextEdit);
+    }
+
+    public void setCustomReplaceEdit(boolean customReplaceEdit) {
+        getActionOrProperty().drawOptions.setCustomReplaceEdit(customReplaceEdit);
+    }
 
     public void setPivotOptions(PivotOptions pivotOptions) {
         getActionOrProperty().drawOptions.setPivotOptions(pivotOptions);
