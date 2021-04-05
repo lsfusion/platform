@@ -6,6 +6,7 @@ import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.controller.ExecuteEditContext;
 import lsfusion.gwt.client.view.MainFrame;
 
@@ -138,7 +139,7 @@ public class ActionOrPropertyPanelValue extends ActionOrPropertyValue implements
     @Override
     public Consumer<Object> getCustomRendererValueChangeConsumer() {
         return value -> {
-              form.changeProperty(property, getColumnKey(), (Serializable) value, getValue(), null);
+              form.changeProperty(property, getColumnKey(), GEditBindingMap.CHANGE, (Serializable) value, getValue(), null);
         };
     }
 }

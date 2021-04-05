@@ -43,22 +43,26 @@ public class ResizeImageSizeAction extends InternalAction {
                 if(width != null || height != null) {
 
                     BufferedImage image = ImageIO.read(inputFile.getInputStream());
-                    int imageWidth = image.getWidth();
-                    int imageHeight = image.getHeight();
-
-                    double scaleWidth = width != null ? ((double) width / imageWidth) : (double) height / imageHeight;
-                    double scaleHeight = height != null ? (double) height / imageHeight : ((double) width / imageWidth);
-
-                    File outputFile = null;
-                    try {
-                        outputFile = File.createTempFile("resized", ".jpg");
-                        if(scaleWidth != 0 && scaleHeight != 0) {
-                            Thumbnails.of(inputFile.getInputStream()).scale(scaleWidth, scaleHeight).toFile(outputFile);
-                            findProperty("resizedImage[]").change(new RawFileData(outputFile), context);
+                    if(image != null) {
+                        int imageWidth = image.getWidth();
+                        int imageHeight = image.getHeight();
+    
+                        double scaleWidth = width != null ? ((double) width / imageWidth) : (double) height / imageHeight;
+                        double scaleHeight = height != null ? (double) height / imageHeight : ((double) width / imageWidth);
+    
+                        File outputFile = null;
+                        try {
+                            outputFile = File.createTempFile("resized", ".jpg");
+                            if(scaleWidth != 0 && scaleHeight != 0) {
+                                Thumbnails.of(inputFile.getInputStream()).scale(scaleWidth, scaleHeight).toFile(outputFile);
+                                findProperty("resizedImage[]").change(new RawFileData(outputFile), context);
+                            }
+                        } finally {
+                            if (outputFile != null && !outputFile.delete())
+                                outputFile.deleteOnExit();
                         }
-                    } finally {
-                        if (outputFile != null && !outputFile.delete())
-                            outputFile.deleteOnExit();
+                    } else {
+                        throw new RuntimeException("Failed to read image");
                     }
                 } else {
                     throw new RuntimeException("No width nor height found");

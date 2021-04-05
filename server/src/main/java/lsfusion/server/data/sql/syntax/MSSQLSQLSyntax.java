@@ -37,7 +37,6 @@ import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
-import java.util.function.Function;
 
 public class MSSQLSQLSyntax extends DefaultSQLSyntax {
 
@@ -105,8 +104,8 @@ public class MSSQLSQLSyntax extends DefaultSQLSyntax {
     }
 
     @Override
-    public String getSafeCastNameFnc(Type type) {
-        return "dbo." + super.getSafeCastNameFnc(type);
+    public String getSafeCastNameFnc(Type type, boolean isInt) {
+        return "dbo." + super.getSafeCastNameFnc(type, isInt);
     }
 
     @Override

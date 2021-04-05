@@ -45,6 +45,9 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public abstract class ImportAction extends SystemAction {
     protected FormEntity formEntity;
@@ -76,7 +79,7 @@ public abstract class ImportAction extends SystemAction {
 
     @Override
     protected FlowResult aspectExecute(final ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
-        ImMap<PropertyObjectEntity, ImMap<ImMap<ObjectEntity, Object>, Object>> result;
+        Map<PropertyObjectEntity, MMap<ImMap<ObjectEntity, Object>, Object>> result;
         ImMap<ObjectEntity, ImSet<Long>> addedObjects;
         try {
             FormImportData data = getData(context);
@@ -87,7 +90,7 @@ public abstract class ImportAction extends SystemAction {
         }
 
         // dropping previous changes
-        for (PropertyObjectEntity<?> property : result.keys()) {
+        for (PropertyObjectEntity<?> property : result.keySet()) {
             for(DataProperty changeProp : property.property.getChangeProps())
                context.getSession().dropChanges(changeProp);
         }
@@ -103,7 +106,7 @@ public abstract class ImportAction extends SystemAction {
         writeClassData(context, mAddedObjects.immutable());
 
         // group by used objects
-        ImMap<ImSet<ObjectEntity>, ImSet<PropertyObjectEntity>> groupedProps = result.keys().group(new BaseUtils.Group<ImSet<ObjectEntity>, PropertyObjectEntity>() {
+        ImMap<ImSet<ObjectEntity>, ImSet<PropertyObjectEntity>> groupedProps = SetFact.fromJavaSet(result.keySet()).group(new BaseUtils.Group<ImSet<ObjectEntity>, PropertyObjectEntity>() {
             public ImSet<ObjectEntity> group(PropertyObjectEntity key) {
                 return ((PropertyObjectEntity<?>)key).getObjectInstances();
             }
@@ -118,7 +121,7 @@ public abstract class ImportAction extends SystemAction {
             // group by rows
             MExclMap<ImMap<ObjectEntity, DataObject>, MMap<PropertyObjectEntity, ObjectValue>> mRows = MapFact.mExclMap();
             for(PropertyObjectEntity prop : props) {
-                ImMap<ImMap<ObjectEntity, Object>, Object> propValues = result.get(prop);
+                ImMap<ImMap<ObjectEntity, Object>, Object> propValues = result.get(prop).immutable();
                 for(int j=0,sizeJ=propValues.size();j<sizeJ;j++) {
                     // convert to DataObject / ObjectValue
                     ImMap<ObjectEntity, DataObject> keys = propValues.getKey(j).mapValues((key, value) -> new DataObject(value, key.baseClass instanceof ConcreteCustomClass ? context.getSession().baseClass.unknown : (DataClass) key.baseClass));
@@ -212,9 +215,9 @@ public abstract class ImportAction extends SystemAction {
 
     @Override
     protected ImMap<Property, Boolean> aspectChangeExtProps() {
-        MSet<Property> mProps = SetFact.mSet();
+        List<Property> properties = new ArrayList<>();
         for(PropertyDrawEntity propertyDraw : formEntity.getStaticPropertyDrawsList())
-            mProps.add((Property) propertyDraw.getImportProperty().property);
-        return mProps.immutable().toMap(false);
+            properties.add((Property) propertyDraw.getImportProperty().property);
+        return getChangeProps(properties.toArray(new Property[0]));
     }
 }

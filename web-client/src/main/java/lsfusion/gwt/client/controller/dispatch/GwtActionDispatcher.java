@@ -174,7 +174,12 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
 
     @Override
     public Object execute(GConfirmAction action) {
-        return null;
+        pauseDispatching();
+
+        Result<Object> result = new Result<>();
+        DialogBoxHelper.showConfirmBox(action.caption, action.message, action.cancel, action.timeout, action.initialValue,
+                chosenOption -> continueDispatching(chosenOption.asInteger(), result));
+        return result.result;
     }
 
     @Override

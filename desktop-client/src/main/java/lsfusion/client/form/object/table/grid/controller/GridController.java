@@ -557,13 +557,13 @@ public class GridController extends AbstractTableController {
         table.focusProperty(propertyDraw);
     }
 
-    public void focusProperty(ClientPropertyDraw propertyDraw) {
+    public boolean focusProperty(ClientPropertyDraw propertyDraw) {
         PropertyPanelController propertyPanelController = panel.getPropertyController(propertyDraw);
         if (propertyPanelController != null) {
-            propertyPanelController.requestFocusInWindow();
+            return propertyPanelController.requestFocusInWindow();
         } else {
             table.focusProperty(propertyDraw);
-            table.requestFocusInWindow();
+            return table.requestFocusInWindow();
         }
     }
 

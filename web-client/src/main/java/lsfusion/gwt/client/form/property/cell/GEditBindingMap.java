@@ -6,8 +6,10 @@ import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.event.GMouseStroke;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 
 import static com.google.gwt.dom.client.BrowserEvents.KEYDOWN;
 import static lsfusion.gwt.client.form.event.GKeyStroke.*;
@@ -17,6 +19,12 @@ public class GEditBindingMap implements Serializable {
     public static final String GROUP_CHANGE = "groupChange";
     public static final String EDIT_OBJECT = "editObject";
     public static final String CHANGE_WYS = "change_wys";
+
+    private static final List<String> changeEvents = Arrays.asList(CHANGE, CHANGE_WYS, GROUP_CHANGE);
+
+    public static boolean isEditableAwareEditEvent(String actionSID) {
+        return changeEvents.contains(actionSID);
+    }
 
     public interface EditEventFilter {
         boolean accept(NativeEvent e);

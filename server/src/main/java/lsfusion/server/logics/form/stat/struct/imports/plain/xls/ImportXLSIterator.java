@@ -117,6 +117,15 @@ public class ImportXLSIterator extends ImportMatrixIterator {
         Cell cell = row.getCell(fieldIndex);
         if(cell == null)
             return null;
+
+        //hack: some files has formulas starting with "=" - apache.poi can not parse it, so we remove "="
+        if (cell.getCellType() == CellType.FORMULA) {
+            String formula = cell.getCellFormula();
+            if (formula != null && formula.startsWith("=")) {
+                cell.setCellFormula(formula.substring(1));
+            }
+        }
+
         CellValue cellValue = formulaEvaluator.evaluate(cell);
         if(cellValue == null)
             return null;
@@ -170,7 +179,7 @@ public class ImportXLSIterator extends ImportMatrixIterator {
             if (cell == null) {
                 return null;
             }
-            switch (cell.getCellTypeEnum()) {
+            switch (cell.getCellType()) {
                 case BOOLEAN:
                     return CellValue.valueOf(cell.getBooleanCellValue());
                 case ERROR:
@@ -180,7 +189,7 @@ public class ImportXLSIterator extends ImportMatrixIterator {
                         return null;
                     }
                 case FORMULA:
-                    switch (cell.getCachedFormulaResultTypeEnum()) {
+                    switch (cell.getCachedFormulaResultType()) {
                         case NUMERIC:
                             return new CellValue(cell.getNumericCellValue());
                         default:
@@ -193,7 +202,7 @@ public class ImportXLSIterator extends ImportMatrixIterator {
                 case BLANK:
                     return null;
                 default:
-                    throw new IllegalStateException("Bad cell type (" + cell.getCellTypeEnum() + ")");
+                    throw new IllegalStateException("Bad cell type (" + cell.getCellType() + ")");
             }
         }
 

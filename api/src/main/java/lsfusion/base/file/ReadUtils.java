@@ -1,14 +1,12 @@
 package lsfusion.base.file;
 
 import com.google.common.base.Throwables;
+import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.SftpException;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.MIMETypeUtils;
 import lsfusion.base.SystemUtils;
 import org.apache.commons.httpclient.util.URIUtil;
-import org.apache.commons.net.ftp.FTP;
-import org.apache.commons.net.ftp.FTPClient;
-import org.apache.commons.net.ftp.FTPConnectionClosedException;
 import org.jfree.ui.ExtensionFileFilter;
 
 import javax.swing.*;
@@ -163,42 +161,19 @@ public abstract class ReadUtils {
         } else return null;
     }
 
-    private static void copyFTPToFile(String path, File file) throws IOException {
-        FTPPath properties = FTPPath.parseFTPPath(path);
-        FTPClient ftpClient = new FTPClient();
-        ftpClient.setConnectTimeout(60000); //1 minute = 60 sec
-        if (properties.charset != null)
-            ftpClient.setControlEncoding(properties.charset);
-        try {
-
-            ftpClient.connect(properties.server, properties.port);
-            ftpClient.login(properties.username, properties.password);
-            if(properties.passiveMode) {
-                ftpClient.enterLocalPassiveMode();
-            }
-            ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
-            if(properties.binaryTransferMode) {
-                ftpClient.setFileTransferMode(FTP.BINARY_FILE_TYPE);
-            }
-
-            OutputStream outputStream = new FileOutputStream(file);
-            boolean done = ftpClient.retrieveFile(properties.remoteFile, outputStream);
-            outputStream.close();
-            if (!done) {
-                throw Throwables.propagate(new RuntimeException("Some error occurred while downloading file from ftp"));
-            }
-        } catch (IOException e) {
-            throw Throwables.propagate(e);
-        } finally {
+    private static void copyFTPToFile(String path, File file) {
+        IOUtils.ftpAction(path, (ftpPath, ftpClient) -> {
             try {
-                if (ftpClient.isConnected()) {
-                    ftpClient.setSoTimeout(10000);
-                    ftpClient.logout();
-                    ftpClient.disconnect();
+                try(OutputStream outputStream = new FileOutputStream(file)) {
+                    if (!ftpClient.retrieveFile(ftpPath.remoteFile, outputStream)) {
+                        throw Throwables.propagate(new RuntimeException("Failed to copy '" + path + "'"));
+                    }
+                    return null;
                 }
-            } catch (FTPConnectionClosedException ignored) {
+            } catch (IOException e) {
+                throw Throwables.propagate(e);
             }
-        }
+        });
     }
 
     private static void copySFTPToFile(String path, File file) {
@@ -206,7 +181,10 @@ public abstract class ReadUtils {
             try {
                 channelSftp.get(ftpPath.remoteFile, file.getAbsolutePath());
             } catch (SftpException e) {
-                throw new RuntimeException("Failed to read '" + path + "'", e);
+                if(e.id == ChannelSftp.SSH_FX_NO_SUCH_FILE)
+                    throw new RuntimeException(String.format("Path '%s' not found for %s", ftpPath.remoteFile, path), e);
+                else
+                    throw Throwables.propagate(e);
             }
             return null;
         });

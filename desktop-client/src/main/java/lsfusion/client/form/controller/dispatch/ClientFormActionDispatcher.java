@@ -76,7 +76,7 @@ public abstract class ClientFormActionDispatcher extends SwingClientActionDispat
 
     public void execute(ProcessFormChangesClientAction action) {
         try {
-            getFormController().applyFormChanges(action.requestIndex, action.formChanges);
+            getFormController().applyFormChanges(action.requestIndex, action.formChanges, false);
         } catch (IOException e) {
             Throwables.propagate(e);
         }

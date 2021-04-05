@@ -5,10 +5,8 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.ClientMessages;
-import lsfusion.gwt.client.base.view.ResizableModalWindow;
 import lsfusion.gwt.client.base.view.ResizableSystemModalWindow;
 import lsfusion.gwt.client.base.view.ResizableVerticalPanel;
-import lsfusion.gwt.client.base.view.WindowHiddenHandler;
 import lsfusion.gwt.client.classes.GObjectClass;
 
 public class GClassDialog extends ResizableSystemModalWindow {

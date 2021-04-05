@@ -23,6 +23,8 @@ import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.filter.ContextFilterInstance;
 import lsfusion.server.logics.form.struct.filter.ContextFilterSelector;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
+import lsfusion.server.logics.form.struct.property.async.AsyncExec;
+import lsfusion.server.logics.form.struct.property.async.AsyncOpenForm;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -117,6 +119,11 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
         return context.hasMoreSessionUsages || ((formInstance = context.getFormInstance(false, false)) != null && formInstance.isFloat()) || (windowType != null && windowType.equals(WindowFormType.FLOAT));
     }
 
+    //todo: same as above
+    private boolean heuristicSyncType() {
+        return true;
+    }
+
     @Override
     protected void executeInternal(FormEntity form, ImMap<ObjectEntity, ? extends ObjectValue> mapObjectValues, ExecutionContext<ClassPropertyInterface> context, ImRevMap<ObjectEntity, O> mapObjects, ImSet<ContextFilterInstance> contextFilters) throws SQLException, SQLHandledException {
         ImRevMap<O, ObjectEntity> mapRevObjects = mapObjects.reverse();
@@ -177,4 +184,23 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
 //                filterOrder((PropertyDrawEntity element) -> element.getValueActionOrProperty() instanceof ActionObjectEntity).getSet().
 //                mapSetValues(propertyDrawEntity -> (Action)propertyDrawEntity.getValueActionOrProperty().property);
 //    }
+
+
+    @Override
+    public AsyncExec getAsyncExec() {
+        FormEntity staticForm = form.getNFStaticForm();
+        String canonicalName = staticForm != null ? staticForm.getCanonicalName() : null;
+        String caption = staticForm != null ? staticForm.getCaption().toString() : null;
+        return new AsyncOpenForm(canonicalName, caption, forbidDuplicate, getModalityType().isModalWindow());
+    }
+
+    private ModalityType getModalityType() {
+        boolean syncType;
+        if(this.syncType != null)
+            syncType = this.syncType;
+        else
+            syncType = heuristicSyncType();
+
+        return getModalityType(syncType);
+    }
 }

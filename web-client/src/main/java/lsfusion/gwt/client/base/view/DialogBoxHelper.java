@@ -45,7 +45,7 @@ public class DialogBoxHelper {
                 case NO: return 1;
                 case OK: return 0;
                 case CANCEL: return 1;
-                case CLOSE: return 0;
+                case CLOSE: return 2;
                 case LOGOUT: return 1;
             }
             throw new IllegalStateException("Shouldn't happen");

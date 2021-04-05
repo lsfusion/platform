@@ -7,6 +7,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.ContextMenuEvent;
 import com.google.gwt.event.dom.client.ContextMenuHandler;
 import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.RootPanel;
@@ -14,11 +15,13 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.view.PopupDialogPanel;
 import lsfusion.gwt.client.base.view.WindowHiddenHandler;
 import lsfusion.gwt.client.form.design.view.flex.FlexTabbedPanel;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
 import lsfusion.gwt.client.form.object.table.view.GToolbarView;
+import lsfusion.gwt.client.form.property.async.GAsyncOpenForm;
 import lsfusion.gwt.client.form.view.FormContainer;
 import lsfusion.gwt.client.form.view.FormDockable;
 import lsfusion.gwt.client.form.view.ModalForm;
@@ -41,6 +44,9 @@ public abstract class FormsController {
     private final List<FormDockable> forms = new ArrayList<>();
     private final List<Integer> formFocusOrder = new ArrayList<>();
     private int focusOrderCount;
+
+    private Long lastCompletedRequest;
+    private NativeHashMap<Long, FormContainer> asyncForms = new NativeHashMap<>();
 
     private final WindowsController windowsController;
 
@@ -147,20 +153,91 @@ public abstract class FormsController {
         return tabsPanel;
     }
 
-    public FormContainer openForm(GForm form, GModalityType modalityType, boolean forbidDuplicate, Event initFilterEvent, WindowHiddenHandler hiddenHandler) {
-        FormDockable duplForm;
-        if(forbidDuplicate && MainFrame.forbidDuplicateForms && (duplForm = findForm(form.sID)) != null) {
-            selectTab(duplForm);
+    public FormContainer openForm(Long requestIndex, GForm form, GModalityType modalityType, boolean forbidDuplicate, Event initFilterEvent, WindowHiddenHandler hiddenHandler) {
+        FormDockable duplicateForm = getDuplicateForm(form.sID, forbidDuplicate);
+        if(duplicateForm != null) {
+            selectTab(duplicateForm);
             return null;
         }
 
-        FormContainer formContainer = modalityType.isModalWindow() ? new ModalForm(this) : new FormDockable(this);
+        boolean modal = modalityType.isModalWindow();
+        FormContainer formContainer = removeAsyncForm(requestIndex);
+        boolean hasAsyncForm = formContainer != null;
+        boolean asyncOpened = hasAsyncForm && formContainer instanceof ModalForm == modal;
+        if(hasAsyncForm && !asyncOpened) {
+            formContainer.hide();
+            ensureTabSelected();
+        }
 
+        if (!asyncOpened) {
+            if(modal) {
+                if(openFormTimer != null) {
+                    openFormTimer.cancel();
+                    openFormTimer = null;
+                }
+                formContainer = new ModalForm(this, requestIndex, form.getCaption(), false);
+            } else {
+                formContainer = new FormDockable(this, requestIndex, form.getCaption(), false);
+            }
+
+        }
         initForm(formContainer, form, hiddenHandler, modalityType.isDialog(), initFilterEvent);
-
-        formContainer.show();
+        if(asyncOpened && !modal) {
+            formContainer.setFormVisible();
+        } else {
+            formContainer.show();
+        }
 
         return formContainer;
+    }
+
+    //size of modal window may change, we don't want flashing, so we use timer
+    Timer openFormTimer;
+    public void asyncOpenForm(Long requestIndex, GAsyncOpenForm openForm) {
+        FormDockable duplicateForm = getDuplicateForm(openForm.canonicalName, openForm.forbidDuplicate);
+        if (duplicateForm == null) {
+            if (openForm.isModal()) {
+                openFormTimer = new Timer() {
+                    @Override
+                    public void run() {
+                        Scheduler.get().scheduleDeferred(() -> {
+                            if (openFormTimer != null) {
+                                if(requestIndex > lastCompletedRequest) { //request is not completed yet
+                                    FormContainer formContainer = new ModalForm(FormsController.this, requestIndex, openForm.caption, true);
+                                    formContainer.show();
+                                    asyncForms.put(requestIndex, formContainer);
+                                }
+                                openFormTimer = null;
+                            }
+                        });
+                    }
+                };
+                openFormTimer.schedule(100);
+            } else {
+                FormContainer formContainer = new FormDockable(this, requestIndex, openForm.caption, true);
+                formContainer.show();
+                asyncForms.put(requestIndex, formContainer);
+            }
+        }
+    }
+
+    private FormDockable getDuplicateForm(String canonicalName, boolean forbidDuplicate) {
+        if(forbidDuplicate && MainFrame.forbidDuplicateForms) {
+            return findForm(canonicalName);
+        }
+        return null;
+    }
+
+    public boolean hasAsyncForm(Long requestIndex) {
+        return asyncForms.containsKey(requestIndex);
+    }
+
+    public void setLastCompletedRequest(Long lastCompletedRequest) {
+        this.lastCompletedRequest = lastCompletedRequest;
+    }
+
+    public FormContainer removeAsyncForm(Long requestIndex) {
+        return asyncForms.remove(requestIndex);
     }
 
     public void addContextMenuHandler(FormDockable formContainer) {
@@ -199,7 +276,7 @@ public abstract class FormsController {
     }
 
     public FormDockable findForm(String formCanonicalName) {
-        return findInList(forms, dockable -> dockable.getForm().getForm().sID.equals(formCanonicalName));
+        return findInList(forms, dockable -> !dockable.async && dockable.getForm().getForm().sID.equals(formCanonicalName));
     }
 
     public void addDockable(FormDockable dockable) {

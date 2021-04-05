@@ -156,7 +156,9 @@ public class Settings implements Cloneable {
 
     private int limitHintNoUpdateComplexity = 10000;
 
-    private int limitWrapComplexity = 200;
+    // we'll make it pretty low, since WrapComplexityAspect uses isComplex (not isOrDependsCmplex) and thus complexity can grow significantly with properties using that complex property
+    // however maybe later it makes sense to change isComplex to isDependsOrComplex and make it 200 again (but it seems that in that case it's better to make 2 branches, one (the current) with low limit, the other with high)
+    private int limitWrapComplexity = 20;
 
     private int limitMaterializeComplexity = 20;
 
@@ -1315,7 +1317,21 @@ public class Settings implements Cloneable {
     public void setUseSafeStringAgg(boolean useSafeStringAgg) {
         this.useSafeStringAgg = useSafeStringAgg;
     }
-    
+
+    // safe cast type for integral (arithmetic casts)
+    // 0 - (default) using pl/sql function with try catch clause - the problem that there seems to be a bug in PostgreSQL 2013 when canceling this statement
+    // 1 - using sql function that compares with maximum minimum values
+    // 2 - do not use any function at all (exceptions will be thrown in that case)
+    private int safeCastIntType = 0;
+
+    public int getSafeCastIntType() {
+        return safeCastIntType;
+    }
+
+    public void setSafeCastIntType(int safeCastIntType) {
+        this.safeCastIntType = safeCastIntType;
+    }
+
     private int remoteLogTime = 3000; // millisectonds
 
     public int getRemoteLogTime() {

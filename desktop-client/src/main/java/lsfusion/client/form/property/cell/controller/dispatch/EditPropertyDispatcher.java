@@ -10,6 +10,7 @@ import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.controller.dispatch.ClientFormActionDispatcher;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.property.ClientPropertyDraw;
+import lsfusion.client.form.property.async.*;
 import lsfusion.client.form.property.cell.controller.EditPropertyHandler;
 import lsfusion.interop.action.EditNotPerformedClientAction;
 import lsfusion.interop.action.RequestUserInputClientAction;
@@ -33,6 +34,7 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
 
     private ClientGroupObjectValue editColumnKey;
     private ClientPropertyDraw simpleChangeProperty;
+    private String actionSID;
 
     private ClientType readType;
     private Object oldValue;
@@ -64,28 +66,19 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
         try {
             ClientFormController form = getFormController();
 
-            if (actionSID.equals(ServerResponse.CHANGE)) { // асинхронные обработки
-                boolean asyncModifyObject = form.isAsyncModifyObject(property);
-                if (asyncModifyObject || property.changeType != null) {
-                    if (property.askConfirm) {
-                        String msg = property.askConfirmMessage;
+            //async actions
+            ClientAsyncEventExec asyncEventExec = property.getAsyncEventExec(actionSID);
+            if (asyncEventExec != null) {
+                if (property.askConfirm) {
+                    String msg = property.askConfirmMessage;
 
-                        int result = SwingUtils.showConfirmDialog(getDialogParentContainer(), msg, "lsFusion", JOptionPane.QUESTION_MESSAGE, false);
-                        if (result != JOptionPane.YES_OPTION) {
-                            return true;
-                        }
-                    }
-
-                    if (asyncModifyObject) {
-                        form.modifyObject(property, columnKey);
+                    int result = SwingUtils.showConfirmDialog(getDialogParentContainer(), msg, "lsFusion", JOptionPane.QUESTION_MESSAGE, false);
+                    if (result != JOptionPane.YES_OPTION) {
                         return true;
-                    } else {
-//                      т.е. property.changeType != null
-                        editColumnKey = columnKey;
-                        simpleChangeProperty = property;
-                        return internalRequestValue(property.changeType);
                     }
                 }
+
+                return asyncEventExec.exec(form, this, property, columnKey, actionSID);
             }
 
             editPerformed = true;
@@ -101,6 +94,13 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
         } finally {
             setEditEvent(null);
         }
+    }
+
+    public boolean asyncChange(ClientPropertyDraw property, ClientGroupObjectValue columnKey, String actionSID, ClientAsyncChange asyncChange) throws IOException {
+        this.editColumnKey = columnKey;
+        this.simpleChangeProperty = property;
+        this.actionSID = actionSID;
+        return internalRequestValue(asyncChange.changeType);
     }
 
     @Override
@@ -150,7 +150,7 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
                             updateEditValueCallback.done(inputResult.getValue());
                         }
                     }
-                    getFormController().changeProperty(simpleChangeProperty, editColumnKey, inputResult.getValue(), oldValueRequested);
+                    getFormController().changeProperty(simpleChangeProperty, editColumnKey, actionSID, inputResult.getValue(), oldValueRequested);
                 } catch (IOException e) {
                     throw Throwables.propagate(e);
                 }

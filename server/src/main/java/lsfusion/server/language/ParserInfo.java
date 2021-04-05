@@ -4,26 +4,26 @@ import lsfusion.server.language.metacode.MetaCodeFragment;
 import org.antlr.runtime.Parser;
 
 public class ParserInfo {
-    private Parser parser;
+    private LsfLogicsParser parser;
     // Информация об объявлении метакода (META metaCode), который мы сейчас парсим   
-    private String metacodeDefinitionModuleName = null;
-    private int metacodeDefinitionLineNumber;
+    private String metacodeDefinitionModuleName;
+    private Integer metacodeDefinitionLineNumber;
     
     // Информация об использовании метакода (@metaCode), который мы парсим
     private String metacodeCallStr;
     private int lineNumber;
 
-    public ParserInfo(Parser parser, MetaCodeFragment metaCode, String metacodeCallStr, int lineNumber) {
+    public ParserInfo(LsfLogicsParser parser, Integer metacodeDefinitionLineNumber, String metacodeDefinitionModuleName, String metacodeCallStr, int lineNumber) {
         this.parser = parser;
-        if (metaCode != null) {
-            this.metacodeDefinitionLineNumber = metaCode.getLineNumber();
-            this.metacodeDefinitionModuleName = metaCode.getModuleName();
-        }
+
+        this.metacodeDefinitionLineNumber = metacodeDefinitionLineNumber;
+        this.metacodeDefinitionModuleName = metacodeDefinitionModuleName;
+
         this.metacodeCallStr = metacodeCallStr;
         this.lineNumber = lineNumber;
     }
 
-    public Parser getParser() {
+    public LsfLogicsParser getParser() {
         return parser;
     }
 

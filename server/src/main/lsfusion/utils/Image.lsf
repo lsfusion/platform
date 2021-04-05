@@ -11,3 +11,8 @@ resizeImageMaxSize(image, maxSize)  INTERNAL  'lsfusion.server.logics.classes.da
 convertedImage = DATA LOCAL IMAGEFILE ();
 //file, convert extension 
 convertImage  INTERNAL  'lsfusion.server.logics.classes.data.utils.image.ConvertImageAction' (IMAGEFILE, STRING);
+
+widthImageInfo = DATA LOCAL INTEGER;
+heightImageInfo = DATA LOCAL INTEGER;
+//get image width and height in pixels
+getImageInfo(image) INTERNAL  'lsfusion.server.logics.classes.data.utils.image.GetImageInfoAction' (IMAGEFILE);

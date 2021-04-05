@@ -1,6 +1,7 @@
 package lsfusion.client.form.view;
 
 import lsfusion.client.controller.remote.RmiQueue;
+import lsfusion.client.form.ClientForm;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.interop.form.event.KeyStrokes;
 import lsfusion.interop.form.remote.RemoteFormInterface;
@@ -17,28 +18,30 @@ import static lsfusion.client.base.SwingUtils.*;
 
 public class ClientModalForm extends JDialog {
 
-    private final KeyEvent initFilterKeyEvent;
+    private KeyEvent initFilterKeyEvent;
 
-    private final RemoteFormInterface remoteForm;
+    private RemoteFormInterface remoteForm;
 
     private ClientFormController form;
-    
-    public ClientModalForm(String canonicalName, String formSID, Component owner, final RemoteFormInterface remoteForm) {
-        this(canonicalName, formSID, owner, remoteForm, null, false, null);
-    }
 
-    public ClientModalForm(String canonicalName, String formSID, Component owner, final RemoteFormInterface remoteForm, byte[] firstChanges, boolean isDialog, EventObject initFilterEvent) {
-        super(getWindow(owner), ModalityType.DOCUMENT_MODAL);
+    public boolean async;
 
-        this.remoteForm = remoteForm;
-
-        this.initFilterKeyEvent = initFilterEvent instanceof KeyEvent ? (KeyEvent) initFilterEvent : null;
+    public ClientModalForm(Component owner, String title, lsfusion.interop.form.ModalityType modalityType, boolean async) {
+        super(getWindow(owner), title, ModalityType.DOCUMENT_MODAL);
 
         setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
 
         setLayout(new BorderLayout());
 
-        form = new ClientFormController(canonicalName, formSID, ClientModalForm.this.remoteForm, firstChanges, null, true, isDialog) {
+        this.async = async;
+    }
+
+    public void init(String canonicalName, String formSID, final RemoteFormInterface remoteForm, ClientForm clientForm, byte[] firstChanges, boolean isDialog, EventObject initFilterEvent) {
+        this.remoteForm = remoteForm;
+
+        this.initFilterKeyEvent = initFilterEvent instanceof KeyEvent ? (KeyEvent) initFilterEvent : null;
+
+        form = new ClientFormController(canonicalName, formSID, ClientModalForm.this.remoteForm, clientForm, firstChanges, null, true, isDialog) {
             @Override
             public void onFormHidden() {
                 hideDialog();
@@ -103,7 +106,9 @@ public class ClientModalForm extends JDialog {
             setLocationRelativeTo(getOwner());
         }
 
-        beforeShowDialog();
+        if(!async) {
+            beforeShowDialog();
+        }
 
         setVisible(true);
     }
@@ -129,12 +134,14 @@ public class ClientModalForm extends JDialog {
                 @Override
                 public void windowActivated(WindowEvent e) {
                     Component defaultComponent = form.getLayout().getFocusTraversalPolicy().getDefaultComponent(form.getLayout());
-                    if (defaultComponent != null) {
-                        defaultComponent.requestFocusInWindow();
-                    } else {
-                        form.focusFirstComponent();
-                    }
-
+                    SwingUtilities.invokeLater(() -> {
+                        if (defaultComponent != null) {
+                            defaultComponent.requestFocusInWindow();
+                        } else if (!form.activateFirstComponents()) {
+                            form.focusFirstComponent();
+                        }
+                    });
+                    
                     removeWindowListener(this);
                 }
             });
@@ -145,15 +152,20 @@ public class ClientModalForm extends JDialog {
         //сначала нужно провалидейтать все компоненты, чтобы отработала логика autohide
 //        form.getLayout().preValidateMainContainer();
 
-        Dimension preferredSize = form.getLayout().getMaxPreferredSize();
+        //todo: calculate size
+        if(async) {
+            return new Dimension(800, 600);
+        } else {
+            Dimension preferredSize = form.getLayout().getMaxPreferredSize();
 
-        // так как у нас есть только size самого contentPane, а нам нужен у JDialog
-        // сколько будет занимать все "рюшечки" вокруг contentPane мы посчитать не можем, поскольку
-        if (!undecorated) {
-            preferredSize.width += 22;
-            preferredSize.height += 40;
+            // так как у нас есть только size самого contentPane, а нам нужен у JDialog
+            // сколько будет занимать все "рюшечки" вокруг contentPane мы посчитать не можем, поскольку
+            if (!undecorated) {
+                preferredSize.width += 22;
+                preferredSize.height += 40;
+            }
+
+            return preferredSize;
         }
-
-        return preferredSize;
     }
 }

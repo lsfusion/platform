@@ -1,10 +1,10 @@
 package lsfusion.server.logics.form.interactive.design.property;
 
-import lsfusion.base.Pair;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
+import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.classes.DataType;
 import lsfusion.interop.form.event.KeyInputEvent;
@@ -28,6 +28,7 @@ import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawExtraType;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
+import lsfusion.server.logics.form.struct.property.async.AsyncEventExec;
 import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyObjectEntity;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.infer.ClassType;
@@ -45,9 +46,10 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.Format;
 import java.text.SimpleDateFormat;
+import java.util.HashMap;
+import java.util.Map;
 
-import static lsfusion.interop.action.ServerResponse.CHANGE;
-import static lsfusion.interop.action.ServerResponse.EDIT_OBJECT;
+import static lsfusion.interop.action.ServerResponse.*;
 import static lsfusion.server.logics.form.struct.property.PropertyDrawExtraType.*;
 
 public class PropertyDrawView extends ComponentView {
@@ -121,10 +123,6 @@ public class PropertyDrawView extends ComponentView {
     public boolean isProperty() {
         return entity.isProperty();
     }
-
-    public Type getChangeType(ServerContext context) {
-        return entity.getRequestInputType(context.entity, context.securityPolicy);
-    }
     
     public Type getChangeWYSType(ServerContext context) {
         return entity.getWYSRequestInputType(context.entity, context.securityPolicy);
@@ -146,8 +144,15 @@ public class PropertyDrawView extends ComponentView {
         return super.getBaseDefaultAlignment(formEntity);
     }
 
-    public Pair<ObjectEntity, Boolean> getAddRemove(ServerContext context) {
-        return entity.getAddRemove(context.entity, context.securityPolicy);
+    public Map<String, AsyncEventExec> getAsyncExec(ServerContext context) {
+        Map<String, AsyncEventExec> asyncExecMap = new HashMap<>();
+        for (String actionId : ServerResponse.events) {
+            AsyncEventExec asyncEventExec = entity.getAsyncEventExec(context.entity, context.securityPolicy, actionId);
+            if (asyncEventExec != null) {
+                asyncExecMap.put(actionId, asyncEventExec);
+            }
+        }
+        return asyncExecMap;
     }
 
     public LocalizedString getCaption() {
@@ -287,23 +292,17 @@ public class PropertyDrawView extends ComponentView {
 
         // асинхронные интерфейсы
 
-        Type changeType = getChangeType(pool.context);
-        outStream.writeBoolean(changeType != null);
-        if (changeType != null) {
-            TypeSerializer.serializeType(outStream, changeType);
-        }
-
         Type changeWYSType = getChangeWYSType(pool.context);
         outStream.writeBoolean(changeWYSType != null);
         if (changeWYSType != null) {
             TypeSerializer.serializeType(outStream, changeWYSType);
         }
 
-        Pair<ObjectEntity, Boolean> addRemove = getAddRemove(pool.context);
-        outStream.writeBoolean(addRemove != null);
-        if(addRemove!=null) {
-            pool.serializeObject(outStream, pool.context.view.getObject(addRemove.first));
-            outStream.writeBoolean(addRemove.second);
+        Map<String, AsyncEventExec> asyncExecMap = getAsyncExec(pool.context);
+        outStream.writeInt(asyncExecMap.size());
+        for (Map.Entry<String, AsyncEventExec> entry : asyncExecMap.entrySet()) {
+            pool.writeString(outStream, entry.getKey());
+            pool.serializeObject(outStream, entry.getValue());
         }
 
         outStream.writeBoolean(entity.askConfirm);

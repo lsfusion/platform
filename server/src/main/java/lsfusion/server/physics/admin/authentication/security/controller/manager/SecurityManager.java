@@ -261,7 +261,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
                             }
                             setUserParameters(userObject, ldapParameters.getFirstName(), ldapParameters.getLastName(),
                                     ldapParameters.getEmail(), ldapParameters.getGroupNames(), session);
-                            apply(session);
+                            apply(session, stack);
                         } else {
                             throw new LoginException();
                         }

@@ -25,23 +25,19 @@ public class MkdirAction extends InternalAction {
     }
 
     public void executeInternal(ExecutionContext<ClassPropertyInterface> context) {
-        try {
-            String directory = BaseUtils.trimToNull((String) context.getKeyValue(directoryInterface).getValue());
-            boolean isClient = context.getKeyValue(isClientInterface).getValue() != null;
-            if (directory != null) {
-                if (isClient) {
-                    String result = (String) context.requestUserInteraction(new MkdirClientAction(directory));
-                    if (result != null) {
-                        throw new RuntimeException(result);
-                    }
-                } else {
-                    FileUtils.mkdir(directory);
+        String directory = BaseUtils.trimToNull((String) context.getKeyValue(directoryInterface).getValue());
+        boolean isClient = context.getKeyValue(isClientInterface).getValue() != null;
+        if (directory != null) {
+            if (isClient) {
+                String result = (String) context.requestUserInteraction(new MkdirClientAction(directory));
+                if (result != null) {
+                    throw new RuntimeException(result);
                 }
             } else {
-                throw new RuntimeException("Path not specified");
+                FileUtils.mkdir(directory);
             }
-        } catch (IOException e) {
-            throw Throwables.propagate(e);
+        } else {
+            throw new RuntimeException("Path not specified");
         }
     }
 

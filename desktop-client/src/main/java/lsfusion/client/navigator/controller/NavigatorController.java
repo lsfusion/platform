@@ -63,6 +63,9 @@ public class NavigatorController implements INavigatorController {
 
     public void openElement(ClientNavigatorElement element, int modifiers) {
         if (element instanceof ClientNavigatorAction) {
+            if(element.asyncExec != null) {
+                element.asyncExec.exec();
+            }
             mainNavigator.openAction((ClientNavigatorAction) element, modifiers);
         }
     }

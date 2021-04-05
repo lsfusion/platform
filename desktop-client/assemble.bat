@@ -1,1 +1,0 @@
-call mvn install -P assemble,sign,pack

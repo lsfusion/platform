@@ -41,8 +41,8 @@ hostnameCurrentComputer () = hostname(currentComputer());
 CLASS ABSTRACT Contact '{authentication.contact}';
 TABLE contact (Contact);
 
-firstName '{authentication.first.name.contact}' = DATA ISTRING[100] (Contact) CHARWIDTH 10 IN base;
-lastName '{authentication.last.name.contact}' = DATA ISTRING[100] (Contact) CHARWIDTH 15 IN base;
+firstName '{authentication.first.name.contact}' = DATA ISTRING[100] (Contact) CHARWIDTH 10 IN id;
+lastName '{authentication.last.name.contact}' = DATA ISTRING[100] (Contact) CHARWIDTH 15 IN id;
 name '{authentication.name.contact}' (Contact contact) = CONCAT ' ', firstName(contact), lastName(contact) IN id CHARWIDTH 20;
 
 phone '{authentication.phone.contact}' = DATA STRING[100] (Contact) CHARWIDTH 10;

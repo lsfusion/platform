@@ -1,11 +1,13 @@
 package lsfusion.gwt.server.convert;
 
+import lsfusion.client.form.property.async.ClientAsyncOpenForm;
 import lsfusion.client.navigator.ClientNavigatorAction;
 import lsfusion.client.navigator.ClientNavigatorElement;
 import lsfusion.client.navigator.ClientNavigatorFolder;
 import lsfusion.client.navigator.tree.window.ClientTreeNavigatorWindow;
 import lsfusion.client.navigator.window.*;
 import lsfusion.gwt.client.action.GAction;
+import lsfusion.gwt.client.form.property.async.GAsyncOpenForm;
 import lsfusion.gwt.client.navigator.GNavigatorAction;
 import lsfusion.gwt.client.navigator.GNavigatorElement;
 import lsfusion.gwt.client.navigator.GNavigatorFolder;
@@ -34,6 +36,8 @@ public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
         element.children = new ArrayList<>();
 
         element.image = createImage(clientElement.imageHolder, "navigator", false);
+
+        element.asyncExec = convertOrCast(clientElement.asyncExec);
 
         for (ClientNavigatorElement child : clientElement.children) {
             GNavigatorElement childElement = convertOrCast(child);
@@ -128,5 +132,11 @@ public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
     @Converter(from = ClientTreeNavigatorWindow.class)
     public GTreeNavigatorWindow convertTreeNavigatorWindow(ClientTreeNavigatorWindow clientWindow) {
         return initNavigatorWindow(clientWindow, new GTreeNavigatorWindow());
+    }
+
+    @Cached
+    @Converter(from = ClientAsyncOpenForm.class)
+    public GAsyncOpenForm convertOpenForm(ClientAsyncOpenForm asyncOpenForm) {
+        return new GAsyncOpenForm(asyncOpenForm.canonicalName, asyncOpenForm.caption, asyncOpenForm.forbidDuplicate, asyncOpenForm.modal);
     }
 }

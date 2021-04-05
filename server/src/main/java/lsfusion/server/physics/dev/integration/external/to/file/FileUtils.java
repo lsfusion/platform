@@ -6,8 +6,6 @@ import com.jcraft.jsch.SftpATTRS;
 import com.jcraft.jsch.SftpException;
 import lsfusion.base.ExceptionUtils;
 import lsfusion.base.file.*;
-import org.apache.commons.net.ftp.FTP;
-import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 
 import java.io.File;
@@ -98,29 +96,26 @@ public class FileUtils {
         } else return false;
     }
 
-    public static void renameFTP(String srcPath, String destPath, String extension) throws IOException {
-        FTPPath srcProperties = FTPPath.parseFTPPath(srcPath);
-        FTPPath destProperties = FTPPath.parseFTPPath(destPath);
-        FTPClient ftpClient = new FTPClient();
-        try {
-            if (connectFTPClient(ftpClient, srcProperties, 60000)) { //1 minute = 60 sec
+    public static void renameFTP(String srcPath, String destPath, String extension) {
+        IOUtils.ftpAction(srcPath, (srcProperties, ftpClient) -> {
+            try {
+                FTPPath destProperties = FTPPath.parseFTPPath(destPath);
                 boolean done = ftpClient.rename(appendExtension(srcProperties.remoteFile, extension), appendExtension(destProperties.remoteFile, extension));
                 if (!done) {
-                    throw new RuntimeException("Error occurred while renaming file to ftp : " + ftpClient.getReplyCode());
+                    throw new RuntimeException("Failed to rename ftp file: " + ftpClient.getReplyString());
                 }
-            } else {
-                throw new RuntimeException("Incorrect login or password. Renaming file from ftp failed");
+                return null;
+            } catch (IOException e) {
+                throw Throwables.propagate(e);
             }
-        } finally {
-            disconnectFTPClient(ftpClient);
-        }
+        });
     }
 
-    public static void delete(String sourcePath) throws IOException {
+    public static void delete(String sourcePath) {
         delete(Path.parsePath(sourcePath));
     }
 
-    public static void delete(Path path) throws IOException {
+    public static void delete(Path path) {
         switch (path.type) {
             case "file":
                 deleteFile(path.path);
@@ -151,21 +146,18 @@ public class FileUtils {
         }
     }
 
-    private static void deleteFTPFile(String path) throws IOException {
-        FTPPath properties = FTPPath.parseFTPPath(path);
-        FTPClient ftpClient = new FTPClient();
-        try {
-            if(connectFTPClient(ftpClient, properties, 60000)) { //1 minute = 60 sec
-                boolean done = ftpClient.deleteFile(properties.remoteFile);
+    private static void deleteFTPFile(String path) {
+        IOUtils.ftpAction(path, (ftpPath, ftpClient) -> {
+            try {
+                boolean done = ftpClient.deleteFile(ftpPath.remoteFile);
                 if (!done) {
-                    throw new RuntimeException("Some error occurred while deleting file from ftp");
+                    throw new RuntimeException("Failed to delete '" + path + "'");
                 }
-            } else {
-                throw new RuntimeException("Incorrect login or password. Deleting file from ftp failed");
+                return null;
+            } catch (IOException e) {
+                throw Throwables.propagate(e);
             }
-        } finally {
-            disconnectFTPClient(ftpClient);
-        }
+        });
     }
 
     private static void deleteSFTPFile(String path) {
@@ -179,14 +171,14 @@ public class FileUtils {
                 return null;
             } catch (SftpException e) {
                 if(e.id == ChannelSftp.SSH_FX_NO_SUCH_FILE)
-                    throw new RuntimeException(String.format("Path '%s' not found for %s", ftpPath.remoteFile, path));
+                    throw new RuntimeException(String.format("Path '%s' not found for %s", ftpPath.remoteFile, path), e);
                 else
-                    throw new RuntimeException("Failed to delete '" + path + "'", e);
+                    throw Throwables.propagate(e);
             }
         });
     }
 
-    public static void mkdir(String directory) throws IOException {
+    public static void mkdir(String directory) {
         Path path = Path.parsePath(directory);
         String result = null;
         switch (path.type) {
@@ -214,35 +206,31 @@ public class FileUtils {
         return result;
     }
 
-    private static String mkdirFTP(String path) throws IOException {
-        String result = null;
-        FTPPath ftpPath = FTPPath.parseFTPPath(path);
-
-        FTPClient ftpClient = new FTPClient();
-        try {
-
-            if (connectFTPClient(ftpClient, ftpPath, 60000)) { //1 minute = 60 sec
+    private static String mkdirFTP(String path) {
+        return IOUtils.ftpAction(path, (ftpPath, ftpClient) -> {
+            try {
+                String result = null;
                 boolean dirExists = true;
                 String[] directories = ftpPath.remoteFile.split("/");
                 for (String dir : directories) {
                     if (result == null && !dir.isEmpty()) {
                         if (dirExists) dirExists = ftpClient.changeWorkingDirectory(dir);
                         if (!dirExists) {
-                            if (!ftpClient.makeDirectory(dir)) result = ftpClient.getReplyString();
-                            if (!ftpClient.changeWorkingDirectory(dir)) result = ftpClient.getReplyString();
+                            if (!ftpClient.makeDirectory(dir)) {
+                                result = ftpClient.getReplyString();
+                            }
+                            if (!ftpClient.changeWorkingDirectory(dir)) {
+                                result = ftpClient.getReplyString();
+                            }
 
                         }
                     }
                 }
-
                 return result;
-            } else {
-                result = "Incorrect login or password. Writing file from ftp failed";
+            } catch (IOException e) {
+                throw Throwables.propagate(e);
             }
-        } finally {
-            disconnectFTPClient(ftpClient);
-        }
-        return result;
+        });
     }
 
     private static String mkdirSFTP(String path) {
@@ -279,11 +267,8 @@ public class FileUtils {
     }
 
     private static boolean checkFileExistsFTP(String path) {
-        FTPPath ftpPath = FTPPath.parseFTPPath(path);
-        FTPClient ftpClient = new FTPClient();
-        try {
-            if(connectFTPClient(ftpClient, ftpPath, 60000)) { //1 minute = 60 sec
-
+        return IOUtils.ftpAction(path, (ftpPath, ftpClient) -> {
+            try {
                 boolean exists;
                 //check file existence
                 try (InputStream inputStream = ftpClient.retrieveFileStream(ftpPath.remoteFile)) {
@@ -294,14 +279,10 @@ public class FileUtils {
                     exists = ftpClient.changeWorkingDirectory(ftpPath.remoteFile);
                 }
                 return exists;
-            } else {
-                throw new RuntimeException("Incorrect login or password. Check file exists ftp failed");
+            } catch (IOException e) {
+                throw Throwables.propagate(e);
             }
-        } catch (IOException e) {
-            throw Throwables.propagate(e);
-        } finally {
-            disconnectFTPClient(ftpClient);
-        }
+        });
     }
 
     private static boolean checkFileExistsSFTP(String path) {
@@ -318,7 +299,7 @@ public class FileUtils {
         });
     }
 
-    public static List<Object> listFiles(String sourcePath, String charset) throws IOException {
+    public static List<Object> listFiles(String sourcePath, String charset) {
         Path path = Path.parsePath(sourcePath);
         List<Object> filesList;
         switch (path.type) {
@@ -329,7 +310,7 @@ public class FileUtils {
                 filesList = listFilesFTP(path.path, charset);
                 break;
             case "sftp":
-                filesList = listFilesSFTP(path.path);
+                filesList = listFilesSFTP(path.path, charset);
                 break;
             default:
                 throw new RuntimeException("ListFiles unsupported type " + path.type);
@@ -358,15 +339,9 @@ public class FileUtils {
         return result;
     }
 
-    private static List<Object> listFilesFTP(String path, String charset) throws IOException {
-        FTPPath ftpPath = FTPPath.parseFTPPath(path);
-        if(ftpPath.charset == null) {
-            ftpPath.charset = charset;
-        }
-        FTPClient ftpClient = new FTPClient();
-        ftpClient.setDataTimeout(120000);
-        try {
-            if(connectFTPClient(ftpClient, ftpPath, 60000)) { //1 minute = 60 sec
+    private static List<Object> listFilesFTP(String path, String charset) {
+        return IOUtils.ftpAction(path, charset, (ftpPath, ftpClient) -> {
+            try {
                 if (ftpPath.remoteFile == null || ftpPath.remoteFile.isEmpty() || ftpClient.changeWorkingDirectory(ftpPath.remoteFile)) {
                     FTPFile[] ftpFileList = ftpClient.listFiles();
                     String[] nameValues = new String[ftpFileList.length];
@@ -382,16 +357,14 @@ public class FileUtils {
                 } else {
                     throw new RuntimeException(String.format("Path '%s' not found for %s", ftpPath.remoteFile, path));
                 }
-            } else {
-                throw new RuntimeException("Incorrect login or password. List files from ftp failed");
+            } catch (IOException e) {
+                throw Throwables.propagate(e);
             }
-        } finally {
-            disconnectFTPClient(ftpClient);
-        }
+        });
     }
 
-    private static List<Object> listFilesSFTP(String path) {
-        return IOUtils.sftpAction(path, (ftpPath, channelSftp) -> {
+    private static List<Object> listFilesSFTP(String path, String charset) {
+        return IOUtils.sftpAction(path, charset, (ftpPath, channelSftp) -> {
             try {
                 Vector result = channelSftp.ls(ftpPath.remoteFile); //list files throws exception if file/directory not found
                 List<String> nameValues = new ArrayList<>();
@@ -407,10 +380,11 @@ public class FileUtils {
                         modifiedDateTimeValues.add(sqlTimestampToLocalDateTime(new Timestamp(attrs.getMTime() * 1000L)));
                     }
                 }
+                //noinspection RedundantCast
                 return Arrays.asList((Object) nameValues.toArray(new String[0]), isDirectoryValues.toArray(new Boolean[0]), modifiedDateTimeValues.toArray(new LocalDateTime[0]));
             } catch (SftpException e) {
                 if(e.id == ChannelSftp.SSH_FX_NO_SUCH_FILE)
-                    throw new RuntimeException(String.format("Path '%s' not found for %s", ftpPath.remoteFile, path));
+                    throw new RuntimeException(String.format("Path '%s' not found for %s", ftpPath.remoteFile, path), e);
                 else
                     throw Throwables.propagate(e);
             }
@@ -420,39 +394,6 @@ public class FileUtils {
     public static void safeDelete(File file) {
         if (file != null && !file.delete()) {
             file.deleteOnExit();
-        }
-    }
-
-    private static boolean connectFTPClient(FTPClient ftpClient, FTPPath ftpPath, int timeout) throws IOException {
-        ftpClient.setConnectTimeout(timeout);
-        if (ftpPath.charset != null) {
-            ftpClient.setControlEncoding(ftpPath.charset);
-        }
-        ftpClient.connect(ftpPath.server, ftpPath.port);
-        boolean login = ftpClient.login(ftpPath.username, ftpPath.password);
-        if (login) {
-            if (ftpPath.passiveMode) {
-                ftpClient.enterLocalPassiveMode();
-            }
-            ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
-            if (ftpPath.binaryTransferMode) {
-                ftpClient.setFileTransferMode(FTP.BINARY_FILE_TYPE);
-            }
-        }
-        return login;
-    }
-
-    private static void disconnectFTPClient(FTPClient ftpClient) {
-        if (ftpClient.isConnected()) {
-//            new Thread(() -> {
-                try {
-                    ftpClient.setSoTimeout(10000);
-                    ftpClient.logout();
-                    ftpClient.disconnect();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-//            }).start();
         }
     }
 }

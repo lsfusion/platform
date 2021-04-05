@@ -8,6 +8,10 @@ public enum ModalityType {
         return this != DOCKED;
     }
 
+    public boolean isModalWindow() {
+        return this == MODAL || this == DIALOG_MODAL;
+    }
+
     public boolean isDialog() {
         return this == DIALOG_MODAL;
     }

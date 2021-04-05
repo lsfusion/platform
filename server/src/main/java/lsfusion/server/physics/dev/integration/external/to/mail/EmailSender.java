@@ -165,7 +165,7 @@ public class EmailSender {
     }
 
     private void processEmail(String subject, LP emailSent, boolean syncType) {
-        String messageInfo = subject.trim();
+        String messageInfo = subject != null ? subject.trim() : "";
         try {
             Address[] addressesTo = message.getRecipients(MimeMessage.RecipientType.TO);
             if (addressesTo == null || addressesTo.length == 0) {

@@ -2,6 +2,8 @@ package lsfusion.base.file;
 
 import com.google.common.base.Throwables;
 import com.jcraft.jsch.*;
+import org.apache.commons.net.ftp.FTP;
+import org.apache.commons.net.ftp.FTPClient;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 
@@ -135,8 +137,69 @@ public class IOUtils {
         return tempFile;
     }
 
+    public static <R> R ftpAction(String path, BiFunction<FTPPath, FTPClient, R> function) {
+        return ftpAction(path, null, function);
+    }
+
+    public static <R> R ftpAction(String path, String charset, BiFunction<FTPPath, FTPClient, R> function) {
+        FTPPath ftpPath = FTPPath.parseFTPPath(path);
+        if(ftpPath.charset == null) {
+            ftpPath.charset = charset;
+        }
+
+        FTPClient ftpClient = new FTPClient();
+        ftpClient.setDataTimeout(120000); //2 minutes = 120 sec
+        ftpClient.setConnectTimeout(60000); //1 minute = 60 sec
+
+        if (ftpPath.charset != null) {
+            ftpClient.setControlEncoding(ftpPath.charset);
+        } else {
+            ftpClient.setAutodetectUTF8(true);
+        }
+
+        try {
+            ftpClient.connect(ftpPath.server, ftpPath.port);
+            boolean login = ftpClient.login(ftpPath.username, ftpPath.password);
+            if (login) {
+                if (ftpPath.passiveMode) {
+                    ftpClient.enterLocalPassiveMode();
+                }
+                ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
+                if (ftpPath.binaryTransferMode) {
+                    ftpClient.setFileTransferMode(FTP.BINARY_FILE_TYPE);
+                }
+                //large buffer size increases download speed
+                //https://stackoverflow.com/questions/30847433/very-slow-ftp-download
+                ftpClient.setBufferSize(1024 * 1024);
+
+                return function.apply(ftpPath, ftpClient);
+            } else {
+                throw new RuntimeException("Incorrect login or password '" + path + "'");
+            }
+        } catch (IOException e) {
+            throw Throwables.propagate(e);
+        } finally {
+            if (ftpClient.isConnected()) {
+                try {
+                    ftpClient.setSoTimeout(10000);
+                    ftpClient.logout();
+                    ftpClient.disconnect();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
     public static <R> R sftpAction(String path, BiFunction<FTPPath, ChannelSftp, R> function) {
+        return sftpAction(path, null, function);
+    }
+
+    public static <R> R sftpAction(String path, String charset, BiFunction<FTPPath, ChannelSftp, R> function) {
         FTPPath ftpPath = FTPPath.parseSFTPPath(path);
+        if(ftpPath.charset == null) {
+            ftpPath.charset = charset;
+        }
 
         ftpPath.remoteFile = ftpPath.remoteFile.replace("\\", "/");
         ftpPath.remoteFile = (!ftpPath.remoteFile.startsWith("/") ? "/" : "") + ftpPath.remoteFile;

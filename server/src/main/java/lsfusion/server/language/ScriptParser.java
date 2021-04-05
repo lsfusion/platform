@@ -3,7 +3,6 @@ package lsfusion.server.language;
 import lsfusion.base.ExceptionUtils;
 import lsfusion.base.Pair;
 import lsfusion.server.base.controller.stack.ExecutionStackAspect;
-import lsfusion.server.language.metacode.MetaCodeFragment;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import org.antlr.runtime.*;
@@ -13,7 +12,7 @@ import java.util.List;
 import java.util.Stack;
 
 public class ScriptParser {
-    public enum State {PRE, META_CLASS_TABLE, MAIN, GENMETA}
+    public enum State {PRE, META_CLASS_TABLE, MAIN, METADECL, GENMETA}
 
     private State currentState = null;
     private Stack<ParserInfo> parsers = new Stack<>();
@@ -30,20 +29,14 @@ public class ScriptParser {
      * сейчас метакодов  */
     private int currentExpansionLine = 0;
     
-    private ScriptingErrorLog errLog;
+    private boolean insideMetaDecl = false;
+    private int prevMetaToken;
+    private List<Pair<String, Boolean>> metaTokens;
 
-    /** Определяет парсится ли сейчас код "развернутого" в IDE метакода. Проверяется, чтобы задать специальный state парсера, 
-     * чтобы ничего не выполнялось при этом парсинге. */
-    private boolean insideGeneratedMeta = false;
-    
     /** Определяет интерпретируется ли сейчас код сформированный "неразвернутым" в IDE метакодом. Если равен true, 
      * то не нужно создавать делегаты для отладчика */
     private boolean insideNonEnabledMeta = false;
-    
-    public ScriptParser(ScriptingErrorLog errLog) {
-        this.errLog = errLog;
-    }
-    
+
     public void initParseStep(ScriptingLogicsModule LM, CharStream stream, State state) throws RecognitionException {
         LsfLogicsLexer lexer = new LsfLogicsLexer(stream);
         LsfLogicsParser parser = new LsfLogicsParser(new CommonTokenStream(lexer));
@@ -57,7 +50,7 @@ public class ScriptParser {
         globalExpandedLines = 0;
         currentExpandedLines = 0;
         currentState = state;
-        parsers.push(new ParserInfo(parser, null, null, 0));
+        parsers.push(new ParserInfo(parser, null, null,null, 0));
         try {
             if (state == State.PRE) {
                 parser.moduleHeader();
@@ -72,7 +65,9 @@ public class ScriptParser {
         currentState = null;
     }
 
-    public void runMetaCode(ScriptingLogicsModule LM, String code, MetaCodeFragment metaCode, String callString, int lineNumber, boolean enabledMeta) throws RecognitionException {
+    public void runMetaCode(ScriptingLogicsModule LM, String code, int metaLineNumber, String metaModuleName, String callString, int lineNumber, boolean enabledMeta) throws RecognitionException {
+        assert !insideMetaDecl;
+
         LsfLogicsLexer lexer = new LsfLogicsLexer(new ANTLRStringStream(code));
         LsfLogicsParser parser = new LsfLogicsParser(new CommonTokenStream(lexer));
 
@@ -80,14 +75,17 @@ public class ScriptParser {
         lexer.parseState = currentState;
 
         parser.self = LM;
-        parser.parseState = insideGeneratedMeta ? State.GENMETA : currentState;
+        parser.parseState = currentState;
 
         //lineNumber is 1-based
         currentExpansionLine += lineNumber - 1;
         
-        ParserInfo lastParser = new ParserInfo(parser, metaCode, callString, lineNumber);
-        
-        if (!enabledMeta && parsers.size() == 1) {
+        ParserInfo lastParser = new ParserInfo(parser, metaLineNumber, metaModuleName, callString, lineNumber);
+
+        boolean isTopParser = parsers.size() == 1; // for meta decl parsing it doesn't matter
+        boolean needOffset = parser.inMainParseState(); // in theory we might also need offset in class step
+
+        if (!enabledMeta && isTopParser) {
             insideNonEnabledMeta = true;
         }
         
@@ -96,18 +94,18 @@ public class ScriptParser {
         parsers.pop();
 
         int codeLinesCnt = 0;
-        if (!insideGeneratedMeta && parser.parseState == State.MAIN) {
+        if (needOffset) {
             codeLinesCnt = linesCount(code);
             globalExpandedLines += codeLinesCnt - 1;
         }
         
-        if (parsers.size() == 1) {
+        if (isTopParser) {
             currentExpandedLines = 0;
-        } else if (!insideGeneratedMeta && parser.parseState == State.MAIN) {
+        } else if (needOffset) {
             currentExpandedLines += codeLinesCnt - 1; 
         }
 
-        if (!enabledMeta && parsers.size() == 1) {
+        if (!enabledMeta && isTopParser) {
             insideNonEnabledMeta = false;
         }
 
@@ -124,51 +122,64 @@ public class ScriptParser {
         return count;
     }
 
-    public Pair<List<String>, List<Pair<Integer, Boolean>>> grabMetaCode(String metaCodeName) throws ScriptingErrorLog.SemanticErrorException {
-        if (isInsideMetacode()) {
-            errLog.emitMetacodeInsideMetacodeError(this);
-        }
+    public boolean isInsideMetaDecl() {
+        return insideMetaDecl;
+    }
 
-        List<String> tokens = new ArrayList<>();
-        List<Pair<Integer, Boolean>> tokenTypes = new ArrayList<>();
+    public void enterMetaDeclState() {
+        insideMetaDecl = true;
+        metaTokens = new ArrayList<>();
+
+        markMetaDeclCode(")");
+    }
+    public void grabMetaDeclCode() {
+        if(!insideMetaDecl)
+            return;
+
         Parser curParser = getCurrentParser();
-        while (!curParser.input.LT(1).getText().equals("END")) {
-            if (curParser.input.LT(1).getType() == LsfLogicsParser.EOF) {
-                errLog.emitMetaCodeNotEndedError(this, metaCodeName);
-            }
-            Token lt = curParser.input.LT(1);
+        int newToken = curParser.input.index();
+        for(int i = prevMetaToken; i < newToken; i++) {
+            Token lt = curParser.input.get(i);
             int type = lt.getType();
-            boolean isMeta = type == LsfLogicsParser.META_ID;
-            if(isMeta || type == LsfLogicsParser.ID) // ID also can be meta parameter
-                tokenTypes.add(new Pair<>(tokens.size(), isMeta));
-            tokens.add(lt.getText());
-            curParser.input.consume();
+            metaTokens.add(new Pair<>(lt.getText(), type == LsfLogicsParser.STRING_LITERAL || type == LsfLogicsParser.ID));
         }
-        return new Pair<>(tokens, tokenTypes);
+        prevMetaToken = newToken;
+    }
+    public void skipMetaDeclCode() {
+        if(!insideMetaDecl)
+            return;
+
+        markMetaDeclCode("}");
+    }
+    private void markMetaDeclCode(String prevToken) {
+        Token braceToken = getCurrentParser().input.LT(-1);
+        assert braceToken.getText().equals(prevToken);
+        prevMetaToken = braceToken.getTokenIndex() + 1; // we want to include spaces / comments after prevToken
     }
 
-    public boolean enterGeneratedMetaState() {
-        if (!insideGeneratedMeta) {
-            insideGeneratedMeta = true;
-            return true;
-        }
-        return false;
+    public List<Pair<String, Boolean>> leaveMetaDeclState() {
+        assert insideMetaDecl;
+
+        grabMetaDeclCode();
+        
+        List<Pair<String, Boolean>> result = metaTokens;
+
+        metaTokens = null;
+        insideMetaDecl = false;
+
+        return result;
     }
 
-    public void leaveGeneratedMetaState() {
-        insideGeneratedMeta = false;
-    }
-    
     public boolean isInsideMetacode() {
         return parsers.size() > 1;
     }
 
-    public Parser getCurrentParser() {
-        if (parsers.empty()) {
-            return null;
-        } else {
-            return parsers.peek().getParser();
-        }
+    public LsfLogicsParser getCurrentParser() {
+        return getCurrentParserInfo().getParser();
+    }
+
+    public ParserInfo getCurrentParserInfo() {
+        return parsers.lastElement();
     }
 
     public boolean isInsideNonEnabledMeta() {
@@ -211,11 +222,12 @@ public class ScriptParser {
     
     //0-based
     public int getGlobalCurrentLineNumber(boolean previous) {
-        if (isInsideNonEnabledMeta()) {
-            return globalExpandedLines + currentExpansionLine + getCurrentParserLineNumber(previous) - 1;
-        } else {
-            return currentExpandedLines + currentExpansionLine + getCurrentParserLineNumber(previous) - 1;
-        }
+        return (isInsideNonEnabledMeta() ? globalExpandedLines : currentExpandedLines) + currentExpansionLine + getCurrentParserLineNumber(previous) - 1;
+    }
+
+    public int getGlobalPositionInLine(boolean previous) {
+        Token token = getToken(getCurrentParserInfo().getParser(), previous);
+        return token.getCharPositionInLine();
     }
 
     public int getCurrentParserLineNumber() {
@@ -223,30 +235,9 @@ public class ScriptParser {
     }
     
     private int getCurrentParserLineNumber(boolean previous) {
-        return getLineNumber(parsers.lastElement().getParser(), previous);
-    }
-
-    private int getLineNumber(Parser parser, boolean previous) {
-        Token token = getToken(parser, previous);
+        ParserInfo currentParserInfo = getCurrentParserInfo();
+        Token token = getToken(currentParserInfo.getParser(), previous);
         return token.getLine();
-    }
-
-
-    public int getGlobalPositionInLine(boolean previous) {
-        return getCurrentParserPositionInLine(previous);
-    }
-
-    public int getCurrentParserPositionInLine() {
-        return getCurrentParserPositionInLine(false);
-    }
-    
-    private int getCurrentParserPositionInLine(boolean previous) {
-        return getPositionInLine(parsers.lastElement().getParser(), previous);
-    }
-
-    private int getPositionInLine(Parser parser, boolean previous) {
-        Token token = getToken(parser, previous);
-        return token.getCharPositionInLine();
     }
 
     private Token getToken(Parser parser, boolean previous) {
