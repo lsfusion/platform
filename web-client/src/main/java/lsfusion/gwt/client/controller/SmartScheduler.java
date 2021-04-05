@@ -1,13 +1,15 @@
 package lsfusion.gwt.client.controller;
 
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.impl.SchedulerImpl;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 public class SmartScheduler extends SchedulerImpl {
     private static SmartScheduler instance;
-    public final List<ScheduledCommand> commands = new ArrayList<>();
+    private final Map<Integer, ScheduledCommand> commandsMap = new HashMap<>();
+    private int id = 0;
     private SmartScheduler() {
     }
 
@@ -18,13 +20,20 @@ public class SmartScheduler extends SchedulerImpl {
     }
 
     @Override
-    public void scheduleEntry(ScheduledCommand cmd) {
-        commands.add(cmd);
+    public void scheduleDeferred(ScheduledCommand cmd) {
+        id++;
+        ScheduledCommand finalCmd = cmd;
+
+        cmd = () -> {
+            if(commandsMap.remove(id) != null)
+                finalCmd.execute();
+        };
+        commandsMap.put(id, cmd);
+
+        Scheduler.get().scheduleDeferred(cmd);
     }
 
-    public void executeAll(boolean clear){
-        commands.forEach(ScheduledCommand::execute);
-        if (clear && !commands.isEmpty())
-            commands.clear();
+    public void flush() {
+        this.commandsMap.values().forEach(ScheduledCommand::execute);
     }
 }

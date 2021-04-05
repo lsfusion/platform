@@ -198,7 +198,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
 
     @Override
     protected boolean previewEvent(Element target, Event event) {
-        SmartScheduler.getInstance().executeAll(true);
+        SmartScheduler.getInstance().flush();
         return form.previewEvent(target, event);
     }
 
