@@ -32,9 +32,7 @@ import lsfusion.gwt.client.view.MainFrame;
 import lsfusion.gwt.client.view.StyleDefaults;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.findInList;
 
@@ -184,8 +182,11 @@ public abstract class FormsController {
 
         }
         initForm(formContainer, form, hiddenHandler, modalityType.isDialog(), initFilterEvent);
-        if (!asyncOpened || modal)
+        if(asyncOpened && !modal) {
+            formContainer.setFormVisible();
+        } else {
             formContainer.show();
+        }
 
         return formContainer;
     }

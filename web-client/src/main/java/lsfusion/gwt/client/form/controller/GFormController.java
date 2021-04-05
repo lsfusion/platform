@@ -619,6 +619,10 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         formVisible = false;
     }
 
+    public void setFormVisible() {
+        this.formVisible = true;
+    }
+
     public void hidePopup() {
         for (GGridController controller : controllers.values()) {
             if(controller.filter != null) {

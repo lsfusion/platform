@@ -45,6 +45,10 @@ public abstract class FormContainer<W extends Widget> {
 
     protected abstract void setContent(Widget widget);
 
+    public void setFormVisible() {
+        form.setFormVisible();
+    }
+
     public abstract void show();
 
     public abstract void hide();
