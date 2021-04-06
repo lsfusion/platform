@@ -141,6 +141,16 @@ public abstract class DefaultSQLSyntax implements SQLSyntax {
         return Types.TIME;
     }
 
+    @Override
+    public String getIntervalType() {
+        return "numeric";
+    }
+
+    @Override
+    public int getIntervalSQL() {
+        return Types.NUMERIC;
+    }
+
     public String getLongType() {
         return "long";
     }

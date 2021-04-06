@@ -39,6 +39,9 @@ public class AnyValuePropertyHolder {
     private final LP yearProperty;
     private final LP dateTimeProperty;
     private final LP zDateTimeProperty;
+    private final LP intervalDateProperty;
+    private final LP intervalDateTimeProperty;
+    private final LP intervalTimeProperty;
     private final LP logicalProperty;
     private final LP dateProperty;
     private final LP timeProperty;
@@ -69,7 +72,7 @@ public class AnyValuePropertyHolder {
     private final LP tableLinkProperty;
 
     public AnyValuePropertyHolder(LP<?> objectProperty, LP<?> stringProperty, LP<?> bpStringProperty, LP<?> textProperty, LP<?> intProperty, LP<?> longProperty, LP<?> doubleProperty, LP<?> numericProperty, LP<?> yearProperty,
-                                  LP<?> dateTimeProperty, LP<?> zDateTimeProperty, LP<?> logicalProperty, LP<?> dateProperty, LP<?> timeProperty, LP<?> colorProperty, LP<?> wordFileProperty, LP<?> imageFileProperty,
+                                  LP<?> dateTimeProperty, LP<?> zDateTimeProperty, LP<?> intervalDateProperty, LP<?> intervalDateTimeProperty, LP<?> intervalTimeProperty,  LP<?> logicalProperty, LP<?> dateProperty, LP<?> timeProperty, LP<?> colorProperty, LP<?> wordFileProperty, LP<?> imageFileProperty,
                                   LP<?> pdfFileProperty, LP<?> rawFileProperty, LP<?> customFileProperty, LP<?> excelFileProperty,
                                   LP<?> textFileProperty, LP<?> csvFileProperty, LP<?> htmlFileProperty, LP<?> jsonFileProperty, LP<?> xmlFileProperty, LP<?> tableFileProperty,
                                   LP<?> wordLinkProperty, LP<?> imageLinkProperty, LP<?> pdfLinkProperty, LP<?> rawLinkProperty,
@@ -86,6 +89,9 @@ public class AnyValuePropertyHolder {
                 && yearProperty.property.getType() == YearClass.instance
                 && dateTimeProperty.property.getType() == DateTimeClass.instance
                 && zDateTimeProperty.property.getType() == ZDateTimeClass.instance
+                && intervalDateProperty.property.getType().getCompatible(IntervalClass.getInstance("DATE")) != null
+                && intervalDateTimeProperty.property.getType().getCompatible(IntervalClass.getInstance("DATETIME")) != null
+                && intervalTimeProperty.property.getType().getCompatible(IntervalClass.getInstance("TIME")) != null
                 && logicalProperty.property.getType() == LogicalClass.instance
                 && dateProperty.property.getType() == DateClass.instance
                 && timeProperty.property.getType() == TimeClass.instance
@@ -127,6 +133,9 @@ public class AnyValuePropertyHolder {
         this.yearProperty = yearProperty;
         this.dateTimeProperty = dateTimeProperty;
         this.zDateTimeProperty = zDateTimeProperty;
+        this.intervalDateProperty = intervalDateProperty;
+        this.intervalDateTimeProperty = intervalDateTimeProperty;
+        this.intervalTimeProperty = intervalTimeProperty;
         this.logicalProperty = logicalProperty;
         this.dateProperty = dateProperty;
         this.timeProperty = timeProperty;
@@ -180,6 +189,12 @@ public class AnyValuePropertyHolder {
             return dateTimeProperty;
         } else if (valueType instanceof ZDateTimeClass) {
             return zDateTimeProperty;
+        } else if (valueType instanceof DateIntervalClass) {
+            return intervalDateProperty;
+        } else if (valueType instanceof DateTimeIntervalClass) {
+            return intervalDateTimeProperty;
+        } else if (valueType instanceof TimeIntervalClass) {
+            return intervalTimeProperty;
         } else if (valueType instanceof LogicalClass) {
             return logicalProperty;
         } else if (valueType instanceof DateClass) {
@@ -256,7 +271,7 @@ public class AnyValuePropertyHolder {
                 // numbers
                 numericProperty, longProperty, intProperty, doubleProperty,
                 // date / times
-                dateTimeProperty, zDateTimeProperty, dateProperty, timeProperty, yearProperty,
+                dateTimeProperty, zDateTimeProperty, intervalDateProperty, intervalDateTimeProperty, intervalTimeProperty, dateProperty, timeProperty, yearProperty,
                 // links
                 customLinkProperty, rawLinkProperty, wordLinkProperty, imageLinkProperty, pdfLinkProperty,  excelLinkProperty,
                 textLinkProperty, csvLinkProperty, htmlLinkProperty, jsonLinkProperty, xmlLinkProperty, tableLinkProperty,

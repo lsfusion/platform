@@ -918,4 +918,19 @@ public class GwtClientUtils {
         }
         return null;
     }
+
+    //when used in gwt-javascript, so as not to pass many parameters to the native-method and get localized strings directly
+    protected static native void getLocalizedString(String string)/*-{
+        var name;
+        var prototype = Object.getPrototypeOf(@GwtClientUtils::messages);
+        var ownPropertyNames = Object.getOwnPropertyNames(prototype);
+        for (var i = 0; i < ownPropertyNames.length; i++) {
+            var property = ownPropertyNames[i];
+            if (property.includes(string)) {
+                name = property;
+                break;
+            }
+        }
+        return name != null ? prototype[name]() : name;
+    }-*/;
 }
