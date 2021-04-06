@@ -612,4 +612,8 @@ public class RmiQueue implements DispatcherListener {
     private interface RmiFutureInterface {
         boolean isFirst();
     }
+
+    public long getNextRmiRequestIndex() {
+        return nextRmiRequestIndex;
+    }
 }

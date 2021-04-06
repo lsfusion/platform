@@ -1,5 +1,6 @@
 package lsfusion.client.form.property.cell;
 
+import lsfusion.client.classes.ClientType;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.table.view.InternalEditEvent;
 import lsfusion.interop.action.ServerResponse;
@@ -82,13 +83,12 @@ public class EditBindingMap {
     }
 
     public static boolean isEditableAwareEditEvent(String actionSID) {
-        return ServerResponse.CHANGE.equals(actionSID)
-                || ServerResponse.CHANGE_WYS.equals(actionSID)
-                || ServerResponse.GROUP_CHANGE.equals(actionSID);
+        return ServerResponse.changeEvents.indexOf(actionSID) >= 0;
     }
 
     public static String getPropertyEventActionSID(EventObject e, ClientPropertyDraw property, EditBindingMap overrideMap) {
-        EditEventFilter eventFilter = property.changeType == null ? null : property.changeType.getEditEventFilter();
+        ClientType changeType = property.getChangeType();
+        EditEventFilter eventFilter = changeType == null ? null : changeType.getEditEventFilter();
 
         String actionSID = null;
         if (property.editBindingMap != null) {

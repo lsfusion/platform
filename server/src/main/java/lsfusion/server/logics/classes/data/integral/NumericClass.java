@@ -22,6 +22,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 
 public class NumericClass extends IntegralClass<BigDecimal> {
     public final static NumericClass defaultNumeric = new NumericClass(ExtInt.UNLIMITED, ExtInt.UNLIMITED);
@@ -136,7 +137,7 @@ public class NumericClass extends IntegralClass<BigDecimal> {
         return syntax.getNumericType(precision, scale);
     }
 
-    private final static Collection<NumericClass> instances = new ArrayList<>();
+    private final static Collection<NumericClass> instances = new ArrayList<>(Collections.singletonList(defaultNumeric));
 
     public BigDecimal read(Object value) {
         if(value==null) return null;

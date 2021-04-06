@@ -1,23 +1,41 @@
 package lsfusion.client.form.view;
 
 import lsfusion.client.base.view.ClientDockable;
+import lsfusion.client.base.view.ClientImages;
 import lsfusion.client.controller.remote.RmiQueue;
+import lsfusion.client.form.ClientForm;
 import lsfusion.client.form.controller.ClientFormController;
+import lsfusion.client.form.controller.CloseAllAction;
 import lsfusion.client.form.controller.FormsController;
 import lsfusion.client.navigator.ClientNavigator;
+import lsfusion.client.view.DockableMainFrame;
 import lsfusion.client.view.MainFrame;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 
-import java.io.IOException;
+import javax.swing.*;
+import java.awt.*;
+import java.util.List;
 
 public class ClientFormDockable extends ClientDockable {
 
-    private ClientFormController clientForm;
+    private FormsController formsController;
+    private ClientFormController form;
 
-    public ClientFormDockable(ClientNavigator navigator, String canonicalName, String formSID, RemoteFormInterface remoteForm, FormsController formsController, final MainFrame.FormCloseListener closeListener, byte[] firstChanges) throws IOException {
+    public ClientFormDockable(String canonicalName, String caption, FormsController formsController, List<ClientDockable> openedForms, Long requestIndex, boolean async) {
         super(canonicalName, formsController);
+        setCaption(caption, null);
+        addAction(new CloseAllAction(openedForms));
+        this.formsController = formsController;
+        this.requestIndex = requestIndex;
+        this.async = async;
+    }
 
-        clientForm = new ClientFormController(canonicalName, formSID, remoteForm, firstChanges, navigator, false, false) {
+    public void asyncInit() {
+        setContent(new JLabel(new ImageIcon(ClientImages.get("loading_async.gif").getImage().getScaledInstance(32, 32, Image.SCALE_DEFAULT))));
+    }
+
+    public void init(ClientNavigator navigator, String canonicalName, String formSID, RemoteFormInterface remoteForm, ClientForm clientForm, final MainFrame.FormCloseListener closeListener, byte[] firstChanges) {
+        this.form = new ClientFormController(canonicalName, formSID, remoteForm, clientForm, firstChanges, navigator, false, false) {
             @Override
             public void onFormHidden() {
                 if (control() != null) {
@@ -37,13 +55,13 @@ public class ClientFormDockable extends ClientDockable {
 
             @Override
             public void blockView() {
-                clientForm.getLayout().setBlocked(true);
+                ClientFormDockable.this.form.getLayout().setBlocked(true);
                 ClientFormDockable.this.blockView();
             }
 
             @Override
             public void unblockView() {
-                clientForm.getLayout().setBlocked(false);
+                ClientFormDockable.this.form.getLayout().setBlocked(false);
                 ClientFormDockable.this.unblockView();
             }
 
@@ -61,7 +79,9 @@ public class ClientFormDockable extends ClientDockable {
             }
         };
 
-        setContent(clientForm.getLayout());
+        setContent(this.form.getLayout());
+        async = false;
+        formsController.getForms().add(canonicalName);
     }
 
     public void setCaption(String caption, String tooltip) {
@@ -71,12 +91,17 @@ public class ClientFormDockable extends ClientDockable {
 
     @Override
     public void onClosing() {
-        RmiQueue.runAction(new Runnable() {
-            @Override
-            public void run() {
-                clientForm.closePressed();
-            }
-        });
+        if(async) {
+            ((DockableMainFrame) MainFrame.instance).removeOpenForm(requestIndex);
+            super.onClosing();
+        } else {
+            RmiQueue.runAction(new Runnable() {
+                @Override
+                public void run() {
+                    form.closePressed();
+                }
+            });
+        }
     }
 
     @Override
@@ -85,8 +110,10 @@ public class ClientFormDockable extends ClientDockable {
 
         // удаляем ссылку на clientForm, поскольку ClientFormDockable совершенно не собирается быть собранным сборщиком мусора,
         // поскольку на него хранят ссылку внутренние объекты DockingFrames
-        clientForm.closed();
-        clientForm = null;
+       if(!async) {
+           form.closed();
+           form = null;
+       }
 
         // на всякий случай
         System.gc();
@@ -94,22 +121,30 @@ public class ClientFormDockable extends ClientDockable {
 
     @Override
     public void onShowingChanged(boolean oldShowing, boolean newShowing) {
-        if (clientForm != null) {
-            clientForm.setSelected(newShowing);
+        if (form != null) {
+            form.setSelected(newShowing);
         }
     }
 
     @Override
     public void onOpened() {
-        if (clientForm != null) 
-            MainFrame.instance.setCurrentForm(clientForm);
+        if (form != null)
+            MainFrame.instance.setCurrentForm(form);
+    }
+
+    @Override
+    protected boolean activateFirstComponents() {
+        if (form != null) {
+            return form.activateFirstComponents();
+        }
+        return false;
     }
 
     @Override
     protected boolean focusDefaultComponent() {
         boolean focusReceived = super.focusDefaultComponent();
-        if (!focusReceived && clientForm != null) {
-            return clientForm.focusFirstComponent();
+        if (!focusReceived && form != null) {
+            return form.focusFirstComponent();
         }
         return false;
     }

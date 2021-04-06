@@ -3,6 +3,7 @@ package lsfusion.client.navigator;
 import lsfusion.base.file.IOUtils;
 import lsfusion.base.file.SerializableImageIconHolder;
 import lsfusion.client.controller.MainController;
+import lsfusion.client.form.property.async.ClientAsyncExec;
 import lsfusion.client.navigator.window.ClientNavigatorWindow;
 import lsfusion.interop.form.remote.serialization.SerializationUtil;
 
@@ -26,6 +27,8 @@ public abstract class ClientNavigatorElement {
     public List<ClientNavigatorElement> children = new ArrayList<>();
     public SerializableImageIconHolder imageHolder;
 
+    public ClientAsyncExec asyncExec;
+
     protected boolean hasChildren = false;
     public ClientNavigatorWindow window;
 
@@ -38,6 +41,8 @@ public abstract class ClientNavigatorElement {
         window = ClientNavigatorWindow.deserialize(inStream);
 
         imageHolder = IOUtils.readImageIcon(inStream);
+
+        asyncExec = ClientAsyncExec.deserialize(inStream);
     }
 
     public String getCanonicalName() {

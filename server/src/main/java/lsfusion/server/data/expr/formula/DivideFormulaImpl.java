@@ -52,7 +52,7 @@ public class DivideFormulaImpl extends ScaleFormulaImpl {
                         src2 = type2.getCast(src2, syntax, env);
                 }
 
-                return type.getSafeCast("(" + src1 + "/" + syntax.getNotZero(src2, type, env) + ")", syntax, env, null);
+                return type.getSafeCast("(" + src1 + "/" + syntax.getNotZero(src2, type, env) + ")", syntax, env, null, true);
             }
             return null;
         }

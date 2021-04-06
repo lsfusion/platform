@@ -33,6 +33,9 @@ public abstract class ClientDockable extends DefaultMultipleCDockable {
 
     private final CustomCloseAction closeAction;
 
+    protected Long requestIndex;
+    public boolean async;
+
     protected ClientDockable(String canonicalName, FormsController formsController) {
         super(formsController.getDockableFactory());
 
@@ -62,7 +65,11 @@ public abstract class ClientDockable extends DefaultMultipleCDockable {
             @Override
             public void focusGained(CDockable dockable) {
                 initDefaultComponent();
-                SwingUtilities.invokeLater(ClientDockable.this::focusDefaultComponent);
+                SwingUtilities.invokeLater(() -> {
+                    if (!activateFirstComponents()) {
+                        focusDefaultComponent();
+                    }
+                });
                 if (defaultComponent != null) {
                     removeFocusListener(this);
                 }
@@ -72,9 +79,13 @@ public abstract class ClientDockable extends DefaultMultipleCDockable {
             public void focusLost(CDockable dockable) {}
         });
     }
+    
+    protected boolean activateFirstComponents() {
+        return false;
+    }
 
     private void initDefaultComponent() {
-        if (defaultComponent == null) {
+        if (!async && defaultComponent == null) {
             FocusTraversalPolicy traversalPolicy = contentContainer.getFocusTraversalPolicy();
             if (traversalPolicy != null) {
                 defaultComponent = traversalPolicy.getDefaultComponent(contentContainer);

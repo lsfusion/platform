@@ -11,6 +11,7 @@ import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.form.classes.view.ClassChosenHandler;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.controller.ExecuteEditContext;
 import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
 import lsfusion.gwt.client.navigator.window.GModalityType;
@@ -42,7 +43,7 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
         if (action.modalityType.isModal()) {
             pauseDispatching();
         }
-        form.openForm(action.form, action.modalityType, action.forbidDuplicate, getEditEvent(), () -> {
+        form.openForm(getDispatchingIndex(), action.form, action.modalityType, action.forbidDuplicate, getEditEvent(), () -> {
             if (action.modalityType.isModal()) {
                 continueDispatching();
             }
@@ -67,12 +68,8 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
         pauseDispatching();
 
         Result<Object> result = new Result<>();
-        form.blockingConfirm(action.caption, action.message, action.cancel, action.timeout, action.initialValue, new DialogBoxHelper.CloseCallback() {
-            @Override
-            public void closed(DialogBoxHelper.OptionType chosenOption) {
-                continueDispatching(chosenOption.asInteger(), result);
-            }
-        });
+        form.blockingConfirm(action.caption, action.message, action.cancel, action.timeout, action.initialValue,
+                chosenOption -> continueDispatching(chosenOption.asInteger(), result));
         return result.result;
     }
 
@@ -124,16 +121,16 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
 
     // editing (INPUT) functionality
 
-    protected Event editEvent;
-
+    private Event editEvent;
     private ExecuteEditContext editContext;
+    private String actionSID;
 
-    public void executePropertyActionSID(Event event, String actionSID, ExecuteEditContext editContext) {
-        editEvent = event;
-
+    public long executePropertyActionSID(Event event, String actionSID, ExecuteEditContext editContext) {
+        this.editEvent = event;
         this.editContext = editContext;
+        this.actionSID = actionSID;
 
-        form.executeEventAction(editContext.getProperty(), editContext.getColumnKey(), actionSID);
+        return form.executeEventAction(editContext.getProperty(), editContext.getColumnKey(), actionSID);
     }
 
     protected Event getEditEvent() {
@@ -148,7 +145,7 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
         // we should not drop at least editSetValue since GUpdateEditValueAction might use it
         Result<Object> result = new Result<>();
         form.edit(action.readType, editEvent, action.hasOldValue, action.oldValue,
-                value -> form.changeEditPropertyValue(editContext, action.readType, value, getDispatchingIndex()), // we'll be optimists and assume that this value will stay
+                value -> form.changeEditPropertyValue(editContext, actionSID, action.readType, value, getDispatchingIndex()), // we'll be optimists and assume that this value will stay
                 value -> continueDispatching(new GUserInputResult(value), result),
                 () -> continueDispatching(GUserInputResult.canceled, result), editContext);
         return result.result;

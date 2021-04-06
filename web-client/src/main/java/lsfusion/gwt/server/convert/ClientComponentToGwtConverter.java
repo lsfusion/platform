@@ -17,11 +17,18 @@ import lsfusion.client.form.object.table.grid.ClientGrid;
 import lsfusion.client.form.object.table.grid.user.toolbar.ClientCalculations;
 import lsfusion.client.form.object.table.tree.ClientTreeGroup;
 import lsfusion.client.form.property.ClientPropertyDraw;
+import lsfusion.client.form.property.async.ClientAsyncAddRemove;
+import lsfusion.client.form.property.async.ClientAsyncChange;
+import lsfusion.client.form.property.async.ClientAsyncEventExec;
+import lsfusion.client.form.property.async.ClientAsyncOpenForm;
 import lsfusion.client.form.property.cell.EditBindingMap;
 import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.classes.GClass;
-import lsfusion.gwt.client.form.design.*;
+import lsfusion.gwt.client.form.design.GComponent;
+import lsfusion.gwt.client.form.design.GContainer;
+import lsfusion.gwt.client.form.design.GContainerType;
+import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.event.*;
 import lsfusion.gwt.client.form.filter.GRegularFilter;
 import lsfusion.gwt.client.form.filter.GRegularFilterGroup;
@@ -35,8 +42,13 @@ import lsfusion.gwt.client.form.object.table.grid.user.toolbar.GCalculations;
 import lsfusion.gwt.client.form.object.table.grid.view.GListViewType;
 import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
 import lsfusion.gwt.client.form.property.*;
+import lsfusion.gwt.client.form.property.async.GAsyncAddRemove;
+import lsfusion.gwt.client.form.property.async.GAsyncChange;
+import lsfusion.gwt.client.form.property.async.GAsyncOpenForm;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
+import lsfusion.gwt.client.navigator.window.GModalityType;
 import lsfusion.interop.base.view.FlexAlignment;
+import lsfusion.interop.form.ModalityType;
 import lsfusion.interop.form.design.ContainerType;
 import lsfusion.interop.form.design.FontInfo;
 import lsfusion.interop.form.event.BindingMode;
@@ -240,6 +252,11 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.canonicalName = clientPropertyDraw.getCanonicalName();
         propertyDraw.propertyFormName = clientPropertyDraw.getPropertyFormName();
         propertyDraw.integrationSID = clientPropertyDraw.getIntegrationSID();
+        
+        propertyDraw.customRenderFunction = clientPropertyDraw.customRenderFunction;
+        propertyDraw.customEditorFunctions = clientPropertyDraw.customEditorFunctions;
+        propertyDraw.customTextEdit = clientPropertyDraw.customTextEdit;
+        propertyDraw.customReplaceEdit = clientPropertyDraw.customReplaceEdit;
 
         propertyDraw.toolTip = clientPropertyDraw.toolTip;
         propertyDraw.tableName = clientPropertyDraw.tableName;
@@ -263,13 +280,12 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         }
 
         propertyDraw.baseType = typeConverter.convertOrCast(clientPropertyDraw.baseType);
-        propertyDraw.changeType = typeConverter.convertOrCast(clientPropertyDraw.changeType);
         propertyDraw.changeWYSType = typeConverter.convertOrCast(clientPropertyDraw.changeWYSType);
         propertyDraw.returnClass = typeConverter.convertOrCast(clientPropertyDraw.returnClass);
 
-        if (clientPropertyDraw.addRemove != null) {
-            GObject addRemoveObject = convertOrCast(clientPropertyDraw.addRemove.first);
-            propertyDraw.addRemove = new GPropertyDraw.AddRemove(addRemoveObject, clientPropertyDraw.addRemove.second);
+        propertyDraw.asyncExecMap = new HashMap<>();
+        for(Map.Entry<String, ClientAsyncEventExec> entry : clientPropertyDraw.asyncExecMap.entrySet()) {
+            propertyDraw.asyncExecMap.put(entry.getKey(), convertOrCast(entry.getValue()));
         }
 
         propertyDraw.askConfirm = clientPropertyDraw.askConfirm;
@@ -481,6 +497,18 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
     }
 
     @Cached
+    @Converter(from = ModalityType.class)
+    public GModalityType convertModalityType(ModalityType modalityType) {
+        switch (modalityType) {
+            case DOCKED: return GModalityType.DOCKED;
+            case DOCKED_MODAL: return GModalityType.DOCKED_MODAL;
+            case MODAL: return GModalityType.MODAL;
+            case DIALOG_MODAL: return GModalityType.DIALOG_MODAL;
+        }
+        return null;
+    }
+
+    @Cached
     @Converter(from = ClientTreeGroup.class)
     public GTreeGroup convertTreeGroup(ClientTreeGroup clientTreeGroup) {
         GTreeGroup treeGroup = initGwtComponent(clientTreeGroup, new GTreeGroup());
@@ -543,6 +571,24 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         groupObject.rowForegroundReader = convertRowForegroundReader(clientGroupObject.rowForegroundReader);
 
         return groupObject;
+    }
+
+    @Cached
+    @Converter(from = ClientAsyncAddRemove.class)
+    public GAsyncAddRemove convertOpenForm(ClientAsyncAddRemove clientAddRemove) {
+        return new GAsyncAddRemove(convertOrCast(clientAddRemove.object), clientAddRemove.add);
+    }
+
+    @Cached
+    @Converter(from = ClientAsyncChange.class)
+    public GAsyncChange convertOpenForm(ClientAsyncChange clientChangeType) {
+        return new GAsyncChange(typeConverter.convertOrCast(clientChangeType.changeType));
+    }
+
+    @Cached
+    @Converter(from = ClientAsyncOpenForm.class)
+    public GAsyncOpenForm convertOpenForm(ClientAsyncOpenForm asyncOpenForm) {
+        return new GAsyncOpenForm(asyncOpenForm.canonicalName, asyncOpenForm.caption, asyncOpenForm.forbidDuplicate, asyncOpenForm.modal);
     }
 
     @Cached

@@ -1,7 +1,6 @@
 package lsfusion.client.form.property;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.Pair;
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.base.view.ClientImages;
 import lsfusion.client.base.view.SwingDefaults;
@@ -16,13 +15,17 @@ import lsfusion.client.form.controller.remote.serialization.ClientSerializationP
 import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientGroupObjectValue;
-import lsfusion.client.form.object.ClientObject;
 import lsfusion.client.form.object.table.controller.TableController;
+import lsfusion.client.form.property.async.ClientAsyncAddRemove;
+import lsfusion.client.form.property.async.ClientAsyncChange;
+import lsfusion.client.form.property.async.ClientAsyncEventExec;
+import lsfusion.client.form.property.async.ClientAsyncOpenForm;
 import lsfusion.client.form.property.cell.EditBindingMap;
 import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
 import lsfusion.client.form.property.cell.classes.view.FormatPropertyRenderer;
 import lsfusion.client.form.property.cell.view.PropertyRenderer;
 import lsfusion.client.form.property.panel.view.PanelView;
+import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.event.KeyInputEvent;
 import lsfusion.interop.form.event.MouseInputEvent;
@@ -36,10 +39,8 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.text.*;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 import static lsfusion.base.BaseUtils.isRedundantString;
 import static lsfusion.base.BaseUtils.nullTrim;
@@ -75,9 +76,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public ClientClass returnClass;
 
     // асинхронные интерфейсы
-    public ClientType changeType;
     public ClientType changeWYSType;
-    public Pair<ClientObject, Boolean> addRemove;
+    public Map<String, ClientAsyncEventExec> asyncExecMap;
     public boolean askConfirm;
     public String askConfirmMessage;
 
@@ -142,6 +142,11 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public String eventID;
     public Boolean changeOnSingleClick;
     public boolean hide;
+
+    public String customRenderFunction;
+    public String customEditorFunctions;
+    public boolean customTextEdit;
+    public boolean customReplaceEdit;
 
     public String creationScript;
     public String creationPath;
@@ -386,6 +391,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     }
 
     public boolean canUseChangeValueForRendering() {
+        ClientType changeType = getChangeType();
         return changeType != null && baseType.getTypeClass() == changeType.getTypeClass();
     }
 
@@ -484,14 +490,15 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         baseType = ClientTypeSerializer.deserializeClientType(inStream);
         if (inStream.readBoolean()) {
-            changeType = ClientTypeSerializer.deserializeClientType(inStream);
-        }
-        if (inStream.readBoolean()) {
             changeWYSType = ClientTypeSerializer.deserializeClientType(inStream);
         }
 
-        if(inStream.readBoolean()) {
-            addRemove = new Pair<>(pool.deserializeObject(inStream), inStream.readBoolean());
+        asyncExecMap = new HashMap<>();
+        int asyncExecSize = inStream.readInt();
+        for (int i = 0; i < asyncExecSize; ++i) {
+            String key = pool.readString(inStream);
+            ClientAsyncEventExec value = pool.deserializeObject(inStream);
+            asyncExecMap.put(key, value);
         }
 
         askConfirm = inStream.readBoolean();
@@ -549,6 +556,12 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         }
 
         returnClass = ClientTypeSerializer.deserializeClientClass(inStream);
+        
+        customRenderFunction = pool.readString(inStream);
+        customEditorFunctions = pool.readString(inStream);
+        customTextEdit = pool.readBoolean(inStream);
+        customReplaceEdit = pool.readBoolean(inStream);
+
         eventID = pool.readString(inStream);
 
         creationScript = pool.readString(inStream);
@@ -582,6 +595,16 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         }
         
         notNull = inStream.readBoolean();
+    }
+
+    public ClientAsyncEventExec getAsyncEventExec(String actionSID) {
+        return asyncExecMap.get(actionSID);
+    }
+
+    public ClientType getChangeType() {
+        ClientAsyncEventExec asyncExec = asyncExecMap.get(ServerResponse.CHANGE);
+        ClientAsyncChange changeType = asyncExec instanceof ClientAsyncChange ? (ClientAsyncChange) asyncExec : null;
+        return changeType != null ? changeType.changeType : null;
     }
 
     private void initEditBindingMap() {

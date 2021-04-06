@@ -837,11 +837,10 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     @Override
     @IdentityStrongLazy
     public LP getObjValueProp(FormEntity formEntity, ObjectEntity obj) {
-        ValueClass cls = obj.baseClass;
-        LP result = addProp(new ObjectValueProperty(cls, obj));
+        LP result = addProp(new ObjectValueProperty(obj));
         if (formEntity.getCanonicalName() != null && !obj.noClasses()) {
             String name = objValuePrefix + formEntity.getCanonicalName().replace('.', '_') + "_" + obj.getSID(); // issue #47
-            makePropertyPublic(result, name, cls.getResolveSet());
+            makePropertyPublic(result, name, obj.baseClass.getResolveSet());
         }
         return result;
     }

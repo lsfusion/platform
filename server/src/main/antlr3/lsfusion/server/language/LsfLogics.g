@@ -85,6 +85,7 @@ grammar LsfLogics;
     
     import javax.mail.Message;
     import java.awt.*;
+    import java.math.BigDecimal;
     import java.util.List;
     import java.util.*;
     import java.time.*;
@@ -154,6 +155,14 @@ grammar LsfLogics;
 
 	public boolean inMainParseState() {
 		return inParseState(ScriptParser.State.MAIN);
+	}
+
+	public boolean inGenMetaParseState() {
+		return inParseState(ScriptParser.State.GENMETA);
+	}
+
+	public boolean inMetaParseState() {
+		return inGenMetaParseState() || inParseState(ScriptParser.State.METADECL);
 	}
 
 	public boolean isFirstFullParse() {
@@ -289,9 +298,8 @@ statement
 	;
 
 metaCodeParsingStatement  // metacode parsing rule
-	:	'META' ID '(' idList ')'
+	:
 		statements
-		'END'
 	;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -634,6 +642,18 @@ propertyClassViewType returns [ClassViewType type]
 	|   'TOOLBAR' {$type = ClassViewType.TOOLBAR;}
 	;
 
+propertyCustomView returns [String customRenderFunctions, String customEditorFunctions, boolean textEdit, boolean replaceEdit]
+@init {
+    boolean isEditText = false;
+    boolean isReplaceEditor = false;
+}
+	:	'CUSTOM' ('RENDER' renderFun=stringLiteral { $customRenderFunctions = $renderFun.val;})? 
+		('EDIT' (
+		    type=PRIMITIVE_TYPE {self.checkCustomPropertyViewTextOption($type.text); isEditText = true;}
+		    | 'REPLACE' {isReplaceEditor = true;})?
+		editFun=stringLiteral {$customEditorFunctions = $editFun.val; $textEdit = isEditText; $replaceEdit = isReplaceEditor;})?
+	;
+
 listViewType returns [ListViewType type, PivotOptions options, String customRenderFunction]
 	:   'PIVOT' {$type = ListViewType.PIVOT;} ('DEFAULT' | 'NODEFAULT' {$type = null;})? opt = pivotOptions {$options = $opt.options; }
 	|   'MAP' {$type = ListViewType.MAP;}
@@ -792,6 +812,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|	'HEADER' propObj=formPropertyObject { $options.setHeader($propObj.property); }
 		|	'FOOTER' propObj=formPropertyObject { $options.setFooter($propObj.property); }
 		|	viewType=propertyClassViewType { $options.setViewType($viewType.type); }
+		|	customView=propertyCustomView { $options.setCustomRenderFunctions($customView.customRenderFunctions); $options.setCustomEditorFunctions($customView.customEditorFunctions); $options.setCustomTextEdit($customView.textEdit); $options.setCustomReplaceEdit($customView.replaceEdit);}
 		|	pgt=propertyGroupType { $options.setAggrFunc($pgt.type); }
 		|	pla=propertyLastAggr { $options.setLastAggr($pla.properties, $pla.desc); }
 		|	pf=propertyFormula { $options.setFormula($pf.formula, $pf.operands); }
@@ -801,7 +822,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|	'FIRST' { $options.setInsertType(InsertType.FIRST); }
 		|	'QUICKFILTER' pdraw=formPropertyDraw { $options.setQuickFilterPropertyDraw($pdraw.property); }
 		|	'ON' et=formEventType prop=formActionObject { $options.addEventAction($et.type, $prop.action); }
-		|	'ON' 'CONTEXTMENU' (c=localizedStringLiteral)? prop=formActionObject { $options.addContextMenuAction($c.val, $prop.action); }
+		|	'ON' 'CONTEXTMENU' (c=localizedStringLiteralNoID)? prop=formActionObject { $options.addContextMenuAction($c.val, $prop.action); }
 		|	'ON' 'KEYPRESS' key=stringLiteral prop=formActionObject { $options.addKeyPressAction($key.val, $prop.action); }
 		|	'EVENTID' id=stringLiteral { $options.setEventId($id.val); }
 		|	'ATTR' { $options.setAttr(true); }
@@ -1656,7 +1677,7 @@ unaryMinusPE[List<TypedParameter> context, boolean dynamic] returns [LPWithParam
 		$property = self.addScriptedUnaryMinusProp($expr.property);
 	} 
 }
-	:	MINUS expr=unaryMinusPE[context, dynamic] { minusWas = true; } { if(inMainParseState()) { self.checkNotExprInExpr($expr.property, $expr.ci); } }
+	:	MINUS expr=unaryMinusPE[context, dynamic] { minusWas = true; } { if(inMainParseState()) { $ci = self.checkNumericLiteralInExpr($expr.property, $expr.ci); } }
 	|	simpleExpr=postfixUnaryPE[context, dynamic] { $property = $simpleExpr.property; $ci = $simpleExpr.ci; }
 	;
 
@@ -2579,6 +2600,7 @@ recursiveActionOptions[LA action, String actionName, LocalizedString caption, Ac
 semiActionOrPropertyOption[LAP property, String propertyName, LocalizedString caption, ActionOrPropertySettings ps, List<TypedParameter> context]
     :	inSetting [ps]
 	|	viewTypeSetting [property]
+	|	customViewSetting [property]
 	|	flexCharWidthSetting [property]
 	|	charWidthSetting [property]
 	|	changeKeySetting [property]
@@ -2692,7 +2714,7 @@ shortcutSetting [LA property, LocalizedString caption]
 		self.addToContextMenuFor(property, $c.val != null ? $c.val : caption, $usage.propUsage);
 	}
 }
-	:	'ASON' 'CONTEXTMENU' (c=localizedStringLiteral)? usage = actionOrPropertyUsage
+	:	'ASON' 'CONTEXTMENU' (c=localizedStringLiteralNoID)? usage = actionOrPropertyUsage
 	;
 
 asonEventActionSetting [LA property]
@@ -2714,6 +2736,18 @@ viewTypeSetting [LAP property]
 	}
 }
 	:	viewType=propertyClassViewType
+	;
+
+customViewSetting [LAP property]
+@after {
+	if (inMainParseState()) {
+		self.setCustomRenderFunctions(property, $customView.customRenderFunctions);
+		self.setCustomEditorFunctions(property, $customView.customEditorFunctions);
+		self.setCustomTextEdit(property, $customView.textEdit);
+		self.setCustomReplaceEdit(property, $customView.replaceEdit);
+	}
+}
+	:	customView=propertyCustomView
 	;
 
 flexCharWidthSetting [LAP property]
@@ -2874,7 +2908,7 @@ onContextMenuEventSetting [LAP property, List<TypedParameter> context]
 		self.setScriptedContextMenuAction(property, $c.val, $action.action);
 	}
 }
-	:	'ON' 'CONTEXTMENU' (c=localizedStringLiteral)?
+	:	'ON' 'CONTEXTMENU' (c=localizedStringLiteralNoID)?
 		action=listTopContextDependentActionDefinitionBody[context, false, false]
 	;
 
@@ -4739,6 +4773,7 @@ setObjectPropertyStatement[Object propertyReceiver] returns [String id, Object v
 
 componentPropertyValue returns [Object value] //commented literals are in designPropertyObject
 	:   //c=colorLiteral { $value = $c.val; }
+    //|   s=localizedStringLiteralNoID { $value = $s.val; }
 	//|   i=intLiteral { $value = $i.val; }
 	//|   l=longLiteral { $value = $l.val; }
 	//|   d=doubleLiteral { $value = $d.val; }
@@ -4758,23 +4793,29 @@ componentPropertyValue returns [Object value] //commented literals are in design
 
 metaCodeDeclarationStatement
 @init {
-	String code;
-	List<String> tokens;
-	List<Pair<Integer, Boolean>> metaTokens;
+	List<Pair<String, Boolean>> tokens;
 	int lineNumber = self.getParser().getCurrentParserLineNumber();
+
+    ScriptParser.State oldState = null;
 }
 @after {
 	if (inMetaClassTableParseState()) {
-		self.addScriptedMetaCodeFragment($id.text, $list.ids, tokens, metaTokens, $text, lineNumber);
+		self.addScriptedMetaCodeFragment($id.text, $list.ids, tokens, lineNumber);
 	}
 }
 	
 	:	'META' id=ID '(' list=idList ')'
-		{
-			Pair<List<String>, List<Pair<Integer, Boolean>>> tokensAndMeta = self.grabMetaCode($id.text);
-			tokens = tokensAndMeta.first;
-			metaTokens = tokensAndMeta.second;
-		}
+        {
+            self.getParser().enterMetaDeclState();
+            oldState = parseState;
+            parseState = ScriptParser.State.METADECL;
+        }
+        statements
+        {
+            tokens = self.getParser().leaveMetaDeclState();
+
+            parseState = oldState;
+        }
 		'END'
 	;
 
@@ -4786,23 +4827,32 @@ metaCodeStatement
 	boolean enabledMeta = false;
 }
 @after {
-	self.runMetaCode($id.sid, $list.ids, lineNumber, enabledMeta);
+    if(!inMetaParseState()) // we don't want to run meta when we're in META declaration, or inside the @code generated by IDE
+    	self.runMetaCode($id.sid, $list.ids, lineNumber, enabledMeta);
 }
 	:	'@' id=compoundID '(' list=metaCodeIdList ')'
-		('{' 	
-		{ 	enabledMeta = true; 
-			if (self.getParser().enterGeneratedMetaState()) {  
-				oldState = parseState;
-				parseState = ScriptParser.State.GENMETA; 
-			}
+		(
+		{
+		    enabledMeta = true;
+
+            if(!inGenMetaParseState()) { // we want to skip generated statements, so grabbing only topmost rules
+                self.getParser().grabMetaDeclCode();
+
+                oldState = parseState;
+                parseState = ScriptParser.State.GENMETA;
+            }
 		}
+		'{'
 		statements 
-		{ 	if (oldState != null) {
-				self.getParser().leaveGeneratedMetaState(); 
-				parseState = oldState;
-			}
+		'}'
+		{
+            if(oldState != null)
+                parseState = oldState;
+
+            if(!inGenMetaParseState()) // we want to skip generated statements, so grabbing only topmost rules
+                self.getParser().skipMetaDeclCode(); // we want to skip generated statements
 		} 
-		'}')? // for intellij plugin
+		)? // for intellij plugin
 		';'	
 	;
 
@@ -5020,9 +5070,9 @@ constantProperty returns [LP property, LPLiteral literal]
 literal returns [ScriptingLogicsModule.ConstType cls, Object value]
 	: 	vint=uintLiteral	{ $cls = ScriptingLogicsModule.ConstType.INT; $value = $vint.val; }
 	|	vlong=ulongLiteral	{ $cls = ScriptingLogicsModule.ConstType.LONG; $value = $vlong.val; }
-	|	vnum=UNUMERIC_LITERAL	{ $cls = ScriptingLogicsModule.ConstType.NUMERIC; $value = $vnum.text; }
+	|	vnum=unumericLiteral   { $cls = ScriptingLogicsModule.ConstType.NUMERIC; $value = $vnum.val; }
 	|	vdouble=udoubleLiteral { $cls = ScriptingLogicsModule.ConstType.REAL; $value = $vdouble.val; }
-	|	vstr=localizedStringLiteral	{ $cls = ScriptingLogicsModule.ConstType.STRING; $value = $vstr.val; }  
+	|	vstr=localizedStringLiteralNoID	{ $cls = ScriptingLogicsModule.ConstType.STRING; $value = $vstr.val; }
 	|	vbool=booleanLiteral	{ $cls = ScriptingLogicsModule.ConstType.LOGICAL; $value = $vbool.val;  { if (inMainParseState()) self.getChecks().checkBooleanUsage($vbool.val); }}
 	|	vdate=dateLiteral	{ $cls = ScriptingLogicsModule.ConstType.DATE; $value = $vdate.val; }
 	|	vdatetime=dateTimeLiteral { $cls = ScriptingLogicsModule.ConstType.DATETIME; $value = $vdatetime.val; }
@@ -5129,10 +5179,18 @@ colorLiteral returns [Color val]
 
 stringLiteral returns [String val]
 	:	s=STRING_LITERAL { $val = self.transformStringLiteral($s.text); }
+    |   s=ID { $val = null; }
+	;
+
+// there are some rules where ID is not desirable (see usages), where there is an ID
+// it makes sense to be synchronized with noIDCheck in LSF.bnf in idea-plugin
+localizedStringLiteralNoID returns [LocalizedString val]
+	:	s=STRING_LITERAL { $val = self.transformLocalizedStringLiteral($s.text); } 
 	;
 
 localizedStringLiteral returns [LocalizedString val]
-	:	s=STRING_LITERAL { $val = self.transformLocalizedStringLiteral($s.text); } 
+	:	ls=localizedStringLiteralNoID { $val = $ls.val; }
+    |   s=ID { $val = null; }
 	;
 
 intLiteral returns [int val]
@@ -5238,6 +5296,10 @@ udoubleLiteral returns [double val]
 	:	d=UDOUBLE_LITERAL { $val = self.createScriptedDouble($d.text.substring(0, $d.text.length() - 1)); }
 	;	
 		
+unumericLiteral returns [BigDecimal val]
+	:	u=UNUMERIC_LITERAL { $val = self.createScriptedNumeric($u.text); }
+	;
+
 uintLiteral returns [int val]
 	:	u=UINT_LITERAL { $val = self.createScriptedInteger($u.text); }
 	;		
@@ -5273,9 +5335,12 @@ fragment CLOSE_CODE_BRACKET : '}>';
 fragment STRING_LITERAL_FRAGMENT : '\'' STR_LITERAL_CHAR* '\'';
 fragment ID_FRAGMENT : FIRST_ID_LETTER NEXT_ID_LETTER*;
 fragment NEXTID_FRAGMENT : NEXT_ID_LETTER+;
+
+fragment ID_META_FRAGMENT : (ID_FRAGMENT? (('###' | '##') NEXTID_FRAGMENT)+) | ID_FRAGMENT;
+
 fragment STRING_LITERAL_ID_FRAGMENT : ID_FRAGMENT | STRING_LITERAL_FRAGMENT;
 fragment STRING_LITERAL_NEXTID_FRAGMENT : NEXTID_FRAGMENT | STRING_LITERAL_FRAGMENT;
-fragment META_FRAGMENT : STRING_LITERAL_ID_FRAGMENT? (('##' | '###') STRING_LITERAL_NEXTID_FRAGMENT)+;
+fragment STRING_META_FRAGMENT : (STRING_LITERAL_ID_FRAGMENT ('###' | '##'))* STRING_LITERAL_FRAGMENT (('###' | '##') STRING_LITERAL_NEXTID_FRAGMENT)*;
 
 fragment INTERVAL_TYPE : 'DATE' | 'DATETIME' | 'TIME';
 
@@ -5289,9 +5354,8 @@ PRIMITIVE_TYPE  :	'INTEGER' | 'DOUBLE' | 'LONG' | 'BOOLEAN' | 'DATE' | 'DATETIME
 				|   ('INTERVAL' ('[' INTERVAL_TYPE ']'));
 LOGICAL_LITERAL :	'TRUE' | 'FALSE';
 NULL_LITERAL	:	'NULL';	
-ID				:	ID_FRAGMENT;
-STRING_LITERAL	:	STRING_LITERAL_FRAGMENT;
-META_ID			:	META_FRAGMENT;
+ID				:	ID_META_FRAGMENT;
+STRING_LITERAL	:	STRING_META_FRAGMENT;
 WS				:	(NEWLINE | SPACE) { $channel=HIDDEN; };
 COLOR_LITERAL 	:	'#' HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT;
 COMMENTS		:	('//' .* '\n') { $channel=HIDDEN; };

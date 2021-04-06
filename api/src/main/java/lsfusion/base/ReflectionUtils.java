@@ -1,10 +1,33 @@
 package lsfusion.base;
 
 import com.google.common.base.Throwables;
+import sun.misc.Unsafe;
 
 import java.lang.reflect.*;
 
 public class ReflectionUtils {
+
+    static {
+        disableWarning();
+    }
+
+    /*since java 9 there is 'Illegal reflective access' warning for the first usage of reflection methods,
+    so we just disable IllegalAccessLogger
+    https://stackoverflow.com/questions/46454995/how-to-hide-warning-illegal-reflective-access-in-java-9-without-jvm-argument
+    */
+    private static void disableWarning() {
+        try {
+            Field theUnsafe = Unsafe.class.getDeclaredField("theUnsafe");
+            theUnsafe.setAccessible(true);
+            Unsafe u = (Unsafe) theUnsafe.get(null);
+
+            Class cls = Class.forName("jdk.internal.module.IllegalAccessLogger");
+            Field logger = cls.getDeclaredField("logger");
+            u.putObjectVolatile(cls, u.staticFieldOffset(logger), null);
+        } catch (Exception ignored) {
+        }
+    }
+
     public static Class getFirstTypeParameterOfSuperclass(Class clazz) {
         if (clazz == null) {
             throw new IllegalArgumentException("clazz must not be null");
@@ -105,6 +128,30 @@ public class ReflectionUtils {
         try {
             Method method = clazz.getMethod(methodName, paramsClasses);
             method.setAccessible(true);
+            return (T) method.invoke(target, params);
+        } catch (InvocationTargetException e) {
+            if(e.getCause() instanceof ClassNotFoundException) {
+                throw (ClassNotFoundException) e.getCause();
+            } else {
+                throw Throwables.propagate(e);
+            }
+        } catch (Exception e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
+    public static <T> T getMethodValue2(Class clazz, Object target, String methodName, Class[] paramsClasses, Object[] params) {
+        try {
+            return getMethodValueWithException2(clazz, target, methodName, paramsClasses, params);
+        } catch (ClassNotFoundException e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
+    public static <T> T getMethodValueWithException2(Class clazz, Object target, String methodName, Class[] paramsClasses, Object[] params) throws ClassNotFoundException {
+        try {
+            Method method = clazz.getMethod(methodName, paramsClasses);
+            //method.setAccessible(true);
             return (T) method.invoke(target, params);
         } catch (InvocationTargetException e) {
             if(e.getCause() instanceof ClassNotFoundException) {

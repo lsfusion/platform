@@ -294,6 +294,27 @@ public class ScriptingErrorLog {
     public void emitAlreadyDefinedPropertyDrawError(ScriptParser parser, String formName, String propertyDrawName, String oldPosition) throws SemanticErrorException {
         emitSimpleError(parser, format("property '%s' in form '%s' was already defined at %s", propertyDrawName, formName, oldPosition));
     }
+    
+    public void emitCustomPropertyRenderFunctionsError(ScriptParser parser, String propertyDrawName, String customRenderFunctions) throws SemanticErrorException {
+        emitSimpleError(parser,
+                format("Incorrect custom render functions definition for %s:\n\texpected format: '<render_function_name>:<set_value_function_name>:<clear_function_name>',\n\tprovided: '%s'",
+                        propertyDrawName,
+                        customRenderFunctions));                                                        
+    }
+
+    public void emitCustomPropertyEditorFunctionsError(ScriptParser parser, String propertyDrawName, String customEditorFunctions, boolean isTextEditor, boolean isReplaceEdit) throws SemanticErrorException {
+        String expectedFormat = isTextEditor ? "'<render_function_name>:<clear_render_function_name>'" :
+                (isReplaceEdit ? "'<render_function_name>:<start_editing_function_name>:<commit_editing_function_name>:<clear_render_function_name>:<on_browser_event_function_name>'" :
+                        "'<start_editing_function_name>:<commit_editing_function_name>:<on_browser_event_function_name>'");
+        emitSimpleError(parser,
+                format("Incorrect custom editor functions definition for %s:\n\texpected format: " + expectedFormat + ",\n\tprovided: '%s'",
+                        propertyDrawName,
+                        customEditorFunctions));
+    }
+
+    public void emitCustomPropertyWrongEditType(ScriptParser parser, String editType) throws SemanticErrorException {
+        emitSimpleError(parser, format("Incorrect CUSTOM EDIT type definition. \n\texpected type: TEXT or REPLACE or none,\n\tprovided: '%s'", editType));
+    }
 
     public void emitNamedParamsError(ScriptParser parser, List<String> paramNames, int actualParameters) throws SemanticErrorException {
         emitSimpleError(parser, format("number of actual property parameters (%d) differs from number of named parameters (%d: %s)",
@@ -537,6 +558,10 @@ public class ScriptingErrorLog {
 
     public void emitDoubleValueError(ScriptParser parser, String literalText) throws SemanticErrorException {
         emitSimpleError(parser, format("double constant '%s' is out of range", literalText));
+    }
+
+    public void emitNumericValueError(ScriptParser parser, String literalText) throws SemanticErrorException {
+        emitSimpleError(parser, format("numeric constant '%s' is out of range", literalText));
     }
 
     public void emitDateDayError(ScriptParser parser, int y, int m, int d) throws SemanticErrorException {

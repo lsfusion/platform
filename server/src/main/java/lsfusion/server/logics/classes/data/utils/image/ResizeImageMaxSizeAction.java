@@ -38,21 +38,25 @@ public class ResizeImageMaxSizeAction extends InternalAction {
             Integer maxSize = (Integer) context.getKeyValue(maxSizeInterface).getValue();
 
             BufferedImage image = ImageIO.read(inputFile.getInputStream());
-            int imageWidth = image.getWidth();
-            int imageHeight = image.getHeight();
-
-            double scale = (double) maxSize / Math.max(imageWidth, imageHeight);
-
-            File outputFile = null;
-            try {
-                outputFile = File.createTempFile("resized", ".jpg");
-                if(scale != 0) {
-                    Thumbnails.of(inputFile.getInputStream()).scale(scale, scale).toFile(outputFile);
-                    findProperty("resizedImage[]").change(new RawFileData(outputFile), context);
+            if(image != null) {
+                int imageWidth = image.getWidth();
+                int imageHeight = image.getHeight();
+    
+                double scale = (double) maxSize / Math.max(imageWidth, imageHeight);
+    
+                File outputFile = null;
+                try {
+                    outputFile = File.createTempFile("resized", ".jpg");
+                    if(scale != 0) {
+                        Thumbnails.of(inputFile.getInputStream()).scale(scale, scale).toFile(outputFile);
+                        findProperty("resizedImage[]").change(new RawFileData(outputFile), context);
+                    }
+                } finally {
+                    if (outputFile != null && !outputFile.delete())
+                        outputFile.deleteOnExit();
                 }
-            } finally {
-                if (outputFile != null && !outputFile.delete())
-                    outputFile.deleteOnExit();
+            } else {
+                throw new RuntimeException("Failed to read image");
             }
 
 

@@ -14,7 +14,9 @@ import lsfusion.client.controller.MainController;
 import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.controller.remote.RmiRequest;
 import lsfusion.client.controller.remote.proxy.RemoteObjectProxy;
+import lsfusion.client.form.ClientForm;
 import lsfusion.client.form.classes.view.ClassDialog;
+import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.controller.remote.proxy.RemoteFormProxy;
 import lsfusion.client.form.print.ClientReportUtils;
 import lsfusion.client.form.view.ClientFormDockable;
@@ -93,6 +95,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
                         ClientAction action = actions[i];
                         Object dispatchResult;
                         try {
+                            dispatchingIndex = serverResponse.requestIndex;
                             dispatchResult = action.dispatch(this);
                         } catch (Throwable t) {
                             actionThrowable = t;
@@ -178,6 +181,15 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
         }
     }
 
+    //copy from GwtActionDispatcher
+    protected long dispatchingIndex = -1;
+    public long getDispatchingIndex() {
+        if (currentServerResponse == null) // means that we continueDispatching before exiting to dispatchResponse cycle (for example LogicalCellRenderer commits editing immediately)
+            return dispatchingIndex;
+        else
+            return currentServerResponse.requestIndex;
+    }
+
     @Override
     public boolean isDispatchingPaused() {
         return dispatchingPaused;
@@ -201,32 +213,32 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
             }
         }
 
-        ModalityType modality = action.modalityType;
-        if (modality == ModalityType.DOCKED_MODAL) {
+        ModalityType modalityType = action.modalityType;
+        if (modalityType == ModalityType.DOCKED_MODAL) {
             pauseDispatching();
             beforeModalActionInSameEDT(true);
-            ClientFormDockable blockingForm = MainFrame.instance.runForm(action.canonicalName, action.formSID, false, remoteForm, action.firstChanges, new MainFrame.FormCloseListener() {
-                @Override
-                public void formClosed(boolean openFailed) {
-                    afterModalActionInSameEDT(true);
-                    if (!openFailed) {
-                        continueDispatching();
-                    }
+            ClientFormDockable blockingForm = MainFrame.instance.runForm(getDispatchingIndex(), action.canonicalName, action.formSID, false, remoteForm, action.firstChanges, openFailed -> {
+                afterModalActionInSameEDT(true);
+                if (!openFailed) {
+                    continueDispatching();
                 }
             });
             setBlockingForm(blockingForm);
-        } else if (modality.isModal()) {
+        } else if (modalityType.isModal()) {
             beforeModalActionInSameEDT(false);
             Component owner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
-            new ClientModalForm(action.canonicalName, action.formSID, owner, remoteForm, action.firstChanges, modality.isDialog(), editEvent) {
+            ClientForm clientForm = ClientFormController.deserializeClientForm(remoteForm);
+            ClientModalForm form = new ClientModalForm(owner, clientForm.getCaption(), modalityType, false) {
                 @Override
                 public void hideDialog() {
                     super.hideDialog();
                     afterModalActionInSameEDT(false);
                 }
-            }.showDialog(false);
+            };
+            form.init(action.canonicalName, action.formSID, remoteForm, clientForm, action.firstChanges, modalityType.isDialog(), editEvent);
+            form.showDialog(false);
         } else {
-            MainFrame.instance.runForm(action.canonicalName, action.formSID, action.forbidDuplicate, remoteForm, action.firstChanges, null);
+            MainFrame.instance.runForm(getDispatchingIndex(), action.canonicalName, action.formSID, action.forbidDuplicate, remoteForm, action.firstChanges, null);
         }
     }
 

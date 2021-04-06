@@ -5,6 +5,7 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.base.EscapeUtils;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.TooltipManager;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
@@ -17,12 +18,16 @@ public final class FormDockable extends FormContainer<FormDockable.ContentWidget
     private TabWidget tabWidget;
     private FormDockable blockingForm; //GFormController
 
-    public FormDockable(FormsController formsController) {
-        super(formsController);
+    public FormDockable(FormsController formsController, Long requestIndex, String caption, boolean async) {
+        super(formsController, requestIndex, async);
 
-        tabWidget = new TabWidget("");
+        tabWidget = new TabWidget(caption);
         tabWidget.setBlocked(false);
         formsController.addContextMenuHandler(this);
+
+        if(async) {
+            GwtClientUtils.setThemeImage(loadingAsyncImage, imageUrl -> contentWidget.setContent(createLoadingWidget(imageUrl)), false);
+        }
     }
 
     @Override
@@ -65,7 +70,13 @@ public final class FormDockable extends FormContainer<FormDockable.ContentWidget
     }
 
     public void closePressed() {
-        form.closePressed();
+        if(async) {
+            formsController.removeAsyncForm(requestIndex);
+            formsController.removeDockable(this);
+            formsController.ensureTabSelected();
+        } else {
+            form.closePressed();
+        }
     }
 
     public Widget getTabWidget() {

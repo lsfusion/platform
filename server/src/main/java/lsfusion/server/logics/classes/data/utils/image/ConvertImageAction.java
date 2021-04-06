@@ -39,18 +39,21 @@ public class ConvertImageAction extends InternalAction {
 
             ByteArrayOutputStream os = new ByteArrayOutputStream();
             BufferedImage bi = ImageIO.read(inputFile.getInputStream());
+            if(bi != null) {
+                if (bi.getType() == BufferedImage.TYPE_4BYTE_ABGR) {
+                    //ImageIO.write doesn't support TYPE_4BYTE_ABGR
+                    BufferedImage newBi = new BufferedImage(bi.getWidth(), bi.getHeight(), BufferedImage.TYPE_INT_RGB);
+                    newBi.createGraphics().drawImage(bi, 0, 0, Color.WHITE, null);
+                    bi = newBi;
+                }
 
-            if(bi.getType() == BufferedImage.TYPE_4BYTE_ABGR) {
-                //ImageIO.write doesn't support TYPE_4BYTE_ABGR
-                BufferedImage newBi = new BufferedImage(bi.getWidth(), bi.getHeight(), BufferedImage.TYPE_INT_RGB);
-                newBi.createGraphics().drawImage(bi, 0, 0, Color.WHITE, null);
-                bi = newBi;
-            }
-
-            if(ImageIO.write(bi, extension, os)) {
-                findProperty("convertedImage[]").change(new RawFileData(os), context);
+                if (ImageIO.write(bi, extension, os)) {
+                    findProperty("convertedImage[]").change(new RawFileData(os), context);
+                } else {
+                    throw new RuntimeException("Convert Image failed");
+                }
             } else {
-                throw new RuntimeException("Convert Image failed");
+                throw new RuntimeException("Failed to read image");
             }
 
         } catch (IOException | ScriptingErrorLog.SemanticErrorException e) {

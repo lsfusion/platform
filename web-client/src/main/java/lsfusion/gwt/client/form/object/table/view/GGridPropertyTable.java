@@ -15,6 +15,7 @@ import lsfusion.gwt.client.base.view.HasMaxPreferredSize;
 import lsfusion.gwt.client.base.view.grid.Column;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
+import lsfusion.gwt.client.controller.SmartScheduler;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.event.*;
@@ -23,18 +24,25 @@ import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController;
 import lsfusion.gwt.client.form.order.user.GGridSortableHeaderManager;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
+import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTable;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 import static java.lang.Math.max;
-import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
 
 public abstract class GGridPropertyTable<T extends GridDataRecord> extends GPropertyTable<T> implements HasMaxPreferredSize {
     public static int DEFAULT_PREFERRED_WIDTH = 130; // должно соответствовать значению в gridResizePanel в MainFrame.css
     public static int DEFAULT_PREFERRED_HEIGHT = 70; // должно соответствовать значению в gridResizePanel в MainFrame.css
     public static int DEFAULT_MAX_PREFERRED_HEIGHT = 140;
+
+    protected boolean columnsUpdated = true; //could be no properties on init
+    protected boolean captionsUpdated = false;
+    protected boolean footersUpdated = false;
 
     protected ArrayList<T> rows = new ArrayList<>();
 
@@ -195,6 +203,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
 
     @Override
     protected boolean previewEvent(Element target, Event event) {
+        SmartScheduler.getInstance().flush();
         return form.previewEvent(target, event);
     }
 
@@ -211,13 +220,13 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     }
 
     public GPropertyDraw getSelectedProperty() {
-        if(getSelectedRow() >= 0)
+        if(getSelectedRow() >= 0 && getSelectedColumn() >= 0)
             return getProperty(getSelectedCell());
         return null;
     }
 
     public GGroupObjectValue getSelectedColumnKey() {
-        if(getSelectedRow() >= 0)
+        if(getSelectedRow() >= 0 && getSelectedColumn() >= 0)
             return getColumnKey(getSelectedCell());
         return null;
     }
@@ -244,10 +253,12 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
 
     public void updatePropertyCaptions(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, Object> values) {
         propertyCaptions.put(propertyDraw, values);
+        captionsUpdated = true;
     }
 
     public void updatePropertyFooters(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, Object> values) {
         propertyFooters.put(propertyDraw, values);
+        footersUpdated = true;
     }
 
     public void headerClicked(GGridPropertyTableHeader header, boolean ctrlDown, boolean shiftDown) {
@@ -366,6 +377,27 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     protected abstract Integer getUserWidth(GPropertyDraw property);
 
     protected abstract GPropertyDraw getColumnPropertyDraw(int i);
+    protected abstract GGroupObjectValue getColumnKey(int i);
+
+    protected void updateCaptions() {
+        if (captionsUpdated) {
+            for (int i = 0, size = getColumnCount(); i < size; i++) {
+                updatePropertyHeader(i);
+            }
+            headersChanged();
+            captionsUpdated = false;
+        }
+    }
+
+    protected void updateFooters() {
+        if (footersUpdated) {
+            for (int i = 0, size = getColumnCount(); i < size; i++) {
+                updatePropertyFooter(i);
+            }
+            headersChanged();
+            footersUpdated = false;
+        }
+    }
 
     private double[] prefs;  // mutable
     private int[] basePrefs;
@@ -389,12 +421,20 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         updateLayoutWidthColumns();
     }
 
+    protected void updatePropertyHeader(int index) {
+        updatePropertyHeader(getColumnKey(index), getColumnPropertyDraw(index), index);
+    }
+
     protected void updatePropertyHeader(GGroupObjectValue columnKey, GPropertyDraw property, int index) {
         String columnCaption = getPropertyCaption(property, columnKey);
         GGridPropertyTableHeader header = getGridHeader(index);
         header.setCaption(columnCaption, property.notNull, property.hasChangeAction);
         header.setToolTip(property.getTooltipText(columnCaption));
         header.setHeaderHeight(getHeaderHeight());
+    }
+
+    protected void updatePropertyFooter(int index) {
+        updatePropertyFooter(getColumnKey(index), getColumnPropertyDraw(index), index);
     }
 
     protected void updatePropertyFooter(GGroupObjectValue columnKey, GPropertyDraw property, int index) {
@@ -486,7 +526,35 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         public void updateDom(Cell cell, Element cellElement) {
             GPropertyDraw property = getProperty(cell);
             if (property != null) // in tree there can be no property in groups other than last
-                form.update(property, cellElement, getValue(property, (T) cell.getRow()), GGridPropertyTable.this);
+            {
+                Object oldValue = getValue(property, (T) cell.getRow());
+                form.update(property, cellElement, oldValue, new UpdateContext() {
+                    @Override
+                    public Consumer<Object> getCustomRendererValueChangeConsumer() {
+                        return value -> form.changeProperty(property,
+                                GGridPropertyTable.this.getColumnKey(cell),
+                                GEditBindingMap.CHANGE,
+                                (Serializable) value,
+                                oldValue,
+                                null);
+                    }
+
+                    @Override
+                    public boolean isPropertyReadOnly() {
+                        return GGridPropertyTable.this.isReadOnly(cell);
+                    }
+
+                    @Override
+                    public boolean isStaticHeight() {
+                        return GGridPropertyTable.this.isStaticHeight();
+                    }
+
+                    @Override
+                    public boolean globalCaptionIsDrawn() {
+                        return GGridPropertyTable.this.globalCaptionIsDrawn();
+                    }
+                });
+            }
         }
     }
 }

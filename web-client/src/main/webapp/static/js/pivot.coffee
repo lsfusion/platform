@@ -892,11 +892,20 @@ callWithJQuery ($) ->
                     listItem = $("<li>").addClass("axis_#{i}")
                     listItem.css(lineHeight: opts.valueHeight + "px")
 
+                    listItem.bind "dblclick", () ->
+                        if unusedDiv.has(attrElem).length > 0
+                            element = createPaxis(false)
+                            listItem.appendTo(element.children())
+                            element.prependTo(pvtRowsTable.children())
+                        else
+                            listItem.prependTo(unusedDiv)
+
+                        refresh()
+
                     attrElem = $("<div>").addClass('pvtAttr').data("attrName", attr).appendTo(listItem)
                     attrElemText = $("<span>").addClass('pvtAttrText').text(attr).prop("title", attr).appendTo(attrElem)
                     attrElem.append(triangleLink)
 
-                    attrElem.bind "dblclick", () -> opts.callbacks.elementDblClickHandler attr
                     attrElemText.addClass('pvtFilteredAttribute') if hasExcludedItem
                     unusedDiv.append(listItem)
                     pvtUiContainer.append(valueList)

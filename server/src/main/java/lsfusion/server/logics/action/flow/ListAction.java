@@ -19,6 +19,7 @@ import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.user.CustomClass;
+import lsfusion.server.logics.form.struct.property.async.AsyncExec;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
@@ -189,6 +190,22 @@ public class ListAction extends ListCaseAction {
         if(result != null)
             return result;
         return super.getSimpleDelete();
+    }
+
+    @Override
+    public AsyncExec getAsyncExec() {
+        AsyncExec result = null;
+        for (ActionMapImplement<?, PropertyInterface> action : getListActions()) {
+            AsyncExec asyncExec = action.action.getAsyncExec();
+            if (asyncExec != null) {
+                if (result == null) {
+                    result = asyncExec;
+                } else {
+                    return null;
+                }
+            }
+        }
+        return result;
     }
 
     @Override

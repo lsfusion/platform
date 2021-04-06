@@ -2,6 +2,7 @@ package lsfusion.server.logics.navigator;
 
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.form.struct.FormEntity;
+import lsfusion.server.logics.form.struct.property.async.AsyncExec;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 public class NavigatorAction extends NavigatorElement {
@@ -24,6 +25,11 @@ public class NavigatorAction extends NavigatorElement {
     @Override
     public byte getTypeID() {
         return 2;
+    }
+
+    @Override
+    public AsyncExec getAsyncExec() {
+        return action.getAsyncExec();
     }
 
     public FormEntity getForm() {

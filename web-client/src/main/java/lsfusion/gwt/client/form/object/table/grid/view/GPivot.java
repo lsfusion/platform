@@ -44,6 +44,7 @@ import lsfusion.gwt.client.view.StyleDefaults;
 
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.function.Consumer;
 
 import static java.lang.Integer.decode;
 import static lsfusion.gwt.client.base.GwtSharedUtils.nullEmpty;
@@ -1122,6 +1123,16 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
     }
 
     @Override
+    public Consumer<Object> getCustomRendererValueChangeConsumer() {
+        return null;
+    }
+
+    @Override
+    public boolean isPropertyReadOnly() {
+        return true;
+    }
+
+    @Override
     public boolean isStaticHeight() {
         return true;
     }
@@ -1791,11 +1802,6 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
                 //nothing
             },
 
-            elementDblClickHandler: function (elementName) {
-                //remove element from unused area to rows or remove from rows / cols to unused area
-                instance.@GPivot::elementDblclickAction(*)(elementName);
-            },
-
             rowAxisHeaderDblClickHandler: function (event, element, attrName) {
                 instance.@GPivot::rowAxisHeaderDblClickAction(*)(attrName, element, attrName, event.ctrlKey, event.shiftKey);
             },
@@ -1828,38 +1834,6 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         //2 double clicks will be handled as 4 clicks with detail = 1, 2, 3, 4
         function isOdd(num) { return num % 2 === 0; }
 
-    }-*/;
-
-    private void elementDblclickAction(String elementName) {
-        JsArrayString cols = config.getArrayString("cols");
-        JsArrayString rows = config.getArrayString("rows");
-
-        if (contains(cols, elementName))
-            config = dblclickRemoveElement(cols, elementName, config, "Cols");
-        else if (contains(rows, elementName))
-            config = dblclickRemoveElement(rows, elementName, config, "Rows");
-        else
-            rows.push(elementName);
-
-        updateView(true, null);
-    }
-
-    private native WrapperObject dblclickRemoveElement(JsArrayString array, String removeElementName, WrapperObject config, String location) /*-{ //location is Rows or Cols
-        var result = {};
-        result[location.toLowerCase()] = array.filter(function (element) {
-            return element !== removeElementName;
-        });
-        var newSplitElements = [];
-        var splitElements = config["split" + location];
-        var index = array.indexOf(removeElementName);
-        for (var i = 0; i < splitElements.length; i++) {
-            var element = splitElements[i];
-            if (index === element && (element - 1 === splitElements[i - 1] || index === 0))
-                continue
-            newSplitElements.push(element >= index ? element - 1 : element)
-        }
-        result["split" + location] = newSplitElements;
-        return Object.assign({}, config, result);
     }-*/;
 
     private void cellDblClickAction(JsArrayMixed rowKeyValues, JsArrayMixed colKeyValues, int x, int y) {

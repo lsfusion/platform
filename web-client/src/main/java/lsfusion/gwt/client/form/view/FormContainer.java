@@ -4,7 +4,8 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.ui.*;
+import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.base.Dimension;
 import lsfusion.gwt.client.base.GwtClientUtils;
@@ -20,6 +21,7 @@ import static java.lang.Math.min;
 
 // multiple inheritance
 public abstract class FormContainer<W extends Widget> {
+    private static final ClientMessages messages = ClientMessages.Instance.get();
 
     protected final FormsController formsController;
     protected final W contentWidget;
@@ -28,8 +30,13 @@ public abstract class FormContainer<W extends Widget> {
 
     protected GFormController form;
 
-    public FormContainer(FormsController formsController) {
+    public Long requestIndex;
+    public boolean async;
+
+    public FormContainer(FormsController formsController, Long requestIndex, boolean async) {
         this.formsController = formsController;
+        this.requestIndex = requestIndex;
+        this.async = async;
 
         this.contentWidget = initContentWidget();
     }
@@ -38,30 +45,45 @@ public abstract class FormContainer<W extends Widget> {
 
     protected abstract void setContent(Widget widget);
 
+    public void setFormVisible() {
+        form.setFormVisible();
+    }
+
     public abstract void show();
 
     public abstract void hide();
 
     private Element focusedElement;
     public void onFocus(boolean add) {
-        form.gainedFocus();
+        if(!async) {
+            form.gainedFocus();
+        }
+
         MainFrame.setCurrentForm(this);
         assert !MainFrame.isModalPopup();
 
-        if(add || focusedElement == null)
-            form.focusFirstWidget();
-        else
-            focusedElement.focus();
-        form.restorePopup();
+        if(!async) {
+            if(add || focusedElement == null)
+                form.focusFirstWidget();
+            else
+                focusedElement.focus();
+            form.restorePopup();
+        }
     }
 
     public void onBlur(boolean remove) {
-        form.lostFocus();
-        focusedElement = remove ? null : GwtClientUtils.getFocusedChild(contentWidget.getElement());
+        if(!async) {
+            form.lostFocus();
+            focusedElement = remove ? null : GwtClientUtils.getFocusedChild(contentWidget.getElement());
+        }
 
-        assert MainFrame.getAssertCurrentForm() == this;
+        //todo
+        //assert MainFrame.getAssertCurrentForm() == this;
         MainFrame.setCurrentForm(null);
-        form.hidePopup();
+
+        if(!async) {
+            form.hidePopup();
+        }
     }
 
     public void initForm(FormsController formsController, GForm gForm, WindowHiddenHandler hiddenHandler, boolean isDialog, Event initFilterEvent) {
@@ -84,6 +106,7 @@ public abstract class FormContainer<W extends Widget> {
         setContent(form);
 
         Scheduler.get().scheduleDeferred(this::initQuickFilter);
+        async = false;
     }
 
     protected abstract void setCaption(String caption, String tooltip);
@@ -93,16 +116,18 @@ public abstract class FormContainer<W extends Widget> {
     }
 
     protected void initMaxPreferredSize() {
-        Dimension size = form.getMaxPreferredSize();
-        if (size.width > 0) {
-            int wndWidth = Window.getClientWidth();
-            size.width = min(size.width + 20, wndWidth - 20);
-            form.setWidth(size.width + "px");
-        }
-        if (size.height > 0) {
-            int wndHeight = Window.getClientHeight();
-            size.height = min(size.height, wndHeight - 100);
-            form.setHeight(size.height + "px");
+        if(!async) {
+            Dimension size = form.getMaxPreferredSize();
+            if (size.width > 0) {
+                int wndWidth = Window.getClientWidth();
+                size.width = min(size.width + 20, wndWidth - 20);
+                form.setWidth(size.width + "px");
+            }
+            if (size.height > 0) {
+                int wndHeight = Window.getClientHeight();
+                size.height = min(size.height, wndHeight - 100);
+                form.setHeight(size.height + "px");
+            }
         }
     }
 
@@ -122,5 +147,26 @@ public abstract class FormContainer<W extends Widget> {
                 });
             }
         }
+    }
+
+    protected String loadingAsyncImage = "loading_async.gif";
+    protected Widget createLoadingWidget(String imageUrl) {
+        VerticalPanel loadingWidget = new VerticalPanel();
+        loadingWidget.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+        loadingWidget.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
+        loadingWidget.setSize("100%", "100%");
+
+        HorizontalPanel topPanel = new HorizontalPanel();
+        topPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+        topPanel.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
+        topPanel.setSpacing(5);
+        Image image = new Image(imageUrl);
+        image.setSize("32px", "32px");
+        topPanel.add(image);
+        topPanel.add(new HTML(messages.loading()));
+
+        loadingWidget.add(topPanel);
+
+        return loadingWidget;
     }
 }

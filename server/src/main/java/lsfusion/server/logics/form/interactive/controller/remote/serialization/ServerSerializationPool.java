@@ -9,6 +9,9 @@ import lsfusion.server.logics.form.interactive.design.filter.RegularFilterGroupV
 import lsfusion.server.logics.form.interactive.design.filter.RegularFilterView;
 import lsfusion.server.logics.form.interactive.design.object.*;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
+import lsfusion.server.logics.form.struct.property.async.AsyncAddRemove;
+import lsfusion.server.logics.form.struct.property.async.AsyncChange;
+import lsfusion.server.logics.form.struct.property.async.AsyncOpenForm;
 
 
 public class ServerSerializationPool extends SerializationPool<ServerContext> {
@@ -34,6 +37,9 @@ public class ServerSerializationPool extends SerializationPool<ServerContext> {
         addMapping2(PropertyDrawView.class);
         addMapping2(RegularFilterView.class);
         addMapping2(RegularFilterGroupView.class);
+        addMapping2(AsyncAddRemove.class);
+        addMapping2(AsyncChange.class);
+        addMapping2(AsyncOpenForm.class);
     }
 
     // IDEA даёт ошибку при добавлении генериков,

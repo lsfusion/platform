@@ -142,13 +142,6 @@
     overflow: hidden;
 }
 
-.dataGridCell p {
-    margin: 0;
-    top: 50%;
-    transform: translate(0, -50%);
-    position: absolute;
-    white-space: pre;
-}
 .dataGridCellInnerDiv {}
 
 .dataGridFirstCell {

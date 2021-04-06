@@ -101,7 +101,10 @@ import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.navigator.DefaultIcon;
 import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.logics.navigator.window.*;
-import lsfusion.server.logics.property.*;
+import lsfusion.server.logics.property.AggregateProperty;
+import lsfusion.server.logics.property.Property;
+import lsfusion.server.logics.property.PropertyFact;
+import lsfusion.server.logics.property.Union;
 import lsfusion.server.logics.property.cases.CaseUnionProperty;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.classes.IsClassProperty;
@@ -206,7 +209,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         errLog = new ScriptingErrorLog();
         errLog.setModuleId(getIdentifier());
         
-        parser = new ScriptParser(errLog);
+        parser = new ScriptParser();
         checks = new ScriptingLogicsModuleChecks(this);
     }
 
@@ -1288,6 +1291,26 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public void setViewType(LAP property, ClassViewType viewType) {
         property.setViewType(viewType);
+    }
+    
+    public void setCustomRenderFunctions(LAP property, String customRenderFunctions) {
+        property.setCustomRenderFunctions(customRenderFunctions);
+    }
+
+    public void checkCustomPropertyViewTextOption(String editType) throws ScriptingErrorLog.SemanticErrorException {
+        checks.checkCustomPropertyEditType(editType);
+    }
+
+    public void setCustomEditorFunctions(LAP property, String customEditorFunctions) {
+        property.setCustomEditorFunctions(customEditorFunctions);
+    }
+
+    public void setCustomTextEdit(LAP property, boolean customTextEdit) {
+        property.setCustomTextEdit(customTextEdit);
+    }
+
+    public void setCustomReplaceEdit(LAP property, boolean customReplaceEdit) {
+        property.setCustomReplaceEdit(customReplaceEdit);
     }
 
     public void setPivotOptions(LAP property, PivotOptions pivotOptions) {
@@ -3043,7 +3066,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         switch (type) {
             case INT: lp = addUnsafeCProp(IntegerClass.instance, value); break;
             case LONG: lp =  addUnsafeCProp(LongClass.instance, value); break;
-            case NUMERIC: lp =  addNumericConst((String) value); break;
+            case NUMERIC: lp =  addNumericConst((BigDecimal) value); break;
             case REAL: lp =  addUnsafeCProp(DoubleClass.instance, value); break;
             case STRING: lp =  addUnsafeCProp(getStringConstClass((LocalizedString)value), value); break;
             case LOGICAL: lp =  addUnsafeCProp(LogicalClass.instance, value); break;
@@ -3057,8 +3080,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         return Pair.create(lp, new LPLiteral(value));
     }
 
-    private LP addNumericConst(String value) {
-        return addUnsafeCProp(NumericClass.get(value.length(), value.length() - value.indexOf('.') - 1), new BigDecimal(value));
+    private LP addNumericConst(BigDecimal value) {
+        //precision() of bigDecimal 0.x is incorrect
+        int precision = value.abs().compareTo(BigDecimal.ONE) < 1 ? (value.scale() + 1) : value.precision();
+        return addUnsafeCProp(NumericClass.get(precision, value.scale()), value);
     }
 
     public Color createScriptedColor(int r, int g, int b) throws ScriptingErrorLog.SemanticErrorException {
@@ -3094,6 +3119,16 @@ public class ScriptingLogicsModule extends LogicsModule {
             res = Double.parseDouble(literalText);
         } catch (NumberFormatException e) {
             errLog.emitDoubleValueError(parser, literalText);
+        }
+        return res;
+    }
+
+    public BigDecimal createScriptedNumeric(String literalText) throws ScriptingErrorLog.SemanticErrorException {
+        BigDecimal res = BigDecimal.ZERO;
+        try {
+            res = new BigDecimal(literalText);
+        } catch (NumberFormatException e) {
+            errLog.emitNumericValueError(parser, literalText);
         }
         return res;
     }
@@ -3668,11 +3703,11 @@ public class ScriptingLogicsModule extends LogicsModule {
         return result;
     }
 
-    public void addScriptedMetaCodeFragment(String name, List<String> params, List<String> tokens, List<Pair<Integer, Boolean>> metaTokens, String code, int lineNumber) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedMetaCodeFragment(String name, List<String> params, List<Pair<String, Boolean>> tokens, int lineNumber) throws RecognitionException {
         checks.checkDuplicateMetaCodeFragment(name, params.size());
         checks.checkDistinctParameters(params);
 
-        MetaCodeFragment fragment = new MetaCodeFragment(elementCanonicalName(name), params, tokens, metaTokens, code, getName(), lineNumber);
+        MetaCodeFragment fragment = new MetaCodeFragment(elementCanonicalName(name), params, tokens, getName(), lineNumber);
         addMetaCodeFragment(fragment);
     }
 
@@ -3681,11 +3716,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         checks.checkMetaCodeParamCount(metaCode, params.size());
 
         String code = metaCode.getCode(params, BL.getIdFromReversedI18NDictionaryMethod(), BL::appendEntryToBundle);
-        parser.runMetaCode(this, code, metaCode, MetaCodeFragment.metaCodeCallString(name, metaCode, params), lineNumber, enabledMeta);
-    }
-
-    public Pair<List<String>, List<Pair<Integer, Boolean>>> grabMetaCode(String metaCodeName) throws ScriptingErrorLog.SemanticErrorException {
-        return parser.grabMetaCode(metaCodeName);
+        parser.runMetaCode(this, code, metaCode.getLineNumber(), metaCode.getModuleName(), MetaCodeFragment.metaCodeCallString(name, metaCode, params), lineNumber, enabledMeta);
     }
 
     private LP addStaticClassConst(String name) throws ScriptingErrorLog.SemanticErrorException {
@@ -4755,6 +4786,24 @@ public class ScriptingLogicsModule extends LogicsModule {
         checkNotExprInExpr(lp, ci);
         return ci instanceof LPLiteral ? (LPLiteral)ci : null;
     }
+
+    public LPNotExpr checkNumericLiteralInExpr(LPWithParams lp, LPNotExpr ci) throws ScriptingErrorLog.SemanticErrorException {
+        checkNotExprInExpr(lp, ci);
+        if (ci instanceof LPLiteral && ((LPLiteral) ci).value instanceof Number) {
+            Number value = (Number) ((LPLiteral) ci).value;
+            if (value instanceof Integer && value.intValue() > 0) {
+                return new LPLiteral(-value.intValue());
+            } else if (value instanceof Long && value.longValue() > 0) {
+                return new LPLiteral(-value.longValue());
+            } else if (value instanceof Double && value.doubleValue() > 0) {
+                return new LPLiteral(-value.doubleValue());
+            } else if (value instanceof BigDecimal && ((BigDecimal) value).signum() > 0) {
+                return new LPLiteral(((BigDecimal) value).negate());
+            }
+        }
+        return null;
+    }
+
     public LPContextIndependent checkTLAInExpr(LPWithParams lp, LPNotExpr ci) throws ScriptingErrorLog.SemanticErrorException {
         if(lp == null) // checking action
             checks.checkTLAInExpr(ci);

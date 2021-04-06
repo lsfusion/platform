@@ -152,6 +152,10 @@ public class GForm implements Serializable, GWidthStringProcessor {
         }
     }
 
+    public String getCaption() {
+        return mainContainer.caption;
+    }
+
     public String getTooltip(String caption) {
         return MainFrame.showDetailedInfo ?
                 GwtSharedUtils.stringFormat("<html><body>" +

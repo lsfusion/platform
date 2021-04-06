@@ -168,6 +168,9 @@ public class IOUtils {
                 if (ftpPath.binaryTransferMode) {
                     ftpClient.setFileTransferMode(FTP.BINARY_FILE_TYPE);
                 }
+                //large buffer size increases download speed
+                //https://stackoverflow.com/questions/30847433/very-slow-ftp-download
+                ftpClient.setBufferSize(1024 * 1024);
 
                 return function.apply(ftpPath, ftpClient);
             } else {

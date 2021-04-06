@@ -71,7 +71,7 @@ public interface RemoteFormInterface extends RemoteRequestInterface {
 
     // async events : properties
 
-    ServerResponse changeProperties(long requestIndex, long lastReceivedRequestIndex, int[] propertyIDs, byte[][] fullKeys, byte[][] pushChanges, Long[] pushAdds) throws RemoteException;
+    ServerResponse changeProperties(long requestIndex, long lastReceivedRequestIndex, String actionSID, int[] propertyIDs, byte[][] fullKeys, byte[][] pushChanges, Long[] pushAdds) throws RemoteException;
 
     // events : filters + orders
 

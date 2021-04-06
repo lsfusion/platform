@@ -13,14 +13,15 @@ import bibliothek.gui.dock.support.lookandfeel.LookAndFeelUtilities;
 import lsfusion.client.base.view.ClientDockable;
 import lsfusion.client.base.view.ColorThemeChangeListener;
 import lsfusion.client.controller.MainController;
+import lsfusion.client.form.ClientForm;
 import lsfusion.client.form.print.view.ClientReportDockable;
 import lsfusion.client.form.print.view.EditReportInvoker;
+import lsfusion.client.form.property.async.ClientAsyncOpenForm;
 import lsfusion.client.form.view.ClientFormDockable;
 import lsfusion.client.navigator.ClientNavigator;
 import lsfusion.client.view.MainFrame;
 import lsfusion.interop.form.print.ReportGenerationData;
 import lsfusion.interop.form.remote.RemoteFormInterface;
-import net.sf.jasperreports.engine.JRException;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -106,23 +107,49 @@ public class FormsController implements ColorThemeChangeListener {
         openedForms.add(page);
     }
 
-    public ClientFormDockable openForm(ClientNavigator navigator, String canonicalName, String formSID, boolean forbidDuplicate, RemoteFormInterface remoteForm, byte[] firstChanges, MainFrame.FormCloseListener closeListener) throws IOException, ClassNotFoundException, JRException {
-        ClientFormDockable page = null;
-        if (MainController.forbidDuplicateForms && forbidDuplicate && forms.getFormsList().contains(formSID)) {
-            ClientDockable dockable = (ClientDockable) control.getCDockable(control.getCDockableCount() - forms.getFormsList().size() + forms.getFormsList().indexOf(formSID));
-            if (dockable instanceof ClientFormDockable)
-                page = (ClientFormDockable) dockable;
-        }
-        
+    public ClientFormDockable openForm(Long requestIndex, ClientNavigator navigator, String canonicalName, String formSID, boolean forbidDuplicate, RemoteFormInterface remoteForm, byte[] firstChanges, MainFrame.FormCloseListener closeListener) {
+        ClientFormDockable page = getDuplicateForm(canonicalName, forbidDuplicate);
         if(page != null) {
             page.toFront();
             page.requestFocusInWindow();
         } else {
-            page = new ClientFormDockable(navigator, canonicalName, formSID, remoteForm, this, closeListener, firstChanges);
-            openForm(page);
+
+            ClientForm clientForm = ClientFormController.deserializeClientForm(remoteForm);
+            page = forms.removeAsyncForm(requestIndex);
+
+            boolean asyncOpened = page != null;
+            if (!asyncOpened) {
+                page = new ClientFormDockable(clientForm.canonicalName, clientForm.getCaption(), this, openedForms, null, false);
+            } else {
+                page.getContentPane().removeAll(); //remove loading
+            }
+            page.init(navigator, canonicalName, formSID, remoteForm, clientForm, closeListener, firstChanges);
+            if (!asyncOpened) {
+                openForm(page);
+            }
         }
-        page.addAction(new CloseAllAction(openedForms));
         return page;
+    }
+
+    public void asyncOpenForm(Long requestIndex, ClientAsyncOpenForm asyncOpenForm) {
+        if (getDuplicateForm(asyncOpenForm.canonicalName, asyncOpenForm.forbidDuplicate) == null) {
+            ClientFormDockable page = new ClientFormDockable(asyncOpenForm.canonicalName, asyncOpenForm.caption, this, openedForms, requestIndex, true);
+            page.asyncInit();
+            openForm(page);
+            forms.addAsyncForm(requestIndex, page);
+        }
+    }
+
+    private ClientFormDockable getDuplicateForm(String canonicalName, boolean forbidDuplicate) {
+        if (MainController.forbidDuplicateForms && forbidDuplicate) {
+            if (forms.getFormsList().contains(canonicalName)) {
+                CDockable dockable = control.getCDockable(control.getCDockableCount() - forms.getFormsList().size() + forms.getFormsList().indexOf(canonicalName));
+                if (dockable instanceof ClientFormDockable) {
+                    return (ClientFormDockable) dockable;
+                }
+            }
+        }
+        return null;
     }
 
     public Integer openReport(ReportGenerationData generationData, String formCaption, String printerName, EditReportInvoker editInvoker) throws IOException, ClassNotFoundException {
@@ -167,7 +194,9 @@ public class FormsController implements ColorThemeChangeListener {
 
             String canonicalName = dockable.getCanonicalName();
             if (dockable.isVisible()) {
-                forms.add(canonicalName);
+                if(!dockable.async) {
+                    forms.add(canonicalName);
+                }
             } else {
                 forms.remove(canonicalName);
                 control.removeDockable(dockable);
