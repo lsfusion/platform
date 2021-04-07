@@ -156,9 +156,20 @@ public class GFilterView extends FlexPanel implements GFilterConditionView.UIHan
 
     public void removeCondition(GPropertyFilter condition) {
         GFilterConditionView view = conditionViews.get(condition);
-        filterContainer.remove(view);
+        
+        GFilterConditionView nextViewToFocus = null;
+        if (conditionViews.size() > 1 && view.isFocused()) {
+            ArrayList<GFilterConditionView> viewsList = new ArrayList<>(conditionViews.values());
+            int currentIndex = viewsList.indexOf(view);
+            nextViewToFocus = viewsList.get(currentIndex == viewsList.size() - 1 ? currentIndex - 1 : currentIndex + 1);
+        }
+        
         conditionViews.remove(condition);
-        focusLastValue();
+        filterContainer.remove(view);
+        
+        if (nextViewToFocus != null) {
+            nextViewToFocus.focusOnValue();
+        }
     }
     
     public boolean isToolsVisible() {

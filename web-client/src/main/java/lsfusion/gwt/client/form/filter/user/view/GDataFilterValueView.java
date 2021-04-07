@@ -9,7 +9,7 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 
 import java.io.Serializable;
 
-public class GDataFilterValueView extends GFilterValueView {
+public abstract class GDataFilterValueView extends GFilterValueView {
     private final GDataFilterValue filterValue;
     private final GTableController logicsSupplier;
 
@@ -32,7 +32,19 @@ public class GDataFilterValueView extends GFilterValueView {
     }
 
     private void changeProperty(GPropertyDraw property) {
-        cell = new GDataFilterPropertyValue(property, logicsSupplier.getForm(), value -> valueChanged(value));
+        cell = new GDataFilterPropertyValue(property, logicsSupplier.getForm(), value -> valueChanged(value)) {
+            @Override
+            protected void onFocus(EventHandler handler) {
+                super.onFocus(handler);
+                setFocused(true);
+            }
+
+            @Override
+            protected void onBlur(EventHandler handler) {
+                super.onBlur(handler);
+                setFocused(false);
+            }
+        };
         cell.setStatic(this, true);
         cell.updateValue(filterValue.value);
     }

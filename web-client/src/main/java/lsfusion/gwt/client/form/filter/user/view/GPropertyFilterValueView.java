@@ -1,7 +1,5 @@
 package lsfusion.gwt.client.form.filter.user.view;
 
-import com.google.gwt.event.dom.client.ChangeEvent;
-import com.google.gwt.event.dom.client.ChangeHandler;
 import lsfusion.gwt.client.classes.GActionType;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilterValue;
 import lsfusion.gwt.client.form.object.table.controller.GTableController;
@@ -9,7 +7,7 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 
 import java.util.List;
 
-public class GPropertyFilterValueView extends GFilterValueView {
+public abstract class GPropertyFilterValueView extends GFilterValueView {
     public GPropertyFilterValueView(final GPropertyFilterValue propertyValue, GTableController logicsSupplier) {
         final GFilterConditionListBox propertyView = new GFilterConditionListBox();
 
@@ -29,12 +27,9 @@ public class GPropertyFilterValueView extends GFilterValueView {
 
         propertyValue.property = (GPropertyDraw) propertyView.getSelectedItem();
 
-        propertyView.addChangeHandler(new ChangeHandler() {
-            @Override
-            public void onChange(ChangeEvent event) {
-                propertyValue.property = (GPropertyDraw) propertyView.getSelectedItem();
-            }
-        });
+        propertyView.addFocusHandler(event -> setFocused(true));
+        propertyView.addBlurHandler(event -> setFocused(false));
+        propertyView.addChangeHandler(event -> propertyValue.property = (GPropertyDraw) propertyView.getSelectedItem());
 
         add(propertyView);
     }

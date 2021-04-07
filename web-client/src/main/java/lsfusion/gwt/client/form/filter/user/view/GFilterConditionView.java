@@ -60,6 +60,8 @@ public class GFilterConditionView extends FlexPanel {
     private UIHandler handler;
 
     private Map<GFilterValue, GFilterValueView> valueViews;
+    
+    private boolean focused = false;
 
     public GFilterConditionView(GPropertyFilter iCondition, GTableController logicsSupplier, final UIHandler handler, boolean toolsVisible) {
         this.condition = iCondition;
@@ -68,11 +70,26 @@ public class GFilterConditionView extends FlexPanel {
 
         valueViews = new LinkedHashMap<>();
         GDataFilterValue dataValue = condition.value instanceof GDataFilterValue ? (GDataFilterValue) condition.value : new GDataFilterValue();
-        valueViews.put(dataValue, new GDataFilterValueView(dataValue, condition.property, logicsSupplier));
+        valueViews.put(dataValue, new GDataFilterValueView(dataValue, condition.property, logicsSupplier) {
+            @Override
+            public void setFocused(boolean focused) {
+                GFilterConditionView.this.focused = focused;
+            }
+        });
         GObjectFilterValue objectValue = condition.value instanceof GObjectFilterValue ? (GObjectFilterValue) condition.value : new GObjectFilterValue();
-        valueViews.put(objectValue, new GObjectFilterValueView(objectValue, logicsSupplier));
+        valueViews.put(objectValue, new GObjectFilterValueView(objectValue, logicsSupplier) {
+            @Override
+            public void setFocused(boolean focused) {
+                GFilterConditionView.this.focused = focused;
+            }
+        });
         GPropertyFilterValue propertyValue = condition.value instanceof GPropertyFilterValue ? (GPropertyFilterValue) condition.value : new GPropertyFilterValue();
-        valueViews.put(propertyValue, new GPropertyFilterValueView(propertyValue, logicsSupplier));
+        valueViews.put(propertyValue, new GPropertyFilterValueView(propertyValue, logicsSupplier) {
+            @Override
+            public void setFocused(boolean focused) {
+                GFilterConditionView.this.focused = focused;
+            }
+        });
         
 
         propertyLabel = new Label(condition.property.getNotEmptyCaption());
@@ -220,6 +237,10 @@ public class GFilterConditionView extends FlexPanel {
             popupContent.addCentered(deleteButton);
         }
         return popup;
+    }
+    
+    public boolean isFocused() {
+        return focused;
     }
 
     private void filterChanged() {
