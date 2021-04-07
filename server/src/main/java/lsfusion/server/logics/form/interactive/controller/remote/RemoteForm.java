@@ -54,6 +54,10 @@ import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInstance;
 import lsfusion.server.logics.form.interactive.listener.RemoteFormListener;
+import lsfusion.server.logics.form.stat.FormDataManager;
+import lsfusion.server.logics.form.stat.struct.FormIntegrationType;
+import lsfusion.server.logics.form.stat.struct.export.StaticExportData;
+import lsfusion.server.logics.form.stat.struct.export.plain.csv.ExportCSVAction;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.physics.admin.Settings;
@@ -97,14 +101,24 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         return weakRemoteFormListener.get();
     }
 
-    public ReportGenerationData getReportData(long requestIndex, long lastReceivedRequestIndex, final Integer groupId, final FormPrintType printType, final FormUserPreferences userPreferences) throws RemoteException {
+    public Object getGroupReportData(long requestIndex, long lastReceivedRequestIndex, final Integer groupId, final FormPrintType printType, final FormUserPreferences userPreferences) throws RemoteException {
         return processRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
 
             if (logger.isTraceEnabled()) {
                 logger.trace(String.format("getReportData Action. GroupID: %s", groupId));
             }
 
-            return new InteractiveFormReportManager(form, groupId, userPreferences).getReportData(printType);
+            InteractiveFormReportManager formReportManager = new InteractiveFormReportManager(form, groupId, userPreferences);
+            ReportGenerationData reportGenerationData = formReportManager.getReportData(printType);
+
+            int minSizeForExportToCSV = Settings.get().getMinSizeForReportExportToCSV();
+            if(minSizeForExportToCSV >= 0 && reportGenerationData.reportSourceData.length > minSizeForExportToCSV) {
+                FormDataManager.ExportResult exportData = formReportManager.getExportData(0);
+                return new ExportCSVAction(null, formReportManager.getFormEntity(), ListFact.EMPTY(), ListFact.EMPTY(), SetFact.EMPTYORDER(), ListFact.EMPTY(),
+                        FormIntegrationType.CSV, null, 0, "UTF-8", false, ";", false).exportReport(new StaticExportData(exportData.keys, exportData.properties), exportData.hierarchy);
+            } else {
+                return reportGenerationData;
+            }
         });
     }
 

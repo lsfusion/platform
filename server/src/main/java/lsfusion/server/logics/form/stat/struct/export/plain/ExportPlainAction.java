@@ -62,7 +62,7 @@ public abstract class ExportPlainAction<O extends ObjectSelector> extends Export
 
     protected abstract ExportPlainWriter getWriter(ImOrderMap<String, Type> fieldTypes, boolean singleRow) throws IOException;
 
-    private void exportGroupData(GroupObjectEntity currentGroup, ImSet<GroupObjectEntity> parentGroups, StaticDataGenerator.Hierarchy hierarchy, Map<GroupObjectEntity, RawFileData> files, final ExportData data, ImOrderSet<ImMap<ObjectEntity, Object>> parentRows) throws IOException {
+    protected void exportGroupData(GroupObjectEntity currentGroup, ImSet<GroupObjectEntity> parentGroups, StaticDataGenerator.Hierarchy hierarchy, Map<GroupObjectEntity, RawFileData> files, final ExportData data, ImOrderSet<ImMap<ObjectEntity, Object>> parentRows) throws IOException {
         
         ImOrderSet<PropertyDrawEntity> childProperties = hierarchy.getProperties(currentGroup);
 

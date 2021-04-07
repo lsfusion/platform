@@ -6,6 +6,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Table;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.heavy.OrderedMap;
+import lsfusion.base.file.RawFileData;
 import lsfusion.base.identity.DefaultIDGenerator;
 import lsfusion.base.identity.IDGenerator;
 import lsfusion.base.lambda.EProvider;
@@ -202,7 +203,7 @@ public class ClientFormController implements AsyncListener {
             throw Throwables.propagate(e);
         }
     }
-    
+
     public boolean hasCanonicalName() {
         return canonicalName != null;
     }
@@ -677,13 +678,13 @@ public class ClientFormController implements AsyncListener {
             activateProperties(formChanges.activateProps);
         }
     }
-    
+
     public boolean activateFirstComponents() {
         if (firstTabsToActivate != null) {
             activateTabs(firstTabsToActivate);
             firstTabsToActivate = null;
         }
-        
+
         boolean focused = false;
         if (firstPropsToActivate != null) {
             focused = activateProperties(firstPropsToActivate);
@@ -1035,7 +1036,7 @@ public class ClientFormController implements AsyncListener {
                     @Override
                     protected void onResponse(long requestIndex, ServerResponse result) throws Exception {
 //                        if(remoteForm != null) // when there is hide in changeProperty and some button is clicked - breaks assertion in dispatchingEnded  
-                        rmiQueue.postponeDispatchingEnded();                       
+                        rmiQueue.postponeDispatchingEnded();
                     }
                 });
         return result == null ? ServerResponse.EMPTY : result;
@@ -1439,16 +1440,21 @@ public class ClientFormController implements AsyncListener {
 
     public void runSingleGroupXlsExport(final GridController groupController) {
         commitOrCancelCurrentEditing();
-        rmiQueue.syncRequest(new RmiCheckNullFormRequest<ReportGenerationData>("runSingleGroupXlsExport") {
+        rmiQueue.syncRequest(new RmiCheckNullFormRequest<Object>("runSingleGroupXlsExport") {
             @Override
-            protected ReportGenerationData doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                return remoteForm.getReportData(requestIndex, lastReceivedRequestIndex, groupController.getGroupObject().getID(), FormPrintType.XLSX, getUserPreferences());
+            protected Object doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
+                return remoteForm.getGroupReportData(requestIndex, lastReceivedRequestIndex, groupController.getGroupObject().getID(), FormPrintType.XLSX, getUserPreferences());
             }
 
             @Override
-            public void onResponse(long requestIndex, ReportGenerationData generationData) throws Exception {
-                if (generationData != null) {
-                    ReportGenerator.exportAndOpen(generationData, FormPrintType.XLSX, true);
+            public void onResponse(long requestIndex, Object reportData) throws Exception {
+                if (reportData != null) {
+                    if (reportData instanceof RawFileData) {
+                        BaseUtils.openFile((RawFileData) reportData, "report", "csv");
+                    } else {
+                        //assert generationData instanceof ReportGenerationData
+                        ReportGenerator.exportAndOpen((ReportGenerationData) reportData, FormPrintType.XLSX, true);
+                    }
                 }
             }
         });

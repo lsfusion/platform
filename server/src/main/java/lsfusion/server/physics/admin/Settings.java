@@ -263,6 +263,8 @@ public class Settings implements Cloneable {
 
     private int minSizeForExcelStreamingReader = 15000000; //-1 disabled, to enable use for example 50000000 (50 MB)
 
+    private int minSizeForReportExportToCSV = -1; //-1 disabled, size of reportSourcesByteArray, to enable use for example 50000000 (50 MB)
+
     public long getMaxRecalculateTime() {
         return maxRecalculateTime;
     }
@@ -2589,6 +2591,14 @@ public class Settings implements Cloneable {
 
     public void setMinSizeForExcelStreamingReader(int minSizeForExcelStreamingReader) {
         this.minSizeForExcelStreamingReader = minSizeForExcelStreamingReader;
+    }
+
+    public int getMinSizeForReportExportToCSV() {
+        return minSizeForReportExportToCSV;
+    }
+
+    public void setMinSizeForReportExportToCSV(int minSizeForReportExportToCSV) {
+        this.minSizeForReportExportToCSV = minSizeForReportExportToCSV;
     }
 
     private int authTokenExpiration = 60 * 24; // in minutes

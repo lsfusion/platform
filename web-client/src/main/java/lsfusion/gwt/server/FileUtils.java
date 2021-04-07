@@ -232,4 +232,12 @@ public class FileUtils {
             throw Throwables.propagate(e);
         }
     }
+
+    public static Pair<String, String> exportFile(RawFileData file) {
+        try {
+            return new Pair<>(FileUtils.saveActionFile(file), "csv");
+        } catch (Exception e) {
+            throw Throwables.propagate(e);
+        }
+    }
 }
