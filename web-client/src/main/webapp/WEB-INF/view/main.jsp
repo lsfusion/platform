@@ -56,7 +56,8 @@
             loadResources([
 
                 <!-- need jquery for pivot table -->
-                'https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js',
+                <!-- version jquery above 2.2.4 causes to errors in the pivot table -->
+                'https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.4/jquery.min.js',
                 'https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js',
 
                 <!-- export pivot to excel -->

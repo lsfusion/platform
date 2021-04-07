@@ -894,9 +894,8 @@ callWithJQuery ($) ->
 
                     listItem.bind "dblclick", () ->
                         if unusedDiv.has(attrElem).length > 0
-                            element = createPaxis(false)
-                            listItem.appendTo(element.children())
-                            element.prependTo(pvtRowsTable.children())
+                            pvtContainer = $('.pvtAxisContainer.pvtHorizList')
+                            listItem.appendTo(pvtContainer[pvtContainer.length - 1])
                         else
                             listItem.prependTo(unusedDiv)
 
