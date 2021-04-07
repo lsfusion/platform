@@ -1,6 +1,7 @@
 package lsfusion.gwt.server.form.handlers;
 
 import lsfusion.base.Pair;
+import lsfusion.base.file.RawFileData;
 import lsfusion.gwt.client.controller.remote.action.form.GroupReport;
 import lsfusion.gwt.client.controller.remote.action.form.GroupReportResult;
 import lsfusion.gwt.server.FileUtils;
@@ -26,9 +27,14 @@ public class GroupReportHandler extends FormActionHandler<GroupReport, GroupRepo
         GwtToClientConverter converter = GwtToClientConverter.getInstance();
 
         FormPrintType printType = FormPrintType.XLSX;
-        ReportGenerationData reportData = form.remoteForm.getReportData(action.requestIndex, action.lastReceivedRequestIndex, action.groupObjectID, printType, converter.convertFormUserPreferences(action.preferences));
-
-        Pair<String, String> report = FileUtils.exportReport(printType, reportData, servlet.getNavigatorProvider().getRemoteLogics());
+        Object reportData = form.remoteForm.getGroupReportData(action.requestIndex, action.lastReceivedRequestIndex, action.groupObjectID, printType, converter.convertFormUserPreferences(action.preferences));
+        Pair<String, String> report;
+        if(reportData instanceof RawFileData) {
+            report = FileUtils.exportFile((RawFileData) reportData);
+        } else {
+            //assert reportData instanceof ReportGenerationData
+            report = FileUtils.exportReport(printType, (ReportGenerationData) reportData, servlet.getNavigatorProvider().getRemoteLogics());
+        }
         return new GroupReportResult(report.first, report.second);
     }
 

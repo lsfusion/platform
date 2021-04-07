@@ -6,6 +6,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Table;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.heavy.OrderedMap;
+import lsfusion.base.file.RawFileData;
 import lsfusion.base.identity.DefaultIDGenerator;
 import lsfusion.base.identity.IDGenerator;
 import lsfusion.base.lambda.EProvider;
@@ -1492,16 +1493,21 @@ public class ClientFormController implements AsyncListener {
 
     public void runSingleGroupXlsExport(final GridController groupController) {
         commitOrCancelCurrentEditing();
-        rmiQueue.syncRequest(new RmiCheckNullFormRequest<ReportGenerationData>("runSingleGroupXlsExport") {
+        rmiQueue.syncRequest(new RmiCheckNullFormRequest<Object>("runSingleGroupXlsExport") {
             @Override
-            protected ReportGenerationData doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                return remoteForm.getReportData(requestIndex, lastReceivedRequestIndex, groupController.getGroupObject().getID(), FormPrintType.XLSX, getUserPreferences());
+            protected Object doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
+                return remoteForm.getGroupReportData(requestIndex, lastReceivedRequestIndex, groupController.getGroupObject().getID(), FormPrintType.XLSX, getUserPreferences());
             }
 
             @Override
-            public void onResponse(long requestIndex, ReportGenerationData generationData) throws Exception {
-                if (generationData != null) {
-                    ReportGenerator.exportAndOpen(generationData, FormPrintType.XLSX, true, MainController.remoteLogics);
+            public void onResponse(long requestIndex, Object reportData) throws Exception {
+                if (reportData != null) {
+                    if (reportData instanceof RawFileData) {
+                        BaseUtils.openFile((RawFileData) reportData, "report", "csv");
+                    } else {
+                        //assert generationData instanceof ReportGenerationData
+                        ReportGenerator.exportAndOpen((ReportGenerationData) reportData, FormPrintType.XLSX, true, MainController.remoteLogics);
+                    }
                 }
             }
         });
