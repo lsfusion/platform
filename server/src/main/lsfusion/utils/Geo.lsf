@@ -11,11 +11,6 @@ CLASS MapProvider '{geo.map.provider}' {
     google '{geo.map.provider.google}',
     yandex '{geo.map.provider.yandex}'
 }
-FORM mapProviders
-    OBJECTS m = MapProvider
-    PROPERTIES(m) READONLY staticCaption
-    LIST MapProvider OBJECT m
-;
 
 calculateUserMapProvider = DATA MapProvider ();
 calculateMapProvider = OVERRIDE calculateUserMapProvider(), MapProvider.yandex;
@@ -42,15 +37,9 @@ longitude '{geo.longitude.poi}' = ABSTRACT NUMERIC[11,6] (POI);
 readLatitude '{geo.latitude.poi}' = DATA LOCAL NUMERIC[11,6] ();
 readLongitude '{geo.longitude.poi}' = DATA LOCAL NUMERIC[11,6] ();
 
-CLASS ApiKey;
-TABLE apiKeys (ApiKey);
-
-apiKeyProvider = DATA MapProvider(ApiKey);
-apiKeyProvider(ApiKey k) <- calculateMapProvider() WHEN SET (k IS ApiKey);
-apiKey '{geo.api.key}' = DATA STRING (ApiKey);
-isDefault '{geo.api.key.default}' = DATA BOOLEAN (ApiKey);
-
-dataApiKey(MapProvider m) = GROUP MAX apiKey(ApiKey a) IF isDefault(a) AND apiKeyProvider(a) == m; 
+isDefault '{geo.api.key.default}' (MapProvider m) = m == calculateMapProvider();
+apiKey '{geo.api.key}' = DATA STRING(MapProvider); 
+provider '{geo.api.key.provider}' (MapProvider m) = staticCaption(m) CHARWIDTH 5;
 
 getCoordinatesAddress  INTERNAL  'lsfusion.server.logics.classes.data.utils.geo.GetCoordinatesAddressAction' (STRING, MapProvider);
 getCoordinates (STRING address)  { getCoordinatesAddress(address, calculateMapProvider()); }
@@ -95,10 +84,9 @@ startPathPOI '{geo.start.path.poi}'= DATA LOCAL POI();
 calculatePath '{geo.calculate.path.poi}' INTERNAL  'lsfusion.server.logics.classes.data.utils.geo.CalculatePathAction' ();
 
 EXTEND FORM options
-    PROPERTIES() autoSynchronizeCoordinates, nameCalculateUserMapProvider, nameShowUserMapProvider, useTor, recalculateAllDistances
-    OBJECTS key = ApiKey
-    PROPERTIES(key) apiKey, isDefault, NEW, DELETE
-    FILTERS apiKeyProvider(key) == calculateMapProvider()
+    PROPERTIES() autoSynchronizeCoordinates, nameShowUserMapProvider, useTor, recalculateAllDistances
+    OBJECTS m = MapProvider
+    PROPERTIES(m) provider, apiKey, isDefault
 ;
 
 DESIGN options {
@@ -106,9 +94,9 @@ DESIGN options {
         NEW coordinatesContainer {
             caption = '{geo.form.options.caption.navigation}';
                 NEW apiKeys {
-                    height = 200;
-                    MOVE PROPERTY(nameCalculateUserMapProvider());
-                    MOVE BOX (key);
+                    fill = 1;
+                    height = 130;
+                    MOVE BOX (m);
                 }
                 MOVE PROPERTY(autoSynchronizeCoordinates());
                 MOVE PROPERTY(nameShowUserMapProvider());
