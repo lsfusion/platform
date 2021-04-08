@@ -41,9 +41,16 @@ longitude '{geo.longitude.poi}' = ABSTRACT NUMERIC[11,6] (POI);
 // Получение координат
 readLatitude '{geo.latitude.poi}' = DATA LOCAL NUMERIC[11,6] ();
 readLongitude '{geo.longitude.poi}' = DATA LOCAL NUMERIC[11,6] ();
-yandexApiKey = DATA STRING(); 
-googleApiKey = DATA STRING(); 
-apiKey() = IF staticName(calculateMapProvider()) == staticName(MapProvider.yandex) THEN yandexApiKey() ELSE googleApiKey();
+
+CLASS ApiKey;
+TABLE apiKeys (ApiKey);
+
+apiKeyProvider = DATA MapProvider(ApiKey);
+apiKeyProvider(ApiKey k) <- calculateMapProvider() WHEN SET (k IS ApiKey);
+apiKey '{geo.api.key}' = DATA STRING (ApiKey);
+isDefault '{geo.api.key.default}' = DATA BOOLEAN (ApiKey);
+
+dataApiKey(MapProvider m) = GROUP MAX apiKey(ApiKey a) IF isDefault(a) AND apiKeyProvider(a) == m; 
 
 getCoordinatesAddress  INTERNAL  'lsfusion.server.logics.classes.data.utils.geo.GetCoordinatesAddressAction' (STRING, MapProvider);
 getCoordinates (STRING address)  { getCoordinatesAddress(address, calculateMapProvider()); }
@@ -88,17 +95,22 @@ startPathPOI '{geo.start.path.poi}'= DATA LOCAL POI();
 calculatePath '{geo.calculate.path.poi}' INTERNAL  'lsfusion.server.logics.classes.data.utils.geo.CalculatePathAction' ();
 
 EXTEND FORM options
-    PROPERTIES() autoSynchronizeCoordinates, nameCalculateUserMapProvider, nameShowUserMapProvider, useTor, recalculateAllDistances, yandexApiKey, googleApiKey
+    PROPERTIES() autoSynchronizeCoordinates, nameCalculateUserMapProvider, nameShowUserMapProvider, useTor, recalculateAllDistances
+    OBJECTS key = ApiKey
+    PROPERTIES(key) apiKey, isDefault, NEW, DELETE
+    FILTERS apiKeyProvider(key) == calculateMapProvider()
 ;
 
 DESIGN options {
     commons {
         NEW coordinatesContainer {
             caption = '{geo.form.options.caption.navigation}';
-                MOVE PROPERTY (yandexApiKey());
-                MOVE PROPERTY (googleApiKey());
+                NEW apiKeys {
+                    height = 200;
+                    MOVE PROPERTY(nameCalculateUserMapProvider());
+                    MOVE BOX (key);
+                }
                 MOVE PROPERTY(autoSynchronizeCoordinates());
-                MOVE PROPERTY(nameCalculateUserMapProvider());
                 MOVE PROPERTY(nameShowUserMapProvider());
                 MOVE PROPERTY(useTor());
                 MOVE PROPERTY(recalculateAllDistances());	

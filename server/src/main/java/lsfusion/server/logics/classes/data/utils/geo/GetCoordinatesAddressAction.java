@@ -47,7 +47,7 @@ public class GetCoordinatesAddressAction extends GeoAction {
             BigDecimal latitude;
             String address = (String) fullAddress.object;
             if (address != null) {
-                String apiKey = (String) findProperty("apiKey[]").read(context);
+                String apiKey = (String) findProperty("dataApiKey[MapProvider]").read(context, mapProvider);
                 if (isYandex(context, mapProvider)) {
                     String addressParam = address.trim().replace(" ", "+");
                     String url = "https://geocode-maps.yandex.ru/1.x/?geocode=" + URLEncoder.encode(addressParam, String.valueOf(StandardCharsets.UTF_8)) + "&apikey=" + apiKey + "&results=1&format=json";
