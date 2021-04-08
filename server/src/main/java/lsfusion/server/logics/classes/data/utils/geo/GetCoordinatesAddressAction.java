@@ -26,37 +26,31 @@ import java.sql.SQLException;
 import java.util.Iterator;
 
 public class GetCoordinatesAddressAction extends GeoAction {
-    private final ClassPropertyInterface POIInterface;
+    private final ClassPropertyInterface addressInterface;
     private final ClassPropertyInterface mapProviderInterface;
-    private final ClassPropertyInterface yandexApiKey;
-    private final ClassPropertyInterface googleApiKey;
 
     public GetCoordinatesAddressAction(ScriptingLogicsModule LM, ValueClass... classes) {
         super(LM, classes);
 
         Iterator<ClassPropertyInterface> i = getOrderInterfaces().iterator();
-        POIInterface = i.next();
+        addressInterface = i.next();
         mapProviderInterface = i.next();
-        yandexApiKey = i.next();
-        googleApiKey = i.next();
     }
 
     public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLHandledException {
         try {
             DataSession session = context.getSession();
-            DataObject fullAddress = context.getDataKeyValue(POIInterface);
+            DataObject fullAddress = context.getDataKeyValue(addressInterface);
             DataObject mapProvider = context.getDataKeyValue(mapProviderInterface);
 
             BigDecimal longitude;
             BigDecimal latitude;
             String address = (String) fullAddress.object;
             if (address != null) {
+                String apiKey = (String) findProperty("apiKey[]").read(context);
                 if (isYandex(context, mapProvider)) {
-                    DataObject dataYandexApiKey = context.getDataKeyValue(yandexApiKey);
-                    String yandexApi = (String) dataYandexApiKey.object;
-
                     String addressParam = address.trim().replace(" ", "+");
-                    String url = "https://geocode-maps.yandex.ru/1.x/?geocode=" + URLEncoder.encode(addressParam, String.valueOf(StandardCharsets.UTF_8)) + "&apikey=" + yandexApi + "&results=1&format=json";
+                    String url = "https://geocode-maps.yandex.ru/1.x/?geocode=" + URLEncoder.encode(addressParam, String.valueOf(StandardCharsets.UTF_8)) + "&apikey=" + apiKey + "&results=1&format=json";
 
                     final JSONObject response = JSONReader.read(url);
                     JSONObject objectCollection = response.getJSONObject("response").getJSONObject("GeoObjectCollection");
@@ -67,9 +61,7 @@ public class GetCoordinatesAddressAction extends GeoAction {
                     longitude = new BigDecimal(position[0]);
                     latitude = new BigDecimal(position[1]);
                 } else {
-                    DataObject dataGoogleApiKey = context.getDataKeyValue(googleApiKey);
-                    String googleApi = (String) dataGoogleApiKey.object;
-                    GeoApiContext geoApiContext = new GeoApiContext.Builder().apiKey(googleApi).build();
+                    GeoApiContext geoApiContext = new GeoApiContext.Builder().apiKey(apiKey).build();
                     GeocodingResult[] results = GeocodingApi.geocode(geoApiContext, address).await();
                     LatLng location = results[0].geometry.location;
 

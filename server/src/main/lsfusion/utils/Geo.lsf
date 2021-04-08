@@ -43,9 +43,10 @@ readLatitude '{geo.latitude.poi}' = DATA LOCAL NUMERIC[11,6] ();
 readLongitude '{geo.longitude.poi}' = DATA LOCAL NUMERIC[11,6] ();
 yandexApiKey = DATA STRING(); 
 googleApiKey = DATA STRING(); 
+apiKey() = IF staticName(calculateMapProvider()) == staticName(MapProvider.yandex) THEN yandexApiKey() ELSE googleApiKey();
 
-getCoordinatesAddress  INTERNAL  'lsfusion.server.logics.classes.data.utils.geo.GetCoordinatesAddressAction' (BPSTRING[255], MapProvider, STRING, STRING);
-getCoordinates (BPSTRING[255] address)  { getCoordinatesAddress(address, calculateMapProvider(), yandexApiKey(), googleApiKey()); }
+getCoordinatesAddress  INTERNAL  'lsfusion.server.logics.classes.data.utils.geo.GetCoordinatesAddressAction' (STRING, MapProvider);
+getCoordinates (STRING address)  { getCoordinatesAddress(address, calculateMapProvider()); }
 recalculateDistance  INTERNAL  'lsfusion.server.logics.classes.data.utils.geo.RecalculateDistancePOIAction' (POI);
 
 calculateCoordinates '{geo.calculate.coordinates}'(POI POI) { 
@@ -94,8 +95,8 @@ DESIGN options {
     commons {
         NEW coordinatesContainer {
             caption = '{geo.form.options.caption.navigation}';
-                MOVE PROPERTY(yandexApiKey());
-                MOVE PROPERTY(googleApiKey());
+                MOVE PROPERTY (yandexApiKey());
+                MOVE PROPERTY (googleApiKey());
                 MOVE PROPERTY(autoSynchronizeCoordinates());
                 MOVE PROPERTY(nameCalculateUserMapProvider());
                 MOVE PROPERTY(nameShowUserMapProvider());
