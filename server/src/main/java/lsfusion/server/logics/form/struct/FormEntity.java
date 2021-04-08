@@ -1325,6 +1325,10 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return mContainers.immutable();
     }
 
+    public String getAsyncCaption() {
+        return ThreadLocalContext.localize(getRichDesign().mainContainer.caption);
+    }
+
     public void setEditType(PropertyEditType editType) {
         for (PropertyDrawEntity propertyView : getPropertyDrawsIt()) {
             setEditType(propertyView, editType);
