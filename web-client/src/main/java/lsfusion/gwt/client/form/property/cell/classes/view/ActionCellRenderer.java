@@ -133,7 +133,7 @@ public class ActionCellRenderer extends CellRenderer {
 
     @Override
     public void renderDynamicContent(Element element, Object value, UpdateContext updateContext) {
-        boolean enabled = (value != null) && (Boolean) value;
+        boolean enabled = !property.isReadOnly() && (value != null) && (Boolean) value;
 
         boolean hasStaticImage = property.hasStaticImage();
         if(hasStaticImage || updateContext.globalCaptionIsDrawn()) {
