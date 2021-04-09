@@ -1825,26 +1825,37 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             valuesMap.exclAdd(key, queryResult.mapValues(value -> value.get(key)));
     }
 
-    private void updateData(Result<ChangedData> mChangedProps, ExecutionStack stack) throws SQLException, SQLHandledException {
+    private void updateData(Result<ChangedData> mChangedProps, ExecutionStack stack, boolean forceLocalEvents, List<ClientAction> resultActions) throws SQLException, SQLHandledException {
         mChangedProps.set(mChangedProps.result.merge(session.updateExternal(this)));
 
         if (dataChanged) {
-            session.executeSessionEvents(this, stack);
+            if(forceLocalEvents || !entity.localAsync) {
+                session.executeSessionEvents(this, stack);
+            } else {
+                resultActions.add(new AsyncGetRemoteChangesClientAction(true));
+            }
+
             
             ChangedData update = session.update(this);
             if(update.wasRestart) // очищаем кэш при рестарте
                 isReallyChanged.clear();
             mChangedProps.set(mChangedProps.result.merge(update));
-            dataChanged = false;
+            if(forceLocalEvents) {
+                dataChanged = false;
+            }
         }
 
+    }
+
+    public FormChanges getChanges(ExecutionStack stack) throws SQLException, SQLHandledException {
+        return getChanges(stack, false, new ArrayList<>());
     }
 
     @StackMessage("{message.form.end.apply}")
     @LogTime
     @ThisMessage
     @AssertSynchronized
-    public FormChanges getChanges(ExecutionStack stack) throws SQLException, SQLHandledException {
+    public FormChanges getChanges(ExecutionStack stack, boolean forceLocalEvents, List<ClientAction> resultActions) throws SQLException, SQLHandledException {
 
         checkNavigatorDeactivated();
 
@@ -1854,7 +1865,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
         // если изменились данные, применяем изменения
         Result<ChangedData> mChangedProps = new Result<>(ChangedData.EMPTY);  // так как могут еще измениться свойства созданные при помощи операторов форм
-        updateData(mChangedProps, stack);
+        updateData(mChangedProps, stack, forceLocalEvents, resultActions);
 
         MSet<PropertyDrawInstance> mChangedDrawProps = SetFact.mSet();
         GroupObjectValue updateGroupObject = null; // так как текущий groupObject идет относительно treeGroup, а не group
@@ -1875,7 +1886,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         }
         ImSet<PropertyDrawInstance> changedDrawProps = mChangedDrawProps.immutable().merge(forcePropertyDrawUpdates);
 
-        updateData(mChangedProps, stack); // повторная проверка для VIEW свойств
+        updateData(mChangedProps, stack, forceLocalEvents, resultActions); // повторная проверка для VIEW свойств
 
         fillChangedDrawProps(result, changedDrawProps, mChangedProps.result);
         

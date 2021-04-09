@@ -196,12 +196,12 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         });
     }
 
-    public ServerResponse getRemoteChanges(long requestIndex, long lastReceivedRequestIndex, final boolean refresh) throws RemoteException {
+    public ServerResponse getRemoteChanges(long requestIndex, long lastReceivedRequestIndex, final boolean refresh, boolean forceLocalEvents) throws RemoteException {
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
             if (refresh) {
                 form.refreshData();
             }
-        });
+        }, forceLocalEvents);
     }
 
     private static DataInputStream getDeserializeKeysValuesInputStream(byte[] keysArray) {
@@ -774,11 +774,11 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
     private boolean delayedHideFormSent;
 
     @Override
-    protected ServerResponse prepareResponse(long requestIndex, List<ClientAction> pendingActions, ExecutionStack stack) {
-        return prepareRemoteChangesResponse(requestIndex, pendingActions, stack);
+    protected ServerResponse prepareResponse(long requestIndex, List<ClientAction> pendingActions, ExecutionStack stack, boolean forceLocalEvents) {
+        return prepareRemoteChangesResponse(requestIndex, pendingActions, stack, forceLocalEvents);
     }
 
-    private ServerResponse prepareRemoteChangesResponse(long requestIndex, List<ClientAction> pendingActions, ExecutionStack stack) {
+    private ServerResponse prepareRemoteChangesResponse(long requestIndex, List<ClientAction> pendingActions, ExecutionStack stack, boolean forceLocalEvents) {
         boolean delayedGetRemoteChanges = false;
         boolean delayedHideForm = false;
         for(ClientAction action : pendingActions) {
@@ -798,9 +798,10 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
             return returnRemoteChangesResponse(requestIndex, pendingActions, delayedHideForm, stack);
         }
 
-        byte[] formChanges = getFormChangesByteArray(stack);
-
         List<ClientAction> resultActions = new ArrayList<>();
+
+        byte[] formChanges = getFormChangesByteArray(stack, forceLocalEvents, resultActions);
+
         resultActions.add(new ProcessFormChangesClientAction(requestIndex, formChanges));
 
         resultActions.addAll(pendingActions);
@@ -809,12 +810,16 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
     }
 
     public byte[] getFormChangesByteArray(ExecutionStack stack) {
+        return getFormChangesByteArray(stack, false, new ArrayList<>());
+    }
+
+    public byte[] getFormChangesByteArray(ExecutionStack stack, boolean forceLocalEvents, List<ClientAction> resultActions) {
         try {
             FormChanges formChanges;
             if(isDeactivated() || delayedHideFormSent) // formWillBeClosed
                 formChanges = FormChanges.EMPTY;
             else
-                formChanges = form.getChanges(stack);
+                formChanges = form.getChanges(stack, forceLocalEvents, resultActions);
 
             if (logger.isTraceEnabled()) {
                 formChanges.logChanges(form, logger);

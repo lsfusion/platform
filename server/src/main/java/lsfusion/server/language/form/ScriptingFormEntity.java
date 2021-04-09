@@ -786,6 +786,10 @@ public class ScriptingFormEntity {
         form.autoRefresh = autoRefresh;
     }
 
+    public void setLocalAsync(boolean localAsync) {
+        form.localAsync = localAsync;
+    }
+
     private CustomClass findCustomClassForFormSetup(String className) throws ScriptingErrorLog.SemanticErrorException {
         ValueClass valueClass = LM.findClass(className);
         if (!(valueClass instanceof CustomClass)) {

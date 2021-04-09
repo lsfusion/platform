@@ -489,17 +489,19 @@ formDeclaration returns [ScriptingFormEntity form]
 	int autoRefresh = 0;
 	String image = null;
 	String title = null;
+	boolean localAsync = false;
 	DebugInfo.DebugPoint point = getCurrentDebugPoint();
 }
 @after {
 	if (inMainParseState()) {
-		$form = self.createScriptedForm($formNameCaption.name, $formNameCaption.caption, point, image, modalityType, autoRefresh);
+		$form = self.createScriptedForm($formNameCaption.name, $formNameCaption.caption, point, image, modalityType, autoRefresh, localAsync);
 	}
 }
 	:	'FORM' 
 		formNameCaption=simpleNameWithCaption
 		(	('IMAGE' img=stringLiteral { image = $img.val; })
 		|	('AUTOREFRESH' refresh=intLiteral { autoRefresh = $refresh.val; })
+		|	('LOCALASYNC' { localAsync = true; })
 		)*
 	;
 

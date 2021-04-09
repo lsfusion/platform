@@ -775,7 +775,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public ScriptingFormEntity createScriptedForm(String formName, LocalizedString caption, DebugInfo.DebugPoint point, String icon,
-                                                  ModalityType modalityType, int autoRefresh) throws ScriptingErrorLog.SemanticErrorException {
+                                                  ModalityType modalityType, int autoRefresh, boolean localAsync) throws ScriptingErrorLog.SemanticErrorException {
         checks.checkDuplicateForm(formName);
         caption = (caption == null ? LocalizedString.create(formName) : caption);
 
@@ -787,6 +787,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         ScriptingFormEntity form = new ScriptingFormEntity(this, formEntity);
         form.setModalityType(modalityType);
         form.setAutoRefresh(autoRefresh);
+        form.setLocalAsync(localAsync);
 
         return form;
     }

@@ -1,9 +1,10 @@
 package lsfusion.interop.action;
 
-import java.io.IOException;
-
 public class AsyncGetRemoteChangesClientAction extends ExecuteClientAction {
-    public AsyncGetRemoteChangesClientAction() {
+    public boolean forceLocalEvents;
+
+    public AsyncGetRemoteChangesClientAction(boolean forceLocalEvents) {
+        this.forceLocalEvents = forceLocalEvents;
     }
 
     @Override
