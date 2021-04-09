@@ -4,7 +4,7 @@
     <parent>
         <groupId>lsfusion.platform.build</groupId>
         <artifactId>assemble</artifactId>
-        <version>4.2-CR</version>
+        <version>4.2_CR-SNAPSHOT</version>
         <relativePath>../assemble/pom.xml</relativePath>
     </parent>
 
