@@ -533,7 +533,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
                     public Consumer<Object> getCustomRendererValueChangeConsumer() {
                         return value -> form.changeProperty(property,
                                 GGridPropertyTable.this.getColumnKey(cell),
-                                GEditBindingMap.CHANGE,
+                                GGridPropertyTable.this.getColumnKey(cell),
                                 (Serializable) value,
                                 oldValue,
                                 null);

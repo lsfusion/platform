@@ -21,6 +21,7 @@ import lsfusion.client.form.property.cell.EditBindingMap;
 import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.classes.GClass;
+import lsfusion.gwt.client.form.design.GAlignment;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.design.GContainerType;

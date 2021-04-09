@@ -138,8 +138,6 @@ public class ActionOrPropertyPanelValue extends ActionOrPropertyValue implements
 
     @Override
     public Consumer<Object> getCustomRendererValueChangeConsumer() {
-        return value -> {
-              form.changeProperty(property, getColumnKey(), GEditBindingMap.CHANGE, (Serializable) value, getValue(), null);
-        };
+        return value -> form.changeProperty(property, columnKey, (Serializable) value, getValue(), null);
     }
 }

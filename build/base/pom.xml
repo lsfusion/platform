@@ -3,7 +3,7 @@
     <groupId>lsfusion.platform.build</groupId>
     <artifactId>base</artifactId>
     <packaging>pom</packaging>
-    <version>4.2-SNAPSHOT</version>
+    <version>4.2-CR</version>
     <name>Base</name>
 
     <properties>
@@ -36,7 +36,7 @@
         <keystore.pass>f7y45cnb</keystore.pass>
 
         <!-- DEPENDENCY VERSIONS -->
-        <lsfusion.version>4.2-SNAPSHOT</lsfusion.version>
+        <lsfusion.version>4.2-CR</lsfusion.version>
 
         <google.guava.version>19.0</google.guava.version>
     </properties>
