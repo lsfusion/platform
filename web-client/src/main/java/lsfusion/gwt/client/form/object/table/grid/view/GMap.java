@@ -124,7 +124,7 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
 
         Map<Object, JsArray<JavaScriptObject>> routes = new HashMap<>();
 
-        boolean markerCreated = false;
+        boolean fitBounds = false;
         Map<GGroupObjectValue, JavaScriptObject> oldMarkers = new HashMap<>(markers);
         JsArray<JavaScriptObject> markersToRefresh = JavaScriptObject.createArray().cast();
 
@@ -148,7 +148,7 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
             if(marker == null) {
                 marker = createMarker(map, groupMarker.polygon != null, fromObject(key), markerClusters);
                 markers.put(key, marker);
-                markerCreated = true;
+                fitBounds = true;
             }
 
             boolean isPoly = groupMarker.polygon != null;
@@ -166,6 +166,9 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
             if(oldGroupMarker == null || !(GwtClientUtils.nullEquals(groupMarker.latitude, oldGroupMarker.latitude) && GwtClientUtils.nullEquals(groupMarker.longitude, oldGroupMarker.longitude) && GwtClientUtils.nullEquals(groupMarker.polygon, oldGroupMarker.polygon))) {
                 updateLatLng(marker, groupMarker.latitude, groupMarker.longitude, getLatLngs(groupMarker.polygon));
                 refreshMarkers = false; //false because "updateLatLng" implicitly makes refresh
+
+                if (hasFitBoundsProperty(object))
+                    fitBounds = true;
             }
 
             if (refreshMarkers)
@@ -199,7 +202,7 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
             if(route.length() > 1)
                 lines.add(createLine(map, route));
 
-        if(markerCreated && !markers.isEmpty())
+        if(fitBounds && !markers.isEmpty())
             Scheduler.get().scheduleDeferred(() -> fitBounds(map, GwtSharedUtils.toArray(markers.values())));
     }
 
@@ -209,6 +212,10 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
         else
             return isReadOnly("latitude", key) && isReadOnly("longitude", key);
     }
+
+    protected native boolean hasFitBoundsProperty(JavaScriptObject object)/*-{
+        return object.hasOwnProperty('fitBounds') ? object.fitBounds : false;
+    }-*/;
 
     protected native JavaScriptObject createMap(com.google.gwt.dom.client.Element element, JavaScriptObject markerClusters)/*-{
         var L = $wnd.L;
