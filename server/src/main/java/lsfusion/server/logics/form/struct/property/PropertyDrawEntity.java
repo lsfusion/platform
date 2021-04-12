@@ -205,7 +205,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     public DataClass getRequestInputType(FormEntity form, SecurityPolicy policy) {
-        return getRequestInputType(CHANGE, form, policy, optimisticAsync);
+        return getRequestInputType(CHANGE, form, policy, true);
     }
 
     public DataClass getWYSRequestInputType(FormEntity form, SecurityPolicy policy) {
