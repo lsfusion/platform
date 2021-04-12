@@ -77,6 +77,29 @@ customUser (login) = GROUP AGGR CustomUser customUser WHERE customUser IS Custom
 upcaseLogin (CustomUser customUser) = upper(login(customUser));
 customUserUpcase (login) = GROUP MAX CustomUser customUser BY upcaseLogin(customUser);
 
+//migration 4 -> 5 version
+intersectingLoginsCount '{authentication.intersecting.logins}' (CustomUser user) = GROUP SUM 1 IF upper(login(CustomUser u)) == upper(login(user));
+intersectingLoginsCount () = GROUP SUM 1 IF intersectingLoginsCount(CustomUser u) > 1;
+FORM intersectingLogins '{authentication.intersecting.logins}'
+OBJECTS c = CustomUser
+PROPERTIES(c) login, intersectingLoginsCount
+FILTERS intersectingLoginsCount(c) > 1 
+;
+
+showIntersectingLogins '{authentication.intersecting.logins}' ()  {
+    SHOW intersectingLogins;
+}
+
+EXTEND FORM migrationData 
+    PROPERTIES showIntersectingLogins()
+;
+
+DESIGN migrationData {
+    commons {
+        MOVE PROPERTY(showIntersectingLogins());
+    }
+}
+
 // password
 sha256Password '{authentication.password}' = DATA STRING[100] (CustomUser) ECHO;
 calculatedHash = DATA LOCAL STRING[100] ();
