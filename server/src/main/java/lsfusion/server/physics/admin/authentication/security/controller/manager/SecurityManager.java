@@ -9,7 +9,6 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
-import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.lru.LRUSVSMap;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.interop.base.exception.AuthenticationException;
@@ -23,7 +22,6 @@ import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.query.build.QueryBuilder;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.DataObject;
-import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.language.property.oraction.LAP;
@@ -31,7 +29,6 @@ import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.session.DataSession;
-import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
@@ -183,8 +180,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
     }
 
     public DataObject readUser(String login, DataSession session) throws SQLException, SQLHandledException {
-        ObjectValue userObject = authenticationLM.useLDAP.read(session) != null ? authenticationLM.customUserUpcaseLogin.readClasses(session, new DataObject(login.toUpperCase(), StringClass.get(100))) :
-                authenticationLM.customUserLogin.readClasses(session, new DataObject(login, StringClass.get(100)));
+        ObjectValue userObject = authenticationLM.customUserNormalized.readClasses(session, new DataObject(login));
         return userObject.isNull() ? null : (DataObject) userObject;
     }
 
