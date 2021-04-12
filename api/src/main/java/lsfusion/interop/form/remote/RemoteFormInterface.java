@@ -27,7 +27,7 @@ public interface RemoteFormInterface extends RemoteRequestInterface {
 
     Set<Integer> getInputGroupObjects() throws RemoteException;
 
-    ServerResponse getRemoteChanges(long requestIndex, long lastReceivedRequestIndex, boolean refresh) throws RemoteException;
+    ServerResponse getRemoteChanges(long requestIndex, long lastReceivedRequestIndex, boolean refresh, boolean forceLocalEvents) throws RemoteException;
 
     // events : form
 

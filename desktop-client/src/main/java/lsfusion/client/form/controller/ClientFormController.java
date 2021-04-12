@@ -371,7 +371,7 @@ public class ClientFormController implements AsyncListener {
                                 rmiQueue.asyncRequest(new ProcessServerResponseRmiRequest("autoRefresh.getRemoteChanges") {
                                     @Override
                                     protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                                        return remoteForm.getRemoteChanges(requestIndex, lastReceivedRequestIndex, true);
+                                        return remoteForm.getRemoteChanges(requestIndex, lastReceivedRequestIndex, true, false);
                                     }
 
                                     @Override
@@ -634,10 +634,14 @@ public class ClientFormController implements AsyncListener {
     }
 
     public void getRemoteChanges(boolean async) {
+        getRemoteChanges(async, false);
+    }
+
+    public void getRemoteChanges(boolean async, boolean forceLocalEvents) {
         ProcessServerResponseRmiRequest request = new ProcessServerResponseRmiRequest("getRemoteChanges") {
             @Override
             protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                return remoteForm.getRemoteChanges(requestIndex, lastReceivedRequestIndex, false);
+                return remoteForm.getRemoteChanges(requestIndex, lastReceivedRequestIndex, false, forceLocalEvents);
             }
         };
         if (async) {

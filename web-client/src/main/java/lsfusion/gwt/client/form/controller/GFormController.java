@@ -581,7 +581,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             public boolean execute() {
                 if (!formHidden) {
                     if (isShowing(GFormController.this)) {
-                        dispatcher.execute(new GetRemoteChanges(true), new ServerResponseCallback() {
+                        dispatcher.execute(new GetRemoteChanges(true, false), new ServerResponseCallback() {
                             @Override
                             public void success(ServerResponseResult response) {
                                 super.success(response);
@@ -608,7 +608,11 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     public void getRemoteChanges() {
-        dispatcher.execute(new GetRemoteChanges(), new ServerResponseCallback());
+        getRemoteChanges(false);
+    }
+
+    public void getRemoteChanges(boolean forceLocalEvents) {
+        dispatcher.execute(new GetRemoteChanges(forceLocalEvents), new ServerResponseCallback());
     }
 
     private boolean formVisible = false;

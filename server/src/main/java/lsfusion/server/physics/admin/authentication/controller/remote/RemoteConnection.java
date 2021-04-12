@@ -260,7 +260,7 @@ public abstract class RemoteConnection extends RemoteRequestObject {
     }
 
     @Override
-    protected ServerResponse prepareResponse(long requestIndex, List<ClientAction> pendingActions, ExecutionStack stack) {
+    protected ServerResponse prepareResponse(long requestIndex, List<ClientAction> pendingActions, ExecutionStack stack, boolean forceLocalEvents) {
         return null;
     }
 }
