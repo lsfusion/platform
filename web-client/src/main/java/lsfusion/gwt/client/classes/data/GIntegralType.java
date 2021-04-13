@@ -28,18 +28,18 @@ public abstract class GIntegralType extends GFormatType<NumberFormat> {
         return Math.min(lengthValue <= 6 ? lengthValue : (int) round(6 + pow(lengthValue - 6, 0.7)), 10);
     }
 
-    protected Double parseToDouble(String s) throws ParseException {
+    protected Double parseToDouble(String s, String pattern) throws ParseException {
         assert s != null;
         try {
-            return GwtClientUtils.smartParse(s);
+            return GwtClientUtils.smartParse(s, getFormat(pattern));
         } catch (NumberFormatException e) {
             throw new ParseException("string " + s + "can not be converted to double", 0);
         }
     }
 
-    public String formatDouble(Double value) {
+    public String formatDouble(Double value, String pattern) {
         assert value != null;
-        return GwtClientUtils.plainFormat(value);
+        return GwtClientUtils.plainFormat(value, getFormat(pattern));
     }
 
     @Override
