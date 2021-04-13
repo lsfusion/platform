@@ -1062,8 +1062,27 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         return sum == null ? 0 : sum;
     }
 
+    private enum HasChanges {
+        HAS, NO, NULL;
+
+        public static HasChanges toHasChanges(Boolean b) {
+            return b != null ? (b ? HAS : NO) : NULL;
+        }
+
+        public Boolean toBoolean() {
+            switch (this) {
+                case HAS:
+                    return true;
+                case NO:
+                    return false;
+            }
+            return null;
+        }
+
+    }
+
     // later it would be better if this map is automatically cleaned / filled some way
-    private Map<Property, Boolean> asyncPropertyChanges = new ConcurrentHashMap<>();
+    private Map<Property, HasChanges> asyncPropertyChanges = new ConcurrentHashMap<>();
     // thread-safe
     private void updateAsyncPropertyChanges() throws SQLException, SQLHandledException {
         for(Property property : asyncPropertyChanges.keySet())
@@ -1072,15 +1091,15 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     // thread-safe
     private boolean updateAsyncPropertyChanges(Property property) throws SQLException, SQLHandledException {
         boolean hasChanges = property.hasChanges(getModifier());
-        asyncPropertyChanges.put(property, hasChanges);
+        asyncPropertyChanges.put(property, HasChanges.toHasChanges(hasChanges));
         return hasChanges;
     }
     // true - has, false - has not, null - not sure, not thread-safe
     private Boolean hasOptimisticAsyncChanges(Property property) {
         if(asyncPropertyChanges.containsKey(property))
-            return asyncPropertyChanges.get(property);
+            return asyncPropertyChanges.get(property).toBoolean();
 
-        asyncPropertyChanges.put(property, null);
+        asyncPropertyChanges.put(property, HasChanges.NULL);
         return null;
     }
 
@@ -1141,7 +1160,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
         String[] result = logicsInstance.getDbManager().getAsyncValues(listProperty, value);
         if(needRecheck) // not sure yet, resending RECHECK
-            result = BaseUtils.addElement(result, "RECHECK", BaseUtils.stringInstancer);
+            result = BaseUtils.addElement(result, RECHECK, BaseUtils.stringInstancer);
         return result;
 
     }
