@@ -5,6 +5,7 @@ import lsfusion.base.*;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
+import lsfusion.base.col.heavy.concurrent.weak.ConcurrentIdentityWeakHashSet;
 import lsfusion.base.col.implementations.abs.AMap;
 import lsfusion.base.col.implementations.abs.ASet;
 import lsfusion.base.col.interfaces.immutable.*;
@@ -12,7 +13,11 @@ import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
+import lsfusion.base.col.lru.LRUUtil;
+import lsfusion.base.col.lru.LRUWVSMap;
+import lsfusion.base.col.lru.LRUWWVSMap;
 import lsfusion.base.file.RawFileData;
+import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.interop.ProgressBar;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.form.property.ExtInt;
@@ -67,6 +72,7 @@ import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.ObjectValueClassSet;
 import lsfusion.server.logics.controller.manager.RestartManager;
+import lsfusion.server.logics.form.interactive.action.input.InputValueList;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.navigator.controller.env.*;
 import lsfusion.server.logics.property.AggregateProperty;
@@ -873,17 +879,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 },
                 () -> 0,
                 new ChangesController() {
-                    public void regChange(ImSet<Property> changes, DataSession session) {
-                    }
-
-                    public ImSet<Property> update(DataSession session, FormInstance form) {
-                        return SetFact.EMPTY();
-                    }
-
-                    public void registerForm(FormInstance form) {
-                    }
-
-                    public void unregisterForm(FormInstance form) {
+                    public DBManager getDbManager() {
+                        return DBManager.this;
                     }
                 }, Locale::getDefault, upOwner
         );
@@ -942,6 +939,108 @@ public class DBManager extends LogicsManager implements InitializingBean {
             }
         }
         return droppedTables;
+    }
+
+    // dropping caches when there are changes depending on inputListProperties
+    private static class Param {
+        public final ImMap<?, ObjectValue> mapValues;
+        public final String value;
+
+        public Param(ImMap<?, ObjectValue> mapValues, String value) {
+            this.mapValues = mapValues;
+            this.value = value;
+        }
+
+        public boolean equals(Object o) {
+            return this == o || o instanceof Param && mapValues.equals(((Param) o).mapValues) && value.equals(((Param) o).value);
+        }
+
+        public int hashCode() {
+            return mapValues.hashCode() * 31 + value.hashCode();
+        }
+    }
+    private static class ParamRef {
+        public Param param;
+
+        public ParamRef(Param param) {
+            this.param = param;
+        }
+
+        private void drop() {
+            param = null;
+        }
+    }
+    private static class ValueRef {
+        // it's the only strong value to keep it from garbage collected
+        public final ParamRef ref;
+        public final String[] values;
+
+        public ValueRef(ParamRef ref, String[] values) {
+            this.ref = ref;
+            this.values = values;
+        }
+    }
+
+    // need this to clean outdated caches
+    // could be done easier with timestamps (value and last changed), but this way cache will be cleaned faster
+    private final LRUWVSMap<Property<?>, ConcurrentIdentityWeakHashSet<ParamRef>> asyncValuesPropCache = new LRUWVSMap<>(LRUUtil.G1);
+
+    private final LRUWWVSMap<Property<?>, Param, ValueRef> asyncValuesValueCache = new LRUWWVSMap<>(LRUUtil.G1);
+
+    public <P extends PropertyInterface> String[] getAsyncValues(InputValueList<P> list, String value) throws SQLException, SQLHandledException {
+        Param param = new Param(list.mapValues, value);
+
+        ValueRef valueRef = asyncValuesValueCache.get(list.property, param);
+        if(valueRef != null && valueRef.ref.param != null)
+            return valueRef.values;
+
+        // has to be before reading to be sure that ref will be dropped when changes are made
+        ParamRef ref = new ParamRef(param);
+        ConcurrentIdentityWeakHashSet<ParamRef> paramRefs = asyncValuesPropCache.get(list.property);
+        if(paramRefs == null) {
+            paramRefs = new ConcurrentIdentityWeakHashSet<>();
+            asyncValuesPropCache.put(list.property, paramRefs);
+        }
+        paramRefs.add(ref);
+
+        String[] values = readAsyncValues(list, value);
+        asyncValuesValueCache.put(list.property, param, new ValueRef(ref, values));
+
+        return values;
+    }
+
+    private <P extends PropertyInterface> String[] readAsyncValues(InputValueList<P> list, String value) throws SQLException, SQLHandledException {
+        String[] values;
+        try(DataSession session = createSession()) {
+            values = FormInstance.getAsyncValues(list, session, Property.defaultModifier, value);
+        }
+        return values;
+    }
+
+    public void flushChanges() {
+        ImSet<Property> flushedChanges;
+        synchronized (changesListLock) {
+            flushedChanges = mChanges.immutable();
+        }
+        if(flushedChanges.isEmpty())
+            return;
+
+        FunctionSet<Property> changedSet = Property.getDependsOnSet(flushedChanges);
+        asyncValuesPropCache.proceedSafeLockLRUEKeyValues((property, refs) -> {
+            if(property != null && changedSet.contains(property)) {
+                for(ParamRef ref : refs)
+                    ref.drop(); // dropping ref will eventually lead to garbage collection of entries in all lru caches, plus there is a check that cache is dropped
+            }
+        });
+    }
+
+    private final Object changesListLock = new Object();
+    private MSet<Property> mChanges = SetFact.mSet();
+
+    public void registerChange(ImSet<Property> properties) {
+        synchronized (changesListLock) {
+            mChanges.addAll(properties);
+        }
     }
 
     private static ImMap<String, ImRevMap<String, String>> getFieldToCanMap(DBStructure<?> dbStructure) {

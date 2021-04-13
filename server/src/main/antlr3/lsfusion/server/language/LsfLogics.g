@@ -3724,14 +3724,19 @@ inputActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams ac
 
     NamedPropertyUsage outProp = null;
     LPWithParams changeProp = null;
+    LPWithParams listProp = null;
 }
 @after {
 	if (inMainParseState()) {
-		$action = self.addScriptedInputAProp($in.dataClass, $in.initValue, outProp, $dDB.action, $dDB.elseAction, context, newContext, assign, changeProp, assignDebugPoint);
+		$action = self.addScriptedInputAProp($in.dataClass, $in.initValue, outProp, $dDB.action, $dDB.elseAction, context, newContext, assign, changeProp, listProp, assignDebugPoint);
 	}
 }
 	:	'INPUT'
 	    in=mappedInput[newContext]
+	    ('LIST'
+	        { List<TypedParameter> newListContext = new ArrayList<TypedParameter>(context); }
+	        listExpr=propertyExpression[newListContext, true] { listProp = $listExpr.property; }
+	    )?
         ( { assignDebugPoint = getCurrentDebugPoint(); } 
             'CHANGE' { assign = true; }
             (EQ consExpr=propertyExpression[context, false])? { changeProp = $consExpr.property; }

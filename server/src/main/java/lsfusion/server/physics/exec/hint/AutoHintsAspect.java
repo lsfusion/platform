@@ -55,6 +55,12 @@ public class AutoHintsAspect {
     public static ThreadLocal<SessionModifier> catchAutoHint = new ThreadLocal<>();
     public static ThreadLocal<Boolean> catchNotFirst = new ThreadLocal<>();
 
+    public static ThreadLocal<Property> catchDisabledDepends = new ThreadLocal<>();
+    private static boolean disabledDepends(Property property) {
+        Property disabledDepends = catchDisabledDepends.get();
+        return disabledDepends != null && Property.depends(property, disabledDepends);
+    }
+
     public static ThreadLocal<Integer> catchDisabledRepeat = new ThreadLocal<>();
     public static void pushDisabledRepeat() {
         Integer prev = catchDisabledRepeat.get();
@@ -260,7 +266,7 @@ public class AutoHintsAspect {
             return thisJoinPoint.proceed();
 
         SessionModifier catchHint = catchAutoHint.get();
-        if(catchHint != null && catchHint.allowPrereadValues(property, interfaceValues)) // если есть не "прочитанные" параметры - значения, вычисляем
+        if(catchHint != null && catchHint.allowPrereadValues(property, interfaceValues) && !disabledDepends(property)) // если есть не "прочитанные" параметры - значения, вычисляем
             throw new HintException(new PrereadHint(property, interfaceValues));
 
         IQuery<?, String> result = (IQuery) thisJoinPoint.proceed();
@@ -268,7 +274,7 @@ public class AutoHintsAspect {
             return result;
 
         // проверка на пустоту для оптимизации при старте
-        if(catchHint != null && !propChanges.isEmpty() && catchHint.allowHintIncrement(property) && !property.isNoHint()) { // неправильно так как может быть не changed
+        if(catchHint != null && !propChanges.isEmpty() && catchHint.allowHintIncrement(property) && !property.isNoHint() && !disabledDepends(property)) { // неправильно так как может быть не changed
             Where changed = null;
             if(queryType.needChange())
                 changed = result.getExpr("changed").getWhere();

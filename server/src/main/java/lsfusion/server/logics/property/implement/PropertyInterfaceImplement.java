@@ -16,6 +16,7 @@ import lsfusion.server.logics.action.session.change.PropertyChange;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.action.session.changed.OldProperty;
+import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
 import lsfusion.server.logics.property.CalcType;
 import lsfusion.server.logics.property.Property;
@@ -53,6 +54,7 @@ public interface PropertyInterfaceImplement<P extends PropertyInterface> extends
     ObjectValue readClasses(ExecutionContext context, ImMap<P, ? extends ObjectValue> interfaceValues) throws SQLException, SQLHandledException;
 
     ActionMapImplement<?, P> mapEventAction(String eventSID, ImList<Property> viewProperties);
+    Property<?> mapViewProperty(CustomClass customClass, ImList<Property> viewProperties);
 
     boolean mapHasAlotKeys();
     int mapEstComplexity();

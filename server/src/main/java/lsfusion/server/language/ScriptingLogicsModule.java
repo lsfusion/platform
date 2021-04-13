@@ -84,6 +84,7 @@ import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.action.expand.ExpandCollapseType;
 import lsfusion.server.logics.form.interactive.action.focus.ActivateAction;
 import lsfusion.server.logics.form.interactive.action.focus.IsActiveFormAction;
+import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
@@ -2131,7 +2132,44 @@ public class ScriptingLogicsModule extends LogicsModule {
         return requestDataClass;
     }
 
-    public LAWithParams addScriptedInputAProp(DataClass requestDataClass, LPWithParams oldValue, NamedPropertyUsage targetProp, LAWithParams doAction, LAWithParams elseAction, List<TypedParameter> oldContext, List<TypedParameter> newContext, boolean assign, LPWithParams changeProp, DebugInfo.DebugPoint assignDebugPoint) throws ScriptingErrorLog.SemanticErrorException {
+    // similar to Context Filter Entity
+    private static class ILEWithParams {
+        public final ImOrderSet<Integer> usedParams;
+        public final ImOrderSet<PropertyInterface> orderInterfaces;
+        public final InputListEntity<?, PropertyInterface> list;
+
+        public ILEWithParams(ImOrderSet<Integer> usedParams, ImOrderSet<PropertyInterface> orderInterfaces, InputListEntity<?, PropertyInterface> list) {
+            this.usedParams = usedParams;
+            this.orderInterfaces = orderInterfaces;
+            assert usedParams.size() == orderInterfaces.size();
+            this.list = list;
+        }
+    }
+    private <O extends ObjectSelector, T extends PropertyInterface> ScriptingLogicsModule.ILEWithParams getContextListEntity(int contextSize, ScriptingLogicsModule.LPWithParams list) {
+        if(list == null)
+            return new ILEWithParams(SetFact.EMPTYORDER(), SetFact.EMPTYORDER(), null);
+
+        ImOrderSet<Integer> usedParams = SetFact.fromJavaOrderSet(list.usedParams);
+        ImOrderSet<Integer> usedContextParams = usedParams.filterOrder(element -> element < contextSize);
+        ImOrderSet<PropertyInterface> orderInterfaces = genInterfaces(usedContextParams.size());
+        ImRevMap<Integer, PropertyInterface> usedInterfaces = usedContextParams.mapSet(orderInterfaces);
+
+        LP<T> lp = (LP<T>) list.getLP();
+        int size = lp.listInterfaces.size();
+        MRevMap<T, PropertyInterface> mMapValues = MapFact.mRevMapMax(size);
+        for(int i = 0; i<size; i++) {
+            T pi = lp.listInterfaces.get(i);
+            Integer usedParam = list.usedParams.get(i);
+            PropertyInterface ii = usedInterfaces.get(usedParam);
+            if(ii != null) // only context parameters
+                mMapValues.revAdd(pi, ii);
+        }
+        ImRevMap<T, PropertyInterface> mapValues = mMapValues.immutableRev();
+        assert mapValues.valuesSet().equals(orderInterfaces.getSet());
+        return new ScriptingLogicsModule.ILEWithParams(usedContextParams, orderInterfaces, new InputListEntity<>(lp.getActionOrProperty(), mapValues, false));
+    }
+
+    public LAWithParams addScriptedInputAProp(DataClass requestDataClass, LPWithParams oldValue, NamedPropertyUsage targetProp, LAWithParams doAction, LAWithParams elseAction, List<TypedParameter> oldContext, List<TypedParameter> newContext, boolean assign, LPWithParams changeProp, LPWithParams listProp, DebugInfo.DebugPoint assignDebugPoint) throws ScriptingErrorLog.SemanticErrorException {
         assert targetProp == null;
         LP<?> tprop = getInputProp(targetProp, requestDataClass, null);
 
@@ -2141,15 +2179,27 @@ public class ScriptingLogicsModule extends LogicsModule {
         if(assign && doAction == null) // we will need to add change props, temporary will make this action empty to avoid extra null checks 
             doAction = new LAWithParams(baseLM.getEmpty(), new ArrayList<Integer>());
 
-        // optimization. we don't use files on client side (see also DefaultChangeAction.executeCustom()) 
+        // optimization. we don't use files on client side (see also DefaultChangeAction.executeCustom())
         if (oldValue != null && requestDataClass instanceof FileClass)
             oldValue = null;
 
-        LA action = addInputAProp(requestDataClass, tprop != null ? tprop.property : null, oldValue != null);
+        ILEWithParams contextEntity = getContextListEntity(oldContext.size(), listProp);
+
+        LA action = addInputAProp(requestDataClass, tprop.property, oldValue != null, contextEntity.orderInterfaces, contextEntity.list);
+
+        List<LPWithParams> mapping = new ArrayList<>();
+
+        if(oldValue != null) {
+            mapping.add(oldValue);
+        }
+
+        for (int usedParam : contextEntity.usedParams) {
+            mapping.add(new LPWithParams(usedParam));
+        }
 
         LAWithParams inputAction;
-        if (oldValue != null)
-            inputAction = addScriptedJoinAProp(action, Collections.singletonList(oldValue));
+        if (mapping.size() > 0)
+            inputAction = addScriptedJoinAProp(action, mapping);
         else
             inputAction = new LAWithParams(action, Collections.emptyList());
 
@@ -3161,10 +3211,6 @@ public class ScriptingLogicsModule extends LogicsModule {
         ImList<O> mappedObjects = mapped.objects;
         ImOrderSet<O> contextObjects = getMappingObjectsArray(mapped, objectsContext);
 
-        MList<O> mInputObjects = ListFact.mListMax(mappedObjects.size());
-        MList<Boolean> mInputNulls = ListFact.mListMax(mappedObjects.size());
-        MList<LP> mInputProps = ListFact.mListMax(mappedObjects.size());
-
         MList<O> mObjects = ListFact.mListMax(mappedObjects.size());
         List<LPWithParams> mapping = new ArrayList<>();
         MList<Boolean> mNulls = ListFact.mListMax(mappedObjects.size());
@@ -3177,15 +3223,12 @@ public class ScriptingLogicsModule extends LogicsModule {
             mNulls.add(objectProp.inNull);
             assert !objectProp.out && !objectProp.constraintFilter;
         }
-        ImList<O> inputObjects = mInputObjects.immutableList();
-        ImList<Boolean> inputNulls = mInputNulls.immutableList();
-        ImList<LP> inputProps = mInputProps.immutableList();
 
         CFEWithParams<O> contextEntities = getContextFilterEntities(oldContext.size(), contextObjects, ListFact.fromJavaList(contextFilters), ListFact.EMPTY());
 
         ImList<O> objects = mObjects.immutableList();
         LA action = addIFAProp(null, LocalizedString.NONAME, mapped.form, objects, mNulls.immutableList(),
-                inputObjects, inputProps, inputNulls,
+                ListFact.EMPTY(), ListFact.EMPTY(), ListFact.EMPTY(),
                 manageSession, noCancel,
                 contextEntities.orderInterfaces, contextEntities.filters,
                 syncType, windowType, false, checkOnOk,

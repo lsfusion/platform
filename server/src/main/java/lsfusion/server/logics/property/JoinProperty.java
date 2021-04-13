@@ -1,6 +1,7 @@
 package lsfusion.server.logics.property;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.col.ListFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MSet;
@@ -20,7 +21,7 @@ import lsfusion.server.logics.action.session.change.PropertyChange;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
 import lsfusion.server.logics.action.session.change.StructChanges;
 import lsfusion.server.logics.classes.ValueClass;
-import lsfusion.server.logics.form.interactive.action.change.DefaultChangeAggAction;
+import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.property.classes.data.AndFormulaProperty;
 import lsfusion.server.logics.property.classes.data.CompareFormulaProperty;
 import lsfusion.server.logics.property.classes.data.NotFormulaProperty;
@@ -297,29 +298,26 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
             if((editClass != null && editClass.getDefaultOpenAction(ThreadLocalContext.getBusinessLogics()) != null)) // just call open action (see super implementation)
                 return super.getDefaultEventAction(eventActionSID, viewProperties);
 
-            ActionMapImplement<?, T> editImplement = implement.property.getEventAction(eventActionSID);
+            ActionMapImplement<?, T> editImplement = implement.property.getEventAction(eventActionSID, ListFact.EMPTY());
             if(editImplement != null)
                 return PropertyFact.createJoinAction(editImplement.map(implement.mapping));
         }
 
-        if (implement.mapping.size() == 1 && !isIdentity) {
-            ValueClass aggClass = ((PropertyMapImplement<?, Interface>) implement.mapping.singleValue()).property.getValueClass(ClassType.editValuePolicy);
+        if (implement.mapping.size() == 1 && !isIdentity)
+            return implement.mapping.singleValue().mapEventAction(eventActionSID, viewProperties.addList(aggProp));
 
-            if (eventActionSID.equals(ServerResponse.CHANGE_WYS)) {
-                ActionMapImplement<?, Interface> changeActionImplement = getEventAction(ServerResponse.CHANGE);
-                if(changeActionImplement==null)
-                    return null;
-
-                ImOrderSet<Interface> listInterfaces = getOrderInterfaces();
-                DefaultChangeAggAction<T> aggChangeAction =
-                        new DefaultChangeAggAction<>(LocalizedString.NONAME, listInterfaces, aggProp, aggClass, changeActionImplement);
-                return aggChangeAction.getImplement(listInterfaces);
-            } else
-                return implement.mapping.singleValue().mapEventAction(eventActionSID, viewProperties.addList(aggProp));
-        }
         return super.getDefaultEventAction(eventActionSID, viewProperties);
     }
-    
+
+    @Override
+    public Property<?> getViewProperty(CustomClass customClass, ImList<Property> viewProperties) {
+        Property<T> aggProp = implement.property;
+        if (implement.mapping.size() == 1 && !isIdentity)
+            return implement.mapping.singleValue().mapViewProperty(customClass, viewProperties.addList(aggProp));
+
+        return super.getViewProperty(customClass, viewProperties);
+    }
+
     public boolean checkEquals() {
         if (implement.property instanceof AndFormulaProperty) {
             AndFormulaProperty andProp = (AndFormulaProperty) implement.property;

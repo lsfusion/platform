@@ -17,6 +17,7 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
+import lsfusion.server.logics.form.interactive.action.input.SimpleRequestInput;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
@@ -94,25 +95,25 @@ public class TryAction extends KeepContextAction {
     }
 
     @Override
-    public Type getFlowSimpleRequestInputType(boolean optimistic, boolean inRequest) {
-        Type tryType = tryAction.action.getSimpleRequestInputType(optimistic, inRequest);
-        Type catchType = catchAction == null ? null : catchAction.action.getSimpleRequestInputType(optimistic, inRequest);
-        Type finallyType = finallyAction == null ? null : finallyAction.action.getSimpleRequestInputType(optimistic, inRequest);
+    public SimpleRequestInput<PropertyInterface> getFlowSimpleRequestInputType(boolean optimistic, boolean inRequest) {
+        SimpleRequestInput<PropertyInterface> trySimpleInput = tryAction.mapSimpleRequestInput(optimistic, inRequest);
+        SimpleRequestInput<PropertyInterface> catchSimpleInput = catchAction == null ? null : catchAction.mapSimpleRequestInput(optimistic, inRequest);
+        SimpleRequestInput<PropertyInterface> finallySimpleInput = finallyAction == null ? null : finallyAction.mapSimpleRequestInput(optimistic, inRequest);
 
         if (!optimistic) {
-            if (tryType == null) {
+            if (trySimpleInput == null) {
                 return null;
             }
-            if (catchAction != null && catchType == null) {
+            if (catchAction != null && catchSimpleInput == null) {
                 return null;
             }
-            if (finallyAction != null && finallyType == null) {
+            if (finallyAction != null && finallySimpleInput == null) {
                 return null;
             }
         }
 
-        Type type = tryType == null ? catchType : (catchType == null ? tryType : tryType.getCompatible(catchType));
-        return type == null ? finallyType : (finallyType == null ? type : type.getCompatible(finallyType));
+        SimpleRequestInput<PropertyInterface> type = trySimpleInput == null ? catchSimpleInput : (catchSimpleInput == null ? trySimpleInput : trySimpleInput.merge(catchSimpleInput));
+        return type == null ? finallySimpleInput : (finallySimpleInput == null ? type : type.merge(finallySimpleInput));
     }
 
     @Override

@@ -25,6 +25,7 @@ public interface ImList<K> extends Iterable<K> {
     ImCol<K> getCol();
 
     int indexOf(K key);
+    boolean containsNull();
     ImMap<Integer, K> toIndexedMap();
 
     ImList<K> addList(ImList<? extends K> list);

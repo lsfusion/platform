@@ -6,8 +6,10 @@ import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.panel.view.ActionOrPropertyValue;
+import lsfusion.interop.action.ServerResponse;
 
 import java.util.function.Consumer;
 
@@ -15,8 +17,8 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
 
     private final Consumer<Object> afterCommit;
 
-    public GDataFilterPropertyValue(GPropertyDraw property, GFormController form, Consumer<Object> afterCommit) {
-        super(property, form);
+    public GDataFilterPropertyValue(GPropertyDraw property, GGroupObjectValue columnKey, GFormController form, Consumer<Object> afterCommit) {
+        super(property, columnKey, form);
 
         this.afterCommit = afterCommit;
 
@@ -82,7 +84,7 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
     protected void onEditEvent(EventHandler handler) {
         if(property.isFilterChange(handler.event)) {
             handler.consume();
-            form.edit(property.baseType, handler.event, false, null, this::setValue, afterCommit, () -> {}, this);
+            form.edit(property.baseType, handler.event, false, null, this::setValue, afterCommit, () -> {}, this, ServerResponse.FILTER);
         }
     }
 }

@@ -98,6 +98,7 @@ public class MainDispatchServlet extends net.customware.gwt.dispatch.server.stan
         registry.addHandler(new GetInitialFilterPropertyHandler(this));
         registry.addHandler(new GetRemoteActionMessageHandler(this));
         registry.addHandler(new CloseHandler(this));
+        registry.addHandler(new GetAsyncValuesHandler(this));
         registry.addHandler(new GetRemoteActionMessageListHandler(this));
         registry.addHandler(new GetRemoteChangesHandler(this));
         registry.addHandler(new GroupReportHandler(this));

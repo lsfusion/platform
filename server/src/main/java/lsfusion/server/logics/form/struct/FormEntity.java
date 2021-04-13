@@ -35,6 +35,7 @@ import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.LogicalClass;
+import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.form.interactive.action.lifecycle.FormToolbarAction;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
@@ -42,14 +43,12 @@ import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.open.FormSelector;
+import lsfusion.server.logics.form.open.interactive.SimpleDialogInput;
 import lsfusion.server.logics.form.stat.FormGroupHierarchyCreator;
 import lsfusion.server.logics.form.stat.GroupObjectHierarchy;
 import lsfusion.server.logics.form.stat.StaticDataGenerator;
 import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
-import lsfusion.server.logics.form.struct.filter.FilterEntity;
-import lsfusion.server.logics.form.struct.filter.FilterEntityInstance;
-import lsfusion.server.logics.form.struct.filter.RegularFilterEntity;
-import lsfusion.server.logics.form.struct.filter.RegularFilterGroupEntity;
+import lsfusion.server.logics.form.struct.filter.*;
 import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
@@ -454,6 +453,13 @@ public class FormEntity implements FormSelector<ObjectEntity> {
             return applyObject == null ? GroupObjectEntity.NULL : applyObject;
         });
     }
+    // in theory upper method could be used but we can't do that with inheritance because of O generic type
+    public <P extends PropertyInterface> ImMap<GroupObjectEntity, ImSet<ContextFilterEntity<?, P, ObjectEntity>>> getGroupContextFilters(ImSet<ContextFilterEntity<?, P, ObjectEntity>> filters) {
+        return filters.group(key -> {
+            GroupObjectEntity applyObject = getApplyObject(key.getObjects(), SetFact.EMPTY());
+            return applyObject == null ? GroupObjectEntity.NULL : applyObject;
+        });
+    }
 
     @IdentityLazy
     public ImMap<GroupObjectEntity, ImOrderSet<PropertyDrawEntity>> getGroupProperties(final ImSet<GroupObjectEntity> excludeGroupObjects, final boolean supportGroupColumns) {
@@ -461,6 +467,31 @@ public class FormEntity implements FormSelector<ObjectEntity> {
             GroupObjectEntity applyObject = key.getApplyObject(FormEntity.this, excludeGroupObjects, supportGroupColumns);
             return applyObject == null ? GroupObjectEntity.NULL : applyObject;
         });
+    }
+
+    @Override
+    public <P extends PropertyInterface> SimpleDialogInput<P> getSimpleDialogInput(BaseLogicsModule LM, ObjectEntity object, LP targetProp, ImSet<ContextFilterEntity<?, P, ObjectEntity>> contextFilters, ImRevMap<ObjectEntity, P> mapObjects) {
+        if(!(object.baseClass instanceof CustomClass))
+            return null;
+
+        GroupObjectEntity groupObject = object.groupTo;
+
+        // just like in InputListEntity.mapInner we will ignore the cases when there are not all objects
+        if(groupObject.getObjects().size() > 1)
+            return null;
+
+        mapObjects = mapObjects.removeRev(object);
+
+        ImSet<FilterEntity> filters = getGroupFixedFilters(SetFact.EMPTY()).get(groupObject);
+        if(filters == null)
+            filters = SetFact.EMPTY();
+        ImSet<? extends ContextFilterEntity<?, P, ObjectEntity>> contextFilterEntities = filters.mapSetValues((FilterEntity filterEntity) -> ((FilterEntity<?>) filterEntity).getContext());
+
+        ImSet<ContextFilterEntity<?, P, ObjectEntity>> contextGroupFilters = getGroupContextFilters(contextFilters).get(groupObject);
+        if(contextGroupFilters == null)
+            contextGroupFilters = SetFact.EMPTY();
+
+        return new SimpleDialogInput<>((CustomClass)object.baseClass, targetProp, groupObject.getInputListEntity(SetFact.addExclSet(contextFilterEntities, contextGroupFilters), mapObjects));
     }
 
     // correlated with FormGroupHierarchyCreator.addDependenciesToGraph
@@ -577,7 +608,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
                 return new GroupMetaExternal(properties.getSet().mapValues(new Function<PropertyDrawEntity, PropMetaExternal>() {
                     public PropMetaExternal apply(PropertyDrawEntity value) {
-                        AsyncEventExec asyncEventExec = ((PropertyDrawEntity<?>) value).getAsyncEventExec(FormEntity.this, policy, CHANGE);
+                        AsyncEventExec asyncEventExec = ((PropertyDrawEntity<?>) value).getAsyncEventExec(FormEntity.this, policy, CHANGE, true);
                         Boolean newDelete = asyncEventExec instanceof AsyncAddRemove ? ((AsyncAddRemove) asyncEventExec).add : null;
                         return new PropMetaExternal(ThreadLocalContext.localize(value.getCaption()), value.isProperty() ? value.getType().getJSONType() : "action", newDelete);
                     }

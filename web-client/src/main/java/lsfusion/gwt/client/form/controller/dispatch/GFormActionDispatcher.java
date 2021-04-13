@@ -11,11 +11,11 @@ import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.form.classes.view.ClassChosenHandler;
 import lsfusion.gwt.client.form.controller.GFormController;
-import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.controller.ExecuteEditContext;
 import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
 import lsfusion.gwt.client.navigator.window.GModalityType;
 import lsfusion.gwt.client.view.MainFrame;
+import lsfusion.interop.action.ServerResponse;
 
 public class GFormActionDispatcher extends GwtActionDispatcher {
     protected final GFormController form;
@@ -147,7 +147,7 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
         form.edit(action.readType, editEvent, action.hasOldValue, action.oldValue,
                 value -> form.changeEditPropertyValue(editContext, actionSID, action.readType, value, getDispatchingIndex()), // we'll be optimists and assume that this value will stay
                 value -> continueDispatching(new GUserInputResult(value), result),
-                () -> continueDispatching(GUserInputResult.canceled, result), editContext);
+                () -> continueDispatching(GUserInputResult.canceled, result), editContext, ServerResponse.INPUT);
         return result.result;
     }
 

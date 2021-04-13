@@ -10,6 +10,7 @@ import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.classes.user.CustomClass;
+import lsfusion.server.logics.form.interactive.action.input.SimpleRequestInput;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
@@ -71,24 +72,24 @@ public class IfAction extends KeepContextAction {
     }
 
     @Override
-    public Type getFlowSimpleRequestInputType(boolean optimistic, boolean inRequest) {
-        Type trueType = trueAction == null ? null : trueAction.action.getSimpleRequestInputType(optimistic, inRequest);
-        Type falseType = falseAction == null ? null : falseAction.action.getSimpleRequestInputType(optimistic, inRequest);
+    public SimpleRequestInput<PropertyInterface> getFlowSimpleRequestInputType(boolean optimistic, boolean inRequest) {
+        SimpleRequestInput<PropertyInterface> trueSimpleInput = trueAction == null ? null : trueAction.mapSimpleRequestInput(optimistic, inRequest);
+        SimpleRequestInput<PropertyInterface> falseSimpleInput = falseAction == null ? null : falseAction.mapSimpleRequestInput(optimistic, inRequest);
 
         if (!optimistic) {
-            if (trueType == null) {
+            if (trueSimpleInput == null) {
                 return null;
             }
-            if (falseAction != null && falseType == null) {
+            if (falseAction != null && falseSimpleInput == null) {
                 return null;
             }
         }
 
-        return trueType == null
-               ? falseType
-               : falseType == null
-                 ? trueType
-                 : trueType.getCompatible(falseType);
+        return trueSimpleInput == null
+               ? falseSimpleInput
+               : falseSimpleInput == null
+                 ? trueSimpleInput
+                 : trueSimpleInput.merge(falseSimpleInput);
     }
 
     @Override

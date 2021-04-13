@@ -10,6 +10,7 @@ import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
+import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
@@ -35,15 +36,17 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
     }
 
     protected GPropertyDraw property;
+    protected GGroupObjectValue columnKey;
 
     protected GFormController form;
 
-    public ActionOrPropertyValue(GPropertyDraw property, GFormController form) {
+    public ActionOrPropertyValue(GPropertyDraw property, GGroupObjectValue columnKey, GFormController form) {
         setElement(Document.get().createDivElement());
 
         DataGrid.initSinkEvents(this);
 
         this.property = property;
+        this.columnKey = columnKey;
 
         this.form = form;
 
@@ -153,6 +156,11 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
     @Override
     public GPropertyDraw getProperty() {
         return property;
+    }
+
+    @Override
+    public GGroupObjectValue getColumnKey() {
+        return columnKey;
     }
 
     public RenderContext getRenderContext() {

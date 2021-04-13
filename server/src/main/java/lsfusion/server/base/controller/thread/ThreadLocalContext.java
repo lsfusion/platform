@@ -28,6 +28,7 @@ import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.controller.manager.RestartManager;
 import lsfusion.server.logics.form.interactive.ManageSessionType;
+import lsfusion.server.logics.form.interactive.action.input.InputContext;
 import lsfusion.server.logics.form.interactive.dialogedit.DialogRequest;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.listener.CustomClassListener;
@@ -207,8 +208,14 @@ public class ThreadLocalContext {
         return get().requestUserObject(dialogRequest, stack);
     }
 
-    public static ObjectValue inputUserData(DataClass dataClass, Object oldValue, boolean hasOldValue) {
-        return get().requestUserData(dataClass, oldValue, hasOldValue);
+    public static InputContext lockInputContext() {
+        return get().lockInputContext();
+    }
+    public static void unlockInputContext() {
+        get().unlockInputContext();
+    }
+    public static ObjectValue inputUserData(DataClass dataClass, Object oldValue, boolean hasOldValue, InputContext inputContext) {
+        return get().requestUserData(dataClass, oldValue, hasOldValue, inputContext);
     }
 
     public static ObjectValue requestUserClass(CustomClass baseClass, CustomClass defaultValue, boolean concrete) {

@@ -14,6 +14,7 @@ import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.form.interactive.FormCloseType;
 import lsfusion.server.logics.form.interactive.ManageSessionType;
 import lsfusion.server.logics.form.interactive.action.input.RequestResult;
+import lsfusion.server.logics.form.interactive.action.input.SimpleRequestInput;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.open.FormAction;
@@ -90,6 +91,7 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
         this.inputObjects = inputObjects;
         this.inputProps = inputProps;
         this.inputNulls = inputNulls;
+        assert !inputProps.containsNull();
 
         this.syncType = syncType;
         this.windowType = windowType;
@@ -122,6 +124,13 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
     //todo: same as above
     private boolean heuristicSyncType() {
         return true;
+    }
+
+    @Override
+    public SimpleRequestInput<ClassPropertyInterface> getSimpleRequestInput(boolean optimistic, boolean inRequest) {
+        if(inRequest && inputObjects.size() == 1)
+            return form.getSimpleDialogInput(getBaseLM(), inputObjects.single(), inputProps.single(), getContextFilters(), mapObjects);
+        return null;
     }
 
     @Override

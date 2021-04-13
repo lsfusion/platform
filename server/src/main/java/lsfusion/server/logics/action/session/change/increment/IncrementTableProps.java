@@ -29,10 +29,6 @@ public class IncrementTableProps extends IncrementProps {
         return getProperties().isEmpty();
     }
 
-    public <P extends PropertyInterface> IncrementTableProps(Property<P> property, PropertyChangeTableUsage<P> table) throws SQLException, SQLHandledException {
-        add(property, table);
-    }
-
     public ImSet<Property> getProperties() {
         return tableProps.getProperties();
     }

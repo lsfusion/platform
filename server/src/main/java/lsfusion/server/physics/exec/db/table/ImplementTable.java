@@ -152,10 +152,6 @@ public class ImplementTable extends DBTable { // последний интерф
         orderMapFields = keys.mapOrderMap(mapFields);
     }
 
-    public <P extends PropertyInterface> IQuery<KeyField, Property> getReadSaveQuery(ImSet<Property> properties, Modifier modifier) throws SQLException, SQLHandledException {
-        return getReadSaveQuery(properties, modifier.getPropertyChanges());
-    }
-
     public <P extends PropertyInterface> IQuery<KeyField, Property> getReadSaveQuery(ImSet<Property> properties, PropertyChanges propertyChanges) {
         QueryBuilder<KeyField, Property> changesQuery = new QueryBuilder<>(this);
         WhereBuilder changedWhere = new WhereBuilder();

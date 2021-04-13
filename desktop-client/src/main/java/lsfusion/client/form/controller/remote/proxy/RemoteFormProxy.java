@@ -314,4 +314,9 @@ public class RemoteFormProxy extends RemoteRequestObjectProxy<RemoteFormInterfac
         logRemoteMethodEndCall("changeProperties", result);
         return result;
     }
+
+    @Override
+    public String[] getAsyncValues(long requestIndex, long lastReceivedRequestIndex, int propertyID, byte[] fullKey, String actionSID, String value, int index) throws RemoteException {
+        return target.getAsyncValues(requestIndex, lastReceivedRequestIndex, propertyID, fullKey, actionSID, value, index);
+    }
 }

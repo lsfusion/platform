@@ -19,6 +19,7 @@ import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.user.CustomClass;
+import lsfusion.server.logics.form.interactive.action.input.SimpleRequestInput;
 import lsfusion.server.logics.form.struct.property.async.AsyncExec;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.data.SessionDataProperty;
@@ -139,15 +140,15 @@ public class ListAction extends ListCaseAction {
     }
 
     @Override
-    public Type getFlowSimpleRequestInputType(boolean optimistic, boolean inRequest) {
-        Type type = null;
+    public SimpleRequestInput<PropertyInterface> getFlowSimpleRequestInputType(boolean optimistic, boolean inRequest) {
+        SimpleRequestInput<PropertyInterface> type = null;
         for (ActionMapImplement<?, PropertyInterface> action : getListActions()) {
-            Type actionRequestType = action.action.getSimpleRequestInputType(optimistic, inRequest);
-            if (actionRequestType != null) {
+            SimpleRequestInput<PropertyInterface> actionSimpleInput = action.mapSimpleRequestInput(optimistic, inRequest);
+            if (actionSimpleInput != null) {
                 if (type == null) {
-                    type = actionRequestType;
+                    type = actionSimpleInput;
                 } else {
-                    type = type.getCompatible(actionRequestType);
+                    type = type.merge(actionSimpleInput);
                     if (type == null) {
                         return null;
                     }

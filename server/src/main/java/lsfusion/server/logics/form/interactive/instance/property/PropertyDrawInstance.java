@@ -36,6 +36,12 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
             return formInstance.instanceFactory.getInstance(eventAction);
         return null;
     }
+    public ActionObjectInstance getEventAction(String actionId, FormInstance formInstance) {
+        ActionObjectEntity<?> eventAction = entity.getEventAction(actionId, formInstance.entity);
+        if(eventAction!=null)
+            return formInstance.instanceFactory.getInstance(eventAction);
+        return null;
+    }
 
     private ActionOrPropertyObjectInstance<?, ?> propertyObject;
     

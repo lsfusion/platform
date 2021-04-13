@@ -19,11 +19,14 @@ public interface ImRevMap<K,V> extends ImMap<K, V> {
     ImRevMap<K, V> addRevExcl(K key, V value);
 
     <M> ImRevMap<K, M> join(ImRevMap<V, M> joinMap);
+    <M> ImRevMap<K, M> innerJoin(ImRevMap<? extends V, M> map);
     <M> ImRevMap<K, M> rightJoin(ImRevMap<V, M> joinMap);
 
     <M> ImRevMap<K, M> crossValuesRev(ImRevMap<? extends M, ? extends V> map); // берем левую часть (assert'им что правая есть), правую revert'им
     <M> ImRevMap<K, M> rightCrossValuesRev(ImRevMap<? extends M, ? extends V> map); // берем левую часть (assert'им что правая есть), правую revert'им
+    <T> ImRevMap<K, T> innerCrossValues(ImRevMap<? extends T, ? extends V> map); // только те которые есть в обоих map'ах
     <M> ImMap<V, M> rightCrossJoin(ImMap<K, M> map);
+    <M> ImRevMap<V, M> innerCrossJoin(ImRevMap<K, M> map);
     <M> ImMap<V, M> innerCrossJoin(ImMap<K, M> map);
     <M> ImRevMap<V, M> crossJoin(ImRevMap<K, M> map);
     <M> ImMap<V, M> crossJoin(ImMap<K, M> map);

@@ -22,6 +22,7 @@ import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.action.session.changed.IncrementType;
 import lsfusion.server.logics.action.session.changed.OldProperty;
 import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
 import lsfusion.server.logics.event.PrevScope;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInstance;
@@ -214,6 +215,11 @@ public class PropertyMapImplement<P extends PropertyInterface, T extends Propert
     public ActionMapImplement<?, T> mapEventAction(String eventSID, ImList<Property> viewProperties) {
         ActionMapImplement<?, P> eventAction = property.getEventAction(eventSID, viewProperties);
         return eventAction == null ? null : eventAction.map(mapping);
+    }
+
+    @Override
+    public Property<?> mapViewProperty(CustomClass customClass, ImList<Property> viewProperties) {
+        return property.getViewProperty(customClass, viewProperties);
     }
 
     public Inferred<T> mapInferInterfaceClasses(ExClassSet commonValue, InferType inferType) {

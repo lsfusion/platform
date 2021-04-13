@@ -8,13 +8,15 @@ import lsfusion.gwt.client.form.property.cell.controller.ExecuteEditContext;
 
 public class GAsyncChange extends GAsyncInputExec {
     public GType changeType;
+    public boolean hasList;
 
     @SuppressWarnings("UnusedDeclaration")
     public GAsyncChange() {
     }
 
-    public GAsyncChange(GType changeType) {
+    public GAsyncChange(GType changeType, boolean hasList) {
         this.changeType = changeType;
+        this.hasList = hasList;
     }
 
     @Override

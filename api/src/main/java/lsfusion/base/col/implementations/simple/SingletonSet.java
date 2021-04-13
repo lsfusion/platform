@@ -354,9 +354,14 @@ public class SingletonSet<K> implements ImSet<K>, ImList<K>, ImOrderSet<K> {
     }
 
     public int indexOf(K key) {
-        if(BaseUtils.hashEquals(key, key))
+        if(BaseUtils.hashEquals(this.key, key))
             return 0;
         return -1;
+    }
+
+    @Override
+    public boolean containsNull() {
+        return this.key == null;
     }
 
     public ImRevMap<Integer, K> toIndexedMap() {

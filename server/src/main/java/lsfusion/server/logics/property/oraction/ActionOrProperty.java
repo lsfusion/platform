@@ -272,29 +272,21 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         return (ImMap<String, ActionMapImplement<?, T>>)(eventActions == null ? MapFact.EMPTY() : eventActions);
     }
 
-    public ActionMapImplement<?, T> getEventAction(String eventActionSID) {
-        return getEventAction(eventActionSID, ListFact.EMPTY());
-    }
-
+    // actually protected (friend of PropertyMapImplement)
     public ActionMapImplement<?, T> getEventAction(String eventActionSID, ImList<Property> viewProperties) {
-        ActionMapImplement<?, T> eventAction = getEventActions().get(eventActionSID);
-        if (eventAction != null) {
+        ActionMapImplement<?, T> eventAction = getExplicitEventAction(eventActionSID);
+        if (eventAction != null)
             return eventAction;
-        }
 
-        if(GROUP_CHANGE.equals(eventActionSID))
-            return null;
-
-        assert CHANGE.equals(eventActionSID) || CHANGE_WYS.equals(eventActionSID) || EDIT_OBJECT.equals(eventActionSID);
-
+        assert CHANGE.equals(eventActionSID) || EDIT_OBJECT.equals(eventActionSID); // explicit event actions can be also CONTEXTMENU
         return getDefaultEventAction(eventActionSID, viewProperties);
     }
 
-    public abstract ActionMapImplement<?, T> getDefaultEventAction(String eventActionSID, ImList<Property> viewProperties);
-
-    public ActionMapImplement<?, T> getDefaultWYSAction() {
-        return null;
+    public ActionMapImplement<?, T> getExplicitEventAction(String eventActionSID) {
+        return getEventActions().get(eventActionSID);
     }
+
+    public abstract ActionMapImplement<?, T> getDefaultEventAction(String eventActionSID, ImList<Property> viewProperties);
 
     public boolean checkEquals() {
         return this instanceof Property;

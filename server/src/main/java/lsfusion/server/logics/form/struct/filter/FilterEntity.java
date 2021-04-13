@@ -1,5 +1,6 @@
 package lsfusion.server.logics.form.struct.filter;
 
+import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
@@ -58,5 +59,9 @@ public class FilterEntity<P extends PropertyInterface> implements Instantiable<F
 
     public GroupObjectEntity getApplyObject(FormEntity formEntity) {
         return getApplyObject(formEntity, SetFact.EMPTY());
+    }
+
+    public <V extends PropertyInterface> ContextFilterEntity<P, V, ObjectEntity> getContext() {
+        return new ContextFilterEntity<>(property.property, MapFact.EMPTYREV(), property.mapping);
     }
 }

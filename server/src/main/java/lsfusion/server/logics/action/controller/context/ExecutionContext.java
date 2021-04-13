@@ -43,6 +43,8 @@ import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.controller.manager.RestartManager;
 import lsfusion.server.logics.form.interactive.ManageSessionType;
+import lsfusion.server.logics.form.interactive.action.input.InputContext;
+import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
 import lsfusion.server.logics.form.interactive.action.input.RequestResult;
 import lsfusion.server.logics.form.interactive.dialogedit.DialogRequest;
 import lsfusion.server.logics.form.interactive.instance.FormEnvironment;
@@ -204,7 +206,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         return new ExecutionContext<>(keys, pushedAddObject, env, executorService, form, stack, hasMoreSessionUsages);
     }
     
-    public ExecutionContext<P> override(boolean hasMoreSessionUsages) { // для дебаггера
+    public ExecutionContext<P> override(boolean hasMoreSessionUsages) {
         return new ExecutionContext<>(keys, pushedAddObject, env, executorService, form, stack, hasMoreSessionUsages);
     }
 
@@ -599,10 +601,6 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         return getBL().LM.pushPopRequestValue(false, getEnv(), callable);
     }
 
-    public <R> R pushRequestedValue(ObjectValue pushValue, Type pushType, SQLCallable<R> callable) throws SQLException, SQLHandledException {
-        return getBL().LM.pushRequestedValue(pushValue, pushType, getEnv(), callable);
-    }
-    
     // чтение пользователя
     public ObjectValue inputUserObject(final DialogRequest dialog) throws SQLException, SQLHandledException { // null если canceled
         return requestUser(ObjectType.instance, () -> ThreadLocalContext.inputUserObject(dialog, stack));
@@ -638,15 +636,18 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
 
     public ObjectValue requestUserData(final DataClass dataClass, final Object oldValue, boolean hasOldValue) {
         try {
-            return requestUser(dataClass, () -> ThreadLocalContext.inputUserData(dataClass, oldValue, hasOldValue));
+            return requestUser(dataClass, () -> ThreadLocalContext.inputUserData(dataClass, oldValue, hasOldValue, null));
         } catch (SQLException | SQLHandledException e) {
             throw Throwables.propagate(e);
         }
     }
 
-    public ObjectValue inputUserData(DataClass dataClass, Object oldValue, boolean hasOldValue) {
+    public <T extends PropertyInterface> ObjectValue inputUserData(DataClass dataClass, Object oldValue, boolean hasOldValue, InputListEntity<T, P> inputList) {
         assertNotUserInteractionInTransaction();
-        return ThreadLocalContext.inputUserData(dataClass, oldValue, hasOldValue);
+        InputContext<T> inputContext = null;
+        if(inputList != null)
+            inputContext = new InputContext<>(inputList.map(getKeys()), inputList.newSession, getSession(), getModifier());
+        return ThreadLocalContext.inputUserData(dataClass, oldValue, hasOldValue, inputContext);
     }
 
     public ObjectValue requestUserClass(final CustomClass baseClass, final CustomClass defaultValue, final boolean concrete) throws SQLException, SQLHandledException {

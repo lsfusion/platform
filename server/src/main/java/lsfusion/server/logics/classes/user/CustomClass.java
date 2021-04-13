@@ -566,6 +566,10 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         return editFormHolder.getPolyForm(LM, concreteCustomClass);
     }
 
+    public ClassFormEntity getEditForm(BaseLogicsModule LM) {
+        return editFormHolder.getForm(LM);
+    }
+
     public void setEditForm(FormEntity form, ObjectEntity object, Version version) {
         editFormHolder.setForm(new ClassFormEntity(form, object), version);
     }

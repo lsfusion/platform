@@ -7,7 +7,6 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MList;
-import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ThrowingFunction;
 import lsfusion.interop.form.property.Compare;
@@ -36,6 +35,7 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.user.AbstractCustomClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.classes.user.CustomClass;
+import lsfusion.server.logics.form.interactive.action.input.SimpleRequestInput;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.classes.infer.ClassType;
@@ -508,24 +508,27 @@ public class ForAction<I extends PropertyInterface> extends ExtendContextAction<
     }
 
     @Override
-    public Type getFlowSimpleRequestInputType(boolean optimistic, boolean inRequest) {
-        Type actionType = action.action.getSimpleRequestInputType(optimistic, inRequest);
-        Type elseType = elseAction == null ? null : elseAction.action.getSimpleRequestInputType(optimistic, inRequest);
+    public SimpleRequestInput<PropertyInterface> getFlowSimpleRequestInputType(boolean optimistic, boolean inRequest) {
+        SimpleRequestInput<I> actionSimpleInput = action.mapSimpleRequestInput(optimistic, inRequest);
+        SimpleRequestInput<I> elseSimpleInput = elseAction == null ? null : elseAction.mapSimpleRequestInput(optimistic, inRequest);
 
         if (!optimistic) {
-            if (actionType == null) {
+            if (actionSimpleInput == null) {
                 return null;
             }
-            if (elseAction != null && elseType == null) {
+            if (elseAction != null && elseSimpleInput == null) {
                 return null;
             }
         }
 
-        return actionType == null
-                ? elseType
-                : elseType == null
-                ? actionType
-                : actionType.getCompatible(elseType);
+        SimpleRequestInput<I> simpleInput = actionSimpleInput == null
+                ? elseSimpleInput
+                : elseSimpleInput == null
+                ? actionSimpleInput
+                : actionSimpleInput.merge(elseSimpleInput);
+        if(simpleInput != null)
+            return simpleInput.mapInner(mapInterfaces.reverse());
+        return null;
     }
 
 }

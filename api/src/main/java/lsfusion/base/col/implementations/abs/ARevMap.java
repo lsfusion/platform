@@ -43,6 +43,24 @@ public abstract class ARevMap<K, V> extends AMap<K, V> implements ImRevMap<K, V>
         return mapRevValues(joinMap.fnGetValue());
     }
 
+    public <M> ImRevMap<K, M> innerJoin(ImRevMap<? extends V, M> joinMap) {
+        MRevMap<K, M> mResult = MapFact.mRevMap(joinMap.size());
+        for(int i=0,size=size();i<size;i++) {
+            V value = getValue(i);
+            if(((ImRevMap<V, M>)joinMap).containsKey(value))
+                mResult.revAdd(getKey(i), ((ImRevMap<V, M>) joinMap).get(value));
+        }
+        return mResult.immutableRev();
+    }
+
+    public <T> ImRevMap<K, T> innerCrossValues(ImRevMap<? extends T, ? extends V> imRevMap) {
+        return innerJoin(((ImRevMap<T, V>) imRevMap).reverse());
+    }
+
+    public <M> ImRevMap<V, M> innerCrossJoin(ImRevMap<K, M> map) {
+        return reverse().innerJoin(map);
+    }
+
     public <M> ImRevMap<K, M> rightJoin(ImRevMap<V, M> joinMap) {
         assert values().toSet().containsAll(joinMap.keys());
 

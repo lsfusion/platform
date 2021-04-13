@@ -4,6 +4,7 @@ import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.form.filter.user.GDataFilterValue;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
+import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.controller.GTableController;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
@@ -15,12 +16,12 @@ public class GDataFilterValueView extends GFilterValueView {
 
     public GDataFilterPropertyValue cell;
 
-    public GDataFilterValueView(GFilterValueListener listener, GDataFilterValue filterValue, GPropertyDraw property, GTableController logicsSupplier) {
+    public GDataFilterValueView(GFilterValueListener listener, GDataFilterValue filterValue, GPropertyDraw property, GGroupObjectValue columnKey, GTableController logicsSupplier) {
         super(listener);
         this.filterValue = filterValue;
         this.logicsSupplier = logicsSupplier;
 
-        cell = new GDataFilterPropertyValue(property, logicsSupplier.getForm(), value -> valueChanged(value));
+        cell = new GDataFilterPropertyValue(property, columnKey, logicsSupplier.getForm(), value -> valueChanged(value));
         cell.setStatic(this, true);
     }
 

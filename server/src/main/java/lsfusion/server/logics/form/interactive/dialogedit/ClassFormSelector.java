@@ -20,8 +20,6 @@ import lsfusion.server.logics.form.struct.object.ObjectEntity;
 
 import java.sql.SQLException;
 
-import static lsfusion.server.base.controller.thread.ThreadLocalContext.getBusinessLogics;
-
 public class ClassFormSelector implements FormSelector<ClassFormSelector.VirtualObject> {
     
     private final CustomClass cls;

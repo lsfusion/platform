@@ -16,6 +16,7 @@ import lsfusion.server.logics.action.flow.FlowResult;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.user.CustomClass;
+import lsfusion.server.logics.form.interactive.action.input.SimpleRequestInput;
 import lsfusion.server.logics.form.struct.property.async.AsyncExec;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
@@ -150,5 +151,13 @@ public class NewSessionAction extends AroundAspectAction {
     @Override
     protected <T extends PropertyInterface> ActionMapImplement<?, PropertyInterface> createAspectImplement(ImSet<PropertyInterface> interfaces, ActionMapImplement<?, PropertyInterface> action) {
         return PropertyFact.createNewSessionAction(interfaces, action, singleApply, newSQL, explicitMigrateProps, isNested);
+    }
+
+    @Override
+    public SimpleRequestInput<PropertyInterface> getFlowSimpleRequestInputType(boolean optimistic, boolean inRequest) {
+        SimpleRequestInput<PropertyInterface> simpleInput = aspectActionImplement.mapSimpleRequestInput(optimistic, inRequest);
+        if(simpleInput != null)
+            return simpleInput.newSession();
+        return null;
     }
 }

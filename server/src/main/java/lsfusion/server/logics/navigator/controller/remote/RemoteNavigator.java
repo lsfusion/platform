@@ -55,6 +55,7 @@ import lsfusion.server.physics.admin.authentication.controller.remote.RemoteConn
 import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 import lsfusion.server.physics.admin.log.RemoteLoggerAspect;
 import lsfusion.server.physics.admin.log.ServerLoggers;
+import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import org.apache.log4j.Logger;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -102,6 +103,8 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
 
         setContext(new RemoteNavigatorContext(this));
         initContext(logicsInstance, token, navigatorInfo.session, stack);
+
+        changesSync = new ChangesSync(dbManager);
         
         ServerLoggers.remoteLifeLog("NAVIGATOR OPEN : " + this);
 
@@ -190,17 +193,25 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         }
     }
 
-    private static class WeakChangesUserProvider implements ChangesController { // чтобы помочь сборщику мусора и устранить цикл
+    private static class WeakChangesUserProvider extends ChangesController { // чтобы помочь сборщику мусора и устранить цикл
         WeakReference<ChangesSync> weakThis;
 
         private WeakChangesUserProvider(ChangesSync dbManager) {
             this.weakThis = new WeakReference<>(dbManager);
         }
 
-        public void regChange(ImSet<Property> changes, DataSession session) {
+        @Override
+        public DBManager getDbManager() {
             ChangesSync changesSync = weakThis.get();
             if(changesSync != null)
-                changesSync.regChange(changes, session);
+                return changesSync.getDbManager();
+            return null;
+        }
+
+        public void regLocalChange(ImSet<Property> changes, DataSession session) {
+            ChangesSync changesSync = weakThis.get();
+            if(changesSync != null)
+                changesSync.regLocalChange(changes, session);
         }
 
         public ImSet<Property> update(DataSession session, FormInstance form) {
@@ -600,12 +611,22 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
 
     }
     // обмен изменениями между сессиями в рамках одного подключения
-    private static class ChangesSync implements ChangesController {
+    private static class ChangesSync extends ChangesController {
+
+        private DBManager dbManager;
 
         private final Map<Property, LastChanges> changes = MapFact.mAddRemoveMap();
         private final WeakIdentityHashMap<FormInstance, Long> formStamps = new WeakIdentityHashMap<>();
         private long minPrevUpdatedStamp = 0;
         private long currentStamp = 0;
+
+        public ChangesSync(DBManager dbManager) {
+            this.dbManager = dbManager;
+        }
+
+        public DBManager getDbManager() {
+            return dbManager;
+        }
 
         private void updateLastStamp(long prevStamp) {
             assert !formStamps.isEmpty();
@@ -620,7 +641,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
             }
         }
 
-        public synchronized void regChange(ImSet<Property> updateChanges, DataSession session) {
+        public synchronized void regLocalChange(ImSet<Property> updateChanges, DataSession session) {
             currentStamp++;
 
             for(Property change : updateChanges) {
@@ -679,7 +700,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         }
     }
 
-    private ChangesSync changesSync = new ChangesSync();
+    private final ChangesSync changesSync;
 
     @Override
     protected String notSafeToString() {

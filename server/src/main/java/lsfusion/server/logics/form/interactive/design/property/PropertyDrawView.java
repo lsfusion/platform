@@ -28,6 +28,7 @@ import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawExtraType;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
+import lsfusion.server.logics.form.struct.property.async.AsyncChange;
 import lsfusion.server.logics.form.struct.property.async.AsyncEventExec;
 import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyObjectEntity;
 import lsfusion.server.logics.property.Property;
@@ -125,7 +126,8 @@ public class PropertyDrawView extends ComponentView {
     }
     
     public Type getChangeWYSType(ServerContext context) {
-        return entity.getWYSRequestInputType(context.entity, context.securityPolicy);
+        AsyncChange asyncChange = entity.getAsyncChange(context.entity, context.securityPolicy, CHANGE_WYS);
+        return asyncChange != null ? asyncChange.changeType : null;
     }
 
     @Override
@@ -147,7 +149,7 @@ public class PropertyDrawView extends ComponentView {
     public Map<String, AsyncEventExec> getAsyncExec(ServerContext context) {
         Map<String, AsyncEventExec> asyncExecMap = new HashMap<>();
         for (String actionId : ServerResponse.events) {
-            AsyncEventExec asyncEventExec = entity.getAsyncEventExec(context.entity, context.securityPolicy, actionId);
+            AsyncEventExec asyncEventExec = entity.getAsyncEventExec(context.entity, context.securityPolicy, actionId, entity.optimisticAsync);
             if (asyncEventExec != null) {
                 asyncExecMap.put(actionId, asyncEventExec);
             }

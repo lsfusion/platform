@@ -13,7 +13,7 @@ import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 // Constraint Check Change
-// need this because form action with CONSTRAINTFILTER is create during parsing, and not in the end, and we need getCheckChangeProperties
+// need this because form action with CONSTRAINTFILTER is created during parsing, and not in the end, and we need getCheckChangeProperties
 // just like ClassFormSelector
 public class CCCContextFilterEntity<P extends PropertyInterface, V extends PropertyInterface, O extends ObjectSelector> extends ContextFilterSelector<P, V, O> {
 
@@ -26,12 +26,12 @@ public class CCCContextFilterEntity<P extends PropertyInterface, V extends Prope
     }
 
     @Override
-    public ImSet<ContextFilterInstance> getInstances(ImMap<V, ? extends ObjectValue> values, ImRevMap<O, ObjectEntity> objects) {
+    public ImSet<? extends ContextFilterEntity<?, V, O>> getEntities() {
         return propertyImplement.property.getCheckProperties().mapOrderSetValues(property -> {
             Pair<ImRevMap<ConstraintCheckChangeProperty.Interface<P>, P>, ConstraintCheckChangeProperty.Interface<P>> mapInterfaces = property.getMapInterfaces();
             ConstraintCheckChangeProperty.Interface<P> second = mapInterfaces.second;
-            ImRevMap<ConstraintCheckChangeProperty.Interface<P>, ObjectEntity> interfaceVImRevMap = MapFact.singletonRev(second, objects.get(object));
-            return (ContextFilterInstance)new ContextFilterInstance<>(property, mapInterfaces.first.join(propertyImplement.mapping).join(values), interfaceVImRevMap);
+            ImRevMap<ConstraintCheckChangeProperty.Interface<P>, V> join = mapInterfaces.first.join(propertyImplement.mapping);
+            return (ContextFilterEntity<?, V, O>) new ContextFilterEntity<>(property, join, MapFact.singletonRev(second, object));
         }).getSet();
     }
 

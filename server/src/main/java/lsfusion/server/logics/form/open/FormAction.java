@@ -18,6 +18,7 @@ import lsfusion.server.logics.form.open.stat.ExportAction;
 import lsfusion.server.logics.form.open.stat.FormStaticAction;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
+import lsfusion.server.logics.form.struct.filter.ContextFilterEntity;
 import lsfusion.server.logics.form.struct.filter.ContextFilterInstance;
 import lsfusion.server.logics.form.struct.filter.ContextFilterSelector;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
@@ -27,6 +28,8 @@ import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyObje
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
+import lsfusion.server.logics.property.classes.IsClassProperty;
+import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
@@ -96,13 +99,16 @@ public abstract class FormAction<O extends ObjectSelector> extends SystemExplici
         if(resolvedForm == null)
             return;
 
-        // context filters
-        MExclSet<ContextFilterInstance> mContextFilters = SetFact.mExclSet();
-        for(ContextFilterSelector<?, ClassPropertyInterface, O> contextFilter : this.contextFilters)
-            mContextFilters.exclAddAll(contextFilter.getInstances(context.getKeys(), resolvedForm.second.reverse()));
-        ImSet<ContextFilterInstance> contextFilters = mContextFilters.immutable();
+        executeInternal(resolvedForm.first, resolvedForm.second.rightJoin(mapObjectValues), context, resolvedForm.second,
+                getContextFilters().mapSetValues(entity -> entity.getInstance(context.getKeys(), resolvedForm.second.reverse())));
+    }
 
-        executeInternal(resolvedForm.first, resolvedForm.second.rightJoin(mapObjectValues), context, resolvedForm.second, contextFilters);
+    @IdentityInstanceLazy
+    protected ImSet<ContextFilterEntity<?, ClassPropertyInterface, O>> getContextFilters() {
+        MExclSet<ContextFilterEntity<?, ClassPropertyInterface, O>> mContextFilters = SetFact.mExclSet();
+        for(ContextFilterSelector<?, ClassPropertyInterface, O> contextFilter : this.contextFilters)
+            mContextFilters.exclAddAll(contextFilter.getEntities());
+        return mContextFilters.immutable();
     }
 
     @Override

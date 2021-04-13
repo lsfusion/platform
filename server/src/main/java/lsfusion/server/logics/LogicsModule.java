@@ -9,6 +9,7 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.MMap;
+import lsfusion.base.col.interfaces.mutable.MRevMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.interop.form.WindowFormType;
@@ -65,6 +66,7 @@ import lsfusion.server.logics.form.interactive.action.expand.ExpandCollapseGroup
 import lsfusion.server.logics.form.interactive.action.expand.ExpandCollapseType;
 import lsfusion.server.logics.form.interactive.action.focus.FocusAction;
 import lsfusion.server.logics.form.interactive.action.input.InputAction;
+import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
 import lsfusion.server.logics.form.interactive.action.input.RequestAction;
 import lsfusion.server.logics.form.interactive.action.seek.SeekGroupObjectAction;
 import lsfusion.server.logics.form.interactive.action.seek.SeekObjectAction;
@@ -93,10 +95,7 @@ import lsfusion.server.logics.form.stat.struct.imports.plain.table.ImportTableAc
 import lsfusion.server.logics.form.stat.struct.imports.plain.xls.ImportXLSAction;
 import lsfusion.server.logics.form.struct.AutoFormEntity;
 import lsfusion.server.logics.form.struct.FormEntity;
-import lsfusion.server.logics.form.struct.filter.ContextFilterSelector;
-import lsfusion.server.logics.form.struct.filter.FilterEntity;
-import lsfusion.server.logics.form.struct.filter.ContextFilterEntity;
-import lsfusion.server.logics.form.struct.filter.RegularFilterGroupEntity;
+import lsfusion.server.logics.form.struct.filter.*;
 import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
@@ -966,7 +965,11 @@ public abstract class LogicsModule {
     
     @IdentityStrongLazy
     public LA addInputAProp(DataClass dataClass, Property targetProp, boolean hasOldValue) { 
-        return addAction(null, new LA(new InputAction(LocalizedString.create("Input"), dataClass, targetProp != null ? new LP(targetProp) : null, hasOldValue)));
+        return addInputAProp(dataClass, targetProp, hasOldValue, SetFact.EMPTYORDER(), null);
+    }
+
+    public <T extends PropertyInterface> LA<?> addInputAProp(DataClass dataClass, Property targetProp, boolean hasOldValue, ImOrderSet<T> orderInterfaces, InputListEntity<?, T> contextList) {
+        return addAction(null, new LA(new InputAction(LocalizedString.create("Input"), dataClass, targetProp != null ? new LP(targetProp) : null, hasOldValue, orderInterfaces, contextList)));
     }
 
     // optimization to cache input for custom classes, returns action with one parameter 

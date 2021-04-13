@@ -13,12 +13,8 @@ import static lsfusion.gwt.client.base.view.ColorUtils.getDisplayColor;
 
 public class ActionOrPropertyPanelValue extends ActionOrPropertyValue implements ExecuteEditContext {
 
-    private final GGroupObjectValue columnKey;
-
     public ActionOrPropertyPanelValue(GPropertyDraw property, GGroupObjectValue columnKey, GFormController form) {
-        super(property, form);
-
-        this.columnKey = columnKey;
+        super(property, columnKey, form);
 
         finalizeInit();
     }
@@ -47,11 +43,6 @@ public class ActionOrPropertyPanelValue extends ActionOrPropertyValue implements
     @Override
     protected void onEditEvent(EventHandler handler) {
         onEditEvent(handler, false);
-    }
-
-    @Override
-    public GGroupObjectValue getColumnKey() {
-        return columnKey;
     }
 
     @Override

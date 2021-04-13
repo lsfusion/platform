@@ -1,5 +1,6 @@
 package lsfusion.server.logics.navigator;
 
+import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.property.async.AsyncExec;
@@ -28,6 +29,7 @@ public class NavigatorAction extends NavigatorElement {
     }
 
     @Override
+    @IdentityLazy
     public AsyncExec getAsyncExec() {
         return action.getAsyncExec();
     }

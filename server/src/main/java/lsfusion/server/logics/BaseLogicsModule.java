@@ -20,6 +20,7 @@ import lsfusion.server.data.expr.formula.*;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.sql.lambda.SQLCallable;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.ScriptingLogicsModule;
@@ -47,6 +48,7 @@ import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
+import lsfusion.server.logics.form.struct.property.async.AsyncChange;
 import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.logics.navigator.window.AbstractWindow;
 import lsfusion.server.logics.navigator.window.NavigatorWindow;
@@ -694,7 +696,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
     @Override
     @IdentityStrongLazy
-    protected LP addCastProp(DataClass castClass) {
+    public LP addCastProp(DataClass castClass) {
         return addProperty(null, new LP<>(new FormulaImplProperty(LocalizedString.create("castTo" + castClass.toString()), 1, new CastFormulaImpl(castClass))));
     }
 
@@ -962,10 +964,10 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         return getRequestCanceledProperty().read(env) != null;
     }
 
-    public <R> R pushRequestedValue(ObjectValue value, Type type, ExecutionEnvironment env, SQLCallable<R> callable) throws SQLException, SQLHandledException {
-        if(value != null) {
+    public <R> R pushRequestedValue(Object value, AsyncChange asyncChange, ExecutionEnvironment env, SQLCallable<R> callable) throws SQLException, SQLHandledException {
+        if(asyncChange != null) {
             dropRequestCanceled(env);
-            getRequestedValueProperty().write(type, value, env);
+            asyncChange.targetProp.change(DataObject.getValue(value, asyncChange.changeType), env);
             return pushRequest(env, callable);
         } else
             return callable.call();
@@ -973,11 +975,12 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
     // defaultchange'и + обратная совместимость
     public ObjectValue getRequestedValue(Type type, ExecutionEnvironment env, SQLCallable<ObjectValue> request) throws SQLException, SQLHandledException {
+        LP<?> targetProp = getRequestedValueProperty().getLCP(type);
         if(isRequestPushed(env))
-            return getRequestedValueProperty().read(type, env);
+            return targetProp.readClasses(env);
 
         ObjectValue result = request.call();
-        writeRequested(RequestResult.get(result, type, null), env);
+        writeRequested(RequestResult.get(result, type, targetProp), env);
         return result;
     }
 
@@ -988,12 +991,8 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
             requestCanceledProperty.change(true, env);
         } else {
             requestCanceledProperty.change((Object)null, env);
-            for(RequestResult requestResult : requestResults) {
-                if (requestResult.targetProp == null)
-                    getRequestedValueProperty().write(requestResult.type, requestResult.chosenValue, env);
-                else
-                    requestResult.targetProp.change(requestResult.chosenValue, env);
-            }
+            for(RequestResult requestResult : requestResults)
+                requestResult.targetProp.change(requestResult.chosenValue, env);
         }
     }
 
@@ -1001,10 +1000,8 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public ImSet<Property> getRequestChangeProps(int count, Function<Integer, Type> type, Function<Integer, LP> targetProp) {
         return SetFact.toOrderExclSet(count, i -> {
             LP prop = targetProp.apply(i);
-            if(prop == null)
-                return getRequestedValueProperty().getLCP(type.apply(i)).property;
-            else
-                return prop.property;
+            assert prop != null;
+            return prop.property;
         }).getSet().addExcl(getRequestCanceledProperty().property);
     }
 }

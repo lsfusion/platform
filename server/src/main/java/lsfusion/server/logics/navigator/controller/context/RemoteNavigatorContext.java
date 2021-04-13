@@ -14,6 +14,7 @@ import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.form.interactive.ManageSessionType;
+import lsfusion.server.logics.form.interactive.action.input.InputContext;
 import lsfusion.server.logics.form.interactive.controller.remote.RemoteForm;
 import lsfusion.server.logics.form.interactive.dialogedit.DialogRequest;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
@@ -181,8 +182,18 @@ public class RemoteNavigatorContext extends RemoteConnectionContext {
         return uiContext.requestUserObject(dialog, stack);
     }
 
-    public ObjectValue requestUserData(DataClass dataClass, Object oldValue, boolean hasOldValue) {
-        return uiContext.requestUserData(dataClass, oldValue, hasOldValue);
+    @Override
+    public InputContext lockInputContext() {
+        return uiContext.lockInputContext();
+    }
+
+    @Override
+    public void unlockInputContext() {
+        uiContext.unlockInputContext();
+    }
+
+    public ObjectValue requestUserData(DataClass dataClass, Object oldValue, boolean hasOldValue, InputContext inputContext) {
+        return uiContext.requestUserData(dataClass, oldValue, hasOldValue, inputContext);
     }
 
     public ObjectValue requestUserClass(CustomClass baseClass, CustomClass defaultValue, boolean concrete) {

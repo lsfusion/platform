@@ -29,6 +29,7 @@ import lsfusion.server.base.controller.context.AbstractContext;
 import lsfusion.server.base.controller.remote.RemoteRequestObject;
 import lsfusion.server.base.controller.thread.SyncType;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
+import lsfusion.server.base.controller.thread.ThreadUtils;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.DataObject;
@@ -36,7 +37,6 @@ import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.action.controller.stack.EExecutionStackCallable;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.session.DataSession;
-import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.logics.form.interactive.changed.FormChanges;
 import lsfusion.server.logics.form.interactive.controller.context.RemoteFormContext;
@@ -56,6 +56,7 @@ import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectI
 import lsfusion.server.logics.form.interactive.listener.RemoteFormListener;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
+import lsfusion.server.logics.form.struct.property.async.AsyncChange;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import org.apache.log4j.Logger;
@@ -71,6 +72,7 @@ import java.util.*;
 
 import static lsfusion.base.BaseUtils.deserializeObject;
 import static lsfusion.interop.action.ServerResponse.CHANGE;
+import static lsfusion.interop.action.ServerResponse.CHANGE_WYS;
 
 // фасад для работы с клиентом
 public class RemoteForm<F extends FormInstance> extends RemoteRequestObject implements RemoteFormInterface {
@@ -669,16 +671,14 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                 PropertyDrawInstance propertyDraw = form.getPropertyDraw(propertyIDs[j]);
                 ImMap<ObjectInstance, DataObject> keys = deserializePropertyKeys(propertyDraw, fullKeys[j]);
 
-                ObjectValue pushChangeObject = null;
-                DataClass pushChangeType = null;
+                Object objectPushChange = null;
+                AsyncChange pushAsyncChange = null;
                 byte[] pushChange = pushChanges[j];
                 if (pushChange != null) {
-                    pushChangeType = propertyDraw.getEntity().getRequestInputType(form.entity, form.securityPolicy, actionSID);
-                    Object objectPushChange = deserializeObject(pushChange);
-                    if (pushChangeType == null) // веб почему-то при асинхронном удалении шлет не null, а [0] который deserialize'ся в null а потом превращается в NullValue.instance и падают ошибки
+                    pushAsyncChange = propertyDraw.getEntity().getAsyncChange(form.entity, form.securityPolicy, actionSID);
+                    objectPushChange = deserializeObject(pushChange);
+                    if (pushAsyncChange == null) // веб почему-то при асинхронном удалении шлет не null, а [0] который deserialize'ся в null а потом превращается в NullValue.instance и падают ошибки
                         ServerLoggers.assertLog(objectPushChange == null, "PROPERTY CANNOT BE CHANGED -> PUSH CHANGE SHOULD BE NULL");
-                    else
-                        pushChangeObject = DataObject.getValue(objectPushChange, pushChangeType);
                 }
 
                 DataObject pushAddObject = null;
@@ -686,7 +686,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                 if (pushAdd != null)
                     pushAddObject = new DataObject(pushAdd, form.session.baseClass.unknown);
 
-                form.executeEventAction(propertyDraw, actionSID, keys, pushChangeObject, pushChangeType, pushAddObject, true, stack);
+                form.executeEventAction(propertyDraw, actionSID, keys, objectPushChange, pushAsyncChange, pushAddObject, true, stack);
 
                 if (logger.isTraceEnabled()) {
                     logger.trace(String.format("changeProperty: [ID: %1$d, SID: %2$s]", propertyDraw.getID(), propertyDraw.getSID()));
@@ -705,6 +705,61 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                 }
             }
         });
+    }
+
+    @Override
+    public String[] getAsyncValues(long requestIndex, long lastReceivedRequestIndex, int propertyID, byte[] fullKey, String actionSID, String value, int asyncIndex) throws RemoteException {
+        if(requestIndex >= 0)
+            return processRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> getAsyncValues(propertyID, fullKey, actionSID, value, asyncIndex, false));
+        else
+            return getAsyncValues(propertyID, fullKey, actionSID, value, asyncIndex, true);
+    }
+
+    private Thread asyncLastThread;
+    private int asyncLastIndex = 0;
+    private final Object asyncLock = new Object();
+
+    public void cancelAsyncValues(int index) throws SQLException, SQLHandledException {
+        synchronized (asyncLock) {
+            if(asyncLastIndex == index && asyncLastThread != null) // if this is last request and it is still running -> canceling it
+                ThreadUtils.interruptThread(getContext(), asyncLastThread);
+        }
+    }
+
+    public String[] getAsyncValues(int propertyID, byte[] fullKey, String actionSID, String value, int asyncIndex, Boolean optimistic) {
+        try {
+            synchronized (asyncLock) {
+                if(asyncIndex >= asyncLastIndex) {
+                    if(asyncLastThread != null)
+                        ThreadUtils.interruptThread(getContext(), asyncLastThread);
+                    asyncLastIndex = asyncIndex;
+                } else
+                    return new String[] {ServerResponse.CANCELED};
+
+                asyncLastThread = Thread.currentThread();
+            }
+
+            PropertyDrawInstance propertyDraw = form.getPropertyDraw(propertyID);
+            ImMap<ObjectInstance, DataObject> keys = deserializePropertyKeys(propertyDraw, fullKey);
+
+            String[] result = form.getAsyncValues(propertyDraw, keys, actionSID, value, optimistic);
+
+            if (logger.isTraceEnabled()) {
+                logger.trace(String.format("getAsyncValues Action. propertyDrawID: %s. Result: %s", propertyDraw.getSID(), result));
+            }
+
+            synchronized (asyncLock) {
+                assert asyncLastIndex >= asyncIndex;
+                if(asyncLastIndex == asyncIndex)
+                    asyncLastThread = null;
+            }
+
+            return result;
+        } catch (Throwable t) { // interrupted for example
+            ServerLoggers.sqlSuppLog(t);
+            return new String[] {ServerResponse.CANCELED};
+//            throw Throwables.propagate(e);
+        }
     }
 
     public ServerResponse executeEventAction(long requestIndex, long lastReceivedRequestIndex, final int propertyID, final byte[] fullKey, final String actionSID) throws RemoteException {
@@ -1024,13 +1079,13 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         PropertyDrawInstance propertyDraw = form.getPropertyDrawIntegration(groupSID, propertySID);
 
         String eventAction;
-        DataClass pushChangeType = null;
-        ObjectValue pushChangeObject = null;
+        AsyncChange pushAsyncChange = null;
+        Object objectPushChange = null;
         DataObject pushAdd = null;
         if(propertyDraw.isProperty()) {
-            pushChangeType = propertyDraw.getEntity().getWYSRequestInputType(form.entity, form.securityPolicy);
-            if (pushChangeType != null)
-                pushChangeObject = DataObject.getValue(pushChangeType.parseJSON(value), pushChangeType);
+            pushAsyncChange = propertyDraw.getEntity().getAsyncChange(form.entity, form.securityPolicy, CHANGE_WYS);
+            if (pushAsyncChange != null)
+                objectPushChange = pushAsyncChange.changeType.parseJSON(value);
             eventAction = ServerResponse.CHANGE_WYS;
 
             // it's tricky here, unlike changeGroupObject, changeProperty is cancelable, i.e. its change may be canceled, but there will be no undo change in getChanges
@@ -1048,7 +1103,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
             }
             eventAction = CHANGE;
         }
-        form.executeEventAction(propertyDraw, eventAction, currentObjects, pushChangeObject, pushChangeType, pushAdd, false, stack);
+        form.executeEventAction(propertyDraw, eventAction, currentObjects, objectPushChange, pushAsyncChange, pushAdd, false, stack);
     }
 
     // будем считать что если unreferenced \ finalized то форма точно также должна закрыться ???

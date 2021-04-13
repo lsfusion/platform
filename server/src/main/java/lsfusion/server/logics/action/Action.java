@@ -40,6 +40,8 @@ import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.event.*;
+import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
+import lsfusion.server.logics.form.interactive.action.input.SimpleRequestInput;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.interactive.instance.FormEnvironment;
 import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
@@ -500,21 +502,21 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
 
     @Override
     public ActionMapImplement<?, P> getDefaultEventAction(String eventActionSID, ImList<Property> viewProperties) {
-        if(eventActionSID.equals(ServerResponse.CHANGE_WYS) || eventActionSID.equals(ServerResponse.EDIT_OBJECT))
+        if(eventActionSID.equals(ServerResponse.EDIT_OBJECT))
             return null;
         return getImplement();
     }
 
-    /**
-     * возвращает тип для "простого" редактирования, когда этот action используется в качестве действия для редактирования </br>
-     * assert, что тип будет DataClass, т.к. для остальных такое редактирование невозможно...
-     * @param optimistic - если true, то если для некоторых случаев нельзя вывести тип, то эти случае будут игнорироваться
-     */
-    public Type getSimpleRequestInputType(boolean optimistic) {
-        return getSimpleRequestInputType(optimistic, false);
+    @IdentityInstanceLazy
+    public SimpleRequestInput<P> getSimpleRequestInput(boolean optimistic) {
+        return getSimpleRequestInput(optimistic, false);
     }
     // по сути protected (recursive usage)
-    public Type getSimpleRequestInputType(boolean optimistic, boolean inRequest) {
+    public SimpleRequestInput<P> getSimpleRequestInput(boolean optimistic, boolean inRequest) {
+        return null;
+    }
+
+    public AsyncExec getAsyncExec() {
         return null;
     }
 
@@ -533,10 +535,6 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
     public P getSimpleDelete() {
         if(isSimpleDelete)
             return interfaces.single();
-        return null;
-    }
-
-    public AsyncExec getAsyncExec() {
         return null;
     }
 
@@ -581,6 +579,20 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
                       null, false, SetFact.EMPTY(), false).map(context.reverse())));
         
         return PropertyFact.createListAction(interfaces, mList.immutableList());
+    }
+
+    public <X extends PropertyInterface> ActionMapImplement<?, P> getDialogChangeWYS(InputListEntity<X, P> viewList, LP targetProp) {
+        // in group_change_wys it's gonna be tricky with recodeviewAction, if we want to optimize it to be executed with a single query
+        // REQUEST
+        //     inputViewAction
+        // DO {
+        //     recodeViewAction;
+        //     PUSH REQUEST eventAction
+        // }
+        Pair<ActionMapImplement<?, P>, ActionMapImplement<?, P>> inputAction = viewList.getActions(getBaseLM(), targetProp);
+        return PropertyFact.createRequestAction(interfaces, inputAction.first,
+                    PropertyFact.createListAction(interfaces, ListFact.toList(inputAction.second,
+                                PropertyFact.createPushRequestAction(interfaces, getImplement()))), null);
     }
 
     @IdentityLazy

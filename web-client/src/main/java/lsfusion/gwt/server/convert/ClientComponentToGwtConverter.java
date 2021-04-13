@@ -574,7 +574,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
     @Cached
     @Converter(from = ClientAsyncChange.class)
     public GAsyncChange convertOpenForm(ClientAsyncChange clientChangeType) {
-        return new GAsyncChange(typeConverter.convertOrCast(clientChangeType.changeType));
+        return new GAsyncChange(typeConverter.convertOrCast(clientChangeType.changeType), clientChangeType.hasList);
     }
 
     @Cached

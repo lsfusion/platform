@@ -1,8 +1,14 @@
 package lsfusion.gwt.client.form.property.cell.controller;
 
-import java.util.function.Consumer;
+import com.google.gwt.user.client.rpc.AsyncCallback;
+import lsfusion.gwt.client.base.Pair;
+import lsfusion.gwt.client.base.result.ListResult;
+
+import java.util.ArrayList;
 
 public interface EditManager {
+    void getAsyncValues(String value, AsyncCallback<Pair<ArrayList<String>, Boolean>> callback);
+
     default void commitEditing(Object value) {
         commitEditing(value, false);
     }

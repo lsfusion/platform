@@ -315,7 +315,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         
         rollbackInfo.clear();
         keepUpProps = null;
-        mApplySingleRemovedClassProps = null;
+        mChangedProps = null;
         mRemovedClasses = null;
 
         cleanOnlyDataModifier();
@@ -561,8 +561,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
         ImSet<Property> changedProps = null;
         if(!cancel) {
-            changedProps = getChangedProps().merge(mApplySingleRemovedClassProps.immutable());
-            changes.regChange(changedProps, this);
+            mChangedProps.addAll(getChangedProps());
         }
 
         synchronized (updateLock) {
@@ -1508,7 +1507,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             return;
 
         // тут есть assert что в increment+noUpdate не будет noDB, то есть не пересекется с NoEventModifier, то есть можно в любом порядке increment'ить
-        IncrementTableProps increment = new IncrementTableProps(property, change);
+        IncrementTableProps increment = new IncrementTableProps();
+        increment.add(property, change);
         OverrideSessionModifier baseModifier = new OverrideSessionModifier("assd", increment, emptyModifier);
 
         try {
@@ -1719,7 +1719,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     // чтобы не протаскивать через стек сделаем пока field'ами
     private FunctionSet<SessionDataProperty> keepUpProps;
     private MSet<CustomClass> mRemovedClasses;
-    private MSet<Property> mApplySingleRemovedClassProps;
+    private MSet<Property> mChangedProps;
 
     public FunctionSet<SessionDataProperty> getKeepProps() {
         return BaseUtils.merge(recursiveUsed, keepUpProps);
@@ -1897,7 +1897,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
         startTransaction(BL, attemptCountMap, deadLockPriority, applyStartTime);
         this.keepUpProps = keepProps;
-        mApplySingleRemovedClassProps = SetFact.mSet();
+        mChangedProps = SetFact.mSet();
         mRemovedClasses = SetFact.mSet();        
 
         try {
@@ -2180,7 +2180,9 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             recursiveActions.clear();
             return recursiveApply(execRecursiveActions, BL, stack);
         }
-        
+
+        ImSet<Property> changedProps = mChangedProps.immutable();
+
         FunctionSet<SessionDataProperty> keepProps = keepUpProps; // because it is set to empty in endTransaction
 
         long checkedTimestamp;
@@ -2192,12 +2194,14 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
         ImSet<CustomClass> removedClasses = this.mRemovedClasses.immutable(); // сбросятся в endTransaction
         registerClassRemove.removed(removedClasses, Long.MAX_VALUE); // надо так как между commit'ом и регистрацией изменения может начаться новая транзакция и update conflict'а не будет, поэтому временно включим режим будущего
-        
+
         commitTransaction();
 
         registerClassRemove.removed(removedClasses, getTimestamp());
 
         registerClassRemove.checked(checkedTimestamp);
+
+        changes.regChange(changedProps, this);
 
         updateSessionNotChangedEvents(keepProps); // need this to mark that nested props are not changed, not in restart to be out of transaction
 
@@ -2210,7 +2214,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         if(!onlyRemove) // для singleRemove не надо делать, так как есть dropDataChanges который по идее и так не должен допустить там удалений
             updateDataCurrentClasses(updateSession);
         else // no need to fill this collection not in single remove, because it will be anyway included in getChangedProps in restart 
-            mApplySingleRemovedClassProps.addAll(updateSession.changes.getChangedProps(baseClass));
+            mChangedProps.addAll(updateSession.getChangedProps());
         stack.updateCurrentClasses(updateSession);
 
         mRemovedClasses.addAll(updateSession.packRemoveClasses(BL));
@@ -2679,7 +2683,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         SessionTableUsage<KeyField, Property> changeTable =
                 new SessionTableUsage<>(debugInfo, table.keys, properties.toOrderSet(), Field.typeGetter(),
                         Property::getType);
-        changeTable.writeRows(sql, table.getReadSaveQuery(properties, modifier), baseClass, env, SessionTable.nonead);
+        changeTable.writeRows(sql, table.getReadSaveQuery(properties, modifier.getPropertyChanges()), baseClass, env, SessionTable.nonead);
         return changeTable;
     }
 

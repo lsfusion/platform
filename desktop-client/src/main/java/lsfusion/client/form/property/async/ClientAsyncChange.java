@@ -14,6 +14,7 @@ import java.io.IOException;
 
 public class ClientAsyncChange extends ClientAsyncInputExec {
     public ClientType changeType;
+    public boolean hasList;
 
     @SuppressWarnings("UnusedDeclaration")
     public ClientAsyncChange() {
@@ -27,6 +28,7 @@ public class ClientAsyncChange extends ClientAsyncInputExec {
     @Override
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
         this.changeType = ClientTypeSerializer.deserializeClientType(inStream);
+        this.hasList = pool.readBoolean(inStream);
     }
 
     @Override

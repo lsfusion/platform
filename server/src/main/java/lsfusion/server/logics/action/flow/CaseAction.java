@@ -26,6 +26,7 @@ import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
 import lsfusion.server.logics.classes.user.set.OrObjectClassSet;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
+import lsfusion.server.logics.form.interactive.action.input.SimpleRequestInput;
 import lsfusion.server.logics.form.struct.property.async.AsyncExec;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
@@ -250,27 +251,27 @@ public class CaseAction extends ListCaseAction {
     public Graph<ActionCase<PropertyInterface>> abstractGraph; 
 
     @Override
-    public Type getFlowSimpleRequestInputType(boolean optimistic, boolean inRequest) {
-        Type type = null;
+    public SimpleRequestInput<PropertyInterface> getFlowSimpleRequestInputType(boolean optimistic, boolean inRequest) {
+        SimpleRequestInput<PropertyInterface> simpleInput = null;
         ImList<ActionMapImplement<?, PropertyInterface>> actions = getListActions();
         for (ActionMapImplement<?, PropertyInterface> action : actions) {
-            Type actionRequestType = action.action.getSimpleRequestInputType(optimistic, inRequest);
-            if (!optimistic && actionRequestType == null) {
+            SimpleRequestInput<PropertyInterface> actionRequestInput = action.mapSimpleRequestInput(optimistic, inRequest);
+            if (!optimistic && actionRequestInput == null) {
                 return null;
             }
 
-            if (type == null) {
-                type = actionRequestType;
+            if (simpleInput == null) {
+                simpleInput = actionRequestInput;
             } else {
-                if(actionRequestType != null) {
-                    type = type.getCompatible(actionRequestType);
-                    if (type == null) {
+                if(actionRequestInput != null) {
+                    simpleInput = simpleInput.merge(actionRequestInput);
+                    if (simpleInput == null) {
                         return null;
                     }
                 }
             }
         }
-        return type;
+        return simpleInput;
     }
 
     @Override

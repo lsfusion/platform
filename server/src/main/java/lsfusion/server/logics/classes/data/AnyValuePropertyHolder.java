@@ -277,10 +277,6 @@ public class AnyValuePropertyHolder {
         return getLCP(valueType).readClasses(context, keys);
     }
 
-    public ObjectValue read(Type valueType, ExecutionEnvironment env, DataObject... keys) throws SQLException, SQLHandledException {
-        return getLCP(valueType).readClasses(env, keys);
-    }
-
     private static ObjectValue getFirstChangeProp(ImOrderSet<SessionDataProperty> props, Action<?> action, Result<SessionDataProperty> readedProperty) {
         ImOrderSet<SessionDataProperty> changedProps = SetFact.filterOrderFn(props, action.getChangeExtProps().keys());
         if(changedProps.isEmpty())

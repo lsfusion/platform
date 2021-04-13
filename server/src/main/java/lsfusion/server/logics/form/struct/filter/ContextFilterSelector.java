@@ -10,9 +10,9 @@ import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 public abstract class ContextFilterSelector<P extends PropertyInterface, V extends PropertyInterface, O extends ObjectSelector> {
-    
-    public abstract ImSet<ContextFilterInstance> getInstances(ImMap<V, ? extends ObjectValue> values, ImRevMap<O, ObjectEntity> objects);
-    
+
+    public abstract ImSet<? extends ContextFilterEntity<?, V, O>> getEntities();
+
     public abstract <C extends PropertyInterface> ContextFilterSelector<P, C, O> map(ImRevMap<V, C> map);
     
     public abstract PropertyMapImplement<P, V> getWhereProperty(ImRevMap<O, V> objects);

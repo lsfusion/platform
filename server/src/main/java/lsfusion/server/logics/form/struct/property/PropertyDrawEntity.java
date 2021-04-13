@@ -27,7 +27,6 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.ExplicitAction;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
-import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.form.interactive.controller.init.InstanceFactory;
 import lsfusion.server.logics.form.interactive.controller.init.Instantiable;
@@ -40,9 +39,10 @@ import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.order.OrderEntity;
-import lsfusion.server.logics.form.struct.property.async.AsyncAddRemove;
+import lsfusion.server.logics.form.struct.property.async.AsyncChange;
 import lsfusion.server.logics.form.struct.property.async.AsyncEventExec;
 import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyObjectEntity;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
@@ -205,14 +205,6 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         this.inheritedProperty = inheritedProperty;
     }
 
-    public DataClass getRequestInputType(FormEntity form, SecurityPolicy policy, String actionSID) {
-        return getRequestInputType(actionSID, form, policy, optimisticAsync);
-    }
-
-    public DataClass getWYSRequestInputType(FormEntity form, SecurityPolicy policy) {
-        return getRequestInputType(CHANGE_WYS, form, policy, true); // wys is optimistic by default
-    }
-    
     public boolean isProperty() {
         return getValueActionOrProperty() instanceof PropertyObjectEntity;
     }
@@ -221,19 +213,16 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return getValueProperty();
     }
 
-    public DataClass getRequestInputType(String actionSID, FormEntity form, SecurityPolicy securityPolicy, boolean optimistic) {
-        ActionObjectEntity<?> changeAction = getEventAction(actionSID, form, securityPolicy);
-
-        if (changeAction != null) {
-            return (DataClass)changeAction.property.getSimpleRequestInputType(optimistic);
-        }
-        return null;
+    public AsyncChange getAsyncChange(FormEntity form, SecurityPolicy policy, String actionSID) {
+        AsyncEventExec asyncEventExec = getAsyncEventExec(form, policy, actionSID, true);
+        return asyncEventExec instanceof AsyncChange ? ((AsyncChange) asyncEventExec) : null;
     }
 
-    public AsyncEventExec getAsyncEventExec(FormEntity form, SecurityPolicy policy, String actionSID) {
+    // for all external calls will set optimistic to true
+    public AsyncEventExec getAsyncEventExec(FormEntity form, SecurityPolicy policy, String actionSID, boolean optimistic) {
         ActionObjectEntity<?> changeAction = getEventAction(actionSID, form, policy);
         if (changeAction != null) {
-            return changeAction.getAsyncEventExec(form, optimisticAsync);
+            return changeAction.getAsyncEventExec(form, optimistic);
         }
         return null;
     }
@@ -288,27 +277,26 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         }
 
         ActionOrProperty<P> eventProperty = getEventProperty();
-        ActionMapImplement<?, P> eventActionImplement = eventProperty.getEventAction(actionId);
-        if(eventActionImplement != null)
-            return eventActionImplement.mapObjects(getEditMapping());
+        ImRevMap<P, ObjectEntity> eventMapping = getEditMapping();
 
         // default implementations for group change and change wys
         if (GROUP_CHANGE.equals(actionId) || CHANGE_WYS.equals(actionId)) {
+            ActionMapImplement<?, P> eventActionImplement = eventProperty.getExplicitEventAction(actionId);
+            if(eventActionImplement != null)
+                return eventActionImplement.mapObjects(eventMapping);
+
+            // if there is no handler, then generate one
             ActionObjectEntity<?> eventAction = getEventAction(CHANGE, form);
             if (eventAction != null) {
-                if (GROUP_CHANGE.equals(actionId)) // if there is no group change, then generate one
+                if (GROUP_CHANGE.equals(actionId))
                     return eventAction.getGroupChange(getToDraw(form));
-                else { // if CHANGE action requests DataClass, then use this action
-                    assert CHANGE_WYS.equals(actionId);
-                    if (eventAction.property.getSimpleRequestInputType(true) != null) // wys is optimistic by default
-                        return eventAction;
-                    else {
-                        ActionMapImplement<?, P> defaultWYSAction = eventProperty.getDefaultWYSAction();
-                        if(defaultWYSAction != null) // assert getSimpleRequestInputType != null
-                            return defaultWYSAction.mapObjects(getEditMapping());
-                    }
-                }
+                else if(eventProperty instanceof Property) // for actions CHANGE_WYS is not supported
+                    return eventAction.getChangeWYS((Property<P>)eventProperty, optimisticAsync);
             }
+        } else {
+            ActionMapImplement<?, P> eventActionImplement = eventProperty.getEventAction(actionId, ListFact.EMPTY());
+            if(eventActionImplement != null)
+                return eventActionImplement.mapObjects(eventMapping);
         }
         return null;
     }

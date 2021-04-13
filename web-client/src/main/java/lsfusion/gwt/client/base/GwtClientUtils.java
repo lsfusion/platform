@@ -918,4 +918,11 @@ public class GwtClientUtils {
         }
         return null;
     }
+
+    public static <T> ArrayList<T> removeLast(ArrayList<T> values) {
+        ArrayList<T> newValues = new ArrayList<>();
+        for (int i = 0; i < values.size() - 1; i++)
+            newValues.add(values.get(i));
+        return newValues;
+    }
 }

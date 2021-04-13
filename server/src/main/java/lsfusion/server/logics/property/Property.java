@@ -42,6 +42,7 @@ import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.stat.PropStat;
 import lsfusion.server.data.stat.TableStatKeys;
 import lsfusion.server.data.table.*;
+import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
@@ -82,7 +83,6 @@ import lsfusion.server.logics.classes.user.set.OrClassSet;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.classes.user.set.ResolveUpClassSet;
 import lsfusion.server.logics.event.*;
-import lsfusion.server.logics.form.interactive.action.change.DefaultWYSObjectAction;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.interactive.dialogedit.ClassFormEntity;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
@@ -1556,6 +1556,10 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return new PropertyMapImplement<>(this, getIdentityInterfaces());
     }
 
+    public <V> PropertyImplement<T, V> getSingleImplement(V map) {
+        return new PropertyImplement<T, V>(this, MapFact.singleton(interfaces.single(), map));
+    }
+
     public <V extends PropertyInterface> PropertyMapImplement<T, V> getImplement(ImOrderSet<V> list) {
         return new PropertyMapImplement<>(this, getMapInterfaces(list));
     }
@@ -1611,14 +1615,11 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return createJoinAction(lm.getNewSessionFormEdit());
     }
     private <X extends PropertyInterface> ActionMapImplement<?, T> getDefaultAsyncUpdateAction(BaseLogicsModule lm, ImList<Property> viewProperties, PropertyMapImplement<?, T> resultValue) {
-        for(int i=viewProperties.size()-1;i>=0;i--) {
-            Property<X> viewProperty = viewProperties.get(i);
-            resultValue = PropertyFact.createJoin(new PropertyImplement<>(viewProperty, MapFact.singleton(viewProperty.interfaces.single(), resultValue)));
-        }
         // IF NOT requestCanceled() ASYNCUPDATE requestedProperty(...)
         return PropertyFact.createIfAction(SetFact.EMPTY(), PropertyFact.createNot(lm.getRequestCanceledProperty().getImplement()),
-                                                    createJoinAction(lm.addAsyncUpdateAProp(), resultValue), null);
-    }    
+                                                    createJoinAction(lm.addAsyncUpdateAProp(), PropertyFact.createViewProperty(viewProperties, resultValue)), null);
+    }
+
     private <X extends PropertyInterface> Pair<ActionMapImplement<?, T>, PropertyMapImplement<?, T>> getDefaultMainInputAction(BaseLogicsModule lm) {
         ValueClass valueClass = getValueClass(ClassType.editValuePolicy);
         Property targetProp = lm.getRequestedValueProperty(valueClass);
@@ -1667,9 +1668,6 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 //        if(interfaceClasses.size() < interfaces.size()) // не все классы есть
 //            return null;
 
-        if(eventActionSID.equals(ServerResponse.CHANGE_WYS)) // like GROUP_CHANGE will be proceeded in PropertyDrawEntity
-            return null;
-
         BaseLogicsModule lm = getBaseLM();
 
         if(eventActionSID.equals(ServerResponse.EDIT_OBJECT)) {
@@ -1686,24 +1684,21 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
                                 PropertyFact.createSetAction(interfaces, getImplement(), input.second), null); // INPUT scripted input generates FOR, but now it's not important
     }
 
-    @Override
-    @IdentityStrongLazy // STRONG for using in security policy
-    public ActionMapImplement<?, T> getDefaultWYSAction() {
-        ImMap<T, ValueClass> interfaceClasses = getInterfaceClasses(ClassType.tryEditPolicy); // because in property draw definition also FULL is used (and not ASSERTFULL)
-        if(interfaceClasses.size() < interfaces.size()) // we don't have all classes
-            return null;
+    @IdentityInstanceLazy
+    public Property<?> getViewProperty(CustomClass customClass) {
+        return getViewProperty(customClass, ListFact.EMPTY());
+    }
 
+    // actually protected, friendly with PropertyMapImplement
+    public Property<?> getViewProperty(CustomClass customClass, ImList<Property> viewProperties) {
         ValueClass valueClass = getValueClass(ClassType.tryEditPolicy);
-        if (!(valueClass instanceof CustomClass))
-            return null;
+        if(valueClass instanceof CustomClass && customClass.isChild((CustomClass)valueClass)) { // found
+            if (viewProperties.isEmpty() || viewProperties.get(0).getValueClass(ClassType.tryEditPolicy) instanceof CustomClass)
+                viewProperties = ListFact.add(((LP<?>) getBaseLM().addCastProp(ObjectType.idClass)).property, viewProperties); // casting object class to long to provide WYS
 
-        if (!canBeChanged())
-            return null;
-
-        ImOrderSet<T> listInterfaces = interfaceClasses.keys().toOrderSet();
-        ImList<ValueClass> listValues = listInterfaces.mapList(interfaceClasses);
-        DefaultWYSObjectAction<T> changeAction = new DefaultWYSObjectAction<>(LocalizedString.NONAME, this, listInterfaces, listValues, (CustomClass) valueClass);
-        return changeAction.getImplement(listInterfaces);
+            return PropertyFact.createViewProperty(viewProperties, null).property;
+        }
+        return null;
     }
 
     public boolean setNotNull;
@@ -2104,7 +2099,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
         return true;
     }
-    
+
     @IdentityStartLazy
     public long getComplexity() {
         try {

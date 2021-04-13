@@ -39,6 +39,8 @@ public class StructChanges extends TwinImmutableObject {
 
     private final ImMap<Property, ChangeType> changes;
 
+    public final static StructChanges EMPTY = new StructChanges(MapFact.EMPTY());
+
     @Override
     public String toString() {
         return changes.toString();
