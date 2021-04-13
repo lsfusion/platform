@@ -231,6 +231,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
     public ModalityType modalityType = ModalityType.DOCKED;
     public int autoRefresh = 0;
+    public boolean localAsync = false;
 
     public PropertyObjectEntity<?> reportPathProp;
 
@@ -1354,6 +1355,10 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         MExclSet<ContainerView> mContainers = SetFact.mExclSet();
         getRichDesign().mainContainer.fillPropertyContainers(mContainers);
         return mContainers.immutable();
+    }
+
+    public String getAsyncCaption() {
+        return ThreadLocalContext.localize(getRichDesign().mainContainer.caption);
     }
 
     public void setEditType(PropertyEditType editType) {

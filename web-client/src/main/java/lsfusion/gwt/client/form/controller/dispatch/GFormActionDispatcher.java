@@ -100,7 +100,7 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
 
     @Override
     public void execute(GAsyncGetRemoteChangesAction action) {
-        form.getRemoteChanges();
+        form.getRemoteChanges(action.forceLocalEvents);
     }
 
     //todo: по идее, action должен заливать куда-то в сеть выбранный локально файл

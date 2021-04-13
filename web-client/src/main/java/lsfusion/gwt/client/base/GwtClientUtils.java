@@ -708,19 +708,20 @@ public class GwtClientUtils {
         return value.replace('.', ',');
     }
 
-    public static Double smartParse(String value) {
+    public static Double smartParse(String value, NumberFormat format) {
         String groupingSeparator = LocaleInfo.getCurrentLocale().getNumberConstants().groupingSeparator();
         if (UNBREAKABLE_SPACE.equals(groupingSeparator)) {
             value = value.replace(" ", UNBREAKABLE_SPACE);
         }
         String decimalSeparator = LocaleInfo.getCurrentLocale().getNumberConstants().decimalSeparator();
-        return NumberFormat.getDecimalFormat().parse(replaceSeparators(value, decimalSeparator, groupingSeparator));
+        return format.parse(replaceSeparators(value, decimalSeparator, groupingSeparator));
     }
 
-    public static String plainFormat(Double value) {
+    public static String plainFormat(Double value, NumberFormat format) {
         String groupingSeparator = LocaleInfo.getCurrentLocale().getNumberConstants().groupingSeparator();
-        String s = NumberFormat.getDecimalFormat().format(value);
-        return GwtClientUtils.replaceCommaSeparator(s.replace(groupingSeparator, ""));
+        String s = format.format(value).replace(groupingSeparator, "");
+        //need because of IntegralCellEditor.createInputElement
+        return MainFrame.mobile ? GwtClientUtils.replaceCommaSeparator(s) : s;
     }
 
     public static String replicate(char character, int length) {
@@ -925,4 +926,19 @@ public class GwtClientUtils {
             newValues.add(values.get(i));
         return newValues;
     }
+
+    //when used in gwt-javascript, so as not to pass many parameters to the native-method and get localized strings directly
+    protected static native void getLocalizedString(String string)/*-{
+        var name;
+        var prototype = Object.getPrototypeOf(@GwtClientUtils::messages);
+        var ownPropertyNames = Object.getOwnPropertyNames(prototype);
+        for (var i = 0; i < ownPropertyNames.length; i++) {
+            var property = ownPropertyNames[i];
+            if (property.includes(string)) {
+                name = property;
+                break;
+            }
+        }
+        return name != null ? prototype[name]() : name;
+    }-*/;
 }

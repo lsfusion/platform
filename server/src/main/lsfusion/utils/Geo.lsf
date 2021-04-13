@@ -11,11 +11,6 @@ CLASS MapProvider '{geo.map.provider}' {
     google '{geo.map.provider.google}',
     yandex '{geo.map.provider.yandex}'
 }
-FORM mapProviders
-    OBJECTS m = MapProvider
-    PROPERTIES(m) READONLY staticCaption
-    LIST MapProvider OBJECT m
-;
 
 calculateUserMapProvider = DATA MapProvider ();
 calculateMapProvider = OVERRIDE calculateUserMapProvider(), MapProvider.yandex;
@@ -42,8 +37,12 @@ longitude '{geo.longitude.poi}' = ABSTRACT NUMERIC[11,6] (POI);
 readLatitude '{geo.latitude.poi}' = DATA LOCAL NUMERIC[11,6] ();
 readLongitude '{geo.longitude.poi}' = DATA LOCAL NUMERIC[11,6] ();
 
-getCoordinatesAddress  INTERNAL  'lsfusion.server.logics.classes.data.utils.geo.GetCoordinatesAddressAction' (BPSTRING[255], MapProvider);
-getCoordinates (BPSTRING[255] address)  { getCoordinatesAddress(address, calculateMapProvider()); }
+isDefault '{geo.api.key.default}' (MapProvider m) = m == calculateMapProvider();
+apiKey '{geo.api.key}' = DATA STRING(MapProvider); 
+provider '{geo.api.key.provider}' (MapProvider m) = staticCaption(m) CHARWIDTH 5;
+
+getCoordinatesAddress  INTERNAL  'lsfusion.server.logics.classes.data.utils.geo.GetCoordinatesAddressAction' (STRING, MapProvider);
+getCoordinates (STRING address)  { getCoordinatesAddress(address, calculateMapProvider()); }
 recalculateDistance  INTERNAL  'lsfusion.server.logics.classes.data.utils.geo.RecalculateDistancePOIAction' (POI);
 
 calculateCoordinates '{geo.calculate.coordinates}'(POI POI) { 
@@ -85,15 +84,21 @@ startPathPOI '{geo.start.path.poi}'= DATA LOCAL POI();
 calculatePath '{geo.calculate.path.poi}' INTERNAL  'lsfusion.server.logics.classes.data.utils.geo.CalculatePathAction' ();
 
 EXTEND FORM options
-    PROPERTIES() autoSynchronizeCoordinates, nameCalculateUserMapProvider, nameShowUserMapProvider, useTor, recalculateAllDistances
+    PROPERTIES() autoSynchronizeCoordinates, nameShowUserMapProvider, useTor, recalculateAllDistances
+    OBJECTS m = MapProvider
+    PROPERTIES(m) provider, apiKey, isDefault
 ;
 
 DESIGN options {
     commons {
         NEW coordinatesContainer {
             caption = '{geo.form.options.caption.navigation}';
+                NEW apiKeys {
+                    fill = 1;
+                    height = 130;
+                    MOVE BOX (m);
+                }
                 MOVE PROPERTY(autoSynchronizeCoordinates());
-                MOVE PROPERTY(nameCalculateUserMapProvider());
                 MOVE PROPERTY(nameShowUserMapProvider());
                 MOVE PROPERTY(useTor());
                 MOVE PROPERTY(recalculateAllDistances());	

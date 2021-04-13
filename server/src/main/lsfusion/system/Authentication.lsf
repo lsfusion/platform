@@ -41,8 +41,8 @@ hostnameCurrentComputer () = hostname(currentComputer());
 CLASS ABSTRACT Contact '{authentication.contact}';
 TABLE contact (Contact);
 
-firstName '{authentication.first.name.contact}' = DATA ISTRING[100] (Contact) CHARWIDTH 10 IN base;
-lastName '{authentication.last.name.contact}' = DATA ISTRING[100] (Contact) CHARWIDTH 15 IN base;
+firstName '{authentication.first.name.contact}' = DATA ISTRING[100] (Contact) CHARWIDTH 10 IN id;
+lastName '{authentication.last.name.contact}' = DATA ISTRING[100] (Contact) CHARWIDTH 15 IN id;
 name '{authentication.name.contact}' (Contact contact) = CONCAT ' ', firstName(contact), lastName(contact) IN id CHARWIDTH 20;
 
 phone '{authentication.phone.contact}' = DATA STRING[100] (Contact) CHARWIDTH 10;
@@ -68,10 +68,37 @@ name '{authentication.name.user}' (User user) = IF user IS SystemUser
 name '{authentication.name.user}' (CustomUser user) = name[User](user AS CustomUser) CHARWIDTH 10;
 
 // login
-login '{authentication.login}' = DATA BPSTRING[100] (CustomUser) CHARWIDTH 15;
+login '{authentication.login}' = DATA ISTRING[100] (CustomUser) CHARWIDTH 15;
+customUserLower (login) = GROUP AGGR CustomUser customUser WHERE customUser IS CustomUser BY ISTRING[100](lower(login(customUser)));
+customUserNormalized (ISTRING[100] login) = customUserLower(lower(login));
+
+//backward compatibility
 customUser (login) = GROUP AGGR CustomUser customUser WHERE customUser IS CustomUser BY login(customUser);
 upcaseLogin (CustomUser customUser) = upper(login(customUser));
 customUserUpcase (login) = GROUP MAX CustomUser customUser BY upcaseLogin(customUser);
+
+//migration 4 -> 5 version
+intersectingLoginsCount '{authentication.intersecting.logins}' (CustomUser user) = GROUP SUM 1 IF upper(login(CustomUser u)) == upper(login(user));
+intersectingLoginsCount () = GROUP SUM 1 IF intersectingLoginsCount(CustomUser u) > 1;
+FORM intersectingLogins '{authentication.intersecting.logins}'
+OBJECTS c = CustomUser
+PROPERTIES(c) login, intersectingLoginsCount
+FILTERS intersectingLoginsCount(c) > 1 
+;
+
+showIntersectingLogins '{authentication.intersecting.logins}' ()  {
+    SHOW intersectingLogins;
+}
+
+EXTEND FORM migrationData 
+    PROPERTIES showIntersectingLogins()
+;
+
+DESIGN migrationData {
+    commons {
+        MOVE PROPERTY(showIntersectingLogins());
+    }
+}
 
 // password
 sha256Password '{authentication.password}' = DATA STRING[100] (CustomUser) ECHO;
@@ -204,7 +231,7 @@ onUserRegister ABSTRACT LIST (User);
 
 registerUser(JSONFILE user) {
     IMPORT FROM user FIELDS STRING[100] login, STRING[100] password, STRING[100] firstName, STRING[100] lastName, STRING[400] email DO {
-        IF customUser(login) THEN {
+        IF customUserNormalized(login) THEN {
             EXPORT FROM error = '{registration.not.successful.login.exist}';
         } ELSE {
             NEW cu = CustomUser { 
@@ -287,7 +314,7 @@ clearPassResetToken () + {
 
 // lock
 isLocked '{authentication.is.locked.user}' = DATA BOOLEAN (CustomUser);
-isLockedLogin (login) = isLocked(customUser(login));
+isLockedLogin (login) = isLocked(customUserNormalized(lower(login)));
 
 // Current User
 currentUser = NATIVE User ();
@@ -381,7 +408,7 @@ syncUsers ABSTRACT LIST (ISTRING[100], JSONFILE) @@noauth;
 syncUsers (ISTRING[100] computer, JSONFILE users) + { 
     LOCAL syncSavedUser = BPSTRING[100](INTEGER);
     IMPORT FROM users TO syncSavedUser=value;
-    EXPORT FROM value=STRING s WHERE s = syncSavedUser(INTEGER i) AND customUser(s) AND NOT isLockedLogin(s);
+    EXPORT FROM value=STRING s WHERE s = syncSavedUser(INTEGER i) AND customUserNormalized(s) AND NOT isLockedLogin(s);
 }
 
 FORM customUser '{authentication.custom.user}'
@@ -618,7 +645,7 @@ relogin '{authentication.relogin}'  INTERNAL  'lsfusion.server.physics.admin.aut
 reloginLoginUser()  { 
     DIALOG reloginLoginUser OBJECTS login INPUT, password INPUT DO {
         LOCAL user = CustomUser();
-        user() <- customUser(login);
+        user() <- customUserNormalized(login);
         IF user() THEN {
             IF isLocked(user()) THEN {
                 MESSAGE '{authentication.relogin.user.locked}';

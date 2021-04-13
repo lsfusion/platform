@@ -102,7 +102,10 @@ import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.navigator.DefaultIcon;
 import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.logics.navigator.window.*;
-import lsfusion.server.logics.property.*;
+import lsfusion.server.logics.property.AggregateProperty;
+import lsfusion.server.logics.property.Property;
+import lsfusion.server.logics.property.PropertyFact;
+import lsfusion.server.logics.property.Union;
 import lsfusion.server.logics.property.cases.CaseUnionProperty;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.classes.IsClassProperty;
@@ -773,7 +776,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public ScriptingFormEntity createScriptedForm(String formName, LocalizedString caption, DebugInfo.DebugPoint point, String icon,
-                                                  ModalityType modalityType, int autoRefresh) throws ScriptingErrorLog.SemanticErrorException {
+                                                  ModalityType modalityType, int autoRefresh, boolean localAsync) throws ScriptingErrorLog.SemanticErrorException {
         checks.checkDuplicateForm(formName);
         caption = (caption == null ? LocalizedString.create(formName) : caption);
 
@@ -785,6 +788,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         ScriptingFormEntity form = new ScriptingFormEntity(this, formEntity);
         form.setModalityType(modalityType);
         form.setAutoRefresh(autoRefresh);
+        form.setLocalAsync(localAsync);
 
         return form;
     }
@@ -1289,6 +1293,26 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public void setViewType(LAP property, ClassViewType viewType) {
         property.setViewType(viewType);
+    }
+    
+    public void setCustomRenderFunctions(LAP property, String customRenderFunctions) {
+        property.setCustomRenderFunctions(customRenderFunctions);
+    }
+
+    public void checkCustomPropertyViewTextOption(String editType) throws ScriptingErrorLog.SemanticErrorException {
+        checks.checkCustomPropertyEditType(editType);
+    }
+
+    public void setCustomEditorFunctions(LAP property, String customEditorFunctions) {
+        property.setCustomEditorFunctions(customEditorFunctions);
+    }
+
+    public void setCustomTextEdit(LAP property, boolean customTextEdit) {
+        property.setCustomTextEdit(customTextEdit);
+    }
+
+    public void setCustomReplaceEdit(LAP property, boolean customReplaceEdit) {
+        property.setCustomReplaceEdit(customReplaceEdit);
     }
 
     public void setPivotOptions(LAP property, PivotOptions pivotOptions) {
@@ -3093,7 +3117,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         switch (type) {
             case INT: lp = addUnsafeCProp(IntegerClass.instance, value); break;
             case LONG: lp =  addUnsafeCProp(LongClass.instance, value); break;
-            case NUMERIC: lp =  addUnsafeCProp(NumericClass.get(((BigDecimal) value).precision(), ((BigDecimal) value).scale()), value); break;
+            case NUMERIC: lp =  addNumericConst((BigDecimal) value); break;
             case REAL: lp =  addUnsafeCProp(DoubleClass.instance, value); break;
             case STRING: lp =  addUnsafeCProp(getStringConstClass((LocalizedString)value), value); break;
             case LOGICAL: lp =  addUnsafeCProp(LogicalClass.instance, value); break;
@@ -3105,6 +3129,12 @@ public class ScriptingLogicsModule extends LogicsModule {
             case NULL: lp =  baseLM.vnull; break;
         }
         return Pair.create(lp, new LPLiteral(value));
+    }
+
+    private LP addNumericConst(BigDecimal value) {
+        //precision() of bigDecimal 0.x is incorrect
+        int precision = value.abs().compareTo(BigDecimal.ONE) < 1 ? (value.scale() + 1) : value.precision();
+        return addUnsafeCProp(NumericClass.get(precision, value.scale()), value);
     }
 
     public Color createScriptedColor(int r, int g, int b) throws ScriptingErrorLog.SemanticErrorException {

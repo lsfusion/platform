@@ -80,6 +80,9 @@ import lsfusion.gwt.client.form.property.GPropertyGroupType;
 import lsfusion.gwt.client.form.property.GPropertyReader;
 import lsfusion.gwt.client.form.property.async.*;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
+import lsfusion.gwt.client.form.property.cell.classes.controller.CustomCellEditor;
+import lsfusion.gwt.client.form.property.cell.classes.controller.CustomReplaceCellEditor;
+import lsfusion.gwt.client.form.property.cell.classes.controller.CustomTextCellEditor;
 import lsfusion.gwt.client.form.property.cell.classes.view.ActionCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.*;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
@@ -579,7 +582,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             public boolean execute() {
                 if (!formHidden) {
                     if (isShowing(GFormController.this)) {
-                        dispatcher.execute(new GetRemoteChanges(true), new ServerResponseCallback() {
+                        dispatcher.execute(new GetRemoteChanges(true, false), new ServerResponseCallback() {
                             @Override
                             public void success(ServerResponseResult response) {
                                 super.success(response);
@@ -606,7 +609,11 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     public void getRemoteChanges() {
-        dispatcher.execute(new GetRemoteChanges(), new ServerResponseCallback());
+        getRemoteChanges(false);
+    }
+
+    public void getRemoteChanges(boolean forceLocalEvents) {
+        dispatcher.execute(new GetRemoteChanges(forceLocalEvents), new ServerResponseCallback());
     }
 
     private boolean formVisible = false;
@@ -618,6 +625,10 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
     public void lostFocus() {
         formVisible = false;
+    }
+
+    public void setFormVisible() {
+        this.formVisible = true;
     }
 
     public void hidePopup() {
@@ -928,26 +939,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
     public long executeEventAction(GPropertyDraw property, GGroupObjectValue columnKey, String actionSID) {
         DeferredRunner.get().commitDelayedGroupObjectChange(property.groupObject);
-        return syncDispatch(new ExecuteEventAction(property.ID, getFullCurrentKey(columnKey), actionSID),
-                new ServerResponseCallback() {
-                    @Override
-                    public void success(ServerResponseResult response) {
-                        super.success(response);
-                        formsController.setLastCompletedRequest(response.requestIndex);
-                        //GFormAction will close asyncForm, if there is no GFormAction in response,
-                        //we should close this erroneous asyncForm
-                        if (formsController.hasAsyncForm(response.requestIndex)) {
-                            if (Arrays.stream(response.actions).noneMatch(a -> a instanceof GFormAction)) {
-                                FormContainer formContainer = formsController.removeAsyncForm(response.requestIndex);
-                                if(formContainer instanceof FormDockable) {
-                                    ((FormDockable) formContainer).closePressed();
-                                } else {
-                                    formContainer.hide();
-                                }
-                            }
-                        }
-                    }
-                });
+        return syncDispatch(new ExecuteEventAction(property.ID, getFullCurrentKey(columnKey), actionSID), new ServerResponseCallback());
     }
 
     public void executePropertyEventAction(EventHandler handler, boolean isBinding, ExecuteEditContext editContext) {
@@ -983,19 +975,20 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
             GAsyncEventExec asyncEventExec = property.getAsyncEventExec(actionSID);
 
-            long requestIndex = asyncEventExec == null || asyncEventExec instanceof GAsyncExec ? actionDispatcher.executePropertyActionSID(event, actionSID, editContext) : -1;
-
             if (asyncEventExec != null) {
                 if (property.askConfirm) {
                     blockingConfirm("lsFusion", property.askConfirmMessage, false, chosenOption -> {
                         if (chosenOption == DialogBoxHelper.OptionType.YES) {
-                            asyncEventExec.exec(this, property, event, editContext, actionSID, requestIndex);
+                            asyncEventExec.exec(this, property, event, editContext, actionSID);
                         }
                     });
                 } else {
-                        asyncEventExec.exec(this, property, event, editContext, actionSID, requestIndex);
+                    asyncEventExec.exec(this, property, event, editContext, actionSID);
                 }
+                return;
             }
+
+            actionDispatcher.executePropertyActionSID(event, actionSID, editContext);
         }
     }
 
@@ -1013,7 +1006,27 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
                 value -> {}, () -> {}, editContext, actionSID);
     }
 
-    public void asyncOpenForm(GAsyncOpenForm asyncOpenForm, long requestIndex) {
+    public void asyncOpenForm(GAsyncOpenForm asyncOpenForm, ExecuteEditContext editContext, String actionSID) {
+        long requestIndex = dispatcher.execute(new ExecuteEventAction(editContext.getProperty().ID, getFullCurrentKey(editContext.getColumnKey()), actionSID),
+                new ServerResponseCallback() {
+                    @Override
+                    public void success(ServerResponseResult response) {
+                        super.success(response);
+                        formsController.setLastCompletedRequest(response.requestIndex);
+                        //GFormAction will close asyncForm, if there is no GFormAction in response,
+                        //we should close this erroneous asyncForm
+                        if (formsController.hasAsyncForm(response.requestIndex)) {
+                            if (Arrays.stream(response.actions).noneMatch(a -> a instanceof GFormAction)) {
+                                FormContainer formContainer = formsController.removeAsyncForm(response.requestIndex);
+                                if(formContainer instanceof FormDockable) {
+                                    ((FormDockable) formContainer).closePressed();
+                                } else {
+                                    formContainer.hide();
+                                }
+                            }
+                        }
+                    }
+                });
         formsController.asyncOpenForm(requestIndex, asyncOpenForm);
     }
 
@@ -1901,7 +1914,15 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     public void edit(GType type, Event event, boolean hasOldValue, Object oldValue, Consumer<Object> beforeCommit, Consumer<Object> afterCommit, Runnable cancel, EditContext editContext, String editAsyncValuesSID) {
         assert this.editContext == null;
         GPropertyDraw property = editContext.getProperty();
-        CellEditor cellEditor = type.createGridCellEditor(this, property);
+        CellEditor cellEditor;
+        String customEditorFunctions = property.customEditorFunctions;
+        if (customEditorFunctions != null) {
+            cellEditor = property.customTextEdit ? new CustomTextCellEditor(this, property, customEditorFunctions) :
+                    (property.customReplaceEdit ? new CustomReplaceCellEditor(this, property, customEditorFunctions) :
+                            new CustomCellEditor(this, property, customEditorFunctions));
+        } else
+            cellEditor = type.createGridCellEditor(this, property);
+
         if (cellEditor != null) {
             editBeforeCommit = beforeCommit;
             editAfterCommit = afterCommit;

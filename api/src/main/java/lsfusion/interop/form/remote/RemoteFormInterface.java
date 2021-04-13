@@ -27,7 +27,7 @@ public interface RemoteFormInterface extends RemoteRequestInterface {
 
     Set<Integer> getInputGroupObjects() throws RemoteException;
 
-    ServerResponse getRemoteChanges(long requestIndex, long lastReceivedRequestIndex, boolean refresh) throws RemoteException;
+    ServerResponse getRemoteChanges(long requestIndex, long lastReceivedRequestIndex, boolean refresh, boolean forceLocalEvents) throws RemoteException;
 
     // events : form
 
@@ -89,7 +89,7 @@ public interface RemoteFormInterface extends RemoteRequestInterface {
 
     // group object shortcut actions (system toolbar)
 
-    ReportGenerationData getReportData(long requestIndex, long lastReceivedRequestIndex, Integer groupId, FormPrintType printType, FormUserPreferences userPreferences) throws RemoteException;
+    Object getGroupReportData(long requestIndex, long lastReceivedRequestIndex, Integer groupId, FormPrintType printType, FormUserPreferences userPreferences) throws RemoteException;
 
     int countRecords(long requestIndex, long lastReceivedRequestIndex, int groupObjectID) throws RemoteException;
 

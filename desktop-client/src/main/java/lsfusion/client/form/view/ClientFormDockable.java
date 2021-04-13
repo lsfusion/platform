@@ -13,6 +13,7 @@ import lsfusion.client.view.MainFrame;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 
 import javax.swing.*;
+import java.awt.*;
 import java.util.List;
 
 public class ClientFormDockable extends ClientDockable {
@@ -30,7 +31,7 @@ public class ClientFormDockable extends ClientDockable {
     }
 
     public void asyncInit() {
-        setContent(new JLabel(ClientImages.get("loading.gif")));
+        setContent(new JLabel(new ImageIcon(ClientImages.get("loading_async.gif").getImage().getScaledInstance(32, 32, Image.SCALE_DEFAULT))));
     }
 
     public void init(ClientNavigator navigator, String canonicalName, String formSID, RemoteFormInterface remoteForm, ClientForm clientForm, final MainFrame.FormCloseListener closeListener, byte[] firstChanges) {

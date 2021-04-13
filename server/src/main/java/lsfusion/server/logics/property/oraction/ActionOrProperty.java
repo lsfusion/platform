@@ -643,6 +643,10 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
 
         // для всех
         private ClassViewType viewType;
+        private String customRenderFunctions;
+        private String customEditorFunctions;
+        private boolean customTextEdit;
+        private boolean customReplaceEdit;
         private PivotOptions pivotOptions;
 
         // для всех 
@@ -651,6 +655,10 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         public void proceedDefaultDraw(PropertyDrawEntity<?> entity, FormEntity form) {
             entity.shouldBeLast = BaseUtils.nvl(shouldBeLast, false);
             entity.viewType = viewType;
+            entity.customRenderFunctions = customRenderFunctions;
+            entity.customEditorFunctions = customEditorFunctions;
+            entity.customTextEdit = customTextEdit;
+            entity.customReplaceEdit = customReplaceEdit;
             entity.askConfirm = BaseUtils.nvl(askConfirm, false);
             entity.askConfirmMessage = askConfirmMessage;
             entity.eventID = eventID;
@@ -742,6 +750,12 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
             
             if(viewType == null)
                 setViewType(options.viewType);
+            if (customRenderFunctions == null)
+                setCustomRenderFunctions(options.customRenderFunctions);
+            if (customEditorFunctions == null)
+                setCustomEditorFunctions(options.customEditorFunctions);
+            setCustomTextEdit(options.customTextEdit);
+            setCustomReplaceEdit(options.customReplaceEdit);
             if(pivotOptions == null)
                 setPivotOptions(options.pivotOptions);
             
@@ -847,6 +861,22 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
 
         public void setViewType(ClassViewType viewType) {
             this.viewType = viewType;
+        }
+        
+        public void setCustomRenderFunctions(String customRenderFunctions) {
+            this.customRenderFunctions = customRenderFunctions;
+        }
+
+        public void setCustomEditorFunctions(String customEditorFunctions) {
+            this.customEditorFunctions = customEditorFunctions;
+        }
+
+        public void setCustomTextEdit(boolean customTextEdit) {
+            this.customTextEdit = customTextEdit;
+        }
+
+        public void setCustomReplaceEdit(boolean customReplaceEdit) {
+            this.customReplaceEdit = customReplaceEdit;
         }
 
         public void setPivotOptions(PivotOptions pivotOptions) {

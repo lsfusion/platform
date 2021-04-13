@@ -210,7 +210,38 @@ public interface ClientMessages extends Messages {
     String linkEditModeDisable();
     String fullScreenModeEnable();
     String fullScreenModeDisable();
-    
+
+//    dateRangePicker
+    String applyLabel();
+    String cancelLabel();
+    String customRangeLabel();
+    String daysOfWeekSU();
+    String daysOfWeekMO();
+    String daysOfWeekTU();
+    String daysOfWeekWE();
+    String daysOfWeekTH();
+    String daysOfWeekFR();
+    String daysOfWeekSA();
+    String monthJanuary();
+    String monthFebruary();
+    String monthMarch();
+    String monthApril();
+    String monthMay();
+    String monthJune();
+    String monthJuly();
+    String monthAugust();
+    String monthSeptember();
+    String monthOctober();
+    String monthNovember();
+    String monthDecember();
+    String today();
+    String yesterday();
+    String last7Days();
+    String last30Days();
+    String thisMonth();
+    String lastMonth();
+    String clear();
+
     class Instance {
         private static final ClientMessages instance = GWT.create(ClientMessages.class);
 

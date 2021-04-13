@@ -280,7 +280,7 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
 
     @Override
     public Object getEditValue() {
-        return null;
+        return true;
     }
 
     @Override

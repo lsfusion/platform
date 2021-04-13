@@ -491,6 +491,31 @@ public class ScriptingFormEntity {
         if (options.getViewType() != null) {
             property.viewType = options.getViewType();
         }
+        String customRenderFunctions = options.getCustomRenderFunctions();
+        if (customRenderFunctions != null) {
+            String pattern = "[a-zA-Z]+\\w*:[a-zA-Z]+\\w*:[a-zA-Z]+\\w*";
+            if (customRenderFunctions.matches(pattern)) {
+                property.customRenderFunctions = customRenderFunctions;
+            } else {
+                LM.getErrLog().emitCustomPropertyRenderFunctionsError(LM.getParser(), property.getSID(), customRenderFunctions);
+            }
+        }
+        String customEditorFunctions = options.getCustomEditorFunctions();
+        property.customTextEdit = options.isCustomTextEdit();
+        property.customReplaceEdit = options.isCustomReplaceEdit();
+        if (customEditorFunctions != null) {
+            String customTextEditPattern = "[a-zA-Z]+\\w*:[a-zA-Z]+\\w*";
+            String customReplaceEditPattern = "[a-zA-Z]+\\w*:[a-zA-Z]+\\w*:[a-zA-Z]+\\w*:[a-zA-Z]+\\w*:([a-zA-Z]+\\w*)?";
+            String customEditPattern = "[a-zA-Z]+\\w*:[a-zA-Z]+\\w*:([a-zA-Z]+\\w*)?";
+            if ((customEditorFunctions.matches(customTextEditPattern) && options.isCustomTextEdit()) ||
+                    (customEditorFunctions.matches(customReplaceEditPattern) && options.isCustomReplaceEdit()) ||
+                    (customEditorFunctions.matches(customEditPattern) && !options.isCustomTextEdit() && !options.isCustomReplaceEdit())) {
+                property.customEditorFunctions = customEditorFunctions;
+            } else {
+                LM.getErrLog().emitCustomPropertyEditorFunctionsError(LM.getParser(), property.getSID(), customEditorFunctions, options.isCustomTextEdit(), options.isCustomReplaceEdit());
+            }
+        }
+
         if (options.getToDraw() != null) {
             property.toDraw = options.getToDraw();
         }
@@ -759,6 +784,10 @@ public class ScriptingFormEntity {
 
     public void setAutoRefresh(int autoRefresh) {
         form.autoRefresh = autoRefresh;
+    }
+
+    public void setLocalAsync(boolean localAsync) {
+        form.localAsync = localAsync;
     }
 
     private CustomClass findCustomClassForFormSetup(String className) throws ScriptingErrorLog.SemanticErrorException {

@@ -146,7 +146,7 @@ public class ClientActionToGwtConverter extends ObjectConverter {
 
     @Converter(from = AsyncGetRemoteChangesClientAction.class)
     public GAsyncGetRemoteChangesAction convertAction(AsyncGetRemoteChangesClientAction action) throws IOException {
-        return new GAsyncGetRemoteChangesAction();
+        return new GAsyncGetRemoteChangesAction(action.forceLocalEvents);
     }
 
     @Converter(from = LogOutClientAction.class)

@@ -6,6 +6,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Table;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.heavy.OrderedMap;
+import lsfusion.base.file.RawFileData;
 import lsfusion.base.identity.DefaultIDGenerator;
 import lsfusion.base.identity.IDGenerator;
 import lsfusion.base.lambda.EProvider;
@@ -370,7 +371,7 @@ public class ClientFormController implements AsyncListener {
                                 rmiQueue.asyncRequest(new ProcessServerResponseRmiRequest("autoRefresh.getRemoteChanges") {
                                     @Override
                                     protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                                        return remoteForm.getRemoteChanges(requestIndex, lastReceivedRequestIndex, true);
+                                        return remoteForm.getRemoteChanges(requestIndex, lastReceivedRequestIndex, true, false);
                                     }
 
                                     @Override
@@ -633,10 +634,14 @@ public class ClientFormController implements AsyncListener {
     }
 
     public void getRemoteChanges(boolean async) {
+        getRemoteChanges(async, false);
+    }
+
+    public void getRemoteChanges(boolean async, boolean forceLocalEvents) {
         ProcessServerResponseRmiRequest request = new ProcessServerResponseRmiRequest("getRemoteChanges") {
             @Override
             protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                return remoteForm.getRemoteChanges(requestIndex, lastReceivedRequestIndex, false);
+                return remoteForm.getRemoteChanges(requestIndex, lastReceivedRequestIndex, false, forceLocalEvents);
             }
         };
         if (async) {
@@ -1008,6 +1013,36 @@ public class ClientFormController implements AsyncListener {
         }
 
         return fullKey;
+    }
+
+    public void asyncOpenForm(ClientPropertyDraw property, ClientGroupObjectValue columnKey, String actionSID, ClientAsyncOpenForm asyncOpenForm) throws IOException {
+        if(!asyncOpenForm.isModal()) { //ignore async modal windows in desktop
+            ((DockableMainFrame) MainFrame.instance).asyncOpenForm(rmiQueue.getNextRmiRequestIndex(), asyncOpenForm);
+        }
+
+        commitOrCancelCurrentEditing();
+
+        final byte[] fullCurrentKey = getFullCurrentKey(columnKey);
+
+        rmiQueue.asyncRequest(new ProcessServerResponseRmiRequest("openForm") {
+            @Override
+            protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
+                return remoteForm.executeEventAction(requestIndex, lastReceivedRequestIndex, property.getID(), fullCurrentKey, actionSID);
+            }
+            @Override
+            protected void onResponse(long requestIndex, ServerResponse result) throws Exception {
+                super.onResponse(requestIndex, result);
+                //FormClientAction closes asyncForm, if there is no GFormAction in response,
+                //we should close this erroneous asyncForm
+                DockableRepository forms = ((DockableMainFrame) MainFrame.instance).getForms();
+                if (forms.hasAsyncForm(requestIndex)) {
+                    if (Arrays.stream(result.actions).noneMatch(a -> a instanceof FormClientAction)) {
+                        ClientFormDockable formContainer = forms.removeAsyncForm(requestIndex);
+                        formContainer.onClosing();
+                    }
+                }
+            }
+        });
     }
 
     public ServerResponse executeEventAction(final ClientPropertyDraw property, final ClientGroupObjectValue columnKey, final String actionSID) throws IOException {
@@ -1462,16 +1497,21 @@ public class ClientFormController implements AsyncListener {
 
     public void runSingleGroupXlsExport(final GridController groupController) {
         commitOrCancelCurrentEditing();
-        rmiQueue.syncRequest(new RmiCheckNullFormRequest<ReportGenerationData>("runSingleGroupXlsExport") {
+        rmiQueue.syncRequest(new RmiCheckNullFormRequest<Object>("runSingleGroupXlsExport") {
             @Override
-            protected ReportGenerationData doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                return remoteForm.getReportData(requestIndex, lastReceivedRequestIndex, groupController.getGroupObject().getID(), FormPrintType.XLSX, getUserPreferences());
+            protected Object doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
+                return remoteForm.getGroupReportData(requestIndex, lastReceivedRequestIndex, groupController.getGroupObject().getID(), FormPrintType.XLSX, getUserPreferences());
             }
 
             @Override
-            public void onResponse(long requestIndex, ReportGenerationData generationData) throws Exception {
-                if (generationData != null) {
-                    ReportGenerator.exportAndOpen(generationData, FormPrintType.XLSX, true, MainController.remoteLogics);
+            public void onResponse(long requestIndex, Object reportData) throws Exception {
+                if (reportData != null) {
+                    if (reportData instanceof RawFileData) {
+                        BaseUtils.openFile((RawFileData) reportData, "report", "csv");
+                    } else {
+                        //assert generationData instanceof ReportGenerationData
+                        ReportGenerator.exportAndOpen((ReportGenerationData) reportData, FormPrintType.XLSX, true, MainController.remoteLogics);
+                    }
                 }
             }
         });

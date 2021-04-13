@@ -372,6 +372,11 @@ public class PropertyDrawView extends ComponentView {
             ((PropertyObjectEntity<?>)debug).property.getValueClass(ClassType.formPolicy).serialize(outStream);
         else
             outStream.writeByte(DataType.ACTION);
+        
+        pool.writeString(outStream, entity.customRenderFunctions);
+        pool.writeString(outStream, entity.customEditorFunctions);
+        pool.writeBoolean(outStream, entity.customTextEdit);
+        pool.writeBoolean(outStream, entity.customReplaceEdit);
 
         pool.writeString(outStream, entity.eventID);
 

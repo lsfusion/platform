@@ -19,7 +19,7 @@ public class GetRemoteChangesHandler extends FormServerResponseActionHandler<Get
     public ServerResponseResult executeEx(final GetRemoteChanges action, ExecutionContext context) throws RemoteException {
         return getServerResponseResult(action, new RemoteCall() {
             public ServerResponse call(RemoteFormInterface remoteForm) throws RemoteException {
-                return remoteForm.getRemoteChanges(action.requestIndex, action.lastReceivedRequestIndex, action.refresh);
+                return remoteForm.getRemoteChanges(action.requestIndex, action.lastReceivedRequestIndex, action.refresh, action.forceLocalEvents);
             }
         });
     }

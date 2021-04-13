@@ -56,8 +56,9 @@
             loadResources([
 
                 <!-- need jquery for pivot table -->
-                'https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.2/jquery.min.js',
-                'https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js',
+                <!-- version jquery above 2.2.4 causes to errors in the pivot table -->
+                'https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.4/jquery.min.js',
+                'https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js',
 
                 <!-- export pivot to excel -->
                 'static/js/tableToExcel.js',
@@ -120,7 +121,12 @@
                 ['https://cdn.jsdelivr.net/npm/fullcalendar@5.5.0/locales-all.js', 'fullcalendar-locales-all.js'],
                 'static/js/fullcalendar-locale-be.js',
                 'https://unpkg.com/@popperjs/core@2.5.3/dist/umd/popper.min.js',
-                'https://unpkg.com/tippy.js@6.2.7/dist/tippy-bundle.umd.min.js'
+                'https://unpkg.com/tippy.js@6.2.7/dist/tippy-bundle.umd.min.js',
+
+                <!-- dateRangePicker -->
+                'https://cdn.jsdelivr.net/momentjs/latest/moment.min.js',
+                'https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js',
+                'https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css'
 
             ]);
 

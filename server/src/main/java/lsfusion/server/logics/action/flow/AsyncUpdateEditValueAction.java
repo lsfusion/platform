@@ -29,7 +29,7 @@ public class AsyncUpdateEditValueAction extends SystemAction {
         } catch (IOException e) {
             Throwables.propagate(e);
         }
-        context.delayUserInteraction(new AsyncGetRemoteChangesClientAction());
+        context.delayUserInteraction(new AsyncGetRemoteChangesClientAction(false));
         return FlowResult.FINISH;
     }
 }

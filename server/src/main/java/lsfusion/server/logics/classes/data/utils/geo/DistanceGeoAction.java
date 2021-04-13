@@ -5,6 +5,7 @@ import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.server.logics.form.stat.struct.imports.hierarchy.json.JSONReader;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import org.json.JSONArray;
@@ -43,7 +44,7 @@ public class DistanceGeoAction extends GeoAction {
             if(netLayer == null && useTor)
                 netLayer = getNetLayer();
             String url = "http://maps.googleapis.com/maps/api/distancematrix/json?" + "origins=" + origins + "&" + "destinations=" + destinations + "&sensor=false";
-            final JSONObject response = useTor ? getDocumentTor(netLayer, url) : JsonReader.read(url);
+            final JSONObject response = useTor ? getDocumentTor(netLayer, url) : JSONReader.read(url);
             if (response.getString("status").equals("OK")) {
                 JSONArray locations = response.getJSONArray("rows");
                 JSONArray locationList = locations.getJSONObject(0).getJSONArray("elements");

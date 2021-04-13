@@ -1508,11 +1508,10 @@
             lineHeight: opts.valueHeight + "px"
           });
           listItem.bind("dblclick", function() {
-            var element;
+            var pvtContainer;
             if (unusedDiv.has(attrElem).length > 0) {
-              element = createPaxis(false);
-              listItem.appendTo(element.children());
-              element.prependTo(pvtRowsTable.children());
+              pvtContainer = $('.pvtAxisContainer.pvtHorizList');
+              listItem.appendTo(pvtContainer[pvtContainer.length - 1]);
             } else {
               listItem.prependTo(unusedDiv);
             }
