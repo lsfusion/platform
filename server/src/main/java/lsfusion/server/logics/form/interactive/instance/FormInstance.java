@@ -301,9 +301,9 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         if (contextFilters != null) {
             allFixedFilters = allFixedFilters.addExcl(contextFilters.mapSetValues(value -> value.getFilter(instanceFactory)));
             pullProps = ContextFilterInstance.getPullProps(contextFilters);
-        } else 
+        } else
             pullProps = SetFact.EMPTY();
-            
+
         ImMap<GroupObjectInstance, ImSet<FilterInstance>> fixedFilters = allFixedFilters.group(new BaseUtils.Group<GroupObjectInstance, FilterInstance>() {
             public GroupObjectInstance group(FilterInstance key) {
                 return key.getApplyObject();
@@ -1036,7 +1036,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                     if (columnKey != null) {
                         key = key.addExcl(columnKey);
                     }
-    
+
                     ObjectValue value = NullValue.instance;
                     Object oValue = pasteRows.getValue(i);
                     if (oValue != null) {
@@ -1829,9 +1829,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         mChangedProps.set(mChangedProps.result.merge(session.updateExternal(this)));
 
         if (dataChanged) {
-            if(forceLocalEvents || !entity.localAsync) {
-                session.executeSessionEvents(this, stack);
-            } else {
+            if(forceLocalEvents || !entity.localAsync) {session.executeSessionEvents(this, stack);
+} else {
                 resultActions.add(new AsyncGetRemoteChangesClientAction(true));
             }
 
@@ -2525,6 +2524,9 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     }
 
     public void formRefresh() throws SQLException, SQLHandledException {
+        if(!Settings.get().isDisableExternalAndForceClearHints())
+            session.refresh();
+
         refreshData();
     }
 

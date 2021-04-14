@@ -237,16 +237,6 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
         return currentInvocation.pauseForUserInteraction(actions);
     }
 
-    public void disconnect() throws SQLException, SQLHandledException {
-        if (currentInvocation != null && currentInvocation.isPaused()) {
-            try {
-                currentInvocation.cancel();
-            } catch (Exception e) {
-                logger.warn("Exception was thrown, while invalidating form", e);
-            }
-        }
-    }
-
     private Map<Long, SyncExecution> syncExecuteServerInvocationMap = MapFact.mAddRemoveMap();
     private Map<Long, SyncExecution> syncContinueServerInvocationMap = MapFact.mAddRemoveMap();
     private Map<Long, SyncExecution> syncThrowInServerInvocationMap = MapFact.mAddRemoveMap();
