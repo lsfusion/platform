@@ -5,6 +5,7 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.base.caches.IdentityStrongLazy;
 import lsfusion.server.logics.action.Action;
+import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.form.interactive.action.input.SimpleDataInput;
 import lsfusion.server.logics.form.interactive.action.input.SimpleRequestInput;
@@ -57,7 +58,20 @@ public class ActionObjectEntity<P extends PropertyInterface> extends ActionOrPro
             SimpleDialogInput<P> simpleDialogInput = (SimpleDialogInput<P>) simpleInput;
             Property<?> viewProperty = eventProperty.getViewProperty(simpleDialogInput.customClass);
             if(viewProperty != null)
-                return property.getDialogChangeWYS(simpleDialogInput.list.getView(viewProperty), simpleDialogInput.targetProp).mapObjects(mapping);
+                return property.getDialogChangeWYS(simpleDialogInput.list.and(viewProperty), simpleDialogInput.targetProp).mapObjects(mapping);
+        }
+
+        return null;
+    }
+
+    @IdentityStrongLazy // for security policy and maybe optimization
+    public <T extends PropertyInterface> ActionObjectEntity<?> getNewWYS(boolean optimistic) {
+        SimpleRequestInput<P> simpleInput = property.getSimpleRequestInput(optimistic);
+        if (simpleInput instanceof SimpleDataInput) {
+            SimpleDataInput<P> simpleDataInput = (SimpleDataInput<P>) simpleInput;
+            ActionMapImplement<?, P> newChangeWYS = property.getNewChangeWYS(simpleDataInput.list, simpleDataInput.targetProp);
+            if(newChangeWYS != null)
+                return newChangeWYS.mapObjects(mapping);
         }
 
         return null;

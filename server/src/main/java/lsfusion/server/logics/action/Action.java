@@ -24,6 +24,7 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.property.LP;
+import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
@@ -36,6 +37,7 @@ import lsfusion.server.logics.action.session.changed.ChangedProperty;
 import lsfusion.server.logics.action.session.changed.OldProperty;
 import lsfusion.server.logics.action.session.changed.SessionProperty;
 import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
@@ -581,17 +583,33 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
         return PropertyFact.createListAction(interfaces, mList.immutableList());
     }
 
-    public <X extends PropertyInterface> ActionMapImplement<?, P> getDialogChangeWYS(InputListEntity<X, P> viewList, LP targetProp) {
+    public <X extends PropertyInterface> ActionMapImplement<?, P> getDialogChangeWYS(InputListEntity<X, P> viewList, LP<?> targetProp) {
         // in group_change_wys it's gonna be tricky with recodeviewAction, if we want to optimize it to be executed with a single query
+        BaseLogicsModule lm = getBaseLM();
+        LP<?> inputWYSProp = lm.getRequestedValueProperty().getLCP(viewList.getDataClass());
+        return getChangeWYS(viewList, inputWYSProp, viewList.getWYSObjectAction(lm, targetProp, inputWYSProp)); // finding object with that name
+    }
+
+    public <X extends PropertyInterface> ActionMapImplement<?, P> getNewChangeWYS(InputListEntity<X, P> viewList, LP<?> targetProp) {
+        if(viewList != null) {
+            Pair<Property<?>, ConcreteCustomClass> viewProperty = viewList.getViewProperty();
+            if (viewProperty != null) {
+                BaseLogicsModule lm = getBaseLM();
+                return getChangeWYS(viewList, targetProp, Property.createJoinAction(lm.addNewEditAction(viewProperty.second, viewProperty.first), targetProp.getImplement()));
+            }
+        }
+        return null;
+    }
+
+    public <X extends PropertyInterface> ActionMapImplement<?, P> getChangeWYS(InputListEntity<X, P> viewList, LP<?> inputWYSProp, ActionMapImplement<?, P> doAction) {
         // REQUEST
         //     inputViewAction
         // DO {
-        //     recodeViewAction;
+        //     doAction
         //     PUSH REQUEST eventAction
         // }
-        Pair<ActionMapImplement<?, P>, ActionMapImplement<?, P>> inputAction = viewList.getActions(getBaseLM(), targetProp);
-        return PropertyFact.createRequestAction(interfaces, inputAction.first,
-                    PropertyFact.createListAction(interfaces, ListFact.toList(inputAction.second,
+        return PropertyFact.createRequestAction(interfaces, viewList.getInputAction(getBaseLM(), inputWYSProp),
+                    PropertyFact.createListAction(interfaces, ListFact.toList(doAction,
                                 PropertyFact.createPushRequestAction(interfaces, getImplement()))), null);
     }
 

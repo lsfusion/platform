@@ -15,6 +15,7 @@ import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.DataClass;
+import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.property.JoinProperty;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
@@ -98,31 +99,44 @@ public class InputListEntity<P extends PropertyInterface, V extends PropertyInte
         return new InputListEntity<>(andProperty.property, andProperty.mapping.innerCrossValues(mapJoinValues), false);
     }
 
-    public <X extends PropertyInterface, J extends PropertyInterface> InputListEntity<?, V> getView(Property<X> viewProperty) {
+    public <X extends PropertyInterface, J extends PropertyInterface> InputListEntity<?, V> and(Property<X> viewProperty) {
         PropertyMapImplement<J, P> and = (PropertyMapImplement<J, P>) PropertyFact.createAnd(property.interfaces, new PropertyMapImplement<X, P>(viewProperty, MapFact.singletonRev(viewProperty.interfaces.single(), singleInterface())), property.getImplement());
         return new InputListEntity<>(and.property, and.mapping.innerJoin(mapValues), newSession);
     }
+    public Pair<Property<?>, ConcreteCustomClass> getViewProperty() {
+        ImMap<P, ValueClass> interfaceClasses = property.getInterfaceClasses(ClassType.tryEditPolicy);
+        ValueClass parameterClass = interfaceClasses.get(singleInterface());
+        if(parameterClass instanceof ConcreteCustomClass) {
+            ConcreteCustomClass concreteCustomClass = (ConcreteCustomClass) parameterClass;
+            Property<?> viewProperty = property.getViewProperty(concreteCustomClass);
+            if(viewProperty != null)
+                return new Pair<>(viewProperty, concreteCustomClass);
+        }
+        return null;
+    }
 
-    public Pair<ActionMapImplement<?, V>, ActionMapImplement<?, V>> getActions(BaseLogicsModule lm, LP<?> targetProp) {
+    public DataClass getDataClass() {
+        return (DataClass) property.getType();
+    }
 
-        DataClass dataClass = (DataClass)property.getType();
-        LP<?> inputWYSProp = lm.getRequestedValueProperty().getLCP(dataClass);
-
+    // INPUT viewProperty.getType LIST viewList(x, sdss) TO inputWYSProp
+    public ActionMapImplement<?, V> getInputAction(BaseLogicsModule lm, LP<?> inputWYSProp) {
         ImOrderSet<V> orderInterfaces = mapValues.valuesSet().toOrderSet();
+        return lm.addInputAProp(getDataClass(), inputWYSProp.property, false, orderInterfaces, this).getImplement(orderInterfaces);
+    }
+
+    // gets from inputted property target property
+    public ActionMapImplement<?, V> getWYSObjectAction(BaseLogicsModule lm, LP<?> targetProp, LP<?> inputWYSProp) {
         P singleInterface = singleInterface();
-        return new Pair<>(
-            //      INPUT viewProperty.getType LIST viewList(x, sdss) TO inputWYSProp
-            lm.addInputAProp(dataClass, inputWYSProp.property, false, orderInterfaces, this).getImplement(orderInterfaces),
-            //      FOR
-            PropertyFact.createForAction(property.interfaces, mapValues.keys(),
+        return PropertyFact.createForAction(property.interfaces, mapValues.keys(), // FOR
                 //      viewList(x, sdss) = requestedProperty() DO
                 PropertyFact.createCompare(property.interfaces, property.getImplement(), inputWYSProp.getImplement(), Compare.EQUALS), MapFact.EMPTYORDER(), false,
                 //          targetProp() <- x;
-                    PropertyFact.createSetAction(SetFact.singleton(singleInterface), targetProp.getImplement(), singleInterface),
+                PropertyFact.createSetAction(SetFact.singleton(singleInterface), targetProp.getImplement(), singleInterface),
                 //          ELSE targetProp() <- NULL;
-                    PropertyFact.createSetAction(SetFact.EMPTY(), targetProp.getImplement(), lm.vnull.getImplement()),
-                    false, SetFact.EMPTY(), false).
-                        map(mapValues));
+                PropertyFact.createSetAction(SetFact.EMPTY(), targetProp.getImplement(), lm.vnull.getImplement()),
+                false, SetFact.EMPTY(), false).
+                map(mapValues);
     }
 
     public ImMap<V, ValueClass> getInterfaceClasses() {

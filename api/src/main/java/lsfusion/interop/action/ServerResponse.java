@@ -12,9 +12,10 @@ public class ServerResponse implements Serializable {
     public static final String GROUP_CHANGE = "groupChange";
     public static final String EDIT_OBJECT = "editObject";
     public static final String CHANGE_WYS = "change_wys";
+    public static final String NEW_WYS = "new_wys";
 
-    public static final ImList<String> changeEvents = ListFact.toList(CHANGE, CHANGE_WYS, GROUP_CHANGE);
-    public static final ImList<String> events = ListFact.toList(CHANGE, CHANGE_WYS, GROUP_CHANGE, EDIT_OBJECT);
+    public static final ImList<String> changeEvents = ListFact.toList(CHANGE, CHANGE_WYS, GROUP_CHANGE, NEW_WYS);
+    public static final ImList<String> events = ListFact.add(EDIT_OBJECT, changeEvents);
 
     public static final String INPUT = "input";
     public static final String FILTER = "filter";

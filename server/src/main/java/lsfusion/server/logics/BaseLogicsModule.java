@@ -886,7 +886,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
     @IdentityStrongLazy
     public LA getAddFormAction(CustomClass cls, FormEntity contextForm, ObjectEntity contextObject, FormSessionScope scope) {
-        LA<?> result = addAddFormAction(cls, contextObject, scope);
+        LA<?> result = addNewEditAction(cls, contextObject, scope);
         // issue #47 Потенциальное совпадение канонических имен различных свойств
         String contextPrefix = getFormPrefix(contextForm) + getObjectPrefix(contextObject);
         String name = "_ADDFORM" + scope + contextPrefix + getClassPrefix(cls);

@@ -1765,41 +1765,51 @@ public abstract class LogicsModule {
 
     // ---------------------- Add Form ---------------------- //
 
-    protected LA addAddFormAction(CustomClass cls, ObjectEntity contextObject, FormSessionScope scope) {
-        LocalizedString caption = LocalizedString.NONAME;
+    // assumes 1 parameter - new, others - context
+    protected LA addNewEditAction(CustomClass cls, LA setAction, LA doAction, int contextParams) {
+        assert doAction.listInterfaces.size() >= contextParams; // assert that doaction uses all context params
 
         // NEW AUTOSET x=X DO {
+        //      <<setAction>>
         //      REQUEST
         //          edit(x);
         //      DO
-        //          SEEK co=x;
+        //          <<doAction>>
         //      ELSE
         //          IF sessionOwners THEN
         //              DELETE x;
         // }
 
-        LA result = addForAProp(LocalizedString.create("{logics.add}"), false, false, false, false, 0, cls, true, false, 0, false,
-                1, //NEW x=X
-                addRequestAProp(null, true, caption, // REQUEST
-                        baseLM.getPolyEdit(), 1, // edit(x);
-                        (contextObject != null ? addOSAProp(contextObject, UpdateType.LAST, 1) : baseLM.getEmptyObject()), 1, // DO SEEK co = x
-                        addIfAProp(baseLM.sessionOwners, baseLM.getPolyDelete(), 1), 1 // ELSE IF seekOwners THEN delete(x)
-                ), 1
+        int newIndex = contextParams + 1;
+        LA edit = addRequestAProp(null, true, LocalizedString.NONAME, // REQUEST
+                BaseUtils.add(BaseUtils.add(
+                new Object[]{baseLM.getPolyEdit(), newIndex}, // edit(x);
+                directLI(doAction)), // DO <<doAction>>
+                new Object[]{addIfAProp(baseLM.sessionOwners, baseLM.getPolyDelete(), 1), newIndex}) // ELSE IF seekOwners THEN delete(x)
         );
-//        LA result = addListAProp(
-//                            addAddObjAProp(cls, true, 0, false, true, addedProperty), // NEW (FORM with AUTOSET), addAddObjAProp(cls, false, true, 0, false, true, addedProperty),
-//                            addJoinAProp(addListAProp( // так хитро делается чтобы заnest'ить addedProperty (иначе apply его сбрасывает)
-//                                    addDMFAProp(caption, cls, ManageSessionType.AUTO, true), 1, // FORM EDIT class OBJECT prm
-//                                    addSetPropertyAProp(1, false, 1, addedProperty, 1), 1), // addedProperty <- prm
-//                            addedProperty)); // FORM EDIT class OBJECT prm
-//
-//        LP formResultProperty = baseLM.getFormResultProperty();
-//        result = addListAProp(LocalizedString.create("{logics.add}"), result,
-//                addIfAProp(addJProp(baseLM.equals2, formResultProperty, addCProp(baseLM.formResult, "ok")), // IF formResult == ok
-//                        (contextObject != null ? addJoinAProp(addOSAProp(contextObject, true, 1), addedProperty) : baseLM.getEmpty()), // THEN (contextObject != null) SEEK exf.o prm
-//                        (addIfAProp(baseLM.sessionOwners, addJoinAProp(getDeleteAction(cls, contextObject, FormSessionScope.OLDSESSION), addedProperty)))) // ELSE IF sessionOwners DELETE prm, // предполагается что если нет
-//                         );
 
+        LA setEdit = edit;
+        if(setAction != null) // adding setAction if any
+            setEdit = addListAProp(BaseUtils.add(directLI(setAction), directLI(setEdit)));
+
+        return addForAProp(LocalizedString.create("{logics.add}"), false, false, false, false, contextParams, cls, true, false, 0, false,
+                BaseUtils.add(getUParams(contextParams + 1), directLI(setEdit))); // context + addedInterface + action
+    }
+
+    public LA<?> addNewEditAction(CustomClass cls, Property setProperty) {
+        return addNewEditAction(cls,
+                addSetPropertyAProp(null, LocalizedString.NONAME, 2, false, 1, 2, new LP(setProperty), 2, 1), // viewProperty(new) <- context
+                baseLM.getEmptyObject(), // no action
+                1);
+    }
+
+    protected LA addNewEditAction(CustomClass cls, ObjectEntity contextObject, FormSessionScope scope) {
+        assert contextObject != null;
+
+        LA result = addNewEditAction(cls,
+                null, // no action
+                addOSAProp(contextObject, UpdateType.LAST, 1), // SEEK co=x;
+                0);
         setAddActionOptions(result, contextObject);
         
         return addSessionScopeAProp(scope, result);

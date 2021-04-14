@@ -1604,7 +1604,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         }
     }
 
-    private <X extends PropertyInterface> ActionMapImplement<?, T> createJoinAction(LA<X> action, PropertyMapImplement<?, T> implement) {
+    public static <X extends PropertyInterface, T extends PropertyInterface> ActionMapImplement<?, T> createJoinAction(LA<X> action, PropertyMapImplement<?, T> implement) {
         return PropertyFact.createJoinAction(new ActionImplement<>(action.action, MapFact.singleton(action.listInterfaces.single(), implement)));
     }
     private <X extends PropertyInterface> ActionMapImplement<?, T> createJoinAction(LA<X> action) {

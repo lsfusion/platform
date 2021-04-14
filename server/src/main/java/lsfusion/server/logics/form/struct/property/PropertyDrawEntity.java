@@ -233,7 +233,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     private boolean isChange(String eventActionSID) {
         // GROUP_CHANGE can also be in context menu binding (see Property constructor)
-        boolean isEdit = CHANGE.equals(eventActionSID) || CHANGE_WYS.equals(eventActionSID) || GROUP_CHANGE.equals(eventActionSID);
+        boolean isEdit = CHANGE.equals(eventActionSID) || CHANGE_WYS.equals(eventActionSID) || GROUP_CHANGE.equals(eventActionSID) || NEW_WYS.equals(eventActionSID);
         assert isEdit || hasContextMenuBinding(eventActionSID) || hasKeyBinding(eventActionSID);
         return isEdit;
     }
@@ -284,18 +284,24 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         ImRevMap<P, ObjectEntity> eventMapping = getEditMapping();
 
         // default implementations for group change and change wys
-        if (GROUP_CHANGE.equals(actionId) || CHANGE_WYS.equals(actionId)) {
+        boolean isGroupChange = GROUP_CHANGE.equals(actionId);
+        boolean isNewWYS = NEW_WYS.equals(actionId);
+        if (isGroupChange || CHANGE_WYS.equals(actionId) || isNewWYS) {
             ActionMapImplement<?, P> eventActionImplement = eventProperty.getExplicitEventAction(actionId);
             if(eventActionImplement != null)
                 return eventActionImplement.mapObjects(eventMapping);
 
             // if there is no handler, then generate one
-            ActionObjectEntity<?> eventAction = getEventAction(CHANGE, form);
+            ActionObjectEntity<?> eventAction = getEventAction(isNewWYS ? CHANGE_WYS : CHANGE, form);
             if (eventAction != null) {
-                if (GROUP_CHANGE.equals(actionId))
+                if (isGroupChange)
                     return eventAction.getGroupChange(getToDraw(form));
-                else if(eventProperty instanceof Property) // for actions CHANGE_WYS is not supported
-                    return eventAction.getChangeWYS((Property<P>)eventProperty, optimisticAsync);
+                else if(eventProperty instanceof Property) { // for actions CHANGE_WYS is not supported
+                    if(isNewWYS)
+                        return eventAction.getNewWYS(optimisticAsync);
+                    else
+                        return eventAction.getChangeWYS((Property<P>) eventProperty, optimisticAsync);
+                }
             }
         } else {
             ActionMapImplement<?, P> eventActionImplement = eventProperty.getEventAction(actionId, ListFact.EMPTY());
