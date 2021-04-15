@@ -1829,8 +1829,9 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         mChangedProps.set(mChangedProps.result.merge(session.updateExternal(this)));
 
         if (dataChanged) {
-            if(forceLocalEvents || !entity.localAsync) {session.executeSessionEvents(this, stack);
-} else {
+            if(forceLocalEvents || !entity.localAsync) {
+                session.executeSessionEvents(this, stack);
+            } else {
                 resultActions.add(new AsyncGetRemoteChangesClientAction(true));
             }
 
