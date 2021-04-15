@@ -892,8 +892,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                 for (FormInstance form : getAllActiveForms()) {
                     form.dataChanged = true;
                 }
-            } else
-                assert isInTransaction();
+            } //else
+              //  assert isInTransaction(); or update external
             
             return true;
         }
