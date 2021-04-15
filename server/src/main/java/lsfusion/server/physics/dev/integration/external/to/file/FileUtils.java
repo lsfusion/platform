@@ -99,7 +99,7 @@ public class FileUtils {
         FTPPath destProperties = FTPPath.parseFTPPath(destPath);
         FTPClient ftpClient = new FTPClient();
         try {
-            if (connectFTPClient(ftpClient, srcProperties, 60000)) { //1 minute = 60 sec
+            if (connectFTPClient(ftpClient, srcProperties)) {
                 boolean done = ftpClient.rename(appendExtension(srcProperties.remoteFile, extension), appendExtension(destProperties.remoteFile, extension));
                 if (!done) {
                     throw new RuntimeException("Error occurred while renaming file to ftp : " + ftpClient.getReplyCode());
@@ -151,7 +151,7 @@ public class FileUtils {
         FTPPath properties = FTPPath.parseFTPPath(path);
         FTPClient ftpClient = new FTPClient();
         try {
-            if(connectFTPClient(ftpClient, properties, 60000)) { //1 minute = 60 sec
+            if(connectFTPClient(ftpClient, properties)) {
                 boolean done = ftpClient.deleteFile(properties.remoteFile);
                 if (!done) {
                     throw new RuntimeException("Some error occurred while deleting file from ftp");
@@ -231,7 +231,7 @@ public class FileUtils {
         FTPClient ftpClient = new FTPClient();
         try {
 
-            if (connectFTPClient(ftpClient, ftpPath, 60000)) { //1 minute = 60 sec
+            if (connectFTPClient(ftpClient, ftpPath)) {
                 boolean dirExists = true;
                 String[] directories = ftpPath.remoteFile.split("/");
                 for (String dir : directories) {
@@ -309,7 +309,7 @@ public class FileUtils {
         FTPPath ftpPath = FTPPath.parseFTPPath(path);
         FTPClient ftpClient = new FTPClient();
         try {
-            if(connectFTPClient(ftpClient, ftpPath, 60000)) { //1 minute = 60 sec
+            if(connectFTPClient(ftpClient, ftpPath)) {
 
                 boolean exists;
                 //check file existence
@@ -393,9 +393,9 @@ public class FileUtils {
             ftpPath.charset = charset;
         }
         FTPClient ftpClient = new FTPClient();
-        ftpClient.setDataTimeout(120000);
+        ftpClient.setDataTimeout(ftpPath.dataTimeout);
         try {
-            if(connectFTPClient(ftpClient, ftpPath, 60000)) { //1 minute = 60 sec
+            if(connectFTPClient(ftpClient, ftpPath)) {
                 if (ftpPath.remoteFile == null || ftpPath.remoteFile.isEmpty() || ftpClient.changeWorkingDirectory(ftpPath.remoteFile)) {
                     FTPFile[] ftpFileList = ftpClient.listFiles();
                     String[] nameValues = new String[ftpFileList.length];
@@ -454,8 +454,8 @@ public class FileUtils {
         }
     }
 
-    private static boolean connectFTPClient(FTPClient ftpClient, FTPPath ftpPath, int timeout) throws IOException {
-        ftpClient.setConnectTimeout(timeout);
+    private static boolean connectFTPClient(FTPClient ftpClient, FTPPath ftpPath) throws IOException {
+        ftpClient.setConnectTimeout(ftpPath.connectTimeout);
         if (ftpPath.charset != null) {
             ftpClient.setControlEncoding(ftpPath.charset);
         }

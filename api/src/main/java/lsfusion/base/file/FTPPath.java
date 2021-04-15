@@ -19,9 +19,11 @@ public class FTPPath {
     public String remoteFile;
     public boolean passiveMode;
     public boolean binaryTransferMode;
+    public int dataTimeout;
+    public int connectTimeout;
 
     public FTPPath(String username, String password, String charset, String server, Integer port, String remoteFile,
-                   boolean passiveMode, boolean binaryTransferMode) {
+                   boolean passiveMode, boolean binaryTransferMode, int dataTimeout, int connectTimeout) {
         this.username = username;
         this.password = password;
         this.charset = charset;
@@ -30,6 +32,8 @@ public class FTPPath {
         this.remoteFile = remoteFile;
         this.passiveMode = passiveMode;
         this.binaryTransferMode = binaryTransferMode;
+        this.dataTimeout = dataTimeout;
+        this.connectTimeout = connectTimeout;
     }
 
     public static FTPPath parseFTPPath(String path) {
@@ -41,7 +45,7 @@ public class FTPPath {
     }
 
     private static FTPPath parseFTPPath(String path, Integer defaultPort) {
-        /*username:password;charset@host:port/path_to_file?passivemode=false&binarytransfermode=false*/
+        /*username:password;charset@host:port/path_to_file?passivemode=false&binarytransfermode=false&datatimeout=120000&connecttimeout=60000*/
         Pattern connectionStringPattern = Pattern.compile("(.*):([^;]*)(?:;(.*))?@([^/:]*)(?::([^/]+))?(?:/([^?]*))?(?:\\?(.*))?");
         Matcher connectionStringMatcher = connectionStringPattern.matcher(path);
         if (connectionStringMatcher.matches()) {
@@ -52,22 +56,28 @@ public class FTPPath {
             Integer port = connectionStringMatcher.group(5) == null ? defaultPort : Integer.parseInt(connectionStringMatcher.group(5));
             String remoteFile = connectionStringMatcher.group(6);
             List<NameValuePair> extraParams = URLEncodedUtils.parse(connectionStringMatcher.group(7), charset != null ? Charset.forName(charset) : StandardCharsets.UTF_8);
-            boolean passiveMode = isPassiveMode(extraParams);
-            boolean binaryTransferMode = isBinaryTransferMode(extraParams);
-            return new FTPPath(username, password, charset, server, port, remoteFile, passiveMode, binaryTransferMode);
+            boolean passiveMode = getBooleanParam(extraParams, "passivemode");
+            boolean binaryTransferMode = getBooleanParam(extraParams, "binarytransfermode");
+            int dataTimeout = getIntParam(extraParams, "datatimeout", 120000);
+            int connectTimeout = getIntParam(extraParams, "connecttimeout", 60000);
+            return new FTPPath(username, password, charset, server, port, remoteFile, passiveMode, binaryTransferMode, dataTimeout, connectTimeout);
         } else {
-            throw new RuntimeException("Incorrect ftp url. Please use format: ftp(s)://username:password;charset@host:port/path_to_file?passivemode=false&binarytransfermode=false");
+            throw new RuntimeException("Incorrect ftp url. Please use format: ftp(s)://username:password;charset@host:port/path_to_file?passivemode=false&binarytransfermode=false&datatimeout=120000&connecttimeout=60000");
         }
     }
 
-    private static boolean isPassiveMode(List<NameValuePair> queryParams) {
-        String result = getParameterValue(queryParams, "passivemode");
+    private static boolean getBooleanParam(List<NameValuePair> queryParams, String name) {
+        String result = getParameterValue(queryParams, name);
         return result == null || result.equals("true");
     }
 
-    private static boolean isBinaryTransferMode(List<NameValuePair> queryParams) {
-        String result = getParameterValue(queryParams, "binarytransfermode");
-        return result == null || result.equals("true");
+    private static int getIntParam(List<NameValuePair> queryParams, String name, int defaultValue) {
+        String result = getParameterValue(queryParams, name);
+        if (result != null) try {
+            return Integer.parseInt(result);
+        } catch (Exception ignored) {
+        }
+        return defaultValue;
     }
 
     private static String getParameterValue(List<NameValuePair> queryParams, String key) {
