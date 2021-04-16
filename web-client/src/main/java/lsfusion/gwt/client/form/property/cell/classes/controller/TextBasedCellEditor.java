@@ -4,7 +4,10 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.*;
 import com.google.gwt.user.client.ui.impl.TextBoxImpl;
+import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.view.CopyPasteUtils;
@@ -18,30 +21,47 @@ import lsfusion.gwt.client.form.property.cell.controller.ReplaceCellEditor;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.List;
 
-import static com.google.gwt.dom.client.BrowserEvents.*;
-import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
+import static com.google.gwt.dom.client.BrowserEvents.BLUR;
+import static com.google.gwt.dom.client.BrowserEvents.KEYDOWN;
+import static lsfusion.gwt.client.base.GwtClientUtils.nvl;
 
 public abstract class TextBasedCellEditor implements ReplaceCellEditor {
+    private static final ClientMessages messages = ClientMessages.Instance.get();
     private static TextBoxImpl textBoxImpl = GWT.create(TextBoxImpl.class);
 
     protected final GPropertyDraw property;
     protected final EditManager editManager;
     protected final String inputElementTagName;
 
+    boolean hasList;
+    boolean listOnly = true; //Параметр должен приходить сверху
+    CustomSuggestBox suggestBox = null;
+    Label noResultsLabel = new Label(messages.nothingFound());
+
     public TextBasedCellEditor(EditManager editManager, GPropertyDraw property) {
-        this(editManager, property, "input");
+        this(editManager, property, false);
     }
 
-    public TextBasedCellEditor(EditManager editManager, GPropertyDraw property, String inputElementTagName) {
+    public TextBasedCellEditor(EditManager editManager, GPropertyDraw property, boolean hasList) {
+        this(editManager, property, "input", hasList);
+    }
+
+    public TextBasedCellEditor(EditManager editManager, GPropertyDraw property, String inputElementTagName, boolean hasList) {
         this.inputElementTagName = inputElementTagName;
         this.editManager = editManager;
         this.property = property;
+        this.hasList = hasList;
     }
 
     @Override
     public void startEditing(Event event, Element parent, Object oldValue) {
         String value = tryFormatInputText(oldValue);
+        if(hasList) {
+            suggestBox.setValue(value);
+        }
         InputElement inputElement = getInputElement(parent);
         boolean selectAll = true;
         if (GKeyStroke.isCharDeleteKeyEvent(event)) {
@@ -67,6 +87,13 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
 
     @Override
     public void onBrowserEvent(Element parent, EventHandler handler) {
+        if(hasList) {
+            //on mouse click blur event finish editing before new value in SelectBox is selected
+            if (BLUR.equals(handler.event.getType())) {
+                suggestBox.setText(suggestBox.display.getReplacementString());
+            }
+        }
+
         Event event = handler.event;
 
         String type = event.getType();
@@ -141,6 +168,9 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
         }
     }
     protected void escapePressed(EventHandler handler, Element parent) {
+        if(hasList) {
+            suggestBox.display.hideSuggestions();
+        }
         if(GKeyStroke.isPlainKeyEvent(handler.event)) {
             handler.consume();
             editManager.cancelEditing();
@@ -189,6 +219,10 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
     }
 
     public void validateAndCommit(Element parent, boolean cancelIfInvalid, boolean blurred) {
+        if(hasList && listOnly && !suggestBox.isValidText()) {
+            return;
+        }
+
         String value = getCurrentText(parent);
         try {
             editManager.commitEditing(tryParseInputText(value, true), blurred);
@@ -200,7 +234,68 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
     }
 
     public Element createInputElement() {
-        return Document.get().createTextInputElement();
+        if(hasList) {
+            suggestBox = new CustomSuggestBox(new SuggestOracle() {
+
+                @Override
+                public void requestDefaultSuggestions(Request request, Callback callback) {
+                    requestAsyncSuggestions(request, callback);
+                }
+
+                @Override
+                public void requestSuggestions(Request request, Callback callback) {
+                    requestAsyncSuggestions(request, callback);
+                }
+
+                private void requestAsyncSuggestions(Request request, Callback callback) {
+                    if(ignoreRequest) {
+                        ignoreRequest = false;
+                        return;
+                    }
+                    String query = nvl(request.getQuery(), "");
+                    editManager.getAsyncValues(query, new AsyncCallback<Pair<ArrayList<String>, Boolean>>() {
+                        @Override
+                        public void onFailure(Throwable caught) {
+                        }
+
+                        private boolean succeeded = false; //for some reason onSuccess executes again after item selection
+                        @Override
+                        public void onSuccess(Pair<ArrayList<String>, Boolean> result) {
+                            if(!succeeded) {
+                                suggestBox.setLatestSuggestions(result.first);
+                                List<Suggestion> suggestionList = new ArrayList<>();
+                                for (String suggestion : result.first) {
+                                    suggestionList.add(new Suggestion() {
+                                        @Override
+                                        public String getDisplayString() {
+                                            int start = suggestion.toLowerCase().indexOf(query.toLowerCase());
+                                            int end = start + query.length();
+                                            return suggestion.substring(0, start) + "<strong>" + suggestion.substring(start, end) + "</strong>" + suggestion.substring(end);
+                                        }
+
+                                        @Override
+                                        public String getReplacementString() {
+                                            return suggestion;
+                                        }
+                                    });
+                                }
+                                noResultsLabel.setVisible(suggestionList.isEmpty());
+                                callback.onSuggestionsReady(request, new Response(suggestionList));
+                                succeeded = true;
+                            }
+                        }
+                    });
+                }
+
+                @Override
+                public boolean isDisplayStringHTML() {
+                    return true;
+                }
+            }, new TextBox(), new DefaultSuggestionDisplayString());
+            return suggestBox.getElement();
+        } else {
+            return Document.get().createTextInputElement();
+        }
     }
 
     protected InputElement getInputElement(Element parent) {
@@ -217,5 +312,77 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
 
     protected String tryFormatInputText(Object value) {
         return value == null ? "" : value.toString();
+    }
+
+    public boolean ignoreRequest = false;
+    private class CustomSuggestBox extends SuggestBox {
+        public DefaultSuggestionDisplayString display;
+        private List<String> latestSuggestions = new ArrayList<>();
+
+        public CustomSuggestBox(SuggestOracle oracle, TextBox textBox, DefaultSuggestionDisplayString display) {
+            super(oracle, textBox, display);
+            this.display = display;
+            onAttach();
+            getElement().removeClassName("gwt-SuggestBox");
+            setAutoSelectEnabled(false);
+
+            addKeyUpHandler(event -> {
+                //need to ignore request from onKeyUp method in SuggestBox
+                if(isSuggestionListShowing() && ignoreKeyCode(event.getNativeEvent())) {
+                    ignoreRequest = true;
+                }
+            });
+            refreshSuggestionList();
+        }
+
+        private native boolean ignoreKeyCode(NativeEvent event) /*-{
+            return event.key.length !== 1 && event.key !== 'Backspace';
+        }-*/;
+
+        public void updateText() {
+            setText(display.getReplacementString());
+        }
+
+        public void setLatestSuggestions(List<String> latestSuggestions) {
+            this.latestSuggestions = latestSuggestions;
+        }
+
+        public boolean isValidText() {
+            return latestSuggestions.contains(getText());
+        }
+    }
+
+    private class DefaultSuggestionDisplayString extends SuggestBox.DefaultSuggestionDisplay {
+        public DefaultSuggestionDisplayString() {
+            setSuggestionListHiddenWhenEmpty(false);
+        }
+
+        public String getReplacementString() {
+            SuggestOracle.Suggestion selection = getCurrentSelection();
+            return selection != null ? selection.getReplacementString() : null;
+        }
+
+        @Override
+        protected void moveSelectionDown() {
+            super.moveSelectionDown();
+            suggestBox.updateText();
+
+        }
+
+        @Override
+        protected void moveSelectionUp() {
+            super.moveSelectionUp();
+            suggestBox.updateText();
+        }
+
+        @Override
+        protected Widget decorateSuggestionList(Widget suggestionList) {
+            VerticalPanel panel = new VerticalPanel();
+            panel.add(suggestionList);
+            noResultsLabel.setVisible(false);
+            panel.add(noResultsLabel);
+            //panel.add(new Button("refresh"));
+            return panel;
+        }
     }
 }

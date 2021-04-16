@@ -57,7 +57,7 @@ public class GNumericType extends GDoubleType {
     }
 
     @Override
-    public CellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
+    public CellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty, boolean hasList) {
         return new NumericCellEditor(this, editManager, editProperty, getEditFormat(editProperty));
     }
 

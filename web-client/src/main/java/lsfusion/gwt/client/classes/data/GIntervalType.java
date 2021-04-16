@@ -36,7 +36,7 @@ public abstract class GIntervalType extends GFormatType<com.google.gwt.i18n.clie
     }
 
     @Override
-    public CellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
+    public CellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty, boolean hasList) {
         return new IntervalCellEditor(editManager, getIntervalType());
     }
 

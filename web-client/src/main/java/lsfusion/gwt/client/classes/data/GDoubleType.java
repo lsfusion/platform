@@ -22,7 +22,7 @@ public class GDoubleType extends GIntegralType {
     }
 
     @Override
-    public CellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
+    public CellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty, boolean hasList) {
         return new DoubleCellEditor(editManager, editProperty, getEditFormat(editProperty));
     }
 

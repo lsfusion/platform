@@ -21,7 +21,7 @@ public class GLogicalType extends GDataType {
 }
 
     @Override
-    public CellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
+    public CellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty, boolean hasList) {
         return new LogicalCellEditor(editManager);
     }
 

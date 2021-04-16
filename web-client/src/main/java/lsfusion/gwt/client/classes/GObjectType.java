@@ -29,7 +29,7 @@ public class GObjectType extends GType {
         return getFullWidthString("0000000", font);
     }
 
-    public CellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
+    public CellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty, boolean hasList) {
         return new LongCellEditor(editManager, editProperty);
     }
 

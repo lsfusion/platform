@@ -24,7 +24,7 @@ public abstract class GType implements Serializable {
 
     public abstract CellRenderer createGridCellRenderer(GPropertyDraw property);
 
-    public CellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
+    public CellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty, boolean hasList) {
         return null;
     }
 

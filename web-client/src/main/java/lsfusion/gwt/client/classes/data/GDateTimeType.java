@@ -30,7 +30,7 @@ public class GDateTimeType extends GFormatType<com.google.gwt.i18n.client.DateTi
     }
 
     @Override
-    public CellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
+    public CellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty, boolean hasList) {
         return new DateTimeCellEditor(editManager, editProperty);
     }
 

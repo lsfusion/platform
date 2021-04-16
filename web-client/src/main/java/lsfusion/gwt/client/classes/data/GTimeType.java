@@ -32,7 +32,7 @@ public class GTimeType extends GFormatType<DateTimeFormat> {
     }
 
     @Override
-    public CellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
+    public CellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty, boolean hasList) {
         return new TimeCellEditor(editManager, editProperty);
     }
 

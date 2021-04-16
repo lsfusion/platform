@@ -26,7 +26,7 @@ public class GDateType extends GFormatType<DateTimeFormat> {
     }
 
     @Override
-    public CellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
+    public CellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty, boolean hasList) {
         return new DateCellEditor(editManager, editProperty);
     }
 

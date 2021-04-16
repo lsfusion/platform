@@ -1003,7 +1003,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         GType changeType = asyncChange.changeType;
         edit(changeType, event, false, null,
                 value -> changeEditPropertyValue(editContext, actionSID, changeType, value, null),
-                value -> {}, () -> {}, editContext, actionSID);
+                value -> {}, () -> {}, editContext, actionSID, asyncChange.hasList);
     }
 
     public void asyncOpenForm(GAsyncOpenForm asyncOpenForm, ExecuteEditContext editContext, String actionSID) {
@@ -1911,7 +1911,13 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         }
     }
 
-    public void edit(GType type, Event event, boolean hasOldValue, Object oldValue, Consumer<Object> beforeCommit, Consumer<Object> afterCommit, Runnable cancel, EditContext editContext, String editAsyncValuesSID) {
+    public void edit(GType type, Event event, boolean hasOldValue, Object oldValue, Consumer<Object> beforeCommit, Consumer<Object> afterCommit,
+                     Runnable cancel, EditContext editContext, String editAsyncValuesSID) {
+        edit(type, event, hasOldValue, oldValue, beforeCommit, afterCommit, cancel, editContext, editAsyncValuesSID, false);
+    }
+
+    public void edit(GType type, Event event, boolean hasOldValue, Object oldValue, Consumer<Object> beforeCommit, Consumer<Object> afterCommit,
+                     Runnable cancel, EditContext editContext, String editAsyncValuesSID, boolean hasList) {
         assert this.editContext == null;
         GPropertyDraw property = editContext.getProperty();
         CellEditor cellEditor;
@@ -1921,7 +1927,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
                     (property.customReplaceEdit ? new CustomReplaceCellEditor(this, property, customEditorFunctions) :
                             new CustomCellEditor(this, property, customEditorFunctions));
         } else
-            cellEditor = type.createGridCellEditor(this, property);
+            cellEditor = type.createGridCellEditor(this, property, hasList);
 
         if (cellEditor != null) {
             editBeforeCommit = beforeCommit;

@@ -12,7 +12,7 @@ public class GLongType extends GIntegralType {
     public static GLongType instance = new GLongType();
 
     @Override
-    public CellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
+    public CellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty, boolean hasList) {
         return new LongCellEditor(editManager, editProperty);
     }
 

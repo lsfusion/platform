@@ -40,7 +40,7 @@ public abstract class GFileType extends GDataType {
     }
 
     @Override
-    public CellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
+    public CellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty, boolean hasList) {
         return new FileCellEditor(editManager, description, storeName, validContentTypes);
     }
 

@@ -12,8 +12,8 @@ import static lsfusion.gwt.client.view.StyleDefaults.*;
 
 public class TextCellEditor extends TextBasedCellEditor {
 
-    public TextCellEditor(EditManager editManager, GPropertyDraw property) {
-        super(editManager, property, "textarea");
+    public TextCellEditor(EditManager editManager, GPropertyDraw property, boolean hasList) {
+        super(editManager, property, "textarea", hasList);
     }
 
     @Override
