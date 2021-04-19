@@ -274,6 +274,7 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
                                     ((GFormAction) action).forbidDuplicate = false;
                         }
                         actionDispatcherLink.link.dispatchResponse(result);
+                        setLastCompletedRequest(result.requestIndex);
                     }
                 });
             }

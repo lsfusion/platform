@@ -128,6 +128,7 @@ public class ClientFormController implements AsyncListener {
 
     private volatile RemoteFormInterface remoteForm;
 
+    public final FormsController formsController;
     public final ClientForm form;
     private final ClientNavigator clientNavigator;
     private final ClientFormActionDispatcher actionDispatcher;
@@ -168,7 +169,7 @@ public class ClientFormController implements AsyncListener {
     private List<ClientComponent> firstTabsToActivate;
     private List<ClientPropertyDraw> firstPropsToActivate;
 
-    public ClientFormController(String icanonicalName, String iformSID, RemoteFormInterface iremoteForm, ClientForm iform, byte[] firstChanges, ClientNavigator iclientNavigator, boolean iisModal, boolean iisDialog) {
+    public ClientFormController(String icanonicalName, String iformSID, RemoteFormInterface iremoteForm, FormsController iformsController, ClientForm iform, byte[] firstChanges, ClientNavigator iclientNavigator, boolean iisModal, boolean iisDialog) {
         formSID = iformSID + (iisModal ? "(modal)" : "") + "(" + System.identityHashCode(this) + ")";
         canonicalName = icanonicalName;
         isDialog = iisDialog;
@@ -183,6 +184,7 @@ public class ClientFormController implements AsyncListener {
         clientNavigator = iclientNavigator;
 
         try {
+            formsController = iformsController;
             form = iform;
 
             rmiQueue = new RmiQueue(tableManager, serverMessageProvider, serverMessageListProvider, this);
@@ -1040,6 +1042,9 @@ public class ClientFormController implements AsyncListener {
                         ClientFormDockable formContainer = forms.removeAsyncForm(requestIndex);
                         formContainer.onClosing();
                     }
+                }
+                if(formsController != null) {
+                    formsController.setLastCompletedRequest(requestIndex);
                 }
             }
         });

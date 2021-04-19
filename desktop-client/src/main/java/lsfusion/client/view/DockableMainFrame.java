@@ -275,6 +275,9 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
                                 ((FormClientAction) action).forbidDuplicate = false;                            
                     }
                     processServerResponse(result);
+                    if(result != null) {
+                        formsController.setLastCompletedRequest(result.requestIndex);
+                    }
                 }
             };
             if(sync) {

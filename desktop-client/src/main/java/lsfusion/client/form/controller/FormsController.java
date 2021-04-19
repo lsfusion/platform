@@ -23,6 +23,7 @@ import lsfusion.client.view.MainFrame;
 import lsfusion.interop.form.print.ReportGenerationData;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 
+import javax.swing.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,6 +40,7 @@ public class FormsController implements ColorThemeChangeListener {
     private ExtendedMode mode = ExtendedMode.NORMALIZED;
     private boolean internalModeChangeOnSetVisible = false;
 
+    private Long lastCompletedRequest = -1L;
     public List<ClientDockable> openedForms = new ArrayList<>();
 
     private ClientDockable prevFocusPage = null;
@@ -119,6 +121,10 @@ public class FormsController implements ColorThemeChangeListener {
 
             boolean asyncOpened = page != null;
             if (!asyncOpened) {
+                if(openFormTimer != null) {
+                    openFormTimer.stop();
+                    openFormTimer = null;
+                }
                 page = new ClientFormDockable(clientForm.canonicalName, clientForm.getCaption(), this, openedForms, null, false);
             } else {
                 page.getContentPane().removeAll(); //remove loading
@@ -131,12 +137,23 @@ public class FormsController implements ColorThemeChangeListener {
         return page;
     }
 
+    //we don't want flashing, so we use timer
+    Timer openFormTimer;
     public void asyncOpenForm(Long requestIndex, ClientAsyncOpenForm asyncOpenForm) {
         if (getDuplicateForm(asyncOpenForm.canonicalName, asyncOpenForm.forbidDuplicate) == null) {
-            ClientFormDockable page = new ClientFormDockable(asyncOpenForm.canonicalName, asyncOpenForm.caption, this, openedForms, requestIndex, true);
-            page.asyncInit();
-            openForm(page);
-            forms.addAsyncForm(requestIndex, page);
+            openFormTimer = new Timer(100, e -> {
+                if(openFormTimer != null) {
+                    if (requestIndex > lastCompletedRequest) { //request is not completed yet
+                        ClientFormDockable page = new ClientFormDockable(asyncOpenForm.canonicalName, asyncOpenForm.caption, FormsController.this, openedForms, requestIndex, true);
+                        page.asyncInit();
+                        openForm(page);
+                        forms.addAsyncForm(requestIndex, page);
+                    }
+                    openFormTimer = null;
+                }
+            });
+            openFormTimer.setRepeats(false);
+            openFormTimer.start();
         }
     }
 
@@ -150,6 +167,10 @@ public class FormsController implements ColorThemeChangeListener {
             }
         }
         return null;
+    }
+
+    public void setLastCompletedRequest(Long lastCompletedRequest) {
+        this.lastCompletedRequest = lastCompletedRequest;
     }
 
     public Integer openReport(ReportGenerationData generationData, String formCaption, String printerName, EditReportInvoker editInvoker) throws IOException, ClassNotFoundException {

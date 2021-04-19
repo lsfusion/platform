@@ -41,7 +41,7 @@ public class ClientModalForm extends JDialog {
 
         this.initFilterKeyEvent = initFilterEvent instanceof KeyEvent ? (KeyEvent) initFilterEvent : null;
 
-        form = new ClientFormController(canonicalName, formSID, ClientModalForm.this.remoteForm, clientForm, firstChanges, null, true, isDialog) {
+        form = new ClientFormController(canonicalName, formSID, ClientModalForm.this.remoteForm, null, clientForm, firstChanges, null, true, isDialog) {
             @Override
             public void onFormHidden() {
                 hideDialog();

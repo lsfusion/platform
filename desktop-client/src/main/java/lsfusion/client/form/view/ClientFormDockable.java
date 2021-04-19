@@ -35,7 +35,7 @@ public class ClientFormDockable extends ClientDockable {
     }
 
     public void init(ClientNavigator navigator, String canonicalName, String formSID, RemoteFormInterface remoteForm, ClientForm clientForm, final MainFrame.FormCloseListener closeListener, byte[] firstChanges) {
-        this.form = new ClientFormController(canonicalName, formSID, remoteForm, clientForm, firstChanges, navigator, false, false) {
+        this.form = new ClientFormController(canonicalName, formSID, remoteForm, formsController, clientForm, firstChanges, navigator, false, false) {
             @Override
             public void onFormHidden() {
                 if (control() != null) {
