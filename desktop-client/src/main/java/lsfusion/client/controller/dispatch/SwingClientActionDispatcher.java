@@ -516,6 +516,9 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
         String result = null;
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setCurrentDirectory(SystemUtils.loadCurrentDirectory());
+        if(action.directory) {
+            fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        }
         boolean canceled = fileChooser.showOpenDialog(SwingUtils.getActiveWindow()) != JFileChooser.APPROVE_OPTION;
         if (!canceled) {
             File file = fileChooser.getSelectedFile();
