@@ -27,6 +27,8 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
+import static lsfusion.base.BaseUtils.nvl;
+
 public class ExportCSVAction<O extends ObjectSelector> extends ExportPlainAction<O> {
     
     // csv
@@ -36,8 +38,17 @@ public class ExportCSVAction<O extends ObjectSelector> extends ExportPlainAction
 
     public ExportCSVAction(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls,
                            ImOrderSet<PropertyInterface> orderContextInterfaces, ImList<ContextFilterSelector<?, PropertyInterface, O>> contextFilters,
-                           FormIntegrationType staticType, ImMap<GroupObjectEntity, LP> exportFiles, Integer selectTop, String charset, boolean noHeader, String separator, boolean noEscape) {
-        super(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, exportFiles, selectTop, charset != null ? charset : ExternalUtils.defaultCSVCharset);
+                           FormIntegrationType staticType, ImMap<GroupObjectEntity, LP> exportFiles, Integer selectTop, String charset, boolean noHeader,
+                           String separator, boolean noEscape) {
+        this(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, exportFiles, selectTop, charset, noHeader, separator, noEscape, false);
+    }
+
+    public ExportCSVAction(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls,
+                           ImOrderSet<PropertyInterface> orderContextInterfaces, ImList<ContextFilterSelector<?, PropertyInterface, O>> contextFilters,
+                           FormIntegrationType staticType, ImMap<GroupObjectEntity, LP> exportFiles, Integer selectTop, String charset, boolean noHeader,
+                           String separator, boolean noEscape, boolean useCaptionInsteadOfIntegrationSID) {
+        super(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, exportFiles, selectTop,
+                nvl(charset, ExternalUtils.defaultCSVCharset), useCaptionInsteadOfIntegrationSID);
         
         this.noHeader = noHeader;
         this.noEscape = noEscape;
