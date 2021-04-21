@@ -114,6 +114,12 @@ overStats '{reflection.stats.property}' (Property property) = OVERRIDE notNullQu
 
 hasNotNullQuantity() = GROUP SUM 1 IF notNullQuantity(Property property);
 
+propertyDependencies = DATA LOCAL Property (INTEGER);
+propertyDependents = DATA LOCAL Property (INTEGER);
+getPropertyDependents (Property property, BOOLEAN dependencies)  INTERNAL  'lsfusion.server.physics.admin.service.action.GetPropertyDependentsAction';
+getPropertyDependencies '{reflection.get.property.dependencies}' (Property property) { getPropertyDependents(property, TRUE); }
+getPropertyDependents '{reflection.get.property.dependents}' (Property property) { getPropertyDependents(property, NULL); }
+
 lastRecalculate '{reflection.last.recalculate.property}' = DATA DATETIME (Property);
 
 CLASS PropertyDraw '{reflection.property.draw}';
