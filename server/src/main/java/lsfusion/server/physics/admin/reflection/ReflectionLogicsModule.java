@@ -41,6 +41,9 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public LP SIDPropertyGroup;
     public LP propertyGroupSID;
 
+    public LP propertyDependencies;
+    public LP propertyDependents;
+
     public LP parentProperty;
     public LP numberProperty;
     public LP dbNameProperty;
@@ -267,6 +270,9 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         notNullQuantityProperty = findProperty("notNullQuantity[Property]");
         lastRecalculateProperty = findProperty("lastRecalculate[Property]");
         hasNotNullQuantity = findProperty("hasNotNullQuantity[]");
+
+        propertyDependencies = findProperty("propertyDependencies[INTEGER]");
+        propertyDependents = findProperty("propertyDependents[INTEGER]");
 
         // ------- Логика представлений --------- //
 

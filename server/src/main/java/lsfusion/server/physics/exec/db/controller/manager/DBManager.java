@@ -1745,6 +1745,25 @@ public class DBManager extends LogicsManager implements InitializingBean {
             run.run(session);
     }
 
+    public List<Property> getDependentProperties(DataSession session, String propertyCanonicalName, boolean dependencies) throws SQLException, SQLHandledException {
+        List<Property> properties = new ArrayList<>();
+        Property<?> property = businessLogics.findProperty(propertyCanonicalName).property;
+        if (dependencies) {
+            for (Property prop : property.getDepends(false)) {
+                if (prop != property && prop.isStored()) {
+                    properties.add(prop);
+                }
+            }
+        } else {
+            for (Property prop : businessLogics.getRecalculateAggregateStoredProperties(session, true)) {
+                if (prop != property && prop.isStored() && Property.depends(prop, property, false)) {
+                    properties.add(prop);
+                }
+            }
+        }
+        return properties;
+    }
+
     public List<String> recalculateAggregations(DataSession dataSession, ExecutionStack stack, SQLSession session, final List<? extends Property> recalculateProperties, boolean isolatedTransaction, Logger logger) throws SQLException, SQLHandledException {
         final List<String> messageList = new ArrayList<>();
         final int total = recalculateProperties.size();
