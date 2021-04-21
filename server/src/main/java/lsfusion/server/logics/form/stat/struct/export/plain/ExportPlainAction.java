@@ -4,6 +4,7 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.file.RawFileData;
+import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.language.property.LP;
@@ -35,12 +36,21 @@ import java.util.function.Function;
 
 public abstract class ExportPlainAction<O extends ObjectSelector> extends ExportAction<O> {
     protected final ImMap<GroupObjectEntity, LP> exportFiles;
-    
+
+    private boolean useCaptionInsteadOfIntegrationSID;
+
     public ExportPlainAction(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls,
                              ImOrderSet<PropertyInterface> orderContextInterfaces, ImList<ContextFilterSelector<?, PropertyInterface, O>> contextFilters,
                              FormIntegrationType staticType, ImMap<GroupObjectEntity, LP> exportFiles, Integer selectTop, String charset) {
+        this(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, exportFiles, selectTop, charset, false);
+    }
+
+    public ExportPlainAction(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls,
+                             ImOrderSet<PropertyInterface> orderContextInterfaces, ImList<ContextFilterSelector<?, PropertyInterface, O>> contextFilters,
+                             FormIntegrationType staticType, ImMap<GroupObjectEntity, LP> exportFiles, Integer selectTop, String charset, boolean useCaptionInsteadOfIntegrationSID) {
         super(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, selectTop, charset);
         this.exportFiles = exportFiles;
+        this.useCaptionInsteadOfIntegrationSID = useCaptionInsteadOfIntegrationSID;
     }
 
     @Override
@@ -88,7 +98,9 @@ public abstract class ExportPlainAction<O extends ObjectSelector> extends Export
             }
         }
 
-        ImRevMap<String, PropertyDrawEntity> propertyNames = childProperties.getSet().mapRevKeys((Function<PropertyDrawEntity, String>) PropertyDrawEntity::getIntegrationSID);
+        ImRevMap<String, PropertyDrawEntity> propertyNames = childProperties.getSet().mapRevKeys(useCaptionInsteadOfIntegrationSID ?
+                ((Function<PropertyDrawEntity, String>) propertyDrawEntity -> ThreadLocalContext.localize(propertyDrawEntity.getCaption())) :
+                (Function<PropertyDrawEntity, String>) PropertyDrawEntity::getIntegrationSID);
         fieldTypes = fieldTypes.addOrderExcl(propertyNames.mapOrder(childProperties).mapOrderValues(new Function<PropertyDrawEntity, Type>() {
             public Type apply(PropertyDrawEntity property) {
                 return data.getType(property);

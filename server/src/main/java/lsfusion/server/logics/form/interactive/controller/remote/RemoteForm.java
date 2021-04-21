@@ -12,6 +12,7 @@ import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
+import lsfusion.base.file.RawFileData;
 import lsfusion.interop.action.*;
 import lsfusion.interop.form.UpdateMode;
 import lsfusion.interop.form.object.table.grid.ListViewType;
@@ -62,6 +63,7 @@ import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.log.ServerLoggers;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -114,8 +116,10 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
             int minSizeForExportToCSV = Settings.get().getMinSizeForReportExportToCSV();
             if(minSizeForExportToCSV >= 0 && reportGenerationData.reportSourceData.length > minSizeForExportToCSV) {
                 FormDataManager.ExportResult exportData = formReportManager.getExportData(0);
-                return new ExportCSVAction(null, formReportManager.getFormEntity(), ListFact.EMPTY(), ListFact.EMPTY(), SetFact.EMPTYORDER(), ListFact.EMPTY(),
-                        FormIntegrationType.CSV, null, 0, "UTF-8", false, ";", false).exportReport(new StaticExportData(exportData.keys, exportData.properties), exportData.hierarchy);
+                RawFileData file = new ExportCSVAction(null, formReportManager.getFormEntity(), ListFact.EMPTY(), ListFact.EMPTY(), SetFact.EMPTYORDER(), ListFact.EMPTY(),
+                        FormIntegrationType.CSV, null, 0, "UTF-8", false, ";", false, true).exportReport(new StaticExportData(exportData.keys, exportData.properties), exportData.hierarchy);
+                return new RawFileData(ArrayUtils.addAll(new byte[]{(byte) 0xef, (byte) 0xbb, (byte) 0xbf}, file.getBytes())); //add bom bytes
+
             } else {
                 return reportGenerationData;
             }
