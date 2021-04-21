@@ -1319,10 +1319,10 @@ public class Settings implements Cloneable {
     }
 
     // safe cast type for integral (arithmetic casts)
-    // 0 - (default) using pl/sql function with try catch clause - the problem that there seems to be a bug in PostgreSQL 2013 when canceling this statement
-    // 1 - using sql function that compares with maximum minimum values
+    // 0 - using pl/sql function with try catch clause - the problem that there seems to be a bug in PostgreSQL 13 when canceling this statement
+    // 1 - (default) using sql function that compares with maximum minimum values
     // 2 - do not use any function at all (exceptions will be thrown in that case)
-    private int safeCastIntType = 0;
+    private int safeCastIntType = 1;
 
     public int getSafeCastIntType() {
         return safeCastIntType;
