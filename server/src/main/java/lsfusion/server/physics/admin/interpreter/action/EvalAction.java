@@ -51,7 +51,7 @@ public class EvalAction<P extends PropertyInterface> extends SystemAction {
     protected FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
         String script = getScript(context);
 
-        LA<?> runAction = LM.baseLM.evaluateRun(script, LM, action);
+        LA<?> runAction = LM.evaluateRun(script, action);
         if (runAction != null)
             return runAction.execute(context, getParams(context));
         

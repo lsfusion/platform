@@ -924,11 +924,6 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         return "_" + objectEntity.getSID();
     }
 
-    @IdentityLazy
-    public LA<?> evaluateRun(String script, ScriptingLogicsModule LM, boolean action) {
-        return EvalUtils.evaluateAndFindAction(BL, LM, script, action);
-    }
-
     // REQUEST / INPUT BLOCK
     
     public void dropRequestCanceled(ExecutionEnvironment env) throws SQLException, SQLHandledException {

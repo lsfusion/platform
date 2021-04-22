@@ -100,7 +100,7 @@ public class EvalUtils {
                 isFirst = false;
                 strBuilder.append(module.getName());
             }
-            if(!BL.getLogicModules().contains(LM)) {
+            if(LM instanceof EvalScriptingLogicsModule) {
                 strBuilder.append(isFirst ? "" : ", ").append(LM.getName());
             }
         }
