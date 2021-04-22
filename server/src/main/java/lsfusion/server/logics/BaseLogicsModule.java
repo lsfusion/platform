@@ -63,6 +63,7 @@ import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.implement.PropertyRevImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.property.value.NullValueProperty;
+import lsfusion.server.physics.admin.interpreter.EvalUtils;
 import lsfusion.server.physics.dev.debug.ActionDebugger;
 import lsfusion.server.physics.dev.debug.action.WatchAction;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
@@ -921,6 +922,11 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
     private static String getObjectPrefix(ObjectEntity objectEntity) {
         return "_" + objectEntity.getSID();
+    }
+
+    @IdentityLazy
+    public LA<?> evaluateRun(String script, ScriptingLogicsModule LM, boolean action) {
+        return EvalUtils.evaluateAndFindAction(BL, LM, script, action);
     }
 
     // REQUEST / INPUT BLOCK

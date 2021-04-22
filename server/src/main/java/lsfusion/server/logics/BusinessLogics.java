@@ -272,7 +272,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     // жестковато, но учитывая что пока есть несколько других кэшей со strong ref'ами на этот action, завязаных на IdentityLazy то цикл жизни у всех этих кэшей будет приблизительно одинаковый
     @IdentityLazy
     public LA<?> evaluateRun(String script, boolean action) {
-        return EvalUtils.evaluateAndFindAction(this, script, action);
+        return EvalUtils.evaluateAndFindAction(this, LM, script, action);
     }
 
     public void setTopModule(String topModule) {

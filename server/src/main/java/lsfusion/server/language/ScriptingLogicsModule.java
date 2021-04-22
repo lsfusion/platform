@@ -2342,7 +2342,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
         ImList<Type> paramTypes = getTypesForEvalAction(params, contextParams);
 
-        return addScriptedJoinAProp(addAProp(new EvalAction(paramTypes, action)), BaseUtils.addList(property, params));
+        return addScriptedJoinAProp(addAProp(new EvalAction(this, paramTypes, action)), BaseUtils.addList(property, params));
     }
 
     public LAWithParams addScriptedDrillDownAction(LPWithParams property) {
@@ -4813,7 +4813,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
 
         for (String moduleName : requiredModules) {
-            checks.checkModule(BL.getSysModule(moduleName), moduleName);
+            checks.checkModule(getSysModule(moduleName), moduleName);
         }
 
         Set<String> prioritySet = new HashSet<>();
@@ -4843,12 +4843,16 @@ public class ScriptingLogicsModule extends LogicsModule {
             namespaceToModules.get(namespaceName).add(module);
         }
         for (String requiredModuleName : module.getRequiredNames()) {
-            LogicsModule requiredModule = BL.getSysModule(requiredModuleName);
+            LogicsModule requiredModule = getSysModule(requiredModuleName);
             assert requiredModule != null;
             if (!visitedModules.contains(requiredModule)) {
                 initNamespacesToModules(requiredModule, visitedModules);
             }
         }
+    }
+
+    protected LogicsModule getSysModule(String requiredModuleName) {
+        return BL.getSysModule(requiredModuleName);
     }
 
     private void showWarnings() {
