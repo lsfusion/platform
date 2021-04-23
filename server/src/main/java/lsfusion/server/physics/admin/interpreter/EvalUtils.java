@@ -11,10 +11,8 @@ import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.event.Event;
 import lsfusion.server.logics.form.struct.FormEntity;
-import org.antlr.runtime.RecognitionException;
 import org.apache.commons.lang.StringUtils;
 
-import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -27,8 +25,8 @@ public class EvalUtils {
         return "UNIQUE" + uniqueNameCounter.incrementAndGet() + "NSNAME";
     }
 
-    public static LA evaluateAndFindAction(BusinessLogics BL, String script, boolean action) {
-        return evaluateAndFindAction(BL, null, null, null, null, false, action ? EvalActionParser.parse(script) : script, "run");
+    public static LA evaluateAndFindAction(BusinessLogics BL, EvalScriptingLogicsModule parentLM, String script, boolean action) {
+        return evaluateAndFindAction(BL, parentLM, null, null, null, null, false, action ? EvalActionParser.parse(script) : script, "run");
     }
     
     private static class WrapResult {
@@ -40,13 +38,14 @@ public class EvalUtils {
             this.additionalLines = additionalLines;
         }
     }
-    
-    public static LA evaluateAndFindAction(BusinessLogics BL, String namespace, String require, String priorities, final ImSet<Pair<LP, List<ResolveClassSet>>> locals, boolean prevEventScope, String script, String action) {
+
+    public static LA evaluateAndFindAction(BusinessLogics BL, EvalScriptingLogicsModule parentLM, String namespace, String require, String priorities, final ImSet<Pair<LP, List<ResolveClassSet>>> locals, boolean prevEventScope, String script, String action) {
         String name = getUniqueName();
-        WrapResult wrapResult = wrapScript(BL, namespace, require, priorities, script, name);
+        String parentModule = parentLM != null ? parentLM.getName() : null;
+        WrapResult wrapResult = wrapScript(BL, parentModule, namespace, require, priorities, script, name);
         
         String code = wrapResult.code;
-        ScriptingLogicsModule module = new EvalScriptingLogicsModule(BL.LM, BL, code);
+        ScriptingLogicsModule module = new EvalScriptingLogicsModule(BL.LM, BL, parentLM, code);
         module.getErrLog().setLineNumberShift(wrapResult.additionalLines);
         
         module.order = BL.getLogicModules().size() + 1;
@@ -80,7 +79,7 @@ public class EvalUtils {
         }
     }
 
-    private static WrapResult wrapScript(BusinessLogics BL, String namespace, String require, String priorities, String script, String name) {
+    private static WrapResult wrapScript(BusinessLogics BL, String parentModule, String namespace, String require, String priorities, String script, String name) {
         StringBuilder strBuilder = new StringBuilder();
         strBuilder.append("MODULE ");
         strBuilder.append(name);
@@ -97,6 +96,9 @@ public class EvalUtils {
                 }
                 isFirst = false;
                 strBuilder.append(module.getName());
+            }
+            if(parentModule != null) {
+                strBuilder.append(isFirst ? "" : ", ").append(parentModule);
             }
         }
         strBuilder.append(";\n");
