@@ -12,6 +12,7 @@ import lsfusion.server.physics.admin.reflection.ReflectionLogicsModule;
 import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.sql.SQLException;
+import java.util.HashSet;
 import java.util.List;
 
 public class GetPropertyDependentsAction extends InternalAction {
@@ -25,8 +26,8 @@ public class GetPropertyDependentsAction extends InternalAction {
         ObjectValue propertyObject = getParamValue(0, context);
         boolean dependencies = getParam(1, context) != null;
         BusinessLogics BL = context.getBL();
-        String propertyCanonicalName = (String) BL.reflectionLM.canonicalNameProperty.read(context, propertyObject);
-        List<Property> properties = context.getDbManager().getDependentProperties(context.getSession(), propertyCanonicalName, dependencies);
+        Property<?> property = BL.findProperty((String) BL.reflectionLM.canonicalNameProperty.read(context, propertyObject)).property;
+        List<Property> properties = context.getDbManager().getDependentProperties(context.getSession(), property, new HashSet<>(), dependencies);
 
         for(int i = 0; i < properties.size(); i++) {
             (dependencies ? BL.reflectionLM.propertyDependencies : BL.reflectionLM.propertyDependents).change(BL.reflectionLM.propertyCanonicalName.read(context.getSession(), new DataObject(properties.get(i).getCanonicalName())), context, new DataObject(i));
