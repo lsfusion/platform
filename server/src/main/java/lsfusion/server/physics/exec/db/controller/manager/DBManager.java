@@ -1745,19 +1745,22 @@ public class DBManager extends LogicsManager implements InitializingBean {
             run.run(session);
     }
 
-    public List<Property> getDependentProperties(DataSession session, String propertyCanonicalName, boolean dependencies) throws SQLException, SQLHandledException {
+    public List<Property> getDependentProperties(DataSession dataSession, Property<?> property, Set<Property> calculated, boolean dependencies) throws SQLException, SQLHandledException {
         List<Property> properties = new ArrayList<>();
-        Property<?> property = businessLogics.findProperty(propertyCanonicalName).property;
+        if(property.isStored()) {
+            properties.add(property);
+            calculated.add(property);
+        }
         if (dependencies) {
             for (Property prop : property.getDepends(false)) {
-                if (prop != property && prop.isStored()) {
-                    properties.add(prop);
+                if (prop != property && !calculated.contains(prop)) {
+                    properties.addAll(getDependentProperties(dataSession, prop, calculated, false));
                 }
             }
         } else {
-            for (Property prop : businessLogics.getRecalculateAggregateStoredProperties(session, true)) {
-                if (prop != property && prop.isStored() && Property.depends(prop, property, false)) {
-                    properties.add(prop);
+            for (Property prop : businessLogics.getRecalculateAggregateStoredProperties(dataSession, true)) {
+                if (prop != property && !calculated.contains(prop) && Property.depends(prop, property, false)) {
+                    properties.addAll(getDependentProperties(dataSession, prop, calculated, true));
                 }
             }
         }
