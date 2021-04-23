@@ -25,8 +25,8 @@ public class EvalUtils {
         return "UNIQUE" + uniqueNameCounter.incrementAndGet() + "NSNAME";
     }
 
-    public static LA evaluateAndFindAction(BusinessLogics BL, ScriptingLogicsModule LM, String script, boolean action) {
-        return evaluateAndFindAction(BL, LM, null, null, null, null, false, action ? EvalActionParser.parse(script) : script, "run");
+    public static LA evaluateAndFindAction(BusinessLogics BL, EvalScriptingLogicsModule parentLM, String script, boolean action) {
+        return evaluateAndFindAction(BL, parentLM, null, null, null, null, false, action ? EvalActionParser.parse(script) : script, "run");
     }
     
     private static class WrapResult {
@@ -39,13 +39,13 @@ public class EvalUtils {
         }
     }
 
-    public static LA evaluateAndFindAction(BusinessLogics BL, ScriptingLogicsModule LM, String namespace, String require, String priorities, final ImSet<Pair<LP, List<ResolveClassSet>>> locals, boolean prevEventScope, String script, String action) {
+    public static LA evaluateAndFindAction(BusinessLogics BL, EvalScriptingLogicsModule parentLM, String namespace, String require, String priorities, final ImSet<Pair<LP, List<ResolveClassSet>>> locals, boolean prevEventScope, String script, String action) {
         String name = getUniqueName();
-        String parentModule = LM instanceof EvalScriptingLogicsModule ? LM.getName() : null;
+        String parentModule = parentLM != null ? parentLM.getName() : null;
         WrapResult wrapResult = wrapScript(BL, parentModule, namespace, require, priorities, script, name);
         
         String code = wrapResult.code;
-        ScriptingLogicsModule module = new EvalScriptingLogicsModule(BL.LM, BL, LM, code);
+        ScriptingLogicsModule module = new EvalScriptingLogicsModule(BL.LM, BL, parentLM, code);
         module.getErrLog().setLineNumberShift(wrapResult.additionalLines);
         
         module.order = BL.getLogicModules().size() + 1;

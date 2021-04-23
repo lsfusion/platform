@@ -20,8 +20,8 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 import java.util.List;
 
 public class EvalScriptingLogicsModule extends ScriptingLogicsModule {
-    private ScriptingLogicsModule parentLM;
-    public EvalScriptingLogicsModule(BaseLogicsModule baseModule, BusinessLogics BL, ScriptingLogicsModule parentLM, String code) {
+    private EvalScriptingLogicsModule parentLM;
+    public EvalScriptingLogicsModule(BaseLogicsModule baseModule, BusinessLogics BL, EvalScriptingLogicsModule parentLM, String code) {
         super(code, baseModule, BL);
         this.parentLM = parentLM;
     }
@@ -67,14 +67,15 @@ public class EvalScriptingLogicsModule extends ScriptingLogicsModule {
 
     @Override
     protected LogicsModule getSysModule(String requiredModuleName) {
-        LogicsModule result = super.getSysModule(requiredModuleName);
-        if (result == null) {
-            result = parentLM.getSysModule(requiredModuleName);
-            if (result == null && parentLM.getName().equals(requiredModuleName)) {
-                result = parentLM;
+        if(parentLM != null) {
+            LogicsModule result = parentLM.getSysModule(requiredModuleName);
+            if (result != null) {
+                return result;
+            } else if (parentLM.getName().equals(requiredModuleName)) {
+                return parentLM;
             }
         }
-        return result;
+        return super.getSysModule(requiredModuleName);
     }
 
     @Override

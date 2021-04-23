@@ -4854,7 +4854,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     @IdentityLazy
     public LA<?> evaluateRun(String script, boolean action) {
-        return EvalUtils.evaluateAndFindAction(BL, this, script, action);
+        return EvalUtils.evaluateAndFindAction(BL, this instanceof EvalScriptingLogicsModule ? (EvalScriptingLogicsModule) this : null, script, action);
     }
 
     protected LogicsModule getSysModule(String requiredModuleName) {
