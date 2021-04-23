@@ -119,6 +119,7 @@ import lsfusion.server.logics.property.set.AggregateGroupProperty;
 import lsfusion.server.logics.property.set.Cycle;
 import lsfusion.server.logics.property.value.ValueProperty;
 import lsfusion.server.physics.admin.Settings;
+import lsfusion.server.physics.admin.interpreter.EvalUtils;
 import lsfusion.server.physics.admin.interpreter.action.EvalAction;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.admin.reflection.ReflectionPropertyType;
@@ -2342,7 +2343,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
         ImList<Type> paramTypes = getTypesForEvalAction(params, contextParams);
 
-        return addScriptedJoinAProp(addAProp(new EvalAction(paramTypes, action)), BaseUtils.addList(property, params));
+        return addScriptedJoinAProp(addAProp(new EvalAction(this, paramTypes, action)), BaseUtils.addList(property, params));
     }
 
     public LAWithParams addScriptedDrillDownAction(LPWithParams property) {
@@ -4813,7 +4814,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
 
         for (String moduleName : requiredModules) {
-            checks.checkModule(BL.getSysModule(moduleName), moduleName);
+            checks.checkModule(getSysModule(moduleName), moduleName);
         }
 
         Set<String> prioritySet = new HashSet<>();
@@ -4843,12 +4844,21 @@ public class ScriptingLogicsModule extends LogicsModule {
             namespaceToModules.get(namespaceName).add(module);
         }
         for (String requiredModuleName : module.getRequiredNames()) {
-            LogicsModule requiredModule = BL.getSysModule(requiredModuleName);
+            LogicsModule requiredModule = getSysModule(requiredModuleName);
             assert requiredModule != null;
             if (!visitedModules.contains(requiredModule)) {
                 initNamespacesToModules(requiredModule, visitedModules);
             }
         }
+    }
+
+    @IdentityLazy
+    public LA<?> evaluateRun(String script, boolean action) {
+        return EvalUtils.evaluateAndFindAction(BL, this instanceof EvalScriptingLogicsModule ? (EvalScriptingLogicsModule) this : null, script, action);
+    }
+
+    protected LogicsModule getSysModule(String requiredModuleName) {
+        return BL.getSysModule(requiredModuleName);
     }
 
     private void showWarnings() {
