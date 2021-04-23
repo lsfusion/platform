@@ -33,7 +33,7 @@ public class GDoubleType extends GIntegralType {
 
     @Override
     public Object parseString(String s, String pattern) throws ParseException {
-        return parseToDouble(s);
+        return parseToDouble(s, pattern);
     }
 
     @Override
