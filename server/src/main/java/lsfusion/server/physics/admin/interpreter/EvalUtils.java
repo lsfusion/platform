@@ -39,13 +39,10 @@ public class EvalUtils {
         }
     }
 
-    public static LA evaluateAndFindAction(BusinessLogics BL, String namespace, String require, String priorities, final ImSet<Pair<LP, List<ResolveClassSet>>> locals, boolean prevEventScope, String script, String action) {
-        return evaluateAndFindAction(BL, BL.LM, namespace, require, priorities, locals, prevEventScope, script, action);
-    }
-
     public static LA evaluateAndFindAction(BusinessLogics BL, ScriptingLogicsModule LM, String namespace, String require, String priorities, final ImSet<Pair<LP, List<ResolveClassSet>>> locals, boolean prevEventScope, String script, String action) {
         String name = getUniqueName();
-        WrapResult wrapResult = wrapScript(BL, LM, namespace, require, priorities, script, name);
+        String parentModule = LM instanceof EvalScriptingLogicsModule ? LM.getName() : null;
+        WrapResult wrapResult = wrapScript(BL, parentModule, namespace, require, priorities, script, name);
         
         String code = wrapResult.code;
         ScriptingLogicsModule module = new EvalScriptingLogicsModule(BL.LM, BL, LM, code);
@@ -82,7 +79,7 @@ public class EvalUtils {
         }
     }
 
-    private static WrapResult wrapScript(BusinessLogics BL, ScriptingLogicsModule LM, String namespace, String require, String priorities, String script, String name) {
+    private static WrapResult wrapScript(BusinessLogics BL, String parentModule, String namespace, String require, String priorities, String script, String name) {
         StringBuilder strBuilder = new StringBuilder();
         strBuilder.append("MODULE ");
         strBuilder.append(name);
@@ -100,8 +97,8 @@ public class EvalUtils {
                 isFirst = false;
                 strBuilder.append(module.getName());
             }
-            if(LM instanceof EvalScriptingLogicsModule) {
-                strBuilder.append(isFirst ? "" : ", ").append(LM.getName());
+            if(parentModule != null) {
+                strBuilder.append(isFirst ? "" : ", ").append(parentModule);
             }
         }
         strBuilder.append(";\n");

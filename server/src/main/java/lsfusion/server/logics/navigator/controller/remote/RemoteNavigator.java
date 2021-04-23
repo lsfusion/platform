@@ -443,7 +443,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
 
     private void evaluateRun(String script) throws SQLException, SQLHandledException {
         try (DataSession session = createSession()) {
-            LA runAction = businessLogics.evaluateRun(script, false);
+            LA runAction = businessLogics.LM.evaluateRun(script, false);
             if (runAction != null) {
                 runAction.execute(session, getStack());
             }

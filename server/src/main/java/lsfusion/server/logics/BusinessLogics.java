@@ -269,12 +269,6 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         return Integer.compare(p1.hashCode(), p2.hashCode());
     }
 
-    // жестковато, но учитывая что пока есть несколько других кэшей со strong ref'ами на этот action, завязаных на IdentityLazy то цикл жизни у всех этих кэшей будет приблизительно одинаковый
-    @IdentityLazy
-    public LA<?> evaluateRun(String script, boolean action) {
-        return EvalUtils.evaluateAndFindAction(this, LM, script, action);
-    }
-
     public void setTopModule(String topModule) {
         this.topModule = topModule;
     }
