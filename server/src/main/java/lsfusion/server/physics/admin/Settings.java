@@ -759,6 +759,16 @@ public class Settings implements Cloneable {
         this.limitApplyHintIncrementStat = limitApplyHintIncrementStat;
     }
 
+    private boolean disableExternalAndForceClearHints = false;
+
+    public boolean isDisableExternalAndForceClearHints() {
+        return disableExternalAndForceClearHints;
+    }
+
+    public void setDisableExternalAndForceClearHints(boolean disableExternalAndForceClearHints) {
+        this.disableExternalAndForceClearHints = disableExternalAndForceClearHints;
+    }
+
     public int getLimitHintNoUpdateComplexity() {
         return limitHintNoUpdateComplexity * limitIncrementCoeff;
     }

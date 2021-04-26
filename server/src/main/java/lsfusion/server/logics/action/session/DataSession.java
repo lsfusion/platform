@@ -891,8 +891,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                 for (FormInstance form : getAllActiveForms()) {
                     form.dataChanged = true;
                 }
-            } else
-                assert isInTransaction();
+            } //else
+              //  assert isInTransaction(); or update external
             
             return true;
         }
@@ -1324,9 +1324,12 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
 
     // узнает список изменений произошедших без него у других сессий
-    public ChangedData updateExternal(FormInstance form) {
+    public ChangedData updateExternal(FormInstance form) throws SQLException, SQLHandledException {
         assert this == form.session;
-        return new ChangedData(changes.update(this, form));
+        ImSet<Property> changedProps = changes.update(this, form);
+        if(!Settings.get().isDisableExternalAndForceClearHints())
+            updateProperties(changedProps, ModifyResult.DATA.fnGetValue(), null);
+        return new ChangedData(changedProps);
     }
 
     // узнает список изменений произошедших без него
@@ -1851,6 +1854,10 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         BL.systemEventsLM.quantityAddedClassesSession.change(addedCount.result, DataSession.this, applyObject);
         BL.systemEventsLM.quantityRemovedClassesSession.change(removedCount.result, DataSession.this, applyObject);
         BL.systemEventsLM.quantityChangedClassesSession.change(changed, DataSession.this, applyObject);
+    }
+
+    public void refresh() throws SQLException, SQLHandledException {
+        clearDataHints(getOwner());
     }
 
     private void clearDataHints(OperationOwner owner) throws SQLException, SQLHandledException {

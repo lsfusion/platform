@@ -201,7 +201,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
     public ServerResponse getRemoteChanges(long requestIndex, long lastReceivedRequestIndex, final boolean refresh, boolean forceLocalEvents) throws RemoteException {
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
             if (refresh) {
-                form.refreshData();
+                form.formRefresh();
             }
         }, forceLocalEvents);
     }
@@ -912,11 +912,6 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                 return result;
         }
         return super.requestUserInteraction(actions);
-    }
-
-    public void disconnect() throws SQLException, SQLHandledException {
-        form.refreshData();
-        super.disconnect();
     }
 
     public Object[] getImmutableMethods() {

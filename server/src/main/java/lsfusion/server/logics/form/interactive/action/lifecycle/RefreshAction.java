@@ -27,6 +27,6 @@ public class RefreshAction extends FormFlowAction {
     }
 
     protected void executeForm(FormInstance form, ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        form.refreshData();
+        form.formRefresh();
     }
 }

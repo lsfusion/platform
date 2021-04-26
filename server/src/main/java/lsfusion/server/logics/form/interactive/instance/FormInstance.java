@@ -300,7 +300,6 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         ImSet<FilterInstance> allFixedFilters = entity.getFixedFilters().mapSetValues(value -> value.getInstance(instanceFactory));
         if (contextFilters != null)
             allFixedFilters = allFixedFilters.addExcl(contextFilters.mapSetValues(value -> value.getFilter(instanceFactory)));
-
         ImMap<GroupObjectInstance, ImSet<FilterInstance>> fixedFilters = allFixedFilters.group(new BaseUtils.Group<GroupObjectInstance, FilterInstance>() {
             public GroupObjectInstance group(FilterInstance key) {
                 return key.getApplyObject();
@@ -2607,6 +2606,9 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     }
 
     public void formRefresh() throws SQLException, SQLHandledException {
+        if(!Settings.get().isDisableExternalAndForceClearHints())
+            session.refresh();
+
         refreshData();
     }
 
