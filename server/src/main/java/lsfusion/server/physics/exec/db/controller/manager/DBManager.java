@@ -1747,7 +1747,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
     public List<Property> getDependentProperties(DataSession dataSession, Property<?> property, Set<Property> calculated, boolean dependencies) throws SQLException, SQLHandledException {
         List<Property> properties = new ArrayList<>();
-        if(property.isStored()) {
+        if(property instanceof AggregateProperty && property.isStored()) {
             properties.add(property);
             calculated.add(property);
         }
