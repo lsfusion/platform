@@ -81,7 +81,6 @@ public class ClientFormDockable extends ClientDockable {
 
         setContent(this.form.getLayout());
         async = false;
-        formsController.getForms().add(canonicalName);
     }
 
     public void setCaption(String caption, String tooltip) {
