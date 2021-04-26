@@ -995,7 +995,8 @@ formMappedProperty returns [BaseFormActionOrPropertyUsage propUsage]
 }
 	:	pu=formPropertyUsage[null] { $propUsage = $pu.propUsage; }
 		'('
-			objects=idList
+			objects=idList 
+			( ',' x = idList {objects.addAll(x);})?
 		')'
 	;
 
@@ -1097,6 +1098,7 @@ formPredefinedUsage[List<String> mapping] returns [FormPredefinedUsage propUsage
 				( '[' clId=compoundID ']'  { signature = Collections.singletonList($clId.sid); } )?
 			)
 		|	cid='VALUE'		{ systemName = $cid.text; }
+		|	cid='INTERVAL'	{ systemName = $cid.text; }
 		|	cid='DELETE'	{ systemName = $cid.text; }
 ;
 

@@ -369,6 +369,10 @@ public class ScriptingFormEntity {
                     property = LM.getDeleteAction(obj, scope);
                     objects = SetFact.singletonOrder(obj);
                     forceIntegrationSID = propertyName;
+                } else if (propertyName.equals("INTERVAL")) {
+                    assert mapping.size() == 2;
+                    objects = getMappingObjects(SetFact.fromJavaOrderSet(mapping));
+                    property = LM.getObjIntervalProp(form, objects);
                 }
             }
             Result<Pair<ActionOrProperty, String>> inherited = new Result<>();

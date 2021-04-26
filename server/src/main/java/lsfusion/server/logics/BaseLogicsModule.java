@@ -5,6 +5,7 @@ import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.identity.DefaultIDGenerator;
 import lsfusion.base.identity.IDGenerator;
@@ -42,6 +43,7 @@ import lsfusion.server.logics.form.interactive.action.change.FormAddObjectAction
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.action.input.RequestResult;
 import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
+import lsfusion.server.logics.form.interactive.property.IntervalValueProperty;
 import lsfusion.server.logics.form.interactive.property.ObjectValueProperty;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.group.Group;
@@ -76,6 +78,7 @@ import org.antlr.runtime.RecognitionException;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
@@ -841,6 +844,20 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         if (formEntity.getCanonicalName() != null && !obj.noClasses()) {
             String name = objValuePrefix + formEntity.getCanonicalName().replace('.', '_') + "_" + obj.getSID(); // issue #47
             makePropertyPublic(result, name, obj.baseClass.getResolveSet());
+        }
+        return result;
+    }
+
+    @Override
+    @IdentityStrongLazy
+    public LP getObjIntervalProp(FormEntity formEntity, ImOrderSet<ObjectEntity> objects) {
+        ObjectEntity object1 = objects.get(0);
+        ObjectEntity object2 = objects.get(1);
+        ImOrderSet<ClassPropertyInterface> interfaces = SetFact.fromJavaOrderSet(Arrays.asList(object1.baseClass.getProperty().interfaces.single(), object2.baseClass.getProperty().interfaces.single()));
+        LP result = addProp(new IntervalValueProperty(interfaces));
+        if (formEntity.getCanonicalName() != null && !object1.noClasses() && !object2.noClasses()) {
+            String name = objValuePrefix + formEntity.getCanonicalName().replace('.', '_') + "_" + object1.getSID() + "_" + object2.getSID();
+            makePropertyPublic(result, name, object1.baseClass.getResolveSet(), object2.baseClass.getResolveSet());
         }
         return result;
     }
