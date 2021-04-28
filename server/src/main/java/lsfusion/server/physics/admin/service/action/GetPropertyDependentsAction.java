@@ -6,6 +6,7 @@ import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.server.logics.property.AggregateProperty;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.admin.reflection.ReflectionLogicsModule;
@@ -27,7 +28,7 @@ public class GetPropertyDependentsAction extends InternalAction {
         boolean dependencies = getParam(1, context) != null;
         BusinessLogics BL = context.getBL();
         Property<?> property = BL.findProperty((String) BL.reflectionLM.canonicalNameProperty.read(context, propertyObject)).property;
-        List<Property> properties = context.getDbManager().getDependentProperties(context.getSession(), property, new HashSet<>(), dependencies);
+        List<AggregateProperty> properties = context.getDbManager().getDependentProperties(context.getSession(), property, new HashSet<>(), dependencies);
 
         for(int i = 0; i < properties.size(); i++) {
             (dependencies ? BL.reflectionLM.propertyDependencies : BL.reflectionLM.propertyDependents).change(BL.reflectionLM.propertyCanonicalName.read(context.getSession(), new DataObject(properties.get(i).getCanonicalName())), context, new DataObject(i));
