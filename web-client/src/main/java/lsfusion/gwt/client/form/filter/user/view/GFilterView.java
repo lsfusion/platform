@@ -95,10 +95,6 @@ public class GFilterView extends FlexPanel implements GFilterConditionView.UIHan
         
         mainContainer.add(buttonsPanel);
 
-        // todo: not working with two grids (applyQuery() with empty conditions?) / EDIT 
-        controller.addBinding(new GKeyInputEvent(new GKeyStroke(KeyCodes.KEY_ENTER)), new GBindingEnv(100, null, null, null, null, null, null, null), event -> processBinding(event, this::applyFilter), this);
-//        controller.addBinding(new GKeyInputEvent(new GKeyStroke(KeyCodes.KEY_ESCAPE)), GBindingEnv.AUTO, event -> processBinding(event, this::allRemovedPressed), this);
-
         for (GPropertyDraw property : filter.properties) {
             addCondition(property);
         }
@@ -190,6 +186,14 @@ public class GFilterView extends FlexPanel implements GFilterConditionView.UIHan
     }
 
     @Override
+    public void addEnterBinding(Widget widget) {
+        controller.addBinding(new GKeyInputEvent(new GKeyStroke(KeyCodes.KEY_ENTER)),
+                GBindingEnv.AUTO,
+                event -> GFilterView.this.processBinding(event, GFilterView.this::applyFilter),
+                widget);
+    }
+
+    @Override
     public void conditionRemoved(GPropertyFilter condition) {
         removeCondition(condition);
         updateJunctionVisibility();
@@ -205,19 +209,13 @@ public class GFilterView extends FlexPanel implements GFilterConditionView.UIHan
 
     public void focusLastValue() {
         if (!conditionViews.isEmpty()) {
-            // пробегаем по всем ячейкам со значеними, останавливаясь на последней, чтобы сбросить стили выделения в остальных
-//            for (GFilterConditionView filterView : conditionViews.values()) {
-//                filterView.focusOnValue();
-//            }
             Object[] views = conditionViews.values().toArray();
             ((GFilterConditionView) views[views.length - 1]).focusOnValue();
         }
     }
 
     public void applyFilter() {
-//        if (!conditionViews.isEmpty()) {
-            controller.applyFilters(new ArrayList<>(conditionViews.keySet()), true);
-//        }
+        controller.applyFilters(new ArrayList<>(conditionViews.keySet()), true);
     }
 
     public boolean hasConditions() {

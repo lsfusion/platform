@@ -36,9 +36,6 @@ public abstract class GUserFilters {
 
         filterView = new GFilterView(this, filter);
 
-//        addBinding(new GKeyInputEvent(new GKeyStroke(KeyCodes.KEY_ENTER)), event -> applyFilter(), filterView);
-//        addBinding(new GKeyInputEvent(new GKeyStroke(KeyCodes.KEY_ESCAPE)), event -> allRemovedPressed(), filterView);
-
         toolbarButton = new GToolbarButton(FILTER_ICON_PATH) {
             @Override
             public ClickHandler getClickHandler() {
@@ -108,9 +105,7 @@ public abstract class GUserFilters {
                 }
             }
         }
-//        if (!conditions.isEmpty()) {
-            applyQuery();
-//        }
+        applyQuery();
     }
 
     private boolean hasCondition(GPropertyFilter newCondition) {

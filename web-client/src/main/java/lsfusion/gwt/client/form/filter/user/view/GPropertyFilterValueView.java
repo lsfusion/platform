@@ -8,8 +8,10 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 import java.util.List;
 
 public abstract class GPropertyFilterValueView extends GFilterValueView {
+    public final GFilterConditionListBox propertyView;
+    
     public GPropertyFilterValueView(final GPropertyFilterValue propertyValue, GTableController logicsSupplier) {
-        final GFilterConditionListBox propertyView = new GFilterConditionListBox();
+        propertyView = new GFilterConditionListBox();
 
         propertyView.addStyleName("customFontPresenter");
 

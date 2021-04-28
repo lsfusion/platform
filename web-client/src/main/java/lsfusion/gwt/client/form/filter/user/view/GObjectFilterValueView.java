@@ -5,9 +5,10 @@ import lsfusion.gwt.client.form.object.GObject;
 import lsfusion.gwt.client.form.object.table.controller.GTableController;
 
 public abstract class GObjectFilterValueView extends GFilterValueView {
-
+    public final GFilterConditionListBox objectView;
+    
     public GObjectFilterValueView(final GObjectFilterValue filterValue, GTableController logicsSupplier) {
-        final GFilterConditionListBox objectView = new GFilterConditionListBox();
+        objectView = new GFilterConditionListBox();
         objectView.addStyleName("customFontPresenter");
 
         objectView.add(logicsSupplier.getObjects().toArray(new GObject[]{}));

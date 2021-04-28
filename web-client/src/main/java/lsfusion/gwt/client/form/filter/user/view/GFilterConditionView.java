@@ -29,6 +29,7 @@ import static lsfusion.gwt.client.view.StyleDefaults.COMPONENT_HEIGHT;
 public class GFilterConditionView extends FlexPanel {
     private static final ClientMessages messages = ClientMessages.Instance.get();
     public interface UIHandler {
+        void addEnterBinding(Widget widget);
         void conditionRemoved(GPropertyFilter condition);
         void applyFilter();
     }
@@ -70,26 +71,34 @@ public class GFilterConditionView extends FlexPanel {
 
         valueViews = new LinkedHashMap<>();
         GDataFilterValue dataValue = condition.value instanceof GDataFilterValue ? (GDataFilterValue) condition.value : new GDataFilterValue();
-        valueViews.put(dataValue, new GDataFilterValueView(dataValue, condition.property, logicsSupplier) {
+        GDataFilterValueView dataValueView = new GDataFilterValueView(dataValue, condition.property, logicsSupplier) {
             @Override
             public void setFocused(boolean focused) {
                 GFilterConditionView.this.focused = focused;
             }
-        });
+        };
+        handler.addEnterBinding(dataValueView.cell);
+        valueViews.put(dataValue, dataValueView);
+        
         GObjectFilterValue objectValue = condition.value instanceof GObjectFilterValue ? (GObjectFilterValue) condition.value : new GObjectFilterValue();
-        valueViews.put(objectValue, new GObjectFilterValueView(objectValue, logicsSupplier) {
+        GObjectFilterValueView objectValueView = new GObjectFilterValueView(objectValue, logicsSupplier) {
             @Override
             public void setFocused(boolean focused) {
                 GFilterConditionView.this.focused = focused;
             }
-        });
+        };
+        handler.addEnterBinding(objectValueView.objectView);
+        valueViews.put(objectValue, objectValueView);
+        
         GPropertyFilterValue propertyValue = condition.value instanceof GPropertyFilterValue ? (GPropertyFilterValue) condition.value : new GPropertyFilterValue();
-        valueViews.put(propertyValue, new GPropertyFilterValueView(propertyValue, logicsSupplier) {
+        GPropertyFilterValueView propertyValueView = new GPropertyFilterValueView(propertyValue, logicsSupplier) {
             @Override
             public void setFocused(boolean focused) {
                 GFilterConditionView.this.focused = focused;
             }
-        });
+        };
+        handler.addEnterBinding(propertyValueView.propertyView);
+        valueViews.put(propertyValue, propertyValueView);
         
 
         propertyLabel = new Label(condition.property.getNotEmptyCaption());
