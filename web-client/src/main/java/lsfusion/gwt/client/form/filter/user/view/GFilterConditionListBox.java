@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form.filter.user.view;
 
+import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.user.client.ui.ListBox;
 import lsfusion.gwt.client.view.StyleDefaults;
 
@@ -11,6 +12,9 @@ public class GFilterConditionListBox extends ListBox {
     public GFilterConditionListBox() {
         addStyleName("userFilterListBox");
         setHeight(StyleDefaults.COMPONENT_HEIGHT_STRING);
+
+        addFocusHandler(event -> setFocused(event.getNativeEvent(), true));
+        addBlurHandler(event -> setFocused(event.getNativeEvent(), false));
     }
     
     List<Object> items = new ArrayList<>();
@@ -55,5 +59,9 @@ public class GFilterConditionListBox extends ListBox {
         if (items.contains(item)) {
             setSelectedIndex(items.indexOf(item));
         }
+    }
+    
+    public void setFocused(NativeEvent event, boolean focused) {
+        // does nothing by default
     }
 }
