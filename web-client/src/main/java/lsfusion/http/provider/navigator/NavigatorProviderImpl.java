@@ -20,6 +20,8 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
+import ua_parser.Client;
+import ua_parser.Parser;
 
 import javax.servlet.http.HttpServletRequest;
 import java.rmi.RemoteException;
@@ -44,7 +46,15 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean 
     }
 
     private static NavigatorInfo getNavigatorInfo(HttpServletRequest request, ConnectionInfo connectionInfo) {
-        String osVersion = System.getProperty("os.name");
+        String osVersion;
+        String userAgent = request.getHeader("User-Agent");
+        if(userAgent != null) {
+            Client c = new Parser().parse(userAgent);
+            osVersion = c.os.family + " " + c.os.major;
+        } else {
+            osVersion = System.getProperty("os.name"); //server os
+        }
+
         String processor = System.getenv("PROCESSOR_IDENTIFIER");
 
         String architecture = System.getProperty("os.arch");
