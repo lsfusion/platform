@@ -47,21 +47,21 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean 
 
     private static NavigatorInfo getNavigatorInfo(HttpServletRequest request, ConnectionInfo connectionInfo) {
         String osVersion;
+        String architecture = null;
+        String processor = null;
         String userAgent = request.getHeader("User-Agent");
         if(userAgent != null) {
             Client c = new Parser().parse(userAgent);
             osVersion = c.os.family + " " + c.os.major;
         } else {
             osVersion = System.getProperty("os.name"); //server os
-        }
-
-        String processor = System.getenv("PROCESSOR_IDENTIFIER");
-
-        String architecture = System.getProperty("os.arch");
-        if (osVersion.startsWith("Windows")) {
-            String arch = System.getenv("PROCESSOR_ARCHITECTURE");
-            String wow64Arch = System.getenv("PROCESSOR_ARCHITEW6432");
-            architecture = arch.endsWith("64") || wow64Arch != null && wow64Arch.endsWith("64") ? "x64" : "x32";
+            architecture = System.getProperty("os.arch");
+            if (osVersion.startsWith("Windows")) {
+                String arch = System.getenv("PROCESSOR_ARCHITECTURE");
+                String wow64Arch = System.getenv("PROCESSOR_ARCHITEW6432");
+                architecture = arch.endsWith("64") || wow64Arch != null && wow64Arch.endsWith("64") ? "x64" : "x32";
+            }
+            processor = System.getenv("PROCESSOR_IDENTIFIER");
         }
 
         Integer cores = Runtime.getRuntime().availableProcessors();
