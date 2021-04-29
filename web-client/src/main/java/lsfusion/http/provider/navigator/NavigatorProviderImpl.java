@@ -52,7 +52,7 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean 
         String userAgent = request.getHeader("User-Agent");
         if(userAgent != null) {
             Client c = new Parser().parse(userAgent);
-            osVersion = c.os.family + " " + c.os.major;
+            osVersion = c.os.family + (c.os.major != null ? (" " + c.os.major) : "");
         } else {
             osVersion = System.getProperty("os.name"); //server os
             architecture = System.getProperty("os.arch");
