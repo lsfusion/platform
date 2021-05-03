@@ -41,7 +41,6 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
     boolean hasList;
     boolean strict;
     CustomSuggestBox suggestBox = null;
-    Label noResultsLabel = new Label(messages.nothingFound());
 
     public TextBasedCellEditor(EditManager editManager, GPropertyDraw property) {
         this(editManager, property, null);
@@ -227,6 +226,9 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
 
     public void validateAndCommit(Element parent, Integer contextAction, boolean cancelIfInvalid, boolean blurred) {
         if(contextAction == null && hasList && strict && !suggestBox.isValidText()) {
+            if (cancelIfInvalid) {
+                editManager.cancelEditing();
+            }
             return;
         }
 
@@ -286,7 +288,7 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
                                         }
                                     });
                                 }
-                                noResultsLabel.setVisible(suggestionList.isEmpty());
+                                suggestBox.updateDecoration(suggestionList.isEmpty(), result.second);
                                 callback.onSuggestionsReady(request, new Response(suggestionList));
                                 succeeded = true;
                             }
@@ -357,9 +359,16 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
         public boolean isValidText() {
             return latestSuggestions.contains(getText());
         }
+
+        public void updateDecoration(boolean showNoResult, boolean showRefresh) {
+            display.updateDecoration(showNoResult, showRefresh);
+        }
     }
 
     private class DefaultSuggestionDisplayString extends SuggestBox.DefaultSuggestionDisplay {
+        private Label noResultsLabel;
+        private PushButton refreshButton;
+
         public DefaultSuggestionDisplayString() {
             setSuggestionListHiddenWhenEmpty(false);
         }
@@ -386,10 +395,14 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
         protected Widget decorateSuggestionList(Widget suggestionList) {
             VerticalPanel panel = new VerticalPanel();
             panel.add(suggestionList);
-            noResultsLabel.setVisible(false);
-            panel.add(noResultsLabel);
-            //panel.add(new Button("refresh"));
+            panel.add(noResultsLabel = new Label(messages.nothingFound()));
+            GwtClientUtils.setThemeImage("refresh.png", (image -> panel.add(refreshButton = new PushButton(new Image(image)))));
             return panel;
+        }
+        
+        public void updateDecoration(boolean showNoResult, boolean showRefresh) {
+            noResultsLabel.setVisible(showNoResult);
+            refreshButton.setVisible(showRefresh);
         }
     }
 }
