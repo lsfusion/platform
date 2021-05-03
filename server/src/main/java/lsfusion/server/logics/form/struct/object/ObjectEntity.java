@@ -133,4 +133,8 @@ public class ObjectEntity extends IdentityObject implements PropertyObjectInterf
     public boolean noClasses() {
         return noClasses;
     }
+
+    public boolean isSimpleList() {
+        return groupTo.getObjects().size() == 1 && groupTo.viewType.isList();
+    }
 }

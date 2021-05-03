@@ -1,10 +1,10 @@
 package lsfusion.interop.action;
 
-import java.io.IOException;
-
 public class LoadLinkClientAction implements ClientAction {
+    public boolean directory;
 
-    public LoadLinkClientAction() {
+    public LoadLinkClientAction(boolean directory) {
+        this.directory = directory;
     }
 
     @Override

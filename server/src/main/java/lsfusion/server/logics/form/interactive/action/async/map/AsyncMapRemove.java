@@ -48,7 +48,7 @@ public class AsyncMapRemove<T extends PropertyInterface> extends AsyncMapInputEx
     @Override
     public AsyncEventExec map(ImRevMap<T, ObjectEntity> mapObjects, FormEntity form) {
         ObjectEntity object;
-        if((object = mapObjects.get(propertyInterface)) != null && object.groupTo.getObjects().size()==1)
+        if((object = mapObjects.get(propertyInterface)) != null && object.isSimpleList())
             return new AsyncAddRemove(object, false);
         return null;
     }

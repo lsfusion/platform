@@ -5,6 +5,7 @@ import lsfusion.server.language.property.LP;
 import lsfusion.server.language.property.PropertySettings;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
+import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.session.LocalNestedType;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
@@ -19,8 +20,10 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 import java.util.List;
 
 public class EvalScriptingLogicsModule extends ScriptingLogicsModule {
-    public EvalScriptingLogicsModule(BaseLogicsModule baseModule, BusinessLogics BL, String code) {
+    private EvalScriptingLogicsModule parentLM;
+    public EvalScriptingLogicsModule(BaseLogicsModule baseModule, BusinessLogics BL, EvalScriptingLogicsModule parentLM, String code) {
         super(code, baseModule, BL);
+        this.parentLM = parentLM;
     }
 
     @Override
@@ -60,6 +63,19 @@ public class EvalScriptingLogicsModule extends ScriptingLogicsModule {
     @Override
     public void addScriptedLoggable(List<NamedPropertyUsage> propUsages) throws ScriptingErrorLog.SemanticErrorException {
         emitEvalError("LOGGABLE statement");
+    }
+
+    @Override
+    protected LogicsModule getSysModule(String requiredModuleName) {
+        if(parentLM != null) {
+            LogicsModule result = parentLM.getSysModule(requiredModuleName);
+            if (result != null) {
+                return result;
+            } else if (parentLM.getName().equals(requiredModuleName)) {
+                return parentLM;
+            }
+        }
+        return super.getSysModule(requiredModuleName);
     }
 
     @Override

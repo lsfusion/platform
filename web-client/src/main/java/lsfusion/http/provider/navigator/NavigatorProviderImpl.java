@@ -20,6 +20,8 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
+import ua_parser.Client;
+import ua_parser.Parser;
 
 import javax.servlet.http.HttpServletRequest;
 import java.rmi.RemoteException;
@@ -44,14 +46,22 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean 
     }
 
     private static NavigatorInfo getNavigatorInfo(HttpServletRequest request, ConnectionInfo connectionInfo) {
-        String osVersion = System.getProperty("os.name");
-        String processor = System.getenv("PROCESSOR_IDENTIFIER");
-
-        String architecture = System.getProperty("os.arch");
-        if (osVersion.startsWith("Windows")) {
-            String arch = System.getenv("PROCESSOR_ARCHITECTURE");
-            String wow64Arch = System.getenv("PROCESSOR_ARCHITEW6432");
-            architecture = arch.endsWith("64") || wow64Arch != null && wow64Arch.endsWith("64") ? "x64" : "x32";
+        String osVersion;
+        String architecture = null;
+        String processor = null;
+        String userAgent = request.getHeader("User-Agent");
+        if(userAgent != null) {
+            Client c = new Parser().parse(userAgent);
+            osVersion = c.os.family + (c.os.major != null ? (" " + c.os.major) : "");
+        } else {
+            osVersion = System.getProperty("os.name"); //server os
+            architecture = System.getProperty("os.arch");
+            if (osVersion.startsWith("Windows")) {
+                String arch = System.getenv("PROCESSOR_ARCHITECTURE");
+                String wow64Arch = System.getenv("PROCESSOR_ARCHITEW6432");
+                architecture = arch.endsWith("64") || wow64Arch != null && wow64Arch.endsWith("64") ? "x64" : "x32";
+            }
+            processor = System.getenv("PROCESSOR_IDENTIFIER");
         }
 
         Integer cores = Runtime.getRuntime().availableProcessors();

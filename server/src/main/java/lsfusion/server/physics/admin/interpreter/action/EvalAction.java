@@ -7,6 +7,7 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.ObjectValue;
+import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.language.action.LA;
 import lsfusion.server.logics.action.SystemAction;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
@@ -20,15 +21,17 @@ import java.sql.SQLException;
 
 public class EvalAction<P extends PropertyInterface> extends SystemAction {
 
+    private ScriptingLogicsModule LM;
     protected PropertyInterface sourceInterface;
     protected ImOrderSet<PropertyInterface> paramInterfaces;
     protected ImMap<PropertyInterface, Type> paramTypes;
 
     private boolean action;
 
-    public EvalAction(ImList<Type> params, boolean action) {
+    public EvalAction(ScriptingLogicsModule LM, ImList<Type> params, boolean action) {
         super(LocalizedString.NONAME, SetFact.toOrderExclSet(params.size() + 1, i -> new PropertyInterface()));
-        
+
+        this.LM = LM;
         ImOrderSet<PropertyInterface> orderInterfaces = getOrderInterfaces();
         sourceInterface = orderInterfaces.get(0);
         this.paramInterfaces = orderInterfaces.subOrder(1, orderInterfaces.size());
@@ -48,7 +51,7 @@ public class EvalAction<P extends PropertyInterface> extends SystemAction {
     protected FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
         String script = getScript(context);
 
-        LA<?> runAction = context.getBL().evaluateRun(script, action);
+        LA<?> runAction = LM.evaluateRun(script, action);
         if (runAction != null)
             return runAction.execute(context, getParams(context));
         

@@ -1844,6 +1844,34 @@ public class DBManager extends LogicsManager implements InitializingBean {
             run.run(session);
     }
 
+    public List<AggregateProperty> getDependentProperties(DataSession dataSession, Property<?> property, Set<Property> calculated, boolean dependencies) throws SQLException, SQLHandledException {
+        List<AggregateProperty> properties = new ArrayList<>();
+        if (dependencies) {
+            for (Property prop : property.getDepends(false)) {
+                if (prop != property && !calculated.contains(prop)) {
+                    properties.addAll(getDependentProperties(dataSession, prop, calculated, true));
+                }
+            }
+        }
+
+        if(property instanceof AggregateProperty && property.isStored()) {
+            properties.add((AggregateProperty) property);
+            calculated.add(property);
+        }
+
+        if(!dependencies) {
+            for (Property prop : businessLogics.getRecalculateAggregateStoredProperties(dataSession, true)) {
+                if (prop != property && !calculated.contains(prop) && Property.depends(prop, property, false)) {
+                    boolean recalculate = reflectionLM.disableAggregationsTableColumn.read(dataSession, reflectionLM.tableColumnSID.readClasses(dataSession, new DataObject(property.getDBName()))) == null;
+                    if(recalculate) {
+                        properties.addAll(getDependentProperties(dataSession, prop, calculated, false));
+                    }
+                }
+            }
+        }
+        return properties;
+    }
+
     public List<String> recalculateAggregations(DataSession dataSession, ExecutionStack stack, SQLSession session, final List<? extends Property> recalculateProperties, boolean isolatedTransaction, Logger logger) throws SQLException, SQLHandledException {
         final List<String> messageList = new ArrayList<>();
         final int total = recalculateProperties.size();
@@ -1907,35 +1935,13 @@ public class DBManager extends LogicsManager implements InitializingBean {
         run(session, isolatedTransaction, sql -> aggregateProperty.recalculateAggregation(businessLogics, dataSession, sql, LM.baseClass, where, recalculateClasses));
     }
 
-    public void recalculateAggregationWithDependenciesTableColumn(SQLSession session, ExecutionStack stack, String propertyCanonicalName, boolean isolatedTransaction, boolean dependents) throws SQLException, SQLHandledException {
+    public void recalculateAggregationWithDependenciesTableColumn(SQLSession session, ExecutionStack stack, String propertyCanonicalName, boolean isolatedTransaction, boolean dependencies) throws SQLException, SQLHandledException {
         try(DataSession dataSession = createRecalculateSession(session)) {
-            recalculateAggregationWithDependenciesTableColumn(dataSession, session, businessLogics.findProperty(propertyCanonicalName).property, isolatedTransaction, new HashSet<>(), dependents);
+            List<AggregateProperty> properties = getDependentProperties(dataSession, businessLogics.findProperty(propertyCanonicalName).property, new HashSet<>(), dependencies);
+            for(AggregateProperty prop : properties) {
+                runAggregationRecalculation(dataSession, session, prop, null, isolatedTransaction);
+            }
             apply(dataSession, stack);
-        }
-    }
-
-    private void recalculateAggregationWithDependenciesTableColumn(DataSession dataSession, SQLSession session, Property<?> property, boolean isolatedTransaction, Set<Property> calculated, boolean dependents) throws SQLException, SQLHandledException {
-        if (!dependents) {
-            for (Property prop : property.getDepends(false)) {
-                if (prop != property && !calculated.contains(prop)) {
-                    recalculateAggregationWithDependenciesTableColumn(dataSession, session, prop, isolatedTransaction, calculated, false);
-                }
-            }
-        }
-        
-        if (property instanceof AggregateProperty && property.isStored()) {
-            runAggregationRecalculation(dataSession, session, (AggregateProperty) property, null, isolatedTransaction);
-            calculated.add(property);
-        }
-
-        if (dependents) {
-            for (Property prop : businessLogics.getRecalculateAggregateStoredProperties(dataSession, true)) {
-                if (prop != property && !calculated.contains(prop) && Property.depends(prop, property, false)) {
-                    boolean recalculate = reflectionLM.disableAggregationsTableColumn.read(dataSession, reflectionLM.tableColumnSID.readClasses(dataSession, new DataObject(property.getDBName()))) == null;
-                    if(recalculate)
-                        recalculateAggregationWithDependenciesTableColumn(dataSession, session, prop, isolatedTransaction, calculated, true);
-                }
-            }
         }
     }
 

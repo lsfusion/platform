@@ -1039,10 +1039,6 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         syncExecutePropertyEventAction(editContext, event, editContext.getProperty(), editContext.getColumnKey(), actionSID);
     }
 
-    public void asyncAddRemove(EditContext editContext, Event editEvent, String actionSID, GAsyncAddRemove asyncAddRemove) {
-        modifyObject(editContext, editEvent, actionSID, asyncAddRemove);
-    }
-
     public void asyncChange(Event event, EditContext editContext, String actionSID, GAsyncChange asyncChange) {
         editProperty(asyncChange.changeType, event, false, null, asyncChange.inputList,
                 value -> {}, () -> {}, editContext, actionSID, null);
@@ -1153,13 +1149,11 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         return changeRequestIndex;
     }
 
-    public void modifyObject(EditContext editContext, Event editEvent, String actionSID, GAsyncAddRemove asyncAddRemove) {
+    public void asyncAddRemove(EditContext editContext, Event editEvent, String actionSID, GAsyncAddRemove asyncAddRemove) {
         final GObject object = form.getObject(asyncAddRemove.object);
         final boolean add = asyncAddRemove.add;
 
         GGridController controller = controllers.get(object.groupObject);
-        if (controller == null || !controller.isList())
-            return;
 
         final int position = controller.getSelectedRow();
 

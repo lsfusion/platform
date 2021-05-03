@@ -42,7 +42,7 @@ public class AsyncMapAdd<T extends PropertyInterface> extends AsyncMapInputExec<
     @Override
     public AsyncEventExec map(ImRevMap<T, ObjectEntity> mapObjects, FormEntity form) {
         for(ObjectEntity object : form.getObjects())
-            if (object.baseClass instanceof CustomClass && customClass.isChild((CustomClass) object.baseClass) && object.groupTo.getObjects().size()==1)
+            if (object.baseClass instanceof CustomClass && customClass.isChild((CustomClass) object.baseClass) && object.isSimpleList())
                 return new AsyncAddRemove(object, true);
         return null;
     }

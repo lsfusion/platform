@@ -64,7 +64,7 @@ javaStackTraceCaughtException = DATA LOCAL TEXT();
 lsfStackTraceCaughtException = DATA LOCAL TEXT();
 
 upper = FORMULA 'upper($1)';    
-lower = FORMULA TEXT 'lower($1)';   
+lower = FORMULA 'lower($1)';   
 
 formApply '{action.form.save}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.lifecycle.FormApplyAction' () CHANGEKEY 'alt ENTER' IMAGE 'apply.png';
 formCancel '{action.form.cancel}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.lifecycle.FormCancelAction' () CHANGEKEY 'shift ESCAPE' IMAGE 'cancel.png';
@@ -367,7 +367,8 @@ END
 @applicationForm(migrationData, '{navigator.migration}');
 
 networkPath '{system.network.path}' = DATA LOCAL NESTED STRING[500] ();
-loadNetworkPath '{system.load.network.path}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.input.LoadLinkAction' ();
+loadNetworkPath '{system.load.network.path}' (BOOLEAN directory)  INTERNAL  'lsfusion.server.logics.form.interactive.action.input.LoadLinkAction';
+loadNetworkPath '{system.load.network.path}' () { loadNetworkPath(NULL); }  
 FORM networkPathForm '{system.form.network.path.form}'
     PROPERTIES() networkPath, loadNetworkPath;
 

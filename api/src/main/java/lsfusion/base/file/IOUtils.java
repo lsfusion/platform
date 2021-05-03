@@ -148,8 +148,8 @@ public class IOUtils {
         }
 
         FTPClient ftpClient = new FTPClient();
-        ftpClient.setDataTimeout(120000); //2 minutes = 120 sec
-        ftpClient.setConnectTimeout(60000); //1 minute = 60 sec
+        ftpClient.setDataTimeout(ftpPath.dataTimeout);
+        ftpClient.setConnectTimeout(ftpPath.connectTimeout);
 
         if (ftpPath.charset != null) {
             ftpClient.setControlEncoding(ftpPath.charset);

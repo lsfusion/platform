@@ -53,7 +53,7 @@ public abstract class FormsController {
     private final List<Integer> formFocusOrder = new ArrayList<>();
     private int focusOrderCount;
 
-    private Long lastCompletedRequest;
+    private Long lastCompletedRequest = -1L;
     private NativeHashMap<Long, FormContainer> asyncForms = new NativeHashMap<>();
 
     private final WindowsController windowsController;
@@ -215,33 +215,29 @@ public abstract class FormsController {
         return formContainer;
     }
 
-    //size of modal window may change, we don't want flashing, so we use timer
+    //we don't want flashing, so we use timer
     Timer openFormTimer;
     public void asyncOpenForm(Long requestIndex, GAsyncOpenForm openForm) {
         FormDockable duplicateForm = getDuplicateForm(openForm.canonicalName, openForm.forbidDuplicate);
         if (duplicateForm == null) {
-            if (openForm.isModal()) {
-                openFormTimer = new Timer() {
-                    @Override
-                    public void run() {
-                        Scheduler.get().scheduleDeferred(() -> {
-                            if (openFormTimer != null) {
-                                if(requestIndex > lastCompletedRequest) { //request is not completed yet
-                                    FormContainer formContainer = new ModalForm(FormsController.this, requestIndex, openForm.caption, true);
-                                    formContainer.show();
-                                    asyncForms.put(requestIndex, formContainer);
-                                }
-                                openFormTimer = null;
+            openFormTimer = new Timer() {
+                @Override
+                public void run() {
+                    Scheduler.get().scheduleDeferred(() -> {
+                        if (openFormTimer != null) {
+                            if (requestIndex > lastCompletedRequest) { //request is not completed yet
+                                FormContainer formContainer = openForm.isModal() ?
+                                        new ModalForm(FormsController.this, requestIndex, openForm.caption, true) :
+                                        new FormDockable(FormsController.this, requestIndex, openForm.caption, true);
+                                formContainer.show();
+                                asyncForms.put(requestIndex, formContainer);
                             }
-                        });
-                    }
-                };
-                openFormTimer.schedule(100);
-            } else {
-                FormContainer formContainer = new FormDockable(this, requestIndex, openForm.caption, true);
-                formContainer.show();
-                asyncForms.put(requestIndex, formContainer);
-            }
+                            openFormTimer = null;
+                        }
+                    });
+                }
+            };
+            openFormTimer.schedule(100);
         }
     }
 

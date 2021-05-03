@@ -577,8 +577,12 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
         public JSONObject serialize() {
             JSONObject groupData = new JSONObject();
-            for(int i=0,size=props.size();i<size;i++)
-                groupData.put(props.getKey(i).getIntegrationSID(), props.getValue(i).serialize());
+            for(int i=0,size=props.size();i<size;i++) {
+                String integrationSID = props.getKey(i).getIntegrationSID();
+                if (integrationSID != null) {
+                    groupData.put(integrationSID, props.getValue(i).serialize());
+                }
+            }
             return groupData;
         }
     }

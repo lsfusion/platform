@@ -352,5 +352,11 @@
             <artifactId>cors-filter</artifactId>
             <version>2.6</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.github.ua-parser</groupId>
+            <artifactId>uap-java</artifactId>
+            <version>1.5.2</version>
+        </dependency>
     </dependencies>
 </project>
