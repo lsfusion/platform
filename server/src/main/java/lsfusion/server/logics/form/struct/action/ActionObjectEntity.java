@@ -51,14 +51,14 @@ public class ActionObjectEntity<P extends PropertyInterface> extends ActionOrPro
         CustomClass simpleAdd = property.getSimpleAdd();
         if(simpleAdd!=null) {
             for(ObjectEntity object : form.getObjects())
-                if (object.baseClass instanceof CustomClass && simpleAdd.isChild((CustomClass) object.baseClass) && object.groupTo.getObjects().size()==1) {
+                if (object.baseClass instanceof CustomClass && simpleAdd.isChild((CustomClass) object.baseClass) && object.isSimpleList()) {
                     return new AsyncAddRemove(object, true);
                 }
         }
 
         P simpleDelete = property.getSimpleDelete();
         PropertyObjectInterfaceEntity object;
-        if(simpleDelete!=null && (object = mapping.get(simpleDelete)) instanceof ObjectEntity && ((ObjectEntity)object).groupTo.getObjects().size()==1) {
+        if(simpleDelete!=null && (object = mapping.get(simpleDelete)) instanceof ObjectEntity && ((ObjectEntity)object).isSimpleList()) {
             return new AsyncAddRemove((ObjectEntity) object, false);
         }
 

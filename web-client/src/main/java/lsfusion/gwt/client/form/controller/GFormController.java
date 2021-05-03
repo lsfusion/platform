@@ -991,13 +991,6 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         }
     }
 
-    public void asyncAddRemove(GPropertyDraw property, ExecuteEditContext editContext, String actionSID, GAsyncAddRemove asyncAddRemove) {
-        GGridController controller = controllers.get(asyncAddRemove.object.groupObject);
-        if (controller != null && controller.isList()) {
-            modifyObject(property, editContext.getColumnKey(), actionSID, asyncAddRemove);
-        }
-    }
-
     public void asyncChange(Event event, ExecuteEditContext editContext, String actionSID, GAsyncChange asyncChange) {
         GType changeType = asyncChange.changeType;
         edit(changeType, event, false, null,
@@ -1111,7 +1104,8 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         }
     }
 
-    public void modifyObject(final GPropertyDraw property, final GGroupObjectValue columnKey, String actionSID, GAsyncAddRemove asyncAddRemove) {
+    public void asyncAddRemove(GPropertyDraw property, ExecuteEditContext editContext, String actionSID, GAsyncAddRemove asyncAddRemove) {
+        GGroupObjectValue columnKey = editContext.getColumnKey();
         final GObject object = asyncAddRemove.object;
         final boolean add = asyncAddRemove.add;
 

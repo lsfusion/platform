@@ -944,15 +944,6 @@ public class ClientFormController implements AsyncListener {
     }
 
     public void asyncAddRemove(ClientPropertyDraw property, ClientGroupObjectValue columnKey, String actionSID, ClientAsyncAddRemove addRemove) throws IOException {
-        if (addRemove != null) {
-            GridController controller = controllers.get(addRemove.object.groupObject);
-            if (controller != null && controller.isList()) {
-                modifyObject(property, columnKey, actionSID, addRemove);
-            }
-        }
-    }
-
-    public void modifyObject(final ClientPropertyDraw property, ClientGroupObjectValue columnKey, String actionSID, ClientAsyncAddRemove addRemove) throws IOException {
         commitOrCancelCurrentEditing();
 
         final ClientObject object = addRemove.object;
