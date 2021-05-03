@@ -45,7 +45,7 @@ public class DefaultChangeObjectAction extends SystemExplicitAction {
                         formInstance.createChangeObjectDialogRequest(customObjectInstance.getBaseClass(), oldValue, customObjectInstance.groupTo, context.stack)
                 );
             } else {
-                changeValue = context.requestUserData(((DataObjectInstance) objectInstance).getBaseClass(), oldValue.getValue(), true);
+                changeValue = context.requestUserData(((DataObjectInstance) objectInstance).getBaseClass(), oldValue.getValue(), false);
             }
             if (changeValue != null) {
                 formInstance.changeObject(objectInstance, changeValue);

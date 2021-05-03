@@ -22,10 +22,12 @@ import lsfusion.server.language.form.object.ScriptingGroupObject;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.language.property.oraction.LAP;
 import lsfusion.server.language.property.oraction.MappedActionOrProperty;
+import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.LogicsModule.InsertType;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.ColorClass;
 import lsfusion.server.logics.classes.data.file.ImageClass;
+import lsfusion.server.logics.classes.data.utils.time.TimeLogicsModule;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
@@ -53,6 +55,7 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import javax.swing.*;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -372,7 +375,10 @@ public class ScriptingFormEntity {
                 } else if (propertyName.equals("INTERVAL")) {
                     assert mapping.size() == 2;
                     objects = getMappingObjects(SetFact.fromJavaOrderSet(mapping));
-                    property = LM.getObjIntervalProp(getMappingObjects(SetFact.fromJavaOrderSet(mapping)));
+                    Iterator<ObjectEntity> iterator = objects.iterator();
+                    List<LogicsModule> requiredModules = LM.getRequiredModules("Time");
+                    TimeLogicsModule timeLogicsModule = requiredModules.size() == 1 ? (TimeLogicsModule) requiredModules.get(0) : null;
+                    property = LM.getObjIntervalProp(iterator.next(), iterator.next(), timeLogicsModule);
                 }
             }
             Result<Pair<ActionOrProperty, String>> inherited = new Result<>();

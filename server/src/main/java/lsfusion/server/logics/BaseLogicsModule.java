@@ -5,7 +5,6 @@ import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
-import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.identity.DefaultIDGenerator;
 import lsfusion.base.identity.IDGenerator;
@@ -34,6 +33,7 @@ import lsfusion.server.logics.classes.data.AnyValuePropertyHolder;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.LogicalClass;
 import lsfusion.server.logics.classes.data.integral.DoubleClass;
+import lsfusion.server.logics.classes.data.utils.time.TimeLogicsModule;
 import lsfusion.server.logics.classes.user.BaseClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.classes.user.CustomClass;
@@ -849,8 +849,8 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
     @Override
     @IdentityStrongLazy
-    public LP getObjIntervalProp(ImOrderSet<ObjectEntity> objects) {
-        return addProp(new IntervalValueProperty(objects));
+    public LP getObjIntervalProp(ObjectEntity objectFrom, ObjectEntity objectTo, TimeLogicsModule timeLogicsModule) {
+        return addProp(new IntervalValueProperty(objectFrom, objectTo, timeLogicsModule));
     }
 
     @Override

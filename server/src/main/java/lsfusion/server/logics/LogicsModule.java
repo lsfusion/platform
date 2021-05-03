@@ -53,7 +53,7 @@ import lsfusion.server.logics.classes.data.LogicalClass;
 import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.data.integral.IntegralClass;
 import lsfusion.server.logics.classes.data.integral.LongClass;
-import lsfusion.server.logics.classes.data.time.IntervalClass;
+import lsfusion.server.logics.classes.data.utils.time.TimeLogicsModule;
 import lsfusion.server.logics.classes.user.*;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.constraint.OutFormSelector;
@@ -1713,8 +1713,8 @@ public abstract class LogicsModule {
         return baseLM.getObjValueProp(formEntity, obj);
     }
 
-    public LP getObjIntervalProp(ImOrderSet<ObjectEntity> objects) {
-        return baseLM.getObjIntervalProp(objects);
+    public LP getObjIntervalProp(ObjectEntity objectFrom, ObjectEntity objectTo, TimeLogicsModule timeLogicsModule) {
+        return baseLM.getObjIntervalProp(objectFrom, objectTo, timeLogicsModule);
     }
 
     // ---------------------- Add Object ---------------------- //
