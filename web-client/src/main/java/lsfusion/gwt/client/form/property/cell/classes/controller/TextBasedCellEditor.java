@@ -89,14 +89,18 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
 
     @Override
     public void onBrowserEvent(Element parent, EventHandler handler) {
+        Event event = handler.event;
+
         if(hasList) {
             //on mouse click blur event finish editing before new value in SelectBox is selected
-            if (BLUR.equals(handler.event.getType())) {
-                suggestBox.setText(suggestBox.display.getReplacementString());
+            if (BLUR.equals(event.getType())) {
+                String replacement = suggestBox.display.getReplacementString();
+                if(replacement != null) {
+                    suggestBox.setText(replacement);
+                }
+                suggestBox.display.hideSuggestions();
             }
         }
-
-        Event event = handler.event;
 
         String type = event.getType();
         if (GKeyStroke.isCharAddKeyEvent(event) || GKeyStroke.isCharDeleteKeyEvent(event) ||
@@ -335,6 +339,16 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
             getElement().removeClassName("gwt-SuggestBox");
             setAutoSelectEnabled(false);
 
+            addKeyDownHandler(event -> {
+                //consume keydown except of enter and escape
+                if(isSuggestionListShowing()) {
+                    int keyCode = event.getNativeEvent().getKeyCode();
+                    if (keyCode != KeyCodes.KEY_ENTER && keyCode != KeyCodes.KEY_ESCAPE) {
+                        event.stopPropagation();
+                    }
+                }
+            });
+            
             addKeyUpHandler(event -> {
                 //need to ignore request from onKeyUp method in SuggestBox
                 if(isSuggestionListShowing() && ignoreKeyCode(event.getNativeEvent())) {
