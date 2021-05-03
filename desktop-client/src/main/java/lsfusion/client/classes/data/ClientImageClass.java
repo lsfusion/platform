@@ -2,8 +2,6 @@ package lsfusion.client.classes.data;
 
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.form.property.ClientPropertyDraw;
-import lsfusion.client.form.property.cell.classes.controller.FilePropertyEditor;
-import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
 import lsfusion.client.form.property.cell.classes.view.ImagePropertyRenderer;
 import lsfusion.client.form.property.cell.view.PropertyRenderer;
 import lsfusion.interop.classes.DataType;
@@ -21,6 +19,11 @@ public class ClientImageClass extends ClientStaticFormatFileClass {
         return new String[] {"jpg", "jpeg", "bmp", "png"};
     }
 
+    @Override
+    public String getDescription() {
+        return ClientResourceBundle.getString("logics.classes.image");
+    }
+
     public byte getTypeId() {
         return DataType.IMAGE;
     }
@@ -32,11 +35,6 @@ public class ClientImageClass extends ClientStaticFormatFileClass {
     @Override
     public String formatString(Object obj) {
         return "Image";
-    }
-
-    @Override
-    public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
-        return new FilePropertyEditor(multiple, storeName, ClientResourceBundle.getString("logics.classes.image"), getExtensions());
     }
 
     @Override
