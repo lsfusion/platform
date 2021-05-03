@@ -33,7 +33,6 @@ import lsfusion.server.logics.classes.data.AnyValuePropertyHolder;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.LogicalClass;
 import lsfusion.server.logics.classes.data.integral.DoubleClass;
-import lsfusion.server.logics.classes.data.utils.time.TimeLogicsModule;
 import lsfusion.server.logics.classes.user.BaseClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.classes.user.CustomClass;
@@ -849,8 +848,8 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
     @Override
     @IdentityStrongLazy
-    public LP getObjIntervalProp(ObjectEntity objectFrom, ObjectEntity objectTo, TimeLogicsModule timeLogicsModule) {
-        return addProp(new IntervalValueProperty(objectFrom, objectTo, timeLogicsModule));
+    public LP getObjIntervalProp(ObjectEntity objectFrom, ObjectEntity objectTo, LP<?> intervalProperty) {
+        return addProp(new IntervalValueProperty(objectFrom, objectTo, intervalProperty));
     }
 
     @Override

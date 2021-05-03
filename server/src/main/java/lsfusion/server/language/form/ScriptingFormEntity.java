@@ -22,7 +22,6 @@ import lsfusion.server.language.form.object.ScriptingGroupObject;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.language.property.oraction.LAP;
 import lsfusion.server.language.property.oraction.MappedActionOrProperty;
-import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.LogicsModule.InsertType;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.ColorClass;
@@ -376,9 +375,10 @@ public class ScriptingFormEntity {
                     assert mapping.size() == 2;
                     objects = getMappingObjects(SetFact.fromJavaOrderSet(mapping));
                     Iterator<ObjectEntity> iterator = objects.iterator();
-                    List<LogicsModule> requiredModules = LM.getRequiredModules("Time");
-                    TimeLogicsModule timeLogicsModule = requiredModules.size() == 1 ? (TimeLogicsModule) requiredModules.get(0) : null;
-                    property = LM.getObjIntervalProp(iterator.next(), iterator.next(), timeLogicsModule);
+                    ObjectEntity objectFrom = iterator.next();
+                    ObjectEntity objectTo = iterator.next();
+                    property = LM.getObjIntervalProp(objectFrom, objectTo, ((TimeLogicsModule) LM.getRequiredModules("Time").get(0))
+                            .findProperty(getIntervalPropertyName(objectFrom)));
                 }
             }
             Result<Pair<ActionOrProperty, String>> inherited = new Result<>();
@@ -425,6 +425,17 @@ public class ScriptingFormEntity {
             movePropertyDraw(propertyDraw, propertyOptions, version);
         }
     }
+
+    private String getIntervalPropertyName(ObjectEntity object) {
+        String objectSid = object.baseClass.getSID();
+        int timeIndex = objectSid.indexOf("TIME");
+        String type = timeIndex < 1 ? objectSid.toLowerCase() :
+                objectSid.substring(0, timeIndex).toLowerCase() +
+                        objectSid.charAt(timeIndex) +
+                        objectSid.substring(timeIndex + 1).toLowerCase();
+        return type + "Interval" + "[" + type.toUpperCase() + ", " + type.toUpperCase() + "]";
+    }
+
 
     private static FormSessionScope getAddFormActionScope(String name) {
         return OLDSESSION;

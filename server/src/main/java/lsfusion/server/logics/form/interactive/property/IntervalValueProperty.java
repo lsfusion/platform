@@ -1,18 +1,16 @@
 package lsfusion.server.logics.form.interactive.property;
 
-import com.google.common.base.Throwables;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.server.base.caches.IdentityStrongLazy;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.WhereBuilder;
-import lsfusion.server.language.ScriptingErrorLog;
+import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.time.IntervalClass;
-import lsfusion.server.logics.classes.data.utils.time.TimeLogicsModule;
 import lsfusion.server.logics.form.interactive.action.change.DefaultChangeIntervalObjectAction;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.CalcType;
@@ -34,9 +32,9 @@ public class IntervalValueProperty extends NoIncrementProperty<ClassPropertyInte
     private final String objectSid;
     private final ClassPropertyInterface interfaceFrom;
     private final ClassPropertyInterface interfaceTo;
-    private final TimeLogicsModule timeLogicsModule;
+    private final LP<?> intervalProperty;
 
-    public IntervalValueProperty(ObjectEntity objectFrom, ObjectEntity objectTo, TimeLogicsModule timeLogicsModule) {
+    public IntervalValueProperty(ObjectEntity objectFrom, ObjectEntity objectTo, LP<?> intervalProperty) {
         super(LocalizedString.NONAME, IsClassProperty.getInterfaces(new ValueClass[]{objectFrom.baseClass, objectTo.baseClass}));
 
         this.objectSid = objectFrom.baseClass.getSID();
@@ -47,30 +45,15 @@ public class IntervalValueProperty extends NoIncrementProperty<ClassPropertyInte
         this.interfaceFrom = iterator.next();
         this.interfaceTo = iterator.next();
 
-        this.timeLogicsModule = timeLogicsModule;
+        this.intervalProperty = intervalProperty;
 
         finalizeInit();
     }
 
     @Override
     protected Expr calculateExpr(ImMap<ClassPropertyInterface, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
-        try {
-            return timeLogicsModule.findProperty(getPropertyName())
-                    .getExpr(joinImplement.get(interfaceFrom),
-                            joinImplement.get(interfaceTo));
-        } catch (ScriptingErrorLog.SemanticErrorException e) {
-            Throwables.propagate(e);
-            return null;
-        }
-    }
-
-    private String getPropertyName() {
-        int timeIndex = objectSid.indexOf("TIME");
-        String type = timeIndex < 1 ? objectSid.toLowerCase() :
-                objectSid.substring(0, timeIndex).toLowerCase() +
-                        objectSid.charAt(timeIndex) +
-                        objectSid.substring(timeIndex + 1).toLowerCase();
-        return type + "Interval" + "[" + type.toUpperCase() + ", " + type.toUpperCase() + "]";
+        return intervalProperty.getExpr(joinImplement.get(interfaceFrom),
+                joinImplement.get(interfaceTo));
     }
 
     @Override
