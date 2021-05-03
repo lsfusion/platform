@@ -2899,7 +2899,7 @@ onEditEventSetting [LAP property, List<TypedParameter> context]
 
 formEventType returns [String type]
 	:	'CHANGE' { $type = ServerResponse.CHANGE; }
-	|	'CHANGEWYS' { $type = ServerResponse.CHANGE_WYS; }
+	|	'CHANGEWYS' { $type = ServerResponse.CHANGE; }
 	|	'EDIT' { $type = ServerResponse.EDIT_OBJECT; }
 	|	'GROUPCHANGE' { $type = ServerResponse.GROUP_CHANGE; }
 	;
@@ -3386,6 +3386,8 @@ formActionProps[String objectName, ValueClass objectClass, List<TypedParameter> 
     Boolean outNull = false;
     NamedPropertyUsage outProp = null;
 
+    LPWithParams listProp = null;
+
     LPWithParams changeProp = null;
 
     boolean assign = false;
@@ -3394,7 +3396,7 @@ formActionProps[String objectName, ValueClass objectClass, List<TypedParameter> 
     DebugInfo.DebugPoint assignDebugPoint = null;
 }
 @after {
-    $props = new FormActionProps(in, inNull, out, outParamNum, outNull, outProp, constraintFilter, assign, changeProp, assignDebugPoint);
+    $props = new FormActionProps(in, inNull, out, outParamNum, outNull, outProp, constraintFilter, assign, listProp, changeProp, assignDebugPoint);
 }
     :   (EQ expr=propertyExpression[context, dynamic] { in = $expr.property; } ('NULL' { inNull = true; } )? )?
         (
@@ -3414,6 +3416,7 @@ formActionProps[String objectName, ValueClass objectClass, List<TypedParameter> 
             ('NULL' { outNull = true; })? 
 //            ('TO' pUsage=propertyUsage { outProp = $pUsage.propUsage; } )?
             (('CONSTRAINTFILTER' { constraintFilter = true; } ) (EQ consExpr=propertyExpression[context, dynamic] { changeProp = $consExpr.property; } )?)?
+            ('LIST' listExpr=propertyExpression[newContext, dynamic] { listProp = $listExpr.property; } )?
         )?
     ;
 
@@ -3753,17 +3756,29 @@ inputActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams ac
     NamedPropertyUsage outProp = null;
     LPWithParams changeProp = null;
     LPWithParams listProp = null;
+    LPWithParams whereProp = null;
 }
 @after {
 	if (inMainParseState()) {
-		$action = self.addScriptedInputAProp($in.dataClass, $in.initValue, outProp, $dDB.action, $dDB.elseAction, context, newContext, assign, changeProp, listProp, assignDebugPoint);
+		$action = self.addScriptedInputAProp($in.valueClass, $in.initValue, outProp, $dDB.action, $dDB.elseAction, context, newContext, assign, changeProp, listProp, whereProp, assignDebugPoint);
 	}
 }
 	:	'INPUT'
 	    in=mappedInput[newContext]
 	    ('LIST'
-	        { List<TypedParameter> newListContext = new ArrayList<TypedParameter>(context); }
-	        listExpr=propertyExpression[newListContext, true] { listProp = $listExpr.property; }
+	        {
+    	        List<TypedParameter> newListContext = new ArrayList<TypedParameter>(context);
+    	        boolean listDynamic;
+                if($in.valueClass instanceof DataClass) {
+                    newListContext = new ArrayList<TypedParameter>(context);
+    	            listDynamic = true;
+                } else {
+                    newListContext = newContext;
+                    listDynamic = false;
+                }
+            }
+	        listExpr=propertyExpression[newListContext, listDynamic] { listProp = $listExpr.property; }
+	        ('WHERE' whereExpr=propertyExpression[newListContext, listDynamic] { whereProp = $whereExpr.property; })
 	    )?
         ( { assignDebugPoint = getCurrentDebugPoint(); } 
             'CHANGE' { assign = true; }
@@ -3773,13 +3788,13 @@ inputActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams ac
         dDB=doInputBody[context, newContext]
 	;
 	
-mappedInput[List<TypedParameter> context] returns [DataClass dataClass, LPWithParams initValue]
+mappedInput[List<TypedParameter> context] returns [ValueClass valueClass, LPWithParams initValue]
 @init {
     String varName = "object"; // for INPUT =f() CHANGE and INPUT LONG;
 }
 @after {
 	if (inMainParseState()) {
-		$dataClass = self.getInputDataClass(varName, context, $ptype.text, $pe.property, insideRecursion);
+		$valueClass = self.getInputValueClass(varName, context, $ptype.text, $pe.property, insideRecursion);
 		$initValue = $pe.property;
 	}
 }

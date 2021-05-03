@@ -29,7 +29,7 @@ import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.form.interactive.UpdateType;
-import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
+import lsfusion.server.logics.form.interactive.action.input.InputContextProperty;
 import lsfusion.server.logics.form.interactive.controller.init.InstanceFactory;
 import lsfusion.server.logics.form.interactive.controller.init.Instantiable;
 import lsfusion.server.logics.form.interactive.instance.filter.FilterInstance;
@@ -347,11 +347,11 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
             where = where.and(filt.getWhere(mapKeys, modifier));
         return where;
     }
-    private <P extends PropertyInterface> InputListEntity<?, P> getFilterInputListEntity(ImSet<ContextFilterEntity<?, P, ObjectEntity>> filters, ImRevMap<ObjectEntity, P> mapObjects) {
+    private <P extends PropertyInterface> InputContextProperty<?, P> getFilterInputContextProperty(ImSet<ContextFilterEntity<?, P, ObjectEntity>> filters, ImRevMap<ObjectEntity, P> mapObjects) {
         // assert single and filters objects contain this object
-        InputListEntity<?, P> result = null;
+        InputContextProperty<?, P> result = null;
         for(ContextFilterEntity<?, P, ObjectEntity> filt : filters)
-            result = InputListEntity.and(result, filt.getInputListEntity(getObjects().single(), mapObjects));
+            result = InputContextProperty.and(result, filt.getInputContextProperty(getObjects().single(), mapObjects));
         return result;
     }
 
@@ -361,15 +361,15 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
     public Where getClassWhere(ImMap<ObjectEntity, ? extends Expr> mapKeys, Modifier modifier) throws SQLException, SQLHandledException {
         return IsClassProperty.getWhere(getGridClasses(getObjects()), mapKeys, modifier, null);
     }
-    public <P extends PropertyInterface> InputListEntity<?, P> getClassInputListEntity() {
-        return new InputListEntity<>(IsClassProperty.getProperty(getGridClasses(getObjects())).property, MapFact.EMPTYREV(), false);
+    public <P extends PropertyInterface> InputContextProperty<?, P> getClassInputContextProperty() {
+        return new InputContextProperty<>(IsClassProperty.getProperty(getGridClasses(getObjects())).property, MapFact.EMPTYREV());
     }
 
     public Where getWhere(ImMap<ObjectEntity, ? extends Expr> mapKeys, Modifier modifier, ImSet<? extends FilterEntityInstance> filters) throws SQLException, SQLHandledException {
         return getFilterWhere(mapKeys, modifier, filters).and(getClassWhere(mapKeys, modifier));
     }
-    public <P extends PropertyInterface> InputListEntity<?, P> getInputListEntity(ImSet<ContextFilterEntity<?, P, ObjectEntity>> filters, ImRevMap<ObjectEntity, P> mapObjects) {
-        return InputListEntity.and(getFilterInputListEntity(filters, mapObjects), getClassInputListEntity());
+    public <P extends PropertyInterface> InputContextProperty<?, P> getInputContextProperty(ImSet<ContextFilterEntity<?, P, ObjectEntity>> filters, ImRevMap<ObjectEntity, P> mapObjects) {
+        return InputContextProperty.and(getFilterInputContextProperty(filters, mapObjects), getClassInputContextProperty());
     }
 
     // hack where ImMap used (it does not support null keys)

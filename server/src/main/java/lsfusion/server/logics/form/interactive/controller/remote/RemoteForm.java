@@ -60,7 +60,7 @@ import lsfusion.server.logics.form.stat.struct.export.StaticExportData;
 import lsfusion.server.logics.form.stat.struct.export.plain.csv.ExportCSVAction;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
-import lsfusion.server.logics.form.struct.property.async.AsyncChange;
+import lsfusion.server.logics.form.interactive.action.async.*;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import org.apache.log4j.Logger;
@@ -73,10 +73,10 @@ import java.lang.ref.WeakReference;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.function.Function;
 
 import static lsfusion.base.BaseUtils.deserializeObject;
 import static lsfusion.interop.action.ServerResponse.CHANGE;
-import static lsfusion.interop.action.ServerResponse.CHANGE_WYS;
 
 // фасад для работы с клиентом
 public class RemoteForm<F extends FormInstance> extends RemoteRequestObject implements RemoteFormInterface {
@@ -678,32 +678,22 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> form.refreshUPHiddenProperties(groupObjectSID, propSids));
     }
 
-    public ServerResponse changeProperties(final long requestIndex, long lastReceivedRequestIndex, String actionSID, final int[] propertyIDs, final byte[][] fullKeys, final byte[][] pushChanges, final Long[] pushAdds) throws RemoteException {
+    @Override
+    public ServerResponse executeEventAction(long requestIndex, long lastReceivedRequestIndex, String actionSID, int[] propertyIDs, byte[][] fullKeys, byte[][] pushAsyncResults) throws RemoteException {
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
             for (int j = 0; j < propertyIDs.length; j++) {
-
                 PropertyDrawInstance propertyDraw = form.getPropertyDraw(propertyIDs[j]);
                 ImMap<ObjectInstance, DataObject> keys = deserializePropertyKeys(propertyDraw, fullKeys[j]);
 
-                Object objectPushChange = null;
-                AsyncChange pushAsyncChange = null;
-                byte[] pushChange = pushChanges[j];
-                if (pushChange != null) {
-                    pushAsyncChange = propertyDraw.getEntity().getAsyncChange(form.entity, form.securityPolicy, actionSID);
-                    objectPushChange = deserializeObject(pushChange);
-                    if (pushAsyncChange == null) // веб почему-то при асинхронном удалении шлет не null, а [0] который deserialize'ся в null а потом превращается в NullValue.instance и падают ошибки
-                        ServerLoggers.assertLog(objectPushChange == null, "PROPERTY CANNOT BE CHANGED -> PUSH CHANGE SHOULD BE NULL");
-                }
-
-                DataObject pushAddObject = null;
-                Long pushAdd = pushAdds[j];
-                if (pushAdd != null)
-                    pushAddObject = new DataObject(pushAdd, form.session.baseClass.unknown);
-
-                form.executeEventAction(propertyDraw, actionSID, keys, objectPushChange, pushAsyncChange, pushAddObject, true, stack);
+                Function<AsyncEventExec, PushAsyncResult> asyncResult = null;
+                byte[] pushAsyncResult = pushAsyncResults[j];
+                if(pushAsyncResult != null)
+                    asyncResult = asyncEventExec -> asyncEventExec.deserializePush(pushAsyncResult);
+                
+                form.executeEventAction(propertyDraw, actionSID, keys, asyncResult, stack);
 
                 if (logger.isTraceEnabled()) {
-                    logger.trace(String.format("changeProperty: [ID: %1$d, SID: %2$s]", propertyDraw.getID(), propertyDraw.getSID()));
+                    logger.trace(String.format("executeEventAction: [ID: %1$d, SID: %2$s]", propertyDraw.getID(), propertyDraw.getSID()));
                     if (keys.size() > 0) {
                         logger.trace("   columnKeys: ");
                         for (int i = 0, size = keys.size(); i < size; i++) {
@@ -774,32 +764,6 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
             return new String[] {ServerResponse.CANCELED};
 //            throw Throwables.propagate(e);
         }
-    }
-
-    public ServerResponse executeEventAction(long requestIndex, long lastReceivedRequestIndex, final int propertyID, final byte[] fullKey, final String actionSID) throws RemoteException {
-        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
-            PropertyDrawInstance propertyDraw = form.getPropertyDraw(propertyID);
-            ImMap<ObjectInstance, DataObject> keys = deserializePropertyKeys(propertyDraw, fullKey);
-
-            form.executeEventAction(propertyDraw, actionSID, keys, stack);
-
-            if (logger.isTraceEnabled()) {
-                logger.trace(String.format("executeEventAction: [ID: %1$d, SID: %2$s]", propertyDraw.getID(), propertyDraw.getSID()));
-                if (keys.size() > 0) {
-                    logger.trace("   columnKeys: ");
-                    for (int i = 0, size = keys.size(); i < size; i++) {
-                        logger.trace(String.format("     %1$s == %2$s", keys.getKey(i), keys.getValue(i)));
-                    }
-                }
-                if (logger.isTraceEnabled()) {
-                    logger.trace("   current object's values: ");
-                    for (ObjectInstance obj : form.getObjects()) {
-                        logger.trace(String.format("     %1$s == %2$s", obj, obj.getObjectValue()));
-                    }
-                }
-
-            }
-        });
     }
 
     public ServerResponse executeNotificationAction(long requestIndex, long lastReceivedRequestIndex, final int idNotification) throws RemoteException {
@@ -888,7 +852,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
 
     public void delayUserInteraction(ClientAction action, String message) {
         if(currentInvocationExternal) {
-            if(action instanceof UpdateEditValueClientAction || action instanceof AsyncGetRemoteChangesClientAction) // in external CHANGE_WYS state is updated at once on a client, we don't need to reupdate it
+            if(action instanceof UpdateEditValueClientAction || action instanceof AsyncGetRemoteChangesClientAction) // in external CHANGE state is updated at once on a client, we don't need to reupdate it
                 return;
             if(message != null) // we'll proceed this message in popLogMessage
                 return;
@@ -1092,15 +1056,15 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
     private void changePropertyOrExecActionExternal(String groupSID, String propertySID, final Object value, ImMap<ObjectInstance, DataObject> currentObjects, ExecutionStack stack) throws SQLException, SQLHandledException, ParseException {
         PropertyDrawInstance propertyDraw = form.getPropertyDrawIntegration(groupSID, propertySID);
 
-        String eventAction;
-        AsyncChange pushAsyncChange = null;
-        Object objectPushChange = null;
-        DataObject pushAdd = null;
+        Function<AsyncEventExec, PushAsyncResult> asyncResult = null;
         if(propertyDraw.isProperty()) {
-            pushAsyncChange = propertyDraw.getEntity().getAsyncChange(form.entity, form.securityPolicy, CHANGE_WYS);
-            if (pushAsyncChange != null)
-                objectPushChange = pushAsyncChange.changeType.parseJSON(value);
-            eventAction = ServerResponse.CHANGE_WYS;
+            asyncResult = asyncEventExec -> {
+                try {
+                    return asyncEventExec instanceof AsyncChange ? new PushAsyncChange(ObjectValue.getValue(((AsyncChange) asyncEventExec).changeType.parseJSON(value), ((AsyncChange) asyncEventExec).changeType)) : null;
+                } catch (ParseException e) {
+                    throw Throwables.propagate(e);
+                }
+            };
 
             // it's tricky here, unlike changeGroupObject, changeProperty is cancelable, i.e. its change may be canceled, but there will be no undo change in getChanges
             // so there are 2 ways store previous values on client (just like it is done now on desktop and web-client, which is not that easy task), or just force that property reread
@@ -1110,14 +1074,13 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
             Pair<ObjectInstance, Boolean> newDelete;
             if(groupSID != null && (newDelete = getNewDeleteExternal(groupSID, propertySID)) != null) {
                 if(newDelete.second)
-                    pushAdd = currentObjects.get(newDelete.first);
+                    asyncResult = asyncEventExec -> new PushAsyncAdd(currentObjects.get(newDelete.first));
 
                 // see comment above
                 newDelete.first.groupTo.forceUpdateKeys();
             }
-            eventAction = CHANGE;
         }
-        form.executeEventAction(propertyDraw, eventAction, currentObjects, objectPushChange, pushAsyncChange, pushAdd, false, stack);
+        form.executeEventAction(propertyDraw, CHANGE, currentObjects, asyncResult, stack);
     }
 
     // будем считать что если unreferenced \ finalized то форма точно также должна закрыться ???

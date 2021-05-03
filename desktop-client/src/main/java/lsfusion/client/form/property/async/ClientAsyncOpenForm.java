@@ -7,6 +7,7 @@ import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.cell.controller.dispatch.EditPropertyDispatcher;
 import lsfusion.client.view.DockableMainFrame;
 import lsfusion.client.view.MainFrame;
+import lsfusion.interop.form.remote.serialization.SerializationUtil;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -22,24 +23,20 @@ public class ClientAsyncOpenForm extends ClientAsyncExec {
     public ClientAsyncOpenForm() {
     }
 
+    public ClientAsyncOpenForm(DataInputStream inStream) throws IOException {
+        super(inStream);
+
+        this.canonicalName = SerializationUtil.readString(inStream);
+        this.caption = SerializationUtil.readString(inStream);
+        this.forbidDuplicate = inStream.readBoolean();
+        this.modal = inStream.readBoolean();
+    }
+
     public ClientAsyncOpenForm(String canonicalName, String caption, boolean forbidDuplicate, boolean modal) {
         this.canonicalName = canonicalName;
         this.caption = caption;
         this.forbidDuplicate = forbidDuplicate;
         this.modal = modal;
-    }
-
-    @Override
-    public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream) throws IOException {
-        throw new UnsupportedOperationException("not supported");
-    }
-
-    @Override
-    public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
-        this.canonicalName = pool.readString(inStream);
-        this.caption = pool.readString(inStream);
-        this.forbidDuplicate = pool.readBoolean(inStream);
-        this.modal = pool.readBoolean(inStream);
     }
 
     @Override

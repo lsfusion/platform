@@ -16,4 +16,8 @@ public class InputValueList<P extends PropertyInterface> {
 
         this.mapValues = mapValues;
     }
+
+    public P singleInterface() {
+        return property.interfaces.removeIncl(mapValues.keys()).single();
+    }
 }

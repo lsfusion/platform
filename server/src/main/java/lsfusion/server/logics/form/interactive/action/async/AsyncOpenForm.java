@@ -1,9 +1,8 @@
-package lsfusion.server.logics.form.struct.property.async;
+package lsfusion.server.logics.form.interactive.action.async;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.interop.form.remote.serialization.SerializationUtil;
-import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
@@ -21,28 +20,27 @@ public class AsyncOpenForm extends AsyncExec {
     }
 
     @Override
-    public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream) throws IOException {
-        pool.writeString(outStream, canonicalName);
-        pool.writeString(outStream, caption);
-        pool.writeBoolean(outStream, forbidDuplicate);
-        pool.writeBoolean(outStream, modal);
-    }
-
-    @Override
-    public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
-        throw new UnsupportedOperationException("not supported");
-    }
-
-    @Override
-    public int getType() {
-        return 0;
+    public byte getTypeId() {
+        return 1;
     }
 
     @Override
     public void serialize(DataOutputStream outStream) throws IOException {
+        super.serialize(outStream);
+
         SerializationUtil.writeString(outStream, canonicalName);
         SerializationUtil.writeString(outStream, caption);
         outStream.writeBoolean(forbidDuplicate);
         outStream.writeBoolean(modal);
+    }
+
+    @Override
+    public AsyncExec merge(AsyncExec asyncExec) {
+        if(!(asyncExec instanceof AsyncOpenForm))
+            return null;
+
+        AsyncOpenForm asyncOpenForm = (AsyncOpenForm) asyncExec;
+        return new AsyncOpenForm(BaseUtils.nullEquals(canonicalName, asyncOpenForm.canonicalName) ? canonicalName : null,
+                BaseUtils.nullEquals(caption, asyncOpenForm.caption) ? caption : null, forbidDuplicate || asyncOpenForm.forbidDuplicate, modal || asyncOpenForm.modal);
     }
 }

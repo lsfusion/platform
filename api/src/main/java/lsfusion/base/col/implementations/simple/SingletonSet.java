@@ -413,10 +413,6 @@ public class SingletonSet<K> implements ImSet<K>, ImList<K>, ImOrderSet<K> {
         return ListFact.singleton(getter.apply(key));
     }
 
-    public <M> ImList<M> mapListValues(IntFunction<M> getter) {
-        return ListFact.singleton(getter.apply(0));
-    }
-
     public <M> ImList<M> mapListValues(IntObjectFunction<K, M> getter) {
         return ListFact.singleton(getter.apply(0, key));
     }

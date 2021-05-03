@@ -25,14 +25,9 @@ public abstract class RemoteDispatchAsync {
     protected abstract <A extends RequestAction<R>, R extends Result> void fillQueuedAction(A action);
     protected abstract <A extends RequestAction<R>, R extends Result> void fillAction(A action);
 
-    public <A extends RequestAction<R>, R extends Result> long execute(A action, AsyncCallback<R> callback, boolean direct) {
+    public <A extends RequestAction<R>, R extends Result> void executeQueue(A action, AsyncCallback<R> callback, boolean direct) {
         fillAction(action);
         queueAction(action, callback, direct);
-        if(action instanceof FormRequestAction) {
-            return ((FormRequestAction<?>) action).requestIndex;
-        } else {
-            return -1;
-        }
     }
 
     public <A extends RequestAction<R>, R extends Result> void executePriority(final A action, final AsyncCallback<R> callback) {
@@ -125,9 +120,5 @@ public abstract class RemoteDispatchAsync {
                 }
             });
         }
-    }
-
-    public long getNextRequestIndex() {
-        return nextRequestIndex;
     }
 }

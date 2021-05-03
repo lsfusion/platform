@@ -30,57 +30,67 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     private int currentActionIndex = -1;
     private int currentContinueIndex = -1;
 
-    public void dispatchResponse(ServerResponseResult response) {
-        dispatchResponse(response, -1);
+    protected abstract void onServerInvocationResponse(ServerResponseResult response);
+
+    public void dispatchServerResponse(ServerResponseResult response) {
+        dispatchServerResponse(response, -1);
+    }
+    public void dispatchServerResponse(ServerResponseResult response, int continueIndex) {
+        assert response != null;
+        assert !dispatchingPaused;
+        onServerInvocationResponse(response);
+
+        dispatchResponse(response, continueIndex);
+    }
+    public void continueDispatchResponse() {
+        assert dispatchingPaused;
+        dispatchResponse(null, -1);
     }
     public void dispatchResponse(ServerResponseResult response, int continueIndex) {
-        assert response != null;
-
-        Object[] actionResults = null;
+        Object[] actionResults;
         Throwable actionThrowable = null;
-        GAction[] actions = response.actions;
-        if (actions != null) {
-            int beginIndex;
-            if (dispatchingPaused) {
-                beginIndex = currentActionIndex + 1;
-                actionResults = currentActionResults;
-                continueIndex = currentContinueIndex;
+        int beginIndex;
+        if (dispatchingPaused) { // continueDispatching
+            beginIndex = currentActionIndex + 1;
+            actionResults = currentActionResults;
+            continueIndex = currentContinueIndex;
+            response = currentResponse;
 
-                currentActionIndex = -1;
-                currentActionResults = null;
-                currentResponse = null;
-                dispatchingPaused = false;
-            } else {
-                beginIndex = 0;
-                actionResults = new Object[actions.length];
-            }
+            currentActionIndex = -1;
+            currentContinueIndex = -1;
+            currentActionResults = null;
+            currentResponse = null;
+            dispatchingPaused = false;
+        } else {
+            beginIndex = 0;
+            actionResults = new Object[response.actions.length];
+        }
 
-            for (int i = beginIndex; i < actions.length; i++) {
-                GAction action = actions[i];
-                Object dispatchResult;
+        for (int i = beginIndex; i < response.actions.length; i++) {
+            GAction action = response.actions[i];
+            Object dispatchResult;
+            try {
+                dispatchingIndex = response.requestIndex;
                 try {
-                    dispatchingIndex = response.requestIndex;
-                    try {
-                        //for unsupported actions null is send to preserve number of actions and thus the order of responses
-                        dispatchResult = action == null ? null : action.dispatch(this);
-                    } finally {
-                        dispatchingIndex = -1;
-                    }
-                } catch (Throwable ex) {
-                    actionThrowable = ex;
-                    break;
+                    //for unsupported actions null is send to preserve number of actions and thus the order of responses
+                    dispatchResult = action == null ? null : action.dispatch(this);
+                } finally {
+                    dispatchingIndex = -1;
                 }
-
-                if (dispatchingPaused) {
-                    currentResponse = response;
-                    currentActionResults = actionResults;
-                    currentActionIndex = i;
-                    currentContinueIndex = continueIndex;
-                    return;
-                }
-
-                actionResults[i] = dispatchResult;
+            } catch (Throwable ex) {
+                actionThrowable = ex;
+                break;
             }
+
+            if (dispatchingPaused) {
+                currentResponse = response;
+                currentActionResults = actionResults;
+                currentActionIndex = i;
+                currentContinueIndex = continueIndex;
+                return;
+            }
+
+            actionResults[i] = dispatchResult;
         }
 
         if (response.resumeInvocation) {
@@ -91,7 +101,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
                     new ErrorHandlingCallback<ServerResponseResult>() {
                         @Override
                         public void success(ServerResponseResult response) {
-                            dispatchResponse(response, fContinueIndex);
+                            dispatchServerResponse(response, fContinueIndex);
                         }
                     };
             if (actionThrowable == null) {
@@ -143,7 +153,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
             if (currentActionResults != null && currentActionIndex >= 0) {
                 currentActionResults[currentActionIndex] = currentActionResult;
             }
-            dispatchResponse(currentResponse);
+            continueDispatchResponse();;
         }
     }
 

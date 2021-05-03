@@ -14,6 +14,7 @@ import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.flow.FlowResult;
 import lsfusion.server.logics.action.flow.KeepContextAction;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
+import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
@@ -109,8 +110,8 @@ public class RequestAction extends KeepContextAction {
     }
 
     @Override
-    public SimpleRequestInput<PropertyInterface> getFlowSimpleRequestInputType(boolean optimistic, boolean inRequest) {
-        return requestAction.mapSimpleRequestInput(optimistic, true);
+    public AsyncMapEventExec<PropertyInterface> calculateAsyncEventExec(boolean optimistic, boolean recursive) {
+        return requestAction.mapAsyncEventExec(optimistic, recursive);
     }
 
     public ActionMapImplement<?, PropertyInterface> getDoAction() {

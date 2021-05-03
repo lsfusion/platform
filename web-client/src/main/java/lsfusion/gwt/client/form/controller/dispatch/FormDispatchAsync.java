@@ -27,8 +27,16 @@ public class FormDispatchAsync extends RemoteDispatchAsync {
         return action.requestIndex;
     }
 
-    public <A extends FormAction<R>, R extends Result> void execute(A action, AsyncCallback<R> callback) {
-        execute(action, callback, false);
+    public <A extends FormAction<R>, R extends Result> long execute(A action, AsyncCallback<R> callback, boolean direct) {
+        executeQueue(action, callback, direct);
+        if(action instanceof FormRequestAction) {
+            return ((FormRequestAction<?>) action).requestIndex;
+        } else {
+            return -1;
+        }
+    }
+    public <A extends FormAction<R>, R extends Result> long execute(A action, AsyncCallback<R> callback) {
+        return execute(action, callback, false);
     }
 
     @Override

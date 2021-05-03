@@ -49,6 +49,11 @@ public class GNavigatorActionDispatcher extends GwtActionDispatcher {
     }
 
     @Override
+    protected void onServerInvocationResponse(ServerResponseResult response) {
+        formsController.onServerInvocationResponse(response);
+    }
+
+    @Override
     public void execute(final GActivateFormAction action) {
         formsController.selectTab(action.formCanonicalName);
     }

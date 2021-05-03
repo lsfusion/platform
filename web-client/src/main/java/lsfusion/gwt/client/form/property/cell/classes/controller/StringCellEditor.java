@@ -2,6 +2,7 @@ package lsfusion.gwt.client.form.property.cell.classes.controller;
 
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.async.GInputList;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 
 public class StringCellEditor extends TextBasedCellEditor {
@@ -9,11 +10,11 @@ public class StringCellEditor extends TextBasedCellEditor {
     private int stringLength; 
 
     public StringCellEditor(EditManager editManager, GPropertyDraw property, boolean isVarString, int stringLength) {
-        this(editManager, property, isVarString, stringLength, false);
+        this(editManager, property, isVarString, stringLength, null);
     }
 
-    public StringCellEditor(EditManager editManager, GPropertyDraw property, boolean isVarString, int stringLength, boolean hasList) {
-        super(editManager, property, hasList);
+    public StringCellEditor(EditManager editManager, GPropertyDraw property, boolean isVarString, int stringLength, GInputList inputList) {
+        super(editManager, property, inputList);
         this.isVarString = isVarString;
         this.stringLength = stringLength;
     }

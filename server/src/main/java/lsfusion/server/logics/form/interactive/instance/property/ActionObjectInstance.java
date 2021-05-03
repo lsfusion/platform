@@ -11,9 +11,10 @@ import lsfusion.server.logics.action.flow.FlowResult;
 import lsfusion.server.logics.action.implement.ActionValueImplement;
 import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
 import lsfusion.server.logics.form.interactive.action.input.InputValueList;
-import lsfusion.server.logics.form.interactive.action.input.SimpleDataInput;
+import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapChange;
 import lsfusion.server.logics.form.interactive.instance.FormEnvironment;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
+import lsfusion.server.logics.form.interactive.action.async.PushAsyncResult;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 import java.sql.SQLException;
@@ -28,8 +29,8 @@ public class ActionObjectInstance<P extends PropertyInterface> extends ActionOrP
         return new ActionObjectInstance<>(property, remapSkippingEqualsObjectInstances(mapKeyValues));
     }
 
-    public FlowResult execute(ExecutionEnvironment env, ExecutionStack stack, DataObject pushAdd, PropertyDrawInstance changingProperty, FormInstance formInstance) throws SQLException, SQLHandledException {
-        return env.execute(property, getInterfaceObjectValues(), new FormEnvironment<>(mapping, changingProperty, formInstance), pushAdd, stack);
+    public FlowResult execute(ExecutionEnvironment env, ExecutionStack stack, PushAsyncResult pushAsyncResult, PropertyDrawInstance changingProperty, FormInstance formInstance) throws SQLException, SQLHandledException {
+        return env.execute(property, getInterfaceObjectValues(), new FormEnvironment<>(mapping, changingProperty, formInstance), pushAsyncResult, stack);
     }
 
     public ActionValueImplement<P> getValueImplement(FormInstance formInstance) {
@@ -37,7 +38,7 @@ public class ActionObjectInstance<P extends PropertyInterface> extends ActionOrP
     }
 
     public Pair<InputValueList<?>, Boolean> getEventValueList(boolean optimistic) {
-        InputListEntity<?, P> listProperty = ((SimpleDataInput<P>) property.getSimpleRequestInput(optimistic)).list;
+        InputListEntity<?, P> listProperty = ((AsyncMapChange<P>) property.getAsyncEventExec(optimistic)).list;
         return new Pair<>(listProperty.map(getInterfaceObjectValues()), listProperty.newSession);
     }
 }

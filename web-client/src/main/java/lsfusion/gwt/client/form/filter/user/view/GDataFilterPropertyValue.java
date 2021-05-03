@@ -8,9 +8,12 @@ import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.async.GAsyncExec;
+import lsfusion.gwt.client.form.property.async.GInputList;
 import lsfusion.gwt.client.form.property.panel.view.ActionOrPropertyValue;
 import lsfusion.interop.action.ServerResponse;
 
+import java.text.ParseException;
 import java.util.function.Consumer;
 
 public class GDataFilterPropertyValue extends ActionOrPropertyValue {
@@ -26,7 +29,13 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
     }
 
     @Override
-    protected void onPaste(Object objValue, String stringValue) {
+    public void pasteValue(String stringValue) {
+        Object objValue = null;
+        try {
+            objValue = property.baseType.parseString(stringValue, property.pattern);
+        } catch (ParseException ignored) {}
+        updateValue(objValue);
+
         afterCommit.accept(objValue);
     }
 
@@ -80,19 +89,20 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
         throw new UnsupportedOperationException();
     }
 
+    public static final GInputList FILTER = new GInputList(new String[0], new GAsyncExec[0], false);
+
     @Override
     protected void onEditEvent(EventHandler handler) {
         if(property.isFilterChange(handler.event)) {
             handler.consume();
-            form.edit(property.baseType, handler.event, false, null, this::setValue, afterCommit, () -> {}, this, ServerResponse.FILTER);
+            form.edit(property.baseType, handler.event, false, null, FILTER, result -> setValue(result.getValue()), result -> afterCommit.accept(result.getValue()), () -> {}, this, ServerResponse.FILTER);
         }
     }
 
     @Override
     public Consumer<Object> getCustomRendererValueChangeConsumer() {
         return value -> {
-            setValue(value);
-            form.update(property, getRenderElement(), value, this);
+            updateValue(value);
             afterCommit.accept(value);
         };
     }

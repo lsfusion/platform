@@ -135,7 +135,7 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
             return false;
         }
 
-        if (isEditableAwareEditEvent(actionSID) && !isCellEditable(row, column)) {
+        if (isChangeEvent(actionSID) && !isCellEditable(row, column)) {
             return false;
         }
         if(ServerResponse.EDIT_OBJECT.equals(actionSID) && !property.hasEditObjectAction) {

@@ -293,9 +293,10 @@ public class RemoteFormProxy extends RemoteRequestObjectProxy<RemoteFormInterfac
         return result;
     }
 
-    public ServerResponse executeEventAction(long requestIndex, long lastReceivedRequestIndex, int propertyID, byte[] fullKey, String actionSID) throws RemoteException {
+    @Override
+    public ServerResponse executeEventAction(long requestIndex, long lastReceivedRequestIndex, String actionSID, int[] propertyIDs, byte[][] fullKeys, byte[][] pushAsyncResults) throws RemoteException {
         logRemoteMethodStartCall("executeEventAction");
-        ServerResponse result = target.executeEventAction(requestIndex, lastReceivedRequestIndex, propertyID, fullKey, actionSID);
+        ServerResponse result = target.executeEventAction(requestIndex, lastReceivedRequestIndex, actionSID, propertyIDs, fullKeys, pushAsyncResults);
         logRemoteMethodEndCall("executeEventAction", result);
         return result;
     }
@@ -305,13 +306,6 @@ public class RemoteFormProxy extends RemoteRequestObjectProxy<RemoteFormInterfac
         logRemoteMethodStartCall("executeNotificationAction");
         ServerResponse result = target.executeNotificationAction(requestIndex, lastReceivedRequestIndex, idNotification);
         logRemoteMethodEndCall("executeNotificationAction", result);
-        return result;
-    }
-
-    public ServerResponse changeProperties(long requestIndex, long lastReceivedRequestIndex, String actionSID, int[] propertyIDs, byte[][] fullKeys, byte[][] pushChanges, Long[] pushAdds) throws RemoteException {
-        logRemoteMethodStartCall("changeProperties");
-        ServerResponse result = target.changeProperties(requestIndex, lastReceivedRequestIndex, actionSID, propertyIDs, fullKeys, pushChanges, pushAdds);
-        logRemoteMethodEndCall("changeProperties", result);
         return result;
     }
 

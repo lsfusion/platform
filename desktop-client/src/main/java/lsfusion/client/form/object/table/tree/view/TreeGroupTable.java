@@ -64,7 +64,7 @@ import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static lsfusion.client.form.controller.ClientFormController.PasteData;
 import static lsfusion.client.form.property.cell.EditBindingMap.getPropertyEventActionSID;
-import static lsfusion.client.form.property.cell.EditBindingMap.isEditableAwareEditEvent;
+import static lsfusion.client.form.property.cell.EditBindingMap.isChangeEvent;
 
 public class TreeGroupTable extends ClientFormTreeTable implements CellTableInterface {
     private final EditPropertyDispatcher editDispatcher;
@@ -808,7 +808,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
             return false;
         }
 
-        if (isEditableAwareEditEvent(actionSID) && !isCellEditable(row, column)) {
+        if (isChangeEvent(actionSID) && !isCellEditable(row, column)) {
             return false;
         }
         if(ServerResponse.EDIT_OBJECT.equals(actionSID) && !property.hasEditObjectAction) {

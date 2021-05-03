@@ -184,13 +184,6 @@ public abstract class AList<K> extends AColObject implements ImList<K> {
         return mResult.immutableList();
     }
 
-    public <M> ImList<M> mapListValues(IntFunction<M> getter) {
-        MList<M> mResult = ListFact.mList(size());
-        for(int i=0,size=size();i<size;i++)
-            mResult.add(getter.apply(i));
-        return mResult.immutableList();
-    }
-
     public <M> ImList<M> mapListValues(IntObjectFunction<K, M> getter) {
         MList<M> mResult = ListFact.mList(size());
         for(int i=0,size=size();i<size;i++)

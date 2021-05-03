@@ -3,25 +3,27 @@ package lsfusion.gwt.client.form.property.cell.view;
 import java.io.Serializable;
 
 public class GUserInputResult implements Serializable {
-    public static final GUserInputResult canceled = new GUserInputResult(true);
+    public static final GUserInputResult canceled = new GUserInputResult(true, null);
 
     private boolean editCanceled;
     private Serializable value;
+    private Integer contextAction;
 
     @SuppressWarnings("UnusedDeclaration")
     public GUserInputResult() {}
 
-    public GUserInputResult(boolean canceled) {
-        this(canceled, null);
-    }
-
     public GUserInputResult(Object value) {
-        this(false, value);
+        this(value, null);
     }
 
-    public GUserInputResult(boolean canceled, Object value) {
+    public GUserInputResult(Object value, Integer contextAction) {
+        this(false, value, contextAction);
+    }
+
+    public GUserInputResult(boolean canceled, Object value, Integer contextAction) {
         this.editCanceled = canceled;
         this.value = (Serializable) value;
+        this.contextAction = contextAction;
     }
 
     public boolean isCanceled() {
@@ -30,6 +32,10 @@ public class GUserInputResult implements Serializable {
 
     public Serializable getValue() {
         return value;
+    }
+
+    public Integer getContextAction() {
+        return contextAction;
     }
 
     @Override

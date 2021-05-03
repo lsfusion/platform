@@ -6,7 +6,6 @@ import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.jsni.JSNIHelper;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
@@ -834,16 +833,6 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     public Object getValueAt(Cell cell) {
         GTreeGridRecord record = getTreeGridRow(cell);
         return record == null ? null : tree.getValue(record.getGroup(), cell.getColumnIndex(), record.getKey());
-    }
-
-    @Override
-    public void pasteData(List<List<String>> table) {
-        if (!table.isEmpty() && !table.get(0).isEmpty()) {
-            GPropertyDraw property = getSelectedProperty();
-            if (property != null) {
-                form.pasteSingleValue(property, getSelectedKey(), table.get(0).get(0));
-            }
-        }
     }
 
     @Override

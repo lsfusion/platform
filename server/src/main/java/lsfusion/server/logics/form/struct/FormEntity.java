@@ -36,6 +36,7 @@ import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.LogicalClass;
 import lsfusion.server.logics.classes.user.CustomClass;
+import lsfusion.server.logics.form.interactive.action.input.InputContextProperty;
 import lsfusion.server.logics.form.interactive.action.lifecycle.FormToolbarAction;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
@@ -43,7 +44,6 @@ import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.open.FormSelector;
-import lsfusion.server.logics.form.open.interactive.SimpleDialogInput;
 import lsfusion.server.logics.form.stat.FormGroupHierarchyCreator;
 import lsfusion.server.logics.form.stat.GroupObjectHierarchy;
 import lsfusion.server.logics.form.stat.StaticDataGenerator;
@@ -57,8 +57,8 @@ import lsfusion.server.logics.form.struct.order.OrderEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawExtraType;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
-import lsfusion.server.logics.form.struct.property.async.AsyncAddRemove;
-import lsfusion.server.logics.form.struct.property.async.AsyncEventExec;
+import lsfusion.server.logics.form.interactive.action.async.AsyncAddRemove;
+import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
 import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyClassImplement;
 import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyObjectEntity;
 import lsfusion.server.logics.property.Property;
@@ -471,7 +471,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     }
 
     @Override
-    public <P extends PropertyInterface> SimpleDialogInput<P> getSimpleDialogInput(BaseLogicsModule LM, ObjectEntity object, LP targetProp, ImSet<ContextFilterEntity<?, P, ObjectEntity>> contextFilters, ImRevMap<ObjectEntity, P> mapObjects) {
+    public <P extends PropertyInterface> InputContextProperty<?, P> getInputContextProperty(BaseLogicsModule LM, ObjectEntity object, ImSet<ContextFilterEntity<?, P, ObjectEntity>> contextFilters, ImRevMap<ObjectEntity, P> mapObjects) {
         if(!(object.baseClass instanceof CustomClass))
             return null;
 
@@ -492,7 +492,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         if(contextGroupFilters == null)
             contextGroupFilters = SetFact.EMPTY();
 
-        return new SimpleDialogInput<>((CustomClass)object.baseClass, targetProp, groupObject.getInputListEntity(SetFact.addExclSet(contextFilterEntities, contextGroupFilters), mapObjects));
+        return groupObject.getInputContextProperty(SetFact.addExclSet(contextFilterEntities, contextGroupFilters), mapObjects);
     }
 
     // correlated with FormGroupHierarchyCreator.addDependenciesToGraph
@@ -609,7 +609,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
                 return new GroupMetaExternal(properties.getSet().mapValues(new Function<PropertyDrawEntity, PropMetaExternal>() {
                     public PropMetaExternal apply(PropertyDrawEntity value) {
-                        AsyncEventExec asyncEventExec = ((PropertyDrawEntity<?>) value).getAsyncEventExec(FormEntity.this, policy, CHANGE, true);
+                        AsyncEventExec asyncEventExec = ((PropertyDrawEntity<?>) value).getAsyncEventExec(FormEntity.this, policy, CHANGE);
                         Boolean newDelete = asyncEventExec instanceof AsyncAddRemove ? ((AsyncAddRemove) asyncEventExec).add : null;
                         return new PropMetaExternal(ThreadLocalContext.localize(value.getCaption()), value.isProperty() ? value.getType().getJSONType() : "action", newDelete);
                     }

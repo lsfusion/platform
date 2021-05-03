@@ -14,7 +14,7 @@ import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.action.flow.FlowResult;
 import lsfusion.server.logics.action.session.changed.OldProperty;
 import lsfusion.server.logics.event.Event;
-import lsfusion.server.logics.form.interactive.action.input.SimpleRequestInput;
+import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
@@ -74,13 +74,6 @@ public class ActionMapImplement<P extends PropertyInterface, T extends PropertyI
         return action.execute(context.map(mapping));
     }
 
-    public T mapSimpleDelete() {
-        P simpleDelete = action.getSimpleDelete();
-        if(simpleDelete!=null)
-            return mapping.get(simpleDelete);
-        return null;
-    }
-    
     public ActionMapImplement<?, T> mapReplaceExtend(Action.ActionReplacer replacer) {
         ActionMapImplement<?, P> replaced = action.replace(replacer);
         if(replaced != null)
@@ -147,10 +140,10 @@ public class ActionMapImplement<P extends PropertyInterface, T extends PropertyI
         return new ActionImplement<>(action, mapping.join(map));
     }
 
-    public SimpleRequestInput<T> mapSimpleRequestInput(boolean optimistic, boolean inRequest) {
-        SimpleRequestInput<P> simpleRequestInput = action.getSimpleRequestInput(optimistic, inRequest);
-        if(simpleRequestInput != null)
-            return simpleRequestInput.map(mapping);
+    public AsyncMapEventExec<T> mapAsyncEventExec(boolean optimistic, boolean recursive) {
+        AsyncMapEventExec<P> asyncMapInputExec = action.getAsyncEventExec(optimistic, recursive);
+        if(asyncMapInputExec != null)
+            return asyncMapInputExec.map(mapping);
         return null;
     }
 }

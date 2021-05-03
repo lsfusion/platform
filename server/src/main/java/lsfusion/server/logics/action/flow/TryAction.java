@@ -13,11 +13,10 @@ import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.base.controller.stack.ExecutionStackAspect;
 import lsfusion.server.base.controller.thread.ThreadUtils;
 import lsfusion.server.data.sql.exception.SQLHandledException;
-import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
-import lsfusion.server.logics.form.interactive.action.input.SimpleRequestInput;
+import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
@@ -95,25 +94,8 @@ public class TryAction extends KeepContextAction {
     }
 
     @Override
-    public SimpleRequestInput<PropertyInterface> getFlowSimpleRequestInputType(boolean optimistic, boolean inRequest) {
-        SimpleRequestInput<PropertyInterface> trySimpleInput = tryAction.mapSimpleRequestInput(optimistic, inRequest);
-        SimpleRequestInput<PropertyInterface> catchSimpleInput = catchAction == null ? null : catchAction.mapSimpleRequestInput(optimistic, inRequest);
-        SimpleRequestInput<PropertyInterface> finallySimpleInput = finallyAction == null ? null : finallyAction.mapSimpleRequestInput(optimistic, inRequest);
-
-        if (!optimistic) {
-            if (trySimpleInput == null) {
-                return null;
-            }
-            if (catchAction != null && catchSimpleInput == null) {
-                return null;
-            }
-            if (finallyAction != null && finallySimpleInput == null) {
-                return null;
-            }
-        }
-
-        SimpleRequestInput<PropertyInterface> type = trySimpleInput == null ? catchSimpleInput : (catchSimpleInput == null ? trySimpleInput : trySimpleInput.merge(catchSimpleInput));
-        return type == null ? finallySimpleInput : (finallySimpleInput == null ? type : type.merge(finallySimpleInput));
+    public AsyncMapEventExec<PropertyInterface> calculateAsyncEventExec(boolean optimistic, boolean recursive) {
+        return getListAsyncEventExec(ListFact.toList(tryAction, catchAction, finallyAction), recursive); // technically catch is a branching operator, but for now it's not that important
     }
 
     @Override

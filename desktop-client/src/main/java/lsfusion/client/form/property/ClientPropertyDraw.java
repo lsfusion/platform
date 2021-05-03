@@ -16,10 +16,7 @@ import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.object.table.controller.TableController;
-import lsfusion.client.form.property.async.ClientAsyncAddRemove;
-import lsfusion.client.form.property.async.ClientAsyncChange;
-import lsfusion.client.form.property.async.ClientAsyncEventExec;
-import lsfusion.client.form.property.async.ClientAsyncOpenForm;
+import lsfusion.client.form.property.async.*;
 import lsfusion.client.form.property.cell.EditBindingMap;
 import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
 import lsfusion.client.form.property.cell.classes.view.FormatPropertyRenderer;
@@ -497,7 +494,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         int asyncExecSize = inStream.readInt();
         for (int i = 0; i < asyncExecSize; ++i) {
             String key = pool.readString(inStream);
-            ClientAsyncEventExec value = pool.deserializeObject(inStream);
+            ClientAsyncEventExec value = ClientAsyncSerializer.deserializeEventExec(inStream);
             asyncExecMap.put(key, value);
         }
 

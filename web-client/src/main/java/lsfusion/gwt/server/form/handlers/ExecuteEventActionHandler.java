@@ -1,7 +1,10 @@
 package lsfusion.gwt.server.form.handlers;
 
+import com.google.common.base.Throwables;
 import lsfusion.gwt.client.controller.remote.action.form.ExecuteEventAction;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
+import lsfusion.gwt.client.form.object.GGroupObjectValue;
+import lsfusion.gwt.client.form.property.async.GPushAsyncResult;
 import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.server.convert.GwtToClientConverter;
 import lsfusion.gwt.server.form.FormServerResponseActionHandler;
@@ -20,11 +23,25 @@ public class ExecuteEventActionHandler extends FormServerResponseActionHandler<E
 
     @Override
     public ServerResponseResult executeEx(final ExecuteEventAction action, ExecutionContext context) throws RemoteException {
-        return getServerResponseResult(action, new RemoteCall() {
-            public ServerResponse call(RemoteFormInterface remoteForm) throws RemoteException {
-                byte[] fullKey = gwtConverter.convertOrCast(action.fullKey);
-                return remoteForm.executeEventAction(action.requestIndex, action.lastReceivedRequestIndex, action.propertyId, fullKey, action.actionSID);
+        return getServerResponseResult(action, remoteForm -> {
+            GGroupObjectValue[] actionFullKeys = action.fullKeys;
+            GPushAsyncResult[] actionPushAsyncResults = action.pushAsyncResults;
+            int length = actionFullKeys.length;
+
+            byte[][] fullKeys = new byte[length][];
+            byte[][] pushAsyncResults = new byte[length][];
+            for (int i = 0; i < length; i++) {
+                fullKeys[i] = gwtConverter.convertOrCast(actionFullKeys[i]);
+                pushAsyncResults[i] = gwtConverter.convertOrCast(actionPushAsyncResults[i]);
             }
+            return remoteForm.executeEventAction(
+                    action.requestIndex,
+                    action.lastReceivedRequestIndex,
+                    action.actionSID,
+                    action.propertyIds,
+                    fullKeys,
+                    pushAsyncResults
+            );
         });
     }
 }

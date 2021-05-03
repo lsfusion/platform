@@ -3,8 +3,7 @@ package lsfusion.gwt.client.form.property.async;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
-import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.cell.controller.ExecuteEditContext;
+import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.view.ModalForm;
 import lsfusion.gwt.client.view.MainFrame;
 
@@ -26,8 +25,8 @@ public class GAsyncOpenForm extends GAsyncExec {
     }
 
     @Override
-    public void exec(GFormController formController, GPropertyDraw property, Event event, ExecuteEditContext editContext, String actionSID) {
-        formController.asyncOpenForm(this, editContext, actionSID);
+    public void exec(GFormController formController, Event event, EditContext editContext, String actionSID) {
+        formController.asyncOpenForm(this, editContext, event, actionSID);
     }
 
     public boolean isModal() {
@@ -36,7 +35,7 @@ public class GAsyncOpenForm extends GAsyncExec {
     }
 
     @Override
-    public void exec(FormsController formsController) {
-        formsController.asyncOpenForm(MainFrame.navigatorDispatchAsync.getNextRequestIndex(), this);
+    public void exec(long requestIndex, FormsController formsController) {
+        formsController.asyncOpenForm(requestIndex, this);
     }
 }

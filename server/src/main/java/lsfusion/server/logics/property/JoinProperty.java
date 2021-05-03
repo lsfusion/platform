@@ -16,12 +16,8 @@ import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
-import lsfusion.server.logics.action.session.change.DataChanges;
-import lsfusion.server.logics.action.session.change.PropertyChange;
-import lsfusion.server.logics.action.session.change.PropertyChanges;
-import lsfusion.server.logics.action.session.change.StructChanges;
+import lsfusion.server.logics.action.session.change.*;
 import lsfusion.server.logics.classes.ValueClass;
-import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.property.classes.data.AndFormulaProperty;
 import lsfusion.server.logics.property.classes.data.CompareFormulaProperty;
 import lsfusion.server.logics.property.classes.data.NotFormulaProperty;
@@ -137,11 +133,11 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
     private final boolean user;
     
     @Override
-    protected ImSet<Property> calculateUsedDataChanges(StructChanges propChanges) {
+    protected ImSet<Property> calculateUsedDataChanges(StructChanges propChanges, CalcDataType type) {
         if(implement.property instanceof CompareFormulaProperty && ((CompareFormulaProperty)implement.property).compare == Compare.EQUALS) { // если =
             MSet<Property> mResult = SetFact.mSet();
             for(Property<?> property : getDepends()) {
-                mResult.addAll(property.getUsedDataChanges(propChanges));
+                mResult.addAll(property.getUsedDataChanges(propChanges, type));
                 mResult.addAll(property.getUsedChanges(propChanges));
             }
             return mResult.immutable();
@@ -151,26 +147,26 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
         if(andInterface!=null) {
             MSet<Property> mImplementDepends = SetFact.mSet();
             implement.mapping.get(andInterface).mapFillDepends(mImplementDepends);
-            return SetFact.add(propChanges.getUsedDataChanges(mImplementDepends.immutable()), getUsedChanges(propChanges));
+            return SetFact.add(propChanges.getUsedDataChanges(type, mImplementDepends.immutable()), getUsedChanges(propChanges));
         }
 
         Property<T> implementProperty = implement.property;
         if(isIdentity) {
             MSet<Property> mImplementProps = SetFact.mSet();
             fillDepends(mImplementProps,implement.mapping.values());
-            return SetFact.add(implementProperty.getUsedDataChanges(propChanges), propChanges.getUsedChanges(mImplementProps.immutable()));
+            return SetFact.add(implementProperty.getUsedDataChanges(propChanges, type), propChanges.getUsedChanges(mImplementProps.immutable()));
         }
 
-        return super.calculateUsedDataChanges(propChanges);
+        return super.calculateUsedDataChanges(propChanges, type);
     }
 
     // для Compare - data changes, тут чтобы не мусорить в Property
-    private static DataChanges getCompareDataChanges(PropertyChange<Interface> change, WhereBuilder changedWhere, PropertyChanges propChanges, PropertyInterfaceImplement<Interface> changeImp, PropertyInterfaceImplement<Interface> valueImp) {
+    private static DataChanges getCompareDataChanges(PropertyChange<Interface> change, CalcDataType type, WhereBuilder changedWhere, PropertyChanges propChanges, PropertyInterfaceImplement<Interface> changeImp, PropertyInterfaceImplement<Interface> valueImp) {
         ImMap<Interface, Expr> mapExprs = change.getMapExprs();
         Expr toChangeExpr = valueImp.mapExpr(mapExprs, propChanges);
         Where toChangeWhere = change.expr.getWhere();
         return changeImp.mapJoinDataChanges(mapExprs, toChangeExpr.and(toChangeWhere), // меняем на новое значение, если надо и скидываем в null если было какое-то
-                change.where.and(toChangeWhere.or(toChangeExpr.compare(changeImp.mapExpr(mapExprs, propChanges), Compare.EQUALS))), GroupType.ASSERTSINGLE_CHANGE(), changedWhere, propChanges);
+                change.where.and(toChangeWhere.or(toChangeExpr.compare(changeImp.mapExpr(mapExprs, propChanges), Compare.EQUALS))), GroupType.ASSERTSINGLE_CHANGE(), changedWhere, propChanges, type);
     }
     
     // для And - data changes, тут чтобы не мусорить в Property
@@ -247,7 +243,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
     }
 
     @Override
-    protected DataChanges calculateDataChanges(PropertyChange<Interface> change, WhereBuilder changedWhere, PropertyChanges propChanges) {
+    protected DataChanges calculateDataChanges(PropertyChange<Interface> change, CalcDataType type, WhereBuilder changedWhere, PropertyChanges propChanges) {
         if(implement.property instanceof CompareFormulaProperty && ((CompareFormulaProperty)implement.property).compare == Compare.EQUALS) { // если =
             assert implement.mapping.size()==2;
             Iterator<T> i = implement.property.interfaces.iterator();
@@ -256,22 +252,22 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
 
             // сначала первый на второй пытаемся изменить, затем для оставшихся второй на первый второй
             WhereBuilder compareChangedWhere = new WhereBuilder();
-            DataChanges result = getCompareDataChanges(change, compareChangedWhere, propChanges, op1, op2);
+            DataChanges result = getCompareDataChanges(change, type, compareChangedWhere, propChanges, op1, op2);
             if(changedWhere!=null) changedWhere.add(compareChangedWhere.toWhere());
-            return result.add(getCompareDataChanges(change.and(compareChangedWhere.toWhere().not()), changedWhere, propChanges, op2, op1));
+            return result.add(getCompareDataChanges(change.and(compareChangedWhere.toWhere().not()), type, changedWhere, propChanges, op2, op1));
         }
 
         T andInterface = getObjectAndInterface(implement.property);
         if(andInterface!=null) {
             ImMap<Interface, Expr> mapExprs = change.getMapExprs();
             return implement.mapping.get(andInterface).mapJoinDataChanges(mapExprs, change.expr,
-                    change.where.and(getAndWhere(this, mapExprs, propChanges)), GroupType.ASSERTSINGLE_CHANGE(), changedWhere, propChanges);
+                    change.where.and(getAndWhere(this, mapExprs, propChanges)), GroupType.ASSERTSINGLE_CHANGE(), changedWhere, propChanges, type);
         }
 
         if(isIdentity) // groupBy'им выбирая max
-            return implement.property.getJoinDataChanges(getJoinImplements(change.getMapExprs(), propChanges, null), change.expr, change.where, GroupType.ASSERTSINGLE_CHANGE(), propChanges, changedWhere); // пока implementChange = identity
+            return implement.property.getJoinDataChanges(getJoinImplements(change.getMapExprs(), propChanges, null), change.expr, change.where, GroupType.ASSERTSINGLE_CHANGE(), propChanges, type, changedWhere); // пока implementChange = identity
         
-        return super.calculateDataChanges(change, changedWhere, propChanges);
+        return super.calculateDataChanges(change, type, changedWhere, propChanges);
     }
 
     @Override
@@ -307,15 +303,6 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
             return implement.mapping.singleValue().mapEventAction(eventActionSID, viewProperties.addList(aggProp));
 
         return super.getDefaultEventAction(eventActionSID, viewProperties);
-    }
-
-    @Override
-    public Property<?> getViewProperty(CustomClass customClass, ImList<Property> viewProperties) {
-        Property<T> aggProp = implement.property;
-        if (implement.mapping.size() == 1 && !isIdentity)
-            return implement.mapping.singleValue().mapViewProperty(customClass, viewProperties.addList(aggProp));
-
-        return super.getViewProperty(customClass, viewProperties);
     }
 
     public boolean checkEquals() {

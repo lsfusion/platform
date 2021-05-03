@@ -1898,9 +1898,13 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
             Column column = columnMap.get(attrName);
             Integer rowIndex = getRowIndex(rowKeyValues, false);
             if (column != null && rowIndex != null) {
-                form.executeEventAction(column.property, keys.get(rowIndex), GEditBindingMap.EDIT_OBJECT);
+                executePropertyEditAction(column, rowIndex);
             }
         }
+    }
+
+    private long executePropertyEditAction(Column column, Integer rowIndex) {
+        return form.syncExecutePropertyEventAction(null, null, column.property, keys.get(rowIndex), GEditBindingMap.EDIT_OBJECT);
     }
 
     private Integer getRowIndex(JsArrayMixed keyValues, boolean cols) {
@@ -1962,7 +1966,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
                 Column column = columnMap.get(config.getArrayString("cols").get(columnKeyValues.length() - 1));
                 Integer rowIndex = getRowIndex(columnKeyValues, true);
                 if (column != null && rowIndex != null) {
-                    form.executeEventAction(column.property, keys.get(rowIndex), GEditBindingMap.EDIT_OBJECT);
+                    executePropertyEditAction(column, rowIndex);
                 }
             }
         }

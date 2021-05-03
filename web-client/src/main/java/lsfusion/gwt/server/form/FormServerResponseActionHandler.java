@@ -31,18 +31,13 @@ public abstract class FormServerResponseActionHandler<A extends FormAction<Serve
     }
 
     public static ServerResponseResult getServerResponseResult(String formID, PendingRemoteInterface remoteInterface, FormSessionObject form, ServerResponse serverResponse, MainDispatchServlet servlet) {
-        GAction[] resultActions;
-        if (serverResponse.actions == null) {
-            resultActions = null;
-        } else {
-            String realHostName = ((RemoteObjectProxy)remoteInterface).realHostName;
-            resultActions = new GAction[serverResponse.actions.length];
-            for (int i = 0; i < serverResponse.actions.length; i++) {
-                try {
-                    resultActions[i] = clientActionConverter.convertAction(serverResponse.actions[i], form, realHostName, formID, servlet);
-                } catch (Exception e) {
-                    resultActions[i] = new GThrowExceptionAction(MainDispatchServlet.fromWebServerToWebClient(e));
-                }
+        String realHostName = ((RemoteObjectProxy)remoteInterface).realHostName;
+        GAction[] resultActions = new GAction[serverResponse.actions.length];
+        for (int i = 0; i < serverResponse.actions.length; i++) {
+            try {
+                resultActions[i] = clientActionConverter.convertAction(serverResponse.actions[i], form, realHostName, formID, servlet);
+            } catch (Exception e) {
+                resultActions[i] = new GThrowExceptionAction(MainDispatchServlet.fromWebServerToWebClient(e));
             }
         }
 

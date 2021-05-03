@@ -4,6 +4,7 @@ import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.async.GInputList;
 import lsfusion.gwt.client.form.property.cell.classes.controller.LongCellEditor;
 import lsfusion.gwt.client.form.property.cell.classes.view.NumberCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
@@ -29,7 +30,7 @@ public class GObjectType extends GType {
         return getFullWidthString("0000000", font);
     }
 
-    public CellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty, boolean hasList) {
+    public CellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList) {
         return new LongCellEditor(editManager, editProperty);
     }
 

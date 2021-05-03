@@ -7,7 +7,7 @@ import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
-import lsfusion.server.logics.form.interactive.action.input.SimpleRequestInput;
+import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
@@ -26,10 +26,6 @@ public abstract class FlowAction extends Action<PropertyInterface> {
     @Override
     public abstract FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException;
 
-    public SimpleRequestInput<PropertyInterface> getSimpleRequestInput(boolean optimistic, boolean inRequest) {
-        return getFlowSimpleRequestInputType(optimistic, inRequest);
-    }
-
     private ActionMapImplement<?, PropertyInterface> compile;
     private boolean compiled;
     @Override
@@ -43,10 +39,6 @@ public abstract class FlowAction extends Action<PropertyInterface> {
     }
     
     protected ActionMapImplement<?, PropertyInterface> aspectCompile() {
-        return null;
-    }
-
-    public SimpleRequestInput<PropertyInterface> getFlowSimpleRequestInputType(boolean optimistic, boolean inRequest) {
         return null;
     }
 }

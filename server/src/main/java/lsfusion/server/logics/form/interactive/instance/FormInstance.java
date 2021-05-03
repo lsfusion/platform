@@ -48,6 +48,7 @@ import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.data.where.Where;
+import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BusinessLogics;
@@ -103,7 +104,10 @@ import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.object.TreeGroupEntity;
 import lsfusion.server.logics.form.struct.order.OrderEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
-import lsfusion.server.logics.form.struct.property.async.AsyncChange;
+import lsfusion.server.logics.form.interactive.action.async.AsyncChange;
+import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
+import lsfusion.server.logics.form.interactive.action.async.PushAsyncChange;
+import lsfusion.server.logics.form.interactive.action.async.PushAsyncResult;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.data.SessionDataProperty;
@@ -953,13 +957,9 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             session.changeClass(objectInstance, dataObject, cls);
     }
 
-    public void executeEventAction(PropertyDrawInstance property, String eventActionSID, ImMap<ObjectInstance, DataObject> keys, ExecutionStack stack) throws SQLException, SQLHandledException {
-        executeEventAction(property, eventActionSID, keys, null, null, null, false, stack);
-    }
-    
     @LogTime
     @ThisMessage
-    public void executeEventAction(final PropertyDrawInstance<?> property, String eventActionSID, final ImMap<ObjectInstance, DataObject> keys, final Object pushChange, AsyncChange pushAsyncChange, final DataObject pushAdd, boolean pushConfirm, final ExecutionStack stack) throws SQLException, SQLHandledException {
+    public void executeEventAction(final PropertyDrawInstance<?> property, String eventActionSID, final ImMap<ObjectInstance, DataObject> keys, Function<AsyncEventExec, PushAsyncResult> asyncResult, final ExecutionStack stack) throws SQLException, SQLHandledException {
         SQLCallable<Boolean> checkReadOnly = property.propertyReadOnly != null ? () -> property.propertyReadOnly.getRemappedPropertyObject(keys).read(FormInstance.this) != null : null;
         ActionObjectInstance<?> eventAction = property.getEventAction(eventActionSID, this, checkReadOnly, securityPolicy);
         if(eventAction == null) {
@@ -967,18 +967,30 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             return;
         }
 
-        if (eventActionSID.equals(CHANGE) || eventActionSID.equals(GROUP_CHANGE)) { //ask confirm logics...
-            PropertyDrawEntity propertyDraw = property.getEntity();
-            if (!pushConfirm && propertyDraw.askConfirm) {
-                int result = (Integer) ThreadLocalContext.requestUserInteraction(new ConfirmClientAction("lsFusion",
-                        entity.getRichDesign().get(propertyDraw).getAskConfirmMessage()));
-                if (result != JOptionPane.YES_OPTION) {
+        PushAsyncResult result = null;
+        if(asyncResult != null) {
+            AsyncEventExec asyncEventExec = property.getEntity().getAsyncEventExec(entity, securityPolicy, eventActionSID);
+            if(asyncEventExec != null) { // in case of paste can be null 
+                result = asyncResult.apply(asyncEventExec);
+                if(result == null) // in case of paste can be null
                     return;
+            } else
+                return;
+        } else {
+            if (ServerResponse.isChangeEvent(CHANGE)) { //ask confirm logics... it is assumed that async logics checks confirm logics itself
+                PropertyDrawEntity propertyDraw = property.getEntity();
+                if (propertyDraw.askConfirm) {
+                    int confirmResult = (Integer) ThreadLocalContext.requestUserInteraction(new ConfirmClientAction("lsFusion",
+                            entity.getRichDesign().get(propertyDraw).getAskConfirmMessage()));
+                    if (confirmResult != JOptionPane.YES_OPTION) {
+                        return;
+                    }
                 }
             }
         }
+                
         final ActionObjectInstance remappedEventAction = eventAction.getRemappedPropertyObject(keys);
-        BL.LM.pushRequestedValue(pushChange, pushAsyncChange, this, () -> remappedEventAction.execute(FormInstance.this, stack, pushAdd, property, FormInstance.this));
+        remappedEventAction.execute(FormInstance.this, stack, result, property, FormInstance.this);
     }
 
     public void pasteExternalTable(List<PropertyDrawInstance> properties, List<ImMap<ObjectInstance, DataObject>> columnKeys, List<List<byte[]>> values, ExecutionStack stack) throws SQLException, IOException, SQLHandledException {
@@ -1013,15 +1025,13 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
     private void executePasteAction(PropertyDrawInstance<?> property, ImMap<ObjectInstance, DataObject> columnKey, ImOrderMap<ImMap<ObjectInstance, DataObject>, Object> pasteRows, ExecutionStack stack) throws SQLException, SQLHandledException {
         if (!pasteRows.isEmpty()) {
-            AsyncChange asyncChange = property.entity.getAsyncChange(entity, securityPolicy, CHANGE_WYS);
-            if (asyncChange != null) {
-                for (int i = 0, size = pasteRows.size(); i < size; i++) {
-                    ImMap<ObjectInstance, DataObject> key = pasteRows.getKey(i);
-                    if (columnKey != null) {
-                        key = key.addExcl(columnKey);
-                    }
-                    executeEventAction(property, CHANGE_WYS, key, pasteRows.getValue(i), asyncChange, null, true, stack);
+            for (int i = 0, size = pasteRows.size(); i < size; i++) {
+                ImMap<ObjectInstance, DataObject> key = pasteRows.getKey(i);
+                Object value = pasteRows.getValue(i);
+                if (columnKey != null) {
+                    key = key.addExcl(columnKey);
                 }
+                executeEventAction(property, CHANGE, key, asyncChange -> asyncChange instanceof AsyncChange ? new PushAsyncChange(ObjectValue.getValue(value, ((AsyncChange) asyncChange).changeType)) : null, stack);
             }
         }
     }
@@ -1088,7 +1098,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             updateAsyncPropertyChanges(property);
     }
     // thread-safe
-    private boolean updateAsyncPropertyChanges(Property property) throws SQLException, SQLHandledException {
+    private <P extends PropertyInterface> boolean updateAsyncPropertyChanges(Property property) throws SQLException, SQLHandledException {
+        // something more efficient like isReallyChange could be used (passing inputvaluelist), but so far it doesn't seem to be reall necessary
         boolean hasChanges = property.hasChanges(getModifier());
         asyncPropertyChanges.put(property, HasChanges.toHasChanges(hasChanges));
         return hasChanges;
@@ -1103,13 +1114,22 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     }
 
     public static <P extends PropertyInterface> String[] getAsyncValues(InputValueList<P> list, DataSession session, Modifier modifier, String value) throws SQLException, SQLHandledException {
+        ImCol<String> result = getQueryAsync(list, modifier, new DataObject(value), true).execute(session, MapFact.EMPTYORDER(), 15).values().mapColValues(map -> (String)map.singleValue());
+        return result.toArray(new String[result.size()]);
+    }
+    public static <P extends PropertyInterface> ObjectValue getAsyncKey(InputValueList<P> list, DataSession session, Modifier modifier, ObjectValue value) throws SQLException, SQLHandledException {
+        ImSet<ImMap<P, DataObject>> keys = getQueryAsync(list, modifier, value, false).executeClasses(session, 1).keys();
+        if(keys.isEmpty())
+            return NullValue.instance;
+        return keys.get(0).get(list.singleInterface());
+    }
+
+    public static <P extends PropertyInterface> Query<P, String> getQueryAsync(InputValueList<P> list, Modifier modifier, ObjectValue value, boolean contains) throws SQLException, SQLHandledException {
         ImRevMap<P, KeyExpr> innerKeys = KeyExpr.getMapKeys(list.property.interfaces.removeIncl(list.mapValues.keys()));
         ImMap<P, Expr> innerExprs = MapFact.addExcl(innerKeys, DataObject.getMapExprs(list.mapValues));
 
         Expr listExpr = list.property.getExpr(innerExprs, modifier);
-        Query<P, String> query = new Query<>(innerKeys, listExpr, "value", listExpr.compare(new DataObject(value), Compare.CONTAINS));
-        ImCol<String> result = query.execute(session, MapFact.EMPTYORDER(), 15).values().mapColValues(map -> (String)map.singleValue());
-        return result.toArray(new String[result.size()]);
+        return new Query<>(innerKeys, listExpr, "value", listExpr.compare(value.getExpr(), contains ? Compare.CONTAINS : Compare.EQUALS));
     }
 
     public <P extends PropertyInterface> String[] getAsyncValues(PropertyDrawInstance<?> propertyDraw, ImMap<ObjectInstance, DataObject> keys, String actionSID, String value, Boolean optimistic) throws SQLException, SQLHandledException {
@@ -1922,7 +1942,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             if(update.wasRestart) // очищаем кэш при рестарте
                 isReallyChanged.clear();
             mChangedProps.set(mChangedProps.result.merge(update));
-            if(forceLocalEvents) {
+            if(forceLocalEvents || !entity.localAsync) {
                 dataChanged = false;
             }
         }

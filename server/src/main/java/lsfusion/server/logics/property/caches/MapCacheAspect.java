@@ -30,10 +30,7 @@ import lsfusion.server.data.translate.*;
 import lsfusion.server.data.value.Value;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
-import lsfusion.server.logics.action.session.change.DataChanges;
-import lsfusion.server.logics.action.session.change.PropertyChange;
-import lsfusion.server.logics.action.session.change.PropertyChanges;
-import lsfusion.server.logics.action.session.change.StructChanges;
+import lsfusion.server.logics.action.session.change.*;
 import lsfusion.server.logics.action.session.change.modifier.SessionModifier;
 import lsfusion.server.logics.property.AggregateProperty;
 import lsfusion.server.logics.property.CalcType;
@@ -251,23 +248,25 @@ public class MapCacheAspect {
     static class DataChangesInterfaceImplement<P extends PropertyInterface> extends AbstractInnerContext<DataChangesInterfaceImplement<P>> {
         final PropertyChanges usedChanges;
         final PropertyChange<P> change;
+        final CalcDataType type;
         final boolean where;
 
-        DataChangesInterfaceImplement(Property<P> property, PropertyChange<P> change, PropertyChanges changes, boolean where) {
-            usedChanges = property.getUsedDataChanges(changes);
+        DataChangesInterfaceImplement(Property<P> property, PropertyChange<P> change, CalcDataType type, PropertyChanges changes, boolean where) {
+            usedChanges = property.getUsedDataChanges(changes, type);
             this.change = change;
+            this.type = type;
             this.where = where;
         }
 
         public boolean equalsInner(DataChangesInterfaceImplement<P> o) {
-            return BaseUtils.hashEquals(change,o.change) && BaseUtils.hashEquals(usedChanges,o.usedChanges) && where == o.where;
+            return BaseUtils.hashEquals(change,o.change) && BaseUtils.hashEquals(type,o.type) && BaseUtils.hashEquals(usedChanges,o.usedChanges) && where == o.where;
         }
 
         protected boolean isComplex() {
             return true;
         }
         public int hash(HashContext hashContext) {
-            return 31 * usedChanges.hashValues(hashContext.values) + change.hashInner(hashContext) + (where?1:0);
+            return 31 * (31 * usedChanges.hashValues(hashContext.values) + change.hashInner(hashContext)) + type.hashCode() + (where?1:0);
         }
 
         public ImSet<ParamExpr> getKeys() {
@@ -281,6 +280,7 @@ public class MapCacheAspect {
         DataChangesInterfaceImplement(DataChangesInterfaceImplement<P> implement, MapTranslate translator) {
             usedChanges = implement.usedChanges.translateValues(translator.mapValues());
             change = implement.change.translateInner(translator);
+            type = implement.type;
             this.where = implement.where;
         }
 
@@ -311,12 +311,12 @@ public class MapCacheAspect {
         }
     }
 
-    public <K extends PropertyInterface> DataChanges getDataChanges(Property<K> property, PropertyChange<K> change, WhereBuilder changedWheres, PropertyChanges propChanges, ProceedingJoinPoint thisJoinPoint) throws Throwable {
+    public <K extends PropertyInterface> DataChanges getDataChanges(Property<K> property, PropertyChange<K> change, CalcDataType type, WhereBuilder changedWheres, PropertyChanges propChanges, ProceedingJoinPoint thisJoinPoint) throws Throwable {
 
         if(disableCaches)
             return (DataChanges) thisJoinPoint.proceed();
 
-        DataChangesInterfaceImplement<K> implement = new DataChangesInterfaceImplement<>(property, change, propChanges, changedWheres != null);
+        DataChangesInterfaceImplement<K> implement = new DataChangesInterfaceImplement<>(property, change, type, propChanges, changedWheres != null);
 
         MAddCol<CacheResult<DataChangesInterfaceImplement<K>, DataChangesResult<K>>> hashCaches = getCachedCol(property, implement.getInnerComponents(true).hash, MapCacheAspect.Type.DATACHANGES);
         synchronized(hashCaches) {
@@ -333,7 +333,7 @@ public class MapCacheAspect {
             logger.debug("getDataChanges - not cached "+property);
             incrementMissed(CacheType.DATA_CHANGES);
             WhereBuilder cacheWheres = Property.cascadeWhere(changedWheres);
-            DataChanges changes = (DataChanges) thisJoinPoint.proceed(new Object[]{property, change, propChanges, cacheWheres});
+            DataChanges changes = (DataChanges) thisJoinPoint.proceed(new Object[]{property, change, type, propChanges, cacheWheres});
 
             cacheNoBig(implement, hashCaches, new DataChangesResult<>(changes, changedWheres != null ? cacheWheres.toWhere() : null));
 
@@ -353,11 +353,11 @@ public class MapCacheAspect {
     }
 
     // aspect который ловит getExpr'ы и оборачивает их в query, для mapKeys после чего join'ит их чтобы импользовать кэши
-    @Around("execution(lsfusion.server.logics.action.session.change.DataChanges lsfusion.server.logics.property.Property.getDataChanges(lsfusion.server.logics.action.session.change.PropertyChange,lsfusion.server.logics.action.session.change.PropertyChanges,lsfusion.server.data.where.WhereBuilder)) " +
-            "&& target(property) && args(change,propChanges,changedWhere)")
-    public Object callGetDataChanges(ProceedingJoinPoint thisJoinPoint, Property property, PropertyChange change, PropertyChanges propChanges, WhereBuilder changedWhere) throws Throwable {
+    @Around("execution(lsfusion.server.logics.action.session.change.DataChanges lsfusion.server.logics.property.Property.getDataChanges(lsfusion.server.logics.action.session.change.PropertyChange, lsfusion.server.logics.action.session.change.CalcDataType,lsfusion.server.logics.action.session.change.PropertyChanges,lsfusion.server.data.where.WhereBuilder)) " +
+            "&& target(property) && args(change,type,propChanges,changedWhere)")
+    public Object callGetDataChanges(ProceedingJoinPoint thisJoinPoint, Property property, PropertyChange change, CalcDataType type, PropertyChanges propChanges, WhereBuilder changedWhere) throws Throwable {
         // сначала target в аспекте должен быть
-        return getDataChanges(property, change, changedWhere, propChanges, thisJoinPoint);
+        return getDataChanges(property, change, type, changedWhere, propChanges, thisJoinPoint);
     }
 
     private interface CalcTypeImplement<This extends ValuesContext<This>> extends ValuesContext<This> {

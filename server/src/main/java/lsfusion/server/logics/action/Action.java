@@ -24,7 +24,6 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.property.LP;
-import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
@@ -37,13 +36,13 @@ import lsfusion.server.logics.action.session.changed.ChangedProperty;
 import lsfusion.server.logics.action.session.changed.OldProperty;
 import lsfusion.server.logics.action.session.changed.SessionProperty;
 import lsfusion.server.logics.classes.ValueClass;
-import lsfusion.server.logics.classes.user.ConcreteCustomClass;
-import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.event.*;
-import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
-import lsfusion.server.logics.form.interactive.action.input.SimpleRequestInput;
+import lsfusion.server.logics.form.interactive.action.async.AsyncExec;
+import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
+import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapExec;
+import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapRemove;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.interactive.instance.FormEnvironment;
 import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
@@ -54,7 +53,6 @@ import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
-import lsfusion.server.logics.form.struct.property.async.AsyncExec;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.classes.IsClassProperty;
@@ -509,34 +507,68 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
         return getImplement();
     }
 
+    private AsyncMapEventExec<P> forceAsyncEventExec;
+
+    public void setSimpleDelete() {
+        this.forceAsyncEventExec = new AsyncMapRemove<>(interfaces.single());
+    }
+
+    public AsyncMapEventExec<P> getAsyncEventExec(boolean optimistic) {
+        return getAsyncEventExec(optimistic, false);
+    }
     @IdentityInstanceLazy
-    public SimpleRequestInput<P> getSimpleRequestInput(boolean optimistic) {
-        return getSimpleRequestInput(optimistic, false);
+    public AsyncMapEventExec<P> getAsyncEventExec(boolean optimistic, boolean recursive) {
+        if(forceAsyncEventExec != null)
+            return forceAsyncEventExec;
+
+        return calculateAsyncEventExec(optimistic, recursive);
     }
-    // по сути protected (recursive usage)
-    public SimpleRequestInput<P> getSimpleRequestInput(boolean optimistic, boolean inRequest) {
+    protected AsyncMapEventExec<P> calculateAsyncEventExec(boolean optimistic, boolean recursive) {
         return null;
     }
 
+    protected static <X extends PropertyInterface> AsyncMapEventExec<X> getBranchAsyncEventExec(ImList<ActionMapImplement<?, X>> actions, boolean optimistic, boolean recursive) {
+        return getFlowAsyncEventExec(actions, optimistic, recursive);
+    }
+    protected static <X extends PropertyInterface> AsyncMapEventExec<X> getListAsyncEventExec(ImList<ActionMapImplement<?, X>> actions, boolean recursive) {
+        return getFlowAsyncEventExec(actions, true, recursive);
+    }
+    private static <X extends PropertyInterface> AsyncMapEventExec<X> getFlowAsyncEventExec(ImList<ActionMapImplement<?, X>> actions, boolean optimistic, boolean recursive) {
+        AsyncMapEventExec<X> asyncExec = null;
+        int nonAsync = 0;
+        int nonRecursive = 0;
+        for (ActionMapImplement<?, X> action : actions) {
+            if(action != null) {
+                AsyncMapEventExec<X> asyncActionExec = action.mapAsyncEventExec(optimistic, recursive);
+                if (asyncActionExec != null) {
+                    if(asyncActionExec != AsyncMapExec.RECURSIVE())
+                        nonRecursive++;
+
+                    if (asyncExec == null || asyncExec == AsyncMapExec.RECURSIVE()) {
+                        asyncExec = asyncActionExec;
+                    } else {
+                        if(asyncActionExec != AsyncMapExec.RECURSIVE()) {
+                            asyncExec = asyncExec.merge(asyncActionExec);
+                            if (asyncExec == null)
+                                return null;
+                        }
+                    }
+                } else
+                    nonAsync++;
+            }
+        }
+
+        if(!optimistic && nonAsync >= nonRecursive)
+            return null;
+
+        return asyncExec;
+    }
+
+    // for navigator / input
     public AsyncExec getAsyncExec() {
-        return null;
-    }
-
-    // по аналогии с верхним, assert что !hasChildren
-    public CustomClass getSimpleAdd() {
-        return null;
-    }
-
-    private boolean isSimpleDelete;
-    
-    public void setSimpleDelete(boolean isSimpleDelete) {
-        assert interfaces.size() == 1;
-        this.isSimpleDelete = isSimpleDelete;
-    }
-
-    public P getSimpleDelete() {
-        if(isSimpleDelete)
-            return interfaces.single();
+        AsyncMapEventExec<?> asyncExec = getAsyncEventExec(false);
+        if(asyncExec instanceof AsyncMapExec)
+            return ((AsyncMapExec<?>) asyncExec).asyncExec;
         return null;
     }
 
@@ -581,36 +613,6 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
                       null, false, SetFact.EMPTY(), false).map(context.reverse())));
         
         return PropertyFact.createListAction(interfaces, mList.immutableList());
-    }
-
-    public <X extends PropertyInterface> ActionMapImplement<?, P> getDialogChangeWYS(InputListEntity<X, P> viewList, LP<?> targetProp) {
-        // in group_change_wys it's gonna be tricky with recodeviewAction, if we want to optimize it to be executed with a single query
-        BaseLogicsModule lm = getBaseLM();
-        LP<?> inputWYSProp = lm.getRequestedValueProperty().getLCP(viewList.getDataClass());
-        return getChangeWYS(viewList, inputWYSProp, viewList.getWYSObjectAction(lm, targetProp, inputWYSProp)); // finding object with that name
-    }
-
-    public <X extends PropertyInterface> ActionMapImplement<?, P> getNewChangeWYS(InputListEntity<X, P> viewList, LP<?> targetProp) {
-        if(viewList != null) {
-            Pair<Property<?>, ConcreteCustomClass> viewProperty = viewList.getViewProperty();
-            if (viewProperty != null) {
-                BaseLogicsModule lm = getBaseLM();
-                return getChangeWYS(viewList, targetProp, Property.createJoinAction(lm.addNewEditAction(viewProperty.second, viewProperty.first), targetProp.getImplement()));
-            }
-        }
-        return null;
-    }
-
-    public <X extends PropertyInterface> ActionMapImplement<?, P> getChangeWYS(InputListEntity<X, P> viewList, LP<?> inputWYSProp, ActionMapImplement<?, P> doAction) {
-        // REQUEST
-        //     inputViewAction
-        // DO {
-        //     doAction
-        //     PUSH REQUEST eventAction
-        // }
-        return PropertyFact.createRequestAction(interfaces, viewList.getInputAction(getBaseLM(), inputWYSProp),
-                    PropertyFact.createListAction(interfaces, ListFact.toList(doAction,
-                                PropertyFact.createPushRequestAction(interfaces, getImplement()))), null);
     }
 
     @IdentityLazy

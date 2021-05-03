@@ -15,9 +15,11 @@ import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.event.GMouseStroke;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.async.GInputList;
 import lsfusion.gwt.client.form.property.cell.classes.view.TextBasedCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.controller.ReplaceCellEditor;
+import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 
 import java.text.ParseException;
@@ -37,23 +39,24 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
     protected final String inputElementTagName;
 
     boolean hasList;
-    boolean listOnly = true; //Параметр должен приходить сверху
+    boolean strict;
     CustomSuggestBox suggestBox = null;
     Label noResultsLabel = new Label(messages.nothingFound());
 
     public TextBasedCellEditor(EditManager editManager, GPropertyDraw property) {
-        this(editManager, property, false);
+        this(editManager, property, null);
     }
 
-    public TextBasedCellEditor(EditManager editManager, GPropertyDraw property, boolean hasList) {
-        this(editManager, property, "input", hasList);
+    public TextBasedCellEditor(EditManager editManager, GPropertyDraw property, GInputList inputList) {
+        this(editManager, property, "input", inputList);
     }
 
-    public TextBasedCellEditor(EditManager editManager, GPropertyDraw property, String inputElementTagName, boolean hasList) {
+    public TextBasedCellEditor(EditManager editManager, GPropertyDraw property, String inputElementTagName, GInputList inputList) {
         this.inputElementTagName = inputElementTagName;
         this.editManager = editManager;
         this.property = property;
-        this.hasList = hasList;
+        this.hasList = inputList != null;
+        this.strict = inputList != null && inputList.strict;
     }
 
     @Override
@@ -219,13 +222,17 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
     }
 
     public void validateAndCommit(Element parent, boolean cancelIfInvalid, boolean blurred) {
-        if(hasList && listOnly && !suggestBox.isValidText()) {
+        validateAndCommit(parent, null, cancelIfInvalid, blurred);
+    }
+
+    public void validateAndCommit(Element parent, Integer contextAction, boolean cancelIfInvalid, boolean blurred) {
+        if(contextAction == null && hasList && strict && !suggestBox.isValidText()) {
             return;
         }
 
-        String value = getCurrentText(parent);
+        String stringValue = getCurrentText(parent);
         try {
-            editManager.commitEditing(tryParseInputText(value, true), blurred);
+            editManager.commitEditing(new GUserInputResult(tryParseInputText(stringValue, true), contextAction), blurred);
         } catch (ParseException ignore) {
             if (cancelIfInvalid) {
                 editManager.cancelEditing();

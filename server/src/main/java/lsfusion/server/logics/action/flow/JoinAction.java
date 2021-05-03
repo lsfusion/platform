@@ -13,9 +13,8 @@ import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.implement.ActionImplement;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
-import lsfusion.server.logics.classes.user.CustomClass;
-import lsfusion.server.logics.form.interactive.action.input.SimpleRequestInput;
-import lsfusion.server.logics.form.struct.property.async.AsyncExec;
+import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
+import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapExec;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
@@ -50,40 +49,14 @@ public class JoinAction<T extends PropertyInterface> extends KeepContextAction {
     }
 
     @Override
-    public SimpleRequestInput<PropertyInterface> getFlowSimpleRequestInputType(boolean optimistic, boolean inRequest) {
-        if(isRecursive) // recursion guard
-            return null;
+    public AsyncMapEventExec<PropertyInterface> calculateAsyncEventExec(boolean optimistic, boolean recursive) {
+        if(isRecursive && recursive) // recursion guard
+            return AsyncMapExec.RECURSIVE();
 
-        SimpleRequestInput<T> simpleInput = action.action.getSimpleRequestInput(optimistic, inRequest);
+        AsyncMapEventExec<T> simpleInput = action.action.getAsyncEventExec(optimistic, isRecursive || recursive);
         if(simpleInput != null)
             return simpleInput.mapJoin(action.mapping);
         return null;
-    }
-
-    @Override
-    public CustomClass getSimpleAdd() {
-        if(isRecursive) // recursion guard
-            return null;
-        return action.action.getSimpleAdd();
-    }
-
-    @Override
-    public PropertyInterface getSimpleDelete() {
-        if(!isRecursive) { // recursion guard
-            T simpleRemove = action.action.getSimpleDelete();
-            PropertyInterfaceImplement<PropertyInterface> mapRemove;
-            if (simpleRemove != null && ((mapRemove = action.mapping.get(simpleRemove)) instanceof PropertyInterface))
-                return (PropertyInterface) mapRemove;
-        }
-        return super.getSimpleDelete();
-    }
-
-    @Override
-    public AsyncExec getAsyncExec() {
-        if (!isRecursive) { // recursion guard
-            return action.action.getAsyncExec();
-        }
-        return super.getAsyncExec();
     }
 
     @Override

@@ -11,12 +11,12 @@ import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
+import lsfusion.server.logics.action.session.change.CalcDataType;
 import lsfusion.server.logics.action.session.change.DataChanges;
 import lsfusion.server.logics.action.session.change.PropertyChange;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.action.session.changed.OldProperty;
-import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
 import lsfusion.server.logics.property.CalcType;
 import lsfusion.server.logics.property.Property;
@@ -54,7 +54,6 @@ public interface PropertyInterfaceImplement<P extends PropertyInterface> extends
     ObjectValue readClasses(ExecutionContext context, ImMap<P, ? extends ObjectValue> interfaceValues) throws SQLException, SQLHandledException;
 
     ActionMapImplement<?, P> mapEventAction(String eventSID, ImList<Property> viewProperties);
-    Property<?> mapViewProperty(CustomClass customClass, ImList<Property> viewProperties);
 
     boolean mapHasAlotKeys();
     int mapEstComplexity();
@@ -64,8 +63,8 @@ public interface PropertyInterfaceImplement<P extends PropertyInterface> extends
     boolean mapHasPreread(Modifier modifier) throws SQLException, SQLHandledException;
 
     long mapComplexity();
-    DataChanges mapJoinDataChanges(ImMap<P, ? extends Expr> mapKeys, Expr expr, Where where, GroupType type, WhereBuilder changedWhere, PropertyChanges propChanges);
-    DataChanges mapJoinDataChanges(PropertyChange<P> change, GroupType type, WhereBuilder changedWhere, PropertyChanges propChanges);
+    DataChanges mapJoinDataChanges(ImMap<P, ? extends Expr> mapKeys, Expr expr, Where where, GroupType groupType, WhereBuilder changedWhere, PropertyChanges propChanges, CalcDataType type);
+    DataChanges mapJoinDataChanges(PropertyChange<P> change, CalcDataType type, GroupType groupType, WhereBuilder changedWhere, PropertyChanges propChanges);
 
     void fill(MSet<P> interfaces, MSet<PropertyMapImplement<?, P>> properties);
     ImCol<P> getInterfaces();

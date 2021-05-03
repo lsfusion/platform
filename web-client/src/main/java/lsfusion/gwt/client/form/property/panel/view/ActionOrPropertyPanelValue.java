@@ -6,11 +6,9 @@ import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.controller.ExecuteEditContext;
 import lsfusion.gwt.client.view.MainFrame;
 
-import java.io.Serializable;
 import java.util.function.Consumer;
 
 import static lsfusion.gwt.client.base.view.ColorUtils.getDisplayColor;
@@ -115,8 +113,8 @@ public class ActionOrPropertyPanelValue extends ActionOrPropertyValue implements
     }
 
     @Override
-    protected void onPaste(Object objValue, String stringValue) {
-        form.pasteSingleValue(property, columnKey, stringValue);
+    public void pasteValue(String stringValue) {
+        form.pasteValue(this, stringValue);
     }
 
     public void setBackground(String color) {
@@ -129,8 +127,6 @@ public class ActionOrPropertyPanelValue extends ActionOrPropertyValue implements
 
     @Override
     public Consumer<Object> getCustomRendererValueChangeConsumer() {
-        return value -> {
-              form.changeProperty(property, getColumnKey(), GEditBindingMap.CHANGE, (Serializable) value, getValue(), null);
-        };
+        return value -> form.changeProperty(this, value);
     }
 }

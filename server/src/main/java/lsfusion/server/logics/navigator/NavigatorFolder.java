@@ -1,6 +1,6 @@
 package lsfusion.server.logics.navigator;
 
-import lsfusion.server.logics.form.struct.property.async.AsyncExec;
+import lsfusion.server.logics.form.interactive.action.async.AsyncExec;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 public class NavigatorFolder extends NavigatorElement {

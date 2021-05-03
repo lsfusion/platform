@@ -66,12 +66,12 @@ public class CustomTextCellEditor extends TextBasedCellEditor {
     }-*/;
 
     @Override
-    public void validateAndCommit(Element parent, boolean cancelIfInvalid, boolean blurred) {
+    public void validateAndCommit(Element parent, Integer contextAction, boolean cancelIfInvalid, boolean blurred) {
         //some libraries set values after the blur. to solve this there is a SmartScheduler that sets the values in the field before the blur
         if (deferredCommitOnBlur) {
-            SmartScheduler.getInstance().scheduleDeferred(() -> super.validateAndCommit(parent, cancelIfInvalid, blurred));
+            SmartScheduler.getInstance().scheduleDeferred(() -> super.validateAndCommit(parent, contextAction, cancelIfInvalid, blurred));
         } else {
-            super.validateAndCommit(parent, cancelIfInvalid, blurred);
+            super.validateAndCommit(parent, contextAction, cancelIfInvalid, blurred);
         }
     }
 }

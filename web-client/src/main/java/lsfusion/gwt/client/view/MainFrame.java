@@ -104,11 +104,16 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
         navigatorDispatchAsync.executePriority(new InterruptNavigator(cancelable), new ErrorHandlingCallback<VoidResult>());
     }
 
-    public <T extends Result> void syncDispatch(final ExecuteNavigatorAction action, AsyncCallback<ServerResponseResult> callback) {
+    // async dispatch
+    public <T extends Result> long dispatch(final ExecuteNavigatorAction action, AsyncCallback<ServerResponseResult> callback) {
+        return navigatorDispatchAsync.execute(action, callback);
+    }
+
+    public <T extends Result> long syncDispatch(final ExecuteNavigatorAction action, AsyncCallback<ServerResponseResult> callback) {
         //todo: may be need something more sophisticated
         //todo: http://stackoverflow.com/questions/2061699/disable-user-interaction-in-a-gwt-container
         loadingManager.start();
-        navigatorDispatchAsync.execute(action, new WrapperAsyncCallbackEx<ServerResponseResult>(callback) {
+        return navigatorDispatchAsync.execute(action, new WrapperAsyncCallbackEx<ServerResponseResult>(callback) {
             @Override
             public void preProcess() {
                 loadingManager.stop();
@@ -264,28 +269,18 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
         final Linker<GNavigatorActionDispatcher> actionDispatcherLink = new Linker<>();
         final FormsController formsController = new FormsController(windowsController) {
             @Override
-            public void executeNavigatorAction(GNavigatorAction action, final NativeEvent event) {
-                syncDispatch(new ExecuteNavigatorAction(action.canonicalName, 1), new ErrorHandlingCallback<ServerResponseResult>() {
-                    @Override
-                    public void success(ServerResponseResult result) {
-                        if(event.getCtrlKey()) {
-                            for (GAction action : result.actions) // хак, но весь механизм forbidDuplicate один большой хак
-                                if (action instanceof GFormAction)
-                                    ((GFormAction) action).forbidDuplicate = false;
-                        }
-                        actionDispatcherLink.link.dispatchResponse(result);
-                    }
-                });
+            public <T extends Result> long syncDispatch(ExecuteNavigatorAction action, AsyncCallback<ServerResponseResult> callback) {
+                return MainFrame.this.syncDispatch(action, callback);
             }
 
             @Override
-            public void executeNotificationAction(String actionSID, int type) {
-                syncDispatch(new ExecuteNavigatorAction(actionSID, type), new ErrorHandlingCallback<ServerResponseResult>() {
-                    @Override
-                    public void success(ServerResponseResult result) {
-                        actionDispatcherLink.link.dispatchResponse(result);
-                    }
-                });
+            public <T extends Result> long dispatch(ExecuteNavigatorAction action, AsyncCallback<ServerResponseResult> callback) {
+                return MainFrame.this.dispatch(action, callback);
+            }
+
+            @Override
+            protected GNavigatorActionDispatcher getDispatcher() {
+                return actionDispatcherLink.link;
             }
         };
 

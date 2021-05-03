@@ -16,8 +16,16 @@ public class NavigatorDispatchAsync extends RemoteDispatchAsync {
         this.sessionID = sessionID;
     }
 
-    public <A extends NavigatorAction<R>, R extends Result> void execute(final A action, final AsyncCallback<R> callback) {
-        execute(action, callback, false);
+    public <A extends NavigatorAction<R>, R extends Result> long execute(A action, AsyncCallback<R> callback, boolean direct) {
+        executeQueue(action, callback, direct);
+        if(action instanceof NavigatorRequestAction) {
+            return ((NavigatorRequestAction) action).requestIndex;
+        } else {
+            return -1;
+        }
+    }
+    public <A extends NavigatorAction<R>, R extends Result> long execute(final A action, final AsyncCallback<R> callback) {
+        return execute(action, callback, false);
     }
 
     @Override

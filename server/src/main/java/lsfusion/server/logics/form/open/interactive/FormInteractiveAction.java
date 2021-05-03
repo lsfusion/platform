@@ -13,8 +13,9 @@ import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.form.interactive.FormCloseType;
 import lsfusion.server.logics.form.interactive.ManageSessionType;
+import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
+import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapExec;
 import lsfusion.server.logics.form.interactive.action.input.RequestResult;
-import lsfusion.server.logics.form.interactive.action.input.SimpleRequestInput;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.open.FormAction;
@@ -24,14 +25,14 @@ import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.filter.ContextFilterInstance;
 import lsfusion.server.logics.form.struct.filter.ContextFilterSelector;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
-import lsfusion.server.logics.form.struct.property.async.AsyncExec;
-import lsfusion.server.logics.form.struct.property.async.AsyncOpenForm;
+import lsfusion.server.logics.form.interactive.action.async.AsyncOpenForm;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.SQLException;
+import java.util.function.Consumer;
 
 public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<O> {
 
@@ -80,13 +81,14 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
                                                                final ImList<O> objectsToSet, final ImList<Boolean> nulls,
                                                                ImList<O> inputObjects, ImList<LP> inputProps, ImList<Boolean> inputNulls,
                                                                ImOrderSet<C> orderInterfaces, ImList<ContextFilterSelector<?, C, O>> contextFilters,
+                                                               Consumer<ImRevMap<C, ClassPropertyInterface>> mapContext,
                                                                ManageSessionType manageSession,
                                                                Boolean noCancel,
                                                                Boolean syncType,
                                                                WindowFormType windowType, boolean forbidDuplicate,
                                                                boolean checkOnOk,
                                                                boolean readOnly) {
-        super(caption, form, objectsToSet, nulls, orderInterfaces, contextFilters);
+        super(caption, form, objectsToSet, nulls, orderInterfaces, contextFilters, mapContext);
 
         this.inputObjects = inputObjects;
         this.inputProps = inputProps;
@@ -124,13 +126,6 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
     //todo: same as above
     private boolean heuristicSyncType() {
         return true;
-    }
-
-    @Override
-    public SimpleRequestInput<ClassPropertyInterface> getSimpleRequestInput(boolean optimistic, boolean inRequest) {
-        if(inRequest && inputObjects.size() == 1)
-            return form.getSimpleDialogInput(getBaseLM(), inputObjects.single(), inputProps.single(), getContextFilters(), mapObjects);
-        return null;
     }
 
     @Override
@@ -196,11 +191,11 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
 
 
     @Override
-    public AsyncExec getAsyncExec() {
+    public AsyncMapEventExec<ClassPropertyInterface> calculateAsyncEventExec(boolean optimistic, boolean recursive) {
         FormEntity staticForm = form.getNFStaticForm();
         String canonicalName = staticForm != null ? staticForm.getCanonicalName() : null;
         String caption = staticForm != null ? staticForm.getAsyncCaption() : null;
-        return new AsyncOpenForm(canonicalName, caption, forbidDuplicate, getModalityType().isModalWindow());
+        return new AsyncMapExec<>(new AsyncOpenForm(canonicalName, caption, forbidDuplicate, getModalityType().isModalWindow()));
     }
 
     private ModalityType getModalityType() {

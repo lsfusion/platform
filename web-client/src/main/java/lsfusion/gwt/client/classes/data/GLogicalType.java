@@ -4,6 +4,7 @@ import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.async.GInputList;
 import lsfusion.gwt.client.form.property.cell.classes.controller.LogicalCellEditor;
 import lsfusion.gwt.client.form.property.cell.classes.view.LogicalCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
@@ -21,7 +22,7 @@ public class GLogicalType extends GDataType {
 }
 
     @Override
-    public CellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty, boolean hasList) {
+    public CellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList) {
         return new LogicalCellEditor(editManager);
     }
 

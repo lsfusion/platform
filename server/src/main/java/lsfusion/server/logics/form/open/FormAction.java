@@ -36,6 +36,7 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 import org.apache.commons.lang3.ArrayUtils;
 
 import java.sql.SQLException;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 // вообще по хорошему надо бы generiть интерфейсы, но тогда с DataChanges (из-за дебилизма generics в современных языках) будут проблемы
@@ -73,7 +74,7 @@ public abstract class FormAction<O extends ObjectSelector> extends SystemExplici
                       FormSelector<O> form,
                       final ImList<O> objectsToSet,
                       final ImList<Boolean> nulls,
-                      ImOrderSet<C> orderContextInterfaces, ImList<ContextFilterSelector<?, C, O>> contextFilters,
+                      ImOrderSet<C> orderContextInterfaces, ImList<ContextFilterSelector<?, C, O>> contextFilters, Consumer<ImRevMap<C, ClassPropertyInterface>> mapContext,
                       ValueClass... extraValueClasses) {
         super(caption, getValueClasses(form, objectsToSet, orderContextInterfaces.size(), extraValueClasses));
 
@@ -89,6 +90,8 @@ public abstract class FormAction<O extends ObjectSelector> extends SystemExplici
         this.contextInterfaces = mapContextInterfaces.valuesSet();
         this.contextFilters = contextFilters.mapListValues((Function<ContextFilterSelector<?, C, O>, ContextFilterSelector<?, ClassPropertyInterface, O>>)
                 filter -> filter.map(mapContextInterfaces)).toOrderExclSet().getSet();
+        if(mapContext != null)
+            mapContext.accept(mapContextInterfaces);
     }
 
     protected abstract void executeInternal(FormEntity form, ImMap<ObjectEntity, ? extends ObjectValue> mapObjectValues, ExecutionContext<ClassPropertyInterface> context, ImRevMap<ObjectEntity, O> mapResolvedObjects, ImSet<ContextFilterInstance> contextFilters) throws SQLException, SQLHandledException;
@@ -104,7 +107,7 @@ public abstract class FormAction<O extends ObjectSelector> extends SystemExplici
     }
 
     @IdentityInstanceLazy
-    protected ImSet<ContextFilterEntity<?, ClassPropertyInterface, O>> getContextFilters() {
+    public ImSet<ContextFilterEntity<?, ClassPropertyInterface, O>> getContextFilters() {
         MExclSet<ContextFilterEntity<?, ClassPropertyInterface, O>> mContextFilters = SetFact.mExclSet();
         for(ContextFilterSelector<?, ClassPropertyInterface, O> contextFilter : this.contextFilters)
             mContextFilters.exclAddAll(contextFilter.getEntities());

@@ -14,6 +14,7 @@ import lsfusion.interop.form.property.Compare;
 import lsfusion.server.data.expr.formula.CustomFormulaSyntax;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.query.PartitionType;
+import lsfusion.server.language.action.LA;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.change.AddObjectAction;
 import lsfusion.server.logics.action.change.ChangeClassAction;
@@ -162,6 +163,9 @@ public class PropertyFact {
         return new Pair<>(joinProperty, revUsedJoinMap);
     }
 
+    public static <X extends PropertyInterface, T extends PropertyInterface> ActionMapImplement<?, T> createJoinAction(Action<X> action, PropertyMapImplement<?, T> implement) {
+        return PropertyFact.createJoinAction(new ActionImplement<>(action, MapFact.singleton(action.interfaces.single(), implement)));
+    }
     public static <L extends PropertyInterface, T extends PropertyInterface> ActionMapImplement<?,T> createJoinAction(ActionImplement<L, PropertyInterfaceImplement<T>> implement) {
         ImOrderSet<T> usedInterfaces = getUsedInterfaces(implement.mapping.values()).toOrderSet();
         JoinAction<L> joinProperty = new JoinAction<>(LocalizedString.NONAME, usedInterfaces, implement);

@@ -796,10 +796,14 @@ public class BaseUtils {
         return b.toByteArray();
     }
 
-    public static Object deserializeCustomObject(byte[] bytes) throws IOException, ClassNotFoundException {
+    public static Object deserializeCustomObject(byte[] bytes) throws IOException {
         ByteArrayInputStream b = new ByteArrayInputStream(bytes);
         ObjectInputStream o = new ObjectInputStream(b);
-        return o.readObject();
+        try {
+            return o.readObject();
+        } catch (ClassNotFoundException e) {
+            throw Throwables.propagate(e);
+        }
     }
     
     public static void serializeString(DataOutputStream outStream, String str) throws IOException {
@@ -2900,6 +2904,26 @@ public class BaseUtils {
             } catch (Exception e) {
                 throw Throwables.propagate(e);
             }
+        }
+    }
+
+    public static void writeObject(DataOutputStream outStream, Object object) throws IOException {
+        outStream.writeBoolean(object != null);
+        if (object != null) {
+            new ObjectOutputStream(outStream).writeObject(object);
+        }
+    }
+
+    public static <T> T readObject(DataInputStream inStream) throws IOException {
+        try {
+            if (inStream.readBoolean()) {
+                T object = (T) new ObjectInputStream(inStream).readObject();
+                return object;
+            } else {
+                return null;
+            }
+        } catch (ClassNotFoundException e) {
+            throw new IOException(getString("serialization.can.not.read.object"), e);
         }
     }
 }

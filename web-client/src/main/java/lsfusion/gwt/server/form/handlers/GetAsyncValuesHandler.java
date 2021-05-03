@@ -28,6 +28,9 @@ public class GetAsyncValuesHandler extends FormActionHandler<GetAsyncValues, Lis
     @Override
     public ListResult executeEx(GetAsyncValues action, ExecutionContext context) throws RemoteException, AppServerNotAvailableDispatchException {
         FormSessionObject form = getFormSessionObject(action.formSessionID);
-        return new ListResult(new ArrayList(Arrays.asList(form.remoteForm.getAsyncValues(action.requestIndex, action.lastReceivedRequestIndex, action.propertyID, (byte[]) gwtConverter.convertOrCast(action.columnKey), action.actionSID, action.value, action.index))));
+        String[] asyncValues = form.remoteForm.getAsyncValues(action.requestIndex, action.lastReceivedRequestIndex, action.propertyID, (byte[]) gwtConverter.convertOrCast(action.columnKey), action.actionSID, action.value, action.index);
+        if(asyncValues == null)
+            return new ListResult(null);
+        return new ListResult(new ArrayList(Arrays.asList(asyncValues)));
     }
 }

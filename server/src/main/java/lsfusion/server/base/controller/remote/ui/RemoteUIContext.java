@@ -20,7 +20,10 @@ import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.form.interactive.FormCloseType;
 import lsfusion.server.logics.form.interactive.ManageSessionType;
+import lsfusion.server.logics.form.interactive.action.async.InputList;
+import lsfusion.server.logics.form.interactive.action.async.AsyncSerializer;
 import lsfusion.server.logics.form.interactive.action.input.InputContext;
+import lsfusion.server.logics.form.interactive.action.input.InputResult;
 import lsfusion.server.logics.form.interactive.controller.remote.RemoteForm;
 import lsfusion.server.logics.form.interactive.dialogedit.DialogRequest;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
@@ -88,14 +91,14 @@ public abstract class RemoteUIContext extends AbstractContext {
         inputContextLock.unlock();
     }
 
-    public ObjectValue requestUserData(DataClass dataClass, Object oldValue, boolean hasOldValue, InputContext inputContext) {
+    public InputResult inputUserData(DataClass dataClass, Object oldValue, boolean hasOldValue, InputContext inputContext, InputList inputList) {
         this.inputContext = inputContext; // we don't have to lock here since thread-safety will be ok anyway
         try {
-            UserInputResult result = (UserInputResult) requestUserInteraction(new RequestUserInputClientAction(serializeType(dataClass), serializeObject(oldValue), hasOldValue));
+            UserInputResult result = (UserInputResult) requestUserInteraction(new RequestUserInputClientAction(serializeType(dataClass), serializeObject(oldValue), hasOldValue, inputContext != null ? AsyncSerializer.serializeInputList(inputList) : null));
             if (result.isCanceled()) {
                 return null;
             }
-            return result.getValue() == null ? NullValue.instance : new DataObject(result.getValue(), dataClass);
+            return InputResult.get(result, dataClass);
         } catch (IOException e) {
             throw Throwables.propagate(e);
         } finally {

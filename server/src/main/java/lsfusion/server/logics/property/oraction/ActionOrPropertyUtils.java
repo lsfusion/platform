@@ -78,10 +78,11 @@ public class ActionOrPropertyUtils {
         return params;
     }
 
-    public static Integer[] getIntParams(LAP prop) {
+    public static Integer[] getIntParams(LAP prop, int from, int to) {
         Integer[] params  = new Integer[prop.listInterfaces.size()];
-        for(int i=0;i<prop.listInterfaces.size();i++)
-            params[i] = (i+1);
+        for(int i=0;i<prop.listInterfaces.size();i++) {
+            params[i] = (from == i + 1 ? to : i + 1);
+        }
         return params;
     }
 

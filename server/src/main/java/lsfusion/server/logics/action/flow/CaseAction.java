@@ -1,6 +1,5 @@
 package lsfusion.server.logics.action.flow;
 
-import lsfusion.base.BaseUtils;
 import lsfusion.base.Result;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.SetFact;
@@ -13,7 +12,6 @@ import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.impl.NFListImpl;
 import lsfusion.server.base.version.interfaces.NFList;
 import lsfusion.server.data.sql.exception.SQLHandledException;
-import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.data.where.classes.ClassWhere;
@@ -22,12 +20,11 @@ import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.classes.ValueClass;
-import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
-import lsfusion.server.logics.classes.user.set.OrObjectClassSet;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
-import lsfusion.server.logics.form.interactive.action.input.SimpleRequestInput;
-import lsfusion.server.logics.form.struct.property.async.AsyncExec;
+import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapAdd;
+import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
+import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapRemove;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.cases.*;
@@ -251,85 +248,13 @@ public class CaseAction extends ListCaseAction {
     public Graph<ActionCase<PropertyInterface>> abstractGraph; 
 
     @Override
-    public SimpleRequestInput<PropertyInterface> getFlowSimpleRequestInputType(boolean optimistic, boolean inRequest) {
-        SimpleRequestInput<PropertyInterface> simpleInput = null;
-        ImList<ActionMapImplement<?, PropertyInterface>> actions = getListActions();
-        for (ActionMapImplement<?, PropertyInterface> action : actions) {
-            SimpleRequestInput<PropertyInterface> actionRequestInput = action.mapSimpleRequestInput(optimistic, inRequest);
-            if (!optimistic && actionRequestInput == null) {
-                return null;
-            }
+    public AsyncMapEventExec<PropertyInterface> calculateAsyncEventExec(boolean optimistic, boolean recursive) {
+        AsyncMapEventExec<PropertyInterface> asyncExec = getBranchAsyncEventExec(getListActions(), optimistic, recursive);
 
-            if (simpleInput == null) {
-                simpleInput = actionRequestInput;
-            } else {
-                if(actionRequestInput != null) {
-                    simpleInput = simpleInput.merge(actionRequestInput);
-                    if (simpleInput == null) {
-                        return null;
-                    }
-                }
-            }
-        }
-        return simpleInput;
-    }
-
-    @Override
-    public CustomClass getSimpleAdd() {
-
-        if(!isExclusive && Settings.get().isDisableSimpleAddRemoveInNonExclCase())
+        if((asyncExec instanceof AsyncMapAdd || asyncExec instanceof AsyncMapRemove) && !isExclusive && Settings.get().isDisableSimpleAddRemoveInNonExclCase())
             return null;
 
-        OrObjectClassSet result = null;
-        for (ActionMapImplement<?, PropertyInterface> action : getListActions()) {
-            CustomClass simpleAdd = action.action.getSimpleAdd();
-            if(simpleAdd==null) // значит есть case который не добавляет
-                return null;
-
-            OrObjectClassSet set = simpleAdd.getUpSet().getOr();
-            if(result == null)
-                result = set;
-            else
-                result = result.or(set);
-        }
-        return result != null ? result.getCommonClass() : null;
-    }
-
-    @Override
-    public PropertyInterface getSimpleDelete() {
-
-        if(isExclusive || !Settings.get().isDisableSimpleAddRemoveInNonExclCase()) {
-            PropertyInterface result = null;
-            for (ActionMapImplement<?, PropertyInterface> action : getListActions()) {
-                PropertyInterface simpleDelete = action.mapSimpleDelete();
-                if (simpleDelete != null && (result == null || BaseUtils.hashEquals(result, simpleDelete)))
-                    result = simpleDelete;
-                else { // значит есть case который не удаляет или удаляет что-то другое
-                    result = null;
-                    break;
-                }
-            }
-            if (result != null)
-                return result;
-        }
-        
-        return super.getSimpleDelete();
-    }
-
-    @Override
-    public AsyncExec getAsyncExec() {
-        AsyncExec result = null;
-        for (ActionMapImplement<?, PropertyInterface> action : getListActions()) {
-            AsyncExec asyncExec = action.action.getAsyncExec();
-            if (asyncExec != null) {
-                if (result == null) {
-                    result = asyncExec;
-                } else {
-                    return null;
-                }
-            }
-        }
-        return result;
+        return asyncExec;
     }
 
     /*

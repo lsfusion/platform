@@ -18,7 +18,6 @@ import lsfusion.server.base.controller.stack.ThisMessage;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.sql.exception.SQLHandledException;
-import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.data.where.Where;
@@ -35,7 +34,7 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.user.AbstractCustomClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.classes.user.CustomClass;
-import lsfusion.server.logics.form.interactive.action.input.SimpleRequestInput;
+import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.classes.infer.ClassType;
@@ -508,26 +507,10 @@ public class ForAction<I extends PropertyInterface> extends ExtendContextAction<
     }
 
     @Override
-    public SimpleRequestInput<PropertyInterface> getFlowSimpleRequestInputType(boolean optimistic, boolean inRequest) {
-        SimpleRequestInput<I> actionSimpleInput = action.mapSimpleRequestInput(optimistic, inRequest);
-        SimpleRequestInput<I> elseSimpleInput = elseAction == null ? null : elseAction.mapSimpleRequestInput(optimistic, inRequest);
-
-        if (!optimistic) {
-            if (actionSimpleInput == null) {
-                return null;
-            }
-            if (elseAction != null && elseSimpleInput == null) {
-                return null;
-            }
-        }
-
-        SimpleRequestInput<I> simpleInput = actionSimpleInput == null
-                ? elseSimpleInput
-                : elseSimpleInput == null
-                ? actionSimpleInput
-                : actionSimpleInput.merge(elseSimpleInput);
-        if(simpleInput != null)
-            return simpleInput.mapInner(mapInterfaces.reverse());
+    public AsyncMapEventExec<PropertyInterface> calculateAsyncEventExec(boolean optimistic, boolean recursive) {
+        AsyncMapEventExec<I> asyncExec = getBranchAsyncEventExec(ListFact.toList(action, elseAction), optimistic, recursive);
+        if(asyncExec != null)
+            return asyncExec.mapInner(mapInterfaces.reverse());
         return null;
     }
 

@@ -48,7 +48,7 @@ import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
-import lsfusion.server.logics.form.struct.property.async.AsyncChange;
+import lsfusion.server.logics.form.interactive.action.async.AsyncChange;
 import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.logics.navigator.window.AbstractWindow;
 import lsfusion.server.logics.navigator.window.NavigatorWindow;
@@ -941,11 +941,12 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         return pushPopRequestValue(true, env, callable);
     }
 
-    public <R> R pushPopRequestValue(boolean push, ExecutionEnvironment env, SQLCallable<R> callable) throws SQLException, SQLHandledException {
-        return pushRequestValue(getRequestPushedProperty(), push, env, callable);
+    public <R> R popRequest(ExecutionEnvironment env, SQLCallable<R> callable) throws SQLException, SQLHandledException {
+        return pushPopRequestValue(false, env, callable);
     }
 
-    public <R> R pushRequestValue(LP requestProperty, boolean push, ExecutionEnvironment env, SQLCallable<R> callable) throws SQLException, SQLHandledException {
+    public <R> R pushPopRequestValue(boolean push, ExecutionEnvironment env, SQLCallable<R> callable) throws SQLException, SQLHandledException {
+        LP requestProperty = getRequestPushedProperty();
         Object prevValue = requestProperty.read(env);
         requestProperty.change(push ? true : null, env);
         try {

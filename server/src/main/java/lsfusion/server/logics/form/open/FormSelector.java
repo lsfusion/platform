@@ -8,11 +8,10 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.ObjectValue;
-import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.ValueClass;
-import lsfusion.server.logics.form.open.interactive.SimpleDialogInput;
+import lsfusion.server.logics.form.interactive.action.input.InputContextProperty;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.filter.ContextFilterEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
@@ -38,11 +37,11 @@ public interface FormSelector<O extends ObjectSelector> {
     }
     Pair<FormEntity, ImRevMap<ObjectEntity, O>> getForm(BaseLogicsModule LM, DataSession session, ImMap<O, ? extends ObjectValue> mapObjectValues) throws SQLException, SQLHandledException;
 
-    default <P extends PropertyInterface> SimpleDialogInput<P> getSimpleDialogInput(BaseLogicsModule LM, O object, LP targetProp, ImSet<ContextFilterEntity<?, P, O>> contextFilters, ImRevMap<O, P> mapObjects) {
+    default <P extends PropertyInterface> InputContextProperty<?, P> getInputContextProperty(BaseLogicsModule LM, O object, ImSet<ContextFilterEntity<?, P, O>> contextFilters, ImRevMap<O, P> mapObjects) {
         Pair<FormEntity, ImRevMap<ObjectEntity, O>> staticForm = getForm(LM);
         if(staticForm == null)
             return null;
 
-        return staticForm.first.getSimpleDialogInput(LM, staticForm.second.singleKey(), targetProp, contextFilters.mapSetValues(contextFilter -> contextFilter.mapObjects(staticForm.second.reverse())), staticForm.second.join(mapObjects));
+        return staticForm.first.getInputContextProperty(LM, staticForm.second.singleKey(), contextFilters.mapSetValues(contextFilter -> contextFilter.mapObjects(staticForm.second.reverse())), staticForm.second.join(mapObjects));
     }
 }

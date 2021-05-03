@@ -3,6 +3,7 @@ package lsfusion.gwt.client.classes.data;
 import com.google.gwt.i18n.client.NumberFormat;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.async.GInputList;
 import lsfusion.gwt.client.form.property.cell.classes.controller.DoubleCellEditor;
 import lsfusion.gwt.client.form.property.cell.classes.view.DoubleCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
@@ -22,7 +23,7 @@ public class GDoubleType extends GIntegralType {
     }
 
     @Override
-    public CellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty, boolean hasList) {
+    public CellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList) {
         return new DoubleCellEditor(editManager, editProperty, getEditFormat(editProperty));
     }
 

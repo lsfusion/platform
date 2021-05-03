@@ -24,11 +24,9 @@ import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController;
 import lsfusion.gwt.client.form.order.user.GGridSortableHeaderManager;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTable;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -493,7 +491,14 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
                 handler -> selectionHandler.onCellBefore(handler, cell, rowChanged -> isChangeOnSingleClick(cell, (Boolean) rowChanged)),
                 handler -> column.onEditEvent(handler, false, cell, parent),
                 handler -> selectionHandler.onCellAfter(handler, cell),
-                handler -> CopyPasteUtils.putIntoClipboard(parent), handler -> CopyPasteUtils.getFromClipboard(handler, line -> pasteData(GwtClientUtils.getClipboardTable(line))), false);
+                handler -> CopyPasteUtils.putIntoClipboard(parent), handler -> CopyPasteUtils.getFromClipboard(handler, line -> pasteData(cell, parent, GwtClientUtils.getClipboardTable(line))), false);
+    }
+
+    @Override
+    public void pasteData(Cell cell, Element parent, List<List<String>> table) {
+        if (!table.isEmpty() && !table.get(0).isEmpty()) {
+            form.pasteValue(getEditContext(cell, parent), table.get(0).get(0));
+        }
     }
 
     protected boolean isFocusable(GPropertyDraw property) {
@@ -531,12 +536,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
                 form.update(property, cellElement, oldValue, new UpdateContext() {
                     @Override
                     public Consumer<Object> getCustomRendererValueChangeConsumer() {
-                        return value -> form.changeProperty(property,
-                                GGridPropertyTable.this.getColumnKey(cell),
-                                GEditBindingMap.CHANGE,
-                                (Serializable) value,
-                                oldValue,
-                                null);
+                        return value -> form.changeProperty(getEditContext(cell, cellElement), value);
                     }
 
                     @Override

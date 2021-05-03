@@ -79,8 +79,6 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public String defaultPattern;
     public GClass returnClass;
 
-    public GType changeWYSType;
-
     public Map<String, GAsyncEventExec> asyncExecMap;
 
     public GType getChangeType() {
@@ -233,12 +231,15 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         }
     }
 
-    public Object parseChangeValueOrNull(String s) {
-        if (s == null || changeWYSType == null) {
+    public Object parsePaste(String s) {
+        if (s == null) {
             return null;
         }
+        GType changeType = getChangeType();
+        if(changeType == null)
+            return null;
         try {
-            return changeWYSType.parseString(s, pattern);
+            return changeType.parseString(s, pattern);
         } catch (ParseException pe) {
             return null;
         }

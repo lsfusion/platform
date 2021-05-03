@@ -3,6 +3,7 @@ package lsfusion.gwt.client.form.property.cell.classes.controller;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.async.GInputList;
 import lsfusion.gwt.client.form.property.cell.classes.view.TextCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
@@ -12,8 +13,8 @@ import static lsfusion.gwt.client.view.StyleDefaults.*;
 
 public class TextCellEditor extends TextBasedCellEditor {
 
-    public TextCellEditor(EditManager editManager, GPropertyDraw property, boolean hasList) {
-        super(editManager, property, "textarea", hasList);
+    public TextCellEditor(EditManager editManager, GPropertyDraw property, GInputList inputList) {
+        super(editManager, property, "textarea", inputList);
     }
 
     @Override

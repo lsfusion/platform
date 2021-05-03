@@ -83,7 +83,6 @@ public class MainDispatchServlet extends net.customware.gwt.dispatch.server.stan
         registry.addHandler(new ChangeGroupObjectHandler(this));
         registry.addHandler(new ChangePageSizeHandler(this));
         registry.addHandler(new ChangeModeHandler(this));
-        registry.addHandler(new ChangePropertiesHandler(this));
         registry.addHandler(new ChangePropertyOrderHandler(this));
         registry.addHandler(new SetPropertyOrdersHandler(this));
         registry.addHandler(new ClosePressedHandler(this));
@@ -104,7 +103,6 @@ public class MainDispatchServlet extends net.customware.gwt.dispatch.server.stan
         registry.addHandler(new GroupReportHandler(this));
         registry.addHandler(new InterruptHandler(this));
         registry.addHandler(new PasteExternalTableHandler(this));
-        registry.addHandler(new PasteSingleCellValueHandler(this));
         registry.addHandler(new RefreshUPHiddenPropsActionHandler(this));
         registry.addHandler(new SaveUserPreferencesActionHandler(this));
         registry.addHandler(new ScrollToEndHandler(this));

@@ -4,7 +4,6 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.FocusWidget;
-import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
@@ -195,23 +194,10 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
     public UpdateContext getUpdateContext() {
         return this;
     }
-    protected abstract void onPaste(Object objValue, String stringValue);
 
-    public void pasteValue(final String value) {
-        Scheduler.get().scheduleDeferred(() -> {
-            Object objValue = null;
-            try {
-                objValue = property.baseType.parseString(value, property.pattern);
-            } catch (ParseException ignored) {}
-            updateValue(objValue);
-
-            onPaste(objValue, value);
-        });
-    }
+    public abstract void pasteValue(final String value);
 
     public void updateValue(Object value) {
-        setValue(value);
-
-        form.update(property, getRenderElement(), getValue(), this);
+        form.update(this, value);
     }
 }

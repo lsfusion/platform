@@ -39,10 +39,8 @@ import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.order.OrderEntity;
-import lsfusion.server.logics.form.struct.property.async.AsyncChange;
-import lsfusion.server.logics.form.struct.property.async.AsyncEventExec;
+import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
 import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyObjectEntity;
-import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
@@ -217,23 +215,18 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return getValueProperty();
     }
 
-    public AsyncChange getAsyncChange(FormEntity form, SecurityPolicy policy, String actionSID) {
-        AsyncEventExec asyncEventExec = getAsyncEventExec(form, policy, actionSID, true);
-        return asyncEventExec instanceof AsyncChange ? ((AsyncChange) asyncEventExec) : null;
-    }
-
     // for all external calls will set optimistic to true
-    public AsyncEventExec getAsyncEventExec(FormEntity form, SecurityPolicy policy, String actionSID, boolean optimistic) {
+    public AsyncEventExec getAsyncEventExec(FormEntity form, SecurityPolicy policy, String actionSID) {
         ActionObjectEntity<?> changeAction = getEventAction(actionSID, form, policy);
         if (changeAction != null) {
-            return changeAction.getAsyncEventExec(form, optimistic);
+            return changeAction.getAsyncEventExec(form, optimisticAsync);
         }
         return null;
     }
 
     private boolean isChange(String eventActionSID) {
         // GROUP_CHANGE can also be in context menu binding (see Property constructor)
-        boolean isEdit = CHANGE.equals(eventActionSID) || CHANGE_WYS.equals(eventActionSID) || GROUP_CHANGE.equals(eventActionSID) || NEW_WYS.equals(eventActionSID);
+        boolean isEdit = CHANGE.equals(eventActionSID) || GROUP_CHANGE.equals(eventActionSID);
         assert isEdit || hasContextMenuBinding(eventActionSID) || hasKeyBinding(eventActionSID);
         return isEdit;
     }
@@ -284,25 +277,15 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         ImRevMap<P, ObjectEntity> eventMapping = getEditMapping();
 
         // default implementations for group change and change wys
-        boolean isGroupChange = GROUP_CHANGE.equals(actionId);
-        boolean isNewWYS = NEW_WYS.equals(actionId);
-        if (isGroupChange || CHANGE_WYS.equals(actionId) || isNewWYS) {
+        if (GROUP_CHANGE.equals(actionId)) {
             ActionMapImplement<?, P> eventActionImplement = eventProperty.getExplicitEventAction(actionId);
             if(eventActionImplement != null)
                 return eventActionImplement.mapObjects(eventMapping);
 
             // if there is no handler, then generate one
-            ActionObjectEntity<?> eventAction = getEventAction(isNewWYS ? CHANGE_WYS : CHANGE, form);
-            if (eventAction != null) {
-                if (isGroupChange)
-                    return eventAction.getGroupChange(getToDraw(form));
-                else if(eventProperty instanceof Property) { // for actions CHANGE_WYS is not supported
-                    if(isNewWYS)
-                        return eventAction.getNewWYS(optimisticAsync);
-                    else
-                        return eventAction.getChangeWYS((Property<P>) eventProperty, optimisticAsync);
-                }
-            }
+            ActionObjectEntity<?> eventAction = getEventAction(CHANGE, form);
+            if (eventAction != null)
+                return eventAction.getGroupChange(getToDraw(form));
         } else {
             ActionMapImplement<?, P> eventActionImplement = eventProperty.getEventAction(actionId, ListFact.EMPTY());
             if(eventActionImplement != null)

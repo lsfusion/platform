@@ -21,7 +21,6 @@ import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
-import lsfusion.gwt.client.form.object.GGroupObjectValueBuilder;
 import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGridUserPreferences;
@@ -33,6 +32,7 @@ import lsfusion.gwt.client.form.object.table.view.GridDataRecord;
 import lsfusion.gwt.client.form.order.user.GGridSortableHeaderManager;
 import lsfusion.gwt.client.form.order.user.GOrder;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 
 import java.util.*;
 
@@ -794,18 +794,10 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     }
 
     @Override
-    public void pasteData(final List<List<String>> table) {
-        final int selectedColumn = getSelectedColumn();
-
-        if (selectedColumn == -1 || table.isEmpty()) {
-            return;
-        }
-
+    public void pasteData(Cell cell, Element parent, final List<List<String>> table) {
         final int tableColumns = getMaxColumnsCount(table);
-
-        boolean singleC = table.size() == 1 && tableColumns == 1;
-
-        if (!singleC) {
+        final int selectedColumn = getSelectedColumn();
+        if (table.size() > 1 || tableColumns > 1) {
             DialogBoxHelper.showConfirmBox("lsFusion", messages.formGridSureToPasteMultivalue(), false, new DialogBoxHelper.CloseCallback() {
                 @Override
                 public void closed(DialogBoxHelper.OptionType chosenOption) {
@@ -824,10 +816,9 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
                     }
                 }
             });
-        } else if (!table.get(0).isEmpty()) {
-            GGroupObjectValue fullKey = new GGroupObjectValueBuilder(getSelectedKey(), getColumnKey(selectedColumn)).toGroupObjectValue();
-            form.pasteSingleValue(getProperty(selectedColumn), fullKey, table.get(0).get(0));
+            return;
         }
+        super.pasteData(cell, parent, table);
     }
 
     @Override

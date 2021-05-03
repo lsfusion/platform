@@ -9,6 +9,7 @@ import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.result.VoidResult;
 import lsfusion.gwt.client.controller.remote.action.form.FormRequestAction;
 import lsfusion.gwt.client.controller.remote.action.navigator.LogClientExceptionAction;
+import lsfusion.gwt.client.controller.remote.action.navigator.NavigatorRequestAction;
 import lsfusion.gwt.client.navigator.controller.dispatch.NavigatorDispatchAsync;
 import lsfusion.gwt.client.view.MainFrame;
 import net.customware.gwt.dispatch.shared.Action;
@@ -95,6 +96,8 @@ public class GExceptionManager {
         long reqId;
         if (action instanceof FormRequestAction) {
             reqId = ((FormRequestAction) action).requestIndex;
+        } else if(action instanceof NavigatorRequestAction) {
+            reqId = ((NavigatorRequestAction) action).requestIndex;
         } else {
             int ind = -1;
             for (Map.Entry<Action, List<NonFatalHandledException>> actionListEntry : failedNotFatalHandledRequests.entrySet()) {

@@ -59,7 +59,6 @@ import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
-import lsfusion.server.logics.action.implement.ActionImplement;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.session.change.*;
@@ -779,7 +778,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
     public PropertyChanges getChangeModifier(PropertyChanges changes, boolean toNull) {
         // строим Where для изменения
-        return getPullDataChanges(changes, toNull).add(changes);
+        return getPullDataChanges(changes, toNull).getPropertyChanges().add(changes);
     }
 
     private ImSet<Property> recDepends;
@@ -1426,12 +1425,12 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     // используется для оптимизации - если Stored то попытать использовать это значение
     protected abstract boolean useSimpleIncrement();
 
-    public PropertyChanges getUsedDataChanges(PropertyChanges propChanges) {
-        return propChanges.filter(getUsedDataChanges(propChanges.getStruct()));
+    public PropertyChanges getUsedDataChanges(PropertyChanges propChanges, CalcDataType type) {
+        return propChanges.filter(getUsedDataChanges(propChanges.getStruct(), type));
     }
 
-    public ImSet<Property> getUsedDataChanges(StructChanges propChanges) {
-        return calculateUsedDataChanges(propChanges);
+    public ImSet<Property> getUsedDataChanges(StructChanges propChanges, CalcDataType type) {
+        return calculateUsedDataChanges(propChanges, type);
     }
 
     public DataChanges getDataChanges(PropertyChange<T> change, Modifier modifier) throws SQLException, SQLHandledException {
@@ -1450,37 +1449,41 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
     protected DataChanges getPullDataChanges(PropertyChanges changes, boolean toNull) {
         ImRevMap<T, KeyExpr> mapKeys = getMapKeys();
-        return getDataChanges(new PropertyChange<>(mapKeys, toNull ? CaseExpr.NULL() : getChangeExpr(), CompareWhere.compare(mapKeys, getChangeExprs())), changes, null);
+        return getDataChanges(new PropertyChange<>(mapKeys, toNull ? CaseExpr.NULL() : getChangeExpr(), CompareWhere.compare(mapKeys, getChangeExprs())), CalcDataType.PULLEXPR, changes, null);
     }
 
-    public DataChanges getJoinDataChanges(ImMap<T, ? extends Expr> implementExprs, Expr expr, Where where, GroupType groupType, PropertyChanges propChanges, WhereBuilder changedWhere) {
+    public DataChanges getJoinDataChanges(ImMap<T, ? extends Expr> implementExprs, Expr expr, Where where, GroupType groupType, PropertyChanges propChanges, CalcDataType type, WhereBuilder changedWhere) {
         ImRevMap<T, KeyExpr> mapKeys = getMapKeys();
         WhereBuilder changedImplementWhere = cascadeWhere(changedWhere);
         DataChanges result = getDataChanges(new PropertyChange<>(mapKeys,
                 GroupExpr.create(implementExprs, expr, where, groupType, mapKeys),
                 GroupExpr.create(implementExprs, where, mapKeys).getWhere()),
-                propChanges, changedImplementWhere);
+                type, propChanges, changedImplementWhere);
         if (changedWhere != null)
             changedWhere.add(new Query<>(mapKeys, changedImplementWhere.toWhere()).join(implementExprs).getWhere());// нужно перемаппить назад
         return result;
     }
 
+    public DataChanges getDataChanges(PropertyChange<T> change, PropertyChanges propChanges, WhereBuilder changedWhere) {
+        return getDataChanges(change, CalcDataType.EXPR, propChanges, changedWhere);
+    }
+
     @StackMessage("{message.core.property.data.changes}")
     @PackComplex
     @ThisMessage
-    public DataChanges getDataChanges(PropertyChange<T> change, PropertyChanges propChanges, WhereBuilder changedWhere) {
+    public DataChanges getDataChanges(PropertyChange<T> change, CalcDataType type, PropertyChanges propChanges, WhereBuilder changedWhere) {
         if (change.where.isFalse()) // оптимизация
             return DataChanges.EMPTY;
 
-        return calculateDataChanges(change, changedWhere, propChanges);
+        return calculateDataChanges(change, type, changedWhere, propChanges);
     }
 
-    protected ImSet<Property> calculateUsedDataChanges(StructChanges propChanges) {
+    protected ImSet<Property> calculateUsedDataChanges(StructChanges propChanges, CalcDataType type) {
         return SetFact.EMPTY();
     }
 
     // для оболочки чтобы всем getDataChanges можно было бы timeChanges вставить
-    protected DataChanges calculateDataChanges(PropertyChange<T> change, WhereBuilder changedWhere, PropertyChanges propChanges) {
+    protected DataChanges calculateDataChanges(PropertyChange<T> change, CalcDataType type, WhereBuilder changedWhere, PropertyChanges propChanges) {
         return DataChanges.EMPTY;
     }
 
@@ -1604,23 +1607,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         }
     }
 
-    public static <X extends PropertyInterface, T extends PropertyInterface> ActionMapImplement<?, T> createJoinAction(LA<X> action, PropertyMapImplement<?, T> implement) {
-        return PropertyFact.createJoinAction(new ActionImplement<>(action.action, MapFact.singleton(action.listInterfaces.single(), implement)));
-    }
-    private <X extends PropertyInterface> ActionMapImplement<?, T> createJoinAction(LA<X> action) {
-        return createJoinAction(action, getImplement());
-    }
-    private <X extends PropertyInterface> ActionMapImplement<?, T> getDefaultEditObjectAction(BaseLogicsModule lm) {
-        // formEdit(property(...))
-        return createJoinAction(lm.getNewSessionFormEdit());
-    }
-    private <X extends PropertyInterface> ActionMapImplement<?, T> getDefaultAsyncUpdateAction(BaseLogicsModule lm, ImList<Property> viewProperties, PropertyMapImplement<?, T> resultValue) {
-        // IF NOT requestCanceled() ASYNCUPDATE requestedProperty(...)
-        return PropertyFact.createIfAction(SetFact.EMPTY(), PropertyFact.createNot(lm.getRequestCanceledProperty().getImplement()),
-                                                    createJoinAction(lm.addAsyncUpdateAProp(), PropertyFact.createViewProperty(viewProperties, resultValue)), null);
-    }
-
-    private <X extends PropertyInterface> Pair<ActionMapImplement<?, T>, PropertyMapImplement<?, T>> getDefaultMainInputAction(BaseLogicsModule lm) {
+    private <X extends PropertyInterface> Pair<ActionMapImplement<?, T>, PropertyMapImplement<?, T>> getDefaultMainInputAction(BaseLogicsModule lm, ImList<Property> viewProperties) {
         ValueClass valueClass = getValueClass(ClassType.editValuePolicy);
         Property targetProp = lm.getRequestedValueProperty(valueClass);
 
@@ -1628,16 +1615,17 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         if(valueClass instanceof CustomClass) {
             // DIALOG LIST valueCLass INPUT object=property(...) CONSTRAINTFILTER
             CustomClass customClass = (CustomClass) valueClass;
-            
+
+            if (viewProperties.isEmpty() || viewProperties.get(0).getValueClass(ClassType.tryEditPolicy) instanceof CustomClass)
+                viewProperties = ListFact.add(((LP<?>) getBaseLM().addCastProp(ObjectType.idClass)).property, viewProperties); // casting object class to long to provide WYS
+
+            Property<?> viewProperty = PropertyFact.createViewProperty(viewProperties, null).property;
+
             // selectors could be used, but since this method is used after logics initialization, getting form, check properties here is more effective
             ClassFormEntity dialogForm = customClass.getDialogForm(lm);
             ImOrderSet<ConstraintCheckChangeProperty<?, T>> checkProperties = getCheckProperties();
-            if(checkProperties.isEmpty()) { // optimization
-                action = createJoinAction(lm.addInputAProp(dialogForm.form, dialogForm.object, targetProp));
-            } else {
-                LP<T> lp = new LP<>(this);
-                action = ((LA<X>) lm.addContextInputAProp(dialogForm.form, dialogForm.object, targetProp, lp, checkProperties)).getImplement(lp.listInterfaces);
-            }    
+            LP<T> lp = new LP<>(this);
+            action = ((LA<X>) lm.addContextInputAProp(dialogForm.form, dialogForm.object, targetProp, viewProperty, lp, checkProperties)).getImplement(lp.listInterfaces);
         } else
             // INPUT valueCLass
             action = lm.addInputAProp((DataClass) valueClass, targetProp, false).action.getImplement();
@@ -1651,12 +1639,8 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         mList.add(PropertyFact.createCheckCanBeChangedAction(interfaces, getImplement()));
 
         // main input
-        Pair<ActionMapImplement<?, T>, PropertyMapImplement<?, T>> input = getDefaultMainInputAction(lm);
+        Pair<ActionMapImplement<?, T>, PropertyMapImplement<?, T>> input = getDefaultMainInputAction(lm, viewProperies);
         mList.add(input.first);
-
-        // we need to update edited value to provide WYSIWYG
-        if(!viewProperies.isEmpty())
-            mList.add(getDefaultAsyncUpdateAction(lm, viewProperies, input.second));
 
         ActionMapImplement<?, T> exInputAction = PropertyFact.createListAction(interfaces, mList.immutableList());
         return new Pair<>(exInputAction, input.second);
@@ -1672,8 +1656,8 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
         if(eventActionSID.equals(ServerResponse.EDIT_OBJECT)) {
             ValueClass editClass = getValueClass(ClassType.tryEditPolicy);
-            LA defaultOpenAction = editClass != null ? editClass.getDefaultOpenAction(getBusinessLogics()) : null;
-            return defaultOpenAction != null ? createJoinAction(defaultOpenAction) : null;
+            LA<?> defaultOpenAction = editClass != null ? editClass.getDefaultOpenAction(getBusinessLogics()) : null;
+            return defaultOpenAction != null ? PropertyFact.createJoinAction(defaultOpenAction.action, getImplement()) : null;
         }
 
         if (!canBeChanged()) // optimization
@@ -1682,23 +1666,6 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         Pair<ActionMapImplement<?, T>, PropertyMapImplement<?, T>> input = getDefaultInputAction(lm, viewProperties);
         return PropertyFact.createRequestAction(interfaces, input.first, 
                                 PropertyFact.createSetAction(interfaces, getImplement(), input.second), null); // INPUT scripted input generates FOR, but now it's not important
-    }
-
-    @IdentityInstanceLazy
-    public Property<?> getViewProperty(CustomClass customClass) {
-        return getViewProperty(customClass, ListFact.EMPTY());
-    }
-
-    // actually protected, friendly with PropertyMapImplement
-    public Property<?> getViewProperty(CustomClass customClass, ImList<Property> viewProperties) {
-        ValueClass valueClass = getValueClass(ClassType.tryEditPolicy);
-        if(valueClass instanceof CustomClass && customClass.isChild((CustomClass)valueClass)) { // found
-            if (viewProperties.isEmpty() || viewProperties.get(0).getValueClass(ClassType.tryEditPolicy) instanceof CustomClass)
-                viewProperties = ListFact.add(((LP<?>) getBaseLM().addCastProp(ObjectType.idClass)).property, viewProperties); // casting object class to long to provide WYS
-
-            return PropertyFact.createViewProperty(viewProperties, null).property;
-        }
-        return null;
     }
 
     public boolean setNotNull;

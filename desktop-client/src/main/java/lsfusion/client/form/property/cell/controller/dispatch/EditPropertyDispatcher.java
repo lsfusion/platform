@@ -39,6 +39,7 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
     private ClientType readType;
     private Object oldValue;
     private boolean hasOldValue;
+    private ClientInputList readInputList;
     private Callback<Object> updateEditValueCallback;
 
     public EditPropertyDispatcher(EditPropertyHandler handler, DispatcherListener dispatcherListener) {
@@ -57,6 +58,7 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
         oldValue = null;
         hasOldValue = false;
 
+        readInputList = null;
         readType = null;
         simpleChangeProperty = null;
         editColumnKey = null;
@@ -174,6 +176,7 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
             readType = deserializeClientType(action.readType);
             oldValue = deserializeObject(action.oldValue);
             hasOldValue = action.hasOldValue;
+            readInputList = ClientAsyncSerializer.deserializeInputList(action.inputList);
         } catch (IOException e) {
             throw Throwables.propagate(e);
         }

@@ -16,6 +16,7 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.TypeSerializer;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.StringClass;
+import lsfusion.server.logics.form.interactive.action.async.AsyncSerializer;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerContext;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
@@ -28,8 +29,8 @@ import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawExtraType;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
-import lsfusion.server.logics.form.struct.property.async.AsyncChange;
-import lsfusion.server.logics.form.struct.property.async.AsyncEventExec;
+import lsfusion.server.logics.form.interactive.action.async.AsyncChange;
+import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
 import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyObjectEntity;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.infer.ClassType;
@@ -126,8 +127,8 @@ public class PropertyDrawView extends ComponentView {
     }
     
     public Type getChangeWYSType(ServerContext context) {
-        AsyncChange asyncChange = entity.getAsyncChange(context.entity, context.securityPolicy, CHANGE_WYS);
-        return asyncChange != null ? asyncChange.changeType : null;
+        AsyncEventExec asyncEventExec = entity.getAsyncEventExec(context.entity, context.securityPolicy, CHANGE);
+        return asyncEventExec instanceof AsyncChange ? ((AsyncChange) asyncEventExec).changeType : null;
     }
 
     @Override
@@ -146,10 +147,10 @@ public class PropertyDrawView extends ComponentView {
         return super.getBaseDefaultAlignment(formEntity);
     }
 
-    public Map<String, AsyncEventExec> getAsyncExec(ServerContext context) {
+    public Map<String, AsyncEventExec> getAsyncEventExec(ServerContext context) {
         Map<String, AsyncEventExec> asyncExecMap = new HashMap<>();
         for (String actionId : ServerResponse.events) {
-            AsyncEventExec asyncEventExec = entity.getAsyncEventExec(context.entity, context.securityPolicy, actionId, entity.optimisticAsync);
+            AsyncEventExec asyncEventExec = entity.getAsyncEventExec(context.entity, context.securityPolicy, actionId);
             if (asyncEventExec != null) {
                 asyncExecMap.put(actionId, asyncEventExec);
             }
@@ -300,11 +301,11 @@ public class PropertyDrawView extends ComponentView {
             TypeSerializer.serializeType(outStream, changeWYSType);
         }
 
-        Map<String, AsyncEventExec> asyncExecMap = getAsyncExec(pool.context);
+        Map<String, AsyncEventExec> asyncExecMap = getAsyncEventExec(pool.context);
         outStream.writeInt(asyncExecMap.size());
         for (Map.Entry<String, AsyncEventExec> entry : asyncExecMap.entrySet()) {
             pool.writeString(outStream, entry.getKey());
-            pool.serializeObject(outStream, entry.getValue());
+            AsyncSerializer.serializeEventExec(entry.getValue(), outStream);
         }
 
         outStream.writeBoolean(entity.askConfirm);

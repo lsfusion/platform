@@ -20,10 +20,11 @@ import lsfusion.server.logics.action.flow.FlowResult;
 import lsfusion.server.logics.action.flow.ForAction;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.classes.change.ClassChange;
-import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.user.*;
 import lsfusion.server.logics.classes.user.set.OrObjectClassSet;
 import lsfusion.server.logics.form.interactive.UpdateType;
+import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
+import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapRemove;
 import lsfusion.server.logics.form.interactive.instance.object.CustomObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
@@ -188,10 +189,10 @@ public class ChangeClassAction<T extends PropertyInterface, I extends PropertyIn
     }
 
     @Override
-    public PropertyInterface getSimpleDelete() {
+    public AsyncMapEventExec<PropertyInterface> calculateAsyncEventExec(boolean optimistic, boolean recursive) {
         if ((where == null || BaseUtils.hashEquals(mapInterfaces.valuesSet(),innerInterfaces)) && valueClass instanceof UnknownClass)
-            return interfaces.single();
-        return super.getSimpleDelete();
+            return new AsyncMapRemove<>(interfaces.single());
+        return null;
     }
 
     @Override

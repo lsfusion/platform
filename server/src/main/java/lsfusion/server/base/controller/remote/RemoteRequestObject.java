@@ -286,6 +286,7 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
             return result;
         }
 
+        // syncing executions with the same index to avoid simultaneous executing retryable requests
         @Around("execution(* lsfusion.server.base.controller.remote.RemoteRequestObject.executeServerInvocation(long, long, lsfusion.server.base.controller.remote.ui.RemotePausableInvocation)) && target(object) && args(requestIndex, lastReceivedRequestIndex, invocation)")
         public Object execute(ProceedingJoinPoint joinPoint, RemoteRequestObject object, long requestIndex, long lastReceivedRequestIndex, RemotePausableInvocation invocation) throws Throwable {
             return syncExecute(object.syncExecuteServerInvocationMap, requestIndex, joinPoint);

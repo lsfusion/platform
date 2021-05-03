@@ -3,13 +3,13 @@ package lsfusion.server.logics;
 import com.google.common.collect.Iterables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
+import lsfusion.base.Result;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.MMap;
-import lsfusion.base.col.interfaces.mutable.MRevMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.interop.form.WindowFormType;
@@ -65,9 +65,7 @@ import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.action.expand.ExpandCollapseGroupObjectAction;
 import lsfusion.server.logics.form.interactive.action.expand.ExpandCollapseType;
 import lsfusion.server.logics.form.interactive.action.focus.FocusAction;
-import lsfusion.server.logics.form.interactive.action.input.InputAction;
-import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
-import lsfusion.server.logics.form.interactive.action.input.RequestAction;
+import lsfusion.server.logics.form.interactive.action.input.*;
 import lsfusion.server.logics.form.interactive.action.seek.SeekGroupObjectAction;
 import lsfusion.server.logics.form.interactive.action.seek.SeekObjectAction;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
@@ -561,8 +559,8 @@ public abstract class LogicsModule {
     protected <O extends ObjectSelector> LA addIFAProp(Group group, LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, ManageSessionType manageSession, Boolean noCancel, Boolean syncType, WindowFormType windowType, boolean forbidDuplicate, boolean checkOnOk, boolean readonly) {
         return addIFAProp(group, caption, form, objectsToSet, nulls, ListFact.EMPTY(), ListFact.EMPTY(), ListFact.EMPTY(), manageSession, noCancel, SetFact.EMPTYORDER(), ListFact.EMPTY(), syncType, windowType, forbidDuplicate, checkOnOk, readonly);
     }
-    public <P extends PropertyInterface, O extends ObjectSelector> LA addIFAProp(Group group, LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, ImList<O> inputObjects, ImList<LP> inputProps, ImList<Boolean> inputNulls, ManageSessionType manageSession, Boolean noCancel, ImOrderSet<P> orderInterfaces, ImList<ContextFilterSelector<?, P, O>> contextProperties, Boolean syncType, WindowFormType windowType, boolean forbidDuplicate, boolean checkOnOk, boolean readonly) {
-        return addAction(group, new LA<>(new FormInteractiveAction<>(caption, form, objectsToSet, nulls, inputObjects, inputProps, inputNulls, orderInterfaces, contextProperties, manageSession, noCancel, syncType, windowType, forbidDuplicate, checkOnOk, readonly)));
+    public <P extends PropertyInterface, O extends ObjectSelector> LA<ClassPropertyInterface> addIFAProp(Group group, LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, ImList<O> inputObjects, ImList<LP> inputProps, ImList<Boolean> inputNulls, ManageSessionType manageSession, Boolean noCancel, ImOrderSet<P> orderInterfaces, ImList<ContextFilterSelector<?, P, O>> contextProperties, Boolean syncType, WindowFormType windowType, boolean forbidDuplicate, boolean checkOnOk, boolean readonly) {
+        return addAction(group, new LA<>(new FormInteractiveAction<>(caption, form, objectsToSet, nulls, inputObjects, inputProps, inputNulls, orderInterfaces, contextProperties, null, manageSession, noCancel, syncType, windowType, forbidDuplicate, checkOnOk, readonly)));
     }
     protected <O extends ObjectSelector> LA<?> addPFAProp(Group group, LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls,
                                                           ImOrderSet<PropertyInterface> orderContextInterfaces, ImList<ContextFilterSelector<?, PropertyInterface, O>> contextFilters,
@@ -965,25 +963,55 @@ public abstract class LogicsModule {
     
     @IdentityStrongLazy
     public LA addInputAProp(DataClass dataClass, Property targetProp, boolean hasOldValue) { 
-        return addInputAProp(dataClass, targetProp, hasOldValue, SetFact.EMPTYORDER(), null);
+        return addInputAProp(dataClass, new LP(targetProp), hasOldValue, SetFact.EMPTYORDER(), null, null, ListFact.EMPTY());
     }
 
-    public <T extends PropertyInterface> LA<?> addInputAProp(DataClass dataClass, Property targetProp, boolean hasOldValue, ImOrderSet<T> orderInterfaces, InputListEntity<?, T> contextList) {
-        return addAction(null, new LA(new InputAction(LocalizedString.create("Input"), dataClass, targetProp != null ? new LP(targetProp) : null, hasOldValue, orderInterfaces, contextList)));
+    public <T extends PropertyInterface> LA<?> addInputAProp(ValueClass valueClass, LP targetProp, boolean hasOldValue, ImOrderSet<T> orderInterfaces, InputListEntity<?, T> contextList, InputContextProperty<?, T> filterList, ImList<InputContextAction<?, T>> contextActions) {
+        // adding newedit action
+        if(valueClass instanceof ConcreteCustomClass)
+            contextActions = ListFact.add(contextList.getNewEditAction(baseLM, (ConcreteCustomClass) valueClass, targetProp), contextActions);
+        
+        if(filterList != null) // applying filter
+            contextList = contextList.and(filterList);
+
+        return addAction(null, new LA(new InputAction(LocalizedString.create("Input"), valueClass, targetProp, hasOldValue, orderInterfaces, contextList, contextActions)));
     }
 
-    // optimization to cache input for custom classes, returns action with one parameter 
-    @IdentityStrongLazy
-    public LA addInputAProp(FormEntity dialogForm, ObjectEntity object, Property targetProp) {
-        return addInputAProp(dialogForm, object, targetProp, SetFact.EMPTYORDER(), ListFact.EMPTY());
-    }
+    public <P extends PropertyInterface, X extends PropertyInterface, O extends ObjectSelector> LA addDialogInputAProp(FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, ImList<O> inputObjects, ImList<LP> inputProps, ImList<Boolean> inputNulls, InputListEntity<?, P> list, ManageSessionType manageSession, Boolean noCancel, ImOrderSet<P> orderInterfaces, ImList<ContextFilterSelector<?, P, O>> contextProperties, boolean syncType, WindowFormType windowType, boolean checkOnOk, boolean readonly) {
+        // objects + contextInterfaces
+        Result<InputListEntity<?, ClassPropertyInterface>> mappedList = list != null ? new Result<>() : null;
+        FormInteractiveAction<O> formAction = new FormInteractiveAction<>(LocalizedString.NONAME, form, objectsToSet, nulls, inputObjects, inputProps, inputNulls, orderInterfaces, contextProperties, map -> { if(mappedList != null) mappedList.set(list.map(map)); }, manageSession, noCancel, syncType ? true : null, windowType, false, checkOnOk, readonly);
 
-    public <T extends PropertyInterface> LA addInputAProp(FormEntity dialogForm, ObjectEntity object, Property targetProp, ImOrderSet<T> orderInterfaces, ImList<ContextFilterSelector<?, T, ObjectEntity>> contextFilters) {
-        return addIFAProp(null, LocalizedString.NONAME, dialogForm, ListFact.singleton(object), ListFact.singleton(true), ListFact.singleton(object), ListFact.singleton(new LP(targetProp)), ListFact.singleton(true), ManageSessionType.AUTO, FormEntity.DEFAULT_NOCANCEL, orderInterfaces, contextFilters, true, WindowFormType.FLOAT, false, false, false);
+        ImOrderSet<ClassPropertyInterface> listInterfaces = formAction.getFriendlyOrderInterfaces();
+
+        LA<?> resultAction;
+        // wrapping dialog into input operator
+        if(inputObjects.size() == 1 && syncType && list != null) {
+            O inputObject = inputObjects.single();
+            LP<?> inputProp = inputProps.single();
+
+            // adding asyncUpdate with list value
+            ActionMapImplement<X, ClassPropertyInterface> formAndUpdate = (ActionMapImplement<X, ClassPropertyInterface>)
+                    PropertyFact.createListAction(formAction.interfaces,
+                            ListFact.toList(formAction.getImplement(), mappedList.result.getAsyncUpdateAction(baseLM, inputProp.getImplement())));
+
+            ImRevMap<O, ClassPropertyInterface> mapObjects = formAction.mapObjects;
+            InputContextProperty<?, ClassPropertyInterface> inputFilter = form.getInputContextProperty(baseLM, inputObject, formAction.getContextFilters(), mapObjects);
+            if(inputFilter != null) {
+                // the order will / have to be the same as in formAction itself
+                return addInputAProp(form.getBaseClass(inputObject), inputProp, false, listInterfaces,
+                        // getting inputList entity with all filters
+                        mappedList.result, inputFilter, ListFact.toList(new InputContextAction<>("dialog", formAndUpdate.action, formAndUpdate.mapping))); // // adding dialog action (no string parameter, but extra parameters)
+            } else
+                resultAction = new LA<>(formAndUpdate.action, listInterfaces.mapOrder(formAndUpdate.mapping.reverse()));
+        } else
+            resultAction = new LA<>(formAction);
+
+        return addAction(null, resultAction);
     }
 
     // returns action with inputProperty order
-    public <T extends PropertyInterface> LA addContextInputAProp(FormEntity dialogForm, ObjectEntity object, Property targetProp, LP<T> inputProperty, ImOrderSet<ConstraintCheckChangeProperty<?, T>> checkProperties) {
+    public <T extends PropertyInterface> LA addContextInputAProp(FormEntity dialogForm, ObjectEntity object, Property targetProp, Property<?> viewProperty, LP<T> inputProperty, ImOrderSet<ConstraintCheckChangeProperty<?, T>> checkProperties) {
         ImOrderSet<ContextFilterSelector<?, T, ObjectEntity>> contextFilters = checkProperties.mapOrderSetValues(property -> {
             Pair<ImRevMap<ConstraintCheckChangeProperty.Interface<T>, T>, ConstraintCheckChangeProperty.Interface<T>> mapInterfaces = property.getMapInterfaces();
             return new ContextFilterEntity<>(property, mapInterfaces.first, MapFact.singletonRev(mapInterfaces.second, object));
@@ -991,7 +1019,10 @@ public abstract class LogicsModule {
 
         ImOrderSet<T> orderInterfaces = inputProperty.listInterfaces;
 
-        LA inputAction = addInputAProp(dialogForm, object, targetProp, orderInterfaces, contextFilters);
+        LA inputAction = addDialogInputAProp(dialogForm, 
+                                ListFact.singleton(object), ListFact.singleton(true), 
+                                ListFact.singleton(object), ListFact.singleton(new LP(targetProp)), ListFact.singleton(true), new InputListEntity<>(viewProperty, MapFact.EMPTYREV(), false),
+                                ManageSessionType.AUTO, FormEntity.DEFAULT_NOCANCEL, orderInterfaces, contextFilters, true, WindowFormType.FLOAT, false, false);
 
         return addJoinAProp(inputAction, BaseUtils.add(directLI(inputProperty), getParams(inputProperty))); // previous value + all params
     }
@@ -1749,7 +1780,7 @@ public abstract class LogicsModule {
         
         LA<?> result = addDeleteAProp(LocalizedString.create("{logics.delete}"), cls);
 
-        result.action.setSimpleDelete(true);
+        result.action.setSimpleDelete();
         setDeleteActionOptions(result);
 
         return addSessionScopeAProp(scope, result);
@@ -1767,11 +1798,9 @@ public abstract class LogicsModule {
 
     // assumes 1 parameter - new, others - context
     protected LA addNewEditAction(CustomClass cls, LA setAction, LA doAction, int contextParams) {
-        assert doAction.listInterfaces.size() >= contextParams; // assert that doaction uses all context params
-
         // NEW AUTOSET x=X DO {
-        //      <<setAction>>
         //      REQUEST
+        //          <<setAction>>
         //          edit(x);
         //      DO
         //          <<doAction>>
@@ -1781,26 +1810,27 @@ public abstract class LogicsModule {
         // }
 
         int newIndex = contextParams + 1;
+        Object[] setEditWithParams = new Object[]{baseLM.getPolyEdit(), newIndex};
+        if(setAction != null) // adding setAction if any
+            setEditWithParams = directLI(addListAProp(BaseUtils.add(directLI(setAction), setEditWithParams)));
+
         LA edit = addRequestAProp(null, true, LocalizedString.NONAME, // REQUEST
                 BaseUtils.add(BaseUtils.add(
-                new Object[]{baseLM.getPolyEdit(), newIndex}, // edit(x);
+                setEditWithParams, // edit(x);
                 directLI(doAction)), // DO <<doAction>>
                 new Object[]{addIfAProp(baseLM.sessionOwners, baseLM.getPolyDelete(), 1), newIndex}) // ELSE IF seekOwners THEN delete(x)
         );
 
-        LA setEdit = edit;
-        if(setAction != null) // adding setAction if any
-            setEdit = addListAProp(BaseUtils.add(directLI(setAction), directLI(setEdit)));
-
         return addForAProp(LocalizedString.create("{logics.add}"), false, false, false, false, contextParams, cls, true, false, 0, false,
-                BaseUtils.add(getUParams(contextParams + 1), directLI(setEdit))); // context + addedInterface + action
+                BaseUtils.add(getUParams(contextParams + 1), directLI(edit))); // context + addedInterface + action
     }
 
-    public LA<?> addNewEditAction(CustomClass cls, Property setProperty) {
+    public LA<?> addNewEditAction(CustomClass cls, LP targetProp, int contextParams, Object... setProperty) {
+        Object[] externalParams = getUParams(contextParams + 1); // + new object
         return addNewEditAction(cls,
-                addSetPropertyAProp(null, LocalizedString.NONAME, 2, false, 1, 2, new LP(setProperty), 2, 1), // viewProperty(new) <- context
-                baseLM.getEmptyObject(), // no action
-                1);
+                addSetPropertyAProp(null, LocalizedString.NONAME, contextParams + 1, false, BaseUtils.add(externalParams, setProperty)),
+                addSetPropertyAProp(null, LocalizedString.NONAME, contextParams + 1, false, BaseUtils.add(externalParams, new Object[] {targetProp, contextParams + 1})), // targetProp() <- new object
+                contextParams);
     }
 
     protected LA addNewEditAction(CustomClass cls, ObjectEntity contextObject, FormSessionScope scope) {

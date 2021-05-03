@@ -7,15 +7,17 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
-import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.interop.form.property.Compare;
+import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.ObjectValue;
+import lsfusion.server.language.action.LA;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BaseLogicsModule;
+import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
+import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.property.JoinProperty;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
@@ -23,7 +25,10 @@ import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.implement.PropertyImplement;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
+import lsfusion.server.logics.property.oraction.ActionOrPropertyUtils;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
+
+import java.sql.SQLException;
 
 // pretty similar to ContextFilterEntity
 public class InputListEntity<P extends PropertyInterface, V extends PropertyInterface> {
@@ -34,6 +39,9 @@ public class InputListEntity<P extends PropertyInterface, V extends PropertyInte
 
     public final boolean newSession;
 
+    public InputListEntity(Property<P> property, ImRevMap<P, V> mapValues) {
+        this(property, mapValues, false);
+    }
     public InputListEntity(Property<P> property, ImRevMap<P, V> mapValues, boolean newSession) {
         this.property = property;
         this.mapValues = mapValues;
@@ -72,74 +80,44 @@ public class InputListEntity<P extends PropertyInterface, V extends PropertyInte
         return new InputValueList<P>(property, BaseUtils.immutableCast(mapValues.join(map)));
     }
 
-    public static <P1 extends PropertyInterface, P2 extends PropertyInterface, V extends PropertyInterface, X extends PropertyInterface>
-                    InputListEntity<?, V> and(InputListEntity<P1, V> il1, InputListEntity<P2, V> il2) {
-        if(il2 == null)
-            return il1;
-        if(il1 == null)
-            return il2;
-
-        P1 p1 = il1.singleInterface();
-        P2 p2 = il2.singleInterface();
-
-        assert !il1.newSession && !il2.newSession;
-        ImRevMap<P1, P2> matchedParams = il1.mapValues.innerCrossValues(il2.mapValues).addRevExcl(MapFact.singletonRev(p1, p2));
-
-        ImRevMap<P1, JoinProperty.Interface> firstJoinParams = il1.property.interfaces.mapRevValues(JoinProperty.genInterface);
-        ImRevMap<P2, JoinProperty.Interface> rightSecondParams = il2.property.interfaces.removeIncl(matchedParams.valuesSet()).mapRevValues(JoinProperty.genInterface);
-        ImRevMap<P2, JoinProperty.Interface> secondJoinParams = rightSecondParams.addRevExcl(matchedParams.innerCrossJoin(firstJoinParams));
-
-        ImRevMap<V, JoinProperty.Interface> mapJoinValues = il1.mapValues.crossJoin(firstJoinParams).addRevExcl(il2.mapValues.innerCrossJoin(rightSecondParams));
-
-        PropertyMapImplement<X, JoinProperty.Interface> andProperty = (PropertyMapImplement<X, JoinProperty.Interface>)
-                PropertyFact.createAnd(firstJoinParams.valuesSet().addExcl(rightSecondParams.valuesSet()),
-                    new PropertyMapImplement<>(il1.property, firstJoinParams),
-                    new PropertyMapImplement<>(il2.property, secondJoinParams));
-
-        return new InputListEntity<>(andProperty.property, andProperty.mapping.innerCrossValues(mapJoinValues), false);
-    }
-
-    public <X extends PropertyInterface, J extends PropertyInterface> InputListEntity<?, V> and(Property<X> viewProperty) {
-        PropertyMapImplement<J, P> and = (PropertyMapImplement<J, P>) PropertyFact.createAnd(property.interfaces, new PropertyMapImplement<X, P>(viewProperty, MapFact.singletonRev(viewProperty.interfaces.single(), singleInterface())), property.getImplement());
-        return new InputListEntity<>(and.property, and.mapping.innerJoin(mapValues), newSession);
-    }
-    public Pair<Property<?>, ConcreteCustomClass> getViewProperty() {
-        ImMap<P, ValueClass> interfaceClasses = property.getInterfaceClasses(ClassType.tryEditPolicy);
-        ValueClass parameterClass = interfaceClasses.get(singleInterface());
-        if(parameterClass instanceof ConcreteCustomClass) {
-            ConcreteCustomClass concreteCustomClass = (ConcreteCustomClass) parameterClass;
-            Property<?> viewProperty = property.getViewProperty(concreteCustomClass);
-            if(viewProperty != null)
-                return new Pair<>(viewProperty, concreteCustomClass);
-        }
-        return null;
+    public <X extends PropertyInterface, J extends PropertyInterface> InputListEntity<?, V> and(InputContextProperty<X, V> filterProperty) {
+        InputContextProperty<J, V> and = (InputContextProperty<J, V>) InputContextProperty.and(new InputContextProperty<>(property, mapValues), filterProperty);
+        return new InputListEntity<>(and.property, and.mapValues, newSession);
     }
 
     public DataClass getDataClass() {
         return (DataClass) property.getType();
     }
 
-    // INPUT viewProperty.getType LIST viewList(x, sdss) TO inputWYSProp
-    public ActionMapImplement<?, V> getInputAction(BaseLogicsModule lm, LP<?> inputWYSProp) {
-        ImOrderSet<V> orderInterfaces = mapValues.valuesSet().toOrderSet();
-        return lm.addInputAProp(getDataClass(), inputWYSProp.property, false, orderInterfaces, this).getImplement(orderInterfaces);
-    }
-
-    // gets from inputted property target property
-    public ActionMapImplement<?, V> getWYSObjectAction(BaseLogicsModule lm, LP<?> targetProp, LP<?> inputWYSProp) {
-        P singleInterface = singleInterface();
-        return PropertyFact.createForAction(property.interfaces, mapValues.keys(), // FOR
-                //      viewList(x, sdss) = requestedProperty() DO
-                PropertyFact.createCompare(property.interfaces, property.getImplement(), inputWYSProp.getImplement(), Compare.EQUALS), MapFact.EMPTYORDER(), false,
-                //          targetProp() <- x;
-                PropertyFact.createSetAction(SetFact.singleton(singleInterface), targetProp.getImplement(), singleInterface),
-                //          ELSE targetProp() <- NULL;
-                PropertyFact.createSetAction(SetFact.EMPTY(), targetProp.getImplement(), lm.vnull.getImplement()),
-                false, SetFact.EMPTY(), false).
-                map(mapValues);
-    }
-
     public ImMap<V, ValueClass> getInterfaceClasses() {
         return mapValues.innerCrossJoin(property.getInterfaceClasses(ClassType.wherePolicy));
+    }
+
+    public <X extends PropertyInterface> InputContextAction<?, V> getNewEditAction(BaseLogicsModule baseLM, ConcreteCustomClass baseClass, LP targetProp) {
+        LP<P> lp = new LP<>(property);
+        ImOrderSet<P> listInterfaces = lp.listInterfaces;
+        P singleInterface = singleInterface();
+
+        int contextParams = property.interfaces.size();
+        int singleIndex = listInterfaces.indexOf(singleInterface) + 1; // object interface, have to be replaced with newIndex, and in set action it's gonna be a string interface
+
+        LA<X> newEdit = (LA<X>) baseLM.addNewEditAction(baseClass, targetProp, contextParams,
+                BaseUtils.add(BaseUtils.add(lp, ActionOrPropertyUtils.getIntParams(lp, singleIndex, contextParams + 1)), // remapping single interface to the new object
+                        singleIndex)); // replacing property with the string
+
+        return new InputContextAction<>("new", newEdit.getActionOrProperty(),
+                listInterfaces.mapSet(newEdit.listInterfaces).removeRev(singleInterface).crossJoin(mapValues));
+    }
+
+    public ObjectValue readObject(ExecutionContext<V> context, ObjectValue userValue) throws SQLException, SQLHandledException {
+        return FormInstance.getAsyncKey(map(context.getKeys()), context.getSession(), context.getModifier(), userValue);
+    }
+
+    public ActionMapImplement<?, V> getAsyncUpdateAction(BaseLogicsModule lm, PropertyMapImplement<?, V> targetProp) {
+        ImRevMap<P, PropertyInterfaceImplement<V>> mapIntValues = BaseUtils.immutableCast(mapValues);
+        return PropertyFact.createIfAction(SetFact.EMPTY(), PropertyFact.createNot(lm.getRequestCanceledProperty().getImplement()), // IF NOT requestCanceled()
+                PropertyFact.createJoinAction(lm.addAsyncUpdateAProp().getActionOrProperty(), // ASYNCUPDATE
+                        // list(requestedProperty(), ...)
+                        PropertyFact.createJoin(new PropertyImplement<>(property, MapFact.addExcl(mapIntValues, singleInterface(), targetProp)))), null);
     }
 }

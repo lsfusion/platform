@@ -1,16 +1,15 @@
 package lsfusion.server.logics.action.flow;
 
+import lsfusion.base.col.ListFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.data.sql.exception.SQLHandledException;
-import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
-import lsfusion.server.logics.classes.user.CustomClass;
-import lsfusion.server.logics.form.interactive.action.input.SimpleRequestInput;
+import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
@@ -72,34 +71,8 @@ public class IfAction extends KeepContextAction {
     }
 
     @Override
-    public SimpleRequestInput<PropertyInterface> getFlowSimpleRequestInputType(boolean optimistic, boolean inRequest) {
-        SimpleRequestInput<PropertyInterface> trueSimpleInput = trueAction == null ? null : trueAction.mapSimpleRequestInput(optimistic, inRequest);
-        SimpleRequestInput<PropertyInterface> falseSimpleInput = falseAction == null ? null : falseAction.mapSimpleRequestInput(optimistic, inRequest);
-
-        if (!optimistic) {
-            if (trueSimpleInput == null) {
-                return null;
-            }
-            if (falseAction != null && falseSimpleInput == null) {
-                return null;
-            }
-        }
-
-        return trueSimpleInput == null
-               ? falseSimpleInput
-               : falseSimpleInput == null
-                 ? trueSimpleInput
-                 : trueSimpleInput.merge(falseSimpleInput);
-    }
-
-    @Override
-    public CustomClass getSimpleAdd() {
-        return null; // пока ничего не делаем, так как на клиенте придется, "отменять" изменения
-    }
-
-    @Override
-    public PropertyInterface getSimpleDelete() {
-        return super.getSimpleDelete(); // по аналогии с верхним
+    public AsyncMapEventExec<PropertyInterface> calculateAsyncEventExec(boolean optimistic, boolean recursive) {
+        return getBranchAsyncEventExec(ListFact.toList(trueAction, falseAction), optimistic, recursive);
     }
 
     @Override

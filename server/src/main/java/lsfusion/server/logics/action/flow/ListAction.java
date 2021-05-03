@@ -13,14 +13,11 @@ import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.impl.NFListImpl;
 import lsfusion.server.base.version.interfaces.NFList;
 import lsfusion.server.data.sql.exception.SQLHandledException;
-import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.classes.ValueClass;
-import lsfusion.server.logics.classes.user.CustomClass;
-import lsfusion.server.logics.form.interactive.action.input.SimpleRequestInput;
-import lsfusion.server.logics.form.struct.property.async.AsyncExec;
+import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
@@ -140,73 +137,8 @@ public class ListAction extends ListCaseAction {
     }
 
     @Override
-    public SimpleRequestInput<PropertyInterface> getFlowSimpleRequestInputType(boolean optimistic, boolean inRequest) {
-        SimpleRequestInput<PropertyInterface> type = null;
-        for (ActionMapImplement<?, PropertyInterface> action : getListActions()) {
-            SimpleRequestInput<PropertyInterface> actionSimpleInput = action.mapSimpleRequestInput(optimistic, inRequest);
-            if (actionSimpleInput != null) {
-                if (type == null) {
-                    type = actionSimpleInput;
-                } else {
-                    type = type.merge(actionSimpleInput);
-                    if (type == null) {
-                        return null;
-                    }
-                }
-            }
-        }
-        return type;
-    }
-
-    @Override
-    public CustomClass getSimpleAdd() {
-        CustomClass result = null;
-        for (ActionMapImplement<?, PropertyInterface> action : getListActions()) {
-            CustomClass simpleAdd = action.action.getSimpleAdd();
-            if (simpleAdd != null) {
-                if (result == null) {
-                    result = simpleAdd;
-                } else {
-                    return null;
-                }
-            }
-        }
-        return result;
-    }
-
-    @Override
-    public PropertyInterface getSimpleDelete() {
-        PropertyInterface result = null;
-        for (ActionMapImplement<?, PropertyInterface> action : getListActions()) {
-            PropertyInterface simpleDelete = action.mapSimpleDelete();
-            if (simpleDelete != null) {
-                if (result == null) {
-                    result = simpleDelete;
-                } else {
-                    result = null;
-                    break;
-                }
-            }
-        }
-        if(result != null)
-            return result;
-        return super.getSimpleDelete();
-    }
-
-    @Override
-    public AsyncExec getAsyncExec() {
-        AsyncExec result = null;
-        for (ActionMapImplement<?, PropertyInterface> action : getListActions()) {
-            AsyncExec asyncExec = action.action.getAsyncExec();
-            if (asyncExec != null) {
-                if (result == null) {
-                    result = asyncExec;
-                } else {
-                    return null;
-                }
-            }
-        }
-        return result;
+    public AsyncMapEventExec<PropertyInterface> calculateAsyncEventExec(boolean optimistic, boolean recursive) {
+        return getListAsyncEventExec(getListActions(), recursive);
     }
 
     @Override

@@ -1,6 +1,8 @@
 package lsfusion.gwt.server.convert;
 
 import com.google.common.base.Throwables;
+import lsfusion.client.form.property.async.ClientPushAsyncAdd;
+import lsfusion.client.form.property.async.ClientPushAsyncChange;
 import lsfusion.gwt.client.action.GExternalHttpResponse;
 import lsfusion.gwt.client.form.GUpdateMode;
 import lsfusion.gwt.client.form.design.GFont;
@@ -11,6 +13,8 @@ import lsfusion.gwt.client.form.object.table.grid.user.design.GGroupObjectUserPr
 import lsfusion.gwt.client.form.object.table.grid.view.GListViewType;
 import lsfusion.gwt.client.form.property.GClassViewType;
 import lsfusion.gwt.client.form.property.GPropertyGroupType;
+import lsfusion.gwt.client.form.property.async.GPushAsyncAdd;
+import lsfusion.gwt.client.form.property.async.GPushAsyncChange;
 import lsfusion.gwt.client.form.property.cell.classes.*;
 import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
 import lsfusion.gwt.server.FileUtils;
@@ -93,7 +97,7 @@ public class GwtToClientConverter extends ObjectConverter {
 
     @Converter(from = GUserInputResult.class)
     public UserInputResult convertInputResult(GUserInputResult gInputResult) {
-        return new UserInputResult(gInputResult.isCanceled(), convertOrCast(gInputResult.getValue()));
+        return new UserInputResult(gInputResult.isCanceled(), convertOrCast(gInputResult.getValue()), gInputResult.getContextAction());
     }
 
     @Converter(from = GClassViewType.class)
@@ -124,6 +128,16 @@ public class GwtToClientConverter extends ObjectConverter {
         serializeGroupObjectValue(dataStream, groupObjectValue);
 
         return outStream.toByteArray();
+    }
+
+    // should correspond AsyncChange.deserializePush(byte[])
+    @Converter(from = GPushAsyncAdd.class)
+    public byte[] convertPushSyncAdd(GPushAsyncAdd pushAsyncChange) {
+        return new ClientPushAsyncAdd(pushAsyncChange.ID).serialize();
+    }
+    @Converter(from = GPushAsyncChange.class)
+    public byte[] convertPushAsyncChange(GPushAsyncChange pushAsync) {
+        return new ClientPushAsyncChange(convertOrCast(pushAsync.result)).serialize();
     }
 
     @Converter(from = GExternalHttpResponse.class)

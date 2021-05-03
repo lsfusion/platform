@@ -2,6 +2,7 @@ package lsfusion.gwt.client.classes.data;
 
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.async.GInputList;
 import lsfusion.gwt.client.form.property.cell.classes.GZDateTimeDTO;
 import lsfusion.gwt.client.form.property.cell.classes.controller.ZDateTimeCellEditor;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
@@ -15,7 +16,7 @@ public class GZDateTimeType extends GDateTimeType {
     public static GZDateTimeType instance = new GZDateTimeType();
 
     @Override
-    public CellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty, boolean hasList) {
+    public CellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList) {
         return new ZDateTimeCellEditor(editManager, editProperty);
     }
 
