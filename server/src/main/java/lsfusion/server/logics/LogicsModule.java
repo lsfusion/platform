@@ -1713,8 +1713,8 @@ public abstract class LogicsModule {
         return baseLM.getObjValueProp(formEntity, obj);
     }
 
-    public LP getObjIntervalProp(FormEntity formEntity, ImOrderSet<ObjectEntity> objects) {
-        return baseLM.getObjIntervalProp(formEntity, objects);
+    public LP getObjIntervalProp(ImOrderSet<ObjectEntity> objects) {
+        return baseLM.getObjIntervalProp(objects);
     }
 
     // ---------------------- Add Object ---------------------- //

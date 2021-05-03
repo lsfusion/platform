@@ -78,7 +78,6 @@ import org.antlr.runtime.RecognitionException;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
@@ -850,16 +849,8 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
     @Override
     @IdentityStrongLazy
-    public LP getObjIntervalProp(FormEntity formEntity, ImOrderSet<ObjectEntity> objects) {
-        ObjectEntity object1 = objects.get(0);
-        ObjectEntity object2 = objects.get(1);
-        ImOrderSet<ClassPropertyInterface> interfaces = SetFact.fromJavaOrderSet(Arrays.asList(object1.baseClass.getProperty().interfaces.single(), object2.baseClass.getProperty().interfaces.single()));
-        LP result = addProp(new IntervalValueProperty(interfaces));
-        if (formEntity.getCanonicalName() != null && !object1.noClasses() && !object2.noClasses()) {
-            String name = objValuePrefix + formEntity.getCanonicalName().replace('.', '_') + "_" + object1.getSID() + "_" + object2.getSID();
-            makePropertyPublic(result, name, object1.baseClass.getResolveSet(), object2.baseClass.getResolveSet());
-        }
-        return result;
+    public LP getObjIntervalProp(ImOrderSet<ObjectEntity> objects) {
+        return addProp(new IntervalValueProperty(objects));
     }
 
     @Override

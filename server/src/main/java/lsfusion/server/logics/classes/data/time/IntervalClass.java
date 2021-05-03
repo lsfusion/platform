@@ -45,7 +45,7 @@ public abstract class IntervalClass extends DataClass<BigDecimal> {
         super(caption);
     }
 
-    public LocalDateTime getLocalDateTime(BigDecimal value, boolean from) {
+    public static LocalDateTime getLocalDateTime(BigDecimal value, boolean from) {
         String object = String.valueOf(value);
         int indexOfDecimal = object.indexOf(".");
 
@@ -102,7 +102,8 @@ public abstract class IntervalClass extends DataClass<BigDecimal> {
 
     @Override
     public BigDecimal read(Object value) {
-        return value == null ? null : new BigDecimal(String.valueOf(value));
+        int length = value instanceof String ? ((String) value).split("[.]").length : 0;
+        return value == null || length > 2  ? getDefaultValue() : new BigDecimal(String.valueOf(value));
     }
 
     @Override

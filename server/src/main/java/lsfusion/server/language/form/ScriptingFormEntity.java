@@ -372,7 +372,7 @@ public class ScriptingFormEntity {
                 } else if (propertyName.equals("INTERVAL")) {
                     assert mapping.size() == 2;
                     objects = getMappingObjects(SetFact.fromJavaOrderSet(mapping));
-                    property = LM.getObjIntervalProp(form, objects);
+                    property = LM.getObjIntervalProp(getMappingObjects(SetFact.fromJavaOrderSet(mapping)));
                 }
             }
             Result<Pair<ActionOrProperty, String>> inherited = new Result<>();

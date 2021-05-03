@@ -995,8 +995,7 @@ formMappedProperty returns [BaseFormActionOrPropertyUsage propUsage]
 }
 	:	pu=formPropertyUsage[null] { $propUsage = $pu.propUsage; }
 		'('
-			objects=idList 
-			( ',' x = idList {objects.addAll(x);})?
+			objects=idList
 		')'
 	;
 
