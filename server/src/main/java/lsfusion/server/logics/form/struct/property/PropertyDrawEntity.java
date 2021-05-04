@@ -40,7 +40,6 @@ import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.order.OrderEntity;
-import lsfusion.server.logics.form.struct.property.async.AsyncAddRemove;
 import lsfusion.server.logics.form.struct.property.async.AsyncEventExec;
 import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyObjectEntity;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
@@ -323,7 +322,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
             for (ObjectEntity objectInstance : getObjectInstances().filter(groupObject.getObjects())) {
                 if (objectInstance.baseClass instanceof CustomClass) {
                     ExplicitAction dialogAction = objectInstance.getChangeAction();
-                    return new ActionObjectEntity<>(dialogAction, MapFact.singletonRev(dialogAction.interfaces.single(), objectInstance));
+                    return new ActionObjectEntity<>(dialogAction, MapFact.EMPTYREV());
                 }
             }
         }

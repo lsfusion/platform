@@ -26,7 +26,6 @@ import lsfusion.server.logics.LogicsModule.InsertType;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.ColorClass;
 import lsfusion.server.logics.classes.data.file.ImageClass;
-import lsfusion.server.logics.classes.data.utils.time.TimeLogicsModule;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
@@ -377,8 +376,7 @@ public class ScriptingFormEntity {
                     Iterator<ObjectEntity> iterator = objects.iterator();
                     ObjectEntity objectFrom = iterator.next();
                     ObjectEntity objectTo = iterator.next();
-                    property = LM.getObjIntervalProp(objectFrom, objectTo, ((TimeLogicsModule) LM.getRequiredModules("Time").get(0))
-                            .findProperty(getIntervalPropertyName(objectFrom)));
+                    property = LM.getObjIntervalProp(objectFrom, objectTo, LM.findProperty(getIntervalPropertyName(objectFrom)));
                 }
             }
             Result<Pair<ActionOrProperty, String>> inherited = new Result<>();

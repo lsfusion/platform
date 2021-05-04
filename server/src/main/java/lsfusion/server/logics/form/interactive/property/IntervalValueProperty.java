@@ -69,11 +69,6 @@ public class IntervalValueProperty extends NoIncrementProperty<ClassPropertyInte
     @Override
     @IdentityStrongLazy
     public ActionMapImplement<?, ClassPropertyInterface> getDefaultEventAction(String eventActionSID, ImList<Property> viewProperties) {
-        DefaultChangeIntervalObjectAction changeIntervalObjectAction
-                = new DefaultChangeIntervalObjectAction(objectFrom, objectTo, objectSid);
-        Iterator<ClassPropertyInterface> iterator = changeIntervalObjectAction.interfaces.iterator();
-
-        return new ActionMapImplement<>(changeIntervalObjectAction,
-                MapFact.toRevMap(iterator.next(), interfaceFrom, iterator.next(), interfaceTo));
+        return new ActionMapImplement<>(new DefaultChangeIntervalObjectAction(objectFrom, objectTo, objectSid), MapFact.EMPTYREV());
     }
 }

@@ -24,7 +24,7 @@ public class DefaultChangeIntervalObjectAction extends SystemExplicitAction {
     private final String type;
 
     public DefaultChangeIntervalObjectAction(ObjectEntity objectFrom, ObjectEntity objectTo, String type) {
-        super(LocalizedString.create("CO", false), objectFrom.baseClass, objectTo.baseClass);
+        super(LocalizedString.create("CO", false));
 
         this.type = type;
         this.objectFrom = objectFrom;
@@ -37,16 +37,16 @@ public class DefaultChangeIntervalObjectAction extends SystemExplicitAction {
     protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         final FormInstance formInstance = context.getFormFlowInstance();
 
-        ObjectInstance objectFromInstance = formInstance.instanceFactory.getInstance(objectFrom);
-        ObjectInstance objectToInstance = formInstance.instanceFactory.getInstance(objectTo);
-
         ObjectValue changeValue = context.requestUserData(IntervalClass.getInstance(type).getBaseClass(), null, false);
 
-        if (changeValue != null) {
-            BigDecimal newValue = (BigDecimal) changeValue.getValue();
+        if (changeValue != null)
+            changeObjects(formInstance, changeValue, true, false);
+    }
 
-            formInstance.changeObject(objectFromInstance, DataObject.getValue(getValue(newValue, true), objectFromInstance.getCurrentClass()));
-            formInstance.changeObject(objectToInstance, DataObject.getValue(getValue(newValue, false), objectToInstance.getCurrentClass()));
+    private void changeObjects(FormInstance formInstance, ObjectValue changeValue, boolean... positions) throws SQLException, SQLHandledException {
+        for (boolean position : positions) {
+            ObjectInstance objectInstance = formInstance.instanceFactory.getInstance(position ? objectFrom : objectTo);
+            formInstance.changeObject(objectInstance, DataObject.getValue(getValue((BigDecimal) changeValue.getValue(), position), objectInstance.getCurrentClass()));
         }
     }
 

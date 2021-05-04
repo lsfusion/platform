@@ -13,7 +13,6 @@ import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.action.ExplicitAction;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.classes.ValueClass;
-import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.form.interactive.action.change.DefaultChangeObjectAction;
@@ -84,7 +83,7 @@ public class ObjectEntity extends IdentityObject implements PropertyObjectInterf
 
     @IdentityInstanceLazy
     public ExplicitAction getChangeAction() {
-        return new DefaultChangeObjectAction(baseClass.getBaseClass(), this);
+        return new DefaultChangeObjectAction(this);
     }
 
     @Override

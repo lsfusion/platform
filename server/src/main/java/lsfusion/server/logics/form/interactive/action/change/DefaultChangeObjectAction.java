@@ -4,7 +4,6 @@ import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.action.SystemExplicitAction;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
-import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.object.CustomObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.DataObjectInstance;
@@ -19,8 +18,8 @@ public class DefaultChangeObjectAction extends SystemExplicitAction {
 
     private final ObjectEntity object;
     
-    public DefaultChangeObjectAction(ValueClass baseClass, ObjectEntity object) {
-        super(LocalizedString.create("CO", false), baseClass);
+    public DefaultChangeObjectAction(ObjectEntity object) {
+        super(LocalizedString.create("CO", false));
         this.object = object;
         
         finalizeInit();
