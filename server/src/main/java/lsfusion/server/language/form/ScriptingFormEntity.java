@@ -250,7 +250,7 @@ public class ScriptingFormEntity {
     }
 
     private ObjectEntity getSingleMappingObject(List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
-        checkSingleParam(mapping.size());
+        checkParamCount(mapping.size(), 1);
         return getMappingObjects(SetFact.singletonOrder(BaseUtils.single(mapping))).single();
     }
 
@@ -258,6 +258,11 @@ public class ScriptingFormEntity {
         ObjectEntity object = getSingleMappingObject(mapping);
         checkCustomClassParam(object, property);
         return object;
+    }
+
+    private ImOrderSet<ObjectEntity> getTwinMappingObject(List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
+        checkParamCount(mapping.size(), 2);
+        return getMappingObjects(SetFact.fromJavaOrderSet(mapping));
     }
 
     private ObjectEntity getObjectEntity(String name) throws ScriptingErrorLog.SemanticErrorException {
@@ -371,8 +376,7 @@ public class ScriptingFormEntity {
                     objects = SetFact.singletonOrder(obj);
                     forceIntegrationSID = propertyName;
                 } else if (propertyName.equals("INTERVAL")) {
-                    assert mapping.size() == 2;
-                    objects = getMappingObjects(SetFact.fromJavaOrderSet(mapping));
+                    objects = getTwinMappingObject(mapping);
                     Iterator<ObjectEntity> iterator = objects.iterator();
                     ObjectEntity objectFrom = iterator.next();
                     ObjectEntity objectTo = iterator.next();
@@ -434,19 +438,9 @@ public class ScriptingFormEntity {
         return type + "Interval" + "[" + type.toUpperCase() + ", " + type.toUpperCase() + "]";
     }
 
-
-    private static FormSessionScope getAddFormActionScope(String name) {
-        return OLDSESSION;
-    }
-
-    private static FormSessionScope getEditFormActionScope(String name) {
-        return OLDSESSION;
-    }
-
-    private void checkSingleParam(int size) throws ScriptingErrorLog.SemanticErrorException {
-        if (size != 1) {
-            LM.getErrLog().emitParamCountError(LM.getParser(), 1, size);
-        }
+    private void checkParamCount(int size, int expectedSize) throws ScriptingErrorLog.SemanticErrorException {
+        if (size != expectedSize)
+            LM.getErrLog().emitParamCountError(LM.getParser(), expectedSize, size);
     }
 
     private void checkCustomClassParam(ObjectEntity param, String propertyName) throws ScriptingErrorLog.SemanticErrorException {

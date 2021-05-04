@@ -10,7 +10,6 @@ import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
 import lsfusion.server.logics.classes.ValueClass;
-import lsfusion.server.logics.classes.data.time.IntervalClass;
 import lsfusion.server.logics.form.interactive.action.change.DefaultChangeIntervalObjectAction;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.CalcType;
@@ -18,6 +17,7 @@ import lsfusion.server.logics.property.NoIncrementProperty;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.classes.IsClassProperty;
+import lsfusion.server.logics.property.classes.infer.AlgType;
 import lsfusion.server.logics.property.classes.infer.ExClassSet;
 import lsfusion.server.logics.property.classes.infer.InferType;
 import lsfusion.server.logics.property.classes.infer.Inferred;
@@ -29,7 +29,7 @@ public class IntervalValueProperty extends NoIncrementProperty<ClassPropertyInte
 
     private final ObjectEntity objectFrom;
     private final ObjectEntity objectTo;
-    private final String objectSid;
+    private final ValueClass intervalValueClass;
     private final ClassPropertyInterface interfaceFrom;
     private final ClassPropertyInterface interfaceTo;
     private final LP<?> intervalProperty;
@@ -37,7 +37,6 @@ public class IntervalValueProperty extends NoIncrementProperty<ClassPropertyInte
     public IntervalValueProperty(ObjectEntity objectFrom, ObjectEntity objectTo, LP<?> intervalProperty) {
         super(LocalizedString.NONAME, IsClassProperty.getInterfaces(new ValueClass[]{objectFrom.baseClass, objectTo.baseClass}));
 
-        this.objectSid = objectFrom.baseClass.getSID();
         this.objectFrom = objectFrom;
         this.objectTo = objectTo;
 
@@ -46,6 +45,7 @@ public class IntervalValueProperty extends NoIncrementProperty<ClassPropertyInte
         this.interfaceTo = iterator.next();
 
         this.intervalProperty = intervalProperty;
+        this.intervalValueClass = intervalProperty.getActionOrProperty().getValueClass(AlgType.defaultType);
 
         finalizeInit();
     }
@@ -63,12 +63,12 @@ public class IntervalValueProperty extends NoIncrementProperty<ClassPropertyInte
 
     @Override
     public ExClassSet calcInferValueClass(ImMap<ClassPropertyInterface, ExClassSet> inferred, InferType inferType) {
-        return new ExClassSet(IntervalClass.getInstance(objectSid).getResolveSet());
+        return new ExClassSet(intervalValueClass.getResolveSet());
     }
 
     @Override
     @IdentityStrongLazy
     public ActionMapImplement<?, ClassPropertyInterface> getDefaultEventAction(String eventActionSID, ImList<Property> viewProperties) {
-        return new ActionMapImplement<>(new DefaultChangeIntervalObjectAction(objectFrom, objectTo, objectSid), MapFact.EMPTYREV());
+        return new ActionMapImplement<>(new DefaultChangeIntervalObjectAction(objectFrom, objectTo, intervalValueClass), MapFact.EMPTYREV());
     }
 }
