@@ -13,6 +13,7 @@ import java.sql.SQLException;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.Date;
 
 public abstract class IntervalClass extends DataClass<BigDecimal> {
 
@@ -101,18 +102,20 @@ public abstract class IntervalClass extends DataClass<BigDecimal> {
 
     @Override
     public BigDecimal read(Object value) {
-        if (value == null)
-            return null;
-        return new BigDecimal(String.valueOf(value));
+        int length = value instanceof String ? ((String) value).split("[.]").length : 0;
+        return value == null || length > 2  ? getDefaultValue() : new BigDecimal(String.valueOf(value));
     }
 
     @Override
     public BigDecimal getDefaultValue() {
-        return null;
+        long time = new Date().getTime() / 1000;
+        return new BigDecimal(time + "." + time);
     }
 
     @Override
     protected Class getReportJavaClass() {
         return BigDecimal.class;
     }
+
+    public abstract Object extractValue(LocalDateTime localDateTime);
 }

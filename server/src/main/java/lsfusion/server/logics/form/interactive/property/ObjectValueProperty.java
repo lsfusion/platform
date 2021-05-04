@@ -1,6 +1,5 @@
 package lsfusion.server.logics.form.interactive.property;
 
-import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
@@ -10,7 +9,6 @@ import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
 import lsfusion.server.logics.classes.ValueClass;
-import lsfusion.server.logics.form.interactive.action.change.DefaultChangeObjectAction;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.CalcType;
 import lsfusion.server.logics.property.NoIncrementProperty;
@@ -60,7 +58,7 @@ public class ObjectValueProperty extends NoIncrementProperty<ClassPropertyInterf
     @Override
     @IdentityStrongLazy // STRONG пришлось поставить из-за использования в политике безопасности
     public ActionMapImplement<?, ClassPropertyInterface> getDefaultEventAction(String eventActionSID, ImList<Property> viewProperties) {
-        return object.getChangeAction().getImplement(SetFact.singletonOrder(getInterface()));
+        return object.getChangeAction().getImplement();
     }
 
     private ClassPropertyInterface getInterface() {

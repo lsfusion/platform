@@ -6,6 +6,7 @@ import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 
@@ -41,5 +42,10 @@ public class DateIntervalClass extends IntervalClass {
     @Override
     public byte getTypeID() {
         return DataType.DATEINTERVAL;
+    }
+
+    @Override
+    public Object extractValue(LocalDateTime localDateTime) {
+        return localDateTime.toLocalDate();
     }
 }

@@ -53,6 +53,7 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import javax.swing.*;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -249,7 +250,7 @@ public class ScriptingFormEntity {
     }
 
     private ObjectEntity getSingleMappingObject(List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
-        checkSingleParam(mapping.size());
+        checkParamCount(mapping.size(), 1);
         return getMappingObjects(SetFact.singletonOrder(BaseUtils.single(mapping))).single();
     }
 
@@ -257,6 +258,11 @@ public class ScriptingFormEntity {
         ObjectEntity object = getSingleMappingObject(mapping);
         checkCustomClassParam(object, property);
         return object;
+    }
+
+    private ImOrderSet<ObjectEntity> getTwinMappingObject(List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
+        checkParamCount(mapping.size(), 2);
+        return getMappingObjects(SetFact.fromJavaOrderSet(mapping));
     }
 
     private ObjectEntity getObjectEntity(String name) throws ScriptingErrorLog.SemanticErrorException {
@@ -369,6 +375,12 @@ public class ScriptingFormEntity {
                     property = LM.getDeleteAction(obj, scope);
                     objects = SetFact.singletonOrder(obj);
                     forceIntegrationSID = propertyName;
+                } else if (propertyName.equals("INTERVAL")) {
+                    objects = getTwinMappingObject(mapping);
+                    Iterator<ObjectEntity> iterator = objects.iterator();
+                    ObjectEntity objectFrom = iterator.next();
+                    ObjectEntity objectTo = iterator.next();
+                    property = LM.getObjIntervalProp(objectFrom, objectTo, LM.findProperty(getIntervalPropertyName(objectFrom)));
                 }
             }
             Result<Pair<ActionOrProperty, String>> inherited = new Result<>();
@@ -416,18 +428,19 @@ public class ScriptingFormEntity {
         }
     }
 
-    private static FormSessionScope getAddFormActionScope(String name) {
-        return OLDSESSION;
+    private String getIntervalPropertyName(ObjectEntity object) {
+        String objectSid = object.baseClass.getSID();
+        int timeIndex = objectSid.indexOf("TIME");
+        String type = timeIndex < 1 ? objectSid.toLowerCase() :
+                objectSid.substring(0, timeIndex).toLowerCase() +
+                        objectSid.charAt(timeIndex) +
+                        objectSid.substring(timeIndex + 1).toLowerCase();
+        return type + "Interval" + "[" + type.toUpperCase() + ", " + type.toUpperCase() + "]";
     }
 
-    private static FormSessionScope getEditFormActionScope(String name) {
-        return OLDSESSION;
-    }
-
-    private void checkSingleParam(int size) throws ScriptingErrorLog.SemanticErrorException {
-        if (size != 1) {
-            LM.getErrLog().emitParamCountError(LM.getParser(), 1, size);
-        }
+    private void checkParamCount(int size, int expectedSize) throws ScriptingErrorLog.SemanticErrorException {
+        if (size != expectedSize)
+            LM.getErrLog().emitParamCountError(LM.getParser(), expectedSize, size);
     }
 
     private void checkCustomClassParam(ObjectEntity param, String propertyName) throws ScriptingErrorLog.SemanticErrorException {

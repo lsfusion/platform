@@ -42,6 +42,7 @@ import lsfusion.server.logics.form.interactive.action.change.FormAddObjectAction
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.action.input.RequestResult;
 import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
+import lsfusion.server.logics.form.interactive.property.IntervalValueProperty;
 import lsfusion.server.logics.form.interactive.property.ObjectValueProperty;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.group.Group;
@@ -843,6 +844,12 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
             makePropertyPublic(result, name, obj.baseClass.getResolveSet());
         }
         return result;
+    }
+
+    @Override
+    @IdentityStrongLazy
+    public LP getObjIntervalProp(ObjectEntity objectFrom, ObjectEntity objectTo, LP<?> intervalProperty) {
+        return addProp(new IntervalValueProperty(objectFrom, objectTo, intervalProperty));
     }
 
     @Override

@@ -1097,6 +1097,7 @@ formPredefinedUsage[List<String> mapping] returns [FormPredefinedUsage propUsage
 				( '[' clId=compoundID ']'  { signature = Collections.singletonList($clId.sid); } )?
 			)
 		|	cid='VALUE'		{ systemName = $cid.text; }
+		|	cid='INTERVAL'	{ systemName = $cid.text; }
 		|	cid='DELETE'	{ systemName = $cid.text; }
 ;
 
