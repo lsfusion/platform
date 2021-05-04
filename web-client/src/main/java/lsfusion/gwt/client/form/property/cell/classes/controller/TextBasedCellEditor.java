@@ -62,6 +62,8 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
     public void startEditing(Event event, Element parent, Object oldValue) {
         String value = tryFormatInputText(oldValue);
         if(hasList) {
+            suggestBox.refreshSuggestionList(); //show suggestions for empty value
+            prevQuery = value;
             suggestBox.setValue(value);
         }
         InputElement inputElement = getInputElement(parent);
@@ -246,6 +248,13 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
         }
     }
 
+    private String prevQuery = null;
+    private boolean checkQuery(String query) {
+        boolean check = !query.equals(prevQuery);
+        prevQuery = query;
+        return check;
+    }
+
     public Element createInputElement() {
         if(hasList) {
             suggestBox = new CustomSuggestBox(new SuggestOracle() {
@@ -261,43 +270,42 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
                 }
 
                 private void requestAsyncSuggestions(Request request, Callback callback) {
-                    if(ignoreRequest) {
-                        ignoreRequest = false;
-                        return;
-                    }
                     String query = nvl(request.getQuery(), "");
-                    editManager.getAsyncValues(query, new AsyncCallback<Pair<ArrayList<String>, Boolean>>() {
-                        @Override
-                        public void onFailure(Throwable caught) {
-                        }
-
-                        private boolean succeeded = false; //for some reason onSuccess executes again after item selection
-                        @Override
-                        public void onSuccess(Pair<ArrayList<String>, Boolean> result) {
-                            if(!succeeded) {
-                                suggestBox.setLatestSuggestions(result.first);
-                                List<Suggestion> suggestionList = new ArrayList<>();
-                                for (String suggestion : result.first) {
-                                    suggestionList.add(new Suggestion() {
-                                        @Override
-                                        public String getDisplayString() {
-                                            int start = suggestion.toLowerCase().indexOf(query.toLowerCase());
-                                            int end = start + query.length();
-                                            return suggestion.substring(0, start) + "<strong>" + suggestion.substring(start, end) + "</strong>" + suggestion.substring(end);
-                                        }
-
-                                        @Override
-                                        public String getReplacementString() {
-                                            return suggestion;
-                                        }
-                                    });
-                                }
-                                suggestBox.updateDecoration(suggestionList.isEmpty(), result.second);
-                                callback.onSuggestionsReady(request, new Response(suggestionList));
-                                succeeded = true;
+                    if (checkQuery(query)) {
+                        editManager.getAsyncValues(query, new AsyncCallback<Pair<ArrayList<String>, Boolean>>() {
+                            @Override
+                            public void onFailure(Throwable caught) {
                             }
-                        }
-                    });
+
+                            private boolean succeeded = false; //for some reason onSuccess executes again after item selection
+
+                            @Override
+                            public void onSuccess(Pair<ArrayList<String>, Boolean> result) {
+                                if (!succeeded) {
+                                    suggestBox.setLatestSuggestions(result.first);
+                                    List<Suggestion> suggestionList = new ArrayList<>();
+                                    for (String suggestion : result.first) {
+                                        suggestionList.add(new Suggestion() {
+                                            @Override
+                                            public String getDisplayString() {
+                                                int start = suggestion.toLowerCase().indexOf(query.toLowerCase());
+                                                int end = start + query.length();
+                                                return suggestion.substring(0, start) + "<strong>" + suggestion.substring(start, end) + "</strong>" + suggestion.substring(end);
+                                            }
+
+                                            @Override
+                                            public String getReplacementString() {
+                                                return suggestion;
+                                            }
+                                        });
+                                    }
+                                    suggestBox.updateDecoration(suggestionList.isEmpty(), result.second);
+                                    callback.onSuggestionsReady(request, new Response(suggestionList));
+                                    succeeded = true;
+                                }
+                            }
+                        });
+                    }
                 }
 
                 @Override
@@ -327,7 +335,6 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
         return value == null ? "" : value.toString();
     }
 
-    public boolean ignoreRequest = false;
     private class CustomSuggestBox extends SuggestBox {
         public DefaultSuggestionDisplayString display;
         private List<String> latestSuggestions = new ArrayList<>();
@@ -340,30 +347,16 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
             setAutoSelectEnabled(false);
 
             addKeyDownHandler(event -> {
-                //consume keydown except of enter and escape
+                //stopPropagation of events processed in SuggestBox onKeyDown handler
                 if(isSuggestionListShowing()) {
                     int keyCode = event.getNativeEvent().getKeyCode();
-                    if (keyCode != KeyCodes.KEY_ENTER && keyCode != KeyCodes.KEY_ESCAPE) {
+                    if (keyCode == KeyCodes.KEY_DOWN || keyCode == KeyCodes.KEY_UP) {
                         event.stopPropagation();
                     }
                 }
             });
-            
-            addKeyUpHandler(event -> {
-                //need to ignore request from onKeyUp method in SuggestBox
-                if(isSuggestionListShowing() && ignoreKeyCode(event.getNativeEvent())) {
-                    ignoreRequest = true;
-                }
-            });
+
             refreshSuggestionList();
-        }
-
-        private native boolean ignoreKeyCode(NativeEvent event) /*-{
-            return event.key.length !== 1 && event.key !== 'Backspace';
-        }-*/;
-
-        public void updateText() {
-            setText(display.getReplacementString());
         }
 
         public void setLatestSuggestions(List<String> latestSuggestions) {
@@ -390,19 +383,6 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
         public String getReplacementString() {
             SuggestOracle.Suggestion selection = getCurrentSelection();
             return selection != null ? selection.getReplacementString() : null;
-        }
-
-        @Override
-        protected void moveSelectionDown() {
-            super.moveSelectionDown();
-            suggestBox.updateText();
-
-        }
-
-        @Override
-        protected void moveSelectionUp() {
-            super.moveSelectionUp();
-            suggestBox.updateText();
         }
 
         @Override
