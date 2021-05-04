@@ -117,5 +117,5 @@ public abstract class IntervalClass extends DataClass<BigDecimal> {
         return BigDecimal.class;
     }
 
-    public abstract Object getSingleValue(BigDecimal value, boolean from);
+    public abstract Object extractValue(LocalDateTime localDateTime);
 }

@@ -10,6 +10,7 @@ import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
 import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.server.logics.classes.data.time.IntervalClass;
 import lsfusion.server.logics.form.interactive.action.change.DefaultChangeIntervalObjectAction;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.CalcType;
@@ -29,7 +30,7 @@ public class IntervalValueProperty extends NoIncrementProperty<ClassPropertyInte
 
     private final ObjectEntity objectFrom;
     private final ObjectEntity objectTo;
-    private final ValueClass intervalValueClass;
+    private final IntervalClass intervalValueClass;
     private final ClassPropertyInterface interfaceFrom;
     private final ClassPropertyInterface interfaceTo;
     private final LP<?> intervalProperty;
@@ -45,7 +46,7 @@ public class IntervalValueProperty extends NoIncrementProperty<ClassPropertyInte
         this.interfaceTo = iterator.next();
 
         this.intervalProperty = intervalProperty;
-        this.intervalValueClass = intervalProperty.getActionOrProperty().getValueClass(AlgType.defaultType);
+        this.intervalValueClass = (IntervalClass) intervalProperty.getActionOrProperty().getValueClass(AlgType.defaultType);
 
         finalizeInit();
     }

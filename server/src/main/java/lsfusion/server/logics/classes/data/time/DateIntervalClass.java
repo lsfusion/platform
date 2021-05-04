@@ -6,7 +6,7 @@ import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.math.BigDecimal;
-import java.time.ZoneId;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 
@@ -45,7 +45,7 @@ public class DateIntervalClass extends IntervalClass {
     }
 
     @Override
-    public Object getSingleValue(BigDecimal value, boolean from) {
-        return getLocalDateTime(value, from).atZone(ZoneId.systemDefault()).toLocalDate();
+    public Object extractValue(LocalDateTime localDateTime) {
+        return localDateTime.toLocalDate();
     }
 }
