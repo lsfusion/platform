@@ -106,15 +106,12 @@ public class PostgreDataAdapter extends DataAdapter {
     }
 
     @Override
-    protected void ensureSystemFuncs() throws IOException, SQLException {
-        executeEnsure(IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sql/postgres/getAnyNotNull.sql")));
-//        executeEnsure(IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sql/postgres/jumpWorkdays.sql")));
-        executeEnsure(IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sql/postgres/completeBarcode.sql")));
-        executeEnsure(IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sql/postgres/aggf.sql")));
-        recursionString = IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sql/postgres/recursion.sql"));
-        safeCastString = IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sql/postgres/safecast.sql"));
-        safeCastIntString = IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sql/postgres/safecastint.sql"));
-        executeEnsure(IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sql/postgres/cast.sql")));
+    protected void ensureSystemFuncs(List<String> resources) throws IOException, SQLException {
+        executeEnsure(filterResources(resources, true, "/postgres/"));
+
+        recursionString = IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sql/postgres/recursion.tsql"));
+        safeCastString = IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sql/postgres/safecast.tsql"));
+        safeCastIntString = IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sql/postgres/safecastint.tsql"));
     }
 
     @Override

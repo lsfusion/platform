@@ -1,6 +1,7 @@
 package lsfusion.server.data.sql.adapter;
 
 import lsfusion.base.Pair;
+import lsfusion.base.ResourceUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
@@ -36,6 +37,8 @@ import java.sql.Statement;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public abstract class DataAdapter extends AbstractConnectionPool implements TypePool {
     public final static SQLSyntax debugSyntax = PostgreSQLSyntax.instance;
@@ -70,10 +73,27 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
 
         ensureConnection = startConnection();
         ensureConnection.setAutoCommit(true);
-        ensureSystemFuncs();
+
+        List<String> resources = ResourceUtils.getResources(Pattern.compile("/sql/.*\\.sql"));
+        ensureSystemFuncs(resources);
+        ensureCustomFuncs(resources);
     }
 
-    protected void ensureSystemFuncs() throws IOException, SQLException {
+    private void ensureCustomFuncs(List<String> resources) {
+        executeEnsure(filterResources(resources, false, "/postgres/", "/mysql/"));
+    }
+
+    protected List<String> filterResources(List<String> resources, boolean keep, String... keys) {
+        return resources.stream().filter(resource -> {
+            for (String key : keys) {
+                if (resource.contains(key))
+                    return keep;
+            }
+            return !keep;
+        }).collect(Collectors.toList());
+    }
+
+    protected void ensureSystemFuncs(List<String> resources) throws IOException, SQLException {
         throw new UnsupportedOperationException();        
     }
 
@@ -149,6 +169,16 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
         } catch (SQLException e) {
             ServerLoggers.sqlSuppLog(e);
         }
+    }
+
+    protected void executeEnsure(List<String> functions) {
+        functions.forEach(command -> {
+            try {
+                executeEnsure(IOUtils.readStreamToString(ResourceUtils.getResourceAsStream(command)));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     protected void executeEnsureParams(String command, ImList<TypeObject> params) throws SQLException {
