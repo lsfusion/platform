@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Context>
+    <WatchedResource>WEB-INF/web.xml</WatchedResource>
+    <WatchedResource>${catalina.base}/conf/web.xml</WatchedResource>
+
+    <!--Recent changes in HTTP standards related to Cookie SameSite attribute changed so that if unset 
+    now it defaults to 'Lax' value (in most modern browsers) instead of previous 'None'.
+    https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie/SameSite
+    We need 'None' at least for Form API in order to make cross-site requests work properly (to deliver Cookies correctly).-->
+    <CookieProcessor sameSiteCookies="none"/>
+</Context>
