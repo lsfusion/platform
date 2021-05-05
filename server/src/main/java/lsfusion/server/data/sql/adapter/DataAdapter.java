@@ -9,7 +9,6 @@ import lsfusion.base.col.lru.LRUSVSMap;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.file.IOUtils;
 import lsfusion.server.data.expr.query.GroupType;
-import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.connection.AbstractConnectionPool;
 import lsfusion.server.data.sql.syntax.DefaultSQLSyntax;
 import lsfusion.server.data.sql.syntax.PostgreSQLSyntax;
@@ -18,7 +17,6 @@ import lsfusion.server.data.table.SessionTable;
 import lsfusion.server.data.type.ConcatenateType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.TypeFunc;
-import lsfusion.server.data.type.TypeObject;
 import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.data.type.exec.TypePool;
 import lsfusion.server.logics.BusinessLogics;
@@ -31,9 +29,9 @@ import org.springframework.util.PropertyPlaceholderHelper;
 
 import java.io.IOException;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -68,33 +66,51 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
         this.instance = instance;
     }
 
+    private List<String> resources;
+
     public void ensure(boolean cleanDB) throws Exception {
         ensureDB(cleanDB);
 
         ensureConnection = startConnection();
         ensureConnection.setAutoCommit(true);
 
-        List<String> resources = ResourceUtils.getResources(Pattern.compile("/sql/.*\\.sql"));
-        ensureSystemFuncs(resources);
-        ensureCustomFuncs(resources);
+        resources = ResourceUtils.getResources(Pattern.compile("/sql/.*"));
+
+        ensureSystemFuncs();
+        ensureCustomFuncs();
     }
 
-    private void ensureCustomFuncs(List<String> resources) {
-        executeEnsure(filterResources(resources, false, "/postgres/", "/mysql/"));
+    private void ensureCustomFuncs() {
+        executeEnsure(filterResources(false));
     }
 
-    protected List<String> filterResources(List<String> resources, boolean keep, String... keys) {
+    private List<String> filterResources(boolean loadSystemScript) {
         return resources.stream().filter(resource -> {
-            for (String key : keys) {
+            if (resource.contains(".tsql"))
+                return false;
+            for (String key : getKeys(loadSystemScript)) {
                 if (resource.contains(key))
-                    return keep;
+                    return loadSystemScript;
             }
-            return !keep;
+            return !loadSystemScript;
         }).collect(Collectors.toList());
     }
 
-    protected void ensureSystemFuncs(List<String> resources) throws IOException, SQLException {
-        throw new UnsupportedOperationException();        
+    private List<String> getKeys(boolean loadSystemScript) {
+        List<String> keys = new ArrayList<>();
+        if (loadSystemScript)
+            keys.add("/" + getDBName() + "/");
+        else {
+            keys.add("/" + PostgreDataAdapter.DB_NAME + "/");
+            keys.add("/" + MySQLDataAdapter.DB_NAME + "/");
+        }
+        return keys;
+    }
+
+    protected abstract String getDBName();
+
+    protected void ensureSystemFuncs() throws IOException, SQLException {
+        executeEnsure(filterResources(true));
     }
 
     public void ensureLogLevel() {
@@ -163,7 +179,6 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
     protected Connection ensureConnection;
 
     protected void executeEnsure(String command) {
-        //        statement.setQueryTimeout(1);
         try (Statement statement = ensureConnection.createStatement()) {
             statement.execute(command);
         } catch (SQLException e) {
@@ -179,21 +194,6 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
                 throw new RuntimeException(e);
             }
         });
-    }
-
-    protected void executeEnsureParams(String command, ImList<TypeObject> params) throws SQLException {
-        PreparedStatement statement = ensureConnection.prepareStatement(command);
-//        statement.setQueryTimeout(1);
-        SQLSession.ParamNum paramNum = new SQLSession.ParamNum();
-        for(TypeObject param : params)
-            param.writeParam(statement, paramNum, syntax);
-        try {
-            statement.execute();
-        } catch(SQLException e) {
-            ServerLoggers.sqlSuppLog(e);
-        } finally {
-            statement.close();
-        }
     }
 
     protected MAddExclMap<ConcatenateType, Boolean> ensuredConcTypes = MapFact.mAddExclMap();
