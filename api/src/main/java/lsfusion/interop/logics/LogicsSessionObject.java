@@ -54,22 +54,20 @@ public class LogicsSessionObject {
             List<Pair<String, RawFileData>> files = getRawFileDataFromJson(json.optJSONArray("resourceFiles"));
             boolean disableRegistration = json.optBoolean("disableRegistration");
 
-            Map<String, String> mapsApiKeys = getMapsApiKeysFromJson(json.optJSONArray("mapsApiKeys"));
+            Map<String, String> lsfParams = getLsfParamsFromJson(json.optJSONArray("lsfParams"));
 
             serverSettings = new ServerSettings(logicsName, displayName, logicsLogo, logicsIcon, platformVersion, apiVersion,
-                    sessionConfigTimeout, anonymousUI, jnlpUrls, files, disableRegistration, mapsApiKeys);
+                    sessionConfigTimeout, anonymousUI, jnlpUrls, files, disableRegistration, lsfParams);
         }
         return serverSettings;
     }
 
-    private Map<String, String> getMapsApiKeysFromJson(JSONArray jsonArray) {
-        Map<String, String> mapsApiKeys = new HashMap<>();
+    private Map<String, String> getLsfParamsFromJson(JSONArray jsonArray) {
+        Map<String, String> lsfParams = new HashMap<>();
         for (int i = 0; i < jsonArray.length(); i++) {
-            String provider = jsonArray.optJSONObject(i).optString("provider");
-            String apiKey = jsonArray.optJSONObject(i).optString("key");
-            mapsApiKeys.put(provider, apiKey);
+            lsfParams.put(jsonArray.optJSONObject(i).optString("key"), jsonArray.optJSONObject(i).optString("value"));
         }
-        return mapsApiKeys;
+        return lsfParams;
     }
 
     private List<Pair<String, RawFileData>> getRawFileDataFromJson(JSONArray jsonArray) {

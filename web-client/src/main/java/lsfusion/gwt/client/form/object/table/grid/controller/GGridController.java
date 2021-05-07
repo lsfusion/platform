@@ -56,6 +56,14 @@ public class GGridController extends GAbstractTableController {
         return groupObject.pivotOptions;
     }
 
+    public String getMapTileProvider() {
+        return groupObject.mapTileProvider;
+    }
+
+    public boolean isGridAutosize() {
+        return groupObject.grid.autoSize;
+    }
+
     public GGridController(GFormController iformController, GGroupObject groupObject, GGridUserPreferences[] userPreferences) {
         super(iformController, groupObject.toolbar, isList(groupObject));
         this.groupObject = groupObject;
@@ -130,7 +138,7 @@ public class GGridController extends GAbstractTableController {
     
     private GGridUserPreferences[] userPreferences;
     private void setGridTableView() {
-        changeTableView(new GGridTable(formController, this, userPreferences, groupObject.grid.autoSize));
+        changeTableView(new GGridTable(formController, this, userPreferences));
         gridTableButton.showBackground(true);
         pivotTableButton.showBackground(false);
         if(mapTableButton != null)
@@ -152,7 +160,7 @@ public class GGridController extends GAbstractTableController {
             calendarTableButton.showBackground(false);
     }
     private void setMapTableView() {
-        changeTableView(new GMap(formController, this, groupObject.mapTileProvider));
+        changeTableView(new GMap(formController, this));
         mapTableButton.showBackground(true);
         gridTableButton.showBackground(false);
         pivotTableButton.showBackground(false);

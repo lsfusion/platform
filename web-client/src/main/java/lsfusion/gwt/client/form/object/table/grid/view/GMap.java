@@ -34,11 +34,9 @@ import static lsfusion.gwt.client.view.StyleDefaults.getFocusedCellBackgroundCol
 public class GMap extends GSimpleStateTableView<JavaScriptObject> implements RequiresResize {
     // No need to support color themes here as we apply svg filters to the icon anyway.
     private final String DEFAULT_MARKER_ICON_URL = GwtClientUtils.getModuleImagePath("map_marker.png");
-    private final String tileProvider;
 
-    public GMap(GFormController form, GGridController grid, String tileProvider) {
+    public GMap(GFormController form, GGridController grid) {
         super(form, grid);
-        this.tileProvider = tileProvider;
     }
 
     private static class GroupMarker {
@@ -121,7 +119,7 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
     protected void render(Element renderElement, JsArray<JavaScriptObject> listObjects) {
         if(map == null) {
             markerClusters = createMarkerClusters();
-            map = createMap(renderElement, markerClusters, tileProvider);
+            map = createMap(renderElement, markerClusters, grid.getMapTileProvider());
         }
 
         Map<Object, JsArray<JavaScriptObject>> routes = new HashMap<>();
@@ -224,13 +222,15 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
         var map = L.map(element);
 
         if (tileProvider === 'google') {
-            L.tileLayer('http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
-                subdomains: ['mt0', 'mt1', 'mt2', 'mt3']
-            }).addTo(map);
+            $wnd.loadCustomScriptIfNoExist('https://maps.googleapis.com/maps/api/js?key=' + $wnd.lsfParams.get('mapApiKey_Google'))
+            L.gridLayer
+                .googleMutant({
+                    type: "roadmap" // valid values are 'roadmap', 'satellite', 'terrain' and 'hybrid'
+                }).addTo(map);
         } else if (tileProvider === 'yandex') {
             L.yandex()
                 .loadApi({
-                    apiParams: $wnd.apiKeysMap.get('Yandex')
+                    apiParams: $wnd.lsfParams.get('mapApiKey_Yandex')
                 }).addTo(map);
         } else {
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {

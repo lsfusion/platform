@@ -216,7 +216,7 @@ public class MainController {
         model.addAttribute("title", getTitle(serverSettings));
         model.addAttribute("logicsIcon", getLogicsIcon(serverSettings));
         model.addAttribute("logicsName", getLogicsName(serverSettings));
-        model.addAttribute("apiKeys", getMapsApiKeys(serverSettings));
+        model.addAttribute("lsfParams", getLsfParams(serverSettings));
 
         return "main";
     }
@@ -255,8 +255,8 @@ public class MainController {
                 : "<a href=" + getDirectUrl("/exec", "action=Security.generateJnlp", request) + ">" + localizedString + "</a>";
     }
 
-    private Map<String, String> getMapsApiKeys(ServerSettings serverSettings) {
-        return serverSettings != null && serverSettings.mapsApiKeys != null ? serverSettings.mapsApiKeys : null;
+    private Map<String, String> getLsfParams(ServerSettings serverSettings) {
+        return serverSettings != null && serverSettings.lsfParams != null ? serverSettings.lsfParams : null;
     }
 
     private String getFileUrl(RawFileData file) {
