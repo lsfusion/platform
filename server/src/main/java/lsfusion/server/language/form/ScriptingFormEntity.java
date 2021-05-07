@@ -133,6 +133,8 @@ public class ScriptingFormEntity {
             groupObj.setPivotOptions(groupObject.pivotOptions);
         if (groupObject.customRenderFunction != null)
             groupObj.setCustomRenderFunction(groupObject.customRenderFunction);
+        if (groupObject.mapTileProvider != null)
+            groupObj.setMapTileProvider(groupObject.mapTileProvider);
 
         if (groupObject.pageSize != null) {
             groupObj.pageSize = groupObject.pageSize;

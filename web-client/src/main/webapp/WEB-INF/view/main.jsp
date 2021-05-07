@@ -56,8 +56,9 @@
             loadResources([
 
                 <!-- need jquery for pivot table -->
-                'https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.2/jquery.min.js',
-                'https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js',
+                <!-- version jquery above 2.2.4 causes to errors in the pivot table -->
+                'https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.4/jquery.min.js',
+                'https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js',
 
                 <!-- export pivot to excel -->
                 'static/js/tableToExcel.js',
@@ -81,8 +82,8 @@
                 'static/js/subtotal.js',
 
                 <!--  plotly libs : plotly_renderers  -->
-                'https://cdnjs.cloudflare.com/ajax/libs/plotly.js/1.55.2/plotly-basic.min.js',
-                'https://cdnjs.cloudflare.com/ajax/libs/plotly.js/1.55.2/plotly-locale-ru.js',
+                'https://cdnjs.cloudflare.com/ajax/libs/plotly.js/1.58.4/plotly-basic.min.js',
+                'https://cdnjs.cloudflare.com/ajax/libs/plotly.js/1.58.4/plotly-locale-ru.js',
 
                 <%-- will patch plotly_renderers with reverse parameter, since it's makes more sense to show rows on x axis, and columns on y axis --%>
                 <%-- + horizontal moved to the end --%>
@@ -111,6 +112,14 @@
                 'https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js',
                 'https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/leaflet.markercluster.js',
                 'https://cdnjs.cloudflare.com/ajax/libs/leaflet-polylinedecorator/1.1.0/leaflet.polylineDecorator.min.js',
+
+                <%--support yandex map tile in leaflet --%>
+                ['https://cdnjs.cloudflare.com/ajax/libs/leaflet-plugins/3.4.0/layer/tile/Yandex.min.js', 'leaflet.yandex.plugin.min.js'],
+                ['https://cdnjs.cloudflare.com/ajax/libs/leaflet-plugins/3.4.0/layer/tile/Yandex.addon.LoadApi.min.js', 'leaflet.yandex.addon.LoadApi.min.js'],
+
+                <%--support google map tile in leaflet --%>
+                ['https://unpkg.com/leaflet.gridlayer.googlemutant@latest/dist/Leaflet.GoogleMutant.js', 'leaflet.GoogleMutant.plugin.js'],
+
                 'static/css/gMap.css',
 
                 <!-- calendar-->

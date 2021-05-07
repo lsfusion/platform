@@ -16,7 +16,9 @@ import org.json.JSONObject;
 import java.nio.charset.StandardCharsets;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static lsfusion.base.BaseUtils.trimToNull;
 
@@ -52,10 +54,20 @@ public class LogicsSessionObject {
             List<Pair<String, RawFileData>> files = getRawFileDataFromJson(json.optJSONArray("resourceFiles"));
             boolean disableRegistration = json.optBoolean("disableRegistration");
 
+            Map<String, String> lsfParams = getLsfParamsFromJson(json.optJSONArray("lsfParams"));
+
             serverSettings = new ServerSettings(logicsName, displayName, logicsLogo, logicsIcon, platformVersion, apiVersion,
-                    sessionConfigTimeout, anonymousUI, jnlpUrls, files, disableRegistration);
+                    sessionConfigTimeout, anonymousUI, jnlpUrls, files, disableRegistration, lsfParams);
         }
         return serverSettings;
+    }
+
+    private Map<String, String> getLsfParamsFromJson(JSONArray jsonArray) {
+        Map<String, String> lsfParams = new HashMap<>();
+        for (int i = 0; i < jsonArray.length(); i++) {
+            lsfParams.put(jsonArray.optJSONObject(i).optString("key"), jsonArray.optJSONObject(i).optString("value"));
+        }
+        return lsfParams;
     }
 
     private List<Pair<String, RawFileData>> getRawFileDataFromJson(JSONArray jsonArray) {

@@ -543,6 +543,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         groupObject.listViewType = GListViewType.valueOf(clientGroupObject.listViewType.name());
         groupObject.pivotOptions = convertOrCast(clientGroupObject.pivotOptions);
         groupObject.customRenderFunction = clientGroupObject.customRenderFunction;
+        groupObject.mapTileProvider = clientGroupObject.mapTileProvider;
 
         groupObject.asyncInit = clientGroupObject.asyncInit;
 

@@ -120,7 +120,7 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
     protected void render(Element renderElement, JsArray<JavaScriptObject> listObjects) {
         if(map == null) {
             markerClusters = createMarkerClusters();
-            map = createMap(renderElement, markerClusters);
+            map = createMap(renderElement, markerClusters, grid.getMapTileProvider());
         }
 
         Map<Object, JsArray<JavaScriptObject>> routes = new HashMap<>();
@@ -218,13 +218,26 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
         return object.hasOwnProperty('fitBounds') ? object.fitBounds : false;
     }-*/;
 
-    protected native JavaScriptObject createMap(com.google.gwt.dom.client.Element element, JavaScriptObject markerClusters)/*-{
+    protected native JavaScriptObject createMap(com.google.gwt.dom.client.Element element, JavaScriptObject markerClusters, String tileProvider)/*-{
         var L = $wnd.L;
         var map = L.map(element);
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        }).addTo(map);
+        if (tileProvider === 'google') {
+            $wnd.loadCustomScriptIfNoExist('https://maps.googleapis.com/maps/api/js?key=' + $wnd.lsfParams.get('mapApiKey_Google'))
+            L.gridLayer
+                .googleMutant({
+                    type: "roadmap" // valid values are 'roadmap', 'satellite', 'terrain' and 'hybrid'
+                }).addTo(map);
+        } else if (tileProvider === 'yandex') {
+            L.yandex()
+                .loadApi({
+                    apiParams: $wnd.lsfParams.get('mapApiKey_Yandex')
+                }).addTo(map);
+        } else {
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+        }
 
         map.setView([0,0], 6); // we need to set view to have editing and dragging fields initialized
 
