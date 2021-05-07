@@ -16,7 +16,9 @@ import org.json.JSONObject;
 import java.nio.charset.StandardCharsets;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static lsfusion.base.BaseUtils.trimToNull;
 
@@ -52,10 +54,22 @@ public class LogicsSessionObject {
             List<Pair<String, RawFileData>> files = getRawFileDataFromJson(json.optJSONArray("resourceFiles"));
             boolean disableRegistration = json.optBoolean("disableRegistration");
 
+            Map<String, String> mapsApiKeys = getMapsApiKeysFromJson(json.optJSONArray("mapsApiKeys"));
+
             serverSettings = new ServerSettings(logicsName, displayName, logicsLogo, logicsIcon, platformVersion, apiVersion,
-                    sessionConfigTimeout, anonymousUI, jnlpUrls, files, disableRegistration);
+                    sessionConfigTimeout, anonymousUI, jnlpUrls, files, disableRegistration, mapsApiKeys);
         }
         return serverSettings;
+    }
+
+    private Map<String, String> getMapsApiKeysFromJson(JSONArray jsonArray) {
+        Map<String, String> mapsApiKeys = new HashMap<>();
+        for (int i = 0; i < jsonArray.length(); i++) {
+            String provider = jsonArray.optJSONObject(i).optString("provider");
+            String apiKey = jsonArray.optJSONObject(i).optString("key");
+            mapsApiKeys.put(provider, apiKey);
+        }
+        return mapsApiKeys;
     }
 
     private List<Pair<String, RawFileData>> getRawFileDataFromJson(JSONArray jsonArray) {

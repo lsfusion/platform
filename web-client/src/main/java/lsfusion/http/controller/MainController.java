@@ -216,6 +216,7 @@ public class MainController {
         model.addAttribute("title", getTitle(serverSettings));
         model.addAttribute("logicsIcon", getLogicsIcon(serverSettings));
         model.addAttribute("logicsName", getLogicsName(serverSettings));
+        model.addAttribute("apiKeys", getMapsApiKeys(serverSettings));
 
         return "main";
     }
@@ -252,6 +253,10 @@ public class MainController {
         String localizedString = ServerMessages.getString(request, "run.desktop.client");
         return serverSettings != null ? serverSettings.jnlpUrls.replaceAll("\\{run.desktop.client}", localizedString)
                 : "<a href=" + getDirectUrl("/exec", "action=Security.generateJnlp", request) + ">" + localizedString + "</a>";
+    }
+
+    private Map<String, String> getMapsApiKeys(ServerSettings serverSettings) {
+        return serverSettings != null && serverSettings.mapsApiKeys != null ? serverSettings.mapsApiKeys : null;
     }
 
     private String getFileUrl(RawFileData file) {

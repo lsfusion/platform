@@ -15,3 +15,8 @@ var getRanges = function (wnd, rangeToday, rangeYesterday, rangeLast7Days, range
         [clear] : [null, null]
     };
 }
+
+var apiKeysMap = new Map();
+var storeApiKeys = function (provider, key) {
+    apiKeysMap.set(provider, key);
+}

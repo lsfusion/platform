@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class ServerSettings {
@@ -26,9 +27,11 @@ public class ServerSettings {
     public List<Pair<String, RawFileData>> resourceFiles;
     public Set<String> filesUrls = null;
     public boolean disableRegistration;
+    public Map<String, String> mapsApiKeys;
 
     public ServerSettings(String logicsName, String displayName, RawFileData logicsLogo, RawFileData logicsIcon, String platformVersion, Integer apiVersion,
-                          int sessionConfigTimeout, boolean anonymousUI, String jnlpUrls, List<Pair<String, RawFileData>> jsFiles, boolean disableRegistration) {
+                          int sessionConfigTimeout, boolean anonymousUI, String jnlpUrls, List<Pair<String, RawFileData>> jsFiles, boolean disableRegistration,
+                          Map<String, String> mapsApiKeys) {
         this.logicsName = logicsName;
         this.displayName = displayName;
         this.logicsLogo = logicsLogo;
@@ -40,6 +43,7 @@ public class ServerSettings {
         this.jnlpUrls = jnlpUrls;
         this.resourceFiles = jsFiles;
         this.disableRegistration = disableRegistration;
+        this.mapsApiKeys = mapsApiKeys;
     }
 
     public synchronized void saveFiles(String appPath, String  externalResourcesParentPath) {

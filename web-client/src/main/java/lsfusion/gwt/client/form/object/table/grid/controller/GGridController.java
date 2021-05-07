@@ -152,7 +152,7 @@ public class GGridController extends GAbstractTableController {
             calendarTableButton.showBackground(false);
     }
     private void setMapTableView() {
-        changeTableView(new GMap(formController, this));
+        changeTableView(new GMap(formController, this, groupObject.mapTileProvider));
         mapTableButton.showBackground(true);
         gridTableButton.showBackground(false);
         pivotTableButton.showBackground(false);
