@@ -107,8 +107,8 @@ public class PostgreDataAdapter extends DataAdapter {
     }
 
     @Override
-    protected void ensureSystemFuncs() throws IOException, SQLException {
-        super.ensureSystemFuncs();
+    protected void ensureSqlFuncs() throws IOException, SQLException {
+        super.ensureSqlFuncs();
 
         recursionString = IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sql/postgres/recursion.tsql"));
         safeCastString = IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sql/postgres/safecast.tsql"));

@@ -32,6 +32,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -76,41 +77,31 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
 
         resources = ResourceUtils.getResources(Pattern.compile("/sql/.*"));
 
-        ensureSystemFuncs();
-        ensureCustomFuncs();
+        ensureSqlFuncs();
     }
 
-    private void ensureCustomFuncs() {
-        executeEnsure(filterResources(false));
+    private static List<String> getAllDBNames() {
+        return new ArrayList<>(Arrays.asList(PostgreDataAdapter.DB_NAME, MySQLDataAdapter.DB_NAME));
     }
 
-    private List<String> filterResources(boolean loadSystemScript) {
+    private List<String> filterResources() {
+        List<String> allDBNames = getAllDBNames();
+        allDBNames.remove(getDBName());
         return resources.stream().filter(resource -> {
             if (resource.contains(".tsql"))
                 return false;
-            for (String key : getKeys(loadSystemScript)) {
-                if (resource.contains(key))
-                    return loadSystemScript;
+            for (String key : allDBNames) {
+                if (resource.contains("/" + key + "/"))
+                    return false;
             }
-            return !loadSystemScript;
+            return true;
         }).collect(Collectors.toList());
-    }
-
-    private List<String> getKeys(boolean loadSystemScript) {
-        List<String> keys = new ArrayList<>();
-        if (loadSystemScript)
-            keys.add("/" + getDBName() + "/");
-        else {
-            keys.add("/" + PostgreDataAdapter.DB_NAME + "/");
-            keys.add("/" + MySQLDataAdapter.DB_NAME + "/");
-        }
-        return keys;
     }
 
     protected abstract String getDBName();
 
-    protected void ensureSystemFuncs() throws IOException, SQLException {
-        executeEnsure(filterResources(true));
+    protected void ensureSqlFuncs() throws IOException, SQLException {
+        executeEnsure(filterResources());
     }
 
     public void ensureLogLevel() {
