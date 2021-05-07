@@ -80,22 +80,18 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
     private double lastQuickSearchTime = 0;
 
-    private boolean autoSize;
-
     private long setRequestIndex;
 
     @Override
     protected boolean isAutoSize() {
-        return autoSize;
+        return groupObjectController.isGridAutosize();
     }
 
-    public GGridTable(GFormController iform, GGridController igroupController, GGridUserPreferences[] iuserPreferences, boolean autoSize) {
+    public GGridTable(GFormController iform, GGridController igroupController, GGridUserPreferences[] iuserPreferences) {
         super(iform, igroupController.groupObject, null);
 
         this.groupObjectController = igroupController;
         this.groupObject = igroupController.groupObject;
-
-        this.autoSize = autoSize;
 
         generalGridPreferences = iuserPreferences != null && iuserPreferences[0] != null ? iuserPreferences[0] : new GGridUserPreferences(groupObject);
         userGridPreferences = iuserPreferences != null && iuserPreferences[1] != null ? iuserPreferences[1] : new GGridUserPreferences(groupObject);

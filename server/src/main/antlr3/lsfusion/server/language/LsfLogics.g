@@ -555,7 +555,7 @@ formGroupObjectDeclaration returns [ScriptingGroupObject groupObject]
 	;
 
 formGroupObjectOptions[ScriptingGroupObject groupObject]
-	:	(	viewType=formGroupObjectViewType { $groupObject.setViewType($viewType.type, $viewType.listType); $groupObject.setPivotOptions($viewType.options); $groupObject.setCustomTypeRenderFunction($viewType.customRenderFunction); }
+	:	(	viewType=formGroupObjectViewType { $groupObject.setViewType($viewType.type, $viewType.listType); $groupObject.setPivotOptions($viewType.options); $groupObject.setCustomTypeRenderFunction($viewType.customRenderFunction); $groupObject.setMapTileProvider($viewType.mapTileProvider);}
 		|	pageSize=formGroupObjectPageSize { $groupObject.setPageSize($pageSize.value); }
 		|	update=formGroupObjectUpdate { $groupObject.setUpdateType($update.updateType); }
 		|	relative=formGroupObjectRelativePosition { $groupObject.setNeighbourGroupObject($relative.groupObject, $relative.insertType); }
@@ -627,15 +627,15 @@ formTreeGroupObject returns [ScriptingGroupObject groupObject, List<LP> properti
 
 	;
 
-formGroupObjectViewType returns [ClassViewType type, ListViewType listType, PivotOptions options, String customRenderFunction]
-	:	viewType=groupObjectClassViewType { $type = $viewType.type; $listType = $viewType.listType; $options = $viewType.options; $customRenderFunction = $viewType.customRenderFunction; }
+formGroupObjectViewType returns [ClassViewType type, ListViewType listType, PivotOptions options, String customRenderFunction, String mapTileProvider]
+	:	viewType=groupObjectClassViewType { $type = $viewType.type; $listType = $viewType.listType; $options = $viewType.options; $customRenderFunction = $viewType.customRenderFunction; $mapTileProvider = $viewType.mapTileProvider;}
 	;
 
-groupObjectClassViewType returns [ClassViewType type, ListViewType listType, PivotOptions options, String customRenderFunction]
+groupObjectClassViewType returns [ClassViewType type, ListViewType listType, PivotOptions options, String customRenderFunction, String mapTileProvider]
 	:   'PANEL' {$type = ClassViewType.PANEL;}
 	|   'TOOLBAR' {$type = ClassViewType.TOOLBAR;}
 	|   'GRID' {$type = ClassViewType.LIST;}
-    |	lType=listViewType { $listType = $lType.type; $options = $lType.options; $customRenderFunction = $lType.customRenderFunction;}
+    |	lType=listViewType { $listType = $lType.type; $options = $lType.options; $customRenderFunction = $lType.customRenderFunction; $mapTileProvider = $lType.mapTileProvider;}
 	;
 
 propertyClassViewType returns [ClassViewType type]
@@ -656,9 +656,9 @@ propertyCustomView returns [String customRenderFunctions, String customEditorFun
 		editFun=stringLiteral {$customEditorFunctions = $editFun.val; $textEdit = isEditText; $replaceEdit = isReplaceEditor;})?
 	;
 
-listViewType returns [ListViewType type, PivotOptions options, String customRenderFunction]
+listViewType returns [ListViewType type, PivotOptions options, String customRenderFunction, String mapTileProvider]
 	:   'PIVOT' {$type = ListViewType.PIVOT;} ('DEFAULT' | 'NODEFAULT' {$type = null;})? opt = pivotOptions {$options = $opt.options; }
-	|   'MAP' {$type = ListViewType.MAP;}
+	|   'MAP' (tileProvider = stringLiteral)? {$type = ListViewType.MAP; $mapTileProvider = $tileProvider.val;}
 	|   'CUSTOM' function=stringLiteral {$type = ListViewType.CUSTOM; $customRenderFunction = $function.val;}
 	|   'CALENDAR' {$type = ListViewType.CALENDAR;}
     ;
