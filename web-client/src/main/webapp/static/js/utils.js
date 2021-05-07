@@ -17,9 +17,6 @@ var getRanges = function (wnd, rangeToday, rangeYesterday, rangeLast7Days, range
 }
 
 var lsfParams = new Map();
-var storeApiKeys = function (key, value) {
-    lsfParams.set(key, value);
-}
 
 var loadCustomScriptIfNoExist = function (url) {
     var scripts = document.getElementsByTagName('script');

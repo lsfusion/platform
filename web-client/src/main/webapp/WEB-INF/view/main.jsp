@@ -142,7 +142,7 @@
 
         <c:forEach items="${lsfParams}" var="lsfParam">
             <script>
-                window.storeApiKeys("${lsfParam.key}", "${lsfParam.value}");
+                lsfParams.set("${lsfParam.key}", "${lsfParam.value}");
             </script>
         </c:forEach>
 
