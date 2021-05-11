@@ -26,7 +26,7 @@ public abstract class Column<T, C> {
 
   public abstract boolean isFocusable();
 
-  public abstract void onEditEvent(EventHandler handler, boolean isBinding, Cell editCell, Element editCellParent);
+  public abstract void onEditEvent(EventHandler handler, Cell editCell, Element editCellParent);
 
   public abstract void renderAndUpdateDom(Cell cell, Element cellElement);
 

@@ -224,10 +224,10 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     // for all external calls will set optimistic to true
-    public AsyncEventExec getAsyncEventExec(FormEntity form, SecurityPolicy policy, String actionSID) {
+    public AsyncEventExec getAsyncEventExec(FormEntity form, SecurityPolicy policy, String actionSID, boolean externalChange) {
         ActionObjectEntity<?> changeAction = getEventAction(actionSID, form, policy);
         if (changeAction != null) {
-            return changeAction.getAsyncEventExec(form, optimisticAsync);
+            return changeAction.getAsyncEventExec(form, optimisticAsync || externalChange);
         }
         return null;
     }

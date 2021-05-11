@@ -489,7 +489,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     public <C> void onBrowserEvent(Cell cell, Event event, Column<T, C> column, Element parent) {
         form.onPropertyBrowserEvent(new EventHandler(event), parent, getTableDataFocusElement(),
                 handler -> selectionHandler.onCellBefore(handler, cell, rowChanged -> isChangeOnSingleClick(cell, (Boolean) rowChanged)),
-                handler -> column.onEditEvent(handler, false, cell, parent),
+                handler -> column.onEditEvent(handler, cell, parent),
                 handler -> selectionHandler.onCellAfter(handler, cell),
                 handler -> CopyPasteUtils.putIntoClipboard(parent), handler -> CopyPasteUtils.getFromClipboard(handler, line -> pasteData(cell, parent, GwtClientUtils.getClipboardTable(line))), false);
     }
@@ -510,8 +510,8 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         protected abstract Object getValue(GPropertyDraw property, T record);
 
         @Override
-        public void onEditEvent(EventHandler handler, boolean isBinding, Cell editCell, Element editCellParent) {
-            GGridPropertyTable.this.onEditEvent(handler, isBinding, editCell, editCellParent);
+        public void onEditEvent(EventHandler handler, Cell editCell, Element editCellParent) {
+            GGridPropertyTable.this.onEditEvent(handler, false, editCell, editCellParent);
         }
 
         @Override

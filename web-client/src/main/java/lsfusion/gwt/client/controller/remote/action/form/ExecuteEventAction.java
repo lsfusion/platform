@@ -8,15 +8,17 @@ public class ExecuteEventAction extends FormRequestCountingAction<ServerResponse
     public GGroupObjectValue[] fullKeys;
     public String actionSID;
 
+    public boolean[] externalChanges;
     public GPushAsyncResult[] pushAsyncResults;
 
     public ExecuteEventAction() {
     }
 
-    public ExecuteEventAction(int[] propertyIds, GGroupObjectValue[] fullKeys, String actionSID, GPushAsyncResult[] pushAsyncResults) {
+    public ExecuteEventAction(int[] propertyIds, GGroupObjectValue[] fullKeys, String actionSID, boolean[] externalChanges, GPushAsyncResult[] pushAsyncResults) {
         this.propertyIds = propertyIds;
         this.fullKeys = fullKeys;
         this.actionSID = actionSID;
+        this.externalChanges = externalChanges;
         this.pushAsyncResults = pushAsyncResults;
     }
 }

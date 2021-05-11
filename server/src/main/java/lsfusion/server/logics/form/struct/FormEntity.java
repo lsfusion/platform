@@ -605,20 +605,16 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     public MetaExternal getMetaExternal(final SecurityPolicy policy) {
         final ImMap<GroupObjectEntity, ImOrderSet<PropertyDrawEntity>> groupProperties = getAllGroupProperties(SetFact.EMPTY(), false);
 
-        return new MetaExternal(getGroups().mapValues(new Function<GroupObjectEntity, GroupMetaExternal>() {
-            public GroupMetaExternal apply(GroupObjectEntity value) {
-                ImOrderSet<PropertyDrawEntity> properties = groupProperties.get(value);
-                if(properties == null)
-                    properties = SetFact.EMPTYORDER();
+        return new MetaExternal(getGroups().mapValues((GroupObjectEntity group) -> {
+            ImOrderSet<PropertyDrawEntity> properties = groupProperties.get(group);
+            if(properties == null)
+                properties = SetFact.EMPTYORDER();
 
-                return new GroupMetaExternal(properties.getSet().mapValues(new Function<PropertyDrawEntity, PropMetaExternal>() {
-                    public PropMetaExternal apply(PropertyDrawEntity value) {
-                        AsyncEventExec asyncEventExec = ((PropertyDrawEntity<?>) value).getAsyncEventExec(FormEntity.this, policy, CHANGE);
-                        Boolean newDelete = asyncEventExec instanceof AsyncAddRemove ? ((AsyncAddRemove) asyncEventExec).add : null;
-                        return new PropMetaExternal(ThreadLocalContext.localize(value.getCaption()), value.isProperty() ? value.getType().getJSONType() : "action", newDelete);
-                    }
+            return new GroupMetaExternal(properties.getSet().mapValues((PropertyDrawEntity property) ->  {
+                    AsyncEventExec asyncEventExec = ((PropertyDrawEntity<?>) property).getAsyncEventExec(FormEntity.this, policy, CHANGE, true);
+                    Boolean newDelete = asyncEventExec instanceof AsyncAddRemove ? ((AsyncAddRemove) asyncEventExec).add : null;
+                    return new PropMetaExternal(ThreadLocalContext.localize(property.getCaption()), property.isProperty() ? property.getType().getJSONType() : "action", newDelete);
                 }));
-            }
         }));
     }
 

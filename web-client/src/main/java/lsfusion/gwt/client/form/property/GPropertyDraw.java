@@ -79,7 +79,14 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public String defaultPattern;
     public GClass returnClass;
 
+    public GType externalChangeType;
     public Map<String, GAsyncEventExec> asyncExecMap;
+
+    // custom renderers, simple state views, paste
+    public static final GType externalChangeTypeUsage = null;
+    public GType getExternalChangeType() {
+        return externalChangeType;
+    }
 
     public GType getChangeType() {
         GAsyncEventExec asyncExec = getAsyncEventExec(ServerResponse.CHANGE);
@@ -231,15 +238,14 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         }
     }
 
-    public Object parsePaste(String s) {
+    public Object parsePaste(String s, GType parseType) {
         if (s == null) {
             return null;
         }
-        GType changeType = getChangeType();
-        if(changeType == null)
+        if(parseType == null)
             return null;
         try {
-            return changeType.parseString(s, pattern);
+            return parseType.parseString(s, pattern);
         } catch (ParseException pe) {
             return null;
         }
@@ -247,10 +253,6 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
     public boolean canUseChangeValueForRendering(GType type) {
         return type != null && baseType.getClass() == type.getClass();
-    }
-
-    public boolean canUseChangeValueForRendering() {
-        return canUseChangeValueForRendering(getChangeType());
     }
 
     public String getCaptionOrEmpty() {

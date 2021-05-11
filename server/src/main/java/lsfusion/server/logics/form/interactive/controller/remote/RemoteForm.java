@@ -683,7 +683,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
     }
 
     @Override
-    public ServerResponse executeEventAction(long requestIndex, long lastReceivedRequestIndex, String actionSID, int[] propertyIDs, byte[][] fullKeys, byte[][] pushAsyncResults) throws RemoteException {
+    public ServerResponse executeEventAction(long requestIndex, long lastReceivedRequestIndex, String actionSID, int[] propertyIDs, byte[][] fullKeys, boolean[] externalChanges, byte[][] pushAsyncResults) throws RemoteException {
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
             for (int j = 0; j < propertyIDs.length; j++) {
                 PropertyDrawInstance propertyDraw = form.getPropertyDraw(propertyIDs[j]);
@@ -694,7 +694,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                 if(pushAsyncResult != null)
                     asyncResult = asyncEventExec -> asyncEventExec.deserializePush(pushAsyncResult);
                 
-                form.executeEventAction(propertyDraw, actionSID, keys, asyncResult, stack);
+                form.executeEventAction(propertyDraw, actionSID, keys, externalChanges[j], asyncResult, stack);
 
                 if (logger.isTraceEnabled()) {
                     logger.trace(String.format("executeEventAction: [ID: %1$d, SID: %2$s]", propertyDraw.getID(), propertyDraw.getSID()));
@@ -1084,7 +1084,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                 newDelete.first.groupTo.forceUpdateKeys();
             }
         }
-        form.executeEventAction(propertyDraw, CHANGE, currentObjects, asyncResult, stack);
+        form.executeEventAction(propertyDraw, CHANGE, currentObjects, true, asyncResult, stack);
     }
 
     // будем считать что если unreferenced \ finalized то форма точно также должна закрыться ???

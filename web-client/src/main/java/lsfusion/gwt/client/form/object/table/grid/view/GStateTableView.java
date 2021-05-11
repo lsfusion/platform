@@ -13,6 +13,7 @@ import lsfusion.gwt.client.base.view.DivWidget;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.ResizableSimplePanel;
 import lsfusion.gwt.client.base.view.SimpleImageButton;
+import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
@@ -437,13 +438,15 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     protected void changeProperties(GPropertyDraw[] properties, GGroupObjectValue[] rowKeys, GGroupObjectValue[] columnKeys, Serializable[] newValues) {
         int length = properties.length;
         Object[] oldValues = new Object[length];
+        GType[] changeTypes = new GType[length];
         GUserInputResult[] newInputResults = new GUserInputResult[length];
         for (int i = 0; i < length; i++) {
             newInputResults[i] = new GUserInputResult(newValues[i]);
+            changeTypes[i] = GPropertyDraw.externalChangeTypeUsage;
             oldValues[i] = getValue(properties[i], rowKeys[i], columnKeys[i]);
         }
 
-        form.changeProperties(GEditBindingMap.CHANGE, null, null, properties, rowKeys, columnKeys, newInputResults, oldValues, null);
+        form.changeProperties(GEditBindingMap.CHANGE, null, null, properties, changeTypes, rowKeys, columnKeys, newInputResults, oldValues, null);
     }
 
     protected boolean isReadOnly(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {

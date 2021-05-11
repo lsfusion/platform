@@ -874,7 +874,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             for (int i = 0; i < propertyColumns; i++) {
                 GPropertyDraw property = propertyList.get(i);
                 String sCell = i < sRow.size() ? sRow.get(i) : null;
-                valueRow.add(property.parsePaste(sCell));
+                valueRow.add(property.parsePaste(sCell, property.getExternalChangeType()));
             }
             values.add(valueRow);
         }
@@ -889,11 +889,12 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
     public void pasteValue(EditContext editContext, String sValue) {
         GPropertyDraw property = editContext.getProperty();
-        Serializable value = (Serializable) property.parsePaste(sValue);
+        GType pasteType = property.getExternalChangeType();
+        Serializable value = (Serializable) property.parsePaste(sValue, pasteType);
 
         changeProperty(editContext, value);
 
-        if(property.canUseChangeValueForRendering())
+        if(property.canUseChangeValueForRendering(pasteType))
             update(editContext, value);
     }
 
@@ -984,16 +985,16 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     public long asyncExecutePropertyEventAction(String actionSID, EditContext editContext, Event editEvent, GPushAsyncResult pushAsyncResult) {
-        return asyncExecutePropertyEventAction(actionSID, editContext, editEvent, new GPropertyDraw[] {editContext.getProperty()}, new GGroupObjectValue[] {editContext.getColumnKey()}, new GPushAsyncResult[]{pushAsyncResult});
+        return asyncExecutePropertyEventAction(actionSID, editContext, editEvent, new GPropertyDraw[] {editContext.getProperty()}, new boolean[]{false}, new GGroupObjectValue[] {editContext.getColumnKey()}, new GPushAsyncResult[]{pushAsyncResult});
     }
-    public long asyncExecutePropertyEventAction(String actionSID, EditContext editContext, Event editEvent, GPropertyDraw[] properties, GGroupObjectValue[] fullKeys, GPushAsyncResult[] pushAsyncResults) {
-        return executePropertyEventAction(actionSID, false, editContext, editEvent, properties, fullKeys, pushAsyncResults);
+    public long asyncExecutePropertyEventAction(String actionSID, EditContext editContext, Event editEvent, GPropertyDraw[] properties, boolean[] externalChanges, GGroupObjectValue[] fullKeys, GPushAsyncResult[] pushAsyncResults) {
+        return executePropertyEventAction(actionSID, false, editContext, editEvent, properties, externalChanges, fullKeys, pushAsyncResults);
     }
     public long syncExecutePropertyEventAction(EditContext editContext, Event editEvent, GPropertyDraw property, GGroupObjectValue columnKey, String actionSID) {
-        return executePropertyEventAction(actionSID, true, editContext, editEvent, new GPropertyDraw[]{property}, new GGroupObjectValue[]{columnKey}, new GPushAsyncResult[] {null});
+        return executePropertyEventAction(actionSID, true, editContext, editEvent, new GPropertyDraw[]{property}, new boolean[]{false}, new GGroupObjectValue[]{columnKey}, new GPushAsyncResult[] {null});
     }
 
-    private long executePropertyEventAction(String actionSID, boolean sync, EditContext editContext, Event editEvent, GPropertyDraw[] properties, GGroupObjectValue[] fullKeys, GPushAsyncResult[] pushAsyncResults) {
+    private long executePropertyEventAction(String actionSID, boolean sync, EditContext editContext, Event editEvent, GPropertyDraw[] properties, boolean[] externalChanges, GGroupObjectValue[] fullKeys, GPushAsyncResult[] pushAsyncResults) {
         int length = properties.length;
         int[] IDs = new int[length];
         GGroupObjectValue[] fullCurrentKeys = new GGroupObjectValue[length];
@@ -1003,7 +1004,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             fullCurrentKeys[i] = getFullCurrentKey(property, fullKeys[i]);
         }
 
-        ExecuteEventAction executeEventAction = new ExecuteEventAction(IDs, fullCurrentKeys, actionSID, pushAsyncResults);
+        ExecuteEventAction executeEventAction = new ExecuteEventAction(IDs, fullCurrentKeys, actionSID, externalChanges, pushAsyncResults);
         ServerResponseCallback serverResponseCallback = getServerResponseEditCallback(editContext, editEvent);
 
         if(sync)
@@ -1055,7 +1056,8 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     public long changeEditPropertyValue(EditContext editContext, Event editEvent, String actionSID, GType changeType, GUserInputResult result, Long changeRequestIndex) {
-        long requestIndex = changeProperty(editContext, editEvent, actionSID, result, changeRequestIndex);
+        assert changeType != null;
+        long requestIndex = changeProperty(editContext, editEvent, changeType, actionSID, result, changeRequestIndex);
 
         if(editContext.getProperty().canUseChangeValueForRendering(changeType)) // changing model, to rerender new value after finishEditing
             editContext.setValue(result.getValue());
@@ -1119,10 +1121,10 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
     // for custom renderer and paste
     public void changeProperty(EditContext editContext, Object value) {
-        changeProperty(editContext, null, GEditBindingMap.CHANGE, new GUserInputResult(value), null);
+        changeProperty(editContext, null, GPropertyDraw.externalChangeTypeUsage, GEditBindingMap.CHANGE, new GUserInputResult(value), null);
     }
 
-    public long changeProperty(EditContext editContext, Event editEvent, String actionSID, GUserInputResult result, Long changeRequestIndex) {
+    public long changeProperty(EditContext editContext, Event editEvent, GType changeType, String actionSID, GUserInputResult result, Long changeRequestIndex) {
         GPropertyDraw property = editContext.getProperty();
         GGroupObjectValue rowKey = GGroupObjectValue.EMPTY;
         if(property.isList) {
@@ -1131,24 +1133,31 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             rowKey = getGroupObjectController(property.groupObject).getCurrentKey(); // we need rowKey for pendingChangeRequests
             assert !rowKey.isEmpty();
         }
-        return changeProperties(actionSID, editContext, editEvent, new GPropertyDraw[]{property}, new GGroupObjectValue[] {rowKey}, new GGroupObjectValue[]{editContext.getColumnKey()}, new GUserInputResult[]{result}, new Object[]{editContext.getValue()}, changeRequestIndex);
+        return changeProperties(actionSID, editContext, editEvent, new GPropertyDraw[]{property}, new GType[]{changeType}, new GGroupObjectValue[] {rowKey}, new GGroupObjectValue[]{editContext.getColumnKey()}, new GUserInputResult[]{result}, new Object[]{editContext.getValue()}, changeRequestIndex);
     }
 
-    public long changeProperties(String actionSID, EditContext editContext, Event editEvent, GPropertyDraw[] properties, GGroupObjectValue[] rowKeys, GGroupObjectValue[] columnKeys, GUserInputResult[] values, Object[] oldValues, Long changeRequestIndex) {
+    public long changeProperties(String actionSID, EditContext editContext, Event editEvent, GPropertyDraw[] properties, GType[] changeTypes, GGroupObjectValue[] rowKeys, GGroupObjectValue[] columnKeys, GUserInputResult[] values, Object[] oldValues, Long changeRequestIndex) {
         int length = properties.length;
         GGroupObjectValue[] fullKeys = new GGroupObjectValue[length];
+        boolean[] externalChanges = new boolean[length];
         GPushAsyncResult[] pushAsyncResults = new GPushAsyncResult[length];
         for (int i = 0; i < length; i++) {
             fullKeys[i] = GGroupObjectValue.getFullKey(rowKeys[i], columnKeys[i]);
+            externalChanges[i] = changeTypes[i] == null;
             pushAsyncResults[i] = new GPushAsyncChange(values[i]);
         }
 
         if(changeRequestIndex == null)
-            changeRequestIndex = asyncExecutePropertyEventAction(actionSID, editContext, editEvent, properties, fullKeys, pushAsyncResults);
+            changeRequestIndex = asyncExecutePropertyEventAction(actionSID, editContext, editEvent, properties, externalChanges, fullKeys, pushAsyncResults);
 
         for (int i = 0; i < length; i++) {
             GPropertyDraw property = properties[i];
-            putToDoubleNativeMap(pendingChangePropertyRequests, property, fullKeys[i], new Change(changeRequestIndex, values[i].getValue(), oldValues[i], property.canUseChangeValueForRendering()));
+            GType changeType = changeTypes[i];
+            if(changeType == null) {
+                assert actionSID.equals(CHANGE);
+                changeType = property.getExternalChangeType();
+            }
+            putToDoubleNativeMap(pendingChangePropertyRequests, property, fullKeys[i], new Change(changeRequestIndex, values[i].getValue(), oldValues[i], property.canUseChangeValueForRendering(changeType)));
         }
 
         return changeRequestIndex;

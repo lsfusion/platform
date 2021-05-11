@@ -125,9 +125,11 @@ public class PropertyDrawView extends ComponentView {
     public boolean isProperty() {
         return entity.isProperty();
     }
-    
-    public Type getChangeWYSType(ServerContext context) {
-        AsyncEventExec asyncEventExec = entity.getAsyncEventExec(context.entity, context.securityPolicy, CHANGE);
+
+    // we force optimistic async event scheme for external calls (since this calls assume that async push should exist)
+    // for that purpose we have to send to client that type to do parsing, rendering, etc.
+    public Type getExternalChangeType(ServerContext context) {
+        AsyncEventExec asyncEventExec = entity.getAsyncEventExec(context.entity, context.securityPolicy, CHANGE, true);
         return asyncEventExec instanceof AsyncChange ? ((AsyncChange) asyncEventExec).changeType : null;
     }
 
@@ -150,7 +152,7 @@ public class PropertyDrawView extends ComponentView {
     public Map<String, AsyncEventExec> getAsyncEventExec(ServerContext context) {
         Map<String, AsyncEventExec> asyncExecMap = new HashMap<>();
         for (String actionId : ServerResponse.events) {
-            AsyncEventExec asyncEventExec = entity.getAsyncEventExec(context.entity, context.securityPolicy, actionId);
+            AsyncEventExec asyncEventExec = entity.getAsyncEventExec(context.entity, context.securityPolicy, actionId, false);
             if (asyncEventExec != null) {
                 asyncExecMap.put(actionId, asyncEventExec);
             }
@@ -293,12 +295,10 @@ public class PropertyDrawView extends ComponentView {
             outStream.writeByte(DataType.ACTION);
         }
 
-        // асинхронные интерфейсы
-
-        Type changeWYSType = getChangeWYSType(pool.context);
-        outStream.writeBoolean(changeWYSType != null);
-        if (changeWYSType != null) {
-            TypeSerializer.serializeType(outStream, changeWYSType);
+        Type externalChangeType = getExternalChangeType(pool.context);
+        outStream.writeBoolean(externalChangeType != null);
+        if (externalChangeType != null) {
+            TypeSerializer.serializeType(outStream, externalChangeType);
         }
 
         Map<String, AsyncEventExec> asyncExecMap = getAsyncEventExec(pool.context);

@@ -72,8 +72,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public ClientType baseType;
     public ClientClass returnClass;
 
-    // асинхронные интерфейсы
-    public ClientType changeWYSType;
+    public ClientType externalChangeType;
     public Map<String, ClientAsyncEventExec> asyncExecMap;
     public boolean askConfirm;
     public String askConfirmMessage;
@@ -369,11 +368,11 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     }
 
     public Object parseChangeValueOrNull(String s) {
-        if (changeWYSType == null) {
+        if (externalChangeType == null) {
             return null;
         }
         try {
-            return changeWYSType.parseString(s);
+            return externalChangeType.parseString(s);
         } catch (ParseException pe) {
             return null;
         }
@@ -384,7 +383,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     }
 
     public boolean canUsePasteValueForRendering() {
-        return changeWYSType != null && baseType.getTypeClass() == changeWYSType.getTypeClass();
+        return externalChangeType != null && baseType.getTypeClass() == externalChangeType.getTypeClass();
     }
 
     public boolean canUseChangeValueForRendering() {
@@ -486,10 +485,10 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         hide = inStream.readBoolean();
 
         baseType = ClientTypeSerializer.deserializeClientType(inStream);
+        
         if (inStream.readBoolean()) {
-            changeWYSType = ClientTypeSerializer.deserializeClientType(inStream);
+            externalChangeType = ClientTypeSerializer.deserializeClientType(inStream);
         }
-
         asyncExecMap = new HashMap<>();
         int asyncExecSize = inStream.readInt();
         for (int i = 0; i < asyncExecSize; ++i) {

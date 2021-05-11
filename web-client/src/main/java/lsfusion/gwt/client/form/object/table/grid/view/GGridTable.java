@@ -582,11 +582,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
                 int newColumnIndex = GwtSharedUtils.relativePosition(property, form.getPropertyDraws(), properties);
 
                 properties.add(newColumnIndex, property);
-                bindingEventIndices.add(newColumnIndex, form.addPropertyBindings(property, event -> {
-                    int column = getPropertyIndex(property, null);
-                    if(column >= 0 && getSelectedRow() >= 0)
-                        onEditEvent(new EventHandler(event), true, getSelectedCell(column), getSelectedElement(column));
-                }, GGridTable.this));
+                bindingEventIndices.add(newColumnIndex, form.addPropertyBindings(property, event -> onBinding(property, event), GGridTable.this));
 
                 this.columnKeys.put(property, columnKeys);
 
@@ -611,6 +607,12 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         
         updatedProperties.put(property, TRUE);
         dataUpdated = true;
+    }
+
+    public void onBinding(GPropertyDraw property, Event event) {
+        int column = getPropertyIndex(property, null);
+        if(column >= 0 && getSelectedRow() >= 0)
+            onEditEvent(new EventHandler(event), true, getSelectedCell(column), getSelectedElement(column));
     }
 
     public void setKeys(ArrayList<GGroupObjectValue> keys) {

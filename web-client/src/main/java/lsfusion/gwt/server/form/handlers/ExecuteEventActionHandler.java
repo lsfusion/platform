@@ -1,6 +1,5 @@
 package lsfusion.gwt.server.form.handlers;
 
-import com.google.common.base.Throwables;
 import lsfusion.gwt.client.controller.remote.action.form.ExecuteEventAction;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
@@ -8,8 +7,6 @@ import lsfusion.gwt.client.form.property.async.GPushAsyncResult;
 import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.server.convert.GwtToClientConverter;
 import lsfusion.gwt.server.form.FormServerResponseActionHandler;
-import lsfusion.interop.action.ServerResponse;
-import lsfusion.interop.form.remote.RemoteFormInterface;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 
 import java.rmi.RemoteException;
@@ -40,6 +37,7 @@ public class ExecuteEventActionHandler extends FormServerResponseActionHandler<E
                     action.actionSID,
                     action.propertyIds,
                     fullKeys,
+                    action.externalChanges,
                     pushAsyncResults
             );
         });

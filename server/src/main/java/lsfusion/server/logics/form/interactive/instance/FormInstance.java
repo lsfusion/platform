@@ -945,7 +945,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
     @LogTime
     @ThisMessage
-    public void executeEventAction(final PropertyDrawInstance<?> property, String eventActionSID, final ImMap<ObjectInstance, DataObject> keys, Function<AsyncEventExec, PushAsyncResult> asyncResult, final ExecutionStack stack) throws SQLException, SQLHandledException {
+    public void executeEventAction(final PropertyDrawInstance<?> property, String eventActionSID, final ImMap<ObjectInstance, DataObject> keys, boolean externalChange, Function<AsyncEventExec, PushAsyncResult> asyncResult, final ExecutionStack stack) throws SQLException, SQLHandledException {
         SQLCallable<Boolean> checkReadOnly = property.propertyReadOnly != null ? () -> property.propertyReadOnly.getRemappedPropertyObject(keys).read(FormInstance.this) != null : null;
         ActionObjectInstance<?> eventAction = property.getEventAction(eventActionSID, this, checkReadOnly, securityPolicy);
         if(eventAction == null) {
@@ -955,7 +955,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
         PushAsyncResult result = null;
         if(asyncResult != null) {
-            AsyncEventExec asyncEventExec = property.getEntity().getAsyncEventExec(entity, securityPolicy, eventActionSID);
+            AsyncEventExec asyncEventExec = property.getEntity().getAsyncEventExec(entity, securityPolicy, eventActionSID, externalChange);
             if(asyncEventExec != null) { // in case of paste can be null 
                 result = asyncResult.apply(asyncEventExec);
                 if(result == null) // in case of paste can be null
@@ -1017,7 +1017,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 if (columnKey != null) {
                     key = key.addExcl(columnKey);
                 }
-                executeEventAction(property, CHANGE, key, asyncChange -> asyncChange instanceof AsyncChange ? new PushAsyncChange(ObjectValue.getValue(value, ((AsyncChange) asyncChange).changeType)) : null, stack);
+                executeEventAction(property, CHANGE, key, true, asyncChange -> asyncChange instanceof AsyncChange ? new PushAsyncChange(ObjectValue.getValue(value, ((AsyncChange) asyncChange).changeType)) : null, stack);
             }
         }
     }
