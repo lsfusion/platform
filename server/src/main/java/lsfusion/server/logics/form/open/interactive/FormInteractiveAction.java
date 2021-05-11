@@ -80,7 +80,7 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
                                                                FormSelector<O> form,
                                                                final ImList<O> objectsToSet, final ImList<Boolean> nulls,
                                                                ImList<O> inputObjects, ImList<LP> inputProps, ImList<Boolean> inputNulls,
-                                                               ImOrderSet<C> orderInterfaces, ImList<ContextFilterSelector<?, C, O>> contextFilters,
+                                                               ImOrderSet<C> orderInterfaces, ImSet<ContextFilterSelector<?, C, O>> contextFilters,
                                                                Consumer<ImRevMap<C, ClassPropertyInterface>> mapContext,
                                                                ManageSessionType manageSession,
                                                                Boolean noCancel,

@@ -16,6 +16,7 @@ import lsfusion.server.base.controller.remote.context.ContextAwarePendingRemoteO
 import lsfusion.server.base.controller.remote.manager.RmiServer;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.ObjectValue;
+import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
@@ -31,7 +32,6 @@ import lsfusion.server.logics.form.interactive.ManageSessionType;
 import lsfusion.server.logics.form.interactive.action.async.InputList;
 import lsfusion.server.logics.form.interactive.action.input.InputContext;
 import lsfusion.server.logics.form.interactive.action.input.InputResult;
-import lsfusion.server.logics.form.interactive.dialogedit.DialogRequest;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.listener.CustomClassListener;
 import lsfusion.server.logics.form.struct.FormEntity;
@@ -153,6 +153,9 @@ public class ThreadLocalContext {
     public static BusinessLogics getBusinessLogics() {
         return getLogicsInstance().getBusinessLogics();
     }
+    public static BaseLogicsModule getBaseLM() {
+        return getBusinessLogics().LM;
+    }
 
     public static NavigatorsManager getNavigatorsManager() {
         return getLogicsInstance().getNavigatorsManager();
@@ -204,10 +207,6 @@ public class ThreadLocalContext {
 
     public static FormInstance createFormInstance(FormEntity formEntity, ImSet<ObjectEntity> inputObjects, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, ExecutionStack stack, DataSession session, boolean isModal, Boolean noCancel, ManageSessionType manageSession, boolean checkOnOk, boolean showDrop, boolean interactive, boolean isFloat, ImSet<ContextFilterInstance> contextFilters, boolean readonly) throws SQLException, SQLHandledException {
         return get().createFormInstance(formEntity, inputObjects, mapObjects, session, isModal, noCancel, manageSession, stack, checkOnOk, showDrop, interactive, isFloat, contextFilters, readonly);
-    }
-
-    public static ObjectValue inputUserObject(DialogRequest dialogRequest, ExecutionStack stack) throws SQLException, SQLHandledException {
-        return get().requestUserObject(dialogRequest, stack);
     }
 
     public static InputContext lockInputContext() {

@@ -249,7 +249,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     }
 
     public void initDefaultElements(Version version) {
-        BaseLogicsModule baseLM = ThreadLocalContext.getBusinessLogics().LM;
+        BaseLogicsModule baseLM = ThreadLocalContext.getBaseLM();
 
         LA<PropertyInterface> formOk = baseLM.getFormOk();
         LA<PropertyInterface> formClose = baseLM.getFormClose();
@@ -270,7 +270,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
     private void initDefaultGroupElements(GroupObjectEntity group, Version version) {
         if(group.viewType.isList() && !group.isInTree()) {
-            BaseLogicsModule baseLM = ThreadLocalContext.getBusinessLogics().LM;
+            BaseLogicsModule baseLM = ThreadLocalContext.getBaseLM();
 
             PropertyDrawEntity propertyDraw = addPropertyDraw(baseLM.count, version);
             propertyDraw.setToDraw(group);

@@ -48,7 +48,6 @@ import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.data.where.Where;
-import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BusinessLogics;
@@ -79,9 +78,6 @@ import lsfusion.server.logics.form.interactive.changed.*;
 import lsfusion.server.logics.form.interactive.controller.init.InstanceFactory;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
-import lsfusion.server.logics.form.interactive.dialogedit.ClassFormEntity;
-import lsfusion.server.logics.form.interactive.dialogedit.DialogRequest;
-import lsfusion.server.logics.form.interactive.dialogedit.DialogRequestAdapter;
 import lsfusion.server.logics.form.interactive.instance.design.ContainerViewInstance;
 import lsfusion.server.logics.form.interactive.instance.filter.FilterInstance;
 import lsfusion.server.logics.form.interactive.instance.filter.RegularFilterGroupInstance;
@@ -97,7 +93,7 @@ import lsfusion.server.logics.form.stat.print.StaticFormReportManager;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
 import lsfusion.server.logics.form.struct.filter.ContextFilterInstance;
-import lsfusion.server.logics.form.struct.filter.FilterEntity;
+import lsfusion.server.logics.form.struct.filter.FilterEntityInstance;
 import lsfusion.server.logics.form.struct.filter.RegularFilterGroupEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
@@ -301,14 +297,10 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             }
         properties = mProperties.immutableList();
 
-        ImSet<FilterInstance> allFixedFilters = entity.getFixedFilters().mapSetValues(value -> value.getInstance(instanceFactory));
+        ImSet<FilterEntityInstance> allFixedFilters = BaseUtils.immutableCast(entity.getFixedFilters());
         if (contextFilters != null)
-            allFixedFilters = allFixedFilters.addExcl(contextFilters.mapSetValues(value -> value.getFilter(instanceFactory)));
-        ImMap<GroupObjectInstance, ImSet<FilterInstance>> fixedFilters = allFixedFilters.group(new BaseUtils.Group<GroupObjectInstance, FilterInstance>() {
-            public GroupObjectInstance group(FilterInstance key) {
-                return key.getApplyObject();
-            }
-        });
+            allFixedFilters = allFixedFilters.addExcl(contextFilters);
+        ImMap<GroupObjectInstance, ImSet<FilterInstance>> fixedFilters = allFixedFilters.mapSetValues(value -> value.getInstance(instanceFactory)).group(key -> key.getApplyObject());
         for (int i = 0, size = fixedFilters.size(); i < size; i++)
             fixedFilters.getKey(i).fixedFilters = fixedFilters.getValue(i);
 
@@ -325,7 +317,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         for (int i = 0, size = fixedOrders.size(); i < size; i++)
             fixedOrders.getKey(i).fixedOrders = fixedOrders.getValue(i);
 
-
+        MExclMap<ObjectEntity, ObjectValue> mSeekCachedObjects = MapFact.mExclMap();
         for (GroupObjectInstance groupObject : groupObjects) {
             UpdateType updateType = groupObject.getUpdateType();
             if (updateType != UpdateType.PREV) {
@@ -336,20 +328,14 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                     if (object.getBaseClass() instanceof CustomClass && classListener != null) {
                         CustomClass cacheClass = (CustomClass) object.getBaseClass();
                         Long objectID = classListener.getObject(cacheClass);
-                        if (objectID != null) {
-                            groupObject.addSeek(object, session.getDataObject(cacheClass, objectID), false);
-                        }
+                        mSeekCachedObjects.exclAdd(object.entity, session.getObjectValue(cacheClass, objectID));
                     }
                 }
             }
         }
-
-        for (int i = 0, size = mapObjects.size(); i < size; i++) {
-            ObjectValue value = mapObjects.getValue(i);
-            if(value instanceof DataObject) {
-                forceChangeObject(instanceFactory.getInstance(mapObjects.getKey(i)), value);
-            }
-        }
+        mapObjects = MapFact.override(mSeekCachedObjects.immutable(), mapObjects);
+        for (int i = 0, size = mapObjects.size(); i < size; i++)
+            seekObject(instanceFactory.getInstance(mapObjects.getKey(i)), mapObjects.getValue(i));
 
         //устанавливаем фильтры и порядки по умолчанию...
         for (RegularFilterGroupInstance filterGroup : regularFilterGroups) {
@@ -937,7 +923,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
         // todo : теоретически надо переделывать
         // нужно менять текущий объект, иначе не будет работать ImportFromExcelActionProperty
-        forceChangeObject(object, dataObject);
+        seekObject(object, dataObject);
 
         // меняем вид, если при добавлении может получиться, что фильтр не выполнится, нужно как-то проверить в общем случае
 //      changeClassView(object.groupTo, ClassViewType.PANEL);
@@ -1521,17 +1507,23 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         return ((CustomObjectInstance) object).currentClass;
     }
 
+    @Deprecated
     public void forceChangeObject(ObjectInstance object, ObjectValue value) throws SQLException, SQLHandledException {
-        forceChangeObject(object, value, false);
+        seekObject(object, value);
     }
 
-    public void forceChangeObject(ObjectInstance object, ObjectValue value, boolean last) throws SQLException, SQLHandledException {
-        if (object instanceof DataObjectInstance && !(value instanceof DataObject))
-            object.changeValue(session, ((DataObjectInstance) object).getBaseClass().getDefaultObjectValue());
-        else
-            object.changeValue(session, value);
+    public void seekObject(ObjectInstance object, ObjectValue value) throws SQLException, SQLHandledException {
+        changeObjectValue(object, value);
 
-        object.groupTo.addSeek(object, value, last);
+        if(value instanceof DataObject) // ignoring null values, it's important when we're seeking with NULL option (since we want to set null object if all objects are NULL)
+            object.groupTo.addSeek(object, value, false);
+    }
+
+    public void changeObjectValue(ObjectInstance object, ObjectValue value) throws SQLException, SQLHandledException { 
+//        if (object instanceof DataObjectInstance && !(value instanceof DataObject))
+//            object.changeValue(session, ((DataObjectInstance) object).getBaseClass().getDefaultObjectValue());
+//        else
+        object.changeValue(session, value);
     }
 
     private boolean hasEventActions() {
@@ -1542,17 +1534,19 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         return false;
     }
 
-    // todo : временная затычка
-    public void seekObject(ObjectInstance object, ObjectValue value, UpdateType updateType) throws SQLException, SQLHandledException {
-        boolean last = updateType == UpdateType.LAST;
-        if (hasEventActions()) { // дебилизм конечно но пока так
-            forceChangeObject(object, value, last);
-        } else {
-            object.groupTo.addSeek(object, value, last);
-        }
+    // explicit SEEK with explicit updateType
+    public void seekObjects(GroupObjectInstance group, ImMap<ObjectInstance, ObjectValue> objectInstances, UpdateType type) throws SQLException, SQLHandledException {
+        if(group == null)
+            group = objectInstances.getKey(0).groupTo;
+        if(type == null)
+            type = group.getUpdateType();
+        // assert that all objects are from this group
+        group.seek(type);
+        for (int i = 0; i < objectInstances.size(); ++i)
+            seekObject(objectInstances.getKey(i), objectInstances.getValue(i));
     }
-    
-    private ImList<ComponentView> userActivateTabs = ListFact.EMPTY(); 
+
+    private ImList<ComponentView> userActivateTabs = ListFact.EMPTY();
     // программный activate tab
     public void activateTab(ComponentView view) throws SQLException, SQLHandledException {
         setTabVisible(view.getTabbedContainer(), view);
@@ -1564,15 +1558,6 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     // программный activate property
     public void activateProperty(PropertyDrawEntity view) {
         userActivateProps = userActivateProps.addList(instanceFactory.getInstance(view));
-    }
-
-    public void changeObject(ObjectInstance object, ObjectValue objectValue) throws SQLException, SQLHandledException {
-        UpdateType updateType = object.groupTo.getUpdateType();
-        if(updateType == UpdateType.NULL)
-            object.groupTo.seek(updateType);
-        else
-            seekObject(object, objectValue, updateType);
-        //        fireObjectChanged(object); // запускаем все Action'ы, которые следят за этим объектом
     }
 
     // кэш на изменение
@@ -2344,62 +2329,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         return new FormData(mResult.immutableOrder());
     }
 
-    public ImSet<ContextFilterInstance> getObjectFixedFilters(ClassFormEntity editForm, GroupObjectInstance selectionGroupObject) {
-        MSet<ContextFilterInstance> mFixedFilters = SetFact.mSet();
-        ObjectEntity object = editForm.object;
-        for (FilterEntity<?> filterEntity : entity.getFixedFilters()) {
-            FilterInstance filter = filterEntity.getInstance(instanceFactory);
-            if (filter.getApplyObject() == selectionGroupObject) { // берем фильтры из этой группы
-                for (ObjectEntity filterObject : filterEntity.getObjects()) {
-                    //добавляем фильтр только, если есть хотя бы один объект который не будет заменён на константу
-                    if (filterObject.baseClass == object.baseClass) {
-                        mFixedFilters.add(filterEntity.getRemappedContextFilter(filterObject, object, instanceFactory));
-                        break;
-                    }
-                }
-            }
-        }
-        return mFixedFilters.immutable();
-    }
-
     public Object read(PropertyObjectInstance<?> property) throws SQLException, SQLHandledException {
         return property.read(this);
-    }
-
-    public DialogRequest createObjectDialogRequest(final CustomClass objectClass, final ExecutionStack stack) {
-        return new DialogRequestAdapter() {
-            @Override
-            public FormInstance doCreateDialog() throws SQLException, SQLHandledException {
-                ClassFormEntity classForm = objectClass.getDialogForm(BL.LM);
-                dialogObject = classForm.object;
-                return createDialogInstance(classForm.form, dialogObject, NullValue.instance, null, stack);
-            }
-        };
-    }
-
-    public DialogRequest createChangeObjectDialogRequest(final CustomClass dialogClass, final ObjectValue dialogValue, final GroupObjectInstance groupObject, final ExecutionStack stack) {
-        return new DialogRequestAdapter() {
-            @Override
-            protected FormInstance doCreateDialog() throws SQLException, SQLHandledException {
-                ClassFormEntity formEntity = dialogClass.getDialogForm(BL.LM);
-                ImSet<ContextFilterInstance> additionalFilters = getObjectFixedFilters(formEntity, groupObject);
-                
-                dialogObject = formEntity.object;
-
-                return createDialogInstance(formEntity.form, dialogObject, dialogValue, additionalFilters, stack);
-            }
-        };
-    }
-
-    // вызов из обработчиков по умолчанию AggChange, DefaultChange, ChangeReadObject
-    private FormInstance createDialogInstance(FormEntity entity, ObjectEntity dialogEntity, ObjectValue dialogValue, ImSet<ContextFilterInstance> additionalFilters, ExecutionStack outerStack) throws SQLException, SQLHandledException {
-        return new FormInstance(entity, this.logicsInstance, SetFact.singleton(dialogEntity),
-                                this.session, securityPolicy,
-                                getFocusListener(), getClassListener(),
-                                MapFact.singleton(dialogEntity, dialogValue),
-                                outerStack,
-                                true, FormEntity.DEFAULT_NOCANCEL, ManageSessionType.AUTO, false, true, true, true,
-                                false, additionalFilters, false, locale);
     }
 
     // ---------------------------------------- Events ----------------------------------------

@@ -3635,7 +3635,7 @@ asyncUpdateActionDefinitionBody[List<TypedParameter> context, boolean dynamic] r
 
 seekObjectActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
 @init {
-	UpdateType type = UpdateType.FIRST;
+	UpdateType type = null;
 	List<String> objNames = new ArrayList<>();
 	List<LPWithParams> lps = new ArrayList<>(); 
 }
@@ -3645,7 +3645,7 @@ seekObjectActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
 		                      : self.addScriptedGroupObjectSeekProp($gobj.sid, objNames, lps, type);
 	}
 }
-	:	'SEEK' ('FIRST' | 'LAST' { type = UpdateType.LAST; } | 'NULL' { type = UpdateType.NULL; })?
+	:	'SEEK' ('FIRST' { type = UpdateType.FIRST; } | 'LAST' { type = UpdateType.LAST; } | 'NULL' { type = UpdateType.NULL; })?
 		(	obj=formObjectID EQ pe=propertyExpression[context, dynamic]
 		|	gobj=formGroupObjectID ('OBJECTS' list=seekObjectsList[context, dynamic] { objNames = $list.objects; lps = $list.values; })?
 		)

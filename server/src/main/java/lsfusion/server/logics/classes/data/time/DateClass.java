@@ -31,7 +31,7 @@ import java.util.Date;
 import static lsfusion.base.DateConverter.*;
 import static lsfusion.server.logics.classes.data.time.DateTimeConverter.getWriteDate;
 
-public class DateClass extends DataClass<LocalDate> {
+public class DateClass extends TimeSeriesClass<LocalDate> {
 
     public final static DateClass instance = new DateClass();
 
@@ -192,5 +192,20 @@ public class DateClass extends DataClass<LocalDate> {
     @Override
     public boolean useIndexedJoin() {
         return true;
+    }
+
+    @Override
+    public String getIntervalProperty() {
+        return "interval[DATE,DATE]";
+    }
+
+    @Override
+    public String getFromIntervalProperty() {
+        return "from[INTERVAL[DATE]]";
+    }
+
+    @Override
+    public String getToIntervalProperty() {
+        return "to[INTERVAL[DATE]]";
     }
 }

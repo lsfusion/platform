@@ -34,7 +34,7 @@ import java.util.Locale;
 import static lsfusion.base.DateConverter.instantToSqlTimestamp;
 import static lsfusion.base.DateConverter.sqlTimestampToInstant;
 
-public class ZDateTimeClass extends DataClass<Instant> {
+public class ZDateTimeClass extends TimeSeriesClass<Instant> {
 
     public final static ZDateTimeClass instance = new ZDateTimeClass();
 
@@ -197,6 +197,21 @@ public class ZDateTimeClass extends DataClass<Instant> {
     @Override
     public boolean useIndexedJoin() {
         return true;
+    }
+
+    @Override
+    public String getIntervalProperty() {
+        return "interval[ZDATETIME,ZDATETIME]";
+    }
+
+    @Override
+    public String getFromIntervalProperty() {
+        return "from[INTERVAL[ZDATETIME]]";
+    }
+
+    @Override
+    public String getToIntervalProperty() {
+        return "to[INTERVAL[ZDATETIME]]";
     }
 }
 

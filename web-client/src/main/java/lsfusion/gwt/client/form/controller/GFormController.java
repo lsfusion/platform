@@ -92,6 +92,7 @@ import lsfusion.gwt.client.form.property.table.view.GPropertyContextMenuPopup;
 import lsfusion.gwt.client.form.view.FormContainer;
 import lsfusion.gwt.client.form.view.FormDockable;
 import lsfusion.gwt.client.form.view.ModalForm;
+import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
 import lsfusion.gwt.client.navigator.window.GModalityType;
 import lsfusion.gwt.client.view.MainFrame;
 import lsfusion.gwt.client.view.ServerMessageProvider;
@@ -819,7 +820,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         if (isDockedModal)
             ((FormDockable)formContainer).block();
 
-        FormContainer blockingForm = formsController.openForm(requestIndex, form, modalityType, forbidDuplicate, initFilterEvent, () -> {
+        FormContainer blockingForm = formsController.openForm(getAsyncFormController(requestIndex), form, modalityType, forbidDuplicate, initFilterEvent, () -> {
             if(isDockedModal) {
                 ((FormDockable)formContainer).unblock();
 
@@ -835,7 +836,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     public void onServerInvocationResponse(ServerResponseResult response) {
-        formsController.onServerInvocationResponse(response);
+        formsController.onServerInvocationResponse(response, getAsyncFormController(response.requestIndex));
     }
 
     public void showClassDialog(GObjectClass baseClass, GObjectClass defaultClass, boolean concreate, final ClassChosenHandler classChosenHandler) {
@@ -1046,7 +1047,11 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
     public void asyncOpenForm(GAsyncOpenForm asyncOpenForm, EditContext editContext, Event editEvent, String actionSID) {
         long requestIndex = asyncExecutePropertyEventAction(actionSID, editContext, editEvent, null);
-        formsController.asyncOpenForm(requestIndex, asyncOpenForm);
+        formsController.asyncOpenForm(getAsyncFormController(requestIndex), asyncOpenForm);
+    }
+
+    public GAsyncFormController getAsyncFormController(long requestIndex) {
+        return actionDispatcher.getAsyncFormController(requestIndex);
     }
 
     public long changeEditPropertyValue(EditContext editContext, Event editEvent, String actionSID, GType changeType, GUserInputResult result, Long changeRequestIndex) {
@@ -1968,7 +1973,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
                     if(contextAction != null && requestIndex.result >= 0) {
                         GAsyncExec actionAsync = inputList.actionAsyncs[contextAction];
                         if(actionAsync != null)
-                            actionAsync.exec(requestIndex.result, formsController);
+                            actionAsync.exec(getAsyncFormController(requestIndex.result), formsController);
                     }
                 },
                 cancel, editContext, actionSID);

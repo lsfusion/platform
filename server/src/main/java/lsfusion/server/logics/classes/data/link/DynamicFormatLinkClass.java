@@ -2,7 +2,7 @@ package lsfusion.server.logics.classes.data.link;
 
 import lsfusion.interop.classes.DataType;
 import lsfusion.server.language.action.LA;
-import lsfusion.server.logics.BusinessLogics;
+import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.classes.data.DataClass;
 
 import java.util.ArrayList;
@@ -32,8 +32,8 @@ public class DynamicFormatLinkClass extends LinkClass {
     }
 
     @Override
-    public LA getDefaultOpenAction(BusinessLogics BL) {
-        return BL.LM.openLink;
+    public LA getDefaultOpenAction(BaseLogicsModule baseLM) {
+        return baseLM.openLink;
     }
 
     public DataClass getCompatible(DataClass compClass, boolean or) {

@@ -31,6 +31,7 @@ import lsfusion.gwt.client.form.property.async.GAsyncOpenForm;
 import lsfusion.gwt.client.form.view.FormContainer;
 import lsfusion.gwt.client.form.view.FormDockable;
 import lsfusion.gwt.client.form.view.ModalForm;
+import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
 import lsfusion.gwt.client.navigator.controller.dispatch.GNavigatorActionDispatcher;
 import lsfusion.gwt.client.navigator.window.GModalityType;
 import lsfusion.gwt.client.navigator.window.view.WindowsController;
@@ -52,9 +53,6 @@ public abstract class FormsController {
     private final List<FormDockable> forms = new ArrayList<>();
     private final List<Integer> formFocusOrder = new ArrayList<>();
     private int focusOrderCount;
-
-    private Long lastCompletedRequest = -1L;
-    private NativeHashMap<Long, FormContainer> asyncForms = new NativeHashMap<>();
 
     private final WindowsController windowsController;
 
@@ -104,13 +102,10 @@ public abstract class FormsController {
         });
     }
 
-    public void onServerInvocationResponse(ServerResponseResult response) {
-        setLastCompletedRequest(response.requestIndex);
-        //GFormAction will close asyncForm, if there is no GFormAction in response,
-        //we should close this erroneous asyncForm
-        if (hasAsyncForm(response.requestIndex)) {
+    public void onServerInvocationResponse(ServerResponseResult response, GAsyncFormController asyncFormController) {
+        if (asyncFormController.onServerInvocationResponse()) {
             if (Arrays.stream(response.actions).noneMatch(a -> a instanceof GFormAction)) {
-                FormContainer formContainer = removeAsyncForm(response.requestIndex);
+                FormContainer formContainer = asyncFormController.removeAsyncForm();
                 if(formContainer instanceof FormDockable) {
                     ((FormDockable) formContainer).closePressed();
                 } else {
@@ -177,7 +172,7 @@ public abstract class FormsController {
         return tabsPanel;
     }
 
-    public FormContainer openForm(Long requestIndex, GForm form, GModalityType modalityType, boolean forbidDuplicate, Event initFilterEvent, WindowHiddenHandler hiddenHandler) {
+    public FormContainer openForm(GAsyncFormController asyncFormController, GForm form, GModalityType modalityType, boolean forbidDuplicate, Event initFilterEvent, WindowHiddenHandler hiddenHandler) {
         FormDockable duplicateForm = getDuplicateForm(form.sID, forbidDuplicate);
         if(duplicateForm != null) {
             selectTab(duplicateForm);
@@ -185,7 +180,7 @@ public abstract class FormsController {
         }
 
         boolean modal = modalityType.isModalWindow();
-        FormContainer formContainer = removeAsyncForm(requestIndex);
+        FormContainer formContainer = asyncFormController.removeAsyncForm();
         boolean hasAsyncForm = formContainer != null;
         boolean asyncOpened = hasAsyncForm && formContainer instanceof ModalForm == modal;
         if(hasAsyncForm && !asyncOpened) {
@@ -199,9 +194,9 @@ public abstract class FormsController {
                     openFormTimer.cancel();
                     openFormTimer = null;
                 }
-                formContainer = new ModalForm(this, requestIndex, form.getCaption(), false);
+                formContainer = new ModalForm(this, asyncFormController, form.getCaption(), false);
             } else {
-                formContainer = new FormDockable(this, requestIndex, form.getCaption(), false);
+                formContainer = new FormDockable(this, asyncFormController, form.getCaption(), false);
             }
 
         }
@@ -217,7 +212,7 @@ public abstract class FormsController {
 
     //we don't want flashing, so we use timer
     Timer openFormTimer;
-    public void asyncOpenForm(Long requestIndex, GAsyncOpenForm openForm) {
+    public void asyncOpenForm(GAsyncFormController asyncFormController, GAsyncOpenForm openForm) {
         FormDockable duplicateForm = getDuplicateForm(openForm.canonicalName, openForm.forbidDuplicate);
         if (duplicateForm == null) {
             openFormTimer = new Timer() {
@@ -225,12 +220,12 @@ public abstract class FormsController {
                 public void run() {
                     Scheduler.get().scheduleDeferred(() -> {
                         if (openFormTimer != null) {
-                            if (requestIndex > lastCompletedRequest) { //request is not completed yet
+                            if (asyncFormController.checkNotCompleted()) { //request is not completed yet
                                 FormContainer formContainer = openForm.isModal() ?
-                                        new ModalForm(FormsController.this, requestIndex, openForm.caption, true) :
-                                        new FormDockable(FormsController.this, requestIndex, openForm.caption, true);
+                                        new ModalForm(FormsController.this, asyncFormController, openForm.caption, true) :
+                                        new FormDockable(FormsController.this, asyncFormController, openForm.caption, true);
                                 formContainer.show();
-                                asyncForms.put(requestIndex, formContainer);
+                                asyncFormController.putAsyncForm(formContainer);
                             }
                             openFormTimer = null;
                         }
@@ -246,18 +241,6 @@ public abstract class FormsController {
             return findForm(canonicalName);
         }
         return null;
-    }
-
-    public boolean hasAsyncForm(Long requestIndex) {
-        return asyncForms.containsKey(requestIndex);
-    }
-
-    public void setLastCompletedRequest(Long lastCompletedRequest) {
-        this.lastCompletedRequest = lastCompletedRequest;
-    }
-
-    public FormContainer removeAsyncForm(Long requestIndex) {
-        return asyncForms.remove(requestIndex);
     }
 
     public void addContextMenuHandler(FormDockable formContainer) {
@@ -373,7 +356,7 @@ public abstract class FormsController {
 
     public abstract <T extends Result> long dispatch(final ExecuteNavigatorAction action, AsyncCallback<ServerResponseResult> callback);
 
-    protected abstract GNavigatorActionDispatcher getDispatcher();
+    public abstract GNavigatorActionDispatcher getDispatcher();
 
     public long executeNavigatorAction(String actionSID, final NativeEvent event, boolean sync) {
         ExecuteNavigatorAction navigatorAction = new ExecuteNavigatorAction(actionSID, 1);

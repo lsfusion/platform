@@ -43,13 +43,6 @@ public class PropertyObjectEntity<P extends PropertyInterface> extends ActionOrP
         return instanceFactory.getInstance(this);
     }
 
-    public ContextFilterInstance<P> getRemappedInstance(final ObjectEntity oldObject, final ObjectEntity newObject, InstanceFactory instanceFactory) {
-        P oldObjectInterface = mapping.reverse().get(oldObject);
-        return new ContextFilterInstance<>(property, 
-                            mapping.removeValues(oldObject).mapValues((ObjectEntity object) -> object.getInstance(instanceFactory).getObjectValue()), 
-                            oldObjectInterface != null ? MapFact.singletonRev(oldObjectInterface, newObject) : MapFact.EMPTYREV());
-    }
-
     @Override
     public Type getType() {
         return property.getType();

@@ -547,7 +547,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
     }
 
     protected BaseLogicsModule getBaseLM() {
-        return ThreadLocalContext.getBusinessLogics().LM;
+        return ThreadLocalContext.getBaseLM();
     }
 
     //

@@ -246,6 +246,14 @@ public abstract class AOrderSet<K> extends AList<K> implements ImOrderSet<K> {
         return mvResult.immutableValueOrder().getMap();
     }
 
+    @Override
+    public <M> ImOrderMap<K, M> mapOrderIntValues(IntFunction<M> getter) {
+        ImOrderValueMap<K, M> mvResult = mapItOrderValues();
+        for(int i=0,size=size();i<size;i++)
+            mvResult.mapValue(i, getter.apply(i));
+        return mvResult.immutableValueOrder();
+    }
+
     public <M> ImMap<K, M> mapOrderValues(IntFunction<M> getter) {
         ImOrderValueMap<K, M> mvResult = mapItOrderValues();
         for(int i=0,size=size();i<size;i++)

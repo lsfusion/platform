@@ -20,7 +20,6 @@ import lsfusion.server.logics.form.interactive.action.async.InputList;
 import lsfusion.server.logics.form.interactive.action.input.InputContext;
 import lsfusion.server.logics.form.interactive.action.input.InputResult;
 import lsfusion.server.logics.form.interactive.controller.remote.RemoteForm;
-import lsfusion.server.logics.form.interactive.dialogedit.DialogRequest;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.listener.CustomClassListener;
 import lsfusion.server.logics.form.struct.FormEntity;
@@ -240,10 +239,6 @@ public abstract class AbstractContext implements Context {
     // UI interfaces, careful with that because RemoteNavigatorContext has multiple inheritance, so every that interfaces should be "proxied" there
     public void requestFormUserInteraction(FormInstance formInstance, ModalityType modalityType, boolean forbidDuplicate, ExecutionStack stack) throws SQLException, SQLHandledException {
         throw new UnsupportedOperationException("requestFormUserInteraction is not supported");
-    }
-
-    public ObjectValue requestUserObject(DialogRequest dialog, ExecutionStack stack) throws SQLException, SQLHandledException { // null если canceled
-        throw new UnsupportedOperationException("requestUserObject is not supported");
     }
 
     public InputContext lockInputContext() {

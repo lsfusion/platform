@@ -25,7 +25,6 @@ import lsfusion.server.logics.form.interactive.action.async.AsyncSerializer;
 import lsfusion.server.logics.form.interactive.action.input.InputContext;
 import lsfusion.server.logics.form.interactive.action.input.InputResult;
 import lsfusion.server.logics.form.interactive.controller.remote.RemoteForm;
-import lsfusion.server.logics.form.interactive.dialogedit.DialogRequest;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.listener.FocusListener;
 import lsfusion.server.logics.form.interactive.listener.RemoteFormListener;
@@ -59,20 +58,6 @@ public abstract class RemoteUIContext extends AbstractContext {
             remoteForm.form.syncLikelyOnClose(true, stack);
         } else
             delayUserInteraction(action);
-    }
-
-    public ObjectValue requestUserObject(DialogRequest dialog, ExecutionStack stack) throws SQLException, SQLHandledException { // null если canceled
-        FormInstance dialogInstance = dialog.createDialog();
-        if (dialogInstance == null) {
-            return null;
-        }
-
-        requestFormUserInteraction(dialogInstance, ModalityType.DIALOG_MODAL, false, stack);
-
-        if (dialogInstance.getFormResult() == FormCloseType.CLOSE) {
-            return null;
-        }
-        return dialogInstance.getFormResult() == FormCloseType.DROP ? NullValue.instance : dialog.getValue();
     }
 
     private InputContext inputContext;

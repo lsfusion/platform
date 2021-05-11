@@ -45,7 +45,6 @@ import lsfusion.server.logics.controller.manager.RestartManager;
 import lsfusion.server.logics.form.interactive.ManageSessionType;
 import lsfusion.server.logics.form.interactive.action.async.InputList;
 import lsfusion.server.logics.form.interactive.action.input.*;
-import lsfusion.server.logics.form.interactive.dialogedit.DialogRequest;
 import lsfusion.server.logics.form.interactive.instance.FormEnvironment;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.object.CustomObjectInstance;
@@ -607,12 +606,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         return getBL().LM.popRequest(getEnv(), callable);
     }
 
-    // чтение пользователя
-    public ObjectValue inputUserObject(final DialogRequest dialog) throws SQLException, SQLHandledException { // null если canceled
-        return requestUser(ObjectType.instance, () -> ThreadLocalContext.inputUserObject(dialog, stack));
-    }
-
-    // cannot use because of backward compatibility 
+    // cannot use because of backward compatibility
 //    public ObjectValue requestUserData(FileClass dataClass, Object oldValue) {
 //        assertNotUserInteractionInTransaction();
 //        ObjectValue userInput = pushedUserInput != null ? pushedUserInput : ThreadLocalContext.requestUserData(dataClass, oldValue);
@@ -631,19 +625,17 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         return getBL().LM.isRequestCanceled(getEnv());
     }
 
+    @Deprecated
     public ObjectValue requestUser(Type type, SQLCallable<ObjectValue> request) throws SQLException, SQLHandledException {
         assertNotUserInteractionInTransaction();
         return getBL().LM.getRequestedValue(type, getEnv(), request);
     }
 
+    @Deprecated
     public ObjectValue requestUserData(final DataClass dataClass, final Object oldValue) {
-        return requestUserData(dataClass, oldValue, true);
-    }
-
-    public ObjectValue requestUserData(final DataClass dataClass, final Object oldValue, boolean hasOldValue) {
         try {
             return requestUser(dataClass, () -> {
-                InputResult inputResult = inputUserData(dataClass, oldValue, hasOldValue, null, null);
+                InputResult inputResult = inputUserData(dataClass, oldValue, true, null, null);
                 return inputResult != null ? inputResult.value : null;
             });
         } catch (SQLException | SQLHandledException e) {
@@ -662,6 +654,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         return ThreadLocalContext.inputUserData(dataClass, oldValue, hasOldValue, inputContext, inputList);
     }
 
+    @Deprecated
     public ObjectValue requestUserClass(final CustomClass baseClass, final CustomClass defaultValue, final boolean concrete) throws SQLException, SQLHandledException {
         return requestUser(ObjectType.instance, () -> ThreadLocalContext.requestUserClass(baseClass, defaultValue, concrete));
     }

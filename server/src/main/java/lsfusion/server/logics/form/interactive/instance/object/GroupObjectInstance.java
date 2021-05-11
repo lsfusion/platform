@@ -540,10 +540,10 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     // поиски по свойствам\объектам
     public SeekObjects userSeeks = null;
 
-    public void addSeek(OrderInstance order, ObjectValue value, boolean addSeek) {
+    public void addSeek(OrderInstance order, ObjectValue value, boolean down) {
         if(userSeeks==null || userSeeks == SEEK_NULL)
             userSeeks = SEEK_PREV();
-        userSeeks = ((SeekOrderObjects)userSeeks).add(order, value, addSeek);
+        userSeeks = ((SeekOrderObjects)userSeeks).add(order, value, down);
     }
 
     public void dropSeek(ObjectInstance object) {
@@ -1348,8 +1348,8 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
             this(MapFact.EMPTY(), end);
         }
 
-        public SeekOrderObjects add(OrderInstance order, ObjectValue value, boolean down) {
-            return new SeekOrderObjects(values.override(order, value), this.end || down);
+        public SeekOrderObjects add(OrderInstance order, ObjectValue value, boolean end) {
+            return new SeekOrderObjects(values.override(order, value), this.end || end);
         }
 
         public SeekOrderObjects remove(ObjectInstance object) {
@@ -1422,7 +1422,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
             if (readSize == 1) { // в частном случае если есть "висячие" ключи не в фильтре и нужна одна запись ставим равно вместо >
                 for(DataObjectInstance freeObject : getFreeDataObjects()) {
                     ObjectValue freeValue = values.get(freeObject);
-                    if(freeValue==null || !(freeValue instanceof DataObject))
+                    if(!(freeValue instanceof DataObject))
                         freeValue = freeObject.getBaseClass().getDefaultObjectValue();
                     orderWhere = orderWhere.and(end==!down?mapKeys.get(freeObject).compare((DataObject)freeValue, Compare.EQUALS):Where.FALSE()); // seekDown==!down, чтобы и вверх и вниз не попали одни и те же ключи
                 }

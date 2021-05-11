@@ -5,6 +5,7 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
+import lsfusion.server.logics.form.interactive.action.change.ActionObjectSelector;
 import lsfusion.server.logics.form.interactive.controller.init.InstanceFactory;
 import lsfusion.server.logics.form.interactive.controller.init.Instantiable;
 import lsfusion.server.logics.form.interactive.instance.property.ActionObjectInstance;
@@ -17,7 +18,7 @@ import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyObje
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
-public class ActionObjectEntity<P extends PropertyInterface> extends ActionOrPropertyObjectEntity<P, Action<P>> implements Instantiable<ActionObjectInstance<P>> {
+public class ActionObjectEntity<P extends PropertyInterface> extends ActionOrPropertyObjectEntity<P, Action<P>> implements Instantiable<ActionObjectInstance<P>>, ActionObjectSelector {
 
     public ActionObjectEntity() {
         //нужен для десериализации
@@ -67,5 +68,10 @@ public class ActionObjectEntity<P extends PropertyInterface> extends ActionOrPro
         if(readOnly == null) // optimization
             return PropertyFact.createTrue().mapEntityObjects(MapFact.EMPTYREV());
         return PropertyFact.createNot(readOnly.property.getImplement()).mapEntityObjects(readOnly.mapping);
+    }
+
+    @Override
+    public ActionObjectEntity<P> getAction(FormEntity formEntity) {
+        return this;
     }
 }

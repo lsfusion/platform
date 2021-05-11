@@ -5,6 +5,7 @@ import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.view.ModalForm;
+import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
 import lsfusion.gwt.client.view.MainFrame;
 
 public class GAsyncOpenForm extends GAsyncExec {
@@ -35,7 +36,7 @@ public class GAsyncOpenForm extends GAsyncExec {
     }
 
     @Override
-    public void exec(long requestIndex, FormsController formsController) {
-        formsController.asyncOpenForm(requestIndex, this);
+    public void exec(GAsyncFormController asyncFormController, FormsController formsController) {
+        formsController.asyncOpenForm(asyncFormController, this);
     }
 }

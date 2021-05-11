@@ -119,7 +119,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
             int minSizeForExportToCSV = Settings.get().getMinSizeForReportExportToCSV();
             if(minSizeForExportToCSV >= 0 && reportGenerationData.reportSourceData.length > minSizeForExportToCSV) {
                 FormDataManager.ExportResult exportData = formReportManager.getExportData(0);
-                RawFileData file = new ExportCSVAction(null, formReportManager.getFormEntity(), ListFact.EMPTY(), ListFact.EMPTY(), SetFact.EMPTYORDER(), ListFact.EMPTY(),
+                RawFileData file = new ExportCSVAction(null, formReportManager.getFormEntity(), ListFact.EMPTY(), ListFact.EMPTY(), SetFact.EMPTYORDER(), SetFact.EMPTY(),
                         FormIntegrationType.CSV, null, 0, "UTF-8", false, ";", false, true).exportReport(new StaticExportData(exportData.keys, exportData.properties), exportData.hierarchy);
                 return new RawFileData(ArrayUtils.addAll(new byte[]{(byte) 0xef, (byte) 0xbb, (byte) 0xbf}, file.getBytes())); //add bom bytes
 

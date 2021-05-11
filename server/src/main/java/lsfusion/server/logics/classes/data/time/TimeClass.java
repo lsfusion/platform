@@ -31,7 +31,7 @@ import java.util.Locale;
 import static lsfusion.base.TimeConverter.localTimeToSqlTime;
 import static lsfusion.base.TimeConverter.sqlTimeToLocalTime;
 
-public class TimeClass extends DataClass<LocalTime> {
+public class TimeClass extends TimeSeriesClass<LocalTime> {
     public final static TimeClass instance = new TimeClass();
 
     private final static String timePattern = DateTimeFormatterBuilder.getLocalizedDateTimePattern(null, FormatStyle.MEDIUM, Chronology.ofLocale(Locale.getDefault()), Locale.getDefault());
@@ -185,5 +185,20 @@ public class TimeClass extends DataClass<LocalTime> {
     @Override
     public LocalTime read(ResultSet set, SQLSyntax syntax, String name) throws SQLException {
         return super.read(set, syntax, name); //return set.getTime(name); в частности jtds глючит String вместо Time возвращает
+    }
+
+    @Override
+    public String getIntervalProperty() {
+        return "interval[TIME,TIME]";
+    }
+
+    @Override
+    public String getFromIntervalProperty() {
+        return "from[INTERVAL[TIME]]";
+    }
+
+    @Override
+    public String getToIntervalProperty() {
+        return "to[INTERVAL[TIME]]";
     }
 }

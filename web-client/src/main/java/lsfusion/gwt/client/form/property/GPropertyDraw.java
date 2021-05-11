@@ -82,7 +82,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public Map<String, GAsyncEventExec> asyncExecMap;
 
     public GType getChangeType() {
-        GAsyncEventExec asyncExec = asyncExecMap.get(ServerResponse.CHANGE);
+        GAsyncEventExec asyncExec = getAsyncEventExec(ServerResponse.CHANGE);
         return asyncExec instanceof GAsyncChange ? ((GAsyncChange) asyncExec).changeType : null;
     }
 

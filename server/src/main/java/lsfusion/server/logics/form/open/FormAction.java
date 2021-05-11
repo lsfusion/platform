@@ -74,7 +74,7 @@ public abstract class FormAction<O extends ObjectSelector> extends SystemExplici
                       FormSelector<O> form,
                       final ImList<O> objectsToSet,
                       final ImList<Boolean> nulls,
-                      ImOrderSet<C> orderContextInterfaces, ImList<ContextFilterSelector<?, C, O>> contextFilters, Consumer<ImRevMap<C, ClassPropertyInterface>> mapContext,
+                      ImOrderSet<C> orderContextInterfaces, ImSet<ContextFilterSelector<?, C, O>> contextFilters, Consumer<ImRevMap<C, ClassPropertyInterface>> mapContext,
                       ValueClass... extraValueClasses) {
         super(caption, getValueClasses(form, objectsToSet, orderContextInterfaces.size(), extraValueClasses));
 
@@ -88,8 +88,7 @@ public abstract class FormAction<O extends ObjectSelector> extends SystemExplici
 
         ImRevMap<C, ClassPropertyInterface> mapContextInterfaces = orderContextInterfaces.mapSet(orderInterfaces.subOrder(objectsToSet.size(), objectsToSet.size() + orderContextInterfaces.size()));
         this.contextInterfaces = mapContextInterfaces.valuesSet();
-        this.contextFilters = contextFilters.mapListValues((Function<ContextFilterSelector<?, C, O>, ContextFilterSelector<?, ClassPropertyInterface, O>>)
-                filter -> filter.map(mapContextInterfaces)).toOrderExclSet().getSet();
+        this.contextFilters = contextFilters.mapSetValues(filter -> filter.map(mapContextInterfaces));
         if(mapContext != null)
             mapContext.accept(mapContextInterfaces);
     }

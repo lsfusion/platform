@@ -12,10 +12,13 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Result;
 import lsfusion.gwt.client.base.exception.ErrorHandlingCallback;
 import lsfusion.gwt.client.base.exception.GExceptionManager;
+import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.log.GLog;
 import lsfusion.gwt.client.base.view.DialogBoxHelper;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.controller.remote.action.navigator.LogClientExceptionAction;
+import lsfusion.gwt.client.form.view.FormContainer;
+import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -327,5 +330,33 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
             }
         }
         return responseHeaders;
+    }
+
+    private long lastCompletedRequest = -1L;
+    private NativeHashMap<Long, FormContainer> asyncForms = new NativeHashMap<>();
+
+    public GAsyncFormController getAsyncFormController(long requestIndex) {
+        return new GAsyncFormController() {
+            @Override
+            public FormContainer removeAsyncForm() {
+                return asyncForms.remove(requestIndex);
+            }
+
+            @Override
+            public void putAsyncForm(FormContainer container) {
+                asyncForms.put(requestIndex, container);
+            }
+
+            @Override
+            public boolean checkNotCompleted() {
+                return requestIndex > lastCompletedRequest;
+            }
+
+            @Override
+            public boolean onServerInvocationResponse() {
+                lastCompletedRequest = requestIndex;
+                return asyncForms.containsKey(requestIndex);
+            }
+        };
     }
 }

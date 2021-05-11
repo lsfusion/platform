@@ -28,7 +28,7 @@ public abstract class ExportAction<O extends ObjectSelector> extends FormStaticA
     protected final String charset;
     
     public ExportAction(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, ImOrderSet<PropertyInterface> orderContextInterfaces,
-                        ImList<ContextFilterSelector<?, PropertyInterface, O>> contextFilters, FormIntegrationType staticType, Integer selectTop, String charset, ValueClass... extraParams) {
+                        ImSet<ContextFilterSelector<?, PropertyInterface, O>> contextFilters, FormIntegrationType staticType, Integer selectTop, String charset, ValueClass... extraParams) {
         super(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, selectTop, extraParams);
         this.charset = charset;
     }

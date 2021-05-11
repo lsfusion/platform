@@ -72,7 +72,9 @@ public class AddObjectAction<T extends PropertyInterface, I extends PropertyInte
 
         assert where==null || result==null || innerInterfaces.containsAll(where.mapping.valuesSet().merge(result.mapping.valuesSet()));
     }
-    
+
+    // not sure that we gonna support this branch
+    @Deprecated
     protected boolean needDialog() {
         return valueClass instanceof AbstractCustomClass;  // || (forceDialog && valueClass.hasChildren())
     }

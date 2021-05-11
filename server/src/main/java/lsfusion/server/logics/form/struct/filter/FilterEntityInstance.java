@@ -6,6 +6,8 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
+import lsfusion.server.logics.form.interactive.controller.init.InstanceFactory;
+import lsfusion.server.logics.form.interactive.instance.filter.FilterInstance;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
@@ -22,4 +24,5 @@ public interface FilterEntityInstance {
         return formEntity.getApplyObject(getObjects(), excludeGroupObjects);
     }
 
+    FilterInstance getInstance(InstanceFactory factory);
 }

@@ -61,7 +61,7 @@ public class PrintAction<O extends ObjectSelector> extends FormStaticAction<O, F
                        final ImList<O> objectsToSet,
                        final ImList<Boolean> nulls,
                        ImOrderSet<PropertyInterface> orderContextInterfaces,
-                       ImList<ContextFilterSelector<?, PropertyInterface, O>> contextFilters,
+                       ImSet<ContextFilterSelector<?, PropertyInterface, O>> contextFilters,
                        FormPrintType staticType,
                        boolean syncType,
                        Integer top,

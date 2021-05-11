@@ -5,8 +5,11 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
+import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
+import lsfusion.server.logics.form.open.ObjectSelector;
+import lsfusion.server.logics.form.struct.filter.ContextFilterEntity;
 import lsfusion.server.logics.property.JoinProperty;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
@@ -69,5 +72,13 @@ public class InputContextProperty<P extends PropertyInterface, V extends Propert
                 PropertyFact.createJoinAction(lm.addAsyncUpdateAProp().getActionOrProperty(), // ASYNCUPDATE
                         // list(requestedProperty(), ...)
                         PropertyFact.createJoin(new PropertyImplement<>(property, MapFact.addExcl(mapIntValues, singleInterface(), targetProp)))), null);
+    }
+
+    public <O extends ObjectSelector> ContextFilterEntity<P, V, O> getFilter(O object) {
+        return new ContextFilterEntity<>(property, mapValues, MapFact.singletonRev(singleInterface(), object));
+    }
+
+    public ImSet<V> getUsedInterfaces() {
+        return mapValues.valuesSet();
     }
 }

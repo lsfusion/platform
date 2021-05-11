@@ -2,6 +2,8 @@ package lsfusion.gwt.client.form.property.cell.classes.controller;
 
 import com.google.gwt.dom.client.*;
 import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.ui.TextArea;
+import com.google.gwt.user.client.ui.ValueBoxBase;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.async.GInputList;
 import lsfusion.gwt.client.form.property.cell.classes.view.TextCellRenderer;
@@ -18,8 +20,13 @@ public class TextCellEditor extends TextBasedCellEditor {
     }
 
     @Override
-    public Element createInputElement() {
+    protected Element createTextInputElement() {
         return Document.get().createTextAreaElement();
+    }
+
+    @Override
+    protected ValueBoxBase<String> createTextBoxBase() {
+        return new TextArea();
     }
 
     @Override

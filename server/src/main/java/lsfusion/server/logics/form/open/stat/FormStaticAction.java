@@ -4,6 +4,7 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
+import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.file.FileData;
@@ -40,7 +41,7 @@ public abstract class FormStaticAction<O extends ObjectSelector, T extends FormS
                             ImList<O> objectsToSet,
                             ImList<Boolean> nulls,
                             ImOrderSet<PropertyInterface> orderContextInterfaces,
-                            ImList<ContextFilterSelector<?, PropertyInterface, O>> contextFilters,
+                            ImSet<ContextFilterSelector<?, PropertyInterface, O>> contextFilters,
                             T staticType,
                             Integer selectTop,
                             ValueClass... extraValueClasses) {

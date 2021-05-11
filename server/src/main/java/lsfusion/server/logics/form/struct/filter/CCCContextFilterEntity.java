@@ -27,12 +27,7 @@ public class CCCContextFilterEntity<P extends PropertyInterface, V extends Prope
 
     @Override
     public ImSet<? extends ContextFilterEntity<?, V, O>> getEntities() {
-        return propertyImplement.property.getCheckProperties().mapOrderSetValues(property -> {
-            Pair<ImRevMap<ConstraintCheckChangeProperty.Interface<P>, P>, ConstraintCheckChangeProperty.Interface<P>> mapInterfaces = property.getMapInterfaces();
-            ConstraintCheckChangeProperty.Interface<P> second = mapInterfaces.second;
-            ImRevMap<ConstraintCheckChangeProperty.Interface<P>, V> join = mapInterfaces.first.join(propertyImplement.mapping);
-            return (ContextFilterEntity<?, V, O>) new ContextFilterEntity<>(property, join, MapFact.singletonRev(second, object));
-        }).getSet();
+        return propertyImplement.property.getCheckFilters(object).mapSetValues(filter -> filter.map(propertyImplement.mapping));
     }
 
     public <C extends PropertyInterface> ContextFilterSelector<P, C, O> map(ImRevMap<V, C> map) {

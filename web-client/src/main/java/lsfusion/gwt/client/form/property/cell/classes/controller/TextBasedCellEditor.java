@@ -255,6 +255,13 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
         return check;
     }
 
+    protected Element createTextInputElement() {
+        return Document.get().createTextInputElement();
+    }
+    protected ValueBoxBase<String> createTextBoxBase() {
+        return new TextBox();
+    }
+
     public Element createInputElement() {
         if(hasList) {
             suggestBox = new CustomSuggestBox(new SuggestOracle() {
@@ -312,10 +319,10 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
                 public boolean isDisplayStringHTML() {
                     return true;
                 }
-            }, new TextBox(), new DefaultSuggestionDisplayString());
+            }, createTextBoxBase(), new DefaultSuggestionDisplayString());
             return suggestBox.getElement();
         } else {
-            return Document.get().createTextInputElement();
+            return createTextInputElement();
         }
     }
 
@@ -339,8 +346,8 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
         public DefaultSuggestionDisplayString display;
         private List<String> latestSuggestions = new ArrayList<>();
 
-        public CustomSuggestBox(SuggestOracle oracle, TextBox textBox, DefaultSuggestionDisplayString display) {
-            super(oracle, textBox, display);
+        public CustomSuggestBox(SuggestOracle oracle, ValueBoxBase<String> valueBox, DefaultSuggestionDisplayString display) {
+            super(oracle, valueBox, display);
             this.display = display;
             onAttach();
             getElement().removeClassName("gwt-SuggestBox");

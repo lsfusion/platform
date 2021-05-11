@@ -15,6 +15,7 @@ import lsfusion.gwt.client.base.view.WindowHiddenHandler;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.event.GKeyStroke;
+import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
 import lsfusion.gwt.client.view.MainFrame;
 
 import static java.lang.Math.min;
@@ -30,12 +31,12 @@ public abstract class FormContainer<W extends Widget> {
 
     protected GFormController form;
 
-    public Long requestIndex;
+    public GAsyncFormController asyncFormController;
     public boolean async;
 
-    public FormContainer(FormsController formsController, Long requestIndex, boolean async) {
+    public FormContainer(FormsController formsController, GAsyncFormController asyncFormController, boolean async) {
         this.formsController = formsController;
-        this.requestIndex = requestIndex;
+        this.asyncFormController = asyncFormController;
         this.async = async;
 
         this.contentWidget = initContentWidget();
@@ -107,6 +108,7 @@ public abstract class FormContainer<W extends Widget> {
 
         Scheduler.get().scheduleDeferred(this::initQuickFilter);
         async = false;
+        asyncFormController = null;
     }
 
     protected abstract void setCaption(String caption, String tooltip);

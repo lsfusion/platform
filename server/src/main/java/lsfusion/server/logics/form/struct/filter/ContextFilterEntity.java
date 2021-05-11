@@ -35,7 +35,7 @@ public class ContextFilterEntity<P extends PropertyInterface, V extends Property
         return new ContextFilterInstance<>(property, mapValues.join(values), mapObjects.join(objects));
     }
 
-    public <C extends PropertyInterface> ContextFilterSelector<P, C, O> map(ImRevMap<V, C> map) {
+    public <C extends PropertyInterface> ContextFilterEntity<P, C, O> map(ImRevMap<V, C> map) {
         return new ContextFilterEntity<>(property, mapValues.join(map), mapObjects);
     }
 

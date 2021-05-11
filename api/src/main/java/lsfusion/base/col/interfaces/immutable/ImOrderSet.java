@@ -59,6 +59,7 @@ public interface ImOrderSet<K> extends ImList<K> {
     
     <M> ImOrderMap<K, M> mapOrderValues(Supplier<M> getter);
     <M> ImOrderMap<K, M> mapOrderValues(Function<K, M> getter);
+    <M> ImOrderMap<K, M> mapOrderIntValues(IntFunction<M> getter);
     <MK, MV> ImOrderMap<MK,MV> mapOrderKeyValues(Function<K, MK> getterKey, Function<K, MV> getterValue);
 
     <M> ImMap<K, M> mapOrderValues(IntObjectFunction<K, M> getter); // в порядке order вызывать getter

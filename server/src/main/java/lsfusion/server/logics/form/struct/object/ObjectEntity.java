@@ -4,24 +4,26 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.identity.IdentityObject;
-import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.ObjectValue;
-import lsfusion.server.logics.action.ExplicitAction;
+import lsfusion.server.language.property.LP;
+import lsfusion.server.logics.BaseLogicsModule;
+import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
-import lsfusion.server.logics.form.interactive.action.change.DefaultChangeObjectAction;
 import lsfusion.server.logics.form.interactive.controller.init.InstanceFactory;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.form.open.ObjectSelector;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.property.PropertyObjectInterfaceEntity;
+import lsfusion.server.logics.property.Property;
+import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import static lsfusion.server.physics.dev.i18n.LocalizedString.create;
@@ -81,11 +83,6 @@ public class ObjectEntity extends IdentityObject implements PropertyObjectInterf
         return ThreadLocalContext.localize(getCaption());
     }
 
-    @IdentityInstanceLazy
-    public ExplicitAction getChangeAction() {
-        return new DefaultChangeObjectAction(this);
-    }
-
     @Override
     public AndClassSet getAndClassSet() {
         return baseClass.getUpSet();
@@ -118,6 +115,12 @@ public class ObjectEntity extends IdentityObject implements PropertyObjectInterf
     @Override
     public GroupObjectEntity getApplyObject(FormEntity formEntity, ImSet<GroupObjectEntity> excludeGroupObjects) {
         return groupTo;
+    }
+
+    public <T extends PropertyInterface> ActionMapImplement<?, T> getSeekPanelAction(BaseLogicsModule lm, Property targetProp) {
+        assert groupTo.isPanel();
+        // we want to have null value if targetProp is null
+        return lm.addJoinAProp(lm.addOSAProp(this, null), new LP(targetProp)).getImplement();
     }
 
     public void setIntegrationSID(String integrationSID) {

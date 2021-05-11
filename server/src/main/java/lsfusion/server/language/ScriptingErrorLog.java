@@ -252,6 +252,14 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, format("custom class parameter expected for property '%s'", propertyName));
     }
 
+    public void emitTimeSeriesExpectedError(ScriptParser parser, String propertyName) throws SemanticErrorException {
+        emitSimpleError(parser, format("time-related class parameter expected for property '%s'", propertyName));
+    }
+
+    public void emitEqualParamClassesExpectedError(ScriptParser parser, String propertyName) throws SemanticErrorException {
+        emitSimpleError(parser, format("class parameters should be equal for property '%s'", propertyName));
+    }
+
     public void emitAbstractClassInstancesDefError(ScriptParser parser) throws SemanticErrorException {
         emitSimpleError(parser, "abstract class cannot be instantiated");
     }

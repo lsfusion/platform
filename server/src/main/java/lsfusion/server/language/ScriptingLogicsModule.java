@@ -1216,11 +1216,13 @@ public class ScriptingLogicsModule extends LogicsModule {
         return property.property.getSID().equals(lastOptimizedJPropSID);
     }
 
+    // it seems that there are a lot more lazy properties (for example AndFormulaProperty instances in BaseLogicsModule - object, and1, etc.)
+    // but so far it doesn't seem to be that critical
     private boolean isLazy(LP<?> property) {
-        return property.property instanceof ValueProperty || property.property instanceof IsClassProperty || property.property instanceof FormulaImplProperty;
+        return property.property instanceof ValueProperty || property.property instanceof IsClassProperty || property.property instanceof FormulaImplProperty || property == baseLM.object; // == baseLM.object since it is used in checkSingleParam
     }
 
-    private LP<?> wrapProperty(LP<?> property) {
+    protected LP<?> wrapProperty(LP<?> property) {
         return addJProp(property, BaseUtils.consecutiveList(property.property.interfaces.size(), 1).toArray());
     }
 
@@ -2358,8 +2360,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         FormEntity form = getFormFromSeekObjectName(name);
         GroupObjectEntity groupObject = getSeekGroupObject(form, name);
 
-        List<ObjectEntity> objects = new ArrayList<>();
+        ImOrderSet<ObjectEntity> objects = SetFact.EMPTYORDER();
         if (objNames != null) {
+            MOrderExclSet<ObjectEntity> mObjects = SetFact.mOrderExclSet(objNames.size());
             for (String objName : objNames) {
                 ObjectEntity obj = form.getNFObject(objName, getVersion());
                 if (obj == null) {
@@ -2367,13 +2370,14 @@ public class ScriptingLogicsModule extends LogicsModule {
                 } else if (obj.groupTo != groupObject) {
                     errLog.emitObjectOfGroupObjectError(parser, obj.getSID(), groupObject.getSID());
                 }
-                objects.add(obj);
+                mObjects.exclAdd(obj);
             }
+            objects = mObjects.immutableOrder();
         }
 
         if (groupObject != null) {
             List<Object> resultParams = getParamsPlainList(values);
-            LA LA = addGOSAProp(groupObject, objects, type, resultParams.toArray());
+            LA LA = addGOSAProp(null, LocalizedString.NONAME, groupObject, objects, type, resultParams.toArray());
             return new LAWithParams(LA, mergeAllParams(values));
         } else {
             errLog.emitGroupObjectNotFoundError(parser, getSeekObjectName(name));
@@ -3285,9 +3289,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
 
         if(valueClass instanceof DataClass) {
-            LP<?> requested = baseLM.getRequestedValueProperty().getLCP((DataClass)valueClass);
-            if(usedProps == null || usedProps.add(requested.property))
-                return requested;
+            Property requested = getRequestedValueProperty(valueClass);
+            if(usedProps == null || usedProps.add(requested))
+                return new LP<>(requested);
         }
         // уже был или Object - генерим новое
         return new LP<>(PropertyFact.createInputDataProp(valueClass));
@@ -3326,10 +3330,10 @@ public class ScriptingLogicsModule extends LogicsModule {
     private static class CFEWithParams<O extends ObjectSelector> {
         public final ImOrderSet<Integer> usedParams;
         public final ImOrderSet<PropertyInterface> orderInterfaces;
-        public final ImList<ContextFilterSelector<?, PropertyInterface, O>> filters;
+        public final ImSet<ContextFilterSelector<?, PropertyInterface, O>> filters;
         public final InputContextProperty<?, PropertyInterface> list;
 
-        public CFEWithParams(ImOrderSet<Integer> usedParams, ImOrderSet<PropertyInterface> orderInterfaces, ImList<ContextFilterSelector<?, PropertyInterface, O>> filters, InputContextProperty<?, PropertyInterface> list) {
+        public CFEWithParams(ImOrderSet<Integer> usedParams, ImOrderSet<PropertyInterface> orderInterfaces, ImSet<ContextFilterSelector<?, PropertyInterface, O>> filters, InputContextProperty<?, PropertyInterface> list) {
             this.usedParams = usedParams;
             this.orderInterfaces = orderInterfaces;
             assert usedParams.size() == orderInterfaces.size();
@@ -3388,7 +3392,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             cccfs.mapListValues((CCCF<O> cccf) -> {
                 LP<X> lp = (LP<X>) cccf.change.getLP();
                 return new CCCContextFilterEntity<>(lp.getImplement(SetFact.fromJavaOrderSet(cccf.change.usedParams).mapOrder(usedInterfaces)), cccf.object);
-            })),
+            })).toOrderExclSet().getSet(),
             list != null ? splitParams(list, contextSize, usedInterfaces, value -> 0, (property, mapValues, mapExternal) -> 
                     new InputContextProperty<>(property, mapValues)) : null);
     }

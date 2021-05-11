@@ -279,18 +279,6 @@ public class AnyValuePropertyHolder {
                 logicalProperty, colorProperty, objectProperty 
         ).mapOrderSetValues(value -> (SessionDataProperty) value.property);
     }
-        
-    public void write(Type valueType, ObjectValue value, ExecutionContext context, DataObject... keys) throws SQLException, SQLHandledException {
-        getLCP(valueType).change(value, context, keys);
-    }
-    
-    public void write(Type valueType, ObjectValue value, ExecutionEnvironment env, DataObject... keys) throws SQLException, SQLHandledException {
-        getLCP(valueType).change(value, env, keys);
-    }
-
-    public ObjectValue read(Type valueType, ExecutionContext context, DataObject... keys) throws SQLException, SQLHandledException {
-        return getLCP(valueType).readClasses(context, keys);
-    }
 
     private static ObjectValue getFirstChangeProp(ImOrderSet<SessionDataProperty> props, Action<?> action, Result<SessionDataProperty> readedProperty) {
         ImOrderSet<SessionDataProperty> changedProps = SetFact.filterOrderFn(props, action.getChangeExtProps().keys());

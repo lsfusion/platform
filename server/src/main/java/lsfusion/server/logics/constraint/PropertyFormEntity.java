@@ -11,7 +11,6 @@ import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.struct.AutoFormEntity;
 import lsfusion.server.logics.form.struct.filter.FilterEntity;
-import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
@@ -49,7 +48,7 @@ public class PropertyFormEntity extends AutoFormEntity {
 
         if(properties.isEmpty()) {
             for(ObjectEntity object : objects)
-                addPropertyDraw(LM.getObjValueProp(this, object), version, object);
+                addValuePropertyDraw(LM, object, version);
             addPropertyDraw(LM.getRecognizeGroup(), property.usePrevHeur(), version, objects);
         } else {
             for (PropertyMapImplement prop : properties) {

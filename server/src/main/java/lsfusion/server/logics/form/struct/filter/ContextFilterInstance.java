@@ -33,7 +33,7 @@ public class ContextFilterInstance<P extends PropertyInterface> implements Filte
         this.mapObjects = mapObjects;
     }
 
-    public FilterInstance getFilter(InstanceFactory factory) {
+    public FilterInstance getInstance(InstanceFactory factory) {
         return new NotNullFilterInstance<>(
                 new PropertyObjectInstance<>(property, 
                         MapFact.<P, PropertyObjectInterfaceInstance>addExcl(mapValues, mapObjects.mapValues(entity -> factory.getInstance(entity)))));

@@ -45,9 +45,6 @@ public class FilterEntity<P extends PropertyInterface> implements Instantiable<F
     public PropertyObjectEntity<P> getImportProperty() {
         return property;
     }
-    public ContextFilterInstance getRemappedContextFilter(final ObjectEntity oldObject, final ObjectEntity newObject, final InstanceFactory instanceOldFactory) {
-        return property.getRemappedInstance(oldObject, newObject, instanceOldFactory);
-    }
 
     public Where getWhere(ImMap<ObjectEntity, ? extends Expr> mapKeys, Modifier modifier) throws SQLException, SQLHandledException {
         return property.getEntityExpr(mapKeys, modifier).getWhere();

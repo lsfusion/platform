@@ -291,7 +291,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
 
         if(eventActionSID.equals(ServerResponse.EDIT_OBJECT)) {
             ValueClass editClass = getValueClass(ClassType.tryEditPolicy);
-            if((editClass != null && editClass.getDefaultOpenAction(ThreadLocalContext.getBusinessLogics()) != null)) // just call open action (see super implementation)
+            if((editClass != null && editClass.getDefaultOpenAction(getBaseLM()) != null)) // just call open action (see super implementation)
                 return super.getDefaultEventAction(eventActionSID, viewProperties);
 
             ActionMapImplement<?, T> editImplement = implement.property.getEventAction(eventActionSID, ListFact.EMPTY());

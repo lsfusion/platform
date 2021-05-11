@@ -132,11 +132,15 @@ public class SessionTable extends NamedTable implements ValuesContext<SessionTab
     // for debug
     public SessionTable(String name, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties) {
         super(name, keys, properties, null, null);
-        initBaseClasses(ThreadLocalContext.getBusinessLogics().LM.baseClass);
+        initBaseClasses(getBaseClass());
 
         statKeys = SerializedTable.getStatKeys(this);
         count = statKeys.getRows().getCount();
         statProps = SerializedTable.getStatProps(this);
+    }
+
+    private static BaseClass getBaseClass() {
+        return ThreadLocalContext.getBaseLM().baseClass;
     }
 
     private static Pair<ImMap<KeyField, Integer>, ImMap<PropertyField, PropStat>> getStats(ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, final ImMap<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>> rows) {
@@ -707,7 +711,7 @@ public class SessionTable extends NamedTable implements ValuesContext<SessionTab
             return this;
 
         if(baseClass==null)
-            baseClass = ThreadLocalContext.getBusinessLogics().LM.baseClass;
+            baseClass = getBaseClass();
 
         final Pair<ClassWhere<KeyField>,ImMap<PropertyField,ClassWhere<Field>>> readClasses;
         final Result<ImSet<KeyField>> objectKeys = new Result<>(); final Result<ImSet<PropertyField>> objectProps = new Result<>();
@@ -776,7 +780,7 @@ public class SessionTable extends NamedTable implements ValuesContext<SessionTab
 
             dbSql.startTransaction(DBManager.DEBUG_TIL, OperationOwner.unknown);
             dbSql.ensureTable(this, sqlLogger);
-            dbSql.insertSessionBatchRecords(getName(sql.syntax), keys, read(sql, ThreadLocalContext.getBusinessLogics().LM.baseClass, OperationOwner.debug).getMap(), OperationOwner.debug, TableOwner.debug);
+            dbSql.insertSessionBatchRecords(getName(sql.syntax), keys, read(sql, getBaseClass(), OperationOwner.debug).getMap(), OperationOwner.debug, TableOwner.debug);
             dbSql.commitTransaction();
         }
     }

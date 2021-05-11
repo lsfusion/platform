@@ -279,7 +279,7 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
             }
 
             @Override
-            protected GNavigatorActionDispatcher getDispatcher() {
+            public GNavigatorActionDispatcher getDispatcher() {
                 return actionDispatcherLink.link;
             }
         };
