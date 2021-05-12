@@ -32,7 +32,7 @@
         <com.healthmarketscience.version>3.0.1</com.healthmarketscience.version>
         <netty.version>3.2.1.Final</netty.version>
         <postgresql.version>42.2.8</postgresql.version>
-        <jasper.version>6.16.0</jasper.version>
+        <jasper.version>6.12.2</jasper.version>
         <jasper.htmlcomponent.version>6.12.2</jasper.htmlcomponent.version>
         <ecj.version>4.6.1</ecj.version>
         <olap4j.version>1.2.0</olap4j.version>
