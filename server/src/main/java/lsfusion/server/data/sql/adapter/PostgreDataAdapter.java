@@ -36,6 +36,7 @@ public class PostgreDataAdapter extends DataAdapter {
     private String defaultDumpDir;
     private String binPath;
     private String dumpDir;
+    protected static final String DB_NAME = "postgres";
 
     public PostgreDataAdapter(String dataBase, String server, String userID, String password) throws Exception {
         this(dataBase, server, userID, password, false);
@@ -106,15 +107,12 @@ public class PostgreDataAdapter extends DataAdapter {
     }
 
     @Override
-    protected void ensureSystemFuncs() throws IOException, SQLException {
-        executeEnsure(IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sql/postgres/getAnyNotNull.sql")));
-//        executeEnsure(IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sql/postgres/jumpWorkdays.sql")));
-        executeEnsure(IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sql/postgres/completeBarcode.sql")));
-        executeEnsure(IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sql/postgres/aggf.sql")));
-        recursionString = IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sql/postgres/recursion.sql"));
-        safeCastString = IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sql/postgres/safecast.sql"));
-        safeCastIntString = IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sql/postgres/safecastint.sql"));
-        executeEnsure(IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sql/postgres/cast.sql")));
+    protected void ensureSqlFuncs() throws IOException, SQLException {
+        super.ensureSqlFuncs();
+
+        recursionString = IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sql/postgres/recursion.tsql"));
+        safeCastString = IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sql/postgres/safecast.tsql"));
+        safeCastIntString = IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sql/postgres/safecastint.tsql"));
     }
 
     @Override
@@ -371,13 +369,6 @@ public class PostgreDataAdapter extends DataAdapter {
         }
     }
 
-
-    @Override
-    protected void prepareConnection(Connection connection) {
-//        ((PGConnection)connection).setPrepareThreshold(2);
-        //((PGConnection)connection).setAutosave(AutoSave.NEVER); // enabled by default AutoSave used for fixing cached plan, however we can restart transaction by ourself so we do not need this overhead
-    }
-
     @Override
     protected void proceedEnsureConcType(ConcatenateType concType) throws SQLException {
         // ensuring types
@@ -437,4 +428,8 @@ public class PostgreDataAdapter extends DataAdapter {
         ensuredRecursion.put(object, true);
     }
 
+    @Override
+    protected String getDBName() {
+        return DB_NAME;
+    }
 }
