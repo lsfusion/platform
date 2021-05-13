@@ -876,7 +876,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     // todo [dale]: выделить общий код    
-    public void addImplementationToAbstractAction(NamedPropertyUsage abstractPropUsage, List<TypedParameter> context, LAWithParams implement, LPWithParams when) throws ScriptingErrorLog.SemanticErrorException {
+    public void addImplementationToAbstractAction(NamedPropertyUsage abstractPropUsage, List<TypedParameter> context, LAWithParams implement, LPWithParams when, boolean optimisticAsync) throws ScriptingErrorLog.SemanticErrorException {
         LA abstractLA = findLAByPropertyUsage(abstractPropUsage, context, true);
         checks.checkParamCount(abstractLA, context.size());
         checks.checkImplementIsNotMain(abstractLA, implement.getLP());
@@ -889,7 +889,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         List<Object> params = getParamsPlainList(allProps);
 
         List<ResolveClassSet> signature = getClassesFromTypedParams(context);
-        addImplementationToAbstractAction(abstractPropUsage.name, abstractLA, signature, when != null, params);
+        addImplementationToAbstractAction(abstractPropUsage.name, abstractLA, signature, when != null, params, optimisticAsync);
     }
 
     public void addImplementationToAbstractProp(NamedPropertyUsage abstractPropUsage, List<TypedParameter> context, LPWithParams implement, LPWithParams when) throws ScriptingErrorLog.SemanticErrorException {
@@ -920,13 +920,13 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    private void addImplementationToAbstractAction(String actionName, LA abstractAction, List<ResolveClassSet> signature, boolean isCase, List<Object> params) throws ScriptingErrorLog.SemanticErrorException {
+    private void addImplementationToAbstractAction(String actionName, LA abstractAction, List<ResolveClassSet> signature, boolean isCase, List<Object> params, boolean optimisticAsync) throws ScriptingErrorLog.SemanticErrorException {
         checks.checkAbstractAction(abstractAction, actionName);
         ListCaseAction.AbstractType type = ((ListCaseAction)abstractAction.action).getAbstractType();
         checks.checkAbstractTypes(type == ListCaseAction.AbstractType.CASE, isCase);
 
         try {
-            abstractAction.addOperand(isCase, signature, getVersion(), params.toArray());
+            abstractAction.addOperand(isCase, signature, optimisticAsync, getVersion(), params.toArray());
         } catch (ScriptParsingException e) {
             errLog.emitSimpleError(parser, e.getMessage());
         }

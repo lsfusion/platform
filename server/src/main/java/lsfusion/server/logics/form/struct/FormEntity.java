@@ -1505,4 +1505,15 @@ public class FormEntity implements FormSelector<ObjectEntity> {
                 consumer.accept(eventAction, null);
         }
     }
+
+    @Override
+    public FormSelector<ObjectEntity> merge(FormSelector formSelector) {
+        if(!(formSelector instanceof FormEntity))
+            return null;
+        
+        if(BaseUtils.hashEquals(this, formSelector))
+            return this;
+        
+        return null;
+    }
 }

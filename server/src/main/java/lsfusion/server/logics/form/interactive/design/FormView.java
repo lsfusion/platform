@@ -602,7 +602,7 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
     }
 
     public void setCaption(LocalizedString caption) {
-        this.mainContainer.caption = caption;
+        this.mainContainer.setCaption(caption);
     }
 
     public void setChangeKey(PropertyDrawView property, KeyStroke keyStroke) {

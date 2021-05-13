@@ -77,8 +77,8 @@ public class GroupObjectContainerSet {
         String sid = group.getPropertyGroupContainerSID();
 
         set.boxContainer = factory.createContainer(); // контейнер всей группы
-        set.boxContainer.setCaption(group.getCaption());
         set.boxContainer.setSID(DefaultFormView.getBoxContainerSID(sid));
+        set.boxContainer.setCaption(group.getCaption());
 
         set.gridBoxContainer = factory.createContainer(); // контейнер грида внутрь
         set.gridBoxContainer.setSID(DefaultFormView.getGridBoxContainerSID(sid));

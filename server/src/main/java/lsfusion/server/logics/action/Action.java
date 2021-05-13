@@ -568,7 +568,7 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
     public AsyncExec getAsyncExec() {
         AsyncMapEventExec<?> asyncExec = getAsyncEventExec(false);
         if(asyncExec instanceof AsyncMapExec)
-            return ((AsyncMapExec<?>) asyncExec).asyncExec;
+            return ((AsyncMapExec<?>) asyncExec).map();
         return null;
     }
 

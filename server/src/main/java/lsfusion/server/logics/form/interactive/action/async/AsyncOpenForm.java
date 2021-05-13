@@ -33,14 +33,4 @@ public class AsyncOpenForm extends AsyncExec {
         outStream.writeBoolean(forbidDuplicate);
         outStream.writeBoolean(modal);
     }
-
-    @Override
-    public AsyncExec merge(AsyncExec asyncExec) {
-        if(!(asyncExec instanceof AsyncOpenForm))
-            return null;
-
-        AsyncOpenForm asyncOpenForm = (AsyncOpenForm) asyncExec;
-        return new AsyncOpenForm(BaseUtils.nullEquals(canonicalName, asyncOpenForm.canonicalName) ? canonicalName : null,
-                BaseUtils.nullEquals(caption, asyncOpenForm.caption) ? caption : null, forbidDuplicate || asyncOpenForm.forbidDuplicate, modal || asyncOpenForm.modal);
-    }
 }

@@ -7,6 +7,7 @@ import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.set.OrObjectClassSet;
 import lsfusion.server.logics.form.interactive.action.async.AsyncAddRemove;
 import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
+import lsfusion.server.logics.form.interactive.dialogedit.ClassFormSelector;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
@@ -53,6 +54,6 @@ public class AsyncMapAdd<T extends PropertyInterface> extends AsyncMapInputExec<
             return null;
 
         AsyncMapAdd<T> asyncInput = (AsyncMapAdd<T>) input;
-        return new AsyncMapAdd<>(customClass.getUpSet().getOr().or(asyncInput.customClass.getUpSet().getOr()).getCommonClass());
+        return new AsyncMapAdd<>(ClassFormSelector.merge(customClass, asyncInput.customClass));
     }
 }

@@ -52,4 +52,9 @@ public class OutFormSelector<P extends PropertyInterface> implements FormSelecto
     public Pair<FormEntity, ImRevMap<ObjectEntity, ObjectSelector>> getForm(BaseLogicsModule LM, DataSession session, ImMap<ObjectSelector, ? extends ObjectValue> mapObjectValues) {
         return new Pair<>(getStaticForm(LM), MapFact.EMPTYREV());
     }
+
+    @Override
+    public FormSelector<ObjectSelector> merge(FormSelector formSelector) {
+        return null;
+    }
 }

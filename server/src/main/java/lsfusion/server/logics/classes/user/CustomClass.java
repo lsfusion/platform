@@ -387,7 +387,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
             return getDefaultForm(LM);
         }
 
-        public ClassFormEntity getPolyForm(final BaseLogicsModule LM, ConcreteCustomClass concreteClass) {
+        public ClassFormEntity getPolyForm(final BaseLogicsModule LM, CustomClass concreteClass) {
             // deprecated ветка 
 //            if(CustomClass.this instanceof ConcreteCustomClass && !hasPolyForm())
 //                return getForm(LM);
@@ -555,14 +555,8 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
      * @param LM
      * @param session
      */
-    public ClassFormEntity getEditForm(BaseLogicsModule LM, DataSession session, ObjectValue concreteObject) throws SQLException, SQLHandledException {
-        ConcreteCustomClass concreteCustomClass = null;
-        
-        ConcreteClass concreteClass = null;
-        if(session != null && concreteObject instanceof DataObject && (concreteClass = session.getCurrentClass((DataObject)concreteObject)) instanceof ConcreteCustomClass)
-            concreteCustomClass = (ConcreteCustomClass) concreteClass;
-            
-        return editFormHolder.getPolyForm(LM, concreteCustomClass);
+    public ClassFormEntity getEditForm(BaseLogicsModule LM, CustomClass customClass) {
+        return editFormHolder.getPolyForm(LM, customClass);
     }
 
     public ClassFormEntity getEditForm(BaseLogicsModule LM) {

@@ -4120,10 +4120,12 @@ scope {
 	List<TypedParameter> context = new ArrayList<>();
 	LAWithParams action = null;
 	LPWithParams when = null;
+
+	boolean optimisticAsync = false;
 }
 @after {
 	if (inMainParseState()) {
-        self.addImplementationToAbstractAction($prop.propUsage, $list.params, action, when);
+        self.addImplementationToAbstractAction($prop.propUsage, $list.params, action, when, optimisticAsync);
 	}
 }
 	:	'ACTION'?
@@ -4142,6 +4144,7 @@ scope {
                     action.getLP().setExplicitClasses(self.getClassesFromTypedParams(context)); // just like in action declaration we need full context, and explicit classes (that will add implicit IF paramater IS class even if there is no parameter usage in body)
             }             
         }
+        ('OPTIMISTICASYNC' { optimisticAsync = true; } )?
 	;
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -15,6 +15,7 @@ import lsfusion.server.logics.form.interactive.FormCloseType;
 import lsfusion.server.logics.form.interactive.ManageSessionType;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapExec;
+import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapOpenForm;
 import lsfusion.server.logics.form.interactive.action.input.RequestResult;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
@@ -192,10 +193,7 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
 
     @Override
     public AsyncMapEventExec<ClassPropertyInterface> calculateAsyncEventExec(boolean optimistic, boolean recursive) {
-        FormEntity staticForm = form.getNFStaticForm();
-        String canonicalName = staticForm != null ? staticForm.getCanonicalName() : null;
-        String caption = staticForm != null ? staticForm.getAsyncCaption() : null;
-        return new AsyncMapExec<>(new AsyncOpenForm(canonicalName, caption, forbidDuplicate, getModalityType().isModalWindow()));
+        return new AsyncMapOpenForm<>(form, forbidDuplicate, getModalityType().isModalWindow(), null, mapObjects.size() == 1 ? mapObjects.singleValue() : null);
     }
 
     private ModalityType getModalityType() {

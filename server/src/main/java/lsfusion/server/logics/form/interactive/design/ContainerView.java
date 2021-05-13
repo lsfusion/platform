@@ -69,13 +69,8 @@ public class ContainerView extends ComponentView {
         this.main = main;
     }
 
-    public void setCaption(Object caption) {
-        if(caption instanceof LocalizedString)
-            this.caption = (LocalizedString) caption;
-        else {
-            this.caption = LocalizedString.NONAME;
-            this.propertyCaption = (PropertyObjectEntity<?>) caption;
-        }
+    public void setCaption(LocalizedString caption) {
+        this.caption = caption;
     }
 
     public boolean isTabbedPane() {

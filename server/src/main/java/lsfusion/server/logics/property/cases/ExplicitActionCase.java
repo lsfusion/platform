@@ -9,12 +9,21 @@ import java.util.List;
 
 public class ExplicitActionCase<P extends PropertyInterface> extends AbstractActionCase<P> {
 
-    public ExplicitActionCase(PropertyMapImplement<?, P> where, ActionMapImplement<?, P> implement) {
-        this(where, implement, null);
+    private final boolean optimisticAsync;
+    
+    public ExplicitActionCase(PropertyMapImplement<?, P> where, ActionMapImplement<?, P> implement, boolean optimisticAsync) {
+        this(where, implement, null, optimisticAsync);
     }
 
-    public ExplicitActionCase(PropertyMapImplement<?, P> where, ActionMapImplement<?, P> implement, List<ResolveClassSet> signature) {
+    public ExplicitActionCase(PropertyMapImplement<?, P> where, ActionMapImplement<?, P> implement, List<ResolveClassSet> signature, boolean optimisticAsync) {
         super(where, implement, signature);
+        
+        this.optimisticAsync = optimisticAsync;
+    }
+
+    @Override
+    public boolean isOptimisticAsync() {
+        return optimisticAsync;
     }
 
     // см. ExplicitCalcCase
