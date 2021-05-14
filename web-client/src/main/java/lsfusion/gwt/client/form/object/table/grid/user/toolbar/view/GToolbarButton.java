@@ -1,12 +1,7 @@
 package lsfusion.gwt.client.form.object.table.grid.user.toolbar.view;
 
-import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.Event;
-import lsfusion.gwt.client.base.view.EventHandler;
-import lsfusion.gwt.client.base.view.ImageButton;
 import lsfusion.gwt.client.base.view.UnFocusableImageButton;
-import lsfusion.gwt.client.view.MainFrame;
 
 import static lsfusion.gwt.client.view.StyleDefaults.COMPONENT_HEIGHT_STRING;
 
@@ -31,8 +26,6 @@ public abstract class GToolbarButton extends UnFocusableImageButton {
         setTitle(tooltipText);
         
         addClickHandler(getClickHandler());
-        
-        setFocusable(false);
     }
 
     public abstract ClickHandler getClickHandler();

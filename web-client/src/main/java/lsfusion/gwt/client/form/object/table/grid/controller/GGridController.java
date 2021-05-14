@@ -15,6 +15,7 @@ import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.design.view.GAbstractContainerView;
+import lsfusion.gwt.client.form.filter.user.GFilter;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
@@ -30,7 +31,9 @@ import lsfusion.gwt.client.form.object.table.view.GridPanel;
 import lsfusion.gwt.client.form.property.*;
 import lsfusion.gwt.client.form.view.Column;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.setupFillParent;
 
@@ -50,6 +53,11 @@ public class GGridController extends GAbstractTableController {
     }
     public boolean isList() {
         return groupObject.viewType.isList();
+    }
+    
+    @Override
+    public GFilter getFilterComponent() {
+        return groupObject.userFilter;
     }
 
     public GPivotOptions getPivotOptions() {
@@ -291,7 +299,7 @@ public class GGridController extends GAbstractTableController {
         if(showFilter() || groupObject.toolbar.showGridSettings) {
 
             if (showFilter()) {
-                addFilterButton();
+                addUserFilterComponent();
             }
 
             if (groupObject.toolbar.showGridSettings) {
@@ -528,6 +536,10 @@ public class GGridController extends GAbstractTableController {
                 toolbarView.setVisible(isVisible);
 
             formController.setFiltersVisible(groupObject, isVisible);
+            
+            if (userFilters != null) {
+                userFilters.setVisible(isVisible);
+            }
         }
     }
 
@@ -608,7 +620,7 @@ public class GGridController extends GAbstractTableController {
 
     @Override
     protected boolean showFilter() {
-        return isList() && groupObject.filter.visible;
+        return isList() && groupObject.userFilter.visible;
     }
 
     @Override

@@ -3,13 +3,17 @@ package lsfusion.client.form.filter.user;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.form.controller.remote.serialization.ClientSerializationPool;
 import lsfusion.client.form.design.ClientComponent;
+import lsfusion.client.form.property.ClientPropertyDraw;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.List;
 
 public class ClientFilter extends ClientComponent {
     public boolean visible = true;
+    
+    public List<ClientPropertyDraw> properties;
 
     public ClientFilter() {
     }
@@ -19,6 +23,8 @@ public class ClientFilter extends ClientComponent {
         super.customSerialize(pool, outStream);
 
         outStream.writeBoolean(visible);
+        
+        pool.serializeCollection(outStream, properties);
     }
 
     @Override
@@ -26,6 +32,8 @@ public class ClientFilter extends ClientComponent {
         super.customDeserialize(pool, inStream);
 
         visible = inStream.readBoolean();
+        
+        properties = pool.deserializeList(inStream);
     }
 
     public boolean getVisible() {

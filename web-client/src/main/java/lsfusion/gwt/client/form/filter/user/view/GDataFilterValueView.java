@@ -10,41 +10,48 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 
 import java.io.Serializable;
 
-public class GDataFilterValueView extends GFilterValueView {
+public abstract class GDataFilterValueView extends GFilterValueView {
     private final GDataFilterValue filterValue;
     private final GTableController logicsSupplier;
 
     public GDataFilterPropertyValue cell;
 
-    public GDataFilterValueView(GFilterValueListener listener, GDataFilterValue filterValue, GPropertyDraw property, GGroupObjectValue columnKey, GTableController logicsSupplier) {
-        super(listener);
+    public GDataFilterValueView(GDataFilterValue filterValue, GPropertyDraw property, GGroupObjectValue columnKey, GTableController logicsSupplier) {
         this.filterValue = filterValue;
         this.logicsSupplier = logicsSupplier;
 
-        cell = new GDataFilterPropertyValue(property, columnKey, logicsSupplier.getForm(), value -> valueChanged(value));
-        cell.setStatic(this, true);
-    }
+        addStyleName("userFilterDataPropertyValue");
 
-    @Override
-    public void propertySet(GPropertyFilter condition) {
-        changeProperty(condition.property);
+        changeProperty(property, columnKey);
     }
 
     @Override
     public void propertyChanged(GPropertyFilter condition) {
         filterValue.value = (Serializable) logicsSupplier.getSelectedValue(condition.property, condition.columnKey);
 
-        changeProperty(condition.property);
+        changeProperty(condition.property, condition.columnKey);
     }
 
-    private void changeProperty(GPropertyDraw property) {
-        cell.changeProperty(property);
+    private void changeProperty(GPropertyDraw property, GGroupObjectValue columnKey) {
+        cell = new GDataFilterPropertyValue(property, columnKey, logicsSupplier.getForm(), value -> valueChanged(value)) {
+            @Override
+            protected void onFocus(EventHandler handler) {
+                super.onFocus(handler);
+                setFocused(true);
+            }
+
+            @Override
+            protected void onBlur(EventHandler handler) {
+                super.onBlur(handler);
+                setFocused(false);
+            }
+        };
+        cell.setStatic(this, true);
         cell.updateValue(filterValue.value);
     }
 
     public void valueChanged(Object value) {
         filterValue.value = (Serializable) value;
-        listener.valueChanged();
     }
 
     public void focusOnValue() {
@@ -53,10 +60,5 @@ public class GDataFilterValueView extends GFilterValueView {
 
     public void startEditing(Event keyEvent) {
         cell.onEditEvent(new EventHandler(keyEvent));
-    }
-
-    @Override
-    public int getWidth(GPropertyDraw property) {
-        return property.getValueWidth(null);
     }
 }

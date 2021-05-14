@@ -113,7 +113,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
             addFilterBinding(nativeEvent -> {
                         if (GKeyStroke.isEscapeKeyEvent(nativeEvent) && GKeyStroke.isPlainKeyEvent(nativeEvent)) {
                             GAbstractTableController goController = getGroupController();
-                            return goController.filter != null && goController.filter.hasConditions();
+                            return goController.userFilters != null && goController.userFilters.hasConditions();
                         }
                         return false;
                     }, removeFilters);

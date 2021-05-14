@@ -196,6 +196,10 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
             addRegularFilterGroupBase(filterGroup, version);
         }
 
+        for (PropertyDrawEntity propertyDrawEntity : entity.getUserFiltersIt(version)) {
+            addUserFilterProperty(propertyDrawEntity, version);
+        }
+
         for (ImList<PropertyDrawEntity> pivotColumn : entity.getPivotColumnsList()) {
             addPivotColumn(pivotColumn, version);
         }
@@ -209,6 +213,16 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         }
 
         initButtons(version);
+    }
+    
+    public void addUserFilterProperty(PropertyDrawEntity userFilterProperty, Version version) {
+        GroupObjectEntity groupObjectEntity = userFilterProperty.getToDraw(entity);
+        PropertyDrawView propertyDrawView = get(userFilterProperty);
+        if (groupObjectEntity.isInTree()) {
+            get(groupObjectEntity.treeGroup).addUserFilter(propertyDrawView, version);
+        } else {
+            get(groupObjectEntity).addUserFilter(propertyDrawView, version);
+        }
     }
 
     public void addDefaultOrder(PropertyDrawEntity property, boolean ascending, Version version) {

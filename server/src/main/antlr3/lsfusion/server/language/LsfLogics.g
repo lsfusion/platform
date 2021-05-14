@@ -410,6 +410,7 @@ scope {
 		|	formEventsList
 		|	filterGroupDeclaration
 		|	extendFilterGroupDeclaration
+		|	userFiltersDeclaration
 		|	formOrderByList
 	    |   formPivotOptionsDeclaration
 		|	dialogFormDeclaration
@@ -1285,6 +1286,20 @@ formActionDeclaration returns [LA action, ImOrderSet<String> mapping, List<Resol
 	
 filterSetDefault returns [boolean isDefault = false]
 	:	('DEFAULT' { $isDefault = true; })?
+	;
+
+userFiltersDeclaration
+@init {
+	List<PropertyDrawEntity> properties = new ArrayList<>();
+}
+@after {
+	if (inMainParseState()) {
+		$formStatement::form.addScriptedUserFilters(properties, self.getVersion());
+	}
+}
+	:	'USERFILTERS'
+		prop=formPropertyDraw { properties.add($prop.property); }
+		(',' prop=formPropertyDraw { properties.add($prop.property); } )*
 	;
 
 formOrderByList

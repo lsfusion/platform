@@ -1,7 +1,7 @@
 package lsfusion.gwt.client.form.filter.user.view;
 
-import com.google.gwt.event.dom.client.ChangeEvent;
-import com.google.gwt.event.dom.client.ChangeHandler;
+import com.google.gwt.dom.client.NativeEvent;
+import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.classes.GActionType;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilterValue;
 import lsfusion.gwt.client.form.object.table.controller.GTableController;
@@ -9,11 +9,19 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 
 import java.util.List;
 
-public class GPropertyFilterValueView extends GFilterValueView {
-    public GPropertyFilterValueView(final GFilterValueListener listener, final GPropertyFilterValue propertyValue, GTableController logicsSupplier) {
-        super(listener);
-
-        final GFilterConditionListBox propertyView = new GFilterConditionListBox();
+public abstract class GPropertyFilterValueView extends GFilterValueView {
+    public final GFilterConditionListBox propertyView;
+    
+    public GPropertyFilterValueView(final GPropertyFilterValue propertyValue, GTableController logicsSupplier) {
+        propertyView = new GFilterConditionListBox() {
+            @Override
+            public void setFocused(NativeEvent event, boolean focused) {
+                if (event instanceof Event) {
+                    logicsSupplier.getForm().previewBlurEvent((Event) event);
+                }
+                GPropertyFilterValueView.this.setFocused(focused);
+            }
+        };
 
         propertyView.addStyleName("customFontPresenter");
 
@@ -31,13 +39,7 @@ public class GPropertyFilterValueView extends GFilterValueView {
 
         propertyValue.property = (GPropertyDraw) propertyView.getSelectedItem();
 
-        propertyView.addChangeHandler(new ChangeHandler() {
-            @Override
-            public void onChange(ChangeEvent event) {
-                propertyValue.property = (GPropertyDraw) propertyView.getSelectedItem();
-                listener.valueChanged();
-            }
-        });
+        propertyView.addChangeHandler(event -> propertyValue.property = (GPropertyDraw) propertyView.getSelectedItem());
 
         add(propertyView);
     }

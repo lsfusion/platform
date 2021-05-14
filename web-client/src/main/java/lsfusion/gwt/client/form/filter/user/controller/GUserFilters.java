@@ -3,7 +3,12 @@ package lsfusion.gwt.client.form.filter.user.controller;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
+import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.event.GBindingEnv;
+import lsfusion.gwt.client.form.event.GInputEvent;
+import lsfusion.gwt.client.form.filter.user.GFilter;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.filter.user.view.GFilterView;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
@@ -16,7 +21,7 @@ import java.util.List;
 
 public abstract class GUserFilters {
     private static final ClientMessages messages = ClientMessages.Instance.get();
-    private static final String FILTER = "filt.png";
+    private static final String FILTER_ICON_PATH = "filt.png";
 
     private GToolbarButton toolbarButton;
 
@@ -26,13 +31,18 @@ public abstract class GUserFilters {
 
     public GFilterView filterView;
 
-    public GUserFilters(GTableController logicsSupplier) {
+    public GUserFilters(GTableController logicsSupplier, GFilter filter) {
         this.logicsSupplier = logicsSupplier;
 
-        toolbarButton = new GToolbarButton(FILTER) {
+        filterView = new GFilterView(this, filter);
+
+        toolbarButton = new GToolbarButton(FILTER_ICON_PATH) {
             @Override
             public ClickHandler getClickHandler() {
-                return event -> showDialog(null, null, null, false, false);
+                return event -> {
+                    filterView.toggleToolsVisible();
+                    updateToolbarButton();
+                };
             }
         };
         updateToolbarButton();
@@ -47,40 +57,24 @@ public abstract class GUserFilters {
     }
 
     public boolean hasConditions() {
-        return !conditions.isEmpty();
+        return filterView.hasConditions();
     }
 
     public GTableController getLogicsSupplier() {
         return logicsSupplier;
     }
 
-    private void showDialog(Event keyEvent, GPropertyDraw propertyDraw, GGroupObjectValue columnKey, boolean replace, boolean alwaysAddNew) {
-        if (filterView != null && filterView.dialogIsVisible() && !replace) {
-            filterView.addCondition(getNewCondition(propertyDraw, columnKey), logicsSupplier);
-        } else {
-
-            if (filterView != null) {
-                filterView.closeDialog();
-            }
-
-            List<GPropertyFilter> conditions = replace ? new ArrayList<>() : new ArrayList<>(this.conditions);
-            if (alwaysAddNew || conditions.isEmpty()) {
-                conditions.add(getNewCondition(propertyDraw, columnKey));
-            }
-
-            filterView = new GFilterView(this);
-            filterView.showDialog(conditions, logicsSupplier, keyEvent, propertyDraw, columnKey);
-        }
+    public Widget getView() {
+        return filterView;
     }
 
     private void updateToolbarButton() {
-        boolean hasConditions = hasConditions();
-        toolbarButton.setTitle(hasConditions ? messages.expandFilterWindow() : (messages.formQueriesFilter() + " (F2)"));
-        toolbarButton.showBackground(hasConditions);
+        toolbarButton.setTitle(filterView.isToolsVisible() ? messages.hideUserFilterTools() : messages.showUserFilterTools());
+        toolbarButton.showBackground(filterView.isToolsVisible());
     }
 
     public void addConditionPressed(boolean replace) {
-        showDialog(null, null, null, replace, true);
+        filterView.addCondition(replace);
     }
 
     public GPropertyFilter getNewCondition(GPropertyDraw property, GGroupObjectValue columnKey) {
@@ -102,7 +96,7 @@ public abstract class GUserFilters {
     }
 
     public void applyFilters(List<GPropertyFilter> filters, boolean replace) {
-        if(replace) {
+        if (replace) {
             conditions = filters;
         } else {
             for (GPropertyFilter filter : filters) {
@@ -134,32 +128,23 @@ public abstract class GUserFilters {
     }
 
     public void allRemovedPressed() {
+        filterView.allRemovedPressed();
+    }
+
+    public void allRemoved() {
         conditions.clear();
         applyQuery();
     }
 
-    public void applyQuery() {
-        remoteApplyQuery();
-        updateToolbarButton();
-    }
-
     public void quickEditFilter(Event keyEvent, GPropertyDraw propertyDraw, GGroupObjectValue columnKey) {
-        showDialog(keyEvent, propertyDraw, columnKey, true, true);
+        filterView.addCondition(propertyDraw, columnKey, keyEvent, true);
     }
 
-    public void hideDialog() {
-        if (filterView != null) {
-            filterView.hideDialog();
-        }
-    }
-
-    public void restoreDialog() {
-        if (filterView != null) {
-            filterView.restoreDialog();
-        }
-    }
-
-    public abstract void remoteApplyQuery();
-    public abstract void filterClosed();
+    public abstract void applyQuery();
     public abstract void checkCommitEditing();
+    public abstract void addBinding(GInputEvent event, GBindingEnv env, GFormController.BindingExec pressed, Widget component);
+
+    public void setVisible(boolean visible) {
+        getView().setVisible(visible);
+    }
 }

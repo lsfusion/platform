@@ -49,7 +49,7 @@ public class ResizableSimplePanel extends SimplePanel implements RequiresResize,
 
     @Override
     public void setMain(Widget main) {
-        add(main);
+        setWidget(main);
     }
 
     @Override

@@ -206,6 +206,9 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
     public GFilter convertFilter(ClientFilter clientFilter) {
         GFilter filter = initGwtComponent(clientFilter, new GFilter());
         filter.visible = clientFilter.visible;
+        for (ClientPropertyDraw property : clientFilter.properties) {
+            filter.properties.add(convertOrCast(property));
+        }        
         return filter;
     }
     
@@ -539,7 +542,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         }
         groupObject.grid = convertOrCast(clientGroupObject.grid);
         groupObject.toolbar = convertOrCast(clientGroupObject.toolbar);
-        groupObject.filter = convertOrCast(clientGroupObject.filter);
+        groupObject.userFilter = convertOrCast(clientGroupObject.userFilter);
 
         groupObject.viewType = GClassViewType.valueOf(clientGroupObject.viewType.name());
         groupObject.listViewType = GListViewType.valueOf(clientGroupObject.listViewType.name());

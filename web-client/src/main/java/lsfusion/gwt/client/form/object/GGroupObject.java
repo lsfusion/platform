@@ -22,7 +22,7 @@ public class GGroupObject implements Serializable, HasNativeSID {
 
     public GGrid grid;
     public GToolbar toolbar;
-    public GFilter filter;
+    public GFilter userFilter;
 
     public int ID;
     public String nativeSID;

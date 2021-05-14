@@ -1,102 +1,103 @@
 package lsfusion.gwt.client.form.filter.user.view;
 
-import com.google.gwt.dom.client.BrowserEvents;
-import com.google.gwt.dom.client.Style;
 import com.google.gwt.dom.client.NativeEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
-import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.ui.*;
+import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
-import lsfusion.gwt.client.base.view.*;
-import lsfusion.gwt.client.form.design.GFont;
-import lsfusion.gwt.client.form.design.GFontMetrics;
-import lsfusion.gwt.client.form.design.GFontWidthString;
-import lsfusion.gwt.client.form.filter.user.GCompare;
+import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.view.FlexPanel;
+import lsfusion.gwt.client.form.event.GBindingEnv;
+import lsfusion.gwt.client.form.event.GKeyInputEvent;
+import lsfusion.gwt.client.form.event.GKeyStroke;
+import lsfusion.gwt.client.form.filter.user.GFilter;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.filter.user.controller.GUserFilters;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
-import lsfusion.gwt.client.form.object.table.controller.GTableController;
+import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.view.StyleDefaults;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
-import static lsfusion.gwt.client.base.GwtClientUtils.createHorizontalSeparator;
-import static lsfusion.gwt.client.base.GwtClientUtils.createHorizontalStrut;
 import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
 
-public class GFilterView extends ResizableFocusPanel implements GFilterConditionView.UIHandler {
+public class GFilterView extends FlexPanel implements GFilterConditionView.UIHandler {
     private static final ClientMessages messages = ClientMessages.Instance.get();
-    private static final String ADD = "filtadd.png";
-    private static final String APPLY = "filtapply.png";
-    private static final String CANCEL = "filtcancel.png";
+    private static final String ADD_ICON_PATH = "filtadd.png";
+    private static final String APPLY_ICON_PATH = "filtapply.png";
+    private static final String RESET_ICON_PATH = "filtreset.png";
 
-    private DialogWindowBox filterDialog;
+    private FlexPanel filterContainer;
 
-    private ResizableVerticalPanel filterContainer;
+    private GToolbarButton addConditionButton;
+    private GToolbarButton applyButton;
+    private GToolbarButton resetConditionsButton;
+    private Widget buttonsReplacement;
 
     private GUserFilters controller;
 
     private Map<GPropertyFilter, GFilterConditionView> conditionViews = new LinkedHashMap<>();
 
-    public GFilterView(GUserFilters iController) {
+    private boolean toolsVisible = false;
+
+    public GFilterView(GUserFilters iController, GFilter filter) {
         controller = iController;
 
-        ResizableVerticalPanel mainContainer = new ResizableVerticalPanel();
-        setWidget(mainContainer);
-        addStyleName("noOutline");
+        FlexPanel mainContainer = new FlexPanel();
+        add(mainContainer);
+        setChildFlex(mainContainer, 1);
+        addStyleName("userFiltersPanel");
 
-        filterContainer = new ResizableVerticalPanel();
+        filterContainer = new FlexPanel();
 
         mainContainer.add(filterContainer);
+        mainContainer.setChildFlex(filterContainer, 1);
+        
+        FlexPanel buttonsPanel = new FlexPanel(); 
 
-        Button addConditionButton = new ImageButton(messages.formQueriesFilterAddCondition(), ADD);
-        addConditionButton.addClickHandler(event -> addNewCondition());
+        addConditionButton = new GToolbarButton(ADD_ICON_PATH, messages.formQueriesFilterAddCondition()) {
+            @Override
+            public ClickHandler getClickHandler() {
+                return event -> addCondition();
+            }
+        };
+        addConditionButton.addStyleName("userFilterButton");
+        addConditionButton.setVisible(toolsVisible);
+        buttonsPanel.add(addConditionButton);
 
-        Button resetConditionsButton = new ImageButton(messages.formQueriesFilterResetConditions());
-        resetConditionsButton.addClickHandler(event -> allRemovedPressed());
+        applyButton = new GToolbarButton(APPLY_ICON_PATH, messages.formQueriesFilterApply()) {
+            @Override
+            public ClickHandler getClickHandler() {
+                return event -> applyFilter();
+            }
+        };
+        applyButton.addStyleName("userFilterButton");
+        applyButton.setVisible(toolsVisible);
+        buttonsPanel.add(applyButton);
 
-        Button applyButton = new ImageButton(messages.ok(), APPLY);
-        applyButton.addClickHandler(event -> applyFilter());
+        resetConditionsButton = new GToolbarButton(RESET_ICON_PATH, messages.formQueriesFilterResetConditions()) {
+            @Override
+            public ClickHandler getClickHandler() {
+                return event -> allRemovedPressed();
+            }
+        };
+        resetConditionsButton.addStyleName("userFilterButton");
+        resetConditionsButton.setVisible(toolsVisible);
+        buttonsPanel.add(resetConditionsButton);
 
-        Button cancelButton = new ImageButton(messages.close(), CANCEL);
-        cancelButton.addClickHandler(event -> cancelFilter());
-
-        HorizontalPanel leftButtonsPanel = new HorizontalPanel();
-        leftButtonsPanel.add(addConditionButton);
-        leftButtonsPanel.add(createHorizontalStrut(3));
-        leftButtonsPanel.add(resetConditionsButton);
-        leftButtonsPanel.addStyleName("flowPanelChildLeftAlign");
-
-        HorizontalPanel rightButtonsPanel = new HorizontalPanel();
-        rightButtonsPanel.add(applyButton);
-        rightButtonsPanel.add(createHorizontalStrut(3));
-        rightButtonsPanel.add(cancelButton);
-        rightButtonsPanel.addStyleName("flowPanelChildRightAlign");
-
-        FlowPanel buttonsPanel = new FlowPanel();
-        buttonsPanel.add(leftButtonsPanel);
-        buttonsPanel.add(rightButtonsPanel);
-
-        Widget horizontalSeparator = createHorizontalSeparator();
-        horizontalSeparator.getElement().getStyle().setMarginTop(5, Style.Unit.PX);
-        horizontalSeparator.getElement().getStyle().setMarginBottom(7, Style.Unit.PX);
-        mainContainer.add(horizontalSeparator);
+        buttonsReplacement = GwtClientUtils.createHorizontalStrut((StyleDefaults.COMPONENT_HEIGHT + 4) * 3); // to prevent container from changing size on showing tools, 4 - margin
+        buttonsReplacement.setVisible(!toolsVisible);
+        buttonsPanel.add(buttonsReplacement);
+        
         mainContainer.add(buttonsPanel);
 
-        FlowPanel controlPanel = new FlowPanel();
-        filterContainer.add(controlPanel);
-
-        addDomHandler(event -> handleKeyEvent(event.getNativeEvent()), KeyDownEvent.getType());
-    }
-
-    private void handleKeyEvent(NativeEvent nativeEvent) {
-        assert nativeEvent.getType().equals(BrowserEvents.KEYDOWN);
-        int keyCode = nativeEvent.getKeyCode();
-        if(keyCode == KeyCodes.KEY_ESCAPE)
-            processBinding(nativeEvent, this::allRemovedPressed);
-        else if(keyCode == KeyCodes.KEY_ENTER)
-            processBinding(nativeEvent, this::applyFilter);
+        for (GPropertyDraw property : filter.properties) {
+            addCondition(property);
+        }
     }
 
     // similar to GFormController.processBinding
@@ -105,145 +106,119 @@ public class GFilterView extends ResizableFocusPanel implements GFilterCondition
         action.run();
         stopPropagation(event);
     }
-
-    public void showDialog(List<GPropertyFilter> conditions, GTableController logicsSupplier, Event keyEvent, GPropertyDraw propertyDraw, GGroupObjectValue columnKey) {
-        if(!conditions.isEmpty()) {
-            for (GPropertyFilter condition : conditions) {
-                addCondition(condition, logicsSupplier);
-            }
-            filterDialog = new DialogWindowBox(new GFilterDialogHeader(messages.formFilterDialogHeader() + " [" + logicsSupplier.getSelectedGroupObject().getCaption() + "]"));
-            filterDialog.setWidget(this);
-            filterDialog.center();
-            focusOnValue();
-            if(keyEvent != null) {
-                startEditing(keyEvent, propertyDraw, columnKey);
-            }
-        }
-    }
-
-    public void closeDialog() {
-        controller.filterClosed();
-        if(filterDialog != null) {
-            filterDialog.close();
-            filterDialog = null;
-        }
-    }
-
-    private boolean hidden = false;
-
-    public void hideDialog() {
-        if(filterDialog != null && !hidden) {
-            filterDialog.hide();
-            hidden = true;
-        }
-    }
-
-    public void restoreDialog() {
-        if(filterDialog != null && hidden) {
-            filterDialog.restoreDialog();
-            hidden = false;
-        }
+    
+    private void clearConditions() {
+        filterContainer.clear();
+        conditionViews.clear();
     }
 
     public void allRemovedPressed() {
-        controller.allRemovedPressed();
-        closeDialog();
+        clearConditions();
+        controller.allRemoved();
     }
 
-    public void addNewCondition() {
-        addCondition(controller.getNewCondition(null, null), controller.getLogicsSupplier());
+    public void addCondition() {
+        addCondition(null, null, null, false);
     }
 
-    public void addCondition(GPropertyFilter condition, GTableController logicsSupplier) {
-        if(condition != null) {
-            GFilterConditionView conditionView = new GFilterConditionView(condition, logicsSupplier, this);
+    public void addCondition(boolean replace) {
+        addCondition(null, null, null, replace);
+    }
+    
+    public void addCondition(GPropertyDraw property) {
+        addCondition(property, null, null, false);
+    }
+
+    public void addCondition(GPropertyDraw property, GGroupObjectValue columnKey, Event keyEvent, boolean replace) {
+        addCondition(controller.getNewCondition(property, columnKey), keyEvent, replace);
+    }
+
+    public void addCondition(GPropertyFilter condition, Event keyEvent, boolean replace) {
+        if (replace) {
+            clearConditions();
+        }
+        if (condition != null) {
+            GFilterConditionView conditionView = new GFilterConditionView(condition, controller.getLogicsSupplier(), this, toolsVisible);
             conditionViews.put(condition, conditionView);
             filterContainer.add(conditionView);
-            conditionChanged();
-            focusOnValue();
+            updateJunctionVisibility();
+            focusLastValue();
+
+            if (keyEvent != null) {
+                conditionView.startEditing(keyEvent);
+            }
         }
     }
 
     public void removeCondition(GPropertyFilter condition) {
-        filterContainer.remove(conditionViews.get(condition));
+        GFilterConditionView view = conditionViews.get(condition);
+        
+        GFilterConditionView nextViewToFocus = null;
+        if (conditionViews.size() > 1 && view.isFocused()) {
+            ArrayList<GFilterConditionView> viewsList = new ArrayList<>(conditionViews.values());
+            int currentIndex = viewsList.indexOf(view);
+            nextViewToFocus = viewsList.get(currentIndex == viewsList.size() - 1 ? currentIndex - 1 : currentIndex + 1);
+        }
+        
         conditionViews.remove(condition);
-        conditionChanged();
-        focusOnValue();
+        filterContainer.remove(view);
+        
+        if (nextViewToFocus != null) {
+            nextViewToFocus.focusOnValue();
+        }
+    }
+    
+    public boolean isToolsVisible() {
+        return toolsVisible;
     }
 
-    public boolean dialogIsVisible() {
-        return filterDialog != null;
+    public void toggleToolsVisible() {
+        toolsVisible = !toolsVisible;
+        for (GFilterConditionView view : conditionViews.values()) {
+            view.setSettingsVisible(toolsVisible);
+        }
+        
+        addConditionButton.setVisible(toolsVisible);
+        applyButton.setVisible(toolsVisible);
+        resetConditionsButton.setVisible(toolsVisible);
+        
+        buttonsReplacement.setVisible(!toolsVisible);
     }
 
     @Override
-    public void conditionChanged() {
-        if(conditionViews.size() == 1) {
-            conditionViews.entrySet().iterator().next().getValue().setJunctionVisible(false);
-        } else {
-            for (GFilterConditionView conditionView : conditionViews.values()) {
-                conditionView.setJunctionEnabled(Arrays.asList(conditionViews.values().toArray()).indexOf(conditionView) < conditionViews.size() - 1);
-            }
-        }
-        updateWidth();
+    public void addEnterBinding(Widget widget) {
+        controller.addBinding(new GKeyInputEvent(new GKeyStroke(KeyCodes.KEY_ENTER)),
+                GBindingEnv.AUTO,
+                event -> GFilterView.this.processBinding(event, GFilterView.this::applyFilter),
+                widget);
     }
 
     @Override
     public void conditionRemoved(GPropertyFilter condition) {
         removeCondition(condition);
+        updateJunctionVisibility();
     }
-
-    private void updateWidth() {
-        int compareWidth = 0;
-        int valueWidth = 0;
-        for(Map.Entry<GPropertyFilter, GFilterConditionView> condition : conditionViews.entrySet()) {
-            compareWidth = Math.max(compareWidth, getCompareViewWidth(condition.getKey().property));
-            valueWidth = Math.max(valueWidth, condition.getValue().getValueViewWidth());
-        }
-        if(compareWidth > 0) {
-            for (GFilterConditionView conditionView : conditionViews.values()) {
-                conditionView.setCompareViewWidth(compareWidth);
-            }
-        }
-        if(valueWidth > 0) {
-            for (GFilterConditionView conditionView : conditionViews.values()) {
-                conditionView.setValueViewWidth(valueWidth);
-            }
+    
+    private void updateJunctionVisibility() {
+        int i = 0;
+        for (GFilterConditionView cView : conditionViews.values()) {
+            i++;
+            cView.setJunctionVisible(i < conditionViews.size());
         }
     }
 
-    public int getCompareViewWidth(GPropertyDraw property) {
-        String longestCompare = "";
-        for(GCompare compare : property.baseType.getFilterCompares()) {
-            if(compare.toString().length() > longestCompare.length())
-                longestCompare = compare.toString();
-        }
-        int width = GFontMetrics.getStringWidth(new GFontWidthString(property.font != null ? property.font : GFont.DEFAULT_FONT, longestCompare));
-        return width + 25; //dropdown arrow width
-    }
-
-    public void focusOnValue() {
+    public void focusLastValue() {
         if (!conditionViews.isEmpty()) {
-            // пробегаем по всем ячейкам со значеними, останавливаясь на последней, чтобы сбросить стили выделения в остальных
-            for (GFilterConditionView filterView : conditionViews.values()) {
-                filterView.focusOnValue();
-            }
+            Object[] views = conditionViews.values().toArray();
+            ((GFilterConditionView) views[views.length - 1]).focusOnValue();
         }
     }
 
     public void applyFilter() {
         controller.applyFilters(new ArrayList<>(conditionViews.keySet()), true);
-        closeDialog();
     }
 
-    public void cancelFilter() {
-        closeDialog();
-    }
-
-    public void startEditing(Event keyEvent, GPropertyDraw propertyDraw, GGroupObjectValue columnKey) {
-        if (conditionViews.size() > 0) {
-            GFilterConditionView view = conditionViews.values().iterator().next();
-            view.setSelectedPropertyDraw(propertyDraw, columnKey);
-            view.startEditing(keyEvent);
-        }
+    public boolean hasConditions() {
+        return !conditionViews.isEmpty();
     }
 }

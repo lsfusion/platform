@@ -49,6 +49,7 @@ import lsfusion.server.logics.form.stat.GroupObjectHierarchy;
 import lsfusion.server.logics.form.stat.StaticDataGenerator;
 import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
 import lsfusion.server.logics.form.struct.filter.*;
+import lsfusion.server.logics.form.struct.group.AbstractNode;
 import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
@@ -184,6 +185,11 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     }
     public Iterable<RegularFilterGroupEntity> getNFRegularFilterGroupsListIt(Version version) { // предполагается все с одной версией, равной текущей (конструирование FormView)
         return regularFilterGroups.getNFListIt(version);
+    }
+
+    public NFList<PropertyDrawEntity> userFilters = NFFact.list();
+    public Iterable<PropertyDrawEntity> getUserFiltersIt(Version version) {
+        return userFilters.getNFListIt(version);
     }
 
     private NFOrderMap<PropertyDrawEntity<?>,Boolean> defaultOrders = NFFact.orderMap();
@@ -1164,6 +1170,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         propertyDraws.finalizeChanges();
         fixedFilters.finalizeChanges();
         eventActions.finalizeChanges();
+        userFilters.finalizeChanges();
         defaultOrders.finalizeChanges();
         fixedOrders.finalizeChanges();
         
@@ -1375,6 +1382,14 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
     public void setEditType(PropertyDrawEntity property, PropertyEditType editType) {
         property.setEditType(editType);
+    }
+    
+    public void addUserFilter(PropertyDrawEntity property, Version version) {
+        userFilters.add(property, version);
+        
+        FormView richDesign = getNFRichDesign(version);
+        if(richDesign !=null)
+            richDesign.addUserFilterProperty(property, version);
     }
 
     public void addDefaultOrder(PropertyDrawEntity property, boolean ascending, Version version) {
