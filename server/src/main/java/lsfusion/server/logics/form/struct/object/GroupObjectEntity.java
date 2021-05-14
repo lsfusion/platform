@@ -95,11 +95,7 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         }
 
         public ImMap<ObjectInstance, ? extends Expr> process(FilterInstance filt, ImMap<ObjectInstance, ? extends Expr> mapKeys) {
-            return MapFact.addExcl(mapKeys, filt.getObjects().remove(mapKeys.keys()).mapValues(new Function<ObjectInstance, Expr>() {
-                public Expr apply(ObjectInstance value) {
-                    return new StaticParamNullableExpr(value.getBaseClass().getUpSet(), value.toString());
-                }
-            }));
+            return MapFact.addExcl(mapKeys, filt.getObjects().remove(mapKeys.keys()).mapValues((ObjectInstance value) -> value.entity.getParamExpr()));
         }
     }
     private static class NoUpProcessor implements GroupObjectInstance.FilterProcessor {

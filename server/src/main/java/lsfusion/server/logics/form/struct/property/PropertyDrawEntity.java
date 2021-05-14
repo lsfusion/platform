@@ -21,6 +21,7 @@ import lsfusion.server.base.caches.IdentityStartLazy;
 import lsfusion.server.base.caches.IdentityStrongLazy;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.version.Version;
+import lsfusion.server.data.expr.value.StaticParamNullableExpr;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.sql.lambda.SQLCallable;
 import lsfusion.server.data.type.Type;
@@ -324,14 +325,16 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
             assert !filter.mapValues.valuesSet().contains(objectInterface);
 
             PropertyObjectEntity<X> listProperty = (PropertyObjectEntity<X>) getDrawProperty();
-            InputListEntity<X, PropertyInterface> list = new InputListEntity<>(listProperty.property, listProperty.mapping.innerJoin(mapObjects.removeRev(object)));
+            ImRevMap<ObjectEntity, PropertyInterface> listMapObjects = mapObjects.removeRev(object);
+            InputListEntity<X, PropertyInterface> list = new InputListEntity<>(listProperty.property, listProperty.mapping.innerJoin(listMapObjects));
+            ImRevMap<PropertyInterface, StaticParamNullableExpr> listMapParamExprs = listMapObjects.reverse().mapRevValues(ObjectEntity::getParamExpr);
 
             // filter orderInterfaces to only used in view and filter
             ImSet<PropertyInterface> usedInterfaces = list.getUsedInterfaces().merge(filter.getUsedInterfaces());
             ImOrderSet<PropertyInterface> orderUsedInterfaces = usedInterfaces.toOrderSet();
 
             // first parameter - object, other used orderInterfaces
-            LA<?> dialogInput = lm.addDialogInputAProp(customClass, orderUsedInterfaces, list, objectEntity -> SetFact.singleton(filter.getFilter(objectEntity)), targetProp);
+            LA<?> dialogInput = lm.addDialogInputAProp(customClass, orderUsedInterfaces, list, listMapParamExprs, objectEntity -> SetFact.singleton(filter.getFilter(objectEntity)), targetProp);
 
             ImOrderSet<PropertyInterface> allOrderUsedInterfaces = SetFact.addOrderExcl(SetFact.singletonOrder(objectInterface), orderUsedInterfaces);
             return PropertyFact.createRequestAction(allOrderUsedInterfaces.getSet(), dialogInput.getImplement(allOrderUsedInterfaces),

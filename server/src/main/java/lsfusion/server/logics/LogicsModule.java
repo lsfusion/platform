@@ -27,6 +27,8 @@ import lsfusion.server.base.version.Version;
 import lsfusion.server.data.expr.formula.CustomFormulaSyntax;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.query.PartitionType;
+import lsfusion.server.data.expr.value.StaticParamNullableExpr;
+import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.language.action.LA;
@@ -977,7 +979,14 @@ public abstract class LogicsModule {
         return addAction(null, new LA(new InputAction(LocalizedString.create("Input"), valueClass, targetProp, hasOldValue, orderInterfaces, contextList, contextActions)));
     }
 
-    public <T extends PropertyInterface> LA addDialogInputAProp(CustomClass customClass, ImOrderSet<T> orderInterfaces, InputListEntity<?, T> list, Function<ObjectEntity, ImSet<ContextFilterEntity<?, T, ObjectEntity>>> filters, Property targetProp) {
+    public <T extends PropertyInterface> LA addDialogInputAProp(CustomClass customClass, ImOrderSet<T> orderInterfaces, InputListEntity<?, T> list, ImRevMap<T, StaticParamNullableExpr> listMapParamExprs, Function<ObjectEntity, ImSet<ContextFilterEntity<?, T, ObjectEntity>>> filters, Property targetProp) {
+//        if (viewProperties.isEmpty() || viewProperties.get(0).getValueClass(ClassType.tryEditPolicy) instanceof CustomClass)
+//            viewProperties = ListFact.add(((LP<?>) getBaseLM().addCastProp(ObjectType.idClass)).property, viewProperties); // casting object class to long to provide WYS
+
+        // drop list in auto event actions (inside INPUT operator) if it has not an unique value
+        if(list != null && !(list.isDefaultWYSInput() && list.isValueUnique(listMapParamExprs)))
+            list = null;
+
         ClassFormEntity dialogForm = customClass.getDialogForm(baseLM);
         return addDialogInputAProp(dialogForm.form,
                 ListFact.singleton(dialogForm.object), ListFact.singleton(true),

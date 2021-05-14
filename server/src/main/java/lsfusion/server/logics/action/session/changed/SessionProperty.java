@@ -36,6 +36,6 @@ public abstract class SessionProperty<T extends PropertyInterface> extends Simpl
 
     @Override
     public boolean aspectDebugHasAlotKeys() {
-        return property instanceof AggregateProperty && ((AggregateProperty) property).hasAlotKeys();
+        return property.hasAlotKeys();
     }
 }

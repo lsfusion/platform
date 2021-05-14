@@ -8,6 +8,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.server.data.expr.value.StaticParamNullableExpr;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.action.LA;
@@ -124,5 +125,18 @@ public class InputListEntity<P extends PropertyInterface, V extends PropertyInte
 
     public ImSet<V> getUsedInterfaces() {
         return mapValues.valuesSet();
+    }
+    
+    public boolean isDefaultWYSInput() {
+        return Property.isDefaultWYSInput(property.getValueClass(ClassType.tryEditPolicy));
+    }
+    
+    public boolean isValueUnique(ImRevMap<V, StaticParamNullableExpr> listParamExprs) {
+        return property.isValueUnique(mapValues.join(listParamExprs));
+    }
+
+    @Override
+    public String toString() {
+        return property + "(" + mapValues + ")" + (newSession ? " NEW" : "");
     }
 }

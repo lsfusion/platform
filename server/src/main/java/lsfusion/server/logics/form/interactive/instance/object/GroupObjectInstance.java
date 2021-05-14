@@ -1047,7 +1047,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
             checkPending(result, () -> { pendingUpdateKeys = false; pendingUpdateScroll = false; } );
             pendingUpdateObjects = false; pendingUpdateObject = false; pendingUpdateFilterProp = false; pendingUpdatePageSize = false; pendingUpdateFilters = false;
         } else {
-            boolean finalUpdateKeys = updateKeys; boolean changedScroll = updateObject || updatePageSize;
+            boolean finalUpdateKeys = updateKeys; boolean changedScroll = !isInTree() && (updateObject || updatePageSize);
             checkPending(result, () -> { pendingUpdateKeys |= finalUpdateKeys; if(changedScroll) pendingUpdateScroll = updateScroll() != null; });
             pendingUpdateObjects |= updateObjects; pendingUpdateObject |= updateObject; pendingUpdateFilterProp |= updateFilterProp; pendingUpdatePageSize |= updatePageSize; pendingUpdateFilters |= updateFilters;
             return null;

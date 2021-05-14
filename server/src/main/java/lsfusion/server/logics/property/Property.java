@@ -27,6 +27,7 @@ import lsfusion.server.data.expr.classes.IsClassType;
 import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.query.GroupType;
+import lsfusion.server.data.expr.value.StaticParamNullableExpr;
 import lsfusion.server.data.expr.value.ValueExpr;
 import lsfusion.server.data.expr.where.cases.CaseExpr;
 import lsfusion.server.data.expr.where.classes.data.CompareWhere;
@@ -39,8 +40,7 @@ import lsfusion.server.data.query.build.QueryBuilder;
 import lsfusion.server.data.query.modify.ModifyQuery;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.exception.SQLHandledException;
-import lsfusion.server.data.stat.PropStat;
-import lsfusion.server.data.stat.TableStatKeys;
+import lsfusion.server.data.stat.*;
 import lsfusion.server.data.table.*;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
@@ -1069,7 +1069,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
             }
         }
 
-        if(calcType.isStatAlot() && explicitClasses != null && this instanceof AggregateProperty && !((AggregateProperty)this).hasAlotKeys() && getType() != null) {
+        if(calcType.isStatAlot() && explicitClasses != null && this instanceof AggregateProperty && !hasAlotKeys() && getType() != null) {
             assert SystemProperties.lightStart;
             assert !hasChanges(propChanges) && modify == null;
             return getVirtualTableExpr(joinImplement, AlgType.statAlotType); // тут собственно смысл в том чтобы класс брать из сигнатуры и не высчитывать
@@ -1609,6 +1609,10 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         }
     }
 
+    public static boolean isDefaultWYSInput(ValueClass valueClass) {
+        return valueClass instanceof StringClass;
+    }
+    
     @IdentityStrongLazy // STRONG for using in security policy
     public ActionMapImplement<?, T> getDefaultEventAction(String eventActionSID, ImList<Property> viewProperties) {
 //        ImMap<T, ValueClass> interfaceClasses = getInterfaceClasses(ClassType.tryEditPolicy); // так как в определении propertyDraw также используется FULL, а не ASSERTFULL
@@ -1630,36 +1634,24 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
         ValueClass valueClass = getValueClass(ClassType.editValuePolicy);
 
-        Property<?> viewProperty = null;
-        if(valueClass instanceof CustomClass) {
-            if (viewProperties.isEmpty() || viewProperties.get(0).getValueClass(ClassType.tryEditPolicy) instanceof CustomClass)
-                viewProperties = ListFact.add(((LP<?>) getBaseLM().addCastProp(ObjectType.idClass)).property, viewProperties); // casting object class to long to provide WYS
-
-            viewProperty = PropertyFact.createViewProperty(viewProperties, null).property;
-        } else {
-            if(valueClass instanceof StringClass)
-                viewProperty = this;
-        }
-
-        InputListEntity<?, T> list = null;
-        if(viewProperty != null)
-            list = new InputListEntity<>(viewProperty, MapFact.EMPTYREV(), false);
-
         Property targetProp = lm.getRequestedValueProperty(valueClass);
 
         ActionMapImplement<?, T> action;
         if(valueClass instanceof CustomClass) {
+            InputListEntity<?, T> list = !viewProperties.isEmpty() ? new InputListEntity<>(PropertyFact.createViewProperty(viewProperties).property, MapFact.EMPTYREV()) : null;
+
             // DIALOG LIST valueCLass INPUT object=property(...) CONSTRAINTFILTER
             LP<T> lp = new LP<>(this);
             ImOrderSet<T> orderInterfaces = lp.listInterfaces; // actually we don't need all interfaces in dialog input action itself (only used one in checkfilters), but for now it doesn't matter
 
             // selectors could be used, but since this method is used after logics initialization, getting form, check properties here is more effective
-            LA<?> inputAction = lm.addDialogInputAProp((CustomClass) valueClass, orderInterfaces, list, objectEntity -> getCheckFilters(objectEntity), targetProp);
+            LA<?> inputAction = lm.addDialogInputAProp((CustomClass) valueClass, orderInterfaces, list, MapFact.EMPTYREV(), objectEntity -> getCheckFilters(objectEntity), targetProp);
 
             action = ((LA<?>) lm.addJoinAProp(inputAction, BaseUtils.add(directLI(lp), getUParams(orderInterfaces.size())))).getImplement(orderInterfaces);
         } else {
             // INPUT valueCLass
-            action = lm.addInputAProp((DataClass) valueClass, new LP(targetProp), false, SetFact.EMPTYORDER(), list, null, ListFact.EMPTY()).getImplement();
+            action = lm.addInputAProp((DataClass) valueClass, new LP(targetProp), false, SetFact.EMPTYORDER(),
+                    isDefaultWYSInput(valueClass) ? new InputListEntity<>(this, MapFact.EMPTYREV()) : null, null, ListFact.EMPTY()).getImplement();
         }
 
         return PropertyFact.createRequestAction(interfaces,
@@ -2060,7 +2052,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
             // по идее эта проверка не нужна, так как при кидании hint'а есть проверка на changed.getFullStatKeys().less значения, но там есть проблема с интервалами так как x<=a<=b вернет маленькую статистику, и пропустит такой хинт, после чего возникнет висячий ключ
             // вообще правильнее либо statType специальный сделать, либо поддержку интервалов при компиляции (хотя с double'ами все равно будет проблема)
             // этот фикс решит проблему в большинстве случаев (кроме когда в свойсте явный интервал, что очень редко имеет смысл)
-            if(this instanceof AggregateProperty && ((AggregateProperty)this).hasAlotKeys()) 
+            if(hasAlotKeys())
                 return false;
         }
 
@@ -2180,5 +2172,76 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
             return (ApplyStoredEvent)event;
         }
         return null;
+    }
+    
+    public Stat getInterfaceStat() {
+        return getInterfaceStat(false);
+    }
+
+    private static <T> Stat getStatRows(ImRevMap<T, KeyExpr> mapKeys, Where where) {
+        return where.getFullStatKeys(mapKeys.valuesSet(), StatType.PROP_STATS).getRows();
+    }
+
+    @IdentityStartLazy
+    @StackMessage("{message.core.property.get.interface.class.stats}")
+    @ThisMessage
+    private Stat getInterfaceStat(boolean alotHeur) {
+        ImRevMap<T,KeyExpr> mapKeys = getMapKeys();
+
+        // we don't need to fight with inconsistent caches, since now finalizeProps goes after initStoredTask (because now there is a dependency finalizeProps -> initIndices to avoid problems with getIndices cache)
+        // however it seems that STAT_ALOT is needed to lower complexity in light start mode 
+        Expr expr = alotHeur ? calculateExpr(mapKeys, CalcType.STAT_ALOT, PropertyChanges.EMPTY, null) : getExpr(mapKeys); // check if is called after stats if filled
+//        Expr expr = calculateStatExpr(mapKeys, alotHeur);
+
+        Where where = expr.getWhere();
+
+        mapKeys = mapKeys.filterInclValuesRev(BaseUtils.<ImSet<KeyExpr>>immutableCast(where.getOuterKeys())); // ignoring "free" keys (not sure what for, but there is a commit marked as a bugfix)
+        return getStatRows(mapKeys, where);
+    }
+
+    @IdentityStartLazy
+    @StackMessage("{message.core.property.get.interface.class.stats}")
+    @ThisMessage
+    public Stat getValueStat(ImRevMap<T, StaticParamNullableExpr> fixedExprs) {
+        ImRevMap<T, KeyExpr> innerKeys = KeyExpr.getMapKeys(interfaces.removeIncl(fixedExprs.keys()));
+        ImMap<T, Expr> innerExprs = MapFact.addExcl(innerKeys, fixedExprs); // we need some virtual values
+
+        Expr expr = getExpr(innerExprs); // check if is called after stats if filled
+//        Expr expr = calculateStatExpr(innerExprs, false);
+
+        ImRevMap<Integer, KeyExpr> mapKeys = KeyExpr.getMapKeys(SetFact.singleton(0));
+        Where where = GroupExpr.create(MapFact.singleton(0, expr), Where.TRUE(), mapKeys).getWhere();
+        
+        return getStatRows(mapKeys, where);
+    }
+
+    // it's heuristics anyway, so why not to try to guess uniqueness by name
+    private static ImSet<String> predefinedValueUniqueNames = SetFact.toSet("name", "id", "number");
+    public boolean isValueUnique(ImRevMap<T, StaticParamNullableExpr> fixedExprs) {
+        return predefinedValueUniqueNames.contains(getName()) || isValueUnique(getInterfaceStat(), getValueStat(fixedExprs)); // getClassProperty().property.getInterfaceStat()
+    }
+
+    public boolean hasAlotKeys() {
+//        if(1==1) return false;
+        if(SystemProperties.lightStart) {
+            if (!isFull(AlgType.statAlotType))
+                return true;
+            if (isStored())
+                return false;
+            return aspectDebugHasAlotKeys();
+        }
+        return hasAlotKeys(getInterfaceStat());
+    }
+
+    protected boolean aspectDebugHasAlotKeys() {
+        return hasAlotKeys(getInterfaceStat(true));
+    }
+
+    private final static Stat ALOT_THRESHOLD = Stat.ALOT.reduce(2); // ALOT stat can be reduced a little bit, but there still will be ALOT keys, so will take sqrt
+    private static boolean hasAlotKeys(Stat stat) {
+        return ALOT_THRESHOLD.lessEquals(stat);
+    }
+    private static boolean isValueUnique(Stat rowStat, Stat valueStat) {
+        return !valueStat.less(rowStat);
     }
 }

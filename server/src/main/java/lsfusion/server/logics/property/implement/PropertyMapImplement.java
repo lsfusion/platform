@@ -172,7 +172,7 @@ public class PropertyMapImplement<P extends PropertyInterface, T extends Propert
 
     @Override
     public boolean mapHasAlotKeys() {
-        return property instanceof AggregateProperty && ((AggregateProperty) property).hasAlotKeys();
+        return property.hasAlotKeys();
     }
 
     @Override

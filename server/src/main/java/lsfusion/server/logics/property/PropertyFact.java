@@ -971,7 +971,8 @@ public class PropertyFact {
                 (where == null ? PropertyFact.createTrue() : where) : getFullWhereProperty(innerInterfaces, where, exprs);
     }
 
-    static <X extends PropertyInterface, T extends PropertyInterface> PropertyMapImplement<?, T> createViewProperty(ImList<Property> viewProperties, PropertyMapImplement<?, T> resultValue) {
+    static <X extends PropertyInterface, T extends PropertyInterface> PropertyMapImplement<?, T> createViewProperty(ImList<Property> viewProperties) {
+        PropertyMapImplement<?, T> resultValue = null;
         for(int i = viewProperties.size()-1; i>=0; i--) {
             Property<X> viewProperty = viewProperties.get(i);
             resultValue = resultValue == null ? ((Property<T>)viewProperty).getImplement() : createJoin(new PropertyImplement<>(viewProperty, MapFact.singleton(viewProperty.interfaces.single(), resultValue)));

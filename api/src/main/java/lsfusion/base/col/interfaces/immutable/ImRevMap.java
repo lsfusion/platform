@@ -53,6 +53,7 @@ public interface ImRevMap<K,V> extends ImMap<K, V> {
     ImRevMap<K,V> removeRev(K key);
     ImRevMap<K,V> removeRev(ImSet<? extends K> keys);
     ImRevMap<K,V> removeValuesRev(ImSet<? extends V> values);
+    ImRevMap<K,V> removeValuesRev(V value);
 
     ImOrderMap<K, V> mapOrder(ImOrderSet<V> map);
 

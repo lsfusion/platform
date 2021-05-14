@@ -56,10 +56,6 @@ public class InputContextProperty<P extends PropertyInterface, V extends Propert
 
         return new InputContextProperty<>(andProperty.property, andProperty.mapping.innerCrossValues(mapJoinValues));
     }
-    
-    public InputListEntity<P, V> getListEntity(boolean newSession) {
-        return new InputListEntity<>(property, mapValues, newSession);
-    }
 
     // input value
     public P singleInterface() {

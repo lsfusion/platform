@@ -146,6 +146,10 @@ public abstract class ARevMap<K, V> extends AMap<K, V> implements ImRevMap<K, V>
         return filterFnValuesRev(new NotFunctionSet<>((ImSet<V>) values));
     }
 
+    public ImRevMap<K, V> removeValuesRev(final V value) {
+        return filterFnValuesRev(element -> !BaseUtils.hashEquals(element, value));
+    }
+
     public ImSet<V> valuesSet() {
         return reverse().keys();
     }

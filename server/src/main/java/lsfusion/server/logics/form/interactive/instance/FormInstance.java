@@ -1100,11 +1100,16 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     }
 
     public static <P extends PropertyInterface> String[] getAsyncValues(InputValueList<P> list, DataSession session, Modifier modifier, String value) throws SQLException, SQLHandledException {
-        ImCol<String> result = getQueryAsync(list, modifier, new DataObject(value), true).execute(session, MapFact.EMPTYORDER(), 15).values().mapColValues(map -> (String)map.singleValue());
+        ImCol<String> result = getQueryAsync(list, modifier, new DataObject(value), true)
+                .execute(session, MapFact.EMPTYORDER(), 15)
+                .values()
+                .mapColValues(map -> (String)map.singleValue());
         return result.toArray(new String[result.size()]);
     }
     public static <P extends PropertyInterface> ObjectValue getAsyncKey(InputValueList<P> list, DataSession session, Modifier modifier, ObjectValue value) throws SQLException, SQLHandledException {
-        ImSet<ImMap<P, DataObject>> keys = getQueryAsync(list, modifier, value, false).executeClasses(session, 1).keys();
+        ImSet<ImMap<P, DataObject>> keys = getQueryAsync(list, modifier, value, false)
+                .executeClasses(session, 1)
+                .keys();
         if(keys.isEmpty())
             return NullValue.instance;
         return keys.get(0).get(list.singleInterface());

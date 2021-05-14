@@ -4,8 +4,10 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.identity.IdentityObject;
+import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.expr.Expr;
+import lsfusion.server.data.expr.value.StaticParamNullableExpr;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.ObjectValue;
@@ -138,5 +140,10 @@ public class ObjectEntity extends IdentityObject implements PropertyObjectInterf
 
     public boolean isSimpleList() {
         return groupTo.getObjects().size() == 1 && groupTo.viewType.isList();
+    }
+    
+    @IdentityInstanceLazy
+    public StaticParamNullableExpr getParamExpr() {
+        return new StaticParamNullableExpr(baseClass, getSID());
     }
 }

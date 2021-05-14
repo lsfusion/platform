@@ -2189,7 +2189,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new ScriptingLogicsModule.ILEWithParams(usedContextParams, orderInterfaces,
                 splitParams(list, contextSize, usedInterfaces, value -> 0, (property, mapValues, mapExternal) -> {
                     assert mapValues.valuesSet().equals(orderInterfaces.getSet()); // all properties are used
-                    return new InputListEntity<>(property, mapValues, false);
+                    return new InputListEntity<>(property, mapValues);
                 }),
                 where != null ? splitParams(where, contextSize, usedInterfaces, value -> 0, (property, mapValues, mapExternal) ->
                         new InputContextProperty<>(property, mapValues)) : null);
@@ -3331,9 +3331,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         public final ImOrderSet<Integer> usedParams;
         public final ImOrderSet<PropertyInterface> orderInterfaces;
         public final ImSet<ContextFilterSelector<?, PropertyInterface, O>> filters;
-        public final InputContextProperty<?, PropertyInterface> list;
+        public final InputListEntity<?, PropertyInterface> list;
 
-        public CFEWithParams(ImOrderSet<Integer> usedParams, ImOrderSet<PropertyInterface> orderInterfaces, ImSet<ContextFilterSelector<?, PropertyInterface, O>> filters, InputContextProperty<?, PropertyInterface> list) {
+        public CFEWithParams(ImOrderSet<Integer> usedParams, ImOrderSet<PropertyInterface> orderInterfaces, ImSet<ContextFilterSelector<?, PropertyInterface, O>> filters, InputListEntity<?, PropertyInterface> list) {
             this.usedParams = usedParams;
             this.orderInterfaces = orderInterfaces;
             assert usedParams.size() == orderInterfaces.size();
@@ -3394,7 +3394,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                 return new CCCContextFilterEntity<>(lp.getImplement(SetFact.fromJavaOrderSet(cccf.change.usedParams).mapOrder(usedInterfaces)), cccf.object);
             })).toOrderExclSet().getSet(),
             list != null ? splitParams(list, contextSize, usedInterfaces, value -> 0, (property, mapValues, mapExternal) -> 
-                    new InputContextProperty<>(property, mapValues)) : null);
+                    new InputListEntity<>(property, mapValues)) : null);
     }
 
     public <O extends ObjectSelector> LAWithParams addScriptedDialogFAProp(
@@ -3471,10 +3471,14 @@ public class ScriptingLogicsModule extends LogicsModule {
         CFEWithParams<O> contextEntities = getContextFilterAndListEntities(oldContext.size(), contextObjects, ListFact.fromJavaList(contextFilters), list, mConstraintContextFilters.immutableList());
 
         boolean syncType = doAction != null || elseAction != null; // optimization
-        
+
+        InputListEntity<?, PropertyInterface> contextList = contextEntities.list;
+        if(contextList != null && scope == FormSessionScope.NEWSESSION)
+            contextList = contextList.newSession();
+
         ImList<O> objects = mObjects.immutableList();
         LA action = addDialogInputAProp(mapped.form, objects, mNulls.immutableList(),
-                                 inputObjects, inputProps, inputNulls, contextEntities.list != null ? contextEntities.list.getListEntity(scope == FormSessionScope.NEWSESSION) : null,
+                                 inputObjects, inputProps, inputNulls, contextList,
                                  manageSession, noCancel,
                                  contextEntities.orderInterfaces, contextEntities.filters,
                                  syncType, windowType, checkOnOk,

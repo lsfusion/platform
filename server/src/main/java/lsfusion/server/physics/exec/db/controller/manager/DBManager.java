@@ -44,7 +44,7 @@ import lsfusion.server.data.sql.adapter.DataAdapter;
 import lsfusion.server.data.sql.connection.ExConnection;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
-import lsfusion.server.data.stat.StatKeys;
+import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.table.*;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
@@ -276,8 +276,12 @@ public class DBManager extends LogicsManager implements InitializingBean {
             } catch (Exception ignored) {
             }
             if(lcp != null) { // temporary for migration, так как могут на действиях стоять
-                Integer statsProperty = (Integer) values.get("overStatsProperty");
-                statsProperty = statsProperty == null ? getStatsProperty(lcp.property) : statsProperty;
+                Integer statsProperty = null;
+                if(lcp.property instanceof AggregateProperty) {
+                    statsProperty = (Integer) values.get("overStatsProperty");
+                    if (statsProperty == null)
+                        statsProperty = getPropertyInterfaceStat(lcp.property);
+                }
                 if (statsProperty == null || maxStatsProperty == null || statsProperty < maxStatsProperty) {
                     lcp.makeUserLoggable(LM, systemEventsLM, getNamingPolicy());
                 }
@@ -285,13 +289,11 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
 
-    public static Integer getStatsProperty (Property property) {
+    public static Integer getPropertyInterfaceStat(Property property) {
         Integer statsProperty = null;
-        if (property instanceof AggregateProperty) {
-            StatKeys classStats = ((AggregateProperty) property).getInterfaceClassStats();
-            if (classStats != null && classStats.getRows() != null)
-                statsProperty = classStats.getRows().getCount();
-        }
+        Stat interfaceStat = property.getInterfaceStat();
+        if (interfaceStat != null)
+            statsProperty = interfaceStat.getCount();
         return statsProperty;
     }
 
@@ -988,6 +990,9 @@ public class DBManager extends LogicsManager implements InitializingBean {
     private final LRUWWVSMap<Property<?>, Param, ValueRef> asyncValuesValueCache = new LRUWWVSMap<>(LRUUtil.G1);
 
     public <P extends PropertyInterface> String[] getAsyncValues(InputValueList<P> list, String value) throws SQLException, SQLHandledException {
+        if(Settings.get().isIsClustered()) // we don't want to use caches since they can be inconsistent
+            return readAsyncValues(list, value);
+
         Param param = new Param(list.mapValues, value);
 
         ValueRef valueRef = asyncValuesValueCache.get(list.property, param);
