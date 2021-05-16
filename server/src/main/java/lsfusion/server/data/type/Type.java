@@ -101,4 +101,6 @@ public interface Type<T> extends ClassReader<T>, FunctionType {
     AndClassSet getBaseClassSet(BaseClass baseClass);
 
     String getSID();
+
+    T read(Object value);
 }

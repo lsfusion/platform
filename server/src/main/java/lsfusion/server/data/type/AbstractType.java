@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.charset.Charset;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public abstract class AbstractType<T> extends AbstractReader<T> implements Type<T> {
@@ -213,4 +214,9 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
     protected T readXLS(Object object) {
         return read(object);
     }
+
+    public T read(ResultSet set, SQLSyntax syntax, String name) throws SQLException {
+        return read(set.getObject(name));
+    }
+
 }

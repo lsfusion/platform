@@ -2795,6 +2795,12 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     private final static BiFunction<String, String, String> addFieldAliases = (key, value) -> value + " AS " + key;
     // вспомогательные методы
 
+    public static String getSelect(SQLSyntax syntax, String fromSelect, ImMap<String, String> keySelect, ImMap<String, String> propertySelect, ImCol<String> whereSelect) {
+        return getSelect(syntax, fromSelect, keySelect.toOrderMap(), propertySelect.toOrderMap(), whereSelect);
+    }
+    public static String getSelect(SQLSyntax syntax, String fromSelect, ImOrderMap<String, String> keySelect, ImOrderMap<String, String> propertySelect, ImCol<String> whereSelect) {
+        return syntax.getSelect(fromSelect, stringExpr(keySelect, propertySelect), whereSelect.toString(" AND "));
+    }
     public static String stringExpr(ImMap<String, String> keySelect, ImMap<String, String> propertySelect) {
         return stringExpr(keySelect.toOrderMap(), propertySelect.toOrderMap());
     }

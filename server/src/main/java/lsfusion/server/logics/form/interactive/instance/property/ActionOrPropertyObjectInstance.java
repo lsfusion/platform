@@ -1,6 +1,7 @@
 package lsfusion.server.logics.form.interactive.instance.property;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.Pair;
 import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
@@ -9,6 +10,8 @@ import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
+import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
+import lsfusion.server.logics.form.interactive.action.input.InputValueList;
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
@@ -31,6 +34,8 @@ public abstract class ActionOrPropertyObjectInstance<P extends PropertyInterface
         this.property = property;
         this.mapping = (ImMap<P, PropertyObjectInterfaceInstance>) mapping;
     }
+    
+    public abstract ActionOrPropertyObjectInstance<P, ?> getRemappedPropertyObject(ImMap<? extends PropertyObjectInterfaceInstance, DataObject> mapKeyValues);
 
     // получает GRID в котором рисоваться
     public GroupObjectInstance getApplyObject() {
@@ -89,5 +94,9 @@ public abstract class ActionOrPropertyObjectInstance<P extends PropertyInterface
     @Override
     public String toString() {
         return property.toString();
+    }
+
+    public Pair<InputValueList<?>, Boolean> getValueList(InputListEntity<?, P> listProperty) {
+        return new Pair<>(listProperty.map(getInterfaceObjectValues()), listProperty.newSession);
     }
 }

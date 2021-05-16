@@ -144,6 +144,6 @@ public class ObjectEntity extends IdentityObject implements PropertyObjectInterf
     
     @IdentityInstanceLazy
     public StaticParamNullableExpr getParamExpr() {
-        return new StaticParamNullableExpr(baseClass, getSID());
+        return new StaticParamNullableExpr(baseClass);
     }
 }

@@ -13,6 +13,8 @@ import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.server.logics.form.interactive.action.input.InputContextProperty;
+import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
 import lsfusion.server.logics.form.interactive.action.input.InputValueList;
 import lsfusion.server.logics.form.interactive.changed.ChangedData;
 import lsfusion.server.logics.form.interactive.changed.ReallyChanged;
@@ -131,10 +133,5 @@ public class PropertyObjectInstance<P extends PropertyInterface> extends ActionO
 
     public Type getType() {
         return property.getType();
-    }
-
-    public InputValueList<?> getFilterValueList(GroupObjectInstance grid) {
-        // remapping all objects except ones in the grid
-        return new InputValueList<>(property, mapping.filterFnValues(value -> !(value instanceof ObjectInstance && grid.objects.contains((ObjectInstance)value))).mapValues(PropertyObjectInterfaceInstance::getObjectValue));
     }
 }

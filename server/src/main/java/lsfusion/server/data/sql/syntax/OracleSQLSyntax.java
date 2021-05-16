@@ -32,10 +32,10 @@ public class OracleSQLSyntax extends DefaultSQLSyntax {
         return "NVL("+ exprs +")";
     }
 
-    public String getSelect(String from, String exprs, String where, String orderBy, String groupBy, String having, String top) {
+    public String getSelect(String from, String exprs, String where, String orderBy, String groupBy, String having, String top, boolean distinct) {
         if(top.length()!=0)
             where = (where.length()==0?"": where +" AND ") + "rownum<=" + top;
-        return "SELECT " + exprs + " FROM " + from + BaseUtils.clause("WHERE", where) + BaseUtils.clause("GROUP BY", groupBy) + BaseUtils.clause("HAVING", having) + BaseUtils.clause("ORDER BY", orderBy);
+        return "SELECT " + (distinct ? "DISTINCT " : "") + exprs + " FROM " + from + BaseUtils.clause("WHERE", where) + BaseUtils.clause("GROUP BY", groupBy) + BaseUtils.clause("HAVING", having) + BaseUtils.clause("ORDER BY", orderBy);
     }
 
     public String getUnionOrder(String union, String orderBy, String top) {

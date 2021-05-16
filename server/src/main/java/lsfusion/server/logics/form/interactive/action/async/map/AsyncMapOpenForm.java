@@ -71,6 +71,7 @@ public class AsyncMapOpenForm<T extends PropertyInterface> extends AsyncMapExec<
             ValueClass valueClass = ((PropertyMapImplement<?, P>) mapJoin).property.getValueClass(ClassType.tryEditPolicy);
             if(valueClass instanceof CustomClass)
                 return new AsyncMapOpenForm<>(formSelector, forbidDuplicate, modal, (CustomClass)valueClass, null);
+            mapJoin = null;
         }
         return override((P) mapJoin);
     }

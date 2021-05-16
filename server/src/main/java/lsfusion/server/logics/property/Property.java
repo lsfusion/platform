@@ -42,7 +42,6 @@ import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.stat.*;
 import lsfusion.server.data.table.*;
-import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
@@ -2182,21 +2181,30 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return where.getFullStatKeys(mapKeys.valuesSet(), StatType.PROP_STATS).getRows();
     }
 
+    private Stat getInterfaceStat(boolean alotHeur) {
+        return getInterfaceStat(MapFact.EMPTYREV(), alotHeur);
+    }
+    
+    private Stat getInterfaceStat(ImRevMap<T, StaticParamNullableExpr> fixedExprs) {
+        return getInterfaceStat(fixedExprs, false);
+    }
+
     @IdentityStartLazy
     @StackMessage("{message.core.property.get.interface.class.stats}")
     @ThisMessage
-    private Stat getInterfaceStat(boolean alotHeur) {
-        ImRevMap<T,KeyExpr> mapKeys = getMapKeys();
+    private Stat getInterfaceStat(ImRevMap<T, StaticParamNullableExpr> fixedExprs, boolean alotHeur) {
+        ImRevMap<T, KeyExpr> innerKeys = KeyExpr.getMapKeys(interfaces.removeIncl(fixedExprs.keys()));
+        ImMap<T, Expr> innerExprs = MapFact.addExcl(innerKeys, fixedExprs); // we need some virtual values
 
         // we don't need to fight with inconsistent caches, since now finalizeProps goes after initStoredTask (because now there is a dependency finalizeProps -> initIndices to avoid problems with getIndices cache)
         // however it seems that STAT_ALOT is needed to lower complexity in light start mode 
-        Expr expr = alotHeur ? calculateExpr(mapKeys, CalcType.STAT_ALOT, PropertyChanges.EMPTY, null) : getExpr(mapKeys); // check if is called after stats if filled
+        Expr expr = alotHeur ? calculateExpr(innerExprs, CalcType.STAT_ALOT, PropertyChanges.EMPTY, null) : getExpr(innerExprs); // check if is called after stats if filled
 //        Expr expr = calculateStatExpr(mapKeys, alotHeur);
 
         Where where = expr.getWhere();
 
-        mapKeys = mapKeys.filterInclValuesRev(BaseUtils.<ImSet<KeyExpr>>immutableCast(where.getOuterKeys())); // ignoring "free" keys (not sure what for, but there is a commit marked as a bugfix)
-        return getStatRows(mapKeys, where);
+        innerKeys = innerKeys.filterInclValuesRev(BaseUtils.immutableCast(where.getOuterKeys())); // ignoring "free" keys (having free keys breaks a lot of assertions in statistic calculations)
+        return getStatRows(innerKeys, where);
     }
 
     @IdentityStartLazy
@@ -2218,7 +2226,19 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     // it's heuristics anyway, so why not to try to guess uniqueness by name
     private static ImSet<String> predefinedValueUniqueNames = SetFact.toSet("name", "id", "number");
     public boolean isValueUnique(ImRevMap<T, StaticParamNullableExpr> fixedExprs) {
-        return predefinedValueUniqueNames.contains(getName()) || isValueUnique(getInterfaceStat(), getValueStat(fixedExprs)); // getClassProperty().property.getInterfaceStat()
+        assert isValueFull(fixedExprs);
+        String name = getName();
+        return ((name != null && predefinedValueUniqueNames.contains(name)) || isValueUnique(getInterfaceStat(fixedExprs), getValueStat(fixedExprs))); // getClassProperty().property.getInterfaceStat()
+    }
+
+    public boolean isValueFull(ImRevMap<T, StaticParamNullableExpr> fixedExprs) {
+        return isFull(interfaces.removeIncl(fixedExprs.keys()), AlgType.statAlotType);
+    }
+
+    public InputListEntity<?, T> getFilterInputList(ImRevMap<T, StaticParamNullableExpr> fixedExprs) {
+        if(isValueFull(fixedExprs))
+            return new InputListEntity<>(this, fixedExprs.keys().toRevMap());
+        return null;
     }
 
     public boolean hasAlotKeys() {
@@ -2241,7 +2261,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     private static boolean hasAlotKeys(Stat stat) {
         return ALOT_THRESHOLD.lessEquals(stat);
     }
-    private static boolean isValueUnique(Stat rowStat, Stat valueStat) {
+    protected static boolean isValueUnique(Stat rowStat, Stat valueStat) {
         return !valueStat.less(rowStat);
     }
 }

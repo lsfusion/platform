@@ -9,10 +9,8 @@ import lsfusion.server.logics.classes.user.set.AndClassSet;
 // эмулируем ключ равный значению, используется в нескольких не принципиальных эвристиках
 public class StaticParamNullableExpr extends StaticNullableExpr {
 
-    private final String name;
-    public StaticParamNullableExpr(ValueClass paramClass, String name) {
+    public StaticParamNullableExpr(ValueClass paramClass) {
         super(paramClass.getUpSet());
-        this.name = name;
     }
 
     public int hash(HashContext hash) {
@@ -21,7 +19,7 @@ public class StaticParamNullableExpr extends StaticNullableExpr {
 
     public String getSource(CompileSource compile, boolean needValue) {
         if(compile instanceof ToString)
-            return "V(" + name + ")";
+            return "PRM(" + paramClass + ")";
 
         throw new UnsupportedOperationException();
     }

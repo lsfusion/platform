@@ -37,8 +37,4 @@ public class ActionObjectInstance<P extends PropertyInterface> extends ActionOrP
         return new ActionValueImplement<>(property, getInterfaceObjectValues(), mapping, formInstance);
     }
 
-    public Pair<InputValueList<?>, Boolean> getEventValueList(boolean optimistic) {
-        InputListEntity<?, P> listProperty = ((AsyncMapChange<P>) property.getAsyncEventExec(optimistic)).list;
-        return new Pair<>(listProperty.map(getInterfaceObjectValues()), listProperty.newSession);
-    }
 }

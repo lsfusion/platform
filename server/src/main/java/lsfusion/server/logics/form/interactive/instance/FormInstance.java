@@ -1100,10 +1100,9 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     }
 
     public static <P extends PropertyInterface> String[] getAsyncValues(InputValueList<P> list, DataSession session, Modifier modifier, String value) throws SQLException, SQLHandledException {
-        ImCol<String> result = getQueryAsync(list, modifier, new DataObject(value), true)
-                .execute(session, MapFact.EMPTYORDER(), 15)
-                .values()
-                .mapColValues(map -> (String)map.singleValue());
+        ImOrderSet<String> result = getQueryAsync(list, modifier, new DataObject(value), true)
+                .executeDistinctValues(session, MapFact.EMPTYORDER(), 15)
+                .mapOrderSetValues(map -> (String)map.singleValue());
         return result.toArray(new String[result.size()]);
     }
     public static <P extends PropertyInterface> ObjectValue getAsyncKey(InputValueList<P> list, DataSession session, Modifier modifier, ObjectValue value) throws SQLException, SQLHandledException {
@@ -1140,21 +1139,12 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 ThreadLocalContext.unlockInputContext();
             }
         } else {
-            boolean newSession;
-            if(actionSID.equals(FILTER)) {
-                listProperty = propertyDraw.getDrawInstance().getRemappedPropertyObject(keys).getFilterValueList(propertyDraw.toDraw);
-                newSession = false;
-            } else {
-                ActionObjectInstance<P> eventAction = propertyDraw.getEventAction(actionSID, this);
-                if(eventAction == null)
-                    return new String[] {CANCELED};
+            Pair<InputValueList<?>, Boolean> valueList = propertyDraw.getAsyncValueList(actionSID, this, keys);
+            if(valueList == null)
+                return new String[] {CANCELED};
 
-                Pair<InputValueList<?>, Boolean> eventValueList = eventAction.getRemappedPropertyObject(keys).getEventValueList(propertyDraw.entity.optimisticAsync);
-                listProperty = eventValueList.first;
-                newSession = eventValueList.second;
-            }
-
-            if(!newSession) {
+            listProperty = valueList.first;
+            if(!valueList.second) { // ! new session
                 if (optimistic) {
                     Boolean hasOptimisticChanges = hasOptimisticAsyncChanges(listProperty.property);
                     if (hasOptimisticChanges == null) // not sure yet

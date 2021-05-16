@@ -9,15 +9,16 @@ import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.base.caches.IdentityStartLazy;
 import lsfusion.server.base.caches.IdentityStrongLazy;
-import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.query.GroupType;
+import lsfusion.server.data.expr.value.StaticParamNullableExpr;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.change.*;
 import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
 import lsfusion.server.logics.property.classes.data.AndFormulaProperty;
 import lsfusion.server.logics.property.classes.data.CompareFormulaProperty;
 import lsfusion.server.logics.property.classes.data.NotFormulaProperty;
@@ -411,5 +412,20 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
             return ((PropertyMapImplement) implement.mapping.singleValue()).property.isNotNull();    
         }
         return false;
+    }
+
+
+    @Override
+    public InputListEntity<?, Interface> getFilterInputList(ImRevMap<Interface, StaticParamNullableExpr> fixedExprs) {
+        ImRevMap<T, Interface> mapInterfaces = BaseUtils.immutableCast(implement.mapping.filterFnValues(element -> element instanceof PropertyInterface).toRevMap());
+        ImRevMap<T, StaticParamNullableExpr> mapFixedExprs = mapInterfaces.join(fixedExprs);
+        // using top most property or bottom most property / property itself
+        if(implement.property.isValueFull(mapFixedExprs) && (
+                implement.property.isValueUnique(mapFixedExprs) ||
+                !isValueFull(fixedExprs) ||
+                isValueUnique(getValueStat(fixedExprs), implement.property.getValueStat(mapFixedExprs))))
+            return new InputListEntity<>(implement.property, mapInterfaces);
+        
+        return super.getFilterInputList(fixedExprs);
     }
 }

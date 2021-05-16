@@ -6,6 +6,7 @@ import lsfusion.client.classes.ClientObjectClass;
 import lsfusion.client.classes.ClientTypeSerializer;
 import lsfusion.client.form.ClientFormChanges;
 import lsfusion.client.form.controller.remote.proxy.RemoteFormProxy;
+import lsfusion.client.form.property.async.ClientAsyncSerializer;
 import lsfusion.client.form.property.async.ClientInputList;
 import lsfusion.gwt.client.GFormChangesDTO;
 import lsfusion.gwt.client.action.*;
@@ -135,7 +136,7 @@ public class ClientActionToGwtConverter extends ObjectConverter {
 
         Object value = deserializeServerValue(action.oldValue);
 
-        GInputList inputList = asyncConverter.convertOrCast(action.inputList);
+        GInputList inputList = asyncConverter.convertOrCast(ClientAsyncSerializer.deserializeInputList(action.inputList));
 
         return new GRequestUserInputAction(type, value, action.hasOldValue, inputList);
     }

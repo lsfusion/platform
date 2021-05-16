@@ -132,7 +132,8 @@ public class InputListEntity<P extends PropertyInterface, V extends PropertyInte
     }
     
     public boolean isValueUnique(ImRevMap<V, StaticParamNullableExpr> listParamExprs) {
-        return property.isValueUnique(mapValues.join(listParamExprs));
+        ImRevMap<P, StaticParamNullableExpr> mapExprs = mapValues.join(listParamExprs);
+        return property.isValueFull(mapExprs) && property.isValueUnique(mapExprs);
     }
 
     @Override

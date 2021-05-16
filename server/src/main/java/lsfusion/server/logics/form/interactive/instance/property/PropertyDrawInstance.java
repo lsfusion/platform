@@ -1,11 +1,13 @@
 package lsfusion.server.logics.form.interactive.instance.property;
 
+import lsfusion.base.Pair;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.PropertyReadType;
 import lsfusion.server.base.caches.IdentityLazy;
@@ -13,6 +15,10 @@ import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.sql.lambda.SQLCallable;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.data.value.DataObject;
+import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapChange;
+import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
+import lsfusion.server.logics.form.interactive.action.input.InputValueList;
 import lsfusion.server.logics.form.interactive.instance.CellInstance;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
@@ -21,6 +27,8 @@ import lsfusion.server.logics.form.interactive.instance.order.OrderInstance;
 import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawExtraType;
+import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
+import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyObjectEntity;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.property.value.NullValueProperty;
 import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
@@ -28,19 +36,28 @@ import lsfusion.server.physics.admin.authentication.security.policy.SecurityPoli
 import java.sql.SQLException;
 
 // представление св-ва
-public class PropertyDrawInstance<P extends PropertyInterface> extends CellInstance<PropertyDrawEntity> implements AggrReaderInstance {
+public class PropertyDrawInstance<P extends PropertyInterface> extends CellInstance<PropertyDrawEntity<P>> implements AggrReaderInstance {
 
     public ActionObjectInstance getEventAction(String actionId, FormInstance formInstance, SQLCallable<Boolean> checkReadOnly, SecurityPolicy securityPolicy) throws SQLException, SQLHandledException {
         ActionObjectEntity<?> eventAction = entity.getEventAction(actionId, formInstance.entity, checkReadOnly, securityPolicy);
-        if(eventAction!=null)
+        if(eventAction != null)
             return formInstance.instanceFactory.getInstance(eventAction);
         return null;
     }
-    public ActionObjectInstance getEventAction(String actionId, FormInstance formInstance) {
-        ActionObjectEntity<?> eventAction = entity.getEventAction(actionId, formInstance.entity);
-        if(eventAction!=null)
-            return formInstance.instanceFactory.getInstance(eventAction);
-        return null;
+
+    public <P extends PropertyInterface> Pair<InputValueList<?>, Boolean> getAsyncValueList(String actionSID, FormInstance formInstance, ImMap<ObjectInstance, DataObject> keys) {
+        ActionOrPropertyObjectEntity<P, ?> mapEntity;
+        InputListEntity<?, P> list;
+        if(actionSID.equals(ServerResponse.FILTER)) {
+            PropertyObjectEntity<P> drawProperty = (PropertyObjectEntity<P>) entity.getDrawProperty();
+            list = drawProperty.getFilterInputList(entity.getToDraw(formInstance.entity));
+            mapEntity = drawProperty;
+        } else {
+            ActionObjectEntity<P> eventAction = (ActionObjectEntity<P>) entity.getEventAction(actionSID, formInstance.entity);
+            list = ((AsyncMapChange<P>) eventAction.property.getAsyncEventExec(entity.optimisticAsync)).list;
+            mapEntity = eventAction;
+        }
+        return formInstance.instanceFactory.getInstance(mapEntity).getRemappedPropertyObject(keys).getValueList(list);
     }
 
     private ActionOrPropertyObjectInstance<?, ?> propertyObject;
