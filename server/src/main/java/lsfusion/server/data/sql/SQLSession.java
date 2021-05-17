@@ -121,25 +121,11 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     private Map<String, Integer> attemptCountMap = new HashMap<>();
     public StatusMessage statusMessage;
 
-    public static SQLSession getSQLSession(Integer sqlProcessId) {
-        if(sqlProcessId != null) {
-            for (SQLSession sqlSession : sqlSessionMap.keySet()) {
-                ExConnection connection = sqlSession.getDebugConnection();
-                if (connection != null && ((PGConnection) connection.sql).getBackendPID() == sqlProcessId)
-                    return sqlSession;
-            }
-        }
-        return null;
-    }
-
-    public static Integer getSQLProcessId(long processId) {
+    public static SQLSession getSQLSession(long processId) {
         for(SQLSession sqlSession : sqlSessionMap.keySet()) {
-            ExConnection connection = sqlSession.getDebugConnection();
-            if(connection != null) {
-                Thread activeThread = sqlSession.getActiveThread();
-                if(activeThread != null && activeThread.getId() == processId)
-                    return ((PGConnection) connection.sql).getBackendPID();
-            }
+            Thread activeThread = sqlSession.getActiveThread();
+            if(activeThread != null && activeThread.getId() == processId)
+                return sqlSession;
         }
         logger.error(String.format("Failed to interrupt process %s: no private connection found", processId));
         return null;
@@ -198,15 +184,21 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     }
 
     public static void cancelExecutingStatement(DBManager dbManager, long processId, boolean interrupt) throws SQLException {
-        SQLSession sqlSession = dbManager.getStopSql();
-        if(sqlSession != null) {
-            Integer sqlProcessId = SQLSession.getSQLProcessId(processId);
-            if(sqlProcessId != null) {
-                SQLSession cancelSession = SQLSession.getSQLSession(sqlProcessId);
-                ServerLoggers.exinfoLog("SQL SESSION INTERRUPT " + cancelSession + " IN " + sqlSession + " PROCESS " + processId);
-                if (cancelSession != null)
-                    cancelSession.setForcedCancel(interrupt);
-                sqlSession.executeDDL(sqlSession.syntax.getCancelActiveTaskQuery(sqlProcessId));
+        SQLSession cancelSession = SQLSession.getSQLSession(processId);
+        if(cancelSession != null) {
+            PreparedStatement executingStatement = cancelSession.executingStatement;
+            if(executingStatement != null) {
+                ServerLoggers.exinfoLog("SQL SESSION INTERRUPT " + cancelSession + "PROCESS " + processId);
+
+                cancelSession.setForcedCancel(interrupt);
+                // we're trying to cancel executing statement, because ddl task might stop some query in pooled connection that is already used by some other thread
+                executingStatement.cancel();
+
+//                SQLSession sqlSession = dbManager.getStopSql();                
+//                ExConnection connection = cancelSession.getDebugConnection();
+//                if(connection != null)
+//                    int sqlProcessID = ((PGConnection) connection.sql).getBackendPID();
+//                sqlSession.executeDDL(sqlSession.syntax.getCancelActiveTaskQuery(sqlProcessID));
             }
         }
     }
