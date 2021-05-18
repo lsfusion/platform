@@ -2635,6 +2635,15 @@ public class BaseUtils {
     public static String dateToString(String format, LocalDate d) {
         return d != null ? d.format(DateTimeFormatter.ofPattern(format)) : "";
     }
+    
+    public static int indexOf(String string, int ch, int count) {
+        int start = 0;
+        for(int i=0;i<count;i++) {
+            start = string.indexOf(ch, start);
+            if(start < 0) break;
+        }
+        return start;
+    }
 
     public static String packWords(String string, int reqLength) {
         if (string.length() <= reqLength)

@@ -166,7 +166,7 @@ public class AnyValuePropertyHolder {
         this.tableLinkProperty = tableLinkProperty;
     }
 
-    public LP<?> getLCP(Type valueType) {
+    public LP<?> getLP(Type valueType) {
         if (valueType instanceof ObjectType) {
             return objectProperty;
         } else if (valueType instanceof StringClass) {

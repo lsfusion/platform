@@ -855,7 +855,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         if (!obj.noClasses() && obj.baseClass instanceof DataClass && obj.groupTo.viewType.isPanel()) {
             DataClass dataClass = (DataClass) obj.baseClass;
 
-            Property targetProp = getRequestedValueProperty(dataClass);
+            LP targetProp = getRequestedValueProperty(dataClass);
 
             LA<?> input = addInputAProp(dataClass, targetProp, false);
 
@@ -879,14 +879,14 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         if(objectFrom.groupTo.viewType.isPanel() && objectTo.groupTo.viewType.isPanel()) {
             DataClass dataClass = (IntervalClass) intervalProperty.getActionOrProperty().getValueClass(AlgType.defaultType);
 
-            Property targetProp = getRequestedValueProperty(dataClass);
+            LP targetProp = getRequestedValueProperty(dataClass);
 
             LA<?> input = addInputAProp(dataClass, targetProp, false);
 
             onChange = PropertyFact.createRequestAction(SetFact.<ClassPropertyInterface>EMPTY(), input.getImplement(),
                     PropertyFact.createListAction(SetFact.<ClassPropertyInterface>EMPTY(),
-                            objectFrom.getSeekPanelAction(this, addJProp(fromIntervalProperty, new LP(targetProp)).property),
-                            objectTo.getSeekPanelAction(this, addJProp(toIntervalProperty, new LP(targetProp)).property)), null).mapObjects(MapFact.EMPTYREV());
+                            objectFrom.getSeekPanelAction(this, addJProp(fromIntervalProperty, targetProp)),
+                            objectTo.getSeekPanelAction(this, addJProp(toIntervalProperty, targetProp))), null).mapObjects(MapFact.EMPTYREV());
         }
 
         return new Pair<>(value, onChange);
@@ -1025,7 +1025,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
     @Deprecated
     public ObjectValue getRequestedValue(Type type, ExecutionEnvironment env, SQLCallable<ObjectValue> request) throws SQLException, SQLHandledException {
-        LP<?> targetProp = getRequestedValueProperty().getLCP(type);
+        LP<?> targetProp = getRequestedValueProperty().getLP(type);
         if(isRequestPushed(env))
             return targetProp.readClasses(env);
 

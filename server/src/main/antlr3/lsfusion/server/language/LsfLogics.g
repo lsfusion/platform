@@ -210,6 +210,10 @@ grammar LsfLogics;
 		return self.new TypedParameter(className, paramName);
 	}
 
+	public TypedParameter TP(String paramName) throws ScriptingErrorLog.SemanticErrorException {
+		return self.new TypedParameter((ValueClass)null, paramName);
+	}
+
 	@Override
 	public void emitErrorMessage(String msg) {
 		if (isFirstFullParse() || inPreParseState()) { 
@@ -1463,17 +1467,22 @@ propertyExpression[List<TypedParameter> context, boolean dynamic] returns [LPWit
 
 propertyExpressionOrContextIndependent[List<TypedParameter> context, boolean dynamic, boolean needFullContext] returns [LPWithParams property, LPContextIndependent ci]
     :   exprOrNotExpr=propertyExpressionOrNot[context, dynamic, needFullContext] { $property = $exprOrNotExpr.property;  }
-        { if(inMainParseState()) { $ci = self.checkTLAInExpr($exprOrNotExpr.property, $exprOrNotExpr.ci); } }
+        { if(inMainParseState()) { $ci = self.checkCIInExpr($exprOrNotExpr.property, $exprOrNotExpr.ci); } }
 ;
 
 propertyExpressionOrTrivialLA[List<TypedParameter> context] returns [LPWithParams property, LPTrivialLA la]
     :   exprOrNotExpr=propertyExpressionOrNot[context, false, false] { $property = $exprOrNotExpr.property;  }
-        { if(inMainParseState()) { $la = self.checkCIInExpr($exprOrNotExpr.ci); } }
+        { if(inMainParseState()) { $la = self.checkTLAInExpr($exprOrNotExpr.property, $exprOrNotExpr.ci); } }
 ;
 
 propertyExpressionOrLiteral[List<TypedParameter> context] returns [LPWithParams property, LPLiteral literal]
     :   exprOrNotExpr=propertyExpressionOrNot[context, false, false] { $property = $exprOrNotExpr.property;  }
         { if(inMainParseState()) { $literal = self.checkLiteralInExpr($exprOrNotExpr.property, $exprOrNotExpr.ci); } }
+;
+
+propertyExpressionOrCompoundID[List<TypedParameter> context] returns [LPWithParams property, LPCompoundID id]
+    :   exprOrNotExpr=propertyExpressionOrNot[context, false, false] { $property = $exprOrNotExpr.property;  }
+        { if(inMainParseState()) { $id = self.checkCompoundIDInExpr($exprOrNotExpr.property, $exprOrNotExpr.ci); } }
 ;
 
 propertyExpressionOrNot[List<TypedParameter> context, boolean dynamic, boolean needFullContext] returns [LPWithParams property, LPNotExpr ci]
@@ -1733,20 +1742,25 @@ simplePE[List<TypedParameter> context, boolean dynamic] returns [LPWithParams pr
 
 	
 expressionPrimitive[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property, LPNotExpr ci]
-	:	param=singleParameter[context, dynamic] { $property = $param.property; }
+	:	param=singleParameter[context, dynamic] { $property = $param.property; $ci = $param.ci; }
 	|	expr=expressionFriendlyPD[context, dynamic] { $property = $expr.property; $ci = $expr.ci; }
 	;
 
-singleParameter[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
+singleParameter[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property, LPNotExpr ci]
 @init {
-	String className = null;
+	TypedParameter parameter = null;
 }
 @after {
 	if (inMainParseState()) {
-		$property = new LPWithParams(null, self.getParamIndex(TP(className, $paramName.text), $context, $dynamic, insideRecursion));
+		Pair<LPWithParams, LPNotExpr> constantProp = self.addSingleParameter(parameter, $context, $dynamic, insideRecursion);
+        $property = constantProp.first;
+        $ci = constantProp.second;
 	}
 }
-	:	(clsId=classId { className = $clsId.sid; })? paramName=parameter
+	:
+	    tp = typedParameter { parameter = $tp.param; }
+	    |
+	    rp = RECURSIVE_PARAM { parameter = TP($rp.text); }
 	;
 	
 expressionFriendlyPD[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property, LPNotExpr ci]
@@ -1771,7 +1785,7 @@ expressionFriendlyPD[List<TypedParameter> context, boolean dynamic] returns [LPW
 	|	signDef=signaturePropertyDefinition[context, dynamic] { $property = $signDef.property; }
 	|	activeTabDef=activeTabPropertyDefinition[context, dynamic] { $property = $activeTabDef.property; }
 	|	roundProp=roundPropertyDefinition[context, dynamic] { $property = $roundProp.property; }
-	|	constDef=constantProperty { $property = new LPWithParams($constDef.property); $ci = $constDef.literal; }
+	|	constDef=constantProperty { $property = new LPWithParams($constDef.property); $ci = $constDef.ci; }
 	;
 
 contextIndependentPD[List<TypedParameter> context, boolean dynamic, boolean innerPD] returns [LP property, List<ResolveClassSet> signature, List<Integer> usedContext = Collections.emptyList()]
@@ -3767,6 +3781,7 @@ inputActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams ac
 @init {
 	List<TypedParameter> newContext = new ArrayList<TypedParameter>(context);
 	boolean assign = false;
+	boolean constraintFilter = false;
 	DebugInfo.DebugPoint assignDebugPoint = null;
 
     NamedPropertyUsage outProp = null;
@@ -3776,42 +3791,43 @@ inputActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams ac
 }
 @after {
 	if (inMainParseState()) {
-		$action = self.addScriptedInputAProp($in.valueClass, $in.initValue, outProp, $dDB.action, $dDB.elseAction, context, newContext, assign, changeProp, listProp, whereProp, assignDebugPoint);
+		$action = self.addScriptedInputAProp($in.valueClass, $in.initValue, outProp, $dDB.action, $dDB.elseAction, context, newContext, assign, constraintFilter, changeProp, listProp, whereProp, assignDebugPoint);
 	}
 }
 	:	'INPUT'
 	    in=mappedInput[newContext]
-	    ('LIST'
-	        {
-    	        List<TypedParameter> newListContext = new ArrayList<TypedParameter>(context);
-    	        boolean listDynamic;
-                if($in.valueClass instanceof DataClass) {
-                    newListContext = new ArrayList<TypedParameter>(context);
-    	            listDynamic = true;
-                } else {
-                    newListContext = newContext;
-                    listDynamic = false;
-                }
-            }
-	        listExpr=propertyExpression[newListContext, listDynamic] { listProp = $listExpr.property; }
-	        ('WHERE' whereExpr=propertyExpression[newListContext, listDynamic] { whereProp = $whereExpr.property; })
-	    )?
-        ( { assignDebugPoint = getCurrentDebugPoint(); } 
-            'CHANGE' { assign = true; }
+        ( { assignDebugPoint = getCurrentDebugPoint(); } // copy paste of 'CHANGE' in formActionProps
+            'CHANGE' { assign = true; constraintFilter = true; }
             (EQ consExpr=propertyExpression[context, false])? { changeProp = $consExpr.property; }
+            ('NOCONSTRAINTFILTER' { constraintFilter = false; } )?
+            ('NOCHANGE' { assign = false; assignDebugPoint = null; } )?
         )?
+        {
+            List<TypedParameter> newListContext = new ArrayList<TypedParameter>(context);
+            boolean listDynamic;
+            if($in.valueClass instanceof DataClass) {
+                newListContext = new ArrayList<TypedParameter>(context);
+                listDynamic = true;
+            } else {
+                newListContext = newContext;
+                listDynamic = false;
+            }
+        }
+	    ('LIST' listExpr=propertyExpression[newListContext, listDynamic] { listProp = $listExpr.property; })?
+        ('WHERE' whereExpr=propertyExpression[newListContext, listDynamic] { whereProp = $whereExpr.property; })?
 //		('TO' pUsage=propertyUsage { outProp = $pUsage.propUsage; } )?
         dDB=doInputBody[context, newContext]
 	;
 	
-mappedInput[List<TypedParameter> context] returns [ValueClass valueClass, LPWithParams initValue]
+mappedInput[List<TypedParameter> context] returns [ValueClass valueClass, LPWithParams initValue = null]
 @init {
     String varName = "object"; // for INPUT =f() CHANGE and INPUT LONG;
 }
 @after {
 	if (inMainParseState()) {
-		$valueClass = self.getInputValueClass(varName, context, $ptype.text, $pe.property, insideRecursion);
-		$initValue = $pe.property;
+		$valueClass = self.getInputValueClass(varName, context, $pe.id != null ? $pe.id.name : $ptype.text, $pe.property, insideRecursion);
+		if($pe.id == null)
+    		$initValue = $pe.property;
 	}
 }
     :    
@@ -3822,7 +3838,7 @@ mappedInput[List<TypedParameter> context] returns [ValueClass valueClass, LPWith
     |	
     ( 
         (varID=ID { varName = $varID.text; } )?
-        EQ pe=propertyExpression[context, false]
+        EQ pe=propertyExpressionOrCompoundID[context]
     )
 ;
 
@@ -4944,10 +4960,6 @@ mappedProperty returns [NamedPropertyUsage propUsage, List<TypedParameter> mappi
 		')'
 	;
 
-parameter
-	:	ID | RECURSIVE_PARAM
-	;
-
 typedParameter returns [TypedParameter param]
 @after {
 	if (inMainParseState()) {
@@ -5093,16 +5105,16 @@ nonEmptyPropertyExpressionList[List<TypedParameter> context, boolean dynamic] re
 		(',' next=propertyExpression[context, dynamic] { $props.add($next.property); })* 
 	;
 	
-constantProperty returns [LP property, LPLiteral literal]
+constantProperty returns [LP property, LPNotExpr ci]
 @init {
 	ScriptingLogicsModule.ConstType cls = null;
 	Object value = null;
 }
 @after {
 	if (inMainParseState()) {
-		Pair<LP, LPLiteral> constantProp = self.addConstantProp(cls, value);
+		Pair<LP, LPNotExpr> constantProp = self.addConstantProp(cls, value);
 		$property = constantProp.first;
-		$literal = constantProp.second;
+		$ci = constantProp.second;
 	}
 }
 	:	lit = literal { cls = $lit.cls; value = $lit.value; }

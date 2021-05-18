@@ -31,7 +31,7 @@ public class CCCContextFilterEntity<P extends PropertyInterface, V extends Prope
     }
 
     public <C extends PropertyInterface> ContextFilterSelector<P, C, O> map(ImRevMap<V, C> map) {
-        return new CCCContextFilterEntity<P, C, O>(propertyImplement.map(map), object);
+        return new CCCContextFilterEntity<>(propertyImplement.map(map), object);
     }
 
     public PropertyMapImplement<P, V> getWhereProperty(ImRevMap<O, V> objects) {

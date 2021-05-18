@@ -119,10 +119,10 @@ public class ObjectEntity extends IdentityObject implements PropertyObjectInterf
         return groupTo;
     }
 
-    public <T extends PropertyInterface> ActionMapImplement<?, T> getSeekPanelAction(BaseLogicsModule lm, Property targetProp) {
+    public <T extends PropertyInterface> ActionMapImplement<?, T> getSeekPanelAction(BaseLogicsModule lm, LP targetProp) {
         assert groupTo.isPanel();
         // we want to have null value if targetProp is null
-        return lm.addJoinAProp(lm.addOSAProp(this, null), new LP(targetProp)).getImplement();
+        return lm.addJoinAProp(lm.addOSAProp(this, null), targetProp).getImplement();
     }
 
     public void setIntegrationSID(String integrationSID) {

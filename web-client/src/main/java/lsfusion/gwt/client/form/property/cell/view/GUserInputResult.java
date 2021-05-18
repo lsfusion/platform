@@ -3,7 +3,7 @@ package lsfusion.gwt.client.form.property.cell.view;
 import java.io.Serializable;
 
 public class GUserInputResult implements Serializable {
-    public static final GUserInputResult canceled = new GUserInputResult(true, null);
+    public static final GUserInputResult canceled = new GUserInputResult(true, null, null);
 
     private boolean editCanceled;
     private Serializable value;

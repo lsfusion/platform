@@ -1633,7 +1633,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
         ValueClass valueClass = getValueClass(ClassType.editValuePolicy);
 
-        Property targetProp = lm.getRequestedValueProperty(valueClass);
+        LP targetProp = lm.getRequestedValueProperty(valueClass);
 
         ActionMapImplement<?, T> action;
         if(valueClass instanceof CustomClass) {
@@ -1644,12 +1644,12 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
             ImOrderSet<T> orderInterfaces = lp.listInterfaces; // actually we don't need all interfaces in dialog input action itself (only used one in checkfilters), but for now it doesn't matter
 
             // selectors could be used, but since this method is used after logics initialization, getting form, check properties here is more effective
-            LA<?> inputAction = lm.addDialogInputAProp((CustomClass) valueClass, orderInterfaces, list, MapFact.EMPTYREV(), objectEntity -> getCheckFilters(objectEntity), targetProp);
+            LA<?> inputAction = lm.addDialogInputAProp((CustomClass) valueClass, targetProp, orderInterfaces, list, MapFact.EMPTYREV(), objectEntity -> getCheckFilters(objectEntity));
 
             action = ((LA<?>) lm.addJoinAProp(inputAction, BaseUtils.add(directLI(lp), getUParams(orderInterfaces.size())))).getImplement(orderInterfaces);
         } else {
             // INPUT valueCLass
-            action = lm.addInputAProp((DataClass) valueClass, new LP(targetProp), false, SetFact.EMPTYORDER(),
+            action = lm.addInputAProp((DataClass) valueClass, targetProp, false, SetFact.EMPTYORDER(),
                     isDefaultWYSInput(valueClass) ? new InputListEntity<>(this, MapFact.EMPTYREV()) : null, null, ListFact.EMPTY()).getImplement();
         }
 
