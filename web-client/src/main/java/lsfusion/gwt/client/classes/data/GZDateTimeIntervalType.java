@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.classes.data;
 
 import com.google.gwt.i18n.client.DateTimeFormat;
+import lsfusion.gwt.client.form.property.cell.classes.GZDateTimeDTO;
 
 import static lsfusion.gwt.client.base.GwtSharedUtils.getDateTimeFormat;
 
@@ -18,7 +19,8 @@ public class GZDateTimeIntervalType extends GIntervalType {
         return getDateTimeFormat(pattern, false);
     }
 
-    public String formatDate(String value){
-        return getFormat(null).format(getTimestamp(value));
+    @Override
+    public String format(Long epoch) {
+        return getFormat(null).format(new GZDateTimeDTO(epoch * 1000).toDateTime());
     }
 }

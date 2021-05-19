@@ -22,13 +22,13 @@ public class ClientZDateTimeIntervalClass extends ClientIntervalClass {
         return "ZDATETIME";
     }
 
-    public Long parseDateString(String date) throws ParseException {
+    @Override
+    protected Long parse(String date) throws ParseException {
         return MainFrame.dateTimeFormat.parse(date).getTime() / 1000;
     }
 
     @Override
-    public StringBuffer getDefaultFormat(Object o) {
-        return new StringBuffer(MainFrame.dateTimeFormat.format(instantToSqlTimestamp(Instant.ofEpochSecond(getIntervalPart(o, true))))
-                + " - " + MainFrame.dateTimeFormat.format(instantToSqlTimestamp(Instant.ofEpochSecond(getIntervalPart(o, false)))));
+    protected String format(Long epoch) {
+        return MainFrame.dateTimeFormat.format(instantToSqlTimestamp(Instant.ofEpochSecond(epoch)));
     }
 }

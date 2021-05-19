@@ -7,10 +7,8 @@ import lsfusion.client.form.property.cell.controller.PropertyTableCellEditor;
 
 import javax.swing.*;
 import java.awt.*;
-import java.math.BigDecimal;
 import java.util.Date;
 import java.util.EventObject;
-import java.util.function.Function;
 
 public class IntervalPropertyEditor extends JDateChooser implements PropertyEditor {
 
@@ -20,8 +18,8 @@ public class IntervalPropertyEditor extends JDateChooser implements PropertyEdit
     private final ClientIntervalClass intervalClass;
 
 
-    public IntervalPropertyEditor(Object value, boolean addButtons, ClientIntervalClass intervalClass, Function<Object, StringBuffer> defaultFormat) {
-        super(null, null, new IntervalPropertyEditorComponent(value, defaultFormat));
+    public IntervalPropertyEditor(Object value, boolean addButtons, ClientIntervalClass intervalClass) {
+        super(null, null, new IntervalPropertyEditorComponent(value, intervalClass));
         this.defaultValue = value;
         this.intervalClass = intervalClass;
 
@@ -59,10 +57,8 @@ public class IntervalPropertyEditor extends JDateChooser implements PropertyEdit
             String text = dateEditor.getText();
             if (text.isEmpty())
                 return null;
-            String[] dates = text.split(" - ");
-            long timeFrom = intervalClass.parseDateString(dates[0]);
-            long timeTo = intervalClass.parseDateString(dates[1]);
-            return timeTo >= timeFrom ? new BigDecimal(timeFrom + "." + timeTo) : defaultValue;
+            Long parsedValue = (Long) intervalClass.parseString(text);
+            return parsedValue != null ? parsedValue : defaultValue;
         } catch (Exception e) {
             return defaultValue;
         }
@@ -82,11 +78,11 @@ public class IntervalPropertyEditor extends JDateChooser implements PropertyEdit
     protected static class IntervalPropertyEditorComponent extends JTextFieldDateEditor {
 
         private Object defaultValue;
-        private Function<Object, StringBuffer> defaultFormat;
+        private final ClientIntervalClass intervalClass;
 
-        public IntervalPropertyEditorComponent(Object value, Function<Object, StringBuffer> defaultFormat) {
+        public IntervalPropertyEditorComponent(Object value, ClientIntervalClass intervalClass) {
             this.defaultValue = value;
-            this.defaultFormat = defaultFormat;
+            this.intervalClass = intervalClass;
         }
 
         @Override
@@ -123,7 +119,7 @@ public class IntervalPropertyEditor extends JDateChooser implements PropertyEdit
                 defaultValue = s;
             }
 
-            setValue(defaultValue != null ? defaultFormat.apply(defaultValue) : "");
+            setValue(defaultValue != null ? intervalClass.formatString(defaultValue) : "");
 
             left = right = false;
         }

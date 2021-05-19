@@ -1,9 +1,14 @@
 package lsfusion.gwt.client.form.property.cell.classes;
 
+import com.google.gwt.i18n.client.DateTimeFormat;
+import com.google.gwt.i18n.client.TimeZone;
+
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Objects;
+
+import static lsfusion.gwt.client.base.GwtSharedUtils.getDefaultDateTimeFormat;
 
 public class GDateTimeDTO implements Serializable {
     public int year;
@@ -27,6 +32,11 @@ public class GDateTimeDTO implements Serializable {
 
     public static GDateTimeDTO fromDate(Date date) {
         return new GDateTimeDTO(date.getYear() + 1900, date.getMonth() + 1, date.getDate(), date.getHours(), date.getMinutes(), date.getSeconds());
+    }
+
+    public static GDateTimeDTO fromEpoch(Long epoch) {
+        DateTimeFormat dateTimeFormat = getDefaultDateTimeFormat(false);
+        return fromDate(dateTimeFormat.parse(dateTimeFormat.format(new Date(epoch * 1000), TimeZone.createTimeZone(0))));
     }
 
     public Timestamp toDateTime() {

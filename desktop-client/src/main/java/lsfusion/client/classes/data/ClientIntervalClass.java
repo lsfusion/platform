@@ -15,7 +15,6 @@ import java.text.Format;
 import java.text.ParseException;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
-import java.util.function.Function;
 
 public abstract class ClientIntervalClass extends ClientFormatClass<SimpleDateFormat> implements ClientTypeClass {
 
@@ -40,17 +39,26 @@ public abstract class ClientIntervalClass extends ClientFormatClass<SimpleDateFo
         return new FormatPropertyRenderer(property){};
     }
 
+    protected abstract Long parse(String date) throws ParseException;
+    protected abstract String format(Long epoch);
+
     @Override
     public Object parseString(String s) throws ParseException {
-        throw new ParseException("Doesnt support convertation", 0);
+        String[] dates = s.split(" - ");
+        Long epochFrom = parse(dates[0]);
+        Long epochTo = parse(dates[1]);
+        return epochFrom < epochTo ? new BigDecimal(epochFrom + "." + epochTo) : null;
+    }
+
+    @Override
+    public String formatString(Object obj) {
+        return format(getIntervalPart(obj, true)) + " - " + format(getIntervalPart(obj, false));
     }
 
     public static Long getIntervalPart(Object o, boolean from) {
         String object = String.valueOf(o);
         int indexOfDecimal = object.indexOf(".");
-        String intervalPart = indexOfDecimal < 0 ? object : from ? object.substring(0, indexOfDecimal) : object.substring(indexOfDecimal + 1);
-
-        return Long.parseLong(intervalPart);
+        return Long.parseLong(indexOfDecimal < 0 ? object : from ? object.substring(0, indexOfDecimal) : object.substring(indexOfDecimal + 1));
     }
 
     @Override
@@ -69,28 +77,21 @@ public abstract class ClientIntervalClass extends ClientFormatClass<SimpleDateFo
     }
 
     @Override
-    public String formatString(Object obj) throws ParseException {
-        return getDefaultFormat(obj).toString();
-    }
-
-    public abstract StringBuffer getDefaultFormat(Object o);
-
-    @Override
     protected PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
-        return new IntervalPropertyEditor(value, true, this, this::getDefaultFormat);
+        return new IntervalPropertyEditor(value, true, this);
     }
 
     public static class IntervalFormat extends Format {
-        private final Function<Object, StringBuffer> format;
+        private final ClientIntervalClass intervalClass;
 
-        public IntervalFormat(Function<Object, StringBuffer> format) {
-            this.format = format;
+        public IntervalFormat(ClientIntervalClass intervalClass) {
+            this.intervalClass = intervalClass;
         }
 
         @Override
         public StringBuffer format(Object o, StringBuffer stringBuffer, FieldPosition fieldPosition) {
             if (o instanceof BigDecimal)
-                return format.apply(o);
+                return new StringBuffer(intervalClass.formatString(o));
 
             return null;
         }
@@ -106,10 +107,8 @@ public abstract class ClientIntervalClass extends ClientFormatClass<SimpleDateFo
     @Override
     public Format getDefaultFormat() {
         if (intervalFormat == null)
-            intervalFormat = new IntervalFormat(this::getDefaultFormat);
+            intervalFormat = new IntervalFormat(this);
 
         return intervalFormat;
     }
-
-    public abstract Long parseDateString(String date) throws ParseException;
 }

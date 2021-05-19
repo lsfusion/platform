@@ -8,6 +8,7 @@ import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
@@ -191,5 +192,9 @@ public class DateConverter {
 
     public static java.sql.Timestamp instantToSqlTimestamp(Instant value) {
         return value != null ? java.sql.Timestamp.from(value) : null;
+    }
+
+    public static Long localDateTimeToUTCEpoch(LocalDateTime dateTime) {
+        return dateTime.toEpochSecond(ZoneOffset.UTC);
     }
 }
