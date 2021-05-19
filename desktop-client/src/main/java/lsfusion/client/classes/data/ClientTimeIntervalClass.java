@@ -6,12 +6,18 @@ import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
 import lsfusion.client.view.MainFrame;
 import lsfusion.interop.classes.DataType;
 
-import java.math.BigDecimal;
-import java.text.FieldPosition;
-import java.text.Format;
+import java.sql.Time;
 import java.text.ParseException;
-import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+
+import static lsfusion.base.TimeConverter.localTimeToSqlTime;
 
 public class ClientTimeIntervalClass extends ClientIntervalClass {
 
@@ -23,18 +29,8 @@ public class ClientTimeIntervalClass extends ClientIntervalClass {
     }
 
     @Override
-    public String formatString(Object obj) throws ParseException {
-        return getTimeIntervalDefaultFormat(obj).toString();
-    }
-
-    @Override
     protected PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
-        return new IntervalPropertyEditor(value, (SimpleDateFormat) MainFrame.timeFormat, false);
-    }
-
-    @Override
-    public Format getDefaultFormat() {
-        return MainFrame.timeIntervalFormat;
+        return new IntervalPropertyEditor(value, false, this, this::getDefaultFormat);
     }
 
     @Override
@@ -42,23 +38,14 @@ public class ClientTimeIntervalClass extends ClientIntervalClass {
         return "TIME";
     }
 
-    public static class TimeIntervalFormat extends Format {
-        @Override
-        public StringBuffer format(Object o, StringBuffer stringBuffer, FieldPosition fieldPosition) {
-            if (o instanceof BigDecimal) {
-                return getTimeIntervalDefaultFormat(o);
-            }
-            return null;
-        }
-
-        @Override
-        public Object parseObject(String s, ParsePosition parsePosition) {
-            return null;
-        }
+    public Long parseDateString(String date) throws ParseException {
+        return LocalTime.parse(date, DateTimeFormatter.ofPattern(((SimpleDateFormat) MainFrame.timeFormat).toPattern())).atDate(LocalDate.now()).toEpochSecond(ZoneOffset.UTC);
     }
 
-    public static StringBuffer getTimeIntervalDefaultFormat(Object o) {
-        return new StringBuffer(MainFrame.timeFormat.format(getDateFromInterval(o, true))
-                + " - " + MainFrame.timeFormat.format(getDateFromInterval(o, false)));
+    @Override
+    public StringBuffer getDefaultFormat(Object o) {
+        Time timeFrom = localTimeToSqlTime(LocalDateTime.ofInstant(Instant.ofEpochSecond(getIntervalPart(o, true)), ZoneId.of("UTC")).toLocalTime());
+        Time timeTo = localTimeToSqlTime(LocalDateTime.ofInstant(Instant.ofEpochSecond(getIntervalPart(o, false)), ZoneId.of("UTC")).toLocalTime());
+        return new StringBuffer(MainFrame.timeFormat.format(timeFrom) + " - " + MainFrame.timeFormat.format(timeTo));
     }
 }

@@ -21,6 +21,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Time;
+import java.sql.Timestamp;
 import java.time.LocalTime;
 import java.time.chrono.Chronology;
 import java.time.format.DateTimeFormatter;
@@ -165,6 +166,8 @@ public class TimeClass extends TimeSeriesClass<LocalTime> {
     public LocalTime read(Object value) {
         if(value instanceof LocalTime)
             return (LocalTime) value;
+        else if (value instanceof Timestamp)
+            return ((Timestamp) value).toLocalDateTime().toLocalTime();
         else
             return sqlTimeToLocalTime((Time) value);
     }

@@ -13,10 +13,12 @@ public class IntervalCellEditor implements CellEditor {
 
     private final EditManager editManager;
     private final String intervalType;
+    private final GIntervalType interval;
 
-    public IntervalCellEditor(EditManager editManager, String intervalType) {
+    public IntervalCellEditor(EditManager editManager, String intervalType, GIntervalType interval) {
         this.editManager = editManager;
         this.intervalType = intervalType;
+        this.interval = interval;
     }
 
     public void validateAndCommit(Long dateFrom, Long dateTo) {
@@ -36,8 +38,7 @@ public class IntervalCellEditor implements CellEditor {
     private Date getObjectDate(Object oldValue, boolean from) {
         String object = String.valueOf(oldValue);
         int indexOfDecimal = object.indexOf(".");
-
-        return indexOfDecimal < 0 ? new Date() : GIntervalType.getTimestamp(from ? object.substring(0, indexOfDecimal) : object.substring(indexOfDecimal + 1));
+        return indexOfDecimal < 0 ? new Date() : interval.getFormat(null).parse(interval.formatDate(from ? object.substring(0, indexOfDecimal) : object.substring(indexOfDecimal + 1)));
     }
 
     protected native void createPicker(Element parent, Date startDate, Date endDate, String intervalType, boolean singleDatePicker)/*-{
@@ -104,8 +105,11 @@ public class IntervalCellEditor implements CellEditor {
         parentEl.on('hide.daterangepicker', function (ev, picker) {
             var startDate = picker.startDate;
             var endDate = picker.endDate;
-            var dateFrom = startDate.isValid() ? startDate.unix() : null;
-            var dateTo = endDate.isValid() != null ? endDate.unix() : null;
+            var epochFrom = startDate.toDate().getTime() / 1000;
+            var epochTo = endDate.toDate().getTime() / 1000;
+            var timezoneOffset = new Date().getTimezoneOffset();
+            var dateFrom = intervalType === 'ZDATETIME' ? epochFrom : (epochFrom - timezoneOffset * 60);
+            var dateTo = intervalType === 'ZDATETIME' ? epochTo : (epochTo - timezoneOffset * 60);
             thisObj.@lsfusion.gwt.client.form.property.cell.classes.controller.IntervalCellEditor::validateAndCommit(*)(dateFrom, dateTo);
         });
 

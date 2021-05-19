@@ -1,40 +1,26 @@
 package lsfusion.client.classes.data;
 
-import lsfusion.client.form.property.ClientPropertyDraw;
-import lsfusion.client.form.property.cell.classes.controller.IntervalPropertyEditor;
-import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
 import lsfusion.client.view.MainFrame;
 import lsfusion.interop.classes.DataType;
 
-import java.math.BigDecimal;
-import java.text.FieldPosition;
-import java.text.Format;
+import java.sql.Date;
 import java.text.ParseException;
-import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+
+import static lsfusion.base.DateConverter.localDateToSqlDate;
 
 public class ClientDateIntervalClass extends ClientIntervalClass {
 
     public final static ClientIntervalClass instance = new ClientDateIntervalClass();
-
     @Override
     public byte getTypeId() {
         return DataType.DATEINTERVAL;
-    }
-
-    @Override
-    public String formatString(Object obj) throws ParseException {
-        return getDateIntervalDefaultFormat(obj).toString();
-    }
-
-    @Override
-    protected PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
-        return new IntervalPropertyEditor(value, (SimpleDateFormat) MainFrame.dateFormat, true);
-    }
-
-    @Override
-    public Format getDefaultFormat() {
-        return MainFrame.dateIntervalFormat;
     }
 
     @Override
@@ -42,23 +28,14 @@ public class ClientDateIntervalClass extends ClientIntervalClass {
         return "DATE";
     }
 
-    public static class DateIntervalFormat extends Format {
-        @Override
-        public StringBuffer format(Object o, StringBuffer stringBuffer, FieldPosition fieldPosition) {
-            if (o instanceof BigDecimal) {
-                return getDateIntervalDefaultFormat(o);
-            }
-            return null;
-        }
-
-        @Override
-        public Object parseObject(String s, ParsePosition parsePosition) {
-            return null;
-        }
+    public Long parseDateString(String date) throws ParseException {
+        return LocalDate.parse(date, DateTimeFormatter.ofPattern(((SimpleDateFormat) MainFrame.dateFormat).toPattern())).atStartOfDay().toEpochSecond(ZoneOffset.UTC);
     }
 
-    public static StringBuffer getDateIntervalDefaultFormat(Object o) {
-        return new StringBuffer(MainFrame.dateFormat.format(getDateFromInterval(o, true))
-                + " - " + MainFrame.dateFormat.format(getDateFromInterval(o, false)));
+    @Override
+    public StringBuffer getDefaultFormat(Object o) {
+        Date dateFrom = localDateToSqlDate(LocalDateTime.ofInstant(Instant.ofEpochSecond(getIntervalPart(o, true)), ZoneId.of("UTC")).toLocalDate());
+        Date dateTo = localDateToSqlDate(LocalDateTime.ofInstant(Instant.ofEpochSecond(getIntervalPart(o, false)), ZoneId.of("UTC")).toLocalDate());
+        return new StringBuffer(MainFrame.dateFormat.format(dateFrom) + " - " + MainFrame.dateFormat.format(dateTo));
     }
 }

@@ -1,6 +1,5 @@
 package lsfusion.server.logics.classes.data.time;
 
-import lsfusion.interop.classes.DataType;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.logics.classes.data.DataClass;
@@ -10,10 +9,8 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.Date;
+import java.time.ZoneOffset;
 
 public abstract class IntervalClass extends DataClass<BigDecimal> {
 
@@ -25,34 +22,16 @@ public abstract class IntervalClass extends DataClass<BigDecimal> {
                 return TimeIntervalClass.instance;
             case "DATETIME":
                 return DateTimeIntervalClass.instance;
+            case "ZDATETIME":
+                return ZDateTimeIntervalClass.instance;
         }
         return null;
     }
 
-    public static IntervalClass getInstance(byte type) {
-        switch (type) {
-            case DataType.DATEINTERVAL:
-                return DateIntervalClass.instance;
-            case DataType.TIMEINTERVAL:
-                return TimeIntervalClass.instance;
-            case DataType.DATETIMEINTERVAL:
-                return DateTimeIntervalClass.instance;
-        }
-        return null;
-    }
+    protected static final LocalDateTime LOCAL_DATE_TIME = LocalDateTime.now();
 
     protected IntervalClass(LocalizedString caption) {
         super(caption);
-    }
-
-    public LocalDateTime getLocalDateTime(BigDecimal value, boolean from) {
-        String object = String.valueOf(value);
-        int indexOfDecimal = object.indexOf(".");
-
-        LocalDateTime ldtFrom = LocalDateTime.ofInstant(Instant.ofEpochSecond(Long.parseLong(object.substring(0, indexOfDecimal))), ZoneId.systemDefault());
-        LocalDateTime ldtTo = LocalDateTime.ofInstant(Instant.ofEpochSecond(Long.parseLong(object.substring(indexOfDecimal + 1))), ZoneId.systemDefault());
-
-        return from ? ldtFrom : ldtTo;
     }
 
     @Override
@@ -108,14 +87,17 @@ public abstract class IntervalClass extends DataClass<BigDecimal> {
 
     @Override
     public BigDecimal getDefaultValue() {
-        long time = new Date().getTime() / 1000;
-        return new BigDecimal(time + "." + time);
+        long l = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC);
+        return new BigDecimal(l + "." + l);
+    }
+
+    @Override
+    public String getString(Object value, SQLSyntax syntax) {
+        throw new RuntimeException("not supported");
     }
 
     @Override
     protected Class getReportJavaClass() {
         return BigDecimal.class;
     }
-
-    public abstract Object extractValue(LocalDateTime localDateTime);
 }
