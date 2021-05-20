@@ -9,15 +9,20 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.text.DateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
+
+import static lsfusion.base.DateConverter.formatInterval;
+import static lsfusion.base.DateConverter.parseIntervalString;
 
 public abstract class IntervalClass extends DataClass<BigDecimal> {
 
-    protected static final DateFormat DATE_FORMAT = DateFormat.getDateInstance(DateFormat.SHORT);
-    protected static final DateFormat DATE_TIME_FORMAT = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM);
-    protected static final DateFormat TIME_FORMAT = DateFormat.getTimeInstance(DateFormat.MEDIUM);
+    protected static final DateTimeFormatter DATE_FORMATTER= DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT);
+    protected static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT, FormatStyle.MEDIUM);
+    protected static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofLocalizedTime(FormatStyle.MEDIUM);
+    protected static final DateTimeFormatter Z_DATE_TIME_FORMATTER = DateTimeFormatter.ISO_INSTANT;
 
     public static IntervalClass getInstance(String type) {
         switch (type) {
@@ -77,26 +82,17 @@ public abstract class IntervalClass extends DataClass<BigDecimal> {
         return false;
     }
 
-    protected abstract Long parse(String date) throws ParseException;
+    protected abstract Long parse(String date);
     protected abstract String format(Long epoch);
 
     @Override
     public BigDecimal parseString(String s) throws ParseException {
-        String[] dates = s.split(" - ");
-        Long epochFrom = parse(dates[0]);
-        Long epochTo = parse(dates[1]);
-        return epochFrom < epochTo ? new BigDecimal(epochFrom + "." + epochTo) : null;
+        return (BigDecimal) parseIntervalString(s, this::parse);
     }
 
     @Override
-    public String formatString(BigDecimal value) {
-        return format(getIntervalPart(value, true)) + " - " + format(getIntervalPart(value, false));
-    }
-
-    private Long getIntervalPart(Object o, boolean from) {
-        String object = String.valueOf(o);
-        int indexOfDecimal = object.indexOf(".");
-        return Long.parseLong(indexOfDecimal < 0 ? object : from ? object.substring(0, indexOfDecimal) : object.substring(indexOfDecimal + 1));
+    public String formatString(BigDecimal obj) {
+        return formatInterval(obj, this::format);
     }
 
     @Override

@@ -106,11 +106,11 @@ public class IntervalCellEditor implements CellEditor {
         parentEl.on('hide.daterangepicker', function (ev, picker) {
             var startDate = picker.startDate;
             var endDate = picker.endDate;
-            var epochFrom = Math.floor(startDate.toDate().getTime() / 1000);
-            var epochTo = Math.floor(endDate.toDate().getTime() / 1000);
-            var timezoneOffset = new Date().getTimezoneOffset();
-            var dateFrom = intervalType === 'ZDATETIME' ? epochFrom : (epochFrom - timezoneOffset * 60);
-            var dateTo = intervalType === 'ZDATETIME' ? epochTo : (epochTo - timezoneOffset * 60);
+            var dateFrom = startDate.isValid() ? (intervalType === 'ZDATETIME' ? startDate.unix() :
+                Date.UTC(startDate.year(), startDate.month(), startDate.date(), startDate.hour(), startDate.minute(), startDate.second(), startDate.millisecond()) / 1000) : null;
+            var dateTo = endDate.isValid() != null ? (intervalType === 'ZDATETIME' ? endDate.unix() :
+                Date.UTC(endDate.year(), endDate.month(), endDate.date(), endDate.hour(), endDate.minute(), endDate.second(), endDate.millisecond()) / 1000) : null;
+
             thisObj.@lsfusion.gwt.client.form.property.cell.classes.controller.IntervalCellEditor::validateAndCommit(*)(dateFrom, dateTo);
         });
 

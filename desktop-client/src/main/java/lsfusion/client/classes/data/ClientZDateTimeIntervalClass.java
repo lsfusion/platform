@@ -4,9 +4,6 @@ import lsfusion.client.view.MainFrame;
 import lsfusion.interop.classes.DataType;
 
 import java.text.ParseException;
-import java.time.Instant;
-
-import static lsfusion.base.DateConverter.instantToSqlTimestamp;
 
 public class ClientZDateTimeIntervalClass extends ClientIntervalClass {
 
@@ -23,12 +20,16 @@ public class ClientZDateTimeIntervalClass extends ClientIntervalClass {
     }
 
     @Override
-    protected Long parse(String date) throws ParseException {
-        return MainFrame.dateTimeFormat.parse(date).getTime() / 1000;
+    protected Long parse(String date) {
+        try {
+            return MainFrame.dateTimeFormat.parse(date).getTime() / 1000;
+        } catch (ParseException e) {
+            return null;
+        }
     }
 
     @Override
     protected String format(Long epoch) {
-        return MainFrame.dateTimeFormat.format(instantToSqlTimestamp(Instant.ofEpochSecond(epoch)));
+        return MainFrame.dateTimeFormat.format(epoch * 1000);
     }
 }

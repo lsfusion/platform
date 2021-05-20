@@ -4,14 +4,10 @@ import lsfusion.client.view.MainFrame;
 import lsfusion.interop.classes.DataType;
 
 import java.text.SimpleDateFormat;
-import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
-import static lsfusion.base.DateConverter.localDateTimeToUTCEpoch;
-import static lsfusion.base.DateConverter.localDateToSqlDate;
+import static lsfusion.base.DateConverter.*;
 
 public class ClientDateIntervalClass extends ClientIntervalClass {
 
@@ -33,6 +29,6 @@ public class ClientDateIntervalClass extends ClientIntervalClass {
 
     @Override
     protected String format(Long epoch) {
-        return MainFrame.dateFormat.format(localDateToSqlDate(LocalDateTime.ofInstant(Instant.ofEpochSecond(epoch), ZoneId.of("UTC")).toLocalDate()));
+        return MainFrame.dateFormat.format(localDateToSqlDate(epochToLocalDateTime(epoch).toLocalDate()));
     }
 }

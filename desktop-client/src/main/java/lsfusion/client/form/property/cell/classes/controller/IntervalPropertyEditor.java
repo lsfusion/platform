@@ -7,8 +7,11 @@ import lsfusion.client.form.property.cell.controller.PropertyTableCellEditor;
 
 import javax.swing.*;
 import java.awt.*;
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.EventObject;
+
+import static lsfusion.base.DateConverter.getIntervalPart;
 
 public class IntervalPropertyEditor extends JDateChooser implements PropertyEditor {
 
@@ -57,7 +60,7 @@ public class IntervalPropertyEditor extends JDateChooser implements PropertyEdit
             String text = dateEditor.getText();
             if (text.isEmpty())
                 return null;
-            Long parsedValue = (Long) intervalClass.parseString(text);
+            BigDecimal parsedValue = (BigDecimal) intervalClass.parseString(text);
             return parsedValue != null ? parsedValue : defaultValue;
         } catch (Exception e) {
             return defaultValue;
@@ -95,9 +98,9 @@ public class IntervalPropertyEditor extends JDateChooser implements PropertyEdit
         public Date getDate() {
             if (defaultValue != null) {
                 if (left)
-                    return new Date(ClientIntervalClass.getIntervalPart(defaultValue, true) * 1000);
+                    return new Date(getIntervalPart(defaultValue, true) * 1000);
                 else if (right)
-                    return new Date(ClientIntervalClass.getIntervalPart(defaultValue, false) * 1000);
+                    return new Date(getIntervalPart(defaultValue, false) * 1000);
             }
             return null;
         }

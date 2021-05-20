@@ -16,6 +16,9 @@ import java.text.ParseException;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 
+import static lsfusion.base.DateConverter.formatInterval;
+import static lsfusion.base.DateConverter.parseIntervalString;
+
 public abstract class ClientIntervalClass extends ClientFormatClass<SimpleDateFormat> implements ClientTypeClass {
 
     public static ClientIntervalClass getInstance(String type) {
@@ -39,26 +42,17 @@ public abstract class ClientIntervalClass extends ClientFormatClass<SimpleDateFo
         return new FormatPropertyRenderer(property){};
     }
 
-    protected abstract Long parse(String date) throws ParseException;
+    protected abstract Long parse(String date);
     protected abstract String format(Long epoch);
 
     @Override
     public Object parseString(String s) throws ParseException {
-        String[] dates = s.split(" - ");
-        Long epochFrom = parse(dates[0]);
-        Long epochTo = parse(dates[1]);
-        return epochFrom < epochTo ? new BigDecimal(epochFrom + "." + epochTo) : null;
+        return parseIntervalString(s, this::parse);
     }
 
     @Override
     public String formatString(Object obj) {
-        return format(getIntervalPart(obj, true)) + " - " + format(getIntervalPart(obj, false));
-    }
-
-    public static Long getIntervalPart(Object o, boolean from) {
-        String object = String.valueOf(o);
-        int indexOfDecimal = object.indexOf(".");
-        return Long.parseLong(indexOfDecimal < 0 ? object : from ? object.substring(0, indexOfDecimal) : object.substring(indexOfDecimal + 1));
+        return formatInterval(obj, this::format);
     }
 
     @Override

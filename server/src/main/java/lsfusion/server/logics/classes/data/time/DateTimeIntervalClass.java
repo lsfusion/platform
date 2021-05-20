@@ -2,14 +2,9 @@ package lsfusion.server.logics.classes.data.time;
 
 import lsfusion.interop.classes.DataType;
 import lsfusion.server.logics.classes.data.DataClass;
-import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
-import java.text.SimpleDateFormat;
-import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 
 import static lsfusion.base.DateConverter.*;
 
@@ -37,12 +32,12 @@ public class DateTimeIntervalClass extends IntervalClass {
     }
 
     @Override
-    protected Long parse(String date) throws ParseException {
-        return localDateTimeToUTCEpoch(LocalDateTime.parse(date, DateTimeFormatter.ofPattern(((SimpleDateFormat) DATE_TIME_FORMAT).toPattern())));
+    protected Long parse(String date) {
+        return localDateTimeToUTCEpoch(LocalDateTime.parse(date, DATE_TIME_FORMATTER));
     }
 
     @Override
     protected String format(Long epoch) {
-        return DATE_TIME_FORMAT.format(localDateTimeToSqlTimestamp(LocalDateTime.ofInstant(Instant.ofEpochSecond(epoch), ZoneId.of("UTC"))));
+        return epochToLocalDateTime(epoch).format(DATE_FORMATTER);
     }
 }
