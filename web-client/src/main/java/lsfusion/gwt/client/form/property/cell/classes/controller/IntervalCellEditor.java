@@ -32,14 +32,7 @@ public class IntervalCellEditor implements CellEditor {
 
     @Override
     public void startEditing(Event event, Element parent, Object oldValue) {
-        createPicker(parent, getObjectDate(oldValue, true), getObjectDate(oldValue, false), intervalType, false);
-    }
-
-    private Date getObjectDate(Object oldValue, boolean from) {
-        String object = String.valueOf(oldValue);
-        int indexOfDecimal = object.indexOf(".");
-        long epoch = indexOfDecimal < 0 ? new Date().getTime() : Long.parseLong(from ? object.substring(0, indexOfDecimal) : object.substring(indexOfDecimal + 1));
-        return interval.getFormat(null).parse(interval.format(epoch));
+        createPicker(parent, interval.getDate(oldValue, true), interval.getDate(oldValue, false), intervalType, false);
     }
 
     protected native void createPicker(Element parent, Date startDate, Date endDate, String intervalType, boolean singleDatePicker)/*-{
@@ -107,9 +100,9 @@ public class IntervalCellEditor implements CellEditor {
             var startDate = picker.startDate;
             var endDate = picker.endDate;
             var dateFrom = startDate.isValid() ? (intervalType === 'ZDATETIME' ? startDate.unix() :
-                Date.UTC(startDate.year(), startDate.month(), startDate.date(), startDate.hour(), startDate.minute(), startDate.second(), startDate.millisecond()) / 1000) : null;
+                Date.UTC(startDate.year(), startDate.month(), startDate.date(), startDate.hour(), startDate.minute(), startDate.second()) / 1000) : null;
             var dateTo = endDate.isValid() != null ? (intervalType === 'ZDATETIME' ? endDate.unix() :
-                Date.UTC(endDate.year(), endDate.month(), endDate.date(), endDate.hour(), endDate.minute(), endDate.second(), endDate.millisecond()) / 1000) : null;
+                Date.UTC(endDate.year(), endDate.month(), endDate.date(), endDate.hour(), endDate.minute(), endDate.second()) / 1000) : null;
 
             thisObj.@lsfusion.gwt.client.form.property.cell.classes.controller.IntervalCellEditor::validateAndCommit(*)(dateFrom, dateTo);
         });

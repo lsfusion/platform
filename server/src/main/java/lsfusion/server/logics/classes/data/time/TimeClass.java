@@ -166,7 +166,7 @@ public class TimeClass extends TimeSeriesClass<LocalTime> {
     public LocalTime read(Object value) {
         if(value instanceof LocalTime)
             return (LocalTime) value;
-        else if (value instanceof Timestamp)
+        else if (value instanceof Timestamp) // need to extract part from INTERVAL[TIME]. Because "to_timestamp()" return TIMESTAMP instead of LocalTime
             return ((Timestamp) value).toLocalDateTime().toLocalTime();
         else
             return sqlTimeToLocalTime((Time) value);

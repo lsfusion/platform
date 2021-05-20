@@ -33,14 +33,6 @@ public class GDateTimeDTO implements Serializable {
         return new Timestamp(year - 1900, month - 1, day, hour, minute, second, 0);
     }
 
-    public GDateDTO toGDateDTO() {
-        return new GDateDTO(year - 1900, month - 1, day);
-    }
-
-    public GTimeDTO toGTimeDTO() {
-        return new GTimeDTO(hour, minute, second);
-    }
-
     @Override
     public String toString() {
         return toDateTime().toString();

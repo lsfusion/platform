@@ -4,7 +4,6 @@ import lsfusion.interop.classes.DataType;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
-import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
@@ -30,12 +29,6 @@ public class ZDateTimeIntervalClass extends IntervalClass{
     @Override
     public byte getTypeID() {
         return DataType.ZDATETIMEINTERVAL;
-    }
-
-    @Override
-    public BigDecimal getDefaultValue() {
-        long l = Instant.now().toEpochMilli() / 1000;
-        return new BigDecimal(l + "." + l);
     }
 
     @Override

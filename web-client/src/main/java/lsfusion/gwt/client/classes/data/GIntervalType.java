@@ -4,7 +4,6 @@ import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.TimeZone;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.async.GInputList;
-import lsfusion.gwt.client.form.property.cell.classes.GDateTimeDTO;
 import lsfusion.gwt.client.form.property.cell.classes.controller.IntervalCellEditor;
 import lsfusion.gwt.client.form.property.cell.classes.view.FormatCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.CellEditor;
@@ -55,17 +54,23 @@ public abstract class GIntervalType extends GFormatType<com.google.gwt.i18n.clie
         return formatObject(1634245200.1634331600); // some dateTimeInterval for default width
     }
 
-    public abstract String format(Long epoch);
+    public String format(Long epoch) {
+        return getFormat(null).format(new Date(epoch * 1000), TimeZone.createTimeZone(0));
+    }
 
     public String formatObject(Object value) {
-        String object = String.valueOf(value);
-        int delimiterIndex = object.indexOf(".");
-        return format(Long.parseLong(object.substring(0, delimiterIndex))) + " - " + format(Long.parseLong(object.substring(delimiterIndex + 1)));
+        return format(getEpoch(value, true)) + " - " + format(getEpoch(value, false));
     }
 
     public abstract String getIntervalType();
 
-    public static GDateTimeDTO fromEpoch(Long epoch, DateTimeFormat format) {
-        return GDateTimeDTO.fromDate(format.parse(format.format(new Date(epoch * 1000), TimeZone.createTimeZone(0))));
+    public Date getDate(Object value, boolean from) {
+        return value != null ? getFormat(null).parse(format(getEpoch(value, from))) : new Date();
+    }
+
+    private Long getEpoch(Object value, boolean from) {
+        String object = String.valueOf(value);
+        int indexOfDecimal = object.indexOf(".");
+        return Long.parseLong(from ? object.substring(0, indexOfDecimal) : object.substring(indexOfDecimal + 1));
     }
 }

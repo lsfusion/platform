@@ -189,19 +189,19 @@ public abstract class MainFrame extends JFrame {
         }
 
         //dateFormat = DateFormat.getDateInstance(DateFormat.SHORT);
-        dateFormatter = DateTimeFormatter.ofPattern(((SimpleDateFormat) MainFrame.dateFormat).toPattern());
         dateFormat = new SimpleDateFormat(localePreferences.dateFormat);
+        dateFormatter = DateTimeFormatter.ofPattern(((SimpleDateFormat) MainFrame.dateFormat).toPattern());
         if (twoDigitYearStartDate != null) {
             ((SimpleDateFormat) dateFormat).set2DigitYearStart(twoDigitYearStartDate);
         }
 
         //timeFormat = DateFormat.getTimeInstance(DateFormat.MEDIUM);
-        timeFormatter = DateTimeFormatter.ofPattern(((SimpleDateFormat) MainFrame.timeFormat).toPattern());
         timeFormat = new SimpleDateFormat(localePreferences.timeFormat);
+        timeFormatter = DateTimeFormatter.ofPattern(((SimpleDateFormat) MainFrame.timeFormat).toPattern());
 
         //dateTimeFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM);
-        dateTimeFormatter = DateTimeFormatter.ofPattern(((SimpleDateFormat) MainFrame.dateTimeFormat).toPattern());
         dateTimeFormat = new SimpleDateFormat(localePreferences.dateFormat + " " + localePreferences.timeFormat);
+        dateTimeFormatter = DateTimeFormatter.ofPattern(((SimpleDateFormat) MainFrame.dateTimeFormat).toPattern());
         if (twoDigitYearStartDate != null) {
             ((SimpleDateFormat) dateTimeFormat).set2DigitYearStart(twoDigitYearStartDate);
         }

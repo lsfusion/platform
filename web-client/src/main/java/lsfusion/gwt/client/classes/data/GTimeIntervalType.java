@@ -2,7 +2,6 @@ package lsfusion.gwt.client.classes.data;
 
 import com.google.gwt.i18n.client.DateTimeFormat;
 
-import static lsfusion.gwt.client.base.GwtSharedUtils.getDefaultTimeFormat;
 import static lsfusion.gwt.client.base.GwtSharedUtils.getTimeFormat;
 
 public class GTimeIntervalType extends GIntervalType {
@@ -12,11 +11,6 @@ public class GTimeIntervalType extends GIntervalType {
     @Override
     public DateTimeFormat getFormat(String pattern) {
         return getTimeFormat(pattern);
-    }
-
-    @Override
-    public String format(Long epoch) {
-        return getFormat(null).format(fromEpoch(epoch, getDefaultTimeFormat()).toGTimeDTO().toTime());
     }
 
     @Override

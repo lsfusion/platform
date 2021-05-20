@@ -9,8 +9,6 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 
@@ -103,8 +101,7 @@ public abstract class IntervalClass extends DataClass<BigDecimal> {
 
     @Override
     public BigDecimal getDefaultValue() {
-        long l = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC);
-        return new BigDecimal(l + "." + l);
+        return null;
     }
 
     @Override
