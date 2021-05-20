@@ -11,6 +11,7 @@ import lsfusion.server.logics.form.interactive.action.async.AsyncOpenForm;
 import lsfusion.server.logics.form.interactive.dialogedit.ClassFormSelector;
 import lsfusion.server.logics.form.open.FormSelector;
 import lsfusion.server.logics.form.struct.FormEntity;
+import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
@@ -77,7 +78,7 @@ public class AsyncMapOpenForm<T extends PropertyInterface> extends AsyncMapExec<
     }
 
     @Override
-    public AsyncEventExec map(ImRevMap<T, ObjectEntity> mapObjects, FormEntity form) {
+    public AsyncEventExec map(ImRevMap<T, ObjectEntity> mapObjects, FormEntity form, GroupObjectEntity toDraw) {
         
         CustomClass objectClass = propertyClass;
         if(propertyInterface != null) {

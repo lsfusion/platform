@@ -6,6 +6,7 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
+import lsfusion.gwt.client.form.object.panel.controller.GPropertyPanelController;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.classes.view.ActionCellRenderer;
 
@@ -15,8 +16,8 @@ public class ActionPanelRenderer extends PanelRenderer {
 
 //    private final GFormController form;
 
-    public ActionPanelRenderer(final GFormController form, final GPropertyDraw property, GGroupObjectValue columnKey) {
-        super(form, property, columnKey);
+    public ActionPanelRenderer(final GFormController form, ActionOrPropertyValueController controller, final GPropertyDraw property, GGroupObjectValue columnKey) {
+        super(form, controller, property, columnKey);
 
         value.setDynamic(false);
 

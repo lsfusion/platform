@@ -8,6 +8,7 @@ import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.panel.view.ActionOrPropertyValueController;
 import lsfusion.gwt.client.form.property.panel.view.ActionPanelRenderer;
 import lsfusion.gwt.client.form.property.panel.view.PanelRenderer;
 
@@ -15,7 +16,7 @@ import java.util.ArrayList;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.isShowing;
 
-public class GPropertyPanelController {
+public class GPropertyPanelController implements ActionOrPropertyValueController {
     private boolean columnsUpdated = true;
 
     public GPropertyDraw property;
@@ -62,7 +63,7 @@ public class GPropertyPanelController {
                             renderersPanel.add(GwtClientUtils.createHorizontalStrut(4));
                         }
                         
-                        PanelRenderer newRenderer = property.createPanelRenderer(form, columnKey);
+                        PanelRenderer newRenderer = property.createPanelRenderer(form, this, columnKey);
                         newRenderer.setReadOnly(property.isReadOnly());
                         Widget component = newRenderer.getComponent();
                         renderersPanel.addFill(component);
@@ -133,6 +134,11 @@ public class GPropertyPanelController {
             return true;
         }
         return false;
+    }
+
+    @Override
+    public void setValue(GGroupObjectValue columnKey, Object value) {
+        values.put(columnKey, value);
     }
 
     public void setPropertyValues(NativeHashMap<GGroupObjectValue, Object> valueMap, boolean updateKeys) {

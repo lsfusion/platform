@@ -25,11 +25,11 @@ import lsfusion.server.logics.action.session.changed.OldProperty;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
 import lsfusion.server.logics.event.PrevScope;
+import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
-import lsfusion.server.logics.property.AggregateProperty;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.UnionProperty;
@@ -212,8 +212,8 @@ public class PropertyMapImplement<P extends PropertyInterface, T extends Propert
     }
 
     @Override
-    public ActionMapImplement<?, T> mapEventAction(String eventSID, ImList<Property> viewProperties) {
-        ActionMapImplement<?, P> eventAction = property.getEventAction(eventSID, viewProperties);
+    public ActionMapImplement<?, T> mapEventAction(String eventSID, FormSessionScope defaultChangeEventScope, ImList<Property> viewProperties) {
+        ActionMapImplement<?, P> eventAction = property.getEventAction(eventSID, defaultChangeEventScope, viewProperties);
         return eventAction == null ? null : eventAction.map(mapping);
     }
 

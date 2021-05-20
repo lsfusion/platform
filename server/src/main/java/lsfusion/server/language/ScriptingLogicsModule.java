@@ -2206,7 +2206,10 @@ public class ScriptingLogicsModule extends LogicsModule {
                         new InputContextProperty<>(property, mapValues)) : null);
     }
 
-    public LAWithParams addScriptedInputAProp(ValueClass requestValueClass, LPWithParams oldValue, NamedPropertyUsage targetProp, LAWithParams doAction, LAWithParams elseAction, List<TypedParameter> oldContext, List<TypedParameter> newContext, boolean assign, boolean constraintFilter, LPWithParams changeProp, LPWithParams listProp, LPWithParams whereProp, DebugInfo.DebugPoint assignDebugPoint) throws ScriptingErrorLog.SemanticErrorException {
+    public LAWithParams addScriptedInputAProp(ValueClass requestValueClass, LPWithParams oldValue, NamedPropertyUsage targetProp, LAWithParams doAction, LAWithParams elseAction, List<TypedParameter> oldContext, List<TypedParameter> newContext, boolean assign, boolean constraintFilter, LPWithParams changeProp, LPWithParams listProp, LPWithParams whereProp, DebugInfo.DebugPoint assignDebugPoint, FormSessionScope listScope) throws ScriptingErrorLog.SemanticErrorException {
+        if(listScope == null)
+            listScope = FormSessionScope.OLDSESSION;
+
         assert targetProp == null;
         LP<?> tprop = getInputProp(targetProp, requestValueClass, null);
 
@@ -2228,7 +2231,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             CFEWithParams<ClassFormSelector.VirtualObject> contextEntities = getContextFilterAndListEntities(oldContext.size(), SetFact.singletonOrder(classForm.virtualObject), ListFact.singleton(whereProp), listProp, cccfs);
             usedParams = contextEntities.usedParams;            
             
-            action = addDialogInputAProp(classForm, tprop, classForm.virtualObject, oldValue != null, contextEntities.orderInterfaces, contextEntities.list, contextEntities.filters);
+            action = addDialogInputAProp(classForm, tprop, classForm.virtualObject, oldValue != null, contextEntities.orderInterfaces, listScope, contextEntities.list, contextEntities.filters);
         } else {
             // optimization. we don't use files on client side (see also DefaultChangeAction.executeCustom())
             if (oldValue != null && requestValueClass instanceof FileClass)
@@ -2237,7 +2240,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             ILEWithParams contextEntity = getContextListEntity(oldContext.size(), listProp, whereProp);
             usedParams = contextEntity.usedParams;
 
-            action = addInputAProp(requestValueClass, tprop, oldValue != null, contextEntity.orderInterfaces, contextEntity.list, contextEntity.where, ListFact.EMPTY());
+            action = addInputAProp((DataClass)requestValueClass, tprop, oldValue != null, contextEntity.orderInterfaces, contextEntity.list, listScope, contextEntity.where, ListFact.EMPTY());
         }
         
         List<LPWithParams> mapping = new ArrayList<>();
@@ -3288,13 +3291,10 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         ImList<O> objects = mObjects.immutableList();
         LA action = addIFAProp(null, LocalizedString.NONAME, mapped.form, objects, mNulls.immutableList(),
-                ListFact.EMPTY(), ListFact.EMPTY(), ListFact.EMPTY(),
-                manageSession, noCancel,
+                formSessionScope, manageSession, noCancel,
                 contextEntities.orderInterfaces, contextEntities.filters,
                 syncType, windowType, false, checkOnOk,
                 readonly);
-
-        action = addSessionScopeAProp(formSessionScope, action);
 
         for (int usedParam : contextEntities.usedParams) {
             mapping.add(new LPWithParams(usedParam));
@@ -3492,20 +3492,15 @@ public class ScriptingLogicsModule extends LogicsModule {
         ImList<Pair<LPWithParams, DebugInfo.DebugPoint>> changeProps = mChangeProps.immutableList();
 
         CFEWithParams<O> contextEntities = getContextFilterAndListEntities(oldContext.size(), contextObjects, ListFact.fromJavaList(contextFilters), list, mConstraintContextFilters.immutableList());
-        InputListEntity<?, PropertyInterface> contextList = contextEntities.list;
-        if(contextList != null && scope == FormSessionScope.NEWSESSION)
-            contextList = contextList.newSession();
 
         boolean syncType = doAction != null || elseAction != null; // optimization
 
         LA action = addDialogInputAProp(mapped.form, objects, mNulls.immutableList(),
-                                 inputObjects, inputProps, inputNulls, contextList,
+                                 inputObjects, inputProps, inputNulls, scope, contextEntities.list,
                                  manageSession, noCancel,
                                  contextEntities.orderInterfaces, contextEntities.filters,
                                  syncType, windowType, checkOnOk,
                                  readonly);
-
-        action = addSessionScopeAProp(scope, action, inputProps.addList(baseLM.getRequestCanceledProperty()).getCol());
 
         for (int usedParam : contextEntities.usedParams) {
             mapping.add(new LPWithParams(usedParam));

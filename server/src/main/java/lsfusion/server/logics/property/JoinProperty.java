@@ -18,6 +18,7 @@ import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.change.*;
 import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
 import lsfusion.server.logics.property.classes.data.AndFormulaProperty;
 import lsfusion.server.logics.property.classes.data.CompareFormulaProperty;
@@ -273,13 +274,13 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
 
     @Override
     @IdentityStrongLazy // STRONG пришлось поставить из-за использования в политике безопасности
-    public ActionMapImplement<?, Interface> getDefaultEventAction(String eventActionSID, ImList<Property> viewProperties) {
+    public ActionMapImplement<?, Interface> getDefaultEventAction(String eventActionSID, FormSessionScope defaultChangeEventScope, ImList<Property> viewProperties) {
         Property<T> aggProp = implement.property;
 
         if (aggProp instanceof AndFormulaProperty) {
             final AndFormulaProperty andProperty = (AndFormulaProperty) aggProp;
             ImCol<PropertyInterfaceImplement<Interface>> ands = implement.mapping.filterFn(element -> element != andProperty.objectInterface).values();
-            ActionMapImplement<?, Interface> implementEdit = implement.mapping.get((T) andProperty.objectInterface).mapEventAction(eventActionSID, viewProperties);
+            ActionMapImplement<?, Interface> implementEdit = implement.mapping.get((T) andProperty.objectInterface).mapEventAction(eventActionSID, defaultChangeEventScope, viewProperties);
             if (implementEdit != null) {
                 return PropertyFact.createIfAction(
                         interfaces,
@@ -293,17 +294,17 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
         if(eventActionSID.equals(ServerResponse.EDIT_OBJECT)) {
             ValueClass editClass = getValueClass(ClassType.tryEditPolicy);
             if((editClass != null && editClass.getDefaultOpenAction(getBaseLM()) != null)) // just call open action (see super implementation)
-                return super.getDefaultEventAction(eventActionSID, viewProperties);
+                return super.getDefaultEventAction(eventActionSID, defaultChangeEventScope, viewProperties);
 
-            ActionMapImplement<?, T> editImplement = implement.property.getEventAction(eventActionSID, ListFact.EMPTY());
+            ActionMapImplement<?, T> editImplement = implement.property.getEventAction(eventActionSID, defaultChangeEventScope, ListFact.EMPTY());
             if(editImplement != null)
                 return PropertyFact.createJoinAction(editImplement.map(implement.mapping));
         }
 
         if (implement.mapping.size() == 1 && !isIdentity)
-            return implement.mapping.singleValue().mapEventAction(eventActionSID, viewProperties.addList(aggProp));
+            return implement.mapping.singleValue().mapEventAction(eventActionSID, defaultChangeEventScope, viewProperties.addList(aggProp));
 
-        return super.getDefaultEventAction(eventActionSID, viewProperties);
+        return super.getDefaultEventAction(eventActionSID, defaultChangeEventScope, viewProperties);
     }
 
     public boolean checkEquals() {

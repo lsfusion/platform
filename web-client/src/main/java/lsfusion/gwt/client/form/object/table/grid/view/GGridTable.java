@@ -897,12 +897,14 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         }
     }
 
+    // editing set value (in EditContext), changes model and value itself
     public void setValueAt(Cell cell, Object value) {
         GridDataRecord rowRecord = getGridRow(cell);
         GridColumn column = getGridColumn(cell);
 
-        column.setValue(rowRecord, value);
-        values.get(column.property).put(rowRecord.getKey(), value);
+        column.setValue(rowRecord, value); // updating inner model
+
+        values.get(column.property).put(rowRecord.getKey(), value); // updating outer model - controller
     }
 
     public Map<Map<GPropertyDraw, GGroupObjectValue>, Boolean> getOrderDirections() {

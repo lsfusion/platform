@@ -156,7 +156,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
             if (currentActionResults != null && currentActionIndex >= 0) {
                 currentActionResults[currentActionIndex] = currentActionResult;
             }
-            continueDispatchResponse();;
+            continueDispatchResponse();
         }
     }
 

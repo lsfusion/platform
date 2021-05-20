@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.form.property.panel.view;
 
-import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.FocusWidget;
@@ -15,8 +14,6 @@ import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 
-import java.text.ParseException;
-
 import static lsfusion.gwt.client.base.GwtClientUtils.setupFillParent;
 import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
 import static lsfusion.gwt.client.base.view.ColorUtils.getDisplayColor;
@@ -30,16 +27,20 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
         return value;
     }
 
+    // editing set value (in EditContext), changes model and value itself
     public void setValue(Object value) {
-        this.value = value;
+        this.value = value; // updating inner model
+
+        controller.setValue(columnKey, value); // updating outer model - controller
     }
 
     protected GPropertyDraw property;
     protected GGroupObjectValue columnKey;
 
     protected GFormController form;
+    protected ActionOrPropertyValueController controller;
 
-    public ActionOrPropertyValue(GPropertyDraw property, GGroupObjectValue columnKey, GFormController form) {
+    public ActionOrPropertyValue(GPropertyDraw property, GGroupObjectValue columnKey, GFormController form, ActionOrPropertyValueController controller) {
         setElement(Document.get().createDivElement());
 
         DataGrid.initSinkEvents(this);
@@ -48,6 +49,7 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
         this.columnKey = columnKey;
 
         this.form = form;
+        this.controller = controller;
 
         getRenderElement().setPropertyObject("groupObject", property.groupObject);
     }
@@ -198,6 +200,8 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
     public abstract void pasteValue(final String value);
 
     public void updateValue(Object value) {
-        form.update(this, value);
+        this.value = value;
+
+        form.update(property, getRenderElement(), value, this);
     }
 }

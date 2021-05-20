@@ -19,7 +19,7 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
     private final Consumer<Object> afterCommit;
 
     public GDataFilterPropertyValue(GPropertyDraw property, GGroupObjectValue columnKey, GFormController form, Consumer<Object> afterCommit) {
-        super(property, columnKey, form);
+        super(property, columnKey, form, (columnKeyValue, value) -> {});
 
         this.afterCommit = afterCommit;
 

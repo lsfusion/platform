@@ -12,6 +12,4 @@ public interface MOrderExclSet<K> {
     K get(int i);
 
     ImOrderSet<K> immutableOrder();
-
-    ImOrderSet<K> immutableOrderCopy();
 }

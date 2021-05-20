@@ -1,14 +1,14 @@
 package lsfusion.server.logics.form.interactive.action.async.map;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
-import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.user.CustomClass;
-import lsfusion.server.logics.classes.user.set.OrObjectClassSet;
 import lsfusion.server.logics.form.interactive.action.async.AsyncAddRemove;
 import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
 import lsfusion.server.logics.form.interactive.dialogedit.ClassFormSelector;
 import lsfusion.server.logics.form.struct.FormEntity;
+import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -41,10 +41,25 @@ public class AsyncMapAdd<T extends PropertyInterface> extends AsyncMapInputExec<
     }
 
     @Override
-    public AsyncEventExec map(ImRevMap<T, ObjectEntity> mapObjects, FormEntity form) {
-        for(ObjectEntity object : form.getObjects())
-            if (object.baseClass instanceof CustomClass && customClass.isChild((CustomClass) object.baseClass) && object.isSimpleList())
-                return new AsyncAddRemove(object, true);
+    public AsyncEventExec map(ImRevMap<T, ObjectEntity> mapObjects, FormEntity form, GroupObjectEntity toDraw) {
+        AsyncAddRemove object = map(toDraw);
+        if (object != null)
+            return object;
+
+        for(GroupObjectEntity group : form.getGroups())
+            if(!BaseUtils.hashEquals(group, toDraw)) {
+                object = map(group);
+                if (object != null)
+                    return object;
+            }
+        return null;
+    }
+
+    public AsyncAddRemove map(GroupObjectEntity group) {
+        if(group.isSimpleList())
+            for(ObjectEntity object : group.getObjects())
+                if (object.baseClass instanceof CustomClass && customClass.isChild((CustomClass) object.baseClass))
+                    return new AsyncAddRemove(object, true);
         return null;
     }
 

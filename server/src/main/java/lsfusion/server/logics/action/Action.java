@@ -43,6 +43,7 @@ import lsfusion.server.logics.form.interactive.action.async.AsyncExec;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapExec;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapRemove;
+import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.interactive.instance.FormEnvironment;
 import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
@@ -501,10 +502,10 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
     }
 
     @Override
-    public ActionMapImplement<?, P> getDefaultEventAction(String eventActionSID, ImList<Property> viewProperties) {
+    public ActionMapImplement<?, P> getDefaultEventAction(String eventActionSID, FormSessionScope defaultChangeEventScope, ImList<Property> viewProperties) {
         if(eventActionSID.equals(ServerResponse.EDIT_OBJECT))
             return null;
-        return getImplement();
+        return PropertyFact.createSessionScopeAction(defaultChangeEventScope, interfaces, getImplement(), SetFact.EMPTY());
     }
 
     private AsyncMapEventExec<P> forceAsyncEventExec;

@@ -31,6 +31,7 @@ import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.classes.view.FormatCellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.CustomCellRenderer;
+import lsfusion.gwt.client.form.property.panel.view.ActionOrPropertyValueController;
 import lsfusion.gwt.client.form.property.panel.view.PanelRenderer;
 import lsfusion.gwt.client.view.MainFrame;
 import lsfusion.gwt.client.view.StyleDefaults;
@@ -207,12 +208,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
     public GPropertyDraw(){}
 
-    public void update(GPropertyController controller, NativeHashMap<GGroupObjectValue, Object> values, boolean updateKeys) {
-        throw new UnsupportedOperationException();
-    }
-
-    public PanelRenderer createPanelRenderer(GFormController form, GGroupObjectValue columnKey) {
-        return baseType.createPanelRenderer(form, this, columnKey);
+    public PanelRenderer createPanelRenderer(GFormController form, ActionOrPropertyValueController controller, GGroupObjectValue columnKey) {
+        return baseType.createPanelRenderer(form, controller, this, columnKey);
     }
 
     public CellRenderer getCellRenderer() {

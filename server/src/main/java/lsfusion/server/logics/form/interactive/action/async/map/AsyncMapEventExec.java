@@ -4,6 +4,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
 import lsfusion.server.logics.form.struct.FormEntity;
+import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -19,5 +20,5 @@ public abstract class AsyncMapEventExec<T extends PropertyInterface> {
 
     public abstract AsyncMapEventExec<T> merge(AsyncMapEventExec<T> input);
     
-    public abstract AsyncEventExec map(ImRevMap<T, ObjectEntity> mapObjects, FormEntity form);
+    public abstract AsyncEventExec map(ImRevMap<T, ObjectEntity> mapObjects, FormEntity form, GroupObjectEntity toDraw);
 }

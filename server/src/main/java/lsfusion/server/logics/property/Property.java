@@ -82,6 +82,7 @@ import lsfusion.server.logics.classes.user.set.OrClassSet;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.classes.user.set.ResolveUpClassSet;
 import lsfusion.server.logics.event.*;
+import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
@@ -1613,7 +1614,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
     
     @IdentityStrongLazy // STRONG for using in security policy
-    public ActionMapImplement<?, T> getDefaultEventAction(String eventActionSID, ImList<Property> viewProperties) {
+    public ActionMapImplement<?, T> getDefaultEventAction(String eventActionSID, FormSessionScope defaultChangeEventScope, ImList<Property> viewProperties) {
 //        ImMap<T, ValueClass> interfaceClasses = getInterfaceClasses(ClassType.tryEditPolicy); // так как в определении propertyDraw также используется FULL, а не ASSERTFULL
 //        if(interfaceClasses.size() < interfaces.size()) // не все классы есть
 //            return null;
@@ -1644,13 +1645,13 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
             ImOrderSet<T> orderInterfaces = lp.listInterfaces; // actually we don't need all interfaces in dialog input action itself (only used one in checkfilters), but for now it doesn't matter
 
             // selectors could be used, but since this method is used after logics initialization, getting form, check properties here is more effective
-            LA<?> inputAction = lm.addDialogInputAProp((CustomClass) valueClass, targetProp, orderInterfaces, list, MapFact.EMPTYREV(), objectEntity -> getCheckFilters(objectEntity));
+            LA<?> inputAction = lm.addDialogInputAProp((CustomClass) valueClass, targetProp, defaultChangeEventScope, orderInterfaces, list, MapFact.EMPTYREV(), objectEntity -> getCheckFilters(objectEntity));
 
             action = ((LA<?>) lm.addJoinAProp(inputAction, BaseUtils.add(directLI(lp), getUParams(orderInterfaces.size())))).getImplement(orderInterfaces);
         } else {
             // INPUT valueCLass
             action = lm.addInputAProp((DataClass) valueClass, targetProp, false, SetFact.EMPTYORDER(),
-                    isDefaultWYSInput(valueClass) ? new InputListEntity<>(this, MapFact.EMPTYREV()) : null, null, ListFact.EMPTY()).getImplement();
+                    isDefaultWYSInput(valueClass) ? new InputListEntity<>(this, MapFact.EMPTYREV()) : null, defaultChangeEventScope, null, ListFact.EMPTY()).getImplement();
         }
 
         return PropertyFact.createRequestAction(interfaces,

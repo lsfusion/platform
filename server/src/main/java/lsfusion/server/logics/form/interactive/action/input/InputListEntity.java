@@ -19,6 +19,7 @@ import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
+import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.property.JoinProperty;
 import lsfusion.server.logics.property.Property;
@@ -95,7 +96,7 @@ public class InputListEntity<P extends PropertyInterface, V extends PropertyInte
         return mapValues.innerCrossJoin(property.getInterfaceClasses(ClassType.wherePolicy));
     }
 
-    public <X extends PropertyInterface> InputContextAction<?, V> getNewEditAction(BaseLogicsModule baseLM, ConcreteCustomClass baseClass, LP targetProp) {
+    public <X extends PropertyInterface> InputContextAction<?, V> getNewEditAction(BaseLogicsModule baseLM, ConcreteCustomClass baseClass, LP targetProp, FormSessionScope scope) {
         LP<P> lp = new LP<>(property);
         ImOrderSet<P> listInterfaces = lp.listInterfaces;
         P singleInterface = singleInterface();
@@ -103,7 +104,7 @@ public class InputListEntity<P extends PropertyInterface, V extends PropertyInte
         int contextParams = property.interfaces.size();
         int singleIndex = listInterfaces.indexOf(singleInterface) + 1; // object interface, have to be replaced with newIndex, and in set action it's gonna be a string interface
 
-        LA<X> newEdit = (LA<X>) baseLM.addNewEditAction(baseClass, targetProp, contextParams,
+        LA<X> newEdit = (LA<X>) baseLM.addNewEditAction(baseClass, targetProp, contextParams, scope,
                 BaseUtils.add(BaseUtils.add(lp, ActionOrPropertyUtils.getIntParams(lp, singleIndex, contextParams + 1)), // remapping single interface to the new object
                         singleIndex)); // replacing property with the string
 

@@ -17,6 +17,7 @@ import lsfusion.server.data.sql.lambda.SQLCallable;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapChange;
+import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
 import lsfusion.server.logics.form.interactive.action.input.InputValueList;
 import lsfusion.server.logics.form.interactive.instance.CellInstance;
@@ -51,6 +52,10 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         if(actionSID.equals(ServerResponse.FILTER)) {
             PropertyObjectEntity<P> drawProperty = (PropertyObjectEntity<P>) entity.getDrawProperty();
             list = drawProperty.getFilterInputList(entity.getToDraw(formInstance.entity));
+            if(list == null)
+                return null;
+            if(entity.defaultChangeEventScope == FormSessionScope.NEWSESSION)
+                list = list.newSession();
             mapEntity = drawProperty;
         } else {
             ActionObjectEntity<P> eventAction = (ActionObjectEntity<P>) entity.getEventAction(actionSID, formInstance.entity);

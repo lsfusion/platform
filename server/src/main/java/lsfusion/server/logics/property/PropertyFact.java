@@ -39,6 +39,7 @@ import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.ObjectClass;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.form.interactive.action.change.CheckCanBeChangedAction;
+import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.action.input.PushRequestAction;
 import lsfusion.server.logics.form.interactive.action.input.RequestAction;
 import lsfusion.server.logics.property.cases.ActionCase;
@@ -893,6 +894,11 @@ public class PropertyFact {
         ImOrderSet<L> listInterfaces = innerInterfaces.toOrderSet();
         NewSessionAction aggAction = new NewSessionAction(LocalizedString.NONAME, listInterfaces, action, singleApply, newSQL, migrateSessionProperties, isNested);
         return aggAction.getImplement(listInterfaces);
+    }
+    public static <T extends PropertyInterface> ActionMapImplement<?, T> createSessionScopeAction(FormSessionScope scope, ImSet<T> innerInterfaces, ActionMapImplement<?, T> action, FunctionSet<SessionDataProperty> migrateSessionProps) {
+        if(scope.isNewSession())
+            return createNewSessionAction(innerInterfaces, action, false, false, migrateSessionProps, scope.isNestedSession());
+        return action;
     }
     public static <L extends PropertyInterface, P extends PropertyInterface> ActionMapImplement<?, L> createNewThreadAction(ImSet<L> innerInterfaces, ActionMapImplement<?, L> action, PropertyInterfaceImplement<L> period, PropertyInterfaceImplement<L> delay, PropertyInterfaceImplement<L> connection) {
         ImOrderSet<L> listInterfaces = innerInterfaces.toOrderSet();

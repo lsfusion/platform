@@ -22,20 +22,15 @@ import lsfusion.server.base.version.interfaces.NFOrderSet;
 import lsfusion.server.base.version.interfaces.NFProperty;
 import lsfusion.server.data.expr.join.classes.IsClassField;
 import lsfusion.server.data.expr.join.classes.ObjectClassField;
-import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
-import lsfusion.server.data.value.DataObject;
-import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.action.LA;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.change.ChangeClassAction;
 import lsfusion.server.logics.action.flow.CaseAction;
-import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.session.changed.IncrementType;
-import lsfusion.server.logics.classes.ConcreteClass;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.user.set.OrObjectClassSet;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
@@ -60,7 +55,6 @@ import lsfusion.server.physics.dev.id.name.CanonicalNameUtils;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.sql.SQLException;
 
 public abstract class CustomClass extends ImmutableObject implements ObjectClass, ValueClass {
 
@@ -157,7 +151,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
 
     @Override
     public LA getDefaultOpenAction(BaseLogicsModule baseLM) {
-        return baseLM.getNewSessionFormEdit();
+        return baseLM.getFormEditObject();
     }
 
     @Override

@@ -38,6 +38,7 @@ import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.event.ApplyGlobalEvent;
 import lsfusion.server.logics.event.Link;
 import lsfusion.server.logics.event.LinkType;
+import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.ValueClassWrapper;
@@ -273,20 +274,20 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
     }
 
     // actually protected (friend of PropertyMapImplement)
-    public ActionMapImplement<?, T> getEventAction(String eventActionSID, ImList<Property> viewProperties) {
+    public ActionMapImplement<?, T> getEventAction(String eventActionSID, FormSessionScope defaultChangeEventScope, ImList<Property> viewProperties) {
         ActionMapImplement<?, T> eventAction = getExplicitEventAction(eventActionSID);
         if (eventAction != null)
             return eventAction;
 
         assert CHANGE.equals(eventActionSID) || EDIT_OBJECT.equals(eventActionSID); // explicit event actions can be also CONTEXTMENU
-        return getDefaultEventAction(eventActionSID, viewProperties);
+        return getDefaultEventAction(eventActionSID, defaultChangeEventScope, viewProperties);
     }
 
     public ActionMapImplement<?, T> getExplicitEventAction(String eventActionSID) {
         return getEventActions().get(eventActionSID);
     }
 
-    public abstract ActionMapImplement<?, T> getDefaultEventAction(String eventActionSID, ImList<Property> viewProperties);
+    public abstract ActionMapImplement<?, T> getDefaultEventAction(String eventActionSID, FormSessionScope defaultChangeEventScope, ImList<Property> viewProperties);
 
     public boolean checkEquals() {
         return this instanceof Property;

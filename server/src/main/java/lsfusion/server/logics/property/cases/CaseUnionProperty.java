@@ -28,6 +28,7 @@ import lsfusion.server.logics.action.session.change.*;
 import lsfusion.server.logics.action.session.changed.OldProperty;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
+import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.cases.graph.Graph;
 import lsfusion.server.logics.property.classes.infer.*;
@@ -257,13 +258,13 @@ public class CaseUnionProperty extends IncrementUnionProperty {
 
     @Override
     @IdentityStrongLazy // STRONG пришлось поставить из-за использования в политике безопасности
-    public ActionMapImplement<?, Interface> getDefaultEventAction(String eventActionSID, ImList<Property> viewProperties) {
+    public ActionMapImplement<?, Interface> getDefaultEventAction(String eventActionSID, FormSessionScope defaultChangeEventScope, ImList<Property> viewProperties) {
         // нужно создать List - if(where[classes]) {getEditAction(); return;}
         int lastNotNullAction = 0;
         ImList<CalcCase<Interface>> cases = getCases();
         MList<ActionCase<Interface>> mActionCases = ListFact.mList();
         for(CalcCase<Interface> propCase : cases) {
-            ActionMapImplement<?, Interface> eventAction = propCase.implement.mapEventAction(eventActionSID, viewProperties);
+            ActionMapImplement<?, Interface> eventAction = propCase.implement.mapEventAction(eventActionSID, defaultChangeEventScope, viewProperties);
             if(isExclusive) {
                 if(eventAction == null)
                     continue;                                
@@ -426,7 +427,7 @@ public class CaseUnionProperty extends IncrementUnionProperty {
         if(isAbstract())
             return new Inferred<>(classValueWhere.getCommonExClasses(interfaces)); // чтобы рекурсии не было
         
-        return op(getCases().mapListValues((Function<CalcCase<Interface>, Inferred<Interface>>) aCase -> aCase.where.mapInferInterfaceClasses(ExClassSet.notNull(commonValue), inferType).and(aCase.implement.mapInferInterfaceClasses(commonValue, inferType), inferType)), true, inferType);
+        return op(getCases().mapListValues(aCase -> aCase.where.mapInferInterfaceClasses(ExClassSet.notNull(commonValue), inferType).and(aCase.implement.mapInferInterfaceClasses(commonValue, inferType), inferType)), true, inferType);
     }
 
     @Override

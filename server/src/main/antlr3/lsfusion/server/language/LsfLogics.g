@@ -3791,7 +3791,7 @@ inputActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams ac
 }
 @after {
 	if (inMainParseState()) {
-		$action = self.addScriptedInputAProp($in.valueClass, $in.initValue, outProp, $dDB.action, $dDB.elseAction, context, newContext, assign, constraintFilter, changeProp, listProp, whereProp, assignDebugPoint);
+		$action = self.addScriptedInputAProp($in.valueClass, $in.initValue, outProp, $dDB.action, $dDB.elseAction, context, newContext, assign, constraintFilter, changeProp, listProp, whereProp, assignDebugPoint, $fs.result);
 	}
 }
 	:	'INPUT'
@@ -3815,6 +3815,7 @@ inputActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams ac
         }
 	    ('LIST' listExpr=propertyExpression[newListContext, listDynamic] { listProp = $listExpr.property; })?
         ('WHERE' whereExpr=propertyExpression[newListContext, listDynamic] { whereProp = $whereExpr.property; })?
+        fs=formSessionScopeClause?
 //		('TO' pUsage=propertyUsage { outProp = $pUsage.propUsage; } )?
         dDB=doInputBody[context, newContext]
 	;

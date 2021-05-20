@@ -6,6 +6,7 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
 import lsfusion.server.logics.form.interactive.action.async.AsyncExec;
 import lsfusion.server.logics.form.struct.FormEntity;
+import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -13,7 +14,7 @@ import lsfusion.server.logics.property.oraction.PropertyInterface;
 public abstract class AsyncMapExec<T extends PropertyInterface> extends AsyncMapEventExec<T> {
 
     public AsyncExec map() {
-        return (AsyncExec) map(MapFact.EMPTYREV(), null);
+        return (AsyncExec) map(MapFact.EMPTYREV(), null, null);
     }
 
     private final static AsyncMapExec RECURSIVE = new AsyncMapExec<PropertyInterface>() {
@@ -39,7 +40,7 @@ public abstract class AsyncMapExec<T extends PropertyInterface> extends AsyncMap
         }
 
         @Override
-        public AsyncEventExec map(ImRevMap<PropertyInterface, ObjectEntity> mapObjects, FormEntity form) {
+        public AsyncEventExec map(ImRevMap<PropertyInterface, ObjectEntity> mapObjects, FormEntity form, GroupObjectEntity toDraw) {
             throw new UnsupportedOperationException();
         }
 

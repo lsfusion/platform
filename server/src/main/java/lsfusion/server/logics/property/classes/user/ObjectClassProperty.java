@@ -20,6 +20,7 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.user.BaseClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.event.ChangeEvent;
+import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.property.CalcType;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.SimpleIncrementProperty;
@@ -125,7 +126,7 @@ public class ObjectClassProperty extends SimpleIncrementProperty<ClassPropertyIn
 
     @Override
     @IdentityStrongLazy // STRONG пришлось поставить из-за использования в политике безопасности
-    public ActionMapImplement<?, ClassPropertyInterface> getDefaultEventAction(String eventActionSID, ImList<Property> viewProperties) {
+    public ActionMapImplement<?, ClassPropertyInterface> getDefaultEventAction(String eventActionSID, FormSessionScope defaultChangeEventScope, ImList<Property> viewProperties) {
         if(eventActionSID.equals(ServerResponse.EDIT_OBJECT))
             return null;
         return ChangeClassAction.create(null, false, baseClass).getImplement(SetFact.singletonOrder(getInterface()));

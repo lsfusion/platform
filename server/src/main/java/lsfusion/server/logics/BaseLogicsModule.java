@@ -328,8 +328,12 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     }
 
     @IdentityInstanceLazy
-    public LA<?> getNewSessionFormEdit() {
-        return addSessionScopeAProp(FormSessionScope.NEWSESSION, getFormEdit());
+    public LA<?> getFormEditObject() {
+        try {
+            return findAction("formEditObject[Object]");
+        } catch (ScriptingErrorLog.SemanticErrorException e) {
+            throw Throwables.propagate(e);
+        }
     }
 
     @IdentityLazy
@@ -920,7 +924,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
     @IdentityStrongLazy
     public LA getFormNavigatorAction(FormEntity form) {
-        LA<?> result = addIFAProp(LocalizedString.NONAME, form, SetFact.EMPTYORDER(), false, WindowFormType.DOCKED, true);
+        LA<?> result = addIFAProp(null, LocalizedString.NONAME, form, SetFact.EMPTYORDER(), FormSessionScope.OLDSESSION, false, WindowFormType.DOCKED, true);
 
         if(form.getCanonicalName() != null) {
             String name = "_NAVIGATORFORM" + getFormPrefix(form);
@@ -931,11 +935,11 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     }
 
     @IdentityStrongLazy
-    public LA getAddFormAction(CustomClass cls, FormEntity formEntity, ObjectEntity contextObject, FormSessionScope scope) {
-        LA<?> result = addNewEditAction(cls, contextObject, scope);
+    public LA getAddFormAction(CustomClass cls, FormEntity formEntity, ObjectEntity contextObject) {
+        LA<?> result = addNewEditAction(cls, contextObject);
 
         if(formEntity.getCanonicalName() != null) {
-            String name = "_ADDFORM" + scope + getFormPrefix(formEntity) + getObjectPrefix(contextObject) + getClassPrefix(cls); // issue #47
+            String name = "_ADDFORMNEWSESSION" + getFormPrefix(formEntity) + getObjectPrefix(contextObject) + getClassPrefix(cls); // issue #47
             makeActionPublic(result, name, new ArrayList<>());
         }
 
@@ -943,20 +947,20 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     }
 
     @IdentityStrongLazy
-    public LA getEditFormAction(CustomClass cls, FormSessionScope scope) {
-        LA<?> result = addEditFormAction(scope, cls);
+    public LA getEditFormAction(CustomClass cls) {
+        LA<?> result = addEditFormAction(cls);
 
-        String name = "_EDITFORM" + scope + getClassPrefix(cls); // issue #47
+        String name = "_EDITFORMNEWSESSION" + getClassPrefix(cls); // issue #47
         makeActionPublic(result, name, cls.getResolveSet());
 
         return result;
     }
 
     @IdentityStrongLazy
-    public LA getDeleteAction(CustomClass cls, FormSessionScope scope) {
-        LA res = addDeleteAction(cls, scope);
+    public LA getDeleteAction(CustomClass cls) {
+        LA res = addDeleteAction(cls);
 
-        String name = "_DELETE" + (scope == FormSessionScope.OLDSESSION ? "SESSION" : (scope == FormSessionScope.NESTEDSESSION ? scope : ""));
+        String name = "_DELETE";
         makeActionPublic(res, name, cls.getResolveSet());
         return res;
     }

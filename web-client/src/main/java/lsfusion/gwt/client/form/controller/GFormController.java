@@ -2068,6 +2068,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
         property.getCellRenderer().renderStatic(element, renderContext);
     }
+    // "external" update - paste + server update edit value
     public void update(EditContext editContext, Object value) {
         editContext.setValue(value);
 

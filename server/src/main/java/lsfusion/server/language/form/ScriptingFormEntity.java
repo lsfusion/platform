@@ -50,6 +50,7 @@ import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
+import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
@@ -372,16 +373,16 @@ public class ScriptingFormEntity {
                 } else if (propertyName.equals("NEWEDIT") || propertyName.equals("NEW")) {
                     ObjectEntity obj = getSingleCustomClassMappingObject(propertyName, mapping);
                     CustomClass explicitClass = getSingleAddClass(pUsage);
-                    property = LM.getAddFormAction(form, obj, explicitClass, scope);
+                    property = LM.getAddFormAction(form, obj, explicitClass);
                     objects = SetFact.EMPTYORDER();
                 } else if (propertyName.equals("EDIT")) {
                     ObjectEntity obj = getSingleCustomClassMappingObject(propertyName, mapping);
                     CustomClass explicitClass = getSingleAddClass(pUsage);
-                    property = LM.getEditFormAction(obj, explicitClass, scope, version);
+                    property = LM.getEditFormAction(obj, explicitClass);
                     objects = SetFact.singletonOrder(obj);
                 } else if (propertyName.equals("DELETE")) {
                     ObjectEntity obj = getSingleCustomClassMappingObject(propertyName, mapping);
-                    property = LM.getDeleteAction(obj, scope);
+                    property = LM.getDeleteAction(obj);
                     objects = SetFact.singletonOrder(obj);
                     forceIntegrationSID = propertyName;
                 } else if (propertyName.equals("INTERVAL")) {
@@ -420,6 +421,11 @@ public class ScriptingFormEntity {
 
             if(forceChangeAction != null)
                 propertyDraw.setEventAction(ServerResponse.CHANGE, forceChangeAction);
+
+            if(scope != OLDSESSION && !(pDrawUsage instanceof ScriptingLogicsModule.FormPredefinedUsage) && !propertyOptions.getEventActions().containsKey(ServerResponse.CHANGE))
+                ServerLoggers.startLogger.info("WARNING! Now default change event action will work in new session " + propertyDraw);
+
+            propertyDraw.defaultChangeEventScope = scope;
 
             if(forceIntegrationSID != null) // for NEW, DELETE will set integration SID for js integration
                 propertyDraw.setIntegrationSID(forceIntegrationSID);

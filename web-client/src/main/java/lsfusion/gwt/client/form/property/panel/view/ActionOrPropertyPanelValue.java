@@ -15,8 +15,8 @@ import static lsfusion.gwt.client.base.view.ColorUtils.getDisplayColor;
 
 public class ActionOrPropertyPanelValue extends ActionOrPropertyValue implements ExecuteEditContext {
 
-    public ActionOrPropertyPanelValue(GPropertyDraw property, GGroupObjectValue columnKey, GFormController form) {
-        super(property, columnKey, form);
+    public ActionOrPropertyPanelValue(GPropertyDraw property, GGroupObjectValue columnKey, GFormController form, ActionOrPropertyValueController controller) {
+        super(property, columnKey, form, controller);
 
         finalizeInit();
     }

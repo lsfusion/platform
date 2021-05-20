@@ -33,6 +33,7 @@ import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.form.interactive.action.change.ActionObjectSelector;
+import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.action.input.InputContextProperty;
 import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
 import lsfusion.server.logics.form.interactive.controller.init.InstanceFactory;
@@ -228,7 +229,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public AsyncEventExec getAsyncEventExec(FormEntity form, SecurityPolicy policy, String actionSID, boolean externalChange) {
         ActionObjectEntity<?> changeAction = getEventAction(actionSID, form, policy);
         if (changeAction != null) {
-            return changeAction.getAsyncEventExec(form, optimisticAsync || externalChange);
+            return changeAction.getAsyncEventExec(form, getToDraw(form), optimisticAsync || externalChange);
         }
         return null;
     }
@@ -286,18 +287,18 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         ActionOrProperty<P> eventProperty = getEventProperty();
         ImRevMap<P, ObjectEntity> eventMapping = getEditMapping();
 
+        ActionMapImplement<?, P> eventActionImplement = eventProperty.getExplicitEventAction(actionId);
+        if(eventActionImplement != null)
+            return eventActionImplement.mapObjects(eventMapping);
+
         // default implementations for group change and change wys
         if (GROUP_CHANGE.equals(actionId)) {
-            ActionMapImplement<?, P> eventActionImplement = eventProperty.getExplicitEventAction(actionId);
-            if(eventActionImplement != null)
-                return eventActionImplement.mapObjects(eventMapping);
-
             // if there is no explicit default handler, then generate one
             ActionObjectEntity<?> eventAction = getEventAction(CHANGE, form);
             if (eventAction != null)
                 return eventAction.getGroupChange(getToDraw(form));
         } else { // default handler
-            ActionMapImplement<?, P> eventActionImplement = eventProperty.getEventAction(actionId, ListFact.EMPTY());
+            eventActionImplement = eventProperty.getDefaultEventAction(actionId, actionId.equals(CHANGE) ? defaultChangeEventScope : null, ListFact.EMPTY());
             if (eventActionImplement != null)
                 return eventActionImplement.mapObjects(eventMapping);
         }
@@ -334,7 +335,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
             ImOrderSet<PropertyInterface> orderUsedInterfaces = usedInterfaces.toOrderSet();
 
             // first parameter - object, other used orderInterfaces
-            LA<?> dialogInput = lm.addDialogInputAProp(customClass, targetProp, orderUsedInterfaces, list, listMapParamExprs, objectEntity -> SetFact.singleton(filter.getFilter(objectEntity)));
+            LA<?> dialogInput = lm.addDialogInputAProp(customClass, targetProp, defaultChangeEventScope, orderUsedInterfaces, list, listMapParamExprs, objectEntity -> SetFact.singleton(filter.getFilter(objectEntity)));
 
             ImOrderSet<PropertyInterface> allOrderUsedInterfaces = SetFact.addOrderExcl(SetFact.singletonOrder(objectInterface), orderUsedInterfaces);
             return PropertyFact.createRequestAction(allOrderUsedInterfaces.getSet(), dialogInput.getImplement(allOrderUsedInterfaces),
@@ -375,6 +376,8 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         }
         eventActions.put(actionSID, eventAction);
     }
+
+    public FormSessionScope defaultChangeEventScope = FormSessionScope.OLDSESSION;
 
     private ActionOrProperty<P> getEventProperty() {
         return propertyObject.property;

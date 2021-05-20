@@ -11,6 +11,7 @@ import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.base.view.ResizableComplexPanel;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
+import lsfusion.gwt.client.form.object.panel.controller.GPropertyPanelController;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.getOffsetSize;
@@ -23,8 +24,8 @@ public class PropertyPanelRenderer extends PanelRenderer {
     
     private final boolean vertical;
 
-    public PropertyPanelRenderer(final GFormController form, GPropertyDraw property, GGroupObjectValue columnKey) {
-        super(form, property, columnKey);
+    public PropertyPanelRenderer(final GFormController form, ActionOrPropertyValueController controller, GPropertyDraw property, GGroupObjectValue columnKey) {
+        super(form, controller, property, columnKey);
 
         vertical = property.panelCaptionVertical;
 
