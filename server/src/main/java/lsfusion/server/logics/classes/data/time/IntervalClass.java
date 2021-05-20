@@ -15,7 +15,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 
 import static lsfusion.base.DateConverter.formatInterval;
-import static lsfusion.base.DateConverter.parseIntervalString;
+import static lsfusion.base.DateConverter.parseInterval;
 
 public abstract class IntervalClass extends DataClass<BigDecimal> {
 
@@ -87,7 +87,7 @@ public abstract class IntervalClass extends DataClass<BigDecimal> {
 
     @Override
     public BigDecimal parseString(String s) throws ParseException {
-        return (BigDecimal) parseIntervalString(s, this::parse);
+        return (BigDecimal) parseInterval(s, this::parse);
     }
 
     @Override

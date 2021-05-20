@@ -3,9 +3,7 @@ package lsfusion.client.classes.data;
 import lsfusion.client.view.MainFrame;
 import lsfusion.interop.classes.DataType;
 
-import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 
 import static lsfusion.base.DateConverter.*;
 import static lsfusion.base.DateConverter.epochToLocalDateTime;
@@ -26,11 +24,11 @@ public class ClientDateTimeIntervalClass extends ClientIntervalClass {
 
     @Override
     protected Long parse(String date) {
-        return localDateTimeToUTCEpoch(LocalDateTime.parse(date, DateTimeFormatter.ofPattern(((SimpleDateFormat) MainFrame.dateTimeFormat).toPattern())));
+        return localDateTimeToUTCEpoch(LocalDateTime.parse(date, MainFrame.dateTimeFormatter));
     }
 
     @Override
     protected String format(Long epoch) {
-        return MainFrame.dateTimeFormat.format(localDateTimeToSqlTimestamp(epochToLocalDateTime(epoch)));
+        return epochToLocalDateTime(epoch).format(MainFrame.dateTimeFormatter);
     }
 }

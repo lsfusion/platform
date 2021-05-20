@@ -50,6 +50,7 @@ import java.math.BigDecimal;
 import java.rmi.RemoteException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.Callable;
@@ -167,6 +168,9 @@ public abstract class MainFrame extends JFrame {
     public static DateFormat dateFormat;
     public static DateFormat timeFormat;
     public static DateFormat dateTimeFormat;
+    public static DateTimeFormatter dateFormatter;
+    public static DateTimeFormatter timeFormatter;
+    public static DateTimeFormatter dateTimeFormatter;
     public static Date wideFormattableDate;
     public static Date wideFormattableDateTime;
     public static BigDecimal wideFormattableDateTimeInterval;
@@ -185,15 +189,18 @@ public abstract class MainFrame extends JFrame {
         }
 
         //dateFormat = DateFormat.getDateInstance(DateFormat.SHORT);
+        dateFormatter = DateTimeFormatter.ofPattern(((SimpleDateFormat) MainFrame.dateFormat).toPattern());
         dateFormat = new SimpleDateFormat(localePreferences.dateFormat);
         if (twoDigitYearStartDate != null) {
             ((SimpleDateFormat) dateFormat).set2DigitYearStart(twoDigitYearStartDate);
         }
 
         //timeFormat = DateFormat.getTimeInstance(DateFormat.MEDIUM);
+        timeFormatter = DateTimeFormatter.ofPattern(((SimpleDateFormat) MainFrame.timeFormat).toPattern());
         timeFormat = new SimpleDateFormat(localePreferences.timeFormat);
 
         //dateTimeFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM);
+        dateTimeFormatter = DateTimeFormatter.ofPattern(((SimpleDateFormat) MainFrame.dateTimeFormat).toPattern());
         dateTimeFormat = new SimpleDateFormat(localePreferences.dateFormat + " " + localePreferences.timeFormat);
         if (twoDigitYearStartDate != null) {
             ((SimpleDateFormat) dateTimeFormat).set2DigitYearStart(twoDigitYearStartDate);

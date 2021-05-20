@@ -6,14 +6,11 @@ import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
 import lsfusion.client.view.MainFrame;
 import lsfusion.interop.classes.DataType;
 
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 
 import static lsfusion.base.DateConverter.epochToLocalDateTime;
 import static lsfusion.base.DateConverter.localDateTimeToUTCEpoch;
-import static lsfusion.base.TimeConverter.localTimeToSqlTime;
 
 public class ClientTimeIntervalClass extends ClientIntervalClass {
 
@@ -36,11 +33,11 @@ public class ClientTimeIntervalClass extends ClientIntervalClass {
 
     @Override
     protected Long parse(String date) {
-        return localDateTimeToUTCEpoch(LocalTime.parse(date, DateTimeFormatter.ofPattern(((SimpleDateFormat) MainFrame.timeFormat).toPattern())).atDate(LocalDate.now()));
+        return localDateTimeToUTCEpoch(LocalTime.parse(date, MainFrame.timeFormatter).atDate(LocalDate.now()));
     }
 
     @Override
     protected String format(Long epoch) {
-        return MainFrame.timeFormat.format(localTimeToSqlTime(epochToLocalDateTime(epoch).toLocalTime()));
+        return epochToLocalDateTime(epoch).toLocalTime().format(MainFrame.timeFormatter);
     }
 }

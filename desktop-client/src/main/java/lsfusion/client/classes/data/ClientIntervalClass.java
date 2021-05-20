@@ -17,7 +17,7 @@ import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 
 import static lsfusion.base.DateConverter.formatInterval;
-import static lsfusion.base.DateConverter.parseIntervalString;
+import static lsfusion.base.DateConverter.parseInterval;
 
 public abstract class ClientIntervalClass extends ClientFormatClass<SimpleDateFormat> implements ClientTypeClass {
 
@@ -47,7 +47,7 @@ public abstract class ClientIntervalClass extends ClientFormatClass<SimpleDateFo
 
     @Override
     public Object parseString(String s) throws ParseException {
-        return parseIntervalString(s, this::parse);
+        return parseInterval(s, this::parse);
     }
 
     @Override

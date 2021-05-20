@@ -38,6 +38,6 @@ public class DateTimeIntervalClass extends IntervalClass {
 
     @Override
     protected String format(Long epoch) {
-        return epochToLocalDateTime(epoch).format(DATE_FORMATTER);
+        return epochToLocalDateTime(epoch).format(DATE_TIME_FORMATTER);
     }
 }
