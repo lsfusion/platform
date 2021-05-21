@@ -6,7 +6,6 @@ import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
-import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.form.event.GBindingEnv;
 import lsfusion.gwt.client.form.event.GKeyInputEvent;
@@ -17,7 +16,6 @@ import lsfusion.gwt.client.form.filter.user.controller.GUserFilters;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.view.StyleDefaults;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -28,17 +26,19 @@ import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
 public class GFilterView extends FlexPanel implements GFilterConditionView.UIHandler {
     private static final ClientMessages messages = ClientMessages.Instance.get();
     private static final String ADD_ICON_PATH = "filtadd.png";
-    private static final String APPLY_ICON_PATH = "filtapply.png";
     private static final String RESET_ICON_PATH = "filtreset.png";
 
     private FlexPanel filterContainer;
 
     private GToolbarButton addConditionButton;
-    private GToolbarButton applyButton;
     private GToolbarButton resetConditionsButton;
-    private Widget buttonsReplacement;
+
+//    private final int BUTTON_WIDTH = StyleDefaults.COMPONENT_HEIGHT + 4; // 4 - margin
+//    private Widget buttonsReplacement; // to prevent container from changing size on showing tools
 
     private GUserFilters controller;
+    private GFilter filterComponent;
+    private boolean initialized = false;
 
     private Map<GPropertyFilter, GFilterConditionView> conditionViews = new LinkedHashMap<>();
 
@@ -46,6 +46,7 @@ public class GFilterView extends FlexPanel implements GFilterConditionView.UIHan
 
     public GFilterView(GUserFilters iController, GFilter filter) {
         controller = iController;
+        filterComponent = filter;
 
         FlexPanel mainContainer = new FlexPanel();
         add(mainContainer);
@@ -69,16 +70,6 @@ public class GFilterView extends FlexPanel implements GFilterConditionView.UIHan
         addConditionButton.setVisible(toolsVisible);
         buttonsPanel.add(addConditionButton);
 
-        applyButton = new GToolbarButton(APPLY_ICON_PATH, messages.formQueriesFilterApply()) {
-            @Override
-            public ClickHandler getClickHandler() {
-                return event -> applyFilter();
-            }
-        };
-        applyButton.addStyleName("userFilterButton");
-        applyButton.setVisible(toolsVisible);
-        buttonsPanel.add(applyButton);
-
         resetConditionsButton = new GToolbarButton(RESET_ICON_PATH, messages.formQueriesFilterResetConditions()) {
             @Override
             public ClickHandler getClickHandler() {
@@ -89,15 +80,11 @@ public class GFilterView extends FlexPanel implements GFilterConditionView.UIHan
         resetConditionsButton.setVisible(toolsVisible);
         buttonsPanel.add(resetConditionsButton);
 
-        buttonsReplacement = GwtClientUtils.createHorizontalStrut((StyleDefaults.COMPONENT_HEIGHT + 4) * 3); // to prevent container from changing size on showing tools, 4 - margin
-        buttonsReplacement.setVisible(!toolsVisible);
-        buttonsPanel.add(buttonsReplacement);
+//        buttonsReplacement = GwtClientUtils.createHorizontalStrut(BUTTON_WIDTH * 2); // 2 for 'add' and 'clear'
+//        buttonsReplacement.setVisible(!toolsVisible);
+//        buttonsPanel.add(buttonsReplacement);
         
         mainContainer.add(buttonsPanel);
-
-        for (GPropertyDraw property : filter.properties) {
-            addCondition(property);
-        }
     }
 
     // similar to GFormController.processBinding
@@ -141,7 +128,9 @@ public class GFilterView extends FlexPanel implements GFilterConditionView.UIHan
             GFilterConditionView conditionView = new GFilterConditionView(condition, controller.getLogicsSupplier(), this, toolsVisible);
             conditionViews.put(condition, conditionView);
             filterContainer.add(conditionView);
-            updateJunctionVisibility();
+//            updateButtonsReplacementWidth();
+            
+            updateConditionsLastState();
             focusLastValue();
 
             if (keyEvent != null) {
@@ -150,7 +139,8 @@ public class GFilterView extends FlexPanel implements GFilterConditionView.UIHan
         }
     }
 
-    public void removeCondition(GPropertyFilter condition) {
+    @Override
+    public void conditionRemoved(GPropertyFilter condition) {
         GFilterConditionView view = conditionViews.get(condition);
         
         GFilterConditionView nextViewToFocus = null;
@@ -162,11 +152,18 @@ public class GFilterView extends FlexPanel implements GFilterConditionView.UIHan
         
         conditionViews.remove(condition);
         filterContainer.remove(view);
+//        updateButtonsReplacementWidth();
         
+        updateConditionsLastState();
         if (nextViewToFocus != null) {
             nextViewToFocus.focusOnValue();
         }
     }
+    
+//    private void updateButtonsReplacementWidth() {
+//        // 2 for 'add' and 'clear' + 1 for each condition ('remove')
+//        buttonsReplacement.setWidth(BUTTON_WIDTH * (2 + conditionViews.size()) + "px");
+//    }
     
     public boolean isToolsVisible() {
         return toolsVisible;
@@ -175,14 +172,13 @@ public class GFilterView extends FlexPanel implements GFilterConditionView.UIHan
     public void toggleToolsVisible() {
         toolsVisible = !toolsVisible;
         for (GFilterConditionView view : conditionViews.values()) {
-            view.setSettingsVisible(toolsVisible);
+            view.setToolsVisible(toolsVisible);
         }
         
         addConditionButton.setVisible(toolsVisible);
-        applyButton.setVisible(toolsVisible);
         resetConditionsButton.setVisible(toolsVisible);
         
-        buttonsReplacement.setVisible(!toolsVisible);
+//        buttonsReplacement.setVisible(!toolsVisible);
     }
 
     @Override
@@ -193,17 +189,11 @@ public class GFilterView extends FlexPanel implements GFilterConditionView.UIHan
                 widget);
     }
 
-    @Override
-    public void conditionRemoved(GPropertyFilter condition) {
-        removeCondition(condition);
-        updateJunctionVisibility();
-    }
-    
-    private void updateJunctionVisibility() {
+    private void updateConditionsLastState() {
         int i = 0;
         for (GFilterConditionView cView : conditionViews.values()) {
             i++;
-            cView.setJunctionVisible(i < conditionViews.size());
+            cView.setLast(i == conditionViews.size());
         }
     }
 
@@ -220,5 +210,14 @@ public class GFilterView extends FlexPanel implements GFilterConditionView.UIHan
 
     public boolean hasConditions() {
         return !conditionViews.isEmpty();
+    }
+    
+    public void update() {
+        if (!initialized) {
+            for (GPropertyDraw property : filterComponent.properties) {
+                addCondition(property);
+            }
+            initialized = true;
+        }
     }
 }

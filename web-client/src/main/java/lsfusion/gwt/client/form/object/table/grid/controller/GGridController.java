@@ -538,6 +538,7 @@ public class GGridController extends GAbstractTableController {
             formController.setFiltersVisible(groupObject, isVisible);
             
             if (userFilters != null) {
+                userFilters.update();
                 userFilters.setVisible(isVisible);
             }
         }

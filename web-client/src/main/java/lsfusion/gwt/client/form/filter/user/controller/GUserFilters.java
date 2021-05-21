@@ -147,4 +147,8 @@ public abstract class GUserFilters {
     public void setVisible(boolean visible) {
         getView().setVisible(visible);
     }
+
+    public void update() {
+        filterView.update();
+    }
 }

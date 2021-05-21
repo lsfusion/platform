@@ -121,6 +121,11 @@ public class GTreeGroupController extends GAbstractTableController {
         for (GGroupObject groupObject : treeGroup.groups)
             formController.setFiltersVisible(groupObject, isTreeVisible);
 
+        if (userFilters != null) {
+            userFilters.update();
+            userFilters.setVisible(isTreeVisible);
+        }
+        
         if(expandTreeButton != null) {
             expandTreeButton.update(this);
         }
