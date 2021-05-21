@@ -50,7 +50,7 @@ public abstract class ExportHierarchicalAction<T extends Node<T>, O extends Obje
                                     ImList<O> objectsToSet,
                                     ImList<Boolean> nulls,
                                     ImOrderSet<PropertyInterface> orderContextInterfaces,
-                                    ImSet<ContextFilterSelector<?, PropertyInterface, O>> contextFilters,
+                                    ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters,
                                     FormIntegrationType staticType,
                                     LP exportFile,
                                     Integer selectTop,

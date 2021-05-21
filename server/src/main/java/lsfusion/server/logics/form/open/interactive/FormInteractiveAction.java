@@ -14,7 +14,6 @@ import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.form.interactive.FormCloseType;
 import lsfusion.server.logics.form.interactive.ManageSessionType;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
-import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapExec;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapOpenForm;
 import lsfusion.server.logics.form.interactive.action.input.RequestResult;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
@@ -26,7 +25,6 @@ import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.filter.ContextFilterInstance;
 import lsfusion.server.logics.form.struct.filter.ContextFilterSelector;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
-import lsfusion.server.logics.form.interactive.action.async.AsyncOpenForm;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -81,7 +79,7 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
                                                                FormSelector<O> form,
                                                                final ImList<O> objectsToSet, final ImList<Boolean> nulls,
                                                                ImList<O> inputObjects, ImList<LP> inputProps, ImList<Boolean> inputNulls,
-                                                               ImOrderSet<C> orderInterfaces, ImSet<ContextFilterSelector<?, C, O>> contextFilters,
+                                                               ImOrderSet<C> orderInterfaces, ImSet<ContextFilterSelector<C, O>> contextFilters,
                                                                Consumer<ImRevMap<C, ClassPropertyInterface>> mapContext,
                                                                ManageSessionType manageSession,
                                                                Boolean noCancel,

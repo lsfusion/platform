@@ -36,6 +36,11 @@ public class OutFormSelector<P extends PropertyInterface> implements FormSelecto
     }
 
     @Override
+    public boolean isSingleGroup(ObjectSelector object) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public FormEntity getNFStaticForm() {
         return null;
     }

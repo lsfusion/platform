@@ -28,7 +28,7 @@ import static lsfusion.base.BaseUtils.nvl;
 public class ExportXMLAction<O extends ObjectSelector> extends ExportHierarchicalAction<XMLNode, O> {
     
     public ExportXMLAction(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls,
-                           ImOrderSet<PropertyInterface> orderContextInterfaces, ImSet<ContextFilterSelector<?, PropertyInterface, O>> contextFilters,
+                           ImOrderSet<PropertyInterface> orderContextInterfaces, ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters,
                            FormIntegrationType staticType, LP exportFile, Integer selectTop, String charset, ValueClass root, ValueClass tag) {
         super(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, exportFile, selectTop, charset, root, tag);
     }

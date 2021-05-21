@@ -34,6 +34,11 @@ public class ClassFormSelector implements FormSelector<ClassFormSelector.Virtual
         return cls;
     }
 
+    @Override
+    public boolean isSingleGroup(VirtualObject object) {
+        return true; // actually we don't know for sure, but for now we'll do it this way
+    }
+
     public class VirtualObject implements ObjectSelector {
         public boolean noClasses() {
             return false;

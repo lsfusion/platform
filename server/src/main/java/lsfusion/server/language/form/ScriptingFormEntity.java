@@ -422,7 +422,8 @@ public class ScriptingFormEntity {
             if(forceChangeAction != null)
                 propertyDraw.setEventAction(ServerResponse.CHANGE, forceChangeAction);
 
-            if(scope != OLDSESSION && !(pDrawUsage instanceof ScriptingLogicsModule.FormPredefinedUsage) && !propertyOptions.getEventActions().containsKey(ServerResponse.CHANGE))
+            // temporary check
+            if(scope != OLDSESSION && !(pDrawUsage instanceof ScriptingLogicsModule.FormPredefinedUsage) && (propertyOptions.getEventActions() == null || !propertyOptions.getEventActions().containsKey(ServerResponse.CHANGE)))
                 ServerLoggers.startLogger.info("WARNING! Now default change event action will work in new session " + propertyDraw);
 
             propertyDraw.defaultChangeEventScope = scope;

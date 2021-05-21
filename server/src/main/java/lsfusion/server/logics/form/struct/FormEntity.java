@@ -36,7 +36,7 @@ import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.LogicalClass;
 import lsfusion.server.logics.classes.user.CustomClass;
-import lsfusion.server.logics.form.interactive.action.input.InputContextProperty;
+import lsfusion.server.logics.form.interactive.action.input.InputFilterEntity;
 import lsfusion.server.logics.form.interactive.action.lifecycle.FormToolbarAction;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
@@ -49,7 +49,6 @@ import lsfusion.server.logics.form.stat.GroupObjectHierarchy;
 import lsfusion.server.logics.form.stat.StaticDataGenerator;
 import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
 import lsfusion.server.logics.form.struct.filter.*;
-import lsfusion.server.logics.form.struct.group.AbstractNode;
 import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
@@ -476,16 +475,10 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         });
     }
 
-    @Override
-    public <P extends PropertyInterface> InputContextProperty<?, P> getInputContextProperty(BaseLogicsModule LM, ObjectEntity object, ImSet<ContextFilterEntity<?, P, ObjectEntity>> contextFilters, ImRevMap<ObjectEntity, P> mapObjects) {
-        if(!(object.baseClass instanceof CustomClass))
-            return null;
-
+    public <P extends PropertyInterface> InputFilterEntity<?, P> getInputFilterEntity(ObjectEntity object, ImSet<ContextFilterEntity<?, P, ObjectEntity>> contextFilters, ImRevMap<ObjectEntity, P> mapObjects) {
+        assert object.baseClass instanceof CustomClass;
         GroupObjectEntity groupObject = object.groupTo;
-
-        // just like in InputListEntity.mapInner we will ignore the cases when there are not all objects
-        if(groupObject.getObjects().size() > 1)
-            return null;
+        assert groupObject.getObjects().size() == 1;
 
         mapObjects = mapObjects.removeRev(object);
 
@@ -498,7 +491,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         if(contextGroupFilters == null)
             contextGroupFilters = SetFact.EMPTY();
 
-        return groupObject.getInputContextProperty(SetFact.addExclSet(contextFilterEntities, contextGroupFilters), mapObjects);
+        return groupObject.getInputFilterEntity(SetFact.addExclSet(contextFilterEntities, contextGroupFilters), mapObjects);
     }
 
     // correlated with FormGroupHierarchyCreator.addDependenciesToGraph
@@ -1471,6 +1464,11 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
     public ValueClass getBaseClass(ObjectEntity object) {
         return object.baseClass;
+    }
+
+    @Override
+    public boolean isSingleGroup(ObjectEntity object) {
+        return object.groupTo.getObjects().size() == 1;
     }
 
     @IdentityLazy

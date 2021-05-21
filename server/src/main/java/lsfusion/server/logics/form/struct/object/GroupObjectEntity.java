@@ -19,7 +19,6 @@ import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.base.version.NFLazy;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.key.KeyExpr;
-import lsfusion.server.data.expr.value.StaticParamNullableExpr;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.stat.StatType;
@@ -29,7 +28,7 @@ import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.form.interactive.UpdateType;
-import lsfusion.server.logics.form.interactive.action.input.InputContextProperty;
+import lsfusion.server.logics.form.interactive.action.input.InputFilterEntity;
 import lsfusion.server.logics.form.interactive.controller.init.InstanceFactory;
 import lsfusion.server.logics.form.interactive.controller.init.Instantiable;
 import lsfusion.server.logics.form.interactive.instance.filter.FilterInstance;
@@ -343,11 +342,11 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
             where = where.and(filt.getWhere(mapKeys, modifier));
         return where;
     }
-    private <P extends PropertyInterface> InputContextProperty<?, P> getFilterInputContextProperty(ImSet<ContextFilterEntity<?, P, ObjectEntity>> filters, ImRevMap<ObjectEntity, P> mapObjects) {
+    private <P extends PropertyInterface> InputFilterEntity<?, P> getFilterInputFilterEntity(ImSet<ContextFilterEntity<?, P, ObjectEntity>> filters, ImRevMap<ObjectEntity, P> mapObjects) {
         // assert single and filters objects contain this object
-        InputContextProperty<?, P> result = null;
+        InputFilterEntity<?, P> result = null;
         for(ContextFilterEntity<?, P, ObjectEntity> filt : filters)
-            result = InputContextProperty.and(result, filt.getInputContextProperty(getObjects().single(), mapObjects));
+            result = InputFilterEntity.and(result, filt.getInputFilterEntity(getObjects().single(), mapObjects));
         return result;
     }
 
@@ -357,15 +356,15 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
     public Where getClassWhere(ImMap<ObjectEntity, ? extends Expr> mapKeys, Modifier modifier) throws SQLException, SQLHandledException {
         return IsClassProperty.getWhere(getGridClasses(getObjects()), mapKeys, modifier, null);
     }
-    public <P extends PropertyInterface> InputContextProperty<?, P> getClassInputContextProperty() {
-        return new InputContextProperty<>(IsClassProperty.getProperty(getGridClasses(getObjects())).property, MapFact.EMPTYREV());
+    public <P extends PropertyInterface> InputFilterEntity<?, P> getClassInputFilterEntity() {
+        return new InputFilterEntity<>(IsClassProperty.getProperty(getGridClasses(getObjects())).property, MapFact.EMPTYREV());
     }
 
     public Where getWhere(ImMap<ObjectEntity, ? extends Expr> mapKeys, Modifier modifier, ImSet<? extends FilterEntityInstance> filters) throws SQLException, SQLHandledException {
         return getFilterWhere(mapKeys, modifier, filters).and(getClassWhere(mapKeys, modifier));
     }
-    public <P extends PropertyInterface> InputContextProperty<?, P> getInputContextProperty(ImSet<ContextFilterEntity<?, P, ObjectEntity>> filters, ImRevMap<ObjectEntity, P> mapObjects) {
-        return InputContextProperty.and(getFilterInputContextProperty(filters, mapObjects), getClassInputContextProperty());
+    public <P extends PropertyInterface> InputFilterEntity<?, P> getInputFilterEntity(ImSet<ContextFilterEntity<?, P, ObjectEntity>> filters, ImRevMap<ObjectEntity, P> mapObjects) {
+        return InputFilterEntity.and(getFilterInputFilterEntity(filters, mapObjects), getClassInputFilterEntity());
     }
 
     // hack where ImMap used (it does not support null keys)

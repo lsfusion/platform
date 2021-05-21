@@ -84,7 +84,7 @@ import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.action.expand.ExpandCollapseType;
 import lsfusion.server.logics.form.interactive.action.focus.ActivateAction;
 import lsfusion.server.logics.form.interactive.action.focus.IsActiveFormAction;
-import lsfusion.server.logics.form.interactive.action.input.InputContextProperty;
+import lsfusion.server.logics.form.interactive.action.input.InputFilterEntity;
 import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.FormView;
@@ -2177,9 +2177,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         public final ImOrderSet<Integer> usedParams;
         public final ImOrderSet<PropertyInterface> orderInterfaces;
         public final InputListEntity<?, PropertyInterface> list;
-        public final InputContextProperty<?, PropertyInterface> where;
+        public final InputFilterEntity<?, PropertyInterface> where;
 
-        public ILEWithParams(ImOrderSet<Integer> usedParams, ImOrderSet<PropertyInterface> orderInterfaces, InputListEntity<?, PropertyInterface> list, InputContextProperty<?, PropertyInterface> where) {
+        public ILEWithParams(ImOrderSet<Integer> usedParams, ImOrderSet<PropertyInterface> orderInterfaces, InputListEntity<?, PropertyInterface> list, InputFilterEntity<?, PropertyInterface> where) {
             this.usedParams = usedParams;
             this.orderInterfaces = orderInterfaces;
             assert usedParams.size() == orderInterfaces.size();
@@ -2203,7 +2203,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                     return new InputListEntity<>(property, mapValues);
                 }),
                 where != null ? splitParams(where, contextSize, usedInterfaces, value -> 0, (property, mapValues, mapExternal) ->
-                        new InputContextProperty<>(property, mapValues)) : null);
+                        new InputFilterEntity<>(property, mapValues)) : null);
     }
 
     public LAWithParams addScriptedInputAProp(ValueClass requestValueClass, LPWithParams oldValue, NamedPropertyUsage targetProp, LAWithParams doAction, LAWithParams elseAction, List<TypedParameter> oldContext, List<TypedParameter> newContext, boolean assign, boolean constraintFilter, LPWithParams changeProp, LPWithParams listProp, LPWithParams whereProp, DebugInfo.DebugPoint assignDebugPoint, FormSessionScope listScope) throws ScriptingErrorLog.SemanticErrorException {
@@ -3356,10 +3356,10 @@ public class ScriptingLogicsModule extends LogicsModule {
     private static class CFEWithParams<O extends ObjectSelector> {
         public final ImOrderSet<Integer> usedParams;
         public final ImOrderSet<PropertyInterface> orderInterfaces;
-        public final ImSet<ContextFilterSelector<?, PropertyInterface, O>> filters;
+        public final ImSet<ContextFilterSelector<PropertyInterface, O>> filters;
         public final InputListEntity<?, PropertyInterface> list;
 
-        public CFEWithParams(ImOrderSet<Integer> usedParams, ImOrderSet<PropertyInterface> orderInterfaces, ImSet<ContextFilterSelector<?, PropertyInterface, O>> filters, InputListEntity<?, PropertyInterface> list) {
+        public CFEWithParams(ImOrderSet<Integer> usedParams, ImOrderSet<PropertyInterface> orderInterfaces, ImSet<ContextFilterSelector<PropertyInterface, O>> filters, InputListEntity<?, PropertyInterface> list) {
             this.usedParams = usedParams;
             this.orderInterfaces = orderInterfaces;
             assert usedParams.size() == orderInterfaces.size();

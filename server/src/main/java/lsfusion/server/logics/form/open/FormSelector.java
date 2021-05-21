@@ -12,7 +12,6 @@ import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.user.CustomClass;
-import lsfusion.server.logics.form.interactive.action.input.InputContextProperty;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.filter.ContextFilterEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
@@ -24,7 +23,8 @@ import java.sql.SQLException;
 public interface FormSelector<O extends ObjectSelector> {
     
     ValueClass getBaseClass(O object);
-    
+    boolean isSingleGroup(O object);
+
     FormEntity getNFStaticForm();
     default FormEntity getStaticForm(BaseLogicsModule LM) {
         return getForm(LM).first; // always not null since session is null
@@ -41,14 +41,6 @@ public interface FormSelector<O extends ObjectSelector> {
         return getStaticForm(LM);
     } 
 
-    default <P extends PropertyInterface> InputContextProperty<?, P> getInputContextProperty(BaseLogicsModule LM, O object, ImSet<ContextFilterEntity<?, P, O>> contextFilters, ImRevMap<O, P> mapObjects) {
-        Pair<FormEntity, ImRevMap<ObjectEntity, O>> staticForm = getForm(LM);
-        if(staticForm == null)
-            return null;
-
-        return staticForm.first.getInputContextProperty(LM, staticForm.second.singleKey(), contextFilters.mapSetValues(contextFilter -> contextFilter.mapObjects(staticForm.second.reverse())), staticForm.second.join(mapObjects));
-    }
-    
     // async merge
     FormSelector<O> merge(FormSelector formSelector);
 }

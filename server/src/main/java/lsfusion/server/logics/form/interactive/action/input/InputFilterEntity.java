@@ -3,7 +3,6 @@ package lsfusion.server.logics.form.interactive.action.input;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
-import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.logics.BaseLogicsModule;
@@ -18,21 +17,31 @@ import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
-public class InputContextProperty<P extends PropertyInterface, V extends PropertyInterface> {
+public class InputFilterEntity<P extends PropertyInterface, V extends PropertyInterface> implements InputFilterSelector<V> {
     
     public final Property<P> property;
     
     public final ImRevMap<P, V> mapValues; // external context
 
-    public InputContextProperty(Property<P> property, ImRevMap<P, V> mapValues) {
+    public InputFilterEntity(Property<P> property, ImRevMap<P, V> mapValues) {
         this.property = property;
 
         this.mapValues = mapValues;
         assert singleInterface() != null;
     }
 
+    @Override
+    public InputFilterEntity<P, V> getEntity() {
+        return this;
+    }
+
+    @Override
+    public <C extends PropertyInterface> InputFilterSelector<C> map(ImRevMap<V, C> map) {
+        return new InputFilterEntity<>(property, mapValues.join(map));
+    }
+
     public static <P1 extends PropertyInterface, P2 extends PropertyInterface, V extends PropertyInterface, X extends PropertyInterface>
-        InputContextProperty<?, V> and(InputContextProperty<P1, V> il1, InputContextProperty<P2, V> il2) {
+    InputFilterEntity<?, V> and(InputFilterEntity<P1, V> il1, InputFilterEntity<P2, V> il2) {
         if(il2 == null)
             return il1;
         if(il1 == null)
@@ -54,7 +63,7 @@ public class InputContextProperty<P extends PropertyInterface, V extends Propert
                         new PropertyMapImplement<>(il1.property, firstJoinParams),
                         new PropertyMapImplement<>(il2.property, secondJoinParams));
 
-        return new InputContextProperty<>(andProperty.property, andProperty.mapping.innerCrossValues(mapJoinValues));
+        return new InputFilterEntity<>(andProperty.property, andProperty.mapping.innerCrossValues(mapJoinValues));
     }
 
     // input value

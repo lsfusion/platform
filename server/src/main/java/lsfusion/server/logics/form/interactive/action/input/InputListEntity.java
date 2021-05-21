@@ -83,8 +83,8 @@ public class InputListEntity<P extends PropertyInterface, V extends PropertyInte
         return new InputValueList<P>(property, BaseUtils.immutableCast(mapValues.join(map)));
     }
 
-    public <X extends PropertyInterface, J extends PropertyInterface> InputListEntity<?, V> and(InputContextProperty<X, V> filterProperty) {
-        InputContextProperty<J, V> and = (InputContextProperty<J, V>) InputContextProperty.and(new InputContextProperty<>(property, mapValues), filterProperty);
+    public <X extends PropertyInterface, J extends PropertyInterface> InputListEntity<?, V> and(InputFilterEntity<X, V> filterProperty) {
+        InputFilterEntity<J, V> and = (InputFilterEntity<J, V>) InputFilterEntity.and(new InputFilterEntity<>(property, mapValues), filterProperty);
         return new InputListEntity<>(and.property, and.mapValues, newSession);
     }
 

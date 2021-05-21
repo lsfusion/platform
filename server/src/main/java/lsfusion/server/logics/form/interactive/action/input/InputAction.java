@@ -45,15 +45,16 @@ public class InputAction extends SystemExplicitAction {
     // CONTEXT
     protected final ImSet<ClassPropertyInterface> contextInterfaces;
     
-    protected final InputListEntity<?, ClassPropertyInterface> contextList;    
+    protected final InputListEntity<?, ClassPropertyInterface> contextList;
+    protected final InputFilterSelector<ClassPropertyInterface> contextFilter;
     protected final ImList<InputContextAction<?, ClassPropertyInterface>> contextActions; // + value param
 
-    private static <O extends ObjectSelector> ValueClass[] getValueClasses(boolean hasOldValue, ValueClass valueClass, int contextInterfaces) {
+    private static ValueClass[] getValueClasses(boolean hasOldValue, ValueClass valueClass, int contextInterfaces) {
         return ArrayUtils.addAll(hasOldValue ? new ValueClass[]{valueClass} : new ValueClass[]{}, BaseUtils.genArray(null, contextInterfaces, ValueClass[]::new));
     }
 
     public <C extends PropertyInterface> InputAction(LocalizedString caption, ValueClass valueClass, LP targetProp, boolean hasOldValue,
-                                                     ImOrderSet<C> orderContextInterfaces, InputListEntity<?, C> contextList, ImList<InputContextAction<?, C>> contextActions) {
+                                                     ImOrderSet<C> orderContextInterfaces, InputListEntity<?, C> contextList, InputFilterSelector<C> contextFilter, ImList<InputContextAction<?, C>> contextActions) {
         super(caption, getValueClasses(hasOldValue, valueClass, orderContextInterfaces.size()));
 
         this.valueClass = valueClass;
@@ -68,13 +69,27 @@ public class InputAction extends SystemExplicitAction {
         this.contextInterfaces = mapContextInterfaces.valuesSet();
         this.contextList = contextList != null ? contextList.map(mapContextInterfaces) : null;
         assert valueClass instanceof DataClass || contextList.singleInterface() != null;
+        this.contextFilter = contextFilter != null ? contextFilter.map(mapContextInterfaces) : null;
         
         this.contextActions = contextActions.mapListValues((InputContextAction<?, C> value) -> value.map(mapContextInterfaces));
     }
 
-    @IdentityLazy
-    private DataClass getInputClass() {
-        return valueClass instanceof DataClass ? (DataClass) valueClass : contextList.getDataClass();
+    @IdentityInstanceLazy
+    private InputListEntity<?, ClassPropertyInterface> mergeFullContextList() {
+        return contextList.and(contextFilter.getEntity());
+    }
+    private InputListEntity<?, ClassPropertyInterface> getFullContextList() {
+        if(contextList == null)
+            return null;
+
+        if(contextFilter == null)
+            return contextList;
+
+        return mergeFullContextList();
+    }
+
+    private DataClass getInputClass(InputListEntity<?, ClassPropertyInterface> fullContextList) {
+        return valueClass instanceof DataClass ? (DataClass) valueClass : fullContextList.getDataClass();
     }
 
     private InputList getInputList() {
@@ -89,7 +104,8 @@ public class InputAction extends SystemExplicitAction {
         boolean hasOldValue = oldValueInterface != null;
         Object oldValue = hasOldValue ? context.getKeyObject(oldValueInterface) : null;
 
-        InputResult userValue = context.inputUserData(getInputClass(), oldValue, hasOldValue, contextList, getInputList());
+        InputListEntity<?, ClassPropertyInterface> fullContextList = getFullContextList();
+        InputResult userValue = context.inputUserData(getInputClass(fullContextList), oldValue, hasOldValue, fullContextList, getInputList());
 
         Integer contextAction;
         if(userValue != null && (contextAction = userValue.contextAction) != null)
@@ -99,7 +115,7 @@ public class InputAction extends SystemExplicitAction {
             if(userValue != null) {
                 ObjectValue value = userValue.value;
                 if (!(valueClass instanceof DataClass))
-                    value = contextList.readObject(context, value);
+                    value = fullContextList.readObject(context, value);
                 requestResults = RequestResult.get(value, valueClass.getType(), targetProp);
             }
             context.writeRequested(requestResults);
@@ -108,8 +124,10 @@ public class InputAction extends SystemExplicitAction {
 
     @Override
     public AsyncMapEventExec<ClassPropertyInterface> calculateAsyncEventExec(boolean optimistic, boolean recursive) {
-        if (oldValueInterface == null)
-            return new AsyncMapChange<>(getInputClass(), contextList, getInputList(), targetProp);
+        if (oldValueInterface == null) {
+            InputListEntity<?, ClassPropertyInterface> fullContextList = getFullContextList();
+            return new AsyncMapChange<>(getInputClass(fullContextList), fullContextList, getInputList(), targetProp);
+        }
         return null;
     }
 
@@ -134,9 +152,10 @@ public class InputAction extends SystemExplicitAction {
     @Override
     public PropertyMapImplement<?, ClassPropertyInterface> calcWhereProperty() {
         PropertyMapImplement<?, ClassPropertyInterface> result = super.calcWhereProperty();
-        if(contextList != null) { // filters don't stop form from showing, however they can be used for param classes, so we're using the same hack as in SystemAction
+        InputListEntity<?, ClassPropertyInterface> fullContextList = getFullContextList(); // should be called after everything is initialized
+        if(fullContextList != null) { // filters don't stop form from showing, however they can be used for param classes, so we're using the same hack as in SystemAction
             ImList<PropertyMapImplement<?, ClassPropertyInterface>> contextList = contextActions.mapListValues((InputContextAction<?, ClassPropertyInterface> value) -> IsClassProperty.getMapProperty(value.getInterfaceClasses()));
-            result = PropertyFact.createAnd(result, PropertyFact.createUnion(interfaces, ListFact.add(contextList, ListFact.toList(IsClassProperty.getMapProperty(this.contextList.getInterfaceClasses()), PropertyFact.createTrue())))); // mix of FormAction and ExtendContextAction (since we need sort of "grouping" in list clause)
+            result = PropertyFact.createAnd(result, PropertyFact.createUnion(interfaces, ListFact.add(contextList, ListFact.toList(IsClassProperty.getMapProperty(fullContextList.getInterfaceClasses()), PropertyFact.createTrue())))); // mix of FormAction and ExtendContextAction (since we need sort of "grouping" in list clause)
         }
         return result;
     }

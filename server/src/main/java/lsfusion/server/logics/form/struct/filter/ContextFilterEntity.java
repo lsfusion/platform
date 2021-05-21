@@ -5,15 +5,14 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.data.value.ObjectValue;
-import lsfusion.server.logics.form.interactive.action.input.InputContextProperty;
-import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
+import lsfusion.server.logics.form.interactive.action.input.InputFilterEntity;
 import lsfusion.server.logics.form.open.ObjectSelector;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
-public class ContextFilterEntity<P extends PropertyInterface, V extends PropertyInterface, O extends ObjectSelector> extends ContextFilterSelector<P, V, O> {
+public class ContextFilterEntity<P extends PropertyInterface, V extends PropertyInterface, O extends ObjectSelector> extends ContextFilterSelector<V, O> {
 
     private final Property<P> property;
 
@@ -51,13 +50,13 @@ public class ContextFilterEntity<P extends PropertyInterface, V extends Property
         return mapObjects.valuesSet();
     }
 
-    public InputContextProperty<?, V> getInputContextProperty(O object, ImRevMap<O, V> mapping) {
+    public InputFilterEntity<?, V> getInputFilterEntity(O object, ImRevMap<O, V> mapping) {
         assert mapObjects.containsValue(object);
         // just like in InputListEntity.mapInner we will ignore the cases when there are not all objects
         ImRevMap<P, V> mappedObjects = mapObjects.innerJoin(mapping);
         if(mappedObjects.size() != mapObjects.size() - 1)
             return null;
 
-        return new InputContextProperty<>(property, mapValues.addRevExcl(mappedObjects));
+        return new InputFilterEntity<>(property, mapValues.addRevExcl(mappedObjects));
     }
 }

@@ -34,7 +34,7 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.form.interactive.action.change.ActionObjectSelector;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
-import lsfusion.server.logics.form.interactive.action.input.InputContextProperty;
+import lsfusion.server.logics.form.interactive.action.input.InputFilterEntity;
 import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
 import lsfusion.server.logics.form.interactive.controller.init.InstanceFactory;
 import lsfusion.server.logics.form.interactive.controller.init.Instantiable;
@@ -322,7 +322,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
             LP targetProp = lm.getRequestedValueProperty(customClass);
 
             // now we don't respect contextFilters (3rd parameter), however later, maybe we can pass it here from formInstance in most call trees
-            InputContextProperty<?, PropertyInterface> filter = entity.getInputContextProperty(lm, object, SetFact.EMPTY(), mapObjects);
+            InputFilterEntity<?, PropertyInterface> filter = entity.getInputFilterEntity(object, SetFact.EMPTY(), mapObjects);
             assert !filter.mapValues.valuesSet().contains(objectInterface);
 
             PropertyObjectEntity<X> listProperty = (PropertyObjectEntity<X>) getDrawProperty();
@@ -331,8 +331,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
             ImRevMap<PropertyInterface, StaticParamNullableExpr> listMapParamExprs = listMapObjects.reverse().mapRevValues(ObjectEntity::getParamExpr);
 
             // filter orderInterfaces to only used in view and filter
-            ImSet<PropertyInterface> usedInterfaces = list.getUsedInterfaces().merge(filter.getUsedInterfaces());
-            ImOrderSet<PropertyInterface> orderUsedInterfaces = usedInterfaces.toOrderSet();
+            ImOrderSet<PropertyInterface> orderUsedInterfaces = listMapObjects.valuesSet().toOrderSet();
 
             // first parameter - object, other used orderInterfaces
             LA<?> dialogInput = lm.addDialogInputAProp(customClass, targetProp, defaultChangeEventScope, orderUsedInterfaces, list, listMapParamExprs, objectEntity -> SetFact.singleton(filter.getFilter(objectEntity)));
