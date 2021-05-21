@@ -51,7 +51,7 @@ public abstract class GIntervalType extends GFormatType<com.google.gwt.i18n.clie
 
     @Override
     public String getDefaultWidthString(GPropertyDraw propertyDraw) {
-        return formatObject(1634245200.1634331600); // some dateTimeInterval for default width
+        return formatObject("1636629071.1636629071"); // some dateTimeInterval for default width
     }
 
     public String format(Long epoch) {
@@ -68,7 +68,7 @@ public abstract class GIntervalType extends GFormatType<com.google.gwt.i18n.clie
         return value != null ? getFormat(null).parse(format(getEpoch(value, from))) : new Date();
     }
 
-    private Long getEpoch(Object value, boolean from) {
+    protected Long getEpoch(Object value, boolean from) {
         String object = String.valueOf(value);
         int indexOfDecimal = object.indexOf(".");
         return Long.parseLong(from ? object.substring(0, indexOfDecimal) : object.substring(indexOfDecimal + 1));

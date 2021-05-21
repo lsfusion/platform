@@ -100,8 +100,8 @@ to(INTERVAL[DATE] dateInterval) = [FORMULA DATE PG 'to_timestamp(SPLIT_PART($1::
 
 // time interval
 interval(TIME timeFrom, TIME timeTo) = [FORMULA INTERVAL[TIME] PG '(EXTRACT (EPOCH FROM $1)  || \'.\' || EXTRACT (EPOCH FROM $2))'](timeFrom AS TIME, timeTo AS TIME);
-from(INTERVAL[TIME] timeInterval) = [FORMULA TIME PG 'to_timestamp(trunc ($1)) AT TIME ZONE \'UTC\''](timeInterval AS INTERVAL[TIME]);
-to(INTERVAL[TIME] timeInterval) = [FORMULA TIME PG 'to_timestamp(SPLIT_PART($1::TEXT, \'.\', 2)::NUMERIC) AT TIME ZONE \'UTC\''](timeInterval AS INTERVAL[TIME]);
+from(INTERVAL[TIME] timeInterval) = [FORMULA TIME PG '(to_timestamp(trunc ($1)) AT TIME ZONE \'UTC\')::time'](timeInterval AS INTERVAL[TIME]);
+to(INTERVAL[TIME] timeInterval) = [FORMULA TIME PG '(to_timestamp(SPLIT_PART($1::TEXT, \'.\', 2)::NUMERIC) AT TIME ZONE \'UTC\')::time'](timeInterval AS INTERVAL[TIME]);
 
 // zDatetime interval
 interval(ZDATETIME zDateTimeFrom, ZDATETIME zDateTimeTo) = [FORMULA INTERVAL[ZDATETIME] PG '(EXTRACT (EPOCH FROM $1)  || \'.\' || EXTRACT (EPOCH FROM $2))'](zDateTimeFrom AS ZDATETIME, zDateTimeTo AS ZDATETIME);

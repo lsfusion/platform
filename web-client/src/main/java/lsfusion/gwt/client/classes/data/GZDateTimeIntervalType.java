@@ -24,4 +24,9 @@ public class GZDateTimeIntervalType extends GIntervalType {
     public String format(Long epoch) {
         return getFormat(null).format(new Date(epoch * 1000));
     }
+
+    @Override
+    public Date getDate(Object value, boolean from) {
+        return value != null ? new Date(getEpoch(value, from) * 1000) : new Date();
+    }
 }
