@@ -36,7 +36,7 @@ public class FormInputFilterSelector<O extends ObjectSelector, V extends Propert
         ImRevMap<O, ObjectEntity> reversedMapObjects = mapStaticObjects.reverse();
 
         return staticForm.getInputFilterEntity(reversedMapObjects.get(inputObject),
-                ContextFilterSelector.getEntities(contextFilters).mapSetValues(contextFilter -> contextFilter.mapObjects(reversedMapObjects)), mapStaticObjects.join(mapObjects));
+                ContextFilterSelector.getEntities(contextFilters).mapSetValues(contextFilter -> contextFilter.mapObjects(reversedMapObjects)), mapStaticObjects.innerJoin(mapObjects));
     }
 
     @Override
