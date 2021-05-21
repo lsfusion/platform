@@ -2,17 +2,21 @@ package lsfusion.base;
 
 import org.apache.http.ParseException;
 
+import java.math.BigDecimal;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 public class DateConverter {
 
@@ -191,5 +195,30 @@ public class DateConverter {
 
     public static java.sql.Timestamp instantToSqlTimestamp(Instant value) {
         return value != null ? java.sql.Timestamp.from(value) : null;
+    }
+
+    public static Long localDateTimeToUTCEpoch(LocalDateTime dateTime) {
+        return dateTime.toEpochSecond(ZoneOffset.UTC);
+    }
+
+    public static LocalDateTime epochToLocalDateTime(long epoch) {
+        return LocalDateTime.ofInstant(Instant.ofEpochSecond(epoch), ZoneId.of("UTC"));
+    }
+
+    public static Object parseInterval(String s, Function<String, Long> parseFunction) {
+        String[] dates = s.split(" - ");
+        Long epochFrom = parseFunction.apply(dates[0]);
+        Long epochTo = parseFunction.apply(dates[1]);
+        return epochFrom <= epochTo ? new BigDecimal(epochFrom + "." + epochTo) : null;
+    }
+
+    public static String formatInterval(Object obj, Function<Long, String> formatFunction) {
+        return formatFunction.apply(getIntervalPart(obj, true)) + " - " + formatFunction.apply(getIntervalPart(obj, false));
+    }
+
+    public static Long getIntervalPart(Object o, boolean from) {
+        String object = String.valueOf(o);
+        int indexOfDecimal = object.indexOf(".");
+        return Long.parseLong(indexOfDecimal < 0 ? object : from ? object.substring(0, indexOfDecimal) : object.substring(indexOfDecimal + 1));
     }
 }
