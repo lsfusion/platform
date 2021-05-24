@@ -64,14 +64,10 @@ public abstract class AbstractLogicsProviderImpl {
     }
 
     public <R> R runRequest(LogicsConnection connection, LogicsRunnable<R> runnable) throws AppServerNotAvailableException, RemoteException {
-        try {
-            return runRequest(connection, runnable, false);
-        } catch (NoSuchObjectException e) {
-            return runRequest(connection, runnable, true);
-        }
+        return runRequest(connection, runnable, false);
     }
 
-    public <R> R runRequest(LogicsConnection connection, LogicsRunnable<R> runnable, boolean retry) throws AppServerNotAvailableException, RemoteException {
+    private <R> R runRequest(LogicsConnection connection, LogicsRunnable<R> runnable, boolean retry) throws AppServerNotAvailableException, RemoteException {
         LogicsSessionObject logicsSessionObject = createOrGetLogicsSessionObject(connection);
         try {
             return runnable.run(logicsSessionObject);
@@ -82,8 +78,8 @@ public abstract class AbstractLogicsProviderImpl {
             throw e;
         } catch (RemoteException e) { // it's important that this exception should not be suppressed (for example in ExternalRequestHandler)
             invalidateLogicsSessionObject(logicsSessionObject);
-            if (retry)
-                return runnable.run(createOrGetLogicsSessionObject(connection));
+            if (e instanceof NoSuchObjectException && !retry)
+                return runRequest(connection, runnable, true);
             else
                 throw e;
         }
