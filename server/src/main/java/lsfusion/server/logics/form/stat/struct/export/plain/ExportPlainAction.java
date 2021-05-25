@@ -98,9 +98,17 @@ public abstract class ExportPlainAction<O extends ObjectSelector> extends Export
             }
         }
 
-        ImRevMap<String, PropertyDrawEntity> propertyNames = childProperties.getSet().mapRevKeys(useCaptionInsteadOfIntegrationSID ?
-                ((Function<PropertyDrawEntity, String>) propertyDrawEntity -> ThreadLocalContext.localize(propertyDrawEntity.getCaption())) :
-                (Function<PropertyDrawEntity, String>) PropertyDrawEntity::getIntegrationSID);
+        ImRevMap<String, PropertyDrawEntity> propertyNames = MapFact.EMPTYREV();
+        for(PropertyDrawEntity property : childProperties) {
+            int i = 0;
+            String propertyName = null;
+            while(propertyName == null || propertyNames.containsKey(propertyName)) {
+                propertyName = (useCaptionInsteadOfIntegrationSID ? ThreadLocalContext.localize(property.getCaption()) : property.getIntegrationSID()) + (i > 0 ? ("_" + i) : "");
+                i++;
+            }
+            propertyNames = propertyNames.addRevExcl(propertyName, property);
+        }
+
         fieldTypes = fieldTypes.addOrderExcl(propertyNames.mapOrder(childProperties).mapOrderValues(new Function<PropertyDrawEntity, Type>() {
             public Type apply(PropertyDrawEntity property) {
                 return data.getType(property);
