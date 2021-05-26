@@ -274,32 +274,27 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
                             public void onFailure(Throwable caught) {
                             }
 
-                            private boolean succeeded = false; //for some reason onSuccess executes again after item selection
-
                             @Override
                             public void onSuccess(Pair<ArrayList<String>, Boolean> result) {
-                                if (!succeeded) {
-                                    suggestBox.setLatestSuggestions(result.first);
-                                    List<Suggestion> suggestionList = new ArrayList<>();
-                                    for (String suggestion : result.first) {
-                                        suggestionList.add(new Suggestion() {
-                                            @Override
-                                            public String getDisplayString() {
-                                                int start = suggestion.toLowerCase().indexOf(query.toLowerCase());
-                                                int end = start + query.length();
-                                                return suggestion.substring(0, start) + "<strong>" + suggestion.substring(start, end) + "</strong>" + suggestion.substring(end);
-                                            }
+                                suggestBox.setLatestSuggestions(result.first);
+                                List<Suggestion> suggestionList = new ArrayList<>();
+                                for (String suggestion : result.first) {
+                                    suggestionList.add(new Suggestion() {
+                                        @Override
+                                        public String getDisplayString() {
+                                            int start = suggestion.toLowerCase().indexOf(query.toLowerCase());
+                                            int end = start + query.length();
+                                            return suggestion.substring(0, start) + "<strong>" + suggestion.substring(start, end) + "</strong>" + suggestion.substring(end);
+                                        }
 
-                                            @Override
-                                            public String getReplacementString() {
-                                                return suggestion;
-                                            }
-                                        });
-                                    }
-                                    suggestBox.updateDecoration(suggestionList.isEmpty(), result.second);
-                                    callback.onSuggestionsReady(request, new Response(suggestionList));
-                                    succeeded = true;
+                                        @Override
+                                        public String getReplacementString() {
+                                            return suggestion;
+                                        }
+                                    });
                                 }
+                                suggestBox.updateDecoration(suggestionList.isEmpty(), result.second);
+                                callback.onSuggestionsReady(request, new Response(suggestionList));
                             }
                         });
                     }
@@ -342,16 +337,6 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
             onAttach();
             getElement().removeClassName("gwt-SuggestBox");
             setAutoSelectEnabled(false);
-
-            addKeyDownHandler(event -> {
-                //stopPropagation of events processed in SuggestBox onKeyDown handler
-                if(isSuggestionListShowing()) {
-                    int keyCode = event.getNativeEvent().getKeyCode();
-                    if (keyCode == KeyCodes.KEY_DOWN || keyCode == KeyCodes.KEY_UP) {
-                        event.stopPropagation();
-                    }
-                }
-            });
 
             refreshSuggestionList();
         }

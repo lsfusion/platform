@@ -1049,7 +1049,10 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         dispatcher.executePriority(action, callback);
     }
     public <T extends Result> long asyncDispatch(final FormAction<T> action, AsyncCallback<T> callback) {
-        return dispatcher.execute(action, callback);
+        return asyncDispatch(action, callback, false);
+    }
+    public <T extends Result> long asyncDispatch(final FormAction<T> action, AsyncCallback<T> callback, boolean flushAnyway) {
+        return dispatcher.execute(action, callback, flushAnyway);
     }
     public <T extends Result> long syncDispatch(final FormAction<T> action, AsyncCallback<T> callback) {
         return syncDispatch(action, callback, false);
@@ -1897,7 +1900,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             public void onSuccess(ListResult result) {
                 callback.onSuccess(new Pair<>(result.value, false));
             }
-        });
+        }, true);
     }
 
     public void getAsyncValues(String value, AsyncCallback<Pair<ArrayList<String>, Boolean>> callback) {

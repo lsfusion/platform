@@ -6,7 +6,6 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import lsfusion.gwt.client.base.AsyncCallbackEx;
 import lsfusion.gwt.client.controller.dispatch.DispatchAsyncWrapper;
 import lsfusion.gwt.client.controller.remote.action.RequestAction;
-import lsfusion.gwt.client.controller.remote.action.form.FormRequestAction;
 import lsfusion.gwt.client.form.controller.dispatch.QueuedAction;
 import net.customware.gwt.dispatch.client.DefaultExceptionHandler;
 import net.customware.gwt.dispatch.shared.Action;
@@ -26,8 +25,12 @@ public abstract class RemoteDispatchAsync {
     protected abstract <A extends RequestAction<R>, R extends Result> void fillAction(A action);
 
     public <A extends RequestAction<R>, R extends Result> void executeQueue(A action, AsyncCallback<R> callback, boolean direct) {
+        executeQueue(action, callback, direct, false);
+    }
+
+    public <A extends RequestAction<R>, R extends Result> void executeQueue(A action, AsyncCallback<R> callback, boolean direct, boolean flushAnyway) {
         fillAction(action);
-        queueAction(action, callback, direct);
+        queueAction(action, callback, direct, flushAnyway);
     }
 
     public <A extends RequestAction<R>, R extends Result> void executePriority(final A action, final AsyncCallback<R> callback) {
@@ -42,10 +45,10 @@ public abstract class RemoteDispatchAsync {
     protected void onAsyncFinished() {
     }
 
-    protected <A extends RequestAction<R>, R extends Result> void queueAction(final A action, final AsyncCallback<R> callback, boolean direct) {
+    protected <A extends RequestAction<R>, R extends Result> void queueAction(final A action, final AsyncCallback<R> callback, boolean direct, boolean flushAnyway) {
         Log.debug("Queueing action: " + action.toString());
 
-        final QueuedAction queuedAction = new QueuedAction(action, callback);
+        final QueuedAction queuedAction = new QueuedAction(action, callback, flushAnyway);
         fillQueuedAction(action);
         // in desktop there is direct query mechanism (for continuing single invocating), which blocks EDT, and guarantee synchronization
         // in web there is no such mechanism, so we'll put the queued action to the very beginning of the queue
@@ -82,17 +85,30 @@ public abstract class RemoteDispatchAsync {
     }
 
     public void flushCompletedRequests() {
-        if (!isEditing()) {
+        if (isEditing()) {
+            int i = 0;
+            while(i < q.size()) {
+                QueuedAction action = q.get(i);
+                if(action.flushAnyway) {
+                    q.remove(action);
+                    proceedAction(action);
+                } else {
+                    i++;
+                }
+            }
+        } else {
             while (!q.isEmpty() && q.peek().finished) {
-                QueuedAction remove = q.remove();
-
-                long requestIndex = remove.getRequestIndex();
-                if(requestIndex >= 0)
-                    lastReceivedRequestIndex = requestIndex;
-
-                remove.proceed();
+                proceedAction(q.remove());
             }
         }
+    }
+
+    public void proceedAction(QueuedAction action) {
+        long requestIndex = action.getRequestIndex();
+        if(requestIndex >= 0)
+            lastReceivedRequestIndex = requestIndex;
+
+        action.proceed();
     }
 
     protected boolean isClosed() {
