@@ -16,6 +16,8 @@ import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.event.GMouseStroke;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.async.GInputList;
+import lsfusion.gwt.client.form.property.cell.classes.controller.suggest.SuggestBox;
+import lsfusion.gwt.client.form.property.cell.classes.controller.suggest.TextBox;
 import lsfusion.gwt.client.form.property.cell.classes.view.TextBasedCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.controller.ReplaceCellEditor;
@@ -92,18 +94,6 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
     @Override
     public void onBrowserEvent(Element parent, EventHandler handler) {
         Event event = handler.event;
-
-        if(hasList) {
-            //on mouse click blur event finish editing before new value in SelectBox is selected
-            if (BLUR.equals(event.getType())) {
-                String replacement = suggestBox.display.getReplacementString();
-                if(replacement != null) {
-                    suggestBox.setText(replacement);
-                }
-                suggestBox.display.hideSuggestions();
-            }
-        }
-
         String type = event.getType();
         if (GKeyStroke.isCharAddKeyEvent(event) || GKeyStroke.isCharDeleteKeyEvent(event) ||
                 GKeyStroke.isCharNavigateKeyEvent(event) || GMouseStroke.isEvent(event) || GKeyStroke.isPasteFromClipboardEvent(event) || GMouseStroke.isContextMenuEvent(event)) {
