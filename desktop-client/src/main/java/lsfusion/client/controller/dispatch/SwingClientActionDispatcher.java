@@ -47,6 +47,8 @@ import java.text.DecimalFormat;
 import java.util.EventObject;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static lsfusion.client.ClientResourceBundle.getString;
 
@@ -535,8 +537,11 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
         if (!canceled) {
             File file = fileChooser.getSelectedFile();
             result = file.toURI().toString();
-            if(result.startsWith("file:/")) {
-                result = result.replaceFirst("file:/", "file://");
+            //replace "file:/" for "file://"
+            Pattern p = Pattern.compile("file:/([^/].*)");
+            Matcher m = p.matcher(result);
+            if(m.matches()) {
+                result = "file://" + m.group(1);
             }
             SystemUtils.saveCurrentDirectory(file.getParentFile());
         }
