@@ -523,6 +523,9 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
         if (!canceled) {
             File file = fileChooser.getSelectedFile();
             result = file.toURI().toString();
+            if(result.startsWith("file:/")) {
+                result = result.replaceFirst("file:/", "file://");
+            }
             SystemUtils.saveCurrentDirectory(file.getParentFile());
         }
         return result;
