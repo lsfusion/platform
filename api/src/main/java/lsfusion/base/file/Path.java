@@ -19,7 +19,7 @@ public class Path {
     }
 
     public static Path parsePath(String sourcePath, boolean read) {
-        String pattern = read ? "(file|ftp|sftp|http|https|jdbc|mdb):(?:/{1,2})?(.*)" : "(file|ftp|sftp):(?:/{1,2})?(.*)";
+        String pattern = read ? "(file|ftp|sftp|http|https|jdbc|mdb):(?://)?(.*)" : "(file|ftp|sftp):(?://)?(.*)";
         String[] types = read ? new String[]{"file:", "ftp:", "sftp:", "http:", "https:", "jdbc:", "mdb:"} : new String[]{"file:", "ftp:", "sftp:"};
 
         if (!StringUtils.startsWithAny(sourcePath, types)) {
