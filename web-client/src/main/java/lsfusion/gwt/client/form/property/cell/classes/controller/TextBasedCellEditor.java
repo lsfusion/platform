@@ -231,6 +231,7 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
 
         String stringValue = suggestBox != null ? suggestBox.getValue() : getCurrentText(parent);
         try {
+            suggestBox.display.hideSuggestions();
             editManager.commitEditing(new GUserInputResult(tryParseInputText(stringValue, true), contextAction), blurred);
         } catch (ParseException ignore) {
             if (cancelIfInvalid) {
@@ -332,7 +333,7 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
             this.display = display;
             onAttach();
             getElement().removeClassName("gwt-SuggestBox");
-            setAutoSelectEnabled(false);
+            setAutoSelectEnabled(strict);
 
             refreshSuggestionList();
         }
@@ -400,6 +401,22 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
         public void updateDecoration(boolean showNoResult, boolean showRefresh) {
             noResultsLabel.setVisible(showNoResult);
             refreshButton.setVisible(showRefresh);
+        }
+
+        @Override
+        protected void moveSelectionDown() {
+            super.moveSelectionDown();
+            if(!strict) {
+                suggestBox.setValue(getReplacementString());
+            }
+        }
+
+        @Override
+        protected void moveSelectionUp() {
+            super.moveSelectionUp();
+            if(!strict) {
+                suggestBox.setValue(getReplacementString());
+            }
         }
     }
 }

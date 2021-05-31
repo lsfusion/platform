@@ -1142,7 +1142,11 @@ public class SuggestBox extends Composite implements HasText, HasFocus, HasAnima
 
       public void onKeyUp(KeyUpEvent event) {
         // After every user key input, refresh the popup's suggestions.
-        refreshSuggestions();
+        //todo: added if
+          int keyCode = event.getNativeEvent().getKeyCode();
+          if (keyCode != KeyCodes.KEY_DOWN && keyCode != KeyCodes.KEY_UP) {
+            refreshSuggestions();
+          }
       }
 
       public void onValueChange(ValueChangeEvent<String> event) {
