@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form.controller;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.Element;
@@ -104,6 +105,7 @@ import net.customware.gwt.dispatch.shared.general.StringResult;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -1014,8 +1016,14 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     public void asyncChange(Event event, EditContext editContext, String actionSID, GAsyncChange asyncChange) {
-        editProperty(asyncChange.changeType, event, false, null, asyncChange.inputList,
-                value -> {}, () -> {}, editContext, actionSID, null);
+        editProperty(asyncChange.changeType, event, false, null, asyncChange.inputList, (value, requestIndex) -> {
+            // it seems that it's better to do everything after commit to avoid potential problems with focus, etc.
+            Integer contextAction = value.getContextAction();
+            if (contextAction != null/* && requestIndex.result >= 0*/) {
+                GAsyncExec actionAsync = asyncChange.inputList.actionAsyncs[contextAction];
+                if (actionAsync != null) actionAsync.exec(getAsyncFormController(requestIndex), formsController);
+            }
+        }, () -> {}, editContext, actionSID, null);
     }
 
     public void asyncOpenForm(GAsyncOpenForm asyncOpenForm, EditContext editContext, Event editEvent, String actionSID) {
@@ -1052,7 +1060,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         return asyncDispatch(action, callback, false);
     }
     public <T extends Result> long asyncDispatch(final FormAction<T> action, AsyncCallback<T> callback, boolean flushAnyway) {
-        return dispatcher.execute(action, callback, flushAnyway);
+        return dispatcher.execute(action, callback, false, flushAnyway);
     }
     public <T extends Result> long syncDispatch(final FormAction<T> action, AsyncCallback<T> callback) {
         return syncDispatch(action, callback, false);
@@ -1943,22 +1951,22 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         }
     }
 
-    public void editProperty(GType type, Event event, boolean hasOldValue, Object oldValue, GInputList inputList, Consumer<GUserInputResult> afterCommit, Runnable cancel, EditContext editContext, String actionSID, Long dispatchingIndex) {
+    public void editProperty(GType type, Event event, boolean hasOldValue, Object oldValue, GInputList inputList, BiConsumer<GUserInputResult, Long> afterCommit, Runnable cancel, EditContext editContext, String actionSID, Long dispatchingIndex) {
         lsfusion.gwt.client.base.Result<Long> requestIndex = new lsfusion.gwt.client.base.Result<>();
         edit(type, event, hasOldValue, oldValue, inputList, // actually it's assumed that actionAsyncs is used only here, in all subsequent calls it should not be referenced
                 value -> {
                     requestIndex.set(changeEditPropertyValue(editContext, event, actionSID, type, value, dispatchingIndex)); // actually ServerResponse.INPUT shouldn't be passed inside changeEditPropertyValue but it's needed only if dispatchingIndex is null
                 },
                 value -> {
-                    afterCommit.accept(value);
+                    afterCommit.accept(value, requestIndex.result);
 
-                    // it seems that it's better to do everything after commit to avoid potential problems with focus, etc.
-                    Integer contextAction = value.getContextAction();
-                    if(contextAction != null && requestIndex.result >= 0) {
-                        GAsyncExec actionAsync = inputList.actionAsyncs[contextAction];
-                        if(actionAsync != null)
-                            actionAsync.exec(getAsyncFormController(requestIndex.result), formsController);
-                    }
+//                    // it seems that it's better to do everything after commit to avoid potential problems with focus, etc.
+//                    Integer contextAction = value.getContextAction();
+//                    if(contextAction != null/* && requestIndex.result >= 0*/) {
+//                        GAsyncExec actionAsync = inputList.actionAsyncs[contextAction];
+//                        if(actionAsync != null)
+//                            actionAsync.exec(getAsyncFormController(requestIndex.result), formsController);
+//                    }
                 },
                 cancel, editContext, actionSID);
     }

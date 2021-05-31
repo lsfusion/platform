@@ -1319,14 +1319,6 @@ public class PopupPanel extends SimplePanel implements SourcesPopupEvents,
    * @param event the {@link NativePreviewEvent}
    */
   private void previewNativeEvent(NativePreviewEvent event) {
-
-    if(event.getTypeInt() == Event.ONMOUSEDOWN) {
-      com.google.gwt.core.shared.GWT.log("PopupPanel previewNativeEvent mousedown");
-    }
-    if(event.getTypeInt() == Event.ONCLICK) {
-      com.google.gwt.core.shared.GWT.log("PopupPanel previewNativeEvent mouseclick");
-    }
-
     // If the event has been canceled or consumed, ignore it
     if (event.isCanceled() || (!previewAllNativeEvents && event.isConsumed())) {
       // We need to ensure that we cancel the event even if its been consumed so
@@ -1345,8 +1337,6 @@ public class PopupPanel extends SimplePanel implements SourcesPopupEvents,
 
     // If the event targets the popup or the partner, consume it
     Event nativeEvent = Event.as(event.getNativeEvent());
-
-    boolean targetsPopup = eventTargetsPopup(nativeEvent);
 
     boolean eventTargetsPopupOrPartner = eventTargetsPopup(nativeEvent)
         || eventTargetsPartner(nativeEvent);

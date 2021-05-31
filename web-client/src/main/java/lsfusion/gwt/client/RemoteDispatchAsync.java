@@ -86,29 +86,25 @@ public abstract class RemoteDispatchAsync {
 
     public void flushCompletedRequests() {
         if (isEditing()) {
-            int i = 0;
-            while(i < q.size()) {
-                QueuedAction action = q.get(i);
-                if(action.flushAnyway) {
-                    q.remove(action);
-                    proceedAction(action);
-                } else {
-                    i++;
+            q.forEach(action -> {
+                if (action.flushAnyway && !action.preProceeded) {
+                    action.proceed();
+                    action.preProceeded = true;
                 }
-            }
+            });
         } else {
             while (!q.isEmpty() && q.peek().finished) {
-                proceedAction(q.remove());
+                QueuedAction action = q.remove();
+                long requestIndex = action.getRequestIndex();
+                if (requestIndex >= 0) {
+                    lastReceivedRequestIndex = requestIndex;
+                }
+
+                if (!action.preProceeded) {
+                    action.proceed();
+                }
             }
         }
-    }
-
-    public void proceedAction(QueuedAction action) {
-        long requestIndex = action.getRequestIndex();
-        if(requestIndex >= 0)
-            lastReceivedRequestIndex = requestIndex;
-
-        action.proceed();
     }
 
     protected boolean isClosed() {

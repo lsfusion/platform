@@ -138,13 +138,15 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
         Result<Object> result = new Result<>();
         // we'll be optimists and assume that this value will stay
         form.editProperty(action.readType, editEvent, action.hasOldValue, action.oldValue, action.inputList,
-                value -> continueDispatching(value, result),
+                (value, requestIndex) -> continueDispatching(value, result),
                 () -> continueDispatching(GUserInputResult.canceled, result), editContext, ServerResponse.INPUT, getDispatchingIndex());
         return result.result;
     }
 
     @Override
     public void execute(GUpdateEditValueAction action) {
-        form.update(editContext, action.value);
+        if(editContext != null) {
+            form.update(editContext, action.value);
+        }
     }
 }

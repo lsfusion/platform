@@ -1171,6 +1171,14 @@ public class SuggestBox extends Composite implements HasText, HasFocus, HasAnima
     showSuggestions(text);
   }
 
+  //todo: added
+  public void forceRefreshSuggestions(String query) {
+    if (isAttached()) {
+      currentText = query;
+      showSuggestions(query);
+    }
+  }
+
   /**
    * Set the new suggestion in the text box.
    *

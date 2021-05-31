@@ -42,6 +42,7 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
 
     boolean hasList;
     boolean strict;
+    String[] actions;
     CustomSuggestBox suggestBox = null;
 
     public TextBasedCellEditor(EditManager editManager, GPropertyDraw property) {
@@ -58,6 +59,7 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
         this.property = property;
         this.hasList = inputList != null;
         this.strict = inputList != null && inputList.strict;
+        this.actions = inputList != null ? inputList.actions : null;
     }
 
     @Override
@@ -65,7 +67,6 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
         String value = tryFormatInputText(oldValue);
         if(hasList) {
             suggestBox.refreshSuggestionList(); //show suggestions for empty value
-            prevQuery = value;
             suggestBox.setValue(value);
         }
         InputElement inputElement = getInputElement(parent);
@@ -228,7 +229,7 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
             return;
         }
 
-        String stringValue = getCurrentText(parent);
+        String stringValue = suggestBox != null ? suggestBox.getValue() : getCurrentText(parent);
         try {
             editManager.commitEditing(new GUserInputResult(tryParseInputText(stringValue, true), contextAction), blurred);
         } catch (ParseException ignore) {
@@ -239,11 +240,6 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
     }
 
     private String prevQuery = null;
-    private boolean checkQuery(String query) {
-        boolean check = !query.equals(prevQuery);
-        prevQuery = query;
-        return check;
-    }
 
     protected Element createTextInputElement() {
         return Document.get().createTextInputElement();
@@ -268,36 +264,36 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
 
                 private void requestAsyncSuggestions(Request request, Callback callback) {
                     String query = nvl(request.getQuery(), "");
-                    if (checkQuery(query)) {
-                        editManager.getAsyncValues(query, new AsyncCallback<Pair<ArrayList<String>, Boolean>>() {
-                            @Override
-                            public void onFailure(Throwable caught) {
-                            }
+                    prevQuery = query;
+                    editManager.getAsyncValues(query, new AsyncCallback<Pair<ArrayList<String>, Boolean>>() {
+                        @Override
+                        public void onFailure(Throwable caught) {
+                        }
 
-                            @Override
-                            public void onSuccess(Pair<ArrayList<String>, Boolean> result) {
-                                suggestBox.setLatestSuggestions(result.first);
-                                List<Suggestion> suggestionList = new ArrayList<>();
-                                for (String suggestion : result.first) {
-                                    suggestionList.add(new Suggestion() {
-                                        @Override
-                                        public String getDisplayString() {
-                                            int start = suggestion.toLowerCase().indexOf(query.toLowerCase());
-                                            int end = start + query.length();
-                                            return suggestion.substring(0, start) + "<strong>" + suggestion.substring(start, end) + "</strong>" + suggestion.substring(end);
-                                        }
+                        @Override
+                        public void onSuccess(Pair<ArrayList<String>, Boolean> result) {
+                            suggestBox.setLatestSuggestions(result.first);
+                            List<Suggestion> suggestionList = new ArrayList<>();
+                            for (String suggestion : result.first) {
+                                suggestionList.add(new Suggestion() {
+                                    @Override
+                                    public String getDisplayString() {
+                                        int start = suggestion.toLowerCase().indexOf(query.toLowerCase());
+                                        int end = start + query.length();
+                                        return suggestion.substring(0, start) + "<strong>" + suggestion.substring(start, end) + "</strong>" + suggestion.substring(end);
+                                    }
 
-                                        @Override
-                                        public String getReplacementString() {
-                                            return suggestion;
-                                        }
-                                    });
-                                }
-                                suggestBox.updateDecoration(suggestionList.isEmpty(), result.second);
-                                callback.onSuggestionsReady(request, new Response(suggestionList));
+                                    @Override
+                                    public String getReplacementString() {
+                                        return suggestion;
+                                    }
+                                });
                             }
-                        });
-                    }
+                            suggestBox.updateDecoration(suggestionList.isEmpty(), result.second);
+                            callback.onSuggestionsReady(request, new Response(suggestionList));
+                        }
+                    });
+
                 }
 
                 @Override
@@ -372,10 +368,35 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
             VerticalPanel panel = new VerticalPanel();
             panel.add(suggestionList);
             panel.add(noResultsLabel = new Label(messages.nothingFound()));
-            GwtClientUtils.setThemeImage("refresh.png", (image -> panel.add(refreshButton = new PushButton(new Image(image)))));
+
+            HorizontalPanel bottomPanel = new HorizontalPanel();
+            bottomPanel.setWidth("100%");
+            bottomPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
+            panel.add(bottomPanel);
+
+            HorizontalPanel buttonsPanel = new HorizontalPanel();
+            for(int i = 0; i < actions.length; i++) {
+                int index = i;
+                GwtClientUtils.setThemeImage(actions[index] + ".png", (image -> buttonsPanel.add(new PushButton(new Image(image)) {
+                    @Override
+                    protected void onClickStart() {
+                        suggestBox.display.hideSuggestions();
+                        validateAndCommit(getElement(), index, true, false);
+                    }
+                })));
+            }
+            GwtClientUtils.setThemeImage("refresh.png", (image -> buttonsPanel.add(refreshButton = new PushButton(new Image(image)) {
+                @Override
+                protected void onClickStart() {
+                    suggestBox.display.hideSuggestions();
+                    suggestBox.forceRefreshSuggestions(prevQuery);
+                }
+            })));
+            bottomPanel.add(buttonsPanel);
+
             return panel;
         }
-        
+
         public void updateDecoration(boolean showNoResult, boolean showRefresh) {
             noResultsLabel.setVisible(showNoResult);
             refreshButton.setVisible(showRefresh);
