@@ -49,7 +49,6 @@ import lsfusion.server.logics.form.struct.filter.FilterEntity;
 import lsfusion.server.logics.form.struct.filter.FilterEntityInstance;
 import lsfusion.server.logics.form.struct.filter.RegularFilterEntity;
 import lsfusion.server.logics.form.struct.filter.RegularFilterGroupEntity;
-import lsfusion.server.logics.form.struct.group.AbstractNode;
 import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
@@ -541,8 +540,12 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
         public JSONObject serialize() {
             JSONObject groupData = new JSONObject();
-            for(int i=0,size=props.size();i<size;i++)
-                groupData.put(props.getKey(i).getIntegrationSID(), props.getValue(i).serialize());
+            for(int i=0,size=props.size();i<size;i++) {
+                String integrationSID = props.getKey(i).getIntegrationSID();
+                if (integrationSID != null) {
+                    groupData.put(integrationSID, props.getValue(i).serialize());
+                }
+            }
             return groupData;
         }
     }

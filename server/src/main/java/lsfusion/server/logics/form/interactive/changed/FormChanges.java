@@ -269,8 +269,12 @@ public class FormChanges {
 
         // drop props
         JSONArray dropJSON = new JSONArray();
-        for (PropertyDrawInstance dropProperty : dropProperties)
-            dropJSON.put(dropProperty.getIntegrationSID());
+        for (PropertyDrawInstance dropProperty : dropProperties) {
+            String integrationSID = dropProperty.getIntegrationSID();
+            if (integrationSID != null) {
+                dropJSON.put(integrationSID);
+            }
+        }
 
         JSONObject response = new JSONObject();
         response.put("modify", modifyJSON);

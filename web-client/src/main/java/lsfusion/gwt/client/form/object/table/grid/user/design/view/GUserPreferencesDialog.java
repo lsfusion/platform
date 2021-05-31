@@ -135,13 +135,13 @@ public abstract class GUserPreferencesDialog extends ResizableSystemModalWindow 
         fontPanel.getElement().getStyle().setMargin(2, Style.Unit.PX);
         Label fontLabel = new Label(messages.formGridPreferencesFontSize() + ":");
         fontLabel.addStyleName("userPreferencesFontLabel");
-        fontPanel.add(fontLabel, GFlexAlignment.CENTER);
+        fontPanel.addCentered(fontLabel);
         fontPanel.add(createHorizontalStrut(2));
-        fontPanel.add(sizeBox);
+        fontPanel.addCentered(sizeBox);
         fontPanel.add(createHorizontalStrut(6));
-        fontPanel.add(boldBox);
+        fontPanel.addCentered(boldBox);
         fontPanel.add(createHorizontalStrut(6));
-        fontPanel.add(italicBox);
+        fontPanel.addCentered(italicBox);
         fontPanel.add(createHorizontalStrut(2));
 
         VerticalPanel gridSettingsPanel = new VerticalPanel();
