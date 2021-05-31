@@ -11,7 +11,6 @@ import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.base.view.ResizableComplexPanel;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
-import lsfusion.gwt.client.form.object.panel.controller.GPropertyPanelController;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.getOffsetSize;
@@ -33,7 +32,6 @@ public class PropertyPanelRenderer extends PanelRenderer {
         panel.addStyleName("dataPanelRendererPanel");
 
         label = new Label();
-//        label.addStyleName("customFontPresenter");
         if (this.property.captionFont != null) {
             this.property.captionFont.apply(label.getElement().getStyle());
         }

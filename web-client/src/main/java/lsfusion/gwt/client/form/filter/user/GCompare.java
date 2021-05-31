@@ -84,11 +84,11 @@ public enum GCompare {
             case NOT_EQUALS :
                 return "!=";
             case START_WITH :
-                return messages.filterCompareStartsWith();
+                return "_*";
             case CONTAINS:
-                return messages.filterCompareContains();
+                return "=*";
             case ENDS_WITH:
-                return messages.filterCompareEndsWith();
+                return "*_";
             case LIKE :
                 return "LIKE";
             case INARRAY :

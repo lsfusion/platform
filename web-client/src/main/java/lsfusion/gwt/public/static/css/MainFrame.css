@@ -1,7 +1,7 @@
-body, textarea, input, button, .gwt-Button, .gwt-Label, .gwt-TextBox, .gwt-TreeItem, .gwt-TabBarItem, .gwt-DialogBox .Caption,
+body, textarea, input, button, select, .gwt-Button, .gwt-Label, .gwt-TextBox, .gwt-TreeItem, .gwt-TabBarItem, .gwt-DialogBox .Caption,
 .messageBox-messageContainer, .ResizableWindow-header, .captionPanelLegend, .checkBoxFilter, .comboBoxFilter,
 .filterDialogHeader, .gwt-ProgressBar-shell .gwt-ProgressBar-text,
-.pvtRenderer, .pvtAggregator, .pvtCheckContainer, .pvtFilterBox input[type=text], .customFontPresenter,
+.pvtRenderer, .pvtAggregator, .pvtCheckContainer, .pvtFilterBox input[type=text], 
 table.pvtTable, table.pvtTable tbody tr th, table.pvtTable thead tr th {
     font-size: 9pt;
 }
@@ -404,7 +404,7 @@ input[type=checkbox]:focus {
     margin: 0 2px;
 }
 
-.checkBoxFilter label, .userFilterCheckBox label {
+.checkBoxFilter label, .userFilterNegationCheckBox label {
     vertical-align: middle;
 }
 
@@ -416,12 +416,31 @@ input[type=checkbox]:focus {
     margin-top: 2px;
 }
 
-.userFilterLabel, .userFilterListBox, .userFilterCheckBox, .userFilterDataPropertyValue {
+.userFilterLabel {
+    cursor: default;
+    margin: 0 3px 0 5px;
+}
+
+.userFilterListBox, .userFilterDataPropertyValue, .userFilterSelector {
     margin: 0 0 0 2px;
 }
 
 .userFilterButton {
     margin: 0 2px;
+}
+
+.userFilterSelector {
+    cursor: default;
+    padding: 2px;
+    color: var(--text-color); /* overrides .gwt-TextBox-readonly style */
+}
+
+.userFilterNegationCheckBox input {
+    margin-left: 3px;
+}
+
+.userFilterJunctionSeparator {
+    margin: 0 7px 0 12px;
 }
 
 .gwt-ProgressBar-shell {

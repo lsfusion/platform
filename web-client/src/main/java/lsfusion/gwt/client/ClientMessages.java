@@ -88,8 +88,6 @@ public interface ClientMessages extends Messages {
     String formGridPreferencesFontStyleBold();
     String formGridPreferencesFontStyleItalic();
 
-    String formFilterConditionViewNot();
-    String formFilterConditionViewAnd();
     String formFilterConditionViewOr();
 
     String tooltipPath();
@@ -174,12 +172,7 @@ public interface ClientMessages extends Messages {
     String typeXMLFileLinkCaption();
     String typeTableFileLinkCaption();
 
-    String filterCompareStartsWith();
-    String filterCompareContains();
-    String filterCompareEndsWith();
     String filterDataValue();
-    String filterObjectValue();
-    String filterPropertyValue();
 
     String multipleFilterComponentAll();
 

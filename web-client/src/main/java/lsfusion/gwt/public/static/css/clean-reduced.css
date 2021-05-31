@@ -1067,6 +1067,7 @@ button {
 .gwt-TextBox {
     padding: 5px 4px;
     border: 1px solid var(--component-border-color);
+    border-radius: var(--textfield-border-radius);
     font-size: small;
 }
 .gwt-TextBox-readonly {
