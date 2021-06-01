@@ -168,7 +168,7 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
     }
     protected void escapePressed(EventHandler handler, Element parent) {
         if(hasList) {
-            suggestBox.display.hideSuggestions();
+            hideSuggestions();
         }
         if(GKeyStroke.isPlainKeyEvent(handler.event)) {
             handler.consume();
@@ -222,7 +222,7 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
     }
 
     public void validateAndCommit(Element parent, Integer contextAction, boolean cancelIfInvalid, boolean blurred) {
-        if(contextAction == null && hasList && strict && !suggestBox.isValidText()) {
+        if(contextAction == null && hasList && strict && !suggestBox.isValidValue()) {
             if (cancelIfInvalid) {
                 editManager.cancelEditing();
             }
@@ -231,7 +231,7 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
 
         String stringValue = suggestBox != null ? suggestBox.getValue() : getCurrentText(parent);
         try {
-            suggestBox.display.hideSuggestions();
+            hideSuggestions();
             editManager.commitEditing(new GUserInputResult(tryParseInputText(stringValue, true), contextAction), blurred);
         } catch (ParseException ignore) {
             if (cancelIfInvalid) {
@@ -273,6 +273,7 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
 
                         @Override
                         public void onSuccess(Pair<ArrayList<String>, Boolean> result) {
+                            suggestBox.setAutoSelectEnabled(strict && !prevQuery.isEmpty());
                             suggestBox.setLatestSuggestions(result.first);
                             List<Suggestion> suggestionList = new ArrayList<>();
                             for (String suggestion : result.first) {
@@ -324,6 +325,12 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
         return value == null ? "" : value.toString();
     }
 
+    private void hideSuggestions() {
+        if(suggestBox != null) {
+            suggestBox.display.hideSuggestions();
+        }
+    }
+
     private class CustomSuggestBox extends SuggestBox {
         public DefaultSuggestionDisplayString display;
         private List<String> latestSuggestions = new ArrayList<>();
@@ -333,7 +340,6 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
             this.display = display;
             onAttach();
             getElement().removeClassName("gwt-SuggestBox");
-            setAutoSelectEnabled(strict);
 
             refreshSuggestionList();
         }
@@ -342,8 +348,9 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
             this.latestSuggestions = latestSuggestions;
         }
 
-        public boolean isValidText() {
-            return latestSuggestions.contains(getText());
+        public boolean isValidValue() {
+            String value = getValue();
+            return value.isEmpty() || latestSuggestions.contains(value);
         }
 
         public void updateDecoration(boolean showNoResult, boolean showRefresh) {
@@ -381,7 +388,7 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
                 GwtClientUtils.setThemeImage(actions[index] + ".png", (image -> buttonsPanel.add(new PushButton(new Image(image)) {
                     @Override
                     protected void onClickStart() {
-                        suggestBox.display.hideSuggestions();
+                        hideSuggestions();
                         validateAndCommit(getElement(), index, true, false);
                     }
                 })));
@@ -389,7 +396,7 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
             GwtClientUtils.setThemeImage("refresh.png", (image -> buttonsPanel.add(refreshButton = new PushButton(new Image(image)) {
                 @Override
                 protected void onClickStart() {
-                    suggestBox.display.hideSuggestions();
+                    hideSuggestions();
                     suggestBox.forceRefreshSuggestions(prevQuery);
                 }
             })));
