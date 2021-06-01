@@ -7,6 +7,9 @@ import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.PopupDialogPanel;
+import lsfusion.gwt.client.form.design.GFont;
+import lsfusion.gwt.client.form.design.GFontMetrics;
+import lsfusion.gwt.client.form.design.GFontWidthString;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 
 public abstract class GFilterOptionSelector<T> extends TextBox {
@@ -48,6 +51,7 @@ public abstract class GFilterOptionSelector<T> extends TextBox {
         String notNullText = text != null ? text : "";
         super.setText(notNullText);
         setTitle(notNullText);
+        setWidth(GFontMetrics.getStringWidth(new GFontWidthString(GFont.DEFAULT_FONT, notNullText)) + "px");
     }
 
     protected Widget getPopupContent() {

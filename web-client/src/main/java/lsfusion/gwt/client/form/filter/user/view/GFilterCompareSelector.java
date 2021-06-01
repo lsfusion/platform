@@ -27,9 +27,9 @@ public abstract class GFilterCompareSelector extends GFilterOptionSelector<GComp
         });
 
         FlexPanel popupContainer = new FlexPanel(true);
-        popupContainer.add(negationCB);
-        popupContainer.add(GwtClientUtils.createHorizontalSeparator());
         popupContainer.add(menuBar);
+        popupContainer.add(GwtClientUtils.createHorizontalSeparator());
+        popupContainer.add(negationCB);
         
         focusPanel = new FocusPanel(popupContainer);
         focusPanel.addFocusHandler(event -> menuBar.focus());

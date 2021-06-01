@@ -130,10 +130,6 @@ public class GFilterConditionView extends FlexPanel {
     protected void onAttach() {
         super.onAttach();
 
-        // before initial hiding of labels to get their sizes
-        updatePropertyViewWidth();
-        updateCompareViewWidth();
-
         setToolsVisible(toolsVisible);
     }
 
@@ -148,15 +144,9 @@ public class GFilterConditionView extends FlexPanel {
         deleteButton.setVisible(visible);
 
         propertyLabel.setVisible(!toolsVisible);
-        if (!toolsVisible) {
-            updatePropertyViewWidth();
-        }
         propertyView.setVisible(toolsVisible);
 
         compareLabel.setVisible(!toolsVisible);
-        if (!toolsVisible) {
-            updateCompareViewWidth();
-        }
         compareView.setVisible(toolsVisible);
 
         updateJunctionVisibility();
@@ -165,14 +155,6 @@ public class GFilterConditionView extends FlexPanel {
     private void updateJunctionVisibility() {
         junctionSeparator.setVisible(!toolsVisible && !isLast && !condition.junction);
         junctionView.setVisible(toolsVisible && !isLast);
-    }
-    
-    private void updatePropertyViewWidth() {
-        propertyView.setWidth(propertyLabel.getOffsetWidth() + "px");
-    } 
-    
-    private void updateCompareViewWidth() {
-        compareView.setWidth(compareLabel.getOffsetWidth() + "px");
     }
     
     public boolean isFocused() {

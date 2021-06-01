@@ -6,7 +6,6 @@ import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
-import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.form.event.GBindingEnv;
 import lsfusion.gwt.client.form.event.GKeyInputEvent;
@@ -17,7 +16,6 @@ import lsfusion.gwt.client.form.filter.user.controller.GUserFilters;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.view.StyleDefaults;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -34,9 +32,6 @@ public class GFilterView extends FlexPanel implements GFilterConditionView.UIHan
 
     private GToolbarButton addConditionButton;
     private GToolbarButton resetConditionsButton;
-
-    private final int BUTTON_WIDTH = StyleDefaults.COMPONENT_HEIGHT + 4; // 4 - margin
-    private Widget buttonsReplacement; // to prevent container from changing size on showing tools
 
     private GUserFilters controller;
     private GFilter filterComponent;
@@ -82,10 +77,6 @@ public class GFilterView extends FlexPanel implements GFilterConditionView.UIHan
         resetConditionsButton.setVisible(toolsVisible);
         buttonsPanel.add(resetConditionsButton);
 
-        buttonsReplacement = GwtClientUtils.createHorizontalStrut(BUTTON_WIDTH * 2); // 2 for 'add' and 'clear'
-        buttonsReplacement.setVisible(!toolsVisible);
-        buttonsPanel.add(buttonsReplacement);
-        
         mainContainer.add(buttonsPanel);
     }
 
@@ -130,7 +121,6 @@ public class GFilterView extends FlexPanel implements GFilterConditionView.UIHan
             GFilterConditionView conditionView = new GFilterConditionView(condition, controller.getLogicsSupplier(), this, toolsVisible);
             conditionViews.put(condition, conditionView);
             filterContainer.add(conditionView);
-            updateButtonsReplacementWidth();
             
             updateConditionsLastState();
             focusLastValue();
@@ -154,17 +144,11 @@ public class GFilterView extends FlexPanel implements GFilterConditionView.UIHan
         
         conditionViews.remove(condition);
         filterContainer.remove(view);
-        updateButtonsReplacementWidth();
         
         updateConditionsLastState();
         if (nextViewToFocus != null) {
             nextViewToFocus.focusOnValue();
         }
-    }
-    
-    private void updateButtonsReplacementWidth() {
-        // 2 for 'add' and 'clear' + 1 for each condition ('remove')
-        buttonsReplacement.setWidth(BUTTON_WIDTH * (2 + conditionViews.size()) + "px");
     }
     
     public boolean isToolsVisible() {
@@ -179,8 +163,6 @@ public class GFilterView extends FlexPanel implements GFilterConditionView.UIHan
         
         addConditionButton.setVisible(toolsVisible);
         resetConditionsButton.setVisible(toolsVisible);
-        
-        buttonsReplacement.setVisible(!toolsVisible);
     }
 
     @Override
