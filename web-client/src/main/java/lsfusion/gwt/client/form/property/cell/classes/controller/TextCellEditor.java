@@ -20,6 +20,11 @@ public class TextCellEditor extends TextBasedCellEditor {
     }
 
     @Override
+    protected boolean disableSuggest() {
+        return true;
+    }
+
+    @Override
     protected Element createTextInputElement() {
         return Document.get().createTextAreaElement();
     }

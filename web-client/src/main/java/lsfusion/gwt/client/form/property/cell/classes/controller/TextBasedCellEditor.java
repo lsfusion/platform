@@ -57,9 +57,13 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
         this.inputElementTagName = inputElementTagName;
         this.editManager = editManager;
         this.property = property;
-        this.hasList = inputList != null;
+        this.hasList = inputList != null && !disableSuggest();
         this.strict = inputList != null && inputList.strict;
         this.actions = inputList != null ? inputList.actions : null;
+    }
+
+    protected boolean disableSuggest() {
+        return false;
     }
 
     @Override
@@ -235,9 +239,11 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
             return;
         }
 
-        String stringValue = suggestBox != null ? suggestBox.getValue() : getCurrentText(parent);
+        String stringValue = hasList ? suggestBox.getValue() : getCurrentText(parent);
         try {
-            suggestBox.display.hideSuggestions();
+            if(hasList) {
+                suggestBox.display.hideSuggestions();
+            }
             editManager.commitEditing(new GUserInputResult(tryParseInputText(stringValue, true), contextAction), blurred);
         } catch (ParseException ignore) {
             if (cancelIfInvalid) {
