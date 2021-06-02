@@ -2220,7 +2220,8 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
         ImRevMap<Integer, KeyExpr> mapKeys = KeyExpr.getMapKeys(SetFact.singleton(0));
         Where where = GroupExpr.create(MapFact.singleton(0, expr), Where.TRUE(), mapKeys).getWhere();
-        
+
+        mapKeys = mapKeys.filterInclValuesRev(BaseUtils.immutableCast(where.getOuterKeys())); // ignoring "free" keys just like in getInterfaceStat (needed because where for example can be FALSE)
         return getStatRows(mapKeys, where);
     }
 
