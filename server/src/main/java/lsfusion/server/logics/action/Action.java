@@ -353,7 +353,7 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
             Boolean rec = used.getValue(i);
 
             // making links to changed props "stronger" (see useCalculatedEventsInEventOrder comment)
-            ImSet<SessionProperty> calcDepends = property.getSessionCalcDepends(Settings.get().isUseCalculatedEventsInEventOrder());
+            ImSet<SessionProperty> calcDepends = property.getSessionCalcDepends(events && Settings.get().isUseCalculatedEventsInEventOrder());
             for(int j=0,sizeJ=calcDepends.size();j<sizeJ;j++)
                 mResult.add(new Pair<ActionOrProperty<?>, LinkType>(calcDepends.get(j), rec ? LinkType.RECEVENT : LinkType.EVENTACTION));
 
