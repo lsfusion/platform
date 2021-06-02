@@ -15,4 +15,5 @@ public interface EditManager {
     void commitEditing(GUserInputResult result, boolean blurred);  // assert if blurred then editor rerender dom
 
     void cancelEditing();
+    boolean isEditing();
 }

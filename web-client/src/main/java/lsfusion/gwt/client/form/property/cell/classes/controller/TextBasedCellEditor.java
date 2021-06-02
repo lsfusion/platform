@@ -232,14 +232,14 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
     }
 
     public void validateAndCommit(Element parent, Integer contextAction, boolean cancelIfInvalid, boolean blurred) {
-        if(contextAction == null && hasList && strict && !suggestBox.isValidValue()) {
+        String stringValue = getCurrentText(parent);
+        if(contextAction == null && hasList && strict && !suggestBox.isValidValue(stringValue)) {
             if (cancelIfInvalid) {
                 editManager.cancelEditing();
             }
             return;
         }
 
-        String stringValue = hasList ? suggestBox.getValue() : getCurrentText(parent);
         try {
             if(hasList) {
                 suggestBox.display.hideSuggestions();
@@ -251,8 +251,6 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
             }
         }
     }
-
-    private String prevQuery = null;
 
     protected Element createTextInputElement() {
         return Document.get().createTextInputElement();
@@ -267,17 +265,16 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
 
                 @Override
                 public void requestDefaultSuggestions(Request request, Callback callback) {
-                    requestAsyncSuggestions(request, callback);
+                    requestAsyncSuggestions(request, callback, true);
                 }
 
                 @Override
                 public void requestSuggestions(Request request, Callback callback) {
-                    requestAsyncSuggestions(request, callback);
+                    requestAsyncSuggestions(request, callback, false);
                 }
 
-                private void requestAsyncSuggestions(Request request, Callback callback) {
+                private void requestAsyncSuggestions(Request request, Callback callback, boolean emptyQuery) {
                     String query = nvl(request.getQuery(), "");
-                    prevQuery = query;
                     editManager.getAsyncValues(query, new AsyncCallback<Pair<ArrayList<String>, Boolean>>() {
                         @Override
                         public void onFailure(Throwable caught) {
@@ -285,30 +282,32 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
 
                         @Override
                         public void onSuccess(Pair<ArrayList<String>, Boolean> result) {
-                            suggestBox.setAutoSelectEnabled(strict && !prevQuery.isEmpty());
-                            suggestBox.setLatestSuggestions(result.first);
-                            List<Suggestion> suggestionList = new ArrayList<>();
-                            for (String suggestion : result.first) {
-                                suggestionList.add(new Suggestion() {
-                                    @Override
-                                    public String getDisplayString() {
-                                        int start = suggestion.toLowerCase().indexOf(query.toLowerCase());
-                                        if(start >= 0) {
-                                            int end = start + query.length();
-                                            return suggestion.substring(0, start) + "<strong>" + suggestion.substring(start, end) + "</strong>" + suggestion.substring(end);
-                                        } else {
+                            if(editManager.isEditing()) {
+                                suggestBox.setAutoSelectEnabled(strict && !emptyQuery);
+                                suggestBox.setLatestSuggestions(result.first);
+                                List<Suggestion> suggestionList = new ArrayList<>();
+                                for (String suggestion : result.first) {
+                                    suggestionList.add(new Suggestion() {
+                                        @Override
+                                        public String getDisplayString() {
+                                            int start = suggestion.toLowerCase().indexOf(query.toLowerCase());
+                                            if (start >= 0) {
+                                                int end = start + query.length();
+                                                return suggestion.substring(0, start) + "<strong>" + suggestion.substring(start, end) + "</strong>" + suggestion.substring(end);
+                                            } else {
+                                                return suggestion;
+                                            }
+                                        }
+
+                                        @Override
+                                        public String getReplacementString() {
                                             return suggestion;
                                         }
-                                    }
-
-                                    @Override
-                                    public String getReplacementString() {
-                                        return suggestion;
-                                    }
-                                });
+                                    });
+                                }
+                                suggestBox.updateDecoration(suggestionList.isEmpty(), result.second);
+                                callback.onSuggestionsReady(request, new Response(suggestionList));
                             }
-                            suggestBox.updateDecoration(suggestionList.isEmpty(), result.second);
-                            callback.onSuggestionsReady(request, new Response(suggestionList));
                         }
                     });
 
@@ -358,8 +357,7 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
             this.latestSuggestions = latestSuggestions;
         }
 
-        public boolean isValidValue() {
-            String value = getValue();
+        public boolean isValidValue(String value) {
             return value.isEmpty() || latestSuggestions.contains(value);
         }
 
@@ -397,24 +395,27 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
             panel.add(bottomPanel);
 
             HorizontalPanel buttonsPanel = new HorizontalPanel();
-            for(int i = 0; i < actions.length; i++) {
-                int index = i;
-                GwtClientUtils.setThemeImage(actions[index] + ".png", (image -> buttonsPanel.add(new PushButton(new Image(image)) {
-                    @Override
-                    protected void onClickStart() {
-                        hideSuggestions();
-                        validateAndCommit(getElement(), index, true, false);
-                    }
-                })));
-            }
+
             buttonsPanel.add(refreshButton = new PushButton() {
                 @Override
                 protected void onClickStart() {
                     refreshButtonPressed = true;
                     updateLoadingButton(true);
-                    suggestBox.forceRefreshSuggestions(prevQuery);
+                    suggestBox.forceRefreshSuggestions(getCurrentText(getElement()));
                 }
             });
+
+            for(int i = 0; i < actions.length; i++) {
+                int index = i;
+                GwtClientUtils.setThemeImage(actions[index] + ".png", (image -> buttonsPanel.add(new PushButton(new Image(image)) {
+                    @Override
+                    protected void onClickStart() {
+                        validateAndCommit(getElement(), index, true, false);
+                        hideSuggestions();
+                    }
+                })));
+            }
+
             updateLoadingButton(true);
             bottomPanel.add(buttonsPanel);
 

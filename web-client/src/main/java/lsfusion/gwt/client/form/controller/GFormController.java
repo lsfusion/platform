@@ -1864,6 +1864,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     private Element focusedElement;
     private Object forceSetFocus;
 
+    @Override
     public boolean isEditing() {
         return editContext != null;
     }

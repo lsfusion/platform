@@ -1120,12 +1120,14 @@ public class SuggestBox extends Composite implements HasText, HasFocus, HasAnima
             display.moveSelectionDown();
             if (isSuggestionListShowing()) {
               event.preventDefault();
+              event.stopPropagation(); //todo: added
             }
             break;
           case KeyCodes.KEY_UP:
             display.moveSelectionUp();
             if (isSuggestionListShowing()) {
               event.preventDefault();
+              event.stopPropagation(); //todo: added
             }
             break;
           case KeyCodes.KEY_ENTER:
