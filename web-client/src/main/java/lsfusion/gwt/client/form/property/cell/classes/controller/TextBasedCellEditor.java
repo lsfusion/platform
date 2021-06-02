@@ -293,8 +293,12 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
                                     @Override
                                     public String getDisplayString() {
                                         int start = suggestion.toLowerCase().indexOf(query.toLowerCase());
-                                        int end = start + query.length();
-                                        return suggestion.substring(0, start) + "<strong>" + suggestion.substring(start, end) + "</strong>" + suggestion.substring(end);
+                                        if(start >= 0) {
+                                            int end = start + query.length();
+                                            return suggestion.substring(0, start) + "<strong>" + suggestion.substring(start, end) + "</strong>" + suggestion.substring(end);
+                                        } else {
+                                            return suggestion;
+                                        }
                                     }
 
                                     @Override
