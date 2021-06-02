@@ -87,7 +87,7 @@ public abstract class RemoteDispatchAsync {
     public void flushCompletedRequests() {
         if (isEditing()) {
             q.forEach(action -> {
-                if (action.flushAnyway && !action.preProceeded) {
+                if (action.flushAnyway && action.finished && !action.preProceeded) {
                     action.proceed();
                     action.preProceeded = true;
                 }

@@ -125,6 +125,12 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
 //                    arrowPressed(event, parent, false);
 //                }
         } else if (BLUR.equals(type)) {
+            //restore focus and ignore blur if refresh button pressed
+            if(hasList && suggestBox.display.isRefreshButtonPressed()) {
+                suggestBox.display.setRefreshButtonPressed(false);
+                suggestBox.setFocus(true);
+                return;
+            }
             // Cancel the change. Ensure that we are blurring the input element and
             // not the parent element itself.
             EventTarget eventTarget = event.getEventTarget();
@@ -168,7 +174,7 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
     }
     protected void escapePressed(EventHandler handler, Element parent) {
         if(hasList) {
-            hideSuggestions();
+            suggestBox.display.hideSuggestions();
         }
         if(GKeyStroke.isPlainKeyEvent(handler.event)) {
             handler.consume();
@@ -231,7 +237,7 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
 
         String stringValue = suggestBox != null ? suggestBox.getValue() : getCurrentText(parent);
         try {
-            hideSuggestions();
+            suggestBox.display.hideSuggestions();
             editManager.commitEditing(new GUserInputResult(tryParseInputText(stringValue, true), contextAction), blurred);
         } catch (ParseException ignore) {
             if (cancelIfInvalid) {
@@ -325,12 +331,6 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
         return value == null ? "" : value.toString();
     }
 
-    private void hideSuggestions() {
-        if(suggestBox != null) {
-            suggestBox.display.hideSuggestions();
-        }
-    }
-
     private class CustomSuggestBox extends SuggestBox {
         public DefaultSuggestionDisplayString display;
         private List<String> latestSuggestions = new ArrayList<>();
@@ -361,6 +361,7 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
     private class DefaultSuggestionDisplayString extends SuggestBox.DefaultSuggestionDisplay {
         private Label noResultsLabel;
         private PushButton refreshButton;
+        private boolean refreshButtonPressed;
 
         public DefaultSuggestionDisplayString() {
             setSuggestionListHiddenWhenEmpty(false);
@@ -375,7 +376,10 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
         protected Widget decorateSuggestionList(Widget suggestionList) {
             VerticalPanel panel = new VerticalPanel();
             panel.add(suggestionList);
-            panel.add(noResultsLabel = new Label(messages.nothingFound()));
+
+            noResultsLabel = new Label(messages.nothingFound());
+            noResultsLabel.getElement().addClassName("item"); //to be like suggestion item
+            panel.add(noResultsLabel);
 
             HorizontalPanel bottomPanel = new HorizontalPanel();
             bottomPanel.setWidth("100%");
@@ -393,21 +397,31 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
                     }
                 })));
             }
-            GwtClientUtils.setThemeImage("refresh.png", (image -> buttonsPanel.add(refreshButton = new PushButton(new Image(image)) {
+            buttonsPanel.add(refreshButton = new PushButton() {
                 @Override
                 protected void onClickStart() {
-                    hideSuggestions();
+                    refreshButtonPressed = true;
+                    updateLoadingButton(true);
                     suggestBox.forceRefreshSuggestions(prevQuery);
                 }
-            })));
+            });
+            updateLoadingButton(true);
             bottomPanel.add(buttonsPanel);
 
             return panel;
         }
 
-        public void updateDecoration(boolean showNoResult, boolean showRefresh) {
+        public void updateDecoration(boolean showNoResult, boolean showLoading) {
             noResultsLabel.setVisible(showNoResult);
-            refreshButton.setVisible(showRefresh);
+            updateLoadingButton(showLoading);
+        }
+
+        boolean prevShowLoading;
+        public void updateLoadingButton(boolean showLoading) {
+            if(prevShowLoading != showLoading) {
+                GwtClientUtils.setThemeImage(showLoading ? "loading.gif" : "refresh.png", image -> refreshButton.getUpFace().setImage(new Image(image)));
+                prevShowLoading = showLoading;
+            }
         }
 
         @Override
@@ -424,6 +438,14 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
             if(!strict) {
                 suggestBox.setValue(getReplacementString());
             }
+        }
+
+        public boolean isRefreshButtonPressed() {
+            return refreshButtonPressed;
+        }
+
+        public void setRefreshButtonPressed(boolean refreshButtonPressed) {
+            this.refreshButtonPressed = refreshButtonPressed;
         }
     }
 }
