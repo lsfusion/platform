@@ -421,12 +421,8 @@ input[type=checkbox]:focus {
     margin: 0 3px 0 5px;
 }
 
-.userFilterListBox, .userFilterDataPropertyValue, .userFilterSelector {
+.userFilterListBox, .userFilterDataPropertyValue, .userFilterSelector, .userFilterButton {
     margin: 0 0 0 2px;
-}
-
-.userFilterButton {
-    margin: 0 2px;
 }
 
 .userFilterSelector {

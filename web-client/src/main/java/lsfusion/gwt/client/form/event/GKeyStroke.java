@@ -8,7 +8,8 @@ import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 
 import java.io.Serializable;
 
-import static com.google.gwt.dom.client.BrowserEvents.*;
+import static com.google.gwt.dom.client.BrowserEvents.KEYDOWN;
+import static com.google.gwt.dom.client.BrowserEvents.KEYPRESS;
 import static com.google.gwt.event.dom.client.KeyCodes.*;
 
 public class GKeyStroke implements Serializable {
@@ -36,6 +37,10 @@ public class GKeyStroke implements Serializable {
     public static final int KEY_C = 67;
     public static final int KEY_R = 82;
     public static final int KEY_V = 86;
+    
+    public static final GKeyStroke ADD_USER_FILTER_KEY_STROKE = new GKeyStroke(KEY_F2);
+    public static final GKeyStroke REPLACE_USER_FILTER_KEY_STROKE = new GKeyStroke(GKeyStroke.KEY_F2, true, false, false);
+    public static final GKeyStroke REMOVE_USER_FILTERS_KEY_STROKE = new GKeyStroke(GKeyStroke.KEY_F2, false, false, true);
 
     public int keyCode;
     public boolean altPressed;
@@ -149,6 +154,14 @@ public class GKeyStroke implements Serializable {
 
     public static boolean isGroupChangeKeyEvent(Event event) {
         return KEYDOWN.equals(event.getType()) && event.getKeyCode() == KEY_F12;
+    }
+    
+    public static boolean isAddUserFilterKeyEvent(Event event) {
+        return ADD_USER_FILTER_KEY_STROKE.isEvent(event);
+    }
+    
+    public static boolean isReplaceUserFilterKeyEvent(Event event) {
+        return REPLACE_USER_FILTER_KEY_STROKE.isEvent(event);
     }
 
     public static boolean isCharModifyKeyEvent(Event event, GEditBindingMap.EditEventFilter editEventFilter) {

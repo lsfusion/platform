@@ -1,8 +1,8 @@
 package lsfusion.gwt.client.form.filter.user.view;
 
+import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
@@ -28,6 +28,7 @@ public class GFilterConditionView extends FlexPanel {
     }
 
     private static final String DELETE_ICON_PATH = "filtdel.png";
+    private static final String SEPARATOR_ICON_PATH = "filtseparator.png";
 
     private Label propertyLabel;
     private Label compareLabel;
@@ -38,7 +39,7 @@ public class GFilterConditionView extends FlexPanel {
 
     private GFilterOptionSelector<Column> propertyView;
     private GFilterCompareSelector compareView;
-    private CheckBox junctionView;
+    private GToolbarButton junctionView;
 
     private boolean isLast = false;
     private boolean toolsVisible;
@@ -106,16 +107,6 @@ public class GFilterConditionView extends FlexPanel {
         handler.addEnterBinding(valueView.cell);
         addCentered(valueView);
 
-        junctionSeparator = GwtClientUtils.createVerticalSeparator(StyleDefaults.COMPONENT_HEIGHT);
-        junctionSeparator.addStyleName("userFilterJunctionSeparator");
-        addCentered(junctionSeparator);
-
-        junctionView = new CheckBox();
-        junctionView.setTitle(messages.formFilterConditionViewOr());
-        junctionView.addValueChangeHandler(event -> condition.junction = !event.getValue());
-        junctionView.setValue(!condition.junction);
-        addCentered(junctionView);
-        
         deleteButton = new GToolbarButton(DELETE_ICON_PATH, messages.formQueriesFilterRemoveCondition()) {
             @Override
             public ClickHandler getClickHandler() {
@@ -124,6 +115,24 @@ public class GFilterConditionView extends FlexPanel {
         };
         deleteButton.addStyleName("userFilterButton");
         addCentered(deleteButton);
+
+        junctionSeparator = GwtClientUtils.createVerticalSeparator(StyleDefaults.COMPONENT_HEIGHT);
+        junctionSeparator.addStyleName("userFilterJunctionSeparator");
+        addCentered(junctionSeparator);
+
+        junctionView = new GToolbarButton(SEPARATOR_ICON_PATH, messages.formFilterConditionViewOr()) {
+            @Override
+            public ClickHandler getClickHandler() {
+                return event -> {
+                    condition.junction = !condition.junction;
+                    showBackground(!condition.junction);        
+                };
+            }
+        };
+        junctionView.addStyleName("userFilterButton");
+        junctionView.getElement().getStyle().setPaddingTop(0, Style.Unit.PX);
+        junctionView.showBackground(!condition.junction);
+        addCentered(junctionView);
     }
 
     @Override

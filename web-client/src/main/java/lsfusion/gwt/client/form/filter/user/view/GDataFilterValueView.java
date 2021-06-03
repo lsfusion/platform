@@ -10,6 +10,9 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 
 import java.io.Serializable;
 
+import static lsfusion.gwt.client.form.event.GKeyStroke.isAddUserFilterKeyEvent;
+import static lsfusion.gwt.client.form.event.GKeyStroke.isReplaceUserFilterKeyEvent;
+
 public abstract class GDataFilterValueView extends GFilterValueView {
     private final GDataFilterValue filterValue;
     private final GTableController logicsSupplier;
@@ -59,6 +62,10 @@ public abstract class GDataFilterValueView extends GFilterValueView {
     }
 
     public void startEditing(Event keyEvent) {
-        cell.onEditEvent(new EventHandler(keyEvent));
+        if (isAddUserFilterKeyEvent(keyEvent) || isReplaceUserFilterKeyEvent(keyEvent)) {
+            cell.startEditing(keyEvent);
+        } else {
+            cell.onEditEvent(new EventHandler(keyEvent));
+        }
     }
 }

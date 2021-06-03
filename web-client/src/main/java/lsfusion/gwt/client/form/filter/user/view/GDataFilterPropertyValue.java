@@ -80,8 +80,21 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
     protected void onEditEvent(EventHandler handler) {
         if(property.isFilterChange(handler.event)) {
             handler.consume();
-            form.edit(property.baseType, handler.event, false, null, FILTER, result -> setValue(result.getValue()), result -> afterCommit.accept(result.getValue()), () -> {}, this, ServerResponse.FILTER);
+            startEditing(handler.event);
         }
+    }
+    
+    protected void startEditing(Event event) {
+        form.edit(property.baseType,
+                event,
+                false,
+                null,
+                FILTER,
+                result -> setValue(result.getValue()),
+                result -> afterCommit.accept(result.getValue()),
+                () -> {},
+                this,
+                ServerResponse.FILTER);
     }
 
     @Override

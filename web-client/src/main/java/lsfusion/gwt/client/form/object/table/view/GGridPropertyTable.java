@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import static java.lang.Math.max;
+import static lsfusion.gwt.client.form.event.GKeyStroke.*;
 
 public abstract class GGridPropertyTable<T extends GridDataRecord> extends GPropertyTable<T> implements HasMaxPreferredSize {
     public static int DEFAULT_PREFERRED_WIDTH = 130; // должно соответствовать значению в gridResizePanel в MainFrame.css
@@ -101,14 +102,14 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
 
         if(groupObject != null) {
             // ADD FILTER
-            addFilterBinding(new GKeyInputEvent(new GKeyStroke(GKeyStroke.KEY_F2)),
-                    event -> getGroupController().addFilter());
+            addFilterBinding(new GKeyInputEvent(ADD_USER_FILTER_KEY_STROKE),
+                    event -> getGroupController().addFilter(event));
             // REPLACE FILTER
-            addFilterBinding(new GKeyInputEvent(new GKeyStroke(GKeyStroke.KEY_F2, true, false, false)),
-                    event -> getGroupController().replaceFilter());
+            addFilterBinding(new GKeyInputEvent(REPLACE_USER_FILTER_KEY_STROKE),
+                    event -> getGroupController().replaceFilter(event));
             // REMOVE FILTERS
             GFormController.BindingExec removeFilters = event -> getGroupController().removeFilters();
-            addFilterBinding(new GKeyInputEvent(new GKeyStroke(GKeyStroke.KEY_F2, false, false, true)),
+            addFilterBinding(new GKeyInputEvent(REMOVE_USER_FILTERS_KEY_STROKE),
                     removeFilters);
             addFilterBinding(nativeEvent -> {
                         if (GKeyStroke.isEscapeKeyEvent(nativeEvent) && GKeyStroke.isPlainKeyEvent(nativeEvent)) {

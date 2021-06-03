@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form.filter.user.view;
 
+import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
@@ -22,6 +23,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
+import static lsfusion.gwt.client.form.event.GKeyStroke.ADD_USER_FILTER_KEY_STROKE;
 
 public class GFilterView extends FlexPanel implements GFilterConditionView.UIHandler {
     private static final ClientMessages messages = ClientMessages.Instance.get();
@@ -60,7 +62,12 @@ public class GFilterView extends FlexPanel implements GFilterConditionView.UIHan
         addConditionButton = new GToolbarButton(ADD_ICON_PATH, messages.formQueriesFilterAddCondition()) {
             @Override
             public ClickHandler getClickHandler() {
-                return event -> addCondition();
+                // pass add filter key down event to start editing immediately
+                return event -> addCondition(Event.as(Document.get().createKeyDownEvent(ADD_USER_FILTER_KEY_STROKE.ctrlPressed,
+                        ADD_USER_FILTER_KEY_STROKE.altPressed,
+                        ADD_USER_FILTER_KEY_STROKE.shiftPressed,
+                        false,
+                        ADD_USER_FILTER_KEY_STROKE.keyCode)));
             }
         };
         addConditionButton.addStyleName("userFilterButton");
@@ -97,12 +104,12 @@ public class GFilterView extends FlexPanel implements GFilterConditionView.UIHan
         controller.allRemoved();
     }
 
-    public void addCondition() {
-        addCondition(null, null, null, false);
+    public void addCondition(Event keyEvent) {
+        addCondition(keyEvent, false);
     }
 
-    public void addCondition(boolean replace) {
-        addCondition(null, null, null, replace);
+    public void addCondition(Event keyEvent, boolean replace) {
+        addCondition(null, null, keyEvent, replace);
     }
     
     public void addCondition(GPropertyDraw property) {

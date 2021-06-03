@@ -73,8 +73,8 @@ public abstract class GUserFilters {
         toolbarButton.showBackground(filterView.isToolsVisible());
     }
 
-    public void addConditionPressed(boolean replace) {
-        filterView.addCondition(replace);
+    public void addConditionPressed(boolean replace, Event event) {
+        filterView.addCondition(event, replace);
     }
 
     public GPropertyFilter getNewCondition(GPropertyDraw property, GGroupObjectValue columnKey) {
