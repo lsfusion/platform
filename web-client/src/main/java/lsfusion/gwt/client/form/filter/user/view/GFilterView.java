@@ -112,8 +112,8 @@ public class GFilterView extends FlexPanel implements GFilterConditionView.UIHan
         addCondition(null, null, keyEvent, replace);
     }
     
-    public void addCondition(GPropertyDraw property) {
-        addCondition(property, null, null, false);
+    public void addCondition(GPropertyDraw property, GGroupObjectValue columnKey) {
+        addCondition(property, columnKey, null, false);
     }
 
     public void addCondition(GPropertyDraw property, GGroupObjectValue columnKey, Event keyEvent, boolean replace) {
@@ -206,7 +206,7 @@ public class GFilterView extends FlexPanel implements GFilterConditionView.UIHan
     public void update() {
         if (!initialized) {
             for (GPropertyDraw property : filterComponent.properties) {
-                addCondition(property);
+                addCondition(property, controller.getLogicsSupplier().getSelectedColumnKey());
             }
             initialized = true;
         }
