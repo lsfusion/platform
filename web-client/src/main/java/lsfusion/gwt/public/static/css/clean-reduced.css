@@ -1058,6 +1058,7 @@ button {
 .gwt-TextArea {
     padding: 4px;
     border: 1px solid var(--component-border-color);
+    border-radius: var(--textfield-border-radius);
     border-top: 1px solid #666;
     font-size: 100%;
 }

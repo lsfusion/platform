@@ -255,6 +255,9 @@ public final class Log {
         }
         JTable table = new JTable(dataArray, columnNames);
         table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+        if(titles.size() == 1) {
+            table.getTableHeader().setReorderingAllowed(false);
+        }
         table.setPreferredScrollableViewportSize(
                 new Dimension(
                         table.getPreferredScrollableViewportSize().width,

@@ -156,6 +156,8 @@ hashModules '{system.hash.modules}' = DATA STRING[200] ();
 checkIsServer INTERNAL 'lsfusion.server.physics.admin.authentication.action.CheckIsServerAction' ();
 isServer = DATA LOCAL BOOLEAN ();
 
+lsfParams(STRING s) = ABSTRACT VALUE STRING(STRING);
+
 // ----------------------------------- open files ----------------------------------- //
 
 //source path, name

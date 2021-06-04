@@ -1,6 +1,5 @@
 package lsfusion.interop.logics;
 
-import com.google.common.base.Throwables;
 import lsfusion.base.ExceptionUtils;
 import lsfusion.base.remote.RMIUtils;
 import lsfusion.interop.base.exception.AppServerNotAvailableException;
@@ -10,6 +9,7 @@ import lsfusion.interop.logics.remote.RemoteLogicsLoaderInterface;
 import lsfusion.interop.session.SessionInfo;
 
 import java.net.MalformedURLException;
+import java.rmi.NoSuchObjectException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.util.Map;
@@ -64,6 +64,10 @@ public abstract class AbstractLogicsProviderImpl {
     }
 
     public <R> R runRequest(LogicsConnection connection, LogicsRunnable<R> runnable) throws AppServerNotAvailableException, RemoteException {
+        return runRequest(connection, runnable, false);
+    }
+
+    private <R> R runRequest(LogicsConnection connection, LogicsRunnable<R> runnable, boolean retry) throws AppServerNotAvailableException, RemoteException {
         LogicsSessionObject logicsSessionObject = createOrGetLogicsSessionObject(connection);
         try {
             return runnable.run(logicsSessionObject);
@@ -74,7 +78,10 @@ public abstract class AbstractLogicsProviderImpl {
             throw e;
         } catch (RemoteException e) { // it's important that this exception should not be suppressed (for example in ExternalRequestHandler)
             invalidateLogicsSessionObject(logicsSessionObject);
-            throw e;
+            if (e instanceof NoSuchObjectException && !retry)
+                return runRequest(connection, runnable, true);
+            else
+                throw e;
         }
     }
 

@@ -201,7 +201,7 @@ public class ClassChanges {
         return new ChangedClasses(mChangedClasses.immutable());
     }
     
-    private boolean checkOldChangeClasses(DataObject keyValue, ConcreteObjectClass oldClassObject, boolean isOldClasses, SingleKeyPropertyUsage dataNews, SQLSession sql, QueryEnvironment env) throws SQLException, SQLHandledException {
+    private static boolean checkOldChangeClasses(DataObject keyValue, ConcreteObjectClass oldClassObject, boolean isOldClasses, SingleKeyPropertyUsage dataNews, SQLSession sql, QueryEnvironment env) throws SQLException, SQLHandledException {
         ImCol<ImMap<String, Object>> prevValue = dataNews.read(sql, env, keyValue);
         if(prevValue.isEmpty())
             assert oldClassObject instanceof UnknownClass || isOldClasses; // а значит не важно true или false isOldChangeClasses, так как isOldClasses - true и delete все равно false
@@ -209,8 +209,33 @@ public class ClassChanges {
             assert BaseUtils.nullEquals(oldClassObject.getClassObject().getValue(), prevValue.single().singleValue());
         return true;
     }
-    
-    private Pair<ClassChange, ClassChange> getUpdateNews(ClassChange change, ClassDataProperty dataProperty, SingleKeyPropertyUsage dataNews, ImSet<ConcreteObjectClass> dataUsedNewClasses, ChangedDataClasses dataChangedClasses, BaseClass baseClass, boolean onlyOneChange, SQLSession sql, QueryEnvironment env) throws SQLException, SQLHandledException {
+
+    private ChangedDataClasses getPrevChangedClasses(ImSet<ConcreteObjectClass> newc, ClassDataProperty dataProperty, ImSet<ConcreteObjectClass> dataUsedPrevClasses) {
+        MSet<CustomClass> mPrevAdds = SetFact.mSet();
+        MSet<CustomClass> mPrevRemoves = SetFact.mSet();
+        MSet<ConcreteObjectClass> mPrevOlds = SetFact.mSet();
+        for(ConcreteObjectClass dataUsedPrevClass : dataUsedPrevClasses)
+            if(dataUsedPrevClass instanceof ConcreteCustomClass) {
+                ClassDataProperty prevDataProperty = ((ConcreteCustomClass) dataUsedPrevClass).dataProperty;
+                if(!BaseUtils.hashEquals(dataProperty, prevDataProperty)) {
+                    ChangedDataClasses changedPrevDataClasses = changedClasses.get(prevDataProperty);
+                    if(changedPrevDataClasses != null) {
+                        mPrevAdds.addAll(changedPrevDataClasses.add);
+                        mPrevRemoves.addAll(changedPrevDataClasses.remove);
+                        mPrevOlds.addAll(changedPrevDataClasses.old);
+                    }
+                }
+            }
+        ImSet<CustomClass> prevAdds = mPrevAdds.immutable();
+        ImSet<CustomClass> prevRemoves = mPrevRemoves.immutable();
+        ImSet<ConcreteObjectClass> prevOlds = mPrevOlds.immutable();
+        if(prevAdds.isEmpty() && prevRemoves.isEmpty() && prevOlds.isEmpty()) // optimization
+            return ChangedDataClasses.EMPTY;
+
+        return new ChangedDataClasses(prevAdds, prevRemoves, prevOlds, newc);
+    }
+
+    private static Pair<ClassChange, ClassChange> getUpdateNews(ClassChange change, ClassDataProperty dataProperty, SingleKeyPropertyUsage dataNews, ImSet<ConcreteObjectClass> dataUsedNewClasses, ChangedDataClasses dataChangedClasses, BaseClass baseClass, boolean onlyOneChange, SQLSession sql, QueryEnvironment env) throws SQLException, SQLHandledException {
         ClassChange delete;
         ClassChange modify;
         ImSet<ConcreteObjectClass> usedOld = dataChangedClasses.old.filter(dataUsedNewClasses);
@@ -259,14 +284,14 @@ public class ClassChanges {
             ClassDataProperty dataProperty = dataProperties.getKey(i);
             ChangedDataClasses dataChangedClasses = dataProperties.getValue(i);
             SingleKeyPropertyUsage dataNews = news.get(dataProperty);
-            ChangedDataClasses oldChangedClasses = this.changedClasses.get(dataProperty);
+            ChangedDataClasses dataOldChangedClasses = this.changedClasses.get(dataProperty);
 
             if (dataNews == null) {
                 dataNews = createChangeTable("chcl:news");
                 news.put(dataProperty, dataNews);
-                assert oldChangedClasses == null;
-                oldChangedClasses = ChangedDataClasses.EMPTY;
-                this.changedClasses.put(dataProperty, oldChangedClasses);
+                assert dataOldChangedClasses == null;
+                dataOldChangedClasses = ChangedDataClasses.EMPTY;
+                this.changedClasses.put(dataProperty, dataOldChangedClasses);
             }
 
             final SingleKeyPropertyUsage fDataNews = dataNews; // материализуем так как change несколько раз будет использоваться и по сути изменится при изменении dataNews (а не из-за того что нельзя modify'ить таблицу используя ее)
@@ -274,7 +299,7 @@ public class ClassChanges {
                 return value.needMaterialize(fDataNews); // return true всегда materializ'овать чтобы не переписывала таблицу в rewrite при чтении isOldChangeClasses ????
             });
             
-            Pair<ClassChange, ClassChange> update = getUpdateNews(matChange.change, dataProperty, dataNews, oldChangedClasses.newc, dataChangedClasses, baseClass, dataProperties.size() == 1, sql, env);
+            Pair<ClassChange, ClassChange> update = getUpdateNews(matChange.change, dataProperty, dataNews, dataOldChangedClasses.newc, dataChangedClasses, baseClass, dataProperties.size() == 1, sql, env);
             ClassChange deleteChange = update.first; ClassChange modifyChange = update.second;
 
 //            // нижний assertion по идее только при удалении добавленного нарушается, но как этим воспользоваться пока непонятно
@@ -285,11 +310,16 @@ public class ClassChanges {
 
             ModifyResult tableChanged = deleteChanged.or(modifyChanged);
 
-            ChangedDataClasses newChangedClasses = oldChangedClasses.merge(dataChangedClasses);
-            if(newChangedClasses != oldChangedClasses) // оптимизация - если реально изменились классы, а не только удалились
+            // before this point (and in aspectChanges) we needed "actual" class changes from current class to new
+            // in changedClasses we need changes from base classes (that are in database now)
+            // pulling them from readChangedClasses is an overhead, so we'll just use oldc, add, remove from current changedClasses
+            ChangedDataClasses newChangedClasses = dataChangedClasses.merge(getPrevChangedClasses(dataChangedClasses.newc, dataProperty, dataChangedClasses.old));
+
+            newChangedClasses = dataOldChangedClasses.merge(newChangedClasses);
+            if(newChangedClasses != dataOldChangedClasses) // optimization
                 this.changedClasses.put(dataProperty, newChangedClasses);
 
-            if(tableChanged.sourceChanged() || (dataChangedClasses != newChangedClasses && oldChangedClasses != newChangedClasses && !oldChangedClasses.newc.containsAll(newChangedClasses.newc))) // если изменились источник (а newc - тоже источник), добавляем всем изменение SOURCE
+            if(tableChanged.sourceChanged() || (dataChangedClasses != newChangedClasses && dataOldChangedClasses != newChangedClasses)) // если изменились источник (а newc - тоже источник), добавляем всем изменение SOURCE
                 mIsClassChanges.addAll(getChangedIsClassProperties(newChangedClasses, baseClass).toMap(UpdateResult.SOURCE));
 
             aspectChangeClass(mDataChanges, mIsClassChanges, i, dataProperty, dataNews, tableChanged, dataChangedClasses, baseClass);

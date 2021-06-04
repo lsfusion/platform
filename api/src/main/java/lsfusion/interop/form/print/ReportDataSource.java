@@ -38,6 +38,16 @@ public class ReportDataSource implements JRRewindableDataSource {
         moveFirst();
     }
 
+    public ReportDataSource rewind() {
+        moveFirst();
+        return this;
+    }
+
+    public ReportDataSource(ReportDataSource dataSource) {
+        this(dataSource.keyData, dataSource.propData, dataSource.repeatCountFieldName);
+        moveFirst();
+    }
+
     @Override
     public void moveFirst() {
         upCurrentKeyRow = new HashMap<>();

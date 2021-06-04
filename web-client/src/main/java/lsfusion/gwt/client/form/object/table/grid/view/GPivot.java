@@ -308,7 +308,12 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         JsArrayMixed sortCols = JsArrayString.createArray().cast();
         LinkedHashMap<GPropertyDraw, Boolean> defaultOrders = gridController.getDefaultOrders();
         for(Map.Entry<GPropertyDraw, Boolean> order : defaultOrders.entrySet()) {
-            sortCols.push(createSortCol(columnCaptionMap.get(order.getKey()), order.getValue()));
+            String caption = columnCaptionMap.get(order.getKey());
+            if(contains(measures, caption)) {
+                sortCols.push(createSortCol(toJsArrayString(caption), order.getValue()));
+            } else {
+                sortCols.push(createSortCol(caption, order.getValue()));
+            }
         }
 
         config = getDefaultConfig(columns, splitCols, rows, splitRows, inclusions, sortCols, rendererName, aggregationName, settings);
@@ -1891,6 +1896,12 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
             }
         }
         return -1;
+    }
+
+    private JsArrayString toJsArrayString(String value) {
+        JsArrayString array = JavaScriptObject.createArray().cast();
+        array.push(value);
+        return array;
     }
 
     private void rowAttrHeaderClickAction(JsArrayMixed rowKeyValues, String attrName, boolean dblClick) {

@@ -8,6 +8,8 @@ import java.sql.SQLException;
 
 public class MySQLDataAdapter extends DataAdapter {
 
+    protected static final String DB_NAME = "mysql";
+
     MySQLDataAdapter(String iDataBase, String iServer, String iUserID, String iPassword) throws Exception {
         super(MySQLSQLSyntax.instance, iDataBase, iServer, null, iUserID, iPassword, null, false);
     }
@@ -25,5 +27,10 @@ public class MySQLDataAdapter extends DataAdapter {
         connect.createStatement().execute("USE " + dataBase);
 
         return connect;
+    }
+
+    @Override
+    protected String getDBName() {
+        return DB_NAME;
     }
 }

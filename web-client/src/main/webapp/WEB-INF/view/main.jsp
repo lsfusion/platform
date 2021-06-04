@@ -112,6 +112,14 @@
                 'https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js',
                 'https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/leaflet.markercluster.js',
                 'https://cdnjs.cloudflare.com/ajax/libs/leaflet-polylinedecorator/1.1.0/leaflet.polylineDecorator.min.js',
+
+                <%--support yandex map tile in leaflet --%>
+                ['https://cdnjs.cloudflare.com/ajax/libs/leaflet-plugins/3.4.0/layer/tile/Yandex.min.js', 'leaflet.yandex.plugin.min.js'],
+                ['https://cdnjs.cloudflare.com/ajax/libs/leaflet-plugins/3.4.0/layer/tile/Yandex.addon.LoadApi.min.js', 'leaflet.yandex.addon.LoadApi.min.js'],
+
+                <%--support google map tile in leaflet --%>
+                ['https://unpkg.com/leaflet.gridlayer.googlemutant@latest/dist/Leaflet.GoogleMutant.js', 'leaflet.GoogleMutant.plugin.js'],
+
                 'static/css/gMap.css',
 
                 <!-- calendar-->
@@ -131,6 +139,12 @@
             ]);
 
         </script>
+
+        <c:forEach items="${lsfParams}" var="lsfParam">
+            <script>
+                lsfParams.set("${lsfParam.key}", "${lsfParam.value}");
+            </script>
+        </c:forEach>
 
         <c:forEach items="${filesUrls}" var="fileUrl">
             <c:if test="${fileUrl.endsWith('js')}">

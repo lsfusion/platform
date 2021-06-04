@@ -41,6 +41,8 @@ isDefault '{geo.api.key.default}' (MapProvider m) = m == calculateMapProvider();
 apiKey '{geo.api.key}' = DATA STRING(MapProvider); 
 provider '{geo.api.key.provider}' (MapProvider m) = staticCaption(m) CHARWIDTH 5;
 
+lsfParams(STRING s) += GROUP MAX apiKey(MapProvider p) IF s = 'mapApiKey_' + staticCaption(p);
+
 getCoordinatesAddress  INTERNAL  'lsfusion.server.logics.classes.data.utils.geo.GetCoordinatesAddressAction' (STRING, MapProvider);
 getCoordinates (STRING address)  { getCoordinatesAddress(address, calculateMapProvider()); }
 recalculateDistance  INTERNAL  'lsfusion.server.logics.classes.data.utils.geo.RecalculateDistancePOIAction' (POI);

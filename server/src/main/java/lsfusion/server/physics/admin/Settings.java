@@ -194,6 +194,10 @@ public class Settings implements Cloneable {
     // а не высчитывать на начало транзакции потому как все равно "временнОй" целостности не будет
     private boolean useEventValuePrevHeuristic = true;
 
+    // if we have WHEN CHANGED(f(a)) we want to make this link stronger in order to get more accurate event order
+    // however it's not evident if we should respect calculated events (the main problem is in getDroppedDepends) which gives sometimes really undesirable behaviour
+    private boolean useCalculatedEventsInEventOrder = false;
+
     // отключает оптимизацию с вкладками
     private boolean disableTabbedOptimization = false;
 
@@ -333,6 +337,14 @@ public class Settings implements Cloneable {
 
     public void setEnableApplySingleRemoveClasses(boolean enableApplySingleRemoveClasses) {
         this.enableApplySingleRemoveClasses = enableApplySingleRemoveClasses;
+    }
+
+    public boolean isUseCalculatedEventsInEventOrder() {
+        return useCalculatedEventsInEventOrder;
+    }
+
+    public void setUseCalculatedEventsInEventOrder(boolean useCalculatedEventsInEventOrder) {
+        this.useCalculatedEventsInEventOrder = useCalculatedEventsInEventOrder;
     }
 
     public boolean isEnableApplySingleStored() {

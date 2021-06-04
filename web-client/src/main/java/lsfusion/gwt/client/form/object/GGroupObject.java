@@ -32,6 +32,7 @@ public class GGroupObject implements Serializable, HasNativeSID {
     public GListViewType listViewType;
     public GPivotOptions pivotOptions;
     public String customRenderFunction;
+    public String mapTileProvider;
 
     public boolean asyncInit;
 

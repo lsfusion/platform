@@ -67,6 +67,7 @@ import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
+import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.dev.debug.*;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
@@ -354,8 +355,8 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
             Property<?> property = used.getKey(i);
             Boolean rec = used.getValue(i);
 
-            // эвристика : усилим связи к session calc, предполагается 
-            ImSet<SessionProperty> calcDepends = property.getSessionCalcDepends(events); // в том числе и для событий усилим, хотя может быть определенная избыточность,когда в SessionCalc - другой SessionCalc, но это очень редкие случаи
+            // making links to changed props "stronger" (see useCalculatedEventsInEventOrder comment)
+            ImSet<SessionProperty> calcDepends = property.getSessionCalcDepends(events && Settings.get().isUseCalculatedEventsInEventOrder());
             for(int j=0,sizeJ=calcDepends.size();j<sizeJ;j++)
                 mResult.add(new Pair<ActionOrProperty<?>, LinkType>(calcDepends.get(j), rec ? LinkType.RECEVENT : LinkType.EVENTACTION));
 

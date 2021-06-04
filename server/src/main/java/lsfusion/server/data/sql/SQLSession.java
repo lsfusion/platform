@@ -574,8 +574,12 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                 this.applyStartTime = applyStartTime;
             }
         } catch (SQLException e) {
-            throw ExceptionUtils.propagate(handle(e, "START TRANSACTION", privateConnection), SQLException.class, SQLHandledException.class);
+            handleAndPropagate(e, "START TRANSACTION");
         }
+    }
+
+    public void handleAndPropagate(SQLException e, String message) throws SQLException, SQLHandledException {
+        throw ExceptionUtils.propagate(handle(e, message, privateConnection), SQLException.class, SQLHandledException.class);
     }
 
     private void endTransaction(final OperationOwner owner, boolean rollback) throws SQLException {
@@ -1225,10 +1229,14 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         return new Pair<>(syntax.getAnalyze(table), StaticExecuteEnvironmentImpl.NOREADONLY);
     }
 
-    public void vacuumAnalyzeSessionTable(String table, OperationOwner owner) throws SQLException {
+    public void vacuumAnalyzeSessionTable(String table, OperationOwner owner) throws SQLException, SQLHandledException {
 //        (isInTransaction()? "" :"VACUUM ") + по идее не надо так как TRUNCATE делается
         Pair<String, StaticExecuteEnvironment> ddl = getVacuumAnalyzeDDL(table, syntax);
-        executeDDL(ddl.first, ddl.second, owner);
+        try {
+            executeDDL(ddl.first, ddl.second, owner);
+        } catch (SQLException throwable) {
+            handleAndPropagate(throwable, "VACUUM ANALYZE");
+        }
     }
 
     private int noReadOnly = 0;
