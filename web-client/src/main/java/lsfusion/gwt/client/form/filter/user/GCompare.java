@@ -4,7 +4,7 @@ package lsfusion.gwt.client.form.filter.user;
 import lsfusion.gwt.client.ClientMessages;
 
 public enum GCompare {
-    EQUALS, GREATER, LESS, GREATER_EQUALS, LESS_EQUALS, NOT_EQUALS, START_WITH, CONTAINS, ENDS_WITH, LIKE, INARRAY;
+    EQUALS, GREATER, LESS, GREATER_EQUALS, LESS_EQUALS, NOT_EQUALS, START_WITH, CONTAINS, ENDS_WITH, LIKE, MATCH, INARRAY;
 
     public static GCompare get(boolean min) {
         return min? GCompare.LESS: GCompare.GREATER;
@@ -33,6 +33,8 @@ public enum GCompare {
             case 9:
                 return LIKE;
             case 10:
+                return MATCH;
+            case 11:
                 return INARRAY;
             default:
                 return EQUALS;
@@ -61,8 +63,10 @@ public enum GCompare {
                 return 8;
             case LIKE:
                 return 9;
-            case INARRAY:
+            case MATCH:
                 return 10;
+            case INARRAY:
+                return 11;
         }
         throw new RuntimeException("Serialize Compare");
     }
@@ -91,6 +95,8 @@ public enum GCompare {
                 return messages.filterCompareEndsWith();
             case LIKE :
                 return "LIKE";
+            case MATCH:
+                return "MATCH";
             case INARRAY :
                 return "IN ARRAY";
         }
