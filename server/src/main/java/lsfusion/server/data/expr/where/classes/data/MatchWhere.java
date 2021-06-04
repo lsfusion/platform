@@ -7,6 +7,7 @@ import lsfusion.server.data.query.compile.CompileSource;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.classes.data.StringClass;
+import lsfusion.server.physics.admin.Settings;
 
 import java.util.Arrays;
 import java.util.List;
@@ -39,16 +40,15 @@ public class MatchWhere extends BinaryWhere<MatchWhere> {
 
     @Override
     protected String getBaseSource(CompileSource compile) {
-        List<String> languages = Arrays.asList("english", "russian");
+        List<String> languages = Arrays.asList(Settings.get().getFilterMatchLanguages().split(","));
         Type type = operator1.getType(compile.keyType);
         String source = operator1.getSource(compile);
         String match = operator2.getSource(compile);
-        String sourceString = languages.stream().map(language -> "to_tsvector('" + language + "', " + source + ")").collect(Collectors.joining(" || "));
-        String matchString = languages.stream().map(language -> "websearch_to_tsquery('" + language + "', " + match + ")").collect(Collectors.joining(" || "));
+        String matchString = languages.stream().map(language -> "to_tsvector('" + language + "', " + source + ") @@ websearch_to_tsquery('" + language + "', " + match + ")").collect(Collectors.joining(" OR "));
         String likeString = source + (type instanceof StringClass && ((StringClass) type).caseInsensitive ? " " + compile.syntax.getInsensitiveLike() + " " : " LIKE ")
                 + "(" + ("'%' " + compile.syntax.getStringConcatenate() + " ") + match + (" " + compile.syntax.getStringConcatenate() + " '%'") + ")";
 
-        return "((" + sourceString + ") @@ (" + matchString + ") OR " + likeString + ")";
+        return "((" + matchString + ") OR " + likeString + ")";
     }
 
     public static Where create(BaseExpr operator1, BaseExpr operator2) {
