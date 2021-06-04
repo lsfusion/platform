@@ -24,7 +24,7 @@ public class GStringType extends GDataType {
 
     @Override
     public GCompare[] getFilterCompares() {
-        return new GCompare[] {EQUALS, GREATER, LESS, GREATER_EQUALS, LESS_EQUALS, NOT_EQUALS, START_WITH, CONTAINS, ENDS_WITH, LIKE};
+        return new GCompare[] {EQUALS, GREATER, LESS, GREATER_EQUALS, LESS_EQUALS, NOT_EQUALS, START_WITH, CONTAINS, ENDS_WITH, LIKE, MATCH};
     }
 
     @Override
@@ -34,7 +34,7 @@ public class GStringType extends GDataType {
 
     @Override
     public GCompare getDefaultCompare() {
-        return caseInsensitive ? GCompare.CONTAINS : GCompare.EQUALS;
+        return caseInsensitive ? MATCH : EQUALS;
     }
 
     public GStringType() {}

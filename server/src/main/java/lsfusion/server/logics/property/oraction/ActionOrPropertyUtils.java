@@ -173,6 +173,8 @@ public class ActionOrPropertyUtils {
                 return Compare.ENDS_WITH;
             case "LIKE":
                 return Compare.LIKE;
+            case "MATCH":
+                return Compare.MATCH;
             case "INARRAY":
                 return Compare.INARRAY;
             default:

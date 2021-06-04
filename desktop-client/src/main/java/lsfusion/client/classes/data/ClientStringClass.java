@@ -37,12 +37,12 @@ public class ClientStringClass extends ClientDataClass {
 
     @Override
     public Compare[] getFilterCompares() {
-        return new Compare[] {EQUALS, GREATER, LESS, GREATER_EQUALS, LESS_EQUALS, NOT_EQUALS, START_WITH, CONTAINS, ENDS_WITH, LIKE};
+        return new Compare[] {EQUALS, GREATER, LESS, GREATER_EQUALS, LESS_EQUALS, NOT_EQUALS, START_WITH, CONTAINS, ENDS_WITH, LIKE, MATCH};
     }
 
     @Override
     public Compare getDefaultCompare() {
-        return caseInsensitive ? CONTAINS : EQUALS;
+        return caseInsensitive ? MATCH : EQUALS;
     }
 
     public final static Map<Pair<Boolean, Boolean>, ClientTypeClass> types = new HashMap<>();
