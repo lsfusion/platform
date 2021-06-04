@@ -89,6 +89,7 @@ public interface ClientMessages extends Messages {
     String formGridPreferencesFontStyleItalic();
 
     String formFilterConditionViewOr();
+    String formFilterConditionAllowNull();
 
     String tooltipPath();
 

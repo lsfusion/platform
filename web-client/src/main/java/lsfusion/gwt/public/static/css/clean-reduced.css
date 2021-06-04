@@ -350,6 +350,7 @@ button {
 }
 .gwt-MenuBar-vertical table {
     border-collapse: collapse;
+    width: 100%;
 }
 .gwt-MenuBar-vertical .gwt-MenuItem {
     padding: 2px 40px 2px 1px;

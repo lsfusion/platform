@@ -21,7 +21,7 @@ public abstract class GDataFilterValueView extends ResizableSimplePanel {
     public GDataFilterPropertyValue cell;
 
     public GDataFilterValueView(GDataFilterValue filterValue, GPropertyDraw property, GGroupObjectValue columnKey, GTableController logicsSupplier) {
-        this.filterValue = filterValue;
+        this.filterValue = filterValue != null ? filterValue : new GDataFilterValue();
         this.logicsSupplier = logicsSupplier;
 
         addStyleName("userFilterDataPropertyValue");

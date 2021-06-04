@@ -196,7 +196,13 @@ public class GFilterView extends FlexPanel implements GFilterConditionView.UIHan
     }
 
     public void applyFilter() {
-        controller.applyFilters(new ArrayList<>(conditionViews.keySet()), true);
+        ArrayList<GPropertyFilter> result = new ArrayList<>();
+        for (Map.Entry<GPropertyFilter, GFilterConditionView> entry : conditionViews.entrySet()) {
+            if (entry.getValue().allowNull || !entry.getKey().nullValue()) {
+                result.add(entry.getKey());
+            }
+        }
+        controller.applyFilters(result, true);
     }
 
     public boolean hasConditions() {

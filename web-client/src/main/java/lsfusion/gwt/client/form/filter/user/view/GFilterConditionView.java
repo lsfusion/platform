@@ -10,7 +10,6 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.form.filter.user.GCompare;
-import lsfusion.gwt.client.form.filter.user.GDataFilterValue;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.object.table.controller.GTableController;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
@@ -40,11 +39,13 @@ public class GFilterConditionView extends FlexPanel {
     private GFilterOptionSelector<Column> propertyView;
     private GFilterCompareSelector compareView;
     private GToolbarButton junctionView;
+    
+    public boolean allowNull = false; 
 
     private boolean isLast = false;
     private boolean toolsVisible;
 
-    public GPropertyFilter condition;
+    private GPropertyFilter condition;
     
     private boolean focused = false;
 
@@ -88,6 +89,11 @@ public class GFilterConditionView extends FlexPanel {
             }
 
             @Override
+            public void allowNullChanged(boolean value) {
+                allowNull = value;
+            }
+
+            @Override
             public void valueChanged(GCompare value) {
                 super.valueChanged(value);
                 condition.compare = value;
@@ -97,8 +103,7 @@ public class GFilterConditionView extends FlexPanel {
         compareView.setSelectedValue(condition.compare);
         addCentered(compareView);
 
-        GDataFilterValue dataValue = condition.value instanceof GDataFilterValue ? (GDataFilterValue) condition.value : new GDataFilterValue();
-        valueView = new GDataFilterValueView(dataValue, condition.property, condition.columnKey, logicsSupplier) {
+        valueView = new GDataFilterValueView(condition.value, condition.property, condition.columnKey, logicsSupplier) {
             @Override
             public void setFocused(boolean focused) {
                 GFilterConditionView.this.focused = focused;

@@ -42,4 +42,8 @@ public class GPropertyFilter {
 
         return filterDTO;
     }
+    
+    public boolean nullValue() {
+        return value.value == null;
+    }
 }
