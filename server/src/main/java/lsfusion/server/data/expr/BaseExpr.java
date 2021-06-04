@@ -19,10 +19,7 @@ import lsfusion.server.data.expr.key.KeyType;
 import lsfusion.server.data.expr.key.ParamExpr;
 import lsfusion.server.data.expr.where.cases.ExprCase;
 import lsfusion.server.data.expr.where.cases.ExprCaseList;
-import lsfusion.server.data.expr.where.classes.data.EqualsWhere;
-import lsfusion.server.data.expr.where.classes.data.GreaterWhere;
-import lsfusion.server.data.expr.where.classes.data.InArrayWhere;
-import lsfusion.server.data.expr.where.classes.data.LikeWhere;
+import lsfusion.server.data.expr.where.classes.data.*;
 import lsfusion.server.data.query.compile.FJData;
 import lsfusion.server.data.stat.KeyStat;
 import lsfusion.server.data.stat.PropStat;
@@ -155,6 +152,8 @@ public abstract class BaseExpr extends Expr {
                 return LikeWhere.create(expr, this, 1);
             case LIKE:
                 return LikeWhere.create(expr, this, null);
+            case MATCH:
+                return MatchWhere.create(expr, this);
             case INARRAY:
                 return InArrayWhere.create(expr, this);
             case CONTAINS:

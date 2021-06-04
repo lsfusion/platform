@@ -62,7 +62,7 @@ public class BaseUtils {
     private static final int STRING_SERIALIZATION_CHUNK_SIZE = 65535/3;
 
     public static Integer getApiVersion() {
-        return 154;
+        return 156;
     }
 
     public static String getPlatformVersion() {
@@ -2635,7 +2635,7 @@ public class BaseUtils {
     public static String dateToString(String format, LocalDate d) {
         return d != null ? d.format(DateTimeFormatter.ofPattern(format)) : "";
     }
-    
+
     public static int indexOf(String string, int ch, int count) {
         int start = 0;
         for(int i=0;i<count;i++) {
