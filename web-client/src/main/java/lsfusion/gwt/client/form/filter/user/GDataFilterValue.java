@@ -3,9 +3,8 @@ package lsfusion.gwt.client.form.filter.user;
 import lsfusion.gwt.client.ClientMessages;
 
 import java.io.Serializable;
-import java.util.Objects;
 
-public class GDataFilterValue extends GFilterValue {
+public class GDataFilterValue {
     public Serializable value;
 
     public GDataFilterValue() {
@@ -20,7 +19,6 @@ public class GDataFilterValue extends GFilterValue {
         return ClientMessages.Instance.get().filterDataValue();
     }
 
-    @Override
     public GFilterValueDTO getDTO() {
         return new GFilterValueDTO(0, value);
     }

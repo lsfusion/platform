@@ -2,6 +2,7 @@ package lsfusion.gwt.client.form.filter.user.view;
 
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.base.view.EventHandler;
+import lsfusion.gwt.client.base.view.ResizableSimplePanel;
 import lsfusion.gwt.client.form.filter.user.GDataFilterValue;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
@@ -13,7 +14,7 @@ import java.io.Serializable;
 import static lsfusion.gwt.client.form.event.GKeyStroke.isAddUserFilterKeyEvent;
 import static lsfusion.gwt.client.form.event.GKeyStroke.isReplaceUserFilterKeyEvent;
 
-public abstract class GDataFilterValueView extends GFilterValueView {
+public abstract class GDataFilterValueView extends ResizableSimplePanel {
     private final GDataFilterValue filterValue;
     private final GTableController logicsSupplier;
 
@@ -28,7 +29,6 @@ public abstract class GDataFilterValueView extends GFilterValueView {
         changeProperty(property, columnKey);
     }
 
-    @Override
     public void propertyChanged(GPropertyFilter condition) {
         filterValue.value = (Serializable) logicsSupplier.getSelectedValue(condition.property, condition.columnKey);
 
@@ -68,4 +68,6 @@ public abstract class GDataFilterValueView extends GFilterValueView {
             cell.onEditEvent(new EventHandler(keyEvent));
         }
     }
+
+    public abstract void setFocused(boolean focused);
 }
