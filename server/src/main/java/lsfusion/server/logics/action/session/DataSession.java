@@ -1918,6 +1918,9 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                 rollbackApply();
             } catch (Throwable rs) {
                 ServerLoggers.sqlHandLogger.info("ROLLBACK EXCEPTION " + ExceptionUtils.toString(rs) + '\n' + ExecutionStackAspect.getExceptionStackTrace());
+                // in theory all rollbacks are inside finally blocks, so the transaction should be rollbacked anyway
+                // but it seems in some extremely rare cases (like deadlocks with VACUUM ANALYZE) the transaction is not properly rollbacked, what can lead to some extremely bad problems
+                throw ExceptionUtils.propagate(rs, SQLException.class, SQLHandledException.class);
             }
                 
             if(t instanceof SQLHandledException && ((SQLHandledException)t).repeatApply(sql, getOwner(), SQLSession.getAttemptCountSum(attemptCountMap))) { // update conflict или deadlock или timeout - пробуем еще раз
