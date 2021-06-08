@@ -34,7 +34,12 @@ public abstract class GFilterOptionSelector<T> extends TextBox {
         for (T value : values) {
             addMenuItem(value, value.toString());
         }
-        
+    }
+
+    @Override
+    protected void onAttach() {
+        super.onAttach();
+        setTabIndex(-1); // makes non-focusable
     }
 
     public void setSelectedValue(T value) {
