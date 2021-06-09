@@ -136,7 +136,7 @@ public class DateConverter {
     static {
         ZONED_DATETIME_FORMAT_REGEXPS.put("^\\d{4}-\\d{1,2}-\\d{1,2}t\\d{1,2}:\\d{2}:\\d{2}[+-]\\d{2}:\\d{2}$", "yyyy-MM-dd'T'HH:mm:ssXXX");
         ZONED_DATETIME_FORMAT_REGEXPS.put("^\\d{4}-\\d{1,2}-\\d{1,2}t\\d{1,2}:\\d{2}:\\d{2}\\.\\d[+-]\\d{2}:\\d{2}$", "yyyy-MM-dd'T'HH:mm:ss.SXXX");
-        ZONED_DATETIME_FORMAT_REGEXPS.put("^\\d{4}-\\d{1,2}-\\d{1,2}t\\d{1,2}:\\d{2}:\\d{2}\\.\\d{2,3}[+-]\\d{2}:\\d{2}$", "yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+        ZONED_DATETIME_FORMAT_REGEXPS.put("^\\d{4}-\\d{1,2}-\\d{1,2}t\\d{1,2}:\\d{2}:\\d{2}\\.\\d{2,3}(([+-]\\d{2}:\\d{2})|z)$", "yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
     }
 
     public static LocalDateTime smartParse(String dateString) {
