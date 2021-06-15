@@ -122,7 +122,7 @@ public class PropertyPanelController {
         for (final ClientGroupObjectValue columnKey : columnKeys) {
             if (showIfs == null || showIfs.get(columnKey) != null) {
                 PanelView view = views != null ? views.remove(columnKey) : null;
-                if (view == null && !property.hide) {
+                if (view == null && (!property.hide || property.changeKey != null)) {
                     view = property.getPanelView(form, columnKey);
                     view.setReadOnly(property.isReadOnly());
 
@@ -145,10 +145,12 @@ public class PropertyPanelController {
         //но при этом будет терятся фокус с удалённых компонентов, поэтому пока забиваем на порядок
 //        viewsPanel.removeAll();
 
-        for (ClientGroupObjectValue columnKey : columnKeys) {
-            PanelView view = views.get(columnKey);
-            if (view != null && view.getComponent().getParent() != viewsPanel) {
-                viewsPanel.add(view.getComponent(), new FlexConstraints(property.getAlignment(), property.getValueWidth(viewsPanel)));
+        if (!property.hide) {
+            for (ClientGroupObjectValue columnKey : columnKeys) {
+                PanelView view = views.get(columnKey);
+                if (view != null && view.getComponent().getParent() != viewsPanel) {
+                    viewsPanel.add(view.getComponent(), new FlexConstraints(property.getAlignment(), property.getValueWidth(viewsPanel)));
+                }
             }
         }
 

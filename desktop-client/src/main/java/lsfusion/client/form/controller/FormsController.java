@@ -22,6 +22,7 @@ import lsfusion.interop.form.print.ReportGenerationData;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 import net.sf.jasperreports.engine.JRException;
 
+import java.awt.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -53,6 +54,17 @@ public class FormsController implements ColorThemeChangeListener {
 
         control.addMultipleDockableFactory("page", dockableFactory);
         MainController.addColorThemeChangeListener(this);
+
+        //Global KeyEvents listener
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventPostProcessor(e -> {
+            if(!e.isConsumed()) {
+                CDockable focused = control.getFocusedCDockable();
+                if(focused instanceof ClientFormDockable) {
+                    ((ClientFormDockable) focused).directProcessKeyEvent(e);
+                }
+            }
+            return false;
+        });
     }
     
     public void clean() {
@@ -113,7 +125,7 @@ public class FormsController implements ColorThemeChangeListener {
             if (dockable instanceof ClientFormDockable)
                 page = (ClientFormDockable) dockable;
         }
-        
+
         if(page != null) {
             page.toFront();
             page.requestFocusInWindow();
