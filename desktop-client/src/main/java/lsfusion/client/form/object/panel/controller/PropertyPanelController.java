@@ -136,7 +136,7 @@ public class PropertyPanelController {
             }
         }
 
-        if(views != null) {
+        if(views != null && !property.hide) {
             views.values().forEach(panelView -> viewsPanel.remove(panelView.getComponent()));
         }
         views = newViews;

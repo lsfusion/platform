@@ -81,7 +81,9 @@ public class GPropertyPanelController {
             // removing old renderers
             renderers.foreachValue(renderer -> {
                 form.removePropertyBindings(renderer.bindingEventIndices);
-                renderersPanel.remove(renderer.getComponent());
+                if (!property.hide) {
+                    renderersPanel.remove(renderer.getComponent());
+                }
             });
             renderers = newRenderers;
 
