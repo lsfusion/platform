@@ -56,15 +56,15 @@ public class FormsController implements ColorThemeChangeListener {
         MainController.addColorThemeChangeListener(this);
 
         //Global KeyEvents listener
-        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventPostProcessor(e -> {
-            if(!e.isConsumed()) {
-                CDockable focused = control.getFocusedCDockable();
-                if(focused instanceof ClientFormDockable) {
-                    ((ClientFormDockable) focused).directProcessKeyEvent(e);
-                }
-            }
-            return false;
-        });
+//        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventPostProcessor(e -> {
+//            if(!e.isConsumed()) {
+//                CDockable focused = control.getFocusedCDockable();
+//                if(focused instanceof ClientFormDockable) {
+//                    ((ClientFormDockable) focused).directProcessKeyEvent(e);
+//                }
+//            }
+//            return false;
+//        });
     }
     
     public void clean() {
