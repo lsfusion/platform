@@ -84,6 +84,10 @@ public class ClientFormLayout extends JPanel {
         });
     }
 
+    public void directProcessKeyEvent(KeyEvent e) {
+        processKeyEvent(e);
+    }
+
     public ClientContainerView getContainerView(ClientContainer container) {
         return containerViews.get(container);
     }
