@@ -23,6 +23,7 @@ import lsfusion.client.view.MainFrame;
 import lsfusion.interop.form.print.ReportGenerationData;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 
+import java.awt.*;
 import javax.swing.*;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -56,6 +57,17 @@ public class FormsController implements ColorThemeChangeListener {
 
         control.addMultipleDockableFactory("page", dockableFactory);
         MainController.addColorThemeChangeListener(this);
+
+        //Global KeyEvents listener
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventPostProcessor(e -> {
+            if(!e.isConsumed()) {
+                CDockable focused = control.getFocusedCDockable();
+                if(focused instanceof ClientFormDockable) {
+                    ((ClientFormDockable) focused).directProcessKeyEvent(e);
+                }
+            }
+            return false;
+        });
     }
     
     public void clean() {
