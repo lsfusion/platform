@@ -124,7 +124,7 @@ public class ClientFormDockable extends ClientDockable {
     }
 
     public void directProcessKeyEvent(KeyEvent e) {
-        if (!clientForm.isEditing()) {
+        if (clientForm != null && !clientForm.isEditing()) {
             clientForm.getLayout().directProcessKeyEvent(e);
         }
     }
