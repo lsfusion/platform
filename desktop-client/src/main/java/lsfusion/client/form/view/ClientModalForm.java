@@ -170,7 +170,7 @@ public class ClientModalForm extends JDialog {
     }
 
     public void directProcessKeyEvent(KeyEvent e) {
-        if (!form.isEditing()) {
+        if (form != null && !form.isEditing()) {
             form.getLayout().directProcessKeyEvent(e);
         }
     }
