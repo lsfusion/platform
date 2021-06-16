@@ -102,7 +102,7 @@ public class ClientFormDockable extends ClientDockable {
 
     @Override
     public void onOpened() {
-        if (clientForm != null) 
+        if (clientForm != null)
             MainFrame.instance.setCurrentForm(clientForm);
     }
 
@@ -124,6 +124,8 @@ public class ClientFormDockable extends ClientDockable {
     }
 
     public void directProcessKeyEvent(KeyEvent e) {
-        clientForm.getLayout().directProcessKeyEvent(e);
+        if (!clientForm.isEditing()) {
+            clientForm.getLayout().directProcessKeyEvent(e);
+        }
     }
 }
