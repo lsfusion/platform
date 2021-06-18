@@ -213,7 +213,6 @@ public class CustomDbfRecord {
     }
     
     public BigDecimal getBigDecimal(String fieldName) throws ParseException {
-        DbfField f = getField(fieldName);
         String s = getString(fieldName);
 
         if (s == null || s.trim().length() == 0) {
@@ -229,7 +228,8 @@ public class CustomDbfRecord {
         //MathContext mc = new MathContext(f.getNumberOfDecimalPlaces());
         //return new BigDecimal(s, mc);
         try {
-            return new BigDecimal(s);
+            //still can be problem, if string has grouping separator
+            return new BigDecimal(s.replace(",", "."));
         } catch (Exception e) {
             throw ParseException.propagateWithMessage(String.format("Error parsing numeric %s (row %s, column %s)", s, recordNumber, fieldName), e);
         }
