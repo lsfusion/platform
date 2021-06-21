@@ -28,8 +28,8 @@ TABLE scheduledTask (ScheduledTask);
 
 CLASS UserScheduledTask '{scheduler.scheduled.task}' : ScheduledTask;
 
-name '{scheduler.name.scheduled.task}' = ABSTRACT STRING[100] (ScheduledTask);
-name '{scheduler.name.scheduled.task}' = DATA STRING[100] (UserScheduledTask);
+name '{scheduler.name.scheduled.task}' = ABSTRACT ISTRING[100] (ScheduledTask) CHARWIDTH 15;
+name '{scheduler.name.scheduled.task}' = DATA ISTRING[100] (UserScheduledTask) CHARWIDTH 15;
 name[ScheduledTask](UserScheduledTask t) += name(t);
 
 scheduledTask (name) = GROUP AGGR ScheduledTask task WHERE task IS ScheduledTask BY name(task);
@@ -49,6 +49,8 @@ timeTo[ScheduledTask](UserScheduledTask t) += timeTo(t);
 startDate '{scheduler.start.date.scheduled.task}' = ABSTRACT DATETIME (ScheduledTask);
 startDate '{scheduler.start.date.scheduled.task}' = DATA DATETIME (UserScheduledTask);
 startDate[ScheduledTask](UserScheduledTask t) += startDate(t);
+
+startTime '{scheduler.start.time.scheduled.task}' (ScheduledTask t) = TIME(startDate(t));
 
 period '{scheduler.period.scheduled.task}' = ABSTRACT INTEGER (ScheduledTask); // in seconds
 period '{scheduler.period.scheduled.task}' = DATA INTEGER (UserScheduledTask);
@@ -97,18 +99,22 @@ scheduledTask = ABSTRACT ScheduledTask (ScheduledTaskDetail) NONULL DELETE;
 scheduledTask = DATA UserScheduledTask (UserScheduledTaskDetail) NONULL DELETE;
 scheduledTask[ScheduledTaskDetail](UserScheduledTaskDetail t) += scheduledTask(t);
 
+nameScheduledTask '{scheduler.form.scheduled.task.filter.all}' (ScheduledTaskDetail d) = name(scheduledTask(d));
+startTime '{scheduler.start.time.scheduled.task}' (ScheduledTaskDetail d) = startTime(scheduledTask(d));
+period '{scheduler.period.scheduled.task}' (ScheduledTaskDetail d) = period(scheduledTask(d));
+
 action = ABSTRACT Action (ScheduledTaskDetail);
 action = DATA Action (UserScheduledTaskDetail);
 action[ScheduledTaskDetail](UserScheduledTaskDetail t) += action(t);
 
-captionAction '{scheduler.caption.action.scheduled.task.detail}' (ScheduledTaskDetail scheduledTaskDetail) = caption(action(scheduledTaskDetail)) CHARWIDTH 50;
-canonicalNameAction '{scheduler.canonical.name.action.scheduled.task.detail}' (ScheduledTaskDetail scheduledTaskDetail) = canonicalName(action(scheduledTaskDetail)) CHARWIDTH 50;
+captionAction '{scheduler.caption.action.scheduled.task.detail}' (ScheduledTaskDetail d) = caption(action(d)) CHARWIDTH 20;
+canonicalNameAction '{scheduler.canonical.name.action.scheduled.task.detail}' (ScheduledTaskDetail d) = canonicalName(action(d));
+
+codeAction '{scheduler.canonical.name.action.scheduled.task.detail}' (ScheduledTaskDetail d) = ISTRING(OVERRIDE script(d), canonicalNameAction(d)) CHARWIDTH 20; 
 
 parameter '{scheduler.parameter.scheduled.task.detail}' = ABSTRACT TEXT (ScheduledTaskDetail);
 parameter '{scheduler.parameter.scheduled.task.detail}' = DATA TEXT (UserScheduledTaskDetail);
 parameter[ScheduledTaskDetail](UserScheduledTaskDetail t) += parameter(t);
-
-classAction '{scheduler.class.action.scheduled.task.detail}' (ScheduledTaskDetail scheduledTaskDetail) = class(action(scheduledTaskDetail)) CHARWIDTH 25;
 
 timeout '{scheduler.timeout.scheduled.task.detail}' = ABSTRACT INTEGER (ScheduledTaskDetail);
 timeout '{scheduler.timeout.scheduled.task.detail}' = DATA INTEGER (UserScheduledTaskDetail);
@@ -124,12 +130,17 @@ CLASS ScheduledTaskLog '{scheduler.scheduled.task.log}';
 TABLE scheduledTaskLog (ScheduledTaskLog);
 TABLE scheduledTaskScheduledTaskLog (ScheduledTask, ScheduledTaskLog);
 
-result '{scheduler.result.scheduled.task.log}' = DATA STRING[200] (ScheduledTaskLog);
+scheduledTask '{scheduler.scheduled.task}' = DATA ScheduledTask (ScheduledTaskLog) INDEXED NONULL DELETE;
+nameScheduledTask '{scheduler.form.scheduled.task}' (ScheduledTaskLog l) = name(scheduledTask(l)); 
+
+last (ScheduledTask t) = GROUP LAST ScheduledTaskLog l ORDER l BY scheduledTask(l);
+isLast (ScheduledTaskLog l) = last(scheduledTask(l)) = l;   
+
+result '{scheduler.result.scheduled.task.log}' = DATA ISTRING[200] (ScheduledTaskLog) CHARWIDTH 20;
 exceptionOccurred '{scheduler.exception.occurred.scheduled.task.log}' = DATA BOOLEAN (ScheduledTaskLog);
-property '{scheduler.property.scheduled.task.log}' = DATA STRING[200] (ScheduledTaskLog);
+property '{scheduler.property.scheduled.task.log}' = DATA ISTRING[200] (ScheduledTaskLog) CHARWIDTH 20;
 date '{scheduler.date.scheduled.task.log}' = DATA DATETIME (ScheduledTaskLog);
 toDate '{scheduler.to.date.scheduled.task.log}' (ScheduledTaskLog d) = DATE(date(d));
-scheduledTask '{scheduler.scheduled.task}' = DATA ScheduledTask (ScheduledTaskLog) INDEXED;
 
 @defineLog (ScheduledTaskLog, '{scheduler.define.log.of.scheduled}', log, toDate);
 
@@ -181,30 +192,49 @@ WHEN changedSchedulerTask(ScheduledTask t) DO
     setupScheduledTask(t);
 WHEN DROPPED(ScheduledTaskDetail td IS ScheduledTaskDetail) AND PREV(active(td)) AND isStartedScheduler() DO 
     setupScheduledTask(PREV(scheduledTask(td)));
+
+allTasks '{scheduler.form.scheduled.task.filter.all}' = DATA LOCAL NESTED BOOLEAN () TOOLBAR; 
            
-FORM scheduledTask '{scheduler.form.scheduled.task}'
+FORM scheduledTask '{scheduler.form.scheduled.tasks}'
 
     PROPERTIES() threadCountScheduler
 
-    OBJECTS t=ScheduledTask
-    PROPERTIES (t) GRID active, name, timeFrom, timeTo, startDate, period,
+    OBJECTS t = ScheduledTask
+    PROPERTIES (t) GRID active, name, timeFrom, timeTo, startDate, startTime READONLY, period,
                     nameSchedulerStartType, runAtStart, daysOfMonth PANEL, executeScheduledTask, setupScheduledTask
     PROPERTIES (t) NEW[UserScheduledTask], DELETE GRID
+    FILTERGROUP filtersTaskActive
+            FILTER '{scheduler.form.scheduled.task.filter.active}' active(t)
          
     OBJECTS td=ScheduledTaskDetail
     PROPERTIES (td) active, ignoreExceptions, order, captionAction, 
-                    canonicalNameAction, parameter, classAction, 
+                    codeAction READONLY, parameter, 
                     timeout, script PANEL
     PROPERTIES (td) NEW[UserScheduledTaskDetail], DELETE GRID
+    PROPERTIES (td) READONLY SHOWIF allTasks() nameScheduledTask, startTime, period
     
-    OBJECTS tl=ScheduledTaskLog LAST
-    PROPERTIES (tl) READONLY property, result, exceptionOccurred, isMessages, isFailed, date
+    PROPERTIES allTasksTd = allTasks() DRAW td 
+    FILTERS scheduledTask(td) = t OR allTasks()
+
+    FILTERGROUP filtersDetailActive
+            FILTER '{scheduler.form.scheduled.task.filter.active}' active(td) AND (active(scheduledTask(td)) OR NOT allTasks())
+    
+    OBJECTS tl = ScheduledTaskLog LAST
+    PROPERTIES (tl) READONLY property, result, exceptionOccurred, isMessages, isFailed, date, 
+                             nameScheduledTask SHOWIF allTasks()
+
+    PROPERTIES allTasksTl = allTasks() DRAW tl 
+    FILTERS scheduledTask(tl) = t OR allTasks()
+    
+    FILTERGROUP filtersTaskLast
+            FILTER '{scheduler.form.scheduled.task.filter.last}' isLast(tl)
     
     FILTERGROUP stlFilters 
         FILTER '{scheduler.form.scheduled.task.filter.exception}' exceptionOccurred(tl) OR isMessages(tl)
 
     OBJECTS ctl=ScheduledClientTaskLog
     PROPERTIES (ctl) READONLY message, failed, date, lsfStack
+    FILTERS scheduledTaskLog(ctl) = tl
     
     OBJECTS dow=DOW
     PROPERTIES (dow) number, staticCaption 
@@ -213,13 +243,6 @@ FORM scheduledTask '{scheduler.form.scheduled.task}'
     PROPERTIES () TOOLBAR stopSchedulerApply SHOWIF isStartedScheduler() , runSetupSchedulerApply SHOWIF isStoppedScheduler() 
     
     ORDERS number(dow)
-    
-    FILTERS scheduledTask(td)==t,
-            scheduledTask(tl) == t,
-            scheduledTaskLog(ctl) == tl
-
-    FILTERGROUP filtersScheduler
-            FILTER '{scheduler.form.scheduled.task.filter.active}' active(td) 'F9'
 ;
 
 DESIGN scheduledTask {
@@ -230,12 +253,15 @@ DESIGN scheduledTask {
         NEW south {
             fill = 2;
             type = TABBED;
-            NEW property{
+            NEW property {
                 caption = '{scheduler.form.scheduled.task.caption.properties}';
                 type = SPLITH;
                 MOVE BOX(td) {
                     PROPERTY(parameter(td)) {
                         valueSize = (-1, 18);
+                    }
+                    TOOLBARLEFT(td) {
+                        MOVE PROPERTY(allTasksTd);
                     }
                 }
                 MOVE PROPERTY(script(td)) {
@@ -246,7 +272,11 @@ DESIGN scheduledTask {
             NEW logContainer {
                 caption = '{scheduler.form.scheduled.task.caption.log}';
                 type = SPLITH;
-                MOVE BOX(tl);
+                MOVE BOX(tl) {
+                    TOOLBARLEFT(tl) {
+                        MOVE PROPERTY(allTasksTl);
+                    }
+                }
                 MOVE BOX(ctl);
             }
             NEW dowContainer {
