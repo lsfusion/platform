@@ -56,6 +56,8 @@ public class EmailSender {
         //mailProps.setProperty("mail.debug", "true");
         mailProps.setProperty("mail.smtp.host", smtpHostAccount);
         mailProps.setProperty("mail.from", fromAddressAccount);
+        mailProps.setProperty("mail.smtp.timeout", "120000");
+        mailProps.setProperty("mail.smtp.connectiontimeout", "60000");
         emails = targets;
     }
 
