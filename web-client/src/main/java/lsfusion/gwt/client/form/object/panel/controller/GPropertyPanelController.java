@@ -57,7 +57,7 @@ public class GPropertyPanelController {
             for (GGroupObjectValue columnKey : columnKeys) {
                 if (showIfs == null || showIfs.get(columnKey) != null) {
                     PanelRenderer renderer = renderers.remove(columnKey);
-                    if (renderer == null && !property.hide) {
+                    if (renderer == null && (!property.hide || property.hasKeyBinding())) {
                         if (renderersPanel.getWidgetCount() > 0) {
                             renderersPanel.add(GwtClientUtils.createHorizontalStrut(4));
                         }
@@ -65,7 +65,9 @@ public class GPropertyPanelController {
                         PanelRenderer newRenderer = property.createPanelRenderer(form, columnKey);
                         newRenderer.setReadOnly(property.isReadOnly());
                         Widget component = newRenderer.getComponent();
-                        renderersPanel.addFill(component);
+                        if(!property.hide) {
+                            renderersPanel.addFill(component);
+                        }
                         newRenderer.bindingEventIndices = form.addPropertyBindings(property, newRenderer::onBinding, component);
 
                         renderer = newRenderer;
@@ -79,7 +81,9 @@ public class GPropertyPanelController {
             // removing old renderers
             renderers.foreachValue(renderer -> {
                 form.removePropertyBindings(renderer.bindingEventIndices);
-                renderersPanel.remove(renderer.getComponent());
+                if (!property.hide) {
+                    renderersPanel.remove(renderer.getComponent());
+                }
             });
             renderers = newRenderers;
 

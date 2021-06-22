@@ -16,12 +16,16 @@ import lsfusion.client.controller.MainController;
 import lsfusion.client.form.print.view.ClientReportDockable;
 import lsfusion.client.form.print.view.EditReportInvoker;
 import lsfusion.client.form.view.ClientFormDockable;
+import lsfusion.client.form.view.ClientModalForm;
 import lsfusion.client.navigator.ClientNavigator;
+import lsfusion.client.view.DockableMainFrame;
 import lsfusion.client.view.MainFrame;
 import lsfusion.interop.form.print.ReportGenerationData;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 import net.sf.jasperreports.engine.JRException;
 
+import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -53,6 +57,23 @@ public class FormsController implements ColorThemeChangeListener {
 
         control.addMultipleDockableFactory("page", dockableFactory);
         MainController.addColorThemeChangeListener(this);
+
+        //Global KeyEvents listener
+        KeyboardFocusManager fm = KeyboardFocusManager.getCurrentKeyboardFocusManager();
+        fm.addKeyEventPostProcessor(e -> {
+            if(e.getID() == KeyEvent.KEY_PRESSED && !e.isConsumed()) {
+                Window activeWindow = fm.getActiveWindow();
+                if(activeWindow instanceof DockableMainFrame) {
+                    CDockable page = control.getFocusedCDockable();
+                    if(page instanceof ClientFormDockable) {
+                        ((ClientFormDockable) page).directProcessKeyEvent(e);
+                    }
+                } else if(activeWindow instanceof ClientModalForm) {
+                    ((ClientModalForm) activeWindow).directProcessKeyEvent(e);
+                }
+            }
+            return false;
+        });
     }
     
     public void clean() {
@@ -113,7 +134,7 @@ public class FormsController implements ColorThemeChangeListener {
             if (dockable instanceof ClientFormDockable)
                 page = (ClientFormDockable) dockable;
         }
-        
+
         if(page != null) {
             page.toFront();
             page.requestFocusInWindow();

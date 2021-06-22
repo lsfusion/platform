@@ -22,7 +22,7 @@ public class ClientModalForm extends JDialog {
     private final RemoteFormInterface remoteForm;
 
     private ClientFormController form;
-    
+
     public ClientModalForm(String canonicalName, String formSID, Component owner, final RemoteFormInterface remoteForm) {
         this(canonicalName, formSID, owner, remoteForm, null, false, null);
     }
@@ -157,5 +157,11 @@ public class ClientModalForm extends JDialog {
         }
 
         return preferredSize;
+    }
+
+    public void directProcessKeyEvent(KeyEvent e) {
+        if (form != null && !form.isEditing()) {
+            form.getLayout().directProcessKeyEvent(e);
+        }
     }
 }

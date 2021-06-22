@@ -8,6 +8,7 @@ import lsfusion.client.navigator.ClientNavigator;
 import lsfusion.client.view.MainFrame;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 
+import java.awt.event.KeyEvent;
 import java.io.IOException;
 
 public class ClientFormDockable extends ClientDockable {
@@ -101,7 +102,7 @@ public class ClientFormDockable extends ClientDockable {
 
     @Override
     public void onOpened() {
-        if (clientForm != null) 
+        if (clientForm != null)
             MainFrame.instance.setCurrentForm(clientForm);
     }
 
@@ -120,5 +121,11 @@ public class ClientFormDockable extends ClientDockable {
             return clientForm.focusFirstComponent();
         }
         return false;
+    }
+
+    public void directProcessKeyEvent(KeyEvent e) {
+        if (clientForm != null && !clientForm.isEditing()) {
+            clientForm.getLayout().directProcessKeyEvent(e);
+        }
     }
 }
