@@ -87,7 +87,7 @@ public class KeyStrokes {
     }
 
     public static boolean isEditObjectEvent(EventObject event) {
-        return isBackSpaceEvent(event);
+        return isKeyEvent(event, KeyEvent.VK_F9) || MouseStrokes.isDblClickEvent(event);
     }
 
     public static boolean isKeyEvent(EventObject event, int keyCode) {
