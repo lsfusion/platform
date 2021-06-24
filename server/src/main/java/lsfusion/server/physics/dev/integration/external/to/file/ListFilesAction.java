@@ -31,7 +31,7 @@ import java.util.List;
 
 public class ListFilesAction extends InternalAction {
     private final ClassPropertyInterface pathInterface;
-    private final ClassPropertyInterface charsetInterface;
+    private final ClassPropertyInterface recursiveInterface;
     private final ClassPropertyInterface isClientInterface;
 
     public ListFilesAction(UtilsLogicsModule LM, ValueClass... classes) {
@@ -39,7 +39,7 @@ public class ListFilesAction extends InternalAction {
 
         Iterator<ClassPropertyInterface> i = getOrderInterfaces().iterator();
         pathInterface = i.next();
-        charsetInterface = i.next();
+        recursiveInterface = i.next();
         isClientInterface = i.next();
     }
 
@@ -58,7 +58,7 @@ public class ListFilesAction extends InternalAction {
     public void executeInternal(ExecutionContext<ClassPropertyInterface> context) {
 
         String sourcePath = (String) context.getKeyValue(pathInterface).getValue();
-        String charset = (String) context.getKeyValue(charsetInterface).getValue();
+        boolean recursive = context.getKeyValue(recursiveInterface).getValue() != null;
         boolean isClient = context.getKeyValue(isClientInterface).getValue() != null;
 
         try {
@@ -66,14 +66,14 @@ public class ListFilesAction extends InternalAction {
 
                 List<Object> filesList;
                 if (isClient) {
-                    Object result = context.requestUserInteraction(new ListFilesClientAction(sourcePath, charset));
+                    Object result = context.requestUserInteraction(new ListFilesClientAction(sourcePath, recursive));
                     if (result instanceof String) {
                         throw new RuntimeException((String) result);
                     }else {
                         filesList = (List<Object>) result;
                     }
                 } else {
-                    filesList = FileUtils.listFiles(sourcePath, charset);
+                    filesList = FileUtils.listFiles(sourcePath, recursive);
                 }
 
                 context.getSession().dropChanges((DataProperty) findProperty("fileName[INTEGER]").property);
