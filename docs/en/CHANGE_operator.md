@@ -24,7 +24,7 @@ The keyword `CHANGE`, which defines an operator, may be omitted.
 
 - `expr1, ..., exprN`
 
-    A list of [expressions](Expression.md) or [typed parameters](IDs.md) defining arguments to the property being changed. When using typed parameters, you can both access already declared parameters and declare new local parameters. When using expressions, new local parameters cannot be added. The number of expressions in this list must equal to the number of parameters of the property being changed. 
+    A list of [expressions](Expression.md) or [typed parameters](IDs.md#paramid) defining arguments to the property being changed. When using typed parameters, you can both access already declared parameters and declare new local parameters. When using expressions, new local parameters cannot be added. The number of expressions in this list must equal to the number of parameters of the property being changed. 
 
 - `valueExpr`
 
