@@ -13,11 +13,13 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 
 import static lsfusion.base.DateConverter.sqlTimestampToLocalDateTime;
 import static lsfusion.base.file.WriteUtils.appendExtension;
@@ -347,17 +349,21 @@ public class FileUtils {
         });
     }
 
-    public static List<Object> listFiles(String sourcePath, String charset) throws IOException {
+    public static List<Object> listFiles(String sourcePath, boolean recursive) throws IOException {
         Path path = Path.parsePath(sourcePath);
         List<Object> filesList;
         switch (path.type) {
             case "file":
-                filesList = listFilesFile(path.path);
+                filesList = listFilesFile(path.path, recursive);
                 break;
             case "ftp":
-                filesList = listFilesFTP(path.path, charset);
+                if(recursive)
+                    throw new RuntimeException("ListFiles recursive is not supported for FTP");
+                filesList = listFilesFTP(path.path);
                 break;
             case "sftp":
+                if(recursive)
+                    throw new RuntimeException("ListFiles recursive is not supported for SFTP");
                 filesList = listFilesSFTP(path.path);
                 break;
             default:
@@ -366,17 +372,18 @@ public class FileUtils {
         return filesList;
     }
 
-    private static List<Object> listFilesFile(String url) {
+    private static List<Object> listFilesFile(String url, boolean recursive) throws IOException {
         List<Object> result;
 
-        File[] filesList = new File(url).listFiles();
-        if (filesList != null) {
-            String[] nameValues = new String[filesList.length];
-            Boolean[] isDirectoryValues = new Boolean[filesList.length];
-            LocalDateTime[] modifiedDateTimeValues = new LocalDateTime[filesList.length];
-            for (int i = 0; i < filesList.length; i++) {
-                File file = filesList[i];
-                nameValues[i] = file.getName();
+        java.nio.file.Path urlPath = Paths.get(url);
+        if (Files.exists(urlPath)) {
+            List<java.nio.file.Path> pathList = (recursive ? Files.walk(urlPath) : Files.list(urlPath)).filter(path -> !path.equals(urlPath)).collect(Collectors.toList());
+            String[] nameValues = new String[pathList.size()];
+            Boolean[] isDirectoryValues = new Boolean[pathList.size()];
+            LocalDateTime[] modifiedDateTimeValues = new LocalDateTime[pathList.size()];
+            for (int i = 0; i < pathList.size(); i++) {
+                File file = pathList.get(i).toFile();
+                nameValues[i] = urlPath.relativize(pathList.get(i)).toFile().getPath();
                 isDirectoryValues[i] = file.isDirectory() ? true : null;
                 modifiedDateTimeValues[i] = sqlTimestampToLocalDateTime(new Timestamp(file.lastModified()));
             }
@@ -387,11 +394,8 @@ public class FileUtils {
         return result;
     }
 
-    private static List<Object> listFilesFTP(String path, String charset) throws IOException {
+    private static List<Object> listFilesFTP(String path) throws IOException {
         FTPPath ftpPath = FTPPath.parseFTPPath(path);
-        if(ftpPath.charset == null) {
-            ftpPath.charset = charset;
-        }
         FTPClient ftpClient = new FTPClient();
         ftpClient.setDataTimeout(ftpPath.dataTimeout);
         try {
