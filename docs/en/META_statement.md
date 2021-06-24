@@ -22,7 +22,7 @@ The `META` statement is an exception - it is not supposed to end with a semicolo
 
 - `name`
 
-    Metacode name. [Simple ID](IDs.md). Must be unique within the current namespace among metacodes with the same number of parameters.
+    Metacode name. [Simple ID](IDs.md#id). Must be unique within the current namespace among metacodes with the same number of parameters.
 
 - `param1, ..., paramN`
 
