@@ -138,15 +138,7 @@ public class IOUtils {
     }
 
     public static <R> R ftpAction(String path, BiFunction<FTPPath, FTPClient, R> function) {
-        return ftpAction(path, null, function);
-    }
-
-    public static <R> R ftpAction(String path, String charset, BiFunction<FTPPath, FTPClient, R> function) {
         FTPPath ftpPath = FTPPath.parseFTPPath(path);
-        if(ftpPath.charset == null) {
-            ftpPath.charset = charset;
-        }
-
         FTPClient ftpClient = new FTPClient();
         ftpClient.setDataTimeout(ftpPath.dataTimeout);
         ftpClient.setConnectTimeout(ftpPath.connectTimeout);
@@ -192,15 +184,7 @@ public class IOUtils {
     }
 
     public static <R> R sftpAction(String path, BiFunction<FTPPath, ChannelSftp, R> function) {
-        return sftpAction(path, null, function);
-    }
-
-    public static <R> R sftpAction(String path, String charset, BiFunction<FTPPath, ChannelSftp, R> function) {
         FTPPath ftpPath = FTPPath.parseSFTPPath(path);
-        if(ftpPath.charset == null) {
-            ftpPath.charset = charset;
-        }
-
         ftpPath.remoteFile = ftpPath.remoteFile.replace("\\", "/");
         ftpPath.remoteFile = (!ftpPath.remoteFile.startsWith("/") ? "/" : "") + ftpPath.remoteFile;
 
