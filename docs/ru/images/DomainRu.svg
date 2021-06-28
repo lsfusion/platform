@@ -307,7 +307,7 @@
          x="344.5"
          y="109.5" /></text>
     <a
-       xlink:href="Classes"
+       xlink:href="../Classes"
        id="a559"
        transform="translate(32,4)"
        style="text-decoration:none;text-decoration-line:none">
@@ -324,7 +324,7 @@
            style="fill:#26c4f7;fill-opacity:1">Классы</tspan></text>
     </a>
     <a
-       xlink:href="Aggregations"
+       xlink:href="../Aggregations"
        id="a567"
        transform="translate(-8,-2)"
        style="text-decoration:none;text-decoration-line:none">
@@ -341,7 +341,7 @@
            style="fill:#26c4f7;fill-opacity:1">Агрегации</tspan></text>
     </a>
     <a
-       xlink:href="Simple_constraints"
+       xlink:href="../Simple_constraints"
        id="a575"
        transform="translate(-39,-2)"
        style="text-decoration:none;text-decoration-line:none">
@@ -358,7 +358,7 @@
            style="fill:#26c4f7;fill-opacity:1">Простые ограничения</tspan></text>
     </a>
     <a
-       xlink:href="Constraints"
+       xlink:href="../Constraints"
        id="a583"
        transform="translate(-35,5)"
        style="text-decoration:none;text-decoration-line:none">
@@ -375,7 +375,7 @@
            style="fill:#26c4f7;fill-opacity:1">Ограничения</tspan></text>
     </a>
     <a
-       xlink:href="Simple_event"
+       xlink:href="../Simple_event"
        id="a591"
        transform="translate(-4,4)"
        style="text-decoration:none;text-decoration-line:none">
@@ -392,7 +392,7 @@
            style="fill:#26c4f7;fill-opacity:1">Простые события</tspan></text>
     </a>
     <a
-       xlink:href="Events"
+       xlink:href="../Events"
        id="a599"
        transform="translate(14,4)"
        style="text-decoration:none;text-decoration-line:none">
@@ -409,7 +409,7 @@
            style="fill:#26c4f7;fill-opacity:1">События</tspan></text>
     </a>
     <a
-       xlink:href="Actions"
+       xlink:href="../Actions"
        id="a607"
        transform="translate(15,3)"
        style="text-decoration:none;text-decoration-line:none">
@@ -426,7 +426,7 @@
            style="fill:#26c4f7;fill-opacity:1">Действия</tspan></text>
     </a>
     <a
-       xlink:href="Properties"
+       xlink:href="../Properties"
        id="a615"
        transform="translate(20,4)"
        style="text-decoration:none;text-decoration-line:none">
@@ -443,7 +443,7 @@
            style="fill:#26c4f7;fill-opacity:1">Свойства</tspan></text>
     </a>
     <a
-       xlink:href="Calculated_events"
+       xlink:href="../Calculated_events"
        id="a652"
        style="text-decoration:none;text-decoration-line:none"
        transform="translate(-22)">

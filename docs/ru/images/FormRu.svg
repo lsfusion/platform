@@ -187,7 +187,7 @@
          x="344.5"
          y="109.5" /></text>
     <a
-       xlink:href="Interactive_view"
+       xlink:href="../Interactive_view"
        style="text-decoration:none;text-decoration-line:none"
        transform="translate(4,-2)"
        id="a495">
@@ -204,7 +204,7 @@
            style="fill:#26c4f7;fill-opacity:1">Интерактивное</tspan></text>
     </a>
     <a
-       xlink:href="Form_views"
+       xlink:href="../Form_views"
        transform="translate(-31,-1)"
        style="text-decoration:none;text-decoration-line:none"
        id="a503">
@@ -221,7 +221,7 @@
            style="fill:#26c4f7;fill-opacity:1">Представления</tspan></text>
     </a>
     <a
-       xlink:href="Print_view"
+       xlink:href="../Print_view"
        style="text-decoration:none;text-decoration-line:none"
        transform="translate(12,1)"
        id="a511">
@@ -238,7 +238,7 @@
            style="fill:#26c4f7;fill-opacity:1">Печатное</tspan></text>
     </a>
     <a
-       xlink:href="Structured_view"
+       xlink:href="../Structured_view"
        style="text-decoration:none;text-decoration-line:none"
        transform="translate(-49,1)"
        id="a519">
@@ -255,7 +255,7 @@
            style="fill:#26c4f7;fill-opacity:1">Структурированное</tspan></text>
     </a>
     <a
-       xlink:href="Form_views"
+       xlink:href="../Form_views"
        style="text-decoration:none;text-decoration-line:none"
        transform="translate(-18,7)"
        id="a527">
@@ -272,7 +272,7 @@
            style="fill:#26c4f7;fill-opacity:1">Графические</tspan></text>
     </a>
     <a
-       xlink:href="Static_view"
+       xlink:href="../Static_view"
        style="text-decoration:none;text-decoration-line:none"
        transform="translate(1,4)"
        id="a535">
@@ -289,7 +289,7 @@
            style="fill:#26c4f7;fill-opacity:1">Статичные</tspan></text>
     </a>
     <a
-       xlink:href="Form_structure"
+       xlink:href="../Form_structure"
        style="text-decoration:none;text-decoration-line:none"
        transform="translate(5,4)"
        id="a543">

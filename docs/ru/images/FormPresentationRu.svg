@@ -146,7 +146,7 @@
          x="344.5"
          y="109.5" /></text>
     <a
-       xlink:href="Interactive_view"
+       xlink:href="../Interactive_view"
        id="a495"
        transform="translate(4,-2)"
        style="text-decoration:none;text-decoration-line:none">
@@ -163,7 +163,7 @@
            style="fill:#26c4f7;fill-opacity:1">Интерактивное</tspan></text>
     </a>
     <a
-       xlink:href="Print_view"
+       xlink:href="../Print_view"
        id="a511"
        transform="translate(12,1)"
        style="text-decoration:none;text-decoration-line:none">
@@ -180,7 +180,7 @@
            style="fill:#26c4f7;fill-opacity:1">Печатное</tspan></text>
     </a>
     <a
-       xlink:href="Structured_view"
+       xlink:href="../Structured_view"
        id="a519"
        transform="translate(-49,1)"
        style="text-decoration:none;text-decoration-line:none">
@@ -197,7 +197,7 @@
            style="fill:#26c4f7;fill-opacity:1">Структурированное</tspan></text>
     </a>
     <a
-       xlink:href="Form_views"
+       xlink:href="../Form_views"
        id="a527"
        transform="translate(-18,7)"
        style="text-decoration:none;text-decoration-line:none">
@@ -214,7 +214,7 @@
            style="fill:#26c4f7;fill-opacity:1">Графические</tspan></text>
     </a>
     <a
-       xlink:href="Static_view"
+       xlink:href="../Static_view"
        id="a535"
        transform="translate(1,4)"
        style="text-decoration:none;text-decoration-line:none">
