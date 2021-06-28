@@ -686,7 +686,7 @@
        id="rect324"
        style="stroke:#26c4f7;stroke-opacity:1;fill:#ffffff;fill-opacity:0" />
     <a
-       xlink:href="Physical_model"
+       xlink:href="../Physical_model"
        transform="translate(-15,-2)"
        style="text-decoration:none;text-decoration-line:none"
        id="a344">
@@ -713,7 +713,7 @@
          x="344.5"
          y="109.5" /></text>
     <a
-       xlink:href="Management"
+       xlink:href="../Management"
        style="text-decoration:none;text-decoration-line:none"
        transform="translate(30,10)"
        id="a356">
@@ -730,7 +730,7 @@
            style="fill:#26c4f7;fill-opacity:1">Управление</tspan></text>
     </a>
     <a
-       xlink:href="Development"
+       xlink:href="../Development"
        transform="translate(11,1)"
        style="text-decoration:none;text-decoration-line:none"
        id="a364">
@@ -747,7 +747,7 @@
            style="fill:#26c4f7;fill-opacity:1">Разработка</tspan></text>
     </a>
     <a
-       xlink:href="Execution"
+       xlink:href="../Execution"
        style="text-decoration:none;text-decoration-line:none"
        transform="translate(6,-2)"
        id="a372">
@@ -764,7 +764,7 @@
            style="fill:#26c4f7;fill-opacity:1">Выполнение</tspan></text>
     </a>
     <a
-       xlink:href="Tables"
+       xlink:href="../Tables"
        style="text-decoration:none;text-decoration-line:none"
        transform="translate(19,5)"
        id="a386">
@@ -781,7 +781,7 @@
            style="fill:#26c4f7;fill-opacity:1">Таблицы</tspan></text>
     </a>
     <a
-       xlink:href="Indexes"
+       xlink:href="../Indexes"
        style="text-decoration:none;text-decoration-line:none"
        transform="translate(14,4)"
        id="a394">
@@ -798,7 +798,7 @@
            style="fill:#26c4f7;fill-opacity:1">Индексы</tspan></text>
     </a>
     <a
-       xlink:href="Materializations"
+       xlink:href="../Materializations"
        style="text-decoration:none;text-decoration-line:none"
        transform="translate(-6,4)"
        id="a402">
@@ -815,7 +815,7 @@
            style="fill:#26c4f7;fill-opacity:1">Материализации</tspan></text>
     </a>
     <a
-       xlink:href="Internationalization"
+       xlink:href="../Internationalization"
        transform="translate(-17,1)"
        style="text-decoration:none;text-decoration-line:none"
        id="a410">
@@ -832,7 +832,7 @@
            style="fill:#26c4f7;fill-opacity:1">Интернационализация</tspan></text>
     </a>
     <a
-       xlink:href="Migration"
+       xlink:href="../Migration"
        style="text-decoration:none;text-decoration-line:none"
        transform="translate(2,2)"
        id="a418">
@@ -849,7 +849,7 @@
            style="fill:#26c4f7;fill-opacity:1">Миграция</tspan></text>
     </a>
     <a
-       xlink:href="Metaprogramming"
+       xlink:href="../Metaprogramming"
        style="text-decoration:none;text-decoration-line:none"
        transform="translate(-31,7)"
        id="a426">
@@ -866,7 +866,7 @@
            style="fill:#26c4f7;fill-opacity:1">Метапрограммирование</tspan></text>
     </a>
     <a
-       xlink:href="Integration"
+       xlink:href="../Integration"
        style="text-decoration:none;text-decoration-line:none"
        transform="translate(-5,-7)"
        id="a434">
@@ -883,7 +883,7 @@
            style="fill:#26c4f7;fill-opacity:1">Интеграция</tspan></text>
     </a>
     <a
-       xlink:href="Element_identification"
+       xlink:href="../Element_identification"
        style="text-decoration:none;text-decoration-line:none"
        transform="translate(-30,6)"
        id="a447">
@@ -900,7 +900,7 @@
            style="fill:#26c4f7;fill-opacity:1">Идентификация элементов</tspan></text>
     </a>
     <a
-       xlink:href="Modularity"
+       xlink:href="../Modularity"
        style="text-decoration:none;text-decoration-line:none"
        transform="translate(9,7)"
        id="a455">
@@ -917,7 +917,7 @@
            style="fill:#26c4f7;fill-opacity:1">Модульность</tspan></text>
     </a>
     <a
-       xlink:href="Logical_model"
+       xlink:href="../Logical_model"
        inkscape:label="a463"
        style="text-decoration:none;text-decoration-line:none"
        transform="translate(24,2)"
@@ -936,7 +936,7 @@
            style="fill:#26c4f7;fill-opacity:1">Логическая модель</tspan></text>
     </a>
     <a
-       xlink:href="View_logic"
+       xlink:href="../View_logic"
        style="text-decoration:none;text-decoration-line:none;image-rendering:auto"
        transform="translate(-33.999901,1)"
        id="a471">
@@ -954,7 +954,7 @@
            style="fill:#26c4f7;fill-opacity:1">Логика представления</tspan></text>
     </a>
     <a
-       xlink:href="Navigator"
+       xlink:href="../Navigator"
        transform="translate(-8,-1)"
        style="text-decoration:none;text-decoration-line:none"
        id="a479">
@@ -971,7 +971,7 @@
            style="fill:#26c4f7;fill-opacity:1">Навигатор</tspan></text>
     </a>
     <a
-       xlink:href="Forms"
+       xlink:href="../Forms"
        style="text-decoration:none;text-decoration-line:none"
        transform="translate(10,6)"
        id="a487">
@@ -988,7 +988,7 @@
            style="fill:#26c4f7;fill-opacity:1">Формы</tspan></text>
     </a>
     <a
-       xlink:href="Interactive_view"
+       xlink:href="../Interactive_view"
        style="text-decoration:none;text-decoration-line:none"
        transform="translate(4,-2)"
        id="a495">
@@ -1005,7 +1005,7 @@
            style="fill:#26c4f7;fill-opacity:1">Интерактивное</tspan></text>
     </a>
     <a
-       xlink:href="Form_views"
+       xlink:href="../Form_views"
        transform="translate(-31,-1)"
        style="text-decoration:none;text-decoration-line:none"
        id="a503">
@@ -1022,7 +1022,7 @@
            style="fill:#26c4f7;fill-opacity:1">Представления</tspan></text>
     </a>
     <a
-       xlink:href="Print_view"
+       xlink:href="../Print_view"
        style="text-decoration:none;text-decoration-line:none"
        transform="translate(12,1)"
        id="a511">
@@ -1039,7 +1039,7 @@
            style="fill:#26c4f7;fill-opacity:1">Печатное</tspan></text>
     </a>
     <a
-       xlink:href="Structured_view"
+       xlink:href="../Structured_view"
        style="text-decoration:none;text-decoration-line:none"
        transform="translate(-49,1)"
        id="a519">
@@ -1056,7 +1056,7 @@
            style="fill:#26c4f7;fill-opacity:1">Структурированное</tspan></text>
     </a>
     <a
-       xlink:href="Form_views"
+       xlink:href="../Form_views"
        style="text-decoration:none;text-decoration-line:none"
        transform="translate(-18,7)"
        id="a527">
@@ -1073,7 +1073,7 @@
            style="fill:#26c4f7;fill-opacity:1">Графические</tspan></text>
     </a>
     <a
-       xlink:href="Static_view"
+       xlink:href="../Static_view"
        style="text-decoration:none;text-decoration-line:none"
        transform="translate(1,4)"
        id="a535">
@@ -1090,7 +1090,7 @@
            style="fill:#26c4f7;fill-opacity:1">Статичные</tspan></text>
     </a>
     <a
-       xlink:href="Form_structure"
+       xlink:href="../Form_structure"
        style="text-decoration:none;text-decoration-line:none"
        transform="translate(5,4)"
        id="a543">
@@ -1107,7 +1107,7 @@
            style="fill:#26c4f7;fill-opacity:1">Структура</tspan></text>
     </a>
     <a
-       xlink:href="Domain_logic"
+       xlink:href="../Domain_logic"
        style="text-decoration:none;text-decoration-line:none"
        transform="translate(-146,11)"
        id="a551">
@@ -1124,7 +1124,7 @@
            style="fill:#26c4f7;fill-opacity:1">Логика передметной области</tspan></text>
     </a>
     <a
-       xlink:href="Classes"
+       xlink:href="../Classes"
        style="text-decoration:none;text-decoration-line:none"
        transform="translate(32,4)"
        id="a559">
@@ -1141,7 +1141,7 @@
            style="fill:#26c4f7;fill-opacity:1">Классы</tspan></text>
     </a>
     <a
-       xlink:href="Aggregations"
+       xlink:href="../Aggregations"
        style="text-decoration:none;text-decoration-line:none"
        transform="translate(-8,-2)"
        id="a567">
@@ -1158,7 +1158,7 @@
            style="fill:#26c4f7;fill-opacity:1">Агрегации</tspan></text>
     </a>
     <a
-       xlink:href="Simple_constraints"
+       xlink:href="../Simple_constraints"
        style="text-decoration:none;text-decoration-line:none"
        transform="translate(-39,-2)"
        id="a575">
@@ -1175,7 +1175,7 @@
            style="fill:#26c4f7;fill-opacity:1">Простые ограничения</tspan></text>
     </a>
     <a
-       xlink:href="Constraints"
+       xlink:href="../Constraints"
        style="text-decoration:none;text-decoration-line:none"
        transform="translate(-35,5)"
        id="a583">
@@ -1192,7 +1192,7 @@
            style="fill:#26c4f7;fill-opacity:1">Ограничения</tspan></text>
     </a>
     <a
-       xlink:href="Simple_event"
+       xlink:href="../Simple_event"
        style="text-decoration:none;text-decoration-line:none"
        transform="translate(-4,4)"
        id="a591">
@@ -1209,7 +1209,7 @@
            style="fill:#26c4f7;fill-opacity:1">Простые события</tspan></text>
     </a>
     <a
-       xlink:href="Events"
+       xlink:href="../Events"
        style="text-decoration:none;text-decoration-line:none"
        transform="translate(14,4)"
        id="a599">
@@ -1226,7 +1226,7 @@
            style="fill:#26c4f7;fill-opacity:1">События</tspan></text>
     </a>
     <a
-       xlink:href="Actions"
+       xlink:href="../Actions"
        style="text-decoration:none;text-decoration-line:none"
        transform="translate(15,3)"
        id="a607">
@@ -1243,7 +1243,7 @@
            style="fill:#26c4f7;fill-opacity:1">Действия</tspan></text>
     </a>
     <a
-       xlink:href="Properties"
+       xlink:href="../Properties"
        style="text-decoration:none;text-decoration-line:none"
        transform="translate(20,4)"
        id="a615">
@@ -1260,7 +1260,7 @@
            style="fill:#26c4f7;fill-opacity:1">Свойства</tspan></text>
     </a>
     <a
-       xlink:href="Calculated_events"
+       xlink:href="../Calculated_events"
        transform="translate(-22)"
        style="text-decoration:none;text-decoration-line:none"
        id="a652">

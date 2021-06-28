@@ -499,7 +499,7 @@
          x="344.5"
          y="109.5" /></text>
     <a
-       xlink:href="View_logic"
+       xlink:href="../View_logic"
        style="text-decoration:none;text-decoration-line:none;image-rendering:auto"
        transform="translate(40.000099,2)"
        id="a471">
@@ -517,7 +517,7 @@
            style="fill:#26c4f7;fill-opacity:1">View logic</tspan></text>
     </a>
     <a
-       xlink:href="Navigator"
+       xlink:href="../Navigator"
        style="text-decoration:none;text-decoration-line:none"
        id="a479">
       <text
@@ -533,7 +533,7 @@
            style="fill:#26c4f7;fill-opacity:1">Navigator</tspan></text>
     </a>
     <a
-       xlink:href="Forms"
+       xlink:href="../Forms"
        style="text-decoration:none;text-decoration-line:none"
        transform="translate(10,6)"
        id="a487">
@@ -550,7 +550,7 @@
            style="fill:#26c4f7;fill-opacity:1">Forms</tspan></text>
     </a>
     <a
-       xlink:href="Interactive_view"
+       xlink:href="../Interactive_view"
        style="text-decoration:none;text-decoration-line:none"
        transform="translate(22,-2)"
        id="a495">
@@ -567,7 +567,7 @@
            style="fill:#26c4f7;fill-opacity:1">Interactive</tspan></text>
     </a>
     <a
-       xlink:href="Form_views"
+       xlink:href="../Form_views"
        style="text-decoration:none;text-decoration-line:none"
        id="a503">
       <text
@@ -583,7 +583,7 @@
            style="fill:#26c4f7;fill-opacity:1">Views</tspan></text>
     </a>
     <a
-       xlink:href="Print_view"
+       xlink:href="../Print_view"
        style="text-decoration:none;text-decoration-line:none"
        transform="translate(30,4)"
        id="a511">
@@ -600,7 +600,7 @@
            style="fill:#26c4f7;fill-opacity:1">Print</tspan></text>
     </a>
     <a
-       xlink:href="Structured_view"
+       xlink:href="../Structured_view"
        style="text-decoration:none;text-decoration-line:none"
        transform="translate(-16,2)"
        id="a519">
@@ -617,7 +617,7 @@
            style="fill:#26c4f7;fill-opacity:1">Structured</tspan></text>
     </a>
     <a
-       xlink:href="Form_views"
+       xlink:href="../Form_views"
        style="text-decoration:none;text-decoration-line:none"
        transform="translate(0,6)"
        id="a527">
@@ -634,7 +634,7 @@
            style="fill:#26c4f7;fill-opacity:1">Graphic</tspan></text>
     </a>
     <a
-       xlink:href="Static_view"
+       xlink:href="../Static_view"
        style="text-decoration:none;text-decoration-line:none"
        transform="translate(14,4)"
        id="a535">
@@ -651,7 +651,7 @@
            style="fill:#26c4f7;fill-opacity:1">Static</tspan></text>
     </a>
     <a
-       xlink:href="Form_structure"
+       xlink:href="../Form_structure"
        style="text-decoration:none;text-decoration-line:none"
        transform="translate(6,4)"
        id="a543">
@@ -668,7 +668,7 @@
            style="fill:#26c4f7;fill-opacity:1">Structure</tspan></text>
     </a>
     <a
-       xlink:href="Domain_logic"
+       xlink:href="../Domain_logic"
        style="text-decoration:none;text-decoration-line:none"
        transform="translate(-54,12)"
        id="a551">
@@ -685,7 +685,7 @@
            style="fill:#26c4f7;fill-opacity:1">Domain logic</tspan></text>
     </a>
     <a
-       xlink:href="Classes"
+       xlink:href="../Classes"
        style="text-decoration:none;text-decoration-line:none"
        transform="translate(34,4)"
        id="a559">
@@ -702,7 +702,7 @@
            style="fill:#26c4f7;fill-opacity:1">Classes</tspan></text>
     </a>
     <a
-       xlink:href="Aggregations"
+       xlink:href="../Aggregations"
        style="text-decoration:none;text-decoration-line:none"
        transform="translate(-18,-4)"
        id="a567">
@@ -719,7 +719,7 @@
            style="fill:#26c4f7;fill-opacity:1">Aggregations</tspan></text>
     </a>
     <a
-       xlink:href="Simple_constraints"
+       xlink:href="../Simple_constraints"
        style="text-decoration:none;text-decoration-line:none"
        transform="translate(-22,-2)"
        id="a575">
@@ -736,7 +736,7 @@
            style="fill:#26c4f7;fill-opacity:1">Simple constraints</tspan></text>
     </a>
     <a
-       xlink:href="Constraints"
+       xlink:href="../Constraints"
        style="text-decoration:none;text-decoration-line:none"
        transform="translate(-28,6)"
        id="a583">
@@ -753,7 +753,7 @@
            style="fill:#26c4f7;fill-opacity:1">Constraints</tspan></text>
     </a>
     <a
-       xlink:href="Simple_event"
+       xlink:href="../Simple_event"
        style="text-decoration:none;text-decoration-line:none"
        transform="translate(10,4)"
        id="a591">
@@ -770,7 +770,7 @@
            style="fill:#26c4f7;fill-opacity:1">Simple events</tspan></text>
     </a>
     <a
-       xlink:href="Events"
+       xlink:href="../Events"
        style="text-decoration:none;text-decoration-line:none"
        transform="translate(22,4)"
        id="a599">
@@ -787,7 +787,7 @@
            style="fill:#26c4f7;fill-opacity:1">Events</tspan></text>
     </a>
     <a
-       xlink:href="Actions"
+       xlink:href="../Actions"
        style="text-decoration:none;text-decoration-line:none"
        transform="translate(23,3)"
        id="a607">
@@ -804,7 +804,7 @@
            style="fill:#26c4f7;fill-opacity:1">Actions</tspan></text>
     </a>
     <a
-       xlink:href="Properties"
+       xlink:href="../Properties"
        style="text-decoration:none;text-decoration-line:none"
        transform="translate(14,4)"
        id="a615">
@@ -821,7 +821,7 @@
            style="fill:#26c4f7;fill-opacity:1">Properties</tspan></text>
     </a>
     <a
-       xlink:href="Calculated_events"
+       xlink:href="../Calculated_events"
        style="text-decoration:none;text-decoration-line:none"
        id="a652">
       <text

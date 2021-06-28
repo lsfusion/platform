@@ -228,7 +228,7 @@
          x="344.5"
          y="109.5" /></text>
     <a
-       xlink:href="Management"
+       xlink:href="../Management"
        style="text-decoration:none;text-decoration-line:none"
        transform="translate(30,10)"
        id="a356">
@@ -245,7 +245,7 @@
            style="fill:#26c4f7;fill-opacity:1">Управление</tspan></text>
     </a>
     <a
-       xlink:href="Development"
+       xlink:href="../Development"
        transform="translate(11,1)"
        style="text-decoration:none;text-decoration-line:none"
        id="a364">
@@ -262,7 +262,7 @@
            style="fill:#26c4f7;fill-opacity:1">Разработка</tspan></text>
     </a>
     <a
-       xlink:href="Execution"
+       xlink:href="../Execution"
        style="text-decoration:none;text-decoration-line:none"
        transform="translate(6,-2)"
        id="a372">
@@ -279,7 +279,7 @@
            style="fill:#26c4f7;fill-opacity:1">Выполнение</tspan></text>
     </a>
     <a
-       xlink:href="Tables"
+       xlink:href="../Tables"
        style="text-decoration:none;text-decoration-line:none"
        transform="translate(19,5)"
        id="a386">
@@ -296,7 +296,7 @@
            style="fill:#26c4f7;fill-opacity:1">Таблицы</tspan></text>
     </a>
     <a
-       xlink:href="Indexes"
+       xlink:href="../Indexes"
        style="text-decoration:none;text-decoration-line:none"
        transform="translate(14,4)"
        id="a394">
@@ -313,7 +313,7 @@
            style="fill:#26c4f7;fill-opacity:1">Индексы</tspan></text>
     </a>
     <a
-       xlink:href="Materializations"
+       xlink:href="../Materializations"
        style="text-decoration:none;text-decoration-line:none"
        transform="translate(-6,4)"
        id="a402">
@@ -330,7 +330,7 @@
            style="fill:#26c4f7;fill-opacity:1">Материализации</tspan></text>
     </a>
     <a
-       xlink:href="Internationalization"
+       xlink:href="../Internationalization"
        transform="translate(-17,1)"
        style="text-decoration:none;text-decoration-line:none"
        id="a410">
@@ -347,7 +347,7 @@
            style="fill:#26c4f7;fill-opacity:1">Интернационализация</tspan></text>
     </a>
     <a
-       xlink:href="Migration"
+       xlink:href="../Migration"
        style="text-decoration:none;text-decoration-line:none"
        transform="translate(2,2)"
        id="a418">
@@ -364,7 +364,7 @@
            style="fill:#26c4f7;fill-opacity:1">Миграция</tspan></text>
     </a>
     <a
-       xlink:href="Metaprogramming"
+       xlink:href="../Metaprogramming"
        style="text-decoration:none;text-decoration-line:none"
        transform="translate(-31,7)"
        id="a426">
@@ -381,7 +381,7 @@
            style="fill:#26c4f7;fill-opacity:1">Метапрограммирование</tspan></text>
     </a>
     <a
-       xlink:href="Integration"
+       xlink:href="../Integration"
        style="text-decoration:none;text-decoration-line:none"
        transform="translate(-5,-7)"
        id="a434">
@@ -398,7 +398,7 @@
            style="fill:#26c4f7;fill-opacity:1">Интеграция</tspan></text>
     </a>
     <a
-       xlink:href="Element_identification"
+       xlink:href="../Element_identification"
        style="text-decoration:none;text-decoration-line:none"
        transform="translate(-30,6)"
        id="a447">
@@ -415,7 +415,7 @@
            style="fill:#26c4f7;fill-opacity:1">Идентификация элементов</tspan></text>
     </a>
     <a
-       xlink:href="Modularity"
+       xlink:href="../Modularity"
        style="text-decoration:none;text-decoration-line:none"
        transform="translate(9,7)"
        id="a455">

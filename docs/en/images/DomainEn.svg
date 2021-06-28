@@ -294,7 +294,7 @@
        id="path204"
        style="fill:none;stroke:#26c4f7;stroke-opacity:1" />
     <a
-       xlink:href="Classes"
+       xlink:href="../Classes"
        style="text-decoration:none;text-decoration-line:none"
        transform="translate(-148.8209,119.88281)"
        id="a559">
@@ -311,7 +311,7 @@
            style="fill:#26c4f7;fill-opacity:1">Classes</tspan></text>
     </a>
     <a
-       xlink:href="Aggregations"
+       xlink:href="../Aggregations"
        style="text-decoration:none;text-decoration-line:none"
        transform="translate(-200.8209,111.88281)"
        id="a567">
@@ -328,7 +328,7 @@
            style="fill:#26c4f7;fill-opacity:1">Aggregations</tspan></text>
     </a>
     <a
-       xlink:href="Simple_constraints"
+       xlink:href="../Simple_constraints"
        style="text-decoration:none;text-decoration-line:none"
        transform="translate(-204.8209,113.88281)"
        id="a575">
@@ -345,7 +345,7 @@
            style="fill:#26c4f7;fill-opacity:1">Simple constraints</tspan></text>
     </a>
     <a
-       xlink:href="Constraints"
+       xlink:href="../Constraints"
        style="text-decoration:none;text-decoration-line:none"
        transform="translate(-210.8209,121.88281)"
        id="a583">
@@ -362,7 +362,7 @@
            style="fill:#26c4f7;fill-opacity:1">Constraints</tspan></text>
     </a>
     <a
-       xlink:href="Simple_event"
+       xlink:href="../Simple_event"
        style="text-decoration:none;text-decoration-line:none"
        transform="translate(-172.8209,119.88281)"
        id="a591">
@@ -379,7 +379,7 @@
            style="fill:#26c4f7;fill-opacity:1">Simple events</tspan></text>
     </a>
     <a
-       xlink:href="Events"
+       xlink:href="../Events"
        style="text-decoration:none;text-decoration-line:none"
        transform="translate(-160.8209,119.88281)"
        id="a599">
@@ -396,7 +396,7 @@
            style="fill:#26c4f7;fill-opacity:1">Events</tspan></text>
     </a>
     <a
-       xlink:href="Actions"
+       xlink:href="../Actions"
        style="text-decoration:none;text-decoration-line:none"
        transform="translate(-159.8209,118.88281)"
        id="a607">
@@ -413,7 +413,7 @@
            style="fill:#26c4f7;fill-opacity:1">Actions</tspan></text>
     </a>
     <a
-       xlink:href="Properties"
+       xlink:href="../Properties"
        style="text-decoration:none;text-decoration-line:none"
        transform="translate(-168.8209,119.88281)"
        id="a615">
@@ -430,7 +430,7 @@
            style="fill:#26c4f7;fill-opacity:1">Properties</tspan></text>
     </a>
     <a
-       xlink:href="Calculated_events"
+       xlink:href="../Calculated_events"
        transform="translate(-182.8209,115.88281)"
        style="text-decoration:none;text-decoration-line:none"
        id="a652">
