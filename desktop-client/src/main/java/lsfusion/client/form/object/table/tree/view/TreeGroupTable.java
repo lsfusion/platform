@@ -21,6 +21,7 @@ import lsfusion.client.form.object.table.view.GridPropertyTable;
 import lsfusion.client.form.order.user.MultiLineHeaderRenderer;
 import lsfusion.client.form.order.user.TableSortableHeaderManager;
 import lsfusion.client.form.property.ClientPropertyDraw;
+import lsfusion.client.form.property.async.ClientInputList;
 import lsfusion.client.form.property.cell.EditBindingMap;
 import lsfusion.client.form.property.cell.controller.ClientAbstractCellEditor;
 import lsfusion.client.form.property.cell.controller.dispatch.EditPropertyDispatcher;
@@ -81,6 +82,8 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
     protected int editCol;
     protected ClientType currentEditType;
     protected Object currentEditValue;
+    protected ClientInputList currentInputList;
+    protected String currentActionSID;
     protected boolean editPerformed;
     protected boolean commitingValue;
 
@@ -769,7 +772,25 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
     public Object getCurrentEditValue() {
         return currentEditValue;
     }
-    
+
+    @Override
+    public ClientInputList getCurrentInputList() {
+        return currentInputList;
+    }
+
+    public String getCurrentActionSID() {
+        return currentActionSID;
+    }
+
+    @Override
+    public Integer getContextAction() {
+        return null;
+    }
+
+    @Override
+    public void setContextAction(Integer contextAction) {
+    }
+
     @Override
     public Object getEditValue() {
         return getValueAt(editRow, editCol);
@@ -835,7 +856,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         return editDispatcher.executePropertyEventAction(property, columnKey, actionSID, editEvent);
     }
 
-    public boolean requestValue(ClientType valueType, Object oldValue) {
+    public boolean requestValue(ClientType valueType, Object oldValue, ClientInputList inputList, String actionSID) {
         //пока чтение значения можно вызывать только один раз в одном изменении...
         //если получится безусловно задержать фокус, то это ограничение можно будет убрать
         Preconditions.checkState(!commitingValue, "You can request value only once per edit action.");
@@ -843,6 +864,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         // need this because we use getTableCellEditorComponent infrastructure and we need to pass currentEditValue there somehow
         currentEditType = valueType;
         currentEditValue = oldValue;
+        currentInputList = inputList;
 
         if (!super.editCellAt(editRow, editCol, editEvent)) {
             return false;

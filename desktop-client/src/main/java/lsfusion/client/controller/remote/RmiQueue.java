@@ -353,12 +353,16 @@ public class RmiQueue implements DispatcherListener {
     }
 
     public <T> void asyncRequest(final RmiRequest<T> request) {
+        asyncRequest(request, false);
+    }
+
+    public <T> void asyncRequest(final RmiRequest<T> request, boolean preProceed) {
         if (logger.isDebugEnabled()) {
             logger.debug("Async request: " + request);
         }
         request.setTimeoutParams(new Pair<>(3, 20));
 
-        execRmiRequestInternal(request);
+        execRmiRequestInternal(request, preProceed);
 
         request.onAsyncRequest();
 
@@ -382,6 +386,10 @@ public class RmiQueue implements DispatcherListener {
     }
 
     private <T> RmiFuture<T> execRmiRequestInternal(RmiRequest<T> request) {
+        return execRmiRequestInternal(request, false);
+    }
+
+    private <T> RmiFuture<T> execRmiRequestInternal(RmiRequest<T> request, boolean preProceed) {
         SwingUtils.assertDispatchThread();
 
         request.setRequestIndex(nextRmiRequestIndex++);
@@ -391,7 +399,7 @@ public class RmiQueue implements DispatcherListener {
             logger.debug("Executing request's thread: " + request);
         }
 
-        RmiFuture<T> rmiFuture = createRmiFuture(request);
+        RmiFuture<T> rmiFuture = createRmiFuture(request, preProceed);
 
         if (rmiFutures.isEmpty() && !dispatchingInProgress) {
             rmiFuture.setFirst(true);
@@ -414,7 +422,24 @@ public class RmiQueue implements DispatcherListener {
             return;
         }
 
-        //не обрабатываем результат, пока не закончится редактирование и не вызовется this.editingStopped()
+        //не обрабатываем результат (кроме с preProceeded), пока не закончится редактирование и не вызовется this.editingStopped()
+        if(tableManager.isEditing()) {
+            rmiFutures.forEach(future -> {
+                if(future.isDone() && future.preProceeded != null && !future.preProceeded) {
+                    try {
+                        dispatchingStarted();
+                        try {
+                            future.execCallback();
+                        } finally {
+                            dispatchingEnded();
+                        }
+                        future.preProceeded = true;
+                    } catch (Throwable t) {
+                        ClientExceptionManager.handle(t, false);
+                    }
+                }
+            });
+        }
         if (!tableManager.isEditing()) {
             flushCompletedRequestsNow(false);
         }
@@ -462,7 +487,9 @@ public class RmiQueue implements DispatcherListener {
         dispatchingStarted();
         
         try {
-            future.execCallback();
+            if(future.preProceeded == null || !future.preProceeded) {
+                future.execCallback();
+            }
         } finally {
             dispatchingEnded();
             
@@ -472,10 +499,14 @@ public class RmiQueue implements DispatcherListener {
             }
         }
     }
-    
+
     private <T> RmiFuture<T> createRmiFuture(final RmiRequest<T> request) {
+        return createRmiFuture(request, false);
+    }
+
+    private <T> RmiFuture<T> createRmiFuture(final RmiRequest<T> request, boolean preProceed) {
         RequestCallable<T> requestCallable = new RequestCallable<>(request, abandoned);
-        RmiFuture<T> future = new RmiFuture<>(request, requestCallable);
+        RmiFuture<T> future = new RmiFuture<>(request, requestCallable, preProceed);
         requestCallable.setFutureInterface(future);
         return future;
     }
@@ -526,10 +557,12 @@ public class RmiQueue implements DispatcherListener {
         private final RmiRequest<T> request;
         boolean executed;
         private boolean first = false;
+        private Boolean preProceeded;
 
-        public RmiFuture(final RmiRequest<T> request, final RequestCallable<T> requestCallable) {
+        public RmiFuture(final RmiRequest<T> request, final RequestCallable<T> requestCallable, boolean preProceed) {
             super(requestCallable);
             this.request = request;
+            this.preProceeded = preProceed ? false : null;
         }
 
         @Override

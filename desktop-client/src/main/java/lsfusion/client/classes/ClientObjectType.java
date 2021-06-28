@@ -13,6 +13,7 @@ import lsfusion.client.form.property.cell.classes.view.IntegralPropertyRenderer;
 import lsfusion.client.form.property.cell.view.PropertyRenderer;
 import lsfusion.client.form.property.panel.view.DataPanelView;
 import lsfusion.client.form.property.panel.view.PanelView;
+import lsfusion.client.form.property.table.view.CellTableInterface;
 import lsfusion.interop.classes.DataType;
 import lsfusion.interop.form.property.Compare;
 
@@ -55,11 +56,13 @@ public class ClientObjectType implements ClientType, ClientTypeClass {
         return new DataPanelView(form, key, columnKey);
     }
 
-    public PropertyEditor getChangeEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, Object value) {
+    @Override
+    public PropertyEditor getChangeEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, CellTableInterface table, Object value) {
         assert false:"shouldn't be used anymore";
         return null;
     }
 
+    @Override
     public PropertyEditor getValueEditorComponent(ClientFormController form, ClientPropertyDraw property, Object value) {
         return new IntegerPropertyEditor(value, ClientLongClass.instance.getDefaultFormat(), null, Long.class);
     }

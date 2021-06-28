@@ -603,6 +603,12 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return changeType != null ? changeType.changeType : null;
     }
 
+    public ClientInputList getInputList() {
+        ClientAsyncEventExec asyncExec = asyncExecMap.get(ServerResponse.CHANGE);
+        ClientAsyncChange changeType = asyncExec instanceof ClientAsyncChange ? (ClientAsyncChange) asyncExec : null;
+        return changeType != null ? changeType.inputList : null;
+    }
+
     private void initEditBindingMap() {
         if (editBindingMap == null) {
             editBindingMap = new EditBindingMap(false);

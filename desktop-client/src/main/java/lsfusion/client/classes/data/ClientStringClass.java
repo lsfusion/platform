@@ -10,6 +10,7 @@ import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
 import lsfusion.client.form.property.cell.classes.controller.StringPropertyEditor;
 import lsfusion.client.form.property.cell.classes.view.StringPropertyRenderer;
 import lsfusion.client.form.property.cell.view.PropertyRenderer;
+import lsfusion.client.form.property.table.view.CellTableInterface;
 import lsfusion.interop.classes.DataType;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.form.property.ExtInt;
@@ -102,12 +103,13 @@ public class ClientStringClass extends ClientDataClass {
     }
 
     @Override
-    public PropertyEditor getChangeEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, Object value) {
-        return super.getChangeEditorComponent(ownerComponent, form, property, value);
+    public PropertyEditor getChangeEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, CellTableInterface table, Object value) {
+        return super.getChangeEditorComponent(ownerComponent, form, property, table, value);
     }
 
-    public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
-        return new StringPropertyEditor(property, value, length.isUnlimited() ? Integer.MAX_VALUE : length.getValue(), !blankPadded, true);
+    @Override
+    public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property, CellTableInterface table) {
+        return new StringPropertyEditor(property, table, value, length.isUnlimited() ? Integer.MAX_VALUE : length.getValue(), !blankPadded, true);
     }
 
     @Override

@@ -11,6 +11,7 @@ import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.property.ClientPropertyDraw;
+import lsfusion.client.form.property.async.ClientInputList;
 import lsfusion.client.form.property.cell.EditBindingMap;
 import lsfusion.client.form.property.cell.controller.ClientAbstractCellEditor;
 import lsfusion.client.form.property.cell.controller.dispatch.EditPropertyDispatcher;
@@ -50,6 +51,8 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
     protected int editCol;
     protected ClientType currentEditType;
     protected Object currentEditValue;
+    protected ClientInputList currentInputList;
+    protected String currentActionSID;
     protected boolean editPerformed;
     protected boolean commitingValue;
     
@@ -109,7 +112,25 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
     public Object getCurrentEditValue() {
         return currentEditValue;
     }
-    
+
+    public ClientInputList getCurrentInputList() {
+        return currentInputList;
+    }
+
+    public String getCurrentActionSID() {
+        return currentActionSID;
+    }
+
+    Integer contextAction = null;
+    @Override
+    public Integer getContextAction() {
+        return contextAction;
+    }
+    @Override
+    public void setContextAction(Integer contextAction) {
+        this.contextAction = contextAction;
+    }
+
     @Override
     public Object getEditValue() {
         if(!checkEditBounds())
@@ -167,7 +188,7 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
         return editRow < getRowCount() && editCol < getColumnCount();
     }
 
-    public boolean requestValue(ClientType valueType, Object oldValue) {
+    public boolean requestValue(ClientType valueType, Object oldValue, ClientInputList inputList, String actionSID) {
         quickLog("formTable.requestValue: " + valueType);
 
         //пока чтение значения можно вызывать только один раз в одном изменении...
@@ -177,6 +198,8 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
         // need this because we use getTableCellEditorComponent infrastructure and we need to pass currentEditValue there somehow
         currentEditType = valueType;
         currentEditValue = oldValue;
+        currentInputList = inputList;
+        currentActionSID = actionSID;
 
         if (!super.editCellAt(editRow, editCol, editEvent)) {
             return false;
@@ -243,7 +266,7 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
     private void commitValue(Object value) {
         quickLog("formTable.commitValue: " + value);
         commitingValue = true;
-        editDispatcher.commitValue(value);
+        editDispatcher.commitValue(value, contextAction);
         form.clearCurrentEditingTable(this);
     }
 

@@ -13,6 +13,7 @@ import lsfusion.client.form.property.cell.EditBindingMap;
 import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
 import lsfusion.client.form.property.panel.view.DataPanelView;
 import lsfusion.client.form.property.panel.view.PanelView;
+import lsfusion.client.form.property.table.view.CellTableInterface;
 import lsfusion.interop.form.property.Compare;
 
 import java.awt.*;
@@ -65,15 +66,17 @@ public abstract class ClientDataClass extends ClientClass implements ClientType 
         return new DataPanelView(form, key, columnKey);
     }
 
-    public PropertyEditor getChangeEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, Object value) {
-        return getDataClassEditorComponent(value, property);
+    @Override
+    public PropertyEditor getChangeEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, CellTableInterface table, Object value) {
+        return getDataClassEditorComponent(value, property, table);
     }
 
+    @Override
     public PropertyEditor getValueEditorComponent(ClientFormController form, ClientPropertyDraw property, Object value) {
-        return getDataClassEditorComponent(value, property);
+        return getDataClassEditorComponent(value, property, null);
     }
 
-    protected abstract PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property);
+    protected abstract PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property, CellTableInterface table);
 
     public String getConfirmMessage() {
         return ClientResourceBundle.getString("logics.classes.do.you.really.want.to.edit.property");

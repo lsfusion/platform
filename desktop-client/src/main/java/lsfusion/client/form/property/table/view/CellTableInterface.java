@@ -4,6 +4,7 @@ import lsfusion.client.classes.ClientType;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.property.ClientPropertyDraw;
+import lsfusion.client.form.property.async.ClientInputList;
 import lsfusion.client.form.property.cell.controller.EditPropertyHandler;
 
 import java.awt.*;
@@ -11,6 +12,10 @@ import java.awt.*;
 public interface CellTableInterface extends EditPropertyHandler {
     ClientType getCurrentEditType();
     Object getCurrentEditValue();
+    ClientInputList getCurrentInputList();
+    String getCurrentActionSID();
+    Integer getContextAction();
+    void setContextAction(Integer contextAction);
 
     boolean isPressed(int row, int column);
 

@@ -6,6 +6,7 @@ import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.cell.classes.controller.IntegerPropertyEditor;
 import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
+import lsfusion.client.form.property.table.view.CellTableInterface;
 import lsfusion.interop.classes.DataType;
 
 import java.text.NumberFormat;
@@ -46,7 +47,8 @@ public class ClientLongClass extends ClientIntegralClass implements ClientTypeCl
         return new IntegerPropertyEditor(value, getEditFormat(property), property, Long.class);
     }
 
-    public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
+    @Override
+    public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property, CellTableInterface table) {
         return new IntegerPropertyEditor(value, property.maxValue, getEditFormat(property), property, Long.class);
     }
 

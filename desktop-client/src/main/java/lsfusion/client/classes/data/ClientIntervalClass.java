@@ -6,6 +6,7 @@ import lsfusion.client.form.property.cell.classes.controller.IntervalPropertyEdi
 import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
 import lsfusion.client.form.property.cell.classes.view.FormatPropertyRenderer;
 import lsfusion.client.form.property.cell.view.PropertyRenderer;
+import lsfusion.client.form.property.table.view.CellTableInterface;
 import lsfusion.client.view.MainFrame;
 
 import java.awt.*;
@@ -71,7 +72,7 @@ public abstract class ClientIntervalClass extends ClientFormatClass<SimpleDateFo
     }
 
     @Override
-    protected PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
+    protected PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property, CellTableInterface table) {
         return new IntervalPropertyEditor(value, true, this);
     }
 

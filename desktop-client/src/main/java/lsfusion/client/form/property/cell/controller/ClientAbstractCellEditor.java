@@ -28,7 +28,7 @@ public class ClientAbstractCellEditor extends AbstractCellEditor implements Prop
             return null;
         }
 
-        propertyEditor = table.getCurrentEditType().getChangeEditorComponent(jTable, table.getForm(), property, table.getCurrentEditValue());
+        propertyEditor = table.getCurrentEditType().getChangeEditorComponent(jTable, table.getForm(), property, table, table.getCurrentEditValue());
         propertyEditor.setTableEditor(this);
 
         assert propertyEditor != null;

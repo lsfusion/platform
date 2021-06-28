@@ -102,7 +102,7 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
         this.editColumnKey = columnKey;
         this.simpleChangeProperty = property;
         this.actionSID = actionSID;
-        return internalRequestValue(asyncChange.changeType);
+        return internalRequestValue(asyncChange.changeType, asyncChange.inputList, actionSID);
     }
 
     @Override
@@ -120,7 +120,7 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
         if (readType != null) {
             ClientType editType = readType;
             readType = null;
-            if (!internalRequestValue(editType)) {
+            if (!internalRequestValue(editType, readInputList, ServerResponse.INPUT)) {
                 cancelEdit();
             }
             return true;
@@ -129,10 +129,10 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
         return response.resumeInvocation || editPerformed;
     }
 
-    private boolean internalRequestValue(ClientType readType) throws IOException {
+    private boolean internalRequestValue(ClientType readType, ClientInputList inputList, String actionSID) throws IOException {
         valueRequested = true;
         oldValueRequested = handler.getEditValue();
-        return handler.requestValue(readType, hasOldValue ? oldValue : oldValueRequested);
+        return handler.requestValue(readType, hasOldValue ? oldValue : oldValueRequested, inputList, actionSID);
     }
 
     private void internalCommitValue(UserInputResult inputResult) {
@@ -152,7 +152,7 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
                             updateEditValueCallback.done(inputResult.getValue());
                         }
                     }
-                    getFormController().changeProperty(simpleChangeProperty, editColumnKey, actionSID, inputResult.getValue(), oldValueRequested);
+                    getFormController().changeProperty(simpleChangeProperty, editColumnKey, actionSID, inputResult.getValue(), inputResult.getContextAction(), oldValueRequested);
                 } catch (IOException e) {
                     throw Throwables.propagate(e);
                 }
@@ -164,7 +164,11 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
     }
 
     public void commitValue(Object value) {
-        internalCommitValue(new UserInputResult(value));
+        commitValue(value, null);
+    }
+
+    public void commitValue(Object value, Integer contextAction) {
+        internalCommitValue(new UserInputResult(value, contextAction));
     }
 
     public void cancelEdit() {

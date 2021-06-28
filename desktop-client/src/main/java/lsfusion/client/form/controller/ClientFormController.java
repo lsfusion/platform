@@ -5,12 +5,14 @@ import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Table;
 import lsfusion.base.BaseUtils;
+import lsfusion.base.Pair;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.file.RawFileData;
 import lsfusion.base.identity.DefaultIDGenerator;
 import lsfusion.base.identity.IDGenerator;
 import lsfusion.base.lambda.EProvider;
 import lsfusion.base.lambda.ERunnable;
+import lsfusion.base.lambda.GetAsyncValuesProvider;
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.base.TableManager;
 import lsfusion.client.base.view.ClientImages;
@@ -82,6 +84,7 @@ import java.rmi.RemoteException;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -119,6 +122,13 @@ public class ClientFormController implements AsyncListener {
                 remoteForm.interrupt(cancelable);
             } catch (Exception ignored) {
             }
+        }
+    };
+
+    private final GetAsyncValuesProvider getAsyncValuesProvider = new GetAsyncValuesProvider() {
+        @Override
+        public String[] getAsyncValues(int propertyID, byte[] columnKey, String actionSID, String value, int asyncIndex) throws RemoteException {
+            return remoteForm == null ? null : remoteForm.getAsyncValues(-1, 0, propertyID, columnKey, actionSID, value, asyncIndex);
         }
     };
 
@@ -556,6 +566,7 @@ public class ClientFormController implements AsyncListener {
     }
 
     public void commitOrCancelCurrentEditing() {
+        editAsyncUsePessimistic = false;
         tableManager.commitOrCancelCurrentEditing();
     }
 
@@ -886,7 +897,7 @@ public class ClientFormController implements AsyncListener {
         });
     }
 
-    private byte[] getFullCurrentKey(ClientGroupObjectValue columnKey) throws IOException {
+    private byte[] getFullCurrentKey(ClientGroupObjectValue columnKey) {
         final ClientGroupObjectValue fullCurrentKey = getFullCurrentKey();
         fullCurrentKey.putAll(columnKey);
 
@@ -894,7 +905,7 @@ public class ClientFormController implements AsyncListener {
     }
 
     public void changeProperty(final ClientPropertyDraw property, final ClientGroupObjectValue columnKey, String actionSID,
-                               final Object newValue, final Object oldValue) throws IOException {
+                               final Object newValue, Integer contextAction, final Object oldValue) throws IOException {
         assert !isEditing();
 
         commitOrCancelCurrentEditing();
@@ -926,7 +937,7 @@ public class ClientFormController implements AsyncListener {
 
             @Override
             protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                return executeEventAction(requestIndex, lastReceivedRequestIndex, remoteForm, property, fullCurrentKey, actionSID, new ClientPushAsyncChange(newValue));
+                return executeEventAction(requestIndex, lastReceivedRequestIndex, remoteForm, property, fullCurrentKey, actionSID, new ClientPushAsyncChange(newValue, contextAction));
             }
 
             @Override
@@ -1222,6 +1233,76 @@ public class ClientFormController implements AsyncListener {
                 return remoteForm.pasteMulticellValue(requestIndex, lastReceivedRequestIndex, mKeys, mValues);
             }
         });
+    }
+
+    private boolean editAsyncUsePessimistic; // optimimization
+    // shouldn't be zeroed when editing ends, since we assume that there is only one live input on the form
+    private int editAsyncIndex;
+    private int editLastReceivedAsyncIndex;
+    // we don't want to proceed results if "later" request results where proceeded
+    private Consumer<Pair<List<String>, Boolean>> checkLast(int editAsyncIndex, Consumer<Pair<List<String>, Boolean>> callback) {
+        return result -> {
+            if(editAsyncIndex >= editLastReceivedAsyncIndex) {
+                editLastReceivedAsyncIndex = editAsyncIndex;
+                if(!result.second && editAsyncIndex < editAsyncIndex - 1)
+                    result = new Pair<>(result.first, true);
+                callback.accept(result);
+            }
+        };
+    }
+
+//    // synchronous call (with request indices, etc.)
+    private void getPessimisticValues(ClientPropertyDraw property, ClientGroupObjectValue columnKey, String value, String actionSID, Consumer<Pair<List<String>, Boolean>> callback) {
+        rmiQueue.asyncRequest(new RmiCheckNullFormRequest<String[]>("getAsyncValues - " + property.getLogName()) {
+            @Override
+            protected String[] doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
+                return remoteForm.getAsyncValues(requestIndex, lastReceivedRequestIndex, property.getID(), getFullCurrentKey(columnKey), actionSID, value, editAsyncIndex);
+            }
+
+            @Override
+            protected void onResponse(long requestIndex, String[] result) throws Exception {
+                super.onResponse(requestIndex, result);
+                callback.accept(Pair.create(Arrays.asList(result), false));
+            }
+
+        }, true);
+    }
+
+    public void getAsyncValues(ClientPropertyDraw property, ClientGroupObjectValue columnKey, String value, String actionSID, Consumer<Pair<List<String>, Boolean>> callback) {
+        Consumer<Pair<List<String>, Boolean>> fCallback = checkLast(editAsyncIndex++, callback);
+
+        if (!editAsyncUsePessimistic) {
+
+            SwingUtilities.invokeLater(() -> {
+                try {
+                    String[] result = getAsyncValuesProvider.getAsyncValues(property.getID(), getFullCurrentKey(columnKey), actionSID, value, editAsyncIndex);
+
+                    if (result == null) { // optimistic request failed, running pessimistic one, with request indices, etc.
+                        editAsyncUsePessimistic = true;
+                        getPessimisticValues(property, columnKey, value, actionSID, fCallback);
+                    } else {
+                        boolean moreResults = false;
+                        List<String> values = Arrays.asList(result);
+                        if (values.size() > 0) {
+                            String lastResult = values.get(values.size() - 1);
+                            if (lastResult.equals(ServerResponse.RECHECK)) {
+                                values = values.subList(0, values.size() - 1);
+
+                                moreResults = true;
+                                getPessimisticValues(property, columnKey, value, actionSID, fCallback);
+                            } else if (values.size() == 1 && lastResult.equals(ServerResponse.CANCELED)) // ignoring CANCELED results
+                                return;
+                        }
+                        callback.accept(new Pair<>(values, moreResults));
+                    }
+
+                } catch (RemoteException e) {
+                    throw Throwables.propagate(e);
+                }
+            });
+        } else {
+            getPessimisticValues(property, columnKey, value, actionSID, fCallback);
+        }
     }
 
     public void changePropertyOrder(final ClientPropertyDraw property, final Order modiType, final ClientGroupObjectValue columnKey) {

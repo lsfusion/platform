@@ -7,6 +7,7 @@ import lsfusion.client.form.property.cell.classes.controller.ColorPropertyEditor
 import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
 import lsfusion.client.form.property.cell.classes.view.ColorPropertyRenderer;
 import lsfusion.client.form.property.cell.view.PropertyRenderer;
+import lsfusion.client.form.property.table.view.CellTableInterface;
 import lsfusion.interop.classes.DataType;
 
 import java.awt.*;
@@ -22,7 +23,7 @@ public class ClientColorClass extends ClientDataClass implements ClientTypeClass
     }
 
     @Override
-    protected PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
+    protected PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property, CellTableInterface table) {
         return new ColorPropertyEditor(value);
     }
 
