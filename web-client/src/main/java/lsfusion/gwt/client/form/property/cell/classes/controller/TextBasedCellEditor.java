@@ -232,8 +232,8 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
     }
 
     public void validateAndCommit(Element parent, Integer contextAction, boolean cancelIfInvalid, boolean blurred) {
-        String stringValue = getCurrentText(parent);
-        if(contextAction == null && hasList && strict && !suggestBox.isValidValue(stringValue)) {
+        String stringValue = contextAction != null ? suggestBox.getValue() : getCurrentText(parent); //if button pressed, input element is button
+        if(hasList && strict && contextAction == null && !suggestBox.isValidValue(stringValue)) {
             if (cancelIfInvalid) {
                 editManager.cancelEditing();
             }
@@ -259,6 +259,7 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
         return new TextBox();
     }
 
+    private String prevQuery = "";
     public Element createInputElement() {
         if(hasList) {
             suggestBox = new CustomSuggestBox(new SuggestOracle() {
@@ -275,6 +276,7 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
 
                 private void requestAsyncSuggestions(Request request, Callback callback, boolean emptyQuery) {
                     String query = nvl(request.getQuery(), "");
+                    prevQuery = query;
                     editManager.getAsyncValues(query, new AsyncCallback<Pair<ArrayList<String>, Boolean>>() {
                         @Override
                         public void onFailure(Throwable caught) {
@@ -385,7 +387,7 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
             VerticalPanel panel = new VerticalPanel();
             panel.add(suggestionList);
 
-            noResultsLabel = new Label(messages.nothingFound());
+            noResultsLabel = new Label(messages.noResults());
             noResultsLabel.getElement().addClassName("item"); //to be like suggestion item
             panel.add(noResultsLabel);
 
@@ -396,18 +398,18 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
 
             HorizontalPanel buttonsPanel = new HorizontalPanel();
 
-            buttonsPanel.add(refreshButton = new PushButton() {
+            buttonsPanel.add(refreshButton = new SuggestPopupButton() {
                 @Override
                 protected void onClickStart() {
                     refreshButtonPressed = true;
                     updateLoadingButton(true);
-                    suggestBox.forceRefreshSuggestions(getCurrentText(getElement()));
+                    suggestBox.forceRefreshSuggestions(prevQuery);
                 }
             });
 
             for(int i = 0; i < actions.length; i++) {
                 int index = i;
-                GwtClientUtils.setThemeImage(actions[index] + ".png", (image -> buttonsPanel.add(new PushButton(new Image(image)) {
+                GwtClientUtils.setThemeImage(actions[index] + ".png", (image -> buttonsPanel.add(new SuggestPopupButton(new Image(image)) {
                     @Override
                     protected void onClickStart() {
                         validateAndCommit(getElement(), index, true, false);
@@ -459,4 +461,17 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
             this.refreshButtonPressed = refreshButtonPressed;
         }
     }
+
+    private class SuggestPopupButton extends PushButton {
+        public SuggestPopupButton() {
+            super();
+            getElement().addClassName("suggestPopupButton");
+        }
+
+        public SuggestPopupButton(Image upImage) {
+            super(upImage);
+            getElement().addClassName("suggestPopupButton");
+        }
+    }
+
 }

@@ -236,7 +236,7 @@ public interface ClientMessages extends Messages {
     String lastMonth();
     String clear();
 
-    String nothingFound();
+    String noResults();
 
     class Instance {
         private static final ClientMessages instance = GWT.create(ClientMessages.class);

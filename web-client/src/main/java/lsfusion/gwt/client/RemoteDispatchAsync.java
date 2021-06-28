@@ -28,9 +28,9 @@ public abstract class RemoteDispatchAsync {
         executeQueue(action, callback, direct, false);
     }
 
-    public <A extends RequestAction<R>, R extends Result> void executeQueue(A action, AsyncCallback<R> callback, boolean direct, boolean flushAnyway) {
+    public <A extends RequestAction<R>, R extends Result> void executeQueue(A action, AsyncCallback<R> callback, boolean direct, boolean preProceed) {
         fillAction(action);
-        queueAction(action, callback, direct, flushAnyway);
+        queueAction(action, callback, direct, preProceed);
     }
 
     public <A extends RequestAction<R>, R extends Result> void executePriority(final A action, final AsyncCallback<R> callback) {
@@ -45,10 +45,10 @@ public abstract class RemoteDispatchAsync {
     protected void onAsyncFinished() {
     }
 
-    protected <A extends RequestAction<R>, R extends Result> void queueAction(final A action, final AsyncCallback<R> callback, boolean direct, boolean flushAnyway) {
+    protected <A extends RequestAction<R>, R extends Result> void queueAction(final A action, final AsyncCallback<R> callback, boolean direct, boolean preProceed) {
         Log.debug("Queueing action: " + action.toString());
 
-        final QueuedAction queuedAction = new QueuedAction(action, callback, flushAnyway);
+        final QueuedAction queuedAction = new QueuedAction(action, callback, preProceed);
         fillQueuedAction(action);
         // in desktop there is direct query mechanism (for continuing single invocating), which blocks EDT, and guarantee synchronization
         // in web there is no such mechanism, so we'll put the queued action to the very beginning of the queue
@@ -87,7 +87,7 @@ public abstract class RemoteDispatchAsync {
     public void flushCompletedRequests() {
         if (isEditing()) {
             q.forEach(action -> {
-                if (action.flushAnyway && action.finished && !action.preProceeded) {
+                if (action.preProceeded != null && !action.preProceeded && action.finished) {
                     action.proceed();
                     action.preProceeded = true;
                 }
@@ -100,7 +100,7 @@ public abstract class RemoteDispatchAsync {
                     lastReceivedRequestIndex = requestIndex;
                 }
 
-                if (!action.preProceeded) {
+                if (action.preProceeded == null || !action.preProceeded) {
                     action.proceed();
                 }
             }

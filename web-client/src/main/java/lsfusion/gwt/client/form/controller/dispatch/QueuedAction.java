@@ -14,13 +14,12 @@ public class QueuedAction<R extends Result> {
     private R result;
     private Throwable throwable;
 
-    public boolean flushAnyway;
-    public boolean preProceeded;
+    public Boolean preProceeded;
 
-    public QueuedAction(Action action, AsyncCallback callback, boolean flushAnyway) {
+    public QueuedAction(Action action, AsyncCallback callback, boolean preProceed) {
         this.action = action;
         this.callback = callback;
-        this.flushAnyway = flushAnyway;
+        this.preProceeded = preProceed ? false : null;
     }
 
     public void succeeded(R result) {

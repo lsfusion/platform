@@ -1059,8 +1059,8 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     public <T extends Result> long asyncDispatch(final FormAction<T> action, AsyncCallback<T> callback) {
         return asyncDispatch(action, callback, false);
     }
-    public <T extends Result> long asyncDispatch(final FormAction<T> action, AsyncCallback<T> callback, boolean flushAnyway) {
-        return dispatcher.execute(action, callback, false, flushAnyway);
+    public <T extends Result> long asyncDispatch(final FormAction<T> action, AsyncCallback<T> callback, boolean preProceed) {
+        return dispatcher.execute(action, callback, false, preProceed);
     }
     public <T extends Result> long syncDispatch(final FormAction<T> action, AsyncCallback<T> callback) {
         return syncDispatch(action, callback, false);

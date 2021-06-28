@@ -807,6 +807,7 @@ button {
 }
 
 .gwt-SuggestBoxPopup {
+    background: var(--component-background-color);
 }
 
 .gwt-SuggestBoxPopup .item {
@@ -814,12 +815,16 @@ button {
     color: var(--text-color);
     cursor: default;
     font-size: 110%;
+    min-width: 200px;
 }
 .gwt-SuggestBoxPopup .item-selected {
     background: #D5E2FF;
 }
 .gwt-SuggestBoxPopup .suggestPopupContent {
-    background: white;
+    background: var(--component-background-color);
+}
+.gwt-SuggestBoxPopup .suggestPopupButton {
+    background: var(--component-background-color);
 }
 .gwt-SuggestBoxPopup .suggestPopupTopCenter {
     border-top: 1px solid #bbb;
