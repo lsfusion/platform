@@ -1,6 +1,7 @@
 package lsfusion.client.form.object.table.grid.controller;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.Pair;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.base.view.FlatRolloverButton;
@@ -10,6 +11,7 @@ import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.form.ClientFormChanges;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.design.view.ClientFormLayout;
+import lsfusion.client.form.filter.user.ClientPropertyFilter;
 import lsfusion.client.form.filter.user.controller.FilterController;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientGroupObjectValue;
@@ -25,6 +27,7 @@ import lsfusion.client.form.object.table.grid.view.GridView;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.ClientPropertyReader;
 import lsfusion.client.form.property.cell.classes.view.link.ImageLinkPropertyRenderer;
+import lsfusion.client.form.view.Column;
 import lsfusion.client.view.MainFrame;
 import lsfusion.interop.form.UpdateMode;
 import lsfusion.interop.form.object.table.grid.user.design.GroupObjectUserPreferences;
@@ -85,10 +88,10 @@ public class GridController extends AbstractTableController {
             
             if (groupObject.userFilter.visible) {
                 filter = new FilterController(this, groupObject.userFilter) {
-                    protected void remoteApplyQuery() {
+                    public void applyFilters(List<ClientPropertyFilter> conditions) {
                         RmiQueue.runAction(() -> {
                             try {
-                                GridController.this.formController.changeFilter(groupObject, getConditions());
+                                GridController.this.formController.changeFilter(groupObject, conditions);
                                 table.requestFocusInWindow();
                             } catch (IOException e) {
                                 throw new RuntimeException(ClientResourceBundle.getString("errors.error.applying.filter"), e);
@@ -112,8 +115,6 @@ public class GridController extends AbstractTableController {
 
             configureToolbar();
         }
-
-        update(null);
     }
 
     private void configureToolbar() {
@@ -497,6 +498,11 @@ public class GridController extends AbstractTableController {
     }
 
     @Override
+    public List<Pair<Column, String>> getSelectedColumns() {
+        return table.getFilterColumns();
+    }
+
+    @Override
     public boolean changeOrders(ClientGroupObject groupObject, LinkedHashMap<ClientPropertyDraw, Boolean> orders, boolean alreadySet) {
         assert this.groupObject.equals(groupObject);
         if(isList()) {
@@ -584,6 +590,7 @@ public class GridController extends AbstractTableController {
             }
 
             if (filter != null) {
+                filter.update();
                 filter.setVisible(isVisible());
             }
 

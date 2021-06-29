@@ -181,6 +181,10 @@ public class GroupTreeTableModel extends DefaultTreeTableModel {
                ? columnProperties.get(col - 1)
                : null;
     }
+    
+    public List<ClientPropertyDraw> getProperties(ClientGroupObject group) {
+        return groupPropsMap.get(group);
+    }
 
     public ClientPropertyDraw getProperty(Object node, int column) {
         if (node instanceof TreeGroupNode) {

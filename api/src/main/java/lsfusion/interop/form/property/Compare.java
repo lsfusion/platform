@@ -4,8 +4,6 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-import static lsfusion.base.ApiResourceBundle.getString;
-
 public enum Compare {
     EQUALS, GREATER, LESS, GREATER_EQUALS, LESS_EQUALS, NOT_EQUALS, START_WITH, CONTAINS, ENDS_WITH, LIKE, MATCH, INARRAY;
 
@@ -113,11 +111,11 @@ public enum Compare {
             case NOT_EQUALS :
                 return "!=";
             case START_WITH :
-                return getString("interop.starts.with");
+                return "_*";
             case CONTAINS:
-                return getString("interop.contains");
+                return "=*";
             case ENDS_WITH :
-                return getString("interop.ends.with");
+                return "*_";
             case LIKE :
                 return "LIKE";
             case MATCH:

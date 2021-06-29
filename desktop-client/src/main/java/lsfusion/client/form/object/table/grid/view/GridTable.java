@@ -25,6 +25,7 @@ import lsfusion.client.form.order.user.MultiLineHeaderRenderer;
 import lsfusion.client.form.order.user.TableSortableHeaderManager;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.table.view.ClientPropertyTable;
+import lsfusion.client.form.view.Column;
 import lsfusion.client.view.MainFrame;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.design.FontInfo;
@@ -1223,6 +1224,36 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
 
     public Object getSelectedValue(ClientPropertyDraw property, ClientGroupObjectValue columnKey) {
         return getSelectedValue(model.getPropertyIndex(property, columnKey));
+    }
+
+    @Override
+    public List<Pair<Column, String>> getFilterColumns() {
+        List<Pair<Column, String>> result = new ArrayList<>();
+        for(ClientPropertyDraw property : properties)
+            for(ClientGroupObjectValue columnKey : columnKeys.get(property))
+                result.add(getSelectedColumn(property, columnKey));
+        return result;
+    }
+
+    public Pair<Column, String> getSelectedColumn(ClientPropertyDraw property, ClientGroupObjectValue columnKey) {
+        return new Pair<>(new Column(property, columnKey), getPropertyCaption(property, columnKey));
+    }
+
+    protected String getPropertyCaption(ClientPropertyDraw property, ClientGroupObjectValue columnKey) {
+        String userCaption = getUserCaption(property);
+        if (userCaption != null)
+            return userCaption;
+
+        return getPropertyCaption(captions.get(property), property, columnKey);
+    }
+
+    public static String getPropertyCaption(Map<ClientGroupObjectValue, Object> propCaptions, ClientPropertyDraw property, ClientGroupObjectValue columnKey) {
+        String caption;
+        if (propCaptions != null)
+            caption = property.getDynamicCaption(propCaptions.get(columnKey));
+        else
+            caption = property.getCaptionOrEmpty();
+        return caption;
     }
 
     private Object getSelectedValue(int col) {

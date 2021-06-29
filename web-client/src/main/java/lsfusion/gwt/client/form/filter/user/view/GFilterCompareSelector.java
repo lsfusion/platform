@@ -20,8 +20,8 @@ public abstract class GFilterCompareSelector extends GFilterOptionSelector<GComp
     private CheckBox allowNullCB;
 
     public GFilterCompareSelector(GPropertyFilter condition) {
-        super(condition.property.baseType.getFilterCompares());
-        this.negation = condition.negation;
+        super(condition.property.getFilterCompares());
+        negation = condition.negation;
 
         negationCB = new CheckBox("!");
         negationCB.addStyleName("userFilterNegationCheckBox");
@@ -66,9 +66,14 @@ public abstract class GFilterCompareSelector extends GFilterOptionSelector<GComp
     public void valueChanged(GCompare value) {
         updateText();
     }
-    
+
+    @Override
+    public void setText(String text) {
+        super.setText((negation ? "!" : "") + text);
+    }
+
     private void updateText() {
-        setText((negation ? "!" : "") + currentValue);
+        setText(currentValue.toString());
     }
 
     public abstract void negationChanged(boolean value);

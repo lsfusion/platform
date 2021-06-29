@@ -6,9 +6,16 @@ import lsfusion.client.ClientResourceBundle;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public class ClientDataFilterValue extends ClientFilterValue {
+public class ClientDataFilterValue {
 
-    private Object value;
+    public Object value;
+
+    public ClientDataFilterValue() {
+    }
+    
+    public ClientDataFilterValue(Object value) {
+        this.value = value;
+    }
 
     byte getTypeID() {
         return 0;
@@ -19,7 +26,7 @@ public class ClientDataFilterValue extends ClientFilterValue {
     }
 
     public void serialize(DataOutputStream outStream) throws IOException {
-        super.serialize(outStream);
+        outStream.writeByte(getTypeID());
         BaseUtils.serializeObject(outStream, value);
     }
 

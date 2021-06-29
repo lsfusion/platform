@@ -3,7 +3,6 @@ package lsfusion.client.form.filter.user.view;
 import lsfusion.client.classes.data.ClientLogicalClass;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.filter.user.ClientDataFilterValue;
-import lsfusion.client.form.filter.user.FilterValueListener;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.object.table.controller.TableController;
 import lsfusion.client.form.property.ClientPropertyDraw;
@@ -13,23 +12,25 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 
-public abstract class DataFilterValueView extends FilterValueView {
+public abstract class DataFilterValueView extends JPanel {
     private final ClientDataFilterValue filterValue;
     private final DataFilterValueViewTable valueTable;
 
     // нужен для получения текущих значений в таблице
     private final TableController logicsSupplier;
 
-    public DataFilterValueView(FilterValueListener listener, ClientDataFilterValue ifilterValue, ClientPropertyDraw property, TableController ilogicsSupplier) {
-        super(listener);
+    public DataFilterValueView(ClientDataFilterValue filterValue, ClientPropertyDraw property, ClientGroupObjectValue columnKey, TableController ilogicsSupplier) {
+        setLayout(new BorderLayout());
 
-        filterValue = ifilterValue;
+        this.filterValue = filterValue != null ? filterValue : new ClientDataFilterValue();
         logicsSupplier = ilogicsSupplier;
 
         // непосредственно объект для изменения значения свойств
         valueTable = new DataFilterValueViewTable(this, property, ilogicsSupplier);
 
         add(valueTable, BorderLayout.CENTER);
+        
+        propertyChanged(property, columnKey);
     }
 
     public boolean requestFocusInWindow() {
@@ -48,12 +49,11 @@ public abstract class DataFilterValueView extends FilterValueView {
 
     public void propertyChanged(ClientPropertyDraw property, ClientGroupObjectValue columnKey) {
         valueTable.setProperty(property);
-        setValue(logicsSupplier.getSelectedValue(property, columnKey));
+        setValue(filterValue.value);
     }
 
     public void valueChanged(Object newValue) {
         setValue(newValue);
-        listener.valueChanged();
     }
 
     private void setValue(Object value) {

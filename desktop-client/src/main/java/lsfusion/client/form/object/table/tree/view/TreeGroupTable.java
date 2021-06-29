@@ -3,6 +3,7 @@ package lsfusion.client.form.object.table.tree.view;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
+import lsfusion.base.Pair;
 import lsfusion.base.col.MapFact;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.base.SwingUtils;
@@ -29,6 +30,7 @@ import lsfusion.client.form.property.cell.view.ClientAbstractCellRenderer;
 import lsfusion.client.form.property.table.view.CellTableContextMenuHandler;
 import lsfusion.client.form.property.table.view.CellTableInterface;
 import lsfusion.client.form.property.table.view.InternalEditEvent;
+import lsfusion.client.form.view.Column;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.event.BindingMode;
 import lsfusion.interop.form.event.KeyInputEvent;
@@ -59,6 +61,7 @@ import java.lang.reflect.Method;
 import java.text.ParseException;
 import java.util.List;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.lang.Math.max;
 import static java.util.Collections.singletonList;
@@ -761,6 +764,16 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
             return null;
         }
         return model.getPropertyValue(pathForRow.getLastPathComponent(), property);
+    }
+
+    public List<Pair<Column, String>> getFilterColumns(ClientGroupObject selectedGroupObject) {
+        return model.getProperties(selectedGroupObject).stream().map(property ->
+                getSelectedColumn(property, ClientGroupObjectValue.EMPTY)
+        ).collect(Collectors.toList());
+    }
+
+    public Pair<Column, String> getSelectedColumn(ClientPropertyDraw property, ClientGroupObjectValue columnKey) {
+        return new Pair<>(new Column(property, columnKey), property.getCaptionOrEmpty());
     }
 
     @Override

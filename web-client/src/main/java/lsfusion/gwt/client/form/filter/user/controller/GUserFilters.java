@@ -17,7 +17,6 @@ import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButt
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public abstract class GUserFilters {
     private static final ClientMessages messages = ClientMessages.Instance.get();
@@ -25,7 +24,7 @@ public abstract class GUserFilters {
 
     private GToolbarButton toolbarButton;
 
-    private List<GPropertyFilter> conditions = new ArrayList<>();
+    private ArrayList<GPropertyFilter> conditions = new ArrayList<>();
 
     private GTableController logicsSupplier;
 
@@ -50,10 +49,6 @@ public abstract class GUserFilters {
 
     public Button getToolbarButton() {
         return toolbarButton;
-    }
-
-    public List<GPropertyFilter> getConditions() {
-        return conditions;
     }
 
     public boolean hasConditions() {
@@ -82,9 +77,9 @@ public abstract class GUserFilters {
         GGroupObjectValue filterColumnKey = columnKey;
         Object filterValue = null;
 
-        if(filterProperty == null) {
+        if (filterProperty == null) {
             filterProperty = logicsSupplier.getSelectedProperty();
-            if(filterProperty != null) {
+            if (filterProperty != null) {
                 filterColumnKey = logicsSupplier.getSelectedColumnKey();
                 filterValue = logicsSupplier.getSelectedValue(filterProperty, filterColumnKey);
             }
@@ -95,7 +90,7 @@ public abstract class GUserFilters {
         return new GPropertyFilter(logicsSupplier.getSelectedGroupObject(), filterProperty, filterColumnKey, filterValue, filterProperty.getDefaultCompare());
     }
 
-    public void applyFilters(List<GPropertyFilter> filters, boolean replace) {
+    public void applyFilters(ArrayList<GPropertyFilter> filters, boolean replace) {
         if (replace) {
             conditions = filters;
         } else {
@@ -105,7 +100,7 @@ public abstract class GUserFilters {
                 }
             }
         }
-        applyQuery();
+        applyFilters(conditions);
     }
 
     private boolean hasCondition(GPropertyFilter newCondition) {
@@ -133,14 +128,14 @@ public abstract class GUserFilters {
 
     public void allRemoved() {
         conditions.clear();
-        applyQuery();
+        applyFilters(conditions);
     }
 
     public void quickEditFilter(Event keyEvent, GPropertyDraw propertyDraw, GGroupObjectValue columnKey) {
         filterView.addCondition(propertyDraw, columnKey, keyEvent, true);
     }
 
-    public abstract void applyQuery();
+    public abstract void applyFilters(ArrayList<GPropertyFilter> conditions);
     public abstract void checkCommitEditing();
     public abstract void addBinding(GInputEvent event, GBindingEnv env, GFormController.BindingExec pressed, Widget component);
 

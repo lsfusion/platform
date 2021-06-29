@@ -94,13 +94,9 @@ public class GFilterView extends FlexPanel implements GFilterConditionView.UIHan
         stopPropagation(event);
     }
     
-    private void clearConditions() {
+    public void allRemovedPressed() {
         filterContainer.clear();
         conditionViews.clear();
-    }
-
-    public void allRemovedPressed() {
-        clearConditions();
         controller.allRemoved();
     }
 
@@ -122,7 +118,7 @@ public class GFilterView extends FlexPanel implements GFilterConditionView.UIHan
 
     public void addCondition(GPropertyFilter condition, Event keyEvent, boolean replace) {
         if (replace) {
-            clearConditions();
+            allRemovedPressed();
         }
         if (condition != null) {
             GFilterConditionView conditionView = new GFilterConditionView(condition, controller.getLogicsSupplier(), this, toolsVisible);
@@ -176,7 +172,7 @@ public class GFilterView extends FlexPanel implements GFilterConditionView.UIHan
     public void addEnterBinding(Widget widget) {
         controller.addBinding(new GKeyInputEvent(new GKeyStroke(KeyCodes.KEY_ENTER)),
                 GBindingEnv.AUTO,
-                event -> GFilterView.this.processBinding(event, GFilterView.this::applyFilter),
+                event -> GFilterView.this.processBinding(event, GFilterView.this::applyFilters),
                 widget);
     }
 
@@ -195,7 +191,7 @@ public class GFilterView extends FlexPanel implements GFilterConditionView.UIHan
         }
     }
 
-    public void applyFilter() {
+    public void applyFilters() {
         ArrayList<GPropertyFilter> result = new ArrayList<>();
         for (Map.Entry<GPropertyFilter, GFilterConditionView> entry : conditionViews.entrySet()) {
             if (entry.getValue().allowNull || !entry.getKey().nullValue()) {

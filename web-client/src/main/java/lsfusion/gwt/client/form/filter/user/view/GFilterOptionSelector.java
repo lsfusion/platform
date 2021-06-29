@@ -6,6 +6,7 @@ import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.view.PopupDialogPanel;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.design.GFontMetrics;
@@ -53,7 +54,7 @@ public abstract class GFilterOptionSelector<T> extends TextBox {
 
     @Override
     public void setText(String text) {
-        String notNullText = text != null ? text : "";
+        String notNullText = GwtSharedUtils.nullTrim(text);
         super.setText(notNullText);
         setTitle(notNullText);
         setWidth(GFontMetrics.getStringWidth(new GFontWidthString(GFont.DEFAULT_FONT, notNullText)) + "px");

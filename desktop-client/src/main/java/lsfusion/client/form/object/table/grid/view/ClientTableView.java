@@ -1,8 +1,10 @@
 package lsfusion.client.form.object.table.grid.view;
 
+import lsfusion.base.Pair;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.property.ClientPropertyDraw;
+import lsfusion.client.form.view.Column;
 import lsfusion.interop.form.object.table.grid.user.design.GroupObjectUserPreferences;
 
 import java.util.LinkedHashMap;
@@ -50,6 +52,8 @@ public interface ClientTableView {
 
     // toolbar features
     Object getSelectedValue(ClientPropertyDraw property, ClientGroupObjectValue columnKey); // for filter to set default value
+
+    List<Pair<Column, String>> getFilterColumns();
 
     boolean hasUserPreferences();
     boolean containsProperty(ClientPropertyDraw property); // for user preferences

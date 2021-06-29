@@ -24,7 +24,6 @@ import lsfusion.gwt.client.form.event.GKeyInputEvent;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
-import lsfusion.gwt.client.form.object.table.controller.GPropertyController;
 import lsfusion.gwt.client.form.property.async.GAsyncChange;
 import lsfusion.gwt.client.form.property.async.GAsyncEventExec;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
@@ -118,6 +117,10 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
     public GCompare getDefaultCompare() {
         return defaultCompare != null ? defaultCompare : baseType.getDefaultCompare();
+    }
+    
+    public GCompare[] getFilterCompares() {
+        return baseType.getFilterCompares();
     }
 
     public boolean hasStaticImage() {

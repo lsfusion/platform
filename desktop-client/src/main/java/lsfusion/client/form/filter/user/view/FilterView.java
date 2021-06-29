@@ -1,0 +1,292 @@
+package lsfusion.client.form.filter.user.view;
+
+import lsfusion.client.controller.remote.RmiQueue;
+import lsfusion.client.form.design.view.JComponentPanel;
+import lsfusion.client.form.filter.user.ClientFilter;
+import lsfusion.client.form.filter.user.ClientPropertyFilter;
+import lsfusion.client.form.filter.user.controller.FilterController;
+import lsfusion.client.form.object.ClientGroupObjectValue;
+import lsfusion.client.form.object.table.controller.TableController;
+import lsfusion.client.form.object.table.grid.user.toolbar.view.ToolbarGridButton;
+import lsfusion.client.form.property.ClientPropertyDraw;
+import lsfusion.client.form.property.panel.view.DataPanelView;
+import lsfusion.interop.base.view.FlexConstraints;
+import lsfusion.interop.base.view.FlexLayout;
+import lsfusion.interop.form.event.KeyStrokes;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+import static lsfusion.client.ClientResourceBundle.getString;
+import static lsfusion.interop.base.view.FlexAlignment.CENTER;
+import static lsfusion.interop.base.view.FlexAlignment.START;
+import static lsfusion.interop.form.event.KeyStrokes.getFilterKeyStroke;
+
+public class FilterView extends JComponentPanel implements FilterConditionView.UIHandler {
+    public static final String ADD_ICON_PATH = "filtadd.png";
+    public static final String RESET_ICON_PATH = "filtreset.png";
+    public static final String FILTER_ICON_PATH = "filt.png";
+
+    private final FilterController controller;
+    private ClientFilter filterComponent;
+    private boolean initialized = false;
+
+    private JButton addConditionButton;
+    private JButton resetConditionsButton;
+
+    private JPanel buttonPanel;
+    private JPanel condContainer;
+
+    private final Map<ClientPropertyFilter, FilterConditionView> conditionViews = new LinkedHashMap<>();
+
+    private boolean toolsVisible;
+
+    public FilterView(FilterController controller, ClientFilter filerComponent) {
+        super(false, CENTER);
+        this.controller = controller;
+        this.filterComponent = filerComponent;
+
+        initButtons();
+
+        initLayout();
+
+        setFocusable(false);
+
+        initUIHandlers();
+    }
+
+    private void initButtons() {
+        addConditionButton = new ToolbarGridButton(ADD_ICON_PATH, getString("form.queries.filter.add.condition"));
+        addConditionButton.addActionListener(ae -> addCondition());
+        addConditionButton.setVisible(toolsVisible);
+
+        resetConditionsButton = new ToolbarGridButton(RESET_ICON_PATH, getString("form.queries.filter.reset.conditions"));
+        resetConditionsButton.addActionListener(e -> removeAllConditions());
+        resetConditionsButton.setVisible(toolsVisible);
+    }
+
+    private void initLayout() {
+        buttonPanel = new JPanel();
+        buttonPanel.setLayout(new FlexLayout(buttonPanel, false, START));
+
+        buttonPanel.add(addConditionButton, new FlexConstraints(CENTER, 0));
+        buttonPanel.add(Box.createHorizontalStrut(2), new FlexConstraints(CENTER, 0));
+        buttonPanel.add(resetConditionsButton, new FlexConstraints(CENTER, 0));
+
+        condContainer = new JPanel();
+        condContainer.setBorder(BorderFactory.createEmptyBorder(2, 0, 2, 0));
+        condContainer.setLayout(new FlexLayout(condContainer, false, START));
+
+        add(condContainer, new FlexConstraints(CENTER, 1));
+        add(buttonPanel, new FlexConstraints(CENTER, 0));
+    }
+
+    private void initUIHandlers() {
+        addActionsToInputMap(this);
+
+        getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStrokes.getEnter(), "applyQuery");
+        getActionMap().put("applyQuery", new AbstractAction() {
+            public void actionPerformed(ActionEvent ae) {
+                RmiQueue.runAction(() -> applyFilters());
+            }
+        });
+
+        getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStrokes.getRemoveFiltersKeyStroke(), "removeAll");
+    }
+
+    // используется для того, чтобы во внешнем компоненте по нажатии кнопок можно было создать отбор/поиск
+    public void addActionsToInputMap(JComponent comp) {
+        comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(getFilterKeyStroke(InputEvent.ALT_DOWN_MASK), "newFilter");
+        comp.getActionMap().put("newFilter", new AbstractAction() {
+            public void actionPerformed(ActionEvent ae) {
+                addCondition(true);
+            }
+        });
+
+        comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(getFilterKeyStroke(0), "addFilter");
+        comp.getActionMap().put("addFilter", new AbstractAction() {
+            public void actionPerformed(ActionEvent ae) {
+                addCondition();
+            }
+        });
+
+        comp.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStrokes.getRemoveFiltersKeyStroke(), "removeAll");
+        comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(getFilterKeyStroke(InputEvent.SHIFT_DOWN_MASK), "removeAll");
+        comp.getActionMap().put("removeAll", createRemoveAllAction());
+    }
+
+    public void addActionsToPanelInputMap(final JComponent comp) {
+        comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(getFilterKeyStroke(InputEvent.ALT_DOWN_MASK), "newFilter");
+        comp.getActionMap().put("newFilter", new AbstractAction() {
+            public void actionPerformed(ActionEvent ae) {
+                if(comp instanceof DataPanelView)
+                    addCondition(((DataPanelView) comp).getProperty(), ((DataPanelView) comp).getColumnKey(), true);
+            }
+        });
+
+        //кто-то съедает pressed F2, поэтому ловим released
+        comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0, true), "addFilter");
+        comp.getActionMap().put("addFilter", new AbstractAction() {
+            public void actionPerformed(ActionEvent ae) {
+                addCondition(((DataPanelView) comp).getProperty(), ((DataPanelView) comp).getColumnKey());
+            }
+        });
+
+        comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(getFilterKeyStroke(InputEvent.SHIFT_DOWN_MASK), "removeAll");
+        comp.getActionMap().put("removeAll", createRemoveAllAction());
+    }
+
+    private AbstractAction createRemoveAllAction() {
+        return new AbstractAction() {
+            public void actionPerformed(ActionEvent ae) {
+                RmiQueue.runAction(() -> removeAllConditions());
+            }
+        };
+    }
+
+    public void updateUI() {
+        if (condContainer != null)
+            condContainer.updateUI();
+
+        if (addConditionButton != null)
+            addConditionButton.updateUI();
+        
+        if (resetConditionsButton != null)
+            resetConditionsButton.updateUI();
+    }
+
+    public boolean isToolsVisible() {
+        return toolsVisible;
+    }
+
+    public void toggleToolsVisible() {
+        toolsVisible = !toolsVisible;
+        
+        for (FilterConditionView view : conditionViews.values()) {
+            view.setToolsVisible(toolsVisible);
+        }
+
+        addConditionButton.setVisible(toolsVisible);
+        resetConditionsButton.setVisible(toolsVisible);
+    }
+
+    public void addCondition() {
+        addCondition(false);
+    }
+
+    public void addCondition(boolean replace) {
+        addCondition(null, null, replace);
+    }
+    
+    public void addCondition(ClientPropertyDraw propertyDraw, ClientGroupObjectValue columnKey) {
+        addCondition(propertyDraw, columnKey, false);
+    }
+
+    public void addCondition(ClientPropertyDraw propertyDraw, ClientGroupObjectValue columnKey, boolean replace) {
+        addCondition(propertyDraw, columnKey, null, replace);
+    }
+
+    public void addCondition(ClientPropertyDraw propertyDraw, ClientGroupObjectValue columnKey, KeyEvent keyEvent, boolean replace) {
+        if (replace) {
+            // считаем, что в таком случае просто нажали сначала все удалить, а затем - добавить
+            removeAllConditions();
+        }
+        ClientPropertyFilter condition = controller.getNewCondition(propertyDraw, columnKey);
+
+        if (condition != null) {
+            addCondition(condition, controller.getLogicsSupplier(), keyEvent);
+        }
+    }
+
+    public void addCondition(ClientPropertyFilter condition, TableController logicsSupplier, KeyEvent keyEvent) {
+        FilterConditionView condView = new FilterConditionView(condition, logicsSupplier, this, toolsVisible);
+        conditionViews.put(condition, condView);
+
+        condContainer.add(condView, new FlexConstraints(CENTER, 0));
+
+        updateConditionsLastState();
+
+        condContainer.revalidate();
+        condContainer.repaint();
+
+        condView.startEditing(keyEvent);
+    }
+
+    public void removeAllConditions() {
+        controller.removeAllConditions();
+        conditionViews.clear();
+
+        condContainer.removeAll();
+        condContainer.revalidate();
+        condContainer.repaint();
+    }
+
+    @Override
+    public Dimension getMinimumSize() {
+        Dimension ms = super.getMinimumSize();
+        if (ms.width < 1 || ms.height < 1) {
+            return new Dimension(Math.max(1, ms.width), Math.max(1, ms.height));
+        } else {
+            return ms;
+        }
+    }
+
+    @Override
+    public Dimension getPreferredSize() {
+        Dimension ps = super.getPreferredSize();
+        if (ps.width < 1 || ps.height < 1) {
+            return new Dimension(Math.max(1, ps.width), Math.max(1, ps.height));
+        } else {
+            return ps;
+        }
+    }
+
+    public void updateConditionsLastState() {
+        int i = 0;
+        for (FilterConditionView cView : conditionViews.values()) {
+            i++;
+            cView.setLast(i == conditionViews.size());
+        }
+    }
+
+    @Override
+    public void removeCondition(ClientPropertyFilter condition) {
+        condContainer.remove(conditionViews.get(condition));
+        conditionViews.remove(condition);
+
+        updateConditionsLastState();
+        
+        condContainer.revalidate();
+        condContainer.repaint();
+        
+        applyFilters();
+    }
+
+    @Override
+    public void applyFilters() {
+        ArrayList<ClientPropertyFilter> result = new ArrayList<>();
+        for (Map.Entry<ClientPropertyFilter, FilterConditionView> entry : conditionViews.entrySet()) {
+            if (entry.getValue().allowNull || !entry.getKey().nullValue()) {
+                result.add(entry.getKey());
+            }
+        }
+        
+        controller.commitAndApplyFilters(result);
+    }
+
+    public void update() {
+        if (!initialized) {
+            for (ClientPropertyDraw property : filterComponent.properties) {
+                addCondition(property, controller.getLogicsSupplier().getSelectedColumn());
+            }
+            
+            initialized = true;
+        }
+    }
+}

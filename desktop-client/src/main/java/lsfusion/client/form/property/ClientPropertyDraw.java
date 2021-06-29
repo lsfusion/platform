@@ -16,7 +16,10 @@ import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.object.table.controller.TableController;
-import lsfusion.client.form.property.async.*;
+import lsfusion.client.form.property.async.ClientAsyncChange;
+import lsfusion.client.form.property.async.ClientAsyncEventExec;
+import lsfusion.client.form.property.async.ClientAsyncSerializer;
+import lsfusion.client.form.property.async.ClientInputList;
 import lsfusion.client.form.property.cell.EditBindingMap;
 import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
 import lsfusion.client.form.property.cell.classes.view.FormatPropertyRenderer;
@@ -36,8 +39,8 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.text.*;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 import static lsfusion.base.BaseUtils.isRedundantString;
 import static lsfusion.base.BaseUtils.nullTrim;
@@ -151,6 +154,14 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public boolean notNull;
 
     public ClientPropertyDraw() {
+    }
+
+    public Compare getDefaultCompare() {
+        return defaultCompare != null ? defaultCompare : baseType.getDefaultCompare();
+    }
+    
+    public Compare[] getFilterCompares() {
+        return baseType.getFilterCompares();
     }
 
     public KeyInputEvent getChangeKey() {
@@ -636,6 +647,10 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return BaseUtils.toCaption(captionValue);
     }
 
+    public String getCaptionOrEmpty() {
+        return caption == null ? "" : caption;
+    }
+    
     @Override
     public String toString() {
         if (!isRedundantString(caption))

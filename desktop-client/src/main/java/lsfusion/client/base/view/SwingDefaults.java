@@ -444,12 +444,16 @@ public class SwingDefaults {
     // ----------- not cached properties ----------- //
     
     
-    public static int getButtonBorderWidth() {
+    public static int getComponentBorderWidth() {
         return 1;
     }
     
+    public static int getButtonBorderWidth() {
+        return getComponentBorderWidth();
+    }
+    
     public static int getComponentHeight() {
-        return getValueHeight() + 2; // supposing all components have border width = 1px
+        return getValueHeight() + getComponentBorderWidth() * 2; // supposing all components have border width = 1px
     }
     
     public static int getSingleCellTableIntercellSpacing() {

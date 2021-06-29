@@ -17,35 +17,42 @@ import lsfusion.gwt.client.form.view.Column;
 import lsfusion.gwt.client.view.StyleDefaults;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class GFilterConditionView extends FlexPanel {
     private static final ClientMessages messages = ClientMessages.Instance.get();
     public interface UIHandler {
         void addEnterBinding(Widget widget);
         void conditionRemoved(GPropertyFilter condition);
-        void applyFilter();
+        void applyFilters();
     }
 
     private static final String DELETE_ICON_PATH = "filtdel.png";
     private static final String SEPARATOR_ICON_PATH = "filtseparator.png";
 
-    private Label propertyLabel;
-    private Label compareLabel;
-    private GDataFilterValueView valueView;
-    private Widget junctionSeparator;
+    private GPropertyFilter condition;
+
+    private Map<Column, String> columns = new HashMap<>();
     
+    private Label propertyLabel;
+    private GFilterOptionSelector<Column> propertyView;
+
+    private Label compareLabel;
+    private GFilterCompareSelector compareView;
+
+    private GDataFilterValueView valueView;
+
     private GToolbarButton deleteButton;
 
-    private GFilterOptionSelector<Column> propertyView;
-    private GFilterCompareSelector compareView;
+    private Widget junctionSeparator;
     private GToolbarButton junctionView;
-    
-    public boolean allowNull = false; 
+
+    public boolean allowNull = false;
 
     private boolean isLast = false;
     private boolean toolsVisible;
-
-    private GPropertyFilter condition;
     
     private boolean focused = false;
 
@@ -53,7 +60,15 @@ public class GFilterConditionView extends FlexPanel {
         this.condition = iCondition;
         this.toolsVisible = toolsVisible;
 
-        propertyLabel = new Label(condition.property.getNotEmptyCaption());
+        List<Pair<Column, String>> selectedColumns = logicsSupplier.getSelectedColumns();
+        for (Pair<Column, String> column : selectedColumns) {
+            columns.put(column.first, column.second);
+        }
+
+        Column currentColumn = new Column(condition.property, condition.columnKey);
+        String currentCaption = columns.get(currentColumn);
+        
+        propertyLabel = new Label(currentCaption);
         propertyLabel.addStyleName("userFilterLabel");
         addCentered(propertyLabel);
 
@@ -63,21 +78,18 @@ public class GFilterConditionView extends FlexPanel {
                 condition.property = column.property;
                 condition.columnKey = column.columnKey;
 
-                propertyLabel.setText(column.property.getNotEmptyCaption());
+                propertyLabel.setText(columns.get(column));
 
                 propertyChanged();
             }
         };
-        for (Pair<Column, String> column : logicsSupplier.getSelectedColumns()) {
+        for (Pair<Column, String> column : selectedColumns) {
             propertyView.add(column.first, column.second);
         }
-
-        if (condition.property != null) {
-            propertyView.setText(condition.property.getNotEmptyCaption());
-        }
+        propertyView.setSelectedValue(currentColumn, currentCaption);
         addCentered(propertyView);
         
-        compareLabel = new Label(condition.compare.toString());
+        compareLabel = new Label((condition.negation ? "!" : "") + condition.compare);
         compareLabel.addStyleName("userFilterLabel");
         addCentered(compareLabel);
 
@@ -179,7 +191,7 @@ public class GFilterConditionView extends FlexPanel {
         valueView.propertyChanged(condition);
         
         GCompare oldCompare = condition.compare;
-        GCompare[] filterCompares = condition.property.baseType.getFilterCompares();
+        GCompare[] filterCompares = condition.property.getFilterCompares();
         compareView.set(filterCompares);
         if (Arrays.asList(filterCompares).contains(oldCompare)) {
             compareView.setSelectedValue(oldCompare);

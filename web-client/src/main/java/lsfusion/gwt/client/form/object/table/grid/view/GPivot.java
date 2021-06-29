@@ -1855,7 +1855,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
                 popup.hide();
                 config = reduceRows(config, config.getArrayString("rows"), rowKeyValues.length());
 
-                List<GPropertyFilter> filters = new ArrayList<>();
+                ArrayList<GPropertyFilter> filters = new ArrayList<>();
                 filters.addAll(getFilters(config.getArrayString("rows"), rowKeyValues));
                 filters.addAll(getFilters(config.getArrayString("cols"), colKeyValues));
 
