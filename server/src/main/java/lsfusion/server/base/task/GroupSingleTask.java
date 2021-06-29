@@ -118,8 +118,8 @@ public abstract class GroupSingleTask<T> extends GroupProgramTask {
 
     public void run(Logger logger) {
         if (isGraph()) {
-            Map<Task, Map<Task, Long>> overMap = new HashMap<>();
-            markDiameters(preTask, overMap, this);
+//            Map<Task, Map<Task, Long>> overMap = new HashMap<>();
+//            markDiameters(preTask, overMap, this);
 //            Pair<List<Task>, Long> maxPath = calcFullDiameter(preTask, new HashMap<Task, Pair<List<Task>, Long>>(), overMap, this);
 //            System.out.println(maxPath);
         }
