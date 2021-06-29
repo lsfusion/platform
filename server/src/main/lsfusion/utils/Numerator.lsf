@@ -26,11 +26,11 @@ stringLength '{numerator.string.length.numerator}' = DATA INTEGER (Numerator) IN
 curValue '{numerator.cur.value.numerator}' = DATA LONG (Numerator) IN id CHARWIDTH 15;
 curValue(Numerator numerator) <- minValue(numerator) WHEN SET(numerator IS Numerator);
 
-lpadStringWithZero = FORMULA STRING[28] PG 'lpad(CAST($1 AS text),$2,\'0\')', MS 'RIGHT(REPLICATE(\'0\', $2) + $1, $2)';
+lpadStringWithZero = FORMULA STRING[48] PG 'lpad(CAST($1 AS text),$2,\'0\')', MS 'RIGHT(REPLICATE(\'0\', $2) + $1, $2)';
 
 curStringValue '{numerator.cur.string.value.numerator}' (Numerator numerator) = lpadStringWithZero(curValue(numerator), stringLength(numerator)) IN base;
 
-incrementedValue = DATA LOCAL NESTED STRING[28] ();
+incrementedValue = DATA LOCAL NESTED STRING[48] ();
 
 incrementValue '{numerator.increment.value.numerator}'(Numerator numerator)  { 
 	NEWSESSION {
@@ -119,7 +119,7 @@ NAVIGATOR {
 GROUP numbered '{numerator.numerator}' : id;
 
 META defineNumberedAbstract(class, stype)
-    number '{numerator.number.numerator}' = ABSTRACT STRING[28] (class) IN numbered MATERIALIZED CHARWIDTH 8;
+    number '{numerator.number.numerator}' = ABSTRACT STRING[48] (class) IN numbered MATERIALIZED CHARWIDTH 8;
     series '{numerator.series.numerator}' = ABSTRACT stype (class) IN numbered MATERIALIZED CHARWIDTH 3 NOFLEX; 
 
     seriesNumber '{numerator.series.number.numerator}' (class o) = 
@@ -144,7 +144,7 @@ DESIGN options{
 }
 
 META defineNumbered(class, stype)
-    number '{numerator.number.numerator}' = DATA STRING[28] (class) IN numbered INDEXED CHARWIDTH 8;
+    number '{numerator.number.numerator}' = DATA STRING[48] (class) IN numbered INDEXED CHARWIDTH 8;
     series '{numerator.series.numerator}' = DATA stype (class) IN numbered CHARWIDTH 3 NOFLEX;
      
     WHEN useLoweredNumber() AND CHANGED(number(class o))
