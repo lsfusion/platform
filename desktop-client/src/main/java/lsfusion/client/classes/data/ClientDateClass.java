@@ -8,7 +8,7 @@ import lsfusion.client.form.property.cell.classes.controller.DatePropertyEditor;
 import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
 import lsfusion.client.form.property.cell.classes.view.DatePropertyRenderer;
 import lsfusion.client.form.property.cell.view.PropertyRenderer;
-import lsfusion.client.form.property.table.view.CellTableInterface;
+import lsfusion.client.form.property.table.view.AsyncChangeInterface;
 import lsfusion.client.view.MainFrame;
 import lsfusion.interop.classes.DataType;
 
@@ -75,7 +75,7 @@ public class ClientDateClass extends ClientFormatClass<SimpleDateFormat> impleme
     }
 
     @Override
-    public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property, CellTableInterface table) {
+    public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property, AsyncChangeInterface asyncChange) {
         return new DatePropertyEditor(value, getEditFormat(property), property);
     }
 

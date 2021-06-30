@@ -12,7 +12,7 @@ import lsfusion.client.form.property.cell.classes.view.ActionPropertyRenderer;
 import lsfusion.client.form.property.cell.view.PropertyRenderer;
 import lsfusion.client.form.property.panel.view.ActionPanelView;
 import lsfusion.client.form.property.panel.view.PanelView;
-import lsfusion.client.form.property.table.view.CellTableInterface;
+import lsfusion.client.form.property.table.view.AsyncChangeInterface;
 import lsfusion.interop.classes.DataType;
 
 import java.awt.*;
@@ -47,7 +47,7 @@ public class ClientActionClass extends ClientDataClass implements ClientTypeClas
     }
 
     @Override
-    protected PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property, CellTableInterface table) {
+    protected PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property, AsyncChangeInterface asyncChange) {
         return new ActionPropertyEditor(property);
     }
 

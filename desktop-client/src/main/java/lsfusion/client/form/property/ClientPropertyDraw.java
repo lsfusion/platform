@@ -25,6 +25,7 @@ import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
 import lsfusion.client.form.property.cell.classes.view.FormatPropertyRenderer;
 import lsfusion.client.form.property.cell.view.PropertyRenderer;
 import lsfusion.client.form.property.panel.view.PanelView;
+import lsfusion.client.form.property.table.view.AsyncChangeInterface;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.event.KeyInputEvent;
@@ -202,8 +203,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return editBindingMap == null ? null : editBindingMap.getContextMenuItems();
     }
 
-    public PropertyEditor getValueEditorComponent(ClientFormController form, Object value) {
-        return baseType.getValueEditorComponent(form, this, value);
+    public PropertyEditor getValueEditorComponent(ClientFormController form, AsyncChangeInterface asyncChange, Object value) {
+        return baseType.getValueEditorComponent(form, this, asyncChange, value);
     }
 
     public PropertyRenderer getRendererComponent() {

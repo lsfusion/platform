@@ -6,7 +6,7 @@ import lsfusion.client.form.property.cell.classes.controller.FilePropertyEditor;
 import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
 import lsfusion.client.form.property.cell.classes.view.DynamicFormatFileRenderer;
 import lsfusion.client.form.property.cell.view.PropertyRenderer;
-import lsfusion.client.form.property.table.view.CellTableInterface;
+import lsfusion.client.form.property.table.view.AsyncChangeInterface;
 import lsfusion.interop.classes.DataType;
 
 public class ClientDynamicFormatFileClass extends ClientFileClass {
@@ -31,7 +31,7 @@ public class ClientDynamicFormatFileClass extends ClientFileClass {
     }
 
     @Override
-    public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property, CellTableInterface table) {
+    public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property, AsyncChangeInterface asyncChange) {
         return new FilePropertyEditor(multiple, storeName);
     }
 

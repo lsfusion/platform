@@ -1,7 +1,7 @@
 package lsfusion.client.form.property.cell.classes.controller;
 
 import lsfusion.client.form.property.ClientPropertyDraw;
-import lsfusion.client.form.property.table.view.CellTableInterface;
+import lsfusion.client.form.property.table.view.AsyncChangeInterface;
 
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
@@ -21,8 +21,8 @@ public class StringPropertyEditor extends TextFieldPropertyEditor {
     public StringPropertyEditor(ClientPropertyDraw property, Object value, final int length, boolean isVarString, boolean matchRegexp) {
         this(property, null, value, length, isVarString, matchRegexp);
     }
-    public StringPropertyEditor(ClientPropertyDraw property, CellTableInterface table, Object value, final int length, boolean isVarString, boolean matchRegexp) {
-        super(property, table);
+    public StringPropertyEditor(ClientPropertyDraw property, AsyncChangeInterface asyncChange, Object value, final int length, boolean isVarString, boolean matchRegexp) {
+        super(property, asyncChange, value);
         this.isVarString = isVarString;
         this.matchRegexp = matchRegexp;
         this.property = property;

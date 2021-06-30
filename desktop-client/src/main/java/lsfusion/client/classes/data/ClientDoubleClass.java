@@ -6,7 +6,7 @@ import lsfusion.client.classes.ClientTypeClass;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.cell.classes.controller.DoublePropertyEditor;
 import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
-import lsfusion.client.form.property.table.view.CellTableInterface;
+import lsfusion.client.form.property.table.view.AsyncChangeInterface;
 import lsfusion.interop.classes.DataType;
 
 import java.text.DecimalFormat;
@@ -56,7 +56,7 @@ public class ClientDoubleClass extends ClientIntegralClass implements ClientType
     }
 
     @Override
-    public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property, CellTableInterface table) {
+    public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property, AsyncChangeInterface asyncChange) {
         return new DoublePropertyEditor(value, property.maxValue, getEditFormat(property), property, Double.class, property.hasMask());
     }
 

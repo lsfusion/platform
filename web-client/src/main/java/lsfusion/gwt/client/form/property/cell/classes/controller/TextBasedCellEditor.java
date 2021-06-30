@@ -309,11 +309,19 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
                                 }
                                 suggestBox.updateDecoration(suggestionList.isEmpty(), result.second);
                                 callback.onSuggestionsReady(request, new Response(suggestionList));
+
+                                setMinWidth(suggestBox.getPopupElement(), suggestBox.getOffsetWidth() - 24); //24 = offsets and borders
                             }
                         }
                     });
 
                 }
+
+                private native void setMinWidth(Element element, int minWidth) /*-{
+                    Array.prototype.forEach.call(element.getElementsByClassName("item"), function(item) {
+                        item.style.minWidth = minWidth + "px";
+                    });
+                }-*/;
 
                 @Override
                 public boolean isDisplayStringHTML() {
@@ -365,6 +373,10 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
 
         public void updateDecoration(boolean showNoResult, boolean showRefresh) {
             display.updateDecoration(showNoResult, showRefresh);
+        }
+
+        public Element getPopupElement() {
+            return display.getPopupElement();
         }
     }
 
@@ -459,6 +471,10 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
 
         public void setRefreshButtonPressed(boolean refreshButtonPressed) {
             this.refreshButtonPressed = refreshButtonPressed;
+        }
+
+        public Element getPopupElement() {
+            return getPopupPanel().getElement();
         }
     }
 

@@ -10,12 +10,11 @@ import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
 import lsfusion.client.form.property.cell.classes.controller.StringPropertyEditor;
 import lsfusion.client.form.property.cell.classes.view.StringPropertyRenderer;
 import lsfusion.client.form.property.cell.view.PropertyRenderer;
-import lsfusion.client.form.property.table.view.CellTableInterface;
+import lsfusion.client.form.property.table.view.AsyncChangeInterface;
 import lsfusion.interop.classes.DataType;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.form.property.ExtInt;
 
-import java.awt.*;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.text.ParseException;
@@ -96,20 +95,15 @@ public class ClientStringClass extends ClientDataClass {
     }
 
     @Override
-    public PropertyEditor getValueEditorComponent(ClientFormController form, ClientPropertyDraw property, Object value) {
+    public PropertyEditor getValueEditorComponent(ClientFormController form, ClientPropertyDraw property, AsyncChangeInterface asyncChange, Object value) {
         if(length.isUnlimited())
-            return super.getValueEditorComponent(form, property, value);
-        return new StringPropertyEditor(property, value, length.getValue(), !blankPadded, false);
+            return super.getValueEditorComponent(form, property, asyncChange, value);
+        return new StringPropertyEditor(property, asyncChange, value, length.getValue(), !blankPadded, false);
     }
 
     @Override
-    public PropertyEditor getChangeEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, CellTableInterface table, Object value) {
-        return super.getChangeEditorComponent(ownerComponent, form, property, table, value);
-    }
-
-    @Override
-    public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property, CellTableInterface table) {
-        return new StringPropertyEditor(property, table, value, length.isUnlimited() ? Integer.MAX_VALUE : length.getValue(), !blankPadded, true);
+    public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property, AsyncChangeInterface asyncChange) {
+        return new StringPropertyEditor(property, asyncChange, value, length.isUnlimited() ? Integer.MAX_VALUE : length.getValue(), !blankPadded, true);
     }
 
     @Override

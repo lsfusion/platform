@@ -1760,7 +1760,8 @@ public class BasicComboBoxUI extends ComboBoxUI {
                     }
                 }
                 else if ( propertyName == "font" ) {
-                    listBox.setFont( comboBox.getFont() );
+                    //todo: commented, listBox shouldn't inherit editor's font
+                    //listBox.setFont( comboBox.getFont() );
                     if ( editor != null ) {
                         editor.setFont( comboBox.getFont() );
                     }
@@ -1971,7 +1972,8 @@ public class BasicComboBoxUI extends ComboBoxUI {
                 if (!comboBox.isPopupVisible() && !item.equals(comboBox.getSelectedItem())) {
                     comboBox.setSelectedItem(comboBox.getEditor().getItem());
                 }
-                ActionMap am = comboBox.getActionMap();
+                //todo: commented
+/*                ActionMap am = comboBox.getActionMap();
                 if (am != null) {
                     Action action = am.get("enterPressed");
                     if (action != null) {
@@ -1979,7 +1981,7 @@ public class BasicComboBoxUI extends ComboBoxUI {
                                 evt.getActionCommand(),
                                 evt.getModifiers()));
                     }
-                }
+                }*/
             }
         }
    }

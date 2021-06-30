@@ -27,9 +27,7 @@ import lsfusion.client.form.property.cell.EditBindingMap;
 import lsfusion.client.form.property.cell.controller.ClientAbstractCellEditor;
 import lsfusion.client.form.property.cell.controller.dispatch.EditPropertyDispatcher;
 import lsfusion.client.form.property.cell.view.ClientAbstractCellRenderer;
-import lsfusion.client.form.property.table.view.CellTableContextMenuHandler;
-import lsfusion.client.form.property.table.view.CellTableInterface;
-import lsfusion.client.form.property.table.view.InternalEditEvent;
+import lsfusion.client.form.property.table.view.*;
 import lsfusion.client.form.view.Column;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.event.BindingMode;
@@ -70,7 +68,7 @@ import static lsfusion.client.form.controller.ClientFormController.PasteData;
 import static lsfusion.client.form.property.cell.EditBindingMap.getPropertyEventActionSID;
 import static lsfusion.client.form.property.cell.EditBindingMap.isChangeEvent;
 
-public class TreeGroupTable extends ClientFormTreeTable implements CellTableInterface {
+public class TreeGroupTable extends ClientFormTreeTable implements AsyncChangeCellTableInterface {
     private final EditPropertyDispatcher editDispatcher;
 
     private final EditBindingMap editBindingMap = new EditBindingMap(true);
@@ -784,6 +782,11 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
     @Override
     public Object getCurrentEditValue() {
         return currentEditValue;
+    }
+
+    @Override
+    public EventObject getCurrentEditEvent() {
+        return editEvent;
     }
 
     @Override

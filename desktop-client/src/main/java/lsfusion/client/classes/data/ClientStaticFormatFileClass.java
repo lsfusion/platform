@@ -3,7 +3,7 @@ package lsfusion.client.classes.data;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.cell.classes.controller.FilePropertyEditor;
 import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
-import lsfusion.client.form.property.table.view.CellTableInterface;
+import lsfusion.client.form.property.table.view.AsyncChangeInterface;
 
 public abstract class ClientStaticFormatFileClass extends ClientFileClass {
 
@@ -20,7 +20,7 @@ public abstract class ClientStaticFormatFileClass extends ClientFileClass {
     public abstract String getDescription();
 
     @Override
-    public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property, CellTableInterface table) {
+    public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property, AsyncChangeInterface asyncChange) {
         return new FilePropertyEditor(multiple, storeName, getDescription(), getExtensions());
     }
 }

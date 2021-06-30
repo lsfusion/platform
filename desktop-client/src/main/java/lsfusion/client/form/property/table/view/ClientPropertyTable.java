@@ -38,7 +38,7 @@ import java.util.EventObject;
 
 import static lsfusion.client.form.property.cell.EditBindingMap.*;
 
-public abstract class ClientPropertyTable extends JTable implements TableTransferHandler.TableInterface, CellTableInterface {
+public abstract class ClientPropertyTable extends JTable implements TableTransferHandler.TableInterface, AsyncChangeCellTableInterface {
     private final EditPropertyDispatcher editDispatcher;
     protected final EditBindingMap editBindingMap = new EditBindingMap(true);
     private final CellTableContextMenuHandler contextMenuHandler = new CellTableContextMenuHandler(this);
@@ -111,6 +111,10 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
 
     public Object getCurrentEditValue() {
         return currentEditValue;
+    }
+
+    public EventObject getCurrentEditEvent() {
+        return editEvent;
     }
 
     public ClientInputList getCurrentInputList() {

@@ -3,7 +3,7 @@ package lsfusion.client.classes.data.link;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.cell.classes.controller.LinkPropertyEditor;
 import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
-import lsfusion.client.form.property.table.view.CellTableInterface;
+import lsfusion.client.form.property.table.view.AsyncChangeInterface;
 
 public abstract class ClientStaticFormatLinkClass extends ClientLinkClass {
 
@@ -12,7 +12,7 @@ public abstract class ClientStaticFormatLinkClass extends ClientLinkClass {
     }
 
     @Override
-    public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property, CellTableInterface table) {
+    public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property, AsyncChangeInterface asyncChange) {
         return new LinkPropertyEditor(property, value);
     }
 }

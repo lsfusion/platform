@@ -19,11 +19,15 @@ public abstract class DataFilterValueView extends JPanel {
     // нужен для получения текущих значений в таблице
     private final TableController logicsSupplier;
 
+    private ClientGroupObjectValue columnKey;
+
     public DataFilterValueView(ClientDataFilterValue filterValue, ClientPropertyDraw property, ClientGroupObjectValue columnKey, TableController ilogicsSupplier) {
         setLayout(new BorderLayout());
 
         this.filterValue = filterValue != null ? filterValue : new ClientDataFilterValue();
         logicsSupplier = ilogicsSupplier;
+
+        this.columnKey = columnKey;
 
         // непосредственно объект для изменения значения свойств
         valueTable = new DataFilterValueViewTable(this, property, ilogicsSupplier);
@@ -66,7 +70,7 @@ public abstract class DataFilterValueView extends JPanel {
     public void startEditing(KeyEvent initFilterKeyEvent) {
         if (valueTable.getProperty().baseType != ClientLogicalClass.instance) {
             // Не начинаем редактирование для check-box, т.к. оно бессмысленно
-            valueTable.editCellAt(0, 0);
+            valueTable.editCellAt(0, 0, initFilterKeyEvent);
         }
         final Component editor = valueTable.getEditorComponent();
         if (editor != null) {
@@ -84,4 +88,8 @@ public abstract class DataFilterValueView extends JPanel {
     }
 
     public abstract void applyQuery();
+
+    public ClientGroupObjectValue getColumnKey() {
+        return columnKey;
+    }
 }

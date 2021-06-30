@@ -3,12 +3,18 @@ package lsfusion.client.form.filter.user.view;
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.classes.data.ClientTextClass;
 import lsfusion.client.controller.remote.RmiQueue;
+import lsfusion.client.form.controller.ClientFormController;
+import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.object.table.controller.TableController;
 import lsfusion.client.form.property.ClientPropertyDraw;
+import lsfusion.client.form.property.async.ClientAsyncExec;
+import lsfusion.client.form.property.async.ClientInputList;
 import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
 import lsfusion.client.form.property.cell.controller.PropertyTableCellEditor;
 import lsfusion.client.form.property.cell.view.PropertyRenderer;
+import lsfusion.client.form.property.table.view.AsyncChangeInterface;
 import lsfusion.client.form.property.table.view.TableTransferHandler;
+import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.event.KeyStrokes;
 
 import javax.swing.*;
@@ -23,11 +29,13 @@ import java.text.ParseException;
 import java.util.EventObject;
 import java.util.List;
 
-class DataFilterValueViewTable extends JTable implements TableTransferHandler.TableInterface {
+class DataFilterValueViewTable extends JTable implements TableTransferHandler.TableInterface, AsyncChangeInterface {
     private DataFilterValueView valueFilterView;
     private final Model model;
     private EventObject editEvent;
     private final TableController logicsSupplier;
+
+    public static final ClientInputList FILTER = new ClientInputList(new String[0], new ClientAsyncExec[0], false);
 
     public DataFilterValueViewTable(DataFilterValueView valueFilterView, ClientPropertyDraw property, TableController ilogicsSupplier) {
         super(new Model());
@@ -165,6 +173,41 @@ class DataFilterValueViewTable extends JTable implements TableTransferHandler.Ta
         setRowHeight(valueHeight);
     }
 
+    @Override
+    public EventObject getCurrentEditEvent() {
+        return editEvent;
+    }
+
+    @Override
+    public ClientInputList getCurrentInputList() {
+        return FILTER;
+    }
+
+    @Override
+    public String getCurrentActionSID() {
+        return ServerResponse.FILTER;
+    }
+
+    @Override
+    public Integer getContextAction() {
+        return null; //no need, no actions in filter
+    }
+
+    @Override
+    public void setContextAction(Integer contextAction) {
+        //no need, no actions in filter
+    }
+
+    @Override
+    public ClientGroupObjectValue getColumnKey(int row, int col) {
+        return valueFilterView.getColumnKey();
+    }
+
+    @Override
+    public ClientFormController getForm() {
+        return logicsSupplier.getFormController();
+    }
+
     private final class Renderer extends JComponent implements TableCellRenderer {
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
@@ -179,7 +222,7 @@ class DataFilterValueViewTable extends JTable implements TableTransferHandler.Ta
 
         @Override
         public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
-            propertyEditor = getProperty().getValueEditorComponent(valueFilterView.getForm(), value);
+            propertyEditor = getProperty().getValueEditorComponent(valueFilterView.getForm(), DataFilterValueViewTable.this, value);
             propertyEditor.setTableEditor(this);
 
             if (propertyEditor != null) {
