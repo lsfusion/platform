@@ -73,7 +73,7 @@ public abstract class ClientDataClass extends ClientClass implements ClientType 
 
     @Override
     public PropertyEditor getValueEditorComponent(ClientFormController form, ClientPropertyDraw property, AsyncChangeInterface asyncChange, Object value) {
-        return getDataClassEditorComponent(value, property, null);
+        return getDataClassEditorComponent(value, property, asyncChange);
     }
 
     protected abstract PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property, AsyncChangeInterface asyncChange);
