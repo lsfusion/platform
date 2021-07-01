@@ -10,9 +10,14 @@ import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.async.ClientInputList;
 import lsfusion.client.form.property.cell.classes.controller.suggest.BasicComboBoxUI;
 import lsfusion.client.form.property.cell.controller.PropertyTableCellEditor;
+import lsfusion.client.form.property.panel.view.CaptureKeyEventsDispatcher;
 import lsfusion.client.form.property.table.view.AsyncChangeInterface;
+import lsfusion.interop.form.event.KeyStrokes;
 
 import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.PopupMenuEvent;
@@ -42,6 +47,8 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
     boolean strict;
     String[] actions;
 
+    EventObject editEvent;
+
     SuggestBox suggestBox;
 
     TextFieldPropertyEditor(ClientPropertyDraw property) {
@@ -53,8 +60,7 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
         this.asyncChange = asyncChange;
         this.property = property;
 
-        EventObject editEvent = asyncChange != null ? asyncChange.getCurrentEditEvent() : null;
-        String initValue = editEvent instanceof KeyEvent ? String.valueOf(((KeyEvent) editEvent).getKeyChar()) : "";
+        editEvent = asyncChange != null ? asyncChange.getCurrentEditEvent() : null;
 
         this.actionSID = asyncChange != null ? asyncChange.getCurrentActionSID() : null;
 
@@ -64,22 +70,12 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
         this.actions = inputList != null ? inputList.actions : null;
 
         if (hasList) {
-            suggestBox = new SuggestBox((String) value, initValue);
-            updateAsyncValues(property, initValue);
+            suggestBox = new SuggestBox((String) value);
+            updateAsyncValues(property, "");
         } else {
-            Insets insets = getTableCellMargins();
-            setBorder(BorderFactory.createEmptyBorder(insets.top, insets.left, insets.bottom, insets.right - 1));
+            setBorder(this);
+            setDesign(this);
             setOpaque(true);
-
-            if (property != null) {
-                if (property.design != null) 
-                    ClientColorUtils.designComponent(this, property.design);
-
-                Integer valueAlignment = property.getSwingValueAlignment();
-                if (valueAlignment != null) {
-                    setHorizontalAlignment(valueAlignment);
-                }
-            }
 
             addActionListener(e -> tableEditor.stopCellEditing());
 
@@ -156,6 +152,23 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
         }
     }
 
+    private void setBorder(JComponent component) {
+        Insets insets = getTableCellMargins();
+        component.setBorder(BorderFactory.createEmptyBorder(insets.top, insets.left, insets.bottom, insets.right - 1));
+    }
+
+    private void setDesign(JTextField component) {
+        if (property != null) {
+            if (property.design != null)
+                ClientColorUtils.designComponent(component, property.design);
+
+            Integer valueAlignment = property.getSwingValueAlignment();
+            if (valueAlignment != null) {
+                component.setHorizontalAlignment(valueAlignment);
+            }
+        }
+    }
+
     //based on glazedLists AutoCompleteSupport
     class SuggestBox {
         private EventList<Object> items;
@@ -165,11 +178,12 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
 
         private JTextField comboBoxEditorComponent;
 
-        public SuggestBox(String value, String initValue) {
+        public SuggestBox(String value) {
             items = GlazedLists.eventListOf();
 
             comboBox = new JComboBox(new DefaultEventComboBoxModel(items));
             comboBox.setEditable(true);
+            setBorder(comboBox);
 
             comboBox.setUI(new BasicComboBoxUI() {
                 @Override
@@ -205,6 +219,15 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
 
                             add(buttonsTopPanel);
                             setBackground(SwingDefaults.getTableCellBackground());
+
+                            setOpaque(true);
+                        }
+
+                        @Override
+                        public void setBorder(Border border) {
+                            Insets insets = getTableCellMargins();
+                            Border margin = new EmptyBorder(insets.top, insets.left, insets.bottom, insets.right - 1);
+                            super.setBorder(new CompoundBorder(border, margin));
                         }
 
                         //calculate width based on width of elements
@@ -231,7 +254,7 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
                 }
             });
 
-            addListeners(value, initValue);
+            addListeners(value);
         }
 
         public boolean isValidValue(String value) {
@@ -295,7 +318,7 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
             }
         }
 
-        private void addListeners(String value, String initValue) {
+        private void addListeners(String value) {
             //stop editing after item selection
             comboBox.setEditor(new BasicComboBoxEditor() {
                 @Override
@@ -322,9 +345,12 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
             });
 
             comboBoxEditorComponent = (JTextField) comboBox.getEditor().getEditorComponent();
-            if(!initValue.isEmpty()) {
-                setComboBoxEditorText(initValue);
-            } else {
+            setDesign(comboBoxEditorComponent);
+
+            //need to catch key events
+            CaptureKeyEventsDispatcher.get().setCapture(comboBoxEditorComponent);
+
+            if (!KeyStrokes.isDeleteEvent(editEvent)) {
                 setComboBoxEditorText(value);
                 comboBoxEditorComponent.selectAll();
             }
@@ -333,8 +359,9 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
             comboBoxEditorComponent.addFocusListener(new FocusAdapter() {
                 @Override
                 public void focusGained(FocusEvent e) {
-                    if (!getComboBoxEditorText().equals(initValue))
+                    if (!KeyStrokes.isSuitableStartFilteringEvent(editEvent)) {
                         comboBoxEditorComponent.selectAll();
+                    }
                 }
             });
 
