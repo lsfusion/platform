@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static lsfusion.base.DateConverter.sqlTimestampToLocalDateTime;
 import static lsfusion.base.file.WriteUtils.appendExtension;
@@ -329,17 +330,19 @@ public class FileUtils {
 
         java.nio.file.Path urlPath = Paths.get(url);
         if (Files.exists(urlPath)) {
-            List<java.nio.file.Path> pathList = (recursive ? Files.walk(urlPath) : Files.list(urlPath)).filter(path -> !path.equals(urlPath)).collect(Collectors.toList());
-            String[] nameValues = new String[pathList.size()];
-            Boolean[] isDirectoryValues = new Boolean[pathList.size()];
-            LocalDateTime[] modifiedDateTimeValues = new LocalDateTime[pathList.size()];
-            for (int i = 0; i < pathList.size(); i++) {
-                File file = pathList.get(i).toFile();
-                nameValues[i] = urlPath.relativize(pathList.get(i)).toFile().getPath();
-                isDirectoryValues[i] = file.isDirectory() ? true : null;
-                modifiedDateTimeValues[i] = sqlTimestampToLocalDateTime(new Timestamp(file.lastModified()));
+            try (Stream<java.nio.file.Path> pathStream = (recursive ? Files.walk(urlPath) : Files.list(urlPath)).filter(path -> !path.equals(urlPath))) {
+                List<java.nio.file.Path> pathList = pathStream.collect(Collectors.toList());
+                String[] nameValues = new String[pathList.size()];
+                Boolean[] isDirectoryValues = new Boolean[pathList.size()];
+                LocalDateTime[] modifiedDateTimeValues = new LocalDateTime[pathList.size()];
+                for (int i = 0; i < pathList.size(); i++) {
+                    File file = pathList.get(i).toFile();
+                    nameValues[i] = urlPath.relativize(pathList.get(i)).toFile().getPath();
+                    isDirectoryValues[i] = file.isDirectory() ? true : null;
+                    modifiedDateTimeValues[i] = sqlTimestampToLocalDateTime(new Timestamp(file.lastModified()));
+                }
+                result = Arrays.asList(nameValues, isDirectoryValues, modifiedDateTimeValues);
             }
-            result = Arrays.asList(nameValues, isDirectoryValues, modifiedDateTimeValues);
         } else {
             throw new RuntimeException(String.format("Path '%s' not found", url));
         }
