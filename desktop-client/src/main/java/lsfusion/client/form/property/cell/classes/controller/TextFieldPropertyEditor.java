@@ -15,8 +15,6 @@ import lsfusion.client.form.property.table.view.AsyncChangeInterface;
 import lsfusion.interop.form.event.KeyStrokes;
 
 import javax.swing.*;
-import javax.swing.border.Border;
-import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -183,6 +181,15 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
 
             comboBox = new JComboBox(new DefaultEventComboBoxModel(items));
             comboBox.setEditable(true);
+            
+            comboBox.setRenderer(new DefaultListCellRenderer() {
+                @Override
+                public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                    JComponent comp = (JComponent) super.getListCellRendererComponent(list,value, index, isSelected, cellHasFocus);
+                    comp.setBorder(new EmptyBorder(0, 3, 0, 0)); //extra 3px for equal padding of textBox and popup
+                    return comp;
+                }
+            });
             setBorder(comboBox);
 
             comboBox.setUI(new BasicComboBoxUI() {
@@ -220,20 +227,15 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
                             add(buttonsTopPanel);
                             setBackground(SwingDefaults.getTableCellBackground());
 
+                            setBorder(BorderFactory.createLineBorder(SwingDefaults.getComponentBorderColor()));
                             setOpaque(true);
-                        }
-
-                        @Override
-                        public void setBorder(Border border) {
-                            Insets insets = getTableCellMargins();
-                            Border margin = new EmptyBorder(insets.top, insets.left, insets.bottom, insets.right - 1);
-                            super.setBorder(new CompoundBorder(border, margin));
                         }
 
                         //calculate width based on width of elements
                         @Override
                         protected Rectangle computePopupBounds(int px, int py, int pw, int ph) {
-                            return super.computePopupBounds(px, py, Math.max(comboBox.getPreferredSize().width, pw), ph);
+                            //default size + 1px left and right for equal width of textBox and popup
+                            return super.computePopupBounds(px - 1, py, Math.max(comboBox.getPreferredSize().width, pw + 2), ph);
                         }
                     };
                     popup.getAccessibleContext().setAccessibleParent(comboBox);
@@ -261,12 +263,14 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
             return latestSuggestions.contains(value);
         }
 
-        private void selectPossibleValue(int index) {
-            if(index >= comboBox.getModel().getSize()) {
-                index = 0;
+        private void setSelectedIndex(int index) {
+            int size = comboBox.getModel().getSize();
+            if (index < 0) {
+                index = size - 1; //last item
+            } else if (index >= size) {
+                index = 0; //first item
             }
-
-            if(comboBox.getModel().getSize() > index) {
+            if(index < size) {
                 comboBox.setSelectedIndex(index);
             }
         }
@@ -282,7 +286,7 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
             public void actionPerformed(ActionEvent e) {
                 if (comboBox.isShowing()) {
                     if (comboBox.isPopupVisible()) {
-                        selectPossibleValue(comboBox.getSelectedIndex() + offset);
+                        setSelectedIndex(comboBox.getSelectedIndex() + offset);
                     } else {
                         comboBox.showPopup();
                     }
@@ -314,7 +318,7 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
             suggestBox.comboBox.hidePopup();
             suggestBox.comboBox.showPopup();
             if (selectFirst) {
-                selectPossibleValue(0);
+                setSelectedIndex(0);
             }
         }
 

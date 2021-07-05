@@ -1251,7 +1251,7 @@ public class ClientFormController implements AsyncListener {
         };
     }
 
-//    // synchronous call (with request indices, etc.)
+    // synchronous call (with request indices, etc.)
     private void getPessimisticValues(ClientPropertyDraw property, ClientGroupObjectValue columnKey, String value, String actionSID, Consumer<Pair<List<String>, Boolean>> callback) {
         rmiQueue.asyncRequest(new RmiCheckNullFormRequest<String[]>("getAsyncValues - " + property.getLogName()) {
             @Override
@@ -1271,9 +1271,8 @@ public class ClientFormController implements AsyncListener {
     public void getAsyncValues(ClientPropertyDraw property, ClientGroupObjectValue columnKey, String value, String actionSID, Consumer<Pair<List<String>, Boolean>> callback) {
         Consumer<Pair<List<String>, Boolean>> fCallback = checkLast(editAsyncIndex++, callback);
 
-        if (!editAsyncUsePessimistic) {
-
-            SwingUtilities.invokeLater(() -> {
+        SwingUtilities.invokeLater(() -> {
+            if (!editAsyncUsePessimistic) {
                 try {
                     String[] result = getAsyncValuesProvider.getAsyncValues(property.getID(), getFullCurrentKey(columnKey), actionSID, value, editAsyncIndex);
 
@@ -1299,10 +1298,10 @@ public class ClientFormController implements AsyncListener {
                 } catch (RemoteException e) {
                     throw Throwables.propagate(e);
                 }
-            });
-        } else {
-            getPessimisticValues(property, columnKey, value, actionSID, fCallback);
-        }
+            } else {
+                getPessimisticValues(property, columnKey, value, actionSID, fCallback);
+            }
+        });
     }
 
     public void changePropertyOrder(final ClientPropertyDraw property, final Order modiType, final ClientGroupObjectValue columnKey) {

@@ -310,7 +310,7 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
                                 suggestBox.updateDecoration(suggestionList.isEmpty(), result.second);
                                 callback.onSuggestionsReady(request, new Response(suggestionList));
 
-                                setMinWidth(suggestBox.getPopupElement(), suggestBox.getOffsetWidth() - 24); //24 = offsets and borders
+                                setMinWidth(suggestBox.getPopupElement(), suggestBox.getOffsetWidth() - 8); //8 = offsets
                             }
                         }
                     });
