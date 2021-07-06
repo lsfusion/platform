@@ -327,11 +327,13 @@ public class SwingUtils {
     }
 
     public static Dimension overrideSize(Dimension base, Dimension override) {
-        if (override.width >= 0) {
-            base.width = override.width;
-        }
-        if (override.height >= 0) {
-            base.height = override.height;
+        if (override != null) {
+            if (override.width >= 0) {
+                base.width = override.width;
+            }
+            if (override.height >= 0) {
+                base.height = override.height;
+            }
         }
         return base;
     }
