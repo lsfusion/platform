@@ -39,6 +39,16 @@ public abstract class AbstractClientContainerView implements ClientContainerView
     }
 
     public static void setSizes(JComponentPanel view, ClientComponent child) {
+        //temp fix
+        if (child.alignment == FlexAlignment.STRETCH) {
+            if (child.container.isVertical()) {
+                if (child.size.width == 0) 
+                    child.size = new Dimension(-1, child.size.height);
+            } else {
+                if (child.size.height == 0) 
+                    child.size = new Dimension(child.size.width, -1);
+            }
+        }
         view.setComponentSize(child.size);
     }
     public static void add(JPanel panel, JComponentPanel view, int index, Object constraints, ClientComponent child) {
