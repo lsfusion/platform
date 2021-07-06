@@ -27,7 +27,7 @@ public class ClientContainer extends ClientComponent {
 
     public FlexAlignment childrenAlignment = FlexAlignment.START;
 
-    public int columns = 4;
+    public int columns = 1;
 
     public List<ClientComponent> children = new ArrayList<>();
 
@@ -100,15 +100,6 @@ public class ClientContainer extends ClientComponent {
     public void setType(ContainerType type) {
         this.type = type;
         updateDependency(this, "type");
-    }
-
-    public int getColumns() {
-        return columns;
-    }
-
-    public void setColumns(int columns) {
-        this.columns = columns;
-        updateDependency(this, "columns");
     }
 
     public boolean isTabbed() {

@@ -3,6 +3,7 @@ package lsfusion.gwt.client.form.object.panel.controller;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
+import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.form.controller.GFormController;
@@ -24,7 +25,7 @@ public class GPropertyPanelController {
 
     public NativeHashMap<GGroupObjectValue, PanelRenderer> renderers;
 
-    public FlexPanel renderersPanel;
+    public Panel renderersPanel;
 
     private ArrayList<GGroupObjectValue> columnKeys;
     // it doesn't make sense to make this maps Native since they come from server and are built anyway
@@ -42,7 +43,20 @@ public class GPropertyPanelController {
         this.form = form;
         renderers = new NativeHashMap<>();
 
-        renderersPanel = new FlexPanel(property.panelColumnVertical);
+        renderersPanel = new Panel(property.panelColumnVertical); // needed for groups-to-columns
+    }
+
+    public interface CaptionContainer {
+        void put(Widget widget, Pair<Integer, Integer> valueSizes);
+    }
+
+    public static class Panel extends FlexPanel {
+
+        public Panel(boolean vertical) {
+            super(vertical);
+        }
+
+        public CaptionContainer captionContainer;
     }
 
     public Widget getView() {
@@ -62,7 +76,7 @@ public class GPropertyPanelController {
                             renderersPanel.add(GwtClientUtils.createHorizontalStrut(4));
                         }
                         
-                        PanelRenderer newRenderer = property.createPanelRenderer(form, columnKey);
+                        PanelRenderer newRenderer = property.createPanelRenderer(form, columnKey, renderersPanel.captionContainer);
                         newRenderer.setReadOnly(property.isReadOnly());
                         Widget component = newRenderer.getComponent();
                         if(!property.hide) {

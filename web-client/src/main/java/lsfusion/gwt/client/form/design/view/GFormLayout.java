@@ -33,22 +33,27 @@ public class GFormLayout extends ResizableSimplePanel {
         this.mainContainer = mainContainer;
 
         addContainers(mainContainer);
-        setFillWidget(getContainerView(mainContainer).getView());
-        
-        getWidget().getElement().getStyle().setOverflow(Style.Overflow.AUTO);
+
+        Widget view = getMainView();
+        setFillWidget(view);
+        view.getElement().getStyle().setOverflow(Style.Overflow.AUTO);
+    }
+
+    private Widget getMainView() {
+        return getContainerView(mainContainer).getView();
     }
 
     private static GAbstractContainerView createContainerView(GFormController form, GContainer container) {
         if (container.isLinear()) {
             return new LinearContainerView(container);
         } else if (container.isSplit()) {
-            return new SplitContainerView(container);
+            return new LinearContainerView(container);
         } else if (container.isTabbed()) {
             return new TabbedContainerView(form, container);
         } else if (container.isColumns()) {
-            return new ColumnsContainerView(container);
+            return new LinearContainerView(container);
         } else if(container.isScroll()) {
-            return new ScrollContainerView(container);
+            return new LinearContainerView(container);
         } else {
             throw new IllegalStateException("Incorrect container type");
         }
@@ -59,7 +64,14 @@ public class GFormLayout extends ResizableSimplePanel {
         GAbstractContainerView containerView = createContainerView(form, container);
 
         containerViews.put(container, containerView);
-        add(container, containerView.getView(), null);
+        Widget viewWidget = containerView.getView();
+        add(container, viewWidget, null);
+
+        // debug info
+        if (container.sID != null) {
+            viewWidget.getElement().setAttribute("lsfusion-container", container.sID);
+            viewWidget.getElement().setAttribute("lsfusion-container-type", container.type.name());
+        }
 
         for (GComponent child : container.children) {
             if(child instanceof GGrid)
@@ -67,13 +79,6 @@ public class GFormLayout extends ResizableSimplePanel {
             if (child instanceof GContainer) {
                 addContainers((GContainer) child);
             }
-        }
-
-        // debug info
-        if (container.sID != null) {
-            Widget view = containerView.getView();
-            view.getElement().setAttribute("lsfusion-container", container.sID);
-            view.getElement().setAttribute("lsfusion-container-type", container.type.name());
         }
 
         return containerView;
@@ -93,7 +98,7 @@ public class GFormLayout extends ResizableSimplePanel {
         }
     }
 
-    public void remove(GComponent key, Widget view) {
+    public void remove(GComponent key) {
         assert !(key instanceof GContainer);
         GAbstractContainerView containerView;
         if (key.container != null && (containerView = containerViews.get(key.container)) != null) { // see add method
@@ -103,10 +108,10 @@ public class GFormLayout extends ResizableSimplePanel {
         }
     }
 
-    public void removeBaseComponent(GComponent key, Widget view) {
+    public void removeBaseComponent(GComponent key) {
         assert !(key instanceof GContainer);
         baseComponentViews.remove(key);
-        remove(key, view);
+        remove(key);
     }
 
     private void maybeAddDefaultFocusReceiver(GComponent key, DefaultFocusReceiver focusReceiver) {
@@ -136,40 +141,40 @@ public class GFormLayout extends ResizableSimplePanel {
     public GAbstractContainerView getContainerView(GContainer container) {
         return containerViews.get(container);
     }
-    public Widget getComponentView(GComponent component) {
-        if(component instanceof GContainer)
-            return getContainerView((GContainer) component).getView();
-        return baseComponentViews.get(component);
-    }
 
     public void hideEmptyContainerViews(int requestIndex) {
         autoShowHideContainers(mainContainer, requestIndex);
     }
 
-    private void autoShowHideContainers(GContainer container, long requestIndex) {
+    private boolean autoShowHideContainers(GContainer container, long requestIndex) {
         GAbstractContainerView containerView = getContainerView(container);
-        int childCnt = containerView.getChildrenCount();
         boolean hasVisible = false;
-        for (int i = 0; i < childCnt; ++i) {
+        int size = containerView.getChildrenCount();
+        boolean[] childrenVisible = new boolean[size];
+        for (int i = 0; i < size; ++i) {
             GComponent child = containerView.getChild(i);
+
+            if (child instanceof GGrid)
+                child = ((GGrid) child).record;
+
             Widget childView = containerView.getChildView(i);
-
-            if(child instanceof GGrid)
-                child = ((GGrid)child).record;
+            boolean childVisible;
             if (child instanceof GContainer)
-                autoShowHideContainers((GContainer) child, requestIndex);
+                childVisible = autoShowHideContainers((GContainer) child, requestIndex);
+            else
+                childVisible = childView.isVisible();
 
-            if (childView.isVisible()) // it's important to be after child autoShowHideContainers
-                hasVisible = true;
+            childrenVisible[i] = childVisible;
+            hasVisible = hasVisible || childVisible;
         }
-        containerView.getView().setVisible(hasVisible);
-        containerView.updateLayout(requestIndex);
+        containerView.updateLayout(requestIndex, childrenVisible);
+        return hasVisible;
     }
 
     @Override
     public Dimension getMaxPreferredSize() {
         Dimension result = GAbstractContainerView.getMaxPreferredSize(mainContainer, containerViews, false); // в BOX container'е берем явный size (предполагая что он используется не как базовый размер с flex > 0, а конечный)
-        setDebugDimensionsAttributes(containerViews.get(mainContainer).getView(), result);
+        setDebugDimensionsAttributes(getMainView(), result);
         return result;
     }
 

@@ -478,7 +478,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
         hasColumnGroupObjects = false;
         for (GPropertyDraw property : form.propertyDraws) {
-            if (property.columnGroupObjects != null && !property.columnGroupObjects.isEmpty()) {
+            if (property.hasColumnGroupObjects()) {
                 hasColumnGroupObjects = true;
             }
         }
@@ -1485,12 +1485,10 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
         // update captions (actually we could've set them directly to the containers, but tabbed pane physically adds / removes that views, so the check if there is a tab is required there)
         GFormLayout layout = formLayout;
-        if(container.isTab())
-            ((TabbedContainerView)layout.getContainerView(container.container)).updateTabCaption(container);
-        else if(container.main)
+        if(container.main)
             updateFormCaption();
         else
-            layout.getContainerView(container).updateCaption();
+            layout.getContainerView(container.container).updateCaption(container);
     }
 
     private static final class Change {

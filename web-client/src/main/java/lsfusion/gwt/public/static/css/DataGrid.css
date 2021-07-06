@@ -32,6 +32,7 @@
     border-radius: var(--table-border-radius);
     background: var(--component-background-color);
     cursor: default;
+    overflow: hidden; /* important for "removing outer grid borders", since they are removed with margin -1 overflow should be hidden */
 }
 
 .dataGridHeader {

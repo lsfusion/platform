@@ -83,11 +83,9 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         component.container = convertOrCast(clientComponent.container);
         component.defaultComponent = clientComponent.defaultComponent;
 
-        if (clientComponent.size != null) {
-            component.width = clientComponent.size.width;
-            component.height = clientComponent.size.height;
-        }
-        
+        component.width = clientComponent.size.width;
+        component.height = clientComponent.size.height;
+
         component.autoSize = clientComponent.autoSize;
 
         component.setFlex(clientComponent.flex);

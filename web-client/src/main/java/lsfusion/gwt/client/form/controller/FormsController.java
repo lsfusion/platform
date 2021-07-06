@@ -279,7 +279,7 @@ public abstract class FormsController {
         forms.add(dockable);
         formFocusOrder.add(null);
 
-        tabsPanel.add(dockable.getContentWidget(), dockable.getTabWidget());
+        tabsPanel.addTab(dockable.getContentWidget(), dockable.getTabWidget());
         assert !isAdding;
         isAdding = true;
         selectTab(dockable);
@@ -295,7 +295,7 @@ public abstract class FormsController {
             isRemoving = true;
         }
 
-        tabsPanel.remove(index);
+        tabsPanel.removeTab(index);
         assert !isRemoving; // checking that the active tab is closing
 
         forms.remove(index);

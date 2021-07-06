@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.form.design;
 
-import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
@@ -33,6 +32,13 @@ public class GComponent implements Serializable {
     public GFont font;
     public GFont captionFont;
 
+    public Integer getSize(boolean vertical) {
+        int size = vertical ? height : width;
+        if (size != -1)
+            return size;
+        return null;
+    }
+
     @Override
     public String toString() {
         String className = this.getClass().getName();
@@ -55,34 +61,15 @@ public class GComponent implements Serializable {
         this.flex = flex;
     }
 
+    public boolean isStretch() {
+        return getAlignment() == GFlexAlignment.STRETCH;
+    }
     public GFlexAlignment getAlignment() {
         return alignment;
     }
 
     public void setAlignment(GFlexAlignment alignment) {
         this.alignment = alignment;
-    }
-
-    public boolean isVerticallyStretched() {
-        return isStretched(container.isLinearVertical(), container.isLinearHorizontal());
-    }
-
-    public boolean isStretched(boolean linearVertical, boolean linearHorizontal) {
-        if (container != null) {
-            if (container.isScroll() || container.isTabbed() || container.isSplit()) {
-                return true;
-            } else if (container.isColumns()) {
-                return false;
-            }
-
-            assert container.isLinear();
-            return linearVertical && getFlex() > 0 || linearHorizontal && getAlignment() == GFlexAlignment.STRETCH;
-        }
-        return false;
-    }
-
-    public boolean isHorizontallyStretched() {
-        return isStretched(container.isLinearHorizontal(), container.isLinearVertical());
     }
 
     public boolean hasMargins() {

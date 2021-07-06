@@ -24,6 +24,7 @@ import lsfusion.gwt.client.form.event.GKeyInputEvent;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
+import lsfusion.gwt.client.form.object.panel.controller.GPropertyPanelController;
 import lsfusion.gwt.client.form.object.table.controller.GPropertyController;
 import lsfusion.gwt.client.form.property.async.GAsyncChange;
 import lsfusion.gwt.client.form.property.async.GAsyncEventExec;
@@ -82,6 +83,10 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public GType changeWYSType;
 
     public Map<String, GAsyncEventExec> asyncExecMap;
+
+    public boolean hasColumnGroupObjects() {
+        return columnGroupObjects != null && !columnGroupObjects.isEmpty();
+    }
 
     public GType getChangeType() {
         GAsyncEventExec asyncExec = asyncExecMap.get(ServerResponse.CHANGE);
@@ -202,12 +207,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
     public GPropertyDraw(){}
 
-    public void update(GPropertyController controller, NativeHashMap<GGroupObjectValue, Object> values, boolean updateKeys) {
-        throw new UnsupportedOperationException();
-    }
-
-    public PanelRenderer createPanelRenderer(GFormController form, GGroupObjectValue columnKey) {
-        return baseType.createPanelRenderer(form, this, columnKey);
+    public PanelRenderer createPanelRenderer(GFormController form, GGroupObjectValue columnKey, GPropertyPanelController.CaptionContainer captionContainer) {
+        return baseType.createPanelRenderer(form, this, columnKey, captionContainer);
     }
 
     public CellRenderer getCellRenderer() {

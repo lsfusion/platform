@@ -50,9 +50,9 @@ public class GPanelController extends GPropertyController {
 
     @Override
     public void removeProperty(GPropertyDraw property) {
-        GPropertyPanelController propController = propertyControllers.remove(property);
+        propertyControllers.remove(property);
 
-        getFormLayout().removeBaseComponent(property, propController.getView());
+        getFormLayout().removeBaseComponent(property);
     }
 
     public void update() {

@@ -18,7 +18,8 @@
     --textfield-border-radius: var(--combobox-border-radius);
     --table-border-radius: var(--combobox-border-radius);
     --panel-border-radius: var(--combobox-border-radius);
-    --tab-border-radius: var(--combobox-border-radius) var(--combobox-border-radius) 0 0;
+    --tab-border-radius-vert: 0 0 var(--combobox-border-radius) var(--combobox-border-radius);
+    --tab-border-radius-horz: var(--combobox-border-radius) var(--combobox-border-radius) 0 0;
 }
 
 pre {
@@ -907,7 +908,17 @@ button {
     overflow: hidden;
 }
 
-.gwt-TabBar {
+.gwt-TabBar-vert {
+    padding-left: 2px;
+}
+.gwt-TabBar-vert .gwt-TabBarFirst {
+    height: 3px;  /* first tab distance from the top */
+    width: 0;  /* to make it invisible when all tabs are wrapped */
+}
+.gwt-TabBar-vert .gwt-TabBarRest {
+    width: 0;  /* to make it invisible when all tabs are wrapped */
+}
+.gwt-TabBar-horz {
     padding-top: 2px;
 }
 .gwt-TabBar .gwt-TabBarFirst {
@@ -918,16 +929,22 @@ button {
     height: 0;  /* to make it invisible when all tabs are wrapped */
 }
 .gwt-TabBar .gwt-TabBarItem {
-    margin-left: 3px;
     padding: 0 10px;
     cursor: pointer;
-    cursor: hand;
     font-weight: normal;
     text-align: center;
     border-top: 1px solid var(--panel-border-color);
     border-left: 1px solid var(--panel-border-color);
+}
+.gwt-TabBar-vert .gwt-TabBarItem {
+    border-bottom: 1px solid var(--panel-border-color);
+    margin-top: 3px;
+    border-radius: var(--tab-border-radius-vert);
+}
+.gwt-TabBar-horz .gwt-TabBarItem {
     border-right: 1px solid var(--panel-border-color);
-    border-radius: var(--tab-border-radius);
+    margin-left: 3px;
+    border-radius: var(--tab-border-radius-horz);
 }
 .gwt-TabBar .gwt-TabBarItem-selected {
     cursor: default;
@@ -941,13 +958,23 @@ button {
 .gwt-TabBar .gwt-TabBarItem:hover {
     border-top: 1px solid var(--component-hover-border-color);
     border-left: 1px solid var(--component-hover-border-color);
-    border-right: 1px solid var(--component-hover-border-color);
     background: var(--component-hover-background-color);
+}
+.gwt-TabBar-vert .gwt-TabBarItem:hover {
+    border-bottom: 1px solid var(--component-hover-border-color);
+}
+.gwt-TabBar-horz .gwt-TabBarItem:hover {
+    border-right: 1px solid var(--component-hover-border-color);
 }
 
 .gwt-TabBar .gwt-TabBarItem:focus {
     border-top: 1px solid var(--focus-color);
     border-left: 1px solid var(--focus-color);
+}
+.gwt-TabBar-vert .gwt-TabBarItem:focus {
+    border-bottom: 1px solid var(--focus-color);
+}
+.gwt-TabBar-horz .gwt-TabBarItem:focus {
     border-right: 1px solid var(--focus-color);
 }
 
@@ -959,99 +986,9 @@ button {
     margin: 0 1px 1px;
 }
 .gwt-TabPanelBottom {
-    border-color: var(--panel-border-color);
-    border-style: solid;
-    border-width: 1px;
-    border-radius: var(--panel-border-radius);
-    /*overflow: visible; *//* вероятно помогает избежать непрерывной перерисовки в FF */
-    overflow: hidden;
     padding: 1px;
-}
-.gwt-DecoratedTabBar {
-    background: var(--panel-border-color);
-    padding-top: 6px;
-}
-.gwt-DecoratedTabBar .gwt-TabBarFirst {
-    width: 5px;  /* first tab distance from the left */
-}
-.gwt-DecoratedTabBar .gwt-TabBarRest {
-}
-.gwt-DecoratedTabBar .gwt-TabBarItem {
-    border-collapse: collapse;
-    margin-left: 4px;
-}
-.gwt-DecoratedTabBar .tabTopCenter {
-    padding: 0px;
-    background: #8E8E8E;
-}
-.gwt-DecoratedTabBar .tabTopLeft,
-.gwt-DecoratedTabBar .tabTopRight {
-    padding: 0px;
-    zoom: 1;
-}
-.gwt-DecoratedTabBar .tabTopLeftInner,
-.gwt-DecoratedTabBar .tabTopRightInner {
-    width: 3px;
-    height: 3px;
-}
-.gwt-DecoratedTabBar .tabTopLeft {
-    background: url(../images/circles.png) no-repeat 0px 0px;
-    -background: url(../images/circles_ie6.png) no-repeat 0px 0px;
-}
-.gwt-DecoratedTabBar .tabTopRight {
-    background: url(../images/circles.png) no-repeat -3px 0px;
-    -background: url(../images/circles_ie6.png) no-repeat -3px 0px;
-}
-* html .gwt-DecoratedTabBar .tabTopLeftInner,
-* html .gwt-DecoratedTabBar .tabTopRightInner {
-    width: 3px;
-    height: 3px;
-    overflow: hidden;
-}
-.gwt-DecoratedTabBar .tabMiddleLeft,
-.gwt-DecoratedTabBar .tabMiddleRight {
-    width: 3px;
-    padding: 0px;
-    background: #8E8E8E;
-}
-.gwt-DecoratedTabBar .tabMiddleLeftInner,
-.gwt-DecoratedTabBar .tabMiddleRightInner {
-    width: 1px;
-    height: 1px;
-}
-.gwt-DecoratedTabBar .tabMiddleCenter {
-    padding: 0px 5px 4px 5px;
-    cursor: pointer;
-    cursor: hand;
-    color: #fff;
-    font-weight: normal;
-    text-align: center;
-    background: #8E8E8E;
-}
-.gwt-DecoratedTabBar .gwt-TabBarItem-selected .tabTopCenter {
-    background:#fff;
-}
-.gwt-DecoratedTabBar .gwt-TabBarItem-selected .tabTopLeft {
-    background: url(../images/circles.png) no-repeat -6px 0px;
-    -background: url(../images/circles_ie6.png) no-repeat -6px 0px;
-}
-.gwt-DecoratedTabBar .gwt-TabBarItem-selected .tabTopRight {
-    background: url(../images/circles.png) no-repeat -9px 0px;
-    -background: url(../images/circles_ie6.png) no-repeat -9px 0px;
-}
-.gwt-DecoratedTabBar .gwt-TabBarItem-selected .tabMiddleLeft,
-.gwt-DecoratedTabBar .gwt-TabBarItem-selected .tabMiddleRight {
-    background: #fff;
-}
-.gwt-DecoratedTabBar .gwt-TabBarItem-selected .tabMiddleCenter {
-    cursor: default;
-    background: #fff;
-    color:#333;
-    font-weight:bold;
-}
-.gwt-DecoratedTabBar .gwt-TabBarItem-disabled .tabMiddleCenter {
-    cursor: default;
-    color: #999999;
+    border: 1px solid var(--panel-border-color);
+    border-radius: var(--panel-border-radius);
 }
 
 .gwt-TextArea {

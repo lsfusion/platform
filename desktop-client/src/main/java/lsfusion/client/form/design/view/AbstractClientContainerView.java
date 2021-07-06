@@ -190,16 +190,17 @@ public abstract class AbstractClientContainerView implements ClientContainerView
     }
 
     private static Dimension overrideSize(ClientComponent child, Dimension dimension, boolean max) {
-        if(child.size == null)
+        Dimension childSize = child.size;
+        if(childSize == null)
             return dimension;
         
-        int width = child.size.width;
+        int width = childSize.width;
         if(width == -1)
             width = dimension.width;
         else if(max)        
             width = BaseUtils.max(width, dimension.width);
         
-        int preferredHeight = child.size.height;
+        int preferredHeight = childSize.height;
         if(preferredHeight == -1)
             preferredHeight = dimension.height;
         else if(max)

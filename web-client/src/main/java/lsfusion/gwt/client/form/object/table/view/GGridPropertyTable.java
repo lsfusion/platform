@@ -4,11 +4,14 @@ import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.Dimension;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.jsni.NativeSIDMap;
+import lsfusion.gwt.client.base.resize.ResizeHandler;
+import lsfusion.gwt.client.base.resize.ResizeHelper;
 import lsfusion.gwt.client.base.view.CopyPasteUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.HasMaxPreferredSize;
@@ -142,6 +145,43 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         }
     }
 
+    public final ResizeHelper resizeHelper = new ResizeHelper() {
+        @Override
+        public Element getChildElement(int index) {
+            return getHeaderElement(index);
+        }
+
+        @Override
+        public Widget getChildWidget(int index) {
+            return null;
+        }
+
+        @Override
+        public void resizeChild(int index, int delta) {
+            resizeColumn(index, delta);
+        }
+
+        @Override
+        public boolean isChildResizable(int index) {
+            return true;
+        }
+
+        @Override
+        public boolean isChildVisible(int index) {
+            return true;
+        }
+
+        @Override
+        public int getChildCount() {
+            return getColumnCount();
+        }
+
+        @Override
+        public boolean isVertical() {
+            return false;
+        }
+    };
+
     private void addFilterBinding(GInputEvent event, GFormController.BindingExec pressed) {
         addFilterBinding(event::isEvent, pressed);
     }
@@ -261,8 +301,8 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         footersUpdated = true;
     }
 
-    public void headerClicked(GGridPropertyTableHeader header, boolean ctrlDown, boolean shiftDown) {
-        sortableHeaderManager.headerClicked(getHeaderIndex(header), ctrlDown, shiftDown);
+    public void headerClicked(int columnIndex, boolean ctrlDown, boolean shiftDown) {
+        sortableHeaderManager.headerClicked(columnIndex, ctrlDown, shiftDown);
         updateHeadersDOM(false);
     }
 

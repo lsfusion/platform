@@ -15,34 +15,18 @@ import static lsfusion.gwt.client.base.GwtSharedUtils.relativePosition;
 
 public class TabbedContainerView extends GAbstractContainerView {
 
-    protected final Panel panel;
-
-    private final Widget view;
+    protected final FlexTabbedPanel panel;
 
     protected final ArrayList<GComponent> visibleChildren = new ArrayList<>();
 
     protected GComponent currentChild;
-
-    public static class Panel extends FlexTabbedPanel {
-
-        public void insertTab(GComponent child, Widget childView, String tabTitle, int index) {
-            child.installMargins(childView);
-
-            // not sure why but this wrapping is necessary (otherwise widgets are not hidden)
-            // + in that case we'll need to "override" insert to deck method to fill correct base sizes
-            FlexPanel proxyPanel = new FlexPanel(true);
-            GAbstractContainerView.add(proxyPanel, childView, child, 0);
-
-            insert(proxyPanel, tabTitle, index);
-        }
-    }
 
     public TabbedContainerView(final GFormController formController, final GContainer container) {
         super(container);
 
         assert container.isTabbed();
 
-        panel = new Panel();
+        panel = new FlexTabbedPanel(vertical);
 
         if (container.children.size() > 0) {
             currentChild = container.children.get(0);
@@ -51,8 +35,16 @@ public class TabbedContainerView extends GAbstractContainerView {
         panel.setSelectionHandler(index -> {
             onTabSelected(index, formController, container);
         });
+    }
 
-        view = initBorder(panel);
+    @Override
+    protected FlexPanel wrapBorderImpl(GComponent child) {
+//      this wrapping is necessary because:
+//          we want border around the container
+//          autoShowHideContainers (automatical showing / hiding containers) uses setVisible, as well as TabbedDeckPanel (switching widgets), so they conflict with each other (however in current implementation only for base components)
+        FlexPanel proxyPanel = new FlexPanel(vertical);
+        proxyPanel.setStyleName("gwt-TabPanelBottom");
+        return proxyPanel;
     }
 
     private int getTabIndex(GComponent component) {
@@ -70,7 +62,7 @@ public class TabbedContainerView extends GAbstractContainerView {
         }
     }
 
-    public void updateTabCaption(GContainer container) {
+    public void updateCaption(GContainer container) {
         int index = getTabIndex(container);
         if(index >= 0)
             panel.setTabCaption(index, container.caption);
@@ -92,56 +84,56 @@ public class TabbedContainerView extends GAbstractContainerView {
     }
 
     @Override
-    protected void removeImpl(int index, GComponent child, Widget view) {
+    protected void removeImpl(int index, GComponent child) {
         int visibleIndex = visibleChildren.indexOf(child);
         if (visibleIndex != -1) {
-            panel.remove(visibleIndex);
+            panel.removeTab(visibleIndex);
             visibleChildren.remove(visibleIndex);
         }
     }
 
     @Override
     public Widget getView() {
-        return view;
+        return panel;
     }
 
     @Override
-    public void updateLayout(long requestIndex) {
-        super.updateLayout(requestIndex);
-        int childCnt = childrenViews.size();
-        for (int i = 0; i < childCnt; i++) {
+    public void updateLayout(long requestIndex, boolean[] childrenVisible) {
+        for (int i = 0, size = children.size(); i < size; i++) {
             GComponent child = children.get(i);
-            Widget childView = childrenViews.get(i);
 
             int index = visibleChildren.indexOf(child);
-            if (childView.isVisible()) {
+            if (childrenVisible[i]) {
                 if (index == -1) {
                     index = relativePosition(child, children, visibleChildren);
                     visibleChildren.add(index, child);
-                    panel.insertTab(child, childView, getTabTitle(child), index);
+                    panel.insertTab(childrenViews.get(i), getTabTitle(child), index, (deck, widget, beforeIndex) -> add(deck, widget, child, beforeIndex));
                     // updateTabCaption(child);
                 }
             } else if (index != -1) {
                 visibleChildren.remove(index);
-                panel.remove(index);
+                panel.removeTab(index);
             }
         }
         ensureTabSelection();
+
+        super.updateLayout(requestIndex, childrenVisible);
     }
 
     @Override
     public Dimension getMaxPreferredSize(Map<GContainer, GAbstractContainerView> containerViews) {
         int selected = panel.getSelectedTab();
+        Dimension dimension;
         if (selected != -1) {
-            Dimension dimensions = getChildMaxPreferredSize(containerViews, selected);
-            dimensions.height += panel.getTabBarHeight() + 5; //little extra for borders, etc.
-            return dimensions;
+            dimension = getChildMaxPreferredSize(containerViews, selected);
+            dimension.height += panel.getTabBarHeight() + 5; //little extra for borders, etc.
+            return dimension;
         }
         return new Dimension(0, 0);
     }
 
     private void ensureTabSelection() {
-        if (panel.getSelectedTab() == -1 && panel.getWidgetCount() != 0) {
+        if (panel.getSelectedTab() == -1 && panel.getTabCount() != 0) {
             panel.selectTab(0);
         }
     }

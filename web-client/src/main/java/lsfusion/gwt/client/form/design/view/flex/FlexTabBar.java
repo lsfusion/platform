@@ -17,20 +17,20 @@ import java.util.function.Consumer;
 
 /** based on from com.google.gwt.user.client.ui.TabBar */
 public class FlexTabBar extends Composite implements TabBar {
-    private static final String STYLENAME_DEFAULT = "gwt-TabBarItem";
 
     public interface Tab extends HasAllKeyHandlers, HasClickHandlers {
     }
 
-    private FlexPanel panel = new FlexPanel(false);
+    private final FlexPanel panel;
 
     private Widget selectedTab;
 
-    public FlexTabBar(Widget extraTabWidget) {
+    public FlexTabBar(Widget extraTabWidget, boolean vertical) {
+        panel = new FlexPanel(vertical);
         if (extraTabWidget == null) {
             initWidget(panel);
         } else {
-            FlexPanel tabBarContainer = new FlexPanel();
+            FlexPanel tabBarContainer = new FlexPanel(vertical);
             tabBarContainer.addFill(panel);
             tabBarContainer.add(extraTabWidget);
             initWidget(tabBarContainer);
@@ -39,8 +39,10 @@ public class FlexTabBar extends Composite implements TabBar {
         sinkEvents(Event.ONMOUSEDOWN);
 
         setStyleName("gwt-TabBar");
+        addStyleName("gwt-TabBar-" + (vertical ? "vert" : "horz"));
         panel.getElement().getStyle().setProperty("flexWrap", "wrap");
 
+        // first is to have an offset on the left, rest not sure what for
         Label first = new Label();
         Label rest = new Label();
 
@@ -82,7 +84,7 @@ public class FlexTabBar extends Composite implements TabBar {
         checkInsertBeforeTabIndex(beforeIndex);
 
         ClickDelegatePanel delWidget = new ClickDelegatePanel(widget);
-        delWidget.setStyleName(STYLENAME_DEFAULT);
+        delWidget.setStyleName("gwt-TabBarItem");
         delWidget.setHeight(StyleDefaults.VALUE_HEIGHT_STRING);
         final Style delWidgetStyle = delWidget.getElement().getStyle();
         delWidgetStyle.setDisplay(Style.Display.FLEX);
@@ -90,7 +92,7 @@ public class FlexTabBar extends Composite implements TabBar {
 
         panel.add(delWidget, beforeIndex + 1, GFlexAlignment.STRETCH);
 
-        setStyleName(DOM.getParent(delWidget.getElement()), STYLENAME_DEFAULT + "-wrapper", true);
+//        setStyleName(DOM.getParent(delWidget.getElement()), STYLENAME_DEFAULT + "-wrapper", true);
     }
 
     public void removeTab(int index) {
