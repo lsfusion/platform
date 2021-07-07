@@ -8,6 +8,7 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.view.FlexPanel;
+import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.form.event.GBindingEnv;
 import lsfusion.gwt.client.form.event.GKeyInputEvent;
 import lsfusion.gwt.client.form.event.GKeyStroke;
@@ -48,15 +49,13 @@ public class GFilterView extends FlexPanel implements GFilterConditionView.UIHan
         filterComponent = filter;
 
         FlexPanel mainContainer = new FlexPanel();
-        add(mainContainer);
-        setChildFlex(mainContainer, 1);
+        addFill(mainContainer, GFlexAlignment.START);
         addStyleName("userFiltersPanel");
 
         filterContainer = new FlexPanel();
 
-        mainContainer.add(filterContainer);
-        mainContainer.setChildFlex(filterContainer, 1);
-        
+        mainContainer.addFill(filterContainer, GFlexAlignment.START);
+
         FlexPanel buttonsPanel = new FlexPanel(); 
 
         addConditionButton = new GToolbarButton(ADD_ICON_PATH, messages.formQueriesFilterAddCondition()) {

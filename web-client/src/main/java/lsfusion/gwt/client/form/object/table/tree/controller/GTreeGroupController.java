@@ -17,7 +17,6 @@ import lsfusion.gwt.client.form.object.table.grid.user.design.view.GExpandTreeBu
 import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
 import lsfusion.gwt.client.form.object.table.tree.view.GTreeGridRecord;
 import lsfusion.gwt.client.form.object.table.tree.view.GTreeTable;
-import lsfusion.gwt.client.form.object.table.view.GridPanel;
 import lsfusion.gwt.client.form.property.*;
 import lsfusion.gwt.client.form.view.Column;
 

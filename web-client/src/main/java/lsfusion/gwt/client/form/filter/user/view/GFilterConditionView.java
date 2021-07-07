@@ -115,14 +115,15 @@ public class GFilterConditionView extends FlexPanel {
         compareView.setSelectedValue(condition.compare);
         addCentered(compareView);
 
-        valueView = new GDataFilterValueView(condition.value, condition.property, condition.columnKey, logicsSupplier) {
+        valueView = new GDataFilterValueView(condition.value, logicsSupplier) {
             @Override
             public void setFocused(boolean focused) {
                 GFilterConditionView.this.focused = focused;
             }
         };
-        handler.addEnterBinding(valueView.cell);
         addCentered(valueView);
+        valueView.changeProperty(condition.property, condition.columnKey); // it's important to do it after adding to the container because setStatic -> setBaseSize is called inside (and adding to container also calls it and override with default value)
+        handler.addEnterBinding(valueView.cell);
 
         deleteButton = new GToolbarButton(DELETE_ICON_PATH, messages.formQueriesFilterRemoveCondition()) {
             @Override

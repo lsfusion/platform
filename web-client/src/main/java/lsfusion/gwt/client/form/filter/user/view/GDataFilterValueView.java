@@ -20,13 +20,11 @@ public abstract class GDataFilterValueView extends ResizableSimplePanel {
 
     public GDataFilterPropertyValue cell;
 
-    public GDataFilterValueView(GDataFilterValue filterValue, GPropertyDraw property, GGroupObjectValue columnKey, GTableController logicsSupplier) {
+    public GDataFilterValueView(GDataFilterValue filterValue, GTableController logicsSupplier) {
         this.filterValue = filterValue != null ? filterValue : new GDataFilterValue();
         this.logicsSupplier = logicsSupplier;
 
         addStyleName("userFilterDataPropertyValue");
-
-        changeProperty(property, columnKey);
     }
 
     public void propertyChanged(GPropertyFilter condition) {
@@ -35,7 +33,7 @@ public abstract class GDataFilterValueView extends ResizableSimplePanel {
         changeProperty(condition.property, condition.columnKey);
     }
 
-    private void changeProperty(GPropertyDraw property, GGroupObjectValue columnKey) {
+    public void changeProperty(GPropertyDraw property, GGroupObjectValue columnKey) {
         cell = new GDataFilterPropertyValue(property, columnKey, logicsSupplier.getForm(), value -> valueChanged(value)) {
             @Override
             protected void onFocus(EventHandler handler) {
