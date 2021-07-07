@@ -52,7 +52,8 @@ FORM f
 
 printFWithD { PRINT f OBJECTS d=currentDate(); } // успешно выполнится
 
-printFWithoutD { PRINT f; } // фильтра для дат нет, а d IS DATE не NULL для бесконечного числа d, платформа выдаст ошибку
+// фильтра для дат нет, а d IS DATE не NULL для бесконечного числа d, платформа выдаст ошибку
+printFWithoutD { PRINT f; } 
 ```
 
 
@@ -61,5 +62,7 @@ printFWithoutD { PRINT f; } // фильтра для дат нет, а d IS DATE
 ```lsf
 hs = GROUP SUM 1 IF (a AS INTEGER) >= 4 AND a <= 6;
 messageHS  { MESSAGE hs(); } // теоретически должна выдать 3, но платформа все равно выдаст ошибку
-hi = GROUP SUM 1 IF iterate(a, 4, 6); // workaround: для работы с интервалами можно использовать свойство iterate (оно в свою очередь реализуется через рекурсию)
+// workaround: для работы с интервалами можно использовать свойство iterate
+// (оно в свою очередь реализуется через рекурсию)
+hi = GROUP SUM 1 IF iterate(a, 4, 6); 
 ```

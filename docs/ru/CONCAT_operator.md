@@ -30,5 +30,6 @@ firstName = DATA STRING[100] (Person);
 middleName = DATA STRING[100] (Person);
 lastName = DATA STRING[100] (Person);
 
-fullName(Person p) = CONCAT ' ', firstName(p), middleName(p), lastName(p);     // если какая-то часть имени не задана, то эта часть будет пропущена вместе с пробелом
+// если какая-то часть имени не задана, то эта часть будет пропущена вместе с пробелом
+fullName(Person p) = CONCAT ' ', firstName(p), middleName(p), lastName(p);     
 ```

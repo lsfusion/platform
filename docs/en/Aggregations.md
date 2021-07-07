@@ -28,6 +28,7 @@ CLASS Invoice 'Invoice';
 createShipment 'Create delivery' = DATA BOOLEAN (Invoice);
 date 'Shipment date' = DATA DATE (Invoice);
 CLASS ShipmentInvoice 'Delivery by invoice' : Shipment;
-shipment(Invoice invoice) = AGGR ShipmentInvoice WHERE createShipment(invoice); // creating a delivery by invoice, if the option for delivery creation is defined for the invoice
+// creating a delivery by invoice, if the option for delivery creation is defined for the invoice
+shipment(Invoice invoice) = AGGR ShipmentInvoice WHERE createShipment(invoice); 
 date(ShipmentInvoice si) += sum(date(invoice(si)),1); // delivery date = invoice date + 1
 ```

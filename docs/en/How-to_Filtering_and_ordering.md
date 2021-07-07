@@ -15,7 +15,8 @@ name 'Name' = DATA ISTRING[100] (Book);
 CLASS Stock 'Warehouse';
 name 'Name' = DATA ISTRING[100] (Stock);
 
-balance 'Balance' = DATA INTEGER (Book, Stock); // for example it is made a data property, although usually it is calculated
+// for example it is made a data property, although usually it is calculated
+balance 'Balance' = DATA INTEGER (Book, Stock); 
 ```
 
 We need to create a form to display the balances of books in a given stock in alphabetical order.

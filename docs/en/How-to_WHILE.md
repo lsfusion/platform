@@ -68,7 +68,8 @@ distributeDiscount 'Distribute discount' (Order o, NUMERIC[14,2] discount)  {
     leftSum(OrderDetail d) <- sum(d) WHERE order(d) == o;
 
     WHILE discount() > 0 DO {
-        FOR OrderDetail d == [ GROUP LAST OrderDetail od ORDER leftSum(od), od BY order(od)](o) DO { // finding the row with the largest "remaining" amount
+        // finding the row with the largest "remaining" amount
+        FOR OrderDetail d == [ GROUP LAST OrderDetail od ORDER leftSum(od), od BY order(od)](o) DO { 
             discountSum(d) <- MIN leftSum(d), discount();
             discount() <- discount() (-) discountSum(d);
         }

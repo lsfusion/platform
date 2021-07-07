@@ -56,7 +56,8 @@ testNewSession ()  {
         MESSAGE (GROUP SUM 1 IF local(Currency c) == 'Local'); // will return NULL
     }
     NEWSESSION NESTED (local) {
-        MESSAGE (GROUP SUM 1 IF local(Currency c) == 'Local'); // will return the number of objects of class Currency
+        // will return the number of objects of class Currency
+        MESSAGE (GROUP SUM 1 IF local(Currency c) == 'Local'); 
     }
 
     NEWSESSION {

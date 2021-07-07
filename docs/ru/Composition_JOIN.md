@@ -30,5 +30,6 @@ cathetus2 = DATA DOUBLE(Triangle);
 
 hypotenuseSq(triangle) = cathetus1(triangle)*cathetus1(triangle) + cathetus2(triangle)*cathetus2(triangle);
 
-hypotenuseSq2(triangle) = [ x*x + y*y](cathetus1(triangle), cathetus2(triangle)); // аналогичное свойство, заданное с помощью композиции
+// аналогичное свойство, заданное с помощью композиции
+hypotenuseSq2(triangle) = [ x*x + y*y](cathetus1(triangle), cathetus2(triangle)); 
 ```

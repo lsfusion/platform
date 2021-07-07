@@ -38,10 +38,13 @@ title: 'Оператор INTERNAL'
 ### Примеры
 
 ```lsf
-showOnMap 'Показать на карте'  INTERNAL  'lsfusion.server.logics.classes.data.utils.geo.ShowOnMapAction' (DOUBLE, DOUBLE, MapProvider, BPSTRING[100]);
+showOnMap 'Показать на карте' 
+    INTERNAL 'lsfusion.server.logics.classes.data.utils.geo.ShowOnMapAction' (DOUBLE, DOUBLE, MapProvider, BPSTRING[100]);
 
-serviceDBMT 'Обслуживание БД (многопоточно, threadCount, timeout)'  INTERNAL  'lsfusion.server.physics.admin.service.action.ServiceDBMultiThreadAction' (INTEGER, INTEGER) NULL;
+serviceDBMT 'Обслуживание БД (многопоточно, threadCount, timeout)' 
+    INTERNAL 'lsfusion.server.physics.admin.service.action.ServiceDBMultiThreadAction' (INTEGER, INTEGER) NULL;
 
-printlnAction 'Вывести текст в консоль'  INTERNAL  <{ System.out.println("action test"); }>;
-setNoCancelInTransaction()  INTERNAL  <{ context.getSession().setNoCancelInTransaction(true); }>; // здесь context - это параметр метода executeInternal
+printlnAction 'Вывести текст в консоль' INTERNAL <{ System.out.println("action test"); }>;
+// здесь context - это параметр метода executeInternal
+setNoCancelInTransaction() INTERNAL <{ context.getSession().setNoCancelInTransaction(true); }>; 
 ```
