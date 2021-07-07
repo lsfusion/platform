@@ -43,6 +43,7 @@ sku = DATA Sku (OrderDetail);
 in = DATA BOOLEAN (Sku, Customer);
 
 CONSTRAINT sku(OrderDetail d) AND NOT in(sku(d), customer(order(d)))
-    CHECKED BY sku[OrderDetail] // a filter by available sku when selecting an item for an order line will be applied
+    // a filter by available sku when selecting an item for an order line will be applied
+    CHECKED BY sku[OrderDetail] 
     MESSAGE 'In the order, a product unavailable to the user is selected for the selected customer';
 ```

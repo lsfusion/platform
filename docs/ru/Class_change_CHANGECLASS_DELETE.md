@@ -30,7 +30,8 @@ deleteObject(obj)  { DELETE obj; }
 CLASS Article;
 active = DATA BOOLEAN (Article);
 deleteInactiveArticles()  {
-    DELETE Article a WHERE a IS Article AND NOT active(a); // добавляется локальный параметр a, соответствующий перебираемым объектам
+    // добавляется локальный параметр a, соответствующий перебираемым объектам
+    DELETE Article a WHERE a IS Article AND NOT active(a); 
 }
 ```
 

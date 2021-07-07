@@ -30,7 +30,8 @@ hostTeam = DATA Team (Game);
 hostGoalsScored(team) = GROUP SUM hostGoals(Game game) BY hostTeam(game);
 
 name = DATA STRING[100] (Country);
-countryName = GROUP AGGR Country country WHERE country IS Country BY name(country); // property (STRING[100]) -> Country is obtained
+// property (STRING[100]) -> Country is obtained
+countryName = GROUP AGGR Country country WHERE country IS Country BY name(country); 
 
 CLASS Book;
 CLASS Tag;

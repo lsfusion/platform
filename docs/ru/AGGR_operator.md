@@ -61,6 +61,7 @@ CLASS Invoice 'Инвойс';
 createShipment 'Создавать поставку' = DATA BOOLEAN (Invoice);
 date 'Дата накладной' = DATA DATE (Invoice);
 CLASS ShipmentInvoice 'Поставка по инвойсу' : Shipment;
-shipment(Invoice invoice) = AGGR ShipmentInvoice WHERE createShipment(invoice); // создаем поставку по инвойсу, если для инвойса задана опция создавать поставку
+// создаем поставку по инвойсу, если для инвойса задана опция создавать поставку
+shipment(Invoice invoice) = AGGR ShipmentInvoice WHERE createShipment(invoice); 
 date(ShipmentInvoice si) += sum(date(invoice(si)),1); // дата поставки = дата инвойса + 1
 ```

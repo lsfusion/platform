@@ -89,16 +89,24 @@ testExportFile = DATA FILE ();
 externalHTTP()  {
     EXTERNAL HTTP GET 'https://www.cs.cmu.edu/~chuck/lennapg/len_std.jpg' TO exportFile;
     open(exportFile());
-
-    EXTERNAL HTTP 'http://tryonline.lsfusion.org/exec?action=getExamples' PARAMS JSONFILE('\{"mode"=1,"locale"="en"\}') TO exportFile; // braces are escaped') TO exportFile; // braces are escaped as they are used in internationalization
+    // braces are escaped as they are used in internationalization
+    EXTERNAL HTTP 'http://tryonline.lsfusion.org/exec?action=getExamples' 
+             PARAMS JSONFILE('\{"mode"=1,"locale"="en"\}') TO exportFile; 
     IMPORT FROM exportFile() FIELDS () TEXT caption, TEXT code DO
         MESSAGE 'Example : ' + caption + ', code : ' + code;
 
-    EXTERNAL HTTP 'http://tryonline.lsfusion.org/exec?action=doSomething&someprm=$1' BODYURL 'otherprm=$2&andonemore=$3' PARAMS 1,2,'3'; // passes the second and third parameters to BODY url-encoded
+    // passes the second and third parameters to BODY url-encoded
+    EXTERNAL HTTP 'http://tryonline.lsfusion.org/exec?action=doSomething&someprm=$1' 
+             BODYURL 'otherprm=$2&andonemore=$3' PARAMS 1,2,'3'; 
 }
 externalSQL ()  {
-    EXPORT TABLE FROM bc=barcode(Article a) WHERE name(a) LIKE '%Meat%'; // getting all barcodes of products with the name meat
-    EXTERNAL SQL 'jdbc:mysql://$1/test?user=root&password=' EXEC 'select price AS pc, articles.barcode AS brc from $2 x JOIN articles ON x.bc=articles.barcode' PARAMS 'localhost',exportFile() TO exportFile; // reading prices for read barcodes
+    // getting all barcodes of products with the name meat
+    EXPORT TABLE FROM bc=barcode(Article a) WHERE name(a) LIKE '%Meat%';
+    // reading prices for read barcodes 
+    EXTERNAL SQL 'jdbc:mysql://$1/test?user=root&password=' 
+             EXEC 'select price AS pc, articles.barcode AS brc from $2 x JOIN articles ON x.bc=articles.barcode' 
+             PARAMS 'localhost', exportFile() 
+             TO exportFile; 
 
     // writing prices for all products with received barcodes
     LOCAL price = INTEGER (INTEGER);

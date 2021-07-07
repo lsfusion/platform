@@ -27,17 +27,20 @@ CLASS Team;
 wins(team) = DATA INTEGER(Team);
 ties(team) = DATA INTEGER(Team);
 
-points(Team team) = wins(team) * 3 + ties(team); // The number of points received by the team for the matches played
+// The number of points received by the team for the matches played
+points(Team team) = wins(team) * 3 + ties(team); 
 // In this case, the expression is written to the right of the equal sign. It defines a new property called points.
-// When calculating the expression, two JOIN operators are first executed: wins(team) and ties(team), substituting the team parameter in the wins and ties properties
-// Then the multiplication operator will be executed, which will build a property that returns a number equal to the product of the return value of wins(team) and the number 3
-// Then the addition operator will be executed, which will create a property that sums the return values (wins(team) * 3) and ties(team)
-// The resulting property will be the result of the expression
+// When calculating the expression, two JOIN operators are first executed: wins(team) and ties(team), substituting 
+// the team parameter in the wins and ties properties. Then the multiplication operator will be executed, 
+// which will build a property that returns a number equal to the product of the return value of wins(team) 
+// and the number 3. Then the addition operator will be executed, which will create a property that sums the return
+// values (wins(team) * 3) and ties(team). The resulting property will be the result of the expression.
 
 CLASS Game;
 CLASS BonusGame : Game;
 
-gamePoints(Game game) = 2 (+) (1 IF game IS BonusGame); // The number of points per game. If the game is bonus, then 3, otherwise 2.
+// The number of points per game. If the game is bonus, then 3, otherwise 2.
+gamePoints(Game game) = 2 (+) (1 IF game IS BonusGame); 
 // In this example, the order of execution of the operators will be as follows: IS, IF, (+)
 ```
 

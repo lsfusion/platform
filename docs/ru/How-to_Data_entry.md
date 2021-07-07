@@ -25,9 +25,11 @@ NAVIGATOR {
 
 ```lsf
 changeName(Book b)  {
-     INPUT s = ISTRING[100] // вводим ISTRING[100] "в параметр" s (автоматически оборачивается в REQUEST, то есть доступны групповая корректировки, PASTE и т.п.)
-                     DO // проверка на requestCanceled
-                          name(b) <- s;
+    // вводим ISTRING[100] "в параметр" s 
+    // (автоматически оборачивается в REQUEST, то есть доступны групповая корректировки, PASTE и т.п.)
+    INPUT s = ISTRING[100] 
+        DO // проверка на requestCanceled
+            name(b) <- s;
 }
 
 EXTEND FORM books
@@ -94,13 +96,17 @@ NAVIGATOR {
 
 ```lsf
 changeNameBook(Genre g, Order o)  {
-          DIALOG booksByGenre OBJECTS // (автоматически оборачивается в REQUEST, то есть доступны групповая корректировки, PASTE и т.п.)
-                g = g NULL, // разрешен NULL на входе
-                b = book(o) NULL INPUT bk NULL CONSTRAINTFILTER
-                    // book(o) NULL - подставляем book(o) на вход (при необходимости можно не указывать вход, то есть писать просто b INPUT ..., что в свою очередь эквивалентно b=NULL NULL INPUT ...)
-                    // INPUT b NULL - возвращаем значение этого объекта "в параметр" bk (разрешен возврат NULL то есть будет кнопка сбросить). Так как не указана опция TO, результат будет записан в requestedObject
-                    // CONSTRAINTFILTER - учитываем для объекта b ограничения из предположения что результат будет записан в свойство передаваемое на вход (в данном случае book(o),
-                    // при необходимости можно задать другое выражение в виде CONSTRAINTFILTER = dataBook(o)
+    // (автоматически оборачивается в REQUEST, то есть доступны групповая корректировки, PASTE и т.п.)
+    DIALOG booksByGenre OBJECTS 
+        g = g NULL, // разрешен NULL на входе
+        b = book(o) NULL INPUT bk NULL CONSTRAINTFILTER
+        // book(o) NULL - подставляем book(o) на вход (при необходимости можно не указывать вход,
+        //   то есть писать просто b INPUT ..., что в свою очередь эквивалентно b=NULL NULL INPUT ...)
+        // INPUT bk NULL - возвращаем значение этого объекта "в параметр" bk (разрешен возврат NULL то есть
+        //   будет кнопка сбросить). Так как не указана опция TO, результат будет записан в requestedObject
+        // CONSTRAINTFILTER - учитываем для объекта b ограничения из предположения что результат будет записан
+        //   в свойство, передаваемое на вход (в данном случае book(o)), при необходимости можно задать 
+        //   другое выражение в виде CONSTRAINTFILTER = dataBook(o)
     DO // проверка на requestCanceled
         book(o) <- bk;
 }

@@ -17,7 +17,12 @@ To declare a property using a custom formula, use the [`FORMULA` operator](FORMU
 ### Examples
 
 ```lsf
-round(number, digits) = FORMULA 'round(CAST(($1) as numeric),$2)';  // a property with two parameters: a rounded number and the number of decimal places
-toString15(str) = FORMULA BPSTRING[15] 'CAST($1 AS character(15))';   // a property that converts the value passed as an argument to a 15-character string.
-jumpWorkdays = FORMULA NULL DATE PG 'jumpWorkdays($1, $2, $3)', MS 'dbo.jumpWorkdays($1, $2, $3)'; // a property with two different implementations for different SQL dialects
+// a property with two parameters: a rounded number and the number of decimal places
+round(number, digits) = FORMULA 'round(CAST(($1) as numeric),$2)';
+  
+// a property that converts the value passed as an argument to a 15-character string.
+toString15(str) = FORMULA BPSTRING[15] 'CAST($1 AS character(15))';
+   
+// a property with two different implementations for different SQL dialects
+jumpWorkdays = FORMULA NULL DATE PG 'jumpWorkdays($1, $2, $3)', MS 'dbo.jumpWorkdays($1, $2, $3)'; 
 ```

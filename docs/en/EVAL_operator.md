@@ -31,8 +31,12 @@ The code that is passed should consist of a sequence of [statements](Statements.
 ### Examples
 
 ```lsf
-addProperty  { EVAL ACTION 'MESSAGE \'Hello World\''; }  // source code consisting of one statement is specified with a string constant
+// source code consisting of one statement is specified with a string constant
+addProperty  { EVAL ACTION 'MESSAGE \'Hello World\''; }  
 
-code 'Source code' = DATA BPSTRING[2000] ();              // a property to which the user can enter the source code
-execute 'Execute code'  { EVAL code(); }      // the action executing this code
+// a property to which the user can enter the source code
+code 'Source code' = DATA BPSTRING[2000] ();
+
+// the action executing this code              
+execute 'Execute code'  { EVAL code(); }
 ```

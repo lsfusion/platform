@@ -28,13 +28,13 @@ The key features that implement the extension technique are the [`ABSTRACT` oper
 ### Examples
 
 ```lsf
-exportXls 'Export to Excel'  ABSTRACT CASE ( Order);         // In this case, ABSTRACT CASE OVERRIDE LAST is created
+exportXls 'Export to Excel' ABSTRACT CASE (Order); // ABSTRACT CASE OVERRIDE LAST is created        
 exportXls (Order o) + WHEN name(currency(o)) == 'USD' THEN {
     MESSAGE 'Export USD not implemented';
 }
 
 CLASS Task;
-run 'Execute'  ABSTRACT ( Task);                           // ABSTRACT MULTI EXCLUSIVE
+run 'Execute' ABSTRACT (Task); // ABSTRACT MULTI EXCLUSIVE
 
 CLASS Task1 : Task;
 name = DATA STRING[100] (Task);
@@ -48,7 +48,7 @@ price = DATA NUMERIC[14,2] (OrderDetail);
 
 CLASS InvoiceDetail;
 price = DATA NUMERIC[14,2] (InvoiceDetail);
-fill  ABSTRACT LIST ( OrderDetail, InvoiceDetail);   // ABSTRACT LIST LAST
+fill ABSTRACT LIST (OrderDetail, InvoiceDetail); // ABSTRACT LIST LAST
 
 fill (OrderDetail od, InvoiceDetail id) + {
     price(id) <- price(od);
