@@ -24,6 +24,8 @@ import lsfusion.gwt.client.form.event.GKeyInputEvent;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
+import lsfusion.gwt.client.form.object.panel.controller.GPropertyPanelController;
+import lsfusion.gwt.client.form.object.table.controller.GPropertyController;
 import lsfusion.gwt.client.form.property.async.GAsyncChange;
 import lsfusion.gwt.client.form.property.async.GAsyncEventExec;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
@@ -88,6 +90,10 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         return externalChangeType;
     }
 
+    public boolean hasColumnGroupObjects() {
+        return columnGroupObjects != null && !columnGroupObjects.isEmpty();
+    }
+
     public GType getChangeType() {
         GAsyncEventExec asyncExec = getAsyncEventExec(ServerResponse.CHANGE);
         return asyncExec instanceof GAsyncChange ? ((GAsyncChange) asyncExec).changeType : null;
@@ -118,7 +124,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public GCompare getDefaultCompare() {
         return defaultCompare != null ? defaultCompare : baseType.getDefaultCompare();
     }
-    
+
     public GCompare[] getFilterCompares() {
         return baseType.getFilterCompares();
     }
@@ -211,8 +217,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
     public GPropertyDraw(){}
 
-    public PanelRenderer createPanelRenderer(GFormController form, ActionOrPropertyValueController controller, GGroupObjectValue columnKey) {
-        return baseType.createPanelRenderer(form, controller, this, columnKey);
+    public PanelRenderer createPanelRenderer(GFormController form, ActionOrPropertyValueController controller, GGroupObjectValue columnKey, GPropertyPanelController.CaptionContainer captionContainer) {
+        return baseType.createPanelRenderer(form, controller, this, columnKey, captionContainer);
     }
 
     public CellRenderer getCellRenderer() {

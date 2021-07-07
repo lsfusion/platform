@@ -245,12 +245,13 @@ input[type=checkbox]:focus {
 /* ------------ Panel Renderer related styles ------------ */
 .dataPanelRendererPanel {
     white-space: nowrap;
-    cursor: default;
+
+    cursor: default; /* need this since text by default gets "editing" cursor, however it overrides for example resize cursor, but it's not clear what to do with it */
 }
 
 .panelRendererValue, button {
     background: var(--component-background-color);
-    border: 1px solid var(--component-border-color);
+    border: 1px solid var(--component-border-color); /* should correspond to the result in ActionOrPropertyValue.setBaseSize */
 }
 
 .propertyPanelRendererValue {
@@ -277,16 +278,14 @@ input[type=checkbox]:focus {
 
 /* ------------ Caption panel ------------ */
 .captionPanel {
-    padding-top: 1px;
-}
-
-.captionPanelContainer {
-    overflow: visible;
     position: relative;
-    border: 1px solid var(--panel-border-color);
     margin: 9px 1px 1px 1px;
-    padding: 2px 1px 1px 1px;
+
+    padding: 1px;
+    border: 1px solid var(--panel-border-color);
     border-radius: var(--panel-border-radius);
+
+    padding-top: 3px;
 }
 
 .captionPanelLegend {
@@ -294,6 +293,7 @@ input[type=checkbox]:focus {
     top: -1.0em;
     left: 0.25em;
     white-space: nowrap;
+    margin-top: 1px;
     padding: 0 0.25em;
     background-color: var(--background-color);
     color: var(--caption-panel-legend-color);

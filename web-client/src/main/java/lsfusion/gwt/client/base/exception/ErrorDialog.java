@@ -7,7 +7,6 @@ import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
-import lsfusion.gwt.client.base.view.ResizableModalWindow;
 import lsfusion.gwt.client.base.view.ResizableSystemModalWindow;
 import lsfusion.gwt.client.form.design.view.flex.FlexTabbedPanel;
 
@@ -33,13 +32,13 @@ public class ErrorDialog extends ResizableSystemModalWindow {
                 TextArea javaTA = new TextArea();
                 javaTA.addStyleName("errorBox-stackBox");
                 javaTA.setText(javaStack);
-                stacksPanel.add(javaTA, "Java");
+                stacksPanel.addTab(javaTA, "Java");
             }
             if (lsfStack != null) {
                 TextArea lsfTA = new TextArea();
                 lsfTA.addStyleName("errorBox-stackBox");
                 lsfTA.setText(lsfStack);
-                stacksPanel.add(lsfTA, "LSF");
+                stacksPanel.addTab(lsfTA, "LSF");
             }
             stacksPanel.selectTab(0);
             stacksPanel.setVisible(false);

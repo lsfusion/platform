@@ -13,6 +13,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
@@ -20,6 +21,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static lsfusion.base.DateConverter.sqlTimestampToLocalDateTime;
 import static lsfusion.base.file.WriteUtils.appendExtension;
@@ -299,18 +302,22 @@ public class FileUtils {
         });
     }
 
-    public static List<Object> listFiles(String sourcePath, String charset) {
+    public static List<Object> listFiles(String sourcePath, boolean recursive) throws IOException {
         Path path = Path.parsePath(sourcePath);
         List<Object> filesList;
         switch (path.type) {
             case "file":
-                filesList = listFilesFile(path.path);
+                filesList = listFilesFile(path.path, recursive);
                 break;
             case "ftp":
-                filesList = listFilesFTP(path.path, charset);
+                if(recursive)
+                    throw new RuntimeException("ListFiles recursive is not supported for FTP");
+                filesList = listFilesFTP(path.path);
                 break;
             case "sftp":
-                filesList = listFilesSFTP(path.path, charset);
+                if(recursive)
+                    throw new RuntimeException("ListFiles recursive is not supported for SFTP");
+                filesList = listFilesSFTP(path.path);
                 break;
             default:
                 throw new RuntimeException("ListFiles unsupported type " + path.type);
@@ -318,29 +325,32 @@ public class FileUtils {
         return filesList;
     }
 
-    private static List<Object> listFilesFile(String url) {
+    private static List<Object> listFilesFile(String url, boolean recursive) throws IOException {
         List<Object> result;
 
-        File[] filesList = new File(url).listFiles();
-        if (filesList != null) {
-            String[] nameValues = new String[filesList.length];
-            Boolean[] isDirectoryValues = new Boolean[filesList.length];
-            LocalDateTime[] modifiedDateTimeValues = new LocalDateTime[filesList.length];
-            for (int i = 0; i < filesList.length; i++) {
-                File file = filesList[i];
-                nameValues[i] = file.getName();
-                isDirectoryValues[i] = file.isDirectory() ? true : null;
-                modifiedDateTimeValues[i] = sqlTimestampToLocalDateTime(new Timestamp(file.lastModified()));
+        java.nio.file.Path urlPath = Paths.get(url);
+        if (Files.exists(urlPath)) {
+            try (Stream<java.nio.file.Path> pathStream = (recursive ? Files.walk(urlPath) : Files.list(urlPath)).filter(path -> !path.equals(urlPath))) {
+                List<java.nio.file.Path> pathList = pathStream.collect(Collectors.toList());
+                String[] nameValues = new String[pathList.size()];
+                Boolean[] isDirectoryValues = new Boolean[pathList.size()];
+                LocalDateTime[] modifiedDateTimeValues = new LocalDateTime[pathList.size()];
+                for (int i = 0; i < pathList.size(); i++) {
+                    File file = pathList.get(i).toFile();
+                    nameValues[i] = urlPath.relativize(pathList.get(i)).toFile().getPath();
+                    isDirectoryValues[i] = file.isDirectory() ? true : null;
+                    modifiedDateTimeValues[i] = sqlTimestampToLocalDateTime(new Timestamp(file.lastModified()));
+                }
+                result = Arrays.asList(nameValues, isDirectoryValues, modifiedDateTimeValues);
             }
-            result = Arrays.asList(nameValues, isDirectoryValues, modifiedDateTimeValues);
         } else {
             throw new RuntimeException(String.format("Path '%s' not found", url));
         }
         return result;
     }
 
-    private static List<Object> listFilesFTP(String path, String charset) {
-        return IOUtils.ftpAction(path, charset, (ftpPath, ftpClient) -> {
+    private static List<Object> listFilesFTP(String path) {
+        return IOUtils.ftpAction(path, (ftpPath, ftpClient) -> {
             try {
                 if (ftpPath.remoteFile == null || ftpPath.remoteFile.isEmpty() || ftpClient.changeWorkingDirectory(ftpPath.remoteFile)) {
                     FTPFile[] ftpFileList = ftpClient.listFiles();
@@ -363,8 +373,8 @@ public class FileUtils {
         });
     }
 
-    private static List<Object> listFilesSFTP(String path, String charset) {
-        return IOUtils.sftpAction(path, charset, (ftpPath, channelSftp) -> {
+    private static List<Object> listFilesSFTP(String path) {
+        return IOUtils.sftpAction(path, (ftpPath, channelSftp) -> {
             try {
                 Vector result = channelSftp.ls(ftpPath.remoteFile); //list files throws exception if file/directory not found
                 List<String> nameValues = new ArrayList<>();

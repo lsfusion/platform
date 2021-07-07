@@ -4,6 +4,7 @@ import com.google.gwt.dom.client.*;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.FocusWidget;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.form.controller.GFormController;
@@ -71,13 +72,14 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
 
     // when we don't want property value (it's content) to influence on layouting, and in particular flex - basis
     // so we use absolute positioning for that (and not width 100%, or writing to div itself)
-    public void setStatic(ResizableMainPanel panel, boolean isProperty) { // assert that panel is resizable, panel and not resizable simple panel, since we want to append corners also to that panel (and it is not needed for it to be simple)
+    public Pair<Integer, Integer> setStatic(ResizableMainPanel panel, boolean isProperty) { // assert that panel is resizable, panel and not resizable simple panel, since we want to append corners also to that panel (and it is not needed for it to be simple)
         panel.setMain(this);
         setupFillParent(getElement());
         borderWidget = panel.getPanelWidget();
 
-        setBaseSize(isProperty);
+        return setBaseSize(isProperty);
     }
+    // auto sized property with value
     public void setDynamic(ResizableMainPanel panel, boolean isProperty) {
         panel.setMain(this);
         com.google.gwt.dom.client.Element element = getElement();
@@ -87,13 +89,14 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
 
         setBaseSize(isProperty);
     }
+    // auto sized action with caption
     public void setDynamic(boolean isProperty) {
         borderWidget = this;
 
         setBaseSize(isProperty);
     }
 
-    public void setBaseSize(boolean isProperty) {
+    public Pair<Integer, Integer> setBaseSize(boolean isProperty) {
         // we have to set border for border element and not element itself, since absolute positioning include border INSIDE div, and default behaviour is OUTSIDE
         borderWidget.addStyleName("panelRendererValue");
         if(isProperty)
@@ -103,9 +106,12 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
 
         // if widget is wrapped into absolute positioned simple panel, we need to include paddings (since borderWidget doesn't include them)
         boolean isStatic = borderWidget != this;
-        FlexPanel.setBaseSize(borderWidget,
-                isStatic ? property.getValueWidthWithPadding(null) : property.getValueWidth(null),
-                isStatic ? property.getValueHeightWithPadding(null ) : property.getValueHeight(null));
+        int valueWidth = isStatic ? property.getValueWidthWithPadding(null) : property.getValueWidth(null);
+        int valueHeight = isStatic ? property.getValueHeightWithPadding(null) : property.getValueHeight(null);
+        // about the last parameter oppositeAndFixed, here it's tricky since we don't know where this borderWidget will be added, however it seems that all current stacks assume that they are added with STRETCH alignment
+        FlexPanel.setBaseSize(borderWidget, false, valueWidth);
+        FlexPanel.setBaseSize(borderWidget, true, valueHeight);
+        return new Pair<>(valueWidth + 2, valueHeight + 2); // should correspond to margins (now border : 1px which equals to 2px) in panelRendererValue style
     }
 
     @Override

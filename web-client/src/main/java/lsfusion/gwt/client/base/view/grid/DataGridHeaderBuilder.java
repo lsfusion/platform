@@ -66,12 +66,16 @@ public abstract class DataGridHeaderBuilder<T> implements HeaderBuilder<T> {
         if (columnsChanged || rowCount == 0) {
             if (rowCount != 0) {
                 assert rowCount == 1;
-                headerElement.getRows().getItem(0).removeFromParent();
+                getHeaderRow().removeFromParent();
             }
             buildHeaderImpl(headerElement.insertRow(0));
         } else {
-            updateHeaderImpl(headerElement.getRows().getItem(0));
+            updateHeaderImpl(getHeaderRow());
         }
+    }
+
+    public TableRowElement getHeaderRow() {
+        return headerElement.getRows().getItem(0);
     }
 
     protected abstract void buildHeaderImpl(TableRowElement tr);

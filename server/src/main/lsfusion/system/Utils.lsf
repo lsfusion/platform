@@ -11,10 +11,11 @@ fileName '{utils.file.name.integer}' = DATA LOCAL ISTRING[500] (INTEGER);
 fileIsDirectory '{utils.file.is.directory.integer}' = DATA LOCAL BOOLEAN (INTEGER);
 fileModifiedDateTime '{utils.file.modified.datetime.integer}' = DATA LOCAL DATETIME (INTEGER);
 
-//path, charset, isClient
-//todo: во всех использованиях с кастомной кодировкой вписать кодировку в строку подключения, чтобы можно было убрать  charset из параметров
-listFiles '{utils.list.files}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.ListFilesAction' (ISTRING[500], ISTRING[10], BOOLEAN); 
-listFiles '{utils.list.files}' (ISTRING[500] path)  { listFiles(path, 'UTF-8', NULL); }
+//path, recursive, isClient
+listFiles '{utils.list.files}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.ListFilesAction' (ISTRING, BOOLEAN, BOOLEAN); 
+listFiles '{utils.list.files}' (ISTRING[500] path, BOOLEAN recursive)  { listFiles(path, recursive, NULL); }
+listFiles '{utils.list.files}' (ISTRING[500] path)  { listFiles(path, NULL, NULL); }
+listFilesClient '{utils.list.files.client}' (ISTRING[500] path, BOOLEAN recursive)  { listFiles(path, recursive, TRUE); }
 listFilesClient '{utils.list.files.client}' (ISTRING[500] path)  { listFiles(path, NULL, TRUE); }
 
 // ------------------------------ Проверка существования файла по пути ------------------------------ //

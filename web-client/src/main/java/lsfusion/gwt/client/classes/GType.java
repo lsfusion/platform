@@ -6,6 +6,7 @@ import lsfusion.gwt.client.form.design.GFontMetrics;
 import lsfusion.gwt.client.form.design.GFontWidthString;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
+import lsfusion.gwt.client.form.object.panel.controller.GPropertyPanelController;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.async.GInputList;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
@@ -20,8 +21,8 @@ import java.io.Serializable;
 import java.text.ParseException;
 
 public abstract class GType implements Serializable {
-    public PanelRenderer createPanelRenderer(GFormController form, ActionOrPropertyValueController controller, GPropertyDraw property, GGroupObjectValue columnKey) {
-        return new PropertyPanelRenderer(form, controller, property, columnKey);
+    public PanelRenderer createPanelRenderer(GFormController form, ActionOrPropertyValueController controller, GPropertyDraw property, GGroupObjectValue columnKey, GPropertyPanelController.CaptionContainer captionContainer) {
+        return new PropertyPanelRenderer(form, controller, property, columnKey, captionContainer);
     }
 
     public abstract CellRenderer createGridCellRenderer(GPropertyDraw property);

@@ -5,6 +5,7 @@ import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.SftpException;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.xwpf.usermodel.*;
 
 import java.io.*;
 
@@ -63,8 +64,18 @@ public class WriteUtils {
                             destinationWB.write(fos);
                     }
                     break;
+                case "docx": {
+                    try (XWPFDocument sourceDoc = new XWPFDocument(fileData.getInputStream());
+                         XWPFDocument destinationDoc = new XWPFDocument(new FileInputStream(file));
+                         FileOutputStream fos = new FileOutputStream(file)) {
+                            CopyWordUtil.copyXWPFDocument(sourceDoc, destinationDoc);
+                            destinationDoc.write(fos);
+                    }
+                }
+                break;
+
                 default:
-                    throw new RuntimeException("APPEND is supported only for csv, txt, xls, xlsx files");
+                    throw new RuntimeException("APPEND is supported only for csv, txt, xls, xlsx, docx files");
             }
         } else {
             fileData.write(file);

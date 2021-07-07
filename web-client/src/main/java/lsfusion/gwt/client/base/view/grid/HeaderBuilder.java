@@ -16,6 +16,7 @@
 package lsfusion.gwt.client.base.view.grid;
 
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.TableRowElement;
 
 /**
  * Builds the DOM elements for the header section of a CellTable. It also
@@ -43,4 +44,5 @@ public interface HeaderBuilder<T> {
      */
     Header<?> getHeader(Element elem);
 
+    TableRowElement getHeaderRow();
 }

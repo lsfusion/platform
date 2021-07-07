@@ -168,4 +168,10 @@ public class ClientModalForm extends JDialog {
             return preferredSize;
         }
     }
+
+    public void directProcessKeyEvent(KeyEvent e) {
+        if (form != null && !form.isEditing()) {
+            form.getLayout().directProcessKeyEvent(e);
+        }
+    }
 }

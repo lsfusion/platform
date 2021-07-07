@@ -2,34 +2,38 @@ package lsfusion.gwt.client.base.view;
 
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.base.Dimension;
 import lsfusion.gwt.client.base.EscapeUtils;
+import lsfusion.gwt.client.base.GwtClientUtils;
 
 public class CaptionPanel extends FlexPanel {
-    protected final Widget content;
     protected final Label legend;
 
-    public CaptionPanel(String caption, Widget content) {
-        super(true);
-
-        this.content = content;
+    public CaptionPanel(String caption, boolean vertical) {
+        super(vertical);
 
         legend = new Label(EscapeUtils.unicodeEscape(caption));
-
-        FlexPanel innerPanel = new FlexPanel(true);
-        innerPanel.add(legend);
-        innerPanel.addFill(content);
-
-        addFill(innerPanel);
-        
-        // если контейнеру с заголовком дали меньший размер (высоту), чем у содержимого, получалось, что верхний контейнер (с border'ом)
-        // грубо обрезался этим промежуточным контейнером, который получал размер содержимого. позволяем ему сжиматься, чтобы наружу 
-        // выходила только часть внутреннего контейнера
-        innerPanel.getElement().getStyle().setProperty("flexShrink", "1");
+        legend.setStyleName("captionPanelLegend");
+        add(legend);
 
         setStyleName("captionPanel");
-        innerPanel.setStyleName("captionPanelContainer");
-        legend.setStyleName("captionPanelLegend");
+    }
+    public CaptionPanel(String caption, Widget content) {
+        this(caption, true);
 
-        innerPanel.getElement().getStyle().clearOverflow();
+        addFillFlex(content, null);
+    }
+
+    @Override
+    public Dimension getMaxPreferredSize() {
+        return adjustMaxPreferredSize(GwtClientUtils.calculateMaxPreferredSize(getWidget(1))); // assuming that there are only 2 widgets, and the second is the main widget
+    }
+
+    public Dimension adjustMaxPreferredSize(Dimension dimension) {
+        return new Dimension(dimension.width + 5, dimension.height + legend.getOffsetHeight() + 5);
+    }
+
+    public void setCaption(String title) {
+        legend.setText(EscapeUtils.unicodeEscape(title));
     }
 }

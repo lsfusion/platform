@@ -15,8 +15,6 @@ import lsfusion.server.logics.action.session.LocalNestedType;
 import lsfusion.server.logics.classes.data.LogicalClass;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerIdentitySerializable;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
-import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
-import lsfusion.server.logics.form.interactive.design.object.GridView;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.PropertyFact;
@@ -41,23 +39,41 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
 
     public ComponentDesign design = new ComponentDesign();
 
-    public Dimension size;
+    public Dimension size = new Dimension(-2, -2);
     
     public boolean autoSize = false;
 
     protected Double flex = null;
     private FlexAlignment alignment = null;
 
-    public Dimension getSize() {
-        if(size == null) {
-            ContainerView container = getLayoutParamContainer();
-            if(container != null) {
-                if(container.isSplitHorizontal())
-                    return new Dimension(1, -1);
-                if(container.isSplitVertical())
-                    return new Dimension(-1, 1);
+    public Dimension getSize(FormEntity entity) {
+        int height = size.height;
+        int width = size.width;
+        if(height != -2 && width != -2) // optimization
+            return size;
+
+        ContainerView container = getLayoutParamContainer();
+        if(container != null) {
+            FlexAlignment alignment = getAlignment(entity);
+            if(alignment == FlexAlignment.STRETCH) { // for stretch size = 0 is more predictable (it gives scroll only for that block, not the whole container)
+                // container with a single element is usually created for a scroll, and in that case it makes sense to have it auto sized
+                // for tabpane always has tab bar visible, so there are at least two elements and default size 0 gives more predictable behaviour
+                if(height == -2 && container.isHorizontal() && (container.getChildrenList().size() > 1 || container.isTabbedPane()))
+                    height = 0;
+                if(width == -2 && container.isVertical() && (container.getChildrenList().size() > 1 || container.isTabbedPane()))
+                    width = 0;
             }
+            if(width == -2 && container.isSplitHorizontal())
+                width = 0;
+            if(height == -2 && container.isSplitVertical())
+                height = 0;
         }
+        if(height == -2)
+            height = -1;
+        if(width == -2)
+            width = -1;
+        size = new Dimension(width, height);
+
         return size;
     }
     
@@ -146,19 +162,11 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
     }
 
     public void setHeight(int prefHeight) {
-        if (this.size == null) {
-            this.size = new Dimension(-1, prefHeight);
-        } else {
-            this.size.height = prefHeight;
-        }
+        this.size.height = prefHeight;
     }
 
     public void setWidth(int prefWidth) {
-        if (this.size == null) {
-            this.size = new Dimension(prefWidth, -1);
-        } else {
-            this.size.width = prefWidth;
-        }
+        this.size.width = prefWidth;
     }
 
     public void setMarginTop(int marginTop) {
@@ -276,7 +284,7 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         pool.writeObject(outStream, design);
         pool.serializeObject(outStream, getContainer());
 
-        pool.writeObject(outStream, getSize());
+        pool.writeObject(outStream, getSize(pool.context.entity));
         
         outStream.writeBoolean(autoSize);
 

@@ -615,8 +615,12 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
 
         int selectedColumn = getSelectedColumn();
         // Decrement the keyboard selected column.
-        if (index <= selectedColumn)
-            setSelectedColumn(selectedColumn - 1);
+        if (index <= selectedColumn) {
+            if (selectedColumn == 0 && columns.size() > 0)
+                setSelectedColumn(0);
+            else
+                setSelectedColumn(selectedColumn - 1);
+        }
     }
 
     /**
@@ -777,7 +781,7 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
     }
 
     public void setSelectedColumn(int column) {
-        assert column >= 0 : "Column must be zero or greater";
+        assert column >= 0 || columns.size() == 0 : "Column must be zero or greater";
 
         if (getSelectedColumn() == column)
             return;
@@ -962,7 +966,7 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
         return null;
     }
 
-    protected final TableSectionElement getTableHeadElement() {
+    public final TableSectionElement getTableHeadElement() {
         if(!noHeaders)
             return tableHeader.getSection();
         return null;
@@ -1422,6 +1426,15 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
             headerBuilder.update(columnsChanged);
         if (!noFooters)
             footerBuilder.update(columnsChanged);
+    }
+
+    public Element getHeaderElement(int element) {
+        assert !noHeaders;
+        return headerBuilder.getHeaderRow().getCells().getItem(element);
+    }
+
+    public Element getHeader() {
+        return headerBuilder.getHeaderRow();
     }
 
     // mechanism is slightly different - removing redundant columns, resetting others, however there is no that big difference from other updates so will leave it this way

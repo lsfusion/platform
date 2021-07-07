@@ -30,7 +30,7 @@ public class ContainerView extends ComponentView {
 
     public FlexAlignment childrenAlignment = FlexAlignment.START;
 
-    public int columns = 4;
+    public int columns = 1;
     
     public PropertyObjectEntity<?> showIf;
 

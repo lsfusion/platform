@@ -15,6 +15,7 @@ import lsfusion.interop.form.remote.RemoteFormInterface;
 import javax.swing.*;
 import java.awt.*;
 import java.util.List;
+import java.awt.event.KeyEvent;
 
 public class ClientFormDockable extends ClientDockable {
 
@@ -146,5 +147,11 @@ public class ClientFormDockable extends ClientDockable {
             return form.focusFirstComponent();
         }
         return false;
+    }
+
+    public void directProcessKeyEvent(KeyEvent e) {
+        if (form != null && !form.isEditing()) {
+            form.getLayout().directProcessKeyEvent(e);
+        }
     }
 }
