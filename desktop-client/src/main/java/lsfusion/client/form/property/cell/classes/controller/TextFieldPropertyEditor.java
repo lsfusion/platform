@@ -36,18 +36,18 @@ import static org.apache.commons.lang3.StringUtils.trimToEmpty;
 public abstract class TextFieldPropertyEditor extends JFormattedTextField implements PropertyEditor {
     private static final String CANCEL_EDIT_ACTION = "reset-field-edit";
 
-    protected PropertyTableCellEditor tableEditor;
-    public AsyncChangeInterface asyncChange;
-    public ClientPropertyDraw property;
+    private PropertyTableCellEditor tableEditor;
+    private AsyncChangeInterface asyncChange;
+    private ClientPropertyDraw property;
 
-    String actionSID;
-    boolean hasList;
-    boolean strict;
-    String[] actions;
+    private String actionSID;
+    private boolean hasList;
+    private boolean strict;
+    private String[] actions;
 
-    EventObject editEvent;
+    private EventObject editEvent;
 
-    SuggestBox suggestBox;
+    private SuggestBox suggestBox;
 
     TextFieldPropertyEditor(ClientPropertyDraw property) {
         this(property, null, null);
@@ -108,11 +108,7 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
 
     public boolean stopCellEditing() {
         try {
-            if(hasList && strict && asyncChange.getContextAction() == null && !suggestBox.isValidValue(suggestBox.getComboBoxEditorText())) {
-                tableEditor.cancelCellEditing();
-            } else {
-                commitEdit();
-            }
+            commitEdit();
         } catch (ParseException e) {
             return false;
         }
@@ -202,21 +198,16 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
                             JPanel buttonsPanel = new JPanel();
                             setBackgroundColor(buttonsPanel);
 
-                            JButton refreshButton = new JButton(ClientImages.get("refresh.png"));
-                            refreshButton.addActionListener(e -> updateAsyncValues(property, prevQuery));
-                            refreshButton.setRequestFocusEnabled(false);
+                            SuggestPopupButton refreshButton = new SuggestPopupButton(ClientImages.get("refresh.png"), e -> updateAsyncValues(property, prevQuery));
                             buttonsPanel.add(refreshButton);
 
                             for (int i = 0; i < actions.length; i++) {
                                 int index = i;
-                                String action = actions[index];
-                                JButton button = new JButton(ClientImages.get(action + ".png"));
-                                button.addActionListener(e -> {
+                                SuggestPopupButton button = new SuggestPopupButton(ClientImages.get(actions[index] + ".png"), e -> {
                                     asyncChange.setContextAction(index);
                                     tableEditor.stopCellEditing();
                                     asyncChange.setContextAction(null);
                                 });
-                                button.setRequestFocusEnabled(false);
                                 buttonsPanel.add(button);
                             }
 
@@ -243,16 +234,7 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
                 }
 
                 private void setBackgroundColor(JPanel panel) {
-                    panel.setBackground(SwingDefaults.getTableCellBackground());
-                }
-
-                @Override
-                protected JButton createArrowButton() {
-                    return new JButton() {
-                        public int getWidth() {
-                            return 0;
-                        }
-                    };
+                    panel.setBackground(SwingDefaults.getPanelBackground());
                 }
             });
 
@@ -284,15 +266,11 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (comboBox.isShowing()) {
-                    if (comboBox.isPopupVisible()) {
-                        setSelectedIndex(comboBox.getSelectedIndex() + offset);
-                    } else {
-                        comboBox.showPopup();
-                    }
-                    if(!strict) {
-                        setComboBoxEditorText((String) comboBox.getSelectedItem());
-                    }
+                if (comboBox.isPopupVisible()) {
+                    setSelectedIndex(comboBox.getSelectedIndex() + offset);
+                }
+                if (!strict) {
+                    setComboBoxEditorText((String) comboBox.getSelectedItem());
                 }
             }
         }
@@ -344,7 +322,11 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
 
                 @Override
                 public void popupMenuCanceled(PopupMenuEvent e) {
-                    tableEditor.cancelCellEditing();
+                    if(strict) {
+                        tableEditor.cancelCellEditing();
+                    } else {
+                        tableEditor.stopCellEditing();
+                    }
                 }
             });
 
@@ -380,8 +362,8 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
                         }
                         if (!strict || isValidValue(getComboBoxEditorText())) {
                             tableEditor.stopCellEditing();
-                            e.consume();
                         }
+                        e.consume();
                     } else if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
                         tableEditor.cancelCellEditing();
                         e.consume();
@@ -420,6 +402,20 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
             // install custom actions for the arrow keys in the Apple Aqua L&F
             actionMap.put("aquaSelectPrevious", upAction);
             actionMap.put("aquaSelectNext", downAction);
+        }
+    }
+
+    private class SuggestPopupButton extends JButton {
+
+        public SuggestPopupButton(Icon icon, ActionListener actionListener) {
+            super(icon);
+            init(actionListener);
+        }
+
+        private void init(ActionListener actionListener) {
+            setPreferredSize(new Dimension(24, 24));
+            setRequestFocusEnabled(false);
+            addActionListener(actionListener);
         }
     }
 }

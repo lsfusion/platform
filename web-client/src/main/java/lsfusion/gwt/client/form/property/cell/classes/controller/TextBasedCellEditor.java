@@ -72,6 +72,7 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
         if(hasList) {
             suggestBox.refreshSuggestionList(); //show suggestions for empty value
             suggestBox.setValue(value);
+            suggestBox.forceRefreshSuggestions(""); //show async empty popup
         }
         InputElement inputElement = getInputElement(parent);
         boolean selectAll = true;
@@ -259,14 +260,21 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
         return new TextBox();
     }
 
-    private String prevQuery = "";
+    private String prevQuery = null;
     public Element createInputElement() {
         if(hasList) {
             suggestBox = new CustomSuggestBox(new SuggestOracle() {
 
                 @Override
                 public void requestDefaultSuggestions(Request request, Callback callback) {
-                    requestAsyncSuggestions(request, callback, true);
+                    if (prevQuery != null && prevQuery.isEmpty()) {
+                        //it's forceRefreshSuggestions to show async empty popup
+                        suggestBox.updateDecoration(false, true, true);
+                        callback.onSuggestionsReady(request, new Response(new ArrayList<>()));
+                        setMinWidth(suggestBox, false);
+                    } else {
+                        requestAsyncSuggestions(request, callback, true);
+                    }
                 }
 
                 @Override
@@ -284,7 +292,7 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
 
                         @Override
                         public void onSuccess(Pair<ArrayList<String>, Boolean> result) {
-                            if(editManager.isEditing()) {
+                            if(editManager.isEditing() && suggestBox.isSuggestionListShowing()) {
                                 suggestBox.setAutoSelectEnabled(strict && !emptyQuery);
                                 suggestBox.setLatestSuggestions(result.first);
                                 List<Suggestion> suggestionList = new ArrayList<>();
@@ -307,14 +315,18 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
                                         }
                                     });
                                 }
-                                suggestBox.updateDecoration(suggestionList.isEmpty(), result.second);
+                                suggestBox.updateDecoration(suggestionList.isEmpty(), false, result.second);
                                 callback.onSuggestionsReady(request, new Response(suggestionList));
 
-                                setMinWidth(suggestBox.getPopupElement(), suggestBox.getOffsetWidth() - 8); //8 = offsets
+                                setMinWidth(suggestBox, true);
                             }
                         }
                     });
 
+                }
+
+                private void setMinWidth(CustomSuggestBox suggestBox, boolean offsets) {
+                    setMinWidth(suggestBox.getPopupElement(), suggestBox.getOffsetWidth() - (offsets ? 8 : 0)); //8 = offsets
                 }
 
                 private native void setMinWidth(Element element, int minWidth) /*-{
@@ -371,8 +383,8 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
             return value.isEmpty() || latestSuggestions.contains(value);
         }
 
-        public void updateDecoration(boolean showNoResult, boolean showRefresh) {
-            display.updateDecoration(showNoResult, showRefresh);
+        public void updateDecoration(boolean showNoResult, boolean showEmptyLabel, boolean showLoading) {
+            display.updateDecoration(showNoResult, showEmptyLabel, showLoading);
         }
 
         public Element getPopupElement() {
@@ -382,6 +394,7 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
 
     private class DefaultSuggestionDisplayString extends SuggestBox.DefaultSuggestionDisplay {
         private Label noResultsLabel;
+        private Label emptyLabel; //for loading
         private PushButton refreshButton;
         private boolean refreshButtonPressed;
 
@@ -403,9 +416,14 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
             noResultsLabel.getElement().addClassName("item"); //to be like suggestion item
             panel.add(noResultsLabel);
 
+            emptyLabel = new Label();
+            emptyLabel.getElement().addClassName("item"); //to be like suggestion item
+            panel.add(emptyLabel);
+
             HorizontalPanel bottomPanel = new HorizontalPanel();
             bottomPanel.setWidth("100%");
             bottomPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
+            bottomPanel.getElement().addClassName("suggestPopupBottomPanel");
             panel.add(bottomPanel);
 
             HorizontalPanel buttonsPanel = new HorizontalPanel();
@@ -424,7 +442,7 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
                 GwtClientUtils.setThemeImage(actions[index] + ".png", (image -> buttonsPanel.add(new SuggestPopupButton(new Image(image)) {
                     @Override
                     protected void onClickStart() {
-                        validateAndCommit(getElement(), index, true, false);
+                        validateAndCommit(suggestBox.getElement(), index, true, false);
                         hideSuggestions();
                     }
                 })));
@@ -436,8 +454,9 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
             return panel;
         }
 
-        public void updateDecoration(boolean showNoResult, boolean showLoading) {
+        public void updateDecoration(boolean showNoResult, boolean showEmptyLabel, boolean showLoading) {
             noResultsLabel.setVisible(showNoResult);
+            emptyLabel.setVisible(showEmptyLabel);
             updateLoadingButton(showLoading);
         }
 
@@ -481,11 +500,15 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
     private class SuggestPopupButton extends PushButton {
         public SuggestPopupButton() {
             super();
-            getElement().addClassName("suggestPopupButton");
+            init();
         }
 
         public SuggestPopupButton(Image upImage) {
             super(upImage);
+            init();
+        }
+
+        private void init() {
             getElement().addClassName("suggestPopupButton");
         }
     }

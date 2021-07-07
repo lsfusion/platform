@@ -848,13 +848,19 @@ public class BasicComboBoxUI extends ComboBoxUI {
      * @return a button which represents the popup control
      */
     protected JButton createArrowButton() {
-        JButton button = new BasicArrowButton(BasicArrowButton.SOUTH,
+        //todo: commented to hide arrowButton
+        return new JButton() {
+            public int getWidth() {
+                return 0;
+            }
+        };
+        /*JButton button = new BasicArrowButton(BasicArrowButton.SOUTH,
                                     UIManager.getColor("ComboBox.buttonBackground"),
                                     UIManager.getColor("ComboBox.buttonShadow"),
                                     UIManager.getColor("ComboBox.buttonDarkShadow"),
                                     UIManager.getColor("ComboBox.buttonHighlight"));
         button.setName("ComboBox.arrowButton");
-        return button;
+        return button;*/
     }
 
     //

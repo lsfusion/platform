@@ -293,7 +293,7 @@ public class SuggestBox extends Composite implements HasText, HasFocus, HasAnima
     private SuggestBox lastSuggestBox = null;
 
     /**
-     * Sub-classes making use of {@link decorateSuggestionList} to add
+     * Sub-classes making use of decorateSuggestionList to add
      * elements to the suggestion popup _may_ want those elements to show even
      * when there are 0 suggestions. An example would be showing a "No
      * matches" message.
@@ -1133,11 +1133,15 @@ public class SuggestBox extends Composite implements HasText, HasFocus, HasAnima
           case KeyCodes.KEY_ENTER:
           case KeyCodes.KEY_TAB:
             Suggestion suggestion = display.getCurrentSelection();
-            if (suggestion == null) {
+            //todo: replaced, do not hide if no results
+            if (suggestion != null) {
+              setNewSelection(suggestion);
+            }
+            /*if (suggestion == null) {
               display.hideSuggestions();
             } else {
               setNewSelection(suggestion);
-            }
+            }*/
             break;
         }
       }

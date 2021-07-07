@@ -439,8 +439,7 @@ public class RmiQueue implements DispatcherListener {
                     }
                 }
             });
-        }
-        if (!tableManager.isEditing()) {
+        } else {
             flushCompletedRequestsNow(false);
         }
     }
