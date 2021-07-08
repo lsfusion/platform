@@ -727,13 +727,6 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
     private int asyncLastIndex = 0;
     private final Object asyncLock = new Object();
 
-    public void cancelAsyncValues(int index) throws SQLException, SQLHandledException {
-        synchronized (asyncLock) {
-            if(asyncLastIndex == index && asyncLastThread != null) // if this is last request and it is still running -> canceling it
-                ThreadUtils.interruptThread(getContext(), asyncLastThread);
-        }
-    }
-
     public String[] getAsyncValues(int propertyID, byte[] fullKey, String actionSID, String value, int asyncIndex, Boolean optimistic) {
         try {
             synchronized (asyncLock) {

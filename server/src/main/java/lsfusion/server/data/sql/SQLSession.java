@@ -108,7 +108,20 @@ import static lsfusion.server.physics.admin.log.ServerLoggers.explainLogger;
 import static lsfusion.server.physics.admin.log.ServerLoggers.sqlSuppLog;
 
 public class SQLSession extends MutableClosedObject<OperationOwner> implements AutoCloseable {
-    private PreparedStatement executingStatement;
+
+    public static class ExecutingStatement {
+
+        public final PreparedStatement statement;
+        public final Thread thread;
+        public Boolean forcedCancel;
+
+        public ExecutingStatement(PreparedStatement statement, Thread thread) {
+            this.statement = statement;
+            this.thread = thread;
+        }
+    }
+    private ExecutingStatement executingStatement;
+
     private static final Logger logger = ServerLoggers.sqlLogger;
     private static final Logger handLogger = ServerLoggers.sqlHandLogger;
     private static final Logger sqlConflictLogger = ServerLoggers.sqlConflictLogger;
@@ -121,24 +134,23 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     private Map<String, Integer> attemptCountMap = new HashMap<>();
     public StatusMessage statusMessage;
 
-    public static SQLSession getSQLSession(long processId) {
+    public static ExecutingStatement getExecutingStatementJava(long processId) {
         for(SQLSession sqlSession : sqlSessionMap.keySet()) {
-            Thread activeThread = sqlSession.getActiveThread();
-            if(activeThread != null && activeThread.getId() == processId)
-                return sqlSession;
+            ExecutingStatement executingStatement = sqlSession.executingStatement;
+            if(executingStatement != null && executingStatement.thread.getId() == processId)
+                return executingStatement;
         }
         logger.error(String.format("Failed to interrupt process %s: no private connection found", processId));
         return null;
     }
 
-    public static Map<Integer, SQLSession> getSQLSessionMap() {
-        Map<Integer, SQLSession> sessionMap = new HashMap<>();
+    public static ExecutingStatement getExecutingStatementSQL(long processId) throws SQLException {
         for(SQLSession sqlSession : sqlSessionMap.keySet()) {
-            ExConnection connection = sqlSession.getDebugConnection();
-            if(connection != null)
-                sessionMap.put(((PGConnection) connection.sql).getBackendPID(), sqlSession);
+            ExecutingStatement executingStatement = sqlSession.executingStatement;
+            if(executingStatement != null && ((PGConnection)executingStatement.statement.getConnection()).getBackendPID() == processId)
+                return executingStatement;
         }
-        return sessionMap;
+        return null;
     }
 
     public static Map<Integer, SQLThreadInfo> getSQLThreadMap() {
@@ -180,32 +192,30 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     }
 
     public String getExecutingStatement() {
-        return executingStatement == null ? null : executingStatement.toString();
+        return executingStatement == null ? null : executingStatement.statement.toString();
     }
 
     public static void cancelExecutingStatement(DBManager dbManager, long processId, boolean interrupt) throws SQLException {
-        SQLSession cancelSession = SQLSession.getSQLSession(processId);
-        if(cancelSession != null) {
-            PreparedStatement executingStatement = cancelSession.executingStatement;
-            if(executingStatement != null) {
-                ServerLoggers.exinfoLog("SQL SESSION INTERRUPT " + cancelSession + "PROCESS " + processId);
+        // having both thread and statement in executing statement is the only way to guarantee that we'll cancel the statement of the required processId
+        ExecutingStatement cancelStatement = SQLSession.getExecutingStatementJava(processId);
+        if(cancelStatement != null) {
+            ServerLoggers.exinfoLog("SQL SESSION INTERRUPT " + cancelStatement.thread + "PROCESS " + processId);
 
-                cancelSession.setForcedCancel(interrupt);
-                // we're trying to cancel executing statement, because ddl task might stop some query in pooled connection that is already used by some other thread
-                executingStatement.cancel();
+            // we're trying to cancel executing statement, because ddl task might stop some query in pooled connection that is already used by some other thread
+            cancelStatement.statement.cancel();
+            cancelStatement.forcedCancel = interrupt;
 
 //                SQLSession sqlSession = dbManager.getStopSql();                
 //                ExConnection connection = cancelSession.getDebugConnection();
 //                if(connection != null)
 //                    int sqlProcessID = ((PGConnection) connection.sql).getBackendPID();
 //                sqlSession.executeDDL(sqlSession.syntax.getCancelActiveTaskQuery(sqlProcessID));
-            }
         }
     }
 
     public Integer getQueryTimeout() {
         try {
-            return executingStatement == null ? null : executingStatement.getQueryTimeout();
+            return executingStatement == null ? null : executingStatement.statement.getQueryTimeout();
         } catch (SQLException e) {
             return null;
         }
@@ -1644,10 +1654,10 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     private Problem problemInTransaction = null;
 
     private Throwable handle(SQLException e, String message, ExConnection connection) {
-        return handle(e, message, false, connection, true);
+        return handle(e, message, false, connection, true, null);
     }
 
-    private Throwable handle(Throwable t, String message, boolean isTransactTimeout, ExConnection connection, boolean errorPrivate) {
+    private Throwable handle(Throwable t, String message, boolean isTransactTimeout, ExConnection connection, boolean errorPrivate, Boolean forcedCancel) {
         if(!(t instanceof SQLException))
             return t;
         
@@ -1689,7 +1699,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             handled = new SQLRetryException(reason);
 
         if(syntax.isTimeout(e))
-            handled = new lsfusion.server.data.sql.exception.SQLTimeoutException(isTransactTimeout, isForcedCancel());
+            handled = new lsfusion.server.data.sql.exception.SQLTimeoutException(isTransactTimeout, forcedCancel);
         
         if(syntax.isConnectionClosed(e)) {
             handled = new SQLClosedException(connection.sql, inTransaction, e, errorPrivate);
@@ -2011,6 +2021,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         StaticExecuteEnvironment env = command.env;
 
         Savepoint savepoint = null;
+        ExecutingStatement executingStatement = null;
         try {
             snapEnv.beforeConnection(this, owner);
 
@@ -2047,12 +2058,14 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             snapEnv.beforeExec(statement, this);
 
             long started = System.currentTimeMillis();
+            executingStatement = new ExecutingStatement(statement, Thread.currentThread());
 
             try {
                 try {
-                    executingStatement = statement;
+                    this.executingStatement = executingStatement;
                     command.execute(statement, handler, this);
                 } finally {
+                    this.executingStatement = null;
                     executingStatement = null;
                 }
             } finally {
@@ -2061,7 +2074,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                 connection.registerExecute(length.result, runTime);
             }
         } catch (Throwable t) { // по хорошему тоже надо через runSuppressed, но будут проблемы с final'ами
-            t = handle(t, statement != null ? statement.toString() : "PREPARING STATEMENT", snapEnv.isTransactTimeout(), connection, privateConnection != null);
+            t = handle(t, statement != null ? statement.toString() : "PREPARING STATEMENT", snapEnv.isTransactTimeout(), connection, privateConnection != null, executingStatement != null ? executingStatement.forcedCancel : null);
             firstException.set(t);
 
             if(savepoint != null && t instanceof SQLHandledException && ((SQLHandledException)t).repeatCommand()) {
