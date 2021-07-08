@@ -2066,7 +2066,6 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                     command.execute(statement, handler, this);
                 } finally {
                     this.executingStatement = null;
-                    executingStatement = null;
                 }
             } finally {
                 runTime = System.currentTimeMillis() - started;
