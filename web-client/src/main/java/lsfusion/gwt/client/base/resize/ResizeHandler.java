@@ -46,7 +46,10 @@ public class ResizeHandler implements Event.NativePreviewHandler {
 //                    cursorStyle.setProperty("cursor", (helper.isVertical() ? Style.Cursor.ROW_RESIZE : Style.Cursor.COL_RESIZE).getCssName() + " !important");
                 if (eventType.equals(MOUSEDOWN)) {
                     resizeHandler = new ResizeHandler(helper, resizedChild.index);
-                    stopPropagation(event);
+
+                    // if we're not propagating native event, then BLUR event is also canceled and for example editing is not finished
+                    // in all other cases it doesn't matter, since there is no stop propagation for MOUSEDOWN event, and it is the only known problem with preventing default (except expand tree but it seems that in grid everything works fine anyway)
+                    stopPropagation(event, true, false);
                 }
             } else {
                 cursorStyle.clearProperty("cursor");

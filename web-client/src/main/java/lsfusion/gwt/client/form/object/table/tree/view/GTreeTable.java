@@ -349,8 +349,6 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         }
 
         private void changeTreeState(Cell cell, Object value, NativeEvent event) {
-            GwtClientUtils.stopPropagation(event);
-
             Boolean open = ((GTreeColumnValue) value).getOpen();
             if (open != null) {
                 GTreeGridRecord record = getTreeGridRow(cell);
