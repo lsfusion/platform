@@ -241,4 +241,45 @@ public class GKeyStroke implements Serializable {
     public static boolean isSwitchFullScreenModeEvent(NativeEvent event) {
         return KEYDOWN.equals(event.getType()) && event.getKeyCode() == KEY_F11 && event.getAltKey();
     }
+
+    public static boolean isSuitableEditKeyEvent(NativeEvent event) {
+        return !isActionKey(event.getKeyCode()) && !isAlt(event);
+    }
+
+    public static boolean isActionKey(int keyCode) {
+        switch (keyCode) {
+            case KEY_HOME:
+            case KEY_END:
+            case KEY_PAGEUP:
+            case KEY_PAGEDOWN:
+            case KEY_UP:
+            case KEY_DOWN:
+            case KEY_LEFT:
+            case KEY_RIGHT:
+            case KEY_F1:
+            case KEY_F2:
+            case KEY_F3:
+            case KEY_F4:
+            case KEY_F5:
+            case KEY_F6:
+            case KEY_F7:
+            case KEY_F8:
+            case KEY_F9:
+            case KEY_F10:
+            case KEY_F11:
+            case KEY_F12:
+            case KEY_PRINT_SCREEN:
+            case KEY_SCROLL_LOCK:
+            case KEY_CAPS_LOCK:
+            case KEY_NUMLOCK:
+            case KEY_PAUSE:
+            case KEY_INSERT:
+                return true;
+        }
+        return false;
+    }
+
+    public static boolean isAlt(NativeEvent event) {
+        return event.getKeyCode() == KEY_ALT || event.getAltKey();
+    }
 }

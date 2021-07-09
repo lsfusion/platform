@@ -130,6 +130,8 @@ public interface SQLSyntax {
     String getEpoch();
     String getDateTime();
 
+    String getWebSearchToTSQuery();
+
     String getInsensitiveLike();
 
     boolean supportGroupNumbers();

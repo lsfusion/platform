@@ -40,6 +40,7 @@ import com.google.gwt.user.client.ui.SuggestOracle.Callback;
 import com.google.gwt.user.client.ui.SuggestOracle.Request;
 import com.google.gwt.user.client.ui.SuggestOracle.Response;
 import com.google.gwt.user.client.ui.SuggestOracle.Suggestion;
+import lsfusion.gwt.client.form.event.GKeyStroke;
 
 import java.util.Collection;
 import java.util.List;
@@ -660,6 +661,7 @@ public class SuggestBox extends Composite implements HasText, HasFocus, HasAnima
   private LeafValueEditor<String> editor;
   private final SuggestionDisplay display;
   private final ValueBoxBase<String> box;
+  private final boolean strict;
   private final Callback callback = new Callback() {
     public void onSuggestionsReady(Request request, Response response) {
       // If disabled while request was in-flight, drop it
@@ -708,7 +710,7 @@ public class SuggestBox extends Composite implements HasText, HasFocus, HasAnima
    * @param box the text widget
    */
   public SuggestBox(SuggestOracle oracle, ValueBoxBase<String> box) {
-    this(oracle, box, new DefaultSuggestionDisplay());
+    this(oracle, box, new DefaultSuggestionDisplay(), false);
   }
 
   /**
@@ -721,9 +723,10 @@ public class SuggestBox extends Composite implements HasText, HasFocus, HasAnima
    * @param suggestDisplay the class used to display suggestions
    */
   public SuggestBox(SuggestOracle oracle, ValueBoxBase<String> box,
-      SuggestionDisplay suggestDisplay) {
+      SuggestionDisplay suggestDisplay, boolean strict) {
     this.box = box;
     this.display = suggestDisplay;
+    this.strict = strict;
     initWidget(box);
 
     addEventsToTextBox();
@@ -1134,7 +1137,7 @@ public class SuggestBox extends Composite implements HasText, HasFocus, HasAnima
           case KeyCodes.KEY_TAB:
             Suggestion suggestion = display.getCurrentSelection();
             //todo: replaced, do not hide if no results
-            if (suggestion != null) {
+            if (suggestion != null && strict) {
               setNewSelection(suggestion);
             }
             /*if (suggestion == null) {
@@ -1149,8 +1152,7 @@ public class SuggestBox extends Composite implements HasText, HasFocus, HasAnima
       public void onKeyUp(KeyUpEvent event) {
         // After every user key input, refresh the popup's suggestions.
         //todo: added if
-          int keyCode = event.getNativeEvent().getKeyCode();
-          if (keyCode != KeyCodes.KEY_DOWN && keyCode != KeyCodes.KEY_UP) {
+          if (GKeyStroke.isSuitableEditKeyEvent(event.getNativeEvent())) {
             refreshSuggestions();
           }
       }

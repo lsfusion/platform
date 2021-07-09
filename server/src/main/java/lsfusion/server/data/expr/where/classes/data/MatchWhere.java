@@ -44,7 +44,7 @@ public class MatchWhere extends BinaryWhere<MatchWhere> {
         Type type = operator1.getType(compile.keyType);
         String source = operator1.getSource(compile);
         String match = operator2.getSource(compile);
-        String matchString = languages.stream().map(language -> "to_tsvector('" + language + "', " + source + ") @@ websearch_to_tsquery('" + language + "', " + match + ")").collect(Collectors.joining(" OR "));
+        String matchString = languages.stream().map(language -> "to_tsvector('" + language + "', " + source + ") @@ " + compile.syntax.getWebSearchToTSQuery() + "('" + language + "', " + match + ")").collect(Collectors.joining(" OR "));
         String likeString = source + (type instanceof StringClass && ((StringClass) type).caseInsensitive ? " " + compile.syntax.getInsensitiveLike() + " " : " LIKE ")
                 + "(" + ("'%' " + compile.syntax.getStringConcatenate() + " ") + match + (" " + compile.syntax.getStringConcatenate() + " '%'") + ")";
 

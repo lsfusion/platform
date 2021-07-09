@@ -297,6 +297,11 @@ public abstract class DefaultSQLSyntax implements SQLSyntax {
         throw new UnsupportedOperationException();
     }
 
+    @Override
+    public String getWebSearchToTSQuery() {
+        return "websearch_to_tsquery";
+    }
+
     public String getInsensitiveLike() {
         return "LIKE";
     }

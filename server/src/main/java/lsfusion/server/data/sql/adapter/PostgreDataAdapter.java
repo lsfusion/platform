@@ -38,6 +38,8 @@ public class PostgreDataAdapter extends DataAdapter {
     private String dumpDir;
     protected static final String DB_NAME = "postgres";
 
+    private int dbMajorVersion;
+
     public PostgreDataAdapter(String dataBase, String server, String userID, String password) throws Exception {
         this(dataBase, server, userID, password, false);
     }
@@ -73,6 +75,7 @@ public class PostgreDataAdapter extends DataAdapter {
         while(connect == null) {
             try {
                 connect = DriverManager.getConnection("jdbc:postgresql://" + server + "/postgres?user=" + userID + "&password=" + password);
+                dbMajorVersion = connect.getMetaData().getDatabaseMajorVersion();
             } catch (PSQLException e) {
                 ServerLoggers.startLogger.error(String.format("%s (host: %s, user: %s)", e.getMessage(), server, userID));
                 logger.error("EnsureDB error: ", e);
@@ -104,6 +107,10 @@ public class PostgreDataAdapter extends DataAdapter {
         }
 
         connect.close();
+    }
+
+    public int getDbMajorVersion() {
+        return dbMajorVersion;
     }
 
     @Override

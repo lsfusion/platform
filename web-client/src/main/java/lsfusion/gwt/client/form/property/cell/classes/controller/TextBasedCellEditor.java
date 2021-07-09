@@ -285,6 +285,9 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
                 private void requestAsyncSuggestions(Request request, Callback callback, boolean emptyQuery) {
                     String query = nvl(request.getQuery(), "");
                     prevQuery = query;
+                    if(suggestBox != null) {
+                        suggestBox.updateLoadingButton(true);
+                    }
                     editManager.getAsyncValues(query, new AsyncCallback<Pair<ArrayList<String>, Boolean>>() {
                         @Override
                         public void onFailure(Throwable caught) {
@@ -363,11 +366,11 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
     }
 
     private class CustomSuggestBox extends SuggestBox {
-        public DefaultSuggestionDisplayString display;
+        private DefaultSuggestionDisplayString display;
         private List<String> latestSuggestions = new ArrayList<>();
 
         public CustomSuggestBox(SuggestOracle oracle, ValueBoxBase<String> valueBox, DefaultSuggestionDisplayString display) {
-            super(oracle, valueBox, display);
+            super(oracle, valueBox, display, strict);
             this.display = display;
             onAttach();
             getElement().removeClassName("gwt-SuggestBox");
@@ -381,6 +384,10 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
 
         public boolean isValidValue(String value) {
             return value.isEmpty() || latestSuggestions.contains(value);
+        }
+
+        public void updateLoadingButton(boolean showLoading) {
+            display.updateLoadingButton(showLoading);
         }
 
         public void updateDecoration(boolean showNoResult, boolean showEmptyLabel, boolean showLoading) {

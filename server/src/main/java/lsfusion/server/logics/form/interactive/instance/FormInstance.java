@@ -1119,7 +1119,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         ImMap<P, Expr> innerExprs = MapFact.addExcl(innerKeys, DataObject.getMapExprs(list.mapValues));
 
         Expr listExpr = list.property.getExpr(innerExprs, modifier);
-        return new Query<>(innerKeys, listExpr, "value", listExpr.compare(value.getExpr(), contains ? Compare.CONTAINS : Compare.EQUALS));
+        return new Query<>(innerKeys, listExpr, "value", listExpr.compare(value.getExpr(), contains ? Compare.MATCH : Compare.EQUALS));
     }
 
     public <P extends PropertyInterface> String[] getAsyncValues(PropertyDrawInstance<?> propertyDraw, ImMap<ObjectInstance, DataObject> keys, String actionSID, String value, Boolean optimistic) throws SQLException, SQLHandledException {
