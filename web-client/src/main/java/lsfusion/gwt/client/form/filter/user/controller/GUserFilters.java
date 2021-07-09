@@ -75,19 +75,17 @@ public abstract class GUserFilters {
     public GPropertyFilter getNewCondition(GPropertyDraw property, GGroupObjectValue columnKey) {
         GPropertyDraw filterProperty = property;
         GGroupObjectValue filterColumnKey = columnKey;
-        Object filterValue = null;
 
         if (filterProperty == null) {
             filterProperty = logicsSupplier.getSelectedProperty();
             if (filterProperty != null) {
                 filterColumnKey = logicsSupplier.getSelectedColumnKey();
-                filterValue = logicsSupplier.getSelectedValue(filterProperty, filterColumnKey);
             }
         }
         if (filterProperty == null)
             return null;
 
-        return new GPropertyFilter(logicsSupplier.getSelectedGroupObject(), filterProperty, filterColumnKey, filterValue, filterProperty.getDefaultCompare());
+        return new GPropertyFilter(logicsSupplier.getSelectedGroupObject(), filterProperty, filterColumnKey, null, filterProperty.getDefaultCompare());
     }
 
     public void applyFilters(ArrayList<GPropertyFilter> filters, boolean replace) {
@@ -132,7 +130,7 @@ public abstract class GUserFilters {
     }
 
     public void quickEditFilter(Event keyEvent, GPropertyDraw propertyDraw, GGroupObjectValue columnKey) {
-        filterView.addCondition(propertyDraw, columnKey, keyEvent, true);
+        filterView.addCondition(propertyDraw, columnKey, keyEvent, true, true);
     }
 
     public abstract void applyFilters(ArrayList<GPropertyFilter> conditions);

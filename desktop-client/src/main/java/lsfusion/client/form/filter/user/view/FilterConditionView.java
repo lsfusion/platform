@@ -9,16 +9,14 @@ import lsfusion.client.form.view.Column;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.base.view.FlexConstraints;
 import lsfusion.interop.base.view.FlexLayout;
+import lsfusion.interop.form.event.KeyStrokes;
 import lsfusion.interop.form.property.Compare;
 
 import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
-import java.awt.event.KeyEvent;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static javax.swing.Box.createHorizontalStrut;
 import static lsfusion.client.ClientResourceBundle.getString;
@@ -57,7 +55,7 @@ public class FilterConditionView extends JPanel {
     private boolean isLast = false;
     private boolean toolsVisible;
     
-    public FilterConditionView(ClientPropertyFilter ifilter, TableController logicsSupplier, UIHandler iuiHandler, boolean toolsVisible) {
+    public FilterConditionView(ClientPropertyFilter ifilter, TableController logicsSupplier, UIHandler iuiHandler, boolean toolsVisible, boolean readSelectedValue) {
         condition = ifilter;
         uiHandler = iuiHandler;
         this.toolsVisible = toolsVisible;
@@ -89,7 +87,9 @@ public class FilterConditionView extends JPanel {
 
                 propertyLabel.setText(columns.get(value));
                 
-                filterChanged();
+                propertyChanged();
+
+                startEditing(KeyStrokes.createAddUserFilterKeyEvent(valueView));
             }
         };
 
@@ -107,25 +107,34 @@ public class FilterConditionView extends JPanel {
             public void valueChanged(Compare value) {
                 condition.compare = value;
                 compareLabel.setText((condition.negation ? "!" : "") + condition.compare);
+                uiHandler.applyFilters();
             }
 
             @Override
             public void negationChanged(boolean value) {
                 condition.negation = value;
                 compareLabel.setText((value ? "!" : "") + condition.compare);
+                uiHandler.applyFilters();
             }
 
             @Override
             public void allowNullChanged(boolean value) {
                 allowNull = value;
+                uiHandler.applyFilters();
             }
         };
         compareView.setSelectedValue(condition.compare);
         addCentered(compareView);
 
-        valueView = new DataFilterValueView(condition.value, condition.property, condition.columnKey, logicsSupplier) {
+        valueView = new DataFilterValueView(condition.value, condition.property, condition.columnKey, logicsSupplier, readSelectedValue) {
             @Override
-            public void applyQuery() {
+            public void valueChanged(Object newValue) {
+                super.valueChanged(newValue);
+                uiHandler.applyFilters();
+            }
+
+            @Override
+            public void applyFilters() {
                 uiHandler.applyFilters();
             }
         };
@@ -156,6 +165,7 @@ public class FilterConditionView extends JPanel {
                 addActionListener(e -> {
                     condition.junction = !condition.junction;
                     showBackground(!condition.junction);
+                    uiHandler.applyFilters();
                 });
             }
         };
@@ -207,8 +217,8 @@ public class FilterConditionView extends JPanel {
         junctionViewWrapper.setVisible(toolsVisible && !isLast);
     }
 
-    void filterChanged() {
-        valueView.propertyChanged(condition.property, condition.columnKey);
+    void propertyChanged() {
+        valueView.changeProperty(condition.property, condition.columnKey);
 
         Compare oldCompare = condition.compare;
         List<Compare> filterCompares = Arrays.asList(condition.property.getFilterCompares());
@@ -226,11 +236,7 @@ public class FilterConditionView extends JPanel {
         validate();
     }
 
-    void requestValueFocus() {
-        valueView.requestFocusInWindow();
-    }
-
-    public void startEditing(KeyEvent initFilterKeyEvent) {
-        valueView.startEditing(initFilterKeyEvent);
+    public void startEditing(EventObject initFilterEvent) {
+        valueView.startEditing(initFilterEvent);
     }
 }

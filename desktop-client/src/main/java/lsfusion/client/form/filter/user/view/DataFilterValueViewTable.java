@@ -115,6 +115,14 @@ class DataFilterValueViewTable extends JTable implements TableTransferHandler.Ta
     public void editingCanceled(ChangeEvent e) {
         super.editingCanceled(e);
         logicsSupplier.getFormController().clearCurrentEditingTable(this);
+        valueFilterView.editingCancelled();
+    }
+
+    @Override
+    public void removeEditor() {
+        super.removeEditor();
+        logicsSupplier.getFormController().clearCurrentEditingTable(this);
+        valueFilterView.editingCancelled();
     }
 
     @Override
@@ -235,7 +243,7 @@ class DataFilterValueViewTable extends JTable implements TableTransferHandler.Ta
                             @Override
                             public void run() {
                                 if (KeyEvent.VK_ENTER == e.getKeyCode() && stopCellEditing()) {
-                                    valueFilterView.applyQuery();
+                                    valueFilterView.applyFilters();
                                 }
                             }
                         });

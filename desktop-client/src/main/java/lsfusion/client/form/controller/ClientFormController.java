@@ -1358,8 +1358,6 @@ public class ClientFormController implements AsyncListener {
     }
 
     private void applyCurrentFilters() throws IOException {
-        commitOrCancelCurrentEditing();
-
         final List<byte[]> filters = new ArrayList<>();
 
         for (List<ClientPropertyFilter> groupFilters : currentFilters.values()) {

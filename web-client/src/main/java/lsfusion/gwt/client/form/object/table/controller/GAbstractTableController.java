@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form.object.table.controller;
 
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
@@ -130,7 +131,7 @@ public abstract class GAbstractTableController extends GPropertyController imple
             @Override
             public void applyFilters(ArrayList<GPropertyFilter> conditions) {
                 changeFilter(conditions);
-                focusFirstWidget();
+                Scheduler.get().scheduleDeferred(() -> focusFirstWidget());
             }
 
             @Override

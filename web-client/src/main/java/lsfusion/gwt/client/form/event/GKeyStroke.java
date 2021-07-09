@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.form.event;
 
 import com.google.gwt.dom.client.BrowserEvents;
+import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.form.controller.GFormController;
@@ -154,6 +155,14 @@ public class GKeyStroke implements Serializable {
 
     public static boolean isGroupChangeKeyEvent(Event event) {
         return KEYDOWN.equals(event.getType()) && event.getKeyCode() == KEY_F12;
+    }
+
+    public static Event createAddUserFilterKeyEvent() {
+        return Event.as(Document.get().createKeyDownEvent(ADD_USER_FILTER_KEY_STROKE.ctrlPressed,
+                ADD_USER_FILTER_KEY_STROKE.altPressed,
+                ADD_USER_FILTER_KEY_STROKE.shiftPressed,
+                false,
+                ADD_USER_FILTER_KEY_STROKE.keyCode));
     }
     
     public static boolean isAddUserFilterKeyEvent(Event event) {

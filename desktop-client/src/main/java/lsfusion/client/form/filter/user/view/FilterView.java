@@ -20,6 +20,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
+import java.util.EventObject;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -63,7 +64,7 @@ public class FilterView extends JComponentPanel implements FilterConditionView.U
 
     private void initButtons() {
         addConditionButton = new ToolbarGridButton(ADD_ICON_PATH, getString("form.queries.filter.add.condition"));
-        addConditionButton.addActionListener(ae -> addCondition());
+        addConditionButton.addActionListener(ae -> addCondition(KeyStrokes.createAddUserFilterKeyEvent(this)));
         addConditionButton.setVisible(toolsVisible);
 
         resetConditionsButton = new ToolbarGridButton(RESET_ICON_PATH, getString("form.queries.filter.reset.conditions"));
@@ -105,14 +106,18 @@ public class FilterView extends JComponentPanel implements FilterConditionView.U
         comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(getFilterKeyStroke(InputEvent.ALT_DOWN_MASK), "newFilter");
         comp.getActionMap().put("newFilter", new AbstractAction() {
             public void actionPerformed(ActionEvent ae) {
-                addCondition(true);
+                if (!controller.getLogicsSupplier().getFormController().isEditing()) {
+                    SwingUtilities.invokeLater(() -> addCondition(ae, true));
+                }
             }
         });
 
         comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(getFilterKeyStroke(0), "addFilter");
         comp.getActionMap().put("addFilter", new AbstractAction() {
             public void actionPerformed(ActionEvent ae) {
-                addCondition();
+                if (!controller.getLogicsSupplier().getFormController().isEditing()) {
+                    addCondition(ae);
+                }
             }
         });
 
@@ -125,8 +130,9 @@ public class FilterView extends JComponentPanel implements FilterConditionView.U
         comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(getFilterKeyStroke(InputEvent.ALT_DOWN_MASK), "newFilter");
         comp.getActionMap().put("newFilter", new AbstractAction() {
             public void actionPerformed(ActionEvent ae) {
-                if(comp instanceof DataPanelView)
-                    addCondition(((DataPanelView) comp).getProperty(), ((DataPanelView) comp).getColumnKey(), true);
+                if (comp instanceof DataPanelView && !controller.getLogicsSupplier().getFormController().isEditing()) {
+                    SwingUtilities.invokeLater(() -> addCondition(ae, true, true));
+                }
             }
         });
 
@@ -134,7 +140,9 @@ public class FilterView extends JComponentPanel implements FilterConditionView.U
         comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0, true), "addFilter");
         comp.getActionMap().put("addFilter", new AbstractAction() {
             public void actionPerformed(ActionEvent ae) {
-                addCondition(((DataPanelView) comp).getProperty(), ((DataPanelView) comp).getColumnKey());
+                if (!controller.getLogicsSupplier().getFormController().isEditing()) {
+                    addCondition(ae, false, true);
+                }
             }
         });
 
@@ -145,7 +153,9 @@ public class FilterView extends JComponentPanel implements FilterConditionView.U
     private AbstractAction createRemoveAllAction() {
         return new AbstractAction() {
             public void actionPerformed(ActionEvent ae) {
-                RmiQueue.runAction(() -> removeAllConditions());
+                if (!controller.getLogicsSupplier().getFormController().isEditing()) {
+                    RmiQueue.runAction(() -> removeAllConditions());
+                }
             }
         };
     }
@@ -176,36 +186,42 @@ public class FilterView extends JComponentPanel implements FilterConditionView.U
         resetConditionsButton.setVisible(toolsVisible);
     }
 
-    public void addCondition() {
-        addCondition(false);
+    public void addCondition(EventObject keyEvent) {
+        addCondition(keyEvent, false);
     }
 
-    public void addCondition(boolean replace) {
-        addCondition(null, null, replace);
+    public void addCondition(EventObject keyEvent, boolean replace) {
+        addCondition(keyEvent, replace, true);
+    }
+
+    public void addCondition(EventObject keyEvent, boolean replace, boolean readSelectedValue) {
+        addCondition(null, null, keyEvent, replace, readSelectedValue);
     }
     
-    public void addCondition(ClientPropertyDraw propertyDraw, ClientGroupObjectValue columnKey) {
-        addCondition(propertyDraw, columnKey, false);
+    public void addCondition(ClientPropertyDraw propertyDraw, ClientGroupObjectValue columnKey, boolean readSelectedValue) {
+        addCondition(propertyDraw, columnKey, false, readSelectedValue);
     }
 
-    public void addCondition(ClientPropertyDraw propertyDraw, ClientGroupObjectValue columnKey, boolean replace) {
-        addCondition(propertyDraw, columnKey, null, replace);
+    public void addCondition(ClientPropertyDraw propertyDraw, ClientGroupObjectValue columnKey, boolean replace, boolean readSelectedValue) {
+        addCondition(propertyDraw, columnKey, null, replace, readSelectedValue);
     }
 
-    public void addCondition(ClientPropertyDraw propertyDraw, ClientGroupObjectValue columnKey, KeyEvent keyEvent, boolean replace) {
+    public void addCondition(ClientPropertyDraw propertyDraw, ClientGroupObjectValue columnKey, EventObject keyEvent, boolean replace, boolean readSelectedValue) {
         if (replace) {
             // считаем, что в таком случае просто нажали сначала все удалить, а затем - добавить
-            removeAllConditions();
+            removeAllConditions(false);
         }
+        
         ClientPropertyFilter condition = controller.getNewCondition(propertyDraw, columnKey);
-
         if (condition != null) {
-            addCondition(condition, controller.getLogicsSupplier(), keyEvent);
+            addCondition(condition, controller.getLogicsSupplier(), keyEvent, readSelectedValue);
         }
     }
 
-    public void addCondition(ClientPropertyFilter condition, TableController logicsSupplier, KeyEvent keyEvent) {
-        FilterConditionView condView = new FilterConditionView(condition, logicsSupplier, this, toolsVisible);
+    public void addCondition(ClientPropertyFilter condition, TableController logicsSupplier, EventObject keyEvent, boolean readSelectedValue) {
+        logicsSupplier.getFormController().commitOrCancelCurrentEditing();
+        
+        FilterConditionView condView = new FilterConditionView(condition, logicsSupplier, this, toolsVisible, readSelectedValue);
         conditionViews.put(condition, condView);
 
         condContainer.add(condView, new FlexConstraints(CENTER, 0));
@@ -215,11 +231,17 @@ public class FilterView extends JComponentPanel implements FilterConditionView.U
         condContainer.revalidate();
         condContainer.repaint();
 
-        condView.startEditing(keyEvent);
+        if (keyEvent != null) {
+            condView.startEditing(keyEvent);
+        }
     }
 
     public void removeAllConditions() {
-        controller.removeAllConditions();
+        removeAllConditions(true);
+    }
+
+    public void removeAllConditions(boolean focusFirstComponent) {
+        controller.removeAllConditions(focusFirstComponent);
         conditionViews.clear();
 
         condContainer.removeAll();
@@ -277,13 +299,13 @@ public class FilterView extends JComponentPanel implements FilterConditionView.U
             }
         }
         
-        controller.commitAndApplyFilters(result);
+        controller.applyFilters(result, true);
     }
 
     public void update() {
         if (!initialized) {
             for (ClientPropertyDraw property : filterComponent.properties) {
-                addCondition(property, controller.getLogicsSupplier().getSelectedColumn());
+                addCondition(property, controller.getLogicsSupplier().getSelectedColumn(), false);
             }
             
             initialized = true;

@@ -10,7 +10,6 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.jsni.NativeSIDMap;
-import lsfusion.gwt.client.base.resize.ResizeHandler;
 import lsfusion.gwt.client.base.resize.ResizeHelper;
 import lsfusion.gwt.client.base.view.CopyPasteUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
@@ -185,7 +184,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         addFilterBinding(event::isEvent, pressed);
     }
     private void addFilterBinding(GFormController.BindingCheck event, GFormController.BindingExec pressed) {
-        form.addBinding(event, new GBindingEnv(null, null, null, GBindingMode.ONLY, null, null, null, null), pressed, GGridPropertyTable.this, groupObject);
+        form.addBinding(event, new GBindingEnv(null, null, null, GBindingMode.ONLY, GBindingMode.NO, null, null, null), pressed, GGridPropertyTable.this, groupObject);
     }
 
     @Override

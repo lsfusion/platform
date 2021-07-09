@@ -9,22 +9,23 @@ import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.panel.view.CaptureKeyEventsDispatcher;
 
 import javax.swing.*;
+import javax.swing.table.TableCellEditor;
 import java.awt.*;
-import java.awt.event.KeyEvent;
+import java.util.EventObject;
 
 public abstract class DataFilterValueView extends JPanel {
     private final ClientDataFilterValue filterValue;
-    private final DataFilterValueViewTable valueTable;
+    private DataFilterValueViewTable valueTable;
 
     // нужен для получения текущих значений в таблице
     private final TableController logicsSupplier;
 
     private ClientGroupObjectValue columnKey;
 
-    public DataFilterValueView(ClientDataFilterValue filterValue, ClientPropertyDraw property, ClientGroupObjectValue columnKey, TableController ilogicsSupplier) {
+    public DataFilterValueView(ClientDataFilterValue filterValue, ClientPropertyDraw property, ClientGroupObjectValue columnKey, TableController ilogicsSupplier, boolean readSelectedValue) {
         setLayout(new BorderLayout());
 
-        this.filterValue = filterValue != null ? filterValue : new ClientDataFilterValue();
+        this.filterValue = filterValue;
         logicsSupplier = ilogicsSupplier;
 
         this.columnKey = columnKey;
@@ -34,7 +35,7 @@ public abstract class DataFilterValueView extends JPanel {
 
         add(valueTable, BorderLayout.CENTER);
         
-        propertyChanged(property, columnKey);
+        changeProperty(property, columnKey, readSelectedValue);
     }
 
     public boolean requestFocusInWindow() {
@@ -50,27 +51,43 @@ public abstract class DataFilterValueView extends JPanel {
     public Dimension getMaximumSize() {
         return getPreferredSize();
     }
+    
+    public void changeProperty(ClientPropertyDraw property, ClientGroupObjectValue columnKey) {
+        filterValue.setValue(null);
+        TableCellEditor cellEditor = valueTable.getCellEditor();
+        if (cellEditor != null) {
+            cellEditor.cancelCellEditing();
+        }
+        changeProperty(property, columnKey, true);
+    }
 
-    public void propertyChanged(ClientPropertyDraw property, ClientGroupObjectValue columnKey) {
+    public void changeProperty(ClientPropertyDraw property, ClientGroupObjectValue columnKey, boolean readSelectedValue) {
         valueTable.setProperty(property);
-        setValue(filterValue.value);
+        if (readSelectedValue) {
+            setValue(logicsSupplier.getSelectedValue(property, columnKey));
+        } else {
+            setValue(filterValue.value);
+        }
     }
 
     public void valueChanged(Object newValue) {
+        filterValue.setValue(newValue);
         setValue(newValue);
     }
 
     private void setValue(Object value) {
         if(value instanceof String && ((String)value).isEmpty())
             value = null;
-        filterValue.setValue(value);
         valueTable.setValue(value);
     }
 
-    public void startEditing(KeyEvent initFilterKeyEvent) {
+    public void startEditing(EventObject initFilterKeyEvent) {
         if (valueTable.getProperty().baseType != ClientLogicalClass.instance) {
             // Не начинаем редактирование для check-box, т.к. оно бессмысленно
             valueTable.editCellAt(0, 0, initFilterKeyEvent);
+        } else {
+            // to be able to apply on Enter
+            filterValue.value = valueTable.getValue();
         }
         final Component editor = valueTable.getEditorComponent();
         if (editor != null) {
@@ -83,11 +100,15 @@ public abstract class DataFilterValueView extends JPanel {
         }
     }
 
+    public void editingCancelled() {
+        setValue(filterValue.value);
+    }
+    
     public ClientFormController getForm() {
         return logicsSupplier.getFormController();
     }
 
-    public abstract void applyQuery();
+    public abstract void applyFilters();
 
     public ClientGroupObjectValue getColumnKey() {
         return columnKey;

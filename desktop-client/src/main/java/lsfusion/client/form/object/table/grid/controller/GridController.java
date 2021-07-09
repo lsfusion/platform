@@ -88,11 +88,13 @@ public class GridController extends AbstractTableController {
             
             if (groupObject.userFilter.visible) {
                 filter = new FilterController(this, groupObject.userFilter) {
-                    public void applyFilters(List<ClientPropertyFilter> conditions) {
+                    public void applyFilters(List<ClientPropertyFilter> conditions, boolean focusFirstComponent) {
                         RmiQueue.runAction(() -> {
                             try {
                                 GridController.this.formController.changeFilter(groupObject, conditions);
-                                table.requestFocusInWindow();
+                                if (focusFirstComponent) {
+                                    SwingUtilities.invokeLater(() -> focusFirstComponent());
+                                }
                             } catch (IOException e) {
                                 throw new RuntimeException(ClientResourceBundle.getString("errors.error.applying.filter"), e);
                             }

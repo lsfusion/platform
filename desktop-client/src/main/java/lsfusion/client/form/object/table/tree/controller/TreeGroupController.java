@@ -22,6 +22,7 @@ import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.ClientPropertyReader;
 import lsfusion.client.form.view.Column;
 
+import javax.swing.*;
 import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.io.IOException;
@@ -52,13 +53,15 @@ public class TreeGroupController extends AbstractTableController {
 
         if (!treeGroup.plainTreeMode) {
             filter = new FilterController(this, treeGroup.filter) {
-                public void applyFilters(List<ClientPropertyFilter> conditions) {
+                public void applyFilters(List<ClientPropertyFilter> conditions, boolean focusFirstComponent) {
                     RmiQueue.runAction(new Runnable() {
                         @Override
                         public void run() {
                             try {
                                 TreeGroupController.this.formController.changeFilter(treeGroup, conditions);
-                                tree.requestFocusInWindow();
+                                if (focusFirstComponent) {
+                                    SwingUtilities.invokeLater(() -> focusFirstComponent());
+                                }
                             } catch (IOException e) {
                                 throw new RuntimeException(ClientResourceBundle.getString("errors.error.applying.filter"), e);
                             }

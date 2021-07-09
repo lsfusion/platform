@@ -54,20 +54,18 @@ public abstract class FilterController {
         return logicsSupplier;
     }
 
-    public void removeAllConditions() {
-        applyFilters(Collections.emptyList());
+    public void removeAllConditions(boolean focusFirstComponent) {
+        applyFilters(Collections.emptyList(), focusFirstComponent);
     }
     
     public ClientPropertyFilter getNewCondition(ClientPropertyDraw propertyDraw, ClientGroupObjectValue columnKey) {
         ClientPropertyDraw filterProperty = propertyDraw;
         ClientGroupObjectValue filterColumnKey = columnKey;
-        Object filterValue = null;
 
         if (filterProperty == null) {
             filterProperty = logicsSupplier.getSelectedProperty();
             if (filterProperty != null) {
                 filterColumnKey = logicsSupplier.getSelectedColumn();
-                filterValue = logicsSupplier.getSelectedValue(filterProperty, filterColumnKey);
             }
         }
 
@@ -75,22 +73,14 @@ public abstract class FilterController {
             return null;
         }
 
-        return new ClientPropertyFilter(logicsSupplier.getSelectedGroupObject(), filterProperty, filterColumnKey, filterValue, filterProperty.getDefaultCompare());
-    }
-
-    public void commitAndApplyFilters(List<ClientPropertyFilter> conditions) {
-        if (!logicsSupplier.getFormController().commitCurrentEditing()) {
-            return;
-        }
-
-        applyFilters(conditions);
+        return new ClientPropertyFilter(logicsSupplier.getSelectedGroupObject(), filterProperty, filterColumnKey, null, filterProperty.getDefaultCompare());
     }
 
     public void quickEditFilter(KeyEvent initFilterKeyEvent, ClientPropertyDraw propertyDraw, ClientGroupObjectValue columnKey) {
-        view.addCondition(propertyDraw, columnKey, initFilterKeyEvent, true);
+        view.addCondition(propertyDraw, columnKey, initFilterKeyEvent, true, true);
     }
 
-    public abstract void applyFilters(List<ClientPropertyFilter> conditions);
+    public abstract void applyFilters(List<ClientPropertyFilter> conditions, boolean focusFirstComponent);
 
     public void setVisible(boolean visible) {
         getView().setVisible(visible);

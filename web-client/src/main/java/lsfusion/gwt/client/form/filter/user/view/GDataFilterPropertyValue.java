@@ -17,11 +17,13 @@ import java.util.function.Consumer;
 public class GDataFilterPropertyValue extends ActionOrPropertyValue {
 
     private final Consumer<Object> afterCommit;
+    private final Runnable onCancel;
 
-    public GDataFilterPropertyValue(GPropertyDraw property, GGroupObjectValue columnKey, GFormController form, Consumer<Object> afterCommit) {
+    public GDataFilterPropertyValue(GPropertyDraw property, GGroupObjectValue columnKey, GFormController form, Consumer<Object> afterCommit, Runnable onCancel) {
         super(property, columnKey, form, (columnKeyValue, value) -> {});
 
         this.afterCommit = afterCommit;
+        this.onCancel = onCancel;
 
         finalizeInit();
     }
@@ -92,7 +94,7 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
                 FILTER,
                 result -> setValue(result.getValue()),
                 result -> afterCommit.accept(result.getValue()),
-                () -> {},
+                onCancel,
                 this,
                 ServerResponse.FILTER);
     }

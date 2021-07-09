@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.form.filter.user.view;
 
-import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
@@ -24,7 +23,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
-import static lsfusion.gwt.client.form.event.GKeyStroke.ADD_USER_FILTER_KEY_STROKE;
 
 public class GFilterView extends FlexPanel implements GFilterConditionView.UIHandler {
     private static final ClientMessages messages = ClientMessages.Instance.get();
@@ -62,11 +60,7 @@ public class GFilterView extends FlexPanel implements GFilterConditionView.UIHan
             @Override
             public ClickHandler getClickHandler() {
                 // pass add filter key down event to start editing immediately
-                return event -> addCondition(Event.as(Document.get().createKeyDownEvent(ADD_USER_FILTER_KEY_STROKE.ctrlPressed,
-                        ADD_USER_FILTER_KEY_STROKE.altPressed,
-                        ADD_USER_FILTER_KEY_STROKE.shiftPressed,
-                        false,
-                        ADD_USER_FILTER_KEY_STROKE.keyCode)));
+                return event -> addCondition(GKeyStroke.createAddUserFilterKeyEvent());
             }
         };
         addConditionButton.addStyleName("userFilterButton");
@@ -104,28 +98,28 @@ public class GFilterView extends FlexPanel implements GFilterConditionView.UIHan
     }
 
     public void addCondition(Event keyEvent, boolean replace) {
-        addCondition(null, null, keyEvent, replace);
+        addCondition(null, null, keyEvent, replace, true);
     }
     
-    public void addCondition(GPropertyDraw property, GGroupObjectValue columnKey) {
-        addCondition(property, columnKey, null, false);
+    public void addCondition(GPropertyDraw property, GGroupObjectValue columnKey, boolean readSelectedValue) {
+        addCondition(property, columnKey, null, false, readSelectedValue);
     }
 
-    public void addCondition(GPropertyDraw property, GGroupObjectValue columnKey, Event keyEvent, boolean replace) {
-        addCondition(controller.getNewCondition(property, columnKey), keyEvent, replace);
+    public void addCondition(GPropertyDraw property, GGroupObjectValue columnKey, Event keyEvent, boolean replace, boolean readSelectedValue) {
+        addCondition(controller.getNewCondition(property, columnKey), keyEvent, replace, readSelectedValue);
     }
 
-    public void addCondition(GPropertyFilter condition, Event keyEvent, boolean replace) {
+    public void addCondition(GPropertyFilter condition, Event keyEvent, boolean replace, boolean readSelectedValue) {
         if (replace) {
             allRemovedPressed();
         }
         if (condition != null) {
-            GFilterConditionView conditionView = new GFilterConditionView(condition, controller.getLogicsSupplier(), this, toolsVisible);
+            GFilterConditionView conditionView = new GFilterConditionView(condition, controller.getLogicsSupplier(), this, toolsVisible, readSelectedValue);
             conditionViews.put(condition, conditionView);
             filterContainer.add(conditionView);
-            
+
             updateConditionsLastState();
-            focusLastValue();
+            conditionView.focusOnValue();
 
             if (keyEvent != null) {
                 conditionView.startEditing(keyEvent);
@@ -135,22 +129,12 @@ public class GFilterView extends FlexPanel implements GFilterConditionView.UIHan
 
     @Override
     public void conditionRemoved(GPropertyFilter condition) {
-        GFilterConditionView view = conditionViews.get(condition);
-        
-        GFilterConditionView nextViewToFocus = null;
-        if (conditionViews.size() > 1 && view.isFocused()) {
-            ArrayList<GFilterConditionView> viewsList = new ArrayList<>(conditionViews.values());
-            int currentIndex = viewsList.indexOf(view);
-            nextViewToFocus = viewsList.get(currentIndex == viewsList.size() - 1 ? currentIndex - 1 : currentIndex + 1);
-        }
-        
+        filterContainer.remove(conditionViews.get(condition));
         conditionViews.remove(condition);
-        filterContainer.remove(view);
         
         updateConditionsLastState();
-        if (nextViewToFocus != null) {
-            nextViewToFocus.focusOnValue();
-        }
+        
+        applyFilters();
     }
     
     public boolean isToolsVisible() {
@@ -183,13 +167,6 @@ public class GFilterView extends FlexPanel implements GFilterConditionView.UIHan
         }
     }
 
-    public void focusLastValue() {
-        if (!conditionViews.isEmpty()) {
-            Object[] views = conditionViews.values().toArray();
-            ((GFilterConditionView) views[views.length - 1]).focusOnValue();
-        }
-    }
-
     public void applyFilters() {
         ArrayList<GPropertyFilter> result = new ArrayList<>();
         for (Map.Entry<GPropertyFilter, GFilterConditionView> entry : conditionViews.entrySet()) {
@@ -207,7 +184,7 @@ public class GFilterView extends FlexPanel implements GFilterConditionView.UIHan
     public void update() {
         if (!initialized) {
             for (GPropertyDraw property : filterComponent.properties) {
-                addCondition(property, controller.getLogicsSupplier().getSelectedColumnKey());
+                addCondition(property, controller.getLogicsSupplier().getSelectedColumnKey(), false);
             }
             initialized = true;
         }
