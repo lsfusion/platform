@@ -1271,37 +1271,52 @@ public class ClientFormController implements AsyncListener {
     public void getAsyncValues(ClientPropertyDraw property, ClientGroupObjectValue columnKey, String value, String actionSID, Consumer<Pair<List<String>, Boolean>> callback) {
         Consumer<Pair<List<String>, Boolean>> fCallback = checkLast(editAsyncIndex++, callback);
 
-        SwingUtilities.invokeLater(() -> {
-            if (!editAsyncUsePessimistic) {
-                try {
-                    String[] result = getAsyncValuesProvider.getAsyncValues(property.getID(), getFullCurrentKey(columnKey), actionSID, value, editAsyncIndex);
+        new SwingWorker<List<String>, Void>() {
+            boolean runPessimistic = false;
 
-                    if (result == null) { // optimistic request failed, running pessimistic one, with request indices, etc.
-                        editAsyncUsePessimistic = true;
-                        getPessimisticValues(property, columnKey, value, actionSID, fCallback);
-                    } else {
-                        boolean moreResults = false;
-                        List<String> values = Arrays.asList(result);
-                        if (values.size() > 0) {
-                            String lastResult = values.get(values.size() - 1);
-                            if (lastResult.equals(ServerResponse.RECHECK)) {
-                                values = values.subList(0, values.size() - 1);
-
-                                moreResults = true;
-                                getPessimisticValues(property, columnKey, value, actionSID, fCallback);
-                            } else if (values.size() == 1 && lastResult.equals(ServerResponse.CANCELED)) // ignoring CANCELED results
-                                return;
+            @Override
+            protected List<String> doInBackground() {
+                if (!editAsyncUsePessimistic) {
+                    try {
+                        String[] result = getAsyncValuesProvider.getAsyncValues(property.getID(), getFullCurrentKey(columnKey), actionSID, value, editAsyncIndex);
+                        if (result == null) { // optimistic request failed, running pessimistic one, with request indices, etc.
+                            editAsyncUsePessimistic = true;
+                            runPessimistic = true;
+                        } else {
+                            List<String> values = Arrays.asList(result);
+                            if (values.size() > 0) {
+                                String lastResult = values.get(values.size() - 1);
+                                if (lastResult.equals(ServerResponse.RECHECK)) {
+                                    runPessimistic = true;
+                                    values = values.subList(0, values.size() - 1);
+                                } else if (values.size() == 1 && lastResult.equals(ServerResponse.CANCELED)) // ignoring CANCELED results
+                                    values = Collections.emptyList();
+                            }
+                            return values;
                         }
-                        callback.accept(new Pair<>(values, moreResults));
-                    }
 
-                } catch (RemoteException e) {
-                    throw Throwables.propagate(e);
+                    } catch (RemoteException e) {
+                        throw Throwables.propagate(e);
+                    }
+                } else {
+                    runPessimistic = true;
                 }
-            } else {
-                getPessimisticValues(property, columnKey, value, actionSID, fCallback);
+
+                return Collections.emptyList();
             }
-        });
+
+            @Override
+            protected void done() {
+                try {
+                    fCallback.accept(Pair.create(get(), runPessimistic));
+                    if(runPessimistic) {
+                        getPessimisticValues(property, columnKey, value, actionSID, fCallback);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }.execute();
     }
 
     public void changePropertyOrder(final ClientPropertyDraw property, final Order modiType, final ClientGroupObjectValue columnKey) {

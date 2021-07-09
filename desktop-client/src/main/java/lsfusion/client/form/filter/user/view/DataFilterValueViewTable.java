@@ -13,6 +13,7 @@ import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
 import lsfusion.client.form.property.cell.controller.PropertyTableCellEditor;
 import lsfusion.client.form.property.cell.view.PropertyRenderer;
 import lsfusion.client.form.property.table.view.AsyncChangeInterface;
+import lsfusion.client.form.property.table.view.AsyncInputComponent;
 import lsfusion.client.form.property.table.view.TableTransferHandler;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.event.KeyStrokes;
@@ -99,6 +100,10 @@ class DataFilterValueViewTable extends JTable implements TableTransferHandler.Ta
             if (editor != null) {
                 editor.requestFocusInWindow();
                 logicsSupplier.getFormController().setCurrentEditingTable(this);
+            }
+
+            if (editorComp instanceof AsyncInputComponent) {
+                ((AsyncInputComponent) editorComp).initEditor();
             }
         }
 

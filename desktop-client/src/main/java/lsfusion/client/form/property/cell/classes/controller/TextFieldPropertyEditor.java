@@ -3,6 +3,7 @@ package lsfusion.client.form.property.cell.classes.controller;
 import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.GlazedLists;
 import ca.odell.glazedlists.swing.DefaultEventComboBoxModel;
+import lsfusion.base.Pair;
 import lsfusion.client.base.view.ClientColorUtils;
 import lsfusion.client.base.view.ClientImages;
 import lsfusion.client.base.view.SwingDefaults;
@@ -12,6 +13,7 @@ import lsfusion.client.form.property.cell.classes.controller.suggest.BasicComboB
 import lsfusion.client.form.property.cell.controller.PropertyTableCellEditor;
 import lsfusion.client.form.property.panel.view.CaptureKeyEventsDispatcher;
 import lsfusion.client.form.property.table.view.AsyncChangeInterface;
+import lsfusion.client.form.property.table.view.AsyncInputComponent;
 import lsfusion.interop.form.event.KeyStrokes;
 
 import javax.swing.*;
@@ -27,6 +29,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EventObject;
 import java.util.List;
 
@@ -49,6 +52,8 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
 
     private SuggestBox suggestBox;
 
+    private SuggestPopupButton refreshButton;
+
     TextFieldPropertyEditor(ClientPropertyDraw property) {
         this(property, null, null);
     }
@@ -69,7 +74,6 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
 
         if (hasList) {
             suggestBox = new SuggestBox((String) value);
-            updateAsyncValues(property, "");
         } else {
             setBorder(this);
             setDesign(this);
@@ -94,7 +98,8 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
     public void updateAsyncValues(ClientPropertyDraw property, String query) {
         if(!suggestBox.disableUpdate) {
             prevQuery = query;
-            asyncChange.getForm().getAsyncValues(property, asyncChange.getColumnKey(0, 0), query, actionSID, result -> suggestBox.updateItems(result.first, strict && !query.isEmpty()));
+            suggestBox.updateLoadingButton(true);
+            asyncChange.getForm().getAsyncValues(property, asyncChange.getColumnKey(0, 0), query, actionSID, result -> suggestBox.updateItems(result, strict && !query.isEmpty()));
         }
     }
 
@@ -168,14 +173,14 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
         private EventList<Object> items;
         List<String> latestSuggestions = new ArrayList<>();
 
-        private JComboBox comboBox;
+        private CustomComboBox comboBox;
 
         private JTextField comboBoxEditorComponent;
 
         public SuggestBox(String value) {
             items = GlazedLists.eventListOf();
 
-            comboBox = new JComboBox(new DefaultEventComboBoxModel(items));
+            comboBox = new CustomComboBox(new DefaultEventComboBoxModel(items));
             comboBox.setEditable(true);
             
             comboBox.setRenderer(new DefaultListCellRenderer() {
@@ -198,7 +203,7 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
                             JPanel buttonsPanel = new JPanel();
                             setBackgroundColor(buttonsPanel);
 
-                            SuggestPopupButton refreshButton = new SuggestPopupButton(ClientImages.get("refresh.png"), e -> updateAsyncValues(property, prevQuery));
+                            refreshButton = new SuggestPopupButton(ClientImages.get("refresh.png"), e -> updateAsyncValues(property, prevQuery));
                             buttonsPanel.add(refreshButton);
 
                             for (int i = 0; i < actions.length; i++) {
@@ -242,7 +247,7 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
         }
 
         public boolean isValidValue(String value) {
-            return latestSuggestions.contains(value);
+            return value.isEmpty() || latestSuggestions.contains(value);
         }
 
         private void setSelectedIndex(int index) {
@@ -286,17 +291,26 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
             disableUpdate = false;
         }
 
-        public void updateItems(List<String> result, boolean selectFirst) {
+        public void updateItems(Pair<List<String>, Boolean> result, boolean selectFirst) {
             items.clear();
             comboBox.getModel().setSelectedItem(null);
-            items.addAll(GlazedLists.eventListOf(result.toArray()));
-            latestSuggestions = result;
-            comboBox.setMaximumRowCount(result.size());
+            items.addAll(GlazedLists.eventListOf(result.first.toArray()));
+            latestSuggestions = result.first;
+            comboBox.setMaximumRowCount(result.first.size());
             //hide and show to call computePopupBounds
             suggestBox.comboBox.hidePopup();
             suggestBox.comboBox.showPopup();
+            updateLoadingButton(result.second);
             if (selectFirst) {
                 setSelectedIndex(0);
+            }
+        }
+
+        boolean prevShowLoading;
+        public void updateLoadingButton(boolean showLoading) {
+            if(prevShowLoading != showLoading) {
+                refreshButton.setIcon(ClientImages.get(showLoading ? "loading.gif" : "refresh.png"));
+                prevShowLoading = showLoading;
             }
         }
 
@@ -416,6 +430,25 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
             setPreferredSize(new Dimension(24, 24));
             setRequestFocusEnabled(false);
             addActionListener(actionListener);
+        }
+    }
+
+
+    private class CustomComboBox extends JComboBox implements AsyncInputComponent {
+
+        public CustomComboBox(ComboBoxModel model) {
+            super(model);
+        }
+
+        @Override
+        public void initEditor() {
+            //need because we extend JComboBox
+            suggestBox.comboBoxEditorComponent.putClientProperty("doNotCancelPopup",  new JComboBox().getClientProperty("doNotCancelPopup"));
+
+            //show empty async popup
+            suggestBox.comboBoxEditorComponent.selectAll();
+            suggestBox.updateItems(Pair.create(Collections.emptyList(), true), false);
+            updateAsyncValues(property, "");
         }
     }
 }

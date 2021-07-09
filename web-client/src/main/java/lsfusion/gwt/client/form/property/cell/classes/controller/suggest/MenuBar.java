@@ -709,6 +709,7 @@ public class MenuBar extends Widget implements PopupListener, HasAnimation,
         // Fire an item's command when the user clicks on it.
         if (item != null) {
           doItemAction(item, true, true);
+          eatEvent(event); //todo: added to save focus on element
         }
         break;
       }

@@ -213,6 +213,10 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
         assert checkEditBounds();
         prepareTextEditor();
 
+        if (editorComp instanceof AsyncInputComponent) {
+            ((AsyncInputComponent) editorComp).initEditor();
+        }
+
         editorComp.requestFocusInWindow();
 
         form.setCurrentEditingTable(this);

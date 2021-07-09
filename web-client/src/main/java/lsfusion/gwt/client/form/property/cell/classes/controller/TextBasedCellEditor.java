@@ -26,6 +26,7 @@ import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import static com.google.gwt.dom.client.BrowserEvents.BLUR;
@@ -179,7 +180,7 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
     }
     protected void escapePressed(EventHandler handler, Element parent) {
         if(hasList) {
-            suggestBox.display.hideSuggestions();
+            suggestBox.hideSuggestions();
         }
         if(GKeyStroke.isPlainKeyEvent(handler.event)) {
             handler.consume();
@@ -236,6 +237,7 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
         String stringValue = contextAction != null ? suggestBox.getValue() : getCurrentText(parent); //if button pressed, input element is button
         if(hasList && strict && contextAction == null && !suggestBox.isValidValue(stringValue)) {
             if (cancelIfInvalid) {
+                suggestBox.hideSuggestions();
                 editManager.cancelEditing();
             }
             return;
@@ -243,7 +245,7 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
 
         try {
             if(hasList) {
-                suggestBox.display.hideSuggestions();
+                suggestBox.hideSuggestions();
             }
             editManager.commitEditing(new GUserInputResult(tryParseInputText(stringValue, true), contextAction), blurred);
         } catch (ParseException ignore) {
@@ -267,14 +269,7 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
 
                 @Override
                 public void requestDefaultSuggestions(Request request, Callback callback) {
-                    if (prevQuery != null && prevQuery.isEmpty()) {
-                        //it's forceRefreshSuggestions to show async empty popup
-                        suggestBox.updateDecoration(false, true, true);
-                        callback.onSuggestionsReady(request, new Response(new ArrayList<>()));
-                        setMinWidth(suggestBox, false);
-                    } else {
-                        requestAsyncSuggestions(request, callback, true);
-                    }
+                    requestAsyncSuggestions(request, callback, true);
                 }
 
                 @Override
@@ -283,48 +278,54 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
                 }
 
                 private void requestAsyncSuggestions(Request request, Callback callback, boolean emptyQuery) {
-                    String query = nvl(request.getQuery(), "");
-                    prevQuery = query;
                     if(suggestBox != null) {
-                        suggestBox.updateLoadingButton(true);
+                        suggestBox.updateDecoration(false, true, true);
                     }
-                    editManager.getAsyncValues(query, new AsyncCallback<Pair<ArrayList<String>, Boolean>>() {
-                        @Override
-                        public void onFailure(Throwable caught) {
-                        }
+                    if (suggestBox != null && !suggestBox.isSuggestionListShowing()) {
+                        //it's forceRefreshSuggestions to show async empty popup
+                        callback.onSuggestionsReady(request, new Response(new ArrayList<>()));
+                        setMinWidth(suggestBox, false);
+                    } else {
+                        String query = nvl(request.getQuery(), "");
+                        prevQuery = query;
+                        editManager.getAsyncValues(query, new AsyncCallback<Pair<ArrayList<String>, Boolean>>() {
+                            @Override
+                            public void onFailure(Throwable caught) {
+                            }
 
-                        @Override
-                        public void onSuccess(Pair<ArrayList<String>, Boolean> result) {
-                            if(editManager.isEditing() && suggestBox.isSuggestionListShowing()) {
-                                suggestBox.setAutoSelectEnabled(strict && !emptyQuery);
-                                suggestBox.setLatestSuggestions(result.first);
-                                List<Suggestion> suggestionList = new ArrayList<>();
-                                for (String suggestion : result.first) {
-                                    suggestionList.add(new Suggestion() {
-                                        @Override
-                                        public String getDisplayString() {
-                                            int start = suggestion.toLowerCase().indexOf(query.toLowerCase());
-                                            if (start >= 0) {
-                                                int end = start + query.length();
-                                                return suggestion.substring(0, start) + "<strong>" + suggestion.substring(start, end) + "</strong>" + suggestion.substring(end);
-                                            } else {
+                            @Override
+                            public void onSuccess(Pair<ArrayList<String>, Boolean> result) {
+                                if (editManager.isEditing() && suggestBox.isSuggestionListShowing()) {
+                                    suggestBox.setAutoSelectEnabled(strict && !emptyQuery);
+                                    suggestBox.setLatestSuggestions(result.first);
+                                    List<Suggestion> suggestionList = new ArrayList<>();
+                                    for (String suggestion : result.first) {
+                                        suggestionList.add(new Suggestion() {
+                                            @Override
+                                            public String getDisplayString() {
+                                                int start = suggestion.toLowerCase().indexOf(query.toLowerCase());
+                                                if (start >= 0) {
+                                                    int end = start + query.length();
+                                                    return suggestion.substring(0, start) + "<strong>" + suggestion.substring(start, end) + "</strong>" + suggestion.substring(end);
+                                                } else {
+                                                    return suggestion;
+                                                }
+                                            }
+
+                                            @Override
+                                            public String getReplacementString() {
                                                 return suggestion;
                                             }
-                                        }
+                                        });
+                                    }
+                                    suggestBox.updateDecoration(suggestionList.isEmpty(), false, result.second);
+                                    callback.onSuggestionsReady(request, new Response(suggestionList));
 
-                                        @Override
-                                        public String getReplacementString() {
-                                            return suggestion;
-                                        }
-                                    });
+                                    setMinWidth(suggestBox, true);
                                 }
-                                suggestBox.updateDecoration(suggestionList.isEmpty(), false, result.second);
-                                callback.onSuggestionsReady(request, new Response(suggestionList));
-
-                                setMinWidth(suggestBox, true);
                             }
-                        }
-                    });
+                        });
+                    }
 
                 }
 
@@ -386,8 +387,8 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
             return value.isEmpty() || latestSuggestions.contains(value);
         }
 
-        public void updateLoadingButton(boolean showLoading) {
-            display.updateLoadingButton(showLoading);
+        public void hideSuggestions() {
+            display.hideSuggestions();
         }
 
         public void updateDecoration(boolean showNoResult, boolean showEmptyLabel, boolean showLoading) {
@@ -439,7 +440,6 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
                 @Override
                 protected void onClickStart() {
                     refreshButtonPressed = true;
-                    updateLoadingButton(true);
                     suggestBox.forceRefreshSuggestions(prevQuery);
                 }
             });
@@ -454,22 +454,24 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
                     }
                 })));
             }
-
-            updateLoadingButton(true);
             bottomPanel.add(buttonsPanel);
 
             return panel;
         }
 
-        public void updateDecoration(boolean showNoResult, boolean showEmptyLabel, boolean showLoading) {
-            noResultsLabel.setVisible(showNoResult);
-            emptyLabel.setVisible(showEmptyLabel);
-            updateLoadingButton(showLoading);
+        @Override
+        protected void showSuggestions(SuggestBox suggestBox, Collection<? extends SuggestOracle.Suggestion> suggestions, boolean isDisplayStringHTML, boolean isAutoSelectEnabled, SuggestBox.SuggestionCallback callback) {
+            super.showSuggestions(suggestBox, suggestions, isDisplayStringHTML, isAutoSelectEnabled, suggestion -> {
+                callback.onSuggestionSelected(suggestion);
+                commitEditing(suggestBox.getElement().getParentElement());
+            });
         }
 
         boolean prevShowLoading;
-        public void updateLoadingButton(boolean showLoading) {
-            if(prevShowLoading != showLoading) {
+        public void updateDecoration(boolean showNoResult, boolean showEmptyLabel, boolean showLoading) {
+            noResultsLabel.setVisible(showNoResult);
+            emptyLabel.setVisible(showEmptyLabel);
+            if (prevShowLoading != showLoading) {
                 GwtClientUtils.setThemeImage(showLoading ? "loading.gif" : "refresh.png", image -> refreshButton.getUpFace().setImage(new Image(image)));
                 prevShowLoading = showLoading;
             }
