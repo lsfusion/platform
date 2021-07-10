@@ -29,6 +29,7 @@ public class UploadToDBAction extends InternalAction {
         try {
             String type = (String) findProperty("uploadStaticNameType[]").read(context);
             String host = (String) findProperty("uploadHost[]").read(context);
+            Integer port = (Integer) findProperty("uploadPort[]").read(context);
             String user = (String) findProperty("uploadUser[]").read(context);
             String password = (String) findProperty("uploadPassword[]").read(context);
             String db = (String) findProperty("uploadDB[]").read(context);
@@ -37,7 +38,7 @@ public class UploadToDBAction extends InternalAction {
             final DataAdapter adapter;
             try {
                 if(type.trim().equals("Service_DBType.POSTGRE"))
-                    adapter = new PostgreDataAdapter(db, host, user, password);
+                    adapter = new PostgreDataAdapter(db, host, port, user, password);
 //                else if(type.trim().equals("Service_DBType.MSSQL"))
 //                    adapter = new MSSQLDataAdapter(db, host, user, password, instance);
                 else
