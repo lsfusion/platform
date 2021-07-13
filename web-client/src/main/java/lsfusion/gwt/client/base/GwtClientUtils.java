@@ -869,6 +869,10 @@ public class GwtClientUtils {
         return obj1.equals(obj2);
     }
 
+    public static int nullHash(Object obj) {
+        return obj == null ? 0 : obj.hashCode();
+    }
+
     public static Element getElement(Node node) {
         if(node == null)
             return null;

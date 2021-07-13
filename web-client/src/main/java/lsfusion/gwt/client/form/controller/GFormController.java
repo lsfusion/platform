@@ -57,10 +57,7 @@ import lsfusion.gwt.client.form.filter.GRegularFilter;
 import lsfusion.gwt.client.form.filter.GRegularFilterGroup;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilterDTO;
-import lsfusion.gwt.client.form.object.GGroupObject;
-import lsfusion.gwt.client.form.object.GGroupObjectValue;
-import lsfusion.gwt.client.form.object.GGroupObjectValueBuilder;
-import lsfusion.gwt.client.form.object.GObject;
+import lsfusion.gwt.client.form.object.*;
 import lsfusion.gwt.client.form.object.panel.controller.GPanelController;
 import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController;
 import lsfusion.gwt.client.form.object.table.controller.GPropertyController;
@@ -1158,7 +1155,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             MainFrame.logicsDispatchAsync.execute(new GenerateID(), new ErrorHandlingCallback<GenerateIDResult>() {
                 @Override
                 public void success(GenerateIDResult result) {
-                    executeModifyObject(editContext, editEvent, actionSID, object, add, result.ID, new GGroupObjectValue(object.ID, result.ID), position);
+                    executeModifyObject(editContext, editEvent, actionSID, object, add, new GPushAsyncAdd(result.ID), new GGroupObjectValue(object.ID, new GCustomObjectValue(result.ID, null)), position);
                 }
             });
         } else {
@@ -1167,13 +1164,12 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             final GGroupObjectValue value = controllers.get(object.groupObject).getCurrentKey();
             if(value.isEmpty())
                 return;
-            final long ID = (Long) value.getValue(0);
-            executeModifyObject(editContext, editEvent, actionSID, object, add, ID, value, position);
+            executeModifyObject(editContext, editEvent, actionSID, object, add, null, value, position);
         }
     }
 
-    private void executeModifyObject(EditContext editContext, Event editEvent, String actionSID, GObject object, boolean add, long ID, GGroupObjectValue value, int position) {
-        long requestIndex = asyncExecutePropertyEventAction(actionSID, editContext, editEvent, add ? new GPushAsyncAdd(ID) : null);
+    private void executeModifyObject(EditContext editContext, Event editEvent, String actionSID, GObject object, boolean add, GPushAsyncResult pushAsyncResult, GGroupObjectValue value, int position) {
+        long requestIndex = asyncExecutePropertyEventAction(actionSID, editContext, editEvent, pushAsyncResult);
 
         pendingChangeCurrentObjectsRequests.put(object.groupObject, requestIndex);
         pendingModifyObjectRequests.put(requestIndex, new ModifyObject(object, add, value, position));

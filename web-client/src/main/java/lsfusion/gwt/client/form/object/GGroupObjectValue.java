@@ -26,30 +26,11 @@ public class GGroupObjectValue implements Serializable {
     public GGroupObjectValue() {
     }
 
-    public GGroupObjectValue(int keys[], Serializable values[]) {
-        if (keys == null || values == null) {
-            throw new IllegalStateException("keys and values must not be null");
-        } else {
-            if (keys.length != values.length) {
-                throw new IllegalStateException("keys and values must have the same size");
-            }
-            if (keys.length != 0) {
-                if (keys.length == 1) {
-                    initSingle(keys[0], values[0]);
-                } else {
-                    size = keys.length;
-                    this.keys = keys;
-                    this.values = values;
-                }
-            }
-        }
-    }
-
-    public GGroupObjectValue(Map<Integer, Object> k) {
+    public GGroupObjectValue(Map<Integer, Serializable> k) {
         int ks = k.size();
         if (ks != 0) {
             if (ks == 1) {
-                Map.Entry<Integer, Object> e = k.entrySet().iterator().next();
+                Map.Entry<Integer, Serializable> e = k.entrySet().iterator().next();
                 initSingle(e.getKey(), e.getValue());
             } else {
                 size = ks;
@@ -57,15 +38,15 @@ public class GGroupObjectValue implements Serializable {
                 values = new Serializable[size];
 
                 int i = 0;
-                for (Map.Entry<Integer, Object> e : k.entrySet()) {
+                for (Map.Entry<Integer, Serializable> e : k.entrySet()) {
                     keys[i] = e.getKey();
-                    values[i++] = (Serializable) e.getValue();
+                    values[i++] = e.getValue();
                 }
             }
         }
     }
 
-    public GGroupObjectValue(int key, Object value) {
+    public GGroupObjectValue(int key, Serializable value) {
         initSingle(key, value);
     }
 
@@ -83,7 +64,7 @@ public class GGroupObjectValue implements Serializable {
         return size == 1 ? singleKey : keys[index];
     }
 
-    public Object getValue(int index) {
+    public Serializable getValue(int index) {
         return size == 1 ? singleValue : values[index];
     }
 

@@ -54,6 +54,10 @@ public class NativeSIDMap<K extends HasNativeSID, V> {
         return jsSize();
     }
 
+    public K singleKey() {
+        return jsSingleKey(valueMap);
+    }
+
     public String toString() {
         final JsArrayString ts = JsArray.createArray().cast();
         ts.push("{");
@@ -172,6 +176,15 @@ public class NativeSIDMap<K extends HasNativeSID, V> {
             }
         }
         return false;
+    }-*/;
+
+    // Prepend ':' to avoid conflicts with built-in Object properties.
+    private native K jsSingleKey(JavaScriptObject valueMap) /*-{
+        for (var sKey in valueMap) {
+            if (sKey.charCodeAt(0) == 58)
+                return sKey;
+        }
+        return null;
     }-*/;
 
     // only iterate keys with ':' prefix

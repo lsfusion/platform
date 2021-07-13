@@ -598,8 +598,10 @@ public class BaseUtils {
     }
 
     public static Object deserializeObject(DataInputStream inStream) throws IOException {
+        return deserializeObject(inStream, inStream.readByte());
+    }
 
-        int objectType = inStream.readByte();
+    public static Object deserializeObject(DataInputStream inStream, int objectType) throws IOException {
 
         if (objectType == 0) {
             return null;
@@ -2502,26 +2504,19 @@ public class BaseUtils {
             keyValues.put(key, values);
     }
 
-    public static <K, V, M extends Map<K, V>> M getNearObject(V findValue, List<M> keys) {
+    public static <V> V getNearObject(V findValue, List<V> keys) {
         if (keys.size() <= 1)
             return null;
 
-        M nearObject = null;
-        for (M key : keys) {
-            if (key.values().contains(findValue) && nearObject == null) {
+        V nearObject = null;
+        for (V key : keys) {
+            if (key.equals(findValue) && nearObject == null) {
                 int index = keys.indexOf(key);
                 index = index == keys.size() - 1 ? index - 1 : index + 1;
                 nearObject = keys.get(index);
             }
         }
         return nearObject;
-    }
-
-    public static <K, V, M extends Map<K, V>> V getNearValue(K findKey, V findValue, List<M> keys) {
-        M nearObject = getNearObject(findValue, keys);
-        if (nearObject != null)
-            return nearObject.get(findKey);
-        return null;
     }
 
     private static final char[] randomsymbols = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray();

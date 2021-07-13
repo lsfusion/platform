@@ -40,6 +40,8 @@ import lsfusion.server.physics.dev.debug.ActionDelegationType;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.SQLException;
+import java.util.List;
+import java.util.Map;
 
 import static lsfusion.server.logics.property.PropertyFact.createChangeClassAction;
 
@@ -163,7 +165,8 @@ public class ChangeClassAction<T extends PropertyInterface, I extends PropertyIn
                 if (objectInstance instanceof ObjectInstance) {
                     CustomObjectInstance customObjectInstance = (CustomObjectInstance) objectInstance;
                     if(readClass instanceof UnknownClass || !((CustomClass) readClass).isChild(customObjectInstance.gridClass)) { // если удаляется
-                        nearObject = BaseUtils.getNearValue((ObjectInstance) objectInstance, dataObject, ListFact.toJavaMapList(customObjectInstance.groupTo.keys.keyOrderSet()));
+                        ImMap<ObjectInstance, DataObject> nearGroupObject = BaseUtils.getNearObject(MapFact.singleton((ObjectInstance) objectInstance, dataObject), customObjectInstance.groupTo.keys.keyOrderSet().toJavaList());
+                        nearObject = nearGroupObject != null ? nearGroupObject.singleValue() : null;
                         seekOther = true;
                     }
                 }

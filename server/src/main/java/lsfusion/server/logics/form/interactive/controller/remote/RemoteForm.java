@@ -210,32 +210,22 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         }, forceLocalEvents);
     }
 
-    private static DataInputStream getDeserializeKeysValuesInputStream(byte[] keysArray) {
-        assert keysArray != null;
-        return keysArray != null ? new DataInputStream(new ByteArrayInputStream(keysArray)) : null;
+    private ImMap<ObjectInstance, DataObject> deserializeKeysValues(byte[] keysArray) throws IOException {
+        return deserializeKeysValues(new DataInputStream(new ByteArrayInputStream(keysArray)), form);
     }
-    private ImMap<ObjectInstance, Object> deserializeKeysValues(byte[] keysArray) throws IOException {
-        return deserializeKeysValues(getDeserializeKeysValuesInputStream(keysArray), form);
-    }
-    private static ImMap<ObjectInstance, Object> deserializeKeysValues(DataInputStream inStream, FormInstance form) throws IOException {
-        MExclMap<ObjectInstance, Object> mMapValues = MapFact.mExclMap();
-        if (inStream != null) {
-            int cnt = inStream.readInt();
-            for (int i = 0 ; i < cnt; ++i) {
-                mMapValues.exclAdd(form.getObjectInstance(inStream.readInt()), deserializeObject(inStream));
-            }
-        } else 
-            assert false;
+    public static ImMap<ObjectInstance, DataObject> deserializeKeysValues(DataInputStream inStream, FormInstance form) throws IOException {
+        MExclMap<ObjectInstance, DataObject> mMapValues = MapFact.mExclMap();
+        int cnt = inStream.readInt();
+        for (int i = 0 ; i < cnt; ++i) {
+            ObjectInstance object = form.getObjectInstance(inStream.readInt());
+            ObjectValue value = FormChanges.deserializeObjectValue(inStream, object.getBaseClass());
+            if(value instanceof DataObject)
+                mMapValues.exclAdd(object, (DataObject) value);
+            else
+                assert false; // not sure how it can be
+        }
 
         return mMapValues.immutable();
-    }
-
-    private ImMap<ObjectInstance, DataObject> deserializePropertyKeys(PropertyDrawInstance<?> propertyDraw, byte[] remapKeys) throws IOException, SQLException, SQLHandledException {
-        return deserializePropertyKeys(propertyDraw, getDeserializeKeysValuesInputStream(remapKeys), form);
-    }
-    public static ImMap<ObjectInstance, DataObject> deserializePropertyKeys(PropertyDrawInstance<?> propertyDraw, DataInputStream remapKeys, FormInstance form) throws IOException, SQLException, SQLHandledException {
-        //todo: для оптимизации можно забирать существующие ключи из GroupObjectInstance, чтобы сэкономить на query для чтения класса
-        return getDataObjects(form.session, deserializeKeysValues(remapKeys, form));
     }
 
     private static ImMap<ObjectInstance, DataObject> getDataObjects(DataSession session, ImMap<ObjectInstance, Object> dataKeys) throws SQLException, SQLHandledException {
@@ -248,15 +238,11 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         return mvKeys.immutableValue();
     }
 
-    private ImMap<ObjectInstance, DataObject> deserializeGroupObjectKeys(GroupObjectInstance group, byte[] treePathKeys) throws IOException, SQLException, SQLHandledException {
-        return group.findGroupObjectValue(deserializeKeysValues(treePathKeys));
-    }
-
     public ServerResponse changeGroupObject(long requestIndex, long lastReceivedRequestIndex, final int groupID, final byte[] value) throws RemoteException {
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
             GroupObjectInstance groupObject = form.getGroupObjectInstance(groupID);
-            
-            ImMap<ObjectInstance, DataObject> valueToSet = deserializeGroupObjectKeys(groupObject, value);
+
+            ImMap<ObjectInstance, DataObject> valueToSet = deserializeKeysValues(value);
             if(valueToSet == null)
                 return;
 
@@ -287,7 +273,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
     public ServerResponse expandGroupObject(long requestIndex, long lastReceivedRequestIndex, final int groupId, final byte[] groupValues) throws RemoteException {
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
             GroupObjectInstance group = form.getGroupObjectInstance(groupId);
-            ImMap<ObjectInstance, DataObject> valueToSet = deserializeGroupObjectKeys(group, groupValues);
+            ImMap<ObjectInstance, DataObject> valueToSet = deserializeKeysValues(groupValues);
             if(valueToSet == null)
                 return;
 
@@ -318,7 +304,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
     public ServerResponse collapseGroupObject(long requestIndex, long lastReceivedRequestIndex, final int groupId, final byte[] groupValues) throws RemoteException {
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
             GroupObjectInstance group = form.getGroupObjectInstance(groupId);
-            ImMap<ObjectInstance, DataObject> valueToSet = deserializeGroupObjectKeys(group, groupValues);
+            ImMap<ObjectInstance, DataObject> valueToSet = deserializeKeysValues(groupValues);
             if(valueToSet == null)
                 return;
 
@@ -372,7 +358,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                     MExclSet<GroupColumn> mAggrProps = SetFact.mExclSet(propertyIDs.length);
                     for (int i = 0; i < propertyIDs.length; i++) {
                         PropertyDrawInstance property = form.getPropertyDraw(propertyIDs[i]);
-                        GroupColumn column = new GroupColumn(property, deserializePropertyKeys(property, columnKeys[i]));
+                        GroupColumn column = new GroupColumn(property, deserializeKeysValues(columnKeys[i]));
                         if (i >= aggrProps)
                             mAggrProps.exclAdd(column);
                         else
@@ -404,7 +390,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
             for (int i =0; i < propertyIDs.size(); i++) {
                 PropertyDrawInstance<?> property = form.getPropertyDraw(propertyIDs.get(i));
                 properties.add(property);
-                keys.add(deserializePropertyKeys(property, columnKeys.get(i)));
+                keys.add(deserializeKeysValues(columnKeys.get(i)));
             }
 
             if (logger.isTraceEnabled()) {
@@ -436,8 +422,8 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                     
                     if(logger.isTraceEnabled())
                         logger.trace(String.format("propertyDraw: %s", propertyDraw.getSID()));
-                    
-                    propKeys.add(deserializePropertyKeys(propertyDraw, bkey), propValue);
+
+                    propKeys.add(deserializeKeysValues(bkey), propValue);
                 }
 
                 keysValues.put(propertyDraw, propKeys.immutableOrder());
@@ -451,7 +437,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
             PropertyDrawInstance<?> propertyDraw = form.getPropertyDraw(propertyID);
             if(propertyDraw != null) {
-                ImMap<ObjectInstance, DataObject> keys = deserializePropertyKeys(propertyDraw, columnKeys);
+                ImMap<ObjectInstance, DataObject> keys = deserializeKeysValues(columnKeys);
 
                 Order order = Order.deserialize(modiType);
 
@@ -483,7 +469,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                 Boolean order = orderList.get(i);
                 PropertyDrawInstance<?> propertyDraw = form.getPropertyDraw(propertyID);
                 if(propertyDraw != null) {
-                    ImMap<ObjectInstance, DataObject> keys = deserializePropertyKeys(propertyDraw, columnKeys);
+                    ImMap<ObjectInstance, DataObject> keys = deserializeKeysValues(columnKeys);
                     PropertyObjectInstance property = propertyDraw.getDrawInstance().getRemappedPropertyObject(keys);
                     propertyDraw.toDraw.changeOrder(property, Order.ADD);
                     if(!order)
@@ -511,7 +497,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
     public Object calculateSum(long requestIndex, long lastReceivedRequestIndex, final int propertyID, final byte[] columnKeys) throws RemoteException {
         return processRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
             PropertyDrawInstance<?> propertyDraw = form.getPropertyDraw(propertyID);
-            ImMap<ObjectInstance, DataObject> keys = deserializePropertyKeys(propertyDraw, columnKeys);
+            ImMap<ObjectInstance, DataObject> keys = deserializeKeysValues(columnKeys);
 
             Object result = form.calculateSum(propertyDraw, keys);
             
@@ -535,7 +521,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                     MList<ImMap<ObjectInstance, DataObject>> mList = ListFact.mList();
                     if (propertyDraw != null) {
                         for (byte[] columnKeys : oneEntry.getValue()) {
-                            mList.add(deserializePropertyKeys(propertyDraw, columnKeys));
+                            mList.add(deserializeKeysValues(columnKeys));
                         }
                         mOutMap.exclAdd(propertyDraw, mList.immutableList());
                     } else
@@ -687,7 +673,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
             for (int j = 0; j < propertyIDs.length; j++) {
                 PropertyDrawInstance propertyDraw = form.getPropertyDraw(propertyIDs[j]);
-                ImMap<ObjectInstance, DataObject> keys = deserializePropertyKeys(propertyDraw, fullKeys[j]);
+                ImMap<ObjectInstance, DataObject> keys = deserializeKeysValues(fullKeys[j]);
 
                 Function<AsyncEventExec, PushAsyncResult> asyncResult = null;
                 byte[] pushAsyncResult = pushAsyncResults[j];
@@ -741,7 +727,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
             }
 
             PropertyDrawInstance propertyDraw = form.getPropertyDraw(propertyID);
-            ImMap<ObjectInstance, DataObject> keys = deserializePropertyKeys(propertyDraw, fullKey);
+            ImMap<ObjectInstance, DataObject> keys = deserializeKeysValues(fullKey);
 
             String[] result = form.getAsyncValues(propertyDraw, keys, actionSID, value, optimistic);
 

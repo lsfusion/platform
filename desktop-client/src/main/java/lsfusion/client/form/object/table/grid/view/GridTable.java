@@ -775,7 +775,7 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
             }
             setRowKeysAndCurrentObject(irowKeys, rowKey);
         } else {
-            setRowKeysAndCurrentObject(removeList(rowKeys, rowKey), currentObject.equals(rowKey) ? getNearObject(singleValue(rowKey), rowKeys) : null);
+            setRowKeysAndCurrentObject(removeList(rowKeys, rowKey), currentObject.equals(rowKey) ? getNearObject(rowKey, rowKeys) : null);
         }
     }
 

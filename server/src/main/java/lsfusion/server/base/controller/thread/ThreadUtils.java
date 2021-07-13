@@ -34,7 +34,7 @@ public class ThreadUtils {
     public static void interruptThread(DBManager dbManager, Thread thread) throws SQLException, SQLHandledException {
         if(thread != null) {
             ServerLoggers.exinfoLog("THREAD INTERRUPT " + thread);
-            SQLSession.cancelExecutingStatement(dbManager, thread.getId(), true);
+            SQLSession.cancelExecutingStatement(dbManager, thread, true);
             thread.interrupt();
         }
     }
@@ -43,9 +43,9 @@ public class ThreadUtils {
         SystemUtils.sleep(millis);
     }
 
-    public static void interruptThread(DBManager dbManager, Long threadId, Future future) throws SQLException, SQLHandledException {
-        if(threadId != null)
-            SQLSession.cancelExecutingStatement(dbManager, threadId, true);
+    public static void interruptThread(DBManager dbManager, Thread thread, Future future) throws SQLException, SQLHandledException {
+        if(thread != null)
+            SQLSession.cancelExecutingStatement(dbManager, thread, true);
         future.cancel(true);
     }
 
@@ -55,7 +55,7 @@ public class ThreadUtils {
 
     public static void cancelThread(DBManager dbManager, Thread thread) throws SQLException, SQLHandledException {
         if(thread != null)
-            SQLSession.cancelExecutingStatement(dbManager, thread.getId(), false);
+            SQLSession.cancelExecutingStatement(dbManager, thread, false);
     }
     public static ThreadGroup getRootThreadGroup( ) {
         ThreadGroup tg = Thread.currentThread( ).getThreadGroup( );

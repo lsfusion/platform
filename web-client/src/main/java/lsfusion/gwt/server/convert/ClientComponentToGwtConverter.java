@@ -585,12 +585,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
     @Cached
     @Converter(from = ClientObject.class)
     public GObject convertObject(ClientObject clientObject) {
-        GObject object = new GObject();
-        object.ID = clientObject.ID;
-        object.sID = clientObject.getSID();
-        object.groupObject = convertOrCast(clientObject.groupObject);
-        object.caption = clientObject.getCaption();
-        return object;
+        return new GObject(convertOrCast(clientObject.groupObject), clientObject.getCaption(), clientObject.ID, clientObject.getSID());
     }
 
     @Cached

@@ -112,12 +112,10 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     public static class ExecutingStatement {
 
         public final PreparedStatement statement;
-        public final Thread thread;
         public Boolean forcedCancel;
 
-        public ExecutingStatement(PreparedStatement statement, Thread thread) {
+        public ExecutingStatement(PreparedStatement statement) {
             this.statement = statement;
-            this.thread = thread;
         }
     }
     private ExecutingStatement executingStatement;
@@ -134,13 +132,13 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     private Map<String, Integer> attemptCountMap = new HashMap<>();
     public StatusMessage statusMessage;
 
-    public static ExecutingStatement getExecutingStatementJava(long processId) {
+    public static SQLSession getSQLSessionJava(Thread thread) {
         for(SQLSession sqlSession : sqlSessionMap.keySet()) {
-            ExecutingStatement executingStatement = sqlSession.executingStatement;
-            if(executingStatement != null && executingStatement.thread.getId() == processId)
-                return executingStatement;
+            Thread activeThread = sqlSession.getActiveThread();
+            if(activeThread != null && activeThread == thread)
+                return sqlSession;
         }
-        logger.error(String.format("Failed to interrupt process %s: no private connection found", processId));
+        logger.error(String.format("Failed to interrupt process %s: no private connection found", thread));
         return null;
     }
 
@@ -158,12 +156,13 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
         Map<Integer, SQLThreadInfo> sessionMap = new HashMap<>();
         for (SQLSession sqlSession : sqlSessionMap.keySet()) {
-            SQLDebugInfo sqlDebugInfo = sqlDebugInfoMap.get(sqlSession.getActiveThread());
+            Thread javaThread = sqlSession.getActiveThread();
+            SQLDebugInfo sqlDebugInfo = sqlDebugInfoMap.get(javaThread);
             String debugInfo = sqlDebugInfo == null ? null : sqlDebugInfo.getDebugInfoForProcessMonitor();
 
             ExConnection connection = sqlSession.getDebugConnection();
             if (connection != null)
-                sessionMap.put(((PGConnection) connection.sql).getBackendPID(), new SQLThreadInfo(sqlSession.getActiveThread(),
+                sessionMap.put(((PGConnection) connection.sql).getBackendPID(), new SQLThreadInfo(javaThread,
                         sqlSession.threadDebugInfo, sqlSession.isInTransaction(), sqlSession.startTransaction, sqlSession.getAttemptCountMap(),
                         sqlSession.contextProvider.getCurrentUser(), sqlSession.contextProvider.getCurrentComputer(),
                         sqlSession.getExecutingStatement(), sqlSession.isDisabledNestLoop, sqlSession.getQueryTimeout(),
@@ -195,15 +194,20 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         return executingStatement == null ? null : executingStatement.statement.toString();
     }
 
-    public static void cancelExecutingStatement(DBManager dbManager, long processId, boolean interrupt) throws SQLException {
+    public static void cancelExecutingStatement(DBManager dbManager, Thread thread, boolean interrupt) throws SQLException, SQLHandledException {
         // having both thread and statement in executing statement is the only way to guarantee that we'll cancel the statement of the required processId
-        ExecutingStatement cancelStatement = SQLSession.getExecutingStatementJava(processId);
-        if(cancelStatement != null) {
-            ServerLoggers.exinfoLog("SQL SESSION INTERRUPT " + cancelStatement.thread + "PROCESS " + processId);
+        SQLSession cancelSession = SQLSession.getSQLSessionJava(thread);
+        if(cancelSession != null) {
+            cancelSession.runSyncActiveThread(thread, () -> {
+                ExecutingStatement executingStatement = cancelSession.executingStatement;
+                if(executingStatement != null) {
+                    ServerLoggers.exinfoLog("SQL SESSION INTERRUPT " + thread + " PROCESS " + thread.getId() + " SQL " + ((PGConnection) executingStatement.statement.getConnection()).getBackendPID() + " QUERY " + executingStatement.statement.toString());
 
-            // we're trying to cancel executing statement, because ddl task might stop some query in pooled connection that is already used by some other thread
-            cancelStatement.statement.cancel();
-            cancelStatement.forcedCancel = interrupt;
+                    // we're trying to cancel executing statement, because ddl task might stop some query in pooled connection that is already used by some other thread
+                    executingStatement.forcedCancel = interrupt;
+                    executingStatement.statement.cancel();
+                }
+            });
 
 //                SQLSession sqlSession = dbManager.getStopSql();                
 //                ExConnection connection = cancelSession.getDebugConnection();
@@ -2058,7 +2062,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             snapEnv.beforeExec(statement, this);
 
             long started = System.currentTimeMillis();
-            executingStatement = new ExecutingStatement(statement, Thread.currentThread());
+            executingStatement = new ExecutingStatement(statement);
 
             try {
                 try {
@@ -2854,7 +2858,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             Thread activeThread = activeThreads.first();
             if(activeThread != null)
                 return activeThread;
-            
+
             return lastActiveSyncThread == null ? null : lastActiveSyncThread.get();
         }
     }
@@ -2862,6 +2866,16 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     private void setActiveThread(boolean async) {
         synchronized (activeThreadLock) {
             activeThreads.add(Thread.currentThread()); // не excl, потому как сначала lockWrite берет поток, а потом lockRead
+        }
+    }
+
+    // the main usage - canceling sql statement of a particular thread
+    // the problem is that statement.cancel can cancel the statement of another thread, since this method implementation is not synchronized for connection
+    // so we have to guarantee that statement canceling is done for the specific thread
+    private void runSyncActiveThread(Thread thread, SQLRunnable runnable) throws SQLException, SQLHandledException {
+        synchronized (activeThreadLock) {
+            if(activeThreads.single() == thread)
+                runnable.run();
         }
     }
 
@@ -2888,7 +2902,6 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                 return;
 
             try {
-
                 if (isClosed())
                     return;
 
@@ -3115,15 +3128,13 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         if(isClosed())
             return false;
 
-        OperationOwner owner = OperationOwner.unknown;
-
         Connection newConnection = notUsedConnections.remove(connectionPool);
         if(newConnection == null)
             newConnection = connectionPool.newRestartConnection(); // за пределами lockWrite чтобы не задерживать connection
 
         boolean noError = false;
         try {
-            boolean locked = tryLockWrite(owner);
+            boolean locked = tryLockWrite(OperationOwner.unknown);
             try {
                 if(locked)
                     isRestarting = true;

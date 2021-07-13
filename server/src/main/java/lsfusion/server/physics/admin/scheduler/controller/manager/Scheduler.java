@@ -374,7 +374,7 @@ public class Scheduler extends MonitorServer implements InitializingBean {
         }
 
         public void run(ExecutionStack stack) throws Exception {
-            final Result<Long> threadId = new Result<>();
+            final Result<Thread> thread = new Result<>();
             Future<Boolean> future = null;
             try {
                 if (daemonTasksExecutor instanceof WrappingScheduledExecutorService) {
@@ -396,11 +396,11 @@ public class Scheduler extends MonitorServer implements InitializingBean {
                                     mirrorMonitorService = ExecutorFactory.createMonitorMirrorSyncService(Scheduler.this);
 
                                 future = mirrorMonitorService.submit(() -> {
-                                    threadId.set(Thread.currentThread().getId());
+                                    thread.set(Thread.currentThread());
                                     try {
                                         return run(detail);
                                     } finally {
-                                        threadId.set(null);
+                                        thread.set(null);
                                     }
                                 });
                                 boolean succeeded;
@@ -410,7 +410,7 @@ public class Scheduler extends MonitorServer implements InitializingBean {
                                     try {
                                         succeeded = future.get(detail.timeout, TimeUnit.SECONDS);
                                     } catch (TimeoutException e) {
-                                        ThreadUtils.interruptThread(dbManager, threadId.result, future);
+                                        ThreadUtils.interruptThread(dbManager, thread.result, future);
 
                                         ExecutorService terminateService = mirrorMonitorService;
                                         mirrorMonitorService = null;
@@ -435,7 +435,7 @@ public class Scheduler extends MonitorServer implements InitializingBean {
             } catch (Exception e) {
                 if (future != null) {
                     try {
-                        ThreadUtils.interruptThread(dbManager, threadId.result, future);
+                        ThreadUtils.interruptThread(dbManager, thread.result, future);
                     } catch (SQLException | SQLHandledException ignored) {
                     }
                 }

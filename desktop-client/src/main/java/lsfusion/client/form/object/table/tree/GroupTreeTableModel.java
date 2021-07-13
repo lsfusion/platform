@@ -217,10 +217,10 @@ public class GroupTreeTableModel extends DefaultTreeTableModel {
         for (int i = 0; i < keys.size(); i++) {
             ClientGroupObjectValue key = keys.get(i);
 
-            ClientGroupObjectValue parentPath = new ClientGroupObjectValue(key); // значение для непосредственного родителя
-            parentPath.removeAll(group.objects); // удаляем значение ключа самого groupObject, чтобы получить путь к нему из "родителей"
-            parentPath.putAll(parents.get(i)); //рекурсивный случай - просто перезаписываем значения для ObjectInstance'ов
-            parentTree.put(key, parentPath);
+            // 1 param - значение для непосредственного родителя
+            // 2 param - удаляем значение ключа самого groupObject, чтобы получить путь к нему из "родителей"
+            // 3 param - рекурсивный случай - просто перезаписываем значения для ObjectInstance'ов
+            parentTree.put(key, new ClientGroupObjectValue(key, group.objects, parents.get(i)));
         }
 
         Map<ClientGroupObjectValue, List<ClientGroupObjectValue>> childTree = BaseUtils.groupList(parentTree);

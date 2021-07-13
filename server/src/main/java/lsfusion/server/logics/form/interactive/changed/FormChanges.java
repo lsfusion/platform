@@ -1,6 +1,7 @@
 package lsfusion.server.logics.form.interactive.changed;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.BaseUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
@@ -10,7 +11,14 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.server.data.value.DataObject;
+import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.ObjectValue;
+import lsfusion.server.logics.classes.ConcreteClass;
+import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.server.logics.classes.data.DataClass;
+import lsfusion.server.logics.classes.user.ConcreteCustomClass;
+import lsfusion.server.logics.classes.user.ConcreteObjectClass;
+import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.form.interactive.controller.remote.RemoteForm;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
@@ -22,9 +30,7 @@ import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import java.io.*;
 
 import static lsfusion.base.BaseUtils.serializeObject;
 
@@ -150,7 +156,7 @@ public class FormChanges {
 
                 serializeGroupObjectValue(outStream, objectValues);
 
-                serializeObject(outStream, rows.getValue(j).getValue());
+                serializeObjectValue(outStream, rows.getValue(j));
             }
         }
 
@@ -176,12 +182,49 @@ public class FormChanges {
         }
     }
 
-    private void serializeGroupObjectValue(DataOutputStream outStream, ImMap<ObjectInstance,? extends ObjectValue> values) throws IOException {
+    private static void serializeGroupObjectValue(DataOutputStream outStream, ImMap<ObjectInstance,? extends ObjectValue> values) throws IOException {
         outStream.writeInt(values.size());
         for (int i=0,size=values.size();i<size;i++) {
             outStream.writeInt(values.getKey(i).getID());
-            serializeObject(outStream, values.getValue(i).getValue());
+            serializeObjectValue(outStream, values.getValue(i));
         }
+    }
+
+    // should match ClientGroupObjectValue.deserializeObjectValue
+    public static void serializeObjectValue(DataOutputStream outStream, ObjectValue value) throws IOException {
+        ConcreteClass concreteClass;
+        if(value instanceof DataObject && (concreteClass = ((DataObject) value).objectClass) instanceof ConcreteObjectClass) {
+            outStream.writeByte(87);
+            DataObject objectValue = (DataObject) value;
+            outStream.writeLong((Long) objectValue.getValue());
+            Long idClass = concreteClass instanceof ConcreteCustomClass ? ((ConcreteCustomClass) concreteClass).ID : null;
+            outStream.writeBoolean(idClass != null);
+            if(idClass != null)
+                outStream.writeLong(idClass);
+            return;
+        }
+
+        serializeObject(outStream, value.getValue());
+    }
+
+    // should match ClientGroupObjectValue.serializeObjectValue
+    public static ObjectValue deserializeObjectValue(DataInputStream inStream, ValueClass valueClass) throws IOException {
+        byte type = inStream.readByte();
+        if(type == 87) {
+            long id = inStream.readLong();
+            Long idClass = null;
+            if(inStream.readBoolean())
+                idClass = inStream.readLong();
+            return new DataObject(id, ((CustomClass)valueClass).getBaseClass().findConcreteClassID(idClass));
+        }
+
+        Serializable value = (Serializable) BaseUtils.deserializeObject(inStream, type);
+        if(valueClass instanceof CustomClass) {
+            assert value == null;
+            return NullValue.instance;
+        }
+
+        return ObjectValue.getValue(value, (DataClass)valueClass);
     }
 
     private void serializeKeyObjectsMap(DataOutputStream outStream, ImMap<GroupObjectInstance, ? extends ImList<ImMap<ObjectInstance, DataObject>>> keyObjects) throws IOException {

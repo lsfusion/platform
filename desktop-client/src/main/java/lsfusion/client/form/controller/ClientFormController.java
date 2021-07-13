@@ -41,6 +41,7 @@ import lsfusion.client.form.filter.view.SingleFilterBox;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.object.ClientObject;
+import lsfusion.client.form.object.ClientCustomObjectValue;
 import lsfusion.client.form.object.table.controller.TableController;
 import lsfusion.client.form.object.table.grid.controller.GridController;
 import lsfusion.client.form.object.table.grid.user.design.GridUserPreferences;
@@ -898,10 +899,19 @@ public class ClientFormController implements AsyncListener {
     }
 
     private byte[] getFullCurrentKey(ClientGroupObjectValue columnKey) {
-        final ClientGroupObjectValue fullCurrentKey = getFullCurrentKey();
-        fullCurrentKey.putAll(columnKey);
+        List<ClientGroupObjectValue> values = new ArrayList<>();
+        for (GridController group : controllers.values())
+            values.add(group.getCurrentObject());
 
-        return fullCurrentKey.serialize();
+        for (TreeGroupController tree : treeControllers.values()) {
+            ClientGroupObjectValue currentPath = tree.getCurrentPath();
+            if (currentPath != null)
+                values.add(currentPath);
+        }
+
+        values.add(columnKey);
+
+        return new ClientGroupObjectValue(values.toArray(new ClientGroupObjectValue[0])).serialize();
     }
 
     public void changeProperty(final ClientPropertyDraw property, final ClientGroupObjectValue columnKey, String actionSID,
@@ -956,24 +966,22 @@ public class ClientFormController implements AsyncListener {
 
         final GridController controller = controllers.get(object.groupObject);
 
-        final long ID;
+        final ClientPushAsyncResult pushAsyncResult;
         final ClientGroupObjectValue value;
         if(add) {
+            long ID;
             try {
-                ID = rmiQueue.runRetryableRequest(new Callable<Long>() {
-                    public Long call() throws Exception {
-                        return MainController.generateID();
-                    }
-                });
+                ID = rmiQueue.runRetryableRequest(() -> MainController.generateID());
             } catch (Exception e) {
                 throw Throwables.propagate(e);
             }
-            value = new ClientGroupObjectValue(object, ID);
+            pushAsyncResult = new ClientPushAsyncAdd(ID);
+            value = new ClientGroupObjectValue(object, new ClientCustomObjectValue(ID, null));
         } else {
             value = controller.getCurrentObject();
             if(value.isEmpty())
                 return;
-            ID = (Long) BaseUtils.singleValue(value);
+            pushAsyncResult = null;
         }
         
         final int position = controller.getCurrentRow();
@@ -991,26 +999,23 @@ public class ClientFormController implements AsyncListener {
 
             @Override
             protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                return executeEventAction(requestIndex, lastReceivedRequestIndex, remoteForm, property, fullCurrentKey,  actionSID, add ? new ClientPushAsyncAdd(ID) : null);
+                return executeEventAction(requestIndex, lastReceivedRequestIndex, remoteForm, property, fullCurrentKey,  actionSID, pushAsyncResult);
             }
         });
     }
 
     public ClientGroupObjectValue getFullCurrentKey() {
-        ClientGroupObjectValue fullKey = new ClientGroupObjectValue();
-
-        for (GridController group : controllers.values()) {
-            fullKey.putAll(group.getCurrentObject());
-        }
+        List<ClientGroupObjectValue> values = new ArrayList<>();
+        for (GridController group : controllers.values())
+            values.add(group.getCurrentObject());
 
         for (TreeGroupController tree : treeControllers.values()) {
             ClientGroupObjectValue currentPath = tree.getCurrentPath();
-            if (currentPath != null) {
-                fullKey.putAll(currentPath);
-            }
+            if (currentPath != null)
+                values.add(currentPath);
         }
 
-        return fullKey;
+        return new ClientGroupObjectValue(values.toArray(new ClientGroupObjectValue[0]));
     }
 
     public void asyncOpenForm(ClientPropertyDraw property, ClientGroupObjectValue columnKey, String actionSID, ClientAsyncOpenForm asyncOpenForm) throws IOException {
