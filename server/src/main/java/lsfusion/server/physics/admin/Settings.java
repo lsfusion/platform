@@ -1506,7 +1506,7 @@ public class Settings implements Cloneable {
     public long getExplainAllocatedBytesThreshold() {
         return explainAllocatedBytesThreshold;
     }
-    
+
     public void setExplainAllocatedBytesThreshold(long explainAllocatedBytesThreshold) {
         this.explainAllocatedBytesThreshold = explainAllocatedBytesThreshold;
     }
@@ -2670,5 +2670,15 @@ public class Settings implements Cloneable {
 
     public void setSessionConfigTimeout(int sessionConfigTimeout) {
         this.sessionConfigTimeout = sessionConfigTimeout;
+    }
+
+    private boolean trueSerializable = false;
+
+    public boolean isTrueSerializable() {
+        return trueSerializable;
+    }
+
+    public void setTrueSerializable(boolean trueSerializable) {
+        this.trueSerializable = trueSerializable;
     }
 }

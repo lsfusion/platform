@@ -2154,8 +2154,15 @@ public class DBManager extends LogicsManager implements InitializingBean {
     public static int START_TIL = -1;
     public static int DEBUG_TIL = -1;
     public static int RECALC_TIL = -1;
-    public static int SESSION_TIL = Connection.TRANSACTION_REPEATABLE_READ;
-    public static int ID_TIL = Connection.TRANSACTION_REPEATABLE_READ;
+    
+    public static boolean DISABLE_SESSION_TIL = false;
+    public static int getSessionTIL() {
+        return DISABLE_SESSION_TIL ? -1 : getTIL();
+    }
+    
+    public static int getTIL() {
+        return Settings.get().isTrueSerializable() ? Connection.TRANSACTION_SERIALIZABLE : Connection.TRANSACTION_REPEATABLE_READ;
+    }
     
     private static Stack<Integer> STACK_TIL = new Stack<>();
     
@@ -2168,7 +2175,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     }
     
     public static Integer getCurrentTIL() {
-        return STACK_TIL.isEmpty() ? SESSION_TIL : STACK_TIL.peek();
+        return STACK_TIL.isEmpty() ? getSessionTIL() : STACK_TIL.peek();
     }
     
     public static String HOSTNAME_COMPUTER;
