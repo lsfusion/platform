@@ -217,7 +217,7 @@ public class DataPanelView extends JPanel implements PanelView {
     }
 
     public void setToolTip(String caption) {
-        LSFTooltipManager.initTooltip(label, property.getTooltipText(caption), property.command);
+        LSFTooltipManager.initTooltip(label, property.getTooltipText(caption), property.path, property.creationPath);
     }
 
     public Icon getIcon() {

@@ -148,7 +148,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     public String creationScript;
     public String creationPath;
-    public String command;
+    public String path;
     public String formPath;
     
     public boolean notNull;
@@ -565,7 +565,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         creationScript = pool.readString(inStream);
         creationPath = pool.readString(inStream);
-        command = pool.readString(inStream);
+        path = pool.readString(inStream);
         formPath = pool.readString(inStream);
 
         String mouseBinding = pool.readString(inStream);

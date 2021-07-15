@@ -849,10 +849,10 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     }
 
     public <P extends PropertyInterface> PropertyObjectEntity addPropertyObject(LP<P> property, ImRevMap<P, ObjectEntity> objects) {
-        return new PropertyObjectEntity<>(property.property, objects, property.getCreationScript(), property.getCreationPath(), property.getCommand());
+        return new PropertyObjectEntity<>(property.property, objects, property.getCreationScript(), property.getCreationPath(), property.getPath());
     }
     public <P extends PropertyInterface> ActionObjectEntity<P> addPropertyObject(LA<P> property, ImRevMap<P, ObjectEntity> objects) {
-        return new ActionObjectEntity<>(property.action, objects, property.getCreationScript(), property.getCreationPath(), property.getCommand());
+        return new ActionObjectEntity<>(property.action, objects, property.getCreationScript(), property.getCreationPath(), property.getPath());
     }
     
     public <P extends PropertyInterface> PropertyObjectEntity addPropertyObject(PropertyRevImplement<P, ObjectEntity> impl) {
@@ -1186,11 +1186,11 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         }
     }
 
-    public String getCommand() {
+    public String getPath() {
         if (debugPoint == null) {
             return null;
         } else {
-            return debugPoint.command;
+            return debugPoint.path;
         }
     }
 

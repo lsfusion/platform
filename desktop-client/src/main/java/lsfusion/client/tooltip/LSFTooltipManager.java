@@ -2,6 +2,7 @@ package lsfusion.client.tooltip;
 
 import com.google.common.base.Throwables;
 import lsfusion.client.base.view.SwingDefaults;
+import lsfusion.client.controller.MainController;
 import lsfusion.client.form.object.table.grid.view.GridTable;
 import lsfusion.client.form.object.table.tree.GroupTreeTableModel;
 import lsfusion.client.form.object.table.tree.view.TreeGroupTable;
@@ -10,6 +11,7 @@ import net.java.balloontip.BalloonTip;
 import net.java.balloontip.positioners.BasicBalloonTipPositioner;
 import net.java.balloontip.styles.ToolTipBalloonStyle;
 import org.jdesktop.swingx.VerticalLayout;
+import sun.awt.OSInfo;
 
 import javax.swing.*;
 import javax.swing.table.TableColumnModel;
@@ -18,6 +20,9 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import static lsfusion.client.ClientResourceBundle.getString;
 
@@ -26,10 +31,10 @@ public class LSFTooltipManager {
     private static BalloonTip balloonTip;
     private static int index;
 
-    public static void initTooltip(JComponent component, String tooltipText, String command) {
+    public static void initTooltip(JComponent component, String tooltipText, String path, String creationPath) {
         Timer closeTimer = getCloseTimer();
 
-        Timer tooltipTimer = new Timer(1500, evt -> balloonTip = new BalloonTip(component, createTooltipPanel(tooltipText, command, closeTimer),
+        Timer tooltipTimer = new Timer(1500, evt -> balloonTip = new BalloonTip(component, createTooltipPanel(tooltipText, path, creationPath, closeTimer),
                 new ToolTipBalloonStyle(SwingDefaults.getPanelBackground(), SwingDefaults.getComponentBorderColor()), false));
 
         setComponentMouseListeners(component, closeTimer, tooltipTimer);
@@ -45,11 +50,11 @@ public class LSFTooltipManager {
                 int modelIndex = gridTable.getColumnModel().getColumn(index).getModelIndex();
                 GridTable table = (GridTable) gridTable;
                 tooltipPanel = createTooltipPanel(table.getModel().getColumnProperty(modelIndex).getTooltipText(table.getColumnCaption(index)),
-                        table.getModel().getColumnProperty(modelIndex).command, closeTimer);
+                        table.getModel().getColumnProperty(modelIndex).path, table.getModel().getColumnProperty(modelIndex).creationPath, closeTimer);
             } else {
                 ClientPropertyDraw property = ((TreeGroupTable) gridTable).getProperty(0, index);
                 tooltipPanel = createTooltipPanel(property.getTooltipText(((GroupTreeTableModel)model).getColumnName(index)),
-                        property.command, closeTimer);
+                        property.path, property.creationPath, closeTimer);
             }
 
             BasicBalloonTipPositioner positioner = new BasicBalloonTipPositioner(15, 15) {
@@ -137,10 +142,40 @@ public class LSFTooltipManager {
         return timer;
     }
 
-    private static JPanel createTooltipPanel(String tooltipText, String command, Timer closeTimer) {
+    private static final String userDir = MainController.userDir;
+    private static final String ideaBinPath = MainController.ideaBinPath;
+
+    private static String getCommand(String path, String creationPath) {
+        String command = null;
+        Path srcPath = Paths.get(userDir, "src/main/lsfusion/");
+        Path customPath = !Files.exists(srcPath) ? Paths.get(userDir, path) : Paths.get(srcPath.toString(), path);
+
+        if (Files.exists(customPath) && ideaBinPath != null) {
+            String ideaRunCommand = null;
+            boolean addQuotes = false;
+            if (OSInfo.getOSType().equals(OSInfo.OSType.LINUX)) {
+                ideaRunCommand = ideaBinPath + "/idea.sh";
+            } else if (OSInfo.getOSType().equals(OSInfo.OSType.WINDOWS)) {
+                ideaRunCommand = ideaBinPath + (Files.exists(Paths.get(ideaBinPath, "idea64.exe")) ? "/idea64.exe" : "/idea.exe");
+                addQuotes = true;
+            } else if (OSInfo.getOSType().equals(OSInfo.OSType.MACOSX)) {
+                ideaRunCommand = "/idea";
+            }
+
+            int line = Integer.parseInt(creationPath.substring(creationPath.lastIndexOf("(") + 1, creationPath.lastIndexOf(":")));
+
+            command = ideaRunCommand != null ? addQuotes ? "\"" + ideaRunCommand + "\"" + " --line " + line + " " + "\"" + customPath + "\"" :
+                    ideaRunCommand + " --line " + line + " " + customPath : null;
+
+        }
+        return command;
+    }
+
+    private static JPanel createTooltipPanel(String tooltipText, String path, String creationPath, Timer closeTimer) {
         JPanel jPanel = new JPanel(new VerticalLayout());
         jPanel.add(new JLabel(tooltipText));
-        if (command != null) {
+        String command = getCommand(path, creationPath);
+        if (MainController.inDevMode && command != null) {
             JLabel label = new JLabel("<html><font color='#000099'><u>" + getString("show.in.editor") + "</u></font></html>");
             label.setCursor(new Cursor(Cursor.HAND_CURSOR));
             label.addMouseListener(new MouseAdapter() {

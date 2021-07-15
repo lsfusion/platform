@@ -232,8 +232,8 @@ public abstract class NavigatorElement {
         return debugPoint.toString();
     }
 
-    public String getCommand() {
-        return debugPoint.command;
+    public String getPath() {
+        return debugPoint.path;
     }
     
     public void serialize(DataOutputStream outStream) throws IOException {
@@ -241,7 +241,7 @@ public abstract class NavigatorElement {
 
         SerializationUtil.writeString(outStream, canonicalName);
         SerializationUtil.writeString(outStream, getCreationPath());
-        SerializationUtil.writeString(outStream, getCommand());
+        SerializationUtil.writeString(outStream, getPath());
 
         outStream.writeUTF(ThreadLocalContext.localize(caption));
         outStream.writeBoolean(hasChildren());

@@ -69,7 +69,7 @@ public class ToolBarNavigatorView extends NavigatorView {
         };
         button.setIcon(new IndentedIcon(ClientImages.getImage(element.imageHolder), indent));
 
-        LSFTooltipManager.initTooltip(button, element.getTooltip(), element.command);
+        LSFTooltipManager.initTooltip(button, element.getTooltip(), element.path, element.creationPath);
         button.addMouseListener(new NavigatorMouseAdapter(element));
         button.setVerticalTextPosition(window.verticalTextPosition);
         button.setHorizontalTextPosition(window.horizontalTextPosition);

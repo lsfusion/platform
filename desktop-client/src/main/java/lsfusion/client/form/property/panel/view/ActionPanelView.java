@@ -221,8 +221,8 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
     }
 
     public void setToolTip(String caption) {
-        LSFTooltipManager.initTooltip(this,
-                property.getTooltipText(!BaseUtils.isRedundantString(property.toolTip) ? property.toolTip : caption), property.command);
+        LSFTooltipManager.initTooltip(this, property.getTooltipText(!BaseUtils.isRedundantString(property.toolTip) ? property.toolTip : caption),
+                property.path, property.creationPath);
     }
 
     @Override

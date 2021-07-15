@@ -8,12 +8,13 @@ public class SystemProperties {
     public static final boolean lightStart;
     public static final boolean inDevMode; 
     public static final boolean inTestMode;
+    public static final String ideaBinPath = System.getProperty("idea.bin.path");
     
     static {
         String lightStartValue = System.getProperty("lsfusion.server.lightstart");
         String devModePropertyValue = System.getProperty("lsfusion.server.devmode");
         String testModePropertyValue = System.getProperty("lsfusion.server.testmode");
-        
+
         lightStart = lightStartValue == null ? false : "true".equals(lightStartValue.toLowerCase());
         inDevMode  = devModePropertyValue == null ? isPluginEnabled : "true".equals(devModePropertyValue.toLowerCase());
         inTestMode = testModePropertyValue == null ? getAssertsStatus() : "true".equals(testModePropertyValue.toLowerCase());
