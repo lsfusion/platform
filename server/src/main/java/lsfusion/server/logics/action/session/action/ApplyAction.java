@@ -78,7 +78,7 @@ public class ApplyAction extends KeepContextAction {
         
         try {
             if (serializable)
-                DBManager.pushTIL(Connection.TRANSACTION_REPEATABLE_READ);
+                DBManager.pushTIL(DBManager.getTIL());
 
             Result<String> rApplyMessage = new Result<>();
             boolean applied = context.apply(action == null ? SetFact.EMPTYORDER() : SetFact.singletonOrder(action.getValueImplement(context.getKeys(), context.getObjectInstances(), context.getFormAspectInstance())), keepSessionProperties, rApplyMessage);
