@@ -21,6 +21,7 @@ public abstract class ClientNavigatorElement {
     private String canonicalName;
 
     public String creationPath;
+    public String command;
     public String caption;
     
     public List<ClientNavigatorElement> parents = new ArrayList<>();
@@ -35,7 +36,8 @@ public abstract class ClientNavigatorElement {
     public ClientNavigatorElement(DataInputStream inStream) throws IOException {
         canonicalName = SerializationUtil.readString(inStream);
         creationPath = SerializationUtil.readString(inStream);
-        
+        command = SerializationUtil.readString(inStream);
+
         caption = inStream.readUTF();
         hasChildren = inStream.readBoolean();
         window = ClientNavigatorWindow.deserialize(inStream);

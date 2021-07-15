@@ -28,6 +28,7 @@ import lsfusion.client.form.property.cell.view.ClientAbstractCellRenderer;
 import lsfusion.client.form.property.table.view.CellTableContextMenuHandler;
 import lsfusion.client.form.property.table.view.CellTableInterface;
 import lsfusion.client.form.property.table.view.InternalEditEvent;
+import lsfusion.client.tooltip.LSFTooltipManager;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.event.BindingMode;
 import lsfusion.interop.form.event.KeyInputEvent;
@@ -532,7 +533,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
             getColumnModel().getSelectionModel().setLeadSelectionIndex(pos <= currentSelectedColumn ? currentSelectedColumn + 1 : currentSelectedColumn);
         }
 
-        tableColumn.setToolTipText(property.getTooltipText(model.getColumnName(pos)));
+        LSFTooltipManager.initTooltip(getTableHeader(), model, this);
 
         columnsMap.put(property, tableColumn);
 

@@ -15,6 +15,7 @@ import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
 import lsfusion.client.form.property.cell.controller.EditPropertyHandler;
 import lsfusion.client.form.property.cell.controller.dispatch.EditPropertyDispatcher;
 import lsfusion.client.form.property.table.view.ClientPropertyContextMenuPopup;
+import lsfusion.client.tooltip.LSFTooltipManager;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.base.view.FlexConstraints;
@@ -220,7 +221,8 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
     }
 
     public void setToolTip(String caption) {
-        setToolTipText(property.getTooltipText(!BaseUtils.isRedundantString(property.toolTip) ? property.toolTip : caption));
+        LSFTooltipManager.initTooltip(this,
+                property.getTooltipText(!BaseUtils.isRedundantString(property.toolTip) ? property.toolTip : caption), property.command);
     }
 
     @Override

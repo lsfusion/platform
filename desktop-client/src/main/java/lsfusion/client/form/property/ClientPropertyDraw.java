@@ -16,10 +16,8 @@ import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.object.table.controller.TableController;
-import lsfusion.client.form.property.async.ClientAsyncAddRemove;
 import lsfusion.client.form.property.async.ClientAsyncChange;
 import lsfusion.client.form.property.async.ClientAsyncEventExec;
-import lsfusion.client.form.property.async.ClientAsyncOpenForm;
 import lsfusion.client.form.property.cell.EditBindingMap;
 import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
 import lsfusion.client.form.property.cell.classes.view.FormatPropertyRenderer;
@@ -150,6 +148,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     public String creationScript;
     public String creationPath;
+    public String command;
     public String formPath;
     
     public boolean notNull;
@@ -566,6 +565,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         creationScript = pool.readString(inStream);
         creationPath = pool.readString(inStream);
+        command = pool.readString(inStream);
         formPath = pool.readString(inStream);
 
         String mouseBinding = pool.readString(inStream);
@@ -695,7 +695,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
                 String ifaceClasses = BaseUtils.toString(", ", interfacesTypes);
                 String returnClass = this.returnClass.toString();
                 String script = creationScript != null ? escapeLineBreakHTML(escapeHTML(creationScript)) : "";
-                
+
                 return String.format(TOOL_TIP_FORMAT + DETAILED_TOOL_TIP_FORMAT,
                         propCaption, changeKeyText, canonicalName, tableName, ifaceObjects, ifaceClasses, returnClass,
                         script, scriptPath, propertyFormName, scriptFormPath);

@@ -24,6 +24,7 @@ public abstract class LAP<T extends PropertyInterface, P extends ActionOrPropert
     public ImOrderSet<T> listInterfaces;
     private String creationScript = null;
     private String creationPath = null;
+    private String command = null;
 
     public LAP(P property) {
         listInterfaces = property.getFriendlyOrderInterfaces();
@@ -187,8 +188,16 @@ public abstract class LAP<T extends PropertyInterface, P extends ActionOrPropert
         this.creationPath = creationPath;
     }
 
+    public String getCommand() {
+        return command;
+    }
+
+    public void setCommand(String command) {
+        this.command = command;
+    }
+
     public ActionOrPropertyObjectEntity<T, ?> createObjectEntity(ImOrderSet<ObjectEntity> objects) {
-        return ActionOrPropertyObjectEntity.create(getActionOrProperty(), getRevMap(objects), creationScript, creationPath);
+        return ActionOrPropertyObjectEntity.create(getActionOrProperty(), getRevMap(objects), creationScript, creationPath, command);
     }
 
     public List<ResolveClassSet> getExplicitClasses() {

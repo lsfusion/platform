@@ -27,11 +27,11 @@ public class ActionObjectEntity<P extends PropertyInterface> extends ActionOrPro
     }
 
     public ActionObjectEntity(Action<P> property, ImRevMap<P, ObjectEntity> mapping) {
-        this(property, mapping, null, null);
+        this(property, mapping, null, null, null);
     }
 
-    public ActionObjectEntity(Action<P> property, ImRevMap<P, ObjectEntity> mapping, String creationScript, String creationPath) {
-        super(property, mapping, creationScript, creationPath);
+    public ActionObjectEntity(Action<P> property, ImRevMap<P, ObjectEntity> mapping, String creationScript, String creationPath, String command) {
+        super(property, mapping, creationScript, creationPath, command);
     }
 
     public ActionObjectInstance<P> getInstance(InstanceFactory instanceFactory) {

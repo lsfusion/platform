@@ -6,6 +6,7 @@ import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientGroupObjectValue;
+import lsfusion.client.form.object.table.tree.view.TreeGroupTable;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import org.jdesktop.swingx.treetable.DefaultTreeTableModel;
 import org.jdesktop.swingx.treetable.MutableTreeTableNode;
@@ -378,5 +379,17 @@ public class GroupTreeTableModel extends DefaultTreeTableModel {
 
     public int getPropertyColumnIndex(ClientPropertyDraw property) {
         return columnProperties.indexOf(property) + 1;
+    }
+
+    public int getColumnIndexAtX(int xPosition, TreeGroupTable treeGroupTable) {
+        if (xPosition < 0)
+            return -1;
+
+        for(int column = 0; column < getColumnCount(); column++) {
+            xPosition = xPosition - treeGroupTable.getColumn(column).getWidth();
+            if (xPosition < 0)
+                return treeGroupTable.getProperty(0, column) != null ? column : -1;
+        }
+        return -1;
     }
 }

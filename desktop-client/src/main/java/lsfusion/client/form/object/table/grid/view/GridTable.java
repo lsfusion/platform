@@ -25,6 +25,7 @@ import lsfusion.client.form.order.user.MultiLineHeaderRenderer;
 import lsfusion.client.form.order.user.TableSortableHeaderManager;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.table.view.ClientPropertyTable;
+import lsfusion.client.tooltip.LSFTooltipManager;
 import lsfusion.client.view.MainFrame;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.design.FontInfo;
@@ -144,12 +145,9 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
     public GridTable(final GridView igridView, ClientFormController iform, GridUserPreferences[] iuserPreferences) {
         super(new GridTableModel(), iform, igridView.getGridController().getGroupObject());
 
-        setTableHeader(new GridTableHeader(columnModel) {
-            @Override
-            public Dimension getPreferredSize() {
-                return new Dimension(columnModel.getTotalColumnWidth(), getHeaderHeight());
-            }
-        });
+        GridTableHeader tableHeader = new GridTableHeader(columnModel);
+        setTableHeader(tableHeader);
+        LSFTooltipManager.initTooltip(tableHeader, columnModel, this);
 
         gridController = igridView.getGridController();
 
@@ -634,7 +632,7 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
         return (GridTableColumn) columnModel.getColumn(index);
     }
 
-    private String getColumnCaption(int column) {
+    public String getColumnCaption(int column) {
         ClientPropertyDraw cell = model.getColumnProperty(column);
         String userCaption = getUserCaption(cell);
         return userCaption != null ? userCaption : model.getColumnName(column);
@@ -1889,14 +1887,8 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
         }
 
         @Override
-        public String getToolTipText(MouseEvent e) {
-            int index = columnModel.getColumnIndexAtX(e.getPoint().x);
-            if (index == -1) {
-                return super.getToolTipText(e);
-            }
-            int modelIndex = columnModel.getColumn(index).getModelIndex();
-
-            return model.getColumnProperty(modelIndex).getTooltipText(getColumnCaption(index));
+        public Dimension getPreferredSize() {
+            return new Dimension(columnModel.getTotalColumnWidth(), getHeaderHeight());
         }
     }
 

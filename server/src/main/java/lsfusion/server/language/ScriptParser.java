@@ -212,14 +212,14 @@ public class ScriptParser {
         return path.toString();
     }
 
-    public DebugInfo.DebugPoint getGlobalDebugPoint(String moduleName, boolean previous) {
-        return getGlobalDebugPoint(moduleName, previous, null, null);
+    public DebugInfo.DebugPoint getGlobalDebugPoint(String moduleName, String path, boolean previous) {
+        return getGlobalDebugPoint(moduleName, path, previous, null, null);
     }
-    
-    public DebugInfo.DebugPoint getGlobalDebugPoint(String moduleName, boolean previous, String topName, LocalizedString topCaption) {
-        return new DebugInfo.DebugPoint(moduleName, getGlobalCurrentLineNumber(previous), getGlobalPositionInLine(previous), isInsideNonEnabledMeta(), topName, topCaption);
+
+    public DebugInfo.DebugPoint getGlobalDebugPoint(String moduleName, String path, boolean previous, String topName, LocalizedString topCaption) {
+        return new DebugInfo.DebugPoint(moduleName, path, getGlobalCurrentLineNumber(previous), getGlobalPositionInLine(previous), isInsideNonEnabledMeta(), topName, topCaption);
     }
-    
+
     //0-based
     public int getGlobalCurrentLineNumber(boolean previous) {
         return (isInsideNonEnabledMeta() ? globalExpandedLines : currentExpandedLines) + currentExpansionLine + getCurrentParserLineNumber(previous) - 1;

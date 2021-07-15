@@ -4853,6 +4853,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     public void setPropertyScriptInfo(LAP property, String script, DebugInfo.DebugPoint point) {
         property.setCreationScript(script);
         property.setCreationPath(point.toString());
+        property.setCommand(point.command);
     }
 
     private void parseStep(ScriptParser.State state) throws RecognitionException {

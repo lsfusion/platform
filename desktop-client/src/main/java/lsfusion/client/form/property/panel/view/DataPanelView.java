@@ -8,6 +8,7 @@ import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.cell.controller.dispatch.EditPropertyDispatcher;
 import lsfusion.client.form.property.cell.controller.dispatch.SimpleChangePropertyDispatcher;
+import lsfusion.client.tooltip.LSFTooltipManager;
 import lsfusion.client.view.MainFrame;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.base.view.FlexConstraints;
@@ -216,7 +217,7 @@ public class DataPanelView extends JPanel implements PanelView {
     }
 
     public void setToolTip(String caption) {
-        label.setToolTipText(property.getTooltipText(caption));
+        LSFTooltipManager.initTooltip(label, property.getTooltipText(caption), property.command);
     }
 
     public Icon getIcon() {
