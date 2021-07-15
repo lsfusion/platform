@@ -145,7 +145,7 @@ public class IDTable extends DBTable {
     private long reserveIDs(long count, SQLSession dataSession, int idType, int attempts) throws SQLException {
         long freeID;
         try {
-            dataSession.startTransaction(DBManager.ID_TIL, OperationOwner.unknown);
+            dataSession.startTransaction(DBManager.getTIL(), OperationOwner.unknown);
 
             freeID = ObjectType.idClass.read(getGenerateQuery(idType).execute(dataSession, OperationOwner.unknown).singleValue().get(value)) + 1; // замещаем
 
