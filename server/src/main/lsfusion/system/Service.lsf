@@ -490,12 +490,12 @@ WHEN CHANGED(remotePausableLogEnabled(User user)) DO {
     refreshPausableLogEnabled(user);
 }
 
-setExplainAllocationEnabled '{service.set.explain.allocation.enabled}' INTERNAL 'lsfusion.server.physics.admin.service.action.SetExplainAllocationEnabledUserAction' (BOOLEAN, User);
-explainAllocationEnabled '{service.explain.allocation.enabled}' = DATA BOOLEAN (User);
+setExplainAllocationEnabled '{service.set.explain.app.enabled}' INTERNAL 'lsfusion.server.physics.admin.service.action.SetExplainAppEnabledUserAction' (BOOLEAN, User);
+explainAppEnabled '{service.explain.app.enabled}' = DATA BOOLEAN (User);
 refreshExplainAllocationEnabled '' (User user) {
-    setExplainAllocationEnabled(explainAllocationEnabled(user), user);
+    setExplainAllocationEnabled(explainAppEnabled(user), user);
 }
-WHEN CHANGED(explainAllocationEnabled(User user)) DO {
+WHEN CHANGED(explainAppEnabled(User user)) DO {
     refreshExplainAllocationEnabled(user);
 }
 
@@ -512,7 +512,7 @@ onStarted() + {
         refreshExLogEnabled(u);
     FOR remotePausableLogEnabled(User u) DO 
         refreshPausableLogEnabled(u);
-    FOR explainAllocationEnabled(User u) DO
+    FOR explainAppEnabled(User u) DO
         refreshExplainAllocationEnabled(u);
 }
 
@@ -563,7 +563,7 @@ openThreadDump '{system.events.open.thread.dump.custom.user}' (CustomUser user) 
 EXTEND FORM settings
     OBJECTS ul = User
     PROPERTIES(ul) READONLY name, login, userRoles
-    PROPERTIES(ul) explainAnalyzeMode, loggerDebugEnabled, explainTemporaryTablesEnabled, remoteLoggerDebugEnabled, remoteExLogEnabled, remotePausableLogEnabled, explainAllocationEnabled
+    PROPERTIES(ul) explainAnalyzeMode, explainAppEnabled, loggerDebugEnabled, explainTemporaryTablesEnabled, remoteLoggerDebugEnabled, remoteExLogEnabled, remotePausableLogEnabled
     PROPERTIES(ul) GRID requestUserLogs, openUserLogs, requestThreadDump, openThreadDump
 ;
 

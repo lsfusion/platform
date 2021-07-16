@@ -39,7 +39,7 @@ public abstract class AbstractContext implements Context {
     public abstract LogicsInstance getLogicsInstance();
 
     @Override
-    public FormInstance getFormInstance() {
+    public FormEntity getCurrentForm() {
         return null;
     }
 

@@ -1,20 +1,18 @@
 package lsfusion.server.physics.admin.service.action;
 
 import lsfusion.server.base.controller.stack.ExecutionStackAspect;
-import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.admin.service.ServiceLogicsModule;
 import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SetExplainAllocationEnabledUserAction extends InternalAction {
+public class SetExplainAppEnabledUserAction extends InternalAction {
 
-    public SetExplainAllocationEnabledUserAction(ServiceLogicsModule LM, ValueClass... classes) {
+    public SetExplainAppEnabledUserAction(ServiceLogicsModule LM, ValueClass... classes) {
         super(LM, classes);
     }
 
@@ -25,7 +23,7 @@ public class SetExplainAllocationEnabledUserAction extends InternalAction {
             params.add(context.getKeyObject(classPropertyInterface));
         }
 
-        ExecutionStackAspect.setExplainAllocationEnabled((Long) params.get(1), (Boolean) params.get(0));
+        ExecutionStackAspect.setExplainAppEnabled((Long) params.get(1), (Boolean) params.get(0));
     }
 
     @Override

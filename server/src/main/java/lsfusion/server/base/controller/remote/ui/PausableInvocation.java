@@ -155,7 +155,8 @@ public abstract class PausableInvocation<T, E extends Exception> implements Call
 
     private void blockSync(SynchronousQueue sync) throws InterruptedException {
         long startTime = 0;
-        if (Profiler.PROFILER_ENABLED) {
+        ExecutionTimeCounter counter = ExecutionStackAspect.executionTime.get();
+        if (counter != null) {
             startTime = System.nanoTime();
         }
         try {
@@ -164,12 +165,8 @@ public abstract class PausableInvocation<T, E extends Exception> implements Call
             ServerLoggers.assertLog(isDeactivating(), "SHOULD NOT BE INTERRUPTED"); // не должен прерываться так как нарушит синхронизацию main - invocation
             throw e;
         }
-        if (Profiler.PROFILER_ENABLED) {
-            ExecutionTimeCounter counter = ExecutionStackAspect.executionTime.get();
-            if (counter != null) {
-                counter.addUI(System.nanoTime() - startTime);
-            }
-        }
+        if (counter != null)
+            counter.addUI(System.nanoTime() - startTime);
     }
 
     private void releaseSync(SynchronousQueue sync) throws InterruptedException {

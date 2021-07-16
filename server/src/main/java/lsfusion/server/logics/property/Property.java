@@ -586,7 +586,6 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
 
     // есть assertion, что не должен возвращать изменение null -> null, то есть или старое или новое не null, для подр. см usage
-    @LogTime
     @ThisMessage
     public PropertyChange<T> getIncrementChange(Modifier modifier) throws SQLException, SQLHandledException {
         return getIncrementChange(modifier.getPropertyChanges());

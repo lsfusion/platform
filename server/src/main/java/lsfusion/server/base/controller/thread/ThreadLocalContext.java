@@ -195,8 +195,8 @@ public class ThreadLocalContext {
         }
     }
 
-    public static FormInstance getFormInstance() {
-        return get().getFormInstance();
+    public static FormEntity getCurrentForm() {
+        return get().getCurrentForm();
     }
 
     public static FormInstance createFormInstance(FormEntity formEntity, ImSet<ObjectEntity> inputObjects, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, ExecutionStack stack, DataSession session, boolean isModal, Boolean noCancel, ManageSessionType manageSession, boolean checkOnOk, boolean showDrop, boolean interactive, boolean isFloat, ImSet<ContextFilterInstance> contextFilters, boolean readonly) throws SQLException, SQLHandledException {
