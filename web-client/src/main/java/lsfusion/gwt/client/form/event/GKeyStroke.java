@@ -39,9 +39,9 @@ public class GKeyStroke implements Serializable {
     public static final int KEY_R = 82;
     public static final int KEY_V = 86;
     
-    public static final GKeyStroke ADD_USER_FILTER_KEY_STROKE = new GKeyStroke(KEY_F2);
-    public static final GKeyStroke REPLACE_USER_FILTER_KEY_STROKE = new GKeyStroke(GKeyStroke.KEY_F2, true, false, false);
-    public static final GKeyStroke REMOVE_USER_FILTERS_KEY_STROKE = new GKeyStroke(GKeyStroke.KEY_F2, false, false, true);
+    public static final GKeyStroke ADD_USER_FILTER_KEY_STROKE = new GKeyStroke(KEY_F3);
+    public static final GKeyStroke REPLACE_USER_FILTER_KEY_STROKE = new GKeyStroke(KEY_F3, true, false, false);
+    public static final GKeyStroke REMOVE_USER_FILTERS_KEY_STROKE = new GKeyStroke(KEY_F3, false, false, true);
 
     public int keyCode;
     public boolean altPressed;

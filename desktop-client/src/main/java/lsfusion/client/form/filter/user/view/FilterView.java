@@ -137,7 +137,7 @@ public class FilterView extends JComponentPanel implements FilterConditionView.U
         });
 
         //кто-то съедает pressed F2, поэтому ловим released
-        comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0, true), "addFilter");
+        comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0, true), "addFilter");
         comp.getActionMap().put("addFilter", new AbstractAction() {
             public void actionPerformed(ActionEvent ae) {
                 if (!controller.getLogicsSupplier().getFormController().isEditing()) {

@@ -51,8 +51,8 @@ public class KeyStrokes {
         return KeyStroke.getKeyStroke(KeyEvent.VK_END, InputEvent.CTRL_DOWN_MASK);
     }
 
-    public static KeyStroke getF2() {
-        return KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0);
+    public static KeyStroke getF3() {
+        return KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0);
     }
 
     public static KeyStroke getF6() {
@@ -68,7 +68,7 @@ public class KeyStrokes {
     }
     
     public static KeyStroke getFilterKeyStroke(int modifier) {
-        return KeyStroke.getKeyStroke(KeyEvent.VK_F2, modifier);
+        return KeyStroke.getKeyStroke(KeyEvent.VK_F3, modifier);
     }
 
     public static KeyStroke getRemoveFiltersKeyStroke() {

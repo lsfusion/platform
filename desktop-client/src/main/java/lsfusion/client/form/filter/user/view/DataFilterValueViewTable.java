@@ -46,7 +46,7 @@ class DataFilterValueViewTable extends JTable implements TableTransferHandler.Ta
 
         SwingUtils.setupClientTable(this);
         SwingUtils.setupSingleCellTable(this);
-        getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStrokes.getF2(), "none");
+        getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStrokes.getF3(), "none");
 
         //вырезаем Ввод, чтобы он обработался кнопкой apply
         getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStrokes.getEnter(), "none");
