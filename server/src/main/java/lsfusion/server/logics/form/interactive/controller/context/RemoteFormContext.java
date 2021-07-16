@@ -8,6 +8,7 @@ import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.listener.CustomClassListener;
 import lsfusion.server.logics.form.interactive.listener.FocusListener;
 import lsfusion.server.logics.form.interactive.listener.RemoteFormListener;
+import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 import lsfusion.server.physics.admin.log.LogInfo;
 
@@ -25,8 +26,8 @@ public class RemoteFormContext<F extends FormInstance> extends RemoteUIContext {
         return form.form.logicsInstance;
     }
 
-    public FormInstance getFormInstance() {
-        return form.form;
+    public FormEntity getCurrentForm() {
+        return form.form.entity;
     }
 
     @Override

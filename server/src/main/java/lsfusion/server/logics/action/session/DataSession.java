@@ -121,7 +121,6 @@ import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.Settings;
-import lsfusion.server.physics.admin.log.LogTime;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.admin.monitor.StatusMessage;
 import lsfusion.server.physics.dev.debug.ActionDebugger;
@@ -1025,7 +1024,6 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         sessionEventChangedOld.clear(sql, getOwner());
     }
 
-    @LogTime
     @StackMessage("{message.local.event.exec}")
     @ThisMessage(profile = false)
     private void executeSessionEvent(ExecutionEnvironment env, ExecutionStack stack, @ParamMessage Action<?> action) throws SQLException, SQLHandledException {
@@ -1035,7 +1033,6 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         action.execute(env, stack);
     }
 
-    @LogTime
     @StackMessage("{message.global.event.exec}")
     @ThisMessage (profile = false)
     private boolean executeGlobalActionEvent(ExecutionStack stack, BusinessLogics BL, @ParamMessage ApplyGlobalActionEvent event) throws SQLException, SQLHandledException {
@@ -1053,7 +1050,6 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
 
     @Cancelable
-    @LogTime
     @ThisMessage (profile = false)
     private boolean executeApplyAction(BusinessLogics BL, ExecutionStack stack, @ParamMessage ActionValueImplement action) throws SQLException, SQLHandledException {
         startPendingSingles(action.action);

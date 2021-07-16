@@ -111,7 +111,6 @@ import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 import lsfusion.server.physics.admin.log.LogInfo;
-import lsfusion.server.physics.admin.log.LogTime;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.admin.profiler.ProfiledObject;
 
@@ -972,8 +971,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     public void executeEventAction(PropertyDrawInstance property, String eventActionSID, ImMap<ObjectInstance, DataObject> keys, ExecutionStack stack) throws SQLException, SQLHandledException {
         executeEventAction(property, eventActionSID, keys, null, null, null, false, stack);
     }
-    
-    @LogTime
+
     @ThisMessage
     public void executeEventAction(final PropertyDrawInstance<?> property, String eventActionSID, final ImMap<ObjectInstance, DataObject> keys, final ObjectValue pushChange, DataClass pushChangeType, final DataObject pushAdd, boolean pushConfirm, final ExecutionStack stack) throws SQLException, SQLHandledException {
         SQLCallable<Boolean> checkReadOnly = property.propertyReadOnly != null ? () -> property.propertyReadOnly.getRemappedPropertyObject(keys).read(FormInstance.this) != null : null;
@@ -1450,8 +1448,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             object.groupTo.addSeek(object, value, last);
         }
     }
-    
-    private ImList<ComponentView> userActivateTabs = ListFact.EMPTY(); 
+
+    private ImList<ComponentView> userActivateTabs = ListFact.EMPTY();
     // программный activate tab
     public void activateTab(ComponentView view) throws SQLException, SQLHandledException {
         setTabVisible(view.getTabbedContainer(), view);
@@ -1835,7 +1833,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 resultActions.add(new AsyncGetRemoteChangesClientAction(true));
             }
 
-            
+
             ChangedData update = session.update(this);
             if(update.wasRestart) // очищаем кэш при рестарте
                 isReallyChanged.clear();
@@ -1852,7 +1850,6 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     }
 
     @StackMessage("{message.form.end.apply}")
-    @LogTime
     @ThisMessage
     @AssertSynchronized
     public FormChanges getChanges(ExecutionStack stack, boolean forceLocalEvents, List<ClientAction> resultActions) throws SQLException, SQLHandledException {
@@ -1868,27 +1865,12 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         updateData(mChangedProps, stack, forceLocalEvents, resultActions);
 
         MSet<PropertyDrawInstance> mChangedDrawProps = SetFact.mSet();
-        GroupObjectValue updateGroupObject = null; // так как текущий groupObject идет относительно treeGroup, а не group
-        for (GroupObjectInstance group : getOrderGroups()) {
-            try {
-                ImMap<ObjectInstance, DataObject> selectObjects = group.updateKeys(session.sql, queryEnv, getModifier(), environmentIncrement, this, BL.LM.baseClass, isHidden(group), refresh, result, mChangedDrawProps, mChangedProps, this);
-                if (selectObjects != null) // то есть нужно изменять объект
-                    updateGroupObject = new GroupObjectValue(group, selectObjects);
 
-                if (group.getDownTreeGroups().size() == 0 && updateGroupObject != null) { // так как в tree группе currentObject друг на друга никак не влияют, то можно и нужно делать updateGroupObject в конце
-                    updateGroupObject.group.update(session, result, this, updateGroupObject.value, stack);
-                    updateGroupObject = null;
-                }
-            } catch (EmptyStackException e) {
-                systemLogger.error("OBJECTS : " + group.toString() + " FORM " + entity.toString());
-                throw Throwables.propagate(e);
-            }
-        }
-        ImSet<PropertyDrawInstance> changedDrawProps = mChangedDrawProps.immutable().merge(forcePropertyDrawUpdates);
+        fillChangedObjects(result, stack, queryEnv, mChangedProps, mChangedDrawProps);
 
         updateData(mChangedProps, stack, forceLocalEvents, resultActions); // повторная проверка для VIEW свойств
 
-        fillChangedDrawProps(result, changedDrawProps, mChangedProps.result);
+        fillChangedDrawProps(result, mChangedDrawProps.immutable().merge(forcePropertyDrawUpdates), mChangedProps.result);
         
         result.activateTabs.addAll(userActivateTabs);
         result.activateProps.addAll(userActivateProps);
@@ -1907,6 +1889,25 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 //        result.out(this);
 
         return result.immutable();
+    }
+
+    public void fillChangedObjects(MFormChanges result, ExecutionStack stack, QueryEnvironment queryEnv, Result<ChangedData> mChangedProps, MSet<PropertyDrawInstance> mChangedDrawProps) throws SQLException, SQLHandledException {
+        GroupObjectValue updateGroupObject = null; // так как текущий groupObject идет относительно treeGroup, а не group
+        for (GroupObjectInstance group : getOrderGroups()) {
+            try {
+                ImMap<ObjectInstance, DataObject> selectObjects = group.updateKeys(session.sql, queryEnv, getModifier(), environmentIncrement, this, BL.LM.baseClass, isHidden(group), refresh, result, mChangedDrawProps, mChangedProps, this);
+                if (selectObjects != null) // то есть нужно изменять объект
+                    updateGroupObject = new GroupObjectValue(group, selectObjects);
+
+                if (group.getDownTreeGroups().size() == 0 && updateGroupObject != null) { // так как в tree группе currentObject друг на друга никак не влияют, то можно и нужно делать updateGroupObject в конце
+                    updateGroupObject.group.update(session, result, this, updateGroupObject.value, stack);
+                    updateGroupObject = null;
+                }
+            } catch (EmptyStackException e) {
+                systemLogger.error("OBJECTS : " + group.toString() + " FORM " + entity.toString());
+                throw Throwables.propagate(e);
+            }
+        }
     }
 
     private void checkNavigatorDeactivated() {
@@ -2281,7 +2282,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             protected FormInstance doCreateDialog() throws SQLException, SQLHandledException {
                 ClassFormEntity formEntity = dialogClass.getDialogForm(BL.LM);
                 ImSet<ContextFilterInstance> additionalFilters = getObjectFixedFilters(formEntity, groupObject);
-                
+
                 dialogObject = formEntity.object;
 
                 return createDialogInstance(formEntity.form, dialogObject, dialogValue, additionalFilters, stack);

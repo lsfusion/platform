@@ -1503,14 +1503,24 @@ public class Settings implements Cloneable {
         this.logTimeThreshold = logTimeThreshold;
     }
     
-    private long allocatedBytesThreshold = 100 * 1024 * 1024;
-    
-    public long getAllocatedBytesThreshold() {
-        return allocatedBytesThreshold;
+    private long explainAppThreshold = 1000;
+
+    public long getExplainAppThreshold() {
+        return explainAppThreshold;
+    }
+
+    public void setExplainAppThreshold(long explainAppThreshold) {
+        this.explainAppThreshold = explainAppThreshold;
+    }
+
+    private long explainAllocatedBytesThreshold = 0;
+
+    public long getExplainAllocatedBytesThreshold() {
+        return explainAllocatedBytesThreshold;
     }
     
-    public void setAllocatedBytesThreshold(long allocatedBytesThreshold) {
-        this.allocatedBytesThreshold = allocatedBytesThreshold;
+    public void setExplainAllocatedBytesThreshold(long explainAllocatedBytesThreshold) {
+        this.explainAllocatedBytesThreshold = explainAllocatedBytesThreshold;
     }
 
     // в перерасчете / проверке агрегаций можно использовать InconsistentExpr, но тогда появляются лишние join'ы (а значит нужно еще больше памяти)

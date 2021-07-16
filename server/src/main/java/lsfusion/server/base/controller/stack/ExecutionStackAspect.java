@@ -3,6 +3,7 @@ package lsfusion.server.base.controller.stack;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.ExceptionUtils;
 import lsfusion.base.ReflectionUtils;
+import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.heavy.concurrent.weak.ConcurrentWeakHashMap;
 import lsfusion.interop.ProgressBar;
@@ -13,8 +14,6 @@ import lsfusion.server.base.controller.remote.stack.RmiCallStackItem;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.sql.exception.HandledException;
 import lsfusion.server.logics.action.controller.stack.ExecuteActionStackItem;
-import lsfusion.server.logics.form.interactive.instance.FormInstance;
-import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.admin.profiler.ExecutionTimeCounter;
@@ -27,6 +26,8 @@ import org.aspectj.lang.annotation.Aspect;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
 import java.util.*;
+import java.util.function.BiFunction;
+import java.util.function.Supplier;
 
 import static lsfusion.server.physics.admin.profiler.Profiler.PROFILER_ENABLED;
 
@@ -196,20 +197,42 @@ public class ExecutionStackAspect {
         return processStackItem(joinPoint, item);
     }
 
-    private static Map<Long, Boolean> explainAllocationEnabled = MapFact.getGlobalConcurrentHashMap();
+    private static Map<Long, Boolean> explainAppEnabled = MapFact.getGlobalConcurrentHashMap();
     
-    public static void setExplainAllocationEnabled(Long user, Boolean enabled) {
-        explainAllocationEnabled.put(user, enabled != null && enabled);
+    public static void setExplainAppEnabled(Long user, Boolean enabled) {
+        explainAppEnabled.put(user, enabled != null && enabled);
     }
 
-    public boolean isExplainAllocationEnabled() {
+    public static boolean isExplainAppEnabled() {
         Long currentUser = ThreadLocalContext.getCurrentUser();
         if (currentUser == null)
             return false;
-        Boolean ett = explainAllocationEnabled.get(currentUser);
+        Boolean ett = explainAppEnabled.get(currentUser);
         return ett != null && ett;
     }
-    
+
+    public static boolean isProfilerEnabled() {
+        if(!PROFILER_ENABLED)
+            return false;
+
+        return Profiler.checkUserForm(ThreadLocalContext.getCurrentUser(), ThreadLocalContext.getCurrentForm());
+    }
+
+    private static boolean allocationBytesSupplierCalculated = false; // cache
+    private static Supplier<Long> allocationBytesSupplier = null;
+    private static Supplier<Long> getAllocationBytesSupplier() {
+        if(!allocationBytesSupplierCalculated) {
+            Class threadMXBeanClass = ReflectionUtils.classForName("com.sun.management.ThreadMXBean");
+            ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
+            if(threadMXBeanClass != null && threadMXBeanClass.isInstance(threadMXBean))
+                allocationBytesSupplier = () -> ReflectionUtils.getMethodValue(threadMXBeanClass, threadMXBean, "getThreadAllocatedBytes", new Class[]{long.class}, new Object[] {Thread.currentThread().getId()});
+            else
+                allocationBytesSupplier = () -> 0L;
+            allocationBytesSupplierCalculated = true;
+        }
+        return allocationBytesSupplier;
+    }
+
     // тут важно что цикл жизни ровно в стеке, иначе утечку можем получить
     private Object processStackItem(ProceedingJoinPoint joinPoint, ExecutionStackItem item) throws Throwable {
         assert item != null;
@@ -217,63 +240,82 @@ public class ExecutionStackAspect {
         StackAndTime stackAndTime = pushStackItem(item);
         
         try {
+            boolean EXPLAINAPP_ENABLED = isExplainAppEnabled();
+            boolean PROFILER_ENABLED = isProfilerEnabled() && isProfileStackItem(item);
+
+            boolean ANALYZE_ENABLED = PROFILER_ENABLED || EXPLAINAPP_ENABLED;
+
             ExecutionTimeCounter executionTimeCounter = null;
+            boolean topStack = false;
             long start = 0;
             long sqlStart = 0;
             long uiStart = 0;
-            if (PROFILER_ENABLED && isProfileStackItem(item)) {
-                FormInstance formInstance = ThreadLocalContext.getFormInstance();
-                FormEntity form = formInstance != null ? formInstance.entity : null;
-                boolean checked = Profiler.checkUserForm(ThreadLocalContext.getCurrentUser(), form);
-                
-                if (checked) {
-                    executionTimeCounter = executionTime.get();
-                    if (executionTimeCounter == null) {
-                        executionTimeCounter = new ExecutionTimeCounter();
-                        executionTime.set(executionTimeCounter);
-                    }
-
-                    start = System.nanoTime();
-                    sqlStart = executionTimeCounter.sqlTime;
-                    uiStart = executionTimeCounter.userInteractionTime;
-                }
-            }
-
+            Supplier<Long> allocationBytesSupplier = null;
             long allocatedBytesOnStart = 0;
-            ThreadMXBean threadMXBean = null;
-            Class threadMXBeanClass = ReflectionUtils.classForName("com.sun.management.ThreadMXBean");
-            if (isExplainAllocationEnabled()) {
-                threadMXBean = ManagementFactory.getThreadMXBean();
-                if (threadMXBeanClass != null && threadMXBeanClass.isInstance(threadMXBean)) {
-                    allocatedBytesOnStart = ReflectionUtils.getMethodValue(threadMXBeanClass, threadMXBean, "getThreadAllocatedBytes", new Class[]{long.class}, new Object[] {Thread.currentThread().getId()});
+            if (ANALYZE_ENABLED) {
+                executionTimeCounter = executionTime.get();
+                if (executionTimeCounter == null) {
+                    topStack = true;
+                    executionTimeCounter = new ExecutionTimeCounter();
+                    executionTime.set(executionTimeCounter);
+                }
+
+                start = System.nanoTime();
+                sqlStart = executionTimeCounter.sqlTime;
+                uiStart = executionTimeCounter.userInteractionTime;
+
+                if(EXPLAINAPP_ENABLED) {
+                    if(Settings.get().getExplainAllocatedBytesThreshold() > 0) // optimization since there can be performance issues with getThreadAllocatedBytes
+                        allocationBytesSupplier = getAllocationBytesSupplier();
+                    else
+                        allocationBytesSupplier = () -> 0L;
+
+                    allocatedBytesOnStart = allocationBytesSupplier.get();
                 }
             }
 
             Object result = joinPoint.proceed();
 
-            if (start > 0 && PROFILER_ENABLED) {
-                long executionTime = System.nanoTime() - start;
-                FormInstance formInstance = ThreadLocalContext.getFormInstance();
+            if (ANALYZE_ENABLED) {
+                long totalTime = System.nanoTime() - start;
                 Stack<ExecutionStackItem> stack = stackAndTime.stack.getUnsync();
                 assert stack.indexOf(item) == stack.size() - 1;
-                Profiler.increase(
-                        item.profileObject, 
-                        getUpperProfileObject(stack),
-                        ThreadLocalContext.getCurrentUser(),
-                        formInstance != null ? formInstance.entity : null, 
-                        executionTime, 
-                        executionTimeCounter.sqlTime - sqlStart, 
-                        executionTimeCounter.userInteractionTime - uiStart
-                );
-            }
 
-            if (isExplainAllocationEnabled() && threadMXBeanClass != null && threadMXBeanClass.isInstance(threadMXBean)) {
-                long allocatedBytes = (long) ReflectionUtils.getMethodValue(threadMXBeanClass, threadMXBean, "getThreadAllocatedBytes", new Class[]{long.class}, new Object[]{Thread.currentThread().getId()}) - allocatedBytesOnStart;
-                if (allocatedBytes > Settings.get().getAllocatedBytesThreshold()) {
-                    ServerLoggers.allocatedBytesLogger.info("Allocated bytes: " + (allocatedBytes) + " : " + item);
+                long sqlTime = executionTimeCounter.sqlTime - sqlStart;
+                long userInteractionTime = executionTimeCounter.userInteractionTime - uiStart;
+                long javaTime = totalTime - sqlTime - userInteractionTime;
+
+                if(Profiler.PROFILER_ENABLED)
+                    Profiler.increase(item.profileObject, getUpperProfileObject(stack), ThreadLocalContext.getCurrentUser(), ThreadLocalContext.getCurrentForm(), totalTime, sqlTime, userInteractionTime);
+
+                if(EXPLAINAPP_ENABLED) {
+                    long allocatedBytes = allocationBytesSupplier.get() - allocatedBytesOnStart;
+                    javaTime = javaTime / 1000; // because this measurements are nanos
+                    sqlTime = sqlTime / 1000;
+
+                    boolean javaExceeded = javaTime > Settings.get().getExplainAppThreshold();
+                    boolean sqlExceeded = sqlTime > Settings.get().getExplainThreshold();
+                    boolean allocatedExceeded = allocatedBytes > Settings.get().getExplainAllocatedBytesThreshold();
+                    if (javaExceeded || sqlExceeded || allocatedExceeded) {
+                        BiFunction<Long, Boolean, String> highlighter = (s, exceeded) -> exceeded ? "!! " + s + " !!" : "" + s;
+
+                        if(executionTimeCounter.info == null)
+                            executionTimeCounter.info = ListFact.mList();
+                        // adding \t we're assuming that all upper stack elements will also exceed threshold (since the times are cumulative)
+                        executionTimeCounter.info.add(BaseUtils.replicate('\t', stack.size() - 1) + item + " (" +
+                                "app: " + highlighter.apply(javaTime, javaExceeded) +
+                                ", sql: " + highlighter.apply(sqlTime, sqlExceeded) +
+                                ", allocated app: " + highlighter.apply(allocatedBytes, allocatedExceeded));
+                    }
+
+                    if(topStack) {
+                        if(executionTimeCounter.info != null)
+                            ServerLoggers.explainAppLogger.info('\n' + executionTimeCounter.info.immutableList().reverseList().toString("\n"));
+                        executionTime.set(null);
+                    }
                 }
             }
-                
+
             return result;
         } catch (Throwable e) {
             if (!(e instanceof HandledException && ((HandledException)e).willDefinitelyBeHandled()) && threadLocalExceptionStack.get() == null) {

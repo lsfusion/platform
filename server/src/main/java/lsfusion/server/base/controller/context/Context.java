@@ -31,7 +31,7 @@ public interface Context {
 
     LogicsInstance getLogicsInstance();
 
-    FormInstance getFormInstance();
+    FormEntity getCurrentForm();
 
     FormInstance createFormInstance(FormEntity formEntity, ImSet<ObjectEntity> inputObjects, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, Boolean noCancel, ManageSessionType manageSession, ExecutionStack stack, boolean checkOnOk, boolean showDrop, boolean interactive, boolean isFloat, ImSet<ContextFilterInstance> contextFilters, boolean readonly) throws SQLException, SQLHandledException;
     RemoteForm createRemoteForm(FormInstance formInstance, ExecutionStack stack);

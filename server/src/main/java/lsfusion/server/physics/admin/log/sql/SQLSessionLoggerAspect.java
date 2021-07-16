@@ -47,9 +47,10 @@ public class SQLSessionLoggerAspect {
 
     public Object executeMethodAndLogTime(ProceedingJoinPoint thisJoinPoint, SQLSession session, String queryString) throws Throwable {
         boolean loggingEnabled = session.isLoggerDebugEnabled();
+        ExecutionTimeCounter counter = ExecutionStackAspect.executionTime.get();
 
         long startTime = 0;
-        if (loggingEnabled || Profiler.PROFILER_ENABLED) {
+        if (loggingEnabled || counter != null) {
             startTime = System.nanoTime();
         }
 
@@ -74,12 +75,8 @@ public class SQLSessionLoggerAspect {
                 sqlLogger.info(ExecutionStackAspect.getStackString());
             }
         }
-        if (Profiler.PROFILER_ENABLED) {
-            ExecutionTimeCounter counter = ExecutionStackAspect.executionTime.get();
-            if (counter != null) {
-                counter.addSql(System.nanoTime() - startTime);
-            }
-        }
+        if (counter != null)
+            counter.addSql(System.nanoTime() - startTime);
 
         return result;
     }

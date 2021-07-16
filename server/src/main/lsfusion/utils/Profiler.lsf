@@ -250,7 +250,7 @@ WHEN CHANGED(value(Setting r, NULL)) DO {
 FORM profiler '{profiler.profiler}'
 
     OBJECTS cu = CustomUser
-    PROPERTIES(cu) PANEL explainAnalyzeMode
+    PROPERTIES(cu) PANEL explainAnalyzeMode, explainAppEnabled
     FILTERS cu == currentUser()
     PROPERTIES() explainNoAnalyze, explainJavaStack, explainCompile, explainThreshold
     
