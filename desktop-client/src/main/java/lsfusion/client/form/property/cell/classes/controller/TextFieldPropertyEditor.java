@@ -79,7 +79,11 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
             setDesign(this);
             setOpaque(true);
 
-            addActionListener(e -> tableEditor.stopCellEditing());
+            addActionListener(e -> {
+                tableEditor.preCommit(true);
+                tableEditor.stopCellEditing();
+                tableEditor.postCommit();
+            });
 
             getActionMap().put(CANCEL_EDIT_ACTION, new AbstractAction() {
                 @Override
@@ -375,7 +379,9 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
                             setComboBoxEditorText((String) comboBox.getSelectedItem());
                         }
                         if (!strict || isValidValue(getComboBoxEditorText())) {
+                            tableEditor.preCommit(true);
                             tableEditor.stopCellEditing();
+                            tableEditor.postCommit();
                         }
                         e.consume();
                     } else if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {

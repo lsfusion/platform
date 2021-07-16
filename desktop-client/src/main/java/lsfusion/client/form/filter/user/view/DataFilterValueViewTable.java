@@ -2,7 +2,6 @@ package lsfusion.client.form.filter.user.view;
 
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.classes.data.ClientTextClass;
-import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.object.table.controller.TableController;
@@ -24,7 +23,6 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.text.JTextComponent;
 import java.awt.*;
-import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.text.ParseException;
 import java.util.EventObject;
@@ -232,6 +230,7 @@ class DataFilterValueViewTable extends JTable implements TableTransferHandler.Ta
 
     private final class Editor extends AbstractCellEditor implements PropertyTableCellEditor {
         private PropertyEditor propertyEditor;
+        public boolean enterPressed;
 
         @Override
         public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
@@ -239,23 +238,7 @@ class DataFilterValueViewTable extends JTable implements TableTransferHandler.Ta
             propertyEditor.setTableEditor(this);
 
             if (propertyEditor != null) {
-                Component editorComponent = propertyEditor.getComponent(null, null, editEvent);
-
-                editorComponent.addKeyListener(new KeyAdapter() {
-                    @Override
-                    public void keyPressed(final KeyEvent e) {
-                        RmiQueue.runAction(new Runnable() {
-                            @Override
-                            public void run() {
-                                if (KeyEvent.VK_ENTER == e.getKeyCode() && stopCellEditing()) {
-                                    valueFilterView.applyFilters();
-                                }
-                            }
-                        });
-                    }
-                });
-
-                return editorComponent;
+                return propertyEditor.getComponent(null, null, editEvent);
             }
 
             return null;
@@ -277,6 +260,16 @@ class DataFilterValueViewTable extends JTable implements TableTransferHandler.Ta
         }
 
         @Override
+        public void preCommit(boolean enterPressed) {
+            this.enterPressed = enterPressed;
+        }
+
+        @Override
+        public void postCommit() {
+            enterPressed = false;
+        }
+
+        @Override
         public boolean stopCellEditing() {
             return propertyEditor.stopCellEditing() && super.stopCellEditing();
         }
@@ -285,6 +278,10 @@ class DataFilterValueViewTable extends JTable implements TableTransferHandler.Ta
         public Object getCellEditorValue() {
             return propertyEditor.getCellEditorValue();
         }
+    }
+    
+    public boolean editorEnterPressed() {
+        return ((Editor) getCellEditor()).enterPressed;
     }
 
     private static final class Model extends AbstractTableModel {

@@ -27,7 +27,7 @@ public class GFilterConditionView extends FlexPanel {
     private static final ClientMessages messages = ClientMessages.Instance.get();
     public interface UIHandler {
         void addEnterBinding(Widget widget);
-        void conditionRemoved(GPropertyFilter condition);
+        void removeCondition(GPropertyFilter condition);
         void applyFilters();
     }
 
@@ -55,6 +55,8 @@ public class GFilterConditionView extends FlexPanel {
 
     private boolean isLast = false;
     private boolean toolsVisible;
+
+    public boolean isApplied;
 
     public GFilterConditionView(GPropertyFilter iCondition, GTableController logicsSupplier, final UIHandler handler, boolean toolsVisible, boolean readSelectedValue) {
         this.condition = iCondition;
@@ -126,6 +128,14 @@ public class GFilterConditionView extends FlexPanel {
                 super.valueChanged(value);
                 handler.applyFilters();
             }
+
+            @Override
+            public void editingCancelled() {
+                super.editingCancelled();
+                if (!isApplied) {
+                    handler.removeCondition(condition);
+                }
+            }
         };
         addCentered(valueView);
         valueView.changeProperty(condition.property, condition.columnKey, readSelectedValue); // it's important to do it after adding to the container because setStatic -> setBaseSize is called inside (and adding to container also calls it and override with default value)
@@ -134,7 +144,7 @@ public class GFilterConditionView extends FlexPanel {
         deleteButton = new GToolbarButton(DELETE_ICON_PATH, messages.formQueriesFilterRemoveCondition()) {
             @Override
             public ClickHandler getClickHandler() {
-                return event -> handler.conditionRemoved(condition);
+                return event -> handler.removeCondition(condition);
             }
         };
         deleteButton.addStyleName("userFilterButton");

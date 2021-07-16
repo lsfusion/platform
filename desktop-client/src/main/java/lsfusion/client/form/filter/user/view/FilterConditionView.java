@@ -25,7 +25,7 @@ import static lsfusion.client.base.view.SwingDefaults.*;
 public class FilterConditionView extends JPanel {
     public interface UIHandler {
         void removeCondition(ClientPropertyFilter condition);
-        void applyFilters();
+        void applyFilters(boolean focusFirstComponent);
     }
 
     private final UIHandler uiHandler;
@@ -54,6 +54,8 @@ public class FilterConditionView extends JPanel {
 
     private boolean isLast = false;
     private boolean toolsVisible;
+    
+    public boolean isApplied;
     
     public FilterConditionView(ClientPropertyFilter ifilter, TableController logicsSupplier, UIHandler iuiHandler, boolean toolsVisible, boolean readSelectedValue) {
         condition = ifilter;
@@ -107,20 +109,20 @@ public class FilterConditionView extends JPanel {
             public void valueChanged(Compare value) {
                 condition.compare = value;
                 compareLabel.setText((condition.negation ? "!" : "") + condition.compare);
-                uiHandler.applyFilters();
+                uiHandler.applyFilters(false);
             }
 
             @Override
             public void negationChanged(boolean value) {
                 condition.negation = value;
                 compareLabel.setText((value ? "!" : "") + condition.compare);
-                uiHandler.applyFilters();
+                uiHandler.applyFilters(false);
             }
 
             @Override
             public void allowNullChanged(boolean value) {
                 allowNull = value;
-                uiHandler.applyFilters();
+                uiHandler.applyFilters(false);
             }
         };
         compareView.setSelectedValue(condition.compare);
@@ -130,12 +132,20 @@ public class FilterConditionView extends JPanel {
             @Override
             public void valueChanged(Object newValue) {
                 super.valueChanged(newValue);
-                uiHandler.applyFilters();
+                uiHandler.applyFilters(valueTable.editorEnterPressed());
             }
 
             @Override
-            public void applyFilters() {
-                uiHandler.applyFilters();
+            public void applyFilters(boolean focusFirstComponent) {
+                uiHandler.applyFilters(focusFirstComponent);
+            }
+
+            @Override
+            public void editingCancelled() {
+                super.editingCancelled();
+                if (!isApplied) {
+                    uiHandler.removeCondition(condition);
+                }
             }
         };
         valueView.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 2));
@@ -165,7 +175,7 @@ public class FilterConditionView extends JPanel {
                 addActionListener(e -> {
                     condition.junction = !condition.junction;
                     showBackground(!condition.junction);
-                    uiHandler.applyFilters();
+                    uiHandler.applyFilters(false);
                 });
             }
         };

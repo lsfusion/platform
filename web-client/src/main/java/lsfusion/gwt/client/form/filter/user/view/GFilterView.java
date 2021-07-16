@@ -128,13 +128,13 @@ public class GFilterView extends FlexPanel implements GFilterConditionView.UIHan
     }
 
     @Override
-    public void conditionRemoved(GPropertyFilter condition) {
+    public void removeCondition(GPropertyFilter condition) {
         filterContainer.remove(conditionViews.get(condition));
         conditionViews.remove(condition);
         
         updateConditionsLastState();
         
-        applyFilters();
+        applyFilters(true);
     }
     
     public boolean isToolsVisible() {
@@ -155,7 +155,9 @@ public class GFilterView extends FlexPanel implements GFilterConditionView.UIHan
     public void addEnterBinding(Widget widget) {
         controller.addBinding(new GKeyInputEvent(new GKeyStroke(KeyCodes.KEY_ENTER)),
                 GBindingEnv.AUTO,
-                event -> GFilterView.this.processBinding(event, GFilterView.this::applyFilters),
+                event -> GFilterView.this.processBinding(event, () -> {
+                    GFilterView.this.applyFilters(true);
+                }),
                 widget);
     }
 
@@ -166,15 +168,21 @@ public class GFilterView extends FlexPanel implements GFilterConditionView.UIHan
             cView.setLast(i == conditionViews.size());
         }
     }
-
+    
     public void applyFilters() {
+        applyFilters(false);
+    }
+
+    public void applyFilters(boolean focusFirstComponent) {
         ArrayList<GPropertyFilter> result = new ArrayList<>();
         for (Map.Entry<GPropertyFilter, GFilterConditionView> entry : conditionViews.entrySet()) {
             if (entry.getValue().allowNull || !entry.getKey().nullValue()) {
                 result.add(entry.getKey());
+                
+                entry.getValue().isApplied = true;
             }
         }
-        controller.applyFilters(result, true);
+        controller.applyFilters(result, true, focusFirstComponent);
     }
 
     public boolean hasConditions() {

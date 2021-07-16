@@ -129,9 +129,11 @@ public abstract class GAbstractTableController extends GPropertyController imple
     public void addUserFilterComponent() {
         userFilters = new GUserFilters(this, getFilterComponent()) {
             @Override
-            public void applyFilters(ArrayList<GPropertyFilter> conditions) {
+            public void applyFilters(ArrayList<GPropertyFilter> conditions, boolean focusFirstComponent) {
                 changeFilter(conditions);
-                Scheduler.get().scheduleDeferred(() -> focusFirstWidget());
+                if (focusFirstComponent) {
+                    Scheduler.get().scheduleDeferred(() -> focusFirstWidget());
+                }
             }
 
             @Override

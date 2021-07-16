@@ -88,7 +88,7 @@ public abstract class GUserFilters {
         return new GPropertyFilter(logicsSupplier.getSelectedGroupObject(), filterProperty, filterColumnKey, null, filterProperty.getDefaultCompare());
     }
 
-    public void applyFilters(ArrayList<GPropertyFilter> filters, boolean replace) {
+    public void applyFilters(ArrayList<GPropertyFilter> filters, boolean replace, boolean focusFirstComponent) {
         if (replace) {
             conditions = filters;
         } else {
@@ -98,7 +98,7 @@ public abstract class GUserFilters {
                 }
             }
         }
-        applyFilters(conditions);
+        applyFilters(conditions, focusFirstComponent);
     }
 
     private boolean hasCondition(GPropertyFilter newCondition) {
@@ -126,14 +126,14 @@ public abstract class GUserFilters {
 
     public void allRemoved() {
         conditions.clear();
-        applyFilters(conditions);
+        applyFilters(conditions, true);
     }
 
     public void quickEditFilter(Event keyEvent, GPropertyDraw propertyDraw, GGroupObjectValue columnKey) {
         filterView.addCondition(propertyDraw, columnKey, keyEvent, true, true);
     }
 
-    public abstract void applyFilters(ArrayList<GPropertyFilter> conditions);
+    public abstract void applyFilters(ArrayList<GPropertyFilter> conditions, boolean focusFirstComponent);
     public abstract void checkCommitEditing();
     public abstract void addBinding(GInputEvent event, GBindingEnv env, GFormController.BindingExec pressed, Widget component);
 

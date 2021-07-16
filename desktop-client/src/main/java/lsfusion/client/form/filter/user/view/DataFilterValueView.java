@@ -15,7 +15,7 @@ import java.util.EventObject;
 
 public abstract class DataFilterValueView extends JPanel {
     private final ClientDataFilterValue filterValue;
-    private DataFilterValueViewTable valueTable;
+    public DataFilterValueViewTable valueTable;
 
     // нужен для получения текущих значений в таблице
     private final TableController logicsSupplier;
@@ -108,7 +108,7 @@ public abstract class DataFilterValueView extends JPanel {
         return logicsSupplier.getFormController();
     }
 
-    public abstract void applyFilters();
+    public abstract void applyFilters(boolean focusFirstComponent);
 
     public ClientGroupObjectValue getColumnKey() {
         return columnKey;

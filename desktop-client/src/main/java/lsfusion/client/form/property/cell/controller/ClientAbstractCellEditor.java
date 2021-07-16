@@ -61,6 +61,14 @@ public class ClientAbstractCellEditor extends AbstractCellEditor implements Prop
     }
 
     @Override
+    public void preCommit(boolean enterPressed) {
+    }
+
+    @Override
+    public void postCommit() {
+    }
+
+    @Override
     public boolean stopCellEditing() {
         return propertyEditor.stopCellEditing() && super.stopCellEditing();
     }

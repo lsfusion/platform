@@ -94,7 +94,7 @@ public class FilterView extends JComponentPanel implements FilterConditionView.U
         getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStrokes.getEnter(), "applyQuery");
         getActionMap().put("applyQuery", new AbstractAction() {
             public void actionPerformed(ActionEvent ae) {
-                RmiQueue.runAction(() -> applyFilters());
+                RmiQueue.runAction(() -> applyFilters(true));
             }
         });
 
@@ -279,27 +279,32 @@ public class FilterView extends JComponentPanel implements FilterConditionView.U
 
     @Override
     public void removeCondition(ClientPropertyFilter condition) {
-        condContainer.remove(conditionViews.get(condition));
-        conditionViews.remove(condition);
+        FilterConditionView view = conditionViews.get(condition);
+        if (view != null) {
+            condContainer.remove(view);
+            conditionViews.remove(condition);
 
-        updateConditionsLastState();
-        
-        condContainer.revalidate();
-        condContainer.repaint();
-        
-        applyFilters();
+            updateConditionsLastState();
+
+            condContainer.revalidate();
+            condContainer.repaint();
+
+            applyFilters(true);
+        }
     }
 
     @Override
-    public void applyFilters() {
+    public void applyFilters(boolean focusFirstComponent) {
         ArrayList<ClientPropertyFilter> result = new ArrayList<>();
         for (Map.Entry<ClientPropertyFilter, FilterConditionView> entry : conditionViews.entrySet()) {
             if (entry.getValue().allowNull || !entry.getKey().nullValue()) {
                 result.add(entry.getKey());
+                
+                entry.getValue().isApplied = true;
             }
         }
         
-        controller.applyFilters(result, true);
+        controller.applyFilters(result, focusFirstComponent);
     }
 
     public void update() {
