@@ -67,7 +67,9 @@ public abstract class ClientDockable extends DefaultMultipleCDockable {
                 initDefaultComponent();
                 SwingUtilities.invokeLater(() -> {
                     if (!activateFirstComponents()) {
-                        focusDefaultComponent();
+                        if (focusDefaultComponent()) {
+                            removeFocusListener(this);
+                        }
                     }
                 });
                 if (defaultComponent != null) {
