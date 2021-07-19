@@ -290,8 +290,8 @@ public class ExecutionStackAspect {
 
                 if(EXPLAINAPP_ENABLED) {
                     long allocatedBytes = allocationBytesSupplier.get() - allocatedBytesOnStart;
-                    javaTime = javaTime / 1000; // because this measurements are nanos
-                    sqlTime = sqlTime / 1000;
+                    javaTime = javaTime / 1000000; // because this measurements are nanos
+                    sqlTime = sqlTime / 1000000;
 
                     boolean javaExceeded = javaTime > Settings.get().getExplainAppThreshold();
                     boolean sqlExceeded = sqlTime > Settings.get().getExplainThreshold();
