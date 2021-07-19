@@ -298,8 +298,8 @@ public abstract class DefaultSQLSyntax implements SQLSyntax {
     }
 
     @Override
-    public String getWebSearchToTSQuery() {
-        return "websearch_to_tsquery";
+    public String getPrefixSearch() {
+        return "prefixSearch";
     }
 
     public String getInsensitiveLike() {
