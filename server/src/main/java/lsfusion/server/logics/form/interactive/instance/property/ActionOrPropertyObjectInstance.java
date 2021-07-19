@@ -35,7 +35,7 @@ public abstract class ActionOrPropertyObjectInstance<P extends PropertyInterface
         this.mapping = (ImMap<P, PropertyObjectInterfaceInstance>) mapping;
     }
     
-    public abstract ActionOrPropertyObjectInstance<P, ?> getRemappedPropertyObject(ImMap<? extends PropertyObjectInterfaceInstance, DataObject> mapKeyValues);
+    public abstract ActionOrPropertyObjectInstance<P, ?> getRemappedPropertyObject(ImMap<? extends PropertyObjectInterfaceInstance, ? extends ObjectValue> mapKeyValues);
 
     // получает GRID в котором рисоваться
     public GroupObjectInstance getApplyObject() {
@@ -69,17 +69,17 @@ public abstract class ActionOrPropertyObjectInstance<P extends PropertyInterface
         return mapping.replaceValues(mapKeyValues);
     }
 
-    protected ImMap<P, PropertyObjectInterfaceInstance> remapSkippingEqualsObjectInstances(ImMap<? extends PropertyObjectInterfaceInstance, DataObject> mapKeyValues) {
-        return replaceEqualObjectInstances((ImMap<PropertyObjectInterfaceInstance, DataObject>) mapKeyValues);
+    protected ImMap<P, PropertyObjectInterfaceInstance> remapSkippingEqualsObjectInstances(ImMap<? extends PropertyObjectInterfaceInstance, ? extends ObjectValue> mapKeyValues) {
+        return replaceEqualObjectInstances((ImMap<PropertyObjectInterfaceInstance, ? extends ObjectValue>) mapKeyValues);
     }
 
-    private ImMap<P, PropertyObjectInterfaceInstance> replaceEqualObjectInstances(final ImMap<PropertyObjectInterfaceInstance, DataObject> mapKeyValues) {
+    private ImMap<P, PropertyObjectInterfaceInstance> replaceEqualObjectInstances(final ImMap<PropertyObjectInterfaceInstance, ? extends ObjectValue> mapKeyValues) {
         return mapping.mapValues(value -> {
-            DataObject mapValue = mapKeyValues.get(value);
+            ObjectValue mapValue = mapKeyValues.get(value);
             if (mapValue != null) {
                 if (value instanceof ObjectInstance) {
-                    Object currentValue = value.getObjectValue().getValue();
-                    if (!BaseUtils.nullEquals(currentValue, mapValue.getValue())) {
+                    ObjectValue currentValue = value.getObjectValue();
+                    if (!BaseUtils.hashEquals(currentValue, mapValue)) {
                         value = mapValue;
                     }
                 } else {

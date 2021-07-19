@@ -55,7 +55,7 @@ public class ClientGroupObjectValue implements Serializable {
         return map.entrySet();
     }
 
-    // should match ClientGroupObjectValue.deserializeObjectValue
+    // should match FormChanges.deserializeObjectValue
     public static void serializeObjectValue(DataOutputStream outStream, Serializable value) throws IOException {
         if(value instanceof ClientCustomObjectValue) {
             outStream.writeByte(87);
@@ -109,5 +109,15 @@ public class ClientGroupObjectValue implements Serializable {
         } catch (IOException e) {
             throw Throwables.propagate(e);
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return this == o || o instanceof ClientGroupObjectValue && map.equals(((ClientGroupObjectValue) o).map);
+    }
+
+    @Override
+    public int hashCode() {
+        return map.hashCode();
     }
 }

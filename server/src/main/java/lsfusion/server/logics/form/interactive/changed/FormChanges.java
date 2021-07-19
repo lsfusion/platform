@@ -156,7 +156,7 @@ public class FormChanges {
 
                 serializeGroupObjectValue(outStream, objectValues);
 
-                serializeObjectValue(outStream, rows.getValue(j));
+                BaseUtils.serializeObject(outStream, rows.getValue(j).getValue());
             }
         }
 

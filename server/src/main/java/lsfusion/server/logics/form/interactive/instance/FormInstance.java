@@ -945,7 +945,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
     @LogTime
     @ThisMessage
-    public void executeEventAction(final PropertyDrawInstance<?> property, String eventActionSID, final ImMap<ObjectInstance, DataObject> keys, boolean externalChange, Function<AsyncEventExec, PushAsyncResult> asyncResult, final ExecutionStack stack) throws SQLException, SQLHandledException {
+    public void executeEventAction(final PropertyDrawInstance<?> property, String eventActionSID, final ImMap<ObjectInstance, ? extends ObjectValue> keys, boolean externalChange, Function<AsyncEventExec, PushAsyncResult> asyncResult, final ExecutionStack stack) throws SQLException, SQLHandledException {
         SQLCallable<Boolean> checkReadOnly = property.propertyReadOnly != null ? () -> property.propertyReadOnly.getRemappedPropertyObject(keys).read(FormInstance.this) != null : null;
         ActionObjectInstance<?> eventAction = property.getEventAction(eventActionSID, this, checkReadOnly, securityPolicy);
         if(eventAction == null) {
@@ -1036,12 +1036,12 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         }
     }
 
-    private ImMap<ObjectInstance, Expr> overrideColumnKeys(ImRevMap<ObjectInstance, KeyExpr> mapKeys, ImMap<ObjectInstance, DataObject> columnKeys) {
+    private ImMap<ObjectInstance, Expr> overrideColumnKeys(ImRevMap<ObjectInstance, KeyExpr> mapKeys, ImMap<ObjectInstance, ? extends ObjectValue> columnKeys) {
         // замещение с добавлением
-        return MapFact.override(mapKeys, columnKeys.mapValues((Function<DataObject, Expr>) DataObject::getExpr));
+        return MapFact.override(mapKeys, columnKeys.mapValues(ObjectValue::getExpr));
     }
 
-    public Object calculateSum(PropertyDrawInstance propertyDraw, ImMap<ObjectInstance, DataObject> columnKeys) throws SQLException, SQLHandledException {
+    public Object calculateSum(PropertyDrawInstance propertyDraw, ImMap<ObjectInstance, ? extends ObjectValue> columnKeys) throws SQLException, SQLHandledException {
         GroupObjectInstance groupObject = propertyDraw.toDraw;
 
         ImRevMap<ObjectInstance, KeyExpr> mapKeys = groupObject.getMapKeys();
@@ -1122,7 +1122,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         return new Query<>(innerKeys, listExpr, "value", listExpr.compare(value.getExpr(), contains ? Compare.MATCH : Compare.EQUALS));
     }
 
-    public <P extends PropertyInterface> String[] getAsyncValues(PropertyDrawInstance<?> propertyDraw, ImMap<ObjectInstance, DataObject> keys, String actionSID, String value, Boolean optimistic) throws SQLException, SQLHandledException {
+    public <P extends PropertyInterface> String[] getAsyncValues(PropertyDrawInstance<?> propertyDraw, ImMap<ObjectInstance, ? extends ObjectValue> keys, String actionSID, String value, Boolean optimistic) throws SQLException, SQLHandledException {
         InputValueList<?> listProperty;
         boolean needRecheck = false;
         if (actionSID.equals(INPUT)) {

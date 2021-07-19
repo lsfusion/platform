@@ -823,7 +823,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         return GroupExpr.create(upKeys, validSubElementExpr, GroupType.LOGICAL(), outerMapKeys); // boolean
     }
 
-    public void change(SessionChanges session, ImMap<ObjectInstance, DataObject> value, FormInstance eventForm, ExecutionStack stack) throws SQLException, SQLHandledException {
+    public void change(SessionChanges session, ImMap<ObjectInstance, ? extends ObjectValue> value, FormInstance eventForm, ExecutionStack stack) throws SQLException, SQLHandledException {
         // проставим все объектам метки изменений
         ImSet<ObjectInstance> upGroups = GroupObjectInstance.getObjects(getUpTreeGroups());
         assert value.isEmpty() || value.keys().equals(upGroups);
@@ -836,7 +836,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         eventForm.changeGroupObject(upGroups.addExcl(downGroups), stack);
     }
 
-    public void update(SessionChanges session, MFormChanges changes, FormInstance eventForm, ImMap<ObjectInstance, DataObject> value, ExecutionStack stack) throws SQLException, SQLHandledException {
+    public void update(SessionChanges session, MFormChanges changes, FormInstance eventForm, ImMap<ObjectInstance, ? extends ObjectValue> value, ExecutionStack stack) throws SQLException, SQLHandledException {
         changes.objects.exclAdd(this, value.isEmpty() ? NullValue.getMap(getObjects(getUpTreeGroups())) : value);
         change(session, value, eventForm, stack);
     }

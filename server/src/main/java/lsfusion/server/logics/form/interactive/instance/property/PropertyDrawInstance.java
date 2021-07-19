@@ -16,6 +16,7 @@ import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.sql.lambda.SQLCallable;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.DataObject;
+import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapChange;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
@@ -46,7 +47,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         return null;
     }
 
-    public <P extends PropertyInterface> Pair<InputValueList<?>, Boolean> getAsyncValueList(String actionSID, FormInstance formInstance, ImMap<ObjectInstance, DataObject> keys) {
+    public <P extends PropertyInterface> Pair<InputValueList<?>, Boolean> getAsyncValueList(String actionSID, FormInstance formInstance, ImMap<ObjectInstance, ? extends ObjectValue> keys) {
         ActionOrPropertyObjectEntity<P, ?> mapEntity;
         InputListEntity<?, P> list;
         if(actionSID.equals(ServerResponse.FILTER)) {

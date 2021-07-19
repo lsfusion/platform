@@ -4,6 +4,7 @@ import lsfusion.base.Pair;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.DataObject;
+import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
@@ -25,7 +26,7 @@ public class ActionObjectInstance<P extends PropertyInterface> extends ActionOrP
         super(property, mapping);
     }
 
-    public ActionObjectInstance<P> getRemappedPropertyObject(ImMap<? extends PropertyObjectInterfaceInstance, DataObject> mapKeyValues) {
+    public ActionObjectInstance<P> getRemappedPropertyObject(ImMap<? extends PropertyObjectInterfaceInstance, ? extends ObjectValue> mapKeyValues) {
         return new ActionObjectInstance<>(property, remapSkippingEqualsObjectInstances(mapKeyValues));
     }
 
