@@ -1947,7 +1947,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
 
     public Expr getExpr(ImMap<T, ? extends Expr> joinImplement) {
-        return getExpr(joinImplement, PropertyChanges.EMPTY);
+        return getExpr(joinImplement, CalcType.EXPR);
     }
     public Expr getExpr(ImMap<T, ? extends Expr> joinImplement, CalcType calcType) {
         return getExpr(joinImplement, calcType, PropertyChanges.EMPTY, null);
