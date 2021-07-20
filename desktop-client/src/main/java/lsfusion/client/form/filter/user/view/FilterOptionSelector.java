@@ -46,13 +46,15 @@ public abstract class FilterOptionSelector<T> extends JTextField {
         addMenuItem(value, caption);
     }
 
-    protected void addMenuItem(T item, String caption) {
+    protected JMenuItem addMenuItem(T item, String caption) {
         JMenuItem menuItem = new JMenuItem(caption);
         menuItem.addActionListener(e -> {
             setSelectedValue(item, caption);
             valueChanged(item);
         });
         menu.add(menuItem);
+        
+        return menuItem;
     }
 
     public void setSelectedValue(T value) {

@@ -2,6 +2,7 @@ package lsfusion.gwt.client.form.filter.user.view;
 
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.FocusPanel;
+import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtClientUtils;
@@ -63,6 +64,15 @@ public abstract class GFilterCompareSelector extends GFilterOptionSelector<GComp
     }
 
     @Override
+    protected MenuItem addMenuItem(GCompare value, String caption) {
+        MenuItem menuItem = super.addMenuItem(value, caption);
+        
+        menuItem.setTitle(value.getTooltipText());
+        
+        return menuItem;
+    }
+
+    @Override
     public void valueChanged(GCompare value) {
         updateText();
     }
@@ -74,6 +84,7 @@ public abstract class GFilterCompareSelector extends GFilterOptionSelector<GComp
 
     private void updateText() {
         setText(currentValue.toString());
+        setTitle((negation ? "!" : "") + currentValue.getTooltipText());
     }
 
     public abstract void negationChanged(boolean value);

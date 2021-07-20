@@ -93,7 +93,8 @@ public class GFilterConditionView extends FlexPanel {
         propertyView.setSelectedValue(currentColumn, currentCaption);
         addCentered(propertyView);
         
-        compareLabel = new Label((condition.negation ? "!" : "") + condition.compare);
+        compareLabel = new Label();
+        updateCompareLabelText();
         compareLabel.addStyleName("userFilterLabel");
         addCentered(compareLabel);
 
@@ -101,7 +102,7 @@ public class GFilterConditionView extends FlexPanel {
             @Override
             public void negationChanged(boolean value) {
                 condition.negation = value;
-                compareLabel.setText((value ? "!" : "") + condition.compare);
+                updateCompareLabelText();
                 handler.applyFilters();
             }
 
@@ -115,7 +116,7 @@ public class GFilterConditionView extends FlexPanel {
             public void valueChanged(GCompare value) {
                 super.valueChanged(value);
                 condition.compare = value;
-                compareLabel.setText((condition.negation ? "!" : "") + value);
+                updateCompareLabelText();
                 handler.applyFilters();
             }
         };
@@ -169,6 +170,12 @@ public class GFilterConditionView extends FlexPanel {
         junctionView.showBackground(!condition.junction);
         addCentered(junctionView);
     }
+    
+    private void updateCompareLabelText() {
+        String negationString = condition.negation ? "!" : "";
+        compareLabel.setText(negationString + condition.compare);
+        compareLabel.setTitle(negationString + condition.compare.getTooltipText());
+    }
 
     @Override
     protected void onAttach() {
@@ -214,7 +221,7 @@ public class GFilterConditionView extends FlexPanel {
             compareView.setSelectedValue(defaultCompare);
             condition.compare = defaultCompare;
 
-            compareLabel.setText(defaultCompare.toString());
+            updateCompareLabelText();
         }
     }
 

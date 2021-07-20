@@ -5,7 +5,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 public enum Compare {
-    EQUALS, GREATER, LESS, GREATER_EQUALS, LESS_EQUALS, NOT_EQUALS, START_WITH, CONTAINS, ENDS_WITH, LIKE, MATCH, INARRAY;
+    EQUALS, GREATER, LESS, GREATER_EQUALS, LESS_EQUALS, NOT_EQUALS, LIKE, MATCH, INARRAY;
 
     public static Compare get(boolean min) {
         return min?Compare.LESS:Compare.GREATER;
@@ -28,16 +28,10 @@ public enum Compare {
             case 5:
                 return NOT_EQUALS;
             case 6:
-                return START_WITH;
-            case 7:
-                return CONTAINS;
-            case 8:
-                return ENDS_WITH;
-            case 9:
                 return LIKE;
-            case 10:
+            case 7:
                 return MATCH;
-            case 11:
+            case 8:
                 return INARRAY;
         }
         throw new RuntimeException("Deserialize Compare");
@@ -57,18 +51,12 @@ public enum Compare {
                 return 4;
             case NOT_EQUALS:
                 return 5;
-            case START_WITH:
-                return 6;
-            case CONTAINS:
-                return 7;
-            case ENDS_WITH:
-                return 8;
             case LIKE:
-                return 9;
+                return 6;
             case MATCH:
-                return 10;
+                return 7;
             case INARRAY:
-                return 11;
+                return 8;
         }
         throw new RuntimeException("Serialize Compare");
     }
@@ -110,19 +98,37 @@ public enum Compare {
                 return "<=";
             case NOT_EQUALS :
                 return "!=";
-            case START_WITH :
-                return "_*";
-            case CONTAINS:
-                return "=*";
-            case ENDS_WITH :
-                return "*_";
             case LIKE :
-                return "LIKE";
+                return "=*";
             case MATCH:
-                return "MATCH";
+                return "=@";
             case INARRAY :
                 return "IN ARRAY";
         }
         throw new RuntimeException("Serialize Compare");
+    }
+
+    public String getTooltipText() {
+        switch (this) {
+            case EQUALS :
+                return "=";
+            case GREATER :
+                return ">";
+            case LESS :
+                return "<";
+            case GREATER_EQUALS :
+                return ">=";
+            case LESS_EQUALS :
+                return "<=";
+            case NOT_EQUALS :
+                return "!=";
+            case LIKE :
+                return "LIKE";
+            case MATCH:
+                return "SEARCH";
+            case INARRAY :
+                return "IN ARRAY";
+        }
+        return "";
     }
 }

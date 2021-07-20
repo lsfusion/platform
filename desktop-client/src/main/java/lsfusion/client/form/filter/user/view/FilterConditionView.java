@@ -100,7 +100,8 @@ public class FilterConditionView extends JPanel {
         }
         addCentered(propertyView);
 
-        compareLabel = new JLabel((condition.negation ? "!" : "") + condition.compare);
+        compareLabel = new JLabel();
+        updateCompareLabelText();
         compareLabel.setBorder(labelBorder);
         addCentered(compareLabel);
 
@@ -108,14 +109,14 @@ public class FilterConditionView extends JPanel {
             @Override
             public void valueChanged(Compare value) {
                 condition.compare = value;
-                compareLabel.setText((condition.negation ? "!" : "") + condition.compare);
+                updateCompareLabelText();
                 uiHandler.applyFilters(false);
             }
 
             @Override
             public void negationChanged(boolean value) {
                 condition.negation = value;
-                compareLabel.setText((value ? "!" : "") + condition.compare);
+                updateCompareLabelText();
                 uiHandler.applyFilters(false);
             }
 
@@ -189,6 +190,12 @@ public class FilterConditionView extends JPanel {
         propertyView.setSelectedValue(currentColumn, currentCaption);
     }
 
+    private void updateCompareLabelText() {
+        String negationString = condition.negation ? "!" : "";
+        compareLabel.setText(negationString + condition.compare);
+        compareLabel.setToolTipText(negationString + condition.compare.getTooltipText());
+    }
+
     private void addCentered(Component component) {
         add(component, new FlexConstraints(FlexAlignment.CENTER, 0));
     }
@@ -240,7 +247,7 @@ public class FilterConditionView extends JPanel {
             compareView.setSelectedValue(defaultCompare);
             condition.compare = defaultCompare;
 
-            compareLabel.setText(defaultCompare.toString());
+            updateCompareLabelText();
         }
 
         validate();

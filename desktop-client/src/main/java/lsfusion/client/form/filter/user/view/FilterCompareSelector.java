@@ -5,6 +5,7 @@ import lsfusion.client.form.filter.user.ClientPropertyFilter;
 import lsfusion.interop.form.property.Compare;
 
 import javax.swing.*;
+import java.awt.event.MouseEvent;
 import java.util.Arrays;
 import java.util.List;
 
@@ -53,6 +54,13 @@ public abstract class FilterCompareSelector extends FilterOptionSelector<Compare
     }
 
     @Override
+    protected JMenuItem addMenuItem(Compare item, String caption) {
+        JMenuItem menuItem = super.addMenuItem(item, caption);
+        menuItem.setToolTipText(item.getTooltipText());
+        return menuItem;
+    }
+
+    @Override
     public void valueChanged(Compare value) {
         updateText();
     }
@@ -64,6 +72,11 @@ public abstract class FilterCompareSelector extends FilterOptionSelector<Compare
 
     private void updateText() {
         setText(currentValue.toString());
+    }
+
+    @Override
+    public String getToolTipText(MouseEvent event) {
+        return (negation ? "!" : "") + currentValue.getTooltipText();
     }
 
     public abstract void negationChanged(boolean value);

@@ -72,7 +72,7 @@ public abstract class GFilterOptionSelector<T> extends TextBox {
         addMenuItem(value, caption);
     }
 
-    protected void addMenuItem(T value, String caption) {
+    protected MenuItem addMenuItem(T value, String caption) {
         MenuItem menuItem = new MenuItem(caption, () -> {
             popup.hide();
             setSelectedValue(value, caption);
@@ -80,6 +80,8 @@ public abstract class GFilterOptionSelector<T> extends TextBox {
         });
 
         menuBar.addItem(menuItem);
+        
+        return menuItem;
     }
 
     public abstract void valueChanged(T value);
