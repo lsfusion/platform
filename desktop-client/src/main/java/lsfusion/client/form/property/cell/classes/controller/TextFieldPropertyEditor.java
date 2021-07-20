@@ -191,9 +191,7 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
                 @Override
                 public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                     JComponent comp = (JComponent) super.getListCellRendererComponent(list,value, index, isSelected, cellHasFocus);
-                    //extra 2px top and bottom for equal height with grid elements
-                    //extra 3px left for equal padding of textBox and popup
-                    comp.setBorder(new EmptyBorder(2, 3, 2, 0));
+                    comp.setBorder(SwingDefaults.getTableCellBorder());
                     return comp;
                 }
             });
