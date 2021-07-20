@@ -46,6 +46,7 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 
 import java.sql.SQLException;
+import java.util.function.Predicate;
 
 import static lsfusion.base.BaseUtils.max;
 
@@ -54,6 +55,12 @@ public class AutoHintsAspect {
 
     public static ThreadLocal<SessionModifier> catchAutoHint = new ThreadLocal<>();
     public static ThreadLocal<Boolean> catchNotFirst = new ThreadLocal<>();
+
+    public static ThreadLocal<Predicate<Property>> catchDisabledHints = new ThreadLocal<>();
+    private static boolean disabledHints(Property property) {
+        Predicate<Property> disabledHints = catchDisabledHints.get();
+        return disabledHints != null && disabledHints.test(property);
+    }
 
     public static ThreadLocal<Integer> catchDisabledRepeat = new ThreadLocal<>();
     public static void pushDisabledRepeat() {
@@ -260,7 +267,7 @@ public class AutoHintsAspect {
             return thisJoinPoint.proceed();
 
         SessionModifier catchHint = catchAutoHint.get();
-        if(catchHint != null && catchHint.allowPrereadValues(property, interfaceValues)) // если есть не "прочитанные" параметры - значения, вычисляем
+        if(catchHint != null && catchHint.allowPrereadValues(property, interfaceValues) && !disabledHints(property)) // если есть не "прочитанные" параметры - значения, вычисляем
             throw new HintException(new PrereadHint(property, interfaceValues));
 
         IQuery<?, String> result = (IQuery) thisJoinPoint.proceed();
@@ -268,7 +275,7 @@ public class AutoHintsAspect {
             return result;
 
         // проверка на пустоту для оптимизации при старте
-        if(catchHint != null && !propChanges.isEmpty() && catchHint.allowHintIncrement(property) && !property.isNoHint()) { // неправильно так как может быть не changed
+        if(catchHint != null && !propChanges.isEmpty() && catchHint.allowHintIncrement(property) && !property.isNoHint() && !disabledHints(property)) { // неправильно так как может быть не changed
             Where changed = null;
             if(queryType.needChange())
                 changed = result.getExpr("changed").getWhere();
@@ -325,11 +332,11 @@ public class AutoHintsAspect {
         SessionModifier catchHint = catchAutoHint.get();
 
         ImMap<PropertyInterface, Expr> joinValues;
-        if(catchHint!=null && catchHint.allowPrereadValues(property, joinValues = Property.getJoinValues(joinExprs))) {
+        if(catchHint!=null && catchHint.allowPrereadValues(property, joinValues = Property.getJoinValues(joinExprs)) && !disabledHints(property)) {
             throw new HintException(new PrereadHint(property, joinValues));
         }
 
-        if(catchHint == null || !catchHint.allowHintIncrement(property)) // неправильно так как может быть не changed
+        if(catchHint == null || !catchHint.allowHintIncrement(property) || disabledHints(property)) // неправильно так как может быть не changed
             return thisJoinPoint.proceed();
 
         WhereBuilder cascadeWhere = Property.cascadeWhere(changedWhere);
