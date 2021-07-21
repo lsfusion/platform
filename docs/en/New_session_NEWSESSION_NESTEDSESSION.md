@@ -33,7 +33,8 @@ testNewSession ()  {
         MESSAGE (GROUP SUM 1 IF local(Currency c) == 'Local'); // will return NULL
     }
     NEWSESSION NESTED (local) {
-        MESSAGE (GROUP SUM 1 IF local(Currency c) == 'Local'); // will return the number of objects of class Currency
+        // will return the number of objects of class Currency
+        MESSAGE (GROUP SUM 1 IF local(Currency c) == 'Local'); 
     }
 
     NEWSESSION {
@@ -52,12 +53,14 @@ testNewSession ()  {
 testNestedSession ()  {
     NESTEDSESSION {
         name(Sku s) <- 'aaa';
-        APPLY; // in fact, the changes will not be applied to the database, but to the "upper" session
+        // in fact, the changes will not be applied to the database, but to the "upper" session
+        APPLY; 
     }
 
     MESSAGE (GROUP SUM 1 IF name(Sku s) == 'aaa'); // returns all rows
     CANCEL;
-    MESSAGE (GROUP SUM 1 IF name(Sku s) == 'aaa'); // returns NULL if there was no Sku named aaa in the database before
+    // returns NULL if there was no Sku named aaa in the database before
+    MESSAGE (GROUP SUM 1 IF name(Sku s) == 'aaa'); 
 
 }
 
@@ -68,7 +71,8 @@ FORM sku
 newNestedSession()  {
     NESTEDSESSION {
         NEW s = Sku {
-            // shows the form, but any changes in it will not be applied to the database, but will be saved in the "upper session" session
+            // shows the form, but any changes in it will not be applied to the database,
+            // but will be saved in the "upper session" session
             SHOW sku OBJECTS s = s;
         }
     }

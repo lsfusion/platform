@@ -43,7 +43,6 @@ import lsfusion.server.logics.property.data.StoredDataProperty;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
-import lsfusion.server.physics.admin.log.LogTime;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.SQLException;
@@ -200,7 +199,6 @@ public class ForAction<I extends PropertyInterface> extends ExtendContextAction<
         return result;
     }
 
-    @LogTime
     @ThisMessage
     private FlowResult executeFor(ExecutionContext<PropertyInterface> context, @ParamMessage (profile = false) ImMap<I, ObjectValue> newValues) throws SQLException, SQLHandledException {
         return execute(context, action, newValues, mapInterfaces);

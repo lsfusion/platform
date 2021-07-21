@@ -43,7 +43,8 @@ MODULE MyShape;
 
 REQUIRE Shape;
 
-overSquareCircle (circle) += radius(circle) * radius(circle) * 3.14159265359; // используем формулу с более высокой точностью
+// используем формулу с более высокой точностью
+overSquareCircle (circle) += radius(circle) * radius(circle) * 3.14159265359; 
 ```
 
 Следует отметить, что вместо [оператора `OVERRIDE`](OVERRIDE_operator.md) можно использовать любые другие выражения. В частности, наиболее часто используемыми могут быть [операторы `(+)` и `(-)`](Arithmetic_operators_+_-_etc.md).

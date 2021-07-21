@@ -108,7 +108,6 @@ import lsfusion.server.logics.property.value.NullValueProperty;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.SystemProperties;
 import lsfusion.server.physics.admin.drilldown.form.DrillDownFormEntity;
-import lsfusion.server.physics.admin.log.LogTime;
 import lsfusion.server.physics.dev.debug.PropertyDebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.dev.id.name.DBNamingPolicy;
@@ -588,7 +587,6 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
 
     // есть assertion, что не должен возвращать изменение null -> null, то есть или старое или новое не null, для подр. см usage
-    @LogTime
     @ThisMessage
     public PropertyChange<T> getIncrementChange(Modifier modifier) throws SQLException, SQLHandledException {
         return getIncrementChange(modifier.getPropertyChanges());

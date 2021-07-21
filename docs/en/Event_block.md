@@ -62,8 +62,14 @@ FORM invoice 'Invoice' // creating a form for editing an invoice
 //    ...  setting the rest of the form behavior
 
     EVENTS
-        ON OK { posted(i) <- TRUE; }, // specifying that when the user clicks OK, an action should be executed that will execute actions to "conduction" this invoice
-        ON DROP showImpossibleMessage() // by clicking the formDrop button, showing a message that this cannot be, since this button by default will be shown only in the form for choosing an invoice, and this form is basically an invoice edit form
+        // specifying that when the user clicks OK, an action should be executed 
+        // that will execute actions to "conduction" this invoice
+        ON OK { posted(i) <- TRUE; },
+ 
+        // by clicking the formDrop button, showing a message that this cannot be, 
+        // since this button by default will be shown only in the form for choosing an invoice, 
+        // and this form is basically an invoice edit form
+        ON DROP showImpossibleMessage() 
 ;
 
 CLASS Shift;
@@ -79,8 +85,8 @@ cashier = DATA Cashier (Receipt);
 FORM POS 'POS' // declaring the form for product sale to the customer in the salesroom
 
     OBJECTS r = Receipt PANEL // adding an object that will store the current receipt
-//    ... declaring the behavior of the form
 
+    //  ... declaring the behavior of the form
 ;
 
 createReceipt ()  {
@@ -92,8 +98,12 @@ createReceipt ()  {
     }
 }
 
-EXTEND FORM POS // adding a property through the form extension so that SEEK could be applied to the already created object on the form
+// adding a property through the form extension so that SEEK could be applied to the already created
+// object on the form
+EXTEND FORM POS 
     EVENTS
-        ON INIT createReceipt() // when opening the form, executing the action to create a new receipt, which fills in the shift, cashier and other information
+        // when opening the form, executing the action to create a new receipt, 
+        // which fills in the shift, cashier and other information
+        ON INIT createReceipt() 
 ;
 ```

@@ -26,16 +26,18 @@ To declare an action showing a message, use the [`MESSAGE` operator](MESSAGE_ope
 
 ### Examples
 
-
 ```lsf
-message  { MESSAGE 'Hello World!'; }                                // plain text message
+message  { MESSAGE 'Hello World!'; } // plain text message
 
 isGood = DATA BOOLEAN (Item);
 stringData(Item i)   {
-    MESSAGE IF isGood(i) THEN 'Good' ELSE 'Bad';   // depending on which item will be passed to the action, a window will be shown either with the text 'Good' or with the text 'Bad'
+    // depending on which item will be passed to the action, a window will be shown 
+    // either with the text 'Good' or with the text 'Bad'
+    MESSAGE IF isGood(i) THEN 'Good' ELSE 'Bad';   
 }
 
-testMessage()  {                    // In this case, five text messages will be shown to the user
+// In this case, five text messages will be shown to the user
+testMessage()  { 
     LOCAL i = INTEGER();
     i() <- 0;
     WHILE i() < 5 DO {
@@ -44,7 +46,8 @@ testMessage()  {                    // In this case, five text messages will be 
     }
 }
 
-testMessageNowait()  {              // In the case of NOWAIT, one text message combining messages from five MESSAGE calls will be shown to the user
+// In the case of NOWAIT, one text message combining messages from five MESSAGE calls will be shown to the user
+testMessageNowait()  {              
     LOCAL i = INTEGER();
     i() <- 0;
     WHILE i() < 5 DO {
@@ -55,8 +58,6 @@ testMessageNowait()  {              // In the case of NOWAIT, one text message c
 ```
 
   
-
-
 ```lsf
 testAsk ()  {
     ASK 'Are you sure you want to continue?' DO {

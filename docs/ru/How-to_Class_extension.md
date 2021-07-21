@@ -27,10 +27,13 @@ b = DATA BPSTRING[10] (B); // объявляем первичное свойст
 ```lsf
 MODULE MBA;
 
-REQUIRE MA, MB; // указываем, что модуль MBA зависит от модулей MA и MB, чтобы в нем можно было использовать элементы системы, объявляемые в них
+// указываем, что модуль MBA зависит от модулей MA и MB, чтобы в нем можно было использовать элементы системы,
+// объявляемые в них
+REQUIRE MA, MB; 
 
 EXTEND CLASS B : A; // донаследуем класс B от A
-a(ba) += b(ba); // указываем, что для абстрактного свойства a, в качестве реализации должно использоваться свойство B
+// указываем, что для абстрактного свойства a, в качестве реализации должно использоваться свойство B
+a(ba) += b(ba); 
 ```
 
 Таким образом, непосредственной зависимости между модулями `MA` и `MB`, что позволяет включать/отключать связь между ними при необходимости путем подключения модуля `MBA`. Следует отметить, что модуль `MBA` расширяет функциональность модуля `MB`, не изменяя при этом его кода.
@@ -44,7 +47,8 @@ MODULE MyModule;
 
 META defineMyClass (className) // объявляем метакод defineMyClass с параметром className
     CLASS className; // объявляем класс с именем className
-    myProperty###className = DATA BPSTRING[20] (className); // добавляем для созданного класса свойство с именем myProperty+className
+    // добавляем для созданного класса свойство с именем myProperty+className
+    myProperty###className = DATA BPSTRING[20] (className); 
 END
 ```
 
@@ -55,5 +59,7 @@ CLASS MySuperClass;
 
 @defineMyClass(MyClass); // вызываем метакод, который создаст класс и свойство
 
-EXTEND CLASS MyClass : MySuperClass; // наследуем MyClass от MySuperClass, при этом MyClass "получит" все свойства, которые объявлены для класса MySuperClass
+// наследуем MyClass от MySuperClass, при этом MyClass "получит" все свойства,
+// которые объявлены для класса MySuperClass
+EXTEND CLASS MyClass : MySuperClass; 
 ```

@@ -68,7 +68,8 @@ distributeDiscount 'Распределить скидку' (Order o, NUMERIC[14,
     leftSum(OrderDetail d) <- sum(d) WHERE order(d) == o;
 
     WHILE discount() > 0 DO {
-        FOR OrderDetail d == [ GROUP LAST OrderDetail od ORDER leftSum(od), od BY order(od)](o) DO { // находим строку с наибольшей "оставшейся" суммой
+        // находим строку с наибольшей "оставшейся" суммой
+        FOR OrderDetail d == [ GROUP LAST OrderDetail od ORDER leftSum(od), od BY order(od)](o) DO { 
             discountSum(d) <- MIN leftSum(d), discount();
             discount() <- discount() (-) discountSum(d);
         }

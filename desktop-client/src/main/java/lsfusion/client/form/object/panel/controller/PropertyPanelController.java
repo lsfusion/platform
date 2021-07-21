@@ -46,7 +46,9 @@ public class PropertyPanelController {
                 return forceEdit();
             }
             public boolean showing() {
-                return views.values().iterator().next().isShowing();
+                if(views != null && !views.isEmpty())
+                    return views.values().iterator().next().isShowing();
+                return false;
             }
         });
 

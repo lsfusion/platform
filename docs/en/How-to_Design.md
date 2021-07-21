@@ -61,7 +61,9 @@ DESIGN orders {
         type = SPLITV; // vertical splitter - that is, there can only be 2 children
         MOVE BOX(o); // the first container will be the list of orders
         NEW orderDetails {
-            fill = 2; // Specifying that the specification will take up 2 times more space than the o.box container (for all such containers fill, by default, is 1)
+            // Specifying that the specification will take up 2 times more space than the o.box container 
+            // (for all such containers fill, by default, is 1)
+            fill = 2; 
             type = TABBED; // the container will be a tabbed panel
             MOVE BOX(d) { // the first tab will be a list of rows with books
                 caption = 'Order content';
@@ -113,12 +115,17 @@ We need to add filtering elements to the design of the previously created form.
 ```lsf
 DESIGN orders {
     orderList {
-        NEW orderHeader FIRST { // creating a new container and adding the first component to the vertical splitter
-            fill = 1; // it is necessary to make it "stretched" inside the orderList, as it will have a list of orders
-            // by default, the type of the new container is CONTAINERV, that is, all the components in it are arranged from top to bottom
-            NEW filters { // creating a container in which all the components that are responsible for filtering will be placed
+        // creating a new container and adding the first component to the vertical splitter
+        NEW orderHeader FIRST { 
+            // it is necessary to make it "stretched" inside the orderList, as it will have a list of orders
+            fill = 1; 
+            // by default, the type of the new container is CONTAINERV, that is, all the components in it are
+            // arranged from top to bottom creating a container in which all the components that are responsible 
+            // for filtering will be placed
+            NEW filters { 
                 caption = 'Filters';
-                type = CONTAINERH; // making it horizontal so that all components go from left to right
+                // making it horizontal so that all components go from left to right
+                type = CONTAINERH; 
                 MOVE PROPERTY(df) {
                     caption = 'Date from';
                 }
@@ -127,7 +134,9 @@ DESIGN orders {
                 }
                 MOVE PROPERTY(nameFilterCustomer());
             }
-            MOVE BOX(o); // moving the container with the order list to it, since there should be exactly two components in the splitter
+            // moving the container with the order list to it, since there should be exactly two components
+            // in the splitter
+            MOVE BOX(o); 
         }
     }
 }
