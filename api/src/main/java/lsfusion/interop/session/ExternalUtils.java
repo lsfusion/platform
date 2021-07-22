@@ -38,7 +38,8 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static lsfusion.base.BaseUtils.nvl;
+import static lsfusion.base.BaseUtils.isEmpty;
+import static lsfusion.base.BaseUtils.trimToEmpty;
 import static org.apache.http.entity.ContentType.APPLICATION_FORM_URLENCODED;
 
 public class ExternalUtils {
@@ -247,10 +248,12 @@ public class ExternalUtils {
             builder.setContentType(ExternalUtils.MULTIPART_MIXED);
             for (int i = 0; i < paramCount; i++) {
                 Object value = results[i];
-                String bodyPartName = nvl(i < bodyParamNames.size() ? bodyParamNames.get(i) : null, "param" + i);
+                String[] bodyParamName = trimToEmpty(i < bodyParamNames.size() ? bodyParamNames.get(i) : null).split(";");
+                String bodyPartName = isEmpty(bodyParamName[0]) ? ("param" + i) : bodyParamName[0];
                 if (value instanceof FileData) {
+                    String fileName = bodyParamName.length < 2 || isEmpty(bodyParamName[1]) ? "filename" : bodyParamName[1];
                     String extension = ((FileData) value).getExtension();
-                    builder.addPart(bodyPartName, new ByteArrayBody(((FileData) value).getRawFile().getBytes(), getContentType(extension), "filename"));
+                    builder.addPart(bodyPartName, new ByteArrayBody(((FileData) value).getRawFile().getBytes(), getContentType(extension), fileName));
                 } else {
                     builder.addPart(bodyPartName, new StringBody((String) value, ExternalUtils.TEXT_PLAIN));
                 }
