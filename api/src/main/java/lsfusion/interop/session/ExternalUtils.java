@@ -18,6 +18,8 @@ import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.entity.mime.FormBodyPart;
+import org.apache.http.entity.mime.FormBodyPartBuilder;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.ByteArrayBody;
 import org.apache.http.entity.mime.content.StringBody;
@@ -35,11 +37,11 @@ import java.nio.charset.Charset;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static lsfusion.base.BaseUtils.isEmpty;
-import static lsfusion.base.BaseUtils.trimToEmpty;
+import static lsfusion.base.BaseUtils.*;
 import static org.apache.http.entity.ContentType.APPLICATION_FORM_URLENCODED;
 
 public class ExternalUtils {
@@ -125,7 +127,7 @@ public class ExternalUtils {
 
         if (execResult != null) {
             Result<String> singleFileExtension = new Result<>();
-            entity = getInputStreamFromList(execResult.results, getBodyUrl(execResult.results, returnBodyUrl), new ArrayList<>(), singleFileExtension);
+            entity = getInputStreamFromList(execResult.results, getBodyUrl(execResult.results, returnBodyUrl), new ArrayList<>(), new ArrayList<>(), singleFileExtension, null);
 
             if (singleFileExtension.result != null) // если возвращается один файл, задаем ему имя
                 contentDisposition = "filename=" + (returns.isEmpty() ? filename : returns.get(0)).replace(',', '_') + "." + singleFileExtension.result;
@@ -240,40 +242,48 @@ public class ExternalUtils {
     }
 
     // results byte[] || String, можно было бы попровать getRequestResult (по аналогии с getRequestParam) выделить общий, но там возвращаемые классы разные, нужны будут generic'и и оно того не стоит
-    public static HttpEntity getInputStreamFromList(Object[] results, String bodyUrl, List<String> bodyParamNames, Result<String> singleFileExtension) {
+    public static HttpEntity getInputStreamFromList(Object[] results, String bodyUrl, List<String> bodyParamNames, List<Map<String, String>> bodyParamHeadersList, Result<String> singleFileExtension, ContentType forceContentType) {
         HttpEntity entity;
         int paramCount = results.length;
         if (paramCount > 1 || (bodyParamNames != null && !bodyParamNames.isEmpty())) {
             MultipartEntityBuilder builder = MultipartEntityBuilder.create();
-            builder.setContentType(ExternalUtils.MULTIPART_MIXED);
+            builder.setContentType(nvl(forceContentType, ExternalUtils.MULTIPART_MIXED));
             for (int i = 0; i < paramCount; i++) {
                 Object value = results[i];
-                String[] bodyParamName = trimToEmpty(i < bodyParamNames.size() ? bodyParamNames.get(i) : null).split(";");
+                String[] bodyParamName = trimToEmpty(bodyParamNames != null && i < bodyParamNames.size() ? bodyParamNames.get(i) : null).split(";");
                 String bodyPartName = isEmpty(bodyParamName[0]) ? ("param" + i) : bodyParamName[0];
+                FormBodyPart formBodyPart;
                 if (value instanceof FileData) {
                     String fileName = bodyParamName.length < 2 || isEmpty(bodyParamName[1]) ? "filename" : bodyParamName[1];
                     String extension = ((FileData) value).getExtension();
-                    builder.addPart(bodyPartName, new ByteArrayBody(((FileData) value).getRawFile().getBytes(), getContentType(extension), fileName));
+                    formBodyPart = FormBodyPartBuilder.create(bodyPartName, new ByteArrayBody(((FileData) value).getRawFile().getBytes(), nvl(forceContentType, getContentType(extension)), fileName)).build();
                 } else {
-                    builder.addPart(bodyPartName, new StringBody((String) value, ExternalUtils.TEXT_PLAIN));
+                    formBodyPart = FormBodyPartBuilder.create(bodyPartName, new StringBody((String) value, nvl(forceContentType, ExternalUtils.TEXT_PLAIN))).build();
                 }
+                Map<String, String> bodyParamHeaders = bodyParamHeadersList.size() > i ? bodyParamHeadersList.get(i) : null;
+                if(bodyParamHeaders != null) {
+                    for (Map.Entry<String, String> bodyParamHeader : bodyParamHeaders.entrySet()) {
+                        formBodyPart.addField(bodyParamHeader.getKey(), bodyParamHeader.getValue());
+                    }
+                }
+                builder.addPart(formBodyPart);
             }
             entity = builder.build();
         } else if(paramCount == 1) {
             Object value = BaseUtils.single(results);
             if (value instanceof FileData) {
                 String extension = ((FileData) value).getExtension();
-                entity = new ByteArrayEntity(((FileData) value).getRawFile().getBytes(), getContentType(extension));
+                entity = new ByteArrayEntity(((FileData) value).getRawFile().getBytes(), nvl(forceContentType, getContentType(extension)));
                 if(singleFileExtension != null)
                     singleFileExtension.set(extension);
             } else {
-                entity = new StringEntity((String) value, ExternalUtils.TEXT_PLAIN);
+                entity = new StringEntity((String) value, nvl(forceContentType, ExternalUtils.TEXT_PLAIN));
             }
         } else {
             if (bodyUrl != null) {
-                entity = new StringEntity(bodyUrl, APPLICATION_FORM_URLENCODED);
+                entity = new StringEntity(bodyUrl, nvl(forceContentType, APPLICATION_FORM_URLENCODED));
             } else {
-                entity = new StringEntity("", ExternalUtils.TEXT_PLAIN);
+                entity = new StringEntity("", nvl(forceContentType, ExternalUtils.TEXT_PLAIN));
             }
         }
         return entity;

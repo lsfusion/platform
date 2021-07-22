@@ -37,6 +37,7 @@ import org.apache.http.impl.client.BasicCookieStore;
 
 import java.nio.charset.Charset;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,13 +48,15 @@ public class ExternalHTTPAction extends ExternalAction {
     private PropertyInterface queryInterface;
     private PropertyInterface bodyUrlInterface;
     private List<String> bodyParamNames;
+    private ImList<LP> bodyParamHeadersPropertyList;
     private LP<?> headersProperty;
     private LP<?> cookiesProperty;
     private LP headersToProperty;
     private LP cookiesToProperty;
 
     public ExternalHTTPAction(boolean clientAction, ExternalHttpMethod method, ImList<Type> params, ImList<LP> targetPropList,
-                              List<String> bodyParamNames, LP headersProperty, LP cookiesProperty, LP headersToProperty, LP cookiesToProperty, boolean hasBodyUrl) {
+                              List<String> bodyParamNames, ImList<LP> bodyParamHeadersPropertyList,
+                              LP headersProperty, LP cookiesProperty, LP headersToProperty, LP cookiesToProperty, boolean hasBodyUrl) {
         super(hasBodyUrl ? 2 : 1, params, targetPropList);
 
         this.clientAction = clientAction;
@@ -61,6 +64,7 @@ public class ExternalHTTPAction extends ExternalAction {
         this.queryInterface = getOrderInterfaces().get(0);
         this.bodyUrlInterface = hasBodyUrl ? getOrderInterfaces().get(1) : null;
         this.bodyParamNames = bodyParamNames;
+        this.bodyParamHeadersPropertyList = bodyParamHeadersPropertyList;
         this.headersProperty = headersProperty;
         this.cookiesProperty = cookiesProperty;
         this.headersToProperty = headersToProperty;
@@ -96,6 +100,15 @@ public class ExternalHTTPAction extends ExternalAction {
                 if(bodyUrl != null && !rNotUsedParams.result.isEmpty()) {
                     throw new RuntimeException("All params should be used in BODYURL");
                 }
+                
+                List<Map<String, String>> bodyParamHeadersList = new ArrayList<>();
+
+                for (LP bodyParamHeadersProperty : bodyParamHeadersPropertyList) {
+                    Map<String, String> bodyParamHeaders = new HashMap<>();
+                    MapFact.addJavaAll(bodyParamHeaders, readPropertyValues(context.getEnv(), bodyParamHeadersProperty));
+                    bodyParamHeadersList.add(bodyParamHeaders);
+                }
+
                 Map<String, String> headers = new HashMap<>();
                 if(headersProperty != null) {
                     MapFact.addJavaAll(headers, readPropertyValues(context.getEnv(), headersProperty));
@@ -114,11 +127,10 @@ public class ExternalHTTPAction extends ExternalAction {
 
                 byte[] body = null;
                 if (method.hasBody()) {
-                    HttpEntity entity = ExternalUtils.getInputStreamFromList(paramList, bodyUrl, bodyParamNames, null);
+                    String contentType = headers.get("Content-Type");
+                    HttpEntity entity = ExternalUtils.getInputStreamFromList(paramList, bodyUrl, bodyParamNames, bodyParamHeadersList, null, contentType != null ? ContentType.create(contentType) : null);
                     body = IOUtils.readBytesFromHttpEntity(entity);
-                    if (!headers.containsKey("Content-Type")) {
-                        headers.put("Content-Type", entity.getContentType().getValue());
-                    }
+                    headers.put("Content-Type", entity.getContentType().getValue());
                 }
 
                 Integer timeout = (Integer) context.getBL().LM.timeoutHttp.read(context);
