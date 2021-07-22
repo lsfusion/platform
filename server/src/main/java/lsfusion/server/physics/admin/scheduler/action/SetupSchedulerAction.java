@@ -23,16 +23,13 @@ public class SetupSchedulerAction extends InternalAction {
     @Override
     public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         try {
-            boolean isServer = context.getDbManager().isServer();
-            if (isServer) {
-                ServerLoggers.startLogger.info("Starting Scheduler");
-                Scheduler scheduler = context.getLogicsInstance().getCustomObject(Scheduler.class);
-                Integer threadCount = (Integer) findProperty("threadCountScheduler[]").read(context);
-                scheduler.setupScheduledTasks(context.getSession(), threadCount);
-            } else {
+            ServerLoggers.startLogger.info("Starting Scheduler");
+            Scheduler scheduler = context.getLogicsInstance().getCustomObject(Scheduler.class);
+            Integer threadCount = (Integer) findProperty("threadCountScheduler[]").read(context);
+            boolean started = scheduler.setupScheduledTasks(context.getSession(), threadCount);
+            if(!started)
                 context.delayUserInteraction(new MessageClientAction("Scheduler disabled, change serverComputer() to enable", "Scheduler disabled"));
-            }
-            findProperty("isStartedScheduler[]").change(isServer ? true : null, context);
+            findProperty("isStartedScheduler[]").change(started ? true : null, context);
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             throw Throwables.propagate(e);
         }

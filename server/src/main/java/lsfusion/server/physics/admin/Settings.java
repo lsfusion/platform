@@ -1234,6 +1234,16 @@ public class Settings implements Cloneable {
         this.flushPendingTransactionCleanersThreshold = flushPendingTransactionCleanersThreshold;
     }
 
+    private int flushAsyncValuesCaches = 1;
+
+    public int getFlushAsyncValuesCaches() {
+        return flushAsyncValuesCaches;
+    }
+
+    public void setFlushAsyncValuesCaches(int flushAsyncValuesCaches) {
+        this.flushAsyncValuesCaches = flushAsyncValuesCaches;
+    }
+
     private int tempTablesTimeThreshold = 240; // время сколько будет гарантированно жить таблица (в секундах), нужно для предотвращения ротации кэшей, должно быть соизмеримо со стандартным временем использования
     private int tempTablesCountThreshold = 40; // очищать таблицы, когда их общее количество превысило данный порог * количество соединений
 

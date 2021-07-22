@@ -6,6 +6,7 @@ import lsfusion.base.ExceptionUtils;
 import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.*;
+import lsfusion.interop.action.MessageClientAction;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.base.controller.context.AbstractContext;
 import lsfusion.server.base.controller.lifecycle.LifecycleEvent;
@@ -105,8 +106,12 @@ public class Scheduler extends MonitorServer implements InitializingBean {
         return logicsInstance;
     }
 
-    public void setupScheduledTask(DataSession session, DataObject scheduledTaskObject, String nameScheduledTask) throws SQLException, ScriptingErrorLog.SemanticErrorException, SQLHandledException {
-        if (daemonTasksExecutor != null) {
+    private boolean isServer() {
+        return dbManager.isServer();
+    }
+
+    public boolean setupScheduledTask(DataSession session, DataObject scheduledTaskObject, String nameScheduledTask) throws SQLException, ScriptingErrorLog.SemanticErrorException, SQLHandledException {
+        if (daemonTasksExecutor != null && isServer()) {
             Long scheduledTaskId = (Long) scheduledTaskObject.getValue();
             List<ScheduledFuture> futures = futuresMap.remove(scheduledTaskId);
             if (futures != null) {
@@ -136,11 +141,13 @@ public class Scheduler extends MonitorServer implements InitializingBean {
                     futuresMap.put(scheduledTaskId, futures);
                 }
             }
+            return true;
         }
+        return false;
     }
 
-    public void executeScheduledTask(DataSession session, DataObject scheduledTaskObject, String nameScheduledTask) throws SQLException, SQLHandledException {
-        if (daemonTasksExecutor != null) {
+    public boolean executeScheduledTask(DataSession session, DataObject scheduledTaskObject, String nameScheduledTask) throws SQLException, SQLHandledException {
+        if (daemonTasksExecutor != null && isServer()) {
             Long scheduledTaskId = (Long) scheduledTaskObject.getValue();
             List<ScheduledFuture> futures = futuresMap.get(scheduledTaskId);
             if (futures == null)
@@ -151,18 +158,24 @@ public class Scheduler extends MonitorServer implements InitializingBean {
                     null, null, null, null), scheduledTaskId, true, null, 0, false);
             futures.add(task.execute(daemonTasksExecutor));
             futuresMap.put(scheduledTaskId, futures);
+
+            return true;
         }
+
+        return false;
     }
 
-    public void setupScheduledTasks(DataSession session, Integer threadCount) throws SQLException, ScriptingErrorLog.SemanticErrorException, SQLHandledException {
+    public boolean setupScheduledTasks(DataSession session, Integer threadCount) throws SQLException, ScriptingErrorLog.SemanticErrorException, SQLHandledException {
 
         if (daemonTasksExecutor != null)
             daemonTasksExecutor.shutdownNow();
 
         daemonTasksExecutor = ExecutorFactory.createMonitorScheduledThreadService(threadCount != null ? threadCount : 5, this);
 
-        List<SchedulerTask> tasks = new ArrayList<>(BL.getSystemTasks(this));
-        fillUserScheduledTasks(session, tasks);
+        boolean isServer = isServer();
+        List<SchedulerTask> tasks = new ArrayList<>(BL.getSystemTasks(this, isServer));
+        if(isServer)
+            fillUserScheduledTasks(session, tasks);
 
         for (SchedulerTask task : tasks) {
             List<ScheduledFuture> futures = futuresMap.get(task.scheduledTaskId);
@@ -171,6 +184,8 @@ public class Scheduler extends MonitorServer implements InitializingBean {
             futures.addAll(task.schedule(daemonTasksExecutor));
             futuresMap.put(task.scheduledTaskId, futures);
         }
+
+        return isServer;
     }
 
     private void fillUserScheduledTasks(DataSession session, List<SchedulerTask> tasks) throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {

@@ -1,22 +1,25 @@
 package lsfusion.base.col.lru;
 
+import lsfusion.base.Pair;
+
 import java.lang.ref.Reference;
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
 
 import static lsfusion.base.col.lru.LRUUtil.hash;
 
-public class LRUWWVSMap<K, W, V> extends ALRUKWMap<K, LRUWWVSMap.AEntry<K, W, V>, LRUWWVSMap.ASegment> {
+// WE means Weak but with normal equals, needed for some really rare cases, when we want to clean lru caches "near-immediately" on some event
+public class LRUWWEVSMap<K, W, V> extends ALRUKWMap<K, LRUWWEVSMap.AEntry<K, W, V>, LRUWWEVSMap.ASegment> {
 
-    public LRUWWVSMap(LRUUtil.Strategy expireStrategy) {
+    public LRUWWEVSMap(LRUUtil.Strategy expireStrategy) {
         super(expireStrategy);
     }
 
-    protected LRUWWVSMap.ASegment[] createSegments(int size) {
-        return new LRUWWVSMap.ASegment[size];
+    protected LRUWWEVSMap.ASegment[] createSegments(int size) {
+        return new LRUWWEVSMap.ASegment[size];
     }
 
-    protected LRUWWVSMap.ASegment createSegment(int cap, float loadFactor) {
+    protected LRUWWEVSMap.ASegment createSegment(int cap, float loadFactor) {
         return new ASegment(cap, loadFactor);
     }
 
@@ -38,7 +41,7 @@ public class LRUWWVSMap<K, W, V> extends ALRUKWMap<K, LRUWWVSMap.AEntry<K, W, V>
     }
 
     private static <W, K> int hashKey(K sKey, W wKey) {
-        return hash(31 * System.identityHashCode(wKey) + System.identityHashCode(sKey));
+        return hash(31 * wKey.hashCode() + System.identityHashCode(sKey));
     }
 
     class ASegment extends ALRUKWMap<K, AEntry<K, W, V>, ASegment>.ASegment {
@@ -83,7 +86,8 @@ public class LRUWWVSMap<K, W, V> extends ALRUKWMap<K, LRUWWVSMap.AEntry<K, W, V>
         public final V get(K sKey, W wKey, int hash) {
             final AEntry<K, W, V>[] t = (AEntry<K, W, V>[]) table;
             for (AEntry<K, W, V> e = t[indexFor(hash, t.length)]; e != null; e = e.next) {
-                if (e.get() == sKey && e.key.get() == wKey) {
+                W ewKey;
+                if (e.get() == sKey && (ewKey = e.key.get()) != null && optEquals(ewKey, wKey)) {
                     recordAccess(e);
                     updateLRU();
                     return e.value;
@@ -98,7 +102,8 @@ public class LRUWWVSMap<K, W, V> extends ALRUKWMap<K, LRUWWVSMap.AEntry<K, W, V>
             try {
                 int i = indexFor(hash, table.length);
                 for (AEntry<K, W, V> e = (AEntry<K, W, V> ) table[i]; e != null; e = e.next) {
-                    if (e.get() == sKey && e.key.get() == wKey) {
+                    W ewKey;
+                    if (e.get() == sKey && (ewKey = e.key.get()) != null && optEquals(ewKey, wKey)) {
                         V oldValue = e.value;
                         e.value = value;
                         recordAccess(e);

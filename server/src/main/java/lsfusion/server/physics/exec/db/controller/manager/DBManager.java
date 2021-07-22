@@ -15,6 +15,7 @@ import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.col.lru.LRUWVSMap;
+import lsfusion.base.col.lru.LRUWWEVSMap;
 import lsfusion.base.col.lru.LRUWWVSMap;
 import lsfusion.base.file.RawFileData;
 import lsfusion.base.lambda.set.FunctionSet;
@@ -987,7 +988,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
     // could be done easier with timestamps (value and last changed), but this way cache will be cleaned faster
     private final LRUWVSMap<Property<?>, ConcurrentIdentityWeakHashSet<ParamRef>> asyncValuesPropCache = new LRUWVSMap<>(LRUUtil.G1);
 
-    private final LRUWWVSMap<Property<?>, Param, ValueRef> asyncValuesValueCache = new LRUWWVSMap<>(LRUUtil.G1);
+    // we need weak ref, but regular equals (not identity)
+    private final LRUWWEVSMap<Property<?>, Param, ValueRef> asyncValuesValueCache = new LRUWWEVSMap<>(LRUUtil.G1);
 
     public <P extends PropertyInterface> String[] getAsyncValues(InputValueList<P> list, String value) throws SQLException, SQLHandledException {
         if(Settings.get().isIsClustered()) // we don't want to use caches since they can be inconsistent
