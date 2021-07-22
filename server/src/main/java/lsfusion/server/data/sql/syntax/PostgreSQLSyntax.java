@@ -2,8 +2,10 @@ package lsfusion.server.data.sql.syntax;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.interfaces.immutable.ImList;
+import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.expr.formula.SQLSyntaxType;
 import lsfusion.server.data.query.exec.MStaticExecuteEnvironment;
+import lsfusion.server.data.sql.adapter.PostgreDataAdapter;
 import lsfusion.server.data.type.ConcatenateType;
 import lsfusion.server.data.type.FunctionType;
 import lsfusion.server.data.type.Type;
@@ -137,6 +139,12 @@ public class PostgreSQLSyntax extends DefaultSQLSyntax {
     public String getTypeChange(Type oldType, Type type, String name, MStaticExecuteEnvironment env) {
         String newType = type.getDB(this, env);
         return "TYPE " + newType + " USING " + name + "::" + newType;
+    }
+
+    @Override
+    public String getPrefixSearch() {
+        int dbMajorVersion = ((PostgreDataAdapter) ThreadLocalContext.getDbManager().getAdapter()).getDbMajorVersion();
+        return dbMajorVersion >= 11 ? super.getPrefixSearch() : "prefixSearchOld";
     }
 
     @Override

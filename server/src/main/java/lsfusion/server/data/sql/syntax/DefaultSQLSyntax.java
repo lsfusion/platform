@@ -297,6 +297,11 @@ public abstract class DefaultSQLSyntax implements SQLSyntax {
         throw new UnsupportedOperationException();
     }
 
+    @Override
+    public String getPrefixSearch() {
+        return "prefixSearch";
+    }
+
     public String getInsensitiveLike() {
         return "LIKE";
     }
