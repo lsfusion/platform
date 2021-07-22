@@ -256,9 +256,9 @@ public class ExternalUtils {
                 if (value instanceof FileData) {
                     String fileName = bodyParamName.length < 2 || isEmpty(bodyParamName[1]) ? "filename" : bodyParamName[1];
                     String extension = ((FileData) value).getExtension();
-                    formBodyPart = FormBodyPartBuilder.create(bodyPartName, new ByteArrayBody(((FileData) value).getRawFile().getBytes(), nvl(forceContentType, getContentType(extension)), fileName)).build();
+                    formBodyPart = FormBodyPartBuilder.create(bodyPartName, new ByteArrayBody(((FileData) value).getRawFile().getBytes(), getContentType(extension), fileName)).build();
                 } else {
-                    formBodyPart = FormBodyPartBuilder.create(bodyPartName, new StringBody((String) value, nvl(forceContentType, ExternalUtils.TEXT_PLAIN))).build();
+                    formBodyPart = FormBodyPartBuilder.create(bodyPartName, new StringBody((String) value, ExternalUtils.TEXT_PLAIN)).build();
                 }
                 Map<String, String> bodyParamHeaders = bodyParamHeadersList.size() > i ? bodyParamHeadersList.get(i) : null;
                 if(bodyParamHeaders != null) {
