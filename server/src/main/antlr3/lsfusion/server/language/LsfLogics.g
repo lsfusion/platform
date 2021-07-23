@@ -3462,8 +3462,8 @@ externalActionDefinitionBody [List<TypedParameter> context, boolean dynamic] ret
       } else if($type.format == ExternalFormat.JAVA) {
         $action = self.addScriptedExternalJavaAction(params, context, $tl.propUsages);
       } else if($type.format == ExternalFormat.HTTP) {
-        $action = self.addScriptedExternalHTTPAction($type.clientAction, $type.method, $type.conStr, $type.bodyUrl, $type.bodyParamNames, $type.headers, $type.cookies,
-            $type.headersTo, $type.cookiesTo, params, context, $tl.propUsages);
+        $action = self.addScriptedExternalHTTPAction($type.clientAction, $type.method, $type.conStr, $type.bodyUrl, $type.bodyParamNames, $type.bodyParamHeadersList,
+            $type.headers, $type.cookies, $type.headersTo, $type.cookiesTo, params, context, $tl.propUsages);
       } else if($type.format == ExternalFormat.LSF) {
         $action = self.addScriptedExternalLSFAction($type.conStr, $type.exec, $type.eval, $type.action, params, context, $tl.propUsages);
       }
@@ -3475,12 +3475,13 @@ externalActionDefinitionBody [List<TypedParameter> context, boolean dynamic] ret
 	    ('TO' tl = nonEmptyPropertyUsageList)?
 	;
 
-externalFormat [List<TypedParameter> context, boolean dynamic] returns [ExternalFormat format, ExternalHttpMethod method, boolean clientAction, LPWithParams conStr, LPWithParams bodyUrl, LPWithParams exec, List<String> bodyParamNames = new ArrayList<>(), NamedPropertyUsage headers, NamedPropertyUsage cookies, NamedPropertyUsage headersTo, NamedPropertyUsage cookiesTo, boolean eval = false, boolean action = false, String charset]
+externalFormat [List<TypedParameter> context, boolean dynamic] returns [ExternalFormat format, ExternalHttpMethod method, boolean clientAction, LPWithParams conStr, LPWithParams bodyUrl, LPWithParams exec, List<String> bodyParamNames = new ArrayList<>(), List<NamedPropertyUsage> bodyParamHeadersList = new ArrayList<>(), NamedPropertyUsage headers, NamedPropertyUsage cookies, NamedPropertyUsage headersTo, NamedPropertyUsage cookiesTo, boolean eval = false, boolean action = false, String charset]
 	:	'SQL'	{ $format = ExternalFormat.DB; } conStrVal = propertyExpression[context, dynamic] { $conStr = $conStrVal.property; } 'EXEC' execVal = propertyExpression[context, dynamic] { $exec = $execVal.property; }
 	|	'HTTP'	{ $format = ExternalFormat.HTTP; } ('CLIENT' { $clientAction = true; })?
 	            (methodVal = externalHttpMethod { $method = $methodVal.method; })? conStrVal = propertyExpression[context, dynamic] { $conStr = $conStrVal.property; }
 	            ('BODYURL' bodyUrlVal = propertyExpression[context, dynamic] { $bodyUrl = $bodyUrlVal.property; })?
 	            ('BODYPARAMNAMES' firstName=stringLiteral { $bodyParamNames.add($firstName.val); } (',' nextName=stringLiteral { $bodyParamNames.add($nextName.val); })*)?
+                ('BODYPARAMHEADERS' firstProp = propertyUsage { $bodyParamHeadersList.add($firstProp.propUsage); } (',' nextProp = propertyUsage { $bodyParamHeadersList.add($nextProp.propUsage); })*)?
 	            ('HEADERS' headersVal = propertyUsage { $headers = $headersVal.propUsage; })?
 	            ('COOKIES' cookiesVal = propertyUsage { $cookies = $cookiesVal.propUsage; })?
 	            ('HEADERSTO' headersToVal = propertyUsage { $headersTo = $headersToVal.propUsage; })?
