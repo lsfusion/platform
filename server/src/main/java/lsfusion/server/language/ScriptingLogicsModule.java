@@ -1917,7 +1917,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         return addScriptedJoinAProp(addAProp(new ExternalUDPAction(clientAction, getTypesForExternalAction(params, context))), BaseUtils.addList(connectionString, params));
     }
 
-    public LAWithParams addScriptedExternalHTTPAction(boolean clientAction, ExternalHttpMethod method, LPWithParams connectionString, LPWithParams bodyUrl, List<String> bodyParamNames,
+    public LAWithParams addScriptedExternalHTTPAction(boolean clientAction, ExternalHttpMethod method, LPWithParams connectionString, LPWithParams bodyUrl, 
+                                                      List<String> bodyParamNames, List<NamedPropertyUsage> bodyParamHeadersList,
                                                       NamedPropertyUsage headers, NamedPropertyUsage cookies, NamedPropertyUsage headersTo, NamedPropertyUsage cookiesTo,
                                                       List<LPWithParams> params, List<TypedParameter> context, List<NamedPropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
         LP headersProperty = headers != null ? findLPStringParamByPropertyUsage(headers) : null;
@@ -1926,7 +1927,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         LP cookiesToProperty = cookiesTo != null ? findLPStringParamByPropertyUsage(cookiesTo) : null;
         return addScriptedJoinAProp(addAProp(new ExternalHTTPAction(clientAction, method != null ? method : ExternalHttpMethod.POST,
                         getTypesForExternalAction(params, context), findLPsNoParamsByPropertyUsage(toPropertyUsageList),
-                        bodyParamNames, headersProperty, cookiesProperty, headersToProperty, cookiesToProperty, bodyUrl != null)),
+                        bodyParamNames, findLPsStringParamByPropertyUsage(bodyParamHeadersList), headersProperty, cookiesProperty, headersToProperty, cookiesToProperty, bodyUrl != null)),
                 bodyUrl != null ? BaseUtils.mergeList(Arrays.asList(connectionString, bodyUrl), params) : BaseUtils.addList(connectionString, params));
     }
 
@@ -1934,7 +1935,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         String request = eval ? (action ? "eval/action" : "eval") : "/exec?action=$" + (params.size()+1);
         return addScriptedExternalHTTPAction(false, ExternalHttpMethod.POST,
                 addScriptedJProp(getArithProp("+"), Arrays.asList(connectionString, new LPWithParams(addCProp(StringClass.text, LocalizedString.create(request, false))))),
-                null, null, null, null, null, null, BaseUtils.add(params, actionLCP), context, toPropertyUsageList);
+                null, null, null, null, null, null, null, BaseUtils.add(params, actionLCP), context, toPropertyUsageList);
     }
 
     private ImList<LP> findLPsNoParamsByPropertyUsage(List<NamedPropertyUsage> propUsages) throws ScriptingErrorLog.SemanticErrorException {
@@ -3958,6 +3959,17 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     private LP findLPIntegerParamByPropertyUsage(NamedPropertyUsage propUsage) throws ScriptingErrorLog.SemanticErrorException {
         return findLPParamByPropertyUsage(propUsage, ListFact.singleton(IntegerClass.instance));
+    }
+
+    private ImList<LP> findLPsStringParamByPropertyUsage(List<NamedPropertyUsage> propUsages) throws ScriptingErrorLog.SemanticErrorException {
+        if(propUsages == null)
+            return ListFact.EMPTY();
+        
+        MList<LP> mProps = ListFact.mList(propUsages.size());
+        for (NamedPropertyUsage propUsage : propUsages) {
+            mProps.add(findLPStringParamByPropertyUsage(propUsage));
+        }
+        return mProps.immutableList();
     }
 
     private LP findLPStringParamByPropertyUsage(NamedPropertyUsage propUsage) throws ScriptingErrorLog.SemanticErrorException {
