@@ -10,7 +10,7 @@ import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 import org.apache.commons.codec.binary.Base64;
 
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.util.Iterator;
 
@@ -28,7 +28,7 @@ public class DecodeBase64Action extends InternalAction {
     public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         String value = (String) context.getDataKeyValue(stringInterface).getValue();
         try {
-            String decoded = new String(Base64.decodeBase64(value.getBytes()), Charset.forName("UTF-8"));
+            String decoded = new String(Base64.decodeBase64(value.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8);
             findProperty("decodedBase64[]").change(decoded, context);
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             throw Throwables.propagate(e);
