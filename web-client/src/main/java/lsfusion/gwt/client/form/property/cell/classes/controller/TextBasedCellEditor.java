@@ -179,11 +179,11 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
         }
     }
     protected void escapePressed(EventHandler handler, Element parent) {
-        if(hasList) {
-            suggestBox.hideSuggestions();
-        }
         if(GKeyStroke.isPlainKeyEvent(handler.event)) {
             handler.consume();
+            if(hasList) {
+                suggestBox.hideSuggestions();
+            }
             editManager.cancelEditing();
         }
     }
@@ -343,7 +343,25 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
                 public boolean isDisplayStringHTML() {
                     return true;
                 }
-            }, createTextBoxBase(), new DefaultSuggestionDisplayString());
+            }, createTextBoxBase(), new DefaultSuggestionDisplayString()) {
+                @Override
+                public void hideSuggestions() { // in theory should be in SuggestOracle, but now it's readonly
+                    // canceling query
+                    if(isLoading())
+                        editManager.getAsyncValues(null, new AsyncCallback<Pair<ArrayList<String>, Boolean>>() {
+                            @Override
+                            public void onFailure(Throwable caught) {
+                            }
+
+                            @Override
+                            public void onSuccess(Pair<ArrayList<String>, Boolean> result) {
+                                // assert CANCELED returned
+                            }
+                        });
+
+                    super.hideSuggestions();
+                }
+            };
             return suggestBox.getElement();
         } else {
             return createTextInputElement();
@@ -391,8 +409,11 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
             display.hideSuggestions();
         }
 
-        public void updateDecoration(boolean showNoResult, boolean showEmptyLabel, boolean showLoading) {
-            display.updateDecoration(showNoResult, showEmptyLabel, showLoading);
+        protected boolean isLoading() {
+            return display.isLoading;
+        }
+        public void updateDecoration(boolean showNoResult, boolean showEmptyLabel, boolean isLoading) {
+            display.updateDecoration(showNoResult, showEmptyLabel, isLoading);
         }
 
         public Element getPopupElement() {
@@ -450,7 +471,6 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
                     @Override
                     protected void onClickStart() {
                         validateAndCommit(suggestBox.getElement(), index, true, false);
-                        hideSuggestions();
                     }
                 })));
             }
@@ -467,13 +487,13 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
             });
         }
 
-        boolean prevShowLoading;
-        public void updateDecoration(boolean showNoResult, boolean showEmptyLabel, boolean showLoading) {
+        public boolean isLoading;
+        public void updateDecoration(boolean showNoResult, boolean showEmptyLabel, boolean isLoading) {
             noResultsLabel.setVisible(showNoResult);
             emptyLabel.setVisible(showEmptyLabel);
-            if (prevShowLoading != showLoading) {
-                GwtClientUtils.setThemeImage(showLoading ? "loading.gif" : "refresh.png", image -> refreshButton.getUpFace().setImage(new Image(image)));
-                prevShowLoading = showLoading;
+            if (this.isLoading != isLoading) {
+                GwtClientUtils.setThemeImage(isLoading ? "loading.gif" : "refresh.png", image -> refreshButton.getUpFace().setImage(new Image(image)));
+                this.isLoading = isLoading;
             }
         }
 

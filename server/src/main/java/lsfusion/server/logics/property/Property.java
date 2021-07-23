@@ -1643,13 +1643,13 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
             ImOrderSet<T> orderInterfaces = lp.listInterfaces; // actually we don't need all interfaces in dialog input action itself (only used one in checkfilters), but for now it doesn't matter
 
             // selectors could be used, but since this method is used after logics initialization, getting form, check properties here is more effective
-            LA<?> inputAction = lm.addDialogInputAProp((CustomClass) valueClass, targetProp, defaultChangeEventScope, orderInterfaces, list, MapFact.EMPTYREV(), objectEntity -> getCheckFilters(objectEntity));
+            LA<?> inputAction = lm.addDialogInputAProp((CustomClass) valueClass, targetProp, BaseUtils.nvl(defaultChangeEventScope, PropertyDrawEntity.DEFAULT_CUSTOMCHANGE_EVENTSCOPE), orderInterfaces, list, MapFact.EMPTYREV(), objectEntity -> getCheckFilters(objectEntity));
 
             action = ((LA<?>) lm.addJoinAProp(inputAction, BaseUtils.add(directLI(lp), getUParams(orderInterfaces.size())))).getImplement(orderInterfaces);
         } else {
             // INPUT valueCLass
             action = lm.addInputAProp((DataClass) valueClass, targetProp, false, SetFact.EMPTYORDER(),
-                    isDefaultWYSInput(valueClass) ? new InputListEntity<>(this, MapFact.EMPTYREV()) : null, defaultChangeEventScope, null, ListFact.EMPTY()).getImplement();
+                    isDefaultWYSInput(valueClass) ? new InputListEntity<>(this, MapFact.EMPTYREV()) : null, BaseUtils.nvl(defaultChangeEventScope, PropertyDrawEntity.DEFAULT_DATACHANGE_EVENTSCOPE), null, ListFact.EMPTY()).getImplement();
         }
 
         return PropertyFact.createRequestAction(interfaces,

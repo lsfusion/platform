@@ -123,6 +123,7 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import static lsfusion.base.BaseUtils.deserializeObject;
 import static lsfusion.base.BaseUtils.systemLogger;
@@ -1120,7 +1121,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         return new Query<>(innerKeys, listExpr, "value", listExpr.compare(value.getExpr(), contains ? Compare.MATCH : Compare.EQUALS));
     }
 
-    public <P extends PropertyInterface> String[] getAsyncValues(PropertyDrawInstance<?> propertyDraw, ImMap<ObjectInstance, ? extends ObjectValue> keys, String actionSID, String value, Boolean optimistic) throws SQLException, SQLHandledException {
+    public <P extends PropertyInterface> String[] getAsyncValues(PropertyDrawInstance<?> propertyDraw, ImMap<ObjectInstance, ? extends ObjectValue> keys, String actionSID, String value, Boolean optimistic, Supplier<Boolean> optimisticRun) throws SQLException, SQLHandledException {
         InputValueList<?> listProperty;
         boolean needRecheck = false;
         if (actionSID.equals(INPUT)) {
@@ -1155,6 +1156,11 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 }
             }
         }
+
+        // we need synchronized recheck to synchronously set the cancelable thread and check that this is the last request
+        // this way we'll guarantee that there is always one global form request running (single local form request is guaranteed by regular local requests synchronization)
+        if(!optimisticRun.get())
+            return new String[] {CANCELED};
 
         String[] result = logicsInstance.getDbManager().getAsyncValues(listProperty, value);
         if(needRecheck) // not sure yet, resending RECHECK

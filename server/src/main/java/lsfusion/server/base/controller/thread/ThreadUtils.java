@@ -34,8 +34,8 @@ public class ThreadUtils {
     public static void interruptThread(DBManager dbManager, Thread thread) throws SQLException, SQLHandledException {
         if(thread != null) {
             ServerLoggers.exinfoLog("THREAD INTERRUPT " + thread);
+            thread.interrupt(); // it's better to do it before to prevent sql query execution
             SQLSession.cancelExecutingStatement(dbManager, thread, true);
-            thread.interrupt();
         }
     }
 

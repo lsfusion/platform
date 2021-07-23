@@ -73,7 +73,9 @@ public class StringPropertyEditor extends TextFieldPropertyEditor {
     }
 
     @Override
-    public void cancelCellEditing() { }
+    public void cancelCellEditing() {
+        super.cancelCellEditing();
+    }
 
     private void showErrorTooltip() {
         setToolTipText(property.regexpMessage == null ? getString("form.editor.incorrect.value") : property.regexpMessage);

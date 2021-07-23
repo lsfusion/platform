@@ -1,5 +1,6 @@
 package lsfusion.server.logics.form.interactive.instance.property;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
@@ -55,7 +56,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
             list = drawProperty.getFilterInputList(entity.getToDraw(formInstance.entity));
             if(list == null)
                 return null;
-            if(entity.defaultChangeEventScope == FormSessionScope.NEWSESSION)
+            if(BaseUtils.nvl(entity.defaultChangeEventScope, PropertyDrawEntity.DEFAULT_FILTER_EVENTSCOPE) == FormSessionScope.NEWSESSION)
                 list = list.newSession();
             mapEntity = drawProperty;
         } else {

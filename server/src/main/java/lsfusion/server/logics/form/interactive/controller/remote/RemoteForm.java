@@ -3,6 +3,7 @@ package lsfusion.server.logics.form.interactive.controller.remote;
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
+import lsfusion.base.Result;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
@@ -76,8 +77,10 @@ import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import static lsfusion.base.BaseUtils.deserializeObject;
+import static lsfusion.interop.action.ServerResponse.CANCELED;
 import static lsfusion.interop.action.ServerResponse.CHANGE;
 
 // фасад для работы с клиентом
@@ -700,40 +703,48 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
 
     @Override
     public String[] getAsyncValues(long requestIndex, long lastReceivedRequestIndex, int propertyID, byte[] fullKey, String actionSID, String value, int asyncIndex) throws RemoteException {
-        if(requestIndex >= 0)
-            return processRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> getAsyncValues(propertyID, fullKey, actionSID, value, asyncIndex, false));
-        else
-            return getAsyncValues(propertyID, fullKey, actionSID, value, asyncIndex, true);
-    }
-
-    private Thread asyncLastThread;
-    private int asyncLastIndex = 0;
-    private final Object asyncLock = new Object();
-
-    public String[] getAsyncValues(int propertyID, byte[] fullKey, String actionSID, String value, int asyncIndex, Boolean optimistic) {
         try {
-            synchronized (asyncLock) {
-                if(asyncIndex >= asyncLastIndex) {
-                    if(asyncLastThread != null)
+            // we're setting cacelable thread we're sure that global branch is used and it can be canceled without consequences
+            // however in some cases we might wanna cancel pessimistic requests too (when statement supports that), but it may cause some troubles because there is no transaction, so the consequences are unpredictable (plus it's pretty rare case)
+            Supplier<Boolean> setCancelableThread = () -> {
+                synchronized (asyncLock) {
+                    assert asyncIndex <= asyncLastIndex;
+                    if (asyncIndex == asyncLastIndex) {
+                        asyncLastThread = Thread.currentThread();
+                        return true;
+                    }
+
+                    return false;
+                }
+            };
+
+            Result<String> actualValue = new Result<>(value);
+            synchronized (asyncLock) { // we check asyncLastIndex even for pessimistic requests since we don't want useless requests
+                if (asyncIndex >= asyncLastIndex) {
+                    if (asyncLastThread != null)
                         ThreadUtils.interruptThread(getContext(), asyncLastThread);
                     asyncLastIndex = asyncIndex;
                 } else
-                    return new String[] {ServerResponse.CANCELED};
-
-                asyncLastThread = Thread.currentThread();
+                    actualValue.set(null); // canceling async values query, but we still need to register that request (in processRMIRequest)
             }
 
-            PropertyDrawInstance propertyDraw = form.getPropertyDraw(propertyID);
-            ImMap<ObjectInstance, ? extends ObjectValue> keys = deserializeKeysValues(fullKey);
+            String[] result;
+            if(requestIndex >= 0)
+                result = processRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
+                    // we need to recheck since asyncLastIndex can be updated and we don't need this query anymore (actualValue will be set to null)
+                    synchronized (asyncLock) {
+                        assert asyncIndex <= asyncLastIndex;
+                        if (asyncIndex != asyncLastIndex)
+                            actualValue.set(null);
+                    }
 
-            String[] result = form.getAsyncValues(propertyDraw, keys, actionSID, value, optimistic);
-
-            if (logger.isTraceEnabled()) {
-                logger.trace(String.format("getAsyncValues Action. propertyDrawID: %s. Result: %s", propertyDraw.getSID(), result));
-            }
+                    return getAsyncValues(propertyID, fullKey, actionSID, actualValue.result, false, setCancelableThread);
+                });
+            else
+                result = getAsyncValues(propertyID, fullKey, actionSID, actualValue.result, true, setCancelableThread);
 
             synchronized (asyncLock) {
-                assert asyncLastIndex >= asyncIndex;
+                assert asyncIndex <= asyncLastIndex;
                 if(asyncLastIndex == asyncIndex)
                     asyncLastThread = null;
             }
@@ -744,6 +755,26 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
             return new String[] {ServerResponse.CANCELED};
 //            throw Throwables.propagate(e);
         }
+    }
+
+    private Thread asyncLastThread;
+    private int asyncLastIndex = 0;
+    private final Object asyncLock = new Object();
+
+    public String[] getAsyncValues(int propertyID, byte[] fullKey, String actionSID, String value, Boolean optimistic, Supplier<Boolean> optimisticRun) throws SQLException, SQLHandledException, IOException {
+        if(value == null)
+            return new String[] {CANCELED};
+
+        PropertyDrawInstance propertyDraw = form.getPropertyDraw(propertyID);
+        ImMap<ObjectInstance, ? extends ObjectValue> keys = deserializeKeysValues(fullKey);
+
+        String[] result = form.getAsyncValues(propertyDraw, keys, actionSID, value, optimistic, optimisticRun);
+
+        if (logger.isTraceEnabled()) {
+            logger.trace(String.format("getAsyncValues Action. propertyDrawID: %s. Result: %s", propertyDraw.getSID(), result));
+        }
+
+        return result;
     }
 
     public ServerResponse executeNotificationAction(long requestIndex, long lastReceivedRequestIndex, final int idNotification) throws RemoteException {

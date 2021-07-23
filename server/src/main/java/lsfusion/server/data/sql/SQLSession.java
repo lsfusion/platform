@@ -1704,7 +1704,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
         if(syntax.isTimeout(e))
             handled = new lsfusion.server.data.sql.exception.SQLTimeoutException(isTransactTimeout, forcedCancel);
-        
+
         if(syntax.isConnectionClosed(e)) {
             handled = new SQLClosedException(connection.sql, inTransaction, e, errorPrivate);
             problemInTransaction = Problem.CLOSED;
@@ -2067,6 +2067,10 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             try {
                 try {
                     this.executingStatement = executingStatement;
+
+                    if(Thread.interrupted()) // since interruptThread usually interrupts thread, so we won't event send it
+                        throw new InterruptedException();
+
                     command.execute(statement, handler, this);
                 } finally {
                     this.executingStatement = null;

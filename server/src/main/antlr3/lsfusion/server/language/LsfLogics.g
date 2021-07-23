@@ -808,7 +808,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 	    |   'SELECTOR' { $options.setSelector(true); }
 		|	'HINTNOUPDATE' { $options.setHintNoUpdate(true); }
 		|	'HINTTABLE' { $options.setHintTable(true); }
-        |   (('NEWSESSION' | 'NESTEDSESSION' { $options.setNested(true); } ) { $options.setNewSession(true); })
+        |   fs = formSessionScopeClause { $options.setFormSessionScope($fs.result); }
 		|	'OPTIMISTICASYNC' { $options.setOptimisticAsync(true); }
 		|	'COLUMNS' (columnsName=stringLiteral)? '(' ids=nonEmptyIdList ')' { $options.setColumns($columnsName.text, getGroupObjectsList($ids.ids, self.getVersion())); }
 		|	'SHOWIF' propObj=formPropertyObject { $options.setShowIf($propObj.property); }
@@ -3252,6 +3252,7 @@ manageSessionClause returns [ManageSessionType result]
 formSessionScopeClause returns [FormSessionScope result]
     :	'NEWSESSION' { $result = FormSessionScope.NEWSESSION; }
 	|	'NESTEDSESSION' { $result = FormSessionScope.NESTEDSESSION; }
+	|   'THISSESSION' { $result = FormSessionScope.OLDSESSION; }
     ;
 
 noCancelClause returns [boolean result]

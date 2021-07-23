@@ -330,15 +330,6 @@ public class ScriptingFormEntity {
         return null; 
     }
 
-    private FormSessionScope override(FormPropertyOptions options, FormSessionScope scope) {
-        Boolean newSession = options.isNewSession();
-        if(newSession != null && newSession) {
-            Boolean nested = options.isNested();
-            return (nested != null && nested ? FormSessionScope.NESTEDSESSION : FormSessionScope.NEWSESSION);
-        }
-        return scope;
-    }
-
     public void addScriptedPropertyDraws(List<? extends ScriptingLogicsModule.AbstractFormActionOrPropertyUsage> properties, List<String> aliases, List<LocalizedString> captions, FormPropertyOptions commonOptions, List<FormPropertyOptions> options, Version version, List<DebugInfo.DebugPoint> points) throws ScriptingErrorLog.SemanticErrorException {
         boolean reverse = commonOptions.getInsertType() == FIRST || commonOptions.getNeighbourPropertyDraw() != null && commonOptions.getInsertType() == AFTER;
         
@@ -349,7 +340,7 @@ public class ScriptingFormEntity {
 
             FormPropertyOptions propertyOptions = commonOptions.overrideWith(options.get(i));
 
-            FormSessionScope scope = override(propertyOptions, FormSessionScope.OLDSESSION);
+            FormSessionScope scope = propertyOptions.getFormSessionScope();
             
             LAP<?, ?> property = null;
             ImOrderSet<ObjectEntity> objects = null;
@@ -366,7 +357,7 @@ public class ScriptingFormEntity {
                     property = valueProp.first;
                     forceChangeAction = valueProp.second;
                     objects = SetFact.singletonOrder(obj);
-                } else if (propertyName.equals("NEW") && scope == OLDSESSION) {
+                } else if (propertyName.equals("NEW") && nvl(scope, PropertyDrawEntity.DEFAULT_ACTION_EVENTSCOPE) == OLDSESSION) {
                     ObjectEntity obj = getSingleCustomClassMappingObject(propertyName, mapping);
                     CustomClass explicitClass = getSingleAddClass(pUsage);
                     property = LM.getAddObjectAction(form, obj, explicitClass);
@@ -425,7 +416,7 @@ public class ScriptingFormEntity {
                 propertyDraw.setEventAction(ServerResponse.CHANGE, forceChangeAction);
 
             // temporary check
-            if(scope != OLDSESSION && !(pDrawUsage instanceof ScriptingLogicsModule.FormPredefinedUsage) && (propertyOptions.getEventActions() == null || !propertyOptions.getEventActions().containsKey(ServerResponse.CHANGE)))
+            if(nvl(scope, PropertyDrawEntity.DEFAULT_ACTION_EVENTSCOPE) != OLDSESSION && !(pDrawUsage instanceof ScriptingLogicsModule.FormPredefinedUsage) && (propertyOptions.getEventActions() == null || !propertyOptions.getEventActions().containsKey(ServerResponse.CHANGE)))
                 ServerLoggers.startLogger.info("WARNING! Now default change event action will work in new session " + propertyDraw);
 
             propertyDraw.defaultChangeEventScope = scope;

@@ -17,7 +17,6 @@ import lsfusion.client.form.property.table.view.AsyncInputComponent;
 import lsfusion.interop.form.event.KeyStrokes;
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.PopupMenuEvent;
@@ -99,12 +98,19 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
     }
 
     String prevQuery = "";
-    public void updateAsyncValues(ClientPropertyDraw property, String query) {
+    private void updateAsyncValues(String query) {
         if(!suggestBox.disableUpdate) {
             prevQuery = query;
-            suggestBox.updateLoadingButton(true);
+            suggestBox.updateLoading(true);
             asyncChange.getForm().getAsyncValues(property, asyncChange.getColumnKey(0, 0), query, actionSID, result -> suggestBox.updateItems(result, strict && !query.isEmpty()));
         }
+    }
+
+    private void cancelAsyncValues() {
+        if(suggestBox.isLoading)
+            asyncChange.getForm().getAsyncValues(property, asyncChange.getColumnKey(0, 0), null, actionSID, result -> {
+                // assert that CANCELED
+            });
     }
 
     public void setTableEditor(PropertyTableCellEditor tableEditor) {
@@ -117,6 +123,8 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
 
     public boolean stopCellEditing() {
         try {
+            if(hasList)
+                cancelAsyncValues();
             commitEdit();
         } catch (ParseException e) {
             return false;
@@ -125,7 +133,10 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
         return true;
     }
 
-    public void cancelCellEditing() { }
+    public void cancelCellEditing() {
+        if(hasList)
+            cancelAsyncValues();
+    }
 
     @Override
     public String getText() {
@@ -207,7 +218,7 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
                             JPanel buttonsPanel = new JPanel();
                             setBackgroundColor(buttonsPanel);
 
-                            refreshButton = new SuggestPopupButton(ClientImages.get("refresh.png"), e -> updateAsyncValues(property, prevQuery));
+                            refreshButton = new SuggestPopupButton(ClientImages.get("refresh.png"), e -> updateAsyncValues(prevQuery));
                             buttonsPanel.add(refreshButton);
 
                             for (int i = 0; i < actions.length; i++) {
@@ -304,17 +315,17 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
             //hide and show to call computePopupBounds
             suggestBox.comboBox.hidePopup();
             suggestBox.comboBox.showPopup();
-            updateLoadingButton(result.second);
+            updateLoading(result.second);
             if (selectFirst) {
                 setSelectedIndex(0);
             }
         }
 
-        boolean prevShowLoading;
-        public void updateLoadingButton(boolean showLoading) {
-            if(prevShowLoading != showLoading) {
-                refreshButton.setIcon(ClientImages.get(showLoading ? "loading.gif" : "refresh.png"));
-                prevShowLoading = showLoading;
+        public boolean isLoading;
+        public void updateLoading(boolean isLoading) {
+            if(this.isLoading != isLoading) {
+                refreshButton.setIcon(ClientImages.get(isLoading ? "loading.gif" : "refresh.png"));
+                this.isLoading = isLoading;
             }
         }
 
@@ -404,7 +415,7 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
                 }
 
                 public void run() {
-                    updateAsyncValues(property, getComboBoxEditorText());
+                    updateAsyncValues(getComboBoxEditorText());
                 }
             });
 
@@ -454,7 +465,7 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
             //show empty async popup
             suggestBox.comboBoxEditorComponent.selectAll();
             suggestBox.updateItems(Pair.create(Collections.emptyList(), true), false);
-            updateAsyncValues(property, "");
+            updateAsyncValues("");
         }
     }
 }

@@ -506,7 +506,7 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
     public ActionMapImplement<?, P> getDefaultEventAction(String eventActionSID, FormSessionScope defaultChangeEventScope, ImList<Property> viewProperties) {
         if(eventActionSID.equals(ServerResponse.EDIT_OBJECT))
             return null;
-        return PropertyFact.createSessionScopeAction(defaultChangeEventScope, interfaces, getImplement(), SetFact.EMPTY());
+        return PropertyFact.createSessionScopeAction(BaseUtils.nvl(defaultChangeEventScope, PropertyDrawEntity.DEFAULT_ACTION_EVENTSCOPE), interfaces, getImplement(), SetFact.EMPTY());
     }
 
     private AsyncMapEventExec<P> forceAsyncEventExec;

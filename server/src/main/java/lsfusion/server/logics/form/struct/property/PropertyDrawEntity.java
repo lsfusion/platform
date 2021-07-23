@@ -1,6 +1,7 @@
 package lsfusion.server.logics.form.struct.property;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
@@ -334,7 +335,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
             ImOrderSet<PropertyInterface> orderUsedInterfaces = listMapObjects.valuesSet().toOrderSet();
 
             // first parameter - object, other used orderInterfaces
-            LA<?> dialogInput = lm.addDialogInputAProp(customClass, targetProp, defaultChangeEventScope, orderUsedInterfaces, list, listMapParamExprs, objectEntity -> SetFact.singleton(filter.getFilter(objectEntity)));
+            LA<?> dialogInput = lm.addDialogInputAProp(customClass, targetProp, BaseUtils.nvl(defaultChangeEventScope, DEFAULT_SELECTOR_EVENTSCOPE), orderUsedInterfaces, list, listMapParamExprs, objectEntity -> SetFact.singleton(filter.getFilter(objectEntity)));
 
             ImOrderSet<PropertyInterface> allOrderUsedInterfaces = SetFact.addOrderExcl(SetFact.singletonOrder(objectInterface), orderUsedInterfaces);
             return PropertyFact.createRequestAction(allOrderUsedInterfaces.getSet(), dialogInput.getImplement(allOrderUsedInterfaces),
@@ -376,7 +377,12 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         eventActions.put(actionSID, eventAction);
     }
 
-    public FormSessionScope defaultChangeEventScope = FormSessionScope.OLDSESSION;
+    public FormSessionScope defaultChangeEventScope = null;
+    public static FormSessionScope DEFAULT_ACTION_EVENTSCOPE = FormSessionScope.OLDSESSION;
+    public static FormSessionScope DEFAULT_SELECTOR_EVENTSCOPE = FormSessionScope.OLDSESSION;
+    public static FormSessionScope DEFAULT_CUSTOMCHANGE_EVENTSCOPE = FormSessionScope.OLDSESSION;
+    public static FormSessionScope DEFAULT_FILTER_EVENTSCOPE = FormSessionScope.OLDSESSION;
+    public static FormSessionScope DEFAULT_DATACHANGE_EVENTSCOPE = FormSessionScope.NEWSESSION; // since when data changed in the same session, it immediately leads to pessimistic async values which gives a big overhead in most cases
 
     private ActionOrProperty<P> getEventProperty() {
         return propertyObject.property;
