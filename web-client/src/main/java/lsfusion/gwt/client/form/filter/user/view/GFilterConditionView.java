@@ -28,7 +28,7 @@ public class GFilterConditionView extends FlexPanel {
     public interface UIHandler {
         void addEnterBinding(Widget widget);
         void removeCondition(GPropertyFilter condition);
-        void applyFilters();
+        void applyFilters(boolean focusFirstComponent);
     }
 
     private static final String DELETE_ICON_PATH = "filtdel.png";
@@ -103,13 +103,13 @@ public class GFilterConditionView extends FlexPanel {
             public void negationChanged(boolean value) {
                 condition.negation = value;
                 updateCompareLabelText();
-                handler.applyFilters();
+                handler.applyFilters(false);
             }
 
             @Override
             public void allowNullChanged(boolean value) {
                 allowNull = value;
-                handler.applyFilters();
+                handler.applyFilters(false);
             }
 
             @Override
@@ -117,7 +117,7 @@ public class GFilterConditionView extends FlexPanel {
                 super.valueChanged(value);
                 condition.compare = value;
                 updateCompareLabelText();
-                handler.applyFilters();
+                handler.applyFilters(false);
             }
         };
         compareView.setSelectedValue(condition.compare);
@@ -127,7 +127,7 @@ public class GFilterConditionView extends FlexPanel {
             @Override
             public void valueChanged(Object value) {
                 super.valueChanged(value);
-                handler.applyFilters();
+                handler.applyFilters(cell.enterPressed);
             }
 
             @Override
@@ -161,7 +161,7 @@ public class GFilterConditionView extends FlexPanel {
                 return event -> {
                     condition.junction = !condition.junction;
                     showBackground(!condition.junction);
-                    handler.applyFilters();
+                    handler.applyFilters(false);
                 };
             }
         };

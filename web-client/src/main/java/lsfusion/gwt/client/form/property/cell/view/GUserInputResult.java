@@ -8,6 +8,8 @@ public class GUserInputResult implements Serializable {
     private boolean editCanceled;
     private Serializable value;
     private Integer contextAction;
+    
+    private boolean enterPressed;
 
     @SuppressWarnings("UnusedDeclaration")
     public GUserInputResult() {}
@@ -17,13 +19,22 @@ public class GUserInputResult implements Serializable {
     }
 
     public GUserInputResult(Object value, Integer contextAction) {
-        this(false, value, contextAction);
+        this(false, value, contextAction, false);
+    }
+
+    public GUserInputResult(Object value, Integer contextAction, boolean enterPressed) {
+        this(false, value, contextAction, enterPressed);
     }
 
     public GUserInputResult(boolean canceled, Object value, Integer contextAction) {
+        this(canceled, value, contextAction, false);
+    }
+    
+    public GUserInputResult(boolean canceled, Object value, Integer contextAction, boolean enterPressed) {
         this.editCanceled = canceled;
         this.value = (Serializable) value;
         this.contextAction = contextAction;
+        this.enterPressed = enterPressed;
     }
 
     public boolean isCanceled() {
@@ -36,6 +47,10 @@ public class GUserInputResult implements Serializable {
 
     public Integer getContextAction() {
         return contextAction;
+    }
+    
+    public boolean isEnterPressed() {
+        return enterPressed;
     }
 
     @Override

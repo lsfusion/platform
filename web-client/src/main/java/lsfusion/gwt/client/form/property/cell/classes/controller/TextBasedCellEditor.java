@@ -175,7 +175,7 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
     protected void enterPressed(EventHandler handler, Element parent) {
         if(checkEnterEvent(handler.event)) {
             handler.consume();
-            validateAndCommit(parent, false, false);
+            validateAndCommit(parent, false, false, true);
         }
     }
     protected void escapePressed(EventHandler handler, Element parent) {
@@ -233,7 +233,15 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
         validateAndCommit(parent, null, cancelIfInvalid, blurred);
     }
 
+    public void validateAndCommit(Element parent, boolean cancelIfInvalid, boolean blurred, boolean enterPressed) {
+        validateAndCommit(parent, null, cancelIfInvalid, blurred, enterPressed);
+    }
+
     public void validateAndCommit(Element parent, Integer contextAction, boolean cancelIfInvalid, boolean blurred) {
+        validateAndCommit(parent, contextAction, cancelIfInvalid, blurred, false);
+    }
+    
+    public void validateAndCommit(Element parent, Integer contextAction, boolean cancelIfInvalid, boolean blurred, boolean enterPressed) {
         String stringValue = contextAction != null ? suggestBox.getValue() : getCurrentText(parent); //if button pressed, input element is button
         if(hasList && strict && contextAction == null && !suggestBox.isValidValue(stringValue)) {
             if (cancelIfInvalid) {
@@ -247,7 +255,7 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
             if(hasList) {
                 suggestBox.hideSuggestions();
             }
-            editManager.commitEditing(new GUserInputResult(tryParseInputText(stringValue, true), contextAction), blurred);
+            editManager.commitEditing(new GUserInputResult(tryParseInputText(stringValue, true), contextAction, enterPressed), blurred);
         } catch (ParseException ignore) {
             if (cancelIfInvalid) {
                 editManager.cancelEditing();

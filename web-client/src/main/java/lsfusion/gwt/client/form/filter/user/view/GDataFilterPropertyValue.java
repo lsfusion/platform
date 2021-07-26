@@ -3,11 +3,11 @@ package lsfusion.gwt.client.form.filter.user.view;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.form.controller.GFormController;
-import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.async.GAsyncExec;
 import lsfusion.gwt.client.form.property.async.GInputList;
+import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
 import lsfusion.gwt.client.form.property.panel.view.ActionOrPropertyValue;
 import lsfusion.interop.action.ServerResponse;
 
@@ -18,6 +18,8 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
 
     private final Consumer<Object> afterCommit;
     private final Runnable onCancel;
+    
+    public boolean enterPressed;
 
     public GDataFilterPropertyValue(GPropertyDraw property, GGroupObjectValue columnKey, GFormController form, Consumer<Object> afterCommit, Runnable onCancel) {
         super(property, columnKey, form, (columnKeyValue, value) -> {});
@@ -37,23 +39,6 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
         updateValue(objValue);
 
         afterCommit.accept(objValue);
-    }
-
-    // it's a hacky hack, however when filter will become docked it will go away
-    // todo 
-    @Override
-    public EventHandler createEventHandler(Event event) {
-        return new EventHandler(event) {
-            @Override
-            public void consume(boolean propagateToNative, boolean propagateToUpper) {
-                if (GKeyStroke.isEnterKeyEvent(event)) {
-                    super.consume(false, true);
-//                    return;
-                } else {
-                    super.consume(propagateToNative, propagateToUpper);
-                }
-            }
-        };
     }
 
     @Override
@@ -93,10 +78,16 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
                 null,
                 FILTER,
                 result -> setValue(result.getValue()),
-                result -> afterCommit.accept(result.getValue()),
+                this::acceptCommit,
                 onCancel,
                 this,
                 ServerResponse.FILTER);
+    }
+    
+    private void acceptCommit(GUserInputResult result) {
+        enterPressed = result.isEnterPressed();
+        afterCommit.accept(result.getValue());
+        enterPressed = false;
     }
 
     @Override

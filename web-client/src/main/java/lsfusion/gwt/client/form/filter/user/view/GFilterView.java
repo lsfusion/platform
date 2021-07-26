@@ -9,6 +9,7 @@ import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.form.event.GBindingEnv;
+import lsfusion.gwt.client.form.event.GBindingMode;
 import lsfusion.gwt.client.form.event.GKeyInputEvent;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.filter.user.GFilter;
@@ -154,7 +155,7 @@ public class GFilterView extends FlexPanel implements GFilterConditionView.UIHan
     @Override
     public void addEnterBinding(Widget widget) {
         controller.addBinding(new GKeyInputEvent(new GKeyStroke(KeyCodes.KEY_ENTER)),
-                GBindingEnv.AUTO,
+                new GBindingEnv(null, null, null, null, null, null, GBindingMode.ONLY, null), 
                 event -> GFilterView.this.processBinding(event, () -> {
                     GFilterView.this.applyFilters(true);
                 }),
@@ -169,10 +170,6 @@ public class GFilterView extends FlexPanel implements GFilterConditionView.UIHan
         }
     }
     
-    public void applyFilters() {
-        applyFilters(false);
-    }
-
     public void applyFilters(boolean focusFirstComponent) {
         ArrayList<GPropertyFilter> result = new ArrayList<>();
         for (Map.Entry<GPropertyFilter, GFilterConditionView> entry : conditionViews.entrySet()) {
