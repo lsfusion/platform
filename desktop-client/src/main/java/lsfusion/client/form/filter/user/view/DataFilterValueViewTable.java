@@ -20,6 +20,7 @@ import lsfusion.interop.form.event.KeyStrokes;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.text.JTextComponent;
 import java.awt.*;
@@ -281,7 +282,8 @@ class DataFilterValueViewTable extends JTable implements TableTransferHandler.Ta
     }
     
     public boolean editorEnterPressed() {
-        return ((Editor) getCellEditor()).enterPressed;
+        TableCellEditor editor = getCellEditor();
+        return editor != null && ((Editor) editor).enterPressed;
     }
 
     private static final class Model extends AbstractTableModel {
