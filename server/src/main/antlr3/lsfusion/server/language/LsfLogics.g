@@ -4787,6 +4787,7 @@ componentPropertyValue returns [Object value] //commented literals are in design
 	//|   d=doubleLiteral { $value = $d.val; }
 	|   dim=dimensionLiteral { $value = $dim.val; }
 	|   b=booleanLiteral { $value = $b.val; }
+	|   tb=tbooleanLiteral { $value = $tb.val; }
 	|   intB=boundsIntLiteral { $value = $intB.val; }
 	|   doubleB=boundsDoubleLiteral { $value = $doubleB.val; }
 	|   contType=containerTypeLiteral { $value = $contType.val; }
@@ -4888,6 +4889,7 @@ metaCodeLiteral
 	|	UDOUBLE_LITERAL
 	|	ULONG_LITERAL
 	|	LOGICAL_LITERAL
+	|	T_LOGICAL_LITERAL
 	|	DATE_LITERAL
 	|	DATETIME_LITERAL
 	|	TIME_LITERAL
@@ -5081,7 +5083,8 @@ literal returns [ScriptingLogicsModule.ConstType cls, Object value]
 	|	vnum=unumericLiteral   { $cls = ScriptingLogicsModule.ConstType.NUMERIC; $value = $vnum.val; }
 	|	vdouble=udoubleLiteral { $cls = ScriptingLogicsModule.ConstType.REAL; $value = $vdouble.val; }
 	|	vstr=localizedStringLiteralNoID	{ $cls = ScriptingLogicsModule.ConstType.STRING; $value = $vstr.val; }
-	|	vbool=booleanLiteral	{ $cls = ScriptingLogicsModule.ConstType.LOGICAL; $value = $vbool.val; }
+	|	vbool=booleanLiteral	{ $cls = ScriptingLogicsModule.ConstType.LOGICAL; $value = $vbool.val; { if (inMainParseState()) self.getChecks().checkBooleanUsage($vbool.val); }}
+	|	vtbool=tbooleanLiteral	{ $cls = ScriptingLogicsModule.ConstType.TLOGICAL; $value = $vtbool.val; }
 	|	vdate=dateLiteral	{ $cls = ScriptingLogicsModule.ConstType.DATE; $value = $vdate.val; }
 	|	vdatetime=dateTimeLiteral { $cls = ScriptingLogicsModule.ConstType.DATETIME; $value = $vdatetime.val; }
 	|	vtime=timeLiteral 	{ $cls = ScriptingLogicsModule.ConstType.TIME; $value = $vtime.val; }
@@ -5242,6 +5245,10 @@ booleanLiteral returns [boolean val]
 	:	bool=LOGICAL_LITERAL { $val = Boolean.valueOf($bool.text); }
 	;
 
+tbooleanLiteral returns [boolean val]
+	:	bool=T_LOGICAL_LITERAL { $val = self.tBooleanToBoolean($bool.text); }
+	;
+
 dimensionLiteral returns [Dimension val]
 	:	'(' x=intLiteral ',' y=intLiteral ')' { $val = new Dimension($x.val, $y.val); }
 	;
@@ -5361,7 +5368,8 @@ PRIMITIVE_TYPE  :	'INTEGER' | 'DOUBLE' | 'LONG' | 'BOOLEAN' | 'TBOOLEAN' | 'DATE
 				|	('STRING' ('[' DIGITS ']')?) | ('ISTRING' ('[' DIGITS ']')?) | 'NUMERIC' ('[' DIGITS ',' DIGITS ']')? | 'COLOR'
 				|   ('INTERVAL' ('[' INTERVAL_TYPE ']'));
 LOGICAL_LITERAL :	'TRUE' | 'FALSE';
-NULL_LITERAL	:	'NULL';	
+T_LOGICAL_LITERAL:	'TTRUE' | 'TFALSE';
+NULL_LITERAL	:	'NULL';
 ID				:	ID_META_FRAGMENT;
 STRING_LITERAL	:	STRING_META_FRAGMENT;
 WS				:	(NEWLINE | SPACE) { $channel=HIDDEN; };
