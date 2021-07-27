@@ -115,6 +115,11 @@ public class ClientTypeToGwtConverter extends ObjectConverter {
         return initializeFileClass(pdfClass, new GPDFType());
     }
 
+    @Converter(from = ClientDBFClass.class)
+    public GDBFType convertDBFClass(ClientDBFClass dbfClass) {
+        return initializeFileClass(dbfClass, new GDBFType());
+    }
+
     @Converter(from = ClientImageClass.class)
     public GImageType convertImageClass(ClientImageClass imageClass) {
         return initializeFileClass(imageClass, new GImageType(imageClass.getExtension()));
@@ -175,6 +180,11 @@ public class ClientTypeToGwtConverter extends ObjectConverter {
     @Converter(from = ClientPDFLinkClass.class)
     public GPDFLinkType convertPDFClass(ClientPDFLinkClass pdfClass) {
         return initializeLinkClass(pdfClass, new GPDFLinkType());
+    }
+
+    @Converter(from = ClientDBFLinkClass.class)
+    public GDBFLinkType convertDBFClass(ClientDBFLinkClass dbfClass) {
+        return initializeLinkClass(dbfClass, new GDBFLinkType());
     }
 
     @Converter(from = ClientImageLinkClass.class)

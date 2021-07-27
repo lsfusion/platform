@@ -48,4 +48,6 @@ public class DataType {
     public final static byte DATEINTERVAL = 45;
     public final static byte DATETIMEINTERVAL = 46;
     public final static byte TIMEINTERVAL = 47;
+    public final static byte DBF = 48;
+    public final static byte DBFLINK = 49;
 }
