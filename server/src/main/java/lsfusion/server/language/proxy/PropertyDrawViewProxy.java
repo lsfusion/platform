@@ -23,8 +23,16 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         super(target);
     }
 
+    public void setPanelCaptionVertical(boolean panelCaptionVertical) {
+        target.panelCaptionVertical = panelCaptionVertical;
+    }
+    
     public void setPanelCaptionAfter(boolean panelCaptionAfter) {
         target.panelCaptionAfter = panelCaptionAfter;
+    }
+
+    public void setPanelCaptionAlignment(FlexAlignment panelCaptionAlignment) {
+        target.panelCaptionAlignment = panelCaptionAlignment;
     }
 
     //for backward compatibility
@@ -122,10 +130,6 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
 
     public void setFocusable(Boolean focusable) {
         target.focusable = focusable;
-    }
-
-    public void setPanelCaptionVertical(boolean panelCaptionVertical) {
-        target.panelCaptionVertical = panelCaptionVertical;
     }
 
     public void setPanelColumnVertical(boolean panelColumnVertical) {

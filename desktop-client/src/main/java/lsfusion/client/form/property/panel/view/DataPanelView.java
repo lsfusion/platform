@@ -64,7 +64,7 @@ public class DataPanelView extends JPanel implements PanelView {
             setFocusable(false);
         }
 
-        add(label, new FlexConstraints(FlexAlignment.CENTER, 0));
+        add(label, new FlexConstraints(property.getPanelCaptionAlignment(), 0));
         add(table, new FlexConstraints(FlexAlignment.STRETCH, 1));
 
         setOpaque(false);

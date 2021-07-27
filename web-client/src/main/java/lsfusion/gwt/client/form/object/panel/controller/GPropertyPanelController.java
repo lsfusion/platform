@@ -6,6 +6,7 @@ import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.view.FlexPanel;
+import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -48,7 +49,7 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
     }
 
     public interface CaptionContainer {
-        void put(Widget widget, Pair<Integer, Integer> valueSizes);
+        void put(Widget widget, Pair<Integer, Integer> valueSizes, GFlexAlignment alignment);
     }
 
     public static class Panel extends FlexPanel {

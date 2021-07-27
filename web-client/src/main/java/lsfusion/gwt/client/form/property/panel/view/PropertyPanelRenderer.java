@@ -8,7 +8,6 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.Dimension;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.view.FlexPanel;
-import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.base.view.ResizableComplexPanel;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
@@ -38,7 +37,7 @@ public class PropertyPanelRenderer extends PanelRenderer {
             this.property.captionFont.apply(label.getElement().getStyle());
 
         if(captionContainer == null)
-            panel.add(label, GFlexAlignment.CENTER);
+            panel.add(label, property.getPanelCaptionAlignment());
 
         // we need to wrap into simple panel to make layout independent from property value (make flex-basis 0 for upper components)
         ResizableComplexPanel simplePanel = new ResizableComplexPanel();
@@ -51,7 +50,7 @@ public class PropertyPanelRenderer extends PanelRenderer {
         } else {
             Pair<Integer, Integer> valueSizes = value.setStatic(simplePanel, true);
             if(captionContainer != null)
-                captionContainer.put(label, valueSizes);
+                captionContainer.put(label, valueSizes, property.getPanelCaptionAlignment());
         }
         appendCorners(property, simplePanel); // it's a hack to add
 

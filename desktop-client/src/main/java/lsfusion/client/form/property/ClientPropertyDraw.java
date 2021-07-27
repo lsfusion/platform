@@ -108,6 +108,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     public boolean panelCaptionVertical;
     public boolean panelCaptionAfter;
+    public FlexAlignment panelCaptionAlignment;
 
     public boolean panelColumnVertical;
 
@@ -402,6 +403,10 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         ClientType changeType = getChangeType();
         return changeType != null && baseType.getTypeClass() == changeType.getTypeClass();
     }
+    
+    public FlexAlignment getPanelCaptionAlignment() {
+        return panelCaptionAlignment != null ? panelCaptionAlignment : FlexAlignment.CENTER;
+    }
 
     public String formatString(Object obj) throws ParseException {
         if (obj != null) {
@@ -444,6 +449,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         outStream.writeBoolean(panelCaptionVertical);
         outStream.writeBoolean(panelCaptionAfter);
+        pool.writeObject(outStream, panelCaptionAlignment);
 
         outStream.writeBoolean(panelColumnVertical);
 
@@ -488,6 +494,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         panelCaptionVertical = inStream.readBoolean();
         panelCaptionAfter = inStream.readBoolean();
+        panelCaptionAlignment = pool.readObject(inStream);
 
         panelColumnVertical = inStream.readBoolean();
 

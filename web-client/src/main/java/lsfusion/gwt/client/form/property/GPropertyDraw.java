@@ -25,7 +25,6 @@ import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.panel.controller.GPropertyPanelController;
-import lsfusion.gwt.client.form.object.table.controller.GPropertyController;
 import lsfusion.gwt.client.form.property.async.GAsyncChange;
 import lsfusion.gwt.client.form.property.async.GAsyncEventExec;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
@@ -182,6 +181,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public int valueHeight = -1;
 
     public boolean panelCaptionVertical;
+    public GFlexAlignment panelCaptionAlignment;
     
     public boolean panelColumnVertical;
     
@@ -395,6 +395,10 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
             return getValueWidth(null);
         }
         return flex;
+    }
+    
+    public GFlexAlignment getPanelCaptionAlignment() {
+        return panelCaptionAlignment != null ? panelCaptionAlignment : GFlexAlignment.CENTER;
     }
 
     public GFlexAlignment getAlignment() {
