@@ -148,6 +148,7 @@ public class TypeSerializer {
         }
         if (type == DataType.DYNAMICFORMATLINK) return DynamicFormatLinkClass.get(inStream.readBoolean());
         if (type == DataType.PDFLINK) return PDFLinkClass.get(inStream.readBoolean());
+        if (type == DataType.DBFLINK) return DBFLinkClass.get(inStream.readBoolean());
         if (type == DataType.JDBC) return new JDBCTable.JDBCDataClass(inStream.readInt(), inStream.readUTF());
 
         throw new IOException();

@@ -91,6 +91,7 @@ public final class ClassCanonicalNameUtils {
         put("WORDFILE", WordClass.get());
         put("IMAGEFILE", ImageClass.get());
         put("PDFFILE", PDFClass.get());
+        put("DBFFILE", DBFClass.get());
         put("RAWFILE", CustomStaticFormatFileClass.get());
         put("FILE", DynamicFormatFileClass.get());
         put("EXCELFILE", ExcelClass.get());
@@ -103,6 +104,7 @@ public final class ClassCanonicalNameUtils {
         put("WORDLINK", WordLinkClass.get(false));
         put("IMAGELINK", ImageLinkClass.get(false));
         put("PDFLINK", PDFLinkClass.get(false));
+        put("DBFLINK", DBFLinkClass.get(false));
         put("RAWLINK", CustomStaticFormatLinkClass.get());
         put("LINK", DynamicFormatLinkClass.get(false));
         put("EXCELLINK", ExcelLinkClass.get(false));
@@ -159,6 +161,7 @@ public final class ClassCanonicalNameUtils {
         put("WORDFILE", WordClass.get());
         put("IMAGEFILE", ImageClass.get());
         put("PDFFILE", PDFClass.get());
+        put("DBFFILE", DBFClass.get());
         put("RAWFILE", CustomStaticFormatFileClass.get());
         put("FILE", DynamicFormatFileClass.get());
         put("EXCELFILE", ExcelClass.get());
@@ -171,6 +174,7 @@ public final class ClassCanonicalNameUtils {
         put("WORDLINK", WordLinkClass.get(false));
         put("IMAGELINK", ImageLinkClass.get(false));
         put("PDFLINK", PDFLinkClass.get(false));
+        put("DBFLINK", DBFLinkClass.get(false));
         put("RAWLINK", CustomStaticFormatLinkClass.get());
         put("LINK", DynamicFormatLinkClass.get(false));
         put("EXCELLINK", ExcelLinkClass.get(false));
