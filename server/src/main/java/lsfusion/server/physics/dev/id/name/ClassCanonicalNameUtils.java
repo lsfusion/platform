@@ -83,6 +83,7 @@ public final class ClassCanonicalNameUtils {
         put("DOUBLE", DoubleClass.instance);
         put("LONG", LongClass.instance);
         put("BOOLEAN", LogicalClass.instance);
+        put("TBOOLEAN", LogicalClass.threeStateInstance);
         put("DATE", DateClass.instance);
         put("DATETIME", DateTimeClass.instance );
         put("ZDATETIME", ZDateTimeClass.instance );
@@ -151,6 +152,7 @@ public final class ClassCanonicalNameUtils {
         put("DOUBLE", DoubleClass.instance);
         put("LONG", LongClass.instance);
         put("BOOLEAN", LogicalClass.instance);
+        put("TBOOLEAN", LogicalClass.threeStateInstance);
         put("DATE", DateClass.instance);
         put("DATETIME", DateTimeClass.instance);
         put("ZDATETIME", ZDateTimeClass.instance);
