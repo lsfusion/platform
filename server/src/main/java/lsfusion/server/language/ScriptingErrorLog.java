@@ -624,10 +624,6 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, format("value of class '%s' is not comparable with value of class '%s'", leftClassName, rightClassName));
     }
 
-    public void emitUseNullInsteadOfFalseError(ScriptParser parser) throws SemanticErrorException {
-        emitSimpleError(parser, "use NULL instead of FALSE");
-    }
-
     public void emitEvalModuleError(ScriptParser parser, String prefix) throws SemanticErrorException {
         emitSimpleError(parser, prefix + " cannot be used in EVAL module");
     }
