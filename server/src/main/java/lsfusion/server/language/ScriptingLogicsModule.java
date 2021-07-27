@@ -183,7 +183,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     private String lastOptimizedJPropSID = null;
 
-    public enum ConstType { STATIC, INT, REAL, NUMERIC, STRING, LOGICAL, LONG, DATE, DATETIME, TIME, COLOR, NULL }
+    public enum ConstType { STATIC, INT, REAL, NUMERIC, STRING, LOGICAL, TLOGICAL, LONG, DATE, DATETIME, TIME, COLOR, NULL }
     public enum WindowType {MENU, PANEL, TOOLBAR, TREE}
     public enum GroupingType {SUM, MAX, MIN, CONCAT, AGGR, EQUAL, LAST, NAGGR}
 
@@ -3046,7 +3046,8 @@ public class ScriptingLogicsModule extends LogicsModule {
             case NUMERIC: lp =  addNumericConst((BigDecimal) value); break;
             case REAL: lp =  addUnsafeCProp(DoubleClass.instance, value); break;
             case STRING: lp =  addUnsafeCProp(getStringConstClass((LocalizedString)value), value); break;
-            case LOGICAL: lp =  addUnsafeCProp(!((Boolean) value) ? LogicalClass.threeStateInstance : LogicalClass.instance, value); break;
+            case LOGICAL: lp =  addUnsafeCProp(LogicalClass.instance, value); break;
+            case TLOGICAL: lp =  addUnsafeCProp(LogicalClass.threeStateInstance, value); break;
             case DATE: lp =  addUnsafeCProp(DateClass.instance, value); break;
             case DATETIME: lp =  addUnsafeCProp(DateTimeClass.instance, value); break;
             case TIME: lp =  addUnsafeCProp(TimeClass.instance, value); break;
@@ -3158,6 +3159,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         int m = Integer.parseInt(text.substring(3, 5));
         validateTime(h, m);
         return LocalTime.of(h, m);
+    }
+
+    public boolean tBooleanToBoolean(String text) {
+        return text.equals("TTRUE");
     }
 
     public <O extends ObjectSelector> LAWithParams addScriptedShowFAProp(MappedForm<O> mapped, List<FormActionProps> allObjectProps,

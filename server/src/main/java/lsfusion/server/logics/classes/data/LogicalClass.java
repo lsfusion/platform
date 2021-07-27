@@ -58,7 +58,7 @@ public class LogicalClass extends DataClass<Boolean> {
     }
 
     public DataClass getCompatible(DataClass compClass, boolean or) {
-        return compClass instanceof LogicalClass ?this:null;
+        return compClass instanceof LogicalClass && threeState == ((LogicalClass) compClass).threeState ? this : null;
     }
 
     public Boolean getDefaultValue() {
