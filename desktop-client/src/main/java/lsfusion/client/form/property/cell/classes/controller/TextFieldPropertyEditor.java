@@ -4,6 +4,7 @@ import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.GlazedLists;
 import ca.odell.glazedlists.swing.DefaultEventComboBoxModel;
 import lsfusion.base.Pair;
+import lsfusion.base.lambda.AsyncCallback;
 import lsfusion.client.base.view.ClientColorUtils;
 import lsfusion.client.base.view.ClientImages;
 import lsfusion.client.base.view.SwingDefaults;
@@ -97,19 +98,88 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
         return true;
     }
 
-    String prevQuery = "";
-    private void updateAsyncValues(String query) {
+    private Timer delayTimer;
+    private String currentRequest; // current pending request
+
+    private String prevSucceededEmptyQuery;
+
+    private void requestSuggestions() {
         if(!suggestBox.disableUpdate) {
-            prevQuery = query;
-            suggestBox.updateLoading(true);
-            asyncChange.getForm().getAsyncValues(property, asyncChange.getColumnKey(0, 0), query, actionSID, result -> suggestBox.updateItems(result, strict && !query.isEmpty()));
+            currentRequest = suggestBox.getComboBoxEditorText();
+
+            if(delayTimer == null)
+                updateAsyncValues();
         }
+    }
+
+    private void updateAsyncValues() {
+        final String query = currentRequest;
+        currentRequest = null;
+
+        if(prevSucceededEmptyQuery != null && query.startsWith(prevSucceededEmptyQuery))
+            return;
+
+        suggestBox.updateLoading(true);
+
+        assert delayTimer == null;
+        // we're sending a request, so we want to delay all others for at least 100ms
+        // also we're using timer to identify the call in cancelAndFlushDelayed
+        Timer execTimer = new Timer(100, e -> flushDelayed());
+        execTimer.setRepeats(false);
+        execTimer.start();
+        delayTimer = execTimer;
+
+        asyncChange.getForm().getAsyncValues(property, asyncChange.getColumnKey(0, 0), query, actionSID,
+                new AsyncCallback<Pair<List<String>, Boolean>>() {
+                    @Override
+                    public void done(Pair<List<String>, Boolean> result) {
+                        suggestBox.updateItems(result.first, strict && !query.isEmpty());
+
+                        suggestBox.updateLoading(result.second);
+
+                        if(!result.second) {
+                            if (result.first.isEmpty())
+                                prevSucceededEmptyQuery = query;
+                            else
+                                prevSucceededEmptyQuery = null;
+                        }
+
+                        cancelAndFlushDelayed(execTimer);
+                    }
+
+                    @Override
+                    public void failure(Throwable t) {
+                        cancelAndFlushDelayed(execTimer);
+                    }
+                });
+    }
+
+    private void cancelAndFlushDelayed(Timer execTimer) {
+        if(delayTimer == execTimer) { // we're canceling only if the current timer has not changed
+            delayTimer.stop();
+
+            flushDelayed();
+        }
+    }
+
+    private void flushDelayed() {
+        // assert that delaytimer is equal to execTimer
+        delayTimer = null;
+
+        if(currentRequest != null) // there was pending request
+            updateAsyncValues();
     }
 
     private void cancelAsyncValues() {
         if(suggestBox.isLoading)
-            asyncChange.getForm().getAsyncValues(property, asyncChange.getColumnKey(0, 0), null, actionSID, result -> {
-                // assert that CANCELED
+            asyncChange.getForm().getAsyncValues(property, asyncChange.getColumnKey(0, 0), null, actionSID, new AsyncCallback<Pair<List<String>, Boolean>>() {
+                @Override
+                public void done(Pair<List<String>, Boolean> result) {
+                    // assert that CANCELED
+                }
+                @Override
+                public void failure(Throwable t) {
+                }
             });
     }
 
@@ -183,6 +253,8 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
         }
     }
 
+    private String initValue;
+
     //based on glazedLists AutoCompleteSupport
     class SuggestBox {
         private EventList<Object> items;
@@ -218,7 +290,7 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
                             JPanel buttonsPanel = new JPanel();
                             setBackgroundColor(buttonsPanel);
 
-                            refreshButton = new SuggestPopupButton(ClientImages.get("refresh.png"), e -> updateAsyncValues(prevQuery));
+                            refreshButton = new SuggestPopupButton(ClientImages.get("refresh.png"), e -> requestSuggestions());
                             buttonsPanel.add(refreshButton);
 
                             for (int i = 0; i < actions.length; i++) {
@@ -306,16 +378,15 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
             disableUpdate = false;
         }
 
-        public void updateItems(Pair<List<String>, Boolean> result, boolean selectFirst) {
+        public void updateItems(List<String> result, boolean selectFirst) {
             items.clear();
             comboBox.getModel().setSelectedItem(null);
-            items.addAll(GlazedLists.eventListOf(result.first.toArray()));
-            latestSuggestions = result.first;
-            comboBox.setMaximumRowCount(result.first.size());
+            items.addAll(GlazedLists.eventListOf(result.toArray()));
+            latestSuggestions = result;
+            comboBox.setMaximumRowCount(result.size());
             //hide and show to call computePopupBounds
             suggestBox.comboBox.hidePopup();
             suggestBox.comboBox.showPopup();
-            updateLoading(result.second);
             if (selectFirst) {
                 setSelectedIndex(0);
             }
@@ -365,10 +436,10 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
             //need to catch key events
             CaptureKeyEventsDispatcher.get().setCapture(comboBoxEditorComponent);
 
-            if (!KeyStrokes.isDeleteEvent(editEvent)) {
-                setComboBoxEditorText(value);
-                comboBoxEditorComponent.selectAll();
-            }
+            if (!KeyStrokes.isDeleteEvent(editEvent))
+                initValue = value;
+            else
+                initValue = "";
 
             // add a FocusListener to the ComboBoxEditor which selects all text when focus is gained
             comboBoxEditorComponent.addFocusListener(new FocusAdapter() {
@@ -415,7 +486,7 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
                 }
 
                 public void run() {
-                    updateAsyncValues(getComboBoxEditorText());
+                    requestSuggestions();
                 }
             });
 
@@ -463,9 +534,12 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
             suggestBox.comboBoxEditorComponent.putClientProperty("doNotCancelPopup",  new JComboBox().getClientProperty("doNotCancelPopup"));
 
             //show empty async popup
+            suggestBox.updateItems(Collections.emptyList(), false);
+
+            requestSuggestions();
+
+            suggestBox.setComboBoxEditorText(initValue);
             suggestBox.comboBoxEditorComponent.selectAll();
-            suggestBox.updateItems(Pair.create(Collections.emptyList(), true), false);
-            updateAsyncValues("");
         }
     }
 }

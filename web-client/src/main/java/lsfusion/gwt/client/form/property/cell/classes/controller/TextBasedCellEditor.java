@@ -4,6 +4,7 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.*;
 import com.google.gwt.user.client.ui.impl.TextBoxImpl;
@@ -71,9 +72,8 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
     public void startEditing(Event event, Element parent, Object oldValue) {
         String value = tryFormatInputText(oldValue);
         if(hasList) {
-            suggestBox.refreshSuggestionList(); //show suggestions for empty value
+            suggestBox.showSuggestionList();
             suggestBox.setValue(value);
-            suggestBox.forceRefreshSuggestions(""); //show async empty popup
         }
         InputElement inputElement = getInputElement(parent);
         boolean selectAll = true;
@@ -270,71 +270,126 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
         return new TextBox();
     }
 
-    private String prevQuery = null;
     public Element createInputElement() {
         if(hasList) {
             suggestBox = new CustomSuggestBox(new SuggestOracle() {
+                private Timer delayTimer;
+                private Request currentRequest; // current pending request
+                private Callback currentCallback;
+
+                private String prevSucceededEmptyQuery;
 
                 @Override
                 public void requestDefaultSuggestions(Request request, Callback callback) {
-                    requestAsyncSuggestions(request, callback, true);
+                    requestAsyncSuggestions(request, callback);
                 }
 
                 @Override
                 public void requestSuggestions(Request request, Callback callback) {
-                    requestAsyncSuggestions(request, callback, false);
+                    requestAsyncSuggestions(request, callback);
                 }
 
-                private void requestAsyncSuggestions(Request request, Callback callback, boolean emptyQuery) {
-                    if(suggestBox != null) {
-                        suggestBox.updateDecoration(false, true, true);
-                    }
-                    if (suggestBox != null && !suggestBox.isSuggestionListShowing()) {
-                        //it's forceRefreshSuggestions to show async empty popup
+                private void requestAsyncSuggestions(Request request, Callback callback) {
+                    currentRequest = request;
+                    currentCallback = callback;
+
+                    if(delayTimer == null)
+                        updateAsyncValues();
+                }
+
+                private void updateAsyncValues() {
+                    final Request request = currentRequest;
+                    currentRequest = null;
+                    final Callback callback = currentCallback;
+                    currentCallback = null;
+
+                    boolean emptyQuery = request.getQuery() == null;
+                    String query = nvl(request.getQuery(), "");
+                    if(prevSucceededEmptyQuery != null && query.startsWith(prevSucceededEmptyQuery))
+                        return;
+
+                    suggestBox.updateDecoration(false, true, true);
+
+                    if (emptyQuery && !suggestBox.isSuggestionListShowing()) { // to show empty popup immediately
                         callback.onSuggestionsReady(request, new Response(new ArrayList<>()));
                         setMinWidth(suggestBox, false);
-                    } else {
-                        String query = nvl(request.getQuery(), "");
-                        prevQuery = query;
-                        editManager.getAsyncValues(query, new AsyncCallback<Pair<ArrayList<String>, Boolean>>() {
-                            @Override
-                            public void onFailure(Throwable caught) {
-                            }
-
-                            @Override
-                            public void onSuccess(Pair<ArrayList<String>, Boolean> result) {
-                                if (editManager.isEditing() && suggestBox.isSuggestionListShowing()) {
-                                    suggestBox.setAutoSelectEnabled(strict && !emptyQuery);
-                                    suggestBox.setLatestSuggestions(result.first);
-                                    List<Suggestion> suggestionList = new ArrayList<>();
-                                    for (String suggestion : result.first) {
-                                        suggestionList.add(new Suggestion() {
-                                            @Override
-                                            public String getDisplayString() {
-                                                int start = suggestion.toLowerCase().indexOf(query.toLowerCase());
-                                                if (start >= 0) {
-                                                    int end = start + query.length();
-                                                    return suggestion.substring(0, start) + "<strong>" + suggestion.substring(start, end) + "</strong>" + suggestion.substring(end);
-                                                } else {
-                                                    return suggestion;
-                                                }
-                                            }
-
-                                            @Override
-                                            public String getReplacementString() {
-                                                return suggestion;
-                                            }
-                                        });
-                                    }
-                                    suggestBox.updateDecoration(suggestionList.isEmpty(), false, result.second);
-                                    callback.onSuggestionsReady(request, new Response(suggestionList));
-
-                                    setMinWidth(suggestBox, true);
-                                }
-                            }
-                        });
                     }
 
+                    assert delayTimer == null;
+                    // we're sending a request, so we want to delay all others for at least 100ms
+                    // also we're using timer to identify the call in cancelAndFlushDelayed
+                    Timer execTimer = new Timer() {
+                        public void run() {
+                            flushDelayed();
+                        }
+                    };
+                    execTimer.schedule(1000);
+                    delayTimer = execTimer;
+
+                    editManager.getAsyncValues(query, new AsyncCallback<Pair<ArrayList<String>, Boolean>>() {
+                        @Override
+                        public void onFailure(Throwable caught) {
+                            if (editManager.isEditing() && suggestBox.isSuggestionListShowing())
+                                cancelAndFlushDelayed(execTimer);
+                        }
+
+                        @Override
+                        public void onSuccess(Pair<ArrayList<String>, Boolean> result) {
+                            if (editManager.isEditing() && suggestBox.isSuggestionListShowing()) {
+                                suggestBox.setAutoSelectEnabled(strict && !emptyQuery);
+                                suggestBox.setLatestSuggestions(result.first);
+                                List<Suggestion> suggestionList = new ArrayList<>();
+                                for (String suggestion : result.first) {
+                                    suggestionList.add(new Suggestion() {
+                                        @Override
+                                        public String getDisplayString() {
+                                            int start = suggestion.toLowerCase().indexOf(query.toLowerCase());
+                                            if (start >= 0) {
+                                                int end = start + query.length();
+                                                return suggestion.substring(0, start) + "<strong>" + suggestion.substring(start, end) + "</strong>" + suggestion.substring(end);
+                                            } else {
+                                                return suggestion;
+                                            }
+                                        }
+
+                                        @Override
+                                        public String getReplacementString() {
+                                            return suggestion;
+                                        }
+                                    });
+                                }
+                                callback.onSuggestionsReady(request, new Response(suggestionList));
+                                setMinWidth(suggestBox, true);
+
+                                suggestBox.updateDecoration(suggestionList.isEmpty(), false, result.second);
+
+                                if(!result.second) {
+                                    if (suggestionList.isEmpty())
+                                        prevSucceededEmptyQuery = query;
+                                    else
+                                        prevSucceededEmptyQuery = null;
+                                }
+
+                                cancelAndFlushDelayed(execTimer);
+                            }
+                        }
+                    });
+                }
+
+                private void cancelAndFlushDelayed(Timer execTimer) {
+                    if(delayTimer == execTimer) { // we're canceling only if the current timer has not changed
+                        delayTimer.cancel();
+
+                        flushDelayed();
+                    }
+                }
+
+                private void flushDelayed() {
+                    // assert that delaytimer is equal to execTimer
+                    delayTimer = null;
+
+                    if(currentRequest != null) // there was pending request
+                        updateAsyncValues();
                 }
 
                 private void setMinWidth(CustomSuggestBox suggestBox, boolean offsets) {
@@ -355,7 +410,7 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
                 @Override
                 public void hideSuggestions() { // in theory should be in SuggestOracle, but now it's readonly
                     // canceling query
-                    if(isLoading())
+                    if(editManager.isEditing() && isLoading())
                         editManager.getAsyncValues(null, new AsyncCallback<Pair<ArrayList<String>, Boolean>>() {
                             @Override
                             public void onFailure(Throwable caught) {
@@ -401,8 +456,6 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
             this.display = display;
             onAttach();
             getElement().removeClassName("gwt-SuggestBox");
-
-            refreshSuggestionList();
         }
 
         public void setLatestSuggestions(List<String> latestSuggestions) {
@@ -469,7 +522,7 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
                 @Override
                 protected void onClickStart() {
                     refreshButtonPressed = true;
-                    suggestBox.forceRefreshSuggestions(prevQuery);
+                    suggestBox.showSuggestionList();
                 }
             });
 
