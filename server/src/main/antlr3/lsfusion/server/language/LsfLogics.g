@@ -5049,7 +5049,7 @@ literal returns [ScriptingLogicsModule.ConstType cls, Object value]
 	|	vnum=unumericLiteral   { $cls = ScriptingLogicsModule.ConstType.NUMERIC; $value = $vnum.val; }
 	|	vdouble=udoubleLiteral { $cls = ScriptingLogicsModule.ConstType.REAL; $value = $vdouble.val; }
 	|	vstr=localizedStringLiteralNoID	{ $cls = ScriptingLogicsModule.ConstType.STRING; $value = $vstr.val; }
-	|	vbool=booleanLiteral	{ $cls = ScriptingLogicsModule.ConstType.LOGICAL; $value = $vbool.val;  { if (inMainParseState()) self.getChecks().checkBooleanUsage($vbool.val); }}
+	|	vbool=booleanLiteral	{ $cls = ScriptingLogicsModule.ConstType.LOGICAL; $value = $vbool.val; }
 	|	vdate=dateLiteral	{ $cls = ScriptingLogicsModule.ConstType.DATE; $value = $vdate.val; }
 	|	vdatetime=dateTimeLiteral { $cls = ScriptingLogicsModule.ConstType.DATETIME; $value = $vdatetime.val; }
 	|	vtime=timeLiteral 	{ $cls = ScriptingLogicsModule.ConstType.TIME; $value = $vtime.val; }
@@ -5324,7 +5324,7 @@ fragment STRING_LITERAL_ID_FRAGMENT : ID_FRAGMENT | STRING_LITERAL_FRAGMENT;
 fragment STRING_LITERAL_NEXTID_FRAGMENT : NEXTID_FRAGMENT | STRING_LITERAL_FRAGMENT;
 fragment STRING_META_FRAGMENT : (STRING_LITERAL_ID_FRAGMENT ('###' | '##'))* STRING_LITERAL_FRAGMENT (('###' | '##') STRING_LITERAL_NEXTID_FRAGMENT)*;
 
-PRIMITIVE_TYPE  :	'INTEGER' | 'DOUBLE' | 'LONG' | 'BOOLEAN' | 'DATE' | 'DATETIME' | 'ZDATETIME' | 'YEAR'
+PRIMITIVE_TYPE  :	'INTEGER' | 'DOUBLE' | 'LONG' | 'BOOLEAN' | 'TBOOLEAN' | 'DATE' | 'DATETIME' | 'ZDATETIME' | 'YEAR'
                 |   'TEXT' | 'RICHTEXT' | 'TIME' | 'WORDFILE' | 'IMAGEFILE' | 'PDFFILE' | 'RAWFILE'
 				| 	'FILE' | 'EXCELFILE' | 'TEXTFILE' | 'CSVFILE' | 'HTMLFILE' | 'JSONFILE' | 'XMLFILE' | 'TABLEFILE'
 				|   'WORDLINK' | 'IMAGELINK'
