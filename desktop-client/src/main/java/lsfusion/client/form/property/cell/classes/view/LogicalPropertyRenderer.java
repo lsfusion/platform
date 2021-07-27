@@ -31,6 +31,6 @@ public class LogicalPropertyRenderer extends PropertyRenderer {
 
     public void setValue(Object value) {
         super.setValue(value);
-        getComponent().setSelected(value != null);
+        getComponent().setSelected(value != null && (Boolean) value);
     }
 }

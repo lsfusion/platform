@@ -3077,7 +3077,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             case NUMERIC: lp =  addNumericConst((BigDecimal) value); break;
             case REAL: lp =  addUnsafeCProp(DoubleClass.instance, value); break;
             case STRING: lp =  addUnsafeCProp(getStringConstClass((LocalizedString)value), value); break;
-            case LOGICAL: lp =  addUnsafeCProp(LogicalClass.instance, value); break;
+            case LOGICAL: lp =  addUnsafeCProp(!((Boolean) value) ? LogicalClass.threeStateInstance : LogicalClass.instance, value); break;
             case DATE: lp =  addUnsafeCProp(DateClass.instance, value); break;
             case DATETIME: lp =  addUnsafeCProp(DateTimeClass.instance, value); break;
             case TIME: lp =  addUnsafeCProp(TimeClass.instance, value); break;
