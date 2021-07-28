@@ -147,6 +147,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public LP<?> appPort;
     public LP<?> exportName;
     public LP<?> scheme;
+    public LP<?> method;
     public LP<?> webHost;
     public LP<?> webPort;
     public LP<?> contextPath;
@@ -472,6 +473,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         appPort = findProperty("appPort[]");
         exportName = findProperty("exportName[]");
         scheme = findProperty("scheme[]");
+        method = findProperty("method[]");
         webHost = findProperty("webHost[]");
         webPort = findProperty("webPort[]");
         contextPath = findProperty("contextPath[]");

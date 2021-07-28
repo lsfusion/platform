@@ -76,7 +76,7 @@ public class ExternalUtils {
 
     public static ExternalResponse processRequest(ExecInterface remoteExec, InputStream is, ContentType requestContentType,
                                                   String[] headerNames, String[] headerValues, String[] cookieNames, String[] cookieValues, String logicsHost,
-                                                  Integer logicsPort, String logicsExportName, String scheme, String webHost, Integer webPort,
+                                                  Integer logicsPort, String logicsExportName, String scheme, String method, String webHost, Integer webPort,
                                                   String contextPath, String servletPath, String pathInfo, String query) throws IOException, MessagingException {
         Charset charset = getCharsetFromContentType(requestContentType);
         List<NameValuePair> queryParams = URLEncodedUtils.parse(query, charset);
@@ -94,7 +94,7 @@ public class ExternalUtils {
 
         ExternalRequest request = new ExternalRequest(returns.toArray(new String[0]), paramsList.toArray(new Object[paramsList.size()]),
                 charset == null ? null : charset.toString(), headerNames, headerValues, cookieNames,
-                cookieValues, logicsHost, logicsPort, logicsExportName, scheme, webHost, webPort, contextPath, servletPath, pathInfo, query);
+                cookieValues, logicsHost, logicsPort, logicsExportName, scheme, method, webHost, webPort, contextPath, servletPath, pathInfo, query);
 
         String path = servletPath + pathInfo;
         boolean isEvalAction = path.endsWith("/eval/action");
