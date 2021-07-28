@@ -30,5 +30,6 @@ title: 'Инструкция AFTER'
 
 ```lsf
 changePrice(Sku s, DATE d, NUMERIC[10,2] price)  { price(s, d) <- price; }
-AFTER changePrice(Sku s, DATE d, NUMERIC[10,2] price) DO MESSAGE 'Price was changed'; // Сообщение будет показано после каждого вызова changePrice
+// Сообщение будет показано после каждого вызова changePrice
+AFTER changePrice(Sku s, DATE d, NUMERIC[10,2] price) DO MESSAGE 'Price was changed'; 
 ```

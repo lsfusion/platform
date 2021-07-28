@@ -166,7 +166,8 @@ import()  {
         IMPORT XLS SHEET 2 FROM f TO field1 = C, field2, field3 = F, field4 = A;
         IMPORT XLS SHEET ALL FROM f TO field1 = C, field2, field3 = F, field4 = A;
 
-        FOR imported(INTEGER i) DO { // свойство imported - системное свойство, предназначенное для перебора данных
+        // свойство imported - системное свойство, предназначенное для перебора данных
+        FOR imported(INTEGER i) DO { 
             MESSAGE 'field1 value = ' + field1(i);
             MESSAGE 'field2 value = ' + field2(i);
             MESSAGE 'field3 value = ' + field3(i);
@@ -175,13 +176,18 @@ import()  {
     }
 
     LOCAL t = FILE ();
-    EXTERNAL SQL 'jdbc:postgresql://localhost/test?user=postgres&password=12345' EXEC 'SELECT x.a,x.b,x.c,x.d FROM orders x WHERE x.id = $1;' PARAMS '4553' TO t;
-    IMPORT FROM t() FIELDS INTEGER a, DATE b, BPSTRING[50] c, BPSTRING[50] d DO        // импорт с опцией FIELDS
+    EXTERNAL SQL 'jdbc:postgresql://localhost/test?user=postgres&password=12345' 
+             EXEC 'SELECT x.a,x.b,x.c,x.d FROM orders x WHERE x.id = $1;' 
+             PARAMS '4553' 
+             TO t;
+    // импорт с опцией FIELDS
+    IMPORT FROM t() FIELDS INTEGER a, DATE b, BPSTRING[50] c, BPSTRING[50] d DO        
         NEW o = Order {
             number(o) <- a;
             date(o) <- b;
             customer(o) <- c;
-            currency(o) <- GROUP MAX Currency currency IF name(currency) = d; // находим currency с данным именем
+            // находим currency с данным именем
+            currency(o) <- GROUP MAX Currency currency IF name(currency) = d; 
         }
 
 

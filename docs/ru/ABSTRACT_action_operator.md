@@ -54,13 +54,14 @@ title: 'Оператор ABSTRACT'
 ### Примеры
 
 ```lsf
-exportXls 'Выгрузить в Excel'  ABSTRACT CASE ( Order);         // В данном случае создается ABSTRACT CASE OVERRIDE LAST
+// В данном случае создается ABSTRACT CASE OVERRIDE LAST
+exportXls 'Выгрузить в Excel' ABSTRACT CASE (Order);         
 exportXls (Order o) + WHEN name(currency(o)) == 'USD' THEN {
     MESSAGE 'Export USD not implemented';
 }
 
 CLASS Task;
-run 'Выполнить'  ABSTRACT ( Task);                           // ABSTRACT MULTI EXCLUSIVE
+run 'Выполнить' ABSTRACT (Task); // ABSTRACT MULTI EXCLUSIVE
 
 CLASS Task1 : Task;
 name = DATA STRING[100] (Task);
@@ -74,7 +75,7 @@ price = DATA NUMERIC[14,2] (OrderDetail);
 
 CLASS InvoiceDetail;
 price = DATA NUMERIC[14,2] (InvoiceDetail);
-fill  ABSTRACT LIST ( OrderDetail, InvoiceDetail);   // ABSTRACT LIST LAST
+fill  ABSTRACT LIST (OrderDetail, InvoiceDetail); // ABSTRACT LIST LAST
 
 fill (OrderDetail od, InvoiceDetail id) + {
     price(id) <- price(od);

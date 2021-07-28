@@ -54,15 +54,27 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
     }
 
     @Override
-    public ExternalResponse exec(String action, ExternalRequest request) {
+    public ExternalResponse exec(String actionName, ExternalRequest request) {
         ExternalResponse result;
         try {
-            if(action != null) {
-                LA property = businessLogics.findActionByCompoundName(action);
-                if (property != null) {
-                    result = executeExternal(property, request);
+            if(actionName != null) {
+                LA action;
+                String findActionName = actionName;
+                while(true) { // we're doing greedy search for all subpathes to find appropriate "endpoint" action
+                    int lastSlash = findActionName.lastIndexOf('/'); // if it is url
+                    String checkActionName = findActionName;
+                    if(lastSlash >= 0) // optimization
+                        checkActionName = checkActionName.replace('/', '_');
+
+                    if((action = businessLogics.findActionByCompoundName(checkActionName)) != null || lastSlash < 0)
+                        break;
+
+                    findActionName = findActionName.substring(0, lastSlash);
+                }
+                if (action != null) {
+                    result = executeExternal(action, request);
                 } else {
-                    throw new RuntimeException(String.format("Action %s was not found", action));
+                    throw new RuntimeException(String.format("Action %s was not found", actionName));
                 }
             } else {
                 throw new RuntimeException("Action was not specified");

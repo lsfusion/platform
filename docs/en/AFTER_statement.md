@@ -30,5 +30,7 @@ The `AFTER` statement defines an action (let's call it an *aspect*) that will be
 
 ```lsf
 changePrice(Sku s, DATE d, NUMERIC[10,2] price)  { price(s, d) <- price; }
-AFTER changePrice(Sku s, DATE d, NUMERIC[10,2] price) DO MESSAGE 'Price was changed'; // A message will be shown after each call to changePrice
+
+// A message will be shown after each call to changePrice
+AFTER changePrice(Sku s, DATE d, NUMERIC[10,2] price) DO MESSAGE 'Price was changed'; 
 ```

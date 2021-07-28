@@ -11,12 +11,14 @@ The `EXEC` operator creates an [action](Actions.md) that executes another action
 ### Examples
 
 ```lsf
+// declaration of importData action with two parameters
 importData(Sku sku, Order order)  {
     MESSAGE 'Run import for ' + id(sku) + ' ' + customer(order);
-}                                    // declared above action importData with two parameters
+}
 
 order = DATA Order (OrderDetail) NONULL DELETE;
-runImport(OrderDetail d)  { importData(sku(d), order(d)); } // declaration of the action runImport that will call importData
+// declaration of the action runImport that calls importData
+runImport(OrderDetail d)  { importData(sku(d), order(d)); } 
 ```
 
 

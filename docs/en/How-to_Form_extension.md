@@ -19,8 +19,9 @@ FORM sku 'Sku' // creating the Item form
 ;
 
 DESIGN sku {
-    NEW skuDetails AFTER BOX(s) { // creating a new container in a standard container right after i.box
-                                  // this container will be the tab panel, where tabs with product properties can be added
+    // creating a new container in a standard container right after i.box
+    // this container will be the tab panel, where tabs with product properties can be added
+    NEW skuDetails AFTER BOX(s) { 
         type = TABBED;
         fill = 1; // let it expand to the whole form
     }
@@ -48,7 +49,9 @@ EXTEND FORM sku // creating the Item form
 
 DESIGN sku { // expanding the design of the Item form
     skuDetails {
-        MOVE BOX(b); // making a container, which contains everything related to barcodes, by a tab in the previously created tab panel
+        // making a container, which contains everything related to barcodes, by a tab in the previously
+        // created tab panel
+        MOVE BOX(b); 
     }
 }
 ```

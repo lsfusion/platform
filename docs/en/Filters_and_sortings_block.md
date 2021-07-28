@@ -41,14 +41,18 @@ onStock = DATA NUMERIC[10,2] (Stock, Sku);
 
 FORM onStock 'Balances' // creating a form in which the balances of products can be viewed
     OBJECTS r = Region PANEL // adding a region object
-    PROPERTIES name(r) SELECTOR // adding the property name of the region, when clicking on which the user can select it
+    // adding the property name of the region, when clicking on which the user can select it
+    PROPERTIES name(r) SELECTOR 
 
     OBJECTS st = Stock // adding the warehouse object
     PROPERTIES name(st) READONLY // adding the warehouse name
-    FILTERS region(st) == r // adding a filter so that only warehouses of the selected region are shown
+    // adding a filter so that only warehouses of the selected region are shown
+    FILTERS region(st) == r 
 
     OBJECTS s = Sku // adding products
-    PROPERTIES READONLY groupName = nameGroup(s), name(s), onStock(st, s) // adding the name of the group of products, assigning it groupName as the name of the property on the form, as well as the name and balance of the product
+    // adding the name of the group of products, assigning it groupName as the name of the property on the form, 
+    // as well as the name and balance of the product
+    PROPERTIES READONLY groupName = nameGroup(s), name(s), onStock(st, s) 
     FILTERS active(s) // turning it on to show only active products
 ;
 ```
@@ -71,7 +75,7 @@ Each filter is defined with an [expression](Expression.md) that defines the filt
 ### Parameters
 
 <a className="lsdoc-anchor" id="filterName"/>
- 
+
 - `groupName` 
 
     Internal name of a filter group [Simple ID](IDs.md#id). If the `EXTEND` keyword is specified, the platform will search the form for the created filter group with the specified name — otherwise a new filter group with the specified name will be created.
@@ -99,10 +103,16 @@ Each filter is defined with an [expression](Expression.md) that defines the filt
 active = DATA BOOLEAN (Stock);
 
 EXTEND FORM onStock // extending the previously created form with balances
-    FILTERGROUP stockActive // creating a group of filters with one filter, which will be shown as a checkbox by which the user can enable/disable the filter
-        FILTER 'Active' active(st) 'F11' // adding filter for active warehouses only, which will be applied by pressing F11
-    FILTERGROUP skuAvailability // creating a new filter group in which the user can select one of the filters using the drop-down list
-        FILTER 'Is on stock' onStock (st, s) 'F10' DEFAULT // adding a filter that will display only products on stock, which will be selected by pressing F10 and will be automatically selected when the form is opened
+    // creating a group of filters with one filter, which will be shown as a checkbox by which 
+    // the user can enable/disable the filter
+    FILTERGROUP stockActive 
+        // adding filter for active warehouses only, which will be applied by pressing F11
+        FILTER 'Active' active(st) 'F11' 
+    // creating a new filter group in which the user can select one of the filters using the drop-down list
+    FILTERGROUP skuAvailability 
+        // adding a filter that will display only products on stock, which will be selected by pressing F10 
+        // and will be automatically selected when the form is opened
+        FILTER 'Is on stock' onStock (st, s) 'F10' DEFAULT 
 ;
 
 // ...
@@ -141,7 +151,9 @@ An order block adds orderings to the form that will be automatically applied whe
 ```lsf
 EXTEND FORM onStock // extending the previously created form with balances
     ORDERS name(s) // enabling ordering by warehouse name in the warehouse list
-    ORDERS groupName, onStock(st, s) DESC // enabling ordering in ascending order of the group name, and inside in descending order of the balance in the warehouse
-                                            // it should be noted that the property is the property name on the form groupName, not just the property name nameGroupSku
+    ORDERS groupName, onStock(st, s) DESC // enabling ordering in ascending order of the group name, and inside
+                                          // in descending order of the balance in the warehouse
+                                          // it should be noted that the property is the property name on the 
+                                          // form groupName, not just the property name nameGroupSku
 ;
 ```

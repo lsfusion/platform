@@ -62,7 +62,8 @@ book 'Book' = DATA Book (Batch);
 date 'Arrival date' = DATA DATE (Batch);
 
 CLASS Stock 'Warehouse';
-currentBalance 'Balance' = DATA INTEGER (Batch, Stock); // The balance is made data for the example. This is usually a calculated property.
+// The balance is made data for the example. This is usually a calculated property.
+currentBalance 'Balance' = DATA INTEGER (Batch, Stock); 
 ```
 
 We need to distribute the specified quantity for a specified book by batches according to the FIFO principle.

@@ -30,5 +30,6 @@ firstName = DATA STRING[100] (Person);
 middleName = DATA STRING[100] (Person);
 lastName = DATA STRING[100] (Person);
 
-fullName(Person p) = CONCAT ' ', firstName(p), middleName(p), lastName(p);     // if some part of the name is not specified, then this part will be skipped along with a space
+// if some part of the name is not specified, then this part will be skipped along with a space
+fullName(Person p) = CONCAT ' ', firstName(p), middleName(p), lastName(p);     
 ```

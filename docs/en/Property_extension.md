@@ -33,10 +33,15 @@ CLASS Invoice;
 CLASS InvoiceDetail;
 CLASS Range;
 
-rateChargeExchange(invoice) = ABSTRACT NUMERIC[14,6] (Invoice);             // In this case, ABSTRACT MULTI EXCLUSIVE is created
-backgroundSku 'Color' (d) = ABSTRACT CASE FULL COLOR (InvoiceDetail); // In this case, ABSTRACT CASE OVERRIDE LAST is created, and if there are
-                                                                            // several suitable implementations, the first of them will be calculated
-overVAT = ABSTRACT VALUE OVERRIDE FIRST Range (InvoiceDetail);          // The last matching implementation will be calculated here
+// ABSTRACT MULTI EXCLUSIVE is created
+rateChargeExchange(invoice) = ABSTRACT NUMERIC[14,6] (Invoice);
+             
+// ABSTRACT CASE OVERRIDE LAST is created, and if there are several suitable implementations, 
+// the first of them will be calculated
+backgroundSku 'Color' (d) = ABSTRACT CASE FULL COLOR (InvoiceDetail);
+ 
+// The last matching implementation will be calculated here
+overVAT = ABSTRACT VALUE OVERRIDE FIRST Range (InvoiceDetail);          
 ```
 
 ```lsf
@@ -54,6 +59,8 @@ name(BClass b) = 'B' + innerName(b);
 name(CClass c) = 'C' + innerName(c);
 
 name[AClass](BClass b) += name(b);
-name(CClass c) += name(c); // Here name[AClass] will be found on the left, because the search goes only among abstract properties, and on the right name[CClass] will be found
+// Here name[AClass] will be found on the left, because the search goes only among abstract properties, 
+// and on the right name[CClass] will be found
+name(CClass c) += name(c); 
 name(DClass d) += 'DClass' + innerName(d) IF d IS DClass;
 ```

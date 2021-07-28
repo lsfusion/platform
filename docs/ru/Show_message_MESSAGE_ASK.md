@@ -28,14 +28,17 @@ title: 'Показ сообщения (MESSAGE, ASK)'
 
 
 ```lsf
-message  { MESSAGE 'Hello World!'; }                                // простое текстовое сообщение
+message  { MESSAGE 'Hello World!'; } // простое текстовое сообщение
 
 isGood = DATA BOOLEAN (Item);
 stringData(Item i)   {
-    MESSAGE IF isGood(i) THEN 'Good' ELSE 'Bad';   // в зависимости от того, какой item будет передан действию, будет показываться окно с текстом 'Good', либо с текстом 'Bad'
+    // в зависимости от того, какой item будет передан действию, будет показываться окно 
+    // с текстом 'Good', либо с текстом 'Bad'
+    MESSAGE IF isGood(i) THEN 'Good' ELSE 'Bad';   
 }
 
-testMessage()  {                    // В этом случае пользователю будет выдано пять текстовых сообщений
+// В этом случае пользователю будет выдано пять текстовых сообщений
+testMessage()  {                    
     LOCAL i = INTEGER();
     i() <- 0;
     WHILE i() < 5 DO {
@@ -44,7 +47,8 @@ testMessage()  {                    // В этом случае пользова
     }
 }
 
-testMessageNowait()  {              // В случае NOWAIT пользователю будет выдано одно текстовое сообщение, объединяющее сообщения от пяти вызовов MESSAGE
+// В случае NOWAIT пользователю будет выдано одно текстовое сообщение, объединяющее сообщения от пяти вызовов MESSAGE
+testMessageNowait()  {              
     LOCAL i = INTEGER();
     i() <- 0;
     WHILE i() < 5 DO {
