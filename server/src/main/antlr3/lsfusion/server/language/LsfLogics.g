@@ -3787,7 +3787,7 @@ activateActionDefinitionBody[List<TypedParameter> context, boolean dynamic] retu
 	}
 }
 	:	'ACTIVATE'
-		(	'FORM' fName=compoundID { form = self.findForm($fName.sid); }
+		(	'FORM' fName=compoundID { if (inMainParseState()) { form = self.findForm($fName.sid); } }
 		|	'TAB' fc = formComponentID { form = $fc.form; component = $fc.component; }
 		|   'PROPERTY' fp = formPropertyID { propertyDraw = $fp.propertyDraw; }
 		)
