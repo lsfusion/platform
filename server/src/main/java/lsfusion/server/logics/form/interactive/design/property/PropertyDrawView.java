@@ -86,7 +86,7 @@ public class PropertyDrawView extends ComponentView {
     public Boolean focusable;
 
     public boolean panelCaptionVertical = false;
-    public boolean panelCaptionAfter;
+    public Boolean panelCaptionLast;
     public FlexAlignment panelCaptionAlignment;
 
     public boolean panelColumnVertical = false;
@@ -280,7 +280,7 @@ public class PropertyDrawView extends ComponentView {
         outStream.writeByte(entity.getEditType().serialize());
 
         outStream.writeBoolean(panelCaptionVertical);
-        outStream.writeBoolean(panelCaptionAfter);
+        pool.writeObject(outStream, panelCaptionLast);
         pool.writeObject(outStream, panelCaptionAlignment);
 
         outStream.writeBoolean(panelColumnVertical);
@@ -465,7 +465,7 @@ public class PropertyDrawView extends ComponentView {
         focusable = pool.readObject(inStream);
 
         panelCaptionVertical = inStream.readBoolean();
-        panelCaptionAfter = inStream.readBoolean();
+        panelCaptionLast = pool.readObject(inStream);
         panelCaptionAlignment = pool.readObject(inStream);
 
         panelColumnVertical = inStream.readBoolean();

@@ -7,6 +7,7 @@ import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.classes.*;
 import lsfusion.client.classes.data.ClientFormatClass;
 import lsfusion.client.classes.data.ClientIntegralClass;
+import lsfusion.client.classes.data.ClientLogicalClass;
 import lsfusion.client.classes.data.ClientLongClass;
 import lsfusion.client.controller.MainController;
 import lsfusion.client.form.controller.ClientFormController;
@@ -107,7 +108,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public PropertyEditType editType = PropertyEditType.EDITABLE;
 
     public boolean panelCaptionVertical;
-    public boolean panelCaptionAfter;
+    public Boolean panelCaptionLast;
     public FlexAlignment panelCaptionAlignment;
 
     public boolean panelColumnVertical;
@@ -404,8 +405,12 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return changeType != null && baseType.getTypeClass() == changeType.getTypeClass();
     }
     
+    public boolean isPanelCaptionLast() {
+        return panelCaptionLast != null ? panelCaptionLast : baseType instanceof ClientLogicalClass;
+    }
+    
     public FlexAlignment getPanelCaptionAlignment() {
-        return panelCaptionAlignment != null ? panelCaptionAlignment : FlexAlignment.CENTER;
+        return (panelCaptionAlignment != null && panelCaptionAlignment != FlexAlignment.STRETCH) ? panelCaptionAlignment : FlexAlignment.CENTER;
     }
 
     public String formatString(Object obj) throws ParseException {
@@ -448,7 +453,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         pool.writeObject(outStream, focusable);
 
         outStream.writeBoolean(panelCaptionVertical);
-        outStream.writeBoolean(panelCaptionAfter);
+        pool.writeObject(outStream, panelCaptionLast);
         pool.writeObject(outStream, panelCaptionAlignment);
 
         outStream.writeBoolean(panelColumnVertical);
@@ -493,7 +498,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         editType = PropertyEditType.deserialize(inStream.readByte());
 
         panelCaptionVertical = inStream.readBoolean();
-        panelCaptionAfter = inStream.readBoolean();
+        panelCaptionLast = pool.readObject(inStream);
         panelCaptionAlignment = pool.readObject(inStream);
 
         panelColumnVertical = inStream.readBoolean();

@@ -472,4 +472,8 @@ public class SwingDefaults {
     public static int splitDividerWidth() {
         return 6;
     }
+    
+    public static int getDataPanelLabelMargin() {
+        return 4;
+    }
 }

@@ -27,8 +27,8 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         target.panelCaptionVertical = panelCaptionVertical;
     }
     
-    public void setPanelCaptionAfter(boolean panelCaptionAfter) {
-        target.panelCaptionAfter = panelCaptionAfter;
+    public void setPanelCaptionLast(boolean panelCaptionLast) {
+        target.panelCaptionLast = panelCaptionLast;
     }
 
     public void setPanelCaptionAlignment(FlexAlignment panelCaptionAlignment) {

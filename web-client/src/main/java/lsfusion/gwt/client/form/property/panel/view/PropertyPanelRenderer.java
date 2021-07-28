@@ -15,6 +15,7 @@ import lsfusion.gwt.client.form.object.panel.controller.GPropertyPanelController
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.getOffsetSize;
+import static lsfusion.gwt.client.view.StyleDefaults.DATA_PANEL_LABEL_MARGIN;
 
 public class PropertyPanelRenderer extends PanelRenderer {
 
@@ -23,11 +24,15 @@ public class PropertyPanelRenderer extends PanelRenderer {
     private final Label label;
     
     private final boolean vertical;
+    private final boolean tableFirst;
+    
+    private Boolean labelMarginRight = null;
 
     public PropertyPanelRenderer(final GFormController form, ActionOrPropertyValueController controller, GPropertyDraw property, GGroupObjectValue columnKey, GPropertyPanelController.CaptionContainer captionContainer) {
         super(form, controller, property, columnKey);
 
         vertical = property.panelCaptionVertical;
+        tableFirst = property.isPanelCaptionLast();
 
         panel = new Panel(vertical);
         panel.addStyleName("dataPanelRendererPanel");
@@ -36,12 +41,18 @@ public class PropertyPanelRenderer extends PanelRenderer {
         if (this.property.captionFont != null)
             this.property.captionFont.apply(label.getElement().getStyle());
 
-        if(captionContainer == null)
+        if (!tableFirst && captionContainer == null)
             panel.add(label, property.getPanelCaptionAlignment());
 
         // we need to wrap into simple panel to make layout independent from property value (make flex-basis 0 for upper components)
         ResizableComplexPanel simplePanel = new ResizableComplexPanel();
         panel.addFill(simplePanel); // getWidth(), getHeight()
+
+        if (tableFirst && captionContainer == null)
+            panel.add(label, property.getPanelCaptionAlignment());
+
+        if (!vertical)
+            labelMarginRight = captionContainer != null || !tableFirst;
 
         if(property.autoSize) { // we still need a panel to append corners
             assert captionContainer == null;
@@ -78,8 +89,12 @@ public class PropertyPanelRenderer extends PanelRenderer {
 
     protected void setLabelText(String text) {
         label.setText(text);
-        if (!vertical) {
-            label.getElement().getStyle().setMarginRight(text.isEmpty() ? 0 : 4, Style.Unit.PX);
+        if (labelMarginRight != null) {
+            if (labelMarginRight) {
+                label.getElement().getStyle().setMarginRight(text.isEmpty() ? 0 : DATA_PANEL_LABEL_MARGIN, Style.Unit.PX);
+            } else {
+                label.getElement().getStyle().setMarginLeft(text.isEmpty() ? 0 : DATA_PANEL_LABEL_MARGIN, Style.Unit.PX);
+            }
         }
     }
 

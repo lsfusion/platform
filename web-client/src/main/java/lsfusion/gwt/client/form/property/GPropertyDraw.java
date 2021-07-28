@@ -14,6 +14,7 @@ import lsfusion.gwt.client.classes.GClass;
 import lsfusion.gwt.client.classes.GObjectType;
 import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.classes.data.GFormatType;
+import lsfusion.gwt.client.classes.data.GLogicalType;
 import lsfusion.gwt.client.classes.data.GLongType;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
@@ -181,6 +182,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public int valueHeight = -1;
 
     public boolean panelCaptionVertical;
+    public Boolean panelCaptionLast;
     public GFlexAlignment panelCaptionAlignment;
     
     public boolean panelColumnVertical;
@@ -396,9 +398,13 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         }
         return flex;
     }
+
+    public boolean isPanelCaptionLast() {
+        return panelCaptionLast != null ? panelCaptionLast : baseType instanceof GLogicalType;
+    }
     
     public GFlexAlignment getPanelCaptionAlignment() {
-        return panelCaptionAlignment != null ? panelCaptionAlignment : GFlexAlignment.CENTER;
+        return (panelCaptionAlignment != null && panelCaptionAlignment != GFlexAlignment.STRETCH) ? panelCaptionAlignment : GFlexAlignment.CENTER;
     }
 
     public GFlexAlignment getAlignment() {
