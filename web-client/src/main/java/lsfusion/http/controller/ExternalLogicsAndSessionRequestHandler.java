@@ -76,7 +76,7 @@ public class ExternalLogicsAndSessionRequestHandler extends ExternalRequestHandl
 
             ExternalUtils.ExternalResponse responseHttpEntity = ExternalUtils.processRequest(remoteExec, requestInputStream, contentType,
                     headerNames, headerValues, cookieNames, cookieValues, logicsHost, sessionObject.connection.port, sessionObject.connection.exportName,
-                    request.getScheme(), request.getServerName(), request.getServerPort(), request.getContextPath(), request.getServletPath(),
+                    request.getScheme(), request.getMethod(), request.getServerName(), request.getServerPort(), request.getContextPath(), request.getServletPath(),
                     request.getPathInfo() == null ? "" : request.getPathInfo(), query);
 
             if (responseHttpEntity.response != null) {
