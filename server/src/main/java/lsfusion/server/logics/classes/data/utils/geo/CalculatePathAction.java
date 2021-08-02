@@ -46,7 +46,7 @@ public class CalculatePathAction extends DistanceGeoAction {
             ImOrderMap<ImMap<String, DataObject>, ImMap<Object, ObjectValue>> result = query.executeClasses(context.getSession());
 
             boolean coordinatesFlag = true;
-            Object startPathPOI = findProperty("startPathPOI[]").read(context.getSession().sql, context.getModifier(), context.getQueryEnv());
+            Object startPathPOI = findProperty("startPathPOI[]").read(context);
             if (startPathPOI != null) {
                 Map<Integer, DataObject> poiMap = new HashMap<>();
                 Map<Integer, String> points = new HashMap<>();

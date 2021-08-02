@@ -967,6 +967,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         sessionEventChangedOld.add(old, old.property.readChangeTable("upsevco", sql, getModifier(), baseClass, getQueryEnv()));
     }
 
+    @StackMessage("{message.getting.previous.property.changes}")
     private void updateSessionEventNotChangedOld(ExecutionEnvironment env) throws SQLException, SQLHandledException {
         // обновляем прямо перед началом локального события, чтобы не заботиться о clearHints и других изменениях между локальными событиями
         assert isInSessionEvent();
@@ -987,6 +988,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
 
 
+    @StackMessage("{message.executing.local.events}")
     public <T extends PropertyInterface> void executeSessionEvents(ExecutionEnvironment env, ExecutionStack stack) throws SQLException, SQLHandledException {
         if(isInTransaction())
             ServerLoggers.exInfoLogger.info("LOCAL EVENTS IN TRANSACTION"); // так как LogPropertyAction создает форму

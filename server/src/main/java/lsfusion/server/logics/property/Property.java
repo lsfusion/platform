@@ -1345,8 +1345,21 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return getClassValueWhere(AlgType.storedType).remap(MapFact.addRevExcl(mapTable.mapKeys, "value", storedField)); //
     }
 
-    public Object read(ExecutionContext context) throws SQLException, SQLHandledException {
-        return read(context.getSession().sql, MapFact.EMPTY(), context.getModifier(), context.getQueryEnv());
+    public Pair<ObjectValue, Boolean> readClassesChanged(SQLSession session, ImMap<T, ObjectValue> keys, BaseClass baseClass, Modifier modifier, QueryEnvironment env) throws SQLException, SQLHandledException {
+        String readValue = "readvalue"; String readChanged = "readChanged";
+        QueryBuilder<T, Object> readQuery = new QueryBuilder<>(SetFact.EMPTY());
+        WhereBuilder changedWhere = new WhereBuilder();
+        readQuery.addProperty(readValue, getExpr(ObjectValue.getMapExprs(keys), modifier, changedWhere));
+        readQuery.addProperty(readChanged, ValueExpr.get(changedWhere.toWhere()));
+        ImMap<Object, ObjectValue> result = readQuery.executeClasses(session, env, baseClass).singleValue();
+        return new Pair<>(result.get(readValue), !result.get(readChanged).isNull());
+    }
+
+    public ObjectValue readClasses(SQLSession session, ImMap<T, Expr> keys, BaseClass baseClass, Modifier modifier, QueryEnvironment env) throws SQLException, SQLHandledException {
+        String readValue = "readvalue";
+        QueryBuilder<T, Object> readQuery = new QueryBuilder<>(SetFact.EMPTY());
+        readQuery.addProperty(readValue, getExpr(keys, modifier));
+        return readQuery.executeClasses(session, env, baseClass).singleValue().get(readValue);
     }
 
     public Object read(SQLSession session, ImMap<T, ? extends ObjectValue> keys, Modifier modifier, QueryEnvironment env) throws SQLException, SQLHandledException {
@@ -1379,23 +1392,6 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
     public ObjectValue readClasses(ExecutionEnvironment env) throws SQLException, SQLHandledException {
         return readClasses(env.getSession(), MapFact.EMPTY(), env.getModifier(), env.getQueryEnv());
-    }
-
-    public ObjectValue readClasses(SQLSession session, ImMap<T, Expr> keys, BaseClass baseClass, Modifier modifier, QueryEnvironment env) throws SQLException, SQLHandledException {
-        String readValue = "readvalue";
-        QueryBuilder<T, Object> readQuery = new QueryBuilder<>(SetFact.EMPTY());
-        readQuery.addProperty(readValue, getExpr(keys, modifier));
-        return readQuery.executeClasses(session, env, baseClass).singleValue().get(readValue);
-    }
-
-    public Pair<ObjectValue, Boolean> readClassesChanged(SQLSession session, ImMap<T, ObjectValue> keys, BaseClass baseClass, Modifier modifier, QueryEnvironment env) throws SQLException, SQLHandledException {
-        String readValue = "readvalue"; String readChanged = "readChanged";
-        QueryBuilder<T, Object> readQuery = new QueryBuilder<>(SetFact.EMPTY());
-        WhereBuilder changedWhere = new WhereBuilder();
-        readQuery.addProperty(readValue, getExpr(ObjectValue.getMapExprs(keys), modifier, changedWhere));
-        readQuery.addProperty(readChanged, ValueExpr.get(changedWhere.toWhere()));
-        ImMap<Object, ObjectValue> result = readQuery.executeClasses(session, env, baseClass).singleValue();
-        return new Pair<>(result.get(readValue), !result.get(readChanged).isNull());
     }
 
     public Object read(ExecutionEnvironment env, ImMap<T, ? extends ObjectValue> keys) throws SQLException, SQLHandledException {
@@ -1515,7 +1511,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
 
     public void setNotNull(ImMap<T, DataObject> values, ExecutionEnvironment env, ExecutionStack stack, boolean notNull, boolean check) throws SQLException, SQLHandledException {
-        if(!check || (read(env.getSession().sql, values, env.getModifier(), env.getQueryEnv())!=null) != notNull) {
+        if(!check || (read(env, values)!=null) != notNull) {
             ActionMapImplement<?, T> action = getSetNotNullAction(notNull);
             if(action!=null)
                 action.execute(new ExecutionContext<>(values, env, stack));

@@ -154,19 +154,12 @@ public abstract class PausableInvocation<T, E extends Exception> implements Call
     protected abstract boolean isDeactivating();
 
     private void blockSync(SynchronousQueue sync) throws InterruptedException {
-        long startTime = 0;
-        ExecutionTimeCounter counter = ExecutionStackAspect.executionTime.get();
-        if (counter != null) {
-            startTime = System.nanoTime();
-        }
         try {
-            sync.take();
+            ExecutionStackAspect.take(sync);
         } catch (InterruptedException e) {
             ServerLoggers.assertLog(isDeactivating(), "SHOULD NOT BE INTERRUPTED"); // не должен прерываться так как нарушит синхронизацию main - invocation
             throw e;
         }
-        if (counter != null)
-            counter.addUI(System.nanoTime() - startTime);
     }
 
     private void releaseSync(SynchronousQueue sync) throws InterruptedException {

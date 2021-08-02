@@ -267,12 +267,20 @@ public class AutoHintsAspect {
             return thisJoinPoint.proceed();
 
         SessionModifier catchHint = catchAutoHint.get();
-        if(catchHint != null && catchHint.allowPrereadValues(property, interfaceValues) && !disabledHints(property)) // если есть не "прочитанные" параметры - значения, вычисляем
+        boolean allowPrereadValues = catchHint != null && catchHint.allowPrereadValues(property, interfaceValues) && !disabledHints(property);
+        if(allowPrereadValues && catchHint.forcePrereadValues(property)) // если есть не "прочитанные" параметры - значения, вычисляем
             throw new HintException(new PrereadHint(property, interfaceValues));
 
         IQuery<?, String> result = (IQuery) thisJoinPoint.proceed();
         if(queryType == PropertyQueryType.RECURSIVE)
             return result;
+
+        if(allowPrereadValues) {
+            Expr expr = result.getExpr("value");
+            long exprComplexity = expr.getComplexity(false);
+            if(exprComplexity > Settings.get().getLimitHintPrereadComplexity())
+                throw new HintException(new PrereadHint(property, interfaceValues));
+        }
 
         // проверка на пустоту для оптимизации при старте
         if(catchHint != null && !propChanges.isEmpty() && catchHint.allowHintIncrement(property) && !property.isNoHint() && !disabledHints(property)) { // неправильно так как может быть не changed

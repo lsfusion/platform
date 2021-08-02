@@ -1,6 +1,7 @@
 package lsfusion.server.base.controller.remote;
 
 import com.google.common.base.Throwables;
+import lsfusion.server.base.controller.stack.ExecutionStackAspect;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import org.thavam.util.concurrent.BlockingHashMap;
 import org.thavam.util.concurrent.BlockingMap;
@@ -33,10 +34,10 @@ public class SequentialRequestLock {
     public void acquireRequestLock(String ownerSID, long requestIndex) {
         ServerLoggers.pausableLog("Acquiring request lock for " + ownerSID + " for request #" + requestIndex);
         try {
-            if (requestIndex >= 0) {
-                sequentialRequestLock.take(requestIndex);
-            }
-            requestLock.take();
+            if (requestIndex >= 0)
+                ExecutionStackAspect.take(() -> sequentialRequestLock.take(requestIndex));
+            ExecutionStackAspect.take(requestLock);
+
             ServerLoggers.pausableLog("Acquired request lock for " + ownerSID + " for request #" + requestIndex);
         } catch (InterruptedException e) {
             ServerLoggers.pausableLog("Interrupted request lock for " + ownerSID + " for request #" + requestIndex);

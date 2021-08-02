@@ -249,9 +249,6 @@ public abstract class SessionModifier implements Modifier {
     }
 
     protected <P extends PropertyInterface> boolean allowPropertyPrereadValues(Property<P> property) {
-        if(!property.isPreread())
-            return false;
-
         if(Settings.get().isDisablePrereadValues())
             return false;
 
@@ -270,6 +267,10 @@ public abstract class SessionModifier implements Modifier {
             return PrereadRows.EMPTY();
 
         return prereadRows;
+    }
+
+    public <P extends PropertyInterface> boolean forcePrereadValues(Property<P> property) {
+        return property.isPreread();
     }
 
     // assert что в values только

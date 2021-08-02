@@ -6,13 +6,16 @@ import lsfusion.base.ReflectionUtils;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.heavy.concurrent.weak.ConcurrentWeakHashMap;
+import lsfusion.base.lambda.ExceptionRunnable;
 import lsfusion.interop.ProgressBar;
+import lsfusion.server.base.caches.CacheStats;
 import lsfusion.server.base.controller.remote.context.ContextAwarePendingRemoteObject;
 import lsfusion.server.base.controller.remote.context.RemoteContextAspect;
 import lsfusion.server.base.controller.remote.manager.RmiServer;
 import lsfusion.server.base.controller.remote.stack.RmiCallStackItem;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.sql.exception.HandledException;
+import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.action.controller.stack.ExecuteActionStackItem;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.log.ServerLoggers;
@@ -26,6 +29,7 @@ import org.aspectj.lang.annotation.Aspect;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
 import java.util.*;
+import java.util.concurrent.BlockingQueue;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
@@ -59,6 +63,23 @@ public class ExecutionStackAspect {
             result.add(progress != null ? progress : stackItem.toString());
         }
         return result;
+    }
+
+    public static void take(ExceptionRunnable<InterruptedException> runnable) throws InterruptedException {
+        long startTime = 0;
+        ExecutionTimeCounter counter = ExecutionStackAspect.executionTime.get();
+        if (counter != null)
+            startTime = System.nanoTime();
+
+        try {
+            runnable.run();
+        } finally {
+            if (counter != null)
+                counter.addUI(System.nanoTime() - startTime);
+        }
+    }
+    public static void take(BlockingQueue sync) throws InterruptedException {
+        take(sync::take);
     }
 
     public static String getActionMessage(Set<Thread> threads) {
@@ -252,6 +273,8 @@ public class ExecutionStackAspect {
             long uiStart = 0;
             Supplier<Long> allocationBytesSupplier = null;
             long allocatedBytesOnStart = 0;
+            Map<CacheStats.CacheType, Long> hitStatsOnStart = null;
+            Map<CacheStats.CacheType, Long> missedStatsOnStart = null;
             if (ANALYZE_ENABLED) {
                 executionTimeCounter = executionTime.get();
                 if (executionTimeCounter == null) {
@@ -271,6 +294,10 @@ public class ExecutionStackAspect {
                         allocationBytesSupplier = () -> 0L;
 
                     allocatedBytesOnStart = allocationBytesSupplier.get();
+
+                    long currentThreadId = Thread.currentThread().getId();
+                    hitStatsOnStart = CacheStats.getCacheHitStats(currentThreadId);
+                    missedStatsOnStart = CacheStats.getCacheMissedStats(currentThreadId);
                 }
             }
 
@@ -293,24 +320,35 @@ public class ExecutionStackAspect {
                     javaTime = javaTime / 1000000; // because this measurements are nanos
                     sqlTime = sqlTime / 1000000;
 
-                    boolean javaExceeded = javaTime > Settings.get().getExplainAppThreshold();
-                    boolean sqlExceeded = sqlTime > Settings.get().getExplainThreshold();
+                    boolean javaExceeded = javaTime >= Settings.get().getExplainAppThreshold();
+                    boolean sqlExceeded = sqlTime >= Settings.get().getExplainThreshold();
                     boolean allocatedExceeded = allocatedBytes > Settings.get().getExplainAllocatedBytesThreshold();
+                    String explainDetails = null;
                     if (javaExceeded || sqlExceeded || allocatedExceeded) {
-                        BiFunction<Long, Boolean, String> highlighter = (s, exceeded) -> exceeded ? "!! " + s + " !!" : "" + s;
+                        BiFunction<Object, Boolean, String> highlighter = (s, exceeded) -> exceeded ? "!! " + s + " !!" : "" + s;
+                        long currentThreadId = Thread.currentThread().getId();
 
                         if(executionTimeCounter.info == null)
                             executionTimeCounter.info = ListFact.mList();
                         // adding \t we're assuming that all upper stack elements will also exceed threshold (since the times are cumulative)
-                        executionTimeCounter.info.add(BaseUtils.replicate('\t', stack.size() - 1) + item + " (" +
+                        explainDetails = " (" +
                                 "app: " + highlighter.apply(javaTime, javaExceeded) +
                                 ", sql: " + highlighter.apply(sqlTime, sqlExceeded) +
-                                ", allocated app: " + highlighter.apply(allocatedBytes, allocatedExceeded));
+                                ", sql/app ratio: " + ((sqlTime * 100) / (sqlTime + javaTime)) + "%" +
+                                ", allocated app: " + highlighter.apply(BusinessLogics.humanReadableByteCount(allocatedBytes), allocatedExceeded) +
+                                ", cache hit ratio - " + CacheStats.getGroupedRatioString(
+                                        CacheStats.diff(CacheStats.getCacheHitStats(currentThreadId), hitStatsOnStart),
+                                        CacheStats.diff(CacheStats.getCacheMissedStats(currentThreadId), missedStatsOnStart)) +
+                                ")";
+                        executionTimeCounter.info.add(BaseUtils.replicate('\t', stack.size() - 1) + item + explainDetails);
                     }
 
                     if(topStack) {
-                        if(executionTimeCounter.info != null)
-                            ServerLoggers.explainAppLogger.info('\n' + executionTimeCounter.info.immutableList().reverseList().toString("\n"));
+                        if(executionTimeCounter.info != null && (
+                                javaTime >= Settings.get().getExplainTopAppThreshold() ||
+                                sqlTime >= Settings.get().getExplainTopThreshold() ||
+                                allocatedBytes >= Settings.get().getExplainTopAllocatedBytesThreshold()))
+                            ServerLoggers.explainAppLogger.info(explainDetails + '\n' + executionTimeCounter.info.immutableList().reverseList().toString("\n"));
                         executionTime.set(null);
                     }
                 }
