@@ -6,6 +6,7 @@ import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.ImageDescription;
 import lsfusion.gwt.client.base.ImageHolder;
+import lsfusion.gwt.client.base.TooltipManager;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
@@ -66,6 +67,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public GClass[] interfacesTypes;
     public String creationScript;
     public String creationPath;
+    public String path;
     public String formPath;
 
     public GGroupObject groupObject;
@@ -303,7 +305,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
                 "<b>" + getMessages().propertyTooltipPath() + ":</b> %s<br>" +
                 createTooltipHorizontalSeparator() +
                 "<b>" + getMessages().propertyTooltipFormPropertyName() + ":</b> %s<br>" +
-                "<b>" + getMessages().propertyTooltipFormPropertyDeclaration() + ":</b> %s" +
+                "<b>" + getMessages().propertyTooltipFormPropertyDeclaration() + ":</b> %s<br>" +
+                (!command.isEmpty() ? "<a href=\"lsfusion-protocol://%s\" target=\"_blank\">" + getMessages().showInEditor()+ "</a>" : "") +
                 "</html>";
     }  
     
@@ -314,14 +317,17 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
                 "<b>" + getMessages().propertyTooltipPath() + ":</b> %s<br>" +
                 createTooltipHorizontalSeparator() +
                 "<b>" + getMessages().propertyTooltipFormPropertyName() + ":</b> %s<br>" +
-                "<b>" + getMessages().propertyTooltipFormPropertyDeclaration() + ":</b> %s" +
+                "<b>" + getMessages().propertyTooltipFormPropertyDeclaration() + ":</b> %s<br>" +
+                (!command.isEmpty() ? "<a href=\"lsfusion-protocol://%s\" target=\"_blank\">" + getMessages().showInEditor() + "</a>" : "") +
                 "</html>";
     }
     
     public static String getChangeKeyToolTipFormat() {
         return createTooltipHorizontalSeparator() + "<b>" + getMessages().propertyTooltipHotkey() + ":</b> %s<br>";
     }
-            
+
+    private static String command;
+
     public String getTooltipText(String caption) {
         String propCaption = GwtSharedUtils.nullTrim(!GwtSharedUtils.isRedundantString(toolTip) ? toolTip : caption);
         String keyBindingText = hasKeyBinding() ? GwtSharedUtils.stringFormat(getChangeKeyToolTipFormat(), getKeyBindingText()) : "";
@@ -332,10 +338,11 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
             String ifaceObjects = GwtSharedUtils.toString(", ", interfacesCaptions);
             String scriptPath = creationPath != null ? escapeLineBreakHTML(creationPath) : "";
             String scriptFormPath = formPath != null ? escapeLineBreakHTML(formPath) : "";
-            
+            command = TooltipManager.getCommand(creationPath, path);
+
             if (baseType instanceof GActionType) {
                 return GwtSharedUtils.stringFormat(TOOL_TIP_FORMAT + getDetailedActionToolTipFormat(),
-                        propCaption, keyBindingText, canonicalName, ifaceObjects, scriptPath, propertyFormName, scriptFormPath);
+                        propCaption, keyBindingText, canonicalName, ifaceObjects, scriptPath, propertyFormName, scriptFormPath, command);
             } else {
                 String tableName = this.tableName != null ? this.tableName : "&lt;none&gt;";
                 String returnClass = this.returnClass.toString();
@@ -344,7 +351,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
                 
                 return GwtSharedUtils.stringFormat(TOOL_TIP_FORMAT + getDetailedToolTipFormat(),
                         propCaption, keyBindingText, canonicalName, tableName, ifaceObjects, returnClass, ifaceClasses,
-                        script, scriptPath, propertyFormName, scriptFormPath);
+                        script, scriptPath, propertyFormName, scriptFormPath, command);
             }
         }
     }

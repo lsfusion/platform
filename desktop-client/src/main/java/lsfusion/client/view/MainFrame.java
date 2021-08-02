@@ -24,7 +24,6 @@ import lsfusion.interop.base.exception.AuthenticationException;
 import lsfusion.interop.base.exception.RemoteMessageException;
 import lsfusion.interop.connection.ClientType;
 import lsfusion.interop.connection.LocalePreferences;
-import lsfusion.interop.form.ModalityType;
 import lsfusion.interop.form.event.EventBus;
 import lsfusion.interop.form.print.ReportGenerationData;
 import lsfusion.interop.form.remote.RemoteFormInterface;
@@ -108,8 +107,8 @@ public abstract class MainFrame extends JFrame {
             MainController.busyDialog = clientSettings.busyDialog;
             MainController.busyDialogTimeout = Math.max(clientSettings.busyDialogTimeout, 1000); //минимальный таймаут 1000мс
             MainController.useRequestTimeout = clientSettings.useRequestTimeout;
-            MainController.ideaBinPath = clientSettings.ideaBinPath;
-            MainController.userDir = clientSettings.userDir;
+            MainController.ideaExecPath = clientSettings.ideaExecPath;
+            MainController.projectLSFDir = clientSettings.projectLSFDir;
             MainController.inDevMode = clientSettings.devMode;
             MainController.showDetailedInfo = clientSettings.showDetailedInfo;
             MainController.forbidDuplicateForms = clientSettings.forbidDuplicateForms;

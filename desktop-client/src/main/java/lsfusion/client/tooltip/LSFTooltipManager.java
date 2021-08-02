@@ -10,8 +10,8 @@ import lsfusion.client.form.property.ClientPropertyDraw;
 import net.java.balloontip.BalloonTip;
 import net.java.balloontip.positioners.BasicBalloonTipPositioner;
 import net.java.balloontip.styles.ToolTipBalloonStyle;
+import org.apache.commons.lang3.SystemUtils;
 import org.jdesktop.swingx.VerticalLayout;
-import sun.awt.OSInfo;
 
 import javax.swing.*;
 import javax.swing.table.TableColumnModel;
@@ -142,31 +142,15 @@ public class LSFTooltipManager {
         return timer;
     }
 
-    private static final String userDir = MainController.userDir;
-    private static final String ideaBinPath = MainController.ideaBinPath;
-
     private static String getCommand(String path, String creationPath) {
+        String ideaExecPath = MainController.ideaExecPath;
+        Path fileAbsolutePath = Paths.get(MainController.projectLSFDir, path);
+
         String command = null;
-        Path srcPath = Paths.get(userDir, "src/main/lsfusion/");
-        Path customPath = !Files.exists(srcPath) ? Paths.get(userDir, path) : Paths.get(srcPath.toString(), path);
-
-        if (Files.exists(customPath) && ideaBinPath != null) {
-            String ideaRunCommand = null;
-            boolean addQuotes = false;
-            if (OSInfo.getOSType().equals(OSInfo.OSType.LINUX)) {
-                ideaRunCommand = ideaBinPath + "/idea.sh";
-            } else if (OSInfo.getOSType().equals(OSInfo.OSType.WINDOWS)) {
-                ideaRunCommand = ideaBinPath + (Files.exists(Paths.get(ideaBinPath, "idea64.exe")) ? "/idea64.exe" : "/idea.exe");
-                addQuotes = true;
-            } else if (OSInfo.getOSType().equals(OSInfo.OSType.MACOSX)) {
-                ideaRunCommand = "/idea";
-            }
-
+        if (Files.exists(fileAbsolutePath) && ideaExecPath != null) {
             int line = Integer.parseInt(creationPath.substring(creationPath.lastIndexOf("(") + 1, creationPath.lastIndexOf(":")));
 
-            command = ideaRunCommand != null ? addQuotes ? "\"" + ideaRunCommand + "\"" + " --line " + line + " " + "\"" + customPath + "\"" :
-                    ideaRunCommand + " --line " + line + " " + customPath : null;
-
+            command = (SystemUtils.IS_OS_WINDOWS ? "\"" + ideaExecPath + "\"" : ideaExecPath) + " --line " + line + " " + "\"" + fileAbsolutePath + "\"";
         }
         return command;
     }

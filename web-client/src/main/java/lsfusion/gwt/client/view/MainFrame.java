@@ -69,6 +69,8 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
 
     // settings    
     public static boolean devMode;
+    public static String ideaExecPath;
+    public static String projectLSFDir;
     public static boolean showDetailedInfo;
     public static boolean forbidDuplicateForms;
     public static boolean busyDialog;
@@ -230,6 +232,8 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
                 busyDialogTimeout = Math.max(result.busyDialogTimeout - 500, 500); //минимальный таймаут 500мс + всё равно возникает задержка около 500мс
                 loadingManager = busyDialog ? new GBusyDialogDisplayer(MainFrame.this) : new LoadingBlocker(MainFrame.this); // почему-то в busyDialog не работает showBusyDialog и blockingPanel
                 devMode = result.devMode;
+                ideaExecPath = result.ideaExecPath;
+                projectLSFDir = result.projectLSFDir;
                 showDetailedInfo = result.showDetailedInfo;
                 forbidDuplicateForms = result.forbidDuplicateForms;
                 showNotDefinedStrings = result.showNotDefinedStrings;

@@ -7,9 +7,9 @@ import com.google.gwt.user.client.ui.FocusPanel;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.view.PopupDialogPanel;
+import lsfusion.gwt.client.view.MainFrame;
 
 import static com.google.gwt.dom.client.BrowserEvents.*;
-import static lsfusion.gwt.client.base.GwtSharedUtils.isRedundantString;
 
 public class TooltipManager {
     private static final TooltipManager instance = new TooltipManager();
@@ -20,7 +20,7 @@ public class TooltipManager {
     private int mouseX;
     private int mouseY;
 
-    private PopupDialogPanel tooltip;
+    public PopupDialogPanel tooltip;
     private HTML tooltipHtml;
 
     private boolean mouseIn;
@@ -84,27 +84,14 @@ public class TooltipManager {
         mouseIn = false;
         currentText = "";
 
-        if(tooltipHelper != null) {
-            String tooltipText = tooltipHelper.getTooltip();
-
-            // we want to delay tooltip hiding to check if the next tooltip showing is the same (this way we'll avoid blinking)
-            Scheduler.get().scheduleFixedDelay(() -> {
-                if (!(mouseIn && GwtClientUtils.nullEquals(tooltipText, currentText))) {
-                    if (tooltip != null) {
-                        tooltip.hide();
-                        tooltip = null;
-                        tooltipHtml = null;
-                    }
-                }
-                return false;
-            }, DELAY_HIDE);
-        } else {
-            if (tooltip != null) {
+        Scheduler.get().scheduleDeferred(() -> {
+            if ((!(mouseIn && tooltipHelper != null && GwtClientUtils.nullEquals(tooltipHelper.getTooltip(), currentText)) && tooltip != null && !tooltip.tooltipFocused) ||
+                    tooltip != null && !tooltip.tooltipFocused) {
                 tooltip.hide();
                 tooltip = null;
                 tooltipHtml = null;
             }
-        }
+        });
     }
 
     // за время ожидания курсор может переместиться далеко от места, где вызвался showTooltip()
@@ -121,4 +108,19 @@ public class TooltipManager {
         // to check if nothing changed after tooltip delay
         public abstract boolean stillShowTooltip();
     }
+
+    public static String getCommand(String creationPath, String path) {
+        String projectLSFDir = MainFrame.projectLSFDir;
+        String ideaExecPath = MainFrame.ideaExecPath;
+        String command = "";
+        if (projectLSFDir != null && ideaExecPath != null && creationPath != null) {
+            int line = Integer.parseInt(creationPath.substring(creationPath.lastIndexOf("(") + 1, creationPath.lastIndexOf(":")));
+            //use "**" instead "="
+            command = "idea**" + ideaExecPath + "&--line**" + line + "&path**" + projectLSFDir + path;
+            //replace spaces and slashes because this command going throw url
+            command = command.replaceAll(" ", "++").replaceAll("\\\\", "/");
+        }
+        return command;
+    }
+
 }
