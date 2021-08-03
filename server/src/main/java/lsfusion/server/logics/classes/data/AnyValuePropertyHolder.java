@@ -43,6 +43,7 @@ public class AnyValuePropertyHolder {
     private final LP intervalDateTimeProperty;
     private final LP intervalTimeProperty;
     private final LP logicalProperty;
+    private final LP tLogicalProperty;
     private final LP dateProperty;
     private final LP timeProperty;
     private final LP colorProperty;
@@ -74,7 +75,7 @@ public class AnyValuePropertyHolder {
     private final LP tableLinkProperty;
 
     public AnyValuePropertyHolder(LP<?> objectProperty, LP<?> stringProperty, LP<?> bpStringProperty, LP<?> textProperty, LP<?> intProperty, LP<?> longProperty, LP<?> doubleProperty, LP<?> numericProperty, LP<?> yearProperty,
-                                  LP<?> dateTimeProperty, LP<?> zDateTimeProperty, LP<?> intervalDateProperty, LP<?> intervalDateTimeProperty, LP<?> intervalTimeProperty,  LP<?> logicalProperty, LP<?> dateProperty, LP<?> timeProperty, LP<?> colorProperty, LP<?> wordFileProperty, LP<?> imageFileProperty,
+                                  LP<?> dateTimeProperty, LP<?> zDateTimeProperty, LP<?> intervalDateProperty, LP<?> intervalDateTimeProperty, LP<?> intervalTimeProperty, LP<?> logicalProperty, LP<?> tLogicalProperty, LP<?> dateProperty, LP<?> timeProperty, LP<?> colorProperty, LP<?> wordFileProperty, LP<?> imageFileProperty,
                                   LP<?> pdfFileProperty, LP<?> dbfFileProperty, LP<?> rawFileProperty, LP<?> customFileProperty, LP<?> excelFileProperty,
                                   LP<?> textFileProperty, LP<?> csvFileProperty, LP<?> htmlFileProperty, LP<?> jsonFileProperty, LP<?> xmlFileProperty, LP<?> tableFileProperty,
                                   LP<?> wordLinkProperty, LP<?> imageLinkProperty, LP<?> pdfLinkProperty, LP<?> dbfLinkProperty, LP<?> rawLinkProperty,
@@ -95,6 +96,7 @@ public class AnyValuePropertyHolder {
                 && intervalDateTimeProperty.property.getType().getCompatible(IntervalClass.getInstance("DATETIME")) != null
                 && intervalTimeProperty.property.getType().getCompatible(IntervalClass.getInstance("TIME")) != null
                 && logicalProperty.property.getType() == LogicalClass.instance
+                && tLogicalProperty.property.getType() == LogicalClass.threeStateInstance
                 && dateProperty.property.getType() == DateClass.instance
                 && timeProperty.property.getType() == TimeClass.instance
                 && colorProperty.property.getType() == ColorClass.instance
@@ -141,6 +143,7 @@ public class AnyValuePropertyHolder {
         this.intervalDateTimeProperty = intervalDateTimeProperty;
         this.intervalTimeProperty = intervalTimeProperty;
         this.logicalProperty = logicalProperty;
+        this.tLogicalProperty = tLogicalProperty;
         this.dateProperty = dateProperty;
         this.timeProperty = timeProperty;
         this.colorProperty = colorProperty;
@@ -202,7 +205,7 @@ public class AnyValuePropertyHolder {
         } else if (valueType instanceof TimeIntervalClass) {
             return intervalTimeProperty;
         } else if (valueType instanceof LogicalClass) {
-            return logicalProperty;
+            return ((LogicalClass) valueType).threeState ? tLogicalProperty : logicalProperty;
         } else if (valueType instanceof DateClass) {
             return dateProperty;
         } else if (valueType instanceof TimeClass) {
@@ -286,7 +289,7 @@ public class AnyValuePropertyHolder {
                 customLinkProperty, rawLinkProperty, wordLinkProperty, imageLinkProperty, pdfLinkProperty, dbfLinkProperty, excelLinkProperty,
                 textLinkProperty, csvLinkProperty, htmlLinkProperty, jsonLinkProperty, xmlLinkProperty, tableLinkProperty,
                 // others
-                logicalProperty, colorProperty, objectProperty 
+                logicalProperty, tLogicalProperty, colorProperty, objectProperty
         ).mapOrderSetValues(value -> (SessionDataProperty) value.property);
     }
         

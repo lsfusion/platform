@@ -7,9 +7,11 @@ import javax.swing.*;
 
 public class LogicalPropertyRenderer extends PropertyRenderer {
     private JCheckBox checkBox;
+    private boolean threeState;
     
-    public LogicalPropertyRenderer(ClientPropertyDraw property) {
+    public LogicalPropertyRenderer(ClientPropertyDraw property, boolean threeState) {
         super(property);
+        this.threeState = threeState;
         
         if (property != null) {
             Integer valueAlignment = property.getSwingValueAlignment();
@@ -32,5 +34,6 @@ public class LogicalPropertyRenderer extends PropertyRenderer {
     public void setValue(Object value) {
         super.setValue(value);
         getComponent().setSelected(value != null && (Boolean) value);
+        getComponent().setEnabled(!threeState || value != null);
     }
 }

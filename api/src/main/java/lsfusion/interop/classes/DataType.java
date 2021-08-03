@@ -50,4 +50,5 @@ public class DataType {
     public final static byte TIMEINTERVAL = 47;
     public final static byte DBF = 48;
     public final static byte DBFLINK = 49;
+    public final static byte TLOGICAL = 50;
 }

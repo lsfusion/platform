@@ -9,18 +9,21 @@ import java.awt.event.FocusEvent;
 import java.util.EventObject;
 
 public class LogicalPropertyEditor extends JCheckBox implements PropertyEditor {
-    private boolean newValue;
+    private Boolean nextValue;
+    private boolean threeState;
     private PropertyTableCellEditor tableEditor;
 
-    public LogicalPropertyEditor(Object value) {
+    public LogicalPropertyEditor(Object value, boolean threeState) {
         setHorizontalAlignment(JCheckBox.CENTER);
 
         setOpaque(true);
         setBackground(Color.white);
 
+        this.threeState = threeState;
         // set new value because we'll finish editing immediately
-        newValue = value == null;
-        model.setSelected(newValue);
+        nextValue = getNextValue(value, threeState);
+        model.setSelected(nextValue != null && nextValue);
+        model.setEnabled(!threeState || nextValue != null);
 
         addFocusListener(new FocusAdapter() {
             @Override
@@ -28,6 +31,16 @@ public class LogicalPropertyEditor extends JCheckBox implements PropertyEditor {
                 tableEditor.stopCellEditingLater();
             }
         });
+    }
+
+    private Boolean getNextValue(Object value, boolean threeState) {
+        if (threeState) {
+            if (value == null) return true;
+            if ((boolean) value) return false;
+            return null;
+        } else {
+            return value == null || !(boolean) value;
+        }
     }
 
     @Override
@@ -44,7 +57,7 @@ public class LogicalPropertyEditor extends JCheckBox implements PropertyEditor {
     }
 
     public Object getCellEditorValue() {
-        return newValue ? true : null;
+        return threeState ? nextValue : (nextValue != null && nextValue ? true : null);
     }
 
     @Override

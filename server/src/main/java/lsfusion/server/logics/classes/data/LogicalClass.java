@@ -54,7 +54,7 @@ public class LogicalClass extends DataClass<Boolean> {
     }
 
     public byte getTypeID() {
-        return DataType.LOGICAL;
+        return threeState ? DataType.TLOGICAL : DataType.LOGICAL;
     }
 
     public DataClass getCompatible(DataClass compClass, boolean or) {
@@ -209,7 +209,7 @@ public class LogicalClass extends DataClass<Boolean> {
     }
 
     public String getSID() {
-        return "BOOLEAN";
+        return threeState ? "TBOOLEAN" : "BOOLEAN";
     }
 
     @Override

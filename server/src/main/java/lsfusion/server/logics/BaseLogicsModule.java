@@ -765,6 +765,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
                 getLCPByUniqueName(namePrefix + "IntervalDateTime"),
                 getLCPByUniqueName(namePrefix + "IntervalTime"),
                 getLCPByUniqueName(namePrefix + "Boolean"),
+                getLCPByUniqueName(namePrefix + "TBoolean"),
                 getLCPByUniqueName(namePrefix + "Date"),
                 getLCPByUniqueName(namePrefix + "Time"),
                 getLCPByUniqueName(namePrefix + "Color"),

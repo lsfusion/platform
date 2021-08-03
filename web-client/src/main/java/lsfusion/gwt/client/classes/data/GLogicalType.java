@@ -13,16 +13,27 @@ import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import java.text.ParseException;
 
 public class GLogicalType extends GDataType {
-    public static GLogicalType instance = new GLogicalType();
+    public static GLogicalType instance = new GLogicalType(false);
+
+    public static GLogicalType threeStateInstance = new GLogicalType(true);
+
+    public boolean threeState;
+
+    public GLogicalType() {
+    }
+
+    public GLogicalType(boolean threeState) {
+        this.threeState = threeState;
+    }
 
     @Override
     public CellRenderer createGridCellRenderer(GPropertyDraw property) {
-        return new LogicalCellRenderer(property);
+        return new LogicalCellRenderer(property, threeState);
 }
 
     @Override
     public CellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
-        return new LogicalCellEditor(editManager);
+        return new LogicalCellEditor(editManager, threeState);
     }
 
     @Override

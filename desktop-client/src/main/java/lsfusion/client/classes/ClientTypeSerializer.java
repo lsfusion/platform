@@ -61,6 +61,7 @@ public class ClientTypeSerializer {
         if (type == DataType.DOUBLE) return ClientDoubleClass.instance;
         if (type == DataType.NUMERIC) return new ClientNumericClass(ExtInt.deserialize(inStream), ExtInt.deserialize(inStream));
         if (type == DataType.LOGICAL) return ClientLogicalClass.instance;
+        if (type == DataType.TLOGICAL) return ClientLogicalClass.threeStateInstance;
         if (type == DataType.DATE) return ClientDateClass.instance;
 
         if (type == DataType.STRING || type == DataType.TEXT) {

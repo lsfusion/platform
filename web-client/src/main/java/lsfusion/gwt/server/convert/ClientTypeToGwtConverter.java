@@ -60,7 +60,7 @@ public class ClientTypeToGwtConverter extends ObjectConverter {
 
     @Converter(from = ClientLogicalClass.class)
     public GLogicalType convertLogicalClass(ClientLogicalClass clientLogicalClass) {
-        return GLogicalType.instance;
+        return clientLogicalClass.threeState ? GLogicalType.threeStateInstance : GLogicalType.instance;
     }
 
     @Converter(from = ClientTimeClass.class)
