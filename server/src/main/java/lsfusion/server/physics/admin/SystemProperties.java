@@ -13,6 +13,8 @@ public class SystemProperties {
     public static final boolean inDevMode; 
     public static final boolean inTestMode;
     public static final String ideaExecPath = System.getProperty("idea.exec.path");
+    public static final String userDir = System.getProperty("user.dir");
+    public static final String projectLSFDir;
     
     static {
         String lightStartValue = System.getProperty("lsfusion.server.lightstart");
@@ -34,11 +36,7 @@ public class SystemProperties {
 
     public static final boolean doNotCalculateStats = "true".equals(System.getProperty("lsfusion.server.logics.donotcalculatestats"));
 
-    public static final String userDir = System.getProperty("user.dir");
-
-    public static final String projectLSFDir;
-    private static String getProjectLSFDir() {
-        String userDir = System.getProperty("user.dir");
+    public static String getProjectLSFDir() {
         Path srcPath = Paths.get(userDir, "src/main/lsfusion/");
         return Files.exists(srcPath) ? srcPath.toString() : userDir;
     }

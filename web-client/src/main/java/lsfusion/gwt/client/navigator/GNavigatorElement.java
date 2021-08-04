@@ -42,7 +42,7 @@ public abstract class GNavigatorElement implements Serializable {
     }
 
     public String getTooltipText() {
-        String command = TooltipManager.getCommand(creationPath, path);
+        String command = path != null && MainFrame.devMode ? TooltipManager.getCommand(creationPath, path) : "";
         return MainFrame.showDetailedInfo ?
                 GwtSharedUtils.stringFormat("<html><b>%s</b>" +
                         createTooltipHorizontalSeparator() +

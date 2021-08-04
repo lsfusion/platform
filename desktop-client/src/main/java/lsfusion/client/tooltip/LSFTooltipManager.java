@@ -158,7 +158,7 @@ public class LSFTooltipManager {
     private static JPanel createTooltipPanel(String tooltipText, String path, String creationPath, Timer closeTimer) {
         JPanel jPanel = new JPanel(new VerticalLayout());
         jPanel.add(new JLabel(tooltipText));
-        String command = getCommand(path, creationPath);
+        String command = path != null ? getCommand(path, creationPath) : null;
         if (MainController.inDevMode && command != null) {
             JLabel label = new JLabel("<html><font color='#000099'><u>" + getString("show.in.editor") + "</u></font></html>");
             label.setCursor(new Cursor(Cursor.HAND_CURSOR));

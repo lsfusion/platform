@@ -3,6 +3,8 @@ package lsfusion.server.physics.dev.debug;
 import lsfusion.base.Pair;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
+import java.net.URL;
+
 public class DebugInfo {
 
     public static class DebugPoint {
@@ -17,7 +19,12 @@ public class DebugInfo {
         
         public DebugPoint(String moduleName, String path, int line, int offset, boolean isInsideNonEnabledMeta, String topName, LocalizedString topCaption) {
             this.moduleName = moduleName;
-            this.path = path;
+
+            //path is used in the tooltips links to calculate absolute path to file.
+            // If endpoint path located in a .jar, we don't need to show the link in tooltip
+            URL resource = getClass().getResource(path);
+            this.path = resource != null && !resource.getProtocol().contains("jar") ? path : null;
+
             this.line = line;
             this.offset = offset;
             this.isInsideNonEnabledMeta = isInsideNonEnabledMeta;

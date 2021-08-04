@@ -338,7 +338,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
             String ifaceObjects = GwtSharedUtils.toString(", ", interfacesCaptions);
             String scriptPath = creationPath != null ? escapeLineBreakHTML(creationPath) : "";
             String scriptFormPath = formPath != null ? escapeLineBreakHTML(formPath) : "";
-            command = TooltipManager.getCommand(creationPath, path);
+            command = path != null && MainFrame.devMode ? TooltipManager.getCommand(creationPath, path) : "";
 
             if (baseType instanceof GActionType) {
                 return GwtSharedUtils.stringFormat(TOOL_TIP_FORMAT + getDetailedActionToolTipFormat(),
