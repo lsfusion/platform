@@ -4,6 +4,7 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.DataObject;
+import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.interactive.action.seek.SeekAction;
@@ -46,7 +47,12 @@ public class ExpandCollapseGroupObjectAction extends SeekAction {
             value = MapFact.EMPTY();
             for (int i = 0; i < objects.size(); ++i) {
                 ObjectInstance instance = form.instanceFactory.getInstance(objects.get(i));
-                value = value.addExcl(instance, context.getDataKeyValue(getOrderInterfaces().get(i)));
+                ObjectValue objectValue = context.getKeyValue(getOrderInterfaces().get(i));
+                if(objectValue instanceof DataObject) {
+                    value = value.addExcl(instance, (DataObject) objectValue);
+                } else {
+                    return; // do not expand/collapse if object not found
+                }
             }
         }
 
