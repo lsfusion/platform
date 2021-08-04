@@ -61,9 +61,6 @@ fileDeleted '{backup.file.deleted.backup}' = DATA BOOLEAN (Backup);
 log '{backup.log.backup}' = DATA TEXT (Backup);
 notSucceeded '{backup.not.succeeded.backup}' (Backup b) = NOT log(b);
 
-backupFileName '{backup.backup.file.name}' = DATA LOCAL STRING[100] ();
-backupFilePath '{backup.backup.file.path}' = DATA LOCAL STRING[200]();
-
 exclude '{backup.exclude.table}' = DATA BOOLEAN (Table);
 
 TABLE backupTable(Backup, Table);

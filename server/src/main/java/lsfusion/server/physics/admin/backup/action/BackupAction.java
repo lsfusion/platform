@@ -79,9 +79,6 @@ public class BackupAction extends InternalAction {
 
                 context.getDbManager().backupDB(context, backupFileName, threadCount, excludeTables);
 
-                findProperty("backupFilePath[]").change(backupFilePath, context.getSession());
-                findProperty("backupFileName[]").change(backupFileName + backupFileExtension, context.getSession());
-
                 findProperty("log[Backup]").change(readFileToString(backupFileLogPath), newContext, backupObject);
                 newContext.apply();
             }
