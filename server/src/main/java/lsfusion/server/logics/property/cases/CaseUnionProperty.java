@@ -140,7 +140,7 @@ public class CaseUnionProperty extends IncrementUnionProperty {
     }
 
     @Override
-    protected boolean checkRecursions(ImSet<CaseUnionProperty> abstractPath, ImSet<Property> path, Set<Property> marks) {
+    public boolean checkRecursions(ImSet<CaseUnionProperty> abstractPath, ImSet<Property> path, Set<Property> marks) {
         if(abstractPath.contains(this)) { // found recursion
             if(path != null)
                 throw new ScriptParsingException("Property " + this + " is recursive. One of the pathes : " + path);
