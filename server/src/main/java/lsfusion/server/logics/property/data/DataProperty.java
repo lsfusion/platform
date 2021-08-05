@@ -36,6 +36,7 @@ import lsfusion.server.logics.event.ChangeEvent;
 import lsfusion.server.logics.event.LinkType;
 import lsfusion.server.logics.property.CalcType;
 import lsfusion.server.logics.property.Property;
+import lsfusion.server.logics.property.cases.CaseUnionProperty;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.classes.IsClassProperty;
 import lsfusion.server.logics.property.classes.infer.*;
@@ -48,6 +49,7 @@ import lsfusion.server.physics.admin.drilldown.form.DrillDownFormEntity;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.SQLException;
+import java.util.Set;
 
 public abstract class DataProperty extends AbstractDataProperty {
 
@@ -170,11 +172,24 @@ public abstract class DataProperty extends AbstractDataProperty {
         return result;
     }
 
+    protected boolean calculateHasPreread(StructChanges structChanges) {
+        if (event != null)
+            return event.hasPreread(structChanges);
+        return false;
+    }
+
+    @Override
+    public boolean calculateCheckRecursions(ImSet<CaseUnionProperty> abstractPath, ImSet<Property> path, Set<Property> marks) {
+        if (event != null)
+            return event.where.property.calculateCheckRecursions(abstractPath, path, marks);
+        return false;
+    }
+
     public Expr calculateExpr(ImMap<ClassPropertyInterface, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
 
-        Expr prevExpr = getExpr(joinImplement);
+        Expr prevExpr = getPrevExpr(joinImplement, calcType, propChanges);
 
-        PropertyChange<ClassPropertyInterface> change = getEventChange(propChanges, getJoinValues(joinImplement));
+        PropertyChange<ClassPropertyInterface> change = getEventChange(calcType, propChanges, getJoinValues(joinImplement));
         if (change != null) {
             WhereBuilder changedExprWhere = new WhereBuilder();
             Expr changedExpr = change.getExpr(joinImplement, changedExprWhere);
@@ -185,7 +200,7 @@ public abstract class DataProperty extends AbstractDataProperty {
         return prevExpr;
     }
 
-    public PropertyChange<ClassPropertyInterface> getEventChange(PropertyChanges changes, ImMap<ClassPropertyInterface, Expr> joinValues) {
+    public PropertyChange<ClassPropertyInterface> getEventChange(CalcType calcType, PropertyChanges changes, ImMap<ClassPropertyInterface, Expr> joinValues) {
         PropertyChange<ClassPropertyInterface> result = null;
 
         PropertyChange<ClassPropertyInterface> eventChange = null; // до непосредственно вычисления, для хинтов
@@ -194,6 +209,7 @@ public abstract class DataProperty extends AbstractDataProperty {
 
 
         if(!noClasses()) {
+            PropertyChanges prevPropChanges = getPrevPropChanges(calcType, changes);
             ImRevMap<ClassPropertyInterface, KeyExpr> mapKeys = getMapKeys();
             ImMap<ClassPropertyInterface, Expr> mapExprs = MapFact.override(mapKeys, joinValues);
             Expr prevExpr = null;
@@ -202,14 +218,14 @@ public abstract class DataProperty extends AbstractDataProperty {
                 IsClassProperty classProperty = remove.interfaceClass.getProperty();
                 if (classProperty.hasChanges(changes)) {
                     if (prevExpr == null) // оптимизация
-                        prevExpr = getExpr(mapExprs);
+                        prevExpr = getExpr(mapExprs, prevPropChanges);
                     removeWhere = removeWhere.or(classProperty.getDroppedWhere(mapExprs.get(remove), changes).and(prevExpr.getWhere()));
                 }
             }
             IsClassProperty classProperty = value.getProperty();
             if (classProperty.hasChanges(changes)) {
                 if (prevExpr == null) // оптимизация
-                    prevExpr = getExpr(mapExprs);
+                    prevExpr = getExpr(mapExprs, prevPropChanges);
                 removeWhere = removeWhere.or(classProperty.getDroppedWhere(prevExpr, changes));
             }
             if (!removeWhere.isFalse())

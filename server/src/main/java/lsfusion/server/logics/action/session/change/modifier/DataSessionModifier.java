@@ -27,10 +27,11 @@ public abstract class DataSessionModifier extends SessionModifier {
 
     protected <P extends PropertyInterface> ModifyChange<P> calculateModifyChange(Property<P> property, PrereadRows<P> preread, FunctionSet<Property> overrided) {
         PropertyChange<P> propertyChange = getPropertyChange(property);
+        if(propertyChange == null && !preread.isEmpty())
+            propertyChange = property.getNoChange();
+
         if(propertyChange!=null)
-            return new ModifyChange<>(propertyChange, false);
-        if(!preread.isEmpty())
-            return new ModifyChange<>(property.getNoChange(), preread, false);
+            return new ModifyChange<>(propertyChange, preread, false);
         return null;
     }
 

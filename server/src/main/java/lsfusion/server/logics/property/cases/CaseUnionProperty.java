@@ -226,6 +226,7 @@ public class CaseUnionProperty extends IncrementUnionProperty {
         Where changedUpWheres = Where.FALSE(); // для не exclusive
         Where changedAllWhere = Where.FALSE(); // для exclusive
         Where nullWhere = Where.FALSE(); // для exclusive
+        PropertyChanges prevPropChanges = getPrevPropChanges(propChanges);
         for(int i=0;i<size;i++) {
             Pair<Pair<Expr, Where>, Pair<Expr, Where>> pCaseExpr = caseExprs.get(i);
             Where caseWhere = pCaseExpr.first.first.getWhere();
@@ -243,7 +244,7 @@ public class CaseUnionProperty extends IncrementUnionProperty {
 
             if(isExclusive) {
                 changedAllWhere = changedAllWhere.exclOr(changedCaseWhere); // фокус в том, что changedCaseWhere не особо нужен в nullWhere, но если его добавить только в changed, то prevExpr может не уйти
-                nullWhere = nullWhere.exclOr(changedWhereCase.and(cases.get(i).where.mapExpr(joinImplement).getWhere()));
+                nullWhere = nullWhere.exclOr(changedWhereCase.and(cases.get(i).where.mapExpr(joinImplement, prevPropChanges).getWhere()));
             } else {
                 exprCases.add(caseWhere, prevExpr);
                 if(changedWhere!=null) changedWhere.add(changedWhereCase.or(changedExprCase));

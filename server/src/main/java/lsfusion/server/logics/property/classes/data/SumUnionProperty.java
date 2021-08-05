@@ -53,10 +53,11 @@ public class SumUnionProperty extends IncrementUnionProperty {
         });
 
         Expr result = prevExpr;
+        PropertyChanges prevPropChanges = getPrevPropChanges(propChanges);
         for(int i=0,size=operands.size();i<size;i++) {
             PropertyInterfaceImplement<Interface> operand = operands.getKey(i);
             Pair<Expr, Where> newOperandExpr = operandExprs.get(operand);
-            Expr prevOperandExpr = operand.mapExpr(joinImplement);
+            Expr prevOperandExpr = operand.mapExpr(joinImplement, prevPropChanges);
             result = result.sum(newOperandExpr.first.diff(prevOperandExpr).and(newOperandExpr.second).scale(operands.getValue(i)));
             if(changedWhere!=null) changedWhere.add(newOperandExpr.second);
         }

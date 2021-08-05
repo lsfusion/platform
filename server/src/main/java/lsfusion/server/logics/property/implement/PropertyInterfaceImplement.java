@@ -38,7 +38,6 @@ public interface PropertyInterfaceImplement<P extends PropertyInterface> extends
     Expr mapExpr(ImMap<P, ? extends Expr> joinImplement, PropertyChanges changes, WhereBuilder changedWhere);
     Expr mapExpr(ImMap<P, ? extends Expr> joinImplement, PropertyChanges propChanges);
     Expr mapExpr(ImMap<P, ? extends Expr> joinImplement, Modifier modifier) throws SQLException, SQLHandledException;
-    Expr mapExpr(ImMap<P, ? extends Expr> joinImplement);
 
     void mapFillDepends(MSet<Property> depends);
     ImSet<OldProperty> mapOldDepends();

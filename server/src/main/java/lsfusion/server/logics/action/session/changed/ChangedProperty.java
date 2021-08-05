@@ -90,7 +90,7 @@ public class ChangedProperty<T extends PropertyInterface> extends SessionPropert
 
     private static boolean isSingleFakeChange(StructChanges propChanges, Property<?> property, boolean setOrDropped) {
         ImSet<Property> usedChanges = property.getUsedChanges(propChanges);
-        if(usedChanges.isEmpty()) // нет изменений
+        if(!propChanges.hasChanges(usedChanges)) // нет изменений
             return true;
 
         ChangeType type = propChanges.getUsedChange(property);

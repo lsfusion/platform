@@ -10,6 +10,7 @@ import lsfusion.server.data.caches.hash.HashValues;
 import lsfusion.server.data.translate.MapValuesTranslate;
 import lsfusion.server.data.value.Value;
 import lsfusion.server.logics.action.data.PrereadRows;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 public class ModifyChange<P extends PropertyInterface> extends AbstractValuesContext<ModifyChange<P>> {
@@ -52,10 +53,6 @@ public class ModifyChange<P extends PropertyInterface> extends AbstractValuesCon
         return new ModifyChange<>(change.add(modify.change), preread.add(modify.preread), modify.isFinal);
     }
 
-    public boolean isEmpty() {
-        return change.where.isFalse() && preread.isEmpty();
-    }
-
     public final static AddValue<Object, ModifyChange<PropertyInterface>> addValue = new SimpleAddValue<Object, ModifyChange<PropertyInterface>>() {
         public ModifyChange<PropertyInterface> addValue(Object key, ModifyChange<PropertyInterface> prevValue, ModifyChange<PropertyInterface> newValue) {
             return prevValue.add(newValue);
@@ -78,15 +75,19 @@ public class ModifyChange<P extends PropertyInterface> extends AbstractValuesCon
         return change + ", f:" + isFinal + ", p:" + preread;
     }
 
+    public boolean isNotFinalEmpty() { // fake change, optimization
+        return !isFinal && change.where.isFalse() && preread.isEmpty();
+    }
     public ChangeType getChangeType() {
-        if(isEmpty()) {
-            assert isFinal;
-            return ChangeType.NOUPDATE;
-        }
-        Boolean setOrDropped = null;
-        if(preread.isEmpty())
-            setOrDropped = change.getSetOrDropped();
+        boolean hasChanges = !change.where.isFalse();
+        return ChangeType.get(isFinal, hasChanges && preread.isEmpty() ? change.getSetOrDropped() : null, hasChanges, preread.hasPrev());
+    }
 
-        return ChangeType.get(isFinal, setOrDropped);
+    public ModifyChange<P> getPrev(Property<P> property) { // return null if isEmpty
+        boolean hasPrev = preread.hasPrev();
+        assert hasPrev == !preread.getPrev().isEmpty();
+        if(!hasPrev)
+            return null;
+        return new ModifyChange<>(property.getNoChange(), preread.getPrev(), false); // forcing isFinal false
     }
 }
