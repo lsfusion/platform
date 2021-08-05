@@ -134,6 +134,6 @@ public class ObjectEntity extends IdentityObject implements PropertyObjectInterf
     }
 
     public boolean isSimpleList() {
-        return groupTo.getObjects().size() == 1 && groupTo.viewType.isList();
+        return groupTo.getObjects().size() == 1 && groupTo.viewType.isList() && !groupTo.isInTree();
     }
 }
