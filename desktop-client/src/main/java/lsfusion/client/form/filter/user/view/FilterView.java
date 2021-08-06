@@ -152,6 +152,11 @@ public class FilterView extends JComponentPanel implements FilterConditionView.U
 
     private AbstractAction createRemoveAllAction() {
         return new AbstractAction() {
+            @Override
+            public boolean isEnabled() {
+                return !conditionViews.isEmpty();
+            }
+
             public void actionPerformed(ActionEvent ae) {
                 if (!controller.getLogicsSupplier().getFormController().isEditing()) {
                     RmiQueue.runAction(() -> removeAllConditions());
