@@ -18,7 +18,8 @@ public class LogicalCellEditor implements KeepCellEditor {
 
     @Override
     public void startEditing(Event editEvent, Element parent, Object oldValue) {
-        editManager.commitEditing(getNextValue(oldValue, threeState));
+        Boolean nextValue = getNextValue(oldValue, threeState);
+        editManager.commitEditing(threeState ? nextValue : (nextValue != null && nextValue ? true : null));
     }
 
     private Boolean getNextValue(Object value, boolean threeState) {
