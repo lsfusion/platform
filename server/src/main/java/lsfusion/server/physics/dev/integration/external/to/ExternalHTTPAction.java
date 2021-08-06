@@ -128,7 +128,7 @@ public class ExternalHTTPAction extends ExternalAction {
                 byte[] body = null;
                 if (method.hasBody()) {
                     String contentType = headers.get("Content-Type");
-                    HttpEntity entity = ExternalUtils.getInputStreamFromList(paramList, bodyUrl, bodyParamNames, bodyParamHeadersList, null, contentType != null ? ContentType.create(contentType) : null);
+                    HttpEntity entity = ExternalUtils.getInputStreamFromList(paramList, bodyUrl, bodyParamNames, bodyParamHeadersList, null, contentType != null ? ContentType.parse(contentType) : null);
                     body = IOUtils.readBytesFromHttpEntity(entity);
                     headers.put("Content-Type", entity.getContentType().getValue());
                 }
