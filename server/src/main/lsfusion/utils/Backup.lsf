@@ -42,10 +42,10 @@ decimateBackupsAction '{backup.decimate.backups}'  {
 }
 
 customRestore '{backup.custom.restore}'  INTERNAL  'lsfusion.server.physics.admin.backup.action.CustomRestoreAction' (Backup);
-inCustomRestore '{backup.in.custom.restore}' = DATA BOOLEAN (Table);
-restoreObjects '{backup.restore.objects}' = DATA BOOLEAN (Table);
-inCustomRestore '{backup.in.custom.restore}' = DATA BOOLEAN (TableColumn);
-replaceOnlyNull '{backup.replace.only.null}' = DATA BOOLEAN (TableColumn);
+inCustomRestore '{backup.in.custom.restore}' = DATA  LOCAL NESTED BOOLEAN (Table);
+restoreObjects '{backup.restore.objects}' = DATA LOCAL NESTED BOOLEAN (Table);
+inCustomRestore '{backup.in.custom.restore}' = DATA LOCAL NESTED  BOOLEAN (TableColumn);
+replaceOnlyNull '{backup.replace.only.null}' = DATA LOCAL NESTED  BOOLEAN (TableColumn);
 
 CLASS Backup '{backup.backup}';
 TABLE backup(Backup);
