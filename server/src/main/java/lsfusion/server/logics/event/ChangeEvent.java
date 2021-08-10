@@ -81,7 +81,7 @@ public class ChangeEvent<C extends PropertyInterface> {
 
         usedChanges = SetFact.add(writeTo.getUsedDataChanges(changes), usedChanges);
         if(writeFrom instanceof PropertyMapImplement)
-            usedChanges = SetFact.add(((PropertyMapImplement<?, ?>) writeFrom).property.getUsedChanges(changes));
+            usedChanges = SetFact.add(((PropertyMapImplement<?, ?>) writeFrom).property.getUsedChanges(changes), usedChanges);
         return usedChanges;
     }
 

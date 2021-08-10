@@ -95,7 +95,8 @@ public class ChangedProperty<T extends PropertyInterface> extends SessionPropert
 
         ChangeType type = propChanges.getUsedChange(property);
 
-        if(usedChanges.size() > 1 || !BaseUtils.hashEquals(usedChanges.single(), property)) { // есть изменения, кроме считанного usedChange
+        // if there are changes other than for this property
+        if(usedChanges.size() > 1 || !BaseUtils.hashEquals(usedChanges.single(), property)) {
             ServerLoggers.assertLog(type == null || !type.isFinal(), "SHOULD NOT BE");
             return false;
         }
