@@ -130,7 +130,7 @@ public class ExternalHTTPAction extends ExternalAction {
                     response = ExternalHttpUtils.sendRequest(method, connectionString, timeout, body, headers, cookies, cookieStore);
                 }
 
-                ContentType contentType = response.contentType != null ? ContentType.parse(response.contentType) : null;
+                ContentType contentType = response.contentType != null ? ContentType.parse(response.contentType) : ExternalUtils.APPLICATION_OCTET_STREAM;
                 ImList<Object> requestParams = response.responseBytes != null ? ExternalUtils.getListFromInputStream(response.responseBytes, contentType) : ListFact.EMPTY();
                 fillResults(context, targetPropList, requestParams, ExternalUtils.getCharsetFromContentType(contentType)); // важно игнорировать параметры, так как иначе при общении с LSF пришлось бы всегда TO писать (так как он по умолчанию exportFile возвращает)
 
