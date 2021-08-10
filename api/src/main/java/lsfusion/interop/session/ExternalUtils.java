@@ -55,6 +55,8 @@ public class ExternalUtils {
             "text/plain", stringCharset);
     public static final ContentType MULTIPART_MIXED = ContentType.create(
             "multipart/mixed", stringCharset);
+    public static final ContentType APPLICATION_OCTET_STREAM = ContentType.create(
+            "application/octet-stream");
 
     private static final String ACTION_CN_PARAM = "action";
     private static final String SCRIPT_PARAM = "script";
