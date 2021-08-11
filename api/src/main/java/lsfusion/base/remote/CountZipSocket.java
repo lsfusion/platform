@@ -64,12 +64,14 @@ public class CountZipSocket extends Socket {
     public synchronized void close() throws IOException {
         super.close();
         if (in != null) {
-            in.close();
+            CompressedInputStream inStream = in;
             in = null;
+            inStream.close();
         }
         if (out != null) {
-            out.close();
+            CompressedOutputStream outStream = out;
             out = null;
+            outStream.close();
         }
     }
 }
