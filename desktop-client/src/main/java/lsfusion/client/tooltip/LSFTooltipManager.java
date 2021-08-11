@@ -1,16 +1,19 @@
 package lsfusion.client.tooltip;
 
 import com.google.common.base.Throwables;
+import lsfusion.client.base.view.ClientImages;
 import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.controller.MainController;
 import lsfusion.client.form.object.table.grid.view.GridTable;
 import lsfusion.client.form.object.table.tree.GroupTreeTableModel;
 import lsfusion.client.form.object.table.tree.view.TreeGroupTable;
 import lsfusion.client.form.property.ClientPropertyDraw;
+import lsfusion.client.view.MainFrame;
 import net.java.balloontip.BalloonTip;
 import net.java.balloontip.positioners.BasicBalloonTipPositioner;
 import net.java.balloontip.styles.ToolTipBalloonStyle;
 import org.apache.commons.lang3.SystemUtils;
+import org.jdesktop.swingx.HorizontalLayout;
 import org.jdesktop.swingx.VerticalLayout;
 
 import javax.swing.*;
@@ -35,7 +38,7 @@ public class LSFTooltipManager {
         Timer closeTimer = getCloseTimer();
 
         Timer tooltipTimer = new Timer(1500, evt -> balloonTip = new BalloonTip(component, createTooltipPanel(tooltipText, path, creationPath, closeTimer),
-                new ToolTipBalloonStyle(SwingDefaults.getPanelBackground(), SwingDefaults.getComponentBorderColor()), false));
+                new LSFTooltipStyle(), false));
 
         setComponentMouseListeners(component, closeTimer, tooltipTimer);
     }
@@ -83,8 +86,7 @@ public class LSFTooltipManager {
                 }
             };
 
-            balloonTip = new BalloonTip(component, tooltipPanel, new ToolTipBalloonStyle(SwingDefaults.getPanelBackground(),
-                    SwingDefaults.getComponentBorderColor()), positioner, null);
+            balloonTip = new BalloonTip(component, tooltipPanel, new LSFTooltipStyle(), positioner, null);
 
             //Tooltips in tables are not displayed on elements located close to the borders
             if (!balloonTip.isVisible())
@@ -112,6 +114,42 @@ public class LSFTooltipManager {
         });
 
         setComponentMouseListeners(component, closeTimer, tooltipTimer);
+    }
+
+    private static class LSFTooltipStyle extends ToolTipBalloonStyle {
+
+        private static final Color fillColor = SwingDefaults.getPanelBackground();
+        private static final Color borderColor = SwingDefaults.getComponentBorderColor();
+
+        public LSFTooltipStyle() {
+            super(fillColor, borderColor);
+        }
+
+        @Override
+        public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
+            Graphics2D g2d = (Graphics2D) g;
+            width -= 1;
+            height -= 1;
+
+            int yTop;        // Y-coordinate of the top side of the balloon
+            int yBottom;    // Y-coordinate of the bottom side of the balloon
+            if (flipY) {
+                yTop = y + verticalOffset;
+                yBottom = y + height;
+            } else {
+                yTop = y;
+                yBottom = y + height - verticalOffset;
+            }
+
+            // Draw the outline of the balloon
+            g2d.setPaint(fillColor);
+            g2d.fillRect(x, yTop, width, yBottom);
+            g2d.setPaint(borderColor);
+            g2d.drawRect(x, yTop, width, yBottom);
+
+            //the lower border is not drawn by BalloonTip. Draw it manually
+            g2d.drawLine(x, yBottom, x + width, yBottom);
+        }
     }
 
     private static void setComponentMouseListeners(JComponent component, Timer closeTimer, Timer tooltipTimer) {
@@ -144,10 +182,12 @@ public class LSFTooltipManager {
 
     private static String getCommand(String path, String creationPath) {
         String ideaExecPath = MainController.ideaExecPath;
-        Path fileAbsolutePath = Paths.get(MainController.projectLSFDir, path);
-
         String command = null;
-        if (Files.exists(fileAbsolutePath) && ideaExecPath != null) {
+        if (ideaExecPath != null) {
+            Path fileAbsolutePath = Paths.get(MainFrame.debugPath, path);
+            //if chosen path to the project is incorrect, the path will become null
+            MainFrame.debugPath = Files.exists(fileAbsolutePath) ? MainFrame.debugPath : null;
+
             int line = Integer.parseInt(creationPath.substring(creationPath.lastIndexOf("(") + 1, creationPath.lastIndexOf(":")));
 
             command = (SystemUtils.IS_OS_WINDOWS ? "\"" + ideaExecPath + "\"" : ideaExecPath) + " --line " + line + " " + "\"" + fileAbsolutePath + "\"";
@@ -156,11 +196,26 @@ public class LSFTooltipManager {
     }
 
     private static JPanel createTooltipPanel(String tooltipText, String path, String creationPath, Timer closeTimer) {
-        JPanel jPanel = new JPanel(new VerticalLayout());
+        JPanel jPanel = new JPanel(new VerticalLayout(10));
         jPanel.add(new JLabel(tooltipText));
         String command = path != null ? getCommand(path, creationPath) : null;
         if (MainController.inDevMode && command != null) {
-            JLabel label = new JLabel("<html><font color='#000099'><u>" + getString("show.in.editor") + "</u></font></html>");
+            JComponent label;
+            if (MainFrame.debugPath == null) {
+                label = new JButton("Set path to lsfusion dir");
+            } else {
+                label = new JPanel(new HorizontalLayout(10));
+                label.add(new JLabel("<html><font color='#000099'><u>" + getString("show.in.editor") + "</u></font></html>"));
+                JButton resetButton = new JButton(new ImageIcon(ClientImages.get("view_hide.png").getImage()));
+                resetButton.addMouseListener(new MouseAdapter() {
+                    @Override
+                    public void mouseClicked(MouseEvent e) {
+                        MainFrame.debugPath = null;
+                    }
+                });
+                label.add(resetButton);
+            }
+
             label.setCursor(new Cursor(Cursor.HAND_CURSOR));
             label.addMouseListener(new MouseAdapter() {
                 @Override
@@ -175,12 +230,20 @@ public class LSFTooltipManager {
 
                 @Override
                 public void mouseClicked(MouseEvent e) {
-                    try {
-                        Runtime.getRuntime().exec(command);
-                        if (balloonTip != null && balloonTip.isShowing())
-                            balloonTip.closeBalloon();
-                    } catch (IOException exception) {
-                        Throwables.propagate(exception);
+                    if (MainFrame.debugPath == null) {
+                        JFileChooser fileChooser = new JFileChooser();
+                        fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+                        fileChooser.setDialogTitle("Select project lsfusion directory");
+                        MainFrame.debugPath =
+                                fileChooser.showOpenDialog(jPanel) == JFileChooser.APPROVE_OPTION ? fileChooser.getSelectedFile().getAbsolutePath() : null;
+                    } else {
+                        try {
+                            Runtime.getRuntime().exec(command);
+                            if (balloonTip != null && balloonTip.isShowing())
+                                balloonTip.closeBalloon();
+                        } catch (IOException exception) {
+                            Throwables.propagate(exception);
+                        }
                     }
                 }
             });

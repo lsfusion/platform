@@ -243,7 +243,6 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         boolean showDetailedInfo;
         boolean devMode;
         String ideaExecPath;
-        String projectLSFDir;
         ColorTheme colorTheme;
         ColorPreferences colorPreferences;
 
@@ -257,7 +256,6 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
 
             devMode = SystemProperties.inDevMode || businessLogics.serviceLM.devMode.read(session) != null;
             ideaExecPath = SystemProperties.ideaExecPath;
-            projectLSFDir = SystemProperties.projectLSFDir;
 
             String colorThemeStaticName = (String) businessLogics.authenticationLM.colorThemeStaticName.read(session, user);
             String colorThemeString = colorThemeStaticName != null ? colorThemeStaticName.substring(colorThemeStaticName.indexOf(".") + 1) : null; 
@@ -274,7 +272,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
             throw Throwables.propagate(e);
         }
         return new ClientSettings(localePreferences, currentUserName, fontSize, useBusyDialog, Settings.get().getBusyDialogTimeout(),
-                useRequestTimeout, devMode, ideaExecPath, projectLSFDir, showDetailedInfo, forbidDuplicateForms, Settings.get().isShowNotDefinedStrings(),
+                useRequestTimeout, devMode, ideaExecPath, showDetailedInfo, forbidDuplicateForms, Settings.get().isShowNotDefinedStrings(),
                 Settings.get().isPivotOnlySelectedColumn(), colorTheme, colorPreferences);
     }
 

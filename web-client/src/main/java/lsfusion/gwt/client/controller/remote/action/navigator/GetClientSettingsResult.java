@@ -9,7 +9,6 @@ public class GetClientSettingsResult implements Result {
     public long busyDialogTimeout;
     public boolean devMode;
     public String ideaExecPath;
-    public String projectLSFDir;
     public boolean showDetailedInfo;
     public boolean forbidDuplicateForms;
     public boolean showNotDefinedStrings;
@@ -22,14 +21,13 @@ public class GetClientSettingsResult implements Result {
     public GetClientSettingsResult() {
     }
 
-    public GetClientSettingsResult(boolean busyDialog, long busyDialogTimeout, boolean devMode, String ideaExecPath, String projectLSFDir,
-                                   boolean showDetailedInfo, boolean forbidDuplicateForms, boolean showNotDefinedStrings, boolean pivotOnlySelectedColumn,
-                                   GColorTheme colorTheme, GColorPreferences colorPreferences, String dateFormat, String timeFormat) {
+    public GetClientSettingsResult(boolean busyDialog, long busyDialogTimeout, boolean devMode, String ideaExecPath, boolean showDetailedInfo,
+                                   boolean forbidDuplicateForms, boolean showNotDefinedStrings, boolean pivotOnlySelectedColumn, GColorTheme colorTheme,
+                                   GColorPreferences colorPreferences, String dateFormat, String timeFormat) {
         this.busyDialog = busyDialog;
         this.busyDialogTimeout = busyDialogTimeout;
         this.devMode = devMode;
         this.ideaExecPath = ideaExecPath;
-        this.projectLSFDir = projectLSFDir;
         this.showDetailedInfo = showDetailedInfo;
         this.forbidDuplicateForms = forbidDuplicateForms;
         this.showNotDefinedStrings = showNotDefinedStrings;

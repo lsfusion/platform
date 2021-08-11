@@ -1186,14 +1186,6 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         }
     }
 
-    public String getPath() {
-        if (debugPoint == null) {
-            return null;
-        } else {
-            return debugPoint.path;
-        }
-    }
-
     public int getID() {
         return ID;
     }

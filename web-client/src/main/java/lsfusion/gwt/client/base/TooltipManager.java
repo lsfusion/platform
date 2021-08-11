@@ -3,10 +3,18 @@ package lsfusion.gwt.client.base;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.*;
+import com.google.gwt.user.client.Cookies;
+import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.FocusPanel;
 import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.HasVerticalAlignment;
+import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.TextBox;
+import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.view.PopupDialogPanel;
+import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
 import lsfusion.gwt.client.view.MainFrame;
 
 import static com.google.gwt.dom.client.BrowserEvents.*;
@@ -15,12 +23,11 @@ public class TooltipManager {
     private static final TooltipManager instance = new TooltipManager();
 
     private static final int DELAY_SHOW = 1500;
-    private static final int DELAY_HIDE = 100;
 
     private int mouseX;
     private int mouseY;
 
-    public PopupDialogPanel tooltip;
+    private PopupDialogPanel tooltip;
     private HTML tooltipHtml;
 
     private boolean mouseIn;
@@ -65,19 +72,64 @@ public class TooltipManager {
                         } else {
                             tooltip = new PopupDialogPanel();
                             tooltipHtml = new HTML(tooltipText, false);
-                            GwtClientUtils.showPopupInWindow(tooltip, new FocusPanel(tooltipHtml), mouseX, mouseY);
+
+                            VerticalPanel panel = new VerticalPanel();
+                            panel.add(new FocusPanel(tooltipHtml));
+                            addDebugLink(tooltipHelper, panel);
+
+                            GwtClientUtils.showPopupInWindow(tooltip, panel, mouseX, mouseY);
                         }
                     } else {
-                        if (tooltip != null) {
-                            tooltip.hide();
-                            tooltip = null;
-                            tooltipHtml = null;
-                        }
+                        if (tooltip != null)
+                            hide();
                     }
                 }
                 return false;
             }, DELAY_SHOW);
         }
+    }
+
+    private void addDebugLink(TooltipHelper tooltipHelper, VerticalPanel panel) {
+        if (!MainFrame.showDetailedInfo)
+            return;
+
+        HorizontalPanel horizontalPanel = new HorizontalPanel();
+        horizontalPanel.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
+        if (Cookies.getCookie("debugPath") == null) {
+            TextBox textBox = new TextBox();
+            textBox.getElement().getStyle().setProperty("padding", "0px 3px");
+            textBox.getElement().setPropertyString("placeholder", "enter path to lsfusion dir");
+
+            Button button = new Button("OK");
+            button.getElement().getStyle().setProperty("padding", "0px 3px");
+            button.addClickHandler(event -> {
+                if (!textBox.getText().trim().isEmpty())
+                    Cookies.setCookie("debugPath", textBox.getText());
+
+                hide();
+            });
+
+            horizontalPanel.add(textBox);
+            horizontalPanel.add(button);
+        } else {
+            horizontalPanel.add(new HTML(getCommand(tooltipHelper)));
+            horizontalPanel.add(new GToolbarButton("view_hide.png") {
+                @Override
+                public ClickHandler getClickHandler() {
+                    return event -> {
+                        Cookies.removeCookie("debugPath");
+                        hide();
+                    };
+                }
+            });
+        }
+        panel.add(horizontalPanel);
+    }
+
+    private void hide() {
+        tooltip.hide();
+        tooltip = null;
+        tooltipHtml = null;
     }
 
     public void hideTooltip(final TooltipHelper tooltipHelper) {
@@ -87,9 +139,7 @@ public class TooltipManager {
         Scheduler.get().scheduleDeferred(() -> {
             if ((!(mouseIn && tooltipHelper != null && GwtClientUtils.nullEquals(tooltipHelper.getTooltip(), currentText)) && tooltip != null && !tooltip.tooltipFocused) ||
                     tooltip != null && !tooltip.tooltipFocused) {
-                tooltip.hide();
-                tooltip = null;
-                tooltipHtml = null;
+                hide();
             }
         });
     }
@@ -107,20 +157,31 @@ public class TooltipManager {
 
         // to check if nothing changed after tooltip delay
         public abstract boolean stillShowTooltip();
+
+        public String getPath() {
+            return null;
+        }
+
+        public String getCreationPath() {
+            return null;
+        }
     }
 
-    public static String getCommand(String creationPath, String path) {
-        String projectLSFDir = MainFrame.projectLSFDir;
+    public static String getCommand(TooltipHelper tooltipHelper) {
+        String projectLSFDir = Cookies.getCookie("debugPath");
         String ideaExecPath = MainFrame.ideaExecPath;
-        String command = "";
+        String creationPath = tooltipHelper.getCreationPath();
+        String result = "";
+        
         if (projectLSFDir != null && ideaExecPath != null && creationPath != null) {
             int line = Integer.parseInt(creationPath.substring(creationPath.lastIndexOf("(") + 1, creationPath.lastIndexOf(":")));
             //use "**" instead "="
-            command = "idea**" + ideaExecPath + "&--line**" + line + "&path**" + projectLSFDir + path;
-            //replace spaces and slashes because this command going throw url
-            command = command.replaceAll(" ", "++").replaceAll("\\\\", "/");
+            String command = "idea**" + ideaExecPath + "&--line**" + line + "&path**" + projectLSFDir + tooltipHelper.getPath();
+            //replace spaces and slashes because this command going through url
+            result = "<a href=\"lsfusion-protocol://" + command.replaceAll(" ", "++").replaceAll("\\\\", "/") +
+                    "\" target=\"_blank\">" + ClientMessages.Instance.get().showInEditor() + "</a>";
         }
-        return command;
+        return result;
     }
 
 }

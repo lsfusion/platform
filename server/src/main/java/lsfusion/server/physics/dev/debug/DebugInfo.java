@@ -22,7 +22,7 @@ public class DebugInfo {
 
             //path is used in the tooltips links to calculate absolute path to file.
             // If endpoint path located in a .jar, we don't need to show the link in tooltip
-            URL resource = getClass().getResource(path);
+            URL resource = path != null ? getClass().getResource(path) : null;
             this.path = resource != null && !resource.getProtocol().contains("jar") ? path : null;
 
             this.line = line;
@@ -92,10 +92,6 @@ public class DebugInfo {
     
     public String getModuleName() {
         return point.moduleName;
-    }
-
-    public String getPath() {
-        return point.path;
     }
 
     public DebugPoint getPoint() {

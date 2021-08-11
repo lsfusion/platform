@@ -5,7 +5,6 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.TooltipManager;
 import lsfusion.gwt.client.form.controller.GFormController;
-import lsfusion.gwt.client.form.event.GInputEvent;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
@@ -46,6 +45,14 @@ public abstract class PanelRenderer {
 
             public boolean stillShowTooltip() {
                 return label.isAttached() && label.isVisible();
+            }
+
+            public String getPath() {
+                return property.path;
+            }
+
+            public String getCreationPath() {
+                return property.creationPath;
             }
         });
         if (this.property.captionFont != null) {
