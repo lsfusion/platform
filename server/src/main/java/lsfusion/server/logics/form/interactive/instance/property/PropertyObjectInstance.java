@@ -82,7 +82,7 @@ public class PropertyObjectInstance<P extends PropertyInterface> extends ActionO
         WhereBuilder changedWhere = new WhereBuilder();
         if(disableHint) { // hack - needed because finding out if property really changed with hints can be a huge overhead (for example if it is hidden), so we'll disable hints
             modifier.getPropertyChanges(); // hack - however reading propertyChanges can lead to notifySourceChange where hints can be used, so will read it before disabling
-            AutoHintsAspect.pushDisabledRepeat();
+            AutoHintsAspect.pushDisabledComplex();
         }
         try {
             Expr result = getExpr(keys, modifier, changedWhere);
@@ -90,7 +90,7 @@ public class PropertyObjectInstance<P extends PropertyInterface> extends ActionO
                 return true;
         } finally {
             if(disableHint)
-                AutoHintsAspect.popDisabledRepeat();
+                AutoHintsAspect.popDisabledComplex();
         }
         return !changedWhere.toWhere().isFalse();
     } 

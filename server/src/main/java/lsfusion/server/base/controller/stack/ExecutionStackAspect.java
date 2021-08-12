@@ -271,6 +271,7 @@ public class ExecutionStackAspect {
             long start = 0;
             long sqlStart = 0;
             long uiStart = 0;
+            boolean allocatedBytesEnabled = false;
             Supplier<Long> allocationBytesSupplier = null;
             long allocatedBytesOnStart = 0;
             Map<CacheStats.CacheType, Long> hitStatsOnStart = null;
@@ -288,7 +289,8 @@ public class ExecutionStackAspect {
                 uiStart = executionTimeCounter.userInteractionTime;
 
                 if(EXPLAINAPP_ENABLED) {
-                    if(Settings.get().getExplainAllocatedBytesThreshold() > 0) // optimization since there can be performance issues with getThreadAllocatedBytes
+                    allocatedBytesEnabled = Settings.get().getExplainAllocatedBytesThreshold() > 0;
+                    if(allocatedBytesEnabled) // optimization since there can be performance issues with getThreadAllocatedBytes
                         allocationBytesSupplier = getAllocationBytesSupplier();
                     else
                         allocationBytesSupplier = () -> 0L;
@@ -334,7 +336,7 @@ public class ExecutionStackAspect {
                         explainDetails = " (" +
                                 "app: " + highlighter.apply(javaTime, javaExceeded) +
                                 ", sql: " + highlighter.apply(sqlTime, sqlExceeded) +
-                                ", sql/app ratio: " + ((sqlTime * 100) / (sqlTime + javaTime)) + "%" +
+                                ", sql/app ratio: " + (sqlTime + javaTime != 0 ? ((sqlTime * 100) / (sqlTime + javaTime)) + "%" : "--" ) +
                                 ", allocated app: " + highlighter.apply(BusinessLogics.humanReadableByteCount(allocatedBytes), allocatedExceeded) +
                                 ", cache hit ratio - " + CacheStats.getGroupedRatioString(
                                         CacheStats.diff(CacheStats.getCacheHitStats(currentThreadId), hitStatsOnStart),
@@ -347,7 +349,7 @@ public class ExecutionStackAspect {
                         if(executionTimeCounter.info != null && (
                                 javaTime >= Settings.get().getExplainTopAppThreshold() ||
                                 sqlTime >= Settings.get().getExplainTopThreshold() ||
-                                allocatedBytes >= Settings.get().getExplainTopAllocatedBytesThreshold()))
+                                (allocatedBytesEnabled && allocatedBytes >= Settings.get().getExplainTopAllocatedBytesThreshold())))
                             ServerLoggers.explainAppLogger.info(explainDetails + '\n' + executionTimeCounter.info.immutableList().reverseList().toString("\n"));
                         executionTime.set(null);
                     }

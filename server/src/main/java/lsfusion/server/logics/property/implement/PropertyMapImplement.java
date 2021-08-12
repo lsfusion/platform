@@ -190,8 +190,8 @@ public class PropertyMapImplement<P extends PropertyInterface, T extends Propert
         return property.hasPreread(modifier);
     }
 
-    public long mapComplexity() {
-        return property.getComplexity();
+    public long mapSimpleComplexity() {
+        return property.getSimpleComplexity();
     }
 
     public DataChanges mapJoinDataChanges(ImMap<T, ? extends Expr> mapKeys, Expr expr, Where where, GroupType type, WhereBuilder changedWhere, PropertyChanges propChanges) {

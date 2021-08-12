@@ -103,7 +103,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
         ImCol<PropertyInterfaceImplement<P>> complexMapping = col.filterCol(implement -> implement.mapHasPreread(propChanges));
         if(!complexMapping.isEmpty()) {
             // сортируем по сложности
-            for(PropertyInterfaceImplement<P> mapImpl : complexMapping.sort(Comparator.comparingLong(PropertyInterfaceImplement::mapComplexity))) {
+            for(PropertyInterfaceImplement<P> mapImpl : complexMapping.sort(Comparator.comparingLong(PropertyInterfaceImplement::mapSimpleComplexity))) {
                 WhereBuilder changedWhere = new WhereBuilder();
                 if (mapImpl.mapExpr(joinImplement, calcType, propChanges, changedWhere).isNull() && changedWhere.toWhere().isFalse())
                     return true;

@@ -146,6 +146,8 @@ public class Settings implements Cloneable {
 
     private int limitIncrementCoeff = 1;
 
+    private int limitHintComplexComplexity = 1000;
+
     private int limitHintPrereadComplexity = 50;
 
     private int limitHintIncrementComplexity = 50; // есть проблема когда идет G(очень большого числа данных) = значение, статистика нормальная, сложность большая, начинает hint'ить что мешает проталкиванию
@@ -709,6 +711,14 @@ public class Settings implements Cloneable {
 
     public void setLimitHintPrereadComplexity(int limitHintPrereadComplexity) {
         this.limitHintPrereadComplexity = limitHintPrereadComplexity;
+    }
+
+    public int getLimitHintComplexComplexity() {
+        return limitHintComplexComplexity;
+    }
+
+    public void setLimitHintComplexComplexity(int limitHintComplexComplexity) {
+        this.limitHintComplexComplexity = limitHintComplexComplexity;
     }
 
     public int getLimitHintIncrementComplexity() {

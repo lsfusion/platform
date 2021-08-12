@@ -113,6 +113,7 @@ import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import lsfusion.server.physics.exec.db.table.ImplementTable;
 import lsfusion.server.physics.exec.db.table.MapKeysTable;
 import lsfusion.server.physics.exec.db.table.TableFactory;
+import lsfusion.server.physics.exec.hint.AutoHintsAspect;
 
 import java.sql.SQLException;
 import java.util.Set;
@@ -2122,12 +2123,32 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
     
     @IdentityStartLazy
-    public long getComplexity() {
+    public Long getComplexity(boolean simple) {
+        if(simple)
+            AutoHintsAspect.pushDisabledComplex();
         try {
-            return getExpr(getMapKeys(), defaultModifier).getComplexity(false);
+            Expr expr = getExpr(getMapKeys(), defaultModifier);
+            if(simple && expr == null)
+                return null;
+            return expr.getComplexity(false);
         } catch (SQLException | SQLHandledException e) {
             throw Throwables.propagate(e);
+        } finally {
+            if(simple)
+                AutoHintsAspect.popDisabledComplex();
         }
+    }
+
+    public long getSimpleComplexity() {
+        return getComplexity(true);
+    }
+
+    public long getComplexity() {
+        Long complexity = getComplexity(true);
+        if(complexity != null)
+            return complexity;
+
+        return getComplexity(false);
     }
 
     public void recalculateClasses(SQLSession sql, BaseClass baseClass) throws SQLException, SQLHandledException {

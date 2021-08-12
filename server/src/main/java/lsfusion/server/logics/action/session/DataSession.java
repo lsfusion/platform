@@ -1955,8 +1955,9 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                     Integer attempts = attemptCountMap.get(conflict.getDescription(true));
                     if(attempts != null) {
                         if(conflict.updateConflict) { // update conflicts
-                            if (attempts >= settings.getConflictSleepThreshold()) {
-                                long sleep = (long) (Math.pow(settings.getConflictSleepTimeDegree(), attempts + Math.random()) * 1000);
+                            int conflictSleepThreshold = settings.getConflictSleepThreshold();
+                            if (attempts >= conflictSleepThreshold) {
+                                long sleep = (long) (Math.pow(settings.getConflictSleepTimeDegree(), (attempts - conflictSleepThreshold) + Math.random()) * 1000);
                                 ServerLoggers.sqlConflictLogger.info(String.format("Sleep started after conflict updates : %s (sleep %s)", attempts, sleep));
                                 ThreadUtils.sleep(sleep);
                                 ServerLoggers.sqlConflictLogger.info("Sleep ended after conflict updates : " + attempts);
