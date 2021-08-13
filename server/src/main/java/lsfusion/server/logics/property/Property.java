@@ -2140,7 +2140,10 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
 
     public long getSimpleComplexity() {
-        return getComplexity(true);
+        Long complexity = getComplexity(true);
+        if(complexity == null)
+            return Settings.get().getLimitHintComplexComplexity();
+        return complexity;
     }
 
     public long getComplexity() {
