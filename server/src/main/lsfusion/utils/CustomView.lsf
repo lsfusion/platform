@@ -1,0 +1,13 @@
+MODULE CustomInput;
+
+META rangeSelector(property, form)
+    EXTEND FORM form 
+        PROPERTIES() property PANEL CUSTOM RENDER 'renderRangeSelector:updateRangeSelector:clearRangeSelector'  
+    ;
+    DESIGN form {
+        MOVE PROPERTY (property()){
+            valueWidth = 130;
+            valueHeight = 20;
+        };
+    }
+END
