@@ -297,7 +297,7 @@ public class ScriptingErrorLog {
     
     public void emitCustomPropertyRenderFunctionsError(ScriptParser parser, String propertyDrawName, String customRenderFunctions) throws SemanticErrorException {
         emitSimpleError(parser,
-                format("Incorrect custom render functions definition for %s:\n\texpected format: '<render_function_name>:<set_value_function_name>:<clear_function_name>',\n\tprovided: '%s'",
+                format("Incorrect custom render functions definition for %s:\n\texpected format: '<render_function_name>:<set_value_function_name>:<clear_function_name>' or <LSFCustom[function_name](.[function_param])?>,\n\tprovided: '%s'",
                         propertyDrawName,
                         customRenderFunctions));                                                        
     }

@@ -15,13 +15,22 @@ public class CustomCellRenderer extends CellRenderer<Object> {
 
     public CustomCellRenderer(GPropertyDraw property, String customRenderFunction) {
         super(property);
-        
+
+        if (!customRenderFunction.contains(":")) {
+            String[] functionString = customRenderFunction.split("\\.");
+            customRenderFunction = getPredefinedRenderFunctionsString(functionString[0], functionString.length == 2 ? functionString[1] : null);
+        }
+
         int firstColonIndex = customRenderFunction.indexOf(":");
         int secondColonIndex = customRenderFunction.lastIndexOf(":");
         renderFunction = customRenderFunction.substring(0, firstColonIndex);
         setValueFunction = customRenderFunction.substring(firstColonIndex + 1, secondColonIndex);
         clearFunction = customRenderFunction.substring(secondColonIndex + 1);
     }
+
+    protected native String getPredefinedRenderFunctionsString(String functionName, String functionParam)/*-{
+        return $wnd[functionName](functionParam);
+    }-*/;
 
     @Override
     public void renderStaticContent(Element element, RenderContext renderContext) {
@@ -75,6 +84,12 @@ public class CustomCellRenderer extends CellRenderer<Object> {
             },
             isReadOnly: function () {
                 return isReadOnly;
+            },
+            toDateDTO: function (year, month, day) {
+                return @lsfusion.gwt.client.form.property.cell.classes.GDateDTO::new(III)(year, month, day);
+            },
+            toTimeDTO: function (hour, minute, second) {
+                return @lsfusion.gwt.client.form.property.cell.classes.GTimeDTO::new(III)(hour, minute, second);
             }
         }
     }-*/;

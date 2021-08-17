@@ -508,8 +508,9 @@ public class ScriptingFormEntity {
         }
         String customRenderFunctions = options.getCustomRenderFunctions();
         if (customRenderFunctions != null) {
-            String pattern = "[a-zA-Z]+\\w*:[a-zA-Z]+\\w*:[a-zA-Z]+\\w*";
-            if (customRenderFunctions.matches(pattern)) {
+            String mainPattern = "[a-zA-Z]+\\w*:[a-zA-Z]+\\w*:[a-zA-Z]+\\w*";
+            String customInputTypePattern = "LSFCustom[a-zA-Z]+\\w*(\\.[a-zA-Z]+\\w*)?";
+            if (customRenderFunctions.matches(mainPattern) || customRenderFunctions.matches(customInputTypePattern)) {
                 property.customRenderFunctions = customRenderFunctions;
             } else {
                 LM.getErrLog().emitCustomPropertyRenderFunctionsError(LM.getParser(), property.getSID(), customRenderFunctions);
