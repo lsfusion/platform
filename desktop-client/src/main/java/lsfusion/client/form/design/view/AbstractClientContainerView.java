@@ -115,17 +115,14 @@ public abstract class AbstractClientContainerView implements ClientContainerView
             initBorder();
         }
 
-        private TitledBorder titledBorder;
-
         public ContainerViewPanel() {
             initBorder();
         }
 
         private void initBorder() {
             if (hasCaption()) {
-                titledBorder = new TitledBorder(container.caption);
 //                updateCaption();
-                setBorder(titledBorder);
+                setBorder(new TitledBorder(container.caption));
             }
 
             container.installMargins(this);
@@ -159,11 +156,14 @@ public abstract class AbstractClientContainerView implements ClientContainerView
 
         public void updateCaption() {
             String caption = container.caption;
-            assert caption != null;
 //            titledBorder.setTitle(caption);
 //            repaint()
             // we have to reset titled border, setTitle / repaint doesnt'work sonewhy
-            setBorder(new TitledBorder(caption));
+            if (caption != null) {
+                setBorder(new TitledBorder(caption));
+            } else {
+                setBorder(null);
+            }
         }
     }
 
