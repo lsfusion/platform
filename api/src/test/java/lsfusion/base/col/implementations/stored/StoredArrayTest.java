@@ -12,8 +12,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 public class StoredArrayTest {
     @Rule
@@ -55,9 +54,7 @@ public class StoredArrayTest {
     public void createWithArrayAndGet() throws IOException {
         SerializableClass[] array = initArray();
         StoredArray<SerializableClass> stored = new StoredArray<>(array, serializer);
-        for (int i = 0; i < stored.size(); ++i) {
-            assertEquals(array[i], stored.get(i));
-        }
+        checkEquality(array, stored);
     }
 
     @Test
@@ -67,6 +64,23 @@ public class StoredArrayTest {
         for (int i = stored.size() - 1; i >= 0; --i) {
             assertEquals(array[i], stored.get(i));
         }
+    }
+
+    @Test
+    public void createWithCopyConstructor() throws IOException {
+        SerializableClass[] array = initArrayWithNulls();
+        StoredArray<SerializableClass> stored = new StoredArray<>(array, serializer);
+        StoredArray<SerializableClass> target = new StoredArray<>(stored);
+        checkEquality(array, target);
+    }
+
+    @Test 
+    public void checkArrayCopy() throws IOException {
+        SerializableClass[] array = initArrayWithNulls();
+        StoredArray<SerializableClass> source = new StoredArray<>(array, serializer);
+        StoredArray<SerializableClass> target = new StoredArray<>(source);
+        source.set(0, new SerializableClass("test", 50, false));
+        assertNull(target.get(0));
     }
     
     @Test
@@ -84,23 +98,9 @@ public class StoredArrayTest {
         for (SerializableClass element : array) {
             stored.append(element);    
         }
-        for (int i = 0; i < stored.size(); ++i) {
-            assertEquals(stored.get(i), array[i]);
-        }
+        checkEquality(array, stored);
     }
 
-    @Test
-    public void addWithIndexAndGet() throws IOException {
-        StoredArray<SerializableClass> stored = new StoredArray<>(serializer);
-        SerializableClass[] array = initArray();
-        for (int i = 0; i < array.length; ++i) {
-            stored.set(i, array[i]);
-        }
-        for (int i = 0; i < stored.size(); ++i) {
-            assertEquals(stored.get(i), array[i]);
-        }
-    }
-    
     @Test
     public void addAndImmediateGet() throws IOException {
         SerializableClass[] array = initArray();
@@ -124,9 +124,7 @@ public class StoredArrayTest {
                 stored.set(n - i - 1, a);
             }
         }
-        for (int i = 0; i < n; ++i) {
-            assertEquals(array[i], stored.get(i));
-        }
+        checkEquality(array, stored);
     }
 
     @Test
@@ -139,9 +137,7 @@ public class StoredArrayTest {
         for (int i = 0; i < n; ++i) {
             stored.set(indexes.get(i), array[indexes.get(i)]);
         }
-        for (int i = 0; i < n; ++i) {
-            assertEquals(array[i], stored.get(i));
-        }
+        checkEquality(array, stored);
     }
     
     @Test
@@ -157,22 +153,27 @@ public class StoredArrayTest {
     public void createWithArrayWithNullsAndGet() throws IOException {
         SerializableClass[] array = initArrayWithNulls();
         StoredArray<SerializableClass> stored = new StoredArray<>(array, serializer);
-        for (int i = 0; i < stored.size(); ++i) {
-            assertEquals(array[i], stored.get(i));
-        }
+        checkEquality(array, stored);
     }
 
     @Test
-    public void addWithNullsAndGet() throws IOException {
+    public void appendWithNullsAndGet() throws IOException {
         SerializableClass[] array = initArrayWithNulls();
         StoredArray<SerializableClass> stored = new StoredArray<>(serializer);
         for (SerializableClass obj : array) {
             stored.append(obj);    
         }
-        assertEquals(array.length, stored.size());
-        for (int i = 0; i < stored.size(); ++i) {
-            assertEquals(array[i], stored.get(i));
+        checkEquality(array, stored);
+    }
+
+    @Test
+    public void setWithNullsAndGet() throws IOException {
+        SerializableClass[] array = initArrayWithNulls();
+        StoredArray<SerializableClass> stored = new StoredArray<>(array.length, serializer);
+        for (int i = 0; i < array.length; ++i) {
+            stored.set(i, array[i]);
         }
+        checkEquality(array, stored);
     }
     
     @Test
@@ -192,6 +193,55 @@ public class StoredArrayTest {
             } else {
                 assertEquals(array[i], stored.get(i));
             }
+        }
+    }
+    
+    @Test
+    public void insertToBeginning() throws IOException {
+        SerializableClass[] array = initArrayWithNulls();
+        int mid = array.length / 2;
+        StoredArray<SerializableClass> stored = new StoredArray<>(serializer);
+        for (int i = mid; i < array.length; ++i) {
+            stored.append(array[i]);
+        }
+        for (int i = 0; i < mid; ++i) {
+            stored.insert(i, array[i]);
+        }
+        checkEquality(array, stored);
+    }
+
+    @Test
+    public void insertToMiddle() throws IOException {
+        SerializableClass[] array = initArrayWithNulls();
+        int mid = array.length / 4;
+        StoredArray<SerializableClass> stored = new StoredArray<>(serializer);
+        for (int i = 0; i < mid; ++i) {
+            stored.append(array[i]);
+        }
+        for (int i = array.length - mid; i < array.length; ++i) {
+            stored.append(array[i]);
+        }
+        for (int i = array.length - mid - 1; i >= mid; --i) {
+            stored.insert(mid, array[i]);
+        }
+        checkEquality(array, stored);
+    }
+
+    @Test
+    public void insertToEnd() throws IOException {
+        SerializableClass[] array = initArrayWithNulls();
+        StoredArray<SerializableClass> stored = new StoredArray<>(serializer);
+        for (int i = 0; i < array.length; ++i) {
+            stored.insert(i, array[i]);
+        }
+        checkEquality(array, stored);
+    }
+    
+    
+    private void checkEquality(SerializableClass[] array, StoredArray<SerializableClass> stored) throws IOException {
+        assertEquals(array.length, stored.size());
+        for (int i = 0; i < stored.size(); ++i) {
+            assertEquals(array[i], stored.get(i));
         }
     }
     

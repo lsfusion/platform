@@ -33,9 +33,13 @@ public class StoredArIndexedMap<K, V> extends AMRevMap<K, V> {
     
     public StoredArIndexedMap(StoredArIndexedMap<K, V> map, boolean clone) {
         assert clone;
-        
-        this.keys = map.keys.clone();
-        this.values = map.values.clone();
+        // todo [dale]:
+        try {
+            this.keys = new StoredArray<>(map.keys);
+            this.values = new StoredArray<>(map.values);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
     
     private StoredArIndexedMap(StoredArraySerializer serializer, StoredArray<K> keys) throws IOException {

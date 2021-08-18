@@ -27,7 +27,12 @@ public class StoredArIndexedSet<K> extends AMSet<K> {
 
     public StoredArIndexedSet(StoredArIndexedSet<K> set) {
         // todo [dale]: this can be optimized
-        array = set.array.clone();
+        // todo [dale]: exception
+        try {
+            array = new StoredArray<>(set.array);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public int size() {
