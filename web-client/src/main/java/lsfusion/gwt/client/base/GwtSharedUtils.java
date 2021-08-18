@@ -87,13 +87,7 @@ public class GwtSharedUtils {
             if(pattern != null) {
                 return DateTimeFormat.getFormat(pattern);
             } else {
-                String currentLocale = LocaleInfo.getCurrentLocale().getLocaleName();
-                //in gwt 2.9.0 default DATE_SHORT format for "ru" locale is dd.MM.y
-                if(currentLocale.equals("ru")) {
-                    return DateTimeFormat.getFormat("dd.MM.yy");
-                } else {
-                    return DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.DATE_SHORT);
-                }
+                return getDateFormatShort(DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.DATE_SHORT));
             }
         } else {
             return DateTimeFormat.getFormat(MainFrame.dateFormat);
@@ -116,7 +110,7 @@ public class GwtSharedUtils {
                 return DateTimeFormat.getFormat(pattern);
             } else {
                 DateTimeFormatInfo info = LocaleInfo.getCurrentLocale().getDateTimeFormatInfo();
-                return DateTimeFormat.getFormat(info.dateTime(info.timeFormatMedium(), info.dateFormatShort()).replace(",", ""));
+                return DateTimeFormat.getFormat(info.dateTime(info.timeFormatMedium(), getDateFormatShort(info.dateFormatShort())).replace(",", ""));
             }
         } else {
             return DateTimeFormat.getFormat(MainFrame.dateFormat + " " + MainFrame.timeFormat);
@@ -133,7 +127,25 @@ public class GwtSharedUtils {
 
     public static DateTimeFormat getDefaultDateTimeShortFormat() {
         DateTimeFormatInfo info = LocaleInfo.getCurrentLocale().getDateTimeFormatInfo();
-        return DateTimeFormat.getFormat(info.dateTime(info.timeFormatShort(), info.dateFormatShort()).replace(",", ""));
+        return DateTimeFormat.getFormat(info.dateTime(info.timeFormatShort(), getDateFormatShort(info.dateFormatShort())).replace(",", ""));
+    }
+
+    //in gwt 2.9.0 default DATE_SHORT format for "ru" locale is dd.MM.y
+    private static String getDateFormatShort(String defaultFormat) {
+        String currentLocale = LocaleInfo.getCurrentLocale().getLocaleName();
+        if(currentLocale.equals("ru")) {
+            return "dd.MM.yy";
+        } else {
+            return defaultFormat;
+        }
+    }
+    private static DateTimeFormat getDateFormatShort(DateTimeFormat defaultFormat) {
+        String currentLocale = LocaleInfo.getCurrentLocale().getLocaleName();
+        if(currentLocale.equals("ru")) {
+            return DateTimeFormat.getFormat("dd.MM.yy");
+        } else {
+            return defaultFormat;
+        }
     }
 
     public static <B, K1 extends B, K2 extends B, V> NativeHashMap<B, V> override(NativeHashMap<K1, ? extends V> map1, NativeHashMap<K2, ? extends V> map2) {
