@@ -86,8 +86,11 @@ public class KeyStrokes {
         return KeyStroke.getKeyStroke(KeyEvent.VK_F12, 0);
     }
 
-    public static boolean isEditObjectEvent(EventObject event) {
-        return isKeyEvent(event, KeyEvent.VK_F9) || MouseStrokes.isDblClickEvent(event);
+    public static boolean isEditObjectEvent(EventObject event, boolean hasEditObjectAction, boolean hasChangeAction) {
+        return hasEditObjectAction && (
+                isKeyEvent(event, KeyEvent.VK_F9) ||
+                (!hasChangeAction && MouseStrokes.isDblClickEvent(event)) ||
+                (event instanceof InputEvent && ((InputEvent) event).isControlDown() && MouseStrokes.isDownEvent(event))); // ctrl doesn't work for now since it is used for a cell selection
     }
 
     public static boolean isKeyEvent(EventObject event, int keyCode) {

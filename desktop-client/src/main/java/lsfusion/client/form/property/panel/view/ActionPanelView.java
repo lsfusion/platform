@@ -67,7 +67,7 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
         //we have 'ENTER' binding for tab action, so this 'ENTER' binding should have higher priority
         form.addBinding(new KeyInputEvent(KeyStrokes.getEnter()), new ClientFormController.Binding(property.groupObject, 0, eventObject -> eventObject.getSource() == ActionPanelView.this) {
             @Override
-            public boolean pressed(KeyEvent ke) {
+            public boolean pressed(InputEvent ke) {
                 return form.commitCurrentEditing() && executePropertyEventAction(ServerResponse.CHANGE);
             }
 

@@ -55,8 +55,8 @@ public class GEditBindingMap implements Serializable {
         }
         return null;
     }
-    public static String getDefaultEventSID(Event event, EditEventFilter editEventFilter, boolean hasEditObjectAction) {
-        if (hasEditObjectAction && isEditObjectEvent(event)) // has to be before isChangeEvent, since also handles MOUSE CHANGE event
+    public static String getDefaultEventSID(Event event, EditEventFilter editEventFilter, boolean hasEditObjectAction, boolean hasChangeAction) {
+        if (isEditObjectEvent(event, hasEditObjectAction, hasChangeAction)) // has to be before isChangeEvent, since also handles MOUSE CHANGE event
             return EDIT_OBJECT;
         if (GMouseStroke.isChangeEvent(event))
             return CHANGE;

@@ -12,7 +12,7 @@ import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.base.view.FlexConstraints;
 
 import java.awt.*;
-import java.awt.event.KeyEvent;
+import java.awt.event.InputEvent;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,7 +42,7 @@ public class PropertyPanelController {
         this.property = property;
 
         form.addPropertyBindings(property, () -> new ClientFormController.Binding(property.groupObject, 0) {
-            public boolean pressed(KeyEvent ke) {
+            public boolean pressed(InputEvent ke) {
                 return forceEdit();
             }
             public boolean showing() {
