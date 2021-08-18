@@ -146,6 +146,10 @@ public class Settings implements Cloneable {
 
     private int limitIncrementCoeff = 1;
 
+    private int limitHintComplexComplexity = 1000;
+
+    private int limitHintPrereadComplexity = 50;
+
     private int limitHintIncrementComplexity = 50; // есть проблема когда идет G(очень большого числа данных) = значение, статистика нормальная, сложность большая, начинает hint'ить что мешает проталкиванию
 
     private int limitHintIncrementValueComplexity = 1000; // есть проблема когда идет G(очень большого числа данных) = значение, статистика нормальная, сложность большая, начинает hint'ить что мешает проталкиванию
@@ -699,6 +703,22 @@ public class Settings implements Cloneable {
 
     public void setLimitIncrementCoeff(int limitIncrementCoeff) {
         this.limitIncrementCoeff = limitIncrementCoeff;
+    }
+
+    public int getLimitHintPrereadComplexity() {
+        return limitHintPrereadComplexity;
+    }
+
+    public void setLimitHintPrereadComplexity(int limitHintPrereadComplexity) {
+        this.limitHintPrereadComplexity = limitHintPrereadComplexity;
+    }
+
+    public int getLimitHintComplexComplexity() {
+        return limitHintComplexComplexity;
+    }
+
+    public void setLimitHintComplexComplexity(int limitHintComplexComplexity) {
+        this.limitHintComplexComplexity = limitHintComplexComplexity;
     }
 
     public int getLimitHintIncrementComplexity() {
@@ -1513,6 +1533,7 @@ public class Settings implements Cloneable {
         this.logTimeThreshold = logTimeThreshold;
     }
     
+    private long explainTopAppThreshold = 0;
     private long explainAppThreshold = 1000;
 
     public long getExplainAppThreshold() {
@@ -1523,6 +1544,15 @@ public class Settings implements Cloneable {
         this.explainAppThreshold = explainAppThreshold;
     }
 
+    public long getExplainTopAppThreshold() {
+        return explainTopAppThreshold;
+    }
+
+    public void setExplainTopAppThreshold(long explainTopAppThreshold) {
+        this.explainTopAppThreshold = explainTopAppThreshold;
+    }
+
+    private long explainTopAllocatedBytesThreshold = 0;
     private long explainAllocatedBytesThreshold = 0;
 
     public long getExplainAllocatedBytesThreshold() {
@@ -1531,6 +1561,14 @@ public class Settings implements Cloneable {
     
     public void setExplainAllocatedBytesThreshold(long explainAllocatedBytesThreshold) {
         this.explainAllocatedBytesThreshold = explainAllocatedBytesThreshold;
+    }
+
+    public long getExplainTopAllocatedBytesThreshold() {
+        return explainTopAllocatedBytesThreshold;
+    }
+
+    public void setExplainTopAllocatedBytesThreshold(long explainTopAllocatedBytesThreshold) {
+        this.explainTopAllocatedBytesThreshold = explainTopAllocatedBytesThreshold;
     }
 
     // в перерасчете / проверке агрегаций можно использовать InconsistentExpr, но тогда появляются лишние join'ы (а значит нужно еще больше памяти)
@@ -1681,6 +1719,7 @@ public class Settings implements Cloneable {
         this.subQueriesPessQueryCoeff = subQueriesPessQueryCoeff;
     }
 
+    private int explainTopThreshold = 0;
     private int explainThreshold = 100;
 
     public int getExplainThreshold() {
@@ -1689,6 +1728,14 @@ public class Settings implements Cloneable {
 
     public void setExplainThreshold(int explainThreshold) {
         this.explainThreshold = explainThreshold;
+    }
+
+    public int getExplainTopThreshold() {
+        return explainTopThreshold;
+    }
+
+    public void setExplainTopThreshold(int explainTopThreshold) {
+        this.explainTopThreshold = explainTopThreshold;
     }
 
     private boolean useMaxDivisionLength = true;

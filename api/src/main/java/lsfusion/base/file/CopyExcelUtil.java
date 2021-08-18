@@ -22,14 +22,7 @@ public final class CopyExcelUtil {
     public static void copyHSSFSheets(HSSFWorkbook sourceWB, HSSFWorkbook destinationWB) {
         for (Iterator<Sheet> it = sourceWB.sheetIterator(); it.hasNext(); ) {
             HSSFSheet sheet = (HSSFSheet) it.next();
-            String sheetName = sheet.getSheetName();
-            if (destinationWB.getSheetIndex(sheetName) != -1) {
-                int index = 1;
-                while (destinationWB.getSheetIndex(sheetName + "(" + index + ")") != -1) {
-                    index++;
-                }
-                sheetName += "(" + index + ")";
-            }
+            String sheetName = getSheetName(sheet, destinationWB);
             HSSFSheet newSheet = destinationWB.createSheet(sheetName);
             copySheetSettings(newSheet, sheet);
             copyHSSFSheet(newSheet, sheet);
@@ -132,19 +125,31 @@ public final class CopyExcelUtil {
     public static void copyXSSFSheets(XSSFWorkbook sourceWB, XSSFWorkbook destinationWB) {
         for (Iterator<Sheet> it = sourceWB.sheetIterator(); it.hasNext(); ) {
             XSSFSheet sheet = (XSSFSheet) it.next();
-            String sheetName = sheet.getSheetName();
-            if (destinationWB.getSheetIndex(sheetName) != -1) {
-                int index = 1;
-                while (destinationWB.getSheetIndex(sheetName + "(" + index + ")") != -1) {
-                    index++;
-                }
-                sheetName += "(" + index + ")";
-            }
+            String sheetName = getSheetName(sheet, destinationWB);
             XSSFSheet newSheet = destinationWB.createSheet(sheetName);
             copySheetSettings(newSheet, sheet);
             copyXSSFSheet(newSheet, sheet);
             copyPictures(newSheet, sheet);
         }
+    }
+
+    private static String getSheetName(Sheet sourceSheet, Workbook destinationWB) {
+        String sourceSheetName = sourceSheet.getSheetName();
+        String destinationSheetName = sourceSheetName;
+        if (destinationWB.getSheetIndex(destinationSheetName) != -1) {
+            int index = 1;
+            while ((destinationSheetName = checkSheetName(sourceSheetName, index, destinationWB)) == null) {
+                index++;
+            }
+
+        }
+        return destinationSheetName;
+    }
+
+    private static String checkSheetName(String sourceSheetName, int index, Workbook destinationWB) {
+        String postfix = "(" + index + ")"; //max name length = 31
+        String destinationSheetName = sourceSheetName.substring(0, Math.min(sourceSheetName.length(), 31 - postfix.length())) + postfix;
+        return destinationWB.getSheetIndex(destinationSheetName) != -1 ? null : destinationSheetName;
     }
 
     public static void copySheetSettings(Sheet newSheet, Sheet sheetToCopy) {

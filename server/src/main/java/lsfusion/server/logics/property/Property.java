@@ -115,6 +115,7 @@ import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import lsfusion.server.physics.exec.db.table.ImplementTable;
 import lsfusion.server.physics.exec.db.table.MapKeysTable;
 import lsfusion.server.physics.exec.db.table.TableFactory;
+import lsfusion.server.physics.exec.hint.AutoHintsAspect;
 
 import java.sql.SQLException;
 import java.util.Set;
@@ -751,9 +752,9 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return readTable;
     }
     
-    public PropertyChange<T> getPrevChange(PropertyChangeTableUsage<T> table) {
+    public PropertyChange<T> getPrevChange(PropertyChangeTableUsage<T> table, PropertyChanges prevChanges) {
         ImRevMap<T, KeyExpr> mapKeys = getMapKeys();
-        return new PropertyChange<>(mapKeys, getExpr(mapKeys), table.join(mapKeys).getWhere());
+        return new PropertyChange<>(mapKeys, getExpr(mapKeys, prevChanges), table.join(mapKeys).getWhere());
     }
 
     public PropertyChangeTableUsage<T> readChangeTable(String debugInfo, SQLSession session, PropertyChange<T> change, BaseClass baseClass, QueryEnvironment env) throws SQLException, SQLHandledException {
@@ -792,7 +793,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
             recDepends = calculateRecDepends();
         return recDepends;
     }
-    
+
     public int getEstComplexity() {
         return getRecDepends().size();
     }
@@ -911,19 +912,26 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
                 return false; // no hint will be "thrown" (since it requires reading'an expr)
         }
 
-        for(Property property : getDepends())
-            if(property.hasPreread(structChanges))
-                return true;
+        return calculateHasPreread(structChanges);
+    }
+
+    protected boolean calculateHasPreread(StructChanges structChanges) {
         return false;
     }
-    @IdentityLazy
+
     public boolean hasGlobalPreread() {
+        return hasGlobalPreread(true);
+    }
+
+    @IdentityLazy
+    public boolean hasGlobalPreread(boolean events) {
         if(isPreread())
             return true;
 
-        for(Property property : getDepends())
-            if(property.hasGlobalPreread())
-                return true;
+        return calculateHasGlobalPreread(events);
+    }
+
+    protected boolean calculateHasGlobalPreread(boolean events) {
         return false;
     }
 
@@ -1036,7 +1044,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         if(modify!=null) {
             if(isPreread()) { // вообще rightJoin, но вдруг случайно мимо AutoHint'а может пройти
                 ImMap<T, Expr> joinValues = getJoinValues(joinImplement); Pair<ObjectValue, Boolean> row;
-                if(joinValues!=null && (row = modify.preread.readValues.get(joinValues))!=null) {
+                if(joinValues!=null && (row = modify.preread.readValues.get(new Pair<>(joinValues, hasChanges(propChanges))))!=null) {
                     if(changedWhere!=null) changedWhere.add(row.second ? Where.TRUE() : Where.FALSE());
                     return row.first.getExpr();
                 }
@@ -1063,7 +1071,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
                 WhereBuilder changedExprWhere = new WhereBuilder();
                 Expr changedExpr = calculateExpr(joinImplement, calcType, propChanges, changedExprWhere);
                 if (changedWhere != null) changedWhere.add(changedExprWhere.toWhere());
-                return changedExpr.ifElse(changedExprWhere.toWhere(), getExpr(joinImplement));
+                return changedExpr.ifElse(changedExprWhere.toWhere(), getPrevExpr(joinImplement, calcType, propChanges));
             }
         }
 
@@ -1350,8 +1358,21 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return getClassValueWhere(AlgType.storedType).remap(MapFact.addRevExcl(mapTable.mapKeys, "value", storedField)); //
     }
 
-    public Object read(ExecutionContext context) throws SQLException, SQLHandledException {
-        return read(context.getSession().sql, MapFact.EMPTY(), context.getModifier(), context.getQueryEnv());
+    public Pair<ObjectValue, Boolean> readClassesChanged(SQLSession session, ImMap<T, ObjectValue> keys, BaseClass baseClass, Modifier modifier, boolean hasChanges, QueryEnvironment env) throws SQLException, SQLHandledException {
+        String readValue = "readvalue"; String readChanged = "readChanged";
+        QueryBuilder<T, Object> readQuery = new QueryBuilder<>(SetFact.EMPTY());
+        WhereBuilder changedWhere = new WhereBuilder();
+        readQuery.addProperty(readValue, getExpr(ObjectValue.getMapExprs(keys), modifier, !hasChanges, changedWhere));
+        readQuery.addProperty(readChanged, ValueExpr.get(changedWhere.toWhere()));
+        ImMap<Object, ObjectValue> result = readQuery.executeClasses(session, env, baseClass).singleValue();
+        return new Pair<>(result.get(readValue), !result.get(readChanged).isNull());
+    }
+
+    public ObjectValue readClasses(SQLSession session, ImMap<T, Expr> keys, BaseClass baseClass, Modifier modifier, QueryEnvironment env) throws SQLException, SQLHandledException {
+        String readValue = "readvalue";
+        QueryBuilder<T, Object> readQuery = new QueryBuilder<>(SetFact.EMPTY());
+        readQuery.addProperty(readValue, getExpr(keys, modifier));
+        return readQuery.executeClasses(session, env, baseClass).singleValue().get(readValue);
     }
 
     public Object read(SQLSession session, ImMap<T, ? extends ObjectValue> keys, Modifier modifier, QueryEnvironment env) throws SQLException, SQLHandledException {
@@ -1384,23 +1405,6 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
     public ObjectValue readClasses(ExecutionEnvironment env) throws SQLException, SQLHandledException {
         return readClasses(env.getSession(), MapFact.EMPTY(), env.getModifier(), env.getQueryEnv());
-    }
-
-    public ObjectValue readClasses(SQLSession session, ImMap<T, Expr> keys, BaseClass baseClass, Modifier modifier, QueryEnvironment env) throws SQLException, SQLHandledException {
-        String readValue = "readvalue";
-        QueryBuilder<T, Object> readQuery = new QueryBuilder<>(SetFact.EMPTY());
-        readQuery.addProperty(readValue, getExpr(keys, modifier));
-        return readQuery.executeClasses(session, env, baseClass).singleValue().get(readValue);
-    }
-
-    public Pair<ObjectValue, Boolean> readClassesChanged(SQLSession session, ImMap<T, ObjectValue> keys, BaseClass baseClass, Modifier modifier, QueryEnvironment env) throws SQLException, SQLHandledException {
-        String readValue = "readvalue"; String readChanged = "readChanged";
-        QueryBuilder<T, Object> readQuery = new QueryBuilder<>(SetFact.EMPTY());
-        WhereBuilder changedWhere = new WhereBuilder();
-        readQuery.addProperty(readValue, getExpr(ObjectValue.getMapExprs(keys), modifier, changedWhere));
-        readQuery.addProperty(readChanged, ValueExpr.get(changedWhere.toWhere()));
-        ImMap<Object, ObjectValue> result = readQuery.executeClasses(session, env, baseClass).singleValue();
-        return new Pair<>(result.get(readValue), !result.get(readChanged).isNull());
     }
 
     public Object read(ExecutionEnvironment env, ImMap<T, ? extends ObjectValue> keys) throws SQLException, SQLHandledException {
@@ -1524,7 +1528,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
 
     public void setNotNull(ImMap<T, DataObject> values, ExecutionEnvironment env, ExecutionStack stack, boolean notNull, boolean check) throws SQLException, SQLHandledException {
-        if(!check || (read(env.getSession().sql, values, env.getModifier(), env.getQueryEnv())!=null) != notNull) {
+        if(!check || (read(env, values)!=null) != notNull) {
             ActionMapImplement<?, T> action = getSetNotNullAction(notNull);
             if(action!=null)
                 action.execute(new ExecutionContext<>(values, env, stack));
@@ -1854,7 +1858,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
             Expr newExpr = query.getExpr("value");
             fullQuery.addProperty("value", newExpr);
             
-            Expr dbExpr = getExpr(fullQuery.getMapExprs());
+            Expr dbExpr = getPrevExpr(fullQuery.getMapExprs(), calcType, propChanges);
             Where fullWhere = newExpr.getWhere().or(dbExpr.getWhere());
             if(!DBManager.PROPERTY_REUPDATE && isStored())
                 fullWhere = fullWhere.and(newExpr.compare(dbExpr, Compare.EQUALS).not());            
@@ -1900,8 +1904,17 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return aspectGetExpr(joinImplement, calcType, propChanges, changedWhere);
     }
 
+    protected PropertyChanges getPrevPropChanges(PropertyChanges propChanges) {
+        return getPrevPropChanges(CalcType.EXPR, propChanges);
+    }
+    protected PropertyChanges getPrevPropChanges(CalcType calcType, PropertyChanges propChanges) {
+        return PropertyChanges.PREVEXPR(calcType, propChanges);
+    }
+    public Expr getPrevExpr(ImMap<T, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges) {
+        return getExpr(joinImplement, calcType, getPrevPropChanges(calcType, propChanges), null);
+    }
     public Expr getExpr(ImMap<T, ? extends Expr> joinImplement) {
-        return getExpr(joinImplement, PropertyChanges.EMPTY);
+        return getExpr(joinImplement, CalcType.EXPR);
     }
     public Expr getExpr(ImMap<T, ? extends Expr> joinImplement, CalcType calcType) {
         return getExpr(joinImplement, calcType, PropertyChanges.EMPTY, null);
@@ -1910,7 +1923,13 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return getExpr(joinImplement, modifier, null);
     }
     public Expr getExpr(ImMap<T, ? extends Expr> joinImplement, Modifier modifier, WhereBuilder changedWhere) throws SQLException, SQLHandledException {
-        return getExpr(joinImplement, modifier.getPropertyChanges(), changedWhere);
+        return getExpr(joinImplement, modifier, false, changedWhere);
+    }
+    public Expr getExpr(ImMap<T, ? extends Expr> joinImplement, Modifier modifier, boolean prevChanges, WhereBuilder changedWhere) throws SQLException, SQLHandledException {
+        PropertyChanges propertyChanges = modifier.getPropertyChanges();
+        if(prevChanges)
+            propertyChanges = propertyChanges.getPrev();
+        return getExpr(joinImplement, propertyChanges, changedWhere);
     }
     public Expr getExpr(ImMap<T, ? extends Expr> joinImplement, PropertyChanges propChanges) {
         return getExpr(joinImplement, propChanges, null);
@@ -2058,12 +2077,35 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
 
     @IdentityStartLazy
-    public long getComplexity() {
+    public Long getComplexity(boolean simple) {
+        if(simple)
+            AutoHintsAspect.pushDisabledComplex();
         try {
-            return getExpr(getMapKeys(), defaultModifier).getComplexity(false);
+            Expr expr = getExpr(getMapKeys(), defaultModifier);
+            if(simple && expr == null)
+                return null;
+            return expr.getComplexity(false);
         } catch (SQLException | SQLHandledException e) {
             throw Throwables.propagate(e);
+        } finally {
+            if(simple)
+                AutoHintsAspect.popDisabledComplex();
         }
+    }
+
+    public long getSimpleComplexity() {
+        Long complexity = getComplexity(true);
+        if(complexity == null)
+            return Settings.get().getLimitHintComplexComplexity();
+        return complexity;
+    }
+
+    public long getComplexity() {
+        Long complexity = getComplexity(true);
+        if(complexity != null)
+            return complexity;
+
+        return getComplexity(false);
     }
 
     public void recalculateClasses(SQLSession sql, BaseClass baseClass) throws SQLException, SQLHandledException {
@@ -2149,16 +2191,17 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return SetFact.EMPTY();
     }
     
-    protected boolean checkRecursions(ImSet<CaseUnionProperty> abstractPath, ImSet<Property> path, Set<Property> marks) {
+    public boolean checkRecursions(ImSet<CaseUnionProperty> abstractPath, ImSet<Property> path, Set<Property> marks) {
         if(path != null)
             path = path.addExcl(this);
         else {
             if(!marks.add(this))
                 return false;
         }
-        for(Property depend : getDepends())
-            if(depend.checkRecursions(abstractPath, path, marks))
-                return true;
+        return calculateCheckRecursions(abstractPath, path, marks);
+    }
+
+    public boolean calculateCheckRecursions(ImSet<CaseUnionProperty> abstractPath, ImSet<Property> path, Set<Property> marks) {
         return false;
     }
 

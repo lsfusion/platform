@@ -7,6 +7,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
 import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.base.mutability.TwinImmutableObject;
+import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.data.caches.AbstractValuesContext;
@@ -15,6 +16,7 @@ import lsfusion.server.data.caches.hash.HashValues;
 import lsfusion.server.data.table.SessionTable;
 import lsfusion.server.data.translate.MapValuesTranslate;
 import lsfusion.server.data.value.Value;
+import lsfusion.server.logics.property.CalcType;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
@@ -31,7 +33,7 @@ public class PropertyChanges extends AbstractValuesContext<PropertyChanges> {
         this.changes = changes;
     }
 
-    private final static SFunctionSet<ModifyChange> emptyChanges = element -> element==null || (!element.isFinal && element.isEmpty());
+    private final static SFunctionSet<ModifyChange> emptyChanges = element -> element==null || element.isNotFinalEmpty();
     public PropertyChanges replace(ImMap<Property, ModifyChange> replace) {
         ImSet<Property> remove = replace.filterFnValues(emptyChanges).keys();
         ImMap<Property, ModifyChange> add = replace.remove(remove);
@@ -56,6 +58,28 @@ public class PropertyChanges extends AbstractValuesContext<PropertyChanges> {
         changes = MapFact.EMPTY();
     }
     public final static PropertyChanges EMPTY = new PropertyChanges();
+
+    public static PropertyChanges PREVEXPR(CalcType type, PropertyChanges propChanges) {
+        if(!type.isExpr()) // no hints we don't need preread
+            return PropertyChanges.EMPTY;
+
+        return propChanges.getPrev();
+    }
+
+    @IdentityInstanceLazy
+    public PropertyChanges getPrev() { // returns only preread without used changes
+        ImFilterValueMap<Property, ModifyChange> mvResult = changes.mapFilterValues();
+        for(int i=0,size=changes.size();i<size;i++) {
+            ModifyChange<PropertyInterface> prevValue = changes.getValue(i).getPrev(changes.getKey(i));
+            if(prevValue!=null)
+                mvResult.mapValue(i, prevValue);
+        }
+        ImMap<Property, ModifyChange> changes = mvResult.immutableValue();
+        if(changes.isEmpty()) // optimization of the most common case
+            return PropertyChanges.EMPTY;
+
+        return new PropertyChanges(changes);
+    }
 
     public <T extends PropertyInterface> PropertyChanges(Property<T> property, PropertyChange<T> change) {
         this(property, new ModifyChange<>(change, true));

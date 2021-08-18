@@ -90,7 +90,6 @@ import lsfusion.server.physics.admin.SystemProperties;
 import lsfusion.server.physics.admin.authentication.AuthenticationLogicsModule;
 import lsfusion.server.physics.admin.authentication.security.SecurityLogicsModule;
 import lsfusion.server.physics.admin.authentication.security.controller.manager.SecurityManager;
-import lsfusion.server.physics.admin.interpreter.EvalUtils;
 import lsfusion.server.physics.admin.log.LogInfo;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.admin.monitor.StatusMessage;
@@ -133,7 +132,6 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.regex.Pattern;
@@ -1833,8 +1831,8 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
             SQLSession.updateThreadAllocatedBytesMap();
             Map<Long, Thread> threadMap = ThreadUtils.getThreadMap();
 
-            ConcurrentHashMap<Long, HashMap<CacheType, Long>> hitStats = MapFact.getGlobalConcurrentHashMap(CacheStats.getCacheHitStats());
-            ConcurrentHashMap<Long, HashMap<CacheType, Long>> missedStats = MapFact.getGlobalConcurrentHashMap(CacheStats.getCacheMissedStats());
+            HashMap<Long, HashMap<CacheType, Long>> hitStats = new HashMap<>(CacheStats.getCacheHitStats());
+            HashMap<Long, HashMap<CacheType, Long>> missedStats = new HashMap<>(CacheStats.getCacheMissedStats());
             CacheStats.resetStats();
 
             long totalHit = 0;
@@ -1919,9 +1917,9 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
             
             if (logTotal) {
                 allocatedBytesLogger.info(String.format("Exceeded: sum: %s, \t\t\tmissed-hit: All: %s-%s, %s",
-                        humanReadableByteCount(bytesSum), exceededMisses, exceededMissesHits, getStringMap(exceededHitMap, exceededMissedMap)));
+                        humanReadableByteCount(bytesSum), exceededMisses, exceededMissesHits, CacheStats.getAbsoluteString(exceededHitMap, exceededMissedMap)));
                 allocatedBytesLogger.info(String.format("Total: sum: %s, elapsed %sms, missed-hit: All: %s-%s, %s",
-                        humanReadableByteCount(totalBytesSum), System.currentTimeMillis() - time, totalMissed, totalHit, getStringMap(totalHitMap, totalMissedMap)));
+                        humanReadableByteCount(totalBytesSum), System.currentTimeMillis() - time, totalMissed, totalHit, CacheStats.getAbsoluteString(totalHitMap, totalMissedMap)));
             }
         }
     }
@@ -1970,18 +1968,6 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         int exp = (int) (Math.log(bytes) / Math.log(unit));
         char pre = "KMGTPE".charAt(exp - 1);
         return String.format("%.1f %sB", bytes / Math.pow(unit, exp), pre);
-    }
-
-    private String getStringMap(HashMap<CacheType, Long> hitStats, HashMap<CacheType, Long> missedStats) {
-        String result = "";
-        for (int i = 0; i < CacheType.values().length; i++) {
-            CacheType type = CacheType.values()[i];
-            result += type + ": " + nullToZero(missedStats.get(type)) + "-" + nullToZero(hitStats.get(type));
-            if (i < CacheType.values().length - 1) {
-                result += "; ";
-            }
-        }
-        return result;
     }
 
     private void sumMap(HashMap<CacheType, Long> target, HashMap<CacheType, Long> source) {
@@ -2166,7 +2152,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
             if (user != null) {
                 userMessage += String.format(", Comp. %s, User %s, Roles %s", computer == null ? "unknown" : computer, user, userRoles);
             }
-            userMessage += String.format(", missed-hit: All: %s-%s, %s", userMissed, userHit, getStringMap(userHitMap, userMissedMap));
+            userMessage += String.format(", missed-hit: All: %s-%s, %s", userMissed, userHit, CacheStats.getAbsoluteString(userHitMap, userMissedMap));
 
             return userMessage;
         }

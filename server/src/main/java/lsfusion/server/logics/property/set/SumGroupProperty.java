@@ -11,6 +11,7 @@ import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.action.session.change.PropertyChange;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
+import lsfusion.server.logics.property.CalcType;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
@@ -31,7 +32,7 @@ public class SumGroupProperty<I extends PropertyInterface> extends AddGroupPrope
     
     public Expr getChangedExpr(Expr changedExpr, Expr changedPrevExpr, Expr prevExpr, ImMap<Interface<I>, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
         if(changedWhere!=null) changedWhere.add(changedExpr.getWhere().or(changedPrevExpr.getWhere())); // если хоть один не null
-        return changedExpr.diff(changedPrevExpr).sum(getExpr(joinImplement));
+        return changedExpr.diff(changedPrevExpr).sum(getPrevExpr(joinImplement, CalcType.EXPR, propChanges));
     }
 
     // такая же помошь компилятору как и при getExpr в GroupProperty

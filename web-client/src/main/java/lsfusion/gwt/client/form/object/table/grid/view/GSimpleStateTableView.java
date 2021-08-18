@@ -126,8 +126,8 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
     }
 
     private void pushValue(JsArray<JavaScriptObject> array, GPropertyDraw property, Object value) {
-        if(property.baseType instanceof GLogicalType)
-            array.push(fromBoolean(value!=null));
+        if (property.baseType instanceof GLogicalType)
+            array.push(fromBoolean(((GLogicalType) property.baseType).threeState ? (boolean) value : value != null));
         else if(value == null)
             array.push(null);
         else if(property.baseType instanceof GIntegralType)

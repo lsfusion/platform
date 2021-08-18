@@ -46,6 +46,7 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 
 import java.sql.SQLException;
+import java.util.function.Predicate;
 
 import static lsfusion.base.BaseUtils.max;
 
@@ -55,30 +56,30 @@ public class AutoHintsAspect {
     public static ThreadLocal<SessionModifier> catchAutoHint = new ThreadLocal<>();
     public static ThreadLocal<Boolean> catchNotFirst = new ThreadLocal<>();
 
-    public static ThreadLocal<Property> catchDisabledDepends = new ThreadLocal<>();
-    private static boolean disabledDepends(Property property) {
-        Property disabledDepends = catchDisabledDepends.get();
-        return disabledDepends != null && Property.depends(property, disabledDepends);
+    public static ThreadLocal<Predicate<Property>> catchDisabledHints = new ThreadLocal<>();
+    private static boolean disabledHints(Property property) {
+        Predicate<Property> disabledHints = catchDisabledHints.get();
+        return disabledHints != null && disabledHints.test(property);
     }
 
-    public static ThreadLocal<Integer> catchDisabledRepeat = new ThreadLocal<>();
-    public static void pushDisabledRepeat() {
-        Integer prev = catchDisabledRepeat.get();
+    public static ThreadLocal<Integer> catchDisabledComplex = new ThreadLocal<>();
+    public static void pushDisabledComplex() {
+        Integer prev = catchDisabledComplex.get();
         if(prev == null)
             prev = 0;
-        catchDisabledRepeat.set(prev + 1);
+        catchDisabledComplex.set(prev + 1);
     }
-    private static boolean isDisabledRepeat() {
-        Integer disabled = catchDisabledRepeat.get();
+    private static boolean isDisabledComplex() {
+        Integer disabled = catchDisabledComplex.get();
         return disabled != null && disabled > 0;
     }
-    public static void popDisabledRepeat() {
-        int prev = catchDisabledRepeat.get();
+    public static void popDisabledComplex() {
+        int prev = catchDisabledComplex.get();
         assert prev > 0;
         if(prev == 1)
-            catchDisabledRepeat.remove();
+            catchDisabledComplex.remove();
         else
-            catchDisabledRepeat.set(prev - 1);
+            catchDisabledComplex.set(prev - 1);
     }
 
     // limitHints - тоже надо включать
@@ -88,8 +89,12 @@ public class AutoHintsAspect {
         private final ImMap<Property, Byte> usedHints;
         private final ImMap<Property, ValuesContext> usedPrereads;
 
-        public AutoHintImplement(Property<P> property, ImMap<P, Expr> joinImplement, SessionModifier modifier) throws SQLException, SQLHandledException {
-            usedChanges = property.getUsedChanges(modifier.getPropertyChanges());
+        // isDisabledHint, isDisabledComplex should be added
+        public AutoHintImplement(Property<P> property, ImMap<P, Expr> joinImplement, SessionModifier modifier, boolean prevChanges) throws SQLException, SQLHandledException {
+            PropertyChanges propertyChanges = modifier.getPropertyChanges();
+            if(prevChanges)
+                propertyChanges = propertyChanges.getPrev();
+            usedChanges = property.getUsedChanges(propertyChanges);
             this.joinImplement = joinImplement;
 
             ImSet<Property> depends = property.getRecDepends();
@@ -156,15 +161,15 @@ public class AutoHintsAspect {
         }
     }
 
-    public <P extends PropertyInterface> Object callAutoHint(ProceedingJoinPoint thisJoinPoint, Property<P> property, ImMap<P, Expr> joinImplement, Modifier modifier) throws Throwable {
-        if(!Settings.get().isDisableAutoHints() && modifier instanceof SessionModifier) { // && property.hasChanges(modifier) иначе в рекурсию уходит при changeModifier'е, надо было бы внутрь перенести
-            SessionModifier sessionModifier = (SessionModifier) modifier;
+    public <P extends PropertyInterface> Object callAutoHint(ProceedingJoinPoint thisJoinPoint, Property<P> property, ImMap<P, Expr> joinImplement, Modifier modifier, boolean prevChanges) throws Throwable {
+        if(!Settings.get().isDisableAutoHints()) { // && property.hasChanges(modifier) иначе в рекурсию уходит при changeModifier'е, надо было бы внутрь перенести
 
             Result<Hint> resultHint = new Result<>();
-            Object result = proceedCached(thisJoinPoint, property, joinImplement, sessionModifier, resultHint);
-            if(result!=null || isDisabledRepeat())
+            Object result = proceedCached(thisJoinPoint, property, joinImplement, modifier, prevChanges, resultHint);
+            if(result!=null || isDisabledComplex())
                 return result;
 
+            SessionModifier sessionModifier = (SessionModifier) modifier;
             resultHint.result.resolve(sessionModifier);
 
             Boolean isFirst = null;
@@ -183,11 +188,12 @@ public class AutoHintsAspect {
             return thisJoinPoint.proceed();
     }
 
-    private <P extends PropertyInterface> Object proceedCached(ProceedingJoinPoint thisJoinPoint, Property<P> property, ImMap<P, Expr> joinImplement, SessionModifier sessionModifier, Result<Hint> resultHint) throws Throwable {
-        if(Settings.get().isDisableAutoHintCaches())
-            return proceed(thisJoinPoint, sessionModifier, resultHint);
+    private <P extends PropertyInterface> Object proceedCached(ProceedingJoinPoint thisJoinPoint, Property<P> property, ImMap<P, Expr> joinImplement, Modifier modifier, boolean prevChanges, Result<Hint> resultHint) throws Throwable {
+        if(Settings.get().isDisableAutoHintCaches() || !(modifier instanceof SessionModifier))
+            return proceed(thisJoinPoint, modifier, resultHint);
 
-        AutoHintImplement<P> implement = new AutoHintImplement<>(property, joinImplement, sessionModifier);
+        SessionModifier sessionModifier = (SessionModifier)modifier;
+        AutoHintImplement<P> implement = new AutoHintImplement<>(property, joinImplement, sessionModifier, prevChanges);
         MAddCol<MapCacheAspect.CacheResult<AutoHintImplement<P>,Hint>> hashCaches = MapCacheAspect.getCachedCol(property, implement.getInnerComponents(true).hash, MapCacheAspect.Type.AUTOHINT);
         synchronized(hashCaches) {
             Hint cacheHint = null;
@@ -220,8 +226,9 @@ public class AutoHintsAspect {
         }
     }
 
-    private Object proceed(ProceedingJoinPoint thisJoinPoint, SessionModifier sessionModifier, Result<Hint> resultHint) throws Throwable {
+    private Object proceed(ProceedingJoinPoint thisJoinPoint, Modifier modifier, Result<Hint> resultHint) throws Throwable {
         SessionModifier prevModifier = catchAutoHint.get();
+        SessionModifier sessionModifier = modifier instanceof SessionModifier ? (SessionModifier) modifier : null;
         catchAutoHint.set(sessionModifier);
         Object result;
         try {
@@ -240,13 +247,13 @@ public class AutoHintsAspect {
         }
     }
 
-    @Around("execution(* lsfusion.server.logics.property.Property.getExpr(lsfusion.base.col.interfaces.immutable.ImMap, lsfusion.server.logics.action.session.change.modifier.Modifier, lsfusion.server.data.where.WhereBuilder)) && target(property) && args(map, modifier, changedWhere)")
-    public Object callGetExpr(ProceedingJoinPoint thisJoinPoint, Property property, ImMap map, Modifier modifier, WhereBuilder changedWhere) throws Throwable {
-        return callAutoHint(thisJoinPoint, property, map, modifier);
+    @Around("execution(* lsfusion.server.logics.property.Property.getExpr(lsfusion.base.col.interfaces.immutable.ImMap, lsfusion.server.logics.action.session.change.modifier.Modifier, boolean, lsfusion.server.data.where.WhereBuilder)) && target(property) && args(map, modifier, prevChanges, changedWhere)")
+    public Object callGetExpr(ProceedingJoinPoint thisJoinPoint, Property property, ImMap map, Modifier modifier, boolean prevChanges, WhereBuilder changedWhere) throws Throwable {
+        return callAutoHint(thisJoinPoint, property, map, modifier, prevChanges);
     }
     @Around("execution(* lsfusion.server.logics.property.Property.getIncrementChange(lsfusion.server.logics.action.session.change.modifier.Modifier)) && target(property) && args(modifier)")
     public Object callGetIncrementChange(ProceedingJoinPoint thisJoinPoint, Property property, Modifier modifier) throws Throwable {
-        return callAutoHint(thisJoinPoint, property, null, modifier);
+        return callAutoHint(thisJoinPoint, property, null, modifier, false);
     }
 
     @Around("execution(* lsfusion.server.logics.property.Property.getQuery(lsfusion.server.logics.property.CalcType,lsfusion.server.logics.action.session.change.PropertyChanges,lsfusion.server.logics.property.PropertyQueryType,*)) && target(property) && args(calcType, propChanges, queryType, interfaceValues)")
@@ -266,15 +273,27 @@ public class AutoHintsAspect {
             return thisJoinPoint.proceed();
 
         SessionModifier catchHint = catchAutoHint.get();
-        if(catchHint != null && catchHint.allowPrereadValues(property, interfaceValues) && !disabledDepends(property)) // если есть не "прочитанные" параметры - значения, вычисляем
-            throw new HintException(new PrereadHint(property, interfaceValues));
+        boolean hasPrereadChanges = false;
+        boolean allowPrereadValues = catchHint != null && catchHint.allowPrereadValues(property, interfaceValues, hasPrereadChanges = hintHasChanges(null, property, propChanges)) && !disabledHints(property);
+        if(allowPrereadValues && catchHint.forcePrereadValues(property)) // если есть не "прочитанные" параметры - значения, вычисляем
+            throw new HintException(new PrereadHint(property, interfaceValues, hasPrereadChanges));
 
         IQuery<?, String> result = (IQuery) thisJoinPoint.proceed();
         if(queryType == PropertyQueryType.RECURSIVE)
             return result;
 
+        boolean disabledComplex = isDisabledComplex();
+        if(allowPrereadValues || disabledComplex) {
+            Expr expr = result.getExpr("value");
+            long exprComplexity = expr.getComplexity(false);
+            if(allowPrereadValues && exprComplexity > Settings.get().getLimitHintPrereadComplexity())
+                    throw new HintException(new PrereadHint(property, interfaceValues, hasPrereadChanges));
+            if(disabledComplex && exprComplexity > Settings.get().getLimitHintComplexComplexity())
+                throw new HintException(new DisableComplexHint());
+        }
+
         // проверка на пустоту для оптимизации при старте
-        if(catchHint != null && !propChanges.isEmpty() && catchHint.allowHintIncrement(property) && !property.isNoHint() && !disabledDepends(property)) { // неправильно так как может быть не changed
+        if(catchHint != null && !propChanges.isEmpty() && catchHint.allowHintIncrement(property) && !property.isNoHint() && !disabledHints(property)) { // неправильно так как может быть не changed
             Where changed = null;
             if(queryType.needChange())
                 changed = result.getExpr("changed").getWhere();
@@ -297,7 +316,7 @@ public class AutoHintsAspect {
                 if(complexity > limitComplexity && property.hasChanges(propChanges)) { // сложность большая, если нет изменений то ничем не поможешь
                     if (interfaceValues.isEmpty() && queryType == PropertyQueryType.FULLCHANGED) {
                         ImRevMap<?, KeyExpr> mapKeys = result.getMapKeys();
-                        if(whereComplexity > limitComplexity || exprComplexity > property.getExpr(mapKeys).getComplexity(false) * catchHint.getLimitComplexityGrowthCoeff()) { // вторая проверка как и использование limitComplexity а не prevComplexity (max с ним), чтобы заставить ее более агрессивно hint'ить, когда общая complexity зашкаливает (min не используется чтобы не hint'ить раньше времени)
+                        if(whereComplexity > limitComplexity || exprComplexity > property.getPrevExpr(mapKeys, calcType, propChanges).getComplexity(false) * catchHint.getLimitComplexityGrowthCoeff()) { // вторая проверка как и использование limitComplexity а не prevComplexity (max с ним), чтобы заставить ее более агрессивно hint'ить, когда общая complexity зашкаливает (min не используется чтобы не hint'ить раньше времени)
                             long baseLimit = catchHint.getLimitHintIncrementStat();
                             long maxCountUsed = catchHint.getMaxCountUsed(property);
                             // будем считать что рост сложности полиномиальный (квадратичный с учетом того что A x B, выполняется за условно AB операций), в то же время сложность агрегации условно линейный
@@ -330,22 +349,37 @@ public class AutoHintsAspect {
 
         SessionModifier catchHint = catchAutoHint.get();
 
-        ImMap<PropertyInterface, Expr> joinValues;
-        if(catchHint!=null && catchHint.allowPrereadValues(property, joinValues = Property.getJoinValues(joinExprs))) {
-            throw new HintException(new PrereadHint(property, joinValues));
+        ImMap<PropertyInterface, Expr> joinValues = null;
+        boolean hasPrereadChanges = false;
+        boolean allowPrereadValues = catchHint != null && catchHint.allowPrereadValues(property, joinValues = Property.getJoinValues(joinExprs), hasPrereadChanges = hintHasChanges(null, property, propChanges)) && !disabledHints(property);
+        if(allowPrereadValues && catchHint.forcePrereadValues(property))
+            throw new HintException(new PrereadHint(property, joinValues, hasPrereadChanges));
+
+        WhereBuilder cascadeWhere = null;
+        Expr result;
+        boolean allowHintIncrement = catchHint != null && catchHint.allowHintIncrement(property) && !disabledHints(property);
+        if(allowHintIncrement) { // неправильно так как может быть не changed
+            cascadeWhere = Property.cascadeWhere(changedWhere);
+            result = (Expr) thisJoinPoint.proceed(new Object[]{property, joinExprs, calcType, propChanges, cascadeWhere});
+        } else
+            result = (Expr) thisJoinPoint.proceed();
+
+        boolean disabledComplex = isDisabledComplex();
+        long exprComplexity = allowPrereadValues || allowHintIncrement || disabledComplex ? result.getComplexity(false) : 0;
+
+        if(allowPrereadValues && exprComplexity > Settings.get().getLimitHintPrereadComplexity())
+            throw new HintException(new PrereadHint(property, joinValues, hasPrereadChanges));
+
+        if(disabledComplex && exprComplexity > Settings.get().getLimitHintComplexComplexity())
+            throw new HintException(new DisableComplexHint());
+
+        if(allowHintIncrement) {
+            long complexity = BaseUtils.max(exprComplexity, (changedWhere != null ? cascadeWhere.toWhere().getComplexity(false) : 0));
+            if (complexity > Settings.get().getLimitHintIncrementComplexityCoeff() && property.hasChanges(propChanges))
+                property.getQuery(calcType, propChanges, PropertyQueryType.FULLCHANGED, MapFact.EMPTY()); // по аналогии с верхним
+
+            if (changedWhere != null) changedWhere.add(cascadeWhere.toWhere());
         }
-
-        if(catchHint == null || !catchHint.allowHintIncrement(property)) // неправильно так как может быть не changed
-            return thisJoinPoint.proceed();
-
-        WhereBuilder cascadeWhere = Property.cascadeWhere(changedWhere);
-        Expr result = (Expr) thisJoinPoint.proceed(new Object[]{property, joinExprs, calcType, propChanges, cascadeWhere});
-
-        long complexity = BaseUtils.max(result.getComplexity(false), (changedWhere != null ? cascadeWhere.toWhere().getComplexity(false) : 0));
-        if(complexity > Settings.get().getLimitHintIncrementComplexityCoeff() && property.hasChanges(propChanges))
-            property.getQuery(calcType, propChanges, PropertyQueryType.FULLCHANGED, MapFact.EMPTY()); // по аналогии с верхним
-        
-        if(changedWhere!=null) changedWhere.add(cascadeWhere.toWhere());
         return result;
     }
 
@@ -353,9 +387,11 @@ public class AutoHintsAspect {
 
         public final Property<PropertyInterface> property;
         public final ImMap<PropertyInterface, Expr> values;
-        public PrereadHint(Property property, ImMap<PropertyInterface, Expr> values) {
+        public final boolean hasChanges;
+        public PrereadHint(Property property, ImMap<PropertyInterface, Expr> values, boolean hasChanges) {
             this.property = property;
             this.values = values;
+            this.hasChanges = hasChanges;
         }
 
         public ImSet<Value> getValues() {
@@ -363,19 +399,19 @@ public class AutoHintsAspect {
         }
 
         protected PrereadHint translate(MapValuesTranslate translator) {
-            return new PrereadHint(property, translator.mapKeys().translate(values));
+            return new PrereadHint(property, translator.mapKeys().translate(values), hasChanges);
         }
 
         public boolean calcTwins(TwinImmutableObject o) {
-            return values.equals(((PrereadHint) o).values) && property.equals(((PrereadHint) o).property);
+            return values.equals(((PrereadHint) o).values) && property.equals(((PrereadHint) o).property) && hasChanges == ((PrereadHint) o).hasChanges;
         }
 
         public int hash(HashValues hash) {
-            return 31 * property.hashCode() + AbstractOuterContext.hashOuter(values, new HashContext(HashCodeKeys.instance, hash));
+            return 31 * (31 * property.hashCode() + AbstractOuterContext.hashOuter(values, new HashContext(HashCodeKeys.instance, hash))) + (hasChanges ? 1 : 0);
         }
 
         public void resolve(SessionModifier modifier) throws SQLException, SQLHandledException {
-            modifier.addPrereadValues(property, values);
+            modifier.addPrereadValues(property, values, hasChanges);
         }
     }
 
@@ -410,6 +446,33 @@ public class AutoHintsAspect {
                 modifier.addHintIncrement(property);
             else
                 modifier.addNoUpdate(property);
+        }
+    }
+
+    public static class DisableComplexHint extends Hint<DisableComplexHint> {
+
+        public DisableComplexHint() {
+        }
+
+        protected DisableComplexHint translate(MapValuesTranslate translator) {
+            return this;
+        }
+
+        public ImSet<Value> getValues() {
+            return SetFact.EMPTY();
+        }
+
+        public int hash(HashValues hash) {
+            return 0;
+        }
+
+        public boolean calcTwins(TwinImmutableObject o) {
+            return true;
+        }
+
+        @Override
+        public void resolve(SessionModifier modifier) throws SQLException, SQLHandledException {
+            throw new UnsupportedOperationException(); // shouldn't be since there is a isDisabledComplex check in callAutoHint
         }
     }
 

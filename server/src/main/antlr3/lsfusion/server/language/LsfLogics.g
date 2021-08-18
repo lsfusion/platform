@@ -3499,8 +3499,8 @@ externalActionDefinitionBody [List<TypedParameter> context, boolean dynamic] ret
       } else if($type.format == ExternalFormat.UDP) {
         $action = self.addScriptedExternalUDPAction($type.clientAction, $type.conStr, params, context);
       } else if($type.format == ExternalFormat.HTTP) {
-        $action = self.addScriptedExternalHTTPAction($type.clientAction, $type.method, $type.conStr, $type.bodyUrl, $type.bodyParamNames, $type.headers, $type.cookies,
-            $type.headersTo, $type.cookiesTo, params, context, $tl.propUsages);
+        $action = self.addScriptedExternalHTTPAction($type.clientAction, $type.method, $type.conStr, $type.bodyUrl, $type.bodyParamNames, $type.bodyParamHeadersList,
+            $type.headers, $type.cookies, $type.headersTo, $type.cookiesTo, params, context, $tl.propUsages);
       } else if($type.format == ExternalFormat.LSF) {
         $action = self.addScriptedExternalLSFAction($type.conStr, $type.exec, $type.eval, $type.action, params, context, $tl.propUsages);
       }
@@ -3512,7 +3512,7 @@ externalActionDefinitionBody [List<TypedParameter> context, boolean dynamic] ret
 	    ('TO' tl = nonEmptyPropertyUsageList)?
 	;
 
-externalFormat [List<TypedParameter> context, boolean dynamic] returns [ExternalFormat format, ExternalHttpMethod method, boolean clientAction, LPWithParams conStr, LPWithParams bodyUrl, LPWithParams exec, List<String> bodyParamNames = new ArrayList<>(), NamedPropertyUsage headers, NamedPropertyUsage cookies, NamedPropertyUsage headersTo, NamedPropertyUsage cookiesTo, boolean eval = false, boolean action = false, String charset]
+externalFormat [List<TypedParameter> context, boolean dynamic] returns [ExternalFormat format, ExternalHttpMethod method, boolean clientAction, LPWithParams conStr, LPWithParams bodyUrl, LPWithParams exec, List<String> bodyParamNames = new ArrayList<>(), List<NamedPropertyUsage> bodyParamHeadersList = new ArrayList<>(), NamedPropertyUsage headers, NamedPropertyUsage cookies, NamedPropertyUsage headersTo, NamedPropertyUsage cookiesTo, boolean eval = false, boolean action = false, String charset]
 	:	'SQL'	{ $format = ExternalFormat.DB; } conStrVal = propertyExpression[context, dynamic] { $conStr = $conStrVal.property; } 'EXEC' execVal = propertyExpression[context, dynamic] { $exec = $execVal.property; }
 	|	'UDP'	{ $format = ExternalFormat.UDP; } ('CLIENT' { $clientAction = true; })?
 	            conStrVal = propertyExpression[context, dynamic] { $conStr = $conStrVal.property; }
@@ -3520,6 +3520,7 @@ externalFormat [List<TypedParameter> context, boolean dynamic] returns [External
 	            (methodVal = externalHttpMethod { $method = $methodVal.method; })? conStrVal = propertyExpression[context, dynamic] { $conStr = $conStrVal.property; }
 	            ('BODYURL' bodyUrlVal = propertyExpression[context, dynamic] { $bodyUrl = $bodyUrlVal.property; })?
 	            ('BODYPARAMNAMES' firstName=stringLiteral { $bodyParamNames.add($firstName.val); } (',' nextName=stringLiteral { $bodyParamNames.add($nextName.val); })*)?
+                ('BODYPARAMHEADERS' firstProp = propertyUsage { $bodyParamHeadersList.add($firstProp.propUsage); } (',' nextProp = propertyUsage { $bodyParamHeadersList.add($nextProp.propUsage); })*)?
 	            ('HEADERS' headersVal = propertyUsage { $headers = $headersVal.propUsage; })?
 	            ('COOKIES' cookiesVal = propertyUsage { $cookies = $cookiesVal.propUsage; })?
 	            ('HEADERSTO' headersToVal = propertyUsage { $headersTo = $headersToVal.propUsage; })?
@@ -3801,7 +3802,7 @@ inputActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams ac
 }
 	:	'INPUT'
 	    in=mappedInput[newContext]
-        ( { assignDebugPoint = getCurrentDebugPoint(); } // copy paste of 'CHANGE' in formActionProps
+        ( { assignDebugPoint = getCurrentDebugPoint(); }// copy paste of 'CHANGE' in formActionProps
             'CHANGE' { assign = true; constraintFilter = true; }
             (EQ consExpr=propertyExpression[context, false])? { changeProp = $consExpr.property; }
             ('NOCONSTRAINTFILTER' { constraintFilter = false; } )?
@@ -3872,7 +3873,7 @@ activateActionDefinitionBody[List<TypedParameter> context, boolean dynamic] retu
 	}
 }
 	:	'ACTIVATE'
-		(	'FORM' fName=compoundID { form = self.findForm($fName.sid); }
+		(	'FORM' fName=compoundID { if (inMainParseState()) { form = self.findForm($fName.sid); } }
 		|	'TAB' fc = formComponentID { form = $fc.form; component = $fc.component; }
 		|   'PROPERTY' fp = formPropertyID { propertyDraw = $fp.propertyDraw; }
 		)
@@ -4842,6 +4843,7 @@ componentPropertyValue returns [Object value] //commented literals are in design
 	//|   d=doubleLiteral { $value = $d.val; }
 	|   dim=dimensionLiteral { $value = $dim.val; }
 	|   b=booleanLiteral { $value = $b.val; }
+	|   tb=tbooleanLiteral { $value = $tb.val; }
 	|   intB=boundsIntLiteral { $value = $intB.val; }
 	|   doubleB=boundsDoubleLiteral { $value = $doubleB.val; }
 	|   contType=containerTypeLiteral { $value = $contType.val; }
@@ -4943,6 +4945,7 @@ metaCodeLiteral
 	|	UDOUBLE_LITERAL
 	|	ULONG_LITERAL
 	|	LOGICAL_LITERAL
+	|	T_LOGICAL_LITERAL
 	|	DATE_LITERAL
 	|	DATETIME_LITERAL
 	|	TIME_LITERAL
@@ -5132,7 +5135,8 @@ literal returns [ScriptingLogicsModule.ConstType cls, Object value]
 	|	vnum=unumericLiteral   { $cls = ScriptingLogicsModule.ConstType.NUMERIC; $value = $vnum.val; }
 	|	vdouble=udoubleLiteral { $cls = ScriptingLogicsModule.ConstType.REAL; $value = $vdouble.val; }
 	|	vstr=localizedStringLiteralNoID	{ $cls = ScriptingLogicsModule.ConstType.STRING; $value = $vstr.val; }
-	|	vbool=booleanLiteral	{ $cls = ScriptingLogicsModule.ConstType.LOGICAL; $value = $vbool.val;  { if (inMainParseState()) self.getChecks().checkBooleanUsage($vbool.val); }}
+	|	vbool=booleanLiteral	{ $cls = ScriptingLogicsModule.ConstType.LOGICAL; $value = $vbool.val; { if (inMainParseState()) self.getChecks().checkBooleanUsage($vbool.val); }}
+	|	vtbool=tbooleanLiteral	{ $cls = ScriptingLogicsModule.ConstType.TLOGICAL; $value = $vtbool.val; }
 	|	vdate=dateLiteral	{ $cls = ScriptingLogicsModule.ConstType.DATE; $value = $vdate.val; }
 	|	vdatetime=dateTimeLiteral { $cls = ScriptingLogicsModule.ConstType.DATETIME; $value = $vdatetime.val; }
 	|	vtime=timeLiteral 	{ $cls = ScriptingLogicsModule.ConstType.TIME; $value = $vtime.val; }
@@ -5293,6 +5297,10 @@ booleanLiteral returns [boolean val]
 	:	bool=LOGICAL_LITERAL { $val = Boolean.valueOf($bool.text); }
 	;
 
+tbooleanLiteral returns [boolean val]
+	:	bool=T_LOGICAL_LITERAL { $val = self.tBooleanToBoolean($bool.text); }
+	;
+
 dimensionLiteral returns [Dimension val]
 	:	'(' x=intLiteral ',' y=intLiteral ')' { $val = new Dimension($x.val, $y.val); }
 	;
@@ -5403,16 +5411,17 @@ fragment STRING_META_FRAGMENT : (STRING_LITERAL_ID_FRAGMENT ('###' | '##'))* STR
 
 fragment INTERVAL_TYPE : 'DATE' | 'DATETIME' | 'TIME' | 'ZDATETIME';
 
-PRIMITIVE_TYPE  :	'INTEGER' | 'DOUBLE' | 'LONG' | 'BOOLEAN' | 'DATE' | 'DATETIME' | 'ZDATETIME' | 'YEAR'
-                |   'TEXT' | 'RICHTEXT' | 'TIME' | 'WORDFILE' | 'IMAGEFILE' | 'PDFFILE' | 'RAWFILE'
+PRIMITIVE_TYPE  :	'INTEGER' | 'DOUBLE' | 'LONG' | 'BOOLEAN' | 'TBOOLEAN' | 'DATE' | 'DATETIME' | 'ZDATETIME' | 'YEAR'
+                |   'TEXT' | 'RICHTEXT' | 'TIME' | 'WORDFILE' | 'IMAGEFILE' | 'PDFFILE' | 'DBFFILE' | 'RAWFILE'
 				| 	'FILE' | 'EXCELFILE' | 'TEXTFILE' | 'CSVFILE' | 'HTMLFILE' | 'JSONFILE' | 'XMLFILE' | 'TABLEFILE'
-				|   'WORDLINK' | 'IMAGELINK'
-				|   'PDFLINK' | 'RAWLINK' | 'LINK' | 'EXCELLINK' | 'TEXTLINK' | 'CSVLINK' | 'HTMLLINK' | 'JSONLINK' | 'XMLLINK' | 'TABLELINK'
+				|   'WORDLINK' | 'IMAGELINK' | 'PDFLINK' | 'DBFLINK'
+				|   'RAWLINK' | 'LINK' | 'EXCELLINK' | 'TEXTLINK' | 'CSVLINK' | 'HTMLLINK' | 'JSONLINK' | 'XMLLINK' | 'TABLELINK'
 				|   ('BPSTRING' ('[' DIGITS ']')?) | ('BPISTRING' ('[' DIGITS ']')?)
 				|	('STRING' ('[' DIGITS ']')?) | ('ISTRING' ('[' DIGITS ']')?) | 'NUMERIC' ('[' DIGITS ',' DIGITS ']')? | 'COLOR'
 				|   ('INTERVAL' ('[' INTERVAL_TYPE ']'));
 LOGICAL_LITERAL :	'TRUE' | 'FALSE';
-NULL_LITERAL	:	'NULL';	
+T_LOGICAL_LITERAL:	'TTRUE' | 'TFALSE';
+NULL_LITERAL	:	'NULL';
 ID				:	ID_META_FRAGMENT;
 STRING_LITERAL	:	STRING_META_FRAGMENT;
 WS				:	(NEWLINE | SPACE) { $channel=HIDDEN; };

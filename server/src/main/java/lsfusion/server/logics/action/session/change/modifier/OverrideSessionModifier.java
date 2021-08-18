@@ -107,14 +107,14 @@ public class OverrideSessionModifier extends SessionModifier {
     }
 
     @Override
-    public <P extends PropertyInterface> boolean allowPrereadValues(Property<P> property, ImMap<P, Expr> values) {
+    public <P extends PropertyInterface> boolean allowPrereadValues(Property<P> property, ImMap<P, Expr> values, boolean hasChanges) {
         if(!allowPropertyPrereadValues(property)) // оптимизация
             return false;
 
         if(pushHint(property))
-            return modifier.allowPrereadValues(property, values);
+            return modifier.allowPrereadValues(property, values, hasChanges);
 
-        return super.allowPrereadValues(property, values);
+        return super.allowPrereadValues(property, values, hasChanges);
     }
 
 
@@ -148,14 +148,14 @@ public class OverrideSessionModifier extends SessionModifier {
     }
 
     @Override
-    public <P extends PropertyInterface> void addPrereadValues(Property<P> property, ImMap<P, Expr> values) throws SQLException, SQLHandledException {
+    public <P extends PropertyInterface> void addPrereadValues(Property<P> property, ImMap<P, Expr> values, boolean hasChanges) throws SQLException, SQLHandledException {
         // если не зависит от override'а проталкиваем внутрь
         if(pushHint(property)) {
-            modifier.addPrereadValues(property, values);
+            modifier.addPrereadValues(property, values, hasChanges);
             return;
         }
 
-        super.addPrereadValues(property, values);
+        super.addPrereadValues(property, values, hasChanges);
     }
 
     @Override
@@ -231,7 +231,8 @@ public class OverrideSessionModifier extends SessionModifier {
     protected <P extends PropertyInterface> ModifyChange<P> calculateModifyChange(Property<P> property, PrereadRows<P> preread, FunctionSet<Property> overrided) {
         PropertyChange<P> overrideChange = override.getPropertyChange(property);
         if(overrideChange!=null)
-            return new ModifyChange<>(overrideChange, true);
+            return new ModifyChange<>(overrideChange, preread, true);
+
         return modifier.getModifyChange(property, preread, merge(overrided, Property.getDependsOnSet(override.getProperties()), forceDisableHintIncrement));
     }
 

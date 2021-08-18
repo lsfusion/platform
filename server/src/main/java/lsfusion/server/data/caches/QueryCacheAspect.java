@@ -82,7 +82,7 @@ public class QueryCacheAspect {
                 assert query != cache;
                 MapQuery<K,V,?,?> packed = cacheTwinQuery(cache, query);
                 if(packed !=null) {
-                    logger.debug("cached");
+//                    logger.debug("cached");
                     CacheStats.incrementHit(CacheStats.CacheType.QUERY);
 
                     assert packed.getMapQuery() == cache && ((QueryCacheInterface)cache).getCacheTwin() == cache;
@@ -90,7 +90,7 @@ public class QueryCacheAspect {
                     return packed;
                 }
             }
-            logger.debug("not cached");
+//            logger.debug("not cached");
             CacheStats.incrementMissed(CacheStats.CacheType.QUERY);
             Result<Query> cache = new Result<>();
             result = cacheNoBigTwin(query, cache);

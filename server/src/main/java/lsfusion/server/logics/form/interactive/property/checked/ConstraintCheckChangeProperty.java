@@ -37,7 +37,7 @@ public class ConstraintCheckChangeProperty<T extends PropertyInterface,P extends
     public static ImSet<Property> getUsedChanges(Property<?> onChange, Property<?> toChange, StructChanges propChanges) {
         // we need to remove changedProps, since they are "overrided" with change exprs
         ImSet<Property> changeProps = BaseUtils.immutableCast(toChange.getChangeProps());
-        StructChanges changeModifier = propChanges.add(new StructChanges(changeProps.toMap(ChangeType.get(true, null))));
+        StructChanges changeModifier = propChanges.replace(SetFact.EMPTY(), changeProps.toMap(ChangeType.get(true, null, true, false)));
 
         return SetFact.add(toChange.getUsedDataChanges(propChanges, CalcDataType.PULLEXPR), onChange.getUsedChanges(changeModifier).remove(changeProps));
     }
@@ -121,12 +121,12 @@ public class ConstraintCheckChangeProperty<T extends PropertyInterface,P extends
         Where newWhere;
         Where prevWhere = null;
         // we don't want pull exprs from change modifier to be materialized (it will throw an error)
-        AutoHintsAspect.catchDisabledDepends.set(toChange);
+        AutoHintsAspect.catchDisabledHints.set(property -> Property.depends(property, toChange));
         try {
             newWhere = getChangeWhere(mapKeys, calcType, propChanges);
             if(changedWhere != null) prevWhere = getChangeWhere(mapKeys, calcType, PropertyChanges.EMPTY);
         } finally {
-            AutoHintsAspect.catchDisabledDepends.set(null);
+            AutoHintsAspect.catchDisabledHints.set(null);
         }
 
         Where newExprWhere = GroupExpr.create(mapExprs, newWhere, joinImplement).getWhere(); // constraints (filters)

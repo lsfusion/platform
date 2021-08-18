@@ -153,6 +153,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public LP<?> appPort;
     public LP<?> exportName;
     public LP<?> scheme;
+    public LP<?> method;
     public LP<?> webHost;
     public LP<?> webPort;
     public LP<?> contextPath;
@@ -482,6 +483,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         appPort = findProperty("appPort[]");
         exportName = findProperty("exportName[]");
         scheme = findProperty("scheme[]");
+        method = findProperty("method[]");
         webHost = findProperty("webHost[]");
         webPort = findProperty("webPort[]");
         contextPath = findProperty("contextPath[]");
@@ -773,12 +775,14 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
                 getLCPByUniqueName(namePrefix + "IntervalTime"),
                 getLCPByUniqueName(namePrefix + "IntervalZDateTime"),
                 getLCPByUniqueName(namePrefix + "Boolean"),
+                getLCPByUniqueName(namePrefix + "TBoolean"),
                 getLCPByUniqueName(namePrefix + "Date"),
                 getLCPByUniqueName(namePrefix + "Time"),
                 getLCPByUniqueName(namePrefix + "Color"),
                 getLCPByUniqueName(namePrefix + "WordFile"),
                 getLCPByUniqueName(namePrefix + "ImageFile"),
                 getLCPByUniqueName(namePrefix + "PdfFile"),
+                getLCPByUniqueName(namePrefix + "DbfFile"),
                 getLCPByUniqueName(namePrefix + "RawFile"),
                 getLCPByUniqueName(namePrefix + "File"),
                 getLCPByUniqueName(namePrefix + "ExcelFile"),
@@ -791,6 +795,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
                 getLCPByUniqueName(namePrefix + "WordLink"),
                 getLCPByUniqueName(namePrefix + "ImageLink"),
                 getLCPByUniqueName(namePrefix + "PdfLink"),
+                getLCPByUniqueName(namePrefix + "DbfLink"),
                 getLCPByUniqueName(namePrefix + "RawLink"),
                 getLCPByUniqueName(namePrefix + "Link"),
                 getLCPByUniqueName(namePrefix + "ExcelLink"),

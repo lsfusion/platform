@@ -60,10 +60,11 @@ public class XorUnionProperty extends IncrementUnionProperty {
         });
 
         Where resultWhere = prevExpr.getWhere();
+        PropertyChanges prevPropChanges = getPrevPropChanges(propChanges);
         for(int i=0,size=operands.size();i<size;i++) {
             PropertyInterfaceImplement<Interface> operand = operands.get(i);
             Pair<Expr, Where> operandExpr = operandExprs.get(i);
-            Where prevOperandWhere = operand.mapExpr(joinImplement).getWhere();
+            Where prevOperandWhere = operand.mapExpr(joinImplement, prevPropChanges).getWhere();
             resultWhere = resultWhere.xor(operandExpr.first.getWhere().xor(prevOperandWhere).and(operandExpr.second));
             if(changedWhere!=null) changedWhere.add(operandExpr.second);
         }

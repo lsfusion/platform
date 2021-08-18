@@ -1,16 +1,14 @@
 package lsfusion.server.logics.action.session.change;
 
-import lsfusion.base.BaseUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.base.col.interfaces.mutable.AddValue;
 import lsfusion.base.col.interfaces.mutable.MSet;
-import lsfusion.base.col.interfaces.mutable.SimpleAddValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
 import lsfusion.base.mutability.TwinImmutableObject;
+import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.logics.action.session.changed.OldProperty;
 import lsfusion.server.logics.property.Property;
 
@@ -20,23 +18,6 @@ public class StructChanges extends TwinImmutableObject {
 
     public final static Function<ModifyChange, ChangeType> getType = ModifyChange::getChangeType;
 
-    // не используется
-    private final static AddValue<Property, ChangeType> addValue = new SimpleAddValue<Property, ChangeType>() {
-        public ChangeType addValue(Property key, ChangeType prevValue, ChangeType newValue) {
-            if(prevValue.isFinal() || !newValue.isFinal())
-                return prevValue;
-            return newValue;
-        }
-
-        public AddValue<Property, ChangeType> reverse() {
-            throw new UnsupportedOperationException();
-        }
-
-        public boolean reversed() {
-            return false;
-        }
-    };
-
     private final ImMap<Property, ChangeType> changes;
 
     public final static StructChanges EMPTY = new StructChanges(MapFact.EMPTY());
@@ -44,19 +25,6 @@ public class StructChanges extends TwinImmutableObject {
     @Override
     public String toString() {
         return changes.toString();
-    }
-
-    private StructChanges(StructChanges changes1, StructChanges changes2) {
-        changes = changes1.changes.merge(changes2.changes, addValue);
-    }
-    public StructChanges add(StructChanges add) {
-        if(isEmpty())
-            return add;
-        if(add.isEmpty())
-            return this;
-        if(BaseUtils.hashEquals(this, add))
-            return this;
-        return new StructChanges(this, add);
     }
 
     public StructChanges remove(Property property) {
@@ -72,9 +40,11 @@ public class StructChanges extends TwinImmutableObject {
     }
 
     public boolean hasChanges(ImSet<Property> props) {
-        for(int i=0,size=props.size();i<size;i++)
-            if(changes.get(props.get(i))!= ChangeType.NOUPDATE)
+        for(int i=0,size=props.size();i<size;i++) {
+            ChangeType changeType = changes.get(props.get(i));
+            if(changeType.hasChanges)
                 return true;
+        }
         return false;
     }
 
@@ -104,7 +74,7 @@ public class StructChanges extends TwinImmutableObject {
             Boolean changeSetDropped = type.getSetOrDropped();
             if (changeSetDropped != null) {
                 if(!isFakeChange(setDroppedDepends, property, changeSetDropped))
-                    type = ChangeType.get(type.isFinal(), null);
+                    type = ChangeType.get(type.isFinal(), null, type.hasChanges, type.hasPrevPrereads);
             }
 
             transformedChanges.mapValue(i, type);
@@ -149,5 +119,20 @@ public class StructChanges extends TwinImmutableObject {
 
     public int immutableHashCode() {
         return changes.hashCode();
+    }
+
+    @IdentityInstanceLazy
+    public StructChanges getPrev() {
+        ImFilterValueMap<Property, ChangeType> mvResult = changes.mapFilterValues();
+        for(int i=0,size=changes.size();i<size;i++) {
+            ChangeType prevValue = changes.getValue(i).getPrev();
+            if(prevValue!=null)
+                mvResult.mapValue(i, prevValue);
+        }
+        ImMap<Property, ChangeType> changes = mvResult.immutableValue();
+        if(changes.isEmpty()) // optimization of the most common case
+            return PropertyChanges.EMPTY.getStruct();
+
+        return new StructChanges(changes);
     }
 }

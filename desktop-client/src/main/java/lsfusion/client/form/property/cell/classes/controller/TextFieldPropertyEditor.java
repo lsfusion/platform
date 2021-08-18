@@ -133,23 +133,26 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
                 new AsyncCallback<Pair<List<String>, Boolean>>() {
                     @Override
                     public void done(Pair<List<String>, Boolean> result) {
-                        suggestBox.updateItems(result.first, strict && !query.isEmpty());
+                        if (asyncChange.isEditing() && suggestBox.comboBox.isPopupVisible()) {
+                            suggestBox.updateItems(result.first, strict && !query.isEmpty());
 
-                        suggestBox.updateLoading(result.second);
+                            suggestBox.updateLoading(result.second);
 
-                        if(!result.second) {
-                            if (result.first.isEmpty())
-                                prevSucceededEmptyQuery = query;
-                            else
-                                prevSucceededEmptyQuery = null;
+                            if (!result.second) {
+                                if (result.first.isEmpty())
+                                    prevSucceededEmptyQuery = query;
+                                else
+                                    prevSucceededEmptyQuery = null;
+                            }
+
+                            cancelAndFlushDelayed(execTimer);
                         }
-
-                        cancelAndFlushDelayed(execTimer);
                     }
 
                     @Override
                     public void failure(Throwable t) {
-                        cancelAndFlushDelayed(execTimer);
+                        if (asyncChange.isEditing() && suggestBox.comboBox.isPopupVisible())
+                            cancelAndFlushDelayed(execTimer);
                     }
                 });
     }
@@ -171,7 +174,7 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
     }
 
     private void cancelAsyncValues() {
-        if(suggestBox.isLoading)
+        if(asyncChange.isEditing() && suggestBox.isLoading)
             asyncChange.getForm().getAsyncValues(property, asyncChange.getColumnKey(0, 0), null, actionSID, new AsyncCallback<Pair<List<String>, Boolean>>() {
                 @Override
                 public void done(Pair<List<String>, Boolean> result) {

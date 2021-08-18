@@ -153,6 +153,7 @@ public interface ClientMessages extends Messages {
     String typeExcelFileCaption();
     String typeImageCaption();
     String typePDFFileCaption();
+    String typeDBFFileCaption();
     String typeWordFileCaption();
     String typeTextFileCaption();
     String typeCSVFileCaption();
@@ -165,6 +166,7 @@ public interface ClientMessages extends Messages {
     String typeExcelFileLinkCaption();
     String typeImageLinkCaption();
     String typePDFFileLinkCaption();
+    String typeDBFFileLinkCaption();
     String typeWordFileLinkCaption();
     String typeTextFileLinkCaption();
     String typeCSVFileLinkCaption();

@@ -378,6 +378,6 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
     public static final GroupObjectEntity NULL = new GroupObjectEntity();
 
     public boolean isSimpleList() {
-        return getObjects().size() == 1 && viewType.isList();
+        return getObjects().size() == 1 && viewType.isList() && !isInTree();
     }
 }

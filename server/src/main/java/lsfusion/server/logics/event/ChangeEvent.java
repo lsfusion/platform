@@ -76,7 +76,26 @@ public class ChangeEvent<C extends PropertyInterface> {
         if(!changes.hasChanges(usedChanges)) // для верхней оптимизации
             return usedChanges;
 
-        return SetFact.add(writeTo.getUsedDataChanges(changes, CalcDataType.EXPR), changes.getUsedChanges(getDepends()));
+        usedChanges = SetFact.add(writeTo.getUsedDataChanges(changes, CalcDataType.EXPR), usedChanges);
+        if(writeFrom instanceof PropertyMapImplement)
+            usedChanges = SetFact.add(((PropertyMapImplement<?, ?>) writeFrom).property.getUsedChanges(changes), usedChanges);
+        return usedChanges;
+    }
+
+    public boolean hasPreread(StructChanges structChanges) {
+        if(where.property.hasPreread(structChanges))
+            return true;
+
+        ImSet<Property> usedChanges = where.property.getUsedChanges(structChanges);
+        if(!structChanges.hasChanges(usedChanges)) // need this to break recursion if there is prev in writeFrom
+            return false;
+
+        if(writeTo.hasPreread(structChanges))
+            return true;
+        if(writeFrom instanceof PropertyMapImplement)
+            if((((PropertyMapImplement<?, ?>) writeFrom).property.hasPreread(structChanges)))
+                return true;
+        return false;
     }
 
     public boolean isData() {

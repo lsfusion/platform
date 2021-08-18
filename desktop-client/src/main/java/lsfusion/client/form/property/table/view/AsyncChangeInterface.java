@@ -16,4 +16,5 @@ public interface AsyncChangeInterface {
     ClientGroupObjectValue getColumnKey(int row, int col);
 
     ClientFormController getForm();
+    boolean isEditing();
 }

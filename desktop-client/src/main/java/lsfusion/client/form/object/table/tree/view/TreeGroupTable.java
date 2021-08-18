@@ -9,7 +9,6 @@ import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.classes.ClientType;
-import lsfusion.client.classes.data.ClientLogicalClass;
 import lsfusion.client.classes.data.ClientTextClass;
 import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.form.controller.ClientFormController;
@@ -33,7 +32,7 @@ import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.event.BindingMode;
 import lsfusion.interop.form.event.KeyInputEvent;
 import lsfusion.interop.form.event.KeyStrokes;
-import lsfusion.interop.form.event.MouseInputEvent;
+import lsfusion.interop.form.event.MouseStrokes;
 import lsfusion.interop.form.order.user.Order;
 import org.jdesktop.swingx.JXTableHeader;
 import org.jdesktop.swingx.table.TableColumnExt;
@@ -109,6 +108,10 @@ public class TreeGroupTable extends ClientFormTreeTable implements AsyncChangeCe
 
     private WeakReference<TableCellRenderer> defaultHeaderRendererRef;
     private TableCellRenderer wrapperHeaderRenderer;
+
+    private static ClientGroupObject lastGroupObject(ClientTreeGroup treeGroup) {
+        return treeGroup.groups.size() > 0 ? treeGroup.groups.get(treeGroup.groups.size() - 1) : null;
+    }
 
     public TreeGroupTable(ClientFormController iform, ClientTreeGroup itreeGroup) {
         form = iform;
@@ -234,8 +237,8 @@ public class TreeGroupTable extends ClientFormTreeTable implements AsyncChangeCe
         if (treeGroup.expandOnClick) {
             addMouseListener(new MouseAdapter() {
                 @Override
-                public void mouseClicked(MouseEvent e) {
-                    if (e.getClickCount() == 2 && !editPerformed) {
+                public void mousePressed(MouseEvent e) {
+                    if (!e.isConsumed() && MouseStrokes.isDblClickEvent(e) && !editPerformed) {
                         final TreePath path = getPathForRow(rowAtPoint(e.getPoint()));
                         if (path != null && !isLocationInExpandControl(getHierarhicalColumnRenderer().getUI(), path, e.getX(), e.getY())) {
                             final TreeGroupNode node = (TreeGroupNode) path.getLastPathComponent();
@@ -259,20 +262,10 @@ public class TreeGroupTable extends ClientFormTreeTable implements AsyncChangeCe
             });
         }
 
-        addMouseListener(new MouseAdapter() {
-            public void mouseClicked(MouseEvent e) {
-                if(!e.isConsumed()) {
-                    ClientPropertyDraw property = getSelectedProperty();
-                    //игнорируем double click по editable boolean
-                    boolean ignore = property != null && property.baseType instanceof ClientLogicalClass && !property.isReadOnly();
-                    if (!ignore)
-                        form.processBinding(new MouseInputEvent(e), null, () -> null, false);
-                }
-            }
-        });
-
         initializeActionMap();
         currentTreePath = new TreePath(rootNode);
+
+        enableEvents(AWTEvent.MOUSE_EVENT_MASK); // just in case, because we override processMouseEvent (however there are addMouseListeners)
     }
 
     private void orderChanged(ClientPropertyDraw columnKey, Order modiType) {
@@ -354,7 +347,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements AsyncChangeCe
     private ClientFormController.Binding getEnterBinding(boolean shiftPressed) {
         ClientFormController.Binding binding = new ClientFormController.Binding(BaseUtils.last(treeGroup.groups), -100) {
             @Override
-            public boolean pressed(KeyEvent ke) {
+            public boolean pressed(InputEvent ke) {
                 tabAction(!shiftPressed);
                 return true;
             }
@@ -806,7 +799,6 @@ public class TreeGroupTable extends ClientFormTreeTable implements AsyncChangeCe
     @Override
     public void setContextAction(Integer contextAction) {
     }
-
     @Override
     public Object getEditValue() {
         return getValueAt(editRow, editCol);
@@ -881,6 +873,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements AsyncChangeCe
         currentEditType = valueType;
         currentEditValue = oldValue;
         currentInputList = inputList;
+        currentActionSID = actionSID;
 
         if (!super.editCellAt(editRow, editCol, editEvent)) {
             return false;
@@ -963,10 +956,32 @@ public class TreeGroupTable extends ClientFormTreeTable implements AsyncChangeCe
         }
     }
 
+    private void checkMouseEvent(MouseEvent e, boolean preview) {
+        form.checkMouseEvent(e, preview, getSelectedProperty(), () -> lastGroupObject(treeGroup), false);
+    }
+
+    private void checkKeyEvent(KeyStroke ks, boolean preview, KeyEvent e, int condition, boolean pressed) {
+        form.checkKeyEvent(ks, e, preview, getSelectedProperty(), () -> lastGroupObject(treeGroup), false, condition, pressed);
+    }
+
+    @Override
+    protected void processMouseEvent(MouseEvent e) {
+        checkMouseEvent(e, true);
+
+        super.processMouseEvent(e);
+
+        checkMouseEvent(e, false);
+    }
+
     protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
+        checkKeyEvent(ks, true, e, condition, pressed);
+
         editPerformed = false;
-        boolean consumed = super.processKeyBinding(ks, e, condition, pressed);
-        return consumed || editPerformed;
+        boolean consumed = e.isConsumed() || super.processKeyBinding(ks, e, condition, pressed) || editPerformed;
+
+        checkKeyEvent(ks, false, e, condition, pressed);
+
+        return consumed || e.isConsumed();
     }
 
     @Override

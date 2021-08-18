@@ -138,10 +138,6 @@ public class ObjectEntity extends IdentityObject implements PropertyObjectInterf
         return noClasses;
     }
 
-    public boolean isSimpleList() {
-        return groupTo.isSimpleList();
-    }
-    
     @IdentityInstanceLazy
     public StaticParamNullableExpr getParamExpr() {
         return new StaticParamNullableExpr(baseClass);

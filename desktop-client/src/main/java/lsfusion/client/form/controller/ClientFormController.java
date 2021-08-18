@@ -20,6 +20,7 @@ import lsfusion.client.base.view.ClientImages;
 import lsfusion.client.base.view.ItemAdapter;
 import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.classes.ClientActionClass;
+import lsfusion.client.classes.data.ClientLogicalClass;
 import lsfusion.client.controller.MainController;
 import lsfusion.client.controller.dispatch.DispatcherListener;
 import lsfusion.client.controller.remote.AsyncListener;
@@ -59,10 +60,8 @@ import lsfusion.client.view.MainFrame;
 import lsfusion.interop.action.*;
 import lsfusion.interop.base.remote.RemoteRequestInterface;
 import lsfusion.interop.form.UpdateMode;
-import lsfusion.interop.form.event.BindingMode;
+import lsfusion.interop.form.event.*;
 import lsfusion.interop.form.event.InputEvent;
-import lsfusion.interop.form.event.KeyInputEvent;
-import lsfusion.interop.form.event.MouseInputEvent;
 import lsfusion.interop.form.object.table.grid.user.design.ColumnUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.GroupObjectUserPreferences;
@@ -77,10 +76,7 @@ import lsfusion.interop.form.remote.RemoteFormInterface;
 import javax.swing.Timer;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.KeyEvent;
+import java.awt.event.*;
 import java.io.*;
 import java.rmi.RemoteException;
 import java.util.List;
@@ -227,6 +223,20 @@ public class ClientFormController implements AsyncListener {
         } catch (IOException e) {
             throw Throwables.propagate(e);
         }
+    }
+
+    public void checkMouseEvent(MouseEvent e, boolean preview, ClientPropertyDraw property, Supplier<ClientGroupObject> groupObjectSupplier, boolean panel) {
+        boolean ignore = property != null && property.baseType instanceof ClientLogicalClass && !property.isReadOnly();
+        if (!ignore && !e.isConsumed()) {
+            boolean doubleChangeEvent = MouseStrokes.isDoubleChangeEvent(e);
+            if (MouseStrokes.isChangeEvent(e) || doubleChangeEvent) {
+                processBinding(new MouseInputEvent(e, doubleChangeEvent), preview, e, groupObjectSupplier, panel);
+            }
+        }
+    }
+    public void checkKeyEvent(KeyStroke ks, KeyEvent e, boolean preview, ClientPropertyDraw property, Supplier<ClientGroupObject> groupObjectSupplier, boolean panel, int condition, boolean pressed) {
+        if(condition == JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT && pressed && !e.isConsumed())
+            processBinding(new KeyInputEvent(ks), preview, e, groupObjectSupplier, panel);
     }
 
     public boolean hasCanonicalName() {
@@ -411,7 +421,7 @@ public class ClientFormController implements AsyncListener {
             if(filter.key != null) {
                 addBinding(new KeyInputEvent(filter.key), new Binding(filterGroup.groupObject, 0) {
                     @Override
-                    public boolean pressed(KeyEvent ke) {
+                    public boolean pressed(java.awt.event.InputEvent ke) {
                         comboBox.setSelectedItem(new ClientRegularFilterWrapper(filter));
                         return true;
                     }
@@ -466,7 +476,7 @@ public class ClientFormController implements AsyncListener {
         if(singleFilter.key != null) {
             addBinding(new KeyInputEvent(singleFilter.key), new Binding(filterGroup.groupObject, 0) {
                 @Override
-                public boolean pressed(KeyEvent ke) {
+                public boolean pressed(java.awt.event.InputEvent ke) {
                     checkBox.setSelected(!checkBox.isSelected());
                     return true;
                 }
@@ -1804,6 +1814,7 @@ public class ClientFormController implements AsyncListener {
     public static abstract class Binding {
         public final ClientGroupObject groupObject;
         public int priority;
+        public BindingMode bindPreview;
         public BindingMode bindDialog;
         public BindingMode bindGroup;
         public BindingMode bindEditing;
@@ -1821,7 +1832,7 @@ public class ClientFormController implements AsyncListener {
             this.isSuitable = isSuitable;
         }
 
-        public abstract boolean pressed(KeyEvent ke);
+        public abstract boolean pressed(java.awt.event.InputEvent ke);
         public abstract boolean showing();
     }
 
@@ -1829,6 +1840,8 @@ public class ClientFormController implements AsyncListener {
         List<Binding> groupBindings = bindings.computeIfAbsent(ks, k1 -> new ArrayList<>());
         if(binding.priority == 0)
             binding.priority = groupBindings.size();
+        if(binding.bindPreview == null)
+            binding.bindPreview = ks.bindingModes != null ? ks.bindingModes.getOrDefault("preview", BindingMode.AUTO) : BindingMode.AUTO;
         if(binding.bindDialog == null)
             binding.bindDialog = ks.bindingModes != null ? ks.bindingModes.getOrDefault("dialog", BindingMode.AUTO) : BindingMode.AUTO;
         if(binding.bindGroup == null)
@@ -1843,6 +1856,7 @@ public class ClientFormController implements AsyncListener {
     }
 
     public void addKeySetBinding(Binding binding) {
+        binding.bindPreview = BindingMode.AUTO;
         binding.bindDialog = BindingMode.AUTO;
         binding.bindGroup = BindingMode.AUTO;
         binding.bindEditing = BindingMode.NO;
@@ -1866,26 +1880,45 @@ public class ClientFormController implements AsyncListener {
         }
     }
 
-    public boolean processBinding(InputEvent ks, KeyEvent ke, Supplier<ClientGroupObject> groupObjectSupplier, boolean panel) {
-        List<Binding> keyBinding = bindings.getOrDefault(ks, keySetBindings);
+    public boolean processBinding(InputEvent ks, boolean preview, java.awt.event.InputEvent ke, Supplier<ClientGroupObject> groupObjectSupplier, boolean panel) {
+        List<Binding> keyBinding = bindings.getOrDefault(ks, ks instanceof MouseInputEvent ? null : keySetBindings);
         if(keyBinding != null && !keyBinding.isEmpty()) { // optimization
-            if(ks instanceof MouseInputEvent) // not sure that it should be done only for mouse events, but it's been working like this for a long time
-                commitOrCancelCurrentEditing();
-
             TreeMap<Integer, Binding> orderedBindings = new TreeMap<>();
 
             // increasing priority for group object
             ClientGroupObject groupObject = groupObjectSupplier.get();
             for(Binding binding : keyBinding) // descending sorting by priority
-                if((binding.isSuitable == null || binding.isSuitable.apply(ke)) && bindDialog(binding) && bindGroup(groupObject, binding)
+                if((binding.isSuitable == null || binding.isSuitable.apply(ke)) && bindPreview(binding, ks instanceof MouseInputEvent, preview) && bindDialog(binding) && bindGroup(groupObject, binding)
                         && bindEditing(binding, ke) && bindShowing(binding) && bindPanel(binding, panel))
                         orderedBindings.put(-(binding.priority + (equalGroup(groupObject, binding) ? 100 : 0)), binding);
 
-            for(Binding binding : orderedBindings.values())
-                if(binding.pressed(ke))
+            if(!orderedBindings.isEmpty())
+                commitOrCancelCurrentEditing();
+
+            for(Binding binding : orderedBindings.values()) {
+                if (binding.pressed(ke)) {
+                    ke.consume();
+
                     return true;
+                }
+            }
         }
         return false;
+    }
+
+    private boolean bindPreview(Binding binding, boolean isMouse, boolean preview) {
+        switch (binding.bindPreview) {
+            case AUTO:
+                return isMouse || !preview;
+            case NO:
+                return !preview;
+            case ALL: // actually makes no since if previewed, than will be consumed so equivalent to only
+                return true;
+            case ONLY:
+                return preview;
+            default:
+                throw new UnsupportedOperationException("Unsupported bindingMode " + binding.bindDialog);
+        }
     }
 
     private boolean bindDialog(Binding binding) {
@@ -1933,10 +1966,10 @@ public class ClientFormController implements AsyncListener {
         return Objects.equals(groupObject, binding.groupObject);
     }
 
-    private boolean bindEditing(Binding binding, KeyEvent ke) {
+    private boolean bindEditing(Binding binding, java.awt.event.InputEvent ke) {
         switch (binding.bindEditing) {
             case AUTO:
-                return ke == null || (!isEditing() || notTextCharEvent(ke));
+                return !isEditing() || ke instanceof MouseEvent || (ke instanceof KeyEvent && notTextCharEvent((KeyEvent) ke));
             case ALL:
                 return true;
             case ONLY:

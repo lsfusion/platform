@@ -143,10 +143,6 @@ public class PropertyMapImplement<P extends PropertyInterface, T extends Propert
         return property.getExpr(mapping.join(joinImplement), propChanges);
     }
 
-    public Expr mapExpr(ImMap<T, ? extends Expr> joinImplement) {
-        return property.getExpr(mapping.join(joinImplement));
-    }
-
     public void mapFillDepends(MSet<Property> depends) {
         depends.add(property);
     }
@@ -195,8 +191,8 @@ public class PropertyMapImplement<P extends PropertyInterface, T extends Propert
         return property.hasPreread(modifier);
     }
 
-    public long mapComplexity() {
-        return property.getComplexity();
+    public long mapSimpleComplexity() {
+        return property.getSimpleComplexity();
     }
 
     public DataChanges mapJoinDataChanges(ImMap<T, ? extends Expr> mapKeys, Expr expr, Where where, GroupType groupType, WhereBuilder changedWhere, PropertyChanges propChanges, CalcDataType type) {

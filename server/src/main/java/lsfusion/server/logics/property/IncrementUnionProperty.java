@@ -23,6 +23,6 @@ public abstract class IncrementUnionProperty extends UnionProperty {
             return calculateNewExpr(joinImplement, calcType, propChanges, changedWhere);
 
         assert calcType.isExpr();
-        return calculateIncrementExpr(joinImplement, propChanges, getExpr(joinImplement), changedWhere);
+        return calculateIncrementExpr(joinImplement, propChanges, getPrevExpr(joinImplement, calcType, propChanges), changedWhere);
     }
 }

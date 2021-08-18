@@ -62,7 +62,7 @@ public class BaseUtils {
     private static final int STRING_SERIALIZATION_CHUNK_SIZE = 65535/3;
 
     public static Integer getApiVersion() {
-        return 157;
+        return 161;
     }
 
     public static String getPlatformVersion() {
@@ -1259,7 +1259,7 @@ public class BaseUtils {
         return replaced;
     }
 
-    public static Long nullToZero(Long value) {
+    public static long nullToZero(Long value) {
         return value == null ? 0 : value;
     }
 
@@ -1377,6 +1377,16 @@ public class BaseUtils {
                 }
                 groupSet.add(key);
             }
+        }
+        return result;
+    }
+
+    public static <G, K> Map<G, Long> groupSum(Group<G, K> getter, Map<K, Long> map) { // assert что keys - set
+        Map<G, Long> result = new HashMap<>();
+        for (Map.Entry<K, Long> entry : map.entrySet()) {
+            K key = entry.getKey();
+            G group = getter.group(key);
+            result.put(group, nvl(result.get(group),0L) + entry.getValue());
         }
         return result;
     }

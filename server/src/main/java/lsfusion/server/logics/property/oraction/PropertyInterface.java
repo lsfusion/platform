@@ -171,7 +171,7 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
         return false;
     }
 
-    public long mapComplexity() {
+    public long mapSimpleComplexity() {
         return 0;
     }
 

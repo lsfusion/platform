@@ -966,6 +966,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         sessionEventChangedOld.add(old, old.property.readChangeTable("upsevco", sql, getModifier(), baseClass, getQueryEnv()));
     }
 
+    @StackMessage("{message.getting.previous.property.changes}")
     private void updateSessionEventNotChangedOld(ExecutionEnvironment env) throws SQLException, SQLHandledException {
         // обновляем прямо перед началом локального события, чтобы не заботиться о clearHints и других изменениях между локальными событиями
         assert isInSessionEvent();
@@ -986,6 +987,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
 
 
+    @StackMessage("{message.executing.local.events}")
     public <T extends PropertyInterface> void executeSessionEvents(ExecutionEnvironment env, ExecutionStack stack) throws SQLException, SQLHandledException {
         if(isInTransaction())
             ServerLoggers.exInfoLogger.info("LOCAL EVENTS IN TRANSACTION"); // так как LogPropertyAction создает форму
@@ -1600,6 +1602,9 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         neededProps = action.getDependsUsedProps();
     }
 
+    private PropertyChanges getPendingApplyChanges() throws SQLException, SQLHandledException {
+        return getModifier().getPropertyChanges().getPrev();
+    }
     private <P extends PropertyInterface> void updatePendingApplyStart(ApplyStoredEvent event, PropertyChangeTableUsage<P> tableUsage) throws SQLException, SQLHandledException { // изврат конечно
         assert isInTransaction();
 
@@ -1609,7 +1614,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             prevTable = property.createChangeTable("updpend");
             pendingSingleTables.put(event, prevTable);
         }
-        property.getPrevChange(tableUsage).modifyRows(prevTable, sql, baseClass, Modify.LEFT, env, getOwner(), SessionTable.matGlobalQueryFromTable);// если он уже был в базе он не заместится
+        property.getPrevChange(tableUsage, getPendingApplyChanges()).modifyRows(prevTable, sql, baseClass, Modify.LEFT, env, getOwner(), SessionTable.matGlobalQueryFromTable);// если он уже был в базе он не заместится
         if(prevTable.isEmpty()) // только для первого заполнения (потом удалений нет, проверка не имеет особого смысла) 
             pendingSingleTables.remove(event);
     }
@@ -1629,7 +1634,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                 Property<T> property = pendingSingle.getKey().property;
                 PropertyChangeTableUsage<T> prevTable = pendingSingle.getValue();
 
-                PropertyChangeTableUsage<T> newTable = property.readChangeTable("flupendsin", sql, property.getPrevChange(prevTable), baseClass, env);
+                PropertyChangeTableUsage<T> newTable = property.readChangeTable("flupendsin", sql, property.getPrevChange(prevTable, getPendingApplyChanges()), baseClass, env);
                 try {
                     savePropertyChanges(property, prevTable); // записываем старые изменения
                 } finally {
@@ -1950,8 +1955,9 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                     Integer attempts = attemptCountMap.get(conflict.getDescription(true));
                     if(attempts != null) {
                         if(conflict.updateConflict) { // update conflicts
-                            if (attempts >= settings.getConflictSleepThreshold()) {
-                                long sleep = (long) (Math.pow(settings.getConflictSleepTimeDegree(), attempts + Math.random()) * 1000);
+                            int conflictSleepThreshold = settings.getConflictSleepThreshold();
+                            if (attempts >= conflictSleepThreshold) {
+                                long sleep = (long) (Math.pow(settings.getConflictSleepTimeDegree(), (attempts - conflictSleepThreshold) + Math.random()) * 1000);
                                 ServerLoggers.sqlConflictLogger.info(String.format("Sleep started after conflict updates : %s (sleep %s)", attempts, sleep));
                                 ThreadUtils.sleep(sleep);
                                 ServerLoggers.sqlConflictLogger.info("Sleep ended after conflict updates : " + attempts);
@@ -2609,7 +2615,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                 apply.add(property, prevTable);
             }
             ImRevMap<P, KeyExpr> mapKeys = property.getMapKeys();
-            ModifyResult tableChanges = prevTable.modifyRows(sql, mapKeys, property.getExpr(mapKeys), tableUsage.join(mapKeys).getWhere(), baseClass, Modify.LEFT, env, SessionTable.matGlobalQueryFromTable); // если он уже был в базе он не заместится
+            ModifyResult tableChanges = prevTable.modifyRows(sql, mapKeys, property.getExpr(mapKeys, getPendingApplyChanges()), tableUsage.join(mapKeys).getWhere(), baseClass, Modify.LEFT, env, SessionTable.matGlobalQueryFromTable); // если он уже был в базе он не заместится
             if(prevTable.isEmpty()) // только для первого заполнения (потом удалений нет, проверка не имеет особого смысла)
                 apply.remove(property, sql, owner);
             if(tableChanges.dataChanged())

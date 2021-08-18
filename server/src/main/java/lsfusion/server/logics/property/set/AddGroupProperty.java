@@ -56,7 +56,7 @@ public abstract class AddGroupProperty<I extends PropertyInterface> extends Grou
         Expr changedExpr = GroupExpr.create(getGroupImplements(mapKeys, propChanges, changedGroupWhere), groupProperty.mapExpr(mapKeys, propChanges, changedGroupWhere), changedGroupWhere.toWhere(), getGroupType(), joinImplement);
 
         // старые группировочные записи
-        Expr changedPrevExpr = GroupExpr.create(getGroupImplements(mapKeys, PropertyChanges.EMPTY), groupProperty.mapExpr(mapKeys), changedGroupWhere.toWhere(), getGroupType(), joinImplement);
+        Expr changedPrevExpr = GroupExpr.create(getGroupImplements(mapKeys, getPrevPropChanges(propChanges)), groupProperty.mapExpr(mapKeys, getPrevPropChanges(propChanges)), changedGroupWhere.toWhere(), getGroupType(), joinImplement);
 
         return getChangedExpr(changedExpr, changedPrevExpr, prevExpr, joinImplement, propChanges, changedWhere);
     }
@@ -80,7 +80,7 @@ public abstract class AddGroupProperty<I extends PropertyInterface> extends Grou
             return calculateNewExpr(joinImplement, calcType, propChanges);
 
         assert calcType.isExpr();
-        return calculateIncrementExpr(joinImplement, propChanges, getExpr(joinImplement), changedWhere);
+        return calculateIncrementExpr(joinImplement, propChanges, getPrevExpr(joinImplement, calcType, propChanges), changedWhere);
     }
 
     protected abstract Expr getChangedExpr(Expr changedExpr, Expr changedPrevExpr, Expr prevExpr, ImMap<Interface<I>, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere);

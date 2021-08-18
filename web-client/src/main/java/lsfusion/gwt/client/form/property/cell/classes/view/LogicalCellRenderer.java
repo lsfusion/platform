@@ -1,7 +1,6 @@
 package lsfusion.gwt.client.form.property.cell.classes.view;
 
 import com.google.gwt.dom.client.*;
-import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
@@ -9,8 +8,11 @@ import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 
 public class LogicalCellRenderer extends CellRenderer {
 
-    public LogicalCellRenderer(GPropertyDraw property) {
+    private boolean threeState;
+
+    public LogicalCellRenderer(GPropertyDraw property, boolean threeState) {
         super(property);
+        this.threeState = threeState;
     }
 
     @Override
@@ -43,6 +45,7 @@ public class LogicalCellRenderer extends CellRenderer {
         InputElement input = element.getFirstChild().cast();
         input.setTabIndex(-1);
         input.setChecked(value != null && (Boolean) value);
+        input.setDisabled(threeState && value == null);
 //        }
     }
 

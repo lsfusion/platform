@@ -7,7 +7,6 @@ import lsfusion.base.ReflectionUtils;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.base.view.SwingDefaults;
-import lsfusion.client.classes.data.ClientLogicalClass;
 import lsfusion.client.classes.data.ClientTextClass;
 import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.form.ClientForm;
@@ -31,7 +30,6 @@ import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.design.FontInfo;
 import lsfusion.interop.form.event.BindingMode;
 import lsfusion.interop.form.event.KeyStrokes;
-import lsfusion.interop.form.event.MouseInputEvent;
 import lsfusion.interop.form.object.table.grid.user.design.GroupObjectUserPreferences;
 import lsfusion.interop.form.order.Scroll;
 import lsfusion.interop.form.order.user.Order;
@@ -293,17 +291,6 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
             }
         });
 
-        addMouseListener(new MouseAdapter() {
-            public void mouseClicked(MouseEvent e) {
-                ClientPropertyDraw property = getSelectedProperty();
-                //игнорируем double click по editable boolean
-                boolean ignore = property != null && property.baseType instanceof ClientLogicalClass && !property.isReadOnly();
-                if (!ignore) {
-                    form.processBinding(new MouseInputEvent(e), null, () -> groupObject, false);
-                }
-            }
-        });
-
         //имитируем продвижение фокуса вперёд, если изначально попадаем на нефокусную ячейку
         addFocusListener(new FocusAdapter() {
             public void focusGained(FocusEvent e) {
@@ -437,7 +424,7 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
     private ClientFormController.Binding getQuickSearchFilterBinding() {
         ClientFormController.Binding binding = new ClientFormController.Binding(groupObject, -200, KeyStrokes::isSuitableStartFilteringEvent) {
             @Override
-            public boolean pressed(KeyEvent ke) {
+            public boolean pressed(InputEvent ke) {
                 if(!editPerformed) {
                     if (groupObject.grid.quickSearch) {
                         quickSearch(ke);
@@ -596,7 +583,7 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
             if (!samePropAsPrevious)
                 form.addPropertyBindings(property, () -> new ClientFormController.Binding(property.groupObject, 0) {
                     @Override
-                    public boolean pressed(KeyEvent ke) {
+                    public boolean pressed(InputEvent ke) {
                         int leadRow = getSelectionModel().getLeadSelectionIndex();
                         if (leadRow != -1 && !isEditing()) {
                             keyController.stopRecording();

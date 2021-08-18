@@ -42,10 +42,10 @@ decimateBackupsAction '{backup.decimate.backups}'  {
 }
 
 customRestore '{backup.custom.restore}'  INTERNAL  'lsfusion.server.physics.admin.backup.action.CustomRestoreAction' (Backup);
-inCustomRestore '{backup.in.custom.restore}' = DATA BOOLEAN (Table);
-restoreObjects '{backup.restore.objects}' = DATA BOOLEAN (Table);
-inCustomRestore '{backup.in.custom.restore}' = DATA BOOLEAN (TableColumn);
-replaceOnlyNull '{backup.replace.only.null}' = DATA BOOLEAN (TableColumn);
+inCustomRestore '{backup.in.custom.restore}' = DATA  LOCAL NESTED BOOLEAN (Table);
+restoreObjects '{backup.restore.objects}' = DATA LOCAL NESTED BOOLEAN (Table);
+inCustomRestore '{backup.in.custom.restore}' = DATA LOCAL NESTED  BOOLEAN (TableColumn);
+replaceOnlyNull '{backup.replace.only.null}' = DATA LOCAL NESTED  BOOLEAN (TableColumn);
 
 CLASS Backup '{backup.backup}';
 TABLE backup(Backup);
@@ -60,9 +60,6 @@ isMultithread '{backup.file.is.multithread}' = DATA BOOLEAN (Backup);
 fileDeleted '{backup.file.deleted.backup}' = DATA BOOLEAN (Backup);
 log '{backup.log.backup}' = DATA TEXT (Backup);
 notSucceeded '{backup.not.succeeded.backup}' (Backup b) = NOT log(b);
-
-backupFileName '{backup.backup.file.name}' = DATA LOCAL STRING[100] ();
-backupFilePath '{backup.backup.file.path}' = DATA LOCAL STRING[200]();
 
 exclude '{backup.exclude.table}' = DATA BOOLEAN (Table);
 

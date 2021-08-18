@@ -1852,7 +1852,6 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     }
 
     @StackMessage("{message.form.update.props}")
-    @ThisMessage
     private <T> void queryPropertyObjectValues(
             @ParamMessage ImSet<T> keysSet,
             MExclMap<T, ImMap<ImMap<ObjectInstance, DataObject>, ObjectValue>> valuesMap,
@@ -1978,6 +1977,7 @@ updateAsyncPropertyChanges();
         return result.immutable();
     }
 
+    @StackMessage("{message.getting.changed.objects}")
     public void fillChangedObjects(MFormChanges result, ExecutionStack stack, QueryEnvironment queryEnv, Result<ChangedData> mChangedProps, MSet<PropertyDrawInstance> mChangedDrawProps) throws SQLException, SQLHandledException {
         GroupObjectValue updateGroupObject = null; // так как текущий groupObject идет относительно treeGroup, а не group
         for (GroupObjectInstance group : getOrderGroups()) {
@@ -2002,6 +2002,7 @@ updateAsyncPropertyChanges();
         ServerLoggers.assertLog(classListener == null || !classListener.isDeactivated(), "NAVIGATOR DEACTIVATED " + BaseUtils.nullToString(classListener));
     }
 
+    @StackMessage("{message.getting.visible.properties}")
     private Set<PropertyDrawInstance> readShowIfs(ChangedData changedProps, MFormChanges result) throws SQLException, SQLHandledException {
 
         Set<PropertyDrawInstance> newShown = new HashSet<>();
@@ -2148,9 +2149,20 @@ updateAsyncPropertyChanges();
         return propertyUpdated(propertyObjectInstance, groupObjects, changedProps, hidden);
     }
 
+    @StackMessage("{message.getting.changed.property.values}")
     private void fillChangedDrawProps(MFormChanges result, ImSet<PropertyDrawInstance> changedDrawProps, ChangedData changedProps) throws SQLException, SQLHandledException {
         Set<PropertyDrawInstance> newShown = readShowIfs(changedProps, result);
 
+        ImMap<PropertyReaderInstance, ImSet<GroupObjectInstance>> readProperties = getChangedDrawProps(newShown, changedDrawProps, changedProps, result);
+
+        ImMap<ImSet<GroupObjectInstance>, ImSet<PropertyReaderInstance>> groupReadProps = readProperties.groupValues();
+        for (int i = 0, size = groupReadProps.size(); i < size; i++) {
+            updateDrawProps(result.properties, groupReadProps.getKey(i), groupReadProps.getValue(i));
+        }
+    }
+
+    @StackMessage("{message.getting.changed.properties}")
+    private ImMap<PropertyReaderInstance, ImSet<GroupObjectInstance>> getChangedDrawProps(Set<PropertyDrawInstance> newShown, ImSet<PropertyDrawInstance> changedDrawProps, ChangedData changedProps, MFormChanges result) throws SQLException, SQLHandledException {
         MExclMap<PropertyReaderInstance, ImSet<GroupObjectInstance>> mReadProperties = MapFact.mExclMap();
 
         for (PropertyDrawInstance<?> drawProperty : properties) {
@@ -2199,11 +2211,7 @@ updateAsyncPropertyChanges();
             ContainerViewInstance containerInstance = instanceFactory.getInstance(container);
             fillChangedReader(containerInstance.captionReader, null, result, gridGroups, hidden, update, true, mReadProperties, changedDrawProps, changedProps);
         }
-
-        ImMap<ImSet<GroupObjectInstance>, ImSet<PropertyReaderInstance>> groupReadProps = mReadProperties.immutable().groupValues();
-        for (int i = 0, size = groupReadProps.size(); i < size; i++) {
-            updateDrawProps(result.properties, groupReadProps.getKey(i), groupReadProps.getValue(i));
-        }
+        return mReadProperties.immutable();
     }
 
     private void fillChangedReader(PropertyReaderInstance propertyReader, GroupObjectInstance toDraw, MFormChanges result, ImSet<GroupObjectInstance> columnGroupGrids, boolean hidden, boolean update, boolean wasShown, MExclMap<PropertyReaderInstance, ImSet<GroupObjectInstance>> readProperties, ImSet<PropertyDrawInstance> changedDrawProps, ChangedData changedProps) throws SQLException, SQLHandledException {

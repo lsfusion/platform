@@ -35,6 +35,7 @@ import lsfusion.server.logics.action.session.change.PropertyChange;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
 import lsfusion.server.logics.action.session.change.StructChanges;
 import lsfusion.server.logics.classes.user.BaseClass;
+import lsfusion.server.logics.property.cases.CaseUnionProperty;
 import lsfusion.server.logics.property.classes.infer.*;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -44,6 +45,7 @@ import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 
 import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.util.Set;
 
 import static lsfusion.server.logics.classes.data.time.DateTimeConverter.getWriteDateTime;
 
@@ -77,8 +79,29 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Pro
         return ExClassSet.toExType(aggrType.getType(ExClassSet.fromExType(valueClass)));
     }
 
+    protected boolean calculateHasGlobalPreread(boolean events) {
+        for(Property property : getDepends(events))
+            if(property.hasGlobalPreread(events))
+                return true;
+        return false;
+    }
+
     public ImSet<Property> calculateUsedChanges(StructChanges propChanges) {
         return propChanges.getUsedChanges(getDepends());
+    }
+
+    protected boolean calculateHasPreread(StructChanges structChanges) {
+        for (Property property : getDepends())
+            if (property.hasPreread(structChanges))
+                return true;
+        return false;
+    }
+
+    public boolean calculateCheckRecursions(ImSet<CaseUnionProperty> abstractPath, ImSet<Property> path, Set<Property> marks) {
+        for(Property depend : getDepends())
+            if(depend.checkRecursions(abstractPath, path, marks))
+                return true;
+        return false;
     }
 
     public boolean isStored() {

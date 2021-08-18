@@ -193,6 +193,9 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
         if (request.scheme != null) {
             businessLogics.LM.scheme.change(request.scheme, session);
         }
+        if (request.method != null) {
+            businessLogics.LM.method.change(request.method, session);
+        }
         if (request.webHost != null) {
             businessLogics.LM.webHost.change(request.webHost, session);
         }
