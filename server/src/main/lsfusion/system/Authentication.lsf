@@ -625,6 +625,7 @@ DESIGN reloginLoginUser {
         caption = '';
         GROUP(, data) {
             type = CONTAINERV;
+            columns = 1;
             PROPERTY(valueLogin){
                 caption = '{authentication.login}';
                 fontSize = 36;
