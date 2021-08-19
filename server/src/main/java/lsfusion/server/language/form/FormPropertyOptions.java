@@ -37,8 +37,8 @@ public class FormPropertyOptions {
     private PropertyObjectEntity header;
     private PropertyObjectEntity footer;
     private ClassViewType viewType;
-    private String customRenderFunctions;
-    private String customEditorFunctions;
+    private String customRenderFunction;
+    private String customEditorFunction;
     private boolean customTextEdit;
     private boolean customReplaceEdit;
     private GroupObjectEntity toDraw;
@@ -197,16 +197,16 @@ public class FormPropertyOptions {
         this.viewType = viewType;
     }
     
-    public String getCustomRenderFunctions() {
-        return customRenderFunctions;
+    public String getCustomRenderFunction() {
+        return customRenderFunction;
     }
     
-    public void setCustomRenderFunctions(String customRenderFunctions) {
-        this.customRenderFunctions = customRenderFunctions;
+    public void setCustomRenderFunction(String customRenderFunction) {
+        this.customRenderFunction = customRenderFunction;
     }
 
-    public void setCustomEditorFunctions(String customEditorFunctions) {
-        this.customEditorFunctions = customEditorFunctions;
+    public void setCustomEditorFunction(String customEditorFunction) {
+        this.customEditorFunction = customEditorFunction;
     }
 
     public void setCustomTextEdit(boolean customTextEdit) {
@@ -217,8 +217,8 @@ public class FormPropertyOptions {
         this.customReplaceEdit = customReplaceEdit;
     }
 
-    public String getCustomEditorFunctions() {
-        return customEditorFunctions;
+    public String getCustomEditorFunction() {
+        return customEditorFunction;
     }
 
     public boolean isCustomTextEdit() {
@@ -455,8 +455,8 @@ public class FormPropertyOptions {
         merged.setHeader(nvl(overrides.getHeader(), header));
         merged.setFooter(nvl(overrides.getFooter(), footer));
         merged.setViewType(nvl(overrides.getViewType(), viewType));
-        merged.setCustomRenderFunctions(nvl(overrides.getCustomRenderFunctions(), customRenderFunctions));
-        merged.setCustomEditorFunctions(nvl(overrides.getCustomEditorFunctions(), customEditorFunctions));
+        merged.setCustomRenderFunction(nvl(overrides.getCustomRenderFunction(), customRenderFunction));
+        merged.setCustomEditorFunction(nvl(overrides.getCustomEditorFunction(), customEditorFunction));
         merged.setCustomTextEdit(nvl(overrides.isCustomTextEdit(), customTextEdit));
         merged.setCustomReplaceEdit(nvl(overrides.isCustomReplaceEdit(), customReplaceEdit));
         merged.setToDraw(nvl(overrides.getToDraw(), toDraw));

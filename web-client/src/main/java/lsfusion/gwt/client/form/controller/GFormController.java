@@ -1824,11 +1824,11 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         assert this.editContext == null;
         GPropertyDraw property = editContext.getProperty();
         CellEditor cellEditor;
-        String customEditorFunctions = property.customEditorFunctions;
-        if (customEditorFunctions != null) {
-            cellEditor = property.customTextEdit ? new CustomTextCellEditor(this, property, customEditorFunctions) :
-                    (property.customReplaceEdit ? new CustomReplaceCellEditor(this, property, customEditorFunctions) :
-                            new CustomCellEditor(this, property, customEditorFunctions));
+        String customEditorFunction = property.customEditorFunction;
+        if (customEditorFunction != null) {
+            cellEditor = property.customTextEdit ? new CustomTextCellEditor(this, property, customEditorFunction) :
+                    (property.customReplaceEdit ? new CustomReplaceCellEditor(this, property, customEditorFunction) :
+                            new CustomCellEditor(this, property, customEditorFunction));
         } else
             cellEditor = type.createGridCellEditor(this, property);
 

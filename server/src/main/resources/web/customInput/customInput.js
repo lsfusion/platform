@@ -23,66 +23,42 @@ class CustomInput {
         this.type = type;
     }
 
-    render(type, element) {
-        let input = document.createElement("input");
-        input.type = type;
-        input.style.setProperty("width", "100%");
-        input.style.setProperty("height", "100%");
-        input.onmousedown = function (ev) {
-            ev.stopPropagation();
-        }
-
-        input.onkeypress = function (ev) {
-            ev.stopPropagation();
-        }
-
-        input.onkeydown = function (ev) {
-            ev.stopPropagation();
-        }
-
-        element.appendChild(input);
-
-        return input;
-    }
-
-    update(element, value, onEventFunction, parsedValue) {
-        let inputElement = element.lastElementChild;
-
-        if (inputElement != null) {
-            inputElement.value = parsedValue != null ? parsedValue : value;
-
-            onEventFunction(inputElement, value);
-        }
-    }
-
-    clear(element) {
-        while (element.lastElementChild) {
-            element.removeChild(element.lastElementChild);
-        }
-    }
-
-    getRenderFunction() {
-        return (element) => this.render(this.type, element);
-    }
-
-    getUpdateFunction() {
-        return (element, controller, value) => this.update(element, value, this.onEventFunction(controller), this.parseValue(value));
-    }
-
-    getClearFunction() {
-        return (element) => this.clear(element);
-    }
-
     getFunctions() {
         return {
-            render: this.getRenderFunction(),
-            update: this.getUpdateFunction(),
-            clear: this.getClearFunction()
+            render: (element) => {
+                let input = document.createElement("input");
+                input.type = this.type;
+                input.style.setProperty("width", "100%");
+                input.style.setProperty("height", "100%");
+                input.onmousedown = function (ev) {
+                    ev.stopPropagation();
+                }
+
+                input.onkeypress = function (ev) {
+                    ev.stopPropagation();
+                }
+
+                input.onkeydown = function (ev) {
+                    ev.stopPropagation();
+                }
+
+                element.appendChild(input);
+            },
+            update: (element, controller, value) => {
+                let inputElement = element.lastElementChild;
+                inputElement.value = this.parseValueFunction(value);
+                this.onEventFunction(controller)(inputElement, value);
+            },
+            clear: (element) => {
+                while (element.lastElementChild) {
+                    element.removeChild(element.lastElementChild);
+                }
+            }
         }
     }
 
-    parseValue(value) {
-        return null;
+    parseValueFunction(value) {
+        return value;
     }
 
     onEventFunction(controller) {
@@ -94,20 +70,11 @@ class CustomInput {
             }
         }
     }
-
 }
 
 class CustomInputRange extends CustomInput {
     constructor() {
         super("range");
-    }
-
-    getRenderFunction() {
-        return (element) => {
-            let input = super.render(this.type, element);
-            input.min = "1";
-            input.max = "100";
-        }
     }
 
     onEventFunction(controller) {
@@ -125,7 +92,7 @@ class CustomInputMonth extends CustomInput {
         super("month");
     }
 
-    parseValue(value) {
+    parseValueFunction(value) {
         let valueDate = new Date(value);
         return value != null ? valueDate.getFullYear() + '-' + ("0" + (valueDate.getMonth() + 1)).slice(-2) : null;
     }
@@ -146,7 +113,7 @@ class CustomInputTime extends CustomInput {
         return (inputElement, value) => {
             inputElement.onblur = function () {
                 let timeParts = this.value.split(':');
-                if (value.toString() !== this.value)
+                if ((value == null ? "" : value).toString() !== this.value)
                     controller.changeValue(null, timeParts.length === 2 ? controller.toTimeDTO(parseInt(timeParts[0], 10), parseInt(timeParts[1], 10), 0) : null);
             }
         };
