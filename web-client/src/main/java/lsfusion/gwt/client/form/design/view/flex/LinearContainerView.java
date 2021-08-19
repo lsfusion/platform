@@ -198,7 +198,7 @@ public class LinearContainerView extends GAbstractContainerView {
                 int captionMain = 0;
 
                 for (int j = 0; j < rows; j++) {
-                    int index = i * columnsCount + j;
+                    int index = j * columnsCount + i;
                     if(index < size) {
                         if(alignCaptions) {
                             Dimension captionPref = GwtClientUtils.calculateMaxPreferredSize(childrenCaptions.get(index));
