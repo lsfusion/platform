@@ -22,7 +22,7 @@ public class CustomCellRenderer extends CellRenderer<Object> {
     }
 
     protected native void render(Element element)/*-{
-        $wnd[this.@CustomCellRenderer::customRenderFunction].render(element);
+        $wnd[this.@CustomCellRenderer::customRenderFunction]().render(element);
     }-*/;
 
     @Override
@@ -33,7 +33,7 @@ public class CustomCellRenderer extends CellRenderer<Object> {
     }
 
     protected native void setRendererValue(Element element, JavaScriptObject controller, JavaScriptObject value)/*-{
-        $wnd[this.@CustomCellRenderer::customRenderFunction].update(element, controller, value);
+        $wnd[this.@CustomCellRenderer::customRenderFunction]().update(element, controller, value);
     }-*/;
 
     @Override
@@ -42,7 +42,7 @@ public class CustomCellRenderer extends CellRenderer<Object> {
     }
     
     protected native void clear(Element element)/*-{
-        $wnd[this.@CustomCellRenderer::customRenderFunction].clear(element);
+        $wnd[this.@CustomCellRenderer::customRenderFunction]().clear(element);
     }-*/;
 
     @Override
