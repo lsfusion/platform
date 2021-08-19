@@ -70,7 +70,7 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
 
             //async actions
             ClientAsyncEventExec asyncEventExec = property.getAsyncEventExec(actionSID);
-            if (asyncEventExec != null) {
+            if (asyncEventExec != null && asyncEventExec.isDesktopEnabled(canShowDockedModal())) {
                 if (property.askConfirm) {
                     String msg = property.askConfirmMessage;
 
@@ -86,7 +86,7 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
             editPerformed = true;
             ServerResponse response = form.executeEventAction(property, columnKey, actionSID);
             try {
-                return internalDispatchResponse(response);
+                return internalDispatchServerResponse(response);
             } finally {
                 if(response != ServerResponse.EMPTY) // проверка нужна, если запрос заблокируется то и postponeDispatchingEnded не будет, а значит "скобки" нарушатся и упадет assertion
                     dispatcherListener.dispatchingPostponedEnded(this);
@@ -103,6 +103,12 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
         this.simpleChangeProperty = property;
         this.actionSID = actionSID;
         return internalRequestValue(asyncChange.changeType, asyncChange.inputList, actionSID);
+    }
+
+    public boolean internalDispatchServerResponse(ServerResponse response) throws IOException {
+        onServerResponse(response);
+
+        return internalDispatchResponse(response);
     }
 
     @Override

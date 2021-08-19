@@ -51,6 +51,7 @@ import lsfusion.client.form.object.table.tree.ClientTreeGroup;
 import lsfusion.client.form.object.table.tree.controller.TreeGroupController;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.async.*;
+import lsfusion.client.form.property.cell.controller.dispatch.EditPropertyDispatcher;
 import lsfusion.client.form.property.cell.controller.dispatch.SimpleChangePropertyDispatcher;
 import lsfusion.client.form.property.panel.view.PanelView;
 import lsfusion.client.form.view.ClientFormDockable;
@@ -82,7 +83,6 @@ import java.rmi.RemoteException;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -153,7 +153,7 @@ public class ClientFormController implements AsyncListener {
     private final Map<ClientGroupObject, List<JComponentPanel>> filterViews = new HashMap<>();
 
     private final boolean isDialog;
-    private final boolean isModal;
+    private final boolean isWindow;
 
     private final Map<ClientGroupObject, List<ClientPropertyFilter>> currentFilters = new HashMap<>();
 
@@ -180,7 +180,7 @@ public class ClientFormController implements AsyncListener {
         formSID = iformSID + (iisModal ? "(modal)" : "") + "(" + System.identityHashCode(this) + ")";
         canonicalName = icanonicalName;
         isDialog = iisDialog;
-        isModal = iisModal;
+        isWindow = iisModal;
 
         ID = idGenerator.idShift();
 
@@ -243,8 +243,8 @@ public class ClientFormController implements AsyncListener {
         return canonicalName != null;
     }
 
-    public boolean isModal() {
-        return isModal;
+    public boolean isWindow() {
+        return isWindow;
     }
 
     public boolean isDialog() {
@@ -653,7 +653,7 @@ public class ClientFormController implements AsyncListener {
     private void processServerResponse(ServerResponse serverResponse) throws IOException {
         //ХАК: serverResponse == null теоретически может быть при реконнекте, когда RMI-поток убивается и remote-method возвращает null
         if (serverResponse != null) {
-            actionDispatcher.dispatchResponse(serverResponse);
+            actionDispatcher.dispatchServerResponse(serverResponse);
         }
     }
 
@@ -1029,16 +1029,12 @@ public class ClientFormController implements AsyncListener {
         return new ClientGroupObjectValue(values.toArray(new ClientGroupObjectValue[0]));
     }
 
-    public void asyncOpenForm(ClientPropertyDraw property, ClientGroupObjectValue columnKey, String actionSID, ClientAsyncOpenForm asyncOpenForm) throws IOException {
-        if(!asyncOpenForm.isModal()) { //ignore async modal windows in desktop
-            ((DockableMainFrame) MainFrame.instance).asyncOpenForm(rmiQueue.getNextRmiRequestIndex(), asyncOpenForm);
-        }
-
+    public void asyncOpenForm(ClientPropertyDraw property, EditPropertyDispatcher dispatcher, ClientGroupObjectValue columnKey, String actionSID, ClientAsyncOpenForm asyncOpenForm) throws IOException {
         commitOrCancelCurrentEditing();
 
         final byte[] fullCurrentKey = getFullCurrentKey(columnKey);
 
-        rmiQueue.asyncRequest(new ProcessServerResponseRmiRequest("openForm") {
+        long requestIndex = rmiQueue.asyncRequest(new ProcessServerResponseRmiRequest("openForm") {
             @Override
             protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
                 return executeEventAction(requestIndex, lastReceivedRequestIndex, remoteForm, property, fullCurrentKey, actionSID);
@@ -1046,20 +1042,13 @@ public class ClientFormController implements AsyncListener {
             @Override
             protected void onResponse(long requestIndex, ServerResponse result) throws Exception {
                 super.onResponse(requestIndex, result);
-                //FormClientAction closes asyncForm, if there is no GFormAction in response,
-                //we should close this erroneous asyncForm
-                DockableRepository forms = ((DockableMainFrame) MainFrame.instance).getForms();
-                if (forms.hasAsyncForm(requestIndex)) {
-                    if (Arrays.stream(result.actions).noneMatch(a -> a instanceof FormClientAction)) {
-                        ClientFormDockable formContainer = forms.removeAsyncForm(requestIndex);
-                        formContainer.onClosing();
-                    }
-                }
                 if(formsController != null) {
                     formsController.setLastCompletedRequest(requestIndex);
                 }
             }
         });
+
+        ((DockableMainFrame) MainFrame.instance).asyncOpenForm(dispatcher.getAsyncFormController(requestIndex), asyncOpenForm);
     }
 
     private ServerResponse executeEventAction(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm, ClientPropertyDraw property, byte[] fullCurrentKey, String actionSID) throws RemoteException {
@@ -1108,16 +1097,6 @@ public class ClientFormController implements AsyncListener {
                     protected void onResponse(long requestIndex, ServerResponse result) throws Exception {
 //                        if(remoteForm != null) // when there is hide in changeProperty and some button is clicked - breaks assertion in dispatchingEnded  
                         rmiQueue.postponeDispatchingEnded();
-
-                        //FormClientAction closes asyncForm, if there is no GFormAction in response,
-                        //we should close this erroneous asyncForm
-                        DockableRepository forms = ((DockableMainFrame) MainFrame.instance).getForms();
-                        if (forms.hasAsyncForm(requestIndex)) {
-                            if (Arrays.stream(result.actions).noneMatch(a -> a instanceof FormClientAction)) {
-                                ClientFormDockable formContainer = forms.removeAsyncForm(requestIndex);
-                                formContainer.onClosing();
-                            }
-                        }
                     }
                 });
         return result == null ? ServerResponse.EMPTY : result;
@@ -1681,7 +1660,7 @@ public class ClientFormController implements AsyncListener {
     }
 
     public boolean canShowDockedModal() {
-        return !isModal && !rmiQueue.isSyncStarted();
+        return !isWindow && !rmiQueue.isSyncStarted();
     }
 
     public void block(boolean blockView) {

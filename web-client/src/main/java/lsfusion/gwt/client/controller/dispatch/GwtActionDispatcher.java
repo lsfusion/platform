@@ -160,6 +160,10 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
         }
     }
 
+    public boolean canShowDockedModal() {
+        return true;
+    }
+
     @Override
     public void execute(GFormAction action) {
     }
@@ -356,6 +360,11 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
             public boolean onServerInvocationResponse() {
                 lastCompletedRequest = requestIndex;
                 return asyncForms.containsKey(requestIndex);
+            }
+
+            @Override
+            public boolean canShowDockedModal() {
+                return GwtActionDispatcher.this.canShowDockedModal();
             }
         };
     }

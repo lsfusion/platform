@@ -1479,7 +1479,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         return formLayout.getMaxPreferredSize();
     }
 
-    public boolean isModal() {
+    public boolean isWindow() {
         return formContainer instanceof ModalForm;
     }
 

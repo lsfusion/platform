@@ -21,6 +21,7 @@ import lsfusion.client.form.controller.remote.proxy.RemoteFormProxy;
 import lsfusion.client.form.print.ClientReportUtils;
 import lsfusion.client.form.view.ClientFormDockable;
 import lsfusion.client.form.view.ClientModalForm;
+import lsfusion.client.navigator.controller.AsyncFormController;
 import lsfusion.client.view.DockableMainFrame;
 import lsfusion.client.view.MainFrame;
 import lsfusion.interop.action.*;
@@ -44,6 +45,7 @@ import java.awt.event.KeyEvent;
 import java.io.*;
 import java.rmi.RemoteException;
 import java.text.DecimalFormat;
+import java.util.Arrays;
 import java.util.EventObject;
 import java.util.HashMap;
 import java.util.Map;
@@ -68,6 +70,24 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
         this.dispatcherListener = dispatcherListener;
     }
 
+    protected void onServerResponse(ServerResponse serverResponse) {
+        //FormClientAction closes asyncForm, if there is no GFormAction in response,
+        //we should close this erroneous asyncForm
+        long requestIndex = serverResponse.requestIndex;
+        AsyncFormController asyncFormController = getAsyncFormController(requestIndex);
+        if (asyncFormController.onServerInvocationResponse()) { // if there are no docked form openings (which will eventually remove asyncForm), removing async forms explicitly
+            if (Arrays.stream(serverResponse.actions).noneMatch(a -> (a instanceof FormClientAction && !getModalityType((FormClientAction) a).isWindow()))) {
+                ClientFormDockable formContainer = asyncFormController.removeAsyncForm();
+                formContainer.onClosing();
+            }
+        }
+    }
+
+    public void dispatchServerResponse(ServerResponse serverResponse) throws IOException {
+        onServerResponse(serverResponse);
+
+        dispatchResponse(serverResponse);
+    }
     public void dispatchResponse(ServerResponse serverResponse) throws IOException {
         assert serverResponse != null;
 
@@ -124,6 +144,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
                     } else {
                         serverResponse = continueServerInvocation(serverResponse.requestIndex, continueIndex, actionResults);
                     }
+                    onServerResponse(serverResponse);
                 } else {
                     if (actionThrowable != null) {
                         //всегда оборачиваем, чтобы был корректный stack-trace
@@ -207,6 +228,17 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
 
     protected abstract PendingRemoteInterface getRemote();
 
+    protected boolean canShowDockedModal() {
+        return true;
+    }
+
+    protected ModalityType getModalityType(FormClientAction action) { // should correspond ClientAsyncOpenForm.isDesktopEnabled
+        ModalityType modalityType = action.modalityType;
+        if (modalityType == ModalityType.DOCKED_MODAL && !canShowDockedModal())
+            modalityType = ModalityType.MODAL;
+        return modalityType;
+    }
+
     public void execute(FormClientAction action) {
         RemoteFormProxy remoteForm = new RemoteFormProxy(action.remoteForm, RemoteObjectProxy.getRealHostName(getRemote()));
         if(action.immutableMethods != null) {
@@ -215,18 +247,10 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
             }
         }
 
-        ModalityType modalityType = action.modalityType;
-        if (modalityType == ModalityType.DOCKED_MODAL) {
-            pauseDispatching();
-            beforeModalActionInSameEDT(true);
-            ClientFormDockable blockingForm = MainFrame.instance.runForm(getDispatchingIndex(), action.canonicalName, action.formSID, false, remoteForm, action.firstChanges, openFailed -> {
-                afterModalActionInSameEDT(true);
-                if (!openFailed) {
-                    continueDispatching();
-                }
-            });
-            setBlockingForm(blockingForm);
-        } else if (modalityType.isModal()) {
+        AsyncFormController asyncFormController = getAsyncFormController(getDispatchingIndex());
+
+        ModalityType modalityType = getModalityType(action);
+        if (modalityType.isWindow()) {
             beforeModalActionInSameEDT(false);
             Component owner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
             ClientForm clientForm = ClientFormController.deserializeClientForm(remoteForm);
@@ -239,8 +263,18 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
             };
             form.init(action.canonicalName, action.formSID, remoteForm, clientForm, action.firstChanges, modalityType.isDialog(), editEvent);
             form.showDialog(false);
+        } else if (modalityType == ModalityType.DOCKED_MODAL) {
+            pauseDispatching();
+            beforeModalActionInSameEDT(true);
+            ClientFormDockable blockingForm = MainFrame.instance.runForm(asyncFormController, action.canonicalName, action.formSID, false, remoteForm, action.firstChanges, openFailed -> {
+                afterModalActionInSameEDT(true);
+                if (!openFailed) {
+                    continueDispatching();
+                }
+            });
+            setBlockingForm(blockingForm);
         } else {
-            MainFrame.instance.runForm(getDispatchingIndex(), action.canonicalName, action.formSID, action.forbidDuplicate, remoteForm, action.firstChanges, null);
+            MainFrame.instance.runForm(asyncFormController, action.canonicalName, action.formSID, action.forbidDuplicate, remoteForm, action.firstChanges, null);
         }
     }
 
@@ -663,5 +697,9 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
 
     private String getExtension(byte[] file) {
         return file[0] == 73 && file[1] == 68 && file[2] == 51 ? ".mp3" : ".wav";
+    }
+
+    public AsyncFormController getAsyncFormController(long requestIndex) {
+        return getRmiQueue().getAsyncFormController(requestIndex);
     }
 }

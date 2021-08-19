@@ -35,8 +35,13 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
     }
 
     @Override
+    public boolean canShowDockedModal() {
+        return !form.isWindow();
+    }
+
+    @Override
     public void execute(final GFormAction action) {
-        if (form.isModal() && action.modalityType == GModalityType.DOCKED_MODAL) {
+        if (action.modalityType == GModalityType.DOCKED_MODAL && !canShowDockedModal()) {
             action.modalityType = GModalityType.MODAL;
         }
 

@@ -19,7 +19,6 @@ import lsfusion.gwt.client.action.GAction;
 import lsfusion.gwt.client.action.GFormAction;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.exception.ErrorHandlingCallback;
-import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.view.PopupDialogPanel;
 import lsfusion.gwt.client.base.view.WindowHiddenHandler;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
@@ -179,7 +178,7 @@ public abstract class FormsController {
             return null;
         }
 
-        boolean modal = modalityType.isModalWindow();
+        boolean modal = modalityType.isWindow();
         FormContainer formContainer = asyncFormController.removeAsyncForm();
         boolean hasAsyncForm = formContainer != null;
         boolean asyncOpened = hasAsyncForm && formContainer instanceof ModalForm == modal;
@@ -221,7 +220,7 @@ public abstract class FormsController {
                     Scheduler.get().scheduleDeferred(() -> {
                         if (openFormTimer != null) {
                             if (asyncFormController.checkNotCompleted()) { //request is not completed yet
-                                FormContainer formContainer = openForm.isModal() ?
+                                FormContainer formContainer = openForm.isWindow(asyncFormController.canShowDockedModal()) ?
                                         new ModalForm(FormsController.this, asyncFormController, openForm.caption, true) :
                                         new FormDockable(FormsController.this, asyncFormController, openForm.caption, true);
                                 formContainer.show();

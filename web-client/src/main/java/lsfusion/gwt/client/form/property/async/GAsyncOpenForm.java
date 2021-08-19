@@ -11,18 +11,20 @@ import lsfusion.gwt.client.view.MainFrame;
 public class GAsyncOpenForm extends GAsyncExec {
     public String canonicalName;
     public String caption;
-    public  boolean forbidDuplicate;
+    public boolean forbidDuplicate;
     public boolean modal;
+    public boolean window;
 
     @SuppressWarnings("UnusedDeclaration")
     public GAsyncOpenForm() {
     }
 
-    public GAsyncOpenForm(String canonicalName, String caption, boolean forbidDuplicate, boolean modal) {
+    public GAsyncOpenForm(String canonicalName, String caption, boolean forbidDuplicate, boolean modal, boolean window) {
         this.canonicalName = canonicalName;
         this.caption = caption;
         this.forbidDuplicate = forbidDuplicate;
         this.modal = modal;
+        this.window = window;
     }
 
     @Override
@@ -30,9 +32,9 @@ public class GAsyncOpenForm extends GAsyncExec {
         formController.asyncOpenForm(this, editContext, event, actionSID);
     }
 
-    public boolean isModal() {
+    public boolean isWindow(boolean canShowDockedModal) {
         //if current form is modal, new async form can't be non-modal
-        return modal || MainFrame.getCurrentForm() instanceof ModalForm;
+        return window || (modal && !canShowDockedModal);
     }
 
     @Override
