@@ -26,39 +26,39 @@ public class StoredArrayTest {
     }
 
     @Test
-    public void createWithArray() throws IOException {
+    public void createWithArray() {
         SerializableClass[] array = initArray();
         StoredArray<SerializableClass> stored = new StoredArray<>(array, serializer);
         assertEquals(stored.size(), array.length);
     }
 
     @Test 
-    public void createWithZeroLengthArray() throws IOException {
+    public void createWithZeroLengthArray() {
         StoredArray<SerializableClass> stored = new StoredArray<>(new SerializableClass[0], serializer);
         assertEquals(stored.size(), 0);
     }
 
     @Test
-    public void createWithSize() throws IOException {
+    public void createWithSize() {
         StoredArray<SerializableClass> stored = new StoredArray<>(10, serializer);
         assertEquals(stored.size(), 10);
     }
     
     @Test 
-    public void createEmpty() throws IOException {
+    public void createEmpty() {
         StoredArray<SerializableClass> stored = new StoredArray<>(serializer);
         assertEquals(stored.size(), 0);
     }
     
     @Test
-    public void createWithArrayAndGet() throws IOException {
+    public void createWithArrayAndGet() {
         SerializableClass[] array = initArray();
         StoredArray<SerializableClass> stored = new StoredArray<>(array, serializer);
         checkEquality(array, stored);
     }
 
     @Test
-    public void createWithArrayAndGetReversed() throws IOException {
+    public void createWithArrayAndGetReversed() {
         SerializableClass[] array = initArray();
         StoredArray<SerializableClass> stored = new StoredArray<>(array, serializer);
         for (int i = stored.size() - 1; i >= 0; --i) {
@@ -67,7 +67,7 @@ public class StoredArrayTest {
     }
 
     @Test
-    public void createWithCopyConstructor() throws IOException {
+    public void createWithCopyConstructor() {
         SerializableClass[] array = initArrayWithNulls();
         StoredArray<SerializableClass> stored = new StoredArray<>(array, serializer);
         StoredArray<SerializableClass> target = new StoredArray<>(stored);
@@ -75,7 +75,7 @@ public class StoredArrayTest {
     }
 
     @Test 
-    public void checkArrayCopy() throws IOException {
+    public void checkArrayCopy() {
         SerializableClass[] array = initArrayWithNulls();
         StoredArray<SerializableClass> source = new StoredArray<>(array, serializer);
         StoredArray<SerializableClass> target = new StoredArray<>(source);
@@ -84,7 +84,7 @@ public class StoredArrayTest {
     }
     
     @Test
-    public void checkUnserializableObjectAssert() throws IOException {
+    public void checkUnserializableObjectAssert() {
         SerializableClass[] array = initArray();
         array[3] = new OtherSerializableClass("triangle", 5, true);
         thrown.expect(AssertionError.class);
@@ -92,7 +92,7 @@ public class StoredArrayTest {
     }
     
     @Test
-    public void addAndGet() throws IOException {
+    public void addAndGet() {
         StoredArray<SerializableClass> stored = new StoredArray<>(serializer);
         SerializableClass[] array = initArray();
         for (SerializableClass element : array) {
@@ -102,7 +102,7 @@ public class StoredArrayTest {
     }
 
     @Test
-    public void addAndImmediateGet() throws IOException {
+    public void addAndImmediateGet() {
         SerializableClass[] array = initArray();
         StoredArray<SerializableClass> stored = new StoredArray<>(serializer);
         for (int i = 0; i < stored.size(); ++i) {
@@ -112,7 +112,7 @@ public class StoredArrayTest {
     }
 
     @Test
-    public void createAndReverseMultipleTimes() throws IOException {
+    public void createAndReverseMultipleTimes() {
         SerializableClass[] array = initArray();
         StoredArray<SerializableClass> stored = new StoredArray<>(array, serializer);
         int n = stored.size();
@@ -128,7 +128,7 @@ public class StoredArrayTest {
     }
 
     @Test
-    public void randomAddWithIndex() throws IOException {
+    public void randomAddWithIndex() {
         SerializableClass[] array = initArray();
         StoredArray<SerializableClass> stored = new StoredArray<>(new SerializableClass[array.length], serializer);
         int n = stored.size();
@@ -141,7 +141,7 @@ public class StoredArrayTest {
     }
     
     @Test
-    public void createWithSizeAndCheckForNulls() throws IOException {
+    public void createWithSizeAndCheckForNulls() {
         StoredArray<SerializableClass> stored = new StoredArray<>(10, serializer);
         for (int i = 0; i < stored.size(); ++i) {
             SerializableClass cls = stored.get(i);
@@ -150,14 +150,14 @@ public class StoredArrayTest {
     }
 
     @Test
-    public void createWithArrayWithNullsAndGet() throws IOException {
+    public void createWithArrayWithNullsAndGet() {
         SerializableClass[] array = initArrayWithNulls();
         StoredArray<SerializableClass> stored = new StoredArray<>(array, serializer);
         checkEquality(array, stored);
     }
 
     @Test
-    public void appendWithNullsAndGet() throws IOException {
+    public void appendWithNullsAndGet() {
         SerializableClass[] array = initArrayWithNulls();
         StoredArray<SerializableClass> stored = new StoredArray<>(serializer);
         for (SerializableClass obj : array) {
@@ -167,7 +167,7 @@ public class StoredArrayTest {
     }
 
     @Test
-    public void setWithNullsAndGet() throws IOException {
+    public void setWithNullsAndGet() {
         SerializableClass[] array = initArrayWithNulls();
         StoredArray<SerializableClass> stored = new StoredArray<>(array.length, serializer);
         for (int i = 0; i < array.length; ++i) {
@@ -177,7 +177,7 @@ public class StoredArrayTest {
     }
     
     @Test
-    public void squeeze() throws IOException {
+    public void squeeze() {
         SerializableClass[] array = initArrayWithNulls();
         final DerivedSerializableClass weighty = new DerivedSerializableClass("LongStringStringString", 45, false, "                    ");
         StoredArray<SerializableClass> stored = new StoredArray<>(array, serializer);
@@ -197,7 +197,7 @@ public class StoredArrayTest {
     }
     
     @Test
-    public void insertToBeginning() throws IOException {
+    public void insertToBeginning() {
         SerializableClass[] array = initArrayWithNulls();
         int mid = array.length / 2;
         StoredArray<SerializableClass> stored = new StoredArray<>(serializer);
@@ -211,7 +211,7 @@ public class StoredArrayTest {
     }
 
     @Test
-    public void insertToMiddle() throws IOException {
+    public void insertToMiddle() {
         SerializableClass[] array = initArrayWithNulls();
         int mid = array.length / 4;
         StoredArray<SerializableClass> stored = new StoredArray<>(serializer);
@@ -228,7 +228,7 @@ public class StoredArrayTest {
     }
 
     @Test
-    public void insertToEnd() throws IOException {
+    public void insertToEnd() {
         SerializableClass[] array = initArrayWithNulls();
         StoredArray<SerializableClass> stored = new StoredArray<>(serializer);
         for (int i = 0; i < array.length; ++i) {
@@ -238,7 +238,7 @@ public class StoredArrayTest {
     }
     
     
-    private void checkEquality(SerializableClass[] array, StoredArray<SerializableClass> stored) throws IOException {
+    private void checkEquality(SerializableClass[] array, StoredArray<SerializableClass> stored) {
         assertEquals(array.length, stored.size());
         for (int i = 0; i < stored.size(); ++i) {
             assertEquals(array[i], stored.get(i));

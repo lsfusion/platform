@@ -7,8 +7,6 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImRevValueMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 
-import java.io.IOException;
-
 public class StoredArIndexedSet<K> extends AMSet<K> {
 
     public StoredArray<K> array;
@@ -17,22 +15,17 @@ public class StoredArIndexedSet<K> extends AMSet<K> {
         this.array = array;
     }
 
-    public StoredArIndexedSet(StoredArraySerializer serializer, K[] array) throws IOException {
+    public StoredArIndexedSet(StoredArraySerializer serializer, K[] array) {
         this.array = new StoredArray<>(array, serializer);
     }
     
-    public StoredArIndexedSet(StoredArraySerializer serializer, int size) throws IOException {
+    public StoredArIndexedSet(StoredArraySerializer serializer, int size) {
         array = new StoredArray<>(size, serializer);
     }
 
     public StoredArIndexedSet(StoredArIndexedSet<K> set) {
         // todo [dale]: this can be optimized
-        // todo [dale]: exception
-        try {
-            array = new StoredArray<>(set.array);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        array = new StoredArray<>(set.array);
     }
 
     public int size() {
@@ -40,30 +33,15 @@ public class StoredArIndexedSet<K> extends AMSet<K> {
     }
 
     public K get(int i) {
-        try {
-            return array.get(i);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
+        return array.get(i);
     }
 
     public <M> ImValueMap<K, M> mapItValues() {
-        try {
-            return new StoredArIndexedMap<>(this);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
+        return new StoredArIndexedMap<>(this);
     }
 
     public <M> ImRevValueMap<K, M> mapItRevValues() {
-        try {
-            return new StoredArIndexedMap<>(this);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
+        return new StoredArIndexedMap<>(this);
     }
 
     @Override
@@ -78,12 +56,8 @@ public class StoredArIndexedSet<K> extends AMSet<K> {
 
     @Override
     public void keep(K element) {
-        try {
-            assert size() == 0 || array.get(size() - 1).hashCode() <= element.hashCode();
-            array.append(element);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        assert size() == 0 || array.get(size() - 1).hashCode() <= element.hashCode();
+        array.append(element);
     }
 
     public boolean add(K element) {

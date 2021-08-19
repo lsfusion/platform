@@ -12,14 +12,12 @@ import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImRevValueMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 
-import java.io.IOException;
-
 public class StoredArIndexedMap<K, V> extends AMRevMap<K, V> {
 
     public StoredArray<K> keys;
     public StoredArray<V> values;
 
-    public StoredArIndexedMap(StoredArraySerializer serializer, K[] keys, V[] values) throws IOException {
+    public StoredArIndexedMap(StoredArraySerializer serializer, K[] keys, V[] values) {
         this.keys = new StoredArray<>(keys, serializer);
         this.values = new StoredArray<>(values, serializer);
         assert keys.length == values.length;
@@ -33,24 +31,19 @@ public class StoredArIndexedMap<K, V> extends AMRevMap<K, V> {
     
     public StoredArIndexedMap(StoredArIndexedMap<K, V> map, boolean clone) {
         assert clone;
-        // todo [dale]:
-        try {
-            this.keys = new StoredArray<>(map.keys);
-            this.values = new StoredArray<>(map.values);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        this.keys = new StoredArray<>(map.keys);
+        this.values = new StoredArray<>(map.values);
     }
     
-    private StoredArIndexedMap(StoredArraySerializer serializer, StoredArray<K> keys) throws IOException {
+    private StoredArIndexedMap(StoredArraySerializer serializer, StoredArray<K> keys) {
         this.keys = keys;
         this.values = new StoredArray<>(keys.size(), serializer);
     }
 
-    public StoredArIndexedMap(StoredArIndexedMap<K, ?> map) throws IOException {
+    public StoredArIndexedMap(StoredArIndexedMap<K, ?> map) {
         this(map.keys.getSerializer(), map.keys);
     }
-    public StoredArIndexedMap(StoredArIndexedSet<K> set) throws IOException {
+    public StoredArIndexedMap(StoredArIndexedSet<K> set) {
         this(set.array.getSerializer(), set.array);
     }
 
@@ -59,47 +52,23 @@ public class StoredArIndexedMap<K, V> extends AMRevMap<K, V> {
     }
 
     public K getKey(int i) {
-        try {
-            return keys.get(i);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
+        return keys.get(i);
     }
 
     public V getValue(int i) {
-        try {
-            return values.get(i);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
+        return values.get(i);
     }
 
     public void mapValue(int i, V value) {
-        try {
-            values.set(i, value);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        values.set(i, value);
     }
 
     public <M> ImValueMap<K, M> mapItValues() {
-        try {
-            return new StoredArIndexedMap<>(this);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
+        return new StoredArIndexedMap<>(this);
     }
 
     public <M> ImRevValueMap<K, M> mapItRevValues() {
-        try {
-            return new StoredArIndexedMap<>(this);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
+        return new StoredArIndexedMap<>(this);
     }
 
     public ImMap<K, V> immutable() {
@@ -111,42 +80,37 @@ public class StoredArIndexedMap<K, V> extends AMRevMap<K, V> {
     }
 
     public static <T> int findIndex(Object key, StoredArray<T> keys) {
-        try {
-            int hash = key.hashCode();
+        int hash = key.hashCode();
 
-            int low = 0;
-            int high = keys.size() - 1;
+        int low = 0;
+        int high = keys.size() - 1;
 
-            while (low <= high) {
-                int mid = (low + high) >>> 1;
-                T midVal = keys.get(mid);
-                int midHash = midVal.hashCode();
+        while (low <= high) {
+            int mid = (low + high) >>> 1;
+            T midVal = keys.get(mid);
+            int midHash = midVal.hashCode();
 
-                if (midHash < hash)
-                    low = mid + 1;
-                else if (midHash > hash)
-                    high = mid - 1;
-                else { // hash found
+            if (midHash < hash)
+                low = mid + 1;
+            else if (midHash > hash)
+                high = mid - 1;
+            else { // hash found
+                if (midVal == key || midVal.equals(key))
+                    return mid; // key found
+
+                for (int i = mid + 1; i <= high && (midVal = keys.get(i)).hashCode() == hash; i++)
                     if (midVal == key || midVal.equals(key))
-                        return mid; // key found
+                        return i;
 
-                    for (int i = mid + 1; i <= high && (midVal = keys.get(i)).hashCode() == hash; i++)
-                        if (midVal == key || midVal.equals(key))
-                            return i;
+                for (int i = mid - 1; i >= low && (midVal = keys.get(i)).hashCode() == hash; i--)
+                    if (midVal == key || midVal.equals(key))
+                        return i;
 
-                    for (int i = mid - 1; i >= low && (midVal = keys.get(i)).hashCode() == hash; i--)
-                        if (midVal == key || midVal.equals(key))
-                            return i;
-
-                    low = mid;
-                    break;
-                }
+                low = mid;
+                break;
             }
-            return -(low + 1);
-        } catch (IOException e) {
-            e.printStackTrace();
         }
-        return keys.size();
+        return -(low + 1);
     }
 
     private int findIndex(Object key) {
@@ -156,36 +120,28 @@ public class StoredArIndexedMap<K, V> extends AMRevMap<K, V> {
     public V getObject(Object key) {
         int index = findIndex(key);
         if(index >= 0) {
-            try {
-                return values.get(index);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            return values.get(index);
         }
         return null;
     }
 
     public boolean add(K key, V value) {
-        try {
-            int index = findIndex(key);
-            if (index >= 0) {
-                AddValue<K, V> add = getAddValue();
-                V addedValue = add.addValue(keys.get(index), values.get(index), value);
-                if (add.stopWhenNull() && addedValue == null)
-                    return false;
-                values.set(index, addedValue);
-            } else {
-                int insert = -index - 1;
-                keys.insert(insert, key);
-                values.insert(insert, value);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+        int index = findIndex(key);
+        if (index >= 0) {
+            AddValue<K, V> add = getAddValue();
+            V addedValue = add.addValue(keys.get(index), values.get(index), value);
+            if (add.stopWhenNull() && addedValue == null)
+                return false;
+            values.set(index, addedValue);
+        } else {
+            int insert = -index - 1;
+            keys.insert(insert, key);
+            values.insert(insert, value);
         }
         return true;
     }
 
-    private StoredArIndexedMap<K, V> merge(int mgSize, K[] mgKeys, V[] mgValues, AddValue<K, V> add) throws IOException {
+    private StoredArIndexedMap<K, V> merge(int mgSize, K[] mgKeys, V[] mgValues, AddValue<K, V> add) {
         StoredArray<K> rKeys = new StoredArray<>(keys.getSerializer());
         StoredArray<V> rValues = new StoredArray<>(values.getSerializer());
 
@@ -327,13 +283,9 @@ public class StoredArIndexedMap<K, V> extends AMRevMap<K, V> {
 
     @Override
     public void keep(K key, V value) {
-        try {
-            assert size() == 0 || keys.get(size() - 1).hashCode() <= key.hashCode();
-            keys.append(key);
-            values.append(value);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        assert size() == 0 || keys.get(size() - 1).hashCode() <= key.hashCode();
+        keys.append(key);
+        values.append(value);
     }
 
     @Override
@@ -354,7 +306,7 @@ public class StoredArIndexedMap<K, V> extends AMRevMap<K, V> {
     }
 
     // копия с merge
-    protected boolean twins(StoredArray<K> twKeys, StoredArray<V> twValues) throws IOException {
+    protected boolean twins(StoredArray<K> twKeys, StoredArray<V> twValues) {
 
         int i=0;
         int hash = keys.get(0).hashCode();

@@ -3,65 +3,85 @@ package lsfusion.base.col.implementations.stored;
 import java.io.*;
 
 public class StoredArray<T> {
-    private int size = 0;
     private final StoredArraySerializer serializer;
     private final StoredArrayFileManager fileManager;
+    private int size = 0;
     private RandomAccessFile indexFile;
     private RandomAccessFile dataFile;
     
-    public StoredArray(StoredArraySerializer serializer) throws IOException {
+    public StoredArray(StoredArraySerializer serializer) {
         this(0, serializer);
     }
 
-    public StoredArray(int size, StoredArraySerializer serializer) throws IOException {
-        this(size, serializer, new StoredArrayFileManagerImpl());
+    public StoredArray(int size, StoredArraySerializer serializer) {
+        this(size, serializer, null);
     }
     
-    public StoredArray(T[] array, StoredArraySerializer serializer) throws IOException {
-        this(array, serializer, new StoredArrayFileManagerImpl());
+    public StoredArray(T[] array, StoredArraySerializer serializer) {
+        this(array, serializer, null);
     }
     
-    public StoredArray(T[] array, StoredArraySerializer serializer, StoredArrayFileManager fileManager) throws IOException {
-        this.serializer = serializer;
-        this.fileManager = fileManager;
-        createInitialState(array);
+    public StoredArray(T[] array, StoredArraySerializer serializer, StoredArrayFileManager fileManager) {
+        try {
+            this.serializer = serializer;
+            this.fileManager = (fileManager == null ? new StoredArrayFileManagerImpl() : fileManager);
+            createInitialState(array);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
-    public StoredArray(int initialSize, StoredArraySerializer serializer, StoredArrayFileManager fileManager) throws IOException {
-        this.serializer = serializer;
-        this.fileManager = fileManager;
-        createInitialState(initialSize);
-    }
-    
-    public StoredArray(StoredArray<? extends T> source) throws IOException {
-        this.serializer = source.serializer;
-        this.fileManager = new StoredArrayFileManagerImpl();
-        createInitialState(0);
-        for (int i = 0; i < source.size(); ++i) {
-            append(source.get(i));
+    public StoredArray(int initialSize, StoredArraySerializer serializer, StoredArrayFileManager fileManager) {
+        try {
+            this.serializer = serializer;
+            this.fileManager = (fileManager == null ? new StoredArrayFileManagerImpl() : fileManager);
+            createInitialState(initialSize);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
     }
     
-    public void append(T element) throws IOException {
-        appendElement(element);
+    public StoredArray(StoredArray<? extends T> source) {
+        try {
+            this.serializer = source.serializer;
+            this.fileManager = new StoredArrayFileManagerImpl();
+            createInitialState(0);
+            for (int i = 0; i < source.size(); ++i) {
+                append(source.get(i));
+            }
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
     
-    public void set(int index, T element) throws IOException {
+    public void append(T element) {
+        try {
+            appendElement(element);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+    
+    public void set(int index, T element) {
         assert index >= 0 && index < size;
-        if (element == null) {
-            setNull(index);
-        } else {
-            byte[] elementBuf = serializer.serialize(element);
-            int newLen = elementBuf.length + Short.BYTES;
+        try {
+            if (element == null) {
+                setNull(index);
+            } else {
+                byte[] elementBuf = serializer.serialize(element);
+                int newLen = elementBuf.length + Short.BYTES;
 
-            seekToIndex(index);
-            int offset = indexFile.readInt();
-            int len = indexFile.readInt();
+                seekToIndex(index);
+                int offset = indexFile.readInt();
+                int len = indexFile.readInt();
 
-            int newOffset = (newLen <= len ? offset : (int) dataFile.length());
-            setIndexData(index, newOffset, newLen);
-            seekToObject(newOffset);
-            writeElementData(serializer.getId(element), elementBuf);
+                int newOffset = (newLen <= len ? offset : (int) dataFile.length());
+                setIndexData(index, newOffset, newLen);
+                seekToObject(newOffset);
+                writeElementData(serializer.getId(element), elementBuf);
+            }
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -72,37 +92,45 @@ public class StoredArray<T> {
     }
     
     // time-consuming operation
-    public void insert(int index, T element) throws IOException {
+    public void insert(int index, T element) {
         assert index >= 0 && index <= size;
         
         if (index == size) {
             append(element);
             return;
         }
-
-        int offset = (int) dataFile.length();
-        seekToObject(offset);
-        int len = writeElement(element);
         
-        seekToIndex(index);
-        int nextOffset = 0, nextLen = 0;
-        for (int i = index; i <= size; ++i) {
-            if (i < size) {
-                nextOffset = indexFile.readInt();
-                nextLen = indexFile.readInt();
+        try {
+            int offset = (int) dataFile.length();
+            seekToObject(offset);
+            int len = writeElement(element);
+
+            seekToIndex(index);
+            int nextOffset = 0, nextLen = 0;
+            for (int i = index; i <= size; ++i) {
+                if (i < size) {
+                    nextOffset = indexFile.readInt();
+                    nextLen = indexFile.readInt();
+                }
+                setIndexData(i, offset, len);
+                offset = nextOffset;
+                len = nextLen;
             }
-            setIndexData(i, offset, len);
-            offset = nextOffset;
-            len = nextLen;
+            ++size;
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
-        ++size;
     }
     
-    public T get(int index) throws IOException {
+    public T get(int index) {
         assert index < size;
-        int len = prepareForElementReading(index);
-        if (len > 0) {
-            return readElement(len);
+        try {
+            int len = prepareForElementReading(index);
+            if (len > 0) {
+                return readElement(len);
+            }
+        } catch (IOException e) {
+            throw new UncheckedIOException(e); 
         }
         return null;
     }
@@ -131,7 +159,7 @@ public class StoredArray<T> {
         if (element != null) {
             seekToObject(offset);
             len = writeElement(element);
-        } 
+        }
         setIndexData(size, offset, len);
         ++size;
     }
@@ -173,29 +201,32 @@ public class StoredArray<T> {
         return len;
     }
 
-    public void squeeze() throws IOException {
+    public void squeeze() {
         File tmpIndexFile = fileManager.tmpIndexFile();
         File tmpDataFile = fileManager.tmpDataFile();
-        
-        try (
-            DataOutputStream tmpIndexStream = new DataOutputStream(new FileOutputStream(tmpIndexFile));
-            FileOutputStream tmpDataStream = new FileOutputStream(tmpDataFile)
-        ) {
-            int total = 0;
-            for (int i = 0; i < size; ++i) {
-                int len = prepareForElementReading(i);
-                byte[] buf = new byte[len];
-                dataFile.read(buf);
-                tmpIndexStream.writeInt(total);
-                tmpIndexStream.writeInt(len);
-                tmpDataStream.write(buf);
-                total += len;
+        try {
+            try (
+                DataOutputStream tmpIndexStream = new DataOutputStream(new FileOutputStream(tmpIndexFile));
+                FileOutputStream tmpDataStream = new FileOutputStream(tmpDataFile)
+            ) {
+                int total = 0;
+                for (int i = 0; i < size; ++i) {
+                    int len = prepareForElementReading(i);
+                    byte[] buf = new byte[len];
+                    dataFile.read(buf);
+                    tmpIndexStream.writeInt(total);
+                    tmpIndexStream.writeInt(len);
+                    tmpDataStream.write(buf);
+                    total += len;
+                }
             }
-        }
 
-        closeFiles();
-        fileManager.replaceFilesByTmpFiles();
-        openFiles();
+            closeFiles();
+            fileManager.replaceFilesByTmpFiles();
+            openFiles();
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
     public StoredArraySerializer getSerializer() {
@@ -207,10 +238,10 @@ public class StoredArray<T> {
         closeFiles();
         
         // todo [dale]: FileUtils.safeDelete
-        fileManager.deleteFiles();        
+        fileManager.deleteFiles();
     }
 
-    private void openFiles() throws IOException {
+    private void openFiles() throws FileNotFoundException {
         dataFile = fileManager.openDataFile();
         indexFile = fileManager.openIndexFile();
     }
@@ -226,9 +257,5 @@ public class StoredArray<T> {
     
     private void seekToObject(int offset) throws IOException {
         dataFile.seek(offset);
-    }
-
-    public static class StoredArrayException extends RuntimeException {
-        
     }
 }
