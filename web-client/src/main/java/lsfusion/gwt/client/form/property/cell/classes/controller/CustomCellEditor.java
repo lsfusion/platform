@@ -11,18 +11,12 @@ public class CustomCellEditor implements CellEditor {
 
     private final EditManager editManager;
     private final GPropertyDraw property;
-    private final String startEditingFunction;
-    private final String commitEditingFunction;
-    private final String onBrowserEventFunction;
+    private final String customEditorFunction;
 
-    public CustomCellEditor(EditManager editManager, GPropertyDraw property, String customEditorFunctions) {
+    public CustomCellEditor(EditManager editManager, GPropertyDraw property, String customEditorFunction) {
         this.editManager = editManager;
         this.property = property;
-
-        String[] functions = customEditorFunctions.split(":");
-        this.startEditingFunction = functions[0];
-        this.commitEditingFunction = functions[1];
-        this.onBrowserEventFunction = functions[2];
+        this.customEditorFunction = customEditorFunction;
     }
 
     @Override
@@ -31,7 +25,7 @@ public class CustomCellEditor implements CellEditor {
     }
 
     protected native void commit(Element element)/*-{
-        $wnd[this.@CustomCellEditor::commitEditingFunction](element);
+        $wnd[this.@CustomCellEditor::customEditorFunction]().commit(element);
     }-*/;
 
     @Override
@@ -40,16 +34,17 @@ public class CustomCellEditor implements CellEditor {
     }
 
     protected native void startEditing(Element element)/*-{
-        $wnd[this.@CustomCellEditor::startEditingFunction](element);
+        $wnd[this.@CustomCellEditor::customEditorFunction]().startEditing(element);
     }-*/;
 
     @Override
     public void onBrowserEvent(Element parent, EventHandler handler) {
-        if (onBrowserEventFunction != null)
-            onBrowserEvent();
+        onBrowserEvent();
     }
 
     protected native void onBrowserEvent()/*-{
-        $wnd[this.@CustomCellEditor::onBrowserEventFunction]();
+        var customEditorFunction = $wnd[this.@CustomCellEditor::customEditorFunction]();
+        if (customEditorFunction.onBrowserEvent !== undefined)
+            customEditorFunction.onBrowserEvent();
     }-*/;
 }

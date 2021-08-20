@@ -9,18 +9,11 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 import java.util.function.Consumer;
 
 public class CustomCellRenderer extends CellRenderer<Object> {
-    private final String renderFunction;
-    private final String setValueFunction;
-    private final String clearFunction;
+    private final String customRenderFunction;
 
     public CustomCellRenderer(GPropertyDraw property, String customRenderFunction) {
         super(property);
-        
-        int firstColonIndex = customRenderFunction.indexOf(":");
-        int secondColonIndex = customRenderFunction.lastIndexOf(":");
-        renderFunction = customRenderFunction.substring(0, firstColonIndex);
-        setValueFunction = customRenderFunction.substring(firstColonIndex + 1, secondColonIndex);
-        clearFunction = customRenderFunction.substring(secondColonIndex + 1);
+        this.customRenderFunction = customRenderFunction;
     }
 
     @Override
@@ -29,7 +22,7 @@ public class CustomCellRenderer extends CellRenderer<Object> {
     }
 
     protected native void render(Element element)/*-{
-        $wnd[this.@CustomCellRenderer::renderFunction](element);
+        $wnd[this.@CustomCellRenderer::customRenderFunction]().render(element);
     }-*/;
 
     @Override
@@ -40,7 +33,7 @@ public class CustomCellRenderer extends CellRenderer<Object> {
     }
 
     protected native void setRendererValue(Element element, JavaScriptObject controller, JavaScriptObject value)/*-{
-        $wnd[this.@CustomCellRenderer::setValueFunction](element, value, controller);
+        $wnd[this.@CustomCellRenderer::customRenderFunction]().update(element, controller, value);
     }-*/;
 
     @Override
@@ -49,7 +42,7 @@ public class CustomCellRenderer extends CellRenderer<Object> {
     }
     
     protected native void clear(Element element)/*-{
-        $wnd[this.@CustomCellRenderer::clearFunction](element);
+        $wnd[this.@CustomCellRenderer::customRenderFunction]().clear(element);
     }-*/;
 
     @Override
@@ -75,10 +68,16 @@ public class CustomCellRenderer extends CellRenderer<Object> {
             },
             isReadOnly: function () {
                 return isReadOnly;
+            },
+            toDateDTO: function (year, month, day) {
+                return @lsfusion.gwt.client.form.property.cell.classes.GDateDTO::new(III)(year, month, day);
+            },
+            toTimeDTO: function (hour, minute, second) {
+                return @lsfusion.gwt.client.form.property.cell.classes.GTimeDTO::new(III)(hour, minute, second);
             }
         }
     }-*/;
-    
+
     
     protected native final <T> JavaScriptObject fromObject(T object) /*-{
         return object;

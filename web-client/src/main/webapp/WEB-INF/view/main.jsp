@@ -17,7 +17,7 @@
         <style>
             @import url('static/css/fontsGoogle/fonts_googleapis_OpenSans.css');
         </style>
-
+        
         <style type="text/css">
             #loading {
                 border: 1px solid #ccc;
@@ -125,6 +125,12 @@
             ]);
 
         </script>
+
+        <c:forEach items="${lsfParams}" var="lsfParam">
+            <script>
+                lsfParams["${lsfParam.key}"] = "${lsfParam.value}";
+            </script>
+        </c:forEach>
 
         <c:forEach items="${filesUrls}" var="fileUrl">
             <c:if test="${fileUrl.endsWith('js')}">
