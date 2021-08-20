@@ -158,7 +158,6 @@ checkIsServer INTERNAL 'lsfusion.server.physics.admin.authentication.action.Chec
 isServer = DATA LOCAL BOOLEAN ();
 
 lsfParams(STRING s) = ABSTRACT VALUE STRING(STRING);
-googleAutocompleteCountry '{geo.google.autocomplete.country}' = DATA STRING();
 
 // ----------------------------------- open files ----------------------------------- //
 

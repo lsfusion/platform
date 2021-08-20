@@ -44,7 +44,7 @@ public class CustomCellEditor implements CellEditor {
 
     protected native void onBrowserEvent()/*-{
         var customEditorFunction = $wnd[this.@CustomCellEditor::customEditorFunction]();
-        if (customEditorFunction.onBrowserEvent !== 'undefined')
+        if (customEditorFunction.onBrowserEvent !== undefined)
             customEditorFunction.onBrowserEvent();
     }-*/;
 }

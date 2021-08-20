@@ -38,7 +38,7 @@ public class CustomReplaceCellEditor implements ReplaceCellEditor {
     }
 
     protected native void clearRender(Element element)/*-{
-        $wnd[this.@CustomReplaceCellEditor::customEditorFunction].clearRender(element);
+        $wnd[this.@CustomReplaceCellEditor::customEditorFunction]().clearRender(element);
     }-*/;
 
     @Override
@@ -47,7 +47,7 @@ public class CustomReplaceCellEditor implements ReplaceCellEditor {
     }
 
     protected native void commit(Element element)/*-{
-        $wnd[this.@CustomReplaceCellEditor::customEditorFunction].commit(element);
+        $wnd[this.@CustomReplaceCellEditor::customEditorFunction]().commit(element);
     }-*/;
 
     @Override
@@ -56,7 +56,7 @@ public class CustomReplaceCellEditor implements ReplaceCellEditor {
     }
 
     protected native void startEditing(Element element)/*-{
-        $wnd[this.@CustomReplaceCellEditor::customEditorFunction].startEditing(element);
+        $wnd[this.@CustomReplaceCellEditor::customEditorFunction]().startEditing(element);
     }-*/;
 
     @Override
@@ -66,7 +66,7 @@ public class CustomReplaceCellEditor implements ReplaceCellEditor {
 
     protected native void onBrowserEvent()/*-{
         var customEditorFunction = $wnd[this.@CustomReplaceCellEditor::customEditorFunction]();
-        if (customEditorFunction.onBrowserEvent !== 'undefined')
+        if (customEditorFunction.onBrowserEvent !== undefined)
             customEditorFunction.onBrowserEvent();
     }-*/;
 }
