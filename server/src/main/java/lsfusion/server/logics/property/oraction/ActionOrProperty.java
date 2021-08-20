@@ -651,8 +651,8 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
 
         // для всех
         private ClassViewType viewType;
-        private String customRenderFunctions;
-        private String customEditorFunctions;
+        private String customRenderFunction;
+        private String customEditorFunction;
         private boolean customTextEdit;
         private boolean customReplaceEdit;
         private PivotOptions pivotOptions;
@@ -663,8 +663,8 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         public void proceedDefaultDraw(PropertyDrawEntity<?> entity, FormEntity form) {
             entity.shouldBeLast = BaseUtils.nvl(shouldBeLast, false);
             entity.viewType = viewType;
-            entity.customRenderFunctions = customRenderFunctions;
-            entity.customEditorFunctions = customEditorFunctions;
+            entity.customRenderFunction = customRenderFunction;
+            entity.customEditorFunction = customEditorFunction;
             entity.customTextEdit = customTextEdit;
             entity.customReplaceEdit = customReplaceEdit;
             entity.askConfirm = BaseUtils.nvl(askConfirm, false);
@@ -758,10 +758,10 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
             
             if(viewType == null)
                 setViewType(options.viewType);
-            if (customRenderFunctions == null)
-                setCustomRenderFunctions(options.customRenderFunctions);
-            if (customEditorFunctions == null)
-                setCustomEditorFunctions(options.customEditorFunctions);
+            if (customRenderFunction == null)
+                setCustomRenderFunction(options.customRenderFunction);
+            if (customEditorFunction == null)
+                setCustomEditorFunction(options.customEditorFunction);
             setCustomTextEdit(options.customTextEdit);
             setCustomReplaceEdit(options.customReplaceEdit);
             if(pivotOptions == null)
@@ -871,12 +871,12 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
             this.viewType = viewType;
         }
         
-        public void setCustomRenderFunctions(String customRenderFunctions) {
-            this.customRenderFunctions = customRenderFunctions;
+        public void setCustomRenderFunction(String customRenderFunction) {
+            this.customRenderFunction = customRenderFunction;
         }
 
-        public void setCustomEditorFunctions(String customEditorFunctions) {
-            this.customEditorFunctions = customEditorFunctions;
+        public void setCustomEditorFunction(String customEditorFunction) {
+            this.customEditorFunction = customEditorFunction;
         }
 
         public void setCustomTextEdit(boolean customTextEdit) {

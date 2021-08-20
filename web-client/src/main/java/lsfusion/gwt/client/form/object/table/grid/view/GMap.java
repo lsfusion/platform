@@ -222,7 +222,7 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
         var map = L.map(element);
 
         if (tileProvider === 'google') {
-            $wnd.loadCustomScriptIfNoExist('https://maps.googleapis.com/maps/api/js?key=' + $wnd.lsfParams.get('mapApiKey_Google'))
+            $wnd.loadCustomScriptIfNoExist('https://maps.googleapis.com/maps/api/js?key=' + $wnd.lsfParams.mapApiKey_Google);
             L.gridLayer
                 .googleMutant({
                     type: "roadmap" // valid values are 'roadmap', 'satellite', 'terrain' and 'hybrid'
@@ -230,7 +230,7 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
         } else if (tileProvider === 'yandex') {
             L.yandex()
                 .loadApi({
-                    apiParams: $wnd.lsfParams.get('mapApiKey_Yandex')
+                    apiParams: $wnd.lsfParams.mapApiKey_Yandex
                 }).addTo(map);
         } else {
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {

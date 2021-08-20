@@ -16,7 +16,7 @@ var getRanges = function (wnd, rangeToday, rangeYesterday, rangeLast7Days, range
     };
 }
 
-var lsfParams = new Map();
+var lsfParams = {};
 
 var loadCustomScriptIfNoExist = function (url) {
     var scripts = document.getElementsByTagName('script');

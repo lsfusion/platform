@@ -1296,16 +1296,16 @@ public class ScriptingLogicsModule extends LogicsModule {
         property.setViewType(viewType);
     }
     
-    public void setCustomRenderFunctions(LAP property, String customRenderFunctions) {
-        property.setCustomRenderFunctions(customRenderFunctions);
+    public void setCustomRenderFunction(LAP property, String customRenderFunction) {
+        property.setCustomRenderFunction(customRenderFunction);
     }
 
     public void checkCustomPropertyViewTextOption(String editType) throws ScriptingErrorLog.SemanticErrorException {
         checks.checkCustomPropertyEditType(editType);
     }
 
-    public void setCustomEditorFunctions(LAP property, String customEditorFunctions) {
-        property.setCustomEditorFunctions(customEditorFunctions);
+    public void setCustomEditorFunction(LAP property, String customEditorFunction) {
+        property.setCustomEditorFunction(customEditorFunction);
     }
 
     public void setCustomTextEdit(LAP property, boolean customTextEdit) {

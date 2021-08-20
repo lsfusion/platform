@@ -40,8 +40,10 @@ readLongitude '{geo.longitude.poi}' = DATA LOCAL NUMERIC[11,6] ();
 isDefault '{geo.api.key.default}' (MapProvider m) = m == calculateMapProvider();
 apiKey '{geo.api.key}' = DATA STRING(MapProvider); 
 provider '{geo.api.key.provider}' (MapProvider m) = staticCaption(m) CHARWIDTH 5;
-
 lsfParams(STRING s) += GROUP MAX apiKey(MapProvider p) IF s = 'mapApiKey_' + staticCaption(p);
+
+googleAutocompleteCountry '{geo.google.autocomplete.country}' = DATA STRING();
+lsfParams(STRING s) += googleAutocompleteCountry() IF s = 'googleMapAutocompleteCountry';
 
 getCoordinatesAddress  INTERNAL  'lsfusion.server.logics.classes.data.utils.geo.GetCoordinatesAddressAction' (STRING, MapProvider);
 getCoordinates (STRING address)  { getCoordinatesAddress(address, calculateMapProvider()); }
@@ -86,7 +88,7 @@ startPathPOI '{geo.start.path.poi}'= DATA LOCAL POI();
 calculatePath '{geo.calculate.path.poi}' INTERNAL  'lsfusion.server.logics.classes.data.utils.geo.CalculatePathAction' ();
 
 EXTEND FORM options
-    PROPERTIES() autoSynchronizeCoordinates, nameShowUserMapProvider, useTor, recalculateAllDistances
+    PROPERTIES() autoSynchronizeCoordinates, nameShowUserMapProvider, useTor, recalculateAllDistances, googleAutocompleteCountry
     OBJECTS m = MapProvider
     PROPERTIES(m) provider, apiKey, isDefault
 ;
@@ -100,6 +102,7 @@ DESIGN options {
                     height = 130;
                     MOVE BOX (m);
                 }
+                MOVE PROPERTY(googleAutocompleteCountry());
                 MOVE PROPERTY(autoSynchronizeCoordinates());
                 MOVE PROPERTY(nameShowUserMapProvider());
                 MOVE PROPERTY(useTor());
