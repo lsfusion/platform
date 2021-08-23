@@ -74,6 +74,9 @@ public class CustomCellRenderer extends CellRenderer<Object> {
             },
             toTimeDTO: function (hour, minute, second) {
                 return @lsfusion.gwt.client.form.property.cell.classes.GTimeDTO::new(III)(hour, minute, second);
+            },
+            toDateTimeDTO: function (year, month, day, hour, minute, second) {
+                return @lsfusion.gwt.client.form.property.cell.classes.GDateTimeDTO::new(IIIIII)(year, month, day, hour, minute, second);
             }
         }
     }-*/;
