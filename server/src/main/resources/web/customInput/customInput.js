@@ -8,6 +8,11 @@ function customInputMonth() {
     return new CustomInputMonth().getFunctions();
 }
 
+//week input type. value type = "STRING". Min width on form ~130px
+function customInputWeek() {
+    return new CustomInputWeek().getFunctions();
+}
+
 //date input type. value type = "DATE". Min width on form ~120px
 function customInputDate() {
     return new CustomInputDate().getFunctions();
@@ -16,6 +21,11 @@ function customInputDate() {
 //time input type. value type = "TIME". Min width on form ~90px
 function customInputTime() {
     return new CustomInputTime().getFunctions();
+}
+
+//dateTime input type. value type = "DATETIME". Min width on form ~180px
+function customInputDateTime() {
+    return new CustomInputDateTime().getFunctions();
 }
 
 class CustomInput {
@@ -70,6 +80,10 @@ class CustomInput {
             }
         }
     }
+
+    getTwoDigitsValue(value) {
+        return (("0" + value).slice(-2));
+    }
 }
 
 class CustomInputRange extends CustomInput {
@@ -94,7 +108,23 @@ class CustomInputMonth extends CustomInput {
 
     parseValueFunction(value) {
         let valueDate = new Date(value);
-        return value != null ? valueDate.getFullYear() + '-' + ("0" + (valueDate.getMonth() + 1)).slice(-2) : null;
+        return value != null ? valueDate.getFullYear() + '-' + super.getTwoDigitsValue(valueDate.getMonth() + 1) : null;
+    }
+}
+
+class CustomInputWeek extends CustomInput {
+    constructor() {
+        super("week");
+    }
+
+    onEventFunction(controller) {
+        return (inputElement, value) => {
+            inputElement.onblur = function () {
+                if ((value == null ? "" : value).toString() !== this.value)
+                    controller.changeValue(null, this.value);
+            }
+        };
+
     }
 }
 
@@ -117,5 +147,28 @@ class CustomInputTime extends CustomInput {
                     controller.changeValue(null, timeParts.length === 2 ? controller.toTimeDTO(parseInt(timeParts[0], 10), parseInt(timeParts[1], 10), 0) : null);
             }
         };
+    }
+}
+
+class CustomInputDateTime extends CustomInput {
+    constructor() {
+        super("datetime-local");
+    }
+
+    onEventFunction(controller) {
+        return (inputElement, value) => {
+            inputElement.onblur = function () {
+                let date = new Date(this.value);
+                if (date.getTime() !== new Date(value).getTime())
+                    controller.changeValue(null, !isNaN(date) ? controller.toDateTimeDTO(date.getFullYear(), date.getMonth() + 1, date.getDate(),
+                        date.getHours(), date.getMinutes(), date.getSeconds()) : null);
+            }
+        };
+    }
+
+    parseValueFunction(value) {
+        let valueDate = new Date(value);
+        return value != null ? valueDate.getFullYear() + '-' + super.getTwoDigitsValue(valueDate.getMonth() + 1) + '-' +
+            super.getTwoDigitsValue(valueDate.getDate()) + 'T' + valueDate.getHours() + ':' + super.getTwoDigitsValue(valueDate.getMinutes()) : null;
     }
 }
