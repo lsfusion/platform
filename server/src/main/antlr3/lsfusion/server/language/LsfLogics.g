@@ -86,8 +86,8 @@ grammar LsfLogics;
     import javax.mail.Message;
     import java.awt.*;
     import java.math.BigDecimal;
-    import java.util.List;
     import java.util.*;
+    import java.util.function.*;
     import java.time.*;
 
     import static java.util.Arrays.asList;
@@ -193,10 +193,8 @@ grammar LsfLogics;
 		return getCurrentDebugPoint();
 	}
 
-	public void setObjectProperty(Object propertyReceiver, String propertyName, Object propertyValue) throws ScriptingErrorLog.SemanticErrorException {
-		if (inMainParseState()) {
-			$designStatement::design.setObjectProperty(propertyReceiver, propertyName, propertyValue);
-		}
+	public void setObjectProperty(Object propertyReceiver, String propertyName, Object propertyValue, Supplier<DebugInfo.DebugPoint> debugPoint) throws ScriptingErrorLog.SemanticErrorException {
+        $designStatement::design.setObjectProperty(propertyReceiver, propertyName, propertyValue, debugPoint);
 	}
 
 	public List<GroupObjectEntity> getGroupObjectsList(List<String> ids, Version version) throws ScriptingErrorLog.SemanticErrorException {
@@ -2929,7 +2927,7 @@ onEditEventSetting [LAP property, List<TypedParameter> context]
 
 formEventType returns [String type]
 	:	'CHANGE' { $type = ServerResponse.CHANGE; }
-	|	'CHANGEWYS' { $type = ServerResponse.CHANGE; }
+	|	'CHANGEWYS' { $type = ServerResponse.CHANGE_WYS; }
 	|	'EDIT' { $type = ServerResponse.EDIT_OBJECT; }
 	|	'GROUPCHANGE' { $type = ServerResponse.GROUP_CHANGE; }
 	;
@@ -4832,7 +4830,10 @@ propertySelector[ScriptingFormView formView] returns [PropertyDrawView propertyV
 	;
 
 setObjectPropertyStatement[Object propertyReceiver] returns [String id, Object value]
-	:	ID EQ componentPropertyValue ';'  { setObjectProperty($propertyReceiver, $ID.text, $componentPropertyValue.value); }
+	:	ID EQ componentPropertyValue ';'  {
+            if(inMainParseState())
+	            setObjectProperty($propertyReceiver, $ID.text, $componentPropertyValue.value, () -> getCurrentDebugPoint());
+        }
 	;
 
 componentPropertyValue returns [Object value] //commented literals are in designPropertyObject

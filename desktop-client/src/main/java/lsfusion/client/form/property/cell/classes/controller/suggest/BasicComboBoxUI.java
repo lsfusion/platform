@@ -179,8 +179,12 @@ public class BasicComboBoxUI extends ComboBoxUI {
     private static final Object COMBO_UI_LIST_CELL_RENDERER_KEY =
                         new StringBuffer("DefaultListCellRendererKey");
 
-    static final StringBuffer HIDE_POPUP_KEY
-                  = new StringBuffer("HidePopupKey");
+    private static StringBuffer HIDE_POPUP_KEY = null;
+    public static StringBuffer HIDE_POPUP_KEY() {
+        if(HIDE_POPUP_KEY == null)
+             HIDE_POPUP_KEY = (StringBuffer) new JComboBox().getClientProperty("doNotCancelPopup");
+         return HIDE_POPUP_KEY;
+    }
 
     /**
      * Whether or not all cells have the same baseline.
@@ -276,7 +280,7 @@ public class BasicComboBoxUI extends ComboBoxUI {
 
         installKeyboardActions();
 
-        comboBox.putClientProperty("doNotCancelPopup", HIDE_POPUP_KEY);
+        comboBox.putClientProperty("doNotCancelPopup", HIDE_POPUP_KEY());
 
         if (keySelectionManager == null || keySelectionManager instanceof UIResource) {
             keySelectionManager = new DefaultKeySelectionManager();
@@ -783,7 +787,7 @@ public class BasicComboBoxUI extends ComboBoxUI {
 
         if(editor instanceof JComponent) {
             ((JComponent)editor).putClientProperty("doNotCancelPopup",
-                                                   HIDE_POPUP_KEY);
+                                                   HIDE_POPUP_KEY());
             ((JComponent)editor).setInheritsPopupMenu(true);
         }
 
@@ -823,7 +827,7 @@ public class BasicComboBoxUI extends ComboBoxUI {
             arrowButton.addMouseListener( popup.getMouseListener() );
             arrowButton.addMouseMotionListener( popup.getMouseMotionListener() );
             arrowButton.resetKeyboardActions();
-            arrowButton.putClientProperty("doNotCancelPopup", HIDE_POPUP_KEY);
+            arrowButton.putClientProperty("doNotCancelPopup", HIDE_POPUP_KEY());
             arrowButton.setInheritsPopupMenu(true);
         }
     }
@@ -848,12 +852,12 @@ public class BasicComboBoxUI extends ComboBoxUI {
      * @return a button which represents the popup control
      */
     protected JButton createArrowButton() {
-        //todo: commented to hide arrowButton
-        return new JButton() {
-            public int getWidth() {
-                return 0;
-            }
-        };
+        return null;
+//        return new JButton() {
+//            public int getWidth() {
+//                return 0;
+//            }
+//        };
         /*JButton button = new BasicArrowButton(BasicArrowButton.SOUTH,
                                     UIManager.getColor("ComboBox.buttonBackground"),
                                     UIManager.getColor("ComboBox.buttonShadow"),
@@ -930,12 +934,13 @@ public class BasicComboBoxUI extends ComboBoxUI {
         }
         Dimension size = getDisplaySize();
         Insets insets = getInsets();
-        //calculate the width and height of the button
-        int buttonHeight = size.height;
-        int buttonWidth = squareButton ? buttonHeight : arrowButton.getPreferredSize().width;
         //adjust the size based on the button width
         size.height += insets.top + insets.bottom;
-        size.width +=  insets.left + insets.right + buttonWidth;
+        size.width +=  insets.left + insets.right;
+
+        //calculate the width and height of the button
+        if(arrowButton != null)
+            size.width += squareButton ? size.height : arrowButton.getPreferredSize().width;
 
         cachedMinimumSize.setSize( size.width, size.height );
         isMinimumSizeDirty = false;
@@ -1179,7 +1184,7 @@ public class BasicComboBoxUI extends ComboBoxUI {
         int width = comboBox.getWidth();
         int height = comboBox.getHeight();
         Insets insets = getInsets();
-        int buttonSize = height - (insets.top + insets.bottom);
+        int buttonSize = 0;
         if ( arrowButton != null ) {
             buttonSize = arrowButton.getWidth();
         }
@@ -1938,10 +1943,11 @@ public class BasicComboBoxUI extends ComboBoxUI {
             int height = cb.getHeight();
 
             Insets insets = getInsets();
-            int buttonHeight = height - (insets.top + insets.bottom);
-            int buttonWidth = buttonHeight;
+            int buttonHeight = 0;
+            int buttonWidth = 0;
             if (arrowButton != null) {
                 Insets arrowInsets = arrowButton.getInsets();
+                buttonHeight = height - (insets.top + insets.bottom);
                 buttonWidth = squareButton ?
                     buttonHeight :
                     arrowButton.getPreferredSize().width + arrowInsets.left + arrowInsets.right;

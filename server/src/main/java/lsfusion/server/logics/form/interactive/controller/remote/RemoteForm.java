@@ -751,6 +751,8 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
 
             return result;
         } catch (Throwable t) { // interrupted for example
+            if(t instanceof InterruptedException)
+                Thread.interrupted(); // we want to reset interrupted state, otherwise RemoteExceptionsAspect will rethrow InterruptedException to the client, where it is not always ignored (for example getPessimisticValues)
             ServerLoggers.sqlSuppLog(t);
             return new String[] {ServerResponse.CANCELED};
 //            throw Throwables.propagate(e);

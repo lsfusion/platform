@@ -3,6 +3,7 @@ package lsfusion.client.form.property.cell.classes.controller;
 import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.GlazedLists;
 import ca.odell.glazedlists.swing.DefaultEventComboBoxModel;
+import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.lambda.AsyncCallback;
 import lsfusion.client.base.view.ClientColorUtils;
@@ -18,6 +19,7 @@ import lsfusion.client.form.property.table.view.AsyncInputComponent;
 import lsfusion.interop.form.event.KeyStrokes;
 
 import javax.swing.*;
+import javax.swing.Timer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.PopupMenuEvent;
@@ -28,9 +30,7 @@ import javax.swing.plaf.basic.ComboPopup;
 import java.awt.*;
 import java.awt.event.*;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EventObject;
+import java.util.*;
 import java.util.List;
 
 import static lsfusion.client.base.view.SwingDefaults.getTableCellMargins;
@@ -79,12 +79,14 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
             setDesign(this);
             setOpaque(true);
 
+            // pressed enter, but I have no idea why there is no keycode check or something
             addActionListener(e -> {
                 tableEditor.preCommit(true);
                 tableEditor.stopCellEditing();
                 tableEditor.postCommit();
             });
 
+            // pressed escape default key binding
             getActionMap().put(CANCEL_EDIT_ACTION, new AbstractAction() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
@@ -111,7 +113,6 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
                 updateAsyncValues();
         }
     }
-
     private void updateAsyncValues() {
         final String query = currentRequest;
         currentRequest = null;
@@ -133,7 +134,7 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
                 new AsyncCallback<Pair<List<String>, Boolean>>() {
                     @Override
                     public void done(Pair<List<String>, Boolean> result) {
-                        if (asyncChange.isEditing() && suggestBox.comboBox.isPopupVisible()) {
+                        if (asyncChange.isEditing()) { // && suggestBox.comboBox.isPopupVisible() it can become visible after callback is completed
                             suggestBox.updateItems(result.first, strict && !query.isEmpty());
 
                             suggestBox.updateLoading(result.second);
@@ -151,7 +152,7 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
 
                     @Override
                     public void failure(Throwable t) {
-                        if (asyncChange.isEditing() && suggestBox.comboBox.isPopupVisible())
+                        if (asyncChange.isEditing()) // suggestBox.comboBox.isPopupVisible()
                             cancelAndFlushDelayed(execTimer);
                     }
                 });
@@ -414,24 +415,26 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
             });
 
             //cancel editing when popup is canceled
-            comboBox.addPopupMenuListener(new PopupMenuListener() {
-                @Override
-                public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
-                }
-
-                @Override
-                public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-                }
-
-                @Override
-                public void popupMenuCanceled(PopupMenuEvent e) {
-                    if(strict) {
-                        tableEditor.cancelCellEditing();
-                    } else {
-                        tableEditor.stopCellEditing();
-                    }
-                }
-            });
+//            comboBox.addPopupMenuListener(new PopupMenuListener() {
+//                @Override
+//                public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+//                }
+//
+//                @Override
+//                public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+//                }
+//
+//                @Override
+//                public void popupMenuCanceled(PopupMenuEvent e) {
+//                    // canceling / stopping editing on popupMenuCanceled will lead to some odd behaviour when clicking on other editable field
+//                    // the problem that stopping editing at this point will schedule focus event on this component, what eventually will lead to cancel editing of the "new" clicked editable Field (in the end it will get focus, but with no editing)
+//                    if(strict) {
+//                        tableEditor.cancelCellEditing();
+//                    } else {
+//                        tableEditor.stopCellEditing();
+//                    }
+//                }
+//            });
 
             comboBoxEditorComponent = (JTextField) comboBox.getEditor().getEditorComponent();
             setDesign(comboBoxEditorComponent);
@@ -534,7 +537,10 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
         @Override
         public void initEditor() {
             //need because we extend JComboBox
-            suggestBox.comboBoxEditorComponent.putClientProperty("doNotCancelPopup",  new JComboBox().getClientProperty("doNotCancelPopup"));
+            suggestBox.comboBoxEditorComponent.putClientProperty("doNotCancelPopup",  BasicComboBoxUI.HIDE_POPUP_KEY());
+
+//            suggestBox.comboBoxEditorComponent.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, new HashSet<>());
+//            suggestBox.comboBoxEditorComponent.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, new HashSet<>());
 
             //show empty async popup
             suggestBox.updateItems(Collections.emptyList(), false);

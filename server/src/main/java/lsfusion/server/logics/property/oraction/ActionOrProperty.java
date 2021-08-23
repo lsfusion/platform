@@ -50,6 +50,7 @@ import lsfusion.server.logics.property.classes.infer.AlgType;
 import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.physics.admin.Settings;
+import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameParser;
@@ -262,6 +263,11 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
 
     @NFLazy
     public void setEventAction(String eventActionSID, ActionMapImplement<?, T> eventActionImplement) {
+        if(eventActionSID.equals(CHANGE_WYS)) { // CHANGE_WYS, temp check
+            ServerLoggers.startLogger.info("WARNING! CHANGE_WYS is deprecated, use LIST clause in INPUT / DIALOG operator instead " + this);
+            return;
+        }
+
         if (eventActions == null || eventActions instanceof EmptyRevMap) {
             eventActions = MapFact.mMap(MapFact.override());
         }

@@ -329,13 +329,13 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
                     editManager.getAsyncValues(query, new AsyncCallback<Pair<ArrayList<String>, Boolean>>() {
                         @Override
                         public void onFailure(Throwable caught) {
-                            if (editManager.isEditing() && suggestBox.isSuggestionListShowing())
+                            if (editManager.isEditing()) //  && suggestBox.isSuggestionListShowing()
                                 cancelAndFlushDelayed(execTimer);
                         }
 
                         @Override
                         public void onSuccess(Pair<ArrayList<String>, Boolean> result) {
-                            if (editManager.isEditing() && suggestBox.isSuggestionListShowing()) {
+                            if (editManager.isEditing()) { //  && suggestBox.isSuggestionListShowing() in desktop this check leads to "losing" result, since suggest box can be not shown yet (!), however maybe in web-client it's needed for some reason (but there can be the risk of losing result)
                                 suggestBox.setAutoSelectEnabled(strict && !emptyQuery);
                                 suggestBox.setLatestSuggestions(result.first);
                                 List<Suggestion> suggestionList = new ArrayList<>();
