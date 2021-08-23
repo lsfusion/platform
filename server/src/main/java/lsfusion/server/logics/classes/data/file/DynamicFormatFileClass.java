@@ -112,6 +112,6 @@ public class DynamicFormatFileClass extends FileClass<FileData> {
     }
 
     public String formatString(FileData value) {
-        return value != null ? Base64.encodeBase64String(value.getBytes()) : null;
+        return value != null ? Base64.encodeBase64StringUnChunked(value.getBytes()) : null;
     }
 }

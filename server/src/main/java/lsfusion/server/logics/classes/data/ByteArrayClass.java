@@ -109,7 +109,7 @@ public class ByteArrayClass extends DataClass<RawFileData> {
 
     @Override
     public String formatString(RawFileData value) {
-        return value != null ? Base64.encodeBase64String(value.getBytes()) : null;
+        return value != null ? Base64.encodeBase64StringUnChunked(value.getBytes()) : null;
     }
 
     public String getSID() {

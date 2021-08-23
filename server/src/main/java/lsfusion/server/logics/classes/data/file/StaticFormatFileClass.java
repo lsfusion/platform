@@ -110,7 +110,7 @@ public abstract class StaticFormatFileClass extends FileClass<RawFileData> {
     }
 
     public String formatString(RawFileData value) {
-        return value != null ? Base64.encodeBase64String(value.getBytes()) : null;
+        return value != null ? Base64.encodeBase64StringUnChunked(value.getBytes()) : null;
     }
 
     public abstract FormIntegrationType getIntegrationType();
