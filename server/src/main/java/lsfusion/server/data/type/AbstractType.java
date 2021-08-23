@@ -112,6 +112,10 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
         String s = o instanceof FileData ? new String(((FileData) o).getRawFile().getBytes(), charset) :  (String) o;
         if(isParseNullValue(s))
             return null;
+        return parseHTTPNotNullString(s, charset);
+    }
+
+    protected T parseHTTPNotNullString(String s, Charset charset) throws ParseException {
         return parseString(s);
     }
 
@@ -119,6 +123,10 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
     public Object formatHTTP(T value, Charset charset) {
         if(value == null)
             return getParseNullValue();
+        return formatHTTPNotNullString(value, charset);
+    }
+
+    protected String formatHTTPNotNullString(T value, Charset charset) {
         return formatString(value);
     }
 

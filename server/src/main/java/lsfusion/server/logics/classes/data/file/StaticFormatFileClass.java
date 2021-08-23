@@ -14,6 +14,7 @@ import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.form.stat.struct.FormIntegrationType;
 import org.apache.commons.net.util.Base64;
 
+import java.nio.charset.Charset;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -54,8 +55,18 @@ public abstract class StaticFormatFileClass extends FileClass<RawFileData> {
     }
 
     @Override
+    protected RawFileData parseHTTPNotNullString(String s, Charset charset) {
+        return new RawFileData(s.getBytes(charset));
+    }
+
+    @Override
     protected RawFileData parseHTTPNotNull(FileData b) {
         return b.getRawFile();
+    }
+
+    @Override
+    protected String formatHTTPNotNullString(RawFileData value, Charset charset) {
+        return new String(value.getBytes(), charset);
     }
 
     @Override
