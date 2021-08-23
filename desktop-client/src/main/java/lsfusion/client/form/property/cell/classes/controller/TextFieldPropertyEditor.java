@@ -3,7 +3,6 @@ package lsfusion.client.form.property.cell.classes.controller;
 import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.GlazedLists;
 import ca.odell.glazedlists.swing.DefaultEventComboBoxModel;
-import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.lambda.AsyncCallback;
 import lsfusion.client.base.view.ClientColorUtils;
@@ -19,18 +18,17 @@ import lsfusion.client.form.property.table.view.AsyncInputComponent;
 import lsfusion.interop.form.event.KeyStrokes;
 
 import javax.swing.*;
-import javax.swing.Timer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.event.PopupMenuEvent;
-import javax.swing.event.PopupMenuListener;
 import javax.swing.plaf.basic.BasicComboBoxEditor;
 import javax.swing.plaf.basic.BasicComboPopup;
 import javax.swing.plaf.basic.ComboPopup;
 import java.awt.*;
 import java.awt.event.*;
 import java.text.ParseException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.EventObject;
 import java.util.List;
 
 import static lsfusion.client.base.view.SwingDefaults.getTableCellMargins;
@@ -288,6 +286,8 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
                 @Override
                 protected ComboPopup createPopup() {
                     BasicComboPopup popup = new BasicComboPopup(comboBox) {
+                        JPanel buttonsTopPanel;
+                        
                         @Override
                         protected void configurePopup() {
                             super.configurePopup();
@@ -307,7 +307,7 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
                                 buttonsPanel.add(button);
                             }
 
-                            JPanel buttonsTopPanel = new JPanel(new BorderLayout());
+                            buttonsTopPanel = new JPanel(new BorderLayout());
                             setBackgroundColor(buttonsTopPanel);
                             buttonsTopPanel.add(buttonsPanel, BorderLayout.EAST);
 
@@ -322,7 +322,13 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
                         @Override
                         protected Rectangle computePopupBounds(int px, int py, int pw, int ph) {
                             //default size + 1px left and right for equal width of textBox and popup
-                            return super.computePopupBounds(px - 1, py, Math.max(comboBox.getPreferredSize().width, pw + 2), ph);
+                            Rectangle rectangle = super.computePopupBounds(px - 1, py, Math.max(comboBox.getPreferredSize().width, pw + 2), ph);
+                            if (rectangle.y < 0 && buttonsTopPanel != null) {
+                                // correcting popup y position on panel with buttons height when popup goes above textfield
+                                // may need additional correction if popup would be able to go fullscreen (vertically)
+                                rectangle.y -= buttonsTopPanel.getPreferredSize().height;
+                            }
+                            return rectangle;
                         }
                     };
                     popup.getAccessibleContext().setAccessibleParent(comboBox);
