@@ -124,7 +124,7 @@ public class InputAction extends SystemExplicitAction {
 
     @Override
     public AsyncMapEventExec<ClassPropertyInterface> calculateAsyncEventExec(boolean optimistic, boolean recursive) {
-        if (oldValueInterface == null) {
+        if (optimistic || oldValueInterface == null) {
             InputListEntity<?, ClassPropertyInterface> fullContextList = getFullContextList();
             return new AsyncMapChange<>(getInputClass(fullContextList), fullContextList, getInputList(), targetProp);
         }
