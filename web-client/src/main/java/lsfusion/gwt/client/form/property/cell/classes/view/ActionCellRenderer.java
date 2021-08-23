@@ -151,4 +151,9 @@ public class ActionCellRenderer extends CellRenderer {
     public String format(Object value) {
         return (value != null) && ((Boolean) value) ? "..." : "";
     }
+
+    @Override
+    public boolean isAutoDynamicHeight() {
+        return false;
+    }
 }

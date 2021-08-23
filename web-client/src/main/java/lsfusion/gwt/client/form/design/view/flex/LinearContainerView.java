@@ -104,12 +104,18 @@ public class LinearContainerView extends GAbstractContainerView {
             child.installMargins(captionPanel); // need the same margins as property value
 
             childrenCaptions.add(index, captionPanel);
-            ((GPropertyPanelController.Panel) view).captionContainer = (widget, valueSizes, alignment) -> {
-                captionPanel.add(widget, alignment);
+            ((GPropertyPanelController.Panel) view).captionContainer = (captionWidget, valueSizes, alignment) -> {
+                assert vertical; // because of aligncaptions first check (isVertical())
+                captionPanel.add(captionWidget, alignment);
+
                 Integer baseSize = vertical ? valueSizes.second : valueSizes.first;
 
-                captionPanel.baseSize = baseSize; // it's called after it is first time added to the container, so we store it in some field for further adding, removing (actually it's needed for component "shifting", when we need to add/remove latter components)
-                FlexPanel.setBaseSize(captionPanel, vertical, baseSize);  // oppositeAndFixed - false, since we're settings size for main direction
+                Integer size = child.getSize(vertical);
+                if (size != null)
+                    baseSize = size;
+
+                captionPanel.baseSize = baseSize; // this code line is called after captionPanel is first time added to the container, so we store it in some field for further adding, removing (actually it's needed for component "shifting", when we need to add/remove latter components)
+                FlexPanel.setBaseSize(captionPanel, vertical, baseSize);  // oppositeAndFixed - false, since we're setting the size for the main direction
             };
         }
 

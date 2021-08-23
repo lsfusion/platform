@@ -133,7 +133,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         return imageHolder != null;
     }
     public boolean hasDynamicImage() { // when it's an action and has dynamic image
-        return baseType instanceof GActionType && hasDynamicImage;
+        return isAction() && hasDynamicImage;
     }
 
     public ArrayList<GInputBindingEvent> bindingEvents = new ArrayList<>();
@@ -221,6 +221,10 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
     public PanelRenderer createPanelRenderer(GFormController form, ActionOrPropertyValueController controller, GGroupObjectValue columnKey, GPropertyPanelController.CaptionContainer captionContainer) {
         return baseType.createPanelRenderer(form, controller, this, columnKey, captionContainer);
+    }
+
+    public boolean isAction() {
+        return baseType instanceof GActionType;
     }
 
     public CellRenderer getCellRenderer() {
@@ -344,7 +348,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
             String scriptPath = creationPath != null ? escapeLineBreakHTML(creationPath) : "";
             String scriptFormPath = formPath != null ? escapeLineBreakHTML(formPath) : "";
             
-            if (baseType instanceof GActionType) {
+            if (isAction()) {
                 return GwtSharedUtils.stringFormat(TOOL_TIP_FORMAT + getDetailedActionToolTipFormat(),
                         propCaption, keyBindingText, canonicalName, ifaceObjects, scriptPath, propertyFormName, scriptFormPath);
             } else {
@@ -453,6 +457,9 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     }
     public int getValueHeightWithPadding(GFont parentFont) {
         return getValueHeight(parentFont) + getCellRenderer().getHeightPadding() * 2;
+    }
+    public boolean isAutoDynamicHeight() {
+        return getCellRenderer().isAutoDynamicHeight();
     }
 
     public int getValueWidth(GFont parentFont) {

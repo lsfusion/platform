@@ -41,7 +41,9 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
     protected GFormController form;
     protected ActionOrPropertyValueController controller;
 
-    public ActionOrPropertyValue(GPropertyDraw property, GGroupObjectValue columnKey, GFormController form, ActionOrPropertyValueController controller) {
+    private boolean globalCaptionIsDrawn;
+
+    public ActionOrPropertyValue(GPropertyDraw property, GGroupObjectValue columnKey, GFormController form, boolean globalCaptionIsDrawn, ActionOrPropertyValueController controller) {
         setElement(Document.get().createDivElement());
 
         DataGrid.initSinkEvents(this);
@@ -51,6 +53,8 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
 
         this.form = form;
         this.controller = controller;
+
+        this.globalCaptionIsDrawn = globalCaptionIsDrawn;
 
         getRenderElement().setPropertyObject("groupObject", property.groupObject);
     }
@@ -80,20 +84,20 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
         return setBaseSize(isProperty);
     }
     // auto sized property with value
-    public void setDynamic(ResizableMainPanel panel, boolean isProperty) {
+    public Pair<Integer, Integer> setDynamic(ResizableMainPanel panel, boolean isProperty) {
         panel.setMain(this);
         com.google.gwt.dom.client.Element element = getElement();
         element.getStyle().setWidth(100, Style.Unit.PCT);
         element.getStyle().setHeight(100, Style.Unit.PCT);
         borderWidget = panel.getPanelWidget();
 
-        setBaseSize(isProperty);
+        return setBaseSize(isProperty);
     }
     // auto sized action with caption
-    public void setDynamic(boolean isProperty) {
+    public Pair<Integer, Integer> setDynamic(boolean isProperty) {
         borderWidget = this;
 
-        setBaseSize(isProperty);
+        return setBaseSize(isProperty);
     }
 
     public Pair<Integer, Integer> setBaseSize(boolean isProperty) {
@@ -186,7 +190,7 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
 
     @Override
     public boolean globalCaptionIsDrawn() {
-        return false;
+        return globalCaptionIsDrawn;
     }
 
     @Override

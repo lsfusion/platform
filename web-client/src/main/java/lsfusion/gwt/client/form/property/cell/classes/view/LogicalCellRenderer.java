@@ -58,4 +58,9 @@ public class LogicalCellRenderer extends CellRenderer {
     public String format(Object value) {
         return (value != null) && ((Boolean) value) ? "TRUE" : "FALSE";
     }
+
+    @Override
+    public boolean isAutoDynamicHeight() {
+        return false;
+    }
 }

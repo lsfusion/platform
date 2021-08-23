@@ -29,7 +29,7 @@ public class PropertyPanelRenderer extends PanelRenderer {
     private Boolean labelMarginRight = null;
 
     public PropertyPanelRenderer(final GFormController form, ActionOrPropertyValueController controller, GPropertyDraw property, GGroupObjectValue columnKey, GPropertyPanelController.CaptionContainer captionContainer) {
-        super(form, controller, property, columnKey);
+        super(form, controller, property, columnKey, captionContainer);
 
         vertical = property.panelCaptionVertical;
         tableFirst = property.isPanelCaptionLast();
@@ -54,15 +54,19 @@ public class PropertyPanelRenderer extends PanelRenderer {
         if (!vertical)
             labelMarginRight = captionContainer != null || !tableFirst;
 
+        Pair<Integer, Integer> valueSizes;
         if(property.autoSize) { // we still need a panel to append corners
             assert captionContainer == null;
             simplePanel.getElement().getStyle().setPosition(Style.Position.RELATIVE); // for corners (setStatic sets position absolute, so we don't need to do this for setStatic)
-            value.setDynamic(simplePanel, true);
-        } else {
-            Pair<Integer, Integer> valueSizes = value.setStatic(simplePanel, true);
-            if(captionContainer != null)
-                captionContainer.put(label, valueSizes, property.getPanelCaptionAlignment());
-        }
+            valueSizes = value.setDynamic(simplePanel, true);
+            if(property.isAutoDynamicHeight())
+                valueSizes = null;
+        } else
+            valueSizes = value.setStatic(simplePanel, true);
+
+        if(captionContainer != null && valueSizes != null)
+            captionContainer.put(label, valueSizes, property.getPanelCaptionAlignment());
+
         appendCorners(property, simplePanel); // it's a hack to add
 
         finalizeInit();
