@@ -1,6 +1,7 @@
 package lsfusion.server.logics.classes.data.file;
 
 import lsfusion.base.file.FileData;
+import lsfusion.base.file.RawFileData;
 import lsfusion.interop.classes.DataType;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.Type;
@@ -10,6 +11,7 @@ import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.classes.data.DataClass;
 import org.apache.commons.net.util.Base64;
 
+import java.nio.charset.Charset;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -76,8 +78,18 @@ public class DynamicFormatFileClass extends FileClass<FileData> {
     }
 
     @Override
+    protected FileData parseHTTPNotNullString(String s, Charset charset) {
+        return new FileData(new RawFileData(s.getBytes(charset)), "txt");
+    }
+
+    @Override
     protected FileData parseHTTPNotNull(FileData b) {
         return b;
+    }
+
+    @Override
+    protected String formatHTTPNotNullString(FileData value, Charset charset) {
+        return value != null ? new String(value.getRawFile().getBytes(), charset) : null;
     }
 
     @Override
@@ -112,6 +124,6 @@ public class DynamicFormatFileClass extends FileClass<FileData> {
     }
 
     public String formatString(FileData value) {
-        return value != null ? Base64.encodeBase64String(value.getBytes()) : null;
+        return value != null ? Base64.encodeBase64StringUnChunked(value.getBytes()) : null;
     }
 }
