@@ -21,20 +21,10 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.editor.client.IsEditor;
 import com.google.gwt.editor.client.LeafValueEditor;
 import com.google.gwt.editor.client.adapters.TakesValueEditor;
-import com.google.gwt.event.dom.client.HasAllKeyHandlers;
-import com.google.gwt.event.dom.client.KeyCodes;
-import com.google.gwt.event.dom.client.KeyDownEvent;
-import com.google.gwt.event.dom.client.KeyDownHandler;
-import com.google.gwt.event.dom.client.KeyPressEvent;
-import com.google.gwt.event.dom.client.KeyPressHandler;
-import com.google.gwt.event.dom.client.KeyUpEvent;
-import com.google.gwt.event.dom.client.KeyUpHandler;
-import com.google.gwt.event.logical.shared.HasSelectionHandlers;
-import com.google.gwt.event.logical.shared.SelectionEvent;
-import com.google.gwt.event.logical.shared.SelectionHandler;
-import com.google.gwt.event.logical.shared.ValueChangeEvent;
-import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.event.dom.client.*;
+import com.google.gwt.event.logical.shared.*;
 import com.google.gwt.event.shared.HandlerRegistration;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.*;
 import com.google.gwt.user.client.ui.SuggestOracle.Callback;
 import com.google.gwt.user.client.ui.SuggestOracle.Request;
@@ -471,6 +461,7 @@ public class SuggestBox extends Composite implements HasText, HasFocus, HasAnima
       suggestionMenu.setMenuItemDebugIds(baseID);
     }
 
+    Timer showSuggestionsTimer;
     @Override
     protected void showSuggestions(final SuggestBox suggestBox,
         Collection<? extends Suggestion> suggestions,
@@ -482,6 +473,8 @@ public class SuggestBox extends Composite implements HasText, HasFocus, HasAnima
         hideSuggestions();
         return;
       }
+
+      boolean wasShowing = suggestionPopup.isShowing();
 
       // Hide the popup before we manipulate the menu within it. If we do not
       // do this, some browsers will redraw the popup as items are removed
@@ -520,8 +513,25 @@ public class SuggestBox extends Composite implements HasText, HasFocus, HasAnima
       }
 
       // Show the popup under the TextBox.
+      if (!anySuggestions && !wasShowing) {
+        // add timer to avoid blinking when empty popup is followed by non-empty one
+        showSuggestionsTimer = new Timer() {
+          @Override
+          public void run() {
+            if (!suggestionPopup.isShowing()) {
+              doShowSuggestions(suggestBox);
+            }
+          }
+        };
+        showSuggestionsTimer.schedule(100);
+      } else {
+        doShowSuggestions(suggestBox);
+      }
+    }
+
+    private void doShowSuggestions(SuggestBox suggestBox) {
       suggestionPopup.showRelativeTo(positionRelativeTo != null
-          ? positionRelativeTo : suggestBox);
+              ? positionRelativeTo : suggestBox);
     }
 
     @Override

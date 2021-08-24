@@ -549,7 +549,14 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
 //            suggestBox.comboBoxEditorComponent.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, new HashSet<>());
 
             //show empty async popup
-            suggestBox.updateItems(Collections.emptyList(), false);
+            // add timer to avoid blinking when empty popup is followed by non-empty one
+            Timer showSuggestionsTimer = new Timer(100, e -> {
+                if (!suggestBox.comboBox.isPopupVisible()) {
+                    suggestBox.updateItems(Collections.emptyList(), false);
+                }
+            });
+            showSuggestionsTimer.setRepeats(false);
+            showSuggestionsTimer.start();
 
             requestSuggestions();
 
