@@ -821,6 +821,9 @@ button {
 .gwt-SuggestBoxPopup .suggestPopupContent {
     background: var(--component-background-color);
 }
+.gwt-SuggestBoxPopup .noResultsLabel {
+    margin: 3px 2px;
+}
 
 .gwt-SuggestBoxPopup .suggestPopupBottomPanel {
     background: var(--background-color);

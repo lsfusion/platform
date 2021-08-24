@@ -504,6 +504,7 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
 
             noResultsLabel = new Label(messages.noResults());
             noResultsLabel.getElement().addClassName("item"); //to be like suggestion item
+            noResultsLabel.getElement().addClassName("noResultsLabel");
             panel.add(noResultsLabel);
 
             emptyLabel = new Label();
