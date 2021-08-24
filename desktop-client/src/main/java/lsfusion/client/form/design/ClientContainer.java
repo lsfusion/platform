@@ -1,10 +1,14 @@
 package lsfusion.client.form.design;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.controller.remote.serialization.ClientSerializationPool;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.object.table.controller.TableController;
+import lsfusion.client.form.object.table.grid.ClientGrid;
+import lsfusion.client.form.object.table.tree.ClientTreeGroup;
+import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.ClientPropertyReader;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.design.ContainerType;
@@ -69,6 +73,10 @@ public class ClientContainer extends ClientComponent {
         return caption + " (" + getID() + ")" + "[sid:" + getSID() + "]";
     }
 
+    public FlexAlignment getFlexJustify() {
+        return childrenAlignment;
+    }
+
     public void removeFromChildren(ClientComponent component) {
         component.container = null;
         children.remove(component);
@@ -121,11 +129,28 @@ public class ClientContainer extends ClientComponent {
     }
 
     public boolean isVertical() {
-        return isLinearVertical() || isSplitVertical();
+        return isLinearVertical() || isSplitVertical() || isColumns();
     }
 
     public boolean isHorizontal() {
         return isLinearHorizontal() || isSplitHorizontal();
+    }
+
+
+    public boolean isAlignCaptions() {
+        if(!isVertical()) // later maybe it makes sense to support align captions for horizontal containers, but with no-wrap it doesn't make much sense
+            return false;
+
+        if(children.size() <= 1)
+            return false;
+
+        // only simple property draws
+        for(ClientComponent child : children) {
+            if(!(child instanceof ClientPropertyDraw) || ((ClientPropertyDraw) child).hasColumnGroupObjects() || child.autoSize || child.flex > 0 || ((ClientPropertyDraw) child).panelCaptionVertical)
+                return false;
+        }
+
+        return true;
     }
 
     public boolean isLinearVertical() {

@@ -5,6 +5,7 @@ import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.classes.data.ClientDataClass;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.object.ClientGroupObjectValue;
+import lsfusion.client.form.object.panel.controller.PropertyPanelController;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.cell.classes.controller.ActionPropertyEditor;
 import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
@@ -42,7 +43,8 @@ public class ClientActionClass extends ClientDataClass implements ClientTypeClas
         return new ActionPropertyRenderer(property);
     }
 
-    public PanelView getPanelView(ClientPropertyDraw key, ClientGroupObjectValue columnKey, ClientFormController form) {
+    @Override
+    public PanelView getPanelView(ClientPropertyDraw key, ClientGroupObjectValue columnKey, ClientFormController form, PropertyPanelController.CaptionContainer captionContainer) {
         return new ActionPanelView(key, columnKey, form);
     }
 

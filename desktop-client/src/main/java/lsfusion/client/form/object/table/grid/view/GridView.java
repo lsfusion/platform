@@ -1,7 +1,7 @@
 package lsfusion.client.form.object.table.grid.view;
 
 import lsfusion.client.form.controller.ClientFormController;
-import lsfusion.client.form.design.view.JComponentPanel;
+import lsfusion.client.form.design.view.FlexPanel;
 import lsfusion.client.form.object.table.grid.ClientGrid;
 import lsfusion.client.form.object.table.grid.controller.GridController;
 import lsfusion.client.form.object.table.grid.user.design.GridUserPreferences;
@@ -9,7 +9,7 @@ import lsfusion.client.form.object.table.grid.user.design.GridUserPreferences;
 import javax.swing.*;
 import java.awt.*;
 
-public class GridView extends JComponentPanel {
+public class GridView extends FlexPanel {
     final JScrollPane pane;
 
     private final ClientGrid grid;

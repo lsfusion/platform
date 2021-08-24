@@ -1,7 +1,8 @@
 package lsfusion.client.form.filter.user.view;
 
 import lsfusion.client.controller.remote.RmiQueue;
-import lsfusion.client.form.design.view.JComponentPanel;
+import lsfusion.client.form.design.view.FlexPanel;
+import lsfusion.client.form.design.view.FlexPanel;
 import lsfusion.client.form.filter.user.ClientFilter;
 import lsfusion.client.form.filter.user.ClientPropertyFilter;
 import lsfusion.client.form.filter.user.controller.FilterController;
@@ -29,7 +30,7 @@ import static lsfusion.interop.base.view.FlexAlignment.CENTER;
 import static lsfusion.interop.base.view.FlexAlignment.START;
 import static lsfusion.interop.form.event.KeyStrokes.getFilterKeyStroke;
 
-public class FilterView extends JComponentPanel implements FilterConditionView.UIHandler {
+public class FilterView extends FlexPanel implements FilterConditionView.UIHandler {
     public static final String ADD_ICON_PATH = "filtadd.png";
     public static final String RESET_ICON_PATH = "filtreset.png";
     public static final String FILTER_ICON_PATH = "filt.png";

@@ -1,11 +1,13 @@
 package lsfusion.client.form.property.panel.view;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.Pair;
 import lsfusion.base.SystemUtils;
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.design.view.ClientFormLayout;
 import lsfusion.client.form.object.ClientGroupObjectValue;
+import lsfusion.client.form.object.panel.controller.PropertyPanelController;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.cell.controller.dispatch.EditPropertyDispatcher;
 import lsfusion.client.form.property.cell.controller.dispatch.SimpleChangePropertyDispatcher;
@@ -40,17 +42,21 @@ public class DataPanelView extends JPanel implements PanelView {
     private final ClientFormController form;
 
     private final SimpleChangePropertyDispatcher simpleDispatcher;
-    
+
+    private final boolean vertical;
     private boolean tableFirst;
 
-    public DataPanelView(final ClientFormController iform, final ClientPropertyDraw iproperty, ClientGroupObjectValue icolumnKey) {
+    private Boolean labelMarginRight = null;
+
+    public DataPanelView(final ClientFormController iform, final ClientPropertyDraw iproperty, ClientGroupObjectValue icolumnKey, PropertyPanelController.CaptionContainer captionContainer) {
         super(null);
 
         form = iform;
         property = iproperty;
         columnKey = icolumnKey;
         simpleDispatcher = form.getSimpleChangePropertyDispatcher();
-        
+
+        vertical = property.panelCaptionVertical;
         tableFirst = property.isPanelCaptionLast();
 
         setLayout(new FlexLayout(this, property.panelCaptionVertical, FlexAlignment.CENTER));
@@ -70,15 +76,21 @@ public class DataPanelView extends JPanel implements PanelView {
             setFocusable(false);
         }
 
-        if (!tableFirst) {
+        if (!tableFirst && captionContainer == null) {
             add(label, new FlexConstraints(property.getPanelCaptionAlignment(), 0));
         }
         
         add(table, new FlexConstraints(FlexAlignment.STRETCH, 1));
         
-        if (tableFirst) {
+        if (tableFirst && captionContainer == null) {
             add(label, new FlexConstraints(property.getPanelCaptionAlignment(), 0));
         }
+
+        if (!vertical)
+            labelMarginRight = captionContainer != null || !tableFirst;
+
+        if(captionContainer != null)
+            captionContainer.put(label, Pair.create(property.getValueWidth(this), property.getValueHeight(this))/*valueSizes*/, property.getPanelCaptionAlignment());
 
         setOpaque(false);
         setToolTip(property.getPropertyCaption());
@@ -226,10 +238,10 @@ public class DataPanelView extends JPanel implements PanelView {
             if (BaseUtils.isRedundantString(text)) {
                 label.setBorder(BorderFactory.createEmptyBorder());
             } else {
-                label.setBorder(BorderFactory.createEmptyBorder(0,
-                        tableFirst ? getDataPanelLabelMargin() : 0,
-                        0,
-                        tableFirst ? 0 : getDataPanelLabelMargin()));
+                label.setBorder(BorderFactory.createEmptyBorder(3, //todo: 3 is magic number to look like in web
+                        tableFirst && labelMarginRight != null && !labelMarginRight ? getDataPanelLabelMargin() : 0,
+                        3,
+                        tableFirst && labelMarginRight != null && labelMarginRight ? 0 : getDataPanelLabelMargin()));
             }
         }
     }

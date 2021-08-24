@@ -34,7 +34,7 @@ public class ClientFormLayout extends JPanel {
     @SuppressWarnings({"FieldCanBeLocal"})
     private FocusListener focusListener;
 
-    public JComponentPanel getComponentView(ClientContainer container) {
+    public FlexPanel getComponentView(ClientContainer container) {
         return getContainerView(container).getView();
     }
 
@@ -98,15 +98,15 @@ public class ClientFormLayout extends JPanel {
     private void addContainers(ClientContainer container) {
         ClientContainerView containerView;
         if (container.isLinear()) {
-            containerView = new LinearClientContainerView(this, container);
+            containerView = new LinearClientContainerView(container);
         } else if (container.isSplit()) {
-            containerView = new SplitClientContainerView(this, container);
+            containerView = new LinearClientContainerView(container);
         } else if (container.isTabbed()) {
-            containerView = new TabbedClientContainerView(this, container, form);
+            containerView = new TabbedClientContainerView(container, form);
         } else if (container.isColumns()) {
-            containerView = new ColumnsClientContainerView(this, container);
+            containerView = new LinearClientContainerView(container);
         } else if (container.isScroll()) {
-            containerView = new ScrollClientContainerView(this, container);
+            containerView = new LinearClientContainerView(container);
         } else if (container.isFlow()) {
             throw new IllegalStateException("Flow isn't implemented yet");
         } else {
@@ -154,7 +154,7 @@ public class ClientFormLayout extends JPanel {
     }
 
     // добавляем визуальный компонент
-    public boolean add(ClientComponent key, JComponentPanel view) {
+    public boolean add(ClientComponent key, FlexPanel view) {
         if (key.container != null) { // container can be null when component should be layouted manually
             ClientContainerView containerView = containerViews.get(key.container);
             if (containerView != null && !containerView.hasChild(key)) {

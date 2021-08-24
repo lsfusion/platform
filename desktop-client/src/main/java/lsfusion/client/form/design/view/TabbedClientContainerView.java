@@ -37,8 +37,8 @@ public class TabbedClientContainerView extends AbstractClientContainerView {
 
     private ClientComponent currentChild;
 
-    public TabbedClientContainerView(ClientFormLayout formLayout, ClientContainer icontainer, ClientFormController iform) {
-        super(formLayout, icontainer);
+    public TabbedClientContainerView(ClientContainer icontainer, ClientFormController iform) {
+        super(icontainer);
         assert container.isTabbed();
 
         this.form = iform;
@@ -100,12 +100,12 @@ public class TabbedClientContainerView extends AbstractClientContainerView {
     }
 
     @Override
-    public void addImpl(int index, ClientComponent child, JComponentPanel view) {
+    public void addImpl(int index, ClientComponent child, FlexPanel view) {
         hiddenHolderPanel.add(view);
     }
 
     @Override
-    public void removeImpl(int index, ClientComponent child, JComponentPanel view) {
+    public void removeImpl(int index, ClientComponent child, FlexPanel view) {
         int visibleIndex = visibleChildren.indexOf(child);
         if (visibleIndex != -1) {
             visibleChildren.remove(visibleIndex);
@@ -206,7 +206,7 @@ public class TabbedClientContainerView extends AbstractClientContainerView {
 
         public void addTab(int index, ClientComponent child, Component childView) {
             // добавляем не сам компонент, а proxyPanel, чтобы TabbedPane не управляла его видимостью и не мешала логике autohide'ов
-            JComponentPanel proxyPanel = new JComponentPanel(true, FlexAlignment.START) {
+            FlexPanel proxyPanel = new FlexPanel(true) {
                 @Override
                 public void validate() {
                     super.validate();

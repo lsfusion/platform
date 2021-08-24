@@ -1,9 +1,11 @@
 package lsfusion.client.form.object.panel.controller;
 
+import lsfusion.base.Pair;
 import lsfusion.base.file.RawFileData;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.design.view.ClientFormLayout;
-import lsfusion.client.form.design.view.JComponentPanel;
+import lsfusion.client.form.design.view.FlexPanel;
+import lsfusion.client.form.design.view.FlexPanel;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.cell.classes.view.ImagePropertyRenderer;
@@ -11,6 +13,7 @@ import lsfusion.client.form.property.panel.view.PanelView;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.base.view.FlexConstraints;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.InputEvent;
 import java.util.HashMap;
@@ -33,7 +36,7 @@ public class PropertyPanelController {
 
     private Map<ClientGroupObjectValue, PanelView> views;
 
-    private JComponentPanel viewsPanel;
+    private Panel viewsPanel;
 
     public PropertyPanelController(final ClientFormController form, final PanelController panelController, ClientPropertyDraw property) {
 
@@ -52,7 +55,7 @@ public class PropertyPanelController {
             }
         });
 
-        viewsPanel = new JComponentPanel(property.panelColumnVertical, FlexAlignment.START);
+        viewsPanel = new Panel(property.panelColumnVertical, FlexAlignment.START);
     }
 
     public boolean forceEdit() {
@@ -117,6 +120,19 @@ public class PropertyPanelController {
         this.imageValues = imageValues;
     }
 
+    public interface CaptionContainer {
+        void put(JComponent widget, Pair<Integer, Integer> valueSizes, FlexAlignment alignment);
+    }
+
+    public static class Panel extends FlexPanel {
+
+        public Panel(boolean vertical, FlexAlignment alignment) {
+            super(vertical, alignment);
+        }
+
+        public CaptionContainer captionContainer;
+    }
+
     void update(Color rowBackground, Color rowForeground) {
         Map<ClientGroupObjectValue, PanelView> newViews = new HashMap<>();
 
@@ -125,7 +141,7 @@ public class PropertyPanelController {
             if (showIfs == null || showIfs.get(columnKey) != null) {
                 PanelView view = views != null ? views.remove(columnKey) : null;
                 if (view == null && (!property.hide || property.changeKey != null)) {
-                    view = property.getPanelView(form, columnKey);
+                    view = property.getPanelView(form, columnKey, viewsPanel.captionContainer);
                     view.setReadOnly(property.isReadOnly());
 
                     view.getEditPropertyDispatcher().setUpdateEditValueCallback(result -> values.put(columnKey, result));

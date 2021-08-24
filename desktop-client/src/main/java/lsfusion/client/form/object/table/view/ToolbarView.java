@@ -1,19 +1,18 @@
 package lsfusion.client.form.object.table.view;
 
-import lsfusion.client.form.design.view.JComponentPanel;
+import lsfusion.client.form.design.view.FlexPanel;
 import lsfusion.client.form.object.table.ClientToolbar;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.base.view.FlexConstraints;
-import lsfusion.interop.base.view.FlexLayout;
 
 import javax.swing.*;
 import java.awt.*;
 
-public class ToolbarView extends JComponentPanel {
+public class ToolbarView extends FlexPanel {
     private JPanel mainPanel;
 
     public ToolbarView(ClientToolbar toolbar) {
-        setLayout(new FlexLayout(this, false, FlexAlignment.START));
+        super(false);
         initBottomContainer();
         toolbar.installMargins(this);
     }

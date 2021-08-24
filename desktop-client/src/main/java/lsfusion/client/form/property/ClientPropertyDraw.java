@@ -16,6 +16,7 @@ import lsfusion.client.form.controller.remote.serialization.ClientSerializationP
 import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientGroupObjectValue;
+import lsfusion.client.form.object.panel.controller.PropertyPanelController;
 import lsfusion.client.form.object.table.controller.TableController;
 import lsfusion.client.form.property.async.ClientAsyncChange;
 import lsfusion.client.form.property.async.ClientAsyncEventExec;
@@ -216,8 +217,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return renderer;
     }
 
-    public PanelView getPanelView(ClientFormController form, ClientGroupObjectValue columnKey) {
-        return baseType.getPanelView(this, columnKey, form);
+    public PanelView getPanelView(ClientFormController form, ClientGroupObjectValue columnKey, PropertyPanelController.CaptionContainer captionContainer) {
+        return baseType.getPanelView(this, columnKey, form, captionContainer);
     }
     
     public int getValueWidth() {
@@ -615,6 +616,10 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         }
         
         notNull = inStream.readBoolean();
+    }
+
+    public boolean hasColumnGroupObjects() {
+        return columnGroupObjects != null && !columnGroupObjects.isEmpty();
     }
 
     public ClientAsyncEventExec getAsyncEventExec(String actionSID) {

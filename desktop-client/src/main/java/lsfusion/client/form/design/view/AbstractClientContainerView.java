@@ -1,6 +1,7 @@
 package lsfusion.client.form.design.view;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.client.base.view.ClientColorUtils;
 import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.design.ClientContainer;
 import lsfusion.interop.base.view.FlexAlignment;
@@ -15,30 +16,65 @@ import static java.lang.Math.max;
 
 public abstract class AbstractClientContainerView implements ClientContainerView {
 
-    protected final ClientFormLayout formLayout;
     protected final ClientContainer container;
 
-    protected final List<ClientComponent> children = new ArrayList<>();
-    protected final List<JComponentPanel> childrenViews = new ArrayList<>();
+    protected final boolean vertical;
 
-    public AbstractClientContainerView(ClientFormLayout formLayout, ClientContainer container) {
-        this.formLayout = formLayout;
+    protected final List<ClientComponent> children = new ArrayList<>();
+    protected final List<FlexPanel> childrenViews = new ArrayList<>();
+
+    public AbstractClientContainerView(ClientContainer container) {
         this.container = container;
+
+        vertical = container.isVertical();
     }
 
     @Override
-    public void add(ClientComponent child, JComponentPanel view) {
+    public void add(ClientComponent child, FlexPanel view) {
         assert child != null && view != null && container.children.contains(child);
 
         int index = BaseUtils.relativePosition(child, container.children, children);
 
+        //todo:
+        // if panel is inside linear container, and there are several dynamic components fixing tab flex basis to avoid
+        boolean fixFlexBasis = false;//view instanceof FlexTabbedPanel && child.getFlex() > 0 && container.getFlexCount() > 1;
+
         children.add(index, child);
-        childrenViews.add(index, view);
+        childrenViews.add(index, view = wrapAndOverflowView(child, view, fixFlexBasis));
 
         addImpl(index, child, view);
     }
 
-    public static void setSizes(JComponentPanel view, ClientComponent child) {
+    private FlexPanel wrapAndOverflowView(ClientComponent child, FlexPanel view, boolean fixFlexBasis) {
+        boolean isAutoSized = child.getSize(vertical) == null;
+        boolean isOppositeAutoSized = child.getSize(!vertical) == null;
+
+        if((!(isOppositeAutoSized && isAutoSized) || fixFlexBasis) && (child.size.height > 0 || child.size.width > 0)) { // child is tab, since basis is fixed, strictly speaking this all check is an optimization
+            JScrollPane scroll = new JScrollPane() {
+                @Override
+                public void updateUI() {
+                    super.updateUI();
+                    setBorder(null); // is set on every color theme change in installDefaults()
+                }
+            };
+            scroll.getVerticalScrollBar().setUnitIncrement(14);
+            scroll.getHorizontalScrollBar().setUnitIncrement(14);
+            ClientColorUtils.designComponent(scroll, container.design);
+
+            ContainerViewPanel panel = new ContainerViewPanel();
+            // to forward a mouse wheel event in nested scroll pane to the parent scroll pane
+            JLayer<JScrollPane> scrollLayer = new JLayer<>(scroll, new MouseWheelScrollLayerUI());
+            panel.add(scrollLayer, BorderLayout.CENTER);
+            scroll.setViewportView(view);
+            setSizes(panel, child);
+
+            view = panel;
+        }
+
+        return view;
+    }
+
+    public static void setSizes(FlexPanel view, ClientComponent child) {
         //temp fix
         if (child.alignment == FlexAlignment.STRETCH) {
             if (child.container.isVertical()) {
@@ -51,7 +87,7 @@ public abstract class AbstractClientContainerView implements ClientContainerView
         }
         view.setComponentSize(child.size);
     }
-    public static void add(JPanel panel, JComponentPanel view, int index, Object constraints, ClientComponent child) {
+    public static void add(JPanel panel, FlexPanel view, int index, Object constraints, ClientComponent child) {
         setSizes(view, child);
         panel.add(view, constraints, index);
     }
@@ -64,7 +100,7 @@ public abstract class AbstractClientContainerView implements ClientContainerView
         }
 
         children.remove(index);
-        JComponentPanel view = childrenViews.remove(index);
+        FlexPanel view = childrenViews.remove(index);
 
         removeImpl(index, child, view);
     }
@@ -98,18 +134,18 @@ public abstract class AbstractClientContainerView implements ClientContainerView
     }
 
     @Override
-    public JComponentPanel getView() {
+    public FlexPanel getView() {
         return getPanel();
     }
     public abstract ContainerViewPanel getPanel();
-    protected abstract void addImpl(int index, ClientComponent child, JComponentPanel view);
-    protected abstract void removeImpl(int index, ClientComponent child, JComponentPanel view);
+    protected abstract void addImpl(int index, ClientComponent child, FlexPanel view);
+    protected abstract void removeImpl(int index, ClientComponent child, FlexPanel view);
 
     public void updateCaption() {
         getPanel().updateCaption();
     }
 
-    public class ContainerViewPanel extends JComponentPanel {
+    public class ContainerViewPanel extends FlexPanel {
         public ContainerViewPanel(boolean vertical, FlexAlignment alignment) {
             super(vertical, alignment);
             initBorder();
@@ -167,7 +203,7 @@ public abstract class AbstractClientContainerView implements ClientContainerView
         }
     }
 
-    public JComponentPanel getChildView(ClientComponent child) {
+    public FlexPanel getChildView(ClientComponent child) {
         int index = children.indexOf(child);
         return index != -1 ? childrenViews.get(index) : null;
     }
@@ -176,7 +212,7 @@ public abstract class AbstractClientContainerView implements ClientContainerView
     // можно было бы попробовать общую схему LayoutManager'ов использовать, но проблема в том что каждый ContainerView может создавать внутренние компоненты с не определенными LayoutManager'ами, а как через них протянуть признак что нужен max, а не обычный size непонятно
     // поэтому пока используем логику из Web-Client'а (где LayoutManager'ом вообще CSS является)
 
-    public static Dimension calculateMaxPreferredSize(JComponentPanel component) {
+    public static Dimension calculateMaxPreferredSize(FlexPanel component) {
         return component.getMaxPreferredSize();
     }
 
@@ -195,7 +231,7 @@ public abstract class AbstractClientContainerView implements ClientContainerView
     public static Dimension getMaxPreferredSize(ClientContainer child, Map<ClientContainer, ClientContainerView> containerViews, boolean max) {
         return overrideSize(child, containerViews.get(child).getMaxPreferredSize(containerViews), max);
     }
-    private static Dimension getMaxPreferredSize(ClientComponent child, JComponentPanel childView) { // тут как и в GwtClientUtils.calculateMaxPreferredSize возможно нужна проверка на isVisible
+    private static Dimension getMaxPreferredSize(ClientComponent child, FlexPanel childView) { // тут как и в GwtClientUtils.calculateMaxPreferredSize возможно нужна проверка на isVisible
         return overrideSize(child, calculateMaxPreferredSize(childView), true);
     }
 
@@ -256,5 +292,16 @@ public abstract class AbstractClientContainerView implements ClientContainerView
             dimension.height += 20;
         }
         return dimension;
+    }
+
+    public static void add(FlexPanel panel, FlexPanel widget, ClientComponent component, int beforeIndex) {
+        boolean vertical = panel.isVertical();
+        panel.add(widget, beforeIndex, component.getAlignment(), component.getFlex(), component.getSize(vertical));
+
+        Integer crossSize = component.getSize(!vertical);
+        boolean isStretch = component.isStretch();
+        if(isStretch && crossSize != null && crossSize.equals(0)) // for opposite direction and stretch zero does not make any sense (it is zero by default)
+            crossSize = null;
+        FlexPanel.setBaseSize(widget, !vertical, crossSize, !isStretch);
     }
 }

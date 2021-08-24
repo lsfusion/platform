@@ -33,7 +33,7 @@ import lsfusion.client.form.controller.remote.serialization.ClientSerializationP
 import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.design.ClientContainer;
 import lsfusion.client.form.design.view.ClientFormLayout;
-import lsfusion.client.form.design.view.JComponentPanel;
+import lsfusion.client.form.design.view.FlexPanel;
 import lsfusion.client.form.design.view.TabbedClientContainerView;
 import lsfusion.client.form.filter.ClientRegularFilter;
 import lsfusion.client.form.filter.ClientRegularFilterGroup;
@@ -150,7 +150,7 @@ public class ClientFormController implements AsyncListener {
     private final Map<ClientGroupObject, GridController> controllers = new LinkedHashMap<>();
     private final Map<ClientTreeGroup, TreeGroupController> treeControllers = new LinkedHashMap<>();
 
-    private final Map<ClientGroupObject, List<JComponentPanel>> filterViews = new HashMap<>();
+    private final Map<ClientGroupObject, List<FlexPanel>> filterViews = new HashMap<>();
 
     private final boolean isDialog;
     private final boolean isModal;
@@ -489,9 +489,9 @@ public class ClientFormController implements AsyncListener {
     }
 
     private void addFilterView(ClientRegularFilterGroup filterGroup, JComponent filterView) {
-        JComponentPanel filterPanel = new JComponentPanel();
+        FlexPanel filterPanel = new FlexPanel(false);
         filterPanel.setBorder(BorderFactory.createEmptyBorder(0, 2, 0 , 2));
-        filterPanel.add(filterView, BorderLayout.CENTER);
+        filterPanel.add(filterView);
         
         formLayout.add(filterGroup, filterPanel);
 
@@ -499,7 +499,7 @@ public class ClientFormController implements AsyncListener {
             return;
         }
 
-        List<JComponentPanel> groupFilters = filterViews.get(filterGroup.groupObject);
+        List<FlexPanel> groupFilters = filterViews.get(filterGroup.groupObject);
         if (groupFilters == null) {
             groupFilters = new ArrayList<>();
             filterViews.put(filterGroup.groupObject, groupFilters);
@@ -508,7 +508,7 @@ public class ClientFormController implements AsyncListener {
     }
 
     public void setFiltersVisible(ClientGroupObject groupObject, boolean visible) {
-        List<JComponentPanel> groupFilters = filterViews.get(groupObject);
+        List<FlexPanel> groupFilters = filterViews.get(groupObject);
         if (groupFilters != null) {
             for (JComponent filterView : groupFilters) {
                 filterView.setVisible(visible);

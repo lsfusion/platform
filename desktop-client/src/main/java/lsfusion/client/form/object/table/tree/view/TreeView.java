@@ -1,7 +1,7 @@
 package lsfusion.client.form.object.table.tree.view;
 
 import lsfusion.client.form.controller.ClientFormController;
-import lsfusion.client.form.design.view.JComponentPanel;
+import lsfusion.client.form.design.view.FlexPanel;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.object.table.tree.ClientTreeGroup;
@@ -12,7 +12,7 @@ import java.awt.*;
 import java.util.List;
 import java.util.Map;
 
-public class TreeView extends JComponentPanel {
+public class TreeView extends FlexPanel {
     private final TreeGroupTable groupTree;
 
     public TreeView(ClientFormController form, ClientTreeGroup treeGroup) {
@@ -20,7 +20,7 @@ public class TreeView extends JComponentPanel {
 
         treeGroup.installMargins(this);
 
-        add(new JScrollPane(groupTree));
+        add(new JScrollPane(groupTree), BorderLayout.CENTER);
     }
 
     @Override
