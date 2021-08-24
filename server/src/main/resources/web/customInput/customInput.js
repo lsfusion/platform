@@ -73,7 +73,7 @@ class CustomInput {
 
     onEventFunction(controller) {
         return (inputElement, value) => {
-            inputElement.onblur = function () {
+            inputElement.onchange = function () {
                 let date = new Date(this.value);
                 if (date.getTime() !== new Date(value).getTime())
                     controller.changeValue(null, !isNaN(date) ? controller.toDateDTO(date.getFullYear(), date.getMonth() + 1, date.getDate()) : null);
@@ -93,7 +93,7 @@ class CustomInputRange extends CustomInput {
 
     onEventFunction(controller) {
         return (inputElement, value) => {
-            inputElement.onmouseup = function () {
+            inputElement.onchange = function () {
                 if (value !== parseInt(this.value))
                     controller.changeValue(null, parseInt(this.value));
             }
@@ -119,7 +119,7 @@ class CustomInputWeek extends CustomInput {
 
     onEventFunction(controller) {
         return (inputElement, value) => {
-            inputElement.onblur = function () {
+            inputElement.onchange = function () {
                 if ((value == null ? "" : value).toString() !== this.value)
                     controller.changeValue(null, this.value);
             }
@@ -139,9 +139,15 @@ class CustomInputTime extends CustomInput {
         super("time");
     }
 
+    //use only hh:mm format. If use hh:mm:ss format, when seconds is 0, then input cut of the seconds part.
+    parseValueFunction(value) {
+        let valueParts = value != null ? value.toString().split(':') : 0;
+        return valueParts.length === 3 ? value.toString().replace(':' + valueParts[2], '') : value;
+    }
+
     onEventFunction(controller) {
         return (inputElement, value) => {
-            inputElement.onblur = function () {
+            inputElement.onchange = function () {
                 let timeParts = this.value.split(':');
                 if ((value == null ? "" : value).toString() !== this.value)
                     controller.changeValue(null, timeParts.length === 2 ? controller.toTimeDTO(parseInt(timeParts[0], 10), parseInt(timeParts[1], 10), 0) : null);
@@ -157,7 +163,7 @@ class CustomInputDateTime extends CustomInput {
 
     onEventFunction(controller) {
         return (inputElement, value) => {
-            inputElement.onblur = function () {
+            inputElement.onchange = function () {
                 let date = new Date(this.value);
                 if (date.getTime() !== new Date(value).getTime())
                     controller.changeValue(null, !isNaN(date) ? controller.toDateTimeDTO(date.getFullYear(), date.getMonth() + 1, date.getDate(),
