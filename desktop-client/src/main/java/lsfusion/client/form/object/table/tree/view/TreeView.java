@@ -16,11 +16,12 @@ public class TreeView extends FlexPanel {
     private final TreeGroupTable groupTree;
 
     public TreeView(ClientFormController form, ClientTreeGroup treeGroup) {
+        super(false);
         groupTree = new TreeGroupTable(form, treeGroup);
 
         treeGroup.installMargins(this);
 
-        add(new JScrollPane(groupTree), BorderLayout.CENTER);
+        addFillFlex(new JScrollPane(groupTree), null);
     }
 
     @Override

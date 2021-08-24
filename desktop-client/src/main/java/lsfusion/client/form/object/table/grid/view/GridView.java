@@ -22,6 +22,7 @@ public class GridView extends FlexPanel {
     }
 
     public GridView(GridController iGridController, ClientFormController form, GridUserPreferences[] iuserPreferences, boolean tabVertical, boolean verticalScroll) {
+        super(false);
         gridController = iGridController;
 
         grid = gridController.getGroupObject().grid;
@@ -79,7 +80,7 @@ public class GridView extends FlexPanel {
 
         grid.installMargins(this);
 
-        add(pane, BorderLayout.CENTER);
+        addFillFlex(pane, null);
     }
 
     public GridController getGridController() {
