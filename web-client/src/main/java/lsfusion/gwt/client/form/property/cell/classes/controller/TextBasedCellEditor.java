@@ -41,7 +41,7 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
 
     @Override
     public void startEditing(Event event, Element parent, Object oldValue) {
-        String value = tryFormatInputText(oldValue);
+        String value = property.clearText ? "" : tryFormatInputText(oldValue);
         InputElement inputElement = getInputElement(parent);
         boolean selectAll = true;
         if (GKeyStroke.isCharDeleteKeyEvent(event)) {
