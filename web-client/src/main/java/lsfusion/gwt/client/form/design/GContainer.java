@@ -139,7 +139,7 @@ public class GContainer extends GComponent {
             if(!(child instanceof GPropertyDraw) || ((GPropertyDraw) child).hasColumnGroupObjects() || (child.autoSize && ((GPropertyDraw) child).isAutoDynamicHeight()) || child.flex > 0 || ((GPropertyDraw) child).panelCaptionVertical)
                 return false;
 
-            if(((GPropertyDraw)child).isAction())
+            if(!((GPropertyDraw)child).isAction())
                 notActions++;
         }
 
