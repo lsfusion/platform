@@ -2,6 +2,9 @@ package lsfusion.base.col.implementations.stored;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.MapFact;
+import lsfusion.base.col.SetFact;
+import lsfusion.base.col.implementations.ArIndexedMap;
+import lsfusion.base.col.implementations.ArSet;
 import lsfusion.base.col.implementations.abs.AMRevMap;
 import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -31,6 +34,13 @@ public class StoredArIndexedMap<K, V> extends AMRevMap<K, V> {
     
     public StoredArIndexedMap(StoredArIndexedMap<K, V> map, boolean clone) {
         assert clone;
+        this.keys = new StoredArray<>(map.keys);
+        this.values = new StoredArray<>(map.values);
+    }
+
+    public StoredArIndexedMap(StoredArIndexedMap<K, V> map, AddValue<K, V> addValue) {
+        super(addValue);
+
         this.keys = new StoredArray<>(map.keys);
         this.values = new StoredArray<>(map.values);
     }
@@ -242,38 +252,143 @@ public class StoredArIndexedMap<K, V> extends AMRevMap<K, V> {
         return new StoredArIndexedMap<>(rKeys, rValues);
     }
 
+    private StoredArIndexedMap<K, V> merge(StoredArray<K> mgKeys, StoredArray<V> mgValues, AddValue<K, V> add) {
+        StoredArray<K> rKeys = new StoredArray<>(keys.getSerializer());
+        StoredArray<V> rValues = new StoredArray<>(values.getSerializer());
+
+        int i=0; int j=0;
+        int mgSize = keys.size();
+        int iHash = keys.get(0).hashCode();
+        int jHash = mgKeys.get(0).hashCode();
+        while(i<size() && j<mgSize) {
+//            assert iHash == keys[i].hashCode() && jHash == mgKeys[j].hashCode();
+            if(iHash<jHash) {
+                rKeys.append(keys.get(i));
+                rValues.append(values.get(i));
+                i++;
+                if(i<size())
+                    iHash = keys.get(i).hashCode();
+            } else if(jHash<iHash) {
+                rKeys.append(mgKeys.get(j));
+                rValues.append(mgValues.get(j));
+                j++;
+                if(j<mgSize)
+                    jHash = mgKeys.get(j).hashCode();
+            } else if(iHash == jHash) {
+                if(!add.exclusive() && (keys.get(i)==mgKeys.get(j) || keys.get(i).equals(mgKeys.get(j)))) { // самый частый случай
+                    V addedValue = add.addValue(keys.get(i), values.get(i), mgValues.get(j));
+                    if(add.stopWhenNull() && addedValue==null)
+                        return null;
+                    rKeys.append(keys.get(i));
+                    rValues.append(addedValue);
+
+                    i++;
+                    if(i<size())
+                        iHash = keys.get(i).hashCode();
+                    j++;
+                    if(j<mgSize)
+                        jHash = mgKeys.get(j).hashCode();
+                } else {
+                    int nj = j; // бежим по второму массиву пока не закончится этот хэш
+                    while(true) {
+                        nj++;
+                        if(nj >= mgSize)
+                            break;
+                        jHash = mgKeys.get(nj).hashCode();
+                        if(jHash!=iHash)
+                            break;
+                    }
+
+                    boolean[] found = new boolean[nj-j];
+                    int ni = i;
+                    while(true) { // бежим по первому массиву пока не закончится хэш и ищем соответствия во втором массиве
+                        K key = keys.get(ni);
+                        V addedValue = values.get(ni);
+                        if(!add.exclusive()) {
+                            for (int kj = j; kj < nj; kj++)
+                                if (!found[kj - j] && (key == mgKeys.get(kj) || key.equals(mgKeys.get(kj)))) {
+                                    found[kj - j] = true;
+                                    addedValue = add.addValue(key, addedValue, mgValues.get(kj));
+                                    if (add.stopWhenNull() && addedValue == null)
+                                        return null;
+                                    break;
+                                }
+                        }
+
+                        rKeys.append(key);
+                        rValues.append(addedValue);
+
+                        ni++;
+                        if(ni>=size())
+                            break;
+
+                        int kHash = keys.get(ni).hashCode();
+                        if(kHash != iHash) {
+                            iHash = kHash;
+                            break;
+                        }
+                    }
+
+                    for(int k=j;k<nj;k++)
+                        if(!found[k-j]) {
+                            rKeys.append(mgKeys.get(k));
+                            rValues.append(mgValues.get(k));
+                        }
+
+                    j = nj;
+                    i = ni;
+                }
+            }
+        }
+        while(i<size()) {
+            rKeys.append(keys.get(i));
+            rValues.append(values.get(i));
+            i++;
+        }
+        while(j<mgSize) {
+            rKeys.append(mgKeys.get(j));
+            rValues.append(mgValues.get(j));
+            j++;
+        }
+//        assert sorted(r, rKeys);
+        return new StoredArIndexedMap<>(rKeys, rValues);
+    }
+    
     public ImMap<K, V> merge(ImMap<? extends K, ? extends V> map, AddValue<K, V> add) { // важная оптимизация так как ОЧЕНЬ много раз вызывается
-        throw new UnsupportedOperationException();        
-//        if(map.isEmpty()) return this;
-//        StoredArIndexedMap<K, V> result;
-//        
-//        if(map.size() <= SetFact.useIndexedAddInsteadOfMerge) {
-//            result = new StoredArIndexedMap<>(this, true);
-//            if(add.exclusive())
-//                result.exclAddAll(map);
-//            else {
-//                if (!result.addAll(map))
-//                    return null;
-//            }
-//        } else {
-//            if(map instanceof StoredArIndexedMap) {
-//                StoredArIndexedMap<K, V> arMap = (StoredArIndexedMap<K, V>) map;
-//                result = merge(arMap.size, arMap.keys, arMap.values, add);
-//            } else {
-//                int mapSize = map.size();
-//                K[] mapKeys = (K[])new Object[mapSize];
-//                V[] mapValues = (V[])new Object[mapSize];
-//                for(int i=0;i<mapSize;i++) {
-//                    mapKeys[i] = map.getKey(i);
-//                    mapValues[i] = map.getValue(i);
-//                }
-//                ArSet.sortArray(mapSize, mapKeys, mapValues);
-//                result = merge(mapSize, mapKeys, mapValues, add);
-//            }
-//        }
-//
-////        assert BaseUtils.hashEquals(result, super.merge(map, add));
-//        return result;
+//        throw new UnsupportedOperationException();
+        if(map.isEmpty()) return this;
+        StoredArIndexedMap<K, V> result;
+
+        if(map.size() <= SetFact.useIndexedAddInsteadOfMerge) {
+            result = new StoredArIndexedMap<>(this, true);
+            if(add.exclusive())
+                result.exclAddAll(map);
+            else {
+                if (!result.addAll(map))
+                    return null;
+            }
+        } else {
+            if(map instanceof StoredArIndexedMap) {
+                StoredArIndexedMap<K, V> arMap = (StoredArIndexedMap<K, V>) map;
+                result = merge(arMap.keys, arMap.values, add);
+            } else if (map instanceof ArIndexedMap) {
+                ArIndexedMap<?, ?> arMap = (ArIndexedMap<?, ?>) map;
+                result = merge(arMap.size, (K[])arMap.keys, (V[])arMap.values, add);
+            } else {
+                int mapSize = map.size();
+                K[] mapKeys = (K[])new Object[mapSize];
+                V[] mapValues = (V[])new Object[mapSize];
+                for(int i=0;i<mapSize;i++) {
+                    mapKeys[i] = map.getKey(i);
+                    mapValues[i] = map.getValue(i);
+                }
+                ArSet.sortArray(mapSize, mapKeys, mapValues);
+                result = merge(mapSize, mapKeys, mapValues, add);
+            }
+        }
+
+//        assert BaseUtils.hashEquals(result, super.merge(map, add));
+        return result;
     }
 
     @Override
@@ -307,7 +422,6 @@ public class StoredArIndexedMap<K, V> extends AMRevMap<K, V> {
 
     // копия с merge
     protected boolean twins(StoredArray<K> twKeys, StoredArray<V> twValues) {
-
         int i=0;
         int hash = keys.get(0).hashCode();
         int twHash = twKeys.get(0).hashCode();
@@ -379,15 +493,13 @@ public class StoredArIndexedMap<K, V> extends AMRevMap<K, V> {
 
         return true;
     }
+    
     @Override
     protected boolean twins(ImMap<K, V> map) { // assert что size'ы совпадает
-        throw new UnsupportedOperationException();
-//
-//        if(map instanceof StoredArIndexedMap) {
-//            StoredArIndexedMap<K, V> arMap = ((StoredArIndexedMap<K, V>)map);
-//            return twins(arMap.keys, arMap.values);
-//        }
-//
-//        return super.twins(map);
+        if (map instanceof StoredArIndexedMap) {
+            StoredArIndexedMap<?, ?> smap = (StoredArIndexedMap<?, ?>) map;
+            return twins((StoredArray<K>) smap.keys, (StoredArray<V>) smap.values);
+        } 
+        return super.twins(map);
     }
 }

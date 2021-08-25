@@ -24,7 +24,6 @@ public class StoredArIndexedSet<K> extends AMSet<K> {
     }
 
     public StoredArIndexedSet(StoredArIndexedSet<K> set) {
-        // todo [dale]: this can be optimized
         array = new StoredArray<>(set.array);
     }
 
@@ -73,7 +72,7 @@ public class StoredArIndexedSet<K> extends AMSet<K> {
     }
 
     public StoredArIndexedMap<K, K> toMap() {
-        return new StoredArIndexedMap<K, K>(array, array);
+        return new StoredArIndexedMap<>(array, array);
     }
 
     public ImRevMap<K, K> toRevMap() {

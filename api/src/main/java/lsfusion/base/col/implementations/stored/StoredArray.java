@@ -42,6 +42,7 @@ public class StoredArray<T> {
     }
     
     public StoredArray(StoredArray<? extends T> source) {
+        // todo [dale]: can be optimized
         try {
             this.serializer = source.serializer;
             this.fileManager = new StoredArrayFileManagerImpl();
