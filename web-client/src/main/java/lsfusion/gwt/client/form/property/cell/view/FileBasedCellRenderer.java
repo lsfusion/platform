@@ -49,6 +49,7 @@ public abstract class FileBasedCellRenderer extends CellRenderer {
         Label dropFilesLabel = new Label();
         dropFilesLabel.setAutoHorizontalAlignment(HasAutoHorizontalAlignment.ALIGN_CENTER);
         dropFilesLabel.setWidth("100%");
+        dropFilesLabel.setHeight("100%");
 
         DataGrid.initSinkDragDropEvents(dropFilesLabel);
 
