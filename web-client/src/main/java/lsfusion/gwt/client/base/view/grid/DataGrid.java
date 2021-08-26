@@ -326,10 +326,9 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
         CellBasedWidgetImpl.get().sinkEvents(widget, getBrowserDragDropEvents());
     }
 
-    public static boolean isFakeBlur(Event event) {
-        Element blur = event.getEventTarget().cast();
+    public static boolean isFakeBlur(Event event, Element blur) {
         EventTarget focus = event.getRelatedEventTarget();
-        return focus != null && blur.equals(Element.as(focus).getParentElement());
+        return focus != null && blur.isOrHasChild(Element.as(focus));
     }
 
     public static Element getTargetAndCheck(Element element, Event event) {
@@ -984,8 +983,10 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
     }
 
     protected void onBlur(Event event) {
-        if(!isFocused || isFakeBlur(event))
+        if(!isFocused || isFakeBlur(event, getElement()))
             return;
+        //if !isFocused should be replaced to assert; isFocused must be true, but sometimes is not (related to LoadingManager)
+        //assert isFocused;
         isFocused = false;
         focusedChanged();
     }
