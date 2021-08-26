@@ -151,7 +151,6 @@ To access design components, you can use their names or address property compone
 |`imagePath`|The path to the file with the image to be displayed as an action icon. The path is specified relative to the `images` folder|String literal|`NULL`|`'image.png'`|
 |`maxValue`|The maximum numerical value that the property component can have|Integer literal|`NULL`|`1000000`<br/>`5000000000L`|
 |`notNull`|Specifies that in case of a `NULL` property value, the component of this property should be highlighted|Extended Boolean literal|depends on the property|`TRUE`<br/>`FALSE`|
-|`panelCaptionAbove`|Indicates that the captions of property or action components should be drawn above the value on the panel<br/>**removed in 5.0, use `panelCaptionVertical` instead**|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`panelCaptionVertical`|Indicates that the captions of property or action components should be drawn above the value on the panel|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`panelCaptionAfter`|Indicates that the value should be drawn on the panel prior to thee property caption|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`regexp`|The regular expression that the property value must match during input|String literal|`NULL`|`'^((8\|\\+7)[\\- ]?)?(\\(?\\d\{3\}\\)?[\\- ]?)?[\\d\\- ]\{7,10\}$'`|
