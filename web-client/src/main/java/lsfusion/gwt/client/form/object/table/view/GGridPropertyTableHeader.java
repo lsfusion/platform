@@ -133,7 +133,7 @@ public class GGridPropertyTableHeader extends Header<String> {
     }
 
     public static Element renderTD(Element th, int height, Boolean sortDir, String caption, boolean tableToExcel) {
-        int setHeight = height > 0 ? height : DEFAULT_HEADER_HEIGHT;
+        int setHeight = height >= 0 ? height : DEFAULT_HEADER_HEIGHT;
         GPropertyTableBuilder.setRowHeight(th, setHeight, tableToExcel);
 
         th = GwtClientUtils.wrapCenteredImg(th, true, setHeight, getSortImgProcesspr(sortDir));
