@@ -46,6 +46,7 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.text.JTextComponent;
+import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.ExpandVetoException;
 import javax.swing.tree.TreePath;
 import java.awt.*;
@@ -474,6 +475,19 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
 //        setColumnSizes(tableColumn, pref, pref, pref);
 
         getColumnModel().getSelectionModel().setSelectionInterval(0, 0);
+        
+        setTreeCellRenderer(new DefaultTreeCellRenderer() {
+            // it's rather hard to properly set up these colors via UIDefaults 
+            @Override
+            public Color getBackgroundSelectionColor() {
+                return SwingDefaults.getSelectionColor();
+            }
+
+            @Override
+            public Color getTextSelectionColor() {
+                return SwingDefaults.getTableCellForeground();
+            }
+        });
     }
 
     private TableColumnExt createColumn(int pos) {
