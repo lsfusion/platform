@@ -32,8 +32,9 @@ public class GetClientSettingsHandler extends NavigatorActionHandler<GetClientSe
                 converter.convertOrCast(clientSettings.colorPreferences.getTableGridColor())
         );
         
-        return new GetClientSettingsResult(clientSettings.busyDialog, clientSettings.busyDialogTimeout, clientSettings.devMode, clientSettings.ideaExecPath,
-                clientSettings.showDetailedInfo, clientSettings.forbidDuplicateForms, clientSettings.showNotDefinedStrings, clientSettings.pivotOnlySelectedColumn,
+        return new GetClientSettingsResult(clientSettings.busyDialog, clientSettings.busyDialogTimeout,
+                clientSettings.devMode, clientSettings.projectLSFDir, clientSettings.showDetailedInfo,
+                clientSettings.forbidDuplicateForms, clientSettings.showNotDefinedStrings, clientSettings.pivotOnlySelectedColumn,
                 colorTheme, colorPreferences, clientSettings.localePreferences.dateFormat, clientSettings.localePreferences.timeFormat);
     }
 }

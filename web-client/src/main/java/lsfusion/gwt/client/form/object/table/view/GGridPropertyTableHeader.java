@@ -32,6 +32,8 @@ public class GGridPropertyTableHeader extends Header<String> {
 
     private String caption;
     private String toolTip;
+    private String path;
+    private String creationPath;
     private TooltipManager.TooltipHelper toolTipHandler;
 
     private boolean notNull;
@@ -54,7 +56,22 @@ public class GGridPropertyTableHeader extends Header<String> {
             public boolean stillShowTooltip() {
                 return table.isAttached() && table.isVisible();
             }
+
+            @Override
+            public String getPath() {
+                return path;
+            }
+
+            @Override
+            public String getCreationPath() {
+                return creationPath;
+            }
         };
+    }
+
+    public void setPaths(String path, String creationPath) {
+        this.path = path;
+        this.creationPath = creationPath;
     }
 
     public void setCaption(String caption, boolean notNull, boolean hasChangeAction) {
