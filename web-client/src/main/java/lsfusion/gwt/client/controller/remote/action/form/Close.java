@@ -2,7 +2,7 @@ package lsfusion.gwt.client.controller.remote.action.form;
 
 import lsfusion.gwt.client.base.result.VoidResult;
 
-public class Close extends FormAction<VoidResult> {
+public class Close extends FormPriorityAction<VoidResult> {
 
     public int closeDelay;
 

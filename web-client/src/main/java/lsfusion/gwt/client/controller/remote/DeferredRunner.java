@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class DeferredRunner {
-    public final int DEFAULT_DELAY = 50;
 
     private static DeferredRunner instance;
 
@@ -22,10 +21,6 @@ public class DeferredRunner {
     private final Map<String, Command> commands = new HashMap<>();
 
     private DeferredRunner() {}
-
-    public void reschedule(String sid, Command cmd) {
-        reschedule(sid, cmd, DEFAULT_DELAY);
-    }
 
     public void reschedule(final String sid, final Command cmd, int delay) {
         Log.debug("Rescheduling command: " + sid);
@@ -63,14 +58,8 @@ public class DeferredRunner {
         }
     }
 
-    public void scheduleDelayedGroupObjectChange(GGroupObject groupObject, Command cmd) {
-        reschedule(groupObjectChangeCommandID(groupObject), cmd);
-    }
-
-    public void cancelDelayedGroupObjectChange(GGroupObject groupObject) {
-        if (groupObject != null) {
-            cancel(groupObjectChangeCommandID(groupObject));
-        }
+    public void scheduleGroupObjectChange(GGroupObject groupObject, Command cmd) {
+        reschedule(groupObjectChangeCommandID(groupObject), cmd, 50);
     }
 
     public void commitDelayedGroupObjectChange(GGroupObject groupObject) {
@@ -85,6 +74,10 @@ public class DeferredRunner {
 
     public void scheduleChangePageSize(GGroupObject groupObject, Command cmd) {
         reschedule(changePageSizeCommandID(groupObject), cmd, 100);
+    }
+
+    public void scheduleUpdateView(Command cmd) {
+        reschedule("updateView", cmd, 0);
     }
 
     private String changePageSizeCommandID(GGroupObject groupObject) {

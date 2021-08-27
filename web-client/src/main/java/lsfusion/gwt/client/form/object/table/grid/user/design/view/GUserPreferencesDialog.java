@@ -3,11 +3,11 @@ package lsfusion.gwt.client.form.object.table.grid.user.design.view;
 import com.allen_sauer.gwt.dnd.client.DragHandlerAdapter;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.*;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.Callback;
 import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.exception.ErrorHandlingCallback;
 import lsfusion.gwt.client.base.view.CaptionPanel;
 import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
@@ -437,10 +437,10 @@ public abstract class GUserPreferencesDialog extends ResizableSystemModalWindow 
         return font;
     } 
 
-    private ErrorHandlingCallback<ServerResponseResult> createChangeCallback(final boolean save) {
-        return new ErrorHandlingCallback<ServerResponseResult>() {
+    private AsyncCallback<ServerResponseResult> createChangeCallback(final boolean save) {
+        return new AsyncCallback<ServerResponseResult>() {
             @Override
-            public void success(ServerResponseResult result) {
+            public void onSuccess(ServerResponseResult result) {
                 GFont font = mergeFont();
                 refreshValues(font);
                 grid.font = font;
@@ -459,14 +459,13 @@ public abstract class GUserPreferencesDialog extends ResizableSystemModalWindow 
             }
 
             @Override
-            public void failure(Throwable caught) {
+            public void onFailure(Throwable caught) {
                 GFont font = mergeFont();
                 refreshValues(font);
                 grid.font = font;
                 grid.columnsPreferencesChanged();
                 grid.columnsChanged();
                 focusPanel.setFocus(true);
-                super.failure(caught);
             }
         };
     }

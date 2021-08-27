@@ -1,14 +1,16 @@
 package lsfusion.gwt.client.form.controller.dispatch;
 
-import com.google.gwt.user.client.rpc.AsyncCallback;
 import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.RemoteDispatchAsync;
+import lsfusion.gwt.client.base.result.ListResult;
+import lsfusion.gwt.client.base.result.VoidResult;
+import lsfusion.gwt.client.controller.remote.action.BaseAction;
+import lsfusion.gwt.client.controller.remote.action.PriorityErrorHandlingCallback;
 import lsfusion.gwt.client.controller.remote.action.RequestAction;
-import lsfusion.gwt.client.controller.remote.action.form.FormAction;
-import lsfusion.gwt.client.controller.remote.action.form.FormRequestAction;
-import lsfusion.gwt.client.controller.remote.action.form.FormRequestCountingAction;
+import lsfusion.gwt.client.controller.remote.action.form.*;
 import lsfusion.gwt.client.form.controller.GFormController;
 import net.customware.gwt.dispatch.shared.Result;
+import net.customware.gwt.dispatch.shared.general.StringResult;
 
 public class FormDispatchAsync extends RemoteDispatchAsync {
     private final GForm form;
@@ -22,49 +24,23 @@ public class FormDispatchAsync extends RemoteDispatchAsync {
         this.form = formController.getForm();
     }
 
-    public <A extends FormRequestCountingAction<R>, R extends Result> long execute(A action, AsyncCallback<R> callback) {
-        execute((FormAction<R>) action, callback);
-        return action.requestIndex;
-    }
-
-    public <A extends FormAction<R>, R extends Result> long execute(A action, AsyncCallback<R> callback, boolean direct) {
-        return execute(action, callback, direct, false);
-    }
-
-    public <A extends FormAction<R>, R extends Result> long execute(A action, AsyncCallback<R> callback, boolean direct, boolean preProceed) {
-        executeQueue(action, callback, direct, preProceed);
-        if(action instanceof FormRequestAction) {
-            return ((FormRequestAction<?>) action).requestIndex;
-        } else {
-            return -1;
-        }
-    }
-    public <A extends FormAction<R>, R extends Result> long execute(A action, AsyncCallback<R> callback) {
-        return execute(action, callback, false);
-    }
-
     @Override
-    protected <A extends RequestAction<R>, R extends Result> void fillAction(A action) {
+    protected <A extends BaseAction<R>, R extends Result> void fillAction(A action) {
         ((FormAction) action).formSessionID = form.sessionID;
     }
 
     @Override
-    protected <A extends RequestAction<R>, R extends Result> void fillQueuedAction(A action) {
-        if (action instanceof FormRequestAction) {
-            if (action instanceof FormRequestCountingAction)
-                ((FormRequestCountingAction) action).requestIndex = nextRequestIndex++;
-            ((FormRequestAction) action).lastReceivedRequestIndex = lastReceivedRequestIndex;
-        }
+    protected <A extends RequestAction<R>, R extends Result> long fillQueuedAction(A action) {
+        FormRequestAction formRequestAction = (FormRequestAction) action;
+        if (action instanceof FormRequestCountingAction)
+            formRequestAction.requestIndex = nextRequestIndex++;
+        formRequestAction.lastReceivedRequestIndex = lastReceivedRequestIndex;
+        return formRequestAction.requestIndex;
     }
 
     @Override
-    protected void onAsyncStarted() {
-        formController.onAsyncStarted();
-    }
-
-    @Override
-    protected void onAsyncFinished() {
-        formController.onAsyncFinished();
+    protected void showAsync(boolean set) {
+        formController.showAsync(set);
     }
 
     @Override
@@ -80,4 +56,20 @@ public class FormDispatchAsync extends RemoteDispatchAsync {
     public void close() {
         formClosed = true;
     }
+
+    @Override
+    public void getServerActionMessage(PriorityErrorHandlingCallback<StringResult> callback) {
+        executePriority(new GetRemoteActionMessage(), callback);
+    }
+
+    @Override
+    public void getServerActionMessageList(PriorityErrorHandlingCallback<ListResult> callback) {
+        executePriority(new GetRemoteActionMessageList(), callback);
+    }
+
+    @Override
+    public void interrupt(boolean cancelable) {
+        executePriority(new Interrupt(cancelable), new PriorityErrorHandlingCallback<>());
+    }
+
 }

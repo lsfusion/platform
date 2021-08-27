@@ -8,7 +8,6 @@ import com.google.gwt.event.dom.client.ContextMenuEvent;
 import com.google.gwt.event.dom.client.ContextMenuHandler;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
-import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.RootPanel;
@@ -18,9 +17,11 @@ import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.action.GAction;
 import lsfusion.gwt.client.action.GFormAction;
 import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.exception.ErrorHandlingCallback;
 import lsfusion.gwt.client.base.view.PopupDialogPanel;
 import lsfusion.gwt.client.base.view.WindowHiddenHandler;
+import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
+import lsfusion.gwt.client.controller.remote.action.RequestCountingAsyncCallback;
+import lsfusion.gwt.client.controller.remote.action.RequestCountingErrorHandlingCallback;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.controller.remote.action.navigator.ExecuteNavigatorAction;
 import lsfusion.gwt.client.form.design.view.flex.FlexTabbedPanel;
@@ -180,11 +181,13 @@ public abstract class FormsController {
 
         boolean modal = modalityType.isWindow();
         FormContainer formContainer = asyncFormController.removeAsyncForm();
-        boolean hasAsyncForm = formContainer != null;
-        boolean asyncOpened = hasAsyncForm && formContainer instanceof ModalForm == modal;
-        if(hasAsyncForm && !asyncOpened) {
+        boolean asyncOpened = formContainer != null;
+
+        // if form is async opened with different type - close it
+        if(asyncOpened && formContainer instanceof ModalForm != modal) {
             formContainer.hide();
             ensureTabSelected();
+            asyncOpened = false;
         }
 
         if (!asyncOpened) {
@@ -200,11 +203,10 @@ public abstract class FormsController {
 
         }
         initForm(formContainer, form, hiddenHandler, modalityType.isDialog(), initFilterEvent);
-        if(asyncOpened && !modal) {
-            formContainer.setFormVisible();
-        } else {
+        if(asyncOpened)
+            formContainer.onAsyncInitialized();
+        else
             formContainer.show();
-        }
 
         return formContainer;
     }
@@ -351,38 +353,35 @@ public abstract class FormsController {
         windowsController.resetLayout();
     }
 
-    public abstract <T extends Result> long syncDispatch(final ExecuteNavigatorAction action, AsyncCallback<ServerResponseResult> callback);
+    public abstract <T extends Result> long syncDispatch(final ExecuteNavigatorAction action, RequestCountingAsyncCallback<ServerResponseResult> callback);
 
-    public abstract <T extends Result> long dispatch(final ExecuteNavigatorAction action, AsyncCallback<ServerResponseResult> callback);
+    public abstract <T extends Result> long asyncDispatch(final ExecuteNavigatorAction action, RequestCountingAsyncCallback<ServerResponseResult> callback);
 
     public abstract GNavigatorActionDispatcher getDispatcher();
 
+    private class ServerResponseCallback extends GwtActionDispatcher.ServerResponseCallback {
+
+        @Override
+        protected GwtActionDispatcher getDispatcher() {
+            return FormsController.this.getDispatcher();
+        }
+
+        public ServerResponseCallback(boolean disableForbidDuplicate) {
+            super(disableForbidDuplicate);
+        }
+    }
+
     public long executeNavigatorAction(String actionSID, final NativeEvent event, boolean sync) {
         ExecuteNavigatorAction navigatorAction = new ExecuteNavigatorAction(actionSID, 1);
-        ErrorHandlingCallback<ServerResponseResult> callback = new ErrorHandlingCallback<ServerResponseResult>() {
-            @Override
-            public void success(ServerResponseResult result) {
-            if (event.getCtrlKey()) {
-                for (GAction action : result.actions) // хак, но весь механизм forbidDuplicate один большой хак
-                    if (action instanceof GFormAction)
-                        ((GFormAction) action).forbidDuplicate = false;
-            }
-            getDispatcher().dispatchServerResponse(result);
-            }
-        };
+        ServerResponseCallback callback = new ServerResponseCallback(event.getCtrlKey());
         if(sync)
             return syncDispatch(navigatorAction, callback);
         else
-            return dispatch(navigatorAction, callback);
+            return asyncDispatch(navigatorAction, callback);
     }
 
     public void executeNotificationAction(String actionSID, int type) {
-        syncDispatch(new ExecuteNavigatorAction(actionSID, type), new ErrorHandlingCallback<ServerResponseResult>() {
-            @Override
-            public void success(ServerResponseResult result) {
-                getDispatcher().dispatchServerResponse(result);
-            }
-        });
+        syncDispatch(new ExecuteNavigatorAction(actionSID, type), new ServerResponseCallback(false));
     }
 
 }

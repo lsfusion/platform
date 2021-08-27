@@ -7,7 +7,7 @@ import lsfusion.gwt.client.base.exception.AuthenticationDispatchException;
 import lsfusion.gwt.client.base.exception.RemoteInternalDispatchException;
 import lsfusion.gwt.client.base.exception.RemoteMessageDispatchException;
 import lsfusion.gwt.client.base.exception.RemoteRetryException;
-import lsfusion.gwt.client.controller.remote.action.RequestAction;
+import lsfusion.gwt.client.controller.remote.action.BaseAction;
 import lsfusion.gwt.server.form.handlers.*;
 import lsfusion.gwt.server.logics.handlers.GenerateIDHandler;
 import lsfusion.gwt.server.navigator.handlers.*;
@@ -98,6 +98,7 @@ public class MainDispatchServlet extends net.customware.gwt.dispatch.server.stan
         registry.addHandler(new GetRemoteActionMessageHandler(this));
         registry.addHandler(new CloseHandler(this));
         registry.addHandler(new GetAsyncValuesHandler(this));
+        registry.addHandler(new GetPriorityAsyncValuesHandler(this));
         registry.addHandler(new GetRemoteActionMessageListHandler(this));
         registry.addHandler(new GetRemoteChangesHandler(this));
         registry.addHandler(new GroupReportHandler(this));
@@ -249,10 +250,10 @@ public class MainDispatchServlet extends net.customware.gwt.dispatch.server.stan
     }
 
     private void logRemoteRetryException(Action<?> action, RemoteRetryException et) {
-        if (!(action instanceof RequestAction) || ((RequestAction) action).logRemoteException()) {
+        if (!(action instanceof BaseAction) || ((BaseAction) action).logRemoteException()) {
             String actionTry = "";
-            if(action instanceof RequestAction) {
-                actionTry = "\n" + action + " try: " + ((RequestAction) action).requestTry + ", maxTries: " + et.maxTries;
+            if(action instanceof BaseAction) {
+                actionTry = "\n" + action + " try: " + ((BaseAction) action).requestTry + ", maxTries: " + et.maxTries;
             }
             logger.error("Error in LogicsAwareDispatchServlet.execute: " + actionTry, et);
         }

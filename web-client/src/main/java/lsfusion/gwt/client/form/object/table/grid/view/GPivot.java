@@ -1996,14 +1996,12 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
     }
 
     private void updateViewLater() {
-
-
-        DeferredRunner.get().reschedule("updateView", new DeferredRunner.AbstractCommand() {
+        DeferredRunner.get().scheduleUpdateView(new DeferredRunner.AbstractCommand() {
             @Override
             public void execute() {
                 updateView(true, null);
             }
-        }, 0);
+        });
     }
 
     private SortCol modifySortCols(Object keys, boolean ctrlKey, boolean shiftKey) {
