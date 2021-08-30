@@ -124,6 +124,10 @@ public class KeyStrokes {
     public static boolean isEscapeEvent(EventObject event) {
         return isKeyEvent(event, KeyEvent.VK_ESCAPE);
     }
+    
+    public static boolean isTabEvent(EventObject event) {
+        return isKeyEvent(event, KeyEvent.VK_TAB);
+    }
 
     public static boolean isDigitKeyEvent(EventObject event) {
         if (event instanceof KeyEvent) {
@@ -167,7 +171,8 @@ public class KeyStrokes {
                    !keyEvent.isControlDown() &&
                    !KeyStrokes.isShiftEvent(keyEvent) &&
                    !KeyStrokes.isCharUndefinedEvent(keyEvent) &&
-                   !KeyStrokes.isEscapeEvent(keyEvent);
+                   !KeyStrokes.isEscapeEvent(keyEvent) &&
+                   !KeyStrokes.isTabEvent(keyEvent);
         }
         return false;
     }
