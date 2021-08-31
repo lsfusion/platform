@@ -629,7 +629,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         }
         var renderers = $wnd.$.extend(
             localizeRendererNames($wnd.$.pivotUtilities.subtotal_renderers),
-            localizeRendererNames($wnd.$.pivotUtilities.plotly_renderers($wnd[renderFunction]))
+            localizeRendererNames($wnd.$.pivotUtilities.plotly_renderers)
 //            $wnd.$.pivotUtilities.c3_renderers,
 //            $wnd.$.pivotUtilities.renderers,
 //            localizeRendererNames($wnd.$.pivotUtilities.d3_renderers)
@@ -673,7 +673,10 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
                 }
 
                 var pivotElement = instance.@GPivot::getPivotRendererElement()();
-                return { width : pivotElement.offsetWidth, height : pivotElement.offsetHeight }
+                var plotlyOpts = { width : pivotElement.offsetWidth, height : pivotElement.offsetHeight }
+                if(renderFunction)
+                    $wnd[renderFunction](plotlyOpts);
+                return plotlyOpts;
             },
             getDisplayColor: function (rgb) {
                 return @lsfusion.gwt.client.base.view.ColorUtils::getDisplayColor(III)(rgb[0], rgb[1], rgb[2]);

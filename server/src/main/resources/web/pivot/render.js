@@ -1,3 +1,3 @@
-function hideLegend(layout) {
-    layout.showlegend = false;
+function hideLegend(opts) {
+    opts.showlegend = false;
 }

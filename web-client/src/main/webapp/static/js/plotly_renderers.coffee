@@ -63,7 +63,7 @@ callWithJQuery ($, Plotly) ->
                 attrsString += attr
         return attrsString
 
-    makePlotlyChart = (reverse, traceOptions = {}, layoutOptions = {}, transpose = false, renderFunction) ->
+    makePlotlyChart = (reverse, traceOptions = {}, layoutOptions = {}, transpose = false) ->
         (pivotData, opts) ->
             defaults =
                 localeStrings: {vs: "vs", by: "by"}
@@ -180,8 +180,6 @@ callWithJQuery ($, Plotly) ->
                     r: chartMargin
                     t: chartMargin
                     b: if transpose or hAxisTitle != "" then chartMarginWithText else chartMargin
-            if renderFunction
-                renderFunction(layout)
             result = $("<div>").appendTo $("body")
             Plotly.newPlot(result[0], data, $.extend(layout, layoutOptions, opts.plotly), opts.plotlyConfig)
             return result.detach()
@@ -251,20 +249,20 @@ callWithJQuery ($, Plotly) ->
         renderArea.remove()
         return result
 
-    $.pivotUtilities.plotly_renderers = (renderFunction) ->
-        "BARCHART": makePlotlyChart(true, { type: 'bar' }, { barmode: 'group' }, false, renderFunction),
-        "STACKED_BARCHART": makePlotlyChart(true, { type: 'bar' }, { barmode: 'relative' }, false, renderFunction),
-        "LINECHART": makePlotlyChart(true, {}, {}, false, renderFunction),
-        "AREACHART": makePlotlyChart(true, { stackgroup: 1 }, {}, false, renderFunction),
+    $.pivotUtilities.plotly_renderers =
+        "BARCHART": makePlotlyChart(true, { type: 'bar' }, { barmode: 'group' }, false),
+        "STACKED_BARCHART": makePlotlyChart(true, { type: 'bar' }, { barmode: 'relative' }, false),
+        "LINECHART": makePlotlyChart(true, {}, {}, false),
+        "AREACHART": makePlotlyChart(true, { stackgroup: 1 }, {}, false),
         "SCATTERCHART": makePlotlyScatterChart(),
         "MULTIPLE_PIECHART": makePlotlyChart(false, {
             type: 'pie',
             scalegroup: 1,
             hoverinfo: 'label+value',
             textinfo: 'none'
-        }, {}, true, renderFunction),
-        "HORIZONTAL_BARCHART": makePlotlyChart(true, {type: 'bar', orientation: 'h'}, { barmode: 'group' }, true, renderFunction),
-        "HORIZONTAL_STACKED_BARCHART": makePlotlyChart(true, { type: 'bar', orientation: 'h'}, { barmode: 'relative' }, true, renderFunction)
+        }, {}, true),
+        "HORIZONTAL_BARCHART": makePlotlyChart(true, {type: 'bar', orientation: 'h'}, { barmode: 'group' }, true),
+        "HORIZONTAL_STACKED_BARCHART": makePlotlyChart(true, { type: 'bar', orientation: 'h'}, { barmode: 'relative' }, true)
 
     $.pivotUtilities.colorThemeChanged = (plot) ->
         computedStyle = null
