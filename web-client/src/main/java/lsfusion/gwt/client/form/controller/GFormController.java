@@ -91,7 +91,6 @@ import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
 import lsfusion.gwt.client.navigator.window.GModalityType;
 import lsfusion.gwt.client.view.MainFrame;
 import lsfusion.gwt.client.view.StyleDefaults;
-import lsfusion.interop.action.ServerResponse;
 import net.customware.gwt.dispatch.shared.Result;
 
 import java.io.IOException;
@@ -106,7 +105,8 @@ import static lsfusion.gwt.client.base.GwtClientUtils.*;
 import static lsfusion.gwt.client.base.GwtSharedUtils.putToDoubleNativeMap;
 import static lsfusion.gwt.client.base.GwtSharedUtils.removeFromDoubleMap;
 import static lsfusion.gwt.client.base.view.ColorUtils.getDisplayColor;
-import static lsfusion.gwt.client.form.property.cell.GEditBindingMap.*;
+import static lsfusion.gwt.client.form.property.cell.GEditBindingMap.CHANGE;
+import static lsfusion.gwt.client.form.property.cell.GEditBindingMap.isChangeEvent;
 
 public class GFormController extends ResizableSimplePanel implements EditManager {
     private FormDispatchAsync dispatcher;
@@ -1829,6 +1829,11 @@ public class GFormController extends ResizableSimplePanel implements EditManager
     @Override
     public boolean isEditing() {
         return editContext != null;
+    }
+
+    @Override
+    public EditContext getEditContext() {
+        return editContext;
     }
 
     private String editAsyncValuesSID;

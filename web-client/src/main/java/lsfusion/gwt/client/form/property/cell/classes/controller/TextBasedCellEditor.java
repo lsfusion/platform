@@ -21,6 +21,7 @@ import lsfusion.gwt.client.form.property.async.GInputList;
 import lsfusion.gwt.client.form.property.cell.classes.controller.suggest.SuggestBox;
 import lsfusion.gwt.client.form.property.cell.classes.controller.suggest.TextBox;
 import lsfusion.gwt.client.form.property.cell.classes.view.TextBasedCellRenderer;
+import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.controller.ReplaceCellEditor;
 import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
@@ -34,6 +35,7 @@ import java.util.List;
 import static com.google.gwt.dom.client.BrowserEvents.BLUR;
 import static com.google.gwt.dom.client.BrowserEvents.KEYDOWN;
 import static lsfusion.gwt.client.base.GwtClientUtils.nvl;
+import static lsfusion.gwt.client.base.GwtSharedUtils.nullEquals;
 
 public abstract class TextBasedCellEditor implements ReplaceCellEditor {
     private static final ClientMessages messages = ClientMessages.Instance.get();
@@ -277,6 +279,7 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
                 private Timer delayTimer;
                 private Request currentRequest; // current pending request
                 private Callback currentCallback;
+                private EditContext editContext;
 
                 private String prevSucceededEmptyQuery;
 
@@ -293,6 +296,7 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
                 private void requestAsyncSuggestions(Request request, Callback callback) {
                     currentRequest = request;
                     currentCallback = callback;
+                    editContext = editManager.getEditContext();
 
                     if(delayTimer == null)
                         updateAsyncValues();
@@ -311,9 +315,18 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
 
                     suggestBox.updateDecoration(false, true, true);
 
-                    if (emptyQuery && !suggestBox.isSuggestionListShowing()) { // to show empty popup immediately
-                        callback.onSuggestionsReady(request, new Response(new ArrayList<>()));
-                        setMinWidth(suggestBox, false);
+                    if (emptyQuery) { // to show empty popup immediately
+                        // add timer to avoid blinking when empty popup is followed by non-empty one
+                        Timer t = new Timer() {
+                            @Override
+                            public void run() {
+                                if (!suggestBox.isSuggestionListShowing() && editManager.isEditing() && nullEquals(editContext, editManager.getEditContext())) {
+                                    callback.onSuggestionsReady(request, new Response(new ArrayList<>()));
+                                    setMinWidth(suggestBox, false);
+                                }
+                            }
+                        };
+                        t.schedule(100);
                     }
 
                     assert delayTimer == null;
@@ -330,13 +343,13 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
                     editManager.getAsyncValues(query, new AsyncCallback<Pair<ArrayList<GAsync>, Boolean>>() {
                         @Override
                         public void onFailure(Throwable caught) {
-                            if (editManager.isEditing()) //  && suggestBox.isSuggestionListShowing()
+                            if (editManager.isEditing() && nullEquals(editContext, editManager.getEditContext())) //  && suggestBox.isSuggestionListShowing()
                                 cancelAndFlushDelayed(execTimer);
                         }
 
                         @Override
                         public void onSuccess(Pair<ArrayList<GAsync>, Boolean> result) {
-                            if (editManager.isEditing()) { //  && suggestBox.isSuggestionListShowing() in desktop this check leads to "losing" result, since suggest box can be not shown yet (!), however maybe in web-client it's needed for some reason (but there can be the risk of losing result)
+                            if (editManager.isEditing() && nullEquals(editContext, editManager.getEditContext())) { //  && suggestBox.isSuggestionListShowing() in desktop this check leads to "losing" result, since suggest box can be not shown yet (!), however maybe in web-client it's needed for some reason (but there can be the risk of losing result)
                                 suggestBox.setAutoSelectEnabled(strict && !emptyQuery);
                                 List<String> rawSuggestions = new ArrayList<>();
                                 List<Suggestion> suggestionList = new ArrayList<>();

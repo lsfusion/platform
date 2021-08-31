@@ -17,4 +17,5 @@ public interface EditManager {
 
     void cancelEditing();
     boolean isEditing();
+    EditContext getEditContext();
 }
