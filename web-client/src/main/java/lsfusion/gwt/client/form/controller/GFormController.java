@@ -1832,8 +1832,8 @@ public class GFormController extends ResizableSimplePanel implements EditManager
     }
 
     @Override
-    public EditContext getEditContext() {
-        return editContext;
+    public CellEditor getCellEditor() {
+        return cellEditor;
     }
 
     private String editAsyncValuesSID;

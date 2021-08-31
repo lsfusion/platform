@@ -34,10 +34,8 @@ import java.util.Collections;
 import java.util.EventObject;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static lsfusion.client.base.view.SwingDefaults.getTableCellMargins;
-import static org.apache.commons.lang3.StringUtils.trimToEmpty;
 
 public abstract class TextFieldPropertyEditor extends JFormattedTextField implements PropertyEditor {
     private static final String CANCEL_EDIT_ACTION = "reset-field-edit";
@@ -137,7 +135,7 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
                 new AsyncCallback<Pair<List<Async>, Boolean>>() {
                     @Override
                     public void done(Pair<List<Async>, Boolean> result) {
-                        if (asyncChange.isEditing()) { // && suggestBox.comboBox.isPopupVisible() it can become visible after callback is completed
+                        if (isThisCellEditor()) { // && suggestBox.comboBox.isPopupVisible() it can become visible after callback is completed
                             suggestBox.updateItems(result.first, strict && !query.isEmpty());
 
                             suggestBox.updateLoading(result.second);
@@ -155,7 +153,7 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
 
                     @Override
                     public void failure(Throwable t) {
-                        if (asyncChange.isEditing()) // suggestBox.comboBox.isPopupVisible()
+                        if (isThisCellEditor()) // suggestBox.comboBox.isPopupVisible()
                             cancelAndFlushDelayed(execTimer);
                     }
                 });
@@ -178,7 +176,8 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
     }
 
     private void cancelAsyncValues() {
-        if(asyncChange.isEditing() && suggestBox.isLoading)
+        assert isThisCellEditor();
+        if (suggestBox.isLoading)
             asyncChange.getForm().getAsyncValues(property, asyncChange.getColumnKey(0, 0), null, actionSID, new AsyncCallback<Pair<List<Async>, Boolean>>() {
                 @Override
                 public void done(Pair<List<Async>, Boolean> result) {
@@ -222,6 +221,11 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
 
     public Object getCellEditorValue() {
         return this.getValue();
+    }
+    
+    protected boolean isThisCellEditor() {
+        JTable currentEditingTable = asyncChange.getForm().getCurrentEditingTable();
+        return asyncChange.isEditing() && currentEditingTable != null && currentEditingTable.getCellEditor() == tableEditor;
     }
 
     @Override
@@ -566,7 +570,7 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
             //show empty async popup
             // add timer to avoid blinking when empty popup is followed by non-empty one
             Timer showSuggestionsTimer = new Timer(100, e -> {
-                if (asyncChange.isEditing() && !suggestBox.comboBox.isPopupVisible()) {
+                if (isThisCellEditor() && !suggestBox.comboBox.isPopupVisible()) {
                     suggestBox.updateItems(Collections.emptyList(), false);
                 }
             });
