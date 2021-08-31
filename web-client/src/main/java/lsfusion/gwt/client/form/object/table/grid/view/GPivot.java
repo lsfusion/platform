@@ -653,7 +653,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
             cellHorizontalPadding:@lsfusion.gwt.client.view.StyleDefaults::CELL_HORIZONTAL_PADDING,
             columnAttributeName:@lsfusion.gwt.client.form.object.table.grid.view.GPivot::COLUMN,
             toImageButtonOptions: instance.@GPivot::getToImageButtonOptions(*)(),
-            configFunction: configFunction,
+            rendererOptions: configFunction ? $wnd[configFunction]() : {},
             onRefresh: function (config) {
                 instance.@GPivot::onRefresh(*)(config, config.rows, config.cols, config.inclusions, config.aggregatorName, config.rendererName);
             },
@@ -689,9 +689,6 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
 
         // Configuration ordering column for group
         config.sorters[@lsfusion.gwt.client.form.object.table.grid.view.GPivot::COLUMN] = $wnd.$.pivotUtilities.sortAs(orderColumns);
-
-        if(config.configFunction)
-            config.rendererOptions = $wnd[config.configFunction]();
 
         // because we create new element, aggregators every time
         $wnd.$(d).pivotUI(array, config, true, language);
