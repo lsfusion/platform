@@ -5,6 +5,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import java.io.*;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -12,14 +13,15 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 public class StoredArrayTest {
     @Rule
     public ExpectedException thrown = ExpectedException.none();
     
     
-    public static StoredArraySerializerImpl serializer = new StoredArraySerializerImpl();
+    public static StoredArraySerializerRegistry serializer = new StoredArraySerializerRegistry();
     static {
         serializer.register(SerializableClass.class, SerializableClass::serialize, SerializableClass::deserialize);
         serializer.register(DerivedSerializableClass.class, DerivedSerializableClass::serialize, DerivedSerializableClass::deserialize);
@@ -237,15 +239,38 @@ public class StoredArrayTest {
         checkEquality(array, stored);
     }
     
+    @Test
+    public void stringArray() {
+        String[] strings = initStringArray();
+        StoredArray<String> stored = new StoredArray<>(strings, serializer);
+        checkEquality(strings, stored);
+        strings[0] = "First";
+        strings[7] = "longlonglonglonglong";
+        stored.set(0, strings[0]);
+        stored.set(7, strings[7]);
+        checkEquality(strings, stored);
+    }
     
-    private void checkEquality(SerializableClass[] array, StoredArray<SerializableClass> stored) {
+    @Test
+    public void mixedArray() {
+        Object[] objects = initMixedArray();
+        StoredArray<Object> stored = new StoredArray<>(objects, serializer);
+        checkEquality(objects, stored);
+        objects[0] = 5.0;
+        objects[7] = 5;
+        stored.set(0, 5.0);
+        stored.set(7, 5);
+        checkEquality(objects, stored);
+    }
+
+    private void checkEquality(Object[] array, StoredArray<?> stored) {
         assertEquals(array.length, stored.size());
         for (int i = 0; i < stored.size(); ++i) {
             assertEquals(array[i], stored.get(i));
         }
     }
     
-    private SerializableClass[] initArray() {
+    static SerializableClass[] initArray() {
         List<SerializableClass> result = new ArrayList<>();
         NameClass name = new NameClass("Square");
         for (int i = 0; i < 1; ++i) {
@@ -259,7 +284,7 @@ public class StoredArrayTest {
         return result.toArray(new SerializableClass[0]);
     }
 
-    private SerializableClass[] initArrayWithNulls() {
+    static SerializableClass[] initArrayWithNulls() {
         SerializableClass[] array = new SerializableClass[10];
         array[1] = new SerializableClass("Square", 10, true);
         array[3] = new SerializableClass("Square", 8, false);
@@ -269,7 +294,23 @@ public class StoredArrayTest {
         return array;
     }
 
-    private static class SerializableClass {
+    static String[] initStringArray() {
+        String[] strings = {"Hello", " ", "World", "!", "4", "5", "6", "7", "8", "9"};
+        return strings;
+    }
+    
+    static Object[] initMixedArray() {
+        Object[] array = new Object[10];
+        array[1] = new SerializableClass("Square", 10, true);
+        array[2] = "text";
+        array[3] = new BigInteger("3454654657567567567567567");
+        array[5] = new SerializableClass("Square", 8, false);
+        array[7] = "text2";
+        array[8] = new SerializableClass("Circle", 5, false);
+        return array;
+    }
+    
+    static class SerializableClass {
         private final NameClass name;
         public int cnt;
         public boolean isLarge;
@@ -332,11 +373,11 @@ public class StoredArrayTest {
 
         @Override
         public int hashCode() {
-            return Objects.hash(name, cnt, isLarge);
+            return Objects.hash(name.getName(), cnt, isLarge);
         }
     }
 
-    private static class DerivedSerializableClass extends SerializableClass {
+    static class DerivedSerializableClass extends SerializableClass {
         private final String additional;
 
         public DerivedSerializableClass(String name, int cnt, boolean isLarge, String additional) {

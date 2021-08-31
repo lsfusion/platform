@@ -105,10 +105,19 @@ public class ArIndexedMap<K, V> extends AMRevMap<K, V> {
 
         if(size < SetFact.useArrayMax)
             return new ArMap<>(size, keys, values);
-
+//        if(needToConvertToStored()) {
+//            return new StoredArIndexedMap<>(serializer, (K[])keys, (V[])values);
+//        }
         return this;
     }
 
+//    private static StoredArraySerializer serializer;  
+//    
+//    private boolean needToConvertToStored() {
+//        final int LIMIT = 10000;
+//        return size > LIMIT;
+//    }
+//    
     protected MExclMap<K, V> copy() {
         return new ArIndexedMap<>(this, true);
     }
