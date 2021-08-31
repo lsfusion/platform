@@ -594,7 +594,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
     @Cached
     @Converter(from = PivotOptions.class)
     public GPivotOptions convertPivotOptions(PivotOptions pivotOptions) {
-        return new GPivotOptions(pivotOptions.getType(), convertGroupType(pivotOptions.getAggregation()), pivotOptions.getShowSettings(), pivotOptions.getRenderFunction());
+        return new GPivotOptions(pivotOptions.getType(), convertGroupType(pivotOptions.getAggregation()), pivotOptions.getShowSettings(), pivotOptions.getConfigFunction());
     }
 
     @Cached

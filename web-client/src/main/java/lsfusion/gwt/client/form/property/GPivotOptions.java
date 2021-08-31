@@ -8,16 +8,16 @@ public class GPivotOptions implements Serializable {
     String type;
     GPropertyGroupType aggregation;
     Boolean showSettings;
-    String renderFunction;
+    String configFunction;
 
     public GPivotOptions() {
     }
 
-    public GPivotOptions(String type, GPropertyGroupType aggregation, Boolean showSettings, String renderFunction) {
+    public GPivotOptions(String type, GPropertyGroupType aggregation, Boolean showSettings, String configFunction) {
         this.type = type;
         this.aggregation = aggregation;
         this.showSettings = showSettings;
-        this.renderFunction = renderFunction;
+        this.configFunction = configFunction;
     }
 
     public String getLocalizedType() {
@@ -32,7 +32,7 @@ public class GPivotOptions implements Serializable {
         return showSettings == null || showSettings;
     }
 
-    public String getRenderFunction() {
-        return renderFunction;
+    public String getConfigFunction() {
+        return configFunction;
     }
 }
