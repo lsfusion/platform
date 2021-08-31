@@ -268,6 +268,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         GPivotOptions pivotOptions = gridController.getPivotOptions();
         String rendererName = pivotOptions != null ? pivotOptions.getLocalizedType() : null;
         String aggregationName = pivotOptions != null ? getAggregationName(pivotOptions.getAggregation()) : null;
+        String configFunction = pivotOptions != null ? pivotOptions.getConfigFunction() : null;
 
         Map<GPropertyDraw, String> columnCaptionMap = new HashMap<>();
         columnMap.foreachEntry((key, value) -> columnCaptionMap.putIfAbsent(value.property, key));
@@ -316,7 +317,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
             }
         }
 
-        config = getDefaultConfig(columns, splitCols, rows, splitRows, inclusions, sortCols, rendererName, aggregationName, settings);
+        config = getDefaultConfig(columns, splitCols, rows, splitRows, inclusions, sortCols, rendererName, aggregationName, settings, configFunction);
     }
 
     private Object[] getPivotCaptions( Map<GPropertyDraw, String> columnCaptionMap, List<List<GPropertyDraw>> propertiesList, String defaultElement) {
@@ -615,7 +616,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         return PivotRendererType.valueOf(name).localize();
     }
 
-    private native WrapperObject getDefaultConfig(Object[] columns, Integer[] splitCols, Object[] rows, Integer[] splitRows, JavaScriptObject inclusions, JsArrayMixed sortCols, String rendererName, String aggregatorName, boolean showUI)/*-{
+    private native WrapperObject getDefaultConfig(Object[] columns, Integer[] splitCols, Object[] rows, Integer[] splitRows, JavaScriptObject inclusions, JsArrayMixed sortCols, String rendererName, String aggregatorName, boolean showUI, String configFunction)/*-{
         var instance = this;
         var localizeRendererNames = function(renderers) {
             var localizedRenderers = {};
@@ -652,6 +653,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
             cellHorizontalPadding:@lsfusion.gwt.client.view.StyleDefaults::CELL_HORIZONTAL_PADDING,
             columnAttributeName:@lsfusion.gwt.client.form.object.table.grid.view.GPivot::COLUMN,
             toImageButtonOptions: instance.@GPivot::getToImageButtonOptions(*)(),
+            rendererOptions: configFunction ? $wnd[configFunction]() : {},
             onRefresh: function (config) {
                 instance.@GPivot::onRefresh(*)(config, config.rows, config.cols, config.inclusions, config.aggregatorName, config.rendererName);
             },
@@ -672,7 +674,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
                 }
 
                 var pivotElement = instance.@GPivot::getPivotRendererElement()();
-                return { width : pivotElement.offsetWidth, height : pivotElement.offsetHeight }
+                return { width : pivotElement.offsetWidth, height : pivotElement.offsetHeight };
             },
             getDisplayColor: function (rgb) {
                 return @lsfusion.gwt.client.base.view.ColorUtils::getDisplayColor(III)(rgb[0], rgb[1], rgb[2]);
