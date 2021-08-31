@@ -1,6 +1,8 @@
 let mapApiKeyGoogle = lsfParams.mapApiKey_Google;
 
-if (mapApiKeyGoogle != null)
+//load Google-api if it was not loaded earlier
+//https://issuetracker.google.com/issues/35820648
+if (mapApiKeyGoogle != null && (typeof google !== 'object' || typeof google.maps !== 'object' || typeof google.maps.places !== 'object'))
     $.getScript('https://maps.googleapis.com/maps/api/js?key=' + mapApiKeyGoogle + '&libraries=places');
 else
     console.error("google key does not exist");
