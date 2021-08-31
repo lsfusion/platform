@@ -268,6 +268,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         GPivotOptions pivotOptions = gridController.getPivotOptions();
         String rendererName = pivotOptions != null ? pivotOptions.getLocalizedType() : null;
         String aggregationName = pivotOptions != null ? getAggregationName(pivotOptions.getAggregation()) : null;
+        String renderFunction = pivotOptions != null ? pivotOptions.getRenderFunction() : null;
 
         Map<GPropertyDraw, String> columnCaptionMap = new HashMap<>();
         columnMap.foreachEntry((key, value) -> columnCaptionMap.putIfAbsent(value.property, key));
@@ -316,7 +317,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
             }
         }
 
-        config = getDefaultConfig(columns, splitCols, rows, splitRows, inclusions, sortCols, rendererName, aggregationName, settings);
+        config = getDefaultConfig(columns, splitCols, rows, splitRows, inclusions, sortCols, rendererName, aggregationName, settings, renderFunction);
     }
 
     private Object[] getPivotCaptions( Map<GPropertyDraw, String> columnCaptionMap, List<List<GPropertyDraw>> propertiesList, String defaultElement) {
@@ -615,7 +616,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         return PivotRendererType.valueOf(name).localize();
     }
 
-    private native WrapperObject getDefaultConfig(Object[] columns, Integer[] splitCols, Object[] rows, Integer[] splitRows, JavaScriptObject inclusions, JsArrayMixed sortCols, String rendererName, String aggregatorName, boolean showUI)/*-{
+    private native WrapperObject getDefaultConfig(Object[] columns, Integer[] splitCols, Object[] rows, Integer[] splitRows, JavaScriptObject inclusions, JsArrayMixed sortCols, String rendererName, String aggregatorName, boolean showUI, String renderFunction)/*-{
         var instance = this;
         var localizeRendererNames = function(renderers) {
             var localizedRenderers = {};
@@ -628,7 +629,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         }
         var renderers = $wnd.$.extend(
             localizeRendererNames($wnd.$.pivotUtilities.subtotal_renderers),
-            localizeRendererNames($wnd.$.pivotUtilities.plotly_renderers)
+            localizeRendererNames($wnd.$.pivotUtilities.plotly_renderers($wnd[renderFunction]))
 //            $wnd.$.pivotUtilities.c3_renderers,
 //            $wnd.$.pivotUtilities.renderers,
 //            localizeRendererNames($wnd.$.pivotUtilities.d3_renderers)

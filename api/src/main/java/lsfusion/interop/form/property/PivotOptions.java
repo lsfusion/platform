@@ -6,6 +6,7 @@ public class PivotOptions implements Serializable {
     String type;
     PropertyGroupType aggregation;
     Boolean showSettings;
+    String renderFunction;
 
     public PivotOptions() {
     }
@@ -34,6 +35,14 @@ public class PivotOptions implements Serializable {
         this.showSettings = showSettings;
     }
 
+    public String getRenderFunction() {
+        return renderFunction;
+    }
+
+    public void setRenderFunction(String renderFunction) {
+        this.renderFunction = renderFunction;
+    }
+
     public void merge(PivotOptions pivotOptions) {
         if(pivotOptions.type != null)
             this.type = pivotOptions.type;
@@ -41,5 +50,7 @@ public class PivotOptions implements Serializable {
             this.aggregation = pivotOptions.aggregation;
         if(pivotOptions.showSettings != null)
             this.showSettings = pivotOptions.showSettings;
+        if(pivotOptions.renderFunction != null)
+            this.renderFunction = pivotOptions.renderFunction;
     }
 }

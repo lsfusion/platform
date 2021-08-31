@@ -1343,6 +1343,7 @@ pivotOptions returns [PivotOptions options = new PivotOptions()]
     (   t=stringLiteral { $options.setType($t.val); }
     |   a=propertyGroupType { $options.setAggregation($a.type); }
     |   ('SETTINGS'  { $options.setShowSettings(true); } | 'NOSETTINGS'  { $options.setShowSettings(false); })
+    |   ('RENDER'  sLiteral=stringLiteral { $options.setRenderFunction($sLiteral.val); })
     )*
     ;
 

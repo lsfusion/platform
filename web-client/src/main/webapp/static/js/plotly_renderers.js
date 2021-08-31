@@ -81,7 +81,7 @@
       }
       return attrsString;
     };
-    makePlotlyChart = function(reverse, traceOptions, layoutOptions, transpose) {
+    makePlotlyChart = function(reverse, traceOptions, layoutOptions, transpose, renderFunction) {
       if (traceOptions == null) {
         traceOptions = {};
       }
@@ -237,6 +237,9 @@
             b: transpose || hAxisTitle !== "" ? chartMarginWithText : chartMargin
           };
         }
+        if (renderFunction) {
+          renderFunction(layout);
+        }
         result = $("<div>").appendTo($("body"));
         Plotly.newPlot(result[0], data, $.extend(layout, layoutOptions, opts.plotly), opts.plotlyConfig);
         return result.detach();
@@ -332,40 +335,42 @@
         return result;
       };
     };
-    $.pivotUtilities.plotly_renderers = {
-      "BARCHART": makePlotlyChart(true, {
-        type: 'bar'
-      }, {
-        barmode: 'group'
-      }, false),
-      "STACKED_BARCHART": makePlotlyChart(true, {
-        type: 'bar'
-      }, {
-        barmode: 'relative'
-      }, false),
-      "LINECHART": makePlotlyChart(true, {}, {}, false),
-      "AREACHART": makePlotlyChart(true, {
-        stackgroup: 1
-      }, {}, false),
-      "SCATTERCHART": makePlotlyScatterChart(),
-      "MULTIPLE_PIECHART": makePlotlyChart(false, {
-        type: 'pie',
-        scalegroup: 1,
-        hoverinfo: 'label+value',
-        textinfo: 'none'
-      }, {}, true),
-      "HORIZONTAL_BARCHART": makePlotlyChart(true, {
-        type: 'bar',
-        orientation: 'h'
-      }, {
-        barmode: 'group'
-      }, true),
-      "HORIZONTAL_STACKED_BARCHART": makePlotlyChart(true, {
-        type: 'bar',
-        orientation: 'h'
-      }, {
-        barmode: 'relative'
-      }, true)
+    $.pivotUtilities.plotly_renderers = function(renderFunction) {
+      return {
+        "BARCHART": makePlotlyChart(true, {
+          type: 'bar'
+        }, {
+          barmode: 'group'
+        }, false, renderFunction),
+        "STACKED_BARCHART": makePlotlyChart(true, {
+          type: 'bar'
+        }, {
+          barmode: 'relative'
+        }, false, renderFunction),
+        "LINECHART": makePlotlyChart(true, {}, {}, false, renderFunction),
+        "AREACHART": makePlotlyChart(true, {
+          stackgroup: 1
+        }, {}, false, renderFunction),
+        "SCATTERCHART": makePlotlyScatterChart(),
+        "MULTIPLE_PIECHART": makePlotlyChart(false, {
+          type: 'pie',
+          scalegroup: 1,
+          hoverinfo: 'label+value',
+          textinfo: 'none'
+        }, {}, true, renderFunction),
+        "HORIZONTAL_BARCHART": makePlotlyChart(true, {
+          type: 'bar',
+          orientation: 'h'
+        }, {
+          barmode: 'group'
+        }, true, renderFunction),
+        "HORIZONTAL_STACKED_BARCHART": makePlotlyChart(true, {
+          type: 'bar',
+          orientation: 'h'
+        }, {
+          barmode: 'relative'
+        }, true, renderFunction)
+      };
     };
     return $.pivotUtilities.colorThemeChanged = function(plot) {
       var relayout;
