@@ -33,9 +33,12 @@ address '{geo.address.poi}' (POI poi) = OVERRIDE additionalAddress(poi), mainAdd
 latitude '{geo.latitude.poi}' = ABSTRACT NUMERIC[11,6] (POI);
 longitude '{geo.longitude.poi}' = ABSTRACT NUMERIC[11,6] (POI);
 
-// Получение координат
+//Get coordinates
 readLatitude '{geo.latitude.poi}' = DATA LOCAL NUMERIC[11,6] ();
 readLongitude '{geo.longitude.poi}' = DATA LOCAL NUMERIC[11,6] ();
+
+//Get address
+readAddress '{geo.address.poi}' = DATA LOCAL STRING();
 
 isDefault '{geo.api.key.default}' (MapProvider m) = m == calculateMapProvider();
 apiKey '{geo.api.key}' = DATA STRING(MapProvider); 
@@ -48,6 +51,9 @@ lsfParams(STRING s) += googleAutocompleteCountry() IF s = 'googleMapAutocomplete
 getCoordinatesAddress  INTERNAL  'lsfusion.server.logics.classes.data.utils.geo.GetCoordinatesAddressAction' (STRING, MapProvider);
 getCoordinates (STRING address)  { getCoordinatesAddress(address, calculateMapProvider()); }
 recalculateDistance  INTERNAL  'lsfusion.server.logics.classes.data.utils.geo.RecalculateDistancePOIAction' (POI);
+
+getAddressCoordinates  INTERNAL  'lsfusion.server.logics.classes.data.utils.geo.GetAddressCoordinatesAction' (NUMERIC[11,6], NUMERIC[11,6], MapProvider);
+getAddress(NUMERIC[11,6] latitude, NUMERIC[11,6] longitude) { getAddressCoordinates(latitude, longitude, calculateMapProvider()); }
 
 calculateCoordinates '{geo.calculate.coordinates}'(POI POI) { 
 
