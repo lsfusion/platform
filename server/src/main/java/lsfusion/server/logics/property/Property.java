@@ -25,6 +25,7 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.PullExpr;
 import lsfusion.server.data.expr.classes.IsClassType;
 import lsfusion.server.data.expr.key.KeyExpr;
+import lsfusion.server.data.expr.key.NullableKeyExpr;
 import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.value.StaticParamNullableExpr;
@@ -2227,14 +2228,14 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return getInterfaceStat(MapFact.EMPTYREV(), alotHeur);
     }
     
-    private Stat getInterfaceStat(ImRevMap<T, StaticParamNullableExpr> fixedExprs) {
+    private Stat getInterfaceStat(ImRevMap<T, ? extends Expr> fixedExprs) {
         return getInterfaceStat(fixedExprs, false);
     }
 
     @IdentityStartLazy
     @StackMessage("{message.core.property.get.interface.class.stats}")
     @ThisMessage
-    private Stat getInterfaceStat(ImRevMap<T, StaticParamNullableExpr> fixedExprs, boolean alotHeur) {
+    private Stat getInterfaceStat(ImRevMap<T, ? extends Expr> fixedExprs, boolean alotHeur) {
         ImRevMap<T, KeyExpr> innerKeys = KeyExpr.getMapKeys(interfaces.removeIncl(fixedExprs.keys()));
         ImMap<T, Expr> innerExprs = MapFact.addExcl(innerKeys, fixedExprs); // we need some virtual values
 
@@ -2252,7 +2253,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     @IdentityStartLazy
     @StackMessage("{message.core.property.get.interface.class.stats}")
     @ThisMessage
-    public Stat getValueStat(ImRevMap<T, StaticParamNullableExpr> fixedExprs) {
+    public Stat getValueStat(ImRevMap<T, ? extends Expr> fixedExprs) {
         ImRevMap<T, KeyExpr> innerKeys = KeyExpr.getMapKeys(interfaces.removeIncl(fixedExprs.keys()));
         ImMap<T, Expr> innerExprs = MapFact.addExcl(innerKeys, fixedExprs); // we need some virtual values
 
@@ -2264,6 +2265,18 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
         mapKeys = mapKeys.filterInclValuesRev(BaseUtils.immutableCast(where.getOuterKeys())); // ignoring "free" keys just like in getInterfaceStat (needed because where for example can be FALSE)
         return getStatRows(mapKeys, where);
+    }
+
+    protected ImRevMap<T, NullableKeyExpr> getMapNotNullKeys() {
+        return interfaces.mapRevValues((i, value) -> new NullableKeyExpr(i));
+    }
+
+    @IdentityLazy
+    public Stat getDistinctStat(ImSet<T> interfaces) {
+//        ImMap<T, ValueClass> interfaceClasses = getInterfaceClasses(ClassType.forPolicy).filter(interfaces);
+//        ImRevMap<T, StaticParamNullableExpr> paramExprs = interfaceClasses.mapRevValues(StaticParamNullableExpr::new);
+        ImRevMap<T, NullableKeyExpr> paramExprs = getMapNotNullKeys().filterRev(interfaces);
+        return getInterfaceStat(paramExprs).div(getValueStat(paramExprs));
     }
 
     // it's heuristics anyway, so why not to try to guess uniqueness by name

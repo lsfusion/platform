@@ -239,8 +239,4 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Pro
     public boolean calcEmpty(CalcInfoType calcType) {
         return calculateQueryExpr(calcType).second.getWhere().isFalse();
     }
-
-    private ImRevMap<T, NullableKeyExpr> getMapNotNullKeys() {
-        return interfaces.mapRevValues((i, value) -> new NullableKeyExpr(i));
-    }
 }

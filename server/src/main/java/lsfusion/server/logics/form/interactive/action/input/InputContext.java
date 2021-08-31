@@ -8,13 +8,15 @@ public class InputContext<P extends PropertyInterface> {
 
     public final InputValueList<P> list;
     public final boolean newSession;
+    public final boolean strict;
     public final DataSession session;
     public final Modifier modifier;
 
-    public InputContext(InputValueList<P> list, boolean newSession, DataSession session, Modifier modifier) {
+    public InputContext(InputValueList<P> list, boolean newSession, DataSession session, Modifier modifier, boolean strict) {
         this.list = list;
         this.newSession = newSession;
         this.session = session;
         this.modifier = modifier;
+        this.strict = strict;
     }
 }

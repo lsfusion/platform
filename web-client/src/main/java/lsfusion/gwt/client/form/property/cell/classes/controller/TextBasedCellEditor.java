@@ -9,6 +9,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.*;
 import com.google.gwt.user.client.ui.impl.TextBoxImpl;
 import lsfusion.gwt.client.ClientMessages;
+import lsfusion.gwt.client.base.GAsync;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.view.CopyPasteUtils;
@@ -326,7 +327,7 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
                     execTimer.schedule(1000);
                     delayTimer = execTimer;
 
-                    editManager.getAsyncValues(query, new AsyncCallback<Pair<ArrayList<String>, Boolean>>() {
+                    editManager.getAsyncValues(query, new AsyncCallback<Pair<ArrayList<GAsync>, Boolean>>() {
                         @Override
                         public void onFailure(Throwable caught) {
                             if (editManager.isEditing()) //  && suggestBox.isSuggestionListShowing()
@@ -334,30 +335,26 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
                         }
 
                         @Override
-                        public void onSuccess(Pair<ArrayList<String>, Boolean> result) {
+                        public void onSuccess(Pair<ArrayList<GAsync>, Boolean> result) {
                             if (editManager.isEditing()) { //  && suggestBox.isSuggestionListShowing() in desktop this check leads to "losing" result, since suggest box can be not shown yet (!), however maybe in web-client it's needed for some reason (but there can be the risk of losing result)
                                 suggestBox.setAutoSelectEnabled(strict && !emptyQuery);
-                                suggestBox.setLatestSuggestions(result.first);
+                                List<String> rawSuggestions = new ArrayList<>();
                                 List<Suggestion> suggestionList = new ArrayList<>();
-                                for (String suggestion : result.first) {
+                                for (GAsync suggestion : result.first) {
+                                    rawSuggestions.add(suggestion.rawString);
                                     suggestionList.add(new Suggestion() {
                                         @Override
                                         public String getDisplayString() {
-                                            int start = suggestion.toLowerCase().indexOf(query.toLowerCase());
-                                            if (start >= 0) {
-                                                int end = start + query.length();
-                                                return suggestion.substring(0, start) + "<strong>" + suggestion.substring(start, end) + "</strong>" + suggestion.substring(end);
-                                            } else {
-                                                return suggestion;
-                                            }
+                                            return suggestion.displayString; // .replace("<b>", "<strong>").replace("</b>", "</strong>");
                                         }
 
                                         @Override
                                         public String getReplacementString() {
-                                            return suggestion;
+                                            return suggestion.rawString;
                                         }
                                     });
                                 }
+                                suggestBox.setLatestSuggestions(rawSuggestions);
                                 callback.onSuggestionsReady(request, new Response(suggestionList));
                                 setMinWidth(suggestBox, true);
 
@@ -411,13 +408,13 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
                 public void hideSuggestions() { // in theory should be in SuggestOracle, but now it's readonly
                     // canceling query
                     if(editManager.isEditing() && isLoading())
-                        editManager.getAsyncValues(null, new AsyncCallback<Pair<ArrayList<String>, Boolean>>() {
+                        editManager.getAsyncValues(null, new AsyncCallback<Pair<ArrayList<GAsync>, Boolean>>() {
                             @Override
                             public void onFailure(Throwable caught) {
                             }
 
                             @Override
-                            public void onSuccess(Pair<ArrayList<String>, Boolean> result) {
+                            public void onSuccess(Pair<ArrayList<GAsync>, Boolean> result) {
                                 // assert CANCELED returned
                             }
                         });

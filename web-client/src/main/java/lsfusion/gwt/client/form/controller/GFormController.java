@@ -21,7 +21,6 @@ import lsfusion.gwt.client.GFormChangesDTO;
 import lsfusion.gwt.client.action.GAction;
 import lsfusion.gwt.client.action.GLogMessageAction;
 import lsfusion.gwt.client.base.*;
-import lsfusion.gwt.client.base.busy.LoadingManager;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.base.result.ListResult;
@@ -975,12 +974,12 @@ public class GFormController extends ResizableSimplePanel implements EditManager
             public void onSuccess(ServerResponseResult response, Runnable onFinished) {
                 actionDispatcher.editContext = editContext;
                 actionDispatcher.editEvent = editEvent;
-                try {
-                    super.onSuccess(response, onFinished);
-                } finally {
+                super.onSuccess(response, () -> {
                     actionDispatcher.editContext = null;
                     actionDispatcher.editEvent = null;
-                }
+
+                    onFinished.run();
+                });
             }
         };
         return serverResponseCallback;
@@ -1838,8 +1837,8 @@ public class GFormController extends ResizableSimplePanel implements EditManager
     private int editAsyncIndex;
     private int editLastReceivedAsyncIndex;
     // we don't want to proceed results if "later" request results where proceeded
-    private AsyncCallback<Pair<ArrayList<String>, Boolean>> checkLast(int index, AsyncCallback<Pair<ArrayList<String>, Boolean>> callback) {
-        return new AsyncCallback<Pair<ArrayList<String>, Boolean>>() {
+    private AsyncCallback<Pair<ArrayList<GAsync>, Boolean>> checkLast(int index, AsyncCallback<Pair<ArrayList<GAsync>, Boolean>> callback) {
+        return new AsyncCallback<Pair<ArrayList<GAsync>, Boolean>>() {
             @Override
             public void onFailure(Throwable caught) {
                 if(index >= editLastReceivedAsyncIndex) {
@@ -1849,7 +1848,7 @@ public class GFormController extends ResizableSimplePanel implements EditManager
             }
 
             @Override
-            public void onSuccess(Pair<ArrayList<String>, Boolean> result) {
+            public void onSuccess(Pair<ArrayList<GAsync>, Boolean> result) {
                 if(index >= editLastReceivedAsyncIndex) {
                     editLastReceivedAsyncIndex = index;
                     if(!result.second && index < editAsyncIndex - 1)
@@ -1861,7 +1860,7 @@ public class GFormController extends ResizableSimplePanel implements EditManager
     }
 
     // synchronous call (with request indices, etc.)
-    private void getPessimisticValues(int propertyID, GGroupObjectValue columnKey, String actionSID, String value, int index, AsyncCallback<Pair<ArrayList<String>, Boolean>> callback) {
+    private void getPessimisticValues(int propertyID, GGroupObjectValue columnKey, String actionSID, String value, int index, AsyncCallback<Pair<ArrayList<GAsync>, Boolean>> callback) {
         asyncDispatch(new GetAsyncValues(propertyID, columnKey, actionSID, value, index), new CustomCallback<ListResult>() {
             @Override
             public void onFailure(Throwable caught) {
@@ -1875,11 +1874,11 @@ public class GFormController extends ResizableSimplePanel implements EditManager
         });
     }
 
-    public void getAsyncValues(String value, AsyncCallback<Pair<ArrayList<String>, Boolean>> callback) {
+    public void getAsyncValues(String value, AsyncCallback<Pair<ArrayList<GAsync>, Boolean>> callback) {
         if(editContext != null) { // just in case
             GPropertyDraw property = editContext.getProperty();
             int editIndex = editAsyncIndex++;
-            AsyncCallback<Pair<ArrayList<String>, Boolean>> fCallback = checkLast(editIndex, callback);
+            AsyncCallback<Pair<ArrayList<GAsync>, Boolean>> fCallback = checkLast(editIndex, callback);
 
             GGroupObjectValue currentKey = getFullCurrentKey(property, editContext.getColumnKey());
             final String actionSID = editAsyncValuesSID;
@@ -1898,15 +1897,15 @@ public class GFormController extends ResizableSimplePanel implements EditManager
                             getPessimisticValues(property.ID, currentKey, actionSID, value, editIndex, fCallback);
                         } else {
                             boolean moreResults = false;
-                            ArrayList<String> values = result.value;
+                            ArrayList<GAsync> values = result.value;
                             if(values.size() > 0) {
-                                String lastResult = values.get(values.size() - 1);
-                                if(lastResult.equals(ServerResponse.RECHECK)) {
+                                GAsync lastResult = values.get(values.size() - 1);
+                                if(lastResult.equals(GAsync.RECHECK)) {
                                     values = removeLast(values);
 
                                     moreResults = true;
                                     getPessimisticValues(property.ID, currentKey, actionSID, value, editIndex, fCallback);
-                                } else if(values.size() == 1 && lastResult.equals(ServerResponse.CANCELED)) // ignoring CANCELED results
+                                } else if(values.size() == 1 && lastResult.equals(GAsync.CANCELED)) // ignoring CANCELED results
                                     return;
                             }
                             fCallback.onSuccess(new Pair<>(values, moreResults));

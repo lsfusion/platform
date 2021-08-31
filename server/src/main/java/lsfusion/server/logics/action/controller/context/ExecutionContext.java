@@ -650,7 +650,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
 
         InputContext<T> inputContext = null;
         if(list != null)
-            inputContext = new InputContext<>(list.map(getKeys()), list.newSession, getSession(), getModifier());
+            inputContext = new InputContext<>(list.map(getKeys()), list.newSession, getSession(), getModifier(), inputList.strict);
         return ThreadLocalContext.inputUserData(dataClass, oldValue, hasOldValue, inputContext, inputList);
     }
 

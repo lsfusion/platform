@@ -298,7 +298,7 @@ public abstract class DefaultSQLSyntax implements SQLSyntax {
     }
 
     @Override
-    public String getPrefixSearch() {
+    public String getPrefixSearchQuery() {
         return "prefixSearch";
     }
 

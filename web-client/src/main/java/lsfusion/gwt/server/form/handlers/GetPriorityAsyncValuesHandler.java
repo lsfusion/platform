@@ -30,9 +30,6 @@ public class GetPriorityAsyncValuesHandler extends FormActionHandler<GetPriority
     @Override
     public ListResult executeEx(GetPriorityAsyncValues action, ExecutionContext context) throws RemoteException, AppServerNotAvailableDispatchException {
         FormSessionObject form = getFormSessionObject(action.formSessionID);
-        String[] asyncValues = form.remoteForm.getAsyncValues(-1, 0, action.propertyID, (byte[]) gwtConverter.convertOrCast(action.columnKey), action.actionSID, action.value, action.index);
-        if(asyncValues == null)
-            return new ListResult(null);
-        return new ListResult(new ArrayList(Arrays.asList(asyncValues)));
+        return GetAsyncValuesHandler.convertAsyncValues(form.remoteForm.getAsyncValues(-1, 0, action.propertyID, (byte[]) gwtConverter.convertOrCast(action.columnKey), action.actionSID, action.value, action.index));
     }
 }

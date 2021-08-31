@@ -1131,14 +1131,16 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 if(innerWhere==null)
                     return empty.result;
 
+                int top = innerJoin.getTop();
+
                 MStaticExecuteEnvironment mSubEnv = StaticExecuteEnvironmentImpl.mEnv();
                 Result<ImMap<String, String>> keySelect = new Result<>();
                 Result<ImMap<String, String>> propertySelect = new Result<>();
                 Result<ImCol<String>> whereSelect = new Result<>();
                 Result<ImMap<String, SQLQuery>> subQueries = new Result<>();
-                CompiledQuery<String, String> compiledQuery = new Query<>(group, queries.mapValues(value -> value.expr), innerWhere).compile(new CompileOptions<>(syntax, subcontext.pushSubQuery(), debugInfoWriter != null));
-                String fromSelect = compiledQuery.fillSelect(keySelect, propertySelect, whereSelect, subQueries, params, mSubEnv, pushPrefix(debugInfoWriter, "SUBQUERY", innerJoin));
-                return getSQLQuery("(" + SQLSession.getSelect(syntax, fromSelect, keySelect.result, propertySelect.result, whereSelect.result) + ")", compiledQuery.sql.baseCost, subQueries.result, mSubEnv, innerWhere, false);
+                CompiledQuery<String, String> compiledQuery = new Query<>(group, queries.mapValues(value -> value.expr), innerWhere).compile(new CompileOptions<>(syntax, LimitOptions.get(top), subcontext.pushSubQuery(), debugInfoWriter != null));
+                String fromSelect = compiledQuery.fillSelect(keySelect, propertySelect, whereSelect, subQueries, params, top, mSubEnv, pushPrefix(debugInfoWriter, "SUBQUERY", innerJoin));
+                return getSQLQuery("(" + SQLSession.getSelect(syntax, fromSelect, keySelect.result, propertySelect.result, whereSelect.result, top) + ")", compiledQuery.sql.baseCost, subQueries.result, mSubEnv, innerWhere, false);
             }
 
             protected Where getInnerWhere() {
@@ -1925,7 +1927,13 @@ public class CompiledQuery<K,V> extends ImmutableObject {
 
     // для подзапросов
     public String fillSelect(Result<ImMap<K, String>> fillKeySelect, Result<ImMap<V, String>> fillPropertySelect, Result<ImCol<String>> fillWhereSelect, Result<ImMap<String, SQLQuery>> fillSubQueries, ImRevMap<ParseValue, String> mapValues, MStaticExecuteEnvironment fillEnv, DebugInfoWriter debugInfoWriter) {
-        return fillSelect(getTranslate(mapValues), fillKeySelect, fillPropertySelect, fillWhereSelect, fillSubQueries, fillEnv, debugInfoWriter);
+        return fillSelect(fillKeySelect, fillPropertySelect, fillWhereSelect, fillSubQueries, mapValues, 0, fillEnv, debugInfoWriter);
+    }
+    public String fillSelect(Result<ImMap<K, String>> fillKeySelect, Result<ImMap<V, String>> fillPropertySelect, Result<ImCol<String>> fillWhereSelect, Result<ImMap<String, SQLQuery>> fillSubQueries, ImRevMap<ParseValue, String> mapValues, int top, MStaticExecuteEnvironment fillEnv, DebugInfoWriter debugInfoWriter) {
+        ImRevMap<String, String> translate = getTranslate(mapValues);
+        if(top > 0)
+            translate = translate.addRevExcl(SQLSession.limitParam, String.valueOf(top));
+        return fillSelect(translate, fillKeySelect, fillPropertySelect, fillWhereSelect, fillSubQueries, fillEnv, debugInfoWriter);
     }
     public String getSelect(Result<ImMap<V, String>> fillPropertyNames, Result<ImMap<String, SQLQuery>> fillSubQueries, ImMap<ParseValue, String> mapValues, MStaticExecuteEnvironment fillEnv, int limit, DebugInfoWriter debugInfoWriter) {
         ImMap<String, String> translate = getTranslate(mapValues);

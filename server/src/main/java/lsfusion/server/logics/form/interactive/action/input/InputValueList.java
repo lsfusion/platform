@@ -1,6 +1,7 @@
 package lsfusion.server.logics.form.interactive.action.input;
 
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -19,5 +20,9 @@ public class InputValueList<P extends PropertyInterface> {
 
     public P singleInterface() {
         return property.interfaces.removeIncl(mapValues.keys()).single();
+    }
+
+    public Stat getDistinctStat() {
+        return property.getDistinctStat(mapValues.keys());
     }
 }

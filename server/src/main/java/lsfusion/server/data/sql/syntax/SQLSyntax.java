@@ -130,7 +130,7 @@ public interface SQLSyntax {
     String getEpoch();
     String getDateTime();
 
-    String getPrefixSearch();
+    String getPrefixSearchQuery();
 
     String getInsensitiveLike();
 

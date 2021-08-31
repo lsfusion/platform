@@ -16,12 +16,13 @@ import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.col.lru.LRUWVSMap;
 import lsfusion.base.col.lru.LRUWWEVSMap;
-import lsfusion.base.col.lru.LRUWWVSMap;
 import lsfusion.base.file.RawFileData;
+import lsfusion.base.lambda.DProcessor;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.interop.ProgressBar;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.form.property.ExtInt;
+import lsfusion.interop.form.property.cell.Async;
 import lsfusion.server.base.caches.IdentityStrongLazy;
 import lsfusion.server.base.controller.lifecycle.LifecycleEvent;
 import lsfusion.server.base.controller.manager.LogicsManager;
@@ -976,9 +977,9 @@ public class DBManager extends LogicsManager implements InitializingBean {
     private static class ValueRef {
         // it's the only strong value to keep it from garbage collected
         public final ParamRef ref;
-        public final String[] values;
+        public final Async[] values;
 
-        public ValueRef(ParamRef ref, String[] values) {
+        public ValueRef(ParamRef ref, Async[] values) {
             this.ref = ref;
             this.values = values;
         }
@@ -986,15 +987,28 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
     // need this to clean outdated caches
     // could be done easier with timestamps (value and last changed), but this way cache will be cleaned faster
-    private final LRUWVSMap<Property<?>, ConcurrentIdentityWeakHashSet<ParamRef>> asyncValuesPropCache = new LRUWVSMap<>(LRUUtil.G1);
+    private final LRUWVSMap<Property<?>, ConcurrentIdentityWeakHashSet<ParamRef>> asyncValuesPropCache1 = new LRUWVSMap<>(LRUUtil.G1);
+    private final LRUWVSMap<Property<?>, ConcurrentIdentityWeakHashSet<ParamRef>> asyncValuesPropCache2 = new LRUWVSMap<>(LRUUtil.G2);
 
     // we need weak ref, but regular equals (not identity)
-    private final LRUWWEVSMap<Property<?>, Param, ValueRef> asyncValuesValueCache = new LRUWWEVSMap<>(LRUUtil.G1);
+    private final LRUWWEVSMap<Property<?>, Param, ValueRef> asyncValuesValueCache1 = new LRUWWEVSMap<>(LRUUtil.G1);
+    private final LRUWWEVSMap<Property<?>, Param, ValueRef> asyncValuesValueCache2 = new LRUWWEVSMap<>(LRUUtil.G2);
 
-    public <P extends PropertyInterface> String[] getAsyncValues(InputValueList<P> list, String value) throws SQLException, SQLHandledException {
+    public <P extends PropertyInterface> Async[] getAsyncValues(InputValueList<P> list, String value, boolean strict) throws SQLException, SQLHandledException {
         if(Settings.get().isIsClustered()) // we don't want to use caches since they can be inconsistent
-            return readAsyncValues(list, value);
+            return readAsyncValues(list, value, strict);
 
+        LRUWVSMap<Property<?>, ConcurrentIdentityWeakHashSet<ParamRef>> asyncValuesPropCache;
+        LRUWWEVSMap<Property<?>, Param, ValueRef> asyncValuesValueCache;
+        if(value.length() >= Settings.get().getAsyncValuesLongCacheThreshold()) {
+            asyncValuesPropCache = asyncValuesPropCache1;
+            asyncValuesValueCache = asyncValuesValueCache1;
+        } else {
+            asyncValuesPropCache = asyncValuesPropCache2;
+            asyncValuesValueCache = asyncValuesValueCache2;
+        }
+
+        // strict param is transient (it is used only for optimization purposes, so we won't use it in cache)
         Param param = new Param(list.mapValues, value);
 
         ValueRef valueRef = asyncValuesValueCache.get(list.property, param);
@@ -1010,16 +1024,16 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
         paramRefs.add(ref);
 
-        String[] values = readAsyncValues(list, value);
+        Async[] values = readAsyncValues(list, value, strict);
         asyncValuesValueCache.put(list.property, param, new ValueRef(ref, values));
 
         return values;
     }
 
-    private <P extends PropertyInterface> String[] readAsyncValues(InputValueList<P> list, String value) throws SQLException, SQLHandledException {
-        String[] values;
+    private <P extends PropertyInterface> Async[] readAsyncValues(InputValueList<P> list, String value, boolean strict) throws SQLException, SQLHandledException {
+        Async[] values;
         try(DataSession session = createSession()) {
-            values = FormInstance.getAsyncValues(list, session, Property.defaultModifier, value);
+            values = FormInstance.getAsyncValues(list, session, Property.defaultModifier, value, strict);
         }
         return values;
     }
@@ -1033,12 +1047,14 @@ public class DBManager extends LogicsManager implements InitializingBean {
             return;
 
         FunctionSet<Property> changedSet = Property.getDependsOnSet(flushedChanges);
-        asyncValuesPropCache.proceedSafeLockLRUEKeyValues((property, refs) -> {
-            if(property != null && changedSet.contains(property)) {
-                for(ParamRef ref : refs)
+        DProcessor<Property<?>, ConcurrentIdentityWeakHashSet<ParamRef>> dropCaches = (property, refs) -> {
+            if (property != null && changedSet.contains(property)) {
+                for (ParamRef ref : refs)
                     ref.drop(); // dropping ref will eventually lead to garbage collection of entries in all lru caches, plus there is a check that cache is dropped
             }
-        });
+        };
+        asyncValuesPropCache1.proceedSafeLockLRUEKeyValues(dropCaches);
+        asyncValuesPropCache2.proceedSafeLockLRUEKeyValues(dropCaches);
     }
 
     private final Object changesListLock = new Object();

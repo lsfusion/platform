@@ -24,9 +24,6 @@ public class ServerResponse implements Serializable {
     public static final String INPUT = "input";
     public static final String FILTER = "filter";
 
-    public static final String RECHECK = "recheck";
-    public static final String CANCELED = "canceled";
-
     public final ClientAction[] actions;
     public final boolean resumeInvocation;
     public final long requestIndex;

@@ -16,6 +16,9 @@ import lsfusion.client.form.property.panel.view.CaptureKeyEventsDispatcher;
 import lsfusion.client.form.property.table.view.AsyncChangeInterface;
 import lsfusion.client.form.property.table.view.AsyncInputComponent;
 import lsfusion.interop.form.event.KeyStrokes;
+import lsfusion.interop.form.property.cell.Async;
+import org.jdesktop.swingx.autocomplete.AutoCompleteComboBoxEditor;
+import org.jdesktop.swingx.autocomplete.ObjectToStringConverter;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -30,6 +33,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EventObject;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static lsfusion.client.base.view.SwingDefaults.getTableCellMargins;
 import static org.apache.commons.lang3.StringUtils.trimToEmpty;
@@ -129,9 +134,9 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
         delayTimer = execTimer;
 
         asyncChange.getForm().getAsyncValues(property, asyncChange.getColumnKey(0, 0), query, actionSID,
-                new AsyncCallback<Pair<List<String>, Boolean>>() {
+                new AsyncCallback<Pair<List<Async>, Boolean>>() {
                     @Override
-                    public void done(Pair<List<String>, Boolean> result) {
+                    public void done(Pair<List<Async>, Boolean> result) {
                         if (asyncChange.isEditing()) { // && suggestBox.comboBox.isPopupVisible() it can become visible after callback is completed
                             suggestBox.updateItems(result.first, strict && !query.isEmpty());
 
@@ -174,9 +179,9 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
 
     private void cancelAsyncValues() {
         if(asyncChange.isEditing() && suggestBox.isLoading)
-            asyncChange.getForm().getAsyncValues(property, asyncChange.getColumnKey(0, 0), null, actionSID, new AsyncCallback<Pair<List<String>, Boolean>>() {
+            asyncChange.getForm().getAsyncValues(property, asyncChange.getColumnKey(0, 0), null, actionSID, new AsyncCallback<Pair<List<Async>, Boolean>>() {
                 @Override
-                public void done(Pair<List<String>, Boolean> result) {
+                public void done(Pair<List<Async>, Boolean> result) {
                     // assert that CANCELED
                 }
                 @Override
@@ -212,7 +217,7 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
 
     @Override
     public String getText() {
-        return hasList ? trimToEmpty(suggestBox.getComboBoxEditorText()) : super.getText();
+        return hasList ? suggestBox.getComboBoxEditorText() : super.getText();
     }
 
     public Object getCellEditorValue() {
@@ -371,9 +376,8 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
                 if (comboBox.isPopupVisible()) {
                     setSelectedIndex(comboBox.getSelectedIndex() + offset);
                 }
-                if (!strict) {
-                    setComboBoxEditorText((String) comboBox.getSelectedItem());
-                }
+                if (!strict)
+                    updateSelectedEditorText();
             }
         }
 
@@ -388,11 +392,17 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
             disableUpdate = false;
         }
 
-        public void updateItems(List<String> result, boolean selectFirst) {
+        private void updateSelectedEditorText() {
+            Async selectedItem = (Async) comboBox.getSelectedItem();
+            if(selectedItem != null)
+                setComboBoxEditorText(selectedItem.rawString);
+        }
+
+        public void updateItems(List<Async> result, boolean selectFirst) {
             items.clear();
             comboBox.getModel().setSelectedItem(null);
-            items.addAll(GlazedLists.eventListOf(result.toArray()));
-            latestSuggestions = result;
+            items.addAll(GlazedLists.eventList(result));
+            latestSuggestions = result.stream().map(async -> async.rawString).collect(Collectors.toList());;
             comboBox.setMaximumRowCount(result.size());
             //hide and show to call computePopupBounds
             suggestBox.comboBox.hidePopup();
@@ -412,13 +422,20 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
 
         private void addListeners(String value) {
             //stop editing after item selection
-            comboBox.setEditor(new BasicComboBoxEditor() {
+            comboBox.setEditor(new AutoCompleteComboBoxEditor(new BasicComboBoxEditor() {
                 @Override
                 public void setItem(Object anObject) {
                     super.setItem(anObject);
                     tableEditor.stopCellEditing();
                 }
-            });
+            }, new ObjectToStringConverter() {
+                @Override
+                public String getPreferredStringForItem(Object item) { // need this, because otherwise combobox editor text will be set to toString (ie formatted text)
+                    if(item == null)
+                        return null;
+                    return ((Async)item).rawString;
+                }
+            }));
 
             //cancel editing when popup is canceled
 //            comboBox.addPopupMenuListener(new PopupMenuListener() {
@@ -469,9 +486,7 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
                 public void keyPressed(KeyEvent e) {
                     if (e.getKeyCode() == KeyEvent.VK_ENTER) {
                         //set selected value from dropdown
-                        if(comboBox.getSelectedItem() != null) {
-                            setComboBoxEditorText((String) comboBox.getSelectedItem());
-                        }
+                        updateSelectedEditorText();
                         if (!strict || isValidValue(getComboBoxEditorText())) {
                             tableEditor.preCommit(true);
                             tableEditor.stopCellEditing();
@@ -551,7 +566,7 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
             //show empty async popup
             // add timer to avoid blinking when empty popup is followed by non-empty one
             Timer showSuggestionsTimer = new Timer(100, e -> {
-                if (!suggestBox.comboBox.isPopupVisible()) {
+                if (asyncChange.isEditing() && !suggestBox.comboBox.isPopupVisible()) {
                     suggestBox.updateItems(Collections.emptyList(), false);
                 }
             });

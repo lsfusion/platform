@@ -158,7 +158,7 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
                             updateEditValueCallback.done(inputResult.getValue());
                         }
                     }
-                    getFormController().changeProperty(simpleChangeProperty, editColumnKey, actionSID, inputResult.getValue(), inputResult.getContextAction(), oldValueRequested);
+                    getFormController().changeProperty(simpleChangeProperty, editColumnKey, actionSID, inputResult.getValue(), inputResult.getContextAction(), oldValueRequested, this);
                 } catch (IOException e) {
                     throw Throwables.propagate(e);
                 }
