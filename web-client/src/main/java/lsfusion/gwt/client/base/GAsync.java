@@ -18,4 +18,14 @@ public class GAsync implements IsSerializable, Serializable {
         this.displayString = displayString;
         this.rawString = rawString;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        return this == o || o instanceof GAsync && displayString.equals(((GAsync) o).displayString) && rawString.equals(((GAsync) o).rawString);
+    }
+
+    @Override
+    public int hashCode() {
+        return displayString.hashCode() * 31 + rawString.hashCode();
+    }
 }

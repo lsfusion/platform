@@ -1000,7 +1000,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
         LRUWVSMap<Property<?>, ConcurrentIdentityWeakHashSet<ParamRef>> asyncValuesPropCache;
         LRUWWEVSMap<Property<?>, Param, ValueRef> asyncValuesValueCache;
-        if(value.length() >= Settings.get().getAsyncValuesLongCacheThreshold()) {
+        if(value.length() >= Settings.get().getAsyncValuesLongCacheThreshold() || !list.mapValues.isEmpty()) {
             asyncValuesPropCache = asyncValuesPropCache1;
             asyncValuesValueCache = asyncValuesValueCache1;
         } else {
