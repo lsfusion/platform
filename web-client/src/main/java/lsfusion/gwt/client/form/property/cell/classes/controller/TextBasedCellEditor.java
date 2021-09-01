@@ -72,7 +72,7 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
 
     @Override
     public void startEditing(Event event, Element parent, Object oldValue) {
-        String value = tryFormatInputText(oldValue);
+        String value = property.clearText ? "" : tryFormatInputText(oldValue);
         if(hasList) {
             suggestBox.showSuggestionList();
             suggestBox.setValue(value);
@@ -242,7 +242,7 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
     public void validateAndCommit(Element parent, Integer contextAction, boolean cancelIfInvalid, boolean blurred) {
         validateAndCommit(parent, contextAction, cancelIfInvalid, blurred, false);
     }
-    
+
     public void validateAndCommit(Element parent, Integer contextAction, boolean cancelIfInvalid, boolean blurred, boolean enterPressed) {
         String stringValue = contextAction != null ? suggestBox.getValue() : getCurrentText(parent); //if button pressed, input element is button
         if(hasList && strict && contextAction == null && !suggestBox.isValidValue(stringValue)) {
@@ -271,7 +271,7 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
     protected ValueBoxBase<String> createTextBoxBase() {
         return new TextBox();
     }
-    
+
     protected boolean isThisCellEditor() {
         boolean showing = isShowing(suggestBox);
         assert (editManager.isEditing() && this == editManager.getCellEditor()) == showing;

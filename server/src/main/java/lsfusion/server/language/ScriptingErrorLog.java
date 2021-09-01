@@ -303,21 +303,12 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, format("property '%s' in form '%s' was already defined at %s", propertyDrawName, formName, oldPosition));
     }
     
-    public void emitCustomPropertyRenderFunctionsError(ScriptParser parser, String propertyDrawName, String customRenderFunctions) throws SemanticErrorException {
+    public void emitCustomPropertyViewFunctionError(ScriptParser parser, String propertyDrawName, String customRenderFunction, boolean render) throws SemanticErrorException {
+        String type = render ? "render" : "editor";
         emitSimpleError(parser,
-                format("Incorrect custom render functions definition for %s:\n\texpected format: '<render_function_name>:<set_value_function_name>:<clear_function_name>',\n\tprovided: '%s'",
+                format("Incorrect custom " + type + " function definition for %s:\n\texpected format: '<custom_" + type + "_function>',\n\tprovided: '%s'",
                         propertyDrawName,
-                        customRenderFunctions));                                                        
-    }
-
-    public void emitCustomPropertyEditorFunctionsError(ScriptParser parser, String propertyDrawName, String customEditorFunctions, boolean isTextEditor, boolean isReplaceEdit) throws SemanticErrorException {
-        String expectedFormat = isTextEditor ? "'<render_function_name>:<clear_render_function_name>'" :
-                (isReplaceEdit ? "'<render_function_name>:<start_editing_function_name>:<commit_editing_function_name>:<clear_render_function_name>:<on_browser_event_function_name>'" :
-                        "'<start_editing_function_name>:<commit_editing_function_name>:<on_browser_event_function_name>'");
-        emitSimpleError(parser,
-                format("Incorrect custom editor functions definition for %s:\n\texpected format: " + expectedFormat + ",\n\tprovided: '%s'",
-                        propertyDrawName,
-                        customEditorFunctions));
+                        customRenderFunction));
     }
 
     public void emitCustomPropertyWrongEditType(ScriptParser parser, String editType) throws SemanticErrorException {

@@ -142,7 +142,7 @@
 
         <c:forEach items="${lsfParams}" var="lsfParam">
             <script>
-                lsfParams.set("${lsfParam.key}", "${lsfParam.value}");
+                lsfParams["${lsfParam.key}"] = "${lsfParam.value}";
             </script>
         </c:forEach>
 

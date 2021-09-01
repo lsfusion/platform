@@ -647,16 +647,16 @@ propertyClassViewType returns [ClassViewType type]
 	|   'TOOLBAR' {$type = ClassViewType.TOOLBAR;}
 	;
 
-propertyCustomView returns [String customRenderFunctions, String customEditorFunctions, boolean textEdit, boolean replaceEdit]
+propertyCustomView returns [String customRenderFunction, String customEditorFunction, boolean textEdit, boolean replaceEdit]
 @init {
     boolean isEditText = false;
     boolean isReplaceEditor = false;
 }
-	:	'CUSTOM' ('RENDER' renderFun=stringLiteral { $customRenderFunctions = $renderFun.val;})? 
+	:	'CUSTOM' ('RENDER' renderFun=stringLiteral { $customRenderFunction = $renderFun.val;})?
 		('EDIT' (
 		    type=PRIMITIVE_TYPE {self.checkCustomPropertyViewTextOption($type.text); isEditText = true;}
 		    | 'REPLACE' {isReplaceEditor = true;})?
-		editFun=stringLiteral {$customEditorFunctions = $editFun.val; $textEdit = isEditText; $replaceEdit = isReplaceEditor;})?
+		editFun=stringLiteral {$customEditorFunction = $editFun.val; $textEdit = isEditText; $replaceEdit = isReplaceEditor;})?
 	;
 
 listViewType returns [ListViewType type, PivotOptions options, String customRenderFunction, String mapTileProvider]
@@ -817,7 +817,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|	'HEADER' propObj=formPropertyObject { $options.setHeader($propObj.property); }
 		|	'FOOTER' propObj=formPropertyObject { $options.setFooter($propObj.property); }
 		|	viewType=propertyClassViewType { $options.setViewType($viewType.type); }
-		|	customView=propertyCustomView { $options.setCustomRenderFunctions($customView.customRenderFunctions); $options.setCustomEditorFunctions($customView.customEditorFunctions); $options.setCustomTextEdit($customView.textEdit); $options.setCustomReplaceEdit($customView.replaceEdit);}
+		|	customView=propertyCustomView { $options.setCustomRenderFunction($customView.customRenderFunction); $options.setCustomEditorFunction($customView.customEditorFunction); $options.setCustomTextEdit($customView.textEdit); $options.setCustomReplaceEdit($customView.replaceEdit);}
 		|	pgt=propertyGroupType { $options.setAggrFunc($pgt.type); }
 		|	pla=propertyLastAggr { $options.setLastAggr($pla.properties, $pla.desc); }
 		|	pf=propertyFormula { $options.setFormula($pf.formula, $pf.operands); }
@@ -1360,6 +1360,7 @@ pivotOptions returns [PivotOptions options = new PivotOptions()]
     (   t=stringLiteral { $options.setType($t.val); }
     |   a=propertyGroupType { $options.setAggregation($a.type); }
     |   ('SETTINGS'  { $options.setShowSettings(true); } | 'NOSETTINGS'  { $options.setShowSettings(false); })
+    |   ('CONFIG'  sLiteral=stringLiteral { $options.setConfigFunction($sLiteral.val); })
     )*
     ;
 
@@ -2771,8 +2772,8 @@ viewTypeSetting [LAP property]
 customViewSetting [LAP property]
 @after {
 	if (inMainParseState()) {
-		self.setCustomRenderFunctions(property, $customView.customRenderFunctions);
-		self.setCustomEditorFunctions(property, $customView.customEditorFunctions);
+		self.setCustomRenderFunction(property, $customView.customRenderFunction);
+		self.setCustomEditorFunction(property, $customView.customEditorFunction);
 		self.setCustomTextEdit(property, $customView.textEdit);
 		self.setCustomReplaceEdit(property, $customView.replaceEdit);
 	}

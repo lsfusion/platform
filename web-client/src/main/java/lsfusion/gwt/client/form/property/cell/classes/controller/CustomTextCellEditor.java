@@ -13,16 +13,12 @@ import java.text.ParseException;
 
 public class CustomTextCellEditor extends TextBasedCellEditor {
 
-    private final String renderFunction;
-    private final String clearRenderFunction;
+    private final String customEditorFunction;
     private boolean deferredCommitOnBlur = true;
 
-    public CustomTextCellEditor(EditManager editManager, GPropertyDraw property, String customEditorFunctions) {
+    public CustomTextCellEditor(EditManager editManager, GPropertyDraw property, String customEditorFunction) {
         super(editManager, property);
-
-        String[] functions = customEditorFunctions.split(":");
-        renderFunction = functions[0];
-        clearRenderFunction = functions[1];
+        this.customEditorFunction = customEditorFunction;
     }
 
     @Override
@@ -52,7 +48,7 @@ public class CustomTextCellEditor extends TextBasedCellEditor {
     }-*/;
 
     protected native void render(Element element, JavaScriptObject editor)/*-{
-        $wnd[this.@CustomTextCellEditor::renderFunction](element, editor);
+        $wnd[this.@CustomTextCellEditor::customEditorFunction]().render(element, editor);
     }-*/;
 
     @Override
@@ -62,7 +58,7 @@ public class CustomTextCellEditor extends TextBasedCellEditor {
     }
 
     protected native void clearRender(Element element)/*-{
-        $wnd[this.@CustomTextCellEditor::clearRenderFunction](element);
+        $wnd[this.@CustomTextCellEditor::customEditorFunction]().clear(element);
     }-*/;
 
     @Override

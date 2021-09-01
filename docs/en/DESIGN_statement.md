@@ -144,14 +144,13 @@ To access design components, you can use their names or address property compone
 |`echoSymbols`|Specifying that a set of `*` characters will be displayed instead of the property value. Used for passwords, for example|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`changeKey`|The key that will trigger the property change event. The definition principle is similar to specifying a parameter in [Keystroke.getKeystroke(String)](https://docs.oracle.com/javase/8/docs/api/javax/swing/KeyStroke.html#getKeyStroke-java.lang.String-)|String literal|`NULL`|`'ctrl F6'`<br/>`'BACK_SPACE'`<br/>`'alt shift X'`|
 |`showChangeKey`|Specifying that the property caption will include that name of the key shortcut that will trigger the change event|Extended Boolean literal|`TRUE`|`TRUE`<br/>`FALSE`|
-|`editOnSingleClick`|Specifying that change event should be triggered after the property component is clicked once|Extended Boolean literal|depends on the property|`TRUE`<br/>`FALSE`|
-|`focusable`|Specifying that the property (action) component or a table column can get focus|Extended Boolean literal|changeKey = `NULL`|`TRUE`<br/>`FALSE`|
+|`editOnSingleClick`|Specifying that change event should be triggered after the property component is clicked once<br/>**deprecated, use `changeOnSingleClick` instead**|Extended Boolean literal|depends on the property|`TRUE`<br/>`FALSE`|
+|`changeOnSingleClick`|Specifying that change event should be triggered after the property component is clicked once|Extended Boolean literal|depends on the property|`TRUE`<br/>`FALSE`||`focusable`|Specifying that the property (action) component or a table column can get focus|Extended Boolean literal|changeKey = `NULL`|`TRUE`<br/>`FALSE`|
 |`captionFont`|The font that will be used to display the property caption|String literal|depends on the component|`'Tahoma bold italic 16'`<br/>`'Times 12'`|
 |`hide`|Specifying that the property (action) component should be always hidden|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`imagePath`|The path to the file with the image to be displayed as an action icon. The path is specified relative to the `images` folder|String literal|`NULL`|`'image.png'`|
 |`maxValue`|The maximum numerical value that the property component can have|Integer literal|`NULL`|`1000000`<br/>`5000000000L`|
 |`notNull`|Specifies that in case of a `NULL` property value, the component of this property should be highlighted|Extended Boolean literal|depends on the property|`TRUE`<br/>`FALSE`|
-|`panelCaptionAbove`|Indicates that the captions of property or action components should be drawn above the value on the panel<br/>**removed in 5.0, use `panelCaptionVertical` instead**|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`panelCaptionVertical`|Indicates that the captions of property or action components should be drawn above the value on the panel|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`panelCaptionAfter`|Indicates that the value should be drawn on the panel prior to thee property caption|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`regexp`|The regular expression that the property value must match during input|String literal|`NULL`|`'^((8\|\\+7)[\\- ]?)?(\\(?\\d\{3\}\\)?[\\- ]?)?[\\d\\- ]\{7,10\}$'`|

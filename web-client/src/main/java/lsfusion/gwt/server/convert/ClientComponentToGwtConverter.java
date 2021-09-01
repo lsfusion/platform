@@ -250,11 +250,12 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.integrationSID = clientPropertyDraw.getIntegrationSID();
         
         propertyDraw.customRenderFunction = clientPropertyDraw.customRenderFunction;
-        propertyDraw.customEditorFunctions = clientPropertyDraw.customEditorFunctions;
+        propertyDraw.customEditorFunction = clientPropertyDraw.customEditorFunction;
         propertyDraw.customTextEdit = clientPropertyDraw.customTextEdit;
         propertyDraw.customReplaceEdit = clientPropertyDraw.customReplaceEdit;
 
         propertyDraw.toolTip = clientPropertyDraw.toolTip;
+        propertyDraw.clearText = clientPropertyDraw.clearText;
         propertyDraw.tableName = clientPropertyDraw.tableName;
         propertyDraw.interfacesCaptions = clientPropertyDraw.interfacesCaptions;
         propertyDraw.interfacesTypes = new GClass[clientPropertyDraw.interfacesTypes.length];
@@ -575,7 +576,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
     @Cached
     @Converter(from = PivotOptions.class)
     public GPivotOptions convertPivotOptions(PivotOptions pivotOptions) {
-        return new GPivotOptions(pivotOptions.getType(), convertGroupType(pivotOptions.getAggregation()), pivotOptions.getShowSettings());
+        return new GPivotOptions(pivotOptions.getType(), convertGroupType(pivotOptions.getAggregation()), pivotOptions.getShowSettings(), pivotOptions.getConfigFunction());
     }
 
     @Cached

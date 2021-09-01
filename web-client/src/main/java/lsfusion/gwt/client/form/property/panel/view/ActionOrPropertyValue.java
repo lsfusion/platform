@@ -16,8 +16,6 @@ import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.setupFillParent;
-import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
-import static lsfusion.gwt.client.base.view.ColorUtils.getDisplayColor;
 
 // property value renderer with editing
 public abstract class ActionOrPropertyValue extends FocusWidget implements EditContext, RenderContext, UpdateContext {
@@ -149,12 +147,23 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
                 handler -> CopyPasteUtils.putIntoClipboard(getRenderElement()), handler -> CopyPasteUtils.getFromClipboard(handler, line -> pasteValue(line.trim())), true);
     }
 
+    boolean isFocused;
     protected void onFocus(EventHandler handler) {
+        if(isFocused)
+            return;
         DataGrid.sinkPasteEvent(getFocusElement());
+        isFocused = true;
+
         borderWidget.addStyleName("panelRendererValueFocused");
     }
 
     protected void onBlur(EventHandler handler) {
+        if(!isFocused || DataGrid.isFakeBlur(handler.event, getElement())) {
+            return;
+        }
+        //if !isFocused should be replaced to assert; isFocused must be true, but sometimes is not (related to LoadingManager)
+        //assert isFocused;
+        isFocused = false;
         borderWidget.removeStyleName("panelRendererValueFocused");
     }
 

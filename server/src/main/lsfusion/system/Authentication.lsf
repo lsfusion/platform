@@ -364,6 +364,8 @@ country '{authentication.country.user}' (CustomUser user) = IF useClientLocale(u
 dateFormat '{authentication.date.format.user}' (CustomUser user) = OVERRIDE (clientDateFormat(user) IF useClientDateTimeFormat(user)), userDateFormat(user), defaultUserDateFormat(), serverDateFormat();
 timeFormat '{authentication.time.format.user}' (CustomUser user) = OVERRIDE (clientTimeFormat(user) IF useClientDateTimeFormat(user)), userTimeFormat(user), defaultUserTimeFormat(), serverTimeFormat();
 
+lsfParams(STRING s) += country(currentUser()) IF s = 'googleMapAutocompleteCountry';
+
 // "duplicate" of loadLocalePreferences, but web-client needs this data just right after authentication
 getCurrentUserLocale() {
     FOR CustomUser user AS CustomUser = currentUser() DO

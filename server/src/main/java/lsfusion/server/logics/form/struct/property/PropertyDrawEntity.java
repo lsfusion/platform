@@ -88,8 +88,8 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     public Boolean shouldBeLast;
     public ClassViewType viewType; // assert not null, after initialization
-    public String customRenderFunctions; 
-    public String customEditorFunctions;
+    public String customRenderFunction;
+    public String customEditorFunction;
     public boolean customTextEdit;
     public boolean customReplaceEdit;
     public String eventID;

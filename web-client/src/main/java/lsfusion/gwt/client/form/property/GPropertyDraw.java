@@ -58,11 +58,12 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public String integrationSID;
     
     public String customRenderFunction;
-    public String customEditorFunctions;
+    public String customEditorFunction;
     public boolean customTextEdit;
     public boolean customReplaceEdit;
 
     public String toolTip;
+    public boolean clearText;
     public String tableName;
     public String[] interfacesCaptions;
     public GClass[] interfacesTypes;

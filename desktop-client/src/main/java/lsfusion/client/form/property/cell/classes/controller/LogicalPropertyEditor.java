@@ -22,8 +22,9 @@ public class LogicalPropertyEditor extends JCheckBox implements PropertyEditor {
         this.threeState = threeState;
         // set new value because we'll finish editing immediately
         nextValue = getNextValue(value, threeState);
-        model.setSelected(nextValue != null && nextValue);
-        model.setEnabled(!threeState || nextValue != null);
+        //keep old value in editor, we don't want flashing - new value will be shown in renderer
+        model.setSelected(value != null && (boolean) value);
+        model.setEnabled(!threeState || value != null);
 
         addFocusListener(new FocusAdapter() {
             @Override

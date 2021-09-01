@@ -377,8 +377,8 @@ public class PropertyDrawView extends ComponentView {
         else
             outStream.writeByte(DataType.ACTION);
         
-        pool.writeString(outStream, entity.customRenderFunctions);
-        pool.writeString(outStream, entity.customEditorFunctions);
+        pool.writeString(outStream, entity.customRenderFunction);
+        pool.writeString(outStream, entity.customEditorFunction);
         pool.writeBoolean(outStream, entity.customTextEdit);
         pool.writeBoolean(outStream, entity.customReplaceEdit);
 

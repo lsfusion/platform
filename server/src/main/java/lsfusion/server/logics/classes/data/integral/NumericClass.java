@@ -195,4 +195,10 @@ public class NumericClass extends IntegralClass<BigDecimal> {
     public Stat getTypeStat() {
         return new Stat(10, isUnlimited() ? Settings.get().getMaxNumericPrecision() : precision.value);
     }
+
+    @Override
+    public int getSize(BigDecimal value) {
+        assert precision.isUnlimited();
+        return value.precision();
+    }
 }

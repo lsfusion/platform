@@ -47,6 +47,7 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.text.JTextComponent;
+import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.ExpandVetoException;
 import javax.swing.tree.TreePath;
 import java.awt.*;
@@ -238,6 +239,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements AsyncChangeCe
             addMouseListener(new MouseAdapter() {
                 @Override
                 public void mousePressed(MouseEvent e) {
+                    // should be synchronized with checkMouseEvent (see below)
                     if (!e.isConsumed() && MouseStrokes.isDblClickEvent(e) && !editPerformed) {
                         final TreePath path = getPathForRow(rowAtPoint(e.getPoint()));
                         if (path != null && !isLocationInExpandControl(getHierarhicalColumnRenderer().getUI(), path, e.getX(), e.getY())) {
@@ -477,6 +479,19 @@ public class TreeGroupTable extends ClientFormTreeTable implements AsyncChangeCe
 //        setColumnSizes(tableColumn, pref, pref, pref);
 
         getColumnModel().getSelectionModel().setSelectionInterval(0, 0);
+        
+        setTreeCellRenderer(new DefaultTreeCellRenderer() {
+            // it's rather hard to properly set up these colors via UIDefaults 
+            @Override
+            public Color getBackgroundSelectionColor() {
+                return SwingDefaults.getSelectionColor();
+            }
+
+            @Override
+            public Color getTextSelectionColor() {
+                return SwingDefaults.getTableCellForeground();
+            }
+        });
     }
 
     private TableColumnExt createColumn(int pos) {
@@ -726,21 +741,10 @@ public class TreeGroupTable extends ClientFormTreeTable implements AsyncChangeCe
         int column = getSelectedColumn();
         int row = getSelectedRow();
 
-        ClientPropertyDraw selectedProperty = null;
+        if (column >= 0 && column < getColumnCount() && row >= 0 && row <= getRowCount())
+            return getProperty(row, column);
 
-        if (column == 0) {
-            ++column;
-        }
-
-        if (column >= 0 && column < getColumnCount() && row >= 0 && row <= getRowCount()) {
-            selectedProperty = getProperty(row, column);
-        }
-
-        return selectedProperty != null
-               ? selectedProperty
-               : model.getColumnCount() > 1
-                 ? model.getColumnProperty(1)
-                 : null;
+        return null;
     }
 
     public Object getSelectedValue(ClientPropertyDraw property) {
@@ -957,7 +961,11 @@ public class TreeGroupTable extends ClientFormTreeTable implements AsyncChangeCe
     }
 
     private void checkMouseEvent(MouseEvent e, boolean preview) {
-        form.checkMouseEvent(e, preview, getSelectedProperty(), () -> lastGroupObject(treeGroup), false);
+        ClientPropertyDraw selectedProperty = getSelectedProperty();
+        // in web-client we do the same with adding binding with high priority
+        // to avoid refactoring her we just put this sime
+        if(!(preview && selectedProperty == null && MouseStrokes.isDblClickEvent(e)))
+            form.checkMouseEvent(e, preview, selectedProperty, () -> lastGroupObject(treeGroup), false);
     }
 
     private void checkKeyEvent(KeyStroke ks, boolean preview, KeyEvent e, int condition, boolean pressed) {

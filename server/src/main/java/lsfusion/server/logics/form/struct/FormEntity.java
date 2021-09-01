@@ -208,12 +208,24 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     private NFOrderSet<ImList<PropertyDrawEntity>> pivotRows = NFFact.orderSet();
     private NFOrderSet<PropertyDrawEntity> pivotMeasures = NFFact.orderSet();
 
+    public Iterable<ImList<PropertyDrawEntity>> getNFPivotColumnsListIt(Version version) {
+        return pivotColumns.getNFListIt(version);
+    }
+
     public ImList<ImList<PropertyDrawEntity>> getPivotColumnsList() {
         return pivotColumns.getList();
     }
 
+    public Iterable<ImList<PropertyDrawEntity>> getNFPivotRowsListIt(Version version) {
+        return pivotRows.getNFListIt(version);
+    }
+
     public ImList<ImList<PropertyDrawEntity>> getPivotRowsList() {
         return pivotRows.getList();
+    }
+
+    public Iterable<PropertyDrawEntity> getNFPivotMeasuresListIt(Version version) {
+        return pivotMeasures.getNFListIt(version);
     }
 
     public ImList<PropertyDrawEntity> getPivotMeasuresList() {
