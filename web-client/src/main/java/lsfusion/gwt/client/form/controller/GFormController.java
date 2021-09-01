@@ -1242,8 +1242,8 @@ public class GFormController extends ResizableSimplePanel implements EditManager
         }
     }
 
-    public void getInitialFilterProperty(RequestCountingErrorHandlingCallback<NumberResult> callback) {
-        asyncDispatch(new GetInitialFilterProperty(), callback);
+    public void getInitialFilterProperty(PriorityErrorHandlingCallback<NumberResult> callback) {
+        dispatcher.executePriority(new GetInitialFilterProperty(), callback);
     }
 
     public void focusProperty(GPropertyDraw propertyDraw) {

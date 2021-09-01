@@ -2,6 +2,7 @@ package lsfusion.gwt.client;
 
 import com.allen_sauer.gwt.log.client.Log;
 import com.google.gwt.core.client.Duration;
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import lsfusion.gwt.client.base.AsyncCallbackEx;

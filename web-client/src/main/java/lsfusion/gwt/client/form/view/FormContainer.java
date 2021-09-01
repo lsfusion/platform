@@ -11,6 +11,7 @@ import lsfusion.gwt.client.base.Dimension;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.result.NumberResult;
 import lsfusion.gwt.client.base.view.WindowHiddenHandler;
+import lsfusion.gwt.client.controller.remote.action.PriorityErrorHandlingCallback;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.event.GKeyStroke;
@@ -136,7 +137,7 @@ public abstract class FormContainer<W extends Widget> {
         if (initFilterEvent != null) {
             Event event = initFilterEvent;
             if (GKeyStroke.isPossibleStartFilteringEvent(event) && !GKeyStroke.isSpaceKeyEvent(event)) {
-                form.getInitialFilterProperty(new GFormController.CustomErrorHandlingCallback<NumberResult>() {
+                form.getInitialFilterProperty(new PriorityErrorHandlingCallback<NumberResult>() {
                     @Override
                     public void onSuccess(NumberResult result) {
                         Integer initialFilterPropertyID = (Integer) result.value;
