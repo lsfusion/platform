@@ -135,7 +135,7 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
                 new AsyncCallback<Pair<List<Async>, Boolean>>() {
                     @Override
                     public void done(Pair<List<Async>, Boolean> result) {
-                        assert isThisCellEditor() == suggestBox.isShowing();
+                        assertIsThisCellEditor();
                         if (suggestBox.isShowing()) { // && suggestBox.comboBox.isPopupVisible() it can become visible after callback is completed
                             suggestBox.updateItems(result.first, strict && !query.isEmpty());
 
@@ -154,7 +154,7 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
 
                     @Override
                     public void failure(Throwable t) {
-                        assert isThisCellEditor() == suggestBox.isShowing();
+                        assertIsThisCellEditor();
                         if (suggestBox.isShowing()) // suggestBox.comboBox.isPopupVisible()
                             cancelAndFlushDelayed(execTimer);
                     }
@@ -178,7 +178,7 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
     }
 
     private void cancelAsyncValues() {
-        assert isThisCellEditor();
+        assertIsThisCellEditor();
         if (suggestBox.isLoading)
             asyncChange.getForm().getAsyncValues(property, asyncChange.getColumnKey(0, 0), null, actionSID, new AsyncCallback<Pair<List<Async>, Boolean>>() {
                 @Override
@@ -225,9 +225,9 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
         return this.getValue();
     }
     
-    protected boolean isThisCellEditor() {
+    protected void assertIsThisCellEditor() {
         JTable currentEditingTable = asyncChange.getForm().getCurrentEditingTable();
-        return asyncChange.isEditing() && currentEditingTable != null && currentEditingTable.getCellEditor() == tableEditor;
+        assert (asyncChange.isEditing() && currentEditingTable != null && currentEditingTable.getCellEditor() == tableEditor) == suggestBox.isShowing();
     }
 
     @Override
@@ -576,7 +576,7 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
             //show empty async popup
             // add timer to avoid blinking when empty popup is followed by non-empty one
             Timer showSuggestionsTimer = new Timer(100, e -> {
-                assert isThisCellEditor() == suggestBox.isShowing();
+                assertIsThisCellEditor();
                 if (suggestBox.isShowing() && !suggestBox.comboBox.isPopupVisible()) {
                     suggestBox.updateItems(Collections.emptyList(), false);
                 }
