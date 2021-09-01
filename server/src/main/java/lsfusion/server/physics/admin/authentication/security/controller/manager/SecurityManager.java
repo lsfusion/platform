@@ -306,27 +306,33 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         List<RoleSecurityPolicy> policies = new ArrayList<>();
         try {
             Set<DataObject> userRoleSet = readUserRoleSet(session, userObject);
-            if(!SystemProperties.lightStart || !userRoleSet.contains(adminUserRole)) {
-                for (DataObject userRole : userRoleSet) {
-                    Long userRoleId = (Long)userRole.getValue();
-                    RoleSecurityPolicy policy = cachedSecurityPolicies.get(userRoleId);
-                    if (policy == null) {
-                        Object cachedSecuritySemaphore = getCachedSecuritySemaphore(userRoleId);
-                        synchronized (cachedSecuritySemaphore) { // we use semaphore to prevent simultaneous reading security policy, since this process consumes a lot of time and memory, can be run really a lot of times concurrently (for example when reconnecting users after server restart)
-                            policy = cachedSecurityPolicies.get(userRoleId);
-                            if (policy == null) { // double check
-                                policy = readSecurityPolicy(userRole, session);
-                                cachedSecurityPolicies.put((Long) userRole.getValue(), policy);
-                            }
-                        }
-                    }
-                    policies.add(policy);
-                }
-            }
+            if(!SystemProperties.lightStart || !userRoleSet.contains(adminUserRole))
+                for (DataObject userRole : userRoleSet)
+                    policies.add(getRoleSecurityPolicy(session, userRole));
             return new SecurityPolicy(policies);
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
+    }
+
+    public RoleSecurityPolicy getReadOnlySecurityPolicy(DataSession session) throws SQLException, SQLHandledException {
+        return getRoleSecurityPolicy(session, readOnlyUserRole);
+    }
+
+    private RoleSecurityPolicy getRoleSecurityPolicy(DataSession session, DataObject userRole) throws SQLException, SQLHandledException {
+        Long userRoleId = (Long) userRole.getValue();
+        RoleSecurityPolicy policy = cachedSecurityPolicies.get(userRoleId);
+        if (policy == null) {
+            Object cachedSecuritySemaphore = getCachedSecuritySemaphore(userRoleId);
+            synchronized (cachedSecuritySemaphore) { // we use semaphore to prevent simultaneous reading security policy, since this process consumes a lot of time and memory, can be run really a lot of times concurrently (for example when reconnecting users after server restart)
+                policy = cachedSecurityPolicies.get(userRoleId);
+                if (policy == null) { // double check
+                    policy = readSecurityPolicy(userRole, session);
+                    cachedSecurityPolicies.put((Long) userRole.getValue(), policy);
+                }
+            }
+        }
+        return policy;
     }
 
     public void prereadSecurityPolicies() {
