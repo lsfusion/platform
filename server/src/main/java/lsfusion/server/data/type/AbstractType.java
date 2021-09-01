@@ -45,7 +45,7 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
     // CAST который возвращает NULL, если не может этого сделать 
     public String getSafeCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv, Type typeFrom, boolean isArith) {
         if(hasSafeCast()) {
-            boolean isInt = isArith || typeFrom instanceof IntegralClass;
+            boolean isInt = isArith || typeFrom instanceof IntegralClass || typeFrom instanceof ObjectType;
             if(!(isInt && Settings.get().getSafeCastIntType() == 2)) {
                 typeEnv.addNeedSafeCast(this, isInt);
                 return syntax.getSafeCastNameFnc(this, isInt) + "(" + value + ")";
