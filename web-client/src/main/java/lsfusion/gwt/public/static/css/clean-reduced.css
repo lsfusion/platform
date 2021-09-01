@@ -351,6 +351,7 @@ button {
 }
 .gwt-MenuBar-vertical table {
     border-collapse: collapse;
+    width: 100%;
 }
 .gwt-MenuBar-vertical .gwt-MenuItem {
     padding: 2px 40px 2px 1px;
@@ -562,8 +563,7 @@ button {
     padding: 3px 5px 3px 5px;
 }
 .gwt-PushButton-up {
-    border:1px solid #bbb;
-    border-bottom: 1px solid #a0a0a0;
+    border:1px solid var(--component-border-color);
     cursor: pointer;
     cursor: hand;
 }
@@ -574,7 +574,7 @@ button {
     cursor: hand;
 }
 .gwt-PushButton-up-disabled {
-    border: 1px solid #bbb;
+    border: 1px solid var(--component-border-color);
     cursor: default;
     opacity: .5;
     filter: alpha(opacity=45);
@@ -807,36 +807,37 @@ button {
 }
 
 .gwt-SuggestBoxPopup {
+    background: var(--component-background-color);
+    border: 1px solid var(--component-border-color);
 }
 
 .gwt-SuggestBoxPopup .item {
-    padding: 2px 6px;
     color: var(--text-color);
     cursor: default;
-    font-size: 110%;
 }
 .gwt-SuggestBoxPopup .item-selected {
-    background: #D5E2FF;
+    background: var(--selection-color);
 }
 .gwt-SuggestBoxPopup .suggestPopupContent {
-    background: white;
+    background: var(--component-background-color);
 }
-.gwt-SuggestBoxPopup .suggestPopupTopCenter {
-    border-top: 1px solid #bbb;
+.gwt-SuggestBoxPopup .noResultsLabel {
+    margin: 3px 2px;
 }
-.gwt-SuggestBoxPopup .suggestPopupBottomCenter {
-    border-bottom: 1px solid #bbb;
+
+.gwt-SuggestBoxPopup .suggestPopupBottomPanel {
+    background: var(--background-color);
+}
+
+.gwt-SuggestBoxPopup .suggestPopupButton {
+    background: var(--component-background-color);
+    border-radius: var(--button-border-radius);
+    margin: 2px;
 }
 .gwt-SuggestBoxPopup .suggestPopupTopCenterInner,
 .gwt-SuggestBoxPopup .suggestPopupBottomCenterInner {
     height: 1px;
     line-height: 1px;
-}
-.gwt-SuggestBoxPopup .suggestPopupMiddleLeft {
-    border-left: 1px solid #bbb;
-}
-.gwt-SuggestBoxPopup .suggestPopupMiddleRight {
-    border-right: 1px solid #bbb;
 }
 .gwt-SuggestBoxPopup .suggestPopupMiddleLeftInner,
 .gwt-SuggestBoxPopup .suggestPopupMiddleRightInner {
@@ -862,30 +863,6 @@ button {
     width: 0px;
     height: 0px;
     zoom: 1;
-}
-.gwt-SuggestBoxPopup .suggestPopupTopLeft {
-    background: url(../images/circles.png) no-repeat 0px -6px;
-    -background: url(../images/circles_ie6.png) no-repeat 0px -6px;
-    width:5px;
-    height:5px;
-}
-.gwt-SuggestBoxPopup .suggestPopupTopRight {
-    background: url(../images/circles.png) no-repeat -5px -6px;
-    -background: url(../images/circles_ie6.png) no-repeat -5px -6px;
-    width:5px;
-    height:5px;
-}
-.gwt-SuggestBoxPopup .suggestPopupBottomLeft {
-    background: url(../images/circles.png) no-repeat 0px -11px;
-    -background: url(../images/circles_ie6.png) no-repeat 0px -11px;
-    width:5px;
-    height:5px;
-}
-.gwt-SuggestBoxPopup .suggestPopupBottomRight {
-    background: url(../images/circles.png) no-repeat -5px -11px;
-    -background: url(../images/circles_ie6.png) no-repeat -5px -11px;
-    width:5px;
-    height:5px;
 }
 * html .gwt-SuggestBoxPopup .suggestPopupTopLeftInner {
     width: 0px;

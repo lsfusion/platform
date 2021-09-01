@@ -5,8 +5,8 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.TooltipManager;
 import lsfusion.gwt.client.form.controller.GFormController;
-import lsfusion.gwt.client.form.event.GInputEvent;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
+import lsfusion.gwt.client.form.object.panel.controller.GPropertyPanelController;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
 import java.util.ArrayList;
@@ -27,12 +27,12 @@ public abstract class PanelRenderer {
     private String caption;
     private String tooltip;
 
-    public PanelRenderer(GFormController form, GPropertyDraw property, GGroupObjectValue columnKey) {
+    public PanelRenderer(GFormController form, ActionOrPropertyValueController controller, GPropertyDraw property, GGroupObjectValue columnKey, GPropertyPanelController.CaptionContainer captionContainer) {
         this.form = form;
         this.property = property;
         this.columnKey = columnKey;
 
-        value = new ActionOrPropertyPanelValue(property, columnKey, form);
+        value = new ActionOrPropertyPanelValue(property, columnKey, form, false, controller); // captionContainer != null, now we use different approach when button is renderered as caption
     }
 
     protected void finalizeInit() {

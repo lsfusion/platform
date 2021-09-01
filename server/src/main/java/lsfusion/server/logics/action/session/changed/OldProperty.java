@@ -134,6 +134,6 @@ public class OldProperty<T extends PropertyInterface> extends SessionProperty<T>
     }
 
     private boolean hideOlds() {
-        return Settings.get().isUseEventValuePrevHeuristic() && property instanceof AggregateProperty && ((AggregateProperty)property).hasAlotKeys();
+        return Settings.get().isUseEventValuePrevHeuristic() && property.hasAlotKeys();
     }
 }

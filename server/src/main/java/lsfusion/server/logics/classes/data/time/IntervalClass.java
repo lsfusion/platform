@@ -1,6 +1,5 @@
 package lsfusion.server.logics.classes.data.time;
 
-import lsfusion.interop.classes.DataType;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.logics.classes.data.DataClass;
@@ -10,12 +9,18 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.Date;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
+
+import static lsfusion.base.DateConverter.formatInterval;
+import static lsfusion.base.DateConverter.parseInterval;
 
 public abstract class IntervalClass extends DataClass<BigDecimal> {
+
+    protected static final DateTimeFormatter DATE_FORMATTER= DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT);
+    protected static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT, FormatStyle.MEDIUM);
+    protected static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofLocalizedTime(FormatStyle.MEDIUM);
+    protected static final DateTimeFormatter Z_DATE_TIME_FORMATTER = DateTimeFormatter.ISO_INSTANT;
 
     public static IntervalClass getInstance(String type) {
         switch (type) {
@@ -25,34 +30,14 @@ public abstract class IntervalClass extends DataClass<BigDecimal> {
                 return TimeIntervalClass.instance;
             case "DATETIME":
                 return DateTimeIntervalClass.instance;
-        }
-        return null;
-    }
-
-    public static IntervalClass getInstance(byte type) {
-        switch (type) {
-            case DataType.DATEINTERVAL:
-                return DateIntervalClass.instance;
-            case DataType.TIMEINTERVAL:
-                return TimeIntervalClass.instance;
-            case DataType.DATETIMEINTERVAL:
-                return DateTimeIntervalClass.instance;
+            case "ZDATETIME":
+                return ZDateTimeIntervalClass.instance;
         }
         return null;
     }
 
     protected IntervalClass(LocalizedString caption) {
         super(caption);
-    }
-
-    public LocalDateTime getLocalDateTime(BigDecimal value, boolean from) {
-        String object = String.valueOf(value);
-        int indexOfDecimal = object.indexOf(".");
-
-        LocalDateTime ldtFrom = LocalDateTime.ofInstant(Instant.ofEpochSecond(Long.parseLong(object.substring(0, indexOfDecimal))), ZoneId.systemDefault());
-        LocalDateTime ldtTo = LocalDateTime.ofInstant(Instant.ofEpochSecond(Long.parseLong(object.substring(indexOfDecimal + 1))), ZoneId.systemDefault());
-
-        return from ? ldtFrom : ldtTo;
     }
 
     @Override
@@ -95,9 +80,17 @@ public abstract class IntervalClass extends DataClass<BigDecimal> {
         return false;
     }
 
+    protected abstract Long parse(String date);
+    protected abstract String format(Long epoch);
+
     @Override
     public BigDecimal parseString(String s) throws ParseException {
-        throw new ParseException("Error parsing interval");
+        return (BigDecimal) parseInterval(s, this::parse);
+    }
+
+    @Override
+    public String formatString(BigDecimal obj) {
+        return formatInterval(obj, this::format);
     }
 
     @Override
@@ -108,14 +101,16 @@ public abstract class IntervalClass extends DataClass<BigDecimal> {
 
     @Override
     public BigDecimal getDefaultValue() {
-        long time = new Date().getTime() / 1000;
-        return new BigDecimal(time + "." + time);
+        return null;
+    }
+
+    @Override
+    public String getString(Object value, SQLSyntax syntax) {
+        throw new RuntimeException("not supported");
     }
 
     @Override
     protected Class getReportJavaClass() {
         return BigDecimal.class;
     }
-
-    public abstract Object extractValue(LocalDateTime localDateTime);
 }

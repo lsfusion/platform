@@ -31,7 +31,7 @@ public class SimpleChangePropertyDispatcher extends ClientFormActionDispatcher {
         try {
             ServerResponse serverResponse = getFormController().executeEventAction(property, columnKey, ServerResponse.CHANGE);
             try {
-                dispatchResponse(serverResponse);
+                dispatchServerResponse(serverResponse);
             } finally {
                 if (dispatcherListener != null && serverResponse != ServerResponse.EMPTY)  // проверка нужна, если запрос заблокируется то и postponeDispatchingEnded не будет, а значит "скобки" нарушатся и упадет assertion
                     dispatcherListener.dispatchingPostponedEnded(this);
@@ -40,10 +40,6 @@ public class SimpleChangePropertyDispatcher extends ClientFormActionDispatcher {
         } catch (IOException ex) {
             throw Throwables.propagate(ex);
         }
-    }
-
-    public boolean executeAction(ClientPropertyDraw property, ClientGroupObjectValue columnKey) {
-        return changeProperty(null, property, columnKey);
     }
 
     @Override

@@ -51,13 +51,7 @@ public class SeekInternalAction extends InternalAction {
             value = NullValue.instance;
         }
 
-        boolean firstObject = true;
-        for (ObjectInstance object : objects) {
-            if (firstObject) {
-                object.groupTo.seek(UpdateType.FIRST);
-                firstObject = false;
-            }
-            form.seekObject(object, value, UpdateType.FIRST);
-        }
+        for(ImSet<ObjectInstance> groupedObjects : objects.group(key -> key.groupTo).valueIt())
+            form.seekObjects(null, groupedObjects.toMap(value), UpdateType.FIRST);
     }
 }

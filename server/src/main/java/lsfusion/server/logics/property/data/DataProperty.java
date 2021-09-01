@@ -89,11 +89,14 @@ public abstract class DataProperty extends AbstractDataProperty {
     }
 
     @Override
-    protected ImSet<Property> calculateUsedDataChanges(StructChanges propChanges) {
+    protected ImSet<Property> calculateUsedDataChanges(StructChanges propChanges, CalcDataType type) {
         if(noClasses())
             return SetFact.EMPTY();
-        
-        return propChanges.getUsedChanges(SetFact.toSet(getClassProperty().property, getValueClassProperty().property));
+
+        ImSet<Property> classProps = SetFact.singleton(getValueClassProperty().property);
+        if(type != CalcDataType.PULLEXPR)
+            classProps = classProps.merge(getClassProperty().property);
+        return propChanges.getUsedChanges(classProps);
     }
 
     @Override
@@ -119,7 +122,7 @@ public abstract class DataProperty extends AbstractDataProperty {
         ImRevMap<ClassPropertyInterface, KeyExpr> mapKeys = getMapKeys();
         Join<String> changeJoin = change.join(mapKeys);
         Expr changeExpr = changeJoin.getExpr("value");
-        Where wrongWhere = changeJoin.getWhere().and(getIsClassWhere(propertyChanges, mapKeys.filterInclRev(checkKeyChanges.result), checkValueChange.result ? changeExpr : null).not());
+        Where wrongWhere = changeJoin.getWhere().and(getIsClassWhere(propertyChanges, mapKeys.filterInclRev(checkKeyChanges.result), checkValueChange.result ? changeExpr : null, true).not());
         
         ModifyResult deleted = ModifyResult.NO;
         if(!wrongWhere.isFalse()) { // оптимизация
@@ -141,9 +144,9 @@ public abstract class DataProperty extends AbstractDataProperty {
     }
 
     @Override
-    protected DataChanges calculateDataChanges(PropertyChange<ClassPropertyInterface> change, WhereBuilder changedWhere, PropertyChanges propChanges) {
+    protected DataChanges calculateDataChanges(PropertyChange<ClassPropertyInterface> change, CalcDataType type, WhereBuilder changedWhere, PropertyChanges propChanges) {
         if(!noClasses()) // нижнее условие по аналогии с canBeChanged
-            change = change.and(getIsClassWhere(propChanges, change.getMapExprs(), change.expr));
+            change = change.and(getIsClassWhere(propChanges, change.getMapExprs(), change.expr, type != CalcDataType.PULLEXPR));
         
         if(change.where.isFalse()) // чтобы не плодить пустые change'и
             return DataChanges.EMPTY;
@@ -152,10 +155,12 @@ public abstract class DataProperty extends AbstractDataProperty {
         return new DataChanges(this, change);
     }
 
-    private Where getIsClassWhere(PropertyChanges propChanges, ImMap<ClassPropertyInterface, ? extends Expr> mapKeys, Expr expr) {
-        Where result = getClassProperty(mapKeys.keys()).mapExpr(mapKeys, propChanges, null).getWhere();
-        if(expr != null)
-            result = result.and(getValueClassProperty().mapExpr(MapFact.singleton("value", expr), propChanges, null).getWhere().or(expr.getWhere().not()));
+    private Where getIsClassWhere(PropertyChanges propChanges, ImMap<ClassPropertyInterface, ? extends Expr> mapKeys, Expr expr, boolean checkParams) {
+        Where result = checkParams ? getClassProperty(mapKeys.keys()).mapExpr(mapKeys, propChanges, null).getWhere() : Where.TRUE();
+        if(expr != null) {
+            Where valueWhere = getValueClassProperty().mapExpr(MapFact.singleton("value", expr), propChanges, null).getWhere().or(expr.getWhere().not());
+            result = result.and(valueWhere);
+        }
         return result;
     }
 

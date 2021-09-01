@@ -5,6 +5,23 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 public class SerializationUtil {
+
+    public static void serializeArray(DataOutputStream outStream, String[] array) throws IOException {
+        outStream.writeInt(array.length);
+        for (String element : array) {
+            writeString(outStream, element);
+        }
+    }
+
+    public static String[] deserializeArray(DataInputStream inStream) throws IOException {
+        int size = inStream.readInt();
+        String[] array = new String[size];
+        for (int i = 0; i < size; ++i) {
+            array[i] = readString(inStream);
+        }
+        return array;
+    }
+
     public static void writeString(DataOutputStream outStream, String str) throws IOException {
         outStream.writeBoolean(str != null);
         if (str != null) {

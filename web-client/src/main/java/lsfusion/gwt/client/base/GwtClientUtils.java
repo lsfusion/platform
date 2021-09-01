@@ -869,6 +869,10 @@ public class GwtClientUtils {
         return obj1.equals(obj2);
     }
 
+    public static int nullHash(Object obj) {
+        return obj == null ? 0 : obj.hashCode();
+    }
+
     public static Element getElement(Node node) {
         if(node == null)
             return null;
@@ -910,4 +914,26 @@ public class GwtClientUtils {
         }
         return null;
     }
+
+    public static <T> ArrayList<T> removeLast(ArrayList<T> values) {
+        ArrayList<T> newValues = new ArrayList<>();
+        for (int i = 0; i < values.size() - 1; i++)
+            newValues.add(values.get(i));
+        return newValues;
+    }
+
+    //when used in gwt-javascript, so as not to pass many parameters to the native-method and get localized strings directly
+    protected static native void getLocalizedString(String string)/*-{
+        var name;
+        var prototype = Object.getPrototypeOf(@GwtClientUtils::messages);
+        var ownPropertyNames = Object.getOwnPropertyNames(prototype);
+        for (var i = 0; i < ownPropertyNames.length; i++) {
+            var property = ownPropertyNames[i];
+            if (property.includes(string)) {
+                name = property;
+                break;
+            }
+        }
+        return name != null ? prototype[name]() : name;
+    }-*/;
 }

@@ -1605,12 +1605,12 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     }
 
     @IdentityLazy
-    public ImOrderSet<Property> getCheckConstrainedProperties() {
-        return BaseUtils.immutableCast(getPropertyList().filterOrder(property -> property instanceof Property && ((Property) property).checkChange != Property.CheckType.CHECK_NO));
+    public ImSet<Property> getCheckConstrainedProperties() {
+        return BaseUtils.immutableCast(getPropertyList().getSet().filterFn(property -> property instanceof Property && ((Property) property).checkChange != Property.CheckType.CHECK_NO));
     }
 
-    public ImOrderSet<Property> getCheckConstrainedProperties(Property<?> changingProp) {
-        return BaseUtils.immutableCast(getCheckConstrainedProperties().filterOrder(property -> property.checkChange == Property.CheckType.CHECK_ALL ||
+    public ImSet<Property> getCheckConstrainedProperties(Property<?> changingProp) {
+        return BaseUtils.immutableCast(getCheckConstrainedProperties().filterFn(property -> property.checkChange == Property.CheckType.CHECK_ALL ||
                 property.checkChange == Property.CheckType.CHECK_SOME && property.checkProperties.contains(changingProp)));
     }
 
@@ -1976,10 +1976,13 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         }
     }
 
-    public List<Scheduler.SchedulerTask> getSystemTasks(Scheduler scheduler) {
+    public List<Scheduler.SchedulerTask> getSystemTasks(Scheduler scheduler, boolean isServer) {
         List<Scheduler.SchedulerTask> result = new ArrayList<>();
-        result.add(getChangeCurrentDateTask(scheduler));
-        result.add(getChangeDataCurrentDateTimeTask(scheduler));
+        if(isServer) {
+            result.add(getChangeCurrentDateTask(scheduler));
+            result.add(getChangeDataCurrentDateTimeTask(scheduler));
+        }
+        result.add(getFlushAsyncValuesCachesTask(scheduler));
 
         if(!SystemProperties.inDevMode) { // чтобы не мешать при включенных breakPoint'ах
             result.add(getOpenFormCountUpdateTask(scheduler));
@@ -2067,7 +2070,11 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     private Scheduler.SchedulerTask getFlushPendingTransactionCleanersTask(Scheduler scheduler) {
         return scheduler.createSystemTask(stack -> DataSession.flushPendingTransactionCleaners(), false, Settings.get().getFlushPendingTransactionCleanersThreshold(), false, "Flush Pending Transaction Cleaners");
     }
-    
+
+    private Scheduler.SchedulerTask getFlushAsyncValuesCachesTask(Scheduler scheduler) {
+        return scheduler.createSystemTask(stack -> getDbManager().flushChanges(), false, Settings.get().getFlushAsyncValuesCaches(), false, "Flush async values caches");
+    }
+
     private Scheduler.SchedulerTask getRestartConnectionsTask(Scheduler scheduler) {
         final Result<Double> prevStart = new Result<>(0.0);
         return scheduler.createSystemTask(stack -> SQLSession.restartConnections(prevStart), false, Settings.get().getPeriodRestartConnections(), false, "Connection restart");

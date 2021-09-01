@@ -1,191 +1,228 @@
 package lsfusion.gwt.client.form.filter.user.view;
 
-import com.google.gwt.event.dom.client.ChangeEvent;
-import com.google.gwt.event.dom.client.ChangeHandler;
-import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.logical.shared.ValueChangeEvent;
-import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.ui.CheckBox;
+import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Pair;
-import lsfusion.gwt.client.base.view.ResizableHorizontalPanel;
-import lsfusion.gwt.client.form.filter.user.*;
-import lsfusion.gwt.client.form.object.GGroupObjectValue;
+import lsfusion.gwt.client.base.view.FlexPanel;
+import lsfusion.gwt.client.form.event.GKeyStroke;
+import lsfusion.gwt.client.form.filter.user.GCompare;
+import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.object.table.controller.GTableController;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
-import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.view.Column;
+import lsfusion.gwt.client.view.StyleDefaults;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-public class GFilterConditionView extends ResizableHorizontalPanel implements GFilterValueView.GFilterValueListener {
+public class GFilterConditionView extends FlexPanel {
     private static final ClientMessages messages = ClientMessages.Instance.get();
     public interface UIHandler {
-        void conditionChanged();
-        void conditionRemoved(GPropertyFilter condition);
-        void applyFilter();
+        void addEnterBinding(Widget widget);
+        void removeCondition(GPropertyFilter condition);
+        void applyFilters(boolean focusFirstComponent);
     }
 
-    private static final String DELETE = "filtdel.png";
+    private static final String DELETE_ICON_PATH = "filtdel.png";
+    private static final String SEPARATOR_ICON_PATH = "filtseparator.png";
 
-    private GFilterConditionListBox propertyView;
-    private CheckBox negationView;
-    private GFilterConditionListBox compareView;
-    private GFilterConditionListBox filterValues;
-    private GFilterValueView valueView;
-    private GFilterConditionListBox junctionView;
+    private GPropertyFilter condition;
 
-    public GPropertyFilter condition;
-    private UIHandler handler;
+    private Map<Column, String> columns = new HashMap<>();
+    
+    private Label propertyLabel;
+    private GFilterOptionSelector<Column> propertyView;
 
-    private Map<GFilterValue, GFilterValueView> valueViews;
+    private Label compareLabel;
+    private GFilterCompareSelector compareView;
 
-    public GFilterConditionView(GPropertyFilter iCondition, GTableController logicsSupplier, final UIHandler handler) {
+    private GDataFilterValueView valueView;
+
+    private GToolbarButton deleteButton;
+
+    private Widget junctionSeparator;
+    private GToolbarButton junctionView;
+
+    public boolean allowNull = false;
+
+    private boolean isLast = false;
+    private boolean toolsVisible;
+
+    public boolean isApplied;
+
+    public GFilterConditionView(GPropertyFilter iCondition, GTableController logicsSupplier, final UIHandler handler, boolean toolsVisible, boolean readSelectedValue) {
         this.condition = iCondition;
-        this.handler = handler;
-        setVerticalAlignment(ALIGN_MIDDLE);
+        this.toolsVisible = toolsVisible;
 
-        propertyView = new GFilterConditionListBox();
-        propertyView.addStyleName("customFontPresenter");
-        for (Pair<Column, String> column : logicsSupplier.getSelectedColumns())
-            propertyView.add(column.first, column.second);
-        propertyView.addChangeHandler(event -> {
-            Column selectedItem = (Column)propertyView.getSelectedItem();
-            condition.property = selectedItem.property;
-            condition.columnKey = selectedItem.columnKey;
-            filterChanged();
-        });
-        add(propertyView);
-
-        if (condition.property != null) {
-            setSelectedPropertyDraw(condition.property, condition.columnKey);
+        List<Pair<Column, String>> selectedColumns = logicsSupplier.getSelectedColumns();
+        for (Pair<Column, String> column : selectedColumns) {
+            columns.put(column.first, column.second);
         }
 
-        negationView = new CheckBox(messages.formFilterConditionViewNot());
-        negationView.addStyleName("checkBoxFilter");
-        negationView.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
+        Column currentColumn = new Column(condition.property, condition.columnKey);
+        String currentCaption = columns.get(currentColumn);
+        
+        propertyLabel = new Label(currentCaption);
+        propertyLabel.addStyleName("userFilterLabel");
+        addCentered(propertyLabel);
+
+        propertyView = new GFilterOptionSelector<Column>(new Column[0]) {
             @Override
-            public void onValueChange(ValueChangeEvent<Boolean> event) {
-                condition.negation = negationView.getValue();
-                handler.conditionChanged();
-            }
-        });
-        negationView.addClickHandler(new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent event) {
-                handler.conditionChanged();
-            }
-        });
-        add(negationView);
-        negationView.setValue(condition.negation);
+            public void valueChanged(Column column) {
+                condition.property = column.property;
+                condition.columnKey = column.columnKey;
 
-        compareView = new GFilterConditionListBox();
-        compareView.addStyleName("customFontPresenter");
-        compareView.add(GCompare.values());
-        compareView.addChangeHandler(new ChangeHandler() {
-            @Override
-            public void onChange(ChangeEvent event) {
-                condition.compare = (GCompare) compareView.getSelectedItem();
-                handler.conditionChanged();
-            }
-        });
-        add(compareView);
-        compareView.setItems(condition.property.baseType.getFilterCompares());
-        compareView.setSelectedItem(condition.compare);
+                propertyLabel.setText(columns.get(column));
 
-        filterValues = new GFilterConditionListBox();
-        filterValues.addStyleName("customFontPresenter");
+                propertyChanged();
 
-        valueViews = new HashMap<>();
-
-        GDataFilterValue dataValue = condition.value instanceof GDataFilterValue ? (GDataFilterValue) condition.value : new GDataFilterValue();
-        GDataFilterValueView dataView = new GDataFilterValueView(this, dataValue, condition.property, logicsSupplier);
-        valueViews.put(dataValue, dataView);
-
-        GObjectFilterValue objectValue = condition.value instanceof GObjectFilterValue ? (GObjectFilterValue) condition.value : new GObjectFilterValue();
-        GObjectFilterValueView objectView = new GObjectFilterValueView(this, objectValue, logicsSupplier);
-        valueViews.put(objectValue, objectView);
-
-        GPropertyFilterValue propertyValue = condition.value instanceof GPropertyFilterValue ? (GPropertyFilterValue) condition.value : new GPropertyFilterValue();
-        GPropertyFilterValueView propertyView = new GPropertyFilterValueView(this, propertyValue, logicsSupplier);
-        valueViews.put(propertyValue, propertyView);
-
-        filterValues.add(dataValue, objectValue, propertyValue);
-        filterValues.addChangeHandler(new ChangeHandler() {
-            @Override
-            public void onChange(ChangeEvent event) {
-                condition.value = (GFilterValue) filterValues.getSelectedItem();
-                filterChanged();
-            }
-        });
-        add(filterValues);
-        filterValues.setSelectedItem(condition.value);
-
-        junctionView = new GFilterConditionListBox();
-        junctionView.addStyleName("customFontPresenter");
-        junctionView.add(new String[]{messages.formFilterConditionViewAnd(), messages.formFilterConditionViewOr()});
-        junctionView.addChangeHandler(new ChangeHandler() {
-            @Override
-            public void onChange(ChangeEvent event) {
-                condition.junction = junctionView.getSelectedIndex() == 0;
-                handler.conditionChanged();
-            }
-        });
-        add(junctionView);
-        junctionView.setSelectedIndex(condition.junction ? 0 : 1);
-
-        GToolbarButton deleteButton = new GToolbarButton(DELETE, messages.formQueriesFilterRemoveCondition()) {
-            @Override
-            public ClickHandler getClickHandler() {
-                return event -> handler.conditionRemoved(condition);
+                startEditing(GKeyStroke.createAddUserFilterKeyEvent());
             }
         };
-        deleteButton.addStyleName("filterDialogButton");
-        add(deleteButton);
-
-        valueView = valueViews.get(condition.value);
-        if (valueView != null) {
-            insert(valueView, getWidgetIndex(junctionView));
-            valueView.propertySet(condition);
+        for (Pair<Column, String> column : selectedColumns) {
+            propertyView.add(column.first, column.second);
         }
+        propertyView.setSelectedValue(currentColumn, currentCaption);
+        addCentered(propertyView);
+        
+        compareLabel = new Label();
+        updateCompareLabelText();
+        compareLabel.addStyleName("userFilterLabel");
+        addCentered(compareLabel);
+
+        compareView = new GFilterCompareSelector(condition) {
+            @Override
+            public void negationChanged(boolean value) {
+                condition.negation = value;
+                updateCompareLabelText();
+                handler.applyFilters(false);
+            }
+
+            @Override
+            public void allowNullChanged(boolean value) {
+                allowNull = value;
+                handler.applyFilters(false);
+            }
+
+            @Override
+            public void valueChanged(GCompare value) {
+                super.valueChanged(value);
+                condition.compare = value;
+                updateCompareLabelText();
+                handler.applyFilters(false);
+            }
+        };
+        compareView.setSelectedValue(condition.compare);
+        addCentered(compareView);
+
+        valueView = new GDataFilterValueView(condition.value, logicsSupplier) {
+            @Override
+            public void valueChanged(Object value) {
+                super.valueChanged(value);
+                handler.applyFilters(cell.enterPressed);
+            }
+
+            @Override
+            public void editingCancelled() {
+                super.editingCancelled();
+                if (!isApplied) {
+                    handler.removeCondition(condition);
+                }
+            }
+        };
+        addCentered(valueView);
+        valueView.changeProperty(condition.property, condition.columnKey, readSelectedValue); // it's important to do it after adding to the container because setStatic -> setBaseSize is called inside (and adding to container also calls it and override with default value)
+        handler.addEnterBinding(valueView.cell);
+
+        deleteButton = new GToolbarButton(DELETE_ICON_PATH, messages.formQueriesFilterRemoveCondition()) {
+            @Override
+            public ClickHandler getClickHandler() {
+                return event -> handler.removeCondition(condition);
+            }
+        };
+        deleteButton.addStyleName("userFilterButton");
+        addCentered(deleteButton);
+
+        junctionSeparator = GwtClientUtils.createVerticalSeparator(StyleDefaults.COMPONENT_HEIGHT);
+        junctionSeparator.addStyleName("userFilterJunctionSeparator");
+        addCentered(junctionSeparator);
+
+        junctionView = new GToolbarButton(SEPARATOR_ICON_PATH, messages.formFilterConditionViewOr()) {
+            @Override
+            public ClickHandler getClickHandler() {
+                return event -> {
+                    condition.junction = !condition.junction;
+                    showBackground(!condition.junction);
+                    handler.applyFilters(false);
+                };
+            }
+        };
+        junctionView.addStyleName("userFilterButton");
+        junctionView.getElement().getStyle().setPaddingTop(0, Style.Unit.PX);
+        junctionView.showBackground(!condition.junction);
+        addCentered(junctionView);
     }
-
-    private void filterChanged() {
-        if (valueView != null) {
-            remove(valueView);
-        }
-        valueView = valueViews.get(condition.value);
-        if (valueView != null) {
-            insert(valueView, getWidgetIndex(junctionView));
-            valueView.propertyChanged(condition);
-        }
-        compareView.setItems(condition.property.baseType.getFilterCompares());
-        compareView.setSelectedItem(condition.property.getDefaultCompare());
-        condition.compare = (GCompare) compareView.getSelectedItem();
-
-        handler.conditionChanged();
-    }
-
-    public void setJunctionVisible(boolean visible) {
-        junctionView.setVisible(visible);
-    }
-
-    public void setJunctionEnabled(boolean enabled) {
-        junctionView.setVisible(true);
-        junctionView.setEnabled(enabled);
-    }
-
-    public void setSelectedPropertyDraw(GPropertyDraw propertyDraw, GGroupObjectValue columnKey) {
-        if (propertyDraw != null)
-            propertyView.setSelectedItem(new Column(propertyDraw, columnKey));
+    
+    private void updateCompareLabelText() {
+        String negationString = condition.negation ? "!" : "";
+        compareLabel.setText(negationString + condition.compare);
+        compareLabel.setTitle(negationString + condition.compare.getTooltipText());
     }
 
     @Override
-    public void valueChanged() {
-        handler.conditionChanged();
+    protected void onAttach() {
+        super.onAttach();
+
+        setToolsVisible(toolsVisible);
+    }
+
+    public void setLast(boolean isLast) {
+        this.isLast = isLast;
+
+        updateJunctionVisibility();
+    }
+
+    public void setToolsVisible(boolean visible) {
+        toolsVisible = visible;
+        deleteButton.setVisible(visible);
+
+        propertyLabel.setVisible(!toolsVisible);
+        propertyView.setVisible(toolsVisible);
+
+        compareLabel.setVisible(!toolsVisible);
+        compareView.setVisible(toolsVisible);
+
+        updateJunctionVisibility();
+    }
+    
+    private void updateJunctionVisibility() {
+        junctionSeparator.setVisible(!toolsVisible && !isLast && !condition.junction);
+        junctionView.setVisible(toolsVisible && !isLast);
+    }
+    
+    private void propertyChanged() {
+        valueView.changeProperty(condition.property, condition.columnKey);
+        
+        GCompare oldCompare = condition.compare;
+        GCompare[] filterCompares = condition.property.getFilterCompares();
+        compareView.set(filterCompares);
+        if (Arrays.asList(filterCompares).contains(oldCompare)) {
+            compareView.setSelectedValue(oldCompare);
+        } else {
+            GCompare defaultCompare = condition.property.getDefaultCompare();
+            compareView.setSelectedValue(defaultCompare);
+            condition.compare = defaultCompare;
+
+            updateCompareLabelText();
+        }
     }
 
     public void focusOnValue() {
@@ -193,18 +230,7 @@ public class GFilterConditionView extends ResizableHorizontalPanel implements GF
     }
 
     public void startEditing(Event keyEvent) {
-        valueView.startEditing(keyEvent);
-    }
-
-    public void setCompareViewWidth(int width) {
-        compareView.setWidth(width + "px");
-    }
-
-    public int getValueViewWidth() {
-        return valueView.getWidth(condition.property);
-    }
-
-    public void setValueViewWidth(int width) {
-        valueView.setWidth(width);
+        // scheduleDeferred to fix focus issues with quick filter (adding condition by char key) 
+        Scheduler.get().scheduleDeferred(() -> valueView.startEditing(keyEvent));
     }
 }

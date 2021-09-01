@@ -127,7 +127,7 @@ public final class ClassCanonicalNameUtils {
         assert !name.contains(" ");
         if (scriptedSimpleDataClassNames.containsKey(name)) {
             return scriptedSimpleDataClassNames.get(name);
-        } else if (name.matches("^((BPSTRING\\[\\d+\\])|(BPISTRING\\[\\d+\\])|(STRING\\[\\d+\\])|(ISTRING\\[\\d+\\])|(NUMERIC\\[\\d+,\\d+\\])|(INTERVAL\\[(DATE|DATETIME|TIME)\\]))$")) {
+        } else if (name.matches("^((BPSTRING\\[\\d+\\])|(BPISTRING\\[\\d+\\])|(STRING\\[\\d+\\])|(ISTRING\\[\\d+\\])|(NUMERIC\\[\\d+,\\d+\\])|(INTERVAL\\[(DATE|DATETIME|TIME|ZDATETIME)\\]))$")) {
             if (name.startsWith("BPSTRING[")) {
                 name = name.substring("BPSTRING[".length(), name.length() - 1);
                 return StringClass.get(new ExtInt(Integer.parseInt(name)));

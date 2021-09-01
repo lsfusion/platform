@@ -3,6 +3,7 @@ package lsfusion.client.form.object.table.tree.view;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
+import lsfusion.base.Pair;
 import lsfusion.base.col.MapFact;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.base.SwingUtils;
@@ -20,13 +21,13 @@ import lsfusion.client.form.object.table.view.GridPropertyTable;
 import lsfusion.client.form.order.user.MultiLineHeaderRenderer;
 import lsfusion.client.form.order.user.TableSortableHeaderManager;
 import lsfusion.client.form.property.ClientPropertyDraw;
+import lsfusion.client.form.property.async.ClientInputList;
 import lsfusion.client.form.property.cell.EditBindingMap;
 import lsfusion.client.form.property.cell.controller.ClientAbstractCellEditor;
 import lsfusion.client.form.property.cell.controller.dispatch.EditPropertyDispatcher;
 import lsfusion.client.form.property.cell.view.ClientAbstractCellRenderer;
-import lsfusion.client.form.property.table.view.CellTableContextMenuHandler;
-import lsfusion.client.form.property.table.view.CellTableInterface;
-import lsfusion.client.form.property.table.view.InternalEditEvent;
+import lsfusion.client.form.property.table.view.*;
+import lsfusion.client.form.view.Column;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.event.BindingMode;
 import lsfusion.interop.form.event.KeyInputEvent;
@@ -58,15 +59,16 @@ import java.lang.reflect.Method;
 import java.text.ParseException;
 import java.util.List;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.lang.Math.max;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static lsfusion.client.form.controller.ClientFormController.PasteData;
 import static lsfusion.client.form.property.cell.EditBindingMap.getPropertyEventActionSID;
-import static lsfusion.client.form.property.cell.EditBindingMap.isEditableAwareEditEvent;
+import static lsfusion.client.form.property.cell.EditBindingMap.isChangeEvent;
 
-public class TreeGroupTable extends ClientFormTreeTable implements CellTableInterface {
+public class TreeGroupTable extends ClientFormTreeTable implements AsyncChangeCellTableInterface {
     private final EditPropertyDispatcher editDispatcher;
 
     private final EditBindingMap editBindingMap = new EditBindingMap(true);
@@ -81,6 +83,8 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
     protected int editCol;
     protected ClientType currentEditType;
     protected Object currentEditValue;
+    protected ClientInputList currentInputList;
+    protected String currentActionSID;
     protected boolean editPerformed;
     protected boolean commitingValue;
 
@@ -757,6 +761,16 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         return model.getPropertyValue(pathForRow.getLastPathComponent(), property);
     }
 
+    public List<Pair<Column, String>> getFilterColumns(ClientGroupObject selectedGroupObject) {
+        return model.getProperties(selectedGroupObject).stream().map(property ->
+                getSelectedColumn(property, ClientGroupObjectValue.EMPTY)
+        ).collect(Collectors.toList());
+    }
+
+    public Pair<Column, String> getSelectedColumn(ClientPropertyDraw property, ClientGroupObjectValue columnKey) {
+        return new Pair<>(new Column(property, columnKey), property.getCaptionOrEmpty());
+    }
+
     @Override
     public ClientType getCurrentEditType() {
         return currentEditType;
@@ -767,6 +781,28 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         return currentEditValue;
     }
 
+    @Override
+    public EventObject getCurrentEditEvent() {
+        return editEvent;
+    }
+
+    @Override
+    public ClientInputList getCurrentInputList() {
+        return currentInputList;
+    }
+
+    public String getCurrentActionSID() {
+        return currentActionSID;
+    }
+
+    @Override
+    public Integer getContextAction() {
+        return null;
+    }
+
+    @Override
+    public void setContextAction(Integer contextAction) {
+    }
     @Override
     public Object getEditValue() {
         return getValueAt(editRow, editCol);
@@ -805,7 +841,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
             return false;
         }
 
-        if (isEditableAwareEditEvent(actionSID) && !isCellEditable(row, column)) {
+        if (isChangeEvent(actionSID) && !isCellEditable(row, column)) {
             return false;
         }
         if(ServerResponse.EDIT_OBJECT.equals(actionSID) && !property.hasEditObjectAction) {
@@ -832,7 +868,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         return editDispatcher.executePropertyEventAction(property, columnKey, actionSID, editEvent);
     }
 
-    public boolean requestValue(ClientType valueType, Object oldValue) {
+    public boolean requestValue(ClientType valueType, Object oldValue, ClientInputList inputList, String actionSID) {
         //пока чтение значения можно вызывать только один раз в одном изменении...
         //если получится безусловно задержать фокус, то это ограничение можно будет убрать
         Preconditions.checkState(!commitingValue, "You can request value only once per edit action.");
@@ -840,6 +876,8 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         // need this because we use getTableCellEditorComponent infrastructure and we need to pass currentEditValue there somehow
         currentEditType = valueType;
         currentEditValue = oldValue;
+        currentInputList = inputList;
+        currentActionSID = actionSID;
 
         if (!super.editCellAt(editRow, editCol, editEvent)) {
             return false;

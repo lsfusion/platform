@@ -84,8 +84,11 @@ import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.action.expand.ExpandCollapseType;
 import lsfusion.server.logics.form.interactive.action.focus.ActivateAction;
 import lsfusion.server.logics.form.interactive.action.focus.IsActiveFormAction;
+import lsfusion.server.logics.form.interactive.action.input.InputFilterEntity;
+import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.FormView;
+import lsfusion.server.logics.form.interactive.dialogedit.ClassFormSelector;
 import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
 import lsfusion.server.logics.form.open.MappedForm;
 import lsfusion.server.logics.form.open.ObjectSelector;
@@ -163,6 +166,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.*;
+import java.util.function.IntFunction;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -874,7 +878,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     // todo [dale]: выделить общий код    
-    public void addImplementationToAbstractAction(NamedPropertyUsage abstractPropUsage, List<TypedParameter> context, LAWithParams implement, LPWithParams when) throws ScriptingErrorLog.SemanticErrorException {
+    public void addImplementationToAbstractAction(NamedPropertyUsage abstractPropUsage, List<TypedParameter> context, LAWithParams implement, LPWithParams when, boolean optimisticAsync) throws ScriptingErrorLog.SemanticErrorException {
         LA abstractLA = findLAByPropertyUsage(abstractPropUsage, context, true);
         checks.checkParamCount(abstractLA, context.size());
         checks.checkImplementIsNotMain(abstractLA, implement.getLP());
@@ -887,7 +891,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         List<Object> params = getParamsPlainList(allProps);
 
         List<ResolveClassSet> signature = getClassesFromTypedParams(context);
-        addImplementationToAbstractAction(abstractPropUsage.name, abstractLA, signature, when != null, params);
+        addImplementationToAbstractAction(abstractPropUsage.name, abstractLA, signature, when != null, params, optimisticAsync);
     }
 
     public void addImplementationToAbstractProp(NamedPropertyUsage abstractPropUsage, List<TypedParameter> context, LPWithParams implement, LPWithParams when) throws ScriptingErrorLog.SemanticErrorException {
@@ -918,13 +922,13 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    private void addImplementationToAbstractAction(String actionName, LA abstractAction, List<ResolveClassSet> signature, boolean isCase, List<Object> params) throws ScriptingErrorLog.SemanticErrorException {
+    private void addImplementationToAbstractAction(String actionName, LA abstractAction, List<ResolveClassSet> signature, boolean isCase, List<Object> params, boolean optimisticAsync) throws ScriptingErrorLog.SemanticErrorException {
         checks.checkAbstractAction(abstractAction, actionName);
         ListCaseAction.AbstractType type = ((ListCaseAction)abstractAction.action).getAbstractType();
         checks.checkAbstractTypes(type == ListCaseAction.AbstractType.CASE, isCase);
 
         try {
-            abstractAction.addOperand(isCase, signature, getVersion(), params.toArray());
+            abstractAction.addOperand(isCase, signature, optimisticAsync, getVersion(), params.toArray());
         } catch (ScriptParsingException e) {
             errLog.emitSimpleError(parser, e.getMessage());
         }
@@ -977,7 +981,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                 errLog.emitParamClassNonDeclarationError(parser, paramName);
             }
         }
-        if (index < 0 && context != null && (dynamic || paramName.startsWith("$") && insideRecursion)) {
+        if (index < 0 && context != null && (dynamic || isRecursiveParam(paramName) && insideRecursion)) {
             if (isRecursiveParam(paramName) && insideRecursion) {
                 param.cls = context.get(indexOf(context, paramName.substring(1))).cls;
             }
@@ -1084,6 +1088,16 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         public LPLiteral(Object value) {
             this.value = value;
+        }
+    }
+
+    public static class LPCompoundID extends LPNotExpr {
+        public final String name;
+        public final ScriptingErrorLog.SemanticErrorException error;
+
+        public LPCompoundID(String name, ScriptingErrorLog.SemanticErrorException error) {
+            this.name = name;
+            this.error = error;
         }
     }
 
@@ -1214,11 +1228,13 @@ public class ScriptingLogicsModule extends LogicsModule {
         return property.property.getSID().equals(lastOptimizedJPropSID);
     }
 
+    // it seems that there are a lot more lazy properties (for example AndFormulaProperty instances in BaseLogicsModule - object, and1, etc.)
+    // but so far it doesn't seem to be that critical
     private boolean isLazy(LP<?> property) {
-        return property.property instanceof ValueProperty || property.property instanceof IsClassProperty || property.property instanceof FormulaImplProperty;
+        return property.property instanceof ValueProperty || property.property instanceof IsClassProperty || property.property instanceof FormulaImplProperty || property == baseLM.object; // == baseLM.object since it is used in checkSingleParam
     }
 
-    private LP<?> wrapProperty(LP<?> property) {
+    protected LP<?> wrapProperty(LP<?> property) {
         return addJProp(property, BaseUtils.consecutiveList(property.property.interfaces.size(), 1).toArray());
     }
 
@@ -2147,24 +2163,61 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LAWithParams(sessionLA, action.usedParams);
     }
 
-    public DataClass getInputDataClass(String paramName, List<TypedParameter> context, String typeId, LPWithParams oldValue, boolean insideRecursion) throws ScriptingErrorLog.SemanticErrorException {
-        DataClass requestDataClass;
-        if(typeId != null) {
-            requestDataClass = ClassCanonicalNameUtils.getScriptedDataClass(typeId);
+    public ValueClass getInputValueClass(String paramName, List<TypedParameter> context, String classId, LPWithParams oldValue, boolean insideRecursion) throws ScriptingErrorLog.SemanticErrorException {
+        ValueClass requestValueClass;
+        if(classId != null) {
+            requestValueClass = findClass(classId);
         } else {
             ValueClass valueClass = getValueClassByParamProperty(oldValue, context);
-            checks.checkInputDataClass(valueClass);
-            requestDataClass = (DataClass) valueClass;
+//            checks.checkInputDataClass(valueClass);
+            requestValueClass = valueClass;
         }
 
         if(paramName != null)
-            getParamIndex(new TypedParameter(requestDataClass, paramName), context, true, insideRecursion);
-        return requestDataClass;
+            getParamIndex(new TypedParameter(requestValueClass, paramName), context, true, insideRecursion);
+        return requestValueClass;
     }
 
-    public LAWithParams addScriptedInputAProp(DataClass requestDataClass, LPWithParams oldValue, NamedPropertyUsage targetProp, LAWithParams doAction, LAWithParams elseAction, List<TypedParameter> oldContext, List<TypedParameter> newContext, boolean assign, LPWithParams changeProp, DebugInfo.DebugPoint assignDebugPoint) throws ScriptingErrorLog.SemanticErrorException {
+    // similar to Context Filter Entity
+    private static class ILEWithParams {
+        public final ImOrderSet<Integer> usedParams;
+        public final ImOrderSet<PropertyInterface> orderInterfaces;
+        public final InputListEntity<?, PropertyInterface> list;
+        public final InputFilterEntity<?, PropertyInterface> where;
+
+        public ILEWithParams(ImOrderSet<Integer> usedParams, ImOrderSet<PropertyInterface> orderInterfaces, InputListEntity<?, PropertyInterface> list, InputFilterEntity<?, PropertyInterface> where) {
+            this.usedParams = usedParams;
+            this.orderInterfaces = orderInterfaces;
+            assert usedParams.size() == orderInterfaces.size();
+            this.list = list;
+            this.where = where;
+        }
+    }
+    private ScriptingLogicsModule.ILEWithParams getContextListEntity(int contextSize, ScriptingLogicsModule.LPWithParams list, ScriptingLogicsModule.LPWithParams where) {
+        if(list == null) // optimization
+            return new ILEWithParams(SetFact.EMPTYORDER(), SetFact.EMPTYORDER(), null, null);
+
+        ImOrderSet<Integer> usedParams = SetFact.fromJavaOrderSet(mergeAllParams(ListFact.singleton(list).addList(
+                                                where != null ? ListFact.singleton(list) : ListFact.EMPTY())));
+        ImOrderSet<Integer> usedContextParams = usedParams.filterOrder(element -> element < contextSize);
+        ImOrderSet<PropertyInterface> orderInterfaces = genInterfaces(usedContextParams.size());
+        ImRevMap<Integer, PropertyInterface> usedInterfaces = usedContextParams.mapSet(orderInterfaces);
+
+        return new ScriptingLogicsModule.ILEWithParams(usedContextParams, orderInterfaces,
+                splitParams(list, contextSize, usedInterfaces, value -> 0, (property, mapValues, mapExternal) -> {
+                    assert mapValues.valuesSet().equals(orderInterfaces.getSet()); // all properties are used
+                    return new InputListEntity<>(property, mapValues);
+                }),
+                where != null ? splitParams(where, contextSize, usedInterfaces, value -> 0, (property, mapValues, mapExternal) ->
+                        new InputFilterEntity<>(property, mapValues)) : null);
+    }
+
+    public LAWithParams addScriptedInputAProp(ValueClass requestValueClass, LPWithParams oldValue, NamedPropertyUsage targetProp, LAWithParams doAction, LAWithParams elseAction, List<TypedParameter> oldContext, List<TypedParameter> newContext, boolean assign, boolean constraintFilter, LPWithParams changeProp, LPWithParams listProp, LPWithParams whereProp, DebugInfo.DebugPoint assignDebugPoint, FormSessionScope listScope) throws ScriptingErrorLog.SemanticErrorException {
+        if(listScope == null)
+            listScope = FormSessionScope.OLDSESSION;
+
         assert targetProp == null;
-        LP<?> tprop = getInputProp(targetProp, requestDataClass, null);
+        LP<?> tprop = getInputProp(targetProp, requestValueClass, null);
 
         if (changeProp == null)
             changeProp = oldValue;
@@ -2172,22 +2225,49 @@ public class ScriptingLogicsModule extends LogicsModule {
         if(assign && doAction == null) // we will need to add change props, temporary will make this action empty to avoid extra null checks 
             doAction = new LAWithParams(baseLM.getEmpty(), new ArrayList<Integer>());
 
-        // optimization. we don't use files on client side (see also DefaultChangeAction.executeCustom()) 
-        if (oldValue != null && requestDataClass instanceof FileClass)
-            oldValue = null;
+        LA action;
+        ImOrderSet<Integer> usedParams;
+        if(requestValueClass instanceof CustomClass) {
+            ClassFormSelector classForm = new ClassFormSelector((CustomClass) requestValueClass, false);
 
-        LA action = addInputAProp(requestDataClass, tprop != null ? tprop.property : null, oldValue != null);
+            ImList<CCCF<ClassFormSelector.VirtualObject>> cccfs = ListFact.EMPTY();
+            if(constraintFilter)
+                cccfs = ListFact.singleton(new CCCF<>(changeProp, classForm.virtualObject, oldContext.size())); // assuming that there is only one parameter
+            
+            CFEWithParams<ClassFormSelector.VirtualObject> contextEntities = getContextFilterAndListEntities(oldContext.size(), SetFact.singletonOrder(classForm.virtualObject), ListFact.singleton(whereProp), listProp, cccfs);
+            usedParams = contextEntities.usedParams;            
+            
+            action = addDialogInputAProp(classForm, tprop, classForm.virtualObject, oldValue != null, contextEntities.orderInterfaces, listScope, contextEntities.list, contextEntities.filters);
+        } else {
+            // optimization. we don't use files on client side (see also DefaultChangeAction.executeCustom())
+            if (oldValue != null && requestValueClass instanceof FileClass)
+                oldValue = null;
+
+            ILEWithParams contextEntity = getContextListEntity(oldContext.size(), listProp, whereProp);
+            usedParams = contextEntity.usedParams;
+
+            action = addInputAProp((DataClass)requestValueClass, tprop, oldValue != null, contextEntity.orderInterfaces, contextEntity.list, listScope, contextEntity.where, ListFact.EMPTY());
+        }
+        
+        List<LPWithParams> mapping = new ArrayList<>();
+
+        if(oldValue != null) {
+            mapping.add(oldValue);
+        }
+
+        for (int usedParam : usedParams) {
+            mapping.add(new LPWithParams(usedParam));
+        }
 
         LAWithParams inputAction;
-        if (oldValue != null)
-            inputAction = addScriptedJoinAProp(action, Collections.singletonList(oldValue));
+        if (mapping.size() > 0)
+            inputAction = addScriptedJoinAProp(action, mapping);
         else
             inputAction = new LAWithParams(action, Collections.emptyList());
 
         return proceedInputDoClause(doAction, elseAction, oldContext, newContext, ListFact.singleton(tprop), inputAction,
                 ListFact.singleton(assign ? new Pair<>(changeProp, assignDebugPoint) : null));
     }
-
 
     public LAWithParams addScriptedRequestAProp(LAWithParams requestAction, LAWithParams doAction, LAWithParams elseAction) {
         List<LAPWithParams> propParams = new ArrayList<>();
@@ -2315,8 +2395,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         FormEntity form = getFormFromSeekObjectName(name);
         GroupObjectEntity groupObject = getSeekGroupObject(form, name);
 
-        List<ObjectEntity> objects = new ArrayList<>();
+        ImOrderSet<ObjectEntity> objects = SetFact.EMPTYORDER();
         if (objNames != null) {
+            MOrderExclSet<ObjectEntity> mObjects = SetFact.mOrderExclSet(objNames.size());
             for (String objName : objNames) {
                 ObjectEntity obj = form.getNFObject(objName, getVersion());
                 if (obj == null) {
@@ -2324,13 +2405,14 @@ public class ScriptingLogicsModule extends LogicsModule {
                 } else if (obj.groupTo != groupObject) {
                     errLog.emitObjectOfGroupObjectError(parser, obj.getSID(), groupObject.getSID());
                 }
-                objects.add(obj);
+                mObjects.exclAdd(obj);
             }
+            objects = mObjects.immutableOrder();
         }
 
         if (groupObject != null) {
             List<Object> resultParams = getParamsPlainList(values);
-            LA LA = addGOSAProp(groupObject, objects, type, resultParams.toArray());
+            LA LA = addGOSAProp(null, LocalizedString.NONAME, groupObject, objects, type, resultParams.toArray());
             return new LAWithParams(LA, mergeAllParams(values));
         } else {
             errLog.emitGroupObjectNotFoundError(parser, getSeekObjectName(name));
@@ -3069,7 +3151,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return StringClass.getv(new ExtInt(value.getSourceString().length()));
     }
 
-    public Pair<LP, LPLiteral> addConstantProp(ConstType type, Object value) throws ScriptingErrorLog.SemanticErrorException {
+    public Pair<LP, LPNotExpr> addConstantProp(ConstType type, Object value) throws ScriptingErrorLog.SemanticErrorException {
         LP lp = null;
         switch (type) {
             case INT: lp = addUnsafeCProp(IntegerClass.instance, value); break;
@@ -3082,7 +3164,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             case DATE: lp =  addUnsafeCProp(DateClass.instance, value); break;
             case DATETIME: lp =  addUnsafeCProp(DateTimeClass.instance, value); break;
             case TIME: lp =  addUnsafeCProp(TimeClass.instance, value); break;
-            case STATIC: lp =  addStaticClassConst((String) value); break;
+            case STATIC: return addStaticClassConst((String) value);
             case COLOR: lp =  addUnsafeCProp(ColorClass.instance, value); break;
             case NULL: lp =  baseLM.vnull; break;
         }
@@ -3203,10 +3285,6 @@ public class ScriptingLogicsModule extends LogicsModule {
         ImList<O> mappedObjects = mapped.objects;
         ImOrderSet<O> contextObjects = getMappingObjectsArray(mapped, objectsContext);
 
-        MList<O> mInputObjects = ListFact.mListMax(mappedObjects.size());
-        MList<Boolean> mInputNulls = ListFact.mListMax(mappedObjects.size());
-        MList<LP> mInputProps = ListFact.mListMax(mappedObjects.size());
-
         MList<O> mObjects = ListFact.mListMax(mappedObjects.size());
         List<LPWithParams> mapping = new ArrayList<>();
         MList<Boolean> mNulls = ListFact.mListMax(mappedObjects.size());
@@ -3219,21 +3297,15 @@ public class ScriptingLogicsModule extends LogicsModule {
             mNulls.add(objectProp.inNull);
             assert !objectProp.out && !objectProp.constraintFilter;
         }
-        ImList<O> inputObjects = mInputObjects.immutableList();
-        ImList<Boolean> inputNulls = mInputNulls.immutableList();
-        ImList<LP> inputProps = mInputProps.immutableList();
 
-        CFEWithParams<O> contextEntities = getContextFilterEntities(oldContext.size(), contextObjects, ListFact.fromJavaList(contextFilters), ListFact.EMPTY());
+        CFEWithParams<O> contextEntities = getContextFilterEntities(oldContext.size(), contextObjects, ListFact.fromJavaList(contextFilters));
 
         ImList<O> objects = mObjects.immutableList();
         LA action = addIFAProp(null, LocalizedString.NONAME, mapped.form, objects, mNulls.immutableList(),
-                inputObjects, inputProps, inputNulls,
-                manageSession, noCancel,
+                formSessionScope, manageSession, noCancel,
                 contextEntities.orderInterfaces, contextEntities.filters,
                 syncType, windowType, false, checkOnOk,
                 readonly);
-
-        action = addSessionScopeAProp(formSessionScope, action);
 
         for (int usedParam : contextEntities.usedParams) {
             mapping.add(new LPWithParams(usedParam));
@@ -3254,7 +3326,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
 
         if(valueClass instanceof DataClass) {
-            LP<?> requested = baseLM.getRequestedValueProperty().getLCP((DataClass)valueClass);
+            LP requested = getRequestedValueProperty(valueClass);
             if(usedProps == null || usedProps.add(requested.property))
                 return requested;
         }
@@ -3295,42 +3367,71 @@ public class ScriptingLogicsModule extends LogicsModule {
     private static class CFEWithParams<O extends ObjectSelector> {
         public final ImOrderSet<Integer> usedParams;
         public final ImOrderSet<PropertyInterface> orderInterfaces;
-        public final ImList<ContextFilterSelector<?, PropertyInterface, O>> filters;
+        public final ImSet<ContextFilterSelector<PropertyInterface, O>> filters;
+        public final InputListEntity<?, PropertyInterface> list;
 
-        public CFEWithParams(ImOrderSet<Integer> usedParams, ImOrderSet<PropertyInterface> orderInterfaces, ImList<ContextFilterSelector<?, PropertyInterface, O>> filters) {
+        public CFEWithParams(ImOrderSet<Integer> usedParams, ImOrderSet<PropertyInterface> orderInterfaces, ImSet<ContextFilterSelector<PropertyInterface, O>> filters, InputListEntity<?, PropertyInterface> list) {
             this.usedParams = usedParams;
             this.orderInterfaces = orderInterfaces;
             assert usedParams.size() == orderInterfaces.size();
             this.filters = filters;
+            this.list = list;
         }
     }
-    private <O extends ObjectSelector, T extends PropertyInterface, X extends PropertyInterface> CFEWithParams<O> getContextFilterEntities(int contextSize, ImOrderSet<O> objectsContext, ImList<LPWithParams> contextFilters, ImList<CCCF<O>> cccfs) {
+    private LPWithParams remap(LPWithParams property, int fromParam, int toParam) {
+        List<Integer> remappedList = new ArrayList<Integer>();
+        for(int usedParam : property.usedParams) {
+            if (usedParam == fromParam)
+                usedParam = toParam;
+            remappedList.add(usedParam);
+        }
+        return new LPWithParams(property.getLP(), remappedList);
+    }
+    private interface ThreeFunction<A, B, C, R> {
+        R apply(A param1, B param2, C param3);        
+    }
+    private <T extends PropertyInterface, E, R> R splitParams(LPWithParams lpWithParams, int contextSize, ImRevMap<Integer, PropertyInterface> usedInterfaces, IntFunction<E> external, ThreeFunction<Property<T>, ImRevMap<T, PropertyInterface>, ImRevMap<T, E>, R> result) {
+        return splitAPParams(lpWithParams, contextSize, usedInterfaces, external, result);
+    }
+    private <T extends PropertyInterface, P extends ActionOrProperty<T>, E, R> R splitAPParams(LAPWithParams lpWithParams, int contextSize, ImRevMap<Integer, PropertyInterface> usedInterfaces, IntFunction<E> external, ThreeFunction<P, ImRevMap<T, PropertyInterface>, ImRevMap<T, E>, R> result) {
+        LAP<T, P> lp = (LAP<T, P>) lpWithParams.getLP();
+
+        int size = lp.listInterfaces.size();
+        MRevMap<T, PropertyInterface> mMapValues = MapFact.mRevMapMax(size);
+        MRevMap<T, E> mMapObjects = MapFact.mRevMapMax(size);
+        for(int i = 0; i<size; i++) {
+            T pi = lp.listInterfaces.get(i);
+            Integer usedParam = lpWithParams.usedParams.get(i);
+            PropertyInterface ii = usedInterfaces.get(usedParam);
+            if(ii != null) // either context parameter
+                mMapValues.revAdd(pi, ii);
+            else // either object parameter
+                mMapObjects.revAdd(pi, external.apply(usedParam - contextSize));
+        }
+        return result.apply(lp.getActionOrProperty(), mMapValues.immutableRev(), mMapObjects.immutableRev());
+    }
+    
+    private <O extends ObjectSelector, T extends PropertyInterface, X extends PropertyInterface> CFEWithParams<O> getContextFilterEntities(int contextSize, ImOrderSet<O> objectsContext, ImList<LPWithParams> contextFilters) {
+        return getContextFilterAndListEntities(contextSize, objectsContext, contextFilters, null, ListFact.EMPTY());
+    }
+    private <O extends ObjectSelector, T extends PropertyInterface, X extends PropertyInterface> CFEWithParams<O> getContextFilterAndListEntities(int contextSize, ImOrderSet<O> objectsContext, ImList<LPWithParams> contextFilters, LPWithParams list, ImList<CCCF<O>> cccfs) {
         ImOrderSet<Integer> usedParams = SetFact.fromJavaOrderSet(mergeAllParams(contextFilters.addList(
                                                                                  cccfs.mapListValues((CCCF<O> cccf) -> cccf.change)).addList(
-                                                                                 cccfs.mapListValues((CCCF<O> cccf) -> new LPWithParams(null, cccf.objectParam)))));        
+                                                                                 cccfs.mapListValues((CCCF<O> cccf) -> new LPWithParams(null, cccf.objectParam))).addList(
+                                                                                 list != null ? ListFact.singleton(list) : ListFact.EMPTY())));
         ImOrderSet<Integer> usedContextParams = usedParams.filterOrder(element -> element < contextSize);        
         ImOrderSet<PropertyInterface> orderInterfaces = genInterfaces(usedContextParams.size());
         ImRevMap<Integer, PropertyInterface> usedInterfaces = usedContextParams.mapSet(orderInterfaces);
 
-        return new CFEWithParams<>(usedContextParams, orderInterfaces, ListFact.add(contextFilters.mapListValues((LPWithParams contextFilter) -> {
-            LP<T> lp = (LP<T>) contextFilter.getLP();
-            int size = lp.listInterfaces.size();
-            MRevMap<T, PropertyInterface> mMapValues = MapFact.mRevMapMax(size);
-            MRevMap<T, O> mMapObjects = MapFact.mRevMapMax(size);
-            for(int i = 0; i<size; i++) {
-                T pi = lp.listInterfaces.get(i);
-                Integer usedParam = contextFilter.usedParams.get(i);
-                PropertyInterface ii = usedInterfaces.get(usedParam);
-                if(ii != null) // either context parameter
-                    mMapValues.revAdd(pi, ii);
-                else // either object parameter
-                    mMapObjects.revAdd(pi, objectsContext.get(usedParam - contextSize));
-            }
-            return new ContextFilterEntity<>(lp.getActionOrProperty(), mMapValues.immutableRev(), mMapObjects.immutableRev());
-        }), cccfs.mapListValues((CCCF<O> cccf) -> {
-            LP<X> lp = (LP<X>) cccf.change.getLP();
-            return new CCCContextFilterEntity<>(lp.getImplement(SetFact.fromJavaOrderSet(cccf.change.usedParams).mapOrder(usedInterfaces)), cccf.object);
-        })));
+        return new CFEWithParams<O>(usedContextParams, orderInterfaces, ListFact.add(
+            contextFilters.mapListValues((LPWithParams contextFilter) -> 
+                splitParams(contextFilter, contextSize, usedInterfaces, objectsContext::get, ContextFilterEntity::new)),
+            cccfs.mapListValues((CCCF<O> cccf) -> {
+                LP<X> lp = (LP<X>) cccf.change.getLP();
+                return new CCCContextFilterEntity<>(lp.getImplement(SetFact.fromJavaOrderSet(cccf.change.usedParams).mapOrder(usedInterfaces)), cccf.object);
+            })).toOrderExclSet().getSet(),
+            list != null ? splitParams(list, contextSize, usedInterfaces, value -> 0, (property, mapValues, mapExternal) -> 
+                    new InputListEntity<>(property, mapValues)) : null);
     }
 
     public <O extends ObjectSelector> LAWithParams addScriptedDialogFAProp(
@@ -3351,6 +3452,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         List<LPWithParams> mapping = new ArrayList<>();
         MList<Boolean> mNulls = ListFact.mListMax(mappedObjects.size());
 
+        LPWithParams list = null;
+        
         MList<Pair<LPWithParams, DebugInfo.DebugPoint>> mChangeProps = ListFact.mListMax(mappedObjects.size());
         MList<CCCF<O>> mConstraintContextFilters = ListFact.mList();
 
@@ -3369,17 +3472,19 @@ public class ScriptingLogicsModule extends LogicsModule {
                 mInputNulls.add(objectProp.outNull);
                 LP<?> outProp = getInputProp(objectProp.outProp, mapped.form.getBaseClass(object), usedProps);
                 mInputProps.add(outProp);
+                
+                if(objectProp.listProp != null) {
+                    if(list != null)
+                        errLog.emitSimpleError(parser, "LIST option can be specified only once");
+                    list = remap(objectProp.listProp, objectProp.outParamNum, oldContext.size() + contextObjects.indexOf(object));
+                }                    
 
-                LPWithParams changeProp = null;
-                if(objectProp.constraintFilter || objectProp.assign) {
-                    changeProp = objectProp.changeProp;
-                    if(changeProp == null)
-                        changeProp = objectProp.in;
-                    assert changeProp != null;
-                }
-                if(objectProp.constraintFilter) {
+                LPWithParams changeProp = objectProp.changeProp;
+                if(changeProp == null)
+                    changeProp = objectProp.in;
+
+                if(objectProp.constraintFilter)
                     mConstraintContextFilters.add(new CCCF<O>(changeProp, object, oldContext.size() + contextObjects.indexOf(object)));
-                }
 
                 Pair<LPWithParams, DebugInfo.DebugPoint> assignProp = null;
                 if(objectProp.assign) {
@@ -3390,25 +3495,23 @@ public class ScriptingLogicsModule extends LogicsModule {
                 mChangeProps.add(assignProp);
             }
         }
+        ImList<O> objects = mObjects.immutableList();
         ImList<O> inputObjects = mInputObjects.immutableList();
         ImList<Boolean> inputNulls = mInputNulls.immutableList();
         ImList<LP> inputProps = mInputProps.immutableList();
 
         ImList<Pair<LPWithParams, DebugInfo.DebugPoint>> changeProps = mChangeProps.immutableList();
 
-        CFEWithParams<O> contextEntities = getContextFilterEntities(oldContext.size(), contextObjects, ListFact.fromJavaList(contextFilters), mConstraintContextFilters.immutableList());
+        CFEWithParams<O> contextEntities = getContextFilterAndListEntities(oldContext.size(), contextObjects, ListFact.fromJavaList(contextFilters), list, mConstraintContextFilters.immutableList());
 
-        Boolean syncType = doAction != null || elseAction != null ? true : null; // optimization
-        
-        ImList<O> objects = mObjects.immutableList();
-        LA action = addIFAProp(null, LocalizedString.NONAME, mapped.form, objects, mNulls.immutableList(),
-                                 inputObjects, inputProps, inputNulls,
+        boolean syncType = doAction != null || elseAction != null; // optimization
+
+        LA action = addDialogInputAProp(mapped.form, objects, mNulls.immutableList(),
+                                 inputObjects, inputProps, inputNulls, scope, contextEntities.list,
                                  manageSession, noCancel,
                                  contextEntities.orderInterfaces, contextEntities.filters,
-                                 syncType, windowType, false, checkOnOk,
+                                 syncType, windowType, checkOnOk,
                                  readonly);
-
-        action = addSessionScopeAProp(scope, action, inputProps.addList(baseLM.getRequestCanceledProperty()).getCol());
 
         for (int usedParam : contextEntities.usedParams) {
             mapping.add(new LPWithParams(usedParam));
@@ -3596,7 +3699,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         ValueClass sheetName = sheetNameProperty != null ? getValueClassByParamProperty(sheetNameProperty, params) : null;
         ValueClass password = passwordProperty != null ? getValueClassByParamProperty(passwordProperty, params) : null;
 
-        CFEWithParams<O> contextEntities = getContextFilterEntities(params.size(), contextObjects, ListFact.fromJavaList(contextFilters), ListFact.EMPTY());
+        CFEWithParams<O> contextEntities = getContextFilterEntities(params.size(), contextObjects, ListFact.fromJavaList(contextFilters));
 
         LA action = addPFAProp(null, LocalizedString.NONAME, mapped.form, mappedObjects, mNulls.immutableList(),
                 contextEntities.orderInterfaces, contextEntities.filters, printType, syncType, selectTop, targetProp, false, printer, sheetName, password);
@@ -3678,7 +3781,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         ValueClass root = rootProperty != null ? getValueClassByParamProperty(rootProperty, params) : null;
         ValueClass tag = tagProperty != null ? getValueClassByParamProperty(tagProperty, params) : null;
 
-        CFEWithParams<O> contextEntities = getContextFilterEntities(params.size(), contextObjects, ListFact.fromJavaList(contextFilters), ListFact.EMPTY());
+        CFEWithParams<O> contextEntities = getContextFilterEntities(params.size(), contextObjects, ListFact.fromJavaList(contextFilters));
 
         LA action = addEFAProp(null, LocalizedString.NONAME, mapped.form, mappedObjects, mNulls.immutableList(),
                 contextEntities.orderInterfaces, contextEntities.filters, exportType, noHeader, separator, noEscape, selectTop, charset, singleExportFile, exportFiles.immutable(), root, tag);
@@ -3732,7 +3835,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         parser.runMetaCode(this, code, metaCode.getLineNumber(), metaCode.getModuleName(), MetaCodeFragment.metaCodeCallString(name, metaCode, params), lineNumber, enabledMeta);
     }
 
-    private LP addStaticClassConst(String name) throws ScriptingErrorLog.SemanticErrorException {
+    private Pair<LP, LPNotExpr> addStaticClassConst(String name) throws ScriptingErrorLog.SemanticErrorException {
         int pointPos = name.lastIndexOf('.');
         assert pointPos > 0;
 
@@ -3740,18 +3843,44 @@ public class ScriptingLogicsModule extends LogicsModule {
         String instanceName = name.substring(pointPos + 1);
         LP resultProp = null;
 
-        ValueClass cls = findClass(className);
-        if (cls instanceof ConcreteCustomClass) {
-            ConcreteCustomClass concreteClass = (ConcreteCustomClass) cls;
-            if (concreteClass.hasStaticObject(instanceName)) { //, versionб так как отдельным шагом парсится
-                resultProp = addCProp(concreteClass, instanceName);
+        boolean isCompoundID = className.indexOf('.') < 0;
+        ScriptingErrorLog.SemanticErrorException semanticError = null;
+        try {
+            ValueClass cls = findClass(className);
+            if (cls instanceof ConcreteCustomClass) {
+                ConcreteCustomClass concreteClass = (ConcreteCustomClass) cls;
+                if (concreteClass.hasStaticObject(instanceName)) { //, versionб так как отдельным шагом парсится
+                    resultProp = addCProp(concreteClass, instanceName);
+                } else {
+                    errLog.emitNotFoundError(parser, "static оbject", instanceName);
+                }
             } else {
-                errLog.emitNotFoundError(parser, "static оbject", instanceName);
+                errLog.emitAbstractClassInstancesUseError(parser, className, instanceName);
             }
-        } else {
-            errLog.emitAbstractClassInstancesUseError(parser, className, instanceName);
+        } catch (ScriptingErrorLog.SemanticErrorException e) {
+            if(isCompoundID)
+                semanticError = e;
+            else
+                throw e;
         }
-        return resultProp;
+        return new Pair<>(resultProp, isCompoundID ? new LPCompoundID(name, semanticError) : null);
+    }
+
+    public Pair<LPWithParams, LPNotExpr> addSingleParameter(TypedParameter param, List<TypedParameter> context, boolean dynamic, boolean insideRecursion) throws ScriptingErrorLog.SemanticErrorException {
+        String name = param.paramName;
+        boolean isCompoundID = param.cls == null && !isRecursiveParam(name);
+        ScriptingErrorLog.SemanticErrorException semanticError = null;
+        int paramIndex;
+        try {
+            paramIndex = getParamIndex(param, context, dynamic, insideRecursion);
+        } catch (ScriptingErrorLog.SemanticErrorException e) {
+            if(isCompoundID) {
+                paramIndex = -1;
+                semanticError = e;
+            } else
+                throw e;
+        }
+        return new Pair<>(new LPWithParams(paramIndex), isCompoundID ? new LPCompoundID(name, semanticError) : null);
     }
 
     public void throwAlreadyDefinePropertyDraw(FormEntity.AlreadyDefined alreadyDefined) throws ScriptingErrorLog.SemanticErrorException {
@@ -4798,17 +4927,31 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LPNotExpr checkNotExprInExpr(LPWithParams lp, LPNotExpr ci) throws ScriptingErrorLog.SemanticErrorException {
-        checkCIInExpr(ci);
-        checkTLAInExpr(lp, ci);
+        checks.checkNotCIDInExpr(ci);
+        checks.checkNotCIInExpr(ci);
+        checks.checkNotTLAInExpr(lp,ci);
         return null; // dropping notExpr
     }
-    public LPTrivialLA checkCIInExpr(LPNotExpr ci) throws ScriptingErrorLog.SemanticErrorException {
-        checks.checkCIInExpr(ci);
+    public LPTrivialLA checkTLAInExpr(LPWithParams lp, LPNotExpr ci) throws ScriptingErrorLog.SemanticErrorException {
+        checks.checkNotCIDInExpr(ci);
+        checks.checkNotCIInExpr(ci);
         return ci instanceof LPTrivialLA ? (LPTrivialLA)ci : null;
+    }
+    public LPContextIndependent checkCIInExpr(LPWithParams lp, LPNotExpr ci) throws ScriptingErrorLog.SemanticErrorException {
+        checks.checkNotCIDInExpr(ci);
+        checks.checkNotTLAInExpr(lp, ci);
+        if(lp != null) // checking action
+            return null;
+        return (LPContextIndependent)ci;
     }
     public LPLiteral checkLiteralInExpr(LPWithParams lp, LPNotExpr ci) throws ScriptingErrorLog.SemanticErrorException {
         checkNotExprInExpr(lp, ci);
         return ci instanceof LPLiteral ? (LPLiteral)ci : null;
+    }
+    public LPCompoundID checkCompoundIDInExpr(LPWithParams lp, LPNotExpr ci) throws ScriptingErrorLog.SemanticErrorException {
+        checks.checkNotCIInExpr(ci);
+        checks.checkNotTLAInExpr(lp,ci);
+        return ci instanceof LPCompoundID ? (LPCompoundID)ci : null;
     }
 
     public LPNotExpr checkNumericLiteralInExpr(LPWithParams lp, LPNotExpr ci) throws ScriptingErrorLog.SemanticErrorException {
@@ -4826,14 +4969,6 @@ public class ScriptingLogicsModule extends LogicsModule {
             }
         }
         return null;
-    }
-
-    public LPContextIndependent checkTLAInExpr(LPWithParams lp, LPNotExpr ci) throws ScriptingErrorLog.SemanticErrorException {
-        if(lp == null) // checking action
-            checks.checkTLAInExpr(ci);
-        else
-            return null;
-        return (LPContextIndependent)ci;
     }
 
     public void checkNoExtendContext(int oldContextSize, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
@@ -5117,25 +5252,29 @@ public class ScriptingLogicsModule extends LogicsModule {
         public final Integer outParamNum;
         public final Boolean outNull;
         public final NamedPropertyUsage outProp;
+        
+        public final LPWithParams listProp;
 
         public final LPWithParams changeProp;
-
         public final boolean assign;
         public final DebugInfo.DebugPoint assignDebugPoint;
         public final boolean constraintFilter;
 
-
-        public FormActionProps(LPWithParams in, Boolean inNull, boolean out, Integer outParamNum, Boolean outNull, NamedPropertyUsage outProp, boolean constraintFilter, boolean assign, LPWithParams changeProp, DebugInfo.DebugPoint changeDebugPoint) {
+        public FormActionProps(LPWithParams in, Boolean inNull, boolean out, Integer outParamNum, Boolean outNull, NamedPropertyUsage outProp, boolean constraintFilter, boolean assign, LPWithParams listProp, LPWithParams changeProp, DebugInfo.DebugPoint changeDebugPoint) {
             assert outProp == null;
             this.in = in;
             this.inNull = inNull;
+
+            this.listProp = listProp;
+
             this.out = out;
             this.outParamNum = outParamNum;
             this.outNull = outNull;
             this.outProp = outProp;
+
+            this.changeProp = changeProp;
             this.constraintFilter = constraintFilter;
             this.assign = assign;
-            this.changeProp = changeProp;
             this.assignDebugPoint = changeDebugPoint;
         }
     }

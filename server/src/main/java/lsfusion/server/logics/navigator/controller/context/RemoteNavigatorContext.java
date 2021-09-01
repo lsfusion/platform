@@ -14,8 +14,10 @@ import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.form.interactive.ManageSessionType;
+import lsfusion.server.logics.form.interactive.action.async.InputList;
+import lsfusion.server.logics.form.interactive.action.input.InputContext;
+import lsfusion.server.logics.form.interactive.action.input.InputResult;
 import lsfusion.server.logics.form.interactive.controller.remote.RemoteForm;
-import lsfusion.server.logics.form.interactive.dialogedit.DialogRequest;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.listener.CustomClassListener;
 import lsfusion.server.logics.form.interactive.listener.FocusListener;
@@ -177,12 +179,18 @@ public class RemoteNavigatorContext extends RemoteConnectionContext {
         uiContext.requestFormUserInteraction(formInstance, modalityType, forbidDuplicate, stack);
     }
 
-    public ObjectValue requestUserObject(DialogRequest dialog, ExecutionStack stack) throws SQLException, SQLHandledException { // null если canceled
-        return uiContext.requestUserObject(dialog, stack);
+    @Override
+    public InputContext lockInputContext() {
+        return uiContext.lockInputContext();
     }
 
-    public ObjectValue requestUserData(DataClass dataClass, Object oldValue, boolean hasOldValue) {
-        return uiContext.requestUserData(dataClass, oldValue, hasOldValue);
+    @Override
+    public void unlockInputContext() {
+        uiContext.unlockInputContext();
+    }
+
+    public InputResult inputUserData(DataClass dataClass, Object oldValue, boolean hasOldValue, InputContext inputContext, InputList inputList) {
+        return uiContext.inputUserData(dataClass, oldValue, hasOldValue, inputContext, inputList);
     }
 
     public ObjectValue requestUserClass(CustomClass baseClass, CustomClass defaultValue, boolean concrete) {

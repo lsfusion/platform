@@ -320,6 +320,11 @@ public class SingletonSet<K> implements ImSet<K>, ImList<K>, ImOrderSet<K> {
         return MapFact.<K, M>singleton(key, getter.apply(0, key));
     }
 
+    @Override
+    public <M> ImOrderMap<K, M> mapOrderIntValues(IntFunction<M> getter) {
+        return MapFact.<K, M>singletonOrder(key, getter.apply(0));
+    }
+
     public <M> ImMap<K, M> mapOrderValues(IntFunction<M> getter) {
         return MapFact.<K, M>singleton(key, getter.apply(0));
     }
@@ -357,6 +362,11 @@ public class SingletonSet<K> implements ImSet<K>, ImList<K>, ImOrderSet<K> {
         if(BaseUtils.hashEquals(this.key, key))
             return 0;
         return -1;
+    }
+
+    @Override
+    public boolean containsNull() {
+        return this.key == null;
     }
 
     public ImRevMap<Integer, K> toIndexedMap() {
@@ -406,10 +416,6 @@ public class SingletonSet<K> implements ImSet<K>, ImList<K>, ImOrderSet<K> {
 
     public <M> ImList<M> mapItListValues(Function<K, M> getter) {
         return ListFact.singleton(getter.apply(key));
-    }
-
-    public <M> ImList<M> mapListValues(IntFunction<M> getter) {
-        return ListFact.singleton(getter.apply(0));
     }
 
     public <M> ImList<M> mapListValues(IntObjectFunction<K, M> getter) {

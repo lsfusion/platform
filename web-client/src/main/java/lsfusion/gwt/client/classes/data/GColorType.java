@@ -3,6 +3,7 @@ package lsfusion.gwt.client.classes.data;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.async.GInputList;
 import lsfusion.gwt.client.form.property.cell.classes.controller.ColorCellEditor;
 import lsfusion.gwt.client.form.property.cell.classes.view.ColorCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
@@ -15,7 +16,7 @@ public class GColorType extends GDataType {
     public static GColorType instance = new GColorType();
 
     @Override
-    public CellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
+    public CellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList) {
         return new ColorCellEditor(editManager, editProperty);
     }
 

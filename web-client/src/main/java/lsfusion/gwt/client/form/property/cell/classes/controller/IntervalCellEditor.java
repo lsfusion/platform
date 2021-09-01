@@ -13,10 +13,12 @@ public class IntervalCellEditor implements CellEditor {
 
     private final EditManager editManager;
     private final String intervalType;
+    private final GIntervalType interval;
 
-    public IntervalCellEditor(EditManager editManager, String intervalType) {
+    public IntervalCellEditor(EditManager editManager, String intervalType, GIntervalType interval) {
         this.editManager = editManager;
         this.intervalType = intervalType;
+        this.interval = interval;
     }
 
     public void validateAndCommit(Long dateFrom, Long dateTo) {
@@ -30,14 +32,7 @@ public class IntervalCellEditor implements CellEditor {
 
     @Override
     public void startEditing(Event event, Element parent, Object oldValue) {
-        createPicker(parent, getObjectDate(oldValue, true), getObjectDate(oldValue, false), intervalType, false);
-    }
-
-    private Date getObjectDate(Object oldValue, boolean from) {
-        String object = String.valueOf(oldValue);
-        int indexOfDecimal = object.indexOf(".");
-
-        return indexOfDecimal < 0 ? new Date() : GIntervalType.getTimestamp(from ? object.substring(0, indexOfDecimal) : object.substring(indexOfDecimal + 1));
+        createPicker(parent, interval.getDate(oldValue, true), interval.getDate(oldValue, false), intervalType, false);
     }
 
     protected native void createPicker(Element parent, Date startDate, Date endDate, String intervalType, boolean singleDatePicker)/*-{
@@ -105,8 +100,11 @@ public class IntervalCellEditor implements CellEditor {
         parentEl.on('hide.daterangepicker', function (ev, picker) {
             var startDate = picker.startDate;
             var endDate = picker.endDate;
-            var dateFrom = startDate.isValid() ? startDate.unix() : null;
-            var dateTo = endDate.isValid() != null ? endDate.unix() : null;
+            var dateFrom = startDate.isValid() ? (intervalType === 'ZDATETIME' ? startDate.unix() :
+                Date.UTC(startDate.year(), startDate.month(), startDate.date(), startDate.hour(), startDate.minute(), startDate.second()) / 1000) : null;
+            var dateTo = endDate.isValid() != null ? (intervalType === 'ZDATETIME' ? endDate.unix() :
+                Date.UTC(endDate.year(), endDate.month(), endDate.date(), endDate.hour(), endDate.minute(), endDate.second()) / 1000) : null;
+
             thisObj.@lsfusion.gwt.client.form.property.cell.classes.controller.IntervalCellEditor::validateAndCommit(*)(dateFrom, dateTo);
         });
 

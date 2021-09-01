@@ -100,6 +100,9 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
         addFill(widget, getWidgetCount(), flexBasis);
     }
 
+    public void addFill(Widget widget, GFlexAlignment alignment) {
+        add(widget, getWidgetCount(), alignment, 1, null);
+    }
     public void addFill(Widget widget, int beforeIndex, Integer flexBasis) {
         add(widget, beforeIndex, GFlexAlignment.STRETCH, 1, flexBasis);
     }

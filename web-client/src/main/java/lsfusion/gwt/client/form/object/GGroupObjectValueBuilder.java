@@ -1,11 +1,12 @@
 package lsfusion.gwt.client.form.object;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.TreeMap;
 
 public class GGroupObjectValueBuilder {
 
-    private final TreeMap<Integer, Object> key = new TreeMap<>();
+    private final TreeMap<Integer, Serializable> key = new TreeMap<>();
 
     public GGroupObjectValueBuilder() {
     }
@@ -22,10 +23,6 @@ public class GGroupObjectValueBuilder {
         }
     }
 
-    public GGroupObjectValueBuilder(int key, int value) {
-        this.key.put(key, value);
-    }
-
     public GGroupObjectValueBuilder removeAll(Collection<GObject> objects) {
         for (GObject obj : objects) {
             key.remove(obj.ID);
@@ -33,8 +30,8 @@ public class GGroupObjectValueBuilder {
         return this;
     }
 
-    public GGroupObjectValueBuilder put(Integer k, Object value) {
-        key.put(k, value);
+    public GGroupObjectValueBuilder put(int ID, Serializable value) {
+        key.put(ID, value);
         return this;
     }
 
@@ -43,15 +40,6 @@ public class GGroupObjectValueBuilder {
             key.put(value.getKey(i), value.getValue(i));
         }
         return this;
-    }
-
-    public GGroupObjectValueBuilder remove(Integer k) {
-        key.remove(k);
-        return this;
-    }
-
-    public void clear() {
-        key.clear();
     }
 
     public GGroupObjectValue toGroupObjectValue() {

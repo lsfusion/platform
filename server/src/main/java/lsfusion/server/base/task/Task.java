@@ -143,13 +143,13 @@ public abstract class Task {
             run(logger);
         } else {
             ExecutorService service = ExecutorFactory.createTaskMirrorSyncService(BaseUtils.immutableCast(context));
-            final Result<Long> threadId = new Result<>();
+            final Result<Thread> thread = new Result<>();
             Future future = service.submit(() -> {
-                threadId.set(Thread.currentThread().getId());
+                thread.set(Thread.currentThread());
                 try {
                     Task.this.run(logger);
                 } finally {
-                    threadId.set(null);
+                    thread.set(null);
                 }
             });
             service.shutdown();
@@ -157,7 +157,7 @@ public abstract class Task {
             try {
                 future.get(propertyTimeout, TimeUnit.SECONDS);
             } catch (TimeoutException e) {
-                ThreadUtils.interruptThread(BL.getDbManager(), threadId.result, future);
+                ThreadUtils.interruptThread(BL.getDbManager(), thread.result, future);
             }
         }
 

@@ -10,6 +10,7 @@ import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.property.ClientPropertyDraw;
+import lsfusion.client.form.property.async.ClientInputList;
 import lsfusion.client.form.property.cell.classes.controller.DialogBasedPropertyEditor;
 import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
 import lsfusion.client.form.property.cell.controller.EditPropertyHandler;
@@ -236,8 +237,8 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
     }
 
     @Override
-    public boolean requestValue(ClientType valueType, Object oldValue) {
-        PropertyEditor propertyEditor = valueType.getChangeEditorComponent(ActionPanelView.this, form, property, null);
+    public boolean requestValue(ClientType valueType, Object oldValue, ClientInputList inputList, String actionSID) {
+        PropertyEditor propertyEditor = valueType.getChangeEditorComponent(ActionPanelView.this, form, property, null, null);
 
         assert propertyEditor != null;
 

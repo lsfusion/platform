@@ -62,8 +62,8 @@ public class TreeGroupContainerSet {
         String sid = treeGroup.getPropertyGroupContainerSID();
 
         set.boxContainer = factory.createContainer();
-        set.boxContainer.setCaption(LocalizedString.create("{form.layout.tree}"));
         set.boxContainer.setSID(DefaultFormView.getBoxContainerSID(sid));
+        set.boxContainer.setCaption(LocalizedString.create("{form.layout.tree}"));
 
         set.gridContainer = factory.createContainer(); // контейнер грида внутрь
         set.gridContainer.setSID(DefaultFormView.getGridBoxContainerSID(sid));
@@ -93,9 +93,9 @@ public class TreeGroupContainerSet {
         set.boxContainer.setChildrenAlignment(FlexAlignment.START);
         set.boxContainer.setAlignment(FlexAlignment.STRETCH);
         set.boxContainer.setFlex(1);
+        set.boxContainer.add(treeGroup.getUserFilter(), version);
         set.boxContainer.add(set.gridContainer, version);
         set.boxContainer.add(set.toolbarBoxContainer, version);
-        set.boxContainer.add(treeGroup.getUserFilter(), version);
         set.boxContainer.add(set.panelContainer, version);
 
         set.gridContainer.setType(ContainerType.CONTAINERH);

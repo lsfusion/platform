@@ -244,7 +244,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query, GroupJoi
         ImCol<String> whereSelect = fromWhereSelect.result.mergeCol(group.mapColValues((key, value) -> fromPropertySelect.result.get(key)+"="+value.getSource(source)));
 
         return "(" + source.syntax.getSelect(fromSelect, query.getSource(fromPropertySelect.result, compiled.getMapPropertyReaders(), subQuery, source.syntax, source.env, getType()),
-                whereSelect.toString(" AND "), "", "", "", "") + ")";
+                whereSelect.toString(" AND ")) + ")";
     }
 
     @IdentityInstanceLazy

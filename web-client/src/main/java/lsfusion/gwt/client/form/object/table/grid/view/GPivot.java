@@ -1857,12 +1857,12 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
                 popup.hide();
                 config = reduceRows(config, config.getArrayString("rows"), rowKeyValues.length());
 
-                List<GPropertyFilter> filters = new ArrayList<>();
+                ArrayList<GPropertyFilter> filters = new ArrayList<>();
                 filters.addAll(getFilters(config.getArrayString("rows"), rowKeyValues));
                 filters.addAll(getFilters(config.getArrayString("cols"), colKeyValues));
 
                 config.getArrayString("rows").push(caption);
-                grid.filter.applyFilters(filters, false);
+                grid.userFilters.applyFilters(filters, false);
 //                updateView(true, null);
             });
             menuBar.addItem(menuItem);
@@ -1911,9 +1911,13 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
             Column column = columnMap.get(attrName);
             Integer rowIndex = getRowIndex(rowKeyValues, false);
             if (column != null && rowIndex != null) {
-                form.executeEventAction(column.property, keys.get(rowIndex), GEditBindingMap.EDIT_OBJECT);
+                executePropertyEditAction(column, rowIndex);
             }
         }
+    }
+
+    private long executePropertyEditAction(Column column, Integer rowIndex) {
+        return form.syncExecutePropertyEventAction(null, null, column.property, keys.get(rowIndex), GEditBindingMap.EDIT_OBJECT);
     }
 
     private Integer getRowIndex(JsArrayMixed keyValues, boolean cols) {
@@ -1975,7 +1979,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
                 Column column = columnMap.get(config.getArrayString("cols").get(columnKeyValues.length() - 1));
                 Integer rowIndex = getRowIndex(columnKeyValues, true);
                 if (column != null && rowIndex != null) {
-                    form.executeEventAction(column.property, keys.get(rowIndex), GEditBindingMap.EDIT_OBJECT);
+                    executePropertyEditAction(column, rowIndex);
                 }
             }
         }
@@ -1994,14 +1998,12 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
     }
 
     private void updateViewLater() {
-
-
-        DeferredRunner.get().reschedule("updateView", new DeferredRunner.AbstractCommand() {
+        DeferredRunner.get().scheduleUpdateView(new DeferredRunner.AbstractCommand() {
             @Override
             public void execute() {
                 updateView(true, null);
             }
-        }, 0);
+        });
     }
 
     private SortCol modifySortCols(Object keys, boolean ctrlKey, boolean shiftKey) {

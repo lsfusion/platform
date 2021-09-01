@@ -1,22 +1,19 @@
 package lsfusion.gwt.client.form.property.panel.view;
 
-import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.FocusWidget;
-import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
+import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
-
-import java.text.ParseException;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.setupFillParent;
 
@@ -29,22 +26,33 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
         return value;
     }
 
+    // editing set value (in EditContext), changes model and value itself
     public void setValue(Object value) {
-        this.value = value;
+        this.value = value; // updating inner model
+
+        controller.setValue(columnKey, value); // updating outer model - controller
     }
 
     protected GPropertyDraw property;
+    protected GGroupObjectValue columnKey;
 
     protected GFormController form;
+    protected ActionOrPropertyValueController controller;
 
-    public ActionOrPropertyValue(GPropertyDraw property, GFormController form) {
+    private boolean globalCaptionIsDrawn;
+
+    public ActionOrPropertyValue(GPropertyDraw property, GGroupObjectValue columnKey, GFormController form, boolean globalCaptionIsDrawn, ActionOrPropertyValueController controller) {
         setElement(Document.get().createDivElement());
 
         DataGrid.initSinkEvents(this);
 
         this.property = property;
+        this.columnKey = columnKey;
 
         this.form = form;
+        this.controller = controller;
+
+        this.globalCaptionIsDrawn = globalCaptionIsDrawn;
 
         getRenderElement().setPropertyObject("groupObject", property.groupObject);
     }
@@ -74,20 +82,20 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
         return setBaseSize(isProperty);
     }
     // auto sized property with value
-    public void setDynamic(ResizableMainPanel panel, boolean isProperty) {
+    public Pair<Integer, Integer> setDynamic(ResizableMainPanel panel, boolean isProperty) {
         panel.setMain(this);
         com.google.gwt.dom.client.Element element = getElement();
         element.getStyle().setWidth(100, Style.Unit.PCT);
         element.getStyle().setHeight(100, Style.Unit.PCT);
         borderWidget = panel.getPanelWidget();
 
-        setBaseSize(isProperty);
+        return setBaseSize(isProperty);
     }
     // auto sized action with caption
-    public void setDynamic(boolean isProperty) {
+    public Pair<Integer, Integer> setDynamic(boolean isProperty) {
         borderWidget = this;
 
-        setBaseSize(isProperty);
+        return setBaseSize(isProperty);
     }
 
     public Pair<Integer, Integer> setBaseSize(boolean isProperty) {
@@ -170,6 +178,11 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
         return property;
     }
 
+    @Override
+    public GGroupObjectValue getColumnKey() {
+        return columnKey;
+    }
+
     public RenderContext getRenderContext() {
         return this;
     }
@@ -186,7 +199,7 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
 
     @Override
     public boolean globalCaptionIsDrawn() {
-        return false;
+        return globalCaptionIsDrawn;
     }
 
     @Override
@@ -202,23 +215,12 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
     public UpdateContext getUpdateContext() {
         return this;
     }
-    protected abstract void onPaste(Object objValue, String stringValue);
 
-    public void pasteValue(final String value) {
-        Scheduler.get().scheduleDeferred(() -> {
-            Object objValue = null;
-            try {
-                objValue = property.baseType.parseString(value, property.pattern);
-            } catch (ParseException ignored) {}
-            updateValue(objValue);
-
-            onPaste(objValue, value);
-        });
-    }
+    public abstract void pasteValue(final String value);
 
     public void updateValue(Object value) {
-        setValue(value);
+        this.value = value;
 
-        form.update(property, getRenderElement(), getValue(), this);
+        form.update(property, getRenderElement(), value, this);
     }
 }

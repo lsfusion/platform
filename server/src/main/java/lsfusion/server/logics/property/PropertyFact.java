@@ -1,6 +1,7 @@
 package lsfusion.server.logics.property;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.Pair;
 import lsfusion.base.Result;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
@@ -13,6 +14,7 @@ import lsfusion.interop.form.property.Compare;
 import lsfusion.server.data.expr.formula.CustomFormulaSyntax;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.query.PartitionType;
+import lsfusion.server.language.action.LA;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.change.AddObjectAction;
 import lsfusion.server.logics.action.change.ChangeClassAction;
@@ -37,7 +39,7 @@ import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.ObjectClass;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.form.interactive.action.change.CheckCanBeChangedAction;
-import lsfusion.server.logics.form.interactive.action.change.DefaultChangeAggAction;
+import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.action.input.PushRequestAction;
 import lsfusion.server.logics.form.interactive.action.input.RequestAction;
 import lsfusion.server.logics.property.cases.ActionCase;
@@ -147,6 +149,24 @@ public class PropertyFact {
         return new PropertyMapImplement<>(joinProperty, revJoinMap);
     }
 
+    // join when there are not all params are passed, and we have to create virtual ones
+    public static <L extends PropertyInterface, T extends PropertyInterface> Pair<Property<JoinProperty.Interface>, ImRevMap<JoinProperty.Interface, T>> createPartJoin(PropertyImplement<L, PropertyInterfaceImplement<T>> implement) {
+        ImSet<L> notUsedInterfaces = implement.property.interfaces.removeIncl(implement.mapping.keys());
+        ImSet<T> usedInterfaces = getUsedInterfaces(implement.mapping.values());
+
+        ImRevMap<L,JoinProperty.Interface> notUsedJoinMap = notUsedInterfaces.mapRevValues(JoinProperty.genInterface); // строим карту
+        ImRevMap<T,JoinProperty.Interface> usedJoinMap = usedInterfaces.mapRevValues(JoinProperty.genInterface); // строим карту
+
+        ImRevMap<JoinProperty.Interface, L> revNotUsedJoinMap = notUsedJoinMap.reverse();
+        ImRevMap<JoinProperty.Interface, T> revUsedJoinMap = usedJoinMap.reverse();
+        JoinProperty<L> joinProperty = new JoinProperty<>(LocalizedString.NONAME, revUsedJoinMap.keys().addExcl(revNotUsedJoinMap.keys()).toOrderSet(),
+                new PropertyImplement<>(implement.property, mapImplements(implement.mapping, usedJoinMap).addExcl(notUsedJoinMap)));
+        return new Pair<>(joinProperty, revUsedJoinMap);
+    }
+
+    public static <X extends PropertyInterface, T extends PropertyInterface> ActionMapImplement<?, T> createJoinAction(Action<X> action, PropertyMapImplement<?, T> implement) {
+        return PropertyFact.createJoinAction(new ActionImplement<>(action, MapFact.singleton(action.interfaces.single(), implement)));
+    }
     public static <L extends PropertyInterface, T extends PropertyInterface> ActionMapImplement<?,T> createJoinAction(ActionImplement<L, PropertyInterfaceImplement<T>> implement) {
         ImOrderSet<T> usedInterfaces = getUsedInterfaces(implement.mapping.values()).toOrderSet();
         JoinAction<L> joinProperty = new JoinAction<>(LocalizedString.NONAME, usedInterfaces, implement);
@@ -255,7 +275,7 @@ public class PropertyFact {
         return createAnd(interfaces, object, SetFact.singleton(and));
     }
 
-    public static <MP extends PropertyInterface, MT extends PropertyInterface, P extends PropertyInterface, T extends PropertyInterface, C extends PropertyInterface> PropertyMapImplement<?,C> createAnd(PropertyMapImplement<T, C> object, PropertyInterfaceImplement<C> and) {
+    public static <MP extends PropertyInterface, MT extends PropertyInterface, P extends PropertyInterface, T extends PropertyInterface, C extends PropertyInterface> PropertyMapImplement<?,C> createAnd(PropertyInterfaceImplement<C> object, PropertyInterfaceImplement<C> and) {
         return createAnd(getUsedInterfaces(SetFact.toSet(object, and)), object, and);
     }
 
@@ -766,6 +786,9 @@ public class PropertyFact {
         return (ActionMapImplement<?,L>)createListAction(SetFact.EMPTY(), ListFact.EMPTY());
     }
     
+    public static <L extends PropertyInterface> ActionMapImplement<?, L> createListAction(ImSet<L> innerInterfaces, ActionMapImplement<?, L>... actions) {
+        return createListAction(innerInterfaces, ListFact.toList(actions));
+    }
     public static <L extends PropertyInterface> ActionMapImplement<?, L> createListAction(ImSet<L> innerInterfaces, ImList<ActionMapImplement<?, L>> actions) {
         return createListAction(innerInterfaces, actions, SetFact.EMPTY());
     }
@@ -867,15 +890,15 @@ public class PropertyFact {
         PushRequestAction changeAction = new PushRequestAction(LocalizedString.NONAME, listInterfaces, action);
         return changeAction.getImplement(listInterfaces);
     }
-    public static <L extends PropertyInterface, P extends PropertyInterface> ActionMapImplement<?, L> createDefaultChangedAggAction(ImSet<L> innerInterfaces, Property<P> aggProp, ValueClass aggClass, ActionMapImplement<?, L> changeAction) {
-        ImOrderSet<L> listInterfaces = innerInterfaces.toOrderSet();
-        DefaultChangeAggAction<P> aggAction = new DefaultChangeAggAction<>(LocalizedString.NONAME, listInterfaces, aggProp, aggClass, changeAction);
-        return aggAction.getImplement(listInterfaces);
-    }
     public static <L extends PropertyInterface, P extends PropertyInterface> ActionMapImplement<?, L> createNewSessionAction(ImSet<L> innerInterfaces, ActionMapImplement<?, L> action, boolean singleApply, boolean newSQL, FunctionSet<SessionDataProperty> migrateSessionProperties, boolean isNested) {
         ImOrderSet<L> listInterfaces = innerInterfaces.toOrderSet();
         NewSessionAction aggAction = new NewSessionAction(LocalizedString.NONAME, listInterfaces, action, singleApply, newSQL, migrateSessionProperties, isNested);
         return aggAction.getImplement(listInterfaces);
+    }
+    public static <T extends PropertyInterface> ActionMapImplement<?, T> createSessionScopeAction(FormSessionScope scope, ImSet<T> innerInterfaces, ActionMapImplement<?, T> action, FunctionSet<SessionDataProperty> migrateSessionProps) {
+        if(scope.isNewSession())
+            return createNewSessionAction(innerInterfaces, action, false, false, migrateSessionProps, scope.isNestedSession());
+        return action;
     }
     public static <L extends PropertyInterface, P extends PropertyInterface> ActionMapImplement<?, L> createNewThreadAction(ImSet<L> innerInterfaces, ActionMapImplement<?, L> action, PropertyInterfaceImplement<L> period, PropertyInterfaceImplement<L> delay, PropertyInterfaceImplement<L> connection) {
         ImOrderSet<L> listInterfaces = innerInterfaces.toOrderSet();
@@ -952,5 +975,14 @@ public class PropertyFact {
         ImSet<P> extInterfaces = innerInterfaces.remove(mapInterfaces);
         return (where == null && extInterfaces.isEmpty()) || (where != null && where.mapIsFull(extInterfaces)) ?
                 (where == null ? PropertyFact.createTrue() : where) : getFullWhereProperty(innerInterfaces, where, exprs);
+    }
+
+    static <X extends PropertyInterface, T extends PropertyInterface> PropertyMapImplement<?, T> createViewProperty(ImList<Property> viewProperties) {
+        PropertyMapImplement<?, T> resultValue = null;
+        for(int i = viewProperties.size()-1; i>=0; i--) {
+            Property<X> viewProperty = viewProperties.get(i);
+            resultValue = resultValue == null ? ((Property<T>)viewProperty).getImplement() : createJoin(new PropertyImplement<>(viewProperty, MapFact.singleton(viewProperty.interfaces.single(), resultValue)));
+        }
+        return resultValue;
     }
 }

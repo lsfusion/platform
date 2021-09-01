@@ -15,6 +15,7 @@ import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
+import lsfusion.server.logics.action.session.change.CalcDataType;
 import lsfusion.server.logics.action.session.change.DataChanges;
 import lsfusion.server.logics.action.session.change.PropertyChange;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
@@ -24,11 +25,11 @@ import lsfusion.server.logics.action.session.changed.OldProperty;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
 import lsfusion.server.logics.event.PrevScope;
+import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
-import lsfusion.server.logics.property.AggregateProperty;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.UnionProperty;
@@ -52,11 +53,11 @@ public class PropertyMapImplement<P extends PropertyInterface, T extends Propert
         super(property, mapping);
     }
 
-    public DataChanges mapJoinDataChanges(PropertyChange<T> change, GroupType type, WhereBuilder changedWhere, PropertyChanges propChanges) {
+    public DataChanges mapJoinDataChanges(PropertyChange<T> change, CalcDataType type, GroupType groupType, WhereBuilder changedWhere, PropertyChanges propChanges) {
         ImMap<T, Expr> mapExprs = change.getMapExprs();
         if(mapExprs.size() == mapping.size()) // optimization
-            return property.getDataChanges(change.mapChange(mapping), propChanges, changedWhere);
-        return property.getJoinDataChanges(mapping.join(mapExprs), change.expr, change.where, type, propChanges, changedWhere);
+            return property.getDataChanges(change.mapChange(mapping), type, propChanges, changedWhere);
+        return property.getJoinDataChanges(mapping.join(mapExprs), change.expr, change.where, groupType, propChanges, type, changedWhere);
     }
 
     public PropertyMapImplement<P, T> mapOld(PrevScope event) {
@@ -167,7 +168,7 @@ public class PropertyMapImplement<P extends PropertyInterface, T extends Propert
 
     @Override
     public boolean mapHasAlotKeys() {
-        return property instanceof AggregateProperty && ((AggregateProperty) property).hasAlotKeys();
+        return property.hasAlotKeys();
     }
 
     @Override
@@ -194,8 +195,8 @@ public class PropertyMapImplement<P extends PropertyInterface, T extends Propert
         return property.getSimpleComplexity();
     }
 
-    public DataChanges mapJoinDataChanges(ImMap<T, ? extends Expr> mapKeys, Expr expr, Where where, GroupType type, WhereBuilder changedWhere, PropertyChanges propChanges) {
-        return property.getJoinDataChanges(mapping.join(mapKeys), expr, where, type, propChanges, changedWhere);
+    public DataChanges mapJoinDataChanges(ImMap<T, ? extends Expr> mapKeys, Expr expr, Where where, GroupType groupType, WhereBuilder changedWhere, PropertyChanges propChanges, CalcDataType type) {
+        return property.getJoinDataChanges(mapping.join(mapKeys), expr, where, groupType, propChanges, type, changedWhere);
     }
 
     public void fill(MSet<T> interfaces, MSet<PropertyMapImplement<?, T>> properties) {
@@ -207,8 +208,8 @@ public class PropertyMapImplement<P extends PropertyInterface, T extends Propert
     }
 
     @Override
-    public ActionMapImplement<?, T> mapEventAction(String eventSID, ImList<Property> viewProperties) {
-        ActionMapImplement<?, P> eventAction = property.getEventAction(eventSID, viewProperties);
+    public ActionMapImplement<?, T> mapEventAction(String eventSID, FormSessionScope defaultChangeEventScope, ImList<Property> viewProperties) {
+        ActionMapImplement<?, P> eventAction = property.getEventAction(eventSID, defaultChangeEventScope, viewProperties);
         return eventAction == null ? null : eventAction.map(mapping);
     }
 

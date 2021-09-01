@@ -90,7 +90,7 @@ public class DefaultFormView extends FormView {
     public DefaultFormView(FormEntity formEntity, Version version) {
         super(formEntity, version);
 
-        mainContainer.setCaption(entity.getCaption());
+        setCaption(entity.getCaption());
         canonicalName = entity.getSID();
         creationPath = entity.getCreationPath();
         autoRefresh = entity.autoRefresh;

@@ -4,6 +4,7 @@ import lsfusion.interop.form.property.Compare;
 import lsfusion.server.data.caches.hash.HashContext;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.query.compile.CompileSource;
+import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.classes.data.StringClass;
@@ -38,17 +39,35 @@ public class MatchWhere extends BinaryWhere<MatchWhere> {
         throw new RuntimeException("not supported");
     }
 
+    public static String getPrefixSearchVector(SQLSyntax syntax, String source, String language) {
+        return "to_tsvector('" + language + "', " + source + ")";
+    }
+    public static String getPrefixSearchQuery(SQLSyntax syntax, String source, String language) {
+        return syntax.getPrefixSearchQuery() + "('" + language + "', " + source + ")";
+    }
+    public static String getMatch(SQLSyntax syntax, String search, String match, String language) {
+        return getPrefixSearchVector(syntax, search, language) + " @@ " + getPrefixSearchQuery(syntax, match, language);
+    }
+    public static String getRank(SQLSyntax syntax, String search, String match, String language) {
+        return "ts_rank(" + getPrefixSearchVector(syntax, search, language) + "," + getPrefixSearchQuery(syntax, match, language) + ")";
+    }
+    public static String getHighlight(SQLSyntax syntax, String search, String match, String language) {
+        return "ts_headline('" + language + "'," + search + "," + getPrefixSearchQuery(syntax, match, language) + ")";
+    }
+
     @Override
     protected String getBaseSource(CompileSource compile) {
-        List<String> languages = Arrays.asList(Settings.get().getFilterMatchLanguages().split(","));
         Type type = operator1.getType(compile.keyType);
         String source = operator1.getSource(compile);
         String match = operator2.getSource(compile);
-        String matchString = languages.stream().map(language -> "to_tsvector('" + language + "', " + source + ") @@ " + compile.syntax.getPrefixSearch() + "('" + language + "', " + match + ")").collect(Collectors.joining(" OR "));
+
+        String language = Settings.get().getFilterMatchLanguage();
+        String matchString = getMatch(compile.syntax, source, match, language);
+
         String likeString = source + (type instanceof StringClass && ((StringClass) type).caseInsensitive ? " " + compile.syntax.getInsensitiveLike() + " " : " LIKE ")
                 + "(" + ("'%' " + compile.syntax.getStringConcatenate() + " ") + match + (" " + compile.syntax.getStringConcatenate() + " '%'") + ")";
 
-        return "((" + matchString + ") OR " + likeString + ")";
+        return "(" + matchString + " OR " + likeString + ")";
     }
 
     public static Where create(BaseExpr operator1, BaseExpr operator2) {

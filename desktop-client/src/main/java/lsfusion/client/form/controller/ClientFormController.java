@@ -5,12 +5,15 @@ import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Table;
 import lsfusion.base.BaseUtils;
+import lsfusion.base.Pair;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.file.RawFileData;
 import lsfusion.base.identity.DefaultIDGenerator;
 import lsfusion.base.identity.IDGenerator;
+import lsfusion.base.lambda.AsyncCallback;
 import lsfusion.base.lambda.EProvider;
 import lsfusion.base.lambda.ERunnable;
+import lsfusion.base.lambda.GetAsyncValuesProvider;
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.base.TableManager;
 import lsfusion.client.base.view.ClientImages;
@@ -40,14 +43,15 @@ import lsfusion.client.form.filter.view.SingleFilterBox;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.object.ClientObject;
+import lsfusion.client.form.object.ClientCustomObjectValue;
 import lsfusion.client.form.object.table.controller.TableController;
 import lsfusion.client.form.object.table.grid.controller.GridController;
 import lsfusion.client.form.object.table.grid.user.design.GridUserPreferences;
 import lsfusion.client.form.object.table.tree.ClientTreeGroup;
 import lsfusion.client.form.object.table.tree.controller.TreeGroupController;
 import lsfusion.client.form.property.ClientPropertyDraw;
-import lsfusion.client.form.property.async.ClientAsyncAddRemove;
-import lsfusion.client.form.property.async.ClientAsyncOpenForm;
+import lsfusion.client.form.property.async.*;
+import lsfusion.client.form.property.cell.controller.dispatch.EditPropertyDispatcher;
 import lsfusion.client.form.property.cell.controller.dispatch.SimpleChangePropertyDispatcher;
 import lsfusion.client.form.property.panel.view.PanelView;
 import lsfusion.client.form.view.ClientFormDockable;
@@ -68,6 +72,7 @@ import lsfusion.interop.form.order.user.Order;
 import lsfusion.interop.form.print.FormPrintType;
 import lsfusion.interop.form.print.ReportGenerationData;
 import lsfusion.interop.form.print.ReportGenerator;
+import lsfusion.interop.form.property.cell.Async;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 
 import javax.swing.Timer;
@@ -119,6 +124,13 @@ public class ClientFormController implements AsyncListener {
         }
     };
 
+    private final GetAsyncValuesProvider getAsyncValuesProvider = new GetAsyncValuesProvider() {
+        @Override
+        public Async[] getAsyncValues(int propertyID, byte[] columnKey, String actionSID, String value, int asyncIndex) throws RemoteException {
+            return remoteForm == null ? null : remoteForm.getAsyncValues(-1, 0, propertyID, columnKey, actionSID, value, asyncIndex);
+        }
+    };
+
     private final RmiQueue rmiQueue;
     private final SimpleChangePropertyDispatcher simpleDispatcher;
 
@@ -142,7 +154,7 @@ public class ClientFormController implements AsyncListener {
     private final Map<ClientGroupObject, List<JComponentPanel>> filterViews = new HashMap<>();
 
     private final boolean isDialog;
-    private final boolean isModal;
+    private final boolean isWindow;
 
     private final Map<ClientGroupObject, List<ClientPropertyFilter>> currentFilters = new HashMap<>();
 
@@ -169,7 +181,7 @@ public class ClientFormController implements AsyncListener {
         formSID = iformSID + (iisModal ? "(modal)" : "") + "(" + System.identityHashCode(this) + ")";
         canonicalName = icanonicalName;
         isDialog = iisDialog;
-        isModal = iisModal;
+        isWindow = iisModal;
 
         ID = idGenerator.idShift();
 
@@ -232,8 +244,8 @@ public class ClientFormController implements AsyncListener {
         return canonicalName != null;
     }
 
-    public boolean isModal() {
-        return isModal;
+    public boolean isWindow() {
+        return isWindow;
     }
 
     public boolean isDialog() {
@@ -567,6 +579,7 @@ public class ClientFormController implements AsyncListener {
     }
 
     public void commitOrCancelCurrentEditing() {
+        editAsyncUsePessimistic = false;
         tableManager.commitOrCancelCurrentEditing();
     }
 
@@ -638,10 +651,10 @@ public class ClientFormController implements AsyncListener {
         return form.getDefaultOrders(groupObject);
     }
 
-    private void processServerResponse(ServerResponse serverResponse) throws IOException {
+    private void processServerResponse(ServerResponse serverResponse, EditPropertyDispatcher editDispatcher) throws IOException {
         //ХАК: serverResponse == null теоретически может быть при реконнекте, когда RMI-поток убивается и remote-method возвращает null
         if (serverResponse != null) {
-            actionDispatcher.dispatchResponse(serverResponse);
+            (editDispatcher != null ? editDispatcher : actionDispatcher).dispatchServerResponse(serverResponse);
         }
     }
 
@@ -897,23 +910,31 @@ public class ClientFormController implements AsyncListener {
         });
     }
 
-    private byte[] getFullCurrentKey(ClientGroupObjectValue columnKey) throws IOException {
-        final ClientGroupObjectValue fullCurrentKey = getFullCurrentKey();
-        fullCurrentKey.putAll(columnKey);
+    private byte[] getFullCurrentKey(ClientGroupObjectValue columnKey) {
+        List<ClientGroupObjectValue> values = new ArrayList<>();
+        for (GridController group : controllers.values())
+            values.add(group.getCurrentObject());
 
-        return fullCurrentKey.serialize();
+        for (TreeGroupController tree : treeControllers.values()) {
+            ClientGroupObjectValue currentPath = tree.getCurrentPath();
+            if (currentPath != null)
+                values.add(currentPath);
+        }
+
+        values.add(columnKey);
+
+        return new ClientGroupObjectValue(values.toArray(new ClientGroupObjectValue[0])).serialize();
     }
 
     public void changeProperty(final ClientPropertyDraw property, final ClientGroupObjectValue columnKey, String actionSID,
-                               final Object newValue, final Object oldValue) throws IOException {
+                               final Object newValue, Integer contextAction, final Object oldValue, EditPropertyDispatcher editDispatcher) throws IOException {
         assert !isEditing();
 
         commitOrCancelCurrentEditing();
 
-        final byte[] fullCurrentKey = getFullCurrentKey(columnKey); // чтобы не изменился
-        final byte[] newValueBytes = serializeObject(newValue);
+        final byte[] fullCurrentKey = getFullCurrentKey(columnKey);
 
-        rmiQueue.asyncRequest(new ProcessServerResponseRmiRequest("changeProperty") {
+        rmiQueue.asyncRequest(new ProcessServerResponseRmiRequest("changeProperty", editDispatcher) {
             @Override
             protected void onAsyncRequest(long requestIndex) {
 //                System.out.println("!!Async changing property with req#: " + requestIndex);
@@ -938,54 +959,48 @@ public class ClientFormController implements AsyncListener {
 
             @Override
             protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                return changeProperty(remoteForm, requestIndex, lastReceivedRequestIndex, actionSID, property.getID(), fullCurrentKey, newValueBytes, null);
+                return executeEventAction(requestIndex, lastReceivedRequestIndex, remoteForm, property, fullCurrentKey, actionSID, new ClientPushAsyncChange(newValue, contextAction));
             }
 
             @Override
             protected void onResponse(long requestIndex, ServerResponse result) throws Exception {
                 SwingUtils.commitDelayedGroupObjectChange(property.getGroupObject());
-                processServerResponse(result);
+                super.onResponse(requestIndex, result);
             }
         });
     }
 
-    private ServerResponse changeProperty(RemoteFormInterface remoteForm, long requestIndex, long lastReceivedRequestIndex, String actionSID, int propertyID, byte[] fullCurrentKey, byte[] pushChange, Long pushAdd) throws RemoteException {
-        return remoteForm.changeProperties(requestIndex, lastReceivedRequestIndex, actionSID, new int[]{propertyID}, new byte[][]{fullCurrentKey}, new byte[][]{pushChange}, new Long[]{pushAdd});
-    }
-
-    public void asyncAddRemove(ClientPropertyDraw property, ClientGroupObjectValue columnKey, String actionSID, ClientAsyncAddRemove addRemove) throws IOException {
+    public void asyncAddRemove(ClientPropertyDraw property, EditPropertyDispatcher dispatcher, ClientGroupObjectValue columnKey, String actionSID, ClientAsyncAddRemove addRemove) throws IOException {
         commitOrCancelCurrentEditing();
 
-        final ClientObject object = addRemove.object;
+        final ClientObject object = form.getObject(addRemove.object);
         final boolean add = addRemove.add;
 
         final GridController controller = controllers.get(object.groupObject);
 
-        final long ID;
+        final ClientPushAsyncResult pushAsyncResult;
         final ClientGroupObjectValue value;
         if(add) {
+            long ID;
             try {
-                ID = rmiQueue.runRetryableRequest(new Callable<Long>() {
-                    public Long call() throws Exception {
-                        return MainController.generateID();
-                    }
-                });
+                ID = rmiQueue.runRetryableRequest(() -> MainController.generateID());
             } catch (Exception e) {
                 throw Throwables.propagate(e);
             }
-            value = new ClientGroupObjectValue(object, ID);
+            pushAsyncResult = new ClientPushAsyncAdd(ID);
+            value = new ClientGroupObjectValue(object, new ClientCustomObjectValue(ID, null));
         } else {
             value = controller.getCurrentObject();
             if(value.isEmpty())
                 return;
-            ID = (Long) BaseUtils.singleValue(value);
+            pushAsyncResult = null;
         }
         
         final int position = controller.getCurrentRow();
 
         final byte[] fullCurrentKey = getFullCurrentKey(columnKey); // чтобы не изменился
 
-        rmiQueue.asyncRequest(new ProcessServerResponseRmiRequest("modifyObject") {
+        rmiQueue.asyncRequest(new ProcessServerResponseRmiRequest("modifyObject", dispatcher) {
             @Override
             protected void onAsyncRequest(long requestIndex) {
                 controller.modifyGroupObject(value, add, -1); // сначала посылаем запрос, так как getFullCurrentKey может измениться
@@ -996,59 +1011,52 @@ public class ClientFormController implements AsyncListener {
 
             @Override
             protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                return changeProperty(remoteForm, requestIndex, lastReceivedRequestIndex, actionSID, property.getID(), fullCurrentKey, null, add ? ID : null);
+                return executeEventAction(requestIndex, lastReceivedRequestIndex, remoteForm, property, fullCurrentKey,  actionSID, pushAsyncResult);
             }
         });
     }
 
     public ClientGroupObjectValue getFullCurrentKey() {
-        ClientGroupObjectValue fullKey = new ClientGroupObjectValue();
-
-        for (GridController group : controllers.values()) {
-            fullKey.putAll(group.getCurrentObject());
-        }
+        List<ClientGroupObjectValue> values = new ArrayList<>();
+        for (GridController group : controllers.values())
+            values.add(group.getCurrentObject());
 
         for (TreeGroupController tree : treeControllers.values()) {
             ClientGroupObjectValue currentPath = tree.getCurrentPath();
-            if (currentPath != null) {
-                fullKey.putAll(currentPath);
-            }
+            if (currentPath != null)
+                values.add(currentPath);
         }
 
-        return fullKey;
+        return new ClientGroupObjectValue(values.toArray(new ClientGroupObjectValue[0]));
     }
 
-    public void asyncOpenForm(ClientPropertyDraw property, ClientGroupObjectValue columnKey, String actionSID, ClientAsyncOpenForm asyncOpenForm) throws IOException {
-        if(!asyncOpenForm.isModal()) { //ignore async modal windows in desktop
-            ((DockableMainFrame) MainFrame.instance).asyncOpenForm(rmiQueue.getNextRmiRequestIndex(), asyncOpenForm);
-        }
-
+    public void asyncOpenForm(ClientPropertyDraw property, EditPropertyDispatcher dispatcher, ClientGroupObjectValue columnKey, String actionSID, ClientAsyncOpenForm asyncOpenForm) throws IOException {
         commitOrCancelCurrentEditing();
 
         final byte[] fullCurrentKey = getFullCurrentKey(columnKey);
 
-        rmiQueue.asyncRequest(new ProcessServerResponseRmiRequest("openForm") {
+        long requestIndex = rmiQueue.asyncRequest(new ProcessServerResponseRmiRequest("openForm", dispatcher) {
             @Override
             protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                return remoteForm.executeEventAction(requestIndex, lastReceivedRequestIndex, property.getID(), fullCurrentKey, actionSID);
+                return executeEventAction(requestIndex, lastReceivedRequestIndex, remoteForm, property, fullCurrentKey, actionSID);
             }
             @Override
             protected void onResponse(long requestIndex, ServerResponse result) throws Exception {
                 super.onResponse(requestIndex, result);
-                //FormClientAction closes asyncForm, if there is no GFormAction in response,
-                //we should close this erroneous asyncForm
-                DockableRepository forms = ((DockableMainFrame) MainFrame.instance).getForms();
-                if (forms.hasAsyncForm(requestIndex)) {
-                    if (Arrays.stream(result.actions).noneMatch(a -> a instanceof FormClientAction)) {
-                        ClientFormDockable formContainer = forms.removeAsyncForm(requestIndex);
-                        formContainer.onClosing();
-                    }
-                }
                 if(formsController != null) {
                     formsController.setLastCompletedRequest(requestIndex);
                 }
             }
         });
+
+        ((DockableMainFrame) MainFrame.instance).asyncOpenForm(dispatcher.getAsyncFormController(requestIndex), asyncOpenForm);
+    }
+
+    private ServerResponse executeEventAction(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm, ClientPropertyDraw property, byte[] fullCurrentKey, String actionSID) throws RemoteException {
+        return executeEventAction(requestIndex, lastReceivedRequestIndex, remoteForm, property, fullCurrentKey, actionSID, null);
+    }
+    private ServerResponse executeEventAction(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm, ClientPropertyDraw property, byte[] fullCurrentKey, String actionSID, ClientPushAsyncResult asyncResult) throws RemoteException {
+        return remoteForm.executeEventAction(requestIndex, lastReceivedRequestIndex, actionSID, new int[]{property.getID()}, new byte[][]{fullCurrentKey}, new boolean[] {false}, new byte[][]{asyncResult != null ? asyncResult.serialize() : null});
     }
 
     public ServerResponse executeEventAction(final ClientPropertyDraw property, final ClientGroupObjectValue columnKey, final String actionSID) throws IOException {
@@ -1078,28 +1086,18 @@ public class ClientFormController implements AsyncListener {
                 rmiQueue.syncRequest(new RmiCheckNullFormRequest<ServerResponse>("executeEventAction - " + property.getLogName()) {
                     @Override
                     protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                        return remoteForm.executeEventAction(requestIndex, lastReceivedRequestIndex, property.getID(), fullCurrentKey, actionSID);
+                        return executeEventAction(requestIndex, lastReceivedRequestIndex, remoteForm, property, fullCurrentKey, actionSID);
                     }
 
                     @Override
                     protected void onResponseGetFailed(long requestIndex, Exception e) throws Exception {
-                        processServerResponse(new ServerResponse(requestIndex, new ClientAction[] {new ExceptionClientAction(e)}, isInServerInvocation(requestIndex)));
+                        processServerResponse(new ServerResponse(requestIndex, new ClientAction[] {new ExceptionClientAction(e)}, isInServerInvocation(requestIndex)), null);
                     }
 
                     @Override
                     protected void onResponse(long requestIndex, ServerResponse result) throws Exception {
 //                        if(remoteForm != null) // when there is hide in changeProperty and some button is clicked - breaks assertion in dispatchingEnded  
                         rmiQueue.postponeDispatchingEnded();
-
-                        //FormClientAction closes asyncForm, if there is no GFormAction in response,
-                        //we should close this erroneous asyncForm
-                        DockableRepository forms = ((DockableMainFrame) MainFrame.instance).getForms();
-                        if (forms.hasAsyncForm(requestIndex)) {
-                            if (Arrays.stream(result.actions).noneMatch(a -> a instanceof FormClientAction)) {
-                                ClientFormDockable formContainer = forms.removeAsyncForm(requestIndex);
-                                formContainer.onClosing();
-                            }
-                        }
                     }
                 });
         return result == null ? ServerResponse.EMPTY : result;
@@ -1233,6 +1231,109 @@ public class ClientFormController implements AsyncListener {
         });
     }
 
+    private boolean editAsyncUsePessimistic; // optimimization
+    // shouldn't be zeroed when editing ends, since we assume that there is only one live input on the form
+    private int editAsyncIndex;
+    private int editLastReceivedAsyncIndex;
+    // we don't want to proceed results if "later" request results where proceeded
+    private AsyncCallback<Pair<List<Async>, Boolean>> checkLast(int editAsyncIndex, AsyncCallback<Pair<List<Async>, Boolean>> callback) {
+        return new AsyncCallback<Pair<List<Async>, Boolean>>() {
+            @Override
+            public void failure(Throwable t) {
+                if(editAsyncIndex >= editLastReceivedAsyncIndex) {
+                    editLastReceivedAsyncIndex = editAsyncIndex;
+                    callback.failure(t);
+                }
+            }
+
+            @Override
+            public void done(Pair<List<Async>, Boolean> result) {
+                if(editAsyncIndex >= editLastReceivedAsyncIndex) {
+                    editLastReceivedAsyncIndex = editAsyncIndex;
+                    if(!result.second && editAsyncIndex < editAsyncIndex - 1)
+                        result = new Pair<>(result.first, true);
+                    callback.done(result);
+                }
+            }
+        };
+    }
+
+    // synchronous call (with request indices, etc.)
+    private void getPessimisticValues(ClientPropertyDraw property, ClientGroupObjectValue columnKey, String value, String actionSID, AsyncCallback<Pair<List<Async>, Boolean>> callback) {
+        rmiQueue.asyncRequest(new RmiCheckNullFormRequest<Async[]>("getAsyncValues - " + property.getLogName()) {
+            @Override
+            protected Async[] doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
+                return remoteForm.getAsyncValues(requestIndex, lastReceivedRequestIndex, property.getID(), getFullCurrentKey(columnKey), actionSID, value, editAsyncIndex);
+            }
+
+            @Override
+            protected void onResponse(long requestIndex, Async[] result) throws Exception {
+                super.onResponse(requestIndex, result);
+                callback.done(Pair.create(Arrays.asList(result), false));
+            }
+
+            @Override
+            protected void onResponseGetFailed(long requestIndex, Exception e) throws Exception {
+                super.onResponseGetFailed(requestIndex, e);
+                callback.failure(e);
+            }
+        }, true);
+    }
+
+    public void getAsyncValues(ClientPropertyDraw property, ClientGroupObjectValue columnKey, String value, String actionSID, AsyncCallback<Pair<List<Async>, Boolean>> callback) {
+        AsyncCallback<Pair<List<Async>, Boolean>> fCallback = checkLast(editAsyncIndex++, callback);
+
+        new SwingWorker<List<Async>, Void>() {
+            boolean runPessimistic = false;
+
+            @Override
+            protected List<Async> doInBackground() {
+                if (!editAsyncUsePessimistic) {
+                    try {
+                        Async[] result = getAsyncValuesProvider.getAsyncValues(property.getID(), getFullCurrentKey(columnKey), actionSID, value, editAsyncIndex);
+                        if (result == null) { // optimistic request failed, running pessimistic one, with request indices, etc.
+                            editAsyncUsePessimistic = true;
+                            runPessimistic = true;
+                        } else {
+                            List<Async> values = Arrays.asList(result);
+                            if (values.size() > 0) {
+                                Async lastResult = values.get(values.size() - 1);
+                                if (lastResult.equals(Async.RECHECK)) {
+                                    runPessimistic = true;
+                                    values = values.subList(0, values.size() - 1);
+                                } else if (values.size() == 1 && lastResult.equals(Async.CANCELED)) // ignoring CANCELED results
+                                    values = Collections.emptyList();
+                            }
+                            return values;
+                        }
+
+                    } catch (RemoteException e) {
+                        throw Throwables.propagate(e);
+                    }
+                } else {
+                    runPessimistic = true;
+                }
+
+                return Collections.emptyList();
+            }
+
+            @Override
+            protected void done() {
+                List<Async> result;
+                try {
+                    result = get();
+                } catch (Throwable t) {
+                    fCallback.failure(t);
+                    return;
+                }
+
+                fCallback.done(Pair.create(result, runPessimistic));
+                if(runPessimistic)
+                    getPessimisticValues(property, columnKey, value, actionSID, fCallback);
+            }
+        }.execute();
+    }
+
     public void changePropertyOrder(final ClientPropertyDraw property, final Order modiType, final ClientGroupObjectValue columnKey) {
         commitOrCancelCurrentEditing();
 
@@ -1287,8 +1388,6 @@ public class ClientFormController implements AsyncListener {
     }
 
     private void applyCurrentFilters() throws IOException {
-        commitOrCancelCurrentEditing();
-
         final List<byte[]> filters = new ArrayList<>();
 
         for (List<ClientPropertyFilter> groupFilters : currentFilters.values()) {
@@ -1562,7 +1661,7 @@ public class ClientFormController implements AsyncListener {
     }
 
     public boolean canShowDockedModal() {
-        return !isModal && !rmiQueue.isSyncStarted();
+        return !isWindow && !rmiQueue.isSyncStarted();
     }
 
     public void block(boolean blockView) {
@@ -1638,12 +1737,20 @@ public class ClientFormController implements AsyncListener {
 
     private abstract class ProcessServerResponseRmiRequest extends RmiCheckNullFormRequest<ServerResponse> {
         protected ProcessServerResponseRmiRequest(String name) {
+            this(name, null);
+        }
+
+        private final EditPropertyDispatcher editDispatcher;
+
+        protected ProcessServerResponseRmiRequest(String name, EditPropertyDispatcher editDispatcher) {
             super(name);
+
+            this.editDispatcher = editDispatcher;
         }
 
         @Override
         protected void onResponse(long requestIndex, ServerResponse result) throws Exception {
-            processServerResponse(result);
+            processServerResponse(result, editDispatcher);
         }
     }
 

@@ -4,6 +4,7 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
+import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.file.RawFileData;
 import lsfusion.interop.session.ExternalUtils;
 import lsfusion.server.data.sql.exception.SQLHandledException;
@@ -49,7 +50,7 @@ public abstract class ExportHierarchicalAction<T extends Node<T>, O extends Obje
                                     ImList<O> objectsToSet,
                                     ImList<Boolean> nulls,
                                     ImOrderSet<PropertyInterface> orderContextInterfaces,
-                                    ImList<ContextFilterSelector<?, PropertyInterface, O>> contextFilters,
+                                    ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters,
                                     FormIntegrationType staticType,
                                     LP exportFile,
                                     Integer selectTop,

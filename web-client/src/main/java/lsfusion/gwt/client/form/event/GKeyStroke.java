@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.form.event;
 
 import com.google.gwt.dom.client.BrowserEvents;
+import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.form.controller.GFormController;
@@ -8,7 +9,8 @@ import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 
 import java.io.Serializable;
 
-import static com.google.gwt.dom.client.BrowserEvents.*;
+import static com.google.gwt.dom.client.BrowserEvents.KEYDOWN;
+import static com.google.gwt.dom.client.BrowserEvents.KEYPRESS;
 import static com.google.gwt.event.dom.client.KeyCodes.*;
 
 public class GKeyStroke implements Serializable {
@@ -36,6 +38,10 @@ public class GKeyStroke implements Serializable {
     public static final int KEY_C = 67;
     public static final int KEY_R = 82;
     public static final int KEY_V = 86;
+    
+    public static final GKeyStroke ADD_USER_FILTER_KEY_STROKE = new GKeyStroke(KEY_F3);
+    public static final GKeyStroke REPLACE_USER_FILTER_KEY_STROKE = new GKeyStroke(KEY_F3, true, false, false);
+    public static final GKeyStroke REMOVE_USER_FILTERS_KEY_STROKE = new GKeyStroke(KEY_F3, false, false, true);
 
     public int keyCode;
     public boolean altPressed;
@@ -151,6 +157,22 @@ public class GKeyStroke implements Serializable {
         return KEYDOWN.equals(event.getType()) && event.getKeyCode() == KEY_F12;
     }
 
+    public static Event createAddUserFilterKeyEvent() {
+        return Event.as(Document.get().createKeyDownEvent(ADD_USER_FILTER_KEY_STROKE.ctrlPressed,
+                ADD_USER_FILTER_KEY_STROKE.altPressed,
+                ADD_USER_FILTER_KEY_STROKE.shiftPressed,
+                false,
+                ADD_USER_FILTER_KEY_STROKE.keyCode));
+    }
+    
+    public static boolean isAddUserFilterKeyEvent(Event event) {
+        return ADD_USER_FILTER_KEY_STROKE.isEvent(event);
+    }
+    
+    public static boolean isReplaceUserFilterKeyEvent(Event event) {
+        return REPLACE_USER_FILTER_KEY_STROKE.isEvent(event);
+    }
+
     public static boolean isCharModifyKeyEvent(Event event, GEditBindingMap.EditEventFilter editEventFilter) {
         return ((isCharAddKeyEvent(event) && (editEventFilter == null || editEventFilter.accept(event))) || isCharDeleteKeyEvent(event));
     }
@@ -218,5 +240,46 @@ public class GKeyStroke implements Serializable {
 
     public static boolean isSwitchFullScreenModeEvent(NativeEvent event) {
         return KEYDOWN.equals(event.getType()) && event.getKeyCode() == KEY_F11 && event.getAltKey();
+    }
+
+    public static boolean isSuitableEditKeyEvent(NativeEvent event) {
+        return !isActionKey(event.getKeyCode()) && !isAlt(event);
+    }
+
+    public static boolean isActionKey(int keyCode) {
+        switch (keyCode) {
+            case KEY_HOME:
+            case KEY_END:
+            case KEY_PAGEUP:
+            case KEY_PAGEDOWN:
+            case KEY_UP:
+            case KEY_DOWN:
+            case KEY_LEFT:
+            case KEY_RIGHT:
+            case KEY_F1:
+            case KEY_F2:
+            case KEY_F3:
+            case KEY_F4:
+            case KEY_F5:
+            case KEY_F6:
+            case KEY_F7:
+            case KEY_F8:
+            case KEY_F9:
+            case KEY_F10:
+            case KEY_F11:
+            case KEY_F12:
+            case KEY_PRINT_SCREEN:
+            case KEY_SCROLL_LOCK:
+            case KEY_CAPS_LOCK:
+            case KEY_NUMLOCK:
+            case KEY_PAUSE:
+            case KEY_INSERT:
+                return true;
+        }
+        return false;
+    }
+
+    public static boolean isAlt(NativeEvent event) {
+        return event.getKeyCode() == KEY_ALT || event.getAltKey();
     }
 }

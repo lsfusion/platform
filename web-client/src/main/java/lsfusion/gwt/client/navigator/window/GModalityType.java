@@ -7,7 +7,7 @@ public enum GModalityType {
         return this != DOCKED;
     }
 
-    public boolean isModalWindow() {
+    public boolean isWindow() {
         return this == MODAL || this == DIALOG_MODAL;
     }
 

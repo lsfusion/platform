@@ -1,6 +1,7 @@
 package lsfusion.interop.form.event;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.util.EventObject;
@@ -50,8 +51,8 @@ public class KeyStrokes {
         return KeyStroke.getKeyStroke(KeyEvent.VK_END, InputEvent.CTRL_DOWN_MASK);
     }
 
-    public static KeyStroke getF2() {
-        return KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0);
+    public static KeyStroke getF3() {
+        return KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0);
     }
 
     public static KeyStroke getF6() {
@@ -62,8 +63,12 @@ public class KeyStrokes {
         return KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0);
     }
 
+    public static KeyEvent createAddUserFilterKeyEvent(Component component) {
+        return new KeyEvent(component, KeyEvent.KEY_PRESSED, System.currentTimeMillis(), 0, KeyEvent.VK_SPACE, KeyEvent.CHAR_UNDEFINED);
+    }
+    
     public static KeyStroke getFilterKeyStroke(int modifier) {
-        return KeyStroke.getKeyStroke(KeyEvent.VK_F2, modifier);
+        return KeyStroke.getKeyStroke(KeyEvent.VK_F3, modifier);
     }
 
     public static KeyStroke getRemoveFiltersKeyStroke() {

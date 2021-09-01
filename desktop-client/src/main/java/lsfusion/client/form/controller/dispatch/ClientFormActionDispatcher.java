@@ -44,11 +44,8 @@ public abstract class ClientFormActionDispatcher extends SwingClientActionDispat
     }
 
     @Override
-    public void execute(FormClientAction action) {
-        if (action.modalityType == ModalityType.DOCKED_MODAL && !getFormController().canShowDockedModal()) {
-            action.modalityType = ModalityType.MODAL;
-        }
-        super.execute(action);
+    protected boolean canShowDockedModal() {
+        return getFormController().canShowDockedModal();
     }
 
     @Override

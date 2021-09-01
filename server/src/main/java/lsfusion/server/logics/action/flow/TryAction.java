@@ -13,10 +13,10 @@ import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.base.controller.stack.ExecutionStackAspect;
 import lsfusion.server.base.controller.thread.ThreadUtils;
 import lsfusion.server.data.sql.exception.SQLHandledException;
-import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
+import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
@@ -94,25 +94,8 @@ public class TryAction extends KeepContextAction {
     }
 
     @Override
-    public Type getFlowSimpleRequestInputType(boolean optimistic, boolean inRequest) {
-        Type tryType = tryAction.action.getSimpleRequestInputType(optimistic, inRequest);
-        Type catchType = catchAction == null ? null : catchAction.action.getSimpleRequestInputType(optimistic, inRequest);
-        Type finallyType = finallyAction == null ? null : finallyAction.action.getSimpleRequestInputType(optimistic, inRequest);
-
-        if (!optimistic) {
-            if (tryType == null) {
-                return null;
-            }
-            if (catchAction != null && catchType == null) {
-                return null;
-            }
-            if (finallyAction != null && finallyType == null) {
-                return null;
-            }
-        }
-
-        Type type = tryType == null ? catchType : (catchType == null ? tryType : tryType.getCompatible(catchType));
-        return type == null ? finallyType : (finallyType == null ? type : type.getCompatible(finallyType));
+    public AsyncMapEventExec<PropertyInterface> calculateAsyncEventExec(boolean optimistic, boolean recursive) {
+        return getListAsyncEventExec(ListFact.toList(tryAction, catchAction, finallyAction), recursive); // technically catch is a branching operator, but for now it's not that important
     }
 
     @Override

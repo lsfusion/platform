@@ -33,7 +33,7 @@ import java.util.Locale;
 import static lsfusion.base.DateConverter.*;
 import static lsfusion.server.logics.classes.data.time.DateTimeConverter.getWriteDateTime;
 
-public class DateTimeClass extends DataClass<LocalDateTime> {
+public class DateTimeClass extends TimeSeriesClass<LocalDateTime> {
 
     public final static DateTimeClass instance = new DateTimeClass();
 
@@ -204,5 +204,20 @@ public class DateTimeClass extends DataClass<LocalDateTime> {
     @Override
     public boolean useIndexedJoin() {
         return true;
+    }
+
+    @Override
+    public String getIntervalProperty() {
+        return "interval[DATETIME,DATETIME]";
+    }
+
+    @Override
+    public String getFromIntervalProperty() {
+        return "from[INTERVAL[DATETIME]]";
+    }
+
+    @Override
+    public String getToIntervalProperty() {
+        return "to[INTERVAL[DATETIME]]";
     }
 }

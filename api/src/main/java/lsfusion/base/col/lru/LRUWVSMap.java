@@ -1,5 +1,7 @@
 package lsfusion.base.col.lru;
 
+import lsfusion.base.lambda.DProcessor;
+
 import java.lang.ref.ReferenceQueue;
 
 import static lsfusion.base.col.lru.LRUUtil.Strategy;
@@ -33,7 +35,11 @@ public class LRUWVSMap<W, V> extends ALRUKWMap<W, LRUWVSMap.AEntry<W, V>, LRUWVS
         ASegment aSegment = segmentFor(hash);
         return aSegment.put(wKey, hash, value);
     }
-    
+
+    public void proceedSafeLockLRUEKeyValues(final DProcessor<W, V> processor) {
+        proceedSafeLockLRUEEntries(element -> processor.proceed(element.get(), element.value));
+    }
+
     private static <W> int hashKey(W wKey) {
         return hash(System.identityHashCode(wKey));
     }

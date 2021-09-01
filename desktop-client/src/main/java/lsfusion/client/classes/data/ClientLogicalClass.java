@@ -8,6 +8,7 @@ import lsfusion.client.form.property.cell.classes.controller.LogicalPropertyEdit
 import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
 import lsfusion.client.form.property.cell.classes.view.LogicalPropertyRenderer;
 import lsfusion.client.form.property.cell.view.PropertyRenderer;
+import lsfusion.client.form.property.table.view.AsyncChangeInterface;
 import lsfusion.interop.classes.DataType;
 
 import java.awt.*;
@@ -38,7 +39,8 @@ public class ClientLogicalClass extends ClientDataClass implements ClientTypeCla
         return new LogicalPropertyRenderer(property, threeState);
     }
 
-    public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
+    @Override
+    public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property, AsyncChangeInterface asyncChange) {
         return new LogicalPropertyEditor(value, threeState);
     }
 

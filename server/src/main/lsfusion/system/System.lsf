@@ -212,6 +212,7 @@ exportZDateTime = DATA LOCAL ZDATETIME ();
 exportIntervalDate = DATA LOCAL INTERVAL[DATE] ();
 exportIntervalDateTime = DATA LOCAL INTERVAL[DATETIME] ();
 exportIntervalTime = DATA LOCAL INTERVAL[TIME] ();
+exportIntervalZDateTime = DATA LOCAL INTERVAL[ZDATETIME] ();
 exportBoolean = DATA LOCAL BOOLEAN ();
 exportTBoolean = DATA LOCAL TBOOLEAN ();
 exportDate = DATA LOCAL DATE ();
@@ -286,6 +287,7 @@ requestedZDateTime = DATA LOCAL NESTED ZDATETIME ();
 requestedIntervalDate = DATA LOCAL NESTED INTERVAL[DATE] ();
 requestedIntervalDateTime = DATA LOCAL NESTED INTERVAL[DATETIME] ();
 requestedIntervalTime = DATA LOCAL NESTED INTERVAL[TIME] ();
+requestedIntervalZDateTime = DATA LOCAL NESTED INTERVAL[ZDATETIME] ();
 requestedBoolean = DATA LOCAL NESTED BOOLEAN ();
 requestedTBoolean = DATA LOCAL NESTED TBOOLEAN ();
 requestedDate = DATA LOCAL NESTED DATE ();
@@ -321,8 +323,11 @@ requestedTableLink = DATA LOCAL NESTED TABLELINK ();
 isActiveForm = DATA LOCAL BOOLEAN ();
 
 edit '{logics.edit}'  ABSTRACT MULTI OVERRIDE FIRST ( Object) TOOLBAR;
-edit(Object o) + {  SHOW EDIT Object =o DOCKED; } // since now SHOW fills request props, we don't need to do DIALOG, and without dialog there is no REQUEST wrapping, so group change for example will work
+// since now SHOW fills request props, we don't need to do DIALOG, and without dialog there is no REQUEST wrapping, so group change for example will work
+edit(Object o) + {  SHOW EDIT Object =o DOCKED; } OPTIMISTICASYNC; //  
 formEdit(Object o)  { edit(o); }
+
+formEditObject(Object o)  { NEWSESSION formEdit(o); }
 
 // private, only for interactive usage (for other purposes use operator DELETE)
 delete '{logics.delete}'  ABSTRACT MULTI OVERRIDE FIRST ( Object) IMAGE 'delete.png' CHANGEKEY 'DELETE' HIDE TOOLBAR;

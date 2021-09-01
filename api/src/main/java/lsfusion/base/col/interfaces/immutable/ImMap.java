@@ -9,10 +9,7 @@ import lsfusion.base.lambda.set.SFunctionSet;
 
 import java.util.Comparator;
 import java.util.Map;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.function.IntFunction;
-import java.util.function.Supplier;
+import java.util.function.*;
 
 public interface ImMap<K, V> {
 
@@ -113,6 +110,7 @@ public interface ImMap<K, V> {
     <M> ImMap<K,M> mapItValues(Function<V, M> getter); // with aftereffect
     <M> ImMap<K,M> mapItValues(BiFunction<K, V, M> getter); // with aftereffect
     <E1 extends Exception, E2 extends Exception> ImMap<K,V> mapItIdentityValuesEx(ThrowingFunction<V, V, E1,E2> getter) throws E1, E2; // with aftereffect, identity optimization
+    void iterate(BiConsumer<K, V> consumer);
 
     // "функциональщина"
     <M> ImMap<K,M> mapValues(Function<V, M> getter);

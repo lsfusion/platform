@@ -43,4 +43,9 @@ public class ColorCellRenderer extends CellRenderer<Object> {
     public String format(Object value) {
         return getColorValue(value);
     }
+
+    @Override
+    public boolean isAutoDynamicHeight() {
+        return false;
+    }
 }

@@ -1,15 +1,15 @@
 package lsfusion.server.logics.action.flow;
 
+import lsfusion.base.col.ListFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.data.sql.exception.SQLHandledException;
-import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
-import lsfusion.server.logics.classes.user.CustomClass;
+import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
@@ -71,34 +71,8 @@ public class IfAction extends KeepContextAction {
     }
 
     @Override
-    public Type getFlowSimpleRequestInputType(boolean optimistic, boolean inRequest) {
-        Type trueType = trueAction == null ? null : trueAction.action.getSimpleRequestInputType(optimistic, inRequest);
-        Type falseType = falseAction == null ? null : falseAction.action.getSimpleRequestInputType(optimistic, inRequest);
-
-        if (!optimistic) {
-            if (trueType == null) {
-                return null;
-            }
-            if (falseAction != null && falseType == null) {
-                return null;
-            }
-        }
-
-        return trueType == null
-               ? falseType
-               : falseType == null
-                 ? trueType
-                 : trueType.getCompatible(falseType);
-    }
-
-    @Override
-    public CustomClass getSimpleAdd() {
-        return null; // пока ничего не делаем, так как на клиенте придется, "отменять" изменения
-    }
-
-    @Override
-    public PropertyInterface getSimpleDelete() {
-        return super.getSimpleDelete(); // по аналогии с верхним
+    public AsyncMapEventExec<PropertyInterface> calculateAsyncEventExec(boolean optimistic, boolean recursive) {
+        return getBranchAsyncEventExec(ListFact.toList(trueAction, falseAction), optimistic, recursive);
     }
 
     @Override

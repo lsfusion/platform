@@ -66,14 +66,14 @@ public class ModifyQuery {
 
                 Result<ImOrderSet<KeyField>> keyOrder = new Result<>();
                 Result<ImOrderSet<PropertyField>> propertyOrder = new Result<>();
-                String selectString = syntax.getSelect(fromSelect, SQLSession.stringExpr(
+                String selectString = "(" + SQLSession.getSelect(syntax, fromSelect,
                         SQLSession.mapNames(changeCompile.keySelect,changeCompile.keyNames,keyOrder),
-                        SQLSession.mapNames(changeCompile.propertySelect,changeCompile.propertyNames,propertyOrder)),
-                        whereSelect.toString(" AND "),"","","", "");
+                        SQLSession.mapNames(changeCompile.propertySelect,changeCompile.propertyNames,propertyOrder),
+                        whereSelect) + ")";
 
                 setString = SetFact.addOrderExcl(keyOrder.result, propertyOrder.result).toString(Field.<Field>nameGetter(syntax), ",");
 
-                update = "UPDATE " + table.getName(syntax) + " SET ("+setString+") = ("+selectString+") WHERE EXISTS ("+selectString+")";
+                update = "UPDATE " + table.getName(syntax) + " SET ("+setString+") = "+selectString+" WHERE EXISTS "+selectString;
                 break;
             case 1:
                 // SQL-серверная модель когда она подхватывает первый JoinSelect и старую таблицу уже не вилит

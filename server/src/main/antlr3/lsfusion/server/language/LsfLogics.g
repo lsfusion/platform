@@ -86,8 +86,8 @@ grammar LsfLogics;
     import javax.mail.Message;
     import java.awt.*;
     import java.math.BigDecimal;
-    import java.util.List;
     import java.util.*;
+    import java.util.function.*;
     import java.time.*;
 
     import static java.util.Arrays.asList;
@@ -193,10 +193,8 @@ grammar LsfLogics;
 		return getCurrentDebugPoint();
 	}
 
-	public void setObjectProperty(Object propertyReceiver, String propertyName, Object propertyValue) throws ScriptingErrorLog.SemanticErrorException {
-		if (inMainParseState()) {
-			$designStatement::design.setObjectProperty(propertyReceiver, propertyName, propertyValue);
-		}
+	public void setObjectProperty(Object propertyReceiver, String propertyName, Object propertyValue, Supplier<DebugInfo.DebugPoint> debugPoint) throws ScriptingErrorLog.SemanticErrorException {
+        $designStatement::design.setObjectProperty(propertyReceiver, propertyName, propertyValue, debugPoint);
 	}
 
 	public List<GroupObjectEntity> getGroupObjectsList(List<String> ids, Version version) throws ScriptingErrorLog.SemanticErrorException {
@@ -208,6 +206,10 @@ grammar LsfLogics;
 
 	public TypedParameter TP(String className, String paramName) throws ScriptingErrorLog.SemanticErrorException {
 		return self.new TypedParameter(className, paramName);
+	}
+
+	public TypedParameter TP(String paramName) throws ScriptingErrorLog.SemanticErrorException {
+		return self.new TypedParameter((ValueClass)null, paramName);
 	}
 
 	@Override
@@ -410,6 +412,7 @@ scope {
 		|	formEventsList
 		|	filterGroupDeclaration
 		|	extendFilterGroupDeclaration
+		|	userFiltersDeclaration
 		|	formOrderByList
 	    |   formPivotOptionsDeclaration
 		|	dialogFormDeclaration
@@ -803,7 +806,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 	    |   'SELECTOR' { $options.setSelector(true); }
 		|	'HINTNOUPDATE' { $options.setHintNoUpdate(true); }
 		|	'HINTTABLE' { $options.setHintTable(true); }
-        |   (('NEWSESSION' | 'NESTEDSESSION' { $options.setNested(true); } ) { $options.setNewSession(true); })
+        |   fs = formSessionScopeClause { $options.setFormSessionScope($fs.result); }
 		|	'OPTIMISTICASYNC' { $options.setOptimisticAsync(true); }
 		|	'COLUMNS' (columnsName=stringLiteral)? '(' ids=nonEmptyIdList ')' { $options.setColumns($columnsName.text, getGroupObjectsList($ids.ids, self.getVersion())); }
 		|	'SHOWIF' propObj=formPropertyObject { $options.setShowIf($propObj.property); }
@@ -1287,6 +1290,20 @@ filterSetDefault returns [boolean isDefault = false]
 	:	('DEFAULT' { $isDefault = true; })?
 	;
 
+userFiltersDeclaration
+@init {
+	List<PropertyDrawEntity> properties = new ArrayList<>();
+}
+@after {
+	if (inMainParseState()) {
+		$formStatement::form.addScriptedUserFilters(properties, self.getVersion());
+	}
+}
+	:	'USERFILTERS'
+		prop=formPropertyDraw { properties.add($prop.property); }
+		(',' prop=formPropertyDraw { properties.add($prop.property); } )*
+	;
+
 formOrderByList
 @init {
 	boolean ascending = true;
@@ -1449,17 +1466,22 @@ propertyExpression[List<TypedParameter> context, boolean dynamic] returns [LPWit
 
 propertyExpressionOrContextIndependent[List<TypedParameter> context, boolean dynamic, boolean needFullContext] returns [LPWithParams property, LPContextIndependent ci]
     :   exprOrNotExpr=propertyExpressionOrNot[context, dynamic, needFullContext] { $property = $exprOrNotExpr.property;  }
-        { if(inMainParseState()) { $ci = self.checkTLAInExpr($exprOrNotExpr.property, $exprOrNotExpr.ci); } }
+        { if(inMainParseState()) { $ci = self.checkCIInExpr($exprOrNotExpr.property, $exprOrNotExpr.ci); } }
 ;
 
 propertyExpressionOrTrivialLA[List<TypedParameter> context] returns [LPWithParams property, LPTrivialLA la]
     :   exprOrNotExpr=propertyExpressionOrNot[context, false, false] { $property = $exprOrNotExpr.property;  }
-        { if(inMainParseState()) { $la = self.checkCIInExpr($exprOrNotExpr.ci); } }
+        { if(inMainParseState()) { $la = self.checkTLAInExpr($exprOrNotExpr.property, $exprOrNotExpr.ci); } }
 ;
 
 propertyExpressionOrLiteral[List<TypedParameter> context] returns [LPWithParams property, LPLiteral literal]
     :   exprOrNotExpr=propertyExpressionOrNot[context, false, false] { $property = $exprOrNotExpr.property;  }
         { if(inMainParseState()) { $literal = self.checkLiteralInExpr($exprOrNotExpr.property, $exprOrNotExpr.ci); } }
+;
+
+propertyExpressionOrCompoundID[List<TypedParameter> context] returns [LPWithParams property, LPCompoundID id]
+    :   exprOrNotExpr=propertyExpressionOrNot[context, false, false] { $property = $exprOrNotExpr.property;  }
+        { if(inMainParseState()) { $id = self.checkCompoundIDInExpr($exprOrNotExpr.property, $exprOrNotExpr.ci); } }
 ;
 
 propertyExpressionOrNot[List<TypedParameter> context, boolean dynamic, boolean needFullContext] returns [LPWithParams property, LPNotExpr ci]
@@ -1719,20 +1741,25 @@ simplePE[List<TypedParameter> context, boolean dynamic] returns [LPWithParams pr
 
 	
 expressionPrimitive[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property, LPNotExpr ci]
-	:	param=singleParameter[context, dynamic] { $property = $param.property; }
+	:	param=singleParameter[context, dynamic] { $property = $param.property; $ci = $param.ci; }
 	|	expr=expressionFriendlyPD[context, dynamic] { $property = $expr.property; $ci = $expr.ci; }
 	;
 
-singleParameter[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
+singleParameter[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property, LPNotExpr ci]
 @init {
-	String className = null;
+	TypedParameter parameter = null;
 }
 @after {
 	if (inMainParseState()) {
-		$property = new LPWithParams(null, self.getParamIndex(TP(className, $paramName.text), $context, $dynamic, insideRecursion));
+		Pair<LPWithParams, LPNotExpr> constantProp = self.addSingleParameter(parameter, $context, $dynamic, insideRecursion);
+        $property = constantProp.first;
+        $ci = constantProp.second;
 	}
 }
-	:	(clsId=classId { className = $clsId.sid; })? paramName=parameter
+	:
+	    tp = typedParameter { parameter = $tp.param; }
+	    |
+	    rp = RECURSIVE_PARAM { parameter = TP($rp.text); }
 	;
 	
 expressionFriendlyPD[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property, LPNotExpr ci]
@@ -1757,7 +1784,7 @@ expressionFriendlyPD[List<TypedParameter> context, boolean dynamic] returns [LPW
 	|	signDef=signaturePropertyDefinition[context, dynamic] { $property = $signDef.property; }
 	|	activeTabDef=activeTabPropertyDefinition[context, dynamic] { $property = $activeTabDef.property; }
 	|	roundProp=roundPropertyDefinition[context, dynamic] { $property = $roundProp.property; }
-	|	constDef=constantProperty { $property = new LPWithParams($constDef.property); $ci = $constDef.literal; }
+	|	constDef=constantProperty { $property = new LPWithParams($constDef.property); $ci = $constDef.ci; }
 	;
 
 contextIndependentPD[List<TypedParameter> context, boolean dynamic, boolean innerPD] returns [LP property, List<ResolveClassSet> signature, List<Integer> usedContext = Collections.emptyList()]
@@ -3224,6 +3251,7 @@ manageSessionClause returns [ManageSessionType result]
 formSessionScopeClause returns [FormSessionScope result]
     :	'NEWSESSION' { $result = FormSessionScope.NEWSESSION; }
 	|	'NESTEDSESSION' { $result = FormSessionScope.NESTEDSESSION; }
+	|   'THISSESSION' { $result = FormSessionScope.OLDSESSION; }
     ;
 
 noCancelClause returns [boolean result]
@@ -3388,6 +3416,8 @@ formActionProps[String objectName, ValueClass objectClass, List<TypedParameter> 
     Boolean outNull = false;
     NamedPropertyUsage outProp = null;
 
+    LPWithParams listProp = null;
+
     LPWithParams changeProp = null;
 
     boolean assign = false;
@@ -3396,7 +3426,7 @@ formActionProps[String objectName, ValueClass objectClass, List<TypedParameter> 
     DebugInfo.DebugPoint assignDebugPoint = null;
 }
 @after {
-    $props = new FormActionProps(in, inNull, out, outParamNum, outNull, outProp, constraintFilter, assign, changeProp, assignDebugPoint);
+    $props = new FormActionProps(in, inNull, out, outParamNum, outNull, outProp, constraintFilter, assign, listProp, changeProp, assignDebugPoint);
 }
     :   (EQ expr=propertyExpression[context, dynamic] { in = $expr.property; } ('NULL' { inNull = true; } )? )?
         (
@@ -3416,6 +3446,7 @@ formActionProps[String objectName, ValueClass objectClass, List<TypedParameter> 
             ('NULL' { outNull = true; })? 
 //            ('TO' pUsage=propertyUsage { outProp = $pUsage.propUsage; } )?
             (('CONSTRAINTFILTER' { constraintFilter = true; } ) (EQ consExpr=propertyExpression[context, dynamic] { changeProp = $consExpr.property; } )?)?
+            ('LIST' listExpr=propertyExpression[newContext, dynamic] { listProp = $listExpr.property; } )?
         )?
     ;
 
@@ -3638,7 +3669,7 @@ asyncUpdateActionDefinitionBody[List<TypedParameter> context, boolean dynamic] r
 
 seekObjectActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
 @init {
-	UpdateType type = UpdateType.FIRST;
+	UpdateType type = null;
 	List<String> objNames = new ArrayList<>();
 	List<LPWithParams> lps = new ArrayList<>(); 
 }
@@ -3648,7 +3679,7 @@ seekObjectActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
 		                      : self.addScriptedGroupObjectSeekProp($gobj.sid, objNames, lps, type);
 	}
 }
-	:	'SEEK' ('FIRST' | 'LAST' { type = UpdateType.LAST; } | 'NULL' { type = UpdateType.NULL; })?
+	:	'SEEK' ('FIRST' { type = UpdateType.FIRST; } | 'LAST' { type = UpdateType.LAST; } | 'NULL' { type = UpdateType.NULL; })?
 		(	obj=formObjectID EQ pe=propertyExpression[context, dynamic]
 		|	gobj=formGroupObjectID ('OBJECTS' list=seekObjectsList[context, dynamic] { objNames = $list.objects; lps = $list.values; })?
 		)
@@ -3755,34 +3786,54 @@ inputActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams ac
 @init {
 	List<TypedParameter> newContext = new ArrayList<TypedParameter>(context);
 	boolean assign = false;
+	boolean constraintFilter = false;
 	DebugInfo.DebugPoint assignDebugPoint = null;
 
     NamedPropertyUsage outProp = null;
     LPWithParams changeProp = null;
+    LPWithParams listProp = null;
+    LPWithParams whereProp = null;
 }
 @after {
 	if (inMainParseState()) {
-		$action = self.addScriptedInputAProp($in.dataClass, $in.initValue, outProp, $dDB.action, $dDB.elseAction, context, newContext, assign, changeProp, assignDebugPoint);
+		$action = self.addScriptedInputAProp($in.valueClass, $in.initValue, outProp, $dDB.action, $dDB.elseAction, context, newContext, assign, constraintFilter, changeProp, listProp, whereProp, assignDebugPoint, $fs.result);
 	}
 }
 	:	'INPUT'
 	    in=mappedInput[newContext]
-        ( { assignDebugPoint = getCurrentDebugPoint(); }
-            'CHANGE' { assign = true; }
+        ( { assignDebugPoint = getCurrentDebugPoint(); }// copy paste of 'CHANGE' in formActionProps
+            'CHANGE' { assign = true; constraintFilter = true; }
             (EQ consExpr=propertyExpression[context, false])? { changeProp = $consExpr.property; }
+            ('NOCONSTRAINTFILTER' { constraintFilter = false; } )?
+            ('NOCHANGE' { assign = false; assignDebugPoint = null; } )?
         )?
+        {
+            List<TypedParameter> newListContext = new ArrayList<TypedParameter>(context);
+            boolean listDynamic;
+            if($in.valueClass instanceof DataClass) {
+                newListContext = new ArrayList<TypedParameter>(context);
+                listDynamic = true;
+            } else {
+                newListContext = newContext;
+                listDynamic = false;
+            }
+        }
+	    ('LIST' listExpr=propertyExpression[newListContext, listDynamic] { listProp = $listExpr.property; })?
+        ('WHERE' whereExpr=propertyExpression[newListContext, listDynamic] { whereProp = $whereExpr.property; })?
+        fs=formSessionScopeClause?
 //		('TO' pUsage=propertyUsage { outProp = $pUsage.propUsage; } )?
         dDB=doInputBody[context, newContext]
 	;
 	
-mappedInput[List<TypedParameter> context] returns [DataClass dataClass, LPWithParams initValue]
+mappedInput[List<TypedParameter> context] returns [ValueClass valueClass, LPWithParams initValue = null]
 @init {
     String varName = "object"; // for INPUT =f() CHANGE and INPUT LONG;
 }
 @after {
 	if (inMainParseState()) {
-		$dataClass = self.getInputDataClass(varName, context, $ptype.text, $pe.property, insideRecursion);
-		$initValue = $pe.property;
+		$valueClass = self.getInputValueClass(varName, context, $pe.id != null ? $pe.id.name : $ptype.text, $pe.property, insideRecursion);
+		if($pe.id == null)
+    		$initValue = $pe.property;
 	}
 }
     :    
@@ -3793,7 +3844,7 @@ mappedInput[List<TypedParameter> context] returns [DataClass dataClass, LPWithPa
     |	
     ( 
         (varID=ID { varName = $varID.text; } )?
-        EQ pe=propertyExpression[context, false]
+        EQ pe=propertyExpressionOrCompoundID[context]
     )
 ;
 
@@ -4106,10 +4157,12 @@ scope {
 	List<TypedParameter> context = new ArrayList<>();
 	LAWithParams action = null;
 	LPWithParams when = null;
+
+	boolean optimisticAsync = false;
 }
 @after {
 	if (inMainParseState()) {
-        self.addImplementationToAbstractAction($prop.propUsage, $list.params, action, when);
+        self.addImplementationToAbstractAction($prop.propUsage, $list.params, action, when, optimisticAsync);
 	}
 }
 	:	'ACTION'?
@@ -4128,6 +4181,7 @@ scope {
                     action.getLP().setExplicitClasses(self.getClassesFromTypedParams(context)); // just like in action declaration we need full context, and explicit classes (that will add implicit IF paramater IS class even if there is no parameter usage in body)
             }             
         }
+        ('OPTIMISTICASYNC' { optimisticAsync = true; } )?
 	;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -4777,7 +4831,10 @@ propertySelector[ScriptingFormView formView] returns [PropertyDrawView propertyV
 	;
 
 setObjectPropertyStatement[Object propertyReceiver] returns [String id, Object value]
-	:	ID EQ componentPropertyValue ';'  { setObjectProperty($propertyReceiver, $ID.text, $componentPropertyValue.value); }
+	:	ID EQ componentPropertyValue ';'  {
+            if(inMainParseState())
+	            setObjectProperty($propertyReceiver, $ID.text, $componentPropertyValue.value, () -> getCurrentDebugPoint());
+        }
 	;
 
 componentPropertyValue returns [Object value] //commented literals are in designPropertyObject
@@ -4912,10 +4969,6 @@ mappedProperty returns [NamedPropertyUsage propUsage, List<TypedParameter> mappi
 		'('
 		list=typedParameterList { $mapping = $list.params; }
 		')'
-	;
-
-parameter
-	:	ID | RECURSIVE_PARAM
 	;
 
 typedParameter returns [TypedParameter param]
@@ -5063,16 +5116,16 @@ nonEmptyPropertyExpressionList[List<TypedParameter> context, boolean dynamic] re
 		(',' next=propertyExpression[context, dynamic] { $props.add($next.property); })* 
 	;
 	
-constantProperty returns [LP property, LPLiteral literal]
+constantProperty returns [LP property, LPNotExpr ci]
 @init {
 	ScriptingLogicsModule.ConstType cls = null;
 	Object value = null;
 }
 @after {
 	if (inMainParseState()) {
-		Pair<LP, LPLiteral> constantProp = self.addConstantProp(cls, value);
+		Pair<LP, LPNotExpr> constantProp = self.addConstantProp(cls, value);
 		$property = constantProp.first;
-		$literal = constantProp.second;
+		$ci = constantProp.second;
 	}
 }
 	:	lit = literal { cls = $lit.cls; value = $lit.value; }
@@ -5358,7 +5411,7 @@ fragment STRING_LITERAL_ID_FRAGMENT : ID_FRAGMENT | STRING_LITERAL_FRAGMENT;
 fragment STRING_LITERAL_NEXTID_FRAGMENT : NEXTID_FRAGMENT | STRING_LITERAL_FRAGMENT;
 fragment STRING_META_FRAGMENT : (STRING_LITERAL_ID_FRAGMENT ('###' | '##'))* STRING_LITERAL_FRAGMENT (('###' | '##') STRING_LITERAL_NEXTID_FRAGMENT)*;
 
-fragment INTERVAL_TYPE : 'DATE' | 'DATETIME' | 'TIME';
+fragment INTERVAL_TYPE : 'DATE' | 'DATETIME' | 'TIME' | 'ZDATETIME';
 
 PRIMITIVE_TYPE  :	'INTEGER' | 'DOUBLE' | 'LONG' | 'BOOLEAN' | 'TBOOLEAN' | 'DATE' | 'DATETIME' | 'ZDATETIME' | 'YEAR'
                 |   'TEXT' | 'RICHTEXT' | 'TIME' | 'WORDFILE' | 'IMAGEFILE' | 'PDFFILE' | 'DBFFILE' | 'RAWFILE'

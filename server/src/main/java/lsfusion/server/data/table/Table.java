@@ -23,7 +23,6 @@ import lsfusion.server.data.expr.NullableExprInterface;
 import lsfusion.server.data.expr.classes.IsClassExpr;
 import lsfusion.server.data.expr.classes.IsClassType;
 import lsfusion.server.data.expr.inner.InnerExpr;
-import lsfusion.server.data.expr.join.base.UnionJoin;
 import lsfusion.server.data.expr.join.classes.InnerFollows;
 import lsfusion.server.data.expr.join.inner.InnerJoin;
 import lsfusion.server.data.expr.join.inner.InnerJoins;
@@ -47,7 +46,6 @@ import lsfusion.server.data.query.build.AbstractJoin;
 import lsfusion.server.data.query.build.QueryBuilder;
 import lsfusion.server.data.query.compile.CompileSource;
 import lsfusion.server.data.query.compile.FJData;
-import lsfusion.server.data.query.compile.where.UpWheres;
 import lsfusion.server.data.query.result.ResultHandler;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.exception.SQLHandledException;
@@ -284,7 +282,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
             exprs = exprs.filterFn(element -> !(element.type instanceof FileClass || element.getName().contains("_LG_") || element.getName().contains("_LOG_")));
         query.addProperties(exprs);
         query.and(tableJoin.getWhere());
-        query.getQuery().executeSQL(session, MapFact.EMPTYORDER(), 0, DataSession.emptyEnv(owner), result);
+        query.getQuery().executeSQL(session, MapFact.EMPTYORDER(), 0, false, DataSession.emptyEnv(owner), result);
     }
 
     public static boolean checkClasses(ObjectClassSet classSet, CustomClass inconsistentTableClass, Result<Boolean> mRereadChange, RegisterClassRemove classRemove, long timestamp) {

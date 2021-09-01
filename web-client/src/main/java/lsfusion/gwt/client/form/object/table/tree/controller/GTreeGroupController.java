@@ -8,6 +8,7 @@ import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GFont;
+import lsfusion.gwt.client.form.filter.user.GFilter;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
@@ -19,7 +20,9 @@ import lsfusion.gwt.client.form.object.table.tree.view.GTreeTable;
 import lsfusion.gwt.client.form.property.*;
 import lsfusion.gwt.client.form.view.Column;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.isShowing;
 
@@ -44,7 +47,7 @@ public class GTreeGroupController extends GAbstractTableController {
     }
 
     protected void configureToolbar() {
-        addFilterButton();
+        addUserFilterComponent();
 
         addToolbarSeparator();
 
@@ -54,6 +57,10 @@ public class GTreeGroupController extends GAbstractTableController {
         addToToolbar(expandTreeButton);
     }
 
+    @Override
+    public GFilter getFilterComponent() {
+        return treeGroup.filter;
+    }
     public GFont getFont() {
         return treeGroup.font;
     }
@@ -101,6 +108,11 @@ public class GTreeGroupController extends GAbstractTableController {
 
         for (GGroupObject groupObject : treeGroup.groups)
             formController.setFiltersVisible(groupObject, isTreeVisible);
+
+        if (userFilters != null) {
+            userFilters.update();
+            userFilters.setVisible(isTreeVisible);
+        }
 
         if(expandTreeButton != null) {
             expandTreeButton.update(this);

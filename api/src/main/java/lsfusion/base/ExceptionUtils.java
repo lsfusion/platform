@@ -23,7 +23,7 @@ public class ExceptionUtils {
     }
 
     public static String getPlainStackTrace() {
-        return getStackTrace(new Exception()).replace('\n', '\t');
+        return getStackTrace().replace('\n', '\t');
     }
 
     public static String getStackTrace() {

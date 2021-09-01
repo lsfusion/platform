@@ -1,9 +1,14 @@
 package lsfusion.gwt.server.convert;
 
 import com.google.common.base.Throwables;
+import lsfusion.client.form.object.ClientCustomObjectValue;
+import lsfusion.client.form.object.ClientGroupObjectValue;
+import lsfusion.client.form.property.async.ClientPushAsyncAdd;
+import lsfusion.client.form.property.async.ClientPushAsyncChange;
 import lsfusion.gwt.client.action.GExternalHttpResponse;
 import lsfusion.gwt.client.form.GUpdateMode;
 import lsfusion.gwt.client.form.design.GFont;
+import lsfusion.gwt.client.form.object.GCustomObjectValue;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GColumnUserPreferences;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GFormUserPreferences;
@@ -11,6 +16,8 @@ import lsfusion.gwt.client.form.object.table.grid.user.design.GGroupObjectUserPr
 import lsfusion.gwt.client.form.object.table.grid.view.GListViewType;
 import lsfusion.gwt.client.form.property.GClassViewType;
 import lsfusion.gwt.client.form.property.GPropertyGroupType;
+import lsfusion.gwt.client.form.property.async.GPushAsyncAdd;
+import lsfusion.gwt.client.form.property.async.GPushAsyncChange;
 import lsfusion.gwt.client.form.property.cell.classes.*;
 import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
 import lsfusion.gwt.server.FileUtils;
@@ -93,7 +100,7 @@ public class GwtToClientConverter extends ObjectConverter {
 
     @Converter(from = GUserInputResult.class)
     public UserInputResult convertInputResult(GUserInputResult gInputResult) {
-        return new UserInputResult(gInputResult.isCanceled(), convertOrCast(gInputResult.getValue()));
+        return new UserInputResult(gInputResult.isCanceled(), convertOrCast(gInputResult.getValue()), gInputResult.getContextAction());
     }
 
     @Converter(from = GClassViewType.class)
@@ -126,9 +133,24 @@ public class GwtToClientConverter extends ObjectConverter {
         return outStream.toByteArray();
     }
 
+    // should correspond AsyncChange.deserializePush(byte[])
+    @Converter(from = GPushAsyncAdd.class)
+    public byte[] convertPushSyncAdd(GPushAsyncAdd pushAsyncChange) {
+        return new ClientPushAsyncAdd(pushAsyncChange.ID).serialize();
+    }
+    @Converter(from = GPushAsyncChange.class)
+    public byte[] convertPushAsyncChange(GPushAsyncChange pushAsync) {
+        return new ClientPushAsyncChange(convertOrCast(pushAsync.result)).serialize();
+    }
+
     @Converter(from = GExternalHttpResponse.class)
-    public ExternalHttpResponse convertExternalHttpResponse(GExternalHttpResponse gResponse) {
+    public ExternalHttpResponse convertCustomObjectValue(GExternalHttpResponse gResponse) {
         return new ExternalHttpResponse(gResponse.contentType, gResponse.responseBytes, gResponse.responseHeaders, gResponse.statusCode, gResponse.statusText);
+    }
+
+    @Converter(from = GCustomObjectValue.class)
+    public ClientCustomObjectValue convertCustomObjectValue(GCustomObjectValue gValue) {
+        return new ClientCustomObjectValue(gValue.id, gValue.idClass);
     }
 
     public void serializeGroupObjectValue(DataOutputStream dataStream, GGroupObjectValue groupObjectValue) {
@@ -137,7 +159,7 @@ public class GwtToClientConverter extends ObjectConverter {
             dataStream.writeInt(size);
             for (int i = 0; i < size; ++i) {
                 dataStream.writeInt(groupObjectValue.getKey(i));
-                serializeObject(dataStream, convertOrCast(groupObjectValue.getValue(i)));
+                ClientGroupObjectValue.serializeObjectValue(dataStream, convertOrCast(groupObjectValue.getValue(i)));
             }
         } catch (IOException e) {
             Throwables.propagate(e);

@@ -10,7 +10,6 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.jsni.NativeSIDMap;
-import lsfusion.gwt.client.base.resize.ResizeHandler;
 import lsfusion.gwt.client.base.resize.ResizeHelper;
 import lsfusion.gwt.client.base.view.CopyPasteUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
@@ -27,16 +26,15 @@ import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController;
 import lsfusion.gwt.client.form.order.user.GGridSortableHeaderManager;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTable;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
 import static java.lang.Math.max;
+import static lsfusion.gwt.client.form.event.GKeyStroke.*;
 
 public abstract class GGridPropertyTable<T extends GridDataRecord> extends GPropertyTable<T> implements HasMaxPreferredSize {
     public static int DEFAULT_PREFERRED_WIDTH = 130; // должно соответствовать значению в gridResizePanel в MainFrame.css
@@ -106,19 +104,19 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
 
         if(groupObject != null) {
             // ADD FILTER
-            addFilterBinding(new GKeyInputEvent(new GKeyStroke(GKeyStroke.KEY_F2)),
-                    event -> getGroupController().addFilter());
+            addFilterBinding(new GKeyInputEvent(ADD_USER_FILTER_KEY_STROKE),
+                    event -> getGroupController().addFilter(event));
             // REPLACE FILTER
-            addFilterBinding(new GKeyInputEvent(new GKeyStroke(GKeyStroke.KEY_F2, true, false, false)),
-                    event -> getGroupController().replaceFilter());
+            addFilterBinding(new GKeyInputEvent(REPLACE_USER_FILTER_KEY_STROKE),
+                    event -> getGroupController().replaceFilter(event));
             // REMOVE FILTERS
             GFormController.BindingExec removeFilters = event -> getGroupController().removeFilters();
-            addFilterBinding(new GKeyInputEvent(new GKeyStroke(GKeyStroke.KEY_F2, false, false, true)),
+            addFilterBinding(new GKeyInputEvent(REMOVE_USER_FILTERS_KEY_STROKE),
                     removeFilters);
             addFilterBinding(nativeEvent -> {
                         if (GKeyStroke.isEscapeKeyEvent(nativeEvent) && GKeyStroke.isPlainKeyEvent(nativeEvent)) {
                             GAbstractTableController goController = getGroupController();
-                            return goController.filter != null && goController.filter.hasConditions();
+                            return goController.userFilters != null && goController.userFilters.hasConditions();
                         }
                         return false;
                     }, removeFilters);
@@ -186,7 +184,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         addFilterBinding(event::isEvent, pressed);
     }
     private void addFilterBinding(GFormController.BindingCheck event, GFormController.BindingExec pressed) {
-        form.addBinding(event, new GBindingEnv(null, null, null, GBindingMode.ONLY, null, null, null, null), pressed, GGridPropertyTable.this, groupObject);
+        form.addBinding(event, new GBindingEnv(null, null, null, GBindingMode.ONLY, GBindingMode.NO, null, null, null), pressed, GGridPropertyTable.this, groupObject);
     }
 
     @Override
@@ -531,9 +529,16 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     public <C> void onBrowserEvent(Cell cell, Event event, Column<T, C> column, Element parent) {
         form.onPropertyBrowserEvent(new EventHandler(event), parent, getTableDataFocusElement(),
                 handler -> selectionHandler.onCellBefore(handler, cell, rowChanged -> isChangeOnSingleClick(cell, (Boolean) rowChanged)),
-                handler -> column.onEditEvent(handler, false, cell, parent),
+                handler -> column.onEditEvent(handler, cell, parent),
                 handler -> selectionHandler.onCellAfter(handler, cell),
-                handler -> CopyPasteUtils.putIntoClipboard(parent), handler -> CopyPasteUtils.getFromClipboard(handler, line -> pasteData(GwtClientUtils.getClipboardTable(line))), false);
+                handler -> CopyPasteUtils.putIntoClipboard(parent), handler -> CopyPasteUtils.getFromClipboard(handler, line -> pasteData(cell, parent, GwtClientUtils.getClipboardTable(line))), false);
+    }
+
+    @Override
+    public void pasteData(Cell cell, Element parent, List<List<String>> table) {
+        if (!table.isEmpty() && !table.get(0).isEmpty()) {
+            form.pasteValue(getEditContext(cell, parent), table.get(0).get(0));
+        }
     }
 
     protected boolean isFocusable(GPropertyDraw property) {
@@ -545,8 +550,8 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         protected abstract Object getValue(GPropertyDraw property, T record);
 
         @Override
-        public void onEditEvent(EventHandler handler, boolean isBinding, Cell editCell, Element editCellParent) {
-            GGridPropertyTable.this.onEditEvent(handler, isBinding, editCell, editCellParent);
+        public void onEditEvent(EventHandler handler, Cell editCell, Element editCellParent) {
+            GGridPropertyTable.this.onEditEvent(handler, false, editCell, editCellParent);
         }
 
         @Override
@@ -571,12 +576,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
                 form.update(property, cellElement, oldValue, new UpdateContext() {
                     @Override
                     public Consumer<Object> getCustomRendererValueChangeConsumer() {
-                        return value -> form.changeProperty(property,
-                                GGridPropertyTable.this.getColumnKey(cell),
-                                GEditBindingMap.CHANGE,
-                                (Serializable) value,
-                                oldValue,
-                                null);
+                        return value -> form.changeProperty(getEditContext(cell, cellElement), value);
                     }
 
                     @Override

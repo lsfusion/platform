@@ -8,6 +8,17 @@ public class GObject implements Serializable {
     public int ID;
     public String sID;
 
+    public GObject() {
+    }
+
+    public GObject(GGroupObject groupObject, String caption, int ID, String sID) {
+        this.groupObject = groupObject;
+        this.caption = caption;
+        this.ID = ID;
+        this.sID = sID;
+    }
+
+
     public String getCaption() {
         return caption;
     }

@@ -82,6 +82,7 @@ public class TypeSerializer {
         if (type == DataType.DATEINTERVAL) return IntervalClass.getInstance("DATE");
         if (type == DataType.TIMEINTERVAL) return IntervalClass.getInstance("TIME");
         if (type == DataType.DATETIMEINTERVAL) return IntervalClass.getInstance("DATETIME");
+        if (type == DataType.ZDATETIMEINTERVAL) return IntervalClass.getInstance("ZDATETIME");
         if (type == DataType.COLOR) return ColorClass.instance;
 
         if (type == DataType.STRING || type == DataType.TEXT) {

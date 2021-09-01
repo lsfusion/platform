@@ -29,6 +29,7 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.event.GMouseStroke;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 import lsfusion.gwt.client.view.ColorThemeChangeListener;
@@ -462,8 +463,8 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
 
         TableSectionElement targetTableSection = null;
 
-        if (target == getTableDataFocusElement() || target == getTableElement()) { // need this when focus is on grid and not cell itself, so we need to propagate key events there
-            // usually all events has target getTableDataFocusElement, but ONPASTE when focus is on grid somewhy has target tableElement
+        if (target == getTableDataFocusElement() || GKeyStroke.isPasteFromClipboardEvent(event)) { // need this when focus is on grid and not cell itself, so we need to propagate key events there
+            // usually all events has target getTableDataFocusElement, but ONPASTE when focus is on grid somewhy has target tableElement (in last version something has changed and now target is copied cell, however it is also undesirable)
             if (checkSinkGlobalEvents(event)) {
                 targetTableSection = tbody;
 

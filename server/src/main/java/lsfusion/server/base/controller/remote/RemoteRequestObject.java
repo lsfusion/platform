@@ -179,7 +179,15 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
         String invocationSID;
         if (ServerLoggers.isPausableLogEnabled()) {
             StackTraceElement[] st = new Throwable().getStackTrace();
-            String methodName = st[2].getMethodName();
+            int i = 2;
+            String methodName;
+            while(true) {
+                methodName = st[i].getMethodName();
+                if(methodName.startsWith("process"))
+                    i++;
+                else
+                    break;
+            }
 
             int aspectPostfixInd = methodName.indexOf("_aroundBody");
             if (aspectPostfixInd != -1) {
@@ -286,6 +294,7 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
             return result;
         }
 
+        // syncing executions with the same index to avoid simultaneous executing retryable requests
         @Around("execution(* lsfusion.server.base.controller.remote.RemoteRequestObject.executeServerInvocation(long, long, lsfusion.server.base.controller.remote.ui.RemotePausableInvocation)) && target(object) && args(requestIndex, lastReceivedRequestIndex, invocation)")
         public Object execute(ProceedingJoinPoint joinPoint, RemoteRequestObject object, long requestIndex, long lastReceivedRequestIndex, RemotePausableInvocation invocation) throws Throwable {
             return syncExecute(object.syncExecuteServerInvocationMap, requestIndex, joinPoint);

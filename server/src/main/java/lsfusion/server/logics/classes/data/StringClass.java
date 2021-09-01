@@ -232,7 +232,8 @@ public class StringClass extends DataClass<String> {
     }
 
     public boolean calculateStat() {
-        return length.less(new ExtInt(400));
+        return true; // we need stats at least for isValueUnique heuristics
+//        return length.less(new ExtInt(400));
     }
 
     public StringClass extend(int times) {

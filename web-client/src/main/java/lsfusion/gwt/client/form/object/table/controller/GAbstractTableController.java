@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form.object.table.controller;
 
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
@@ -13,6 +14,9 @@ import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.design.view.GAbstractContainerView;
+import lsfusion.gwt.client.form.event.GBindingEnv;
+import lsfusion.gwt.client.form.event.GInputEvent;
+import lsfusion.gwt.client.form.filter.user.GFilter;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.filter.user.controller.GUserFilters;
 import lsfusion.gwt.client.form.object.GGroupObject;
@@ -32,7 +36,7 @@ import static lsfusion.gwt.client.base.GwtClientUtils.setupFillParent;
 
 public abstract class GAbstractTableController extends GPropertyController implements GTableController {
     protected final GToolbarView toolbarView;
-    public GUserFilters filter;
+    public GUserFilters userFilters;
 
     protected Widget gridView;
     protected ResizableSimplePanel gridContainerView;
@@ -120,26 +124,32 @@ public abstract class GAbstractTableController extends GPropertyController imple
         }
     }
 
-    public void addFilterButton() {
-        filter = new GUserFilters(this) {
+    public abstract GFilter getFilterComponent();
+
+    public void addUserFilterComponent() {
+        userFilters = new GUserFilters(this, getFilterComponent()) {
             @Override
-            public void remoteApplyQuery() {
-                changeFilter(new ArrayList<>(getConditions()));
+            public void applyFilters(ArrayList<GPropertyFilter> conditions, boolean focusFirstComponent) {
+                changeFilter(conditions);
+                if (focusFirstComponent) {
+                    Scheduler.get().scheduleDeferred(() -> focusFirstWidget());
+                }
             }
 
-                @Override
-                public void filterClosed() {
-                    focusFirstWidget();
-                }
+            @Override
+            public void checkCommitEditing() {
+                formController.checkCommitEditing();
+            }
 
-                @Override
-                public void checkCommitEditing() {
-                    formController.checkCommitEditing();
-                }
-            };
+            @Override
+            public void addBinding(GInputEvent event, GBindingEnv env, GFormController.BindingExec pressed, Widget component) {
+                formController.addBinding(event, env, pressed, component, getSelectedGroupObject());
+            }
+        };
+        getFormLayout().addBaseComponent(getFilterComponent(), userFilters.getView(), null);
 
 
-        addToToolbar(filter.getToolbarButton());
+        addToToolbar(userFilters.getToolbarButton());
     }
 
     @Override
@@ -157,21 +167,27 @@ public abstract class GAbstractTableController extends GPropertyController imple
     }
 
     public void quickEditFilter(Event editEvent, GPropertyDraw propertyDraw, GGroupObjectValue columnKey) {
-        filter.quickEditFilter(editEvent, propertyDraw, columnKey);
-    }
-
-    public void replaceFilter() {
-        if (filter != null) {
-            filter.addConditionPressed(true);
+        if (userFilters != null) {
+            userFilters.quickEditFilter(editEvent, propertyDraw, columnKey);
         }
     }
 
-    public void addFilter() {
-        filter.addConditionPressed(false);
+    public void replaceFilter(Event event) {
+        if (userFilters != null) {
+            userFilters.addConditionPressed(true, event);
+        }
+    }
+
+    public void addFilter(Event event) {
+        if (userFilters != null) {
+            userFilters.addConditionPressed(false, event);
+        }
     }
 
     public void removeFilters() {
-        filter.allRemovedPressed();
+        if (userFilters != null) {
+            userFilters.allRemovedPressed();
+        }
     }
 
     protected abstract void changeFilter(ArrayList<GPropertyFilter> conditions);

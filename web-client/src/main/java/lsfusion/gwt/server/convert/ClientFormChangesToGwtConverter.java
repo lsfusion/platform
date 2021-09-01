@@ -5,12 +5,14 @@ import lsfusion.base.file.RawFileData;
 import lsfusion.client.classes.data.ClientImageClass;
 import lsfusion.client.form.ClientFormChanges;
 import lsfusion.client.form.design.ClientComponent;
+import lsfusion.client.form.object.ClientCustomObjectValue;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.object.ClientObject;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.ClientPropertyReader;
 import lsfusion.gwt.client.GFormChangesDTO;
+import lsfusion.gwt.client.form.object.GCustomObjectValue;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.GGroupObjectValueBuilder;
 import lsfusion.gwt.client.form.property.GPropertyReaderDTO;
@@ -184,10 +186,15 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
     @Converter(from = ClientGroupObjectValue.class)
     public GGroupObjectValue convertGroupObjectValue(ClientGroupObjectValue clientGroupObjValue) {
         GGroupObjectValueBuilder groupObjectValue = new GGroupObjectValueBuilder();
-        for (Map.Entry<ClientObject, Object> keyPart : clientGroupObjValue.entrySet()) {
+        for (Map.Entry<ClientObject, Serializable> keyPart : clientGroupObjValue.iterate()) {
             groupObjectValue.put(keyPart.getKey().ID, convertOrCast(keyPart.getValue()));
         }
         return groupObjectValue.toGroupObjectValue();
+    }
+
+    @Converter(from = ClientCustomObjectValue.class)
+    public GCustomObjectValue convertCustomObjectValue(ClientCustomObjectValue customObjectValue) {
+        return new GCustomObjectValue(customObjectValue.id, customObjectValue.idClass);
     }
 
     @Converter(from = LocalDate.class)

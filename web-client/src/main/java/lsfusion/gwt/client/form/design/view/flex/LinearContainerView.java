@@ -24,7 +24,8 @@ public class LinearContainerView extends GAbstractContainerView {
 
     protected FlexPanel[] columns;
     protected FlexPanel[] captionColumns;
-    protected List<Widget> childrenCaptions;
+    protected List<AlignCaptionPanel> childrenCaptions;
+    protected List<Integer> childrenCaptionBaseSizes;
 
     public LinearContainerView(GContainer container) {
         super(container);
@@ -86,18 +87,35 @@ public class LinearContainerView extends GAbstractContainerView {
         return caption;
     }
 
+    private static class AlignCaptionPanel extends FlexPanel {
+        public AlignCaptionPanel(boolean vertical) {
+            super(vertical);
+        }
+
+        public Integer baseSize;
+    }
+
     @Override
     protected void addImpl(int index, GComponent child, Widget view) {
         if(alignCaptions) { // when adding GPropertyPanelController.Panel is empty, so we have to do everything wit callback
-            FlexPanel captionPanel = new FlexPanel(!vertical);
+            AlignCaptionPanel captionPanel = new AlignCaptionPanel(!vertical);
             captionPanel.addStyleName("dataPanelRendererPanel"); // just like in PanelRenderer for no-wrap
 
             child.installMargins(captionPanel); // need the same margins as property value
 
             childrenCaptions.add(index, captionPanel);
-            ((GPropertyPanelController.Panel) view).captionContainer = (widget, valueSizes) -> {
-                captionPanel.add(widget, GFlexAlignment.CENTER);
-                FlexPanel.setBaseSize(captionPanel, vertical, vertical ? valueSizes.second : valueSizes.first);  // oppositeAndFixed - false, since we're settings size for main direction
+            ((GPropertyPanelController.Panel) view).captionContainer = (captionWidget, valueSizes, alignment) -> {
+                assert vertical; // because of aligncaptions first check (isVertical())
+                captionPanel.add(captionWidget, alignment);
+
+                Integer baseSize = vertical ? valueSizes.second : valueSizes.first;
+
+                Integer size = child.getSize(vertical);
+                if (size != null)
+                    baseSize = size;
+
+                captionPanel.baseSize = baseSize; // this code line is called after captionPanel is first time added to the container, so we store it in some field for further adding, removing (actually it's needed for component "shifting", when we need to add/remove latter components)
+                FlexPanel.setBaseSize(captionPanel, vertical, baseSize);  // oppositeAndFixed - false, since we're setting the size for the main direction
             };
         }
 
@@ -145,8 +163,10 @@ public class LinearContainerView extends GAbstractContainerView {
 
         add(isSimple() ? panel : columns[columnIndex], childrenViews.get(index), children.get(index), rowIndex);
 
-        if(alignCaptions)
-            captionColumns[columnIndex].add(childrenCaptions.get(index), rowIndex, GFlexAlignment.START);
+        if(alignCaptions) {
+            AlignCaptionPanel captionPanel = childrenCaptions.get(index);
+            captionColumns[columnIndex].add(captionPanel, rowIndex, GFlexAlignment.START, 0, captionPanel.baseSize);
+        }
     }
 
     @Override
@@ -184,7 +204,7 @@ public class LinearContainerView extends GAbstractContainerView {
                 int captionMain = 0;
 
                 for (int j = 0; j < rows; j++) {
-                    int index = i * columnsCount + j;
+                    int index = j * columnsCount + i;
                     if(index < size) {
                         if(alignCaptions) {
                             Dimension captionPref = GwtClientUtils.calculateMaxPreferredSize(childrenCaptions.get(index));

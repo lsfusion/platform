@@ -14,6 +14,7 @@ import lsfusion.gwt.client.classes.GClass;
 import lsfusion.gwt.client.classes.GObjectType;
 import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.classes.data.GFormatType;
+import lsfusion.gwt.client.classes.data.GLogicalType;
 import lsfusion.gwt.client.classes.data.GLongType;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
@@ -25,13 +26,13 @@ import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.panel.controller.GPropertyPanelController;
-import lsfusion.gwt.client.form.object.table.controller.GPropertyController;
 import lsfusion.gwt.client.form.property.async.GAsyncChange;
 import lsfusion.gwt.client.form.property.async.GAsyncEventExec;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.classes.view.FormatCellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.CustomCellRenderer;
+import lsfusion.gwt.client.form.property.panel.view.ActionOrPropertyValueController;
 import lsfusion.gwt.client.form.property.panel.view.PanelRenderer;
 import lsfusion.gwt.client.view.MainFrame;
 import lsfusion.gwt.client.view.StyleDefaults;
@@ -81,16 +82,21 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public String defaultPattern;
     public GClass returnClass;
 
-    public GType changeWYSType;
-
+    public GType externalChangeType;
     public Map<String, GAsyncEventExec> asyncExecMap;
+
+    // custom renderers, simple state views, paste
+    public static final GType externalChangeTypeUsage = null;
+    public GType getExternalChangeType() {
+        return externalChangeType;
+    }
 
     public boolean hasColumnGroupObjects() {
         return columnGroupObjects != null && !columnGroupObjects.isEmpty();
     }
 
     public GType getChangeType() {
-        GAsyncEventExec asyncExec = asyncExecMap.get(ServerResponse.CHANGE);
+        GAsyncEventExec asyncExec = getAsyncEventExec(ServerResponse.CHANGE);
         return asyncExec instanceof GAsyncChange ? ((GAsyncChange) asyncExec).changeType : null;
     }
 
@@ -120,11 +126,15 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         return defaultCompare != null ? defaultCompare : baseType.getDefaultCompare();
     }
 
+    public GCompare[] getFilterCompares() {
+        return baseType.getFilterCompares();
+    }
+
     public boolean hasStaticImage() {
         return imageHolder != null;
     }
     public boolean hasDynamicImage() { // when it's an action and has dynamic image
-        return baseType instanceof GActionType && hasDynamicImage;
+        return isAction() && hasDynamicImage;
     }
 
     public ArrayList<GInputBindingEvent> bindingEvents = new ArrayList<>();
@@ -173,6 +183,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public int valueHeight = -1;
 
     public boolean panelCaptionVertical;
+    public Boolean panelCaptionLast;
+    public GFlexAlignment panelCaptionAlignment;
     
     public boolean panelColumnVertical;
     
@@ -208,8 +220,12 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
     public GPropertyDraw(){}
 
-    public PanelRenderer createPanelRenderer(GFormController form, GGroupObjectValue columnKey, GPropertyPanelController.CaptionContainer captionContainer) {
-        return baseType.createPanelRenderer(form, this, columnKey, captionContainer);
+    public PanelRenderer createPanelRenderer(GFormController form, ActionOrPropertyValueController controller, GGroupObjectValue columnKey, GPropertyPanelController.CaptionContainer captionContainer) {
+        return baseType.createPanelRenderer(form, controller, this, columnKey, captionContainer);
+    }
+
+    public boolean isAction() {
+        return baseType instanceof GActionType;
     }
 
     public CellRenderer getCellRenderer() {
@@ -235,12 +251,14 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         }
     }
 
-    public Object parseChangeValueOrNull(String s) {
-        if (s == null || changeWYSType == null) {
+    public Object parsePaste(String s, GType parseType) {
+        if (s == null) {
             return null;
         }
+        if(parseType == null)
+            return null;
         try {
-            return changeWYSType.parseString(s, pattern);
+            return parseType.parseString(s, pattern);
         } catch (ParseException pe) {
             return null;
         }
@@ -248,10 +266,6 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
     public boolean canUseChangeValueForRendering(GType type) {
         return type != null && baseType.getClass() == type.getClass();
-    }
-
-    public boolean canUseChangeValueForRendering() {
-        return canUseChangeValueForRendering(getChangeType());
     }
 
     public String getCaptionOrEmpty() {
@@ -335,7 +349,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
             String scriptPath = creationPath != null ? escapeLineBreakHTML(creationPath) : "";
             String scriptFormPath = formPath != null ? escapeLineBreakHTML(formPath) : "";
             
-            if (baseType instanceof GActionType) {
+            if (isAction()) {
                 return GwtSharedUtils.stringFormat(TOOL_TIP_FORMAT + getDetailedActionToolTipFormat(),
                         propCaption, keyBindingText, canonicalName, ifaceObjects, scriptPath, propertyFormName, scriptFormPath);
             } else {
@@ -390,6 +404,14 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         return flex;
     }
 
+    public boolean isPanelCaptionLast() {
+        return panelCaptionLast != null ? panelCaptionLast : baseType instanceof GLogicalType;
+    }
+    
+    public GFlexAlignment getPanelCaptionAlignment() {
+        return (panelCaptionAlignment != null && panelCaptionAlignment != GFlexAlignment.STRETCH) ? panelCaptionAlignment : GFlexAlignment.CENTER;
+    }
+
     public GFlexAlignment getAlignment() {
         return alignment;
     }
@@ -436,6 +458,9 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     }
     public int getValueHeightWithPadding(GFont parentFont) {
         return getValueHeight(parentFont) + getCellRenderer().getHeightPadding() * 2;
+    }
+    public boolean isAutoDynamicHeight() {
+        return getCellRenderer().isAutoDynamicHeight();
     }
 
     public int getValueWidth(GFont parentFont) {

@@ -8,6 +8,7 @@ import lsfusion.client.form.property.cell.classes.controller.DateTimePropertyEdi
 import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
 import lsfusion.client.form.property.cell.classes.view.DateTimePropertyRenderer;
 import lsfusion.client.form.property.cell.view.PropertyRenderer;
+import lsfusion.client.form.property.table.view.AsyncChangeInterface;
 import lsfusion.client.view.MainFrame;
 import lsfusion.interop.classes.DataType;
 
@@ -73,7 +74,8 @@ public class ClientDateTimeClass extends ClientFormatClass<SimpleDateFormat> imp
         return result;
     }
 
-    public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
+    @Override
+    public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property, AsyncChangeInterface asyncChange) {
         return new DateTimePropertyEditor(value, getEditFormat(property), property);
     }
 

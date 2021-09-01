@@ -6,6 +6,7 @@ import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
 import lsfusion.client.form.property.cell.classes.controller.ZDateTimePropertyEditor;
 import lsfusion.client.form.property.cell.classes.view.ZDateTimePropertyRenderer;
 import lsfusion.client.form.property.cell.view.PropertyRenderer;
+import lsfusion.client.form.property.table.view.AsyncChangeInterface;
 import lsfusion.client.view.MainFrame;
 import lsfusion.interop.classes.DataType;
 
@@ -26,7 +27,8 @@ public class ClientZDateTimeClass extends ClientDateTimeClass {
         return new ZDateTimePropertyRenderer(property);
     }
 
-    public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
+    @Override
+    public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property, AsyncChangeInterface asyncChange) {
         return new ZDateTimePropertyEditor(value, getEditFormat(property), property);
     }
 

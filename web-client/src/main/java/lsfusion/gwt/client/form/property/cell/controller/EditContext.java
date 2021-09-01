@@ -12,6 +12,7 @@ public interface EditContext {
     UpdateContext getUpdateContext();
 
     GPropertyDraw getProperty();
+    GGroupObjectValue getColumnKey();
 
     Element getRenderElement();
 

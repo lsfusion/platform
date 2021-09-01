@@ -2,8 +2,6 @@ package lsfusion.client.classes.data;
 
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.form.property.ClientPropertyDraw;
-import lsfusion.client.form.property.cell.classes.controller.FilePropertyEditor;
-import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
 import lsfusion.client.form.property.cell.classes.view.HTMLPropertyRenderer;
 import lsfusion.client.form.property.cell.view.PropertyRenderer;
 import lsfusion.interop.classes.DataType;
@@ -21,6 +19,11 @@ public class ClientHTMLClass extends ClientStaticFormatFileClass {
         return new String[] {"html"};
     }
 
+    @Override
+    public String getDescription() {
+        return ClientResourceBundle.getString("logics.classes.html");
+    }
+
     public PropertyRenderer getRendererComponent(ClientPropertyDraw property) {
         return new HTMLPropertyRenderer(property);
     }
@@ -32,11 +35,6 @@ public class ClientHTMLClass extends ClientStaticFormatFileClass {
 
     public byte getTypeId() {
         return DataType.HTML;
-    }
-
-    @Override
-    public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
-        return new FilePropertyEditor(multiple, storeName, ClientResourceBundle.getString("logics.classes.html"), getExtensions());
     }
 
     @Override

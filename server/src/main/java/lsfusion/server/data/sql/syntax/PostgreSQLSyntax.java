@@ -55,8 +55,8 @@ public class PostgreSQLSyntax extends DefaultSQLSyntax {
         return "COALESCE(" + exprs + ")";
     }
 
-    public String getSelect(String from, String exprs, String where, String orderBy, String groupBy, String having, String top) {
-        return "SELECT " + exprs + " FROM " + from + BaseUtils.clause("WHERE", where) + BaseUtils.clause("GROUP BY", groupBy) + BaseUtils.clause("HAVING", having) + BaseUtils.clause("ORDER BY", orderBy) + BaseUtils.clause("LIMIT", top);
+    public String getSelect(String from, String exprs, String where, String orderBy, String groupBy, String having, String top, boolean distinct) {
+        return "SELECT " + (distinct ? "DISTINCT " : "") + exprs + " FROM " + from + BaseUtils.clause("WHERE", where) + BaseUtils.clause("GROUP BY", groupBy) + BaseUtils.clause("HAVING", having) + BaseUtils.clause("ORDER BY", orderBy) + BaseUtils.clause("LIMIT", top);
     }
 
     public String getUnionOrder(String union, String orderBy, String top) {
@@ -142,9 +142,9 @@ public class PostgreSQLSyntax extends DefaultSQLSyntax {
     }
 
     @Override
-    public String getPrefixSearch() {
+    public String getPrefixSearchQuery() {
         int dbMajorVersion = ((PostgreDataAdapter) ThreadLocalContext.getDbManager().getAdapter()).getDbMajorVersion();
-        return dbMajorVersion >= 11 ? super.getPrefixSearch() : "prefixSearchOld";
+        return dbMajorVersion >= 11 ? super.getPrefixSearchQuery() : "prefixSearchOld";
     }
 
     @Override

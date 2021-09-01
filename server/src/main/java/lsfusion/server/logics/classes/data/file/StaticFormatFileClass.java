@@ -8,7 +8,7 @@ import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.language.action.LA;
-import lsfusion.server.logics.BusinessLogics;
+import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.form.stat.struct.FormIntegrationType;
@@ -36,8 +36,8 @@ public abstract class StaticFormatFileClass extends FileClass<RawFileData> {
     }
 
     @Override
-    public LA getDefaultOpenAction(BusinessLogics BL) {
-        return BL.LM.openRawFile;
+    public LA getDefaultOpenAction(BaseLogicsModule baseLM) {
+        return baseLM.openRawFile;
     }
 
     public Class getReportJavaClass() {

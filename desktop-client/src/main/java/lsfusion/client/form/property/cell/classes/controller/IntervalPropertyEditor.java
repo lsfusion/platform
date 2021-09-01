@@ -2,27 +2,29 @@ package lsfusion.client.form.property.cell.classes.controller;
 
 import com.toedter.calendar.JDateChooser;
 import com.toedter.calendar.JTextFieldDateEditor;
-import lsfusion.client.classes.data.ClientDateIntervalClass;
+import lsfusion.client.classes.data.ClientIntervalClass;
 import lsfusion.client.form.property.cell.controller.PropertyTableCellEditor;
 
 import javax.swing.*;
 import java.awt.*;
 import java.math.BigDecimal;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.EventObject;
+
+import static lsfusion.base.DateConverter.getIntervalPart;
 
 public class IntervalPropertyEditor extends JDateChooser implements PropertyEditor {
 
     private static boolean left = false;
     private static boolean right = false;
     protected final Object defaultValue;
-    private final SimpleDateFormat format;
+    private final ClientIntervalClass intervalClass;
 
-    public IntervalPropertyEditor(Object value, SimpleDateFormat format, boolean addButtons) {
-        super(null, null, format.toPattern(), new IntervalPropertyEditorComponent(value, format));
+
+    public IntervalPropertyEditor(Object value, boolean addButtons, ClientIntervalClass intervalClass) {
+        super(null, null, new IntervalPropertyEditorComponent(value, intervalClass));
         this.defaultValue = value;
-        this.format = format;
+        this.intervalClass = intervalClass;
 
         configureButtons(addButtons);
     }
@@ -58,10 +60,8 @@ public class IntervalPropertyEditor extends JDateChooser implements PropertyEdit
             String text = dateEditor.getText();
             if (text.isEmpty())
                 return null;
-            String[] dates = text.split(" - ");
-            long timeFrom = format.parse(dates[0]).getTime();
-            long timeTo = format.parse(dates[1]).getTime();
-            return timeTo >= timeFrom ? new BigDecimal(timeFrom / 1000 + "." + timeTo / 1000) : defaultValue;
+            BigDecimal parsedValue = (BigDecimal) intervalClass.parseString(text);
+            return parsedValue != null ? parsedValue : defaultValue;
         } catch (Exception e) {
             return defaultValue;
         }
@@ -80,12 +80,12 @@ public class IntervalPropertyEditor extends JDateChooser implements PropertyEdit
 
     protected static class IntervalPropertyEditorComponent extends JTextFieldDateEditor {
 
-        private final SimpleDateFormat editingFormat;
         private Object defaultValue;
+        private final ClientIntervalClass intervalClass;
 
-        public IntervalPropertyEditorComponent(Object value, SimpleDateFormat editingFormat) {
+        public IntervalPropertyEditorComponent(Object value, ClientIntervalClass intervalClass) {
             this.defaultValue = value;
-            this.editingFormat = editingFormat;
+            this.intervalClass = intervalClass;
         }
 
         @Override
@@ -98,9 +98,9 @@ public class IntervalPropertyEditor extends JDateChooser implements PropertyEdit
         public Date getDate() {
             if (defaultValue != null) {
                 if (left)
-                    return ClientDateIntervalClass.getDateFromInterval(defaultValue, true);
+                    return new Date(getIntervalPart(defaultValue, true) * 1000);
                 else if (right)
-                    return ClientDateIntervalClass.getDateFromInterval(defaultValue, false);
+                    return new Date(getIntervalPart(defaultValue, false) * 1000);
             }
             return null;
         }
@@ -122,8 +122,7 @@ public class IntervalPropertyEditor extends JDateChooser implements PropertyEdit
                 defaultValue = s;
             }
 
-            setValue(defaultValue != null ? editingFormat.format(ClientDateIntervalClass.getDateFromInterval(defaultValue, true))
-                    + " - " + editingFormat.format(ClientDateIntervalClass.getDateFromInterval(defaultValue, false)) : "");
+            setValue(defaultValue != null ? intervalClass.formatString(defaultValue) : "");
 
             left = right = false;
         }

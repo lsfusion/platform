@@ -17,13 +17,8 @@ public class CalcType {
     }
 
     public final static CalcType EXPR = new CalcType("EXPR"); // вычисления
-    public final static CalcType STAT = new CalcType("STAT"); // определение статистики, пока нигде не используется, кроме того чтобы предотвратить кэширования, когда статистика еще не обновлена
     public final static CalcType STAT_ALOT = new CalcType("STAT_HASALOT"); // определение статистики для hasAlotKeys
     public final static CalcType RECALC = new CalcType("RECALC"); // перерасчет inconsistent для FULL свойств
-
-    public boolean isStat() {
-        return this == STAT || this == STAT_ALOT;
-    }
 
     public boolean isStatAlot() {
         return this == STAT_ALOT;

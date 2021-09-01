@@ -20,6 +20,8 @@ public class StructChanges extends TwinImmutableObject {
 
     private final ImMap<Property, ChangeType> changes;
 
+    public final static StructChanges EMPTY = new StructChanges(MapFact.EMPTY());
+
     @Override
     public String toString() {
         return changes.toString();
@@ -104,10 +106,10 @@ public class StructChanges extends TwinImmutableObject {
         return mResult.immutable();
     }
 
-    public ImSet<Property> getUsedDataChanges(ImCol<Property> col) {
+    public ImSet<Property> getUsedDataChanges(CalcDataType type, ImCol<Property> col) {
         MSet<Property> mResult = SetFact.mSet();
         for(Property<?> property : col)
-            mResult.addAll(property.getUsedDataChanges(this));
+            mResult.addAll(property.getUsedDataChanges(this, type));
         return mResult.immutable();
     }
 

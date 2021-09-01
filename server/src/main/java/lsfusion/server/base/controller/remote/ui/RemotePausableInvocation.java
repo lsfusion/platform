@@ -167,7 +167,7 @@ public abstract class RemotePausableInvocation extends PausableInvocation<Server
     @Override
     protected final ServerResponse handlePaused() throws RemoteException {
         try {
-            ServerResponse result = new ServerResponse(requestIndex, delayedActions.toArray(new ClientAction[delayedActions.size()]));
+            ServerResponse result = new ServerResponse(requestIndex, delayedActions.toArray(new ClientAction[delayedActions.size()]), true);
             delayedActions.clear();
 
             return result;

@@ -38,6 +38,7 @@ import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.event.ApplyGlobalEvent;
 import lsfusion.server.logics.event.Link;
 import lsfusion.server.logics.event.LinkType;
+import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.ValueClassWrapper;
@@ -49,6 +50,7 @@ import lsfusion.server.logics.property.classes.infer.AlgType;
 import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.physics.admin.Settings;
+import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameParser;
@@ -261,6 +263,11 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
 
     @NFLazy
     public void setEventAction(String eventActionSID, ActionMapImplement<?, T> eventActionImplement) {
+        if(eventActionSID.equals(CHANGE_WYS)) { // CHANGE_WYS, temp check
+            ServerLoggers.startLogger.info("WARNING! CHANGE_WYS is deprecated, use LIST clause in INPUT / DIALOG operator instead " + this);
+            return;
+        }
+
         if (eventActions == null || eventActions instanceof EmptyRevMap) {
             eventActions = MapFact.mMap(MapFact.override());
         }
@@ -272,29 +279,21 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         return (ImMap<String, ActionMapImplement<?, T>>)(eventActions == null ? MapFact.EMPTY() : eventActions);
     }
 
-    public ActionMapImplement<?, T> getEventAction(String eventActionSID) {
-        return getEventAction(eventActionSID, ListFact.EMPTY());
-    }
-
-    public ActionMapImplement<?, T> getEventAction(String eventActionSID, ImList<Property> viewProperties) {
-        ActionMapImplement<?, T> eventAction = getEventActions().get(eventActionSID);
-        if (eventAction != null) {
+    // actually protected (friend of PropertyMapImplement)
+    public ActionMapImplement<?, T> getEventAction(String eventActionSID, FormSessionScope defaultChangeEventScope, ImList<Property> viewProperties) {
+        ActionMapImplement<?, T> eventAction = getExplicitEventAction(eventActionSID);
+        if (eventAction != null)
             return eventAction;
-        }
 
-        if(GROUP_CHANGE.equals(eventActionSID))
-            return null;
-
-        assert CHANGE.equals(eventActionSID) || CHANGE_WYS.equals(eventActionSID) || EDIT_OBJECT.equals(eventActionSID);
-
-        return getDefaultEventAction(eventActionSID, viewProperties);
+        assert CHANGE.equals(eventActionSID) || EDIT_OBJECT.equals(eventActionSID); // explicit event actions can be also CONTEXTMENU
+        return getDefaultEventAction(eventActionSID, defaultChangeEventScope, viewProperties);
     }
 
-    public abstract ActionMapImplement<?, T> getDefaultEventAction(String eventActionSID, ImList<Property> viewProperties);
-
-    public ActionMapImplement<?, T> getDefaultWYSAction() {
-        return null;
+    public ActionMapImplement<?, T> getExplicitEventAction(String eventActionSID) {
+        return getEventActions().get(eventActionSID);
     }
+
+    public abstract ActionMapImplement<?, T> getDefaultEventAction(String eventActionSID, FormSessionScope defaultChangeEventScope, ImList<Property> viewProperties);
 
     public boolean checkEquals() {
         return this instanceof Property;
@@ -555,7 +554,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
     }
 
     protected BaseLogicsModule getBaseLM() {
-        return ThreadLocalContext.getBusinessLogics().LM;
+        return ThreadLocalContext.getBaseLM();
     }
 
     //

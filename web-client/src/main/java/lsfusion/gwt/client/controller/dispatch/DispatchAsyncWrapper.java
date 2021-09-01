@@ -8,10 +8,10 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.rpc.RpcRequestBuilder;
 import com.google.gwt.user.client.rpc.ServiceDefTarget;
 import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.exception.ErrorHandlingCallback;
 import lsfusion.gwt.client.base.exception.GExceptionManager;
 import lsfusion.gwt.client.controller.remote.GConnectionLostManager;
-import lsfusion.gwt.client.controller.remote.action.RequestAction;
+import lsfusion.gwt.client.controller.remote.action.BaseAction;
+import lsfusion.gwt.client.controller.remote.action.PriorityErrorHandlingCallback;
 import net.customware.gwt.dispatch.client.AbstractDispatchAsync;
 import net.customware.gwt.dispatch.client.ExceptionHandler;
 import net.customware.gwt.dispatch.client.standard.StandardDispatchService;
@@ -59,15 +59,15 @@ public class DispatchAsyncWrapper extends AbstractDispatchAsync {
             requestTry++;
         }
         requestTries.put(action, requestTry);
-        if (action instanceof RequestAction) {
-            ((RequestAction) action).requestTry = requestTry;
+        if (action instanceof BaseAction) {
+            ((BaseAction) action).requestTry = requestTry;
         }
 
         final Integer finalRequestTry = requestTry;
         getRealServiceInstance().execute(action, new AsyncCallback<Result>() {
             public void onFailure(Throwable caught) {
-                int maxTries = ErrorHandlingCallback.getMaxTries(caught); // because we set invalidate-session to false (for some security reasons) there is no need to retry request in the case of auth problem
-                boolean isAuthException = ErrorHandlingCallback.isAuthException(caught);
+                int maxTries = PriorityErrorHandlingCallback.getMaxTries(caught); // because we set invalidate-session to false (for some security reasons) there is no need to retry request in the case of auth problem
+                boolean isAuthException = PriorityErrorHandlingCallback.isAuthException(caught);
                 if (finalRequestTry <= maxTries) {
                     assert !isAuthException; // because maxTries is 0 in that case
                     if (finalRequestTry == 2) //first retry

@@ -81,8 +81,8 @@ public class EditBindingMap {
         return mouseBinding;
     }
 
-    public static boolean isEditableAwareEditEvent(String actionSID) {
-        return ServerResponse.changeEvents.indexOf(actionSID) >= 0;
+    public static boolean isChangeEvent(String actionSID) {
+        return ServerResponse.isChangeEvent(actionSID);
     }
 
     public static String getPropertyEventActionSID(EventObject e, ClientPropertyDraw property, EditBindingMap overrideMap) {

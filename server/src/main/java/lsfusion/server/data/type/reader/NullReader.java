@@ -5,11 +5,15 @@ import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.key.KeyType;
+import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.classes.ConcreteClass;
 import lsfusion.server.logics.classes.data.integral.IntegerClass;
 import lsfusion.server.logics.classes.user.BaseClass;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class NullReader extends AbstractReader<Object> implements ClassReader<Object> {
 
@@ -26,8 +30,8 @@ public class NullReader extends AbstractReader<Object> implements ClassReader<Ob
         };
     }
 
-    public Object read(Object value) {
-        assert value==null;
+    @Override
+    public Object read(ResultSet set, SQLSyntax syntax, String name) throws SQLException {
         return null;
     }
 

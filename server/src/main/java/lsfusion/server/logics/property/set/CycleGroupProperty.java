@@ -14,10 +14,7 @@ import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.query.build.Join;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
-import lsfusion.server.logics.action.session.change.DataChanges;
-import lsfusion.server.logics.action.session.change.PropertyChange;
-import lsfusion.server.logics.action.session.change.PropertyChanges;
-import lsfusion.server.logics.action.session.change.StructChanges;
+import lsfusion.server.logics.action.session.change.*;
 import lsfusion.server.logics.form.interactive.property.checked.ConstraintCheckChangeProperty;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
@@ -69,7 +66,7 @@ public class CycleGroupProperty<I extends PropertyInterface, P extends PropertyI
     }
 
     @Override
-    protected ImSet<Property> calculateUsedDataChanges(StructChanges propChanges) {
+    protected ImSet<Property> calculateUsedDataChanges(StructChanges propChanges, CalcDataType type) {
         if(toChange!=null)
             return ConstraintCheckChangeProperty.getUsedChanges(this,toChange, propChanges);
         else
@@ -84,7 +81,7 @@ public class CycleGroupProperty<I extends PropertyInterface, P extends PropertyI
     }
 
     @Override
-    protected DataChanges calculateDataChanges(PropertyChange<Interface<I>> change, WhereBuilder changedWhere, PropertyChanges propChanges) {
+    protected DataChanges calculateDataChanges(PropertyChange<Interface<I>> change, CalcDataType type, WhereBuilder changedWhere, PropertyChanges propChanges) {
 
         if(toChange!=null) {
             ImRevMap<P,KeyExpr> toChangeKeys = toChange.getMapKeys();
@@ -92,7 +89,7 @@ public class CycleGroupProperty<I extends PropertyInterface, P extends PropertyI
             DataChanges dataChanges = toChange.getDataChanges(new PropertyChange<>(toChangeKeys, resultExpr, resultExpr.getWhere().or(getNullWhere(change, propChanges, toChangeKeys))), propChanges);
             if(changedWhere!=null) {
                 if (Settings.get().isCalculateGroupDataChanged())
-                    getExpr(change.getMapExprs(), dataChanges.add(propChanges), changedWhere);
+                    getExpr(change.getMapExprs(), dataChanges.getPropertyChanges().add(propChanges), changedWhere);
                 else
                     changedWhere.add(change.where);
             }

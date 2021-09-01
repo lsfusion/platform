@@ -7,7 +7,6 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MList;
-import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ThrowingFunction;
 import lsfusion.interop.form.property.Compare;
@@ -19,7 +18,6 @@ import lsfusion.server.base.controller.stack.ThisMessage;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.sql.exception.SQLHandledException;
-import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.data.where.Where;
@@ -36,6 +34,7 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.user.AbstractCustomClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.classes.user.CustomClass;
+import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.classes.infer.ClassType;
@@ -506,24 +505,11 @@ public class ForAction<I extends PropertyInterface> extends ExtendContextAction<
     }
 
     @Override
-    public Type getFlowSimpleRequestInputType(boolean optimistic, boolean inRequest) {
-        Type actionType = action.action.getSimpleRequestInputType(optimistic, inRequest);
-        Type elseType = elseAction == null ? null : elseAction.action.getSimpleRequestInputType(optimistic, inRequest);
-
-        if (!optimistic) {
-            if (actionType == null) {
-                return null;
-            }
-            if (elseAction != null && elseType == null) {
-                return null;
-            }
-        }
-
-        return actionType == null
-                ? elseType
-                : elseType == null
-                ? actionType
-                : actionType.getCompatible(elseType);
+    public AsyncMapEventExec<PropertyInterface> calculateAsyncEventExec(boolean optimistic, boolean recursive) {
+        AsyncMapEventExec<I> asyncExec = getBranchAsyncEventExec(ListFact.toList(action, elseAction), optimistic, recursive);
+        if(asyncExec != null)
+            return asyncExec.mapInner(mapInterfaces.reverse());
+        return null;
     }
 
 }

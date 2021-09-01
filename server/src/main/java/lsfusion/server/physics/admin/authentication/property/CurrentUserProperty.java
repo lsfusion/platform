@@ -8,7 +8,7 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 public class CurrentUserProperty extends CurrentEnvironmentProperty {
 
     public CurrentUserProperty(ValueClass paramClass) {
-        super(LocalizedString.create("{logics.property.current.user}"), SQLSession.userParam, paramClass.getUpSet());
+        super(LocalizedString.create("{logics.property.current.user}"), SQLSession.userParam, paramClass);
 
         finalizeInit();
     }

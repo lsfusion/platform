@@ -15,8 +15,7 @@ import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.action.flow.FlowResult;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.DataSession;
-import lsfusion.server.logics.classes.user.CustomClass;
-import lsfusion.server.logics.form.struct.property.async.AsyncExec;
+import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.classes.IsClassProperty;
@@ -133,22 +132,15 @@ public class NewSessionAction extends AroundAspectAction {
     }
 
     @Override
-    public CustomClass getSimpleAdd() {
-        return null; // нет смысла, так как все равно в другой сессии выполнение
-    }
-
-    @Override
-    public PropertyInterface getSimpleDelete() {
-        return null; // aspectActionImplement.property.getSimpleDelete();
-    }
-
-    @Override
-    public AsyncExec getAsyncExec() {
-        return aspectActionImplement.action.getAsyncExec();
-    }
-
-    @Override
     protected <T extends PropertyInterface> ActionMapImplement<?, PropertyInterface> createAspectImplement(ImSet<PropertyInterface> interfaces, ActionMapImplement<?, PropertyInterface> action) {
         return PropertyFact.createNewSessionAction(interfaces, action, singleApply, newSQL, explicitMigrateProps, isNested);
+    }
+
+    @Override
+    public AsyncMapEventExec<PropertyInterface> calculateAsyncEventExec(boolean optimistic, boolean recursive) {
+        AsyncMapEventExec<PropertyInterface> simpleInput = aspectActionImplement.mapAsyncEventExec(optimistic, recursive);
+        if(simpleInput != null)
+            return simpleInput.newSession();
+        return null;
     }
 }

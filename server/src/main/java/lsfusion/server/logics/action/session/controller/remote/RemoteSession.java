@@ -2,9 +2,7 @@ package lsfusion.server.logics.action.session.controller.remote;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.Result;
-import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
-import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.base.exception.AuthenticationException;
 import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.session.ExternalRequest;
@@ -22,7 +20,6 @@ import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.logics.classes.data.StringClass;
-import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.navigator.controller.env.ChangesController;
 import lsfusion.server.logics.navigator.controller.env.FormController;
 import lsfusion.server.logics.property.Property;
@@ -32,6 +29,7 @@ import lsfusion.server.physics.admin.authentication.controller.remote.RemoteConn
 import lsfusion.server.physics.admin.authentication.security.controller.manager.SecurityManager;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.dev.integration.external.to.ExternalHTTPAction;
+import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -268,17 +266,8 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
     @Override
     protected ChangesController createChangesController() {
         return new ChangesController() {
-            public void regChange(ImSet<Property> changes, DataSession session) {
-            }
-
-            public ImSet<Property> update(DataSession session, FormInstance form) {
-                return SetFact.EMPTY();
-            }
-
-            public void registerForm(FormInstance form) {
-            }
-
-            public void unregisterForm(FormInstance form) {
+            protected DBManager getDbManager() {
+                return dbManager;
             }
         };
     }

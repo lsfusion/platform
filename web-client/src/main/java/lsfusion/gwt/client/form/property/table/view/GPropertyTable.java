@@ -73,7 +73,7 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
 
     public abstract Object getValueAt(Cell cell);
 
-    public abstract void pasteData(List<List<String>> table);
+    public abstract void pasteData(Cell cell, Element parent, List<List<String>> table);
 
     @Override
     protected int getRowByKey(Object key) {
@@ -92,82 +92,84 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
 //    }
 
     public void onEditEvent(EventHandler handler, boolean isBinding, Cell editCell, Element editCellParent) {
-        form.executePropertyEventAction(handler, isBinding,
-                new ExecuteEditContext() {
-                    @Override
-                    public RenderContext getRenderContext() {
-                        return GPropertyTable.this;
-                    }
+        form.executePropertyEventAction(handler, isBinding, getEditContext(editCell, editCellParent));
+    }
 
-                    @Override
-                    public UpdateContext getUpdateContext() {
-                        return GPropertyTable.this;
-                    }
+    public ExecuteEditContext getEditContext(Cell editCell, Element editCellParent) {
+        return new ExecuteEditContext() {
+            @Override
+            public RenderContext getRenderContext() {
+                return GPropertyTable.this;
+            }
 
-                    @Override
-                    public GPropertyDraw getProperty() {
-                        return GPropertyTable.this.getProperty(editCell);
-                    }
+            @Override
+            public UpdateContext getUpdateContext() {
+                return GPropertyTable.this;
+            }
 
-                    @Override
-                    public Element getRenderElement() {
-                        return editCellParent;
-                    }
+            @Override
+            public GPropertyDraw getProperty() {
+                return GPropertyTable.this.getProperty(editCell);
+            }
 
-                    @Override
-                    public Object getValue() {
-                        return getValueAt(editCell);
-                    }
+            @Override
+            public Element getRenderElement() {
+                return editCellParent;
+            }
 
-                    @Override
-                    public void setValue(Object value) {
-                        setValueAt(editCell, value);
-                    }
+            @Override
+            public Object getValue() {
+                return getValueAt(editCell);
+            }
 
-                    @Override
-                    public GGroupObjectValue getColumnKey() {
-                        return GPropertyTable.this.getColumnKey(editCell);
-                    }
+            @Override
+            public void setValue(Object value) {
+                setValueAt(editCell, value);
+            }
 
-                    @Override
-                    public boolean isReadOnly() {
-                        return GPropertyTable.this.isReadOnly(editCell);
-                    }
+            @Override
+            public GGroupObjectValue getColumnKey() {
+                return GPropertyTable.this.getColumnKey(editCell);
+            }
 
-                    @Override
-                    public Element getFocusElement() {
-                        return GPropertyTable.this.getTableDataFocusElement();
-                    }
+            @Override
+            public boolean isReadOnly() {
+                return GPropertyTable.this.isReadOnly(editCell);
+            }
 
-                    @Override
-                    public boolean isFocusable() {
-                        return GPropertyTable.this.isFocusable(editCell);
-                    }
+            @Override
+            public Element getFocusElement() {
+                return GPropertyTable.this.getTableDataFocusElement();
+            }
 
-                    @Override
-                    public void trySetFocus() {
-                        if(changeSelectedColumn(editCell.getColumnIndex()))
-                            getFocusElement().focus();
-                    }
+            @Override
+            public boolean isFocusable() {
+                return GPropertyTable.this.isFocusable(editCell);
+            }
 
-                    @Override
-                    public boolean isSetLastBlurred() {
-                        return true;
-                    }
+            @Override
+            public void trySetFocus() {
+                if (changeSelectedColumn(editCell.getColumnIndex()))
+                    getFocusElement().focus();
+            }
 
-                    @Override
-                    public Object forceSetFocus() {
-                        int selectedColumn = getSelectedColumn();
-                        setSelectedColumn(editCell.getColumnIndex());
-                        return selectedColumn;
-                    }
+            @Override
+            public boolean isSetLastBlurred() {
+                return true;
+            }
 
-                    @Override
-                    public void restoreSetFocus(Object forceSetFocus) {
-                        setSelectedColumn((Integer)forceSetFocus);
-                    }
-                }
-        );
+            @Override
+            public Object forceSetFocus() {
+                int selectedColumn = getSelectedColumn();
+                setSelectedColumn(editCell.getColumnIndex());
+                return selectedColumn;
+            }
+
+            @Override
+            public void restoreSetFocus(Object forceSetFocus) {
+                setSelectedColumn((Integer) forceSetFocus);
+            }
+        };
     }
 
     @Override
