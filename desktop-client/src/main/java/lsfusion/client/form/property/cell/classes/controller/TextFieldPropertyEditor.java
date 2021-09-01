@@ -135,7 +135,8 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
                 new AsyncCallback<Pair<List<Async>, Boolean>>() {
                     @Override
                     public void done(Pair<List<Async>, Boolean> result) {
-                        if (isThisCellEditor()) { // && suggestBox.comboBox.isPopupVisible() it can become visible after callback is completed
+                        assert isThisCellEditor() == suggestBox.isShowing();
+                        if (suggestBox.isShowing()) { // && suggestBox.comboBox.isPopupVisible() it can become visible after callback is completed
                             suggestBox.updateItems(result.first, strict && !query.isEmpty());
 
                             suggestBox.updateLoading(result.second);
@@ -153,7 +154,8 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
 
                     @Override
                     public void failure(Throwable t) {
-                        if (isThisCellEditor()) // suggestBox.comboBox.isPopupVisible()
+                        assert isThisCellEditor() == suggestBox.isShowing();
+                        if (suggestBox.isShowing()) // suggestBox.comboBox.isPopupVisible()
                             cancelAndFlushDelayed(execTimer);
                     }
                 });
@@ -350,6 +352,10 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
             });
 
             addListeners(value);
+        }
+        
+        public boolean isShowing() {
+            return comboBoxEditorComponent.isShowing();
         }
 
         public boolean isValidValue(String value) {
@@ -570,7 +576,8 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
             //show empty async popup
             // add timer to avoid blinking when empty popup is followed by non-empty one
             Timer showSuggestionsTimer = new Timer(100, e -> {
-                if (isThisCellEditor() && !suggestBox.comboBox.isPopupVisible()) {
+                assert isThisCellEditor() == suggestBox.isShowing();
+                if (suggestBox.isShowing() && !suggestBox.comboBox.isPopupVisible()) {
                     suggestBox.updateItems(Collections.emptyList(), false);
                 }
             });

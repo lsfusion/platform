@@ -33,6 +33,7 @@ import java.util.List;
 
 import static com.google.gwt.dom.client.BrowserEvents.BLUR;
 import static com.google.gwt.dom.client.BrowserEvents.KEYDOWN;
+import static lsfusion.gwt.client.base.GwtClientUtils.isShowing;
 import static lsfusion.gwt.client.base.GwtClientUtils.nvl;
 
 public abstract class TextBasedCellEditor implements ReplaceCellEditor {
@@ -320,7 +321,8 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
                         Timer t = new Timer() {
                             @Override
                             public void run() {
-                                if (isThisCellEditor() && !suggestBox.isSuggestionListShowing()) {
+                                assert isThisCellEditor() == isShowing(suggestBox);
+                                if (isShowing(suggestBox) && !suggestBox.isSuggestionListShowing()) {
                                     callback.onSuggestionsReady(request, new Response(new ArrayList<>()));
                                     setMinWidth(suggestBox, false);
                                 }
@@ -343,13 +345,15 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
                     editManager.getAsyncValues(query, new AsyncCallback<Pair<ArrayList<GAsync>, Boolean>>() {
                         @Override
                         public void onFailure(Throwable caught) {
-                            if (isThisCellEditor()) //  && suggestBox.isSuggestionListShowing()
+                            assert isThisCellEditor() == isShowing(suggestBox);
+                            if (isShowing(suggestBox)) //  && suggestBox.isSuggestionListShowing()
                                 cancelAndFlushDelayed(execTimer);
                         }
 
                         @Override
                         public void onSuccess(Pair<ArrayList<GAsync>, Boolean> result) {
-                            if (isThisCellEditor()) { //  && suggestBox.isSuggestionListShowing() in desktop this check leads to "losing" result, since suggest box can be not shown yet (!), however maybe in web-client it's needed for some reason (but there can be the risk of losing result)
+                            assert isThisCellEditor() == isShowing(suggestBox);
+                            if (isShowing(suggestBox)) { //  && suggestBox.isSuggestionListShowing() in desktop this check leads to "losing" result, since suggest box can be not shown yet (!), however maybe in web-client it's needed for some reason (but there can be the risk of losing result)
                                 suggestBox.setAutoSelectEnabled(strict && !emptyQuery);
                                 List<String> rawSuggestions = new ArrayList<>();
                                 List<Suggestion> suggestionList = new ArrayList<>();
