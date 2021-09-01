@@ -272,8 +272,10 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
         return new TextBox();
     }
     
-    protected void assertIsThisCellEditor() {
-        assert (editManager.isEditing() && this == editManager.getCellEditor()) == isShowing(suggestBox);
+    protected boolean isThisCellEditor() {
+        boolean showing = isShowing(suggestBox);
+        assert (editManager.isEditing() && this == editManager.getCellEditor()) == showing;
+        return showing;
     }
 
     public Element createInputElement() {
@@ -321,8 +323,7 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
                         Timer t = new Timer() {
                             @Override
                             public void run() {
-                                assertIsThisCellEditor();
-                                if (isShowing(suggestBox) && !suggestBox.isSuggestionListShowing()) {
+                                if (isThisCellEditor() && !suggestBox.isSuggestionListShowing()) {
                                     callback.onSuggestionsReady(request, new Response(new ArrayList<>()));
                                     setMinWidth(suggestBox, false);
                                 }
@@ -345,15 +346,13 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
                     editManager.getAsyncValues(query, new AsyncCallback<Pair<ArrayList<GAsync>, Boolean>>() {
                         @Override
                         public void onFailure(Throwable caught) {
-                            assertIsThisCellEditor();
-                            if (isShowing(suggestBox)) //  && suggestBox.isSuggestionListShowing()
+                            if (isThisCellEditor()) //  && suggestBox.isSuggestionListShowing()
                                 cancelAndFlushDelayed(execTimer);
                         }
 
                         @Override
                         public void onSuccess(Pair<ArrayList<GAsync>, Boolean> result) {
-                            assertIsThisCellEditor();
-                            if (isShowing(suggestBox)) { //  && suggestBox.isSuggestionListShowing() in desktop this check leads to "losing" result, since suggest box can be not shown yet (!), however maybe in web-client it's needed for some reason (but there can be the risk of losing result)
+                            if (isThisCellEditor()) { //  && suggestBox.isSuggestionListShowing() in desktop this check leads to "losing" result, since suggest box can be not shown yet (!), however maybe in web-client it's needed for some reason (but there can be the risk of losing result)
                                 suggestBox.setAutoSelectEnabled(strict && !emptyQuery);
                                 List<String> rawSuggestions = new ArrayList<>();
                                 List<Suggestion> suggestionList = new ArrayList<>();
@@ -424,7 +423,7 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
                 @Override
                 public void hideSuggestions() { // in theory should be in SuggestOracle, but now it's readonly
                     // canceling query
-                    assertIsThisCellEditor();
+                    assert isThisCellEditor();
                     if (isLoading())
                         editManager.getAsyncValues(null, new AsyncCallback<Pair<ArrayList<GAsync>, Boolean>>() {
                             @Override
