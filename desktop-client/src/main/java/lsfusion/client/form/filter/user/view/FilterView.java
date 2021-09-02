@@ -64,7 +64,7 @@ public class FilterView extends JComponentPanel implements FilterConditionView.U
 
     private void initButtons() {
         addConditionButton = new ToolbarGridButton(ADD_ICON_PATH, getString("form.queries.filter.add.condition"));
-        addConditionButton.addActionListener(ae -> addCondition(KeyStrokes.createAddUserFilterKeyEvent(this)));
+        addConditionButton.addActionListener(ae -> addCondition());
         addConditionButton.setVisible(toolsVisible);
 
         resetConditionsButton = new ToolbarGridButton(RESET_ICON_PATH, getString("form.queries.filter.reset.conditions"));
@@ -182,13 +182,21 @@ public class FilterView extends JComponentPanel implements FilterConditionView.U
 
     public void toggleToolsVisible() {
         toolsVisible = !toolsVisible;
-        
-        for (FilterConditionView view : conditionViews.values()) {
-            view.setToolsVisible(toolsVisible);
+
+        if (!conditionViews.isEmpty()) {
+            for (FilterConditionView view : conditionViews.values()) {
+                view.setToolsVisible(toolsVisible);
+            }
+        } else if (toolsVisible) {
+            addCondition();
         }
 
         addConditionButton.setVisible(toolsVisible);
         resetConditionsButton.setVisible(toolsVisible);
+    }
+    
+    public void addCondition() {
+        addCondition(KeyStrokes.createAddUserFilterKeyEvent(this));
     }
 
     public void addCondition(EventObject keyEvent) {
