@@ -44,14 +44,19 @@ public class LinearContainerView extends GAbstractContainerView {
             panel = new FlexPanel(vertical, justifyContent);
         else {
             panel = new FlexPanel(!vertical);
+            // we don't want this panel to be resized, because we don't set overflow, and during resize container can get fixed size (and then if inner container resized it's content overflows outer border)
+            // however resizing inner component also causes troubles, because when you increase components base size, parent components base size also is changed which leads to immediate relayouting, and if the explicit base size is larger than auto base size, there is a leap
+            // plus in that case column resizing is not that ergonomic, because it can be shrinked if you resize a component different from the component you used to extend the column
+            // so it seems that having childrenResizable true is the lesser evil
+//            panel.childrenResizable = false;
 
             columns = new FlexPanel[columnsCount];
             captionColumns = new FlexPanel[columnsCount];
             childrenCaptions = new ArrayList<>();
             for (int i = 0; i < columnsCount; i++) {
                 if(alignCaptions) {
-                    FlexPanel captionColumn = new FlexPanel(vertical);
-                    panel.add(captionColumn); // however it seems that GFlexAlignment.STRETCH is also possible
+                    FlexPanel captionColumn = new FlexPanel(vertical, justifyContent);
+                    panel.add(captionColumn, GFlexAlignment.STRETCH); // we need the same alignment as used for the "main" column (it's important if justifyContent is used)
                     captionColumns[i] = captionColumn;
                 }
 

@@ -29,6 +29,8 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
 
     private boolean visible = true;
 
+    public boolean childrenResizable = true;
+
     public FlexPanel() {
         this(false);
     }
@@ -273,8 +275,11 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
         }
     };
 
-    // the resize algorithm assumes that there should be flex column to the left, to make
+    // the resize algorithm assumes that there should be flex column to the right, to make
     public boolean isWidgetResizable(int widgetNumber) {
+        if(!childrenResizable)
+            return false;
+
         WidgetCollection children = getChildren();
         for(int i=widgetNumber;i>=0;i--) {
             Widget child = children.get(i);
