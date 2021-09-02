@@ -406,7 +406,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     }
     
     public boolean isPanelCaptionLast() {
-        return panelCaptionLast != null ? panelCaptionLast : baseType instanceof ClientLogicalClass;
+        return panelCaptionLast != null ? panelCaptionLast : (baseType instanceof ClientLogicalClass && !panelCaptionVertical && container.isVertical());
     }
     
     public FlexAlignment getPanelCaptionAlignment() {
