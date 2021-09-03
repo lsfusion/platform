@@ -5,6 +5,7 @@ import lsfusion.client.form.filter.user.ClientPropertyFilter;
 import lsfusion.interop.form.property.Compare;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.util.Arrays;
 import java.util.List;
@@ -28,7 +29,14 @@ public abstract class FilterCompareSelector extends FilterOptionSelector<Compare
             updateText();
         });
         
-        allowNullCB = new JCheckBox(ClientResourceBundle.getString("form.queries.filter.condition.allow.null"));
+        allowNullCB = new JCheckBox(ClientResourceBundle.getString("form.queries.filter.condition.allow.null")) {
+            @Override
+            public Dimension getPreferredSize() {
+                Dimension preferredSize = super.getPreferredSize();
+                // doesn't have enough space together with scrollable menu   
+                return new Dimension(preferredSize.width + 2, preferredSize.height);
+            }
+        };
         allowNullCB.setSelected(allowNull);
         allowNullCB.addActionListener(event -> {
             allowNull = allowNullCB.isSelected();

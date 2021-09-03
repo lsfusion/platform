@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form.filter.user.view;
 
+import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
@@ -12,6 +13,7 @@ import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.design.GFontMetrics;
 import lsfusion.gwt.client.form.design.GFontWidthString;
 import lsfusion.gwt.client.form.event.GKeyStroke;
+import lsfusion.gwt.client.view.StyleDefaults;
 
 public abstract class GFilterOptionSelector<T> extends TextBox {
     protected PopupDialogPanel popup = new PopupDialogPanel();
@@ -21,6 +23,10 @@ public abstract class GFilterOptionSelector<T> extends TextBox {
     public GFilterOptionSelector(T[] values) {
         addStyleName("userFilterSelector");
         setReadOnly(true);
+
+        Style menuBarStyle = menuBar.getElement().getStyle();
+        menuBarStyle.setProperty("maxHeight", StyleDefaults.VALUE_HEIGHT * 12, Style.Unit.PX); // 12 rows
+        menuBarStyle.setOverflowY(Style.Overflow.AUTO);
 
         menuBar.addHandler(event -> {
             if (GKeyStroke.isEscapeKeyEvent(event.getNativeEvent())) {
