@@ -225,8 +225,9 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
     
     protected boolean isThisCellEditor() {
         boolean isShowing = suggestBox.isShowing();
-        JTable currentEditingTable;
-        assert (asyncChange.isEditing() && (currentEditingTable = asyncChange.getForm().getCurrentEditingTable()) != null && currentEditingTable.getCellEditor() == tableEditor) == isShowing;
+        // this assertion is incorrect in desktop client (unlike in web-client)
+//        JTable currentEditingTable;
+//        assert (asyncChange.isEditing() && (currentEditingTable = asyncChange.getForm().getCurrentEditingTable()) != null && currentEditingTable.getCellEditor() == tableEditor) == isShowing;
         return isShowing;
     }
 

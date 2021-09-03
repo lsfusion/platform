@@ -518,7 +518,8 @@ public class PropertyDrawView extends ComponentView {
     public boolean isHorizontalValueFlex() {
         if(valueFlex != null)
             return valueFlex;
-        return isProperty() && getType().isFlex();
+        Type type;
+        return isProperty() && (type = getType()) != null && type.isFlex();
     }
 
     public String getAskConfirmMessage() {
@@ -549,7 +550,10 @@ public class PropertyDrawView extends ComponentView {
 
     public FlexAlignment getValueAlignment() {
         if (valueAlignment == null && isProperty()) {
-            return getType().getValueAlignment();
+            Type type = getType();
+            if(type != null)
+                return type.getValueAlignment();
+            return FlexAlignment.START;
         }
         return valueAlignment;
     }
