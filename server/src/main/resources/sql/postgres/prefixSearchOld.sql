@@ -4,7 +4,7 @@ $$
 BEGIN
     querytext := trim(querytext);
 BEGIN
-RETURN to_tsquery(config, CASE WHEN querytext = '' THEN '' ELSE
+RETURN to_tsquery(config,
     CONCAT (
         REPLACE(
             REGEXP_REPLACE(
