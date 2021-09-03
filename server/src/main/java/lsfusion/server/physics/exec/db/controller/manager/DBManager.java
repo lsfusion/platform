@@ -775,7 +775,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     private SQLSessionContextProvider contextProvider = new SQLSessionContextProvider() {
         @Override
         public Long getCurrentUser() {
-            return getSystemUser();
+            return ThreadLocalContext.getCurrentUser();
         }
 
         @Override
@@ -790,11 +790,11 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
         @Override
         public Long getCurrentComputer() {
-            return getServerComputer();
+            return ThreadLocalContext.getCurrentComputer();
         }
         
         public Long getCurrentConnection() {
-            return null;
+            return ThreadLocalContext.getCurrentConnection();
         }
     };
 

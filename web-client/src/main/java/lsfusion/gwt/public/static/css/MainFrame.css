@@ -281,6 +281,9 @@ input[type=checkbox]:focus {
     position: relative;
 }
 
+.oppositeStretchAutoSizePanel {
+}
+
 .captionPanelWithLegend {
     margin: 1px;
     padding: 1px;

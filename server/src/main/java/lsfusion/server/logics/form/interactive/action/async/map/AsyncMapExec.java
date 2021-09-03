@@ -41,7 +41,7 @@ public abstract class AsyncMapExec<T extends PropertyInterface> extends AsyncMap
 
         @Override
         public AsyncEventExec map(ImRevMap<PropertyInterface, ObjectEntity> mapObjects, FormEntity form, GroupObjectEntity toDraw) {
-            throw new UnsupportedOperationException();
+            return null;
         }
 
         @Override
