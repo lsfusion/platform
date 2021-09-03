@@ -26,6 +26,7 @@ public class ActionCellRenderer extends CellRenderer {
 
     public static final String TEXT = "lsf-text-button";
     public static final String IMAGE = "lsf-image-button";
+    public static final String ASYNCIMAGE = "lsf-async-image";
 
     @Override
     protected boolean isSimpleText(RenderContext renderContext) {
@@ -101,10 +102,8 @@ public class ActionCellRenderer extends CellRenderer {
         ((Element)element.getPropertyObject(TEXT)).setInnerText(text != null ? text : "");
     }
 
-    public static void setImage(Element element, String absolutePath, Consumer<String> prevImage, boolean dynamicMargins) {
+    public static void setImage(Element element, String absolutePath, boolean dynamicMargins) {
         ImageElement img = (ImageElement) element.getPropertyObject(IMAGE);
-        if(prevImage != null)
-            prevImage.accept(img.getSrc());
         if(dynamicMargins) {
             if(absolutePath.isEmpty()) {
                 img.removeClassName("wrap-img-margins");
@@ -137,9 +136,13 @@ public class ActionCellRenderer extends CellRenderer {
 
         boolean hasStaticImage = property.hasStaticImage();
         if(hasStaticImage || updateContext.globalCaptionIsDrawn()) {
-            setImage(element, hasStaticImage ?
+            String absolutePath = hasStaticImage ?
                     GwtClientUtils.getAppImagePath(property.getImage(enabled).url) :
-                    GwtClientUtils.getModuleImagePath(ICON_EXECUTE), null, false);
+                    GwtClientUtils.getModuleImagePath(ICON_EXECUTE);
+            setImage(element, absolutePath, false);
+            if(property.drawAsync) {
+                element.setPropertyObject(ASYNCIMAGE, absolutePath);
+            }
         }
         if(!enabled)
             element.addClassName("gwt-Button-disabled");

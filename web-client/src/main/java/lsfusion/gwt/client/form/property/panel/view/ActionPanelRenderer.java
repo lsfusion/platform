@@ -13,7 +13,7 @@ import lsfusion.gwt.client.form.object.panel.controller.GPropertyPanelController
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.classes.view.ActionCellRenderer;
 
-import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
+import static lsfusion.gwt.client.form.property.cell.classes.view.ActionCellRenderer.ASYNCIMAGE;
 
 public class ActionPanelRenderer extends PanelRenderer {
 
@@ -68,15 +68,11 @@ public class ActionPanelRenderer extends PanelRenderer {
     }
 
     // interface for refresh button
-    private String nullImage = null;
     public void setLoadingImage(String iconPath) {
         Element renderElement = value.getRenderElement();
         if(iconPath == null) {
-            if(nullImage != null) {
-                ActionCellRenderer.setImage(renderElement, nullImage, null, false);
-                nullImage = null;
-            }
+            ActionCellRenderer.setImage(renderElement, renderElement.getPropertyString(ASYNCIMAGE), false);
         } else
-            GwtClientUtils.setThemeImage(iconPath, imageUrl -> ActionCellRenderer.setImage(renderElement, imageUrl, nullImage == null ? s -> { nullImage = s; } : null, false));
+            GwtClientUtils.setThemeImage(iconPath, imageUrl -> ActionCellRenderer.setImage(renderElement, imageUrl, false));
     }
 }
