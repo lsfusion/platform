@@ -204,6 +204,26 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         return rowCaptions;
     }
 
+    private JavaScriptObject getPropertyCaptionsMap() {
+        JavaScriptObject result = JavaScriptObject.createObject();
+
+        for (GPropertyDraw property : properties) {
+            int baseOrder = properties.indexOf(property);
+            NativeHashMap<GGroupObjectValue, Object> propCaptions = captions.get(baseOrder);
+
+            for (GGroupObjectValue columnKey : columnKeys.get(baseOrder)) {
+                if(propCaptions != null) {
+                    jsPut(result, property.integrationSID, property.getDynamicCaption(propCaptions.get(columnKey)));
+                }
+            }
+        }
+        return result;
+    }
+
+    private native void jsPut(JavaScriptObject obj, String key, String value) /*-{
+        obj[key] = value;
+    }-*/;
+
     private String getAggregationName(GPropertyGroupType aggregation) {
         if(aggregation != null) {
             switch (aggregation) {
@@ -244,7 +264,8 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
 
         config = overrideAggregators(config, getAggregators(aggregator), systemColumns);
         config = overrideCallbacks(config, getCallbacks());
-        
+        config = overrideRendererOptions(config, getRendererOptions(configFunction, getPropertyCaptionsMap()));
+
         int rowHeight = 0;
         for(GPropertyDraw property : properties) {
             rowHeight = Math.max(rowHeight, property.getValueHeightWithPadding(font));
@@ -268,7 +289,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         GPivotOptions pivotOptions = gridController.getPivotOptions();
         String rendererName = pivotOptions != null ? pivotOptions.getLocalizedType() : null;
         String aggregationName = pivotOptions != null ? getAggregationName(pivotOptions.getAggregation()) : null;
-        String configFunction = pivotOptions != null ? pivotOptions.getConfigFunction() : null;
+        configFunction = pivotOptions != null ? pivotOptions.getConfigFunction() : null;
 
         Map<GPropertyDraw, String> columnCaptionMap = new HashMap<>();
         columnMap.foreachEntry((key, value) -> columnCaptionMap.putIfAbsent(value.property, key));
@@ -317,7 +338,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
             }
         }
 
-        config = getDefaultConfig(columns, splitCols, rows, splitRows, inclusions, sortCols, rendererName, aggregationName, settings, configFunction);
+        config = getDefaultConfig(columns, splitCols, rows, splitRows, inclusions, sortCols, rendererName, aggregationName, settings);
     }
 
     private Object[] getPivotCaptions( Map<GPropertyDraw, String> columnCaptionMap, List<List<GPropertyDraw>> propertiesList, String defaultElement) {
@@ -403,6 +424,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
     private NativeStringMap<Column> columnMap;
     private List<String> aggrCaptions;
     private WrapperObject config;
+    private String configFunction;
     private boolean settings = true;
 
     private int rowHeight;
@@ -482,6 +504,12 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
     private native WrapperObject overrideCallbacks(WrapperObject config, JavaScriptObject callbacks)/*-{
         return Object.assign({}, config, {
             callbacks: callbacks
+        });
+    }-*/;
+
+    private native WrapperObject overrideRendererOptions(WrapperObject config, JavaScriptObject rendererOptions)/*-{
+        return Object.assign({}, config, {
+            rendererOptions: rendererOptions
         });
     }-*/;
 
@@ -616,7 +644,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         return PivotRendererType.valueOf(name).localize();
     }
 
-    private native WrapperObject getDefaultConfig(Object[] columns, Integer[] splitCols, Object[] rows, Integer[] splitRows, JavaScriptObject inclusions, JsArrayMixed sortCols, String rendererName, String aggregatorName, boolean showUI, String configFunction)/*-{
+    private native WrapperObject getDefaultConfig(Object[] columns, Integer[] splitCols, Object[] rows, Integer[] splitRows, JavaScriptObject inclusions, JsArrayMixed sortCols, String rendererName, String aggregatorName, boolean showUI)/*-{
         var instance = this;
         var localizeRendererNames = function(renderers) {
             var localizedRenderers = {};
@@ -653,7 +681,6 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
             cellHorizontalPadding:@lsfusion.gwt.client.view.StyleDefaults::CELL_HORIZONTAL_PADDING,
             columnAttributeName:@lsfusion.gwt.client.form.object.table.grid.view.GPivot::COLUMN,
             toImageButtonOptions: instance.@GPivot::getToImageButtonOptions(*)(),
-            rendererOptions: configFunction ? $wnd[configFunction]() : {},
             onRefresh: function (config) {
                 instance.@GPivot::onRefresh(*)(config, config.rows, config.cols, config.inclusions, config.aggregatorName, config.rendererName);
             },
@@ -1788,6 +1815,10 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
 
         return aggr;
     }
+
+    public native JavaScriptObject getRendererOptions(String configFunction, JavaScriptObject params) /*-{
+        return configFunction ? $wnd[configFunction](params) : {}
+    }-*/;
 
     public native JavaScriptObject getCallbacks() /*-{
         var instance = this;
