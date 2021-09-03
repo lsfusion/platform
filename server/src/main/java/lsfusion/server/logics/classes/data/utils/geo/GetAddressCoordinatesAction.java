@@ -59,7 +59,7 @@ public class GetAddressCoordinatesAction extends GeoAction {
                 } else {
                     GeoApiContext geoApiContext = new GeoApiContext.Builder().apiKey(apiKey).build();
                     GeocodingResult[] results = GeocodingApi.reverseGeocode(geoApiContext, new LatLng(latitude.doubleValue(), longitude.doubleValue())).await();
-                    address = results[0].formattedAddress;
+                    address = (results.length > 0) ? results[0].formattedAddress : null;
                 }
 
                 findProperty("readAddress[]").change(address, session);
