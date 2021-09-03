@@ -4,7 +4,17 @@ $$
 BEGIN
     querytext := trim(querytext);
 BEGIN
-RETURN to_tsquery(config, CASE WHEN querytext = '' THEN '' ELSE CONCAT(array_to_string(regexp_split_to_array(querytext, E'\\s+'), ':* & '), ':*') END);
+RETURN to_tsquery(config, CASE WHEN querytext = '' THEN '' ELSE
+    CONCAT (
+        REPLACE(
+            REGEXP_REPLACE(
+                REGEXP_REPLACE(
+                    TRIM(TRAILING ' \|' FROM querytext),
+                '[\s\|]*\|[\s\|]*','|', 'g'),
+            '\s+', ':* & ', 'g'),
+        '|', ':* | '),
+    ':*')
+END);
 EXCEPTION WHEN OTHERS THEN
         RETURN plainto_tsquery(config, querytext);
 END;
