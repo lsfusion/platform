@@ -1,10 +1,7 @@
 package lsfusion.gwt.client.form.controller;
 
 import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.dom.client.BrowserEvents;
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.EventTarget;
-import com.google.gwt.dom.client.NativeEvent;
+import com.google.gwt.dom.client.*;
 import com.google.gwt.event.dom.client.*;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
@@ -2043,7 +2040,7 @@ public class GFormController extends ResizableSimplePanel implements EditManager
     }
 
     public void render(GPropertyDraw property, Element element, RenderContext renderContext) {
-        if(isEditedOrAsync(property, element)) {
+        if(isEdited(element)) {
             assert false;
             return;
         }
@@ -2057,14 +2054,14 @@ public class GFormController extends ResizableSimplePanel implements EditManager
         update(editContext.getProperty(), editContext.getRenderElement(), value, editContext.getUpdateContext());
     }
     public void update(GPropertyDraw property, Element element, Object value, UpdateContext updateContext) {
-        if(isEditedOrAsync(property, element))
+        if(isEdited(element))
             return;
 
         property.getCellRenderer().renderDynamic(element, value, updateContext);
     }
 
-    public boolean isEditedOrAsync(GPropertyDraw property, Element element) {
-        return (editContext != null && editContext.getRenderElement() == element) || (property.drawAsync && dispatcher.asyncCount > 0);
+    public boolean isEdited(Element element) {
+        return editContext != null && editContext.getRenderElement() == element;
     }
 
     public static void setBackgroundColor(Element element, String color) {
@@ -2093,8 +2090,7 @@ public class GFormController extends ResizableSimplePanel implements EditManager
 
     public static void setDynamicImage(Element element, Object value) { // assert that property.hasDynamicImage
         ActionCellRenderer.setImage(element, value instanceof String && !value.equals("null") ?
-                getDownloadURL((String) value, null, null, false) :
-                "", null, true);
+                getDownloadURL((String) value, null, null, false) : "", true);
     }
 
     public void onPropertyBrowserEvent(EventHandler handler, Element cellParent, Element focusElement, Consumer<EventHandler> onOuterEditBefore,
