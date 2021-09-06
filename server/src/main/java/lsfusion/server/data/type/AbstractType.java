@@ -186,7 +186,7 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
 
     @Override
     public OverJDBField formatDBF(String fieldName) throws JDBFException {
-        return new OverJDBField(fieldName, 'C', 253, 0);
+        return OverJDBField.createField(fieldName, 'C', 253, 0);
     }
     @Override
     public Object formatJSON(T object) {

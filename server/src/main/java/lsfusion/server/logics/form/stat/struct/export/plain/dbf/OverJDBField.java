@@ -17,6 +17,15 @@ public class OverJDBField extends JDBField {
 
     private char type = super.getType();
 
+    public static OverJDBField createField(String name, char type, int i, int j) {
+        try {
+            return new OverJDBField(name, type, i, j);
+        } catch (JDBFException e) {
+            //default constructor throws exception without field name
+            throw new RuntimeException(String.format("Creation of field '%s' failed: " + e.getMessage(), name), e);
+        }
+    }
+
     public OverJDBField(String s, char c, int i, int j) throws JDBFException {
         super(s, c, i, j);
     }

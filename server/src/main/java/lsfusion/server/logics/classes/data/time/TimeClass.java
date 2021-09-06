@@ -171,7 +171,7 @@ public class TimeClass extends TimeSeriesClass<LocalTime> {
 
     @Override
     public OverJDBField formatDBF(String fieldName) throws JDBFException {
-        return new OverJDBField(fieldName, 'C', 8, 0);
+        return OverJDBField.createField(fieldName, 'C', 8, 0);
     }
 
     @Override
