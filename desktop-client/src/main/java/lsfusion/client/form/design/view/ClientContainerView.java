@@ -17,9 +17,9 @@ public interface ClientContainerView {
 
     FlexPanel getView();
 
-    void updateCaption();
+    void updateCaption(ClientContainer clientContainer);
 
-    void updateLayout();
+    void updateLayout(boolean[] childrenVisible);
 
     Dimension getMaxPreferredSize(Map<ClientContainer, ClientContainerView> containerViews);
 }

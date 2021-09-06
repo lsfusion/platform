@@ -13,7 +13,7 @@ import java.util.Map;
 
 public class LinearClientContainerView extends AbstractClientContainerView {
 
-    protected final ContainerViewPanel panel;
+    protected final FlexPanel panel;
 
     protected final int columnsCount;
     protected final boolean alignCaptions;
@@ -36,9 +36,9 @@ public class LinearClientContainerView extends AbstractClientContainerView {
         alignCaptions = container.isAlignCaptions();
 
         if(isSimple())
-            panel = new ContainerViewPanel(vertical, justifyContent);
+            panel = new FlexPanel(vertical, justifyContent);
         else {
-            panel = new ContainerViewPanel(!vertical, FlexAlignment.START);
+            panel = new FlexPanel(!vertical, FlexAlignment.START);
 
             columns = new FlexPanel[columnsCount];
             captionColumns = new FlexPanel[columnsCount];
@@ -67,17 +67,27 @@ public class LinearClientContainerView extends AbstractClientContainerView {
         return columnsCount == 1;
     }
 
-    //todo: method from web CaptionPanel extends FlexPanel
-    public Dimension adjustMaxPreferredSize(Dimension dimension) {
-        return new Dimension(dimension.width + 5, dimension.height + /*legend.getOffsetHeight() + */5);
-    }
-
     private static class AlignCaptionPanel extends FlexPanel {
         public AlignCaptionPanel(boolean vertical) {
             super(vertical);
         }
 
         public Integer baseSize;
+    }
+
+    public void updateCaption(ClientContainer clientContainer) {
+        getCaptionPanel(clientContainer).setCaption(clientContainer.caption);
+    }
+
+    public CaptionPanel getCaptionPanel(ClientContainer container) {
+        FlexPanel childPanel = getChildView(container);
+
+        CaptionPanel caption = null;
+        if(childPanel instanceof CaptionPanel)
+            caption = (CaptionPanel) childPanel;
+//        else // we don't need this since we don't wrap anything like in desktop client
+//            caption = (CaptionPanel) childPanel.getWidget(0);
+        return caption;
     }
 
     @Override
@@ -106,7 +116,15 @@ public class LinearClientContainerView extends AbstractClientContainerView {
     }
 
     @Override
-    public void removeImpl(int index, ClientComponent child, FlexPanel view) {
+    protected FlexPanel wrapBorderImpl(ClientComponent child) {
+        ClientContainer childContainer;
+        if(child instanceof ClientContainer && (childContainer = (ClientContainer) child).caption != null)
+            return new CaptionPanel(childContainer.caption, vertical);
+        return null;
+    }
+
+    @Override
+    public void removeImpl(int index, ClientComponent child) {
         if(isSingleColumn())
             removeChildrenView(index, 0);
         else { // collections are not yet updated
@@ -150,6 +168,17 @@ public class LinearClientContainerView extends AbstractClientContainerView {
     }
 
     @Override
+    public void updateLayout(boolean[] childrenVisible) {
+        for (int i = 0, size = children.size(); i < size; i++) {
+            ClientComponent child = children.get(i);
+            if(child instanceof ClientContainer) // optimization
+                childrenViews.get(i).setVisible(childrenVisible[i]);
+        }
+
+        super.updateLayout(childrenVisible);
+    }
+
+    @Override
     public Dimension getMaxPreferredSize(Map<ClientContainer, ClientContainerView> containerViews) {
         int size = children.size();
 
@@ -175,7 +204,7 @@ public class LinearClientContainerView extends AbstractClientContainerView {
 
                         ClientComponent child = children.get(index);
                         if(child instanceof ClientContainer && ((ClientContainer) child).caption != null) // adding border
-                            childPref = adjustMaxPreferredSize(childPref);
+                            childPref = getCaptionPanel((ClientContainer) child).adjustMaxPreferredSize(childPref);
 
                         columnMain = Math.max(columnMain, vertical ? childPref.width : childPref.height);
                         columnCross += vertical ? childPref.height : childPref.width; // captions cross is equal to columnCross
@@ -190,7 +219,7 @@ public class LinearClientContainerView extends AbstractClientContainerView {
     }
 
     @Override
-    public ContainerViewPanel getPanel() {
+    public FlexPanel getView() {
         return panel;
     }
 }

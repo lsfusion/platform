@@ -27,7 +27,7 @@ public abstract class AbstractTableController implements TableController {
             toolbarView = null;
         } else {
             toolbarView = new ToolbarView(toolbar);
-            formLayout.add(toolbar, toolbarView);
+            formLayout.addBaseComponent(toolbar, toolbarView);
         }
     }
 

@@ -7,7 +7,6 @@ import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.design.ClientContainer;
 import lsfusion.client.form.object.table.grid.view.GridTable;
-import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.base.view.FlexConstraints;
 import lsfusion.interop.form.design.CachableLayout;
 import lsfusion.interop.form.event.KeyStrokes;
@@ -29,7 +28,7 @@ public class TabbedClientContainerView extends AbstractClientContainerView {
 
     private final ClientFormController form;
 
-    private final ContainerViewPanel panel;
+    private final FlexPanel panel;
     private final JPanel hiddenHolderPanel;
     private final TabbedPane tabbedPane;
 
@@ -52,7 +51,7 @@ public class TabbedClientContainerView extends AbstractClientContainerView {
 
         hiddenHolderPanel = new JPanel(null);
 
-        panel = new ContainerViewPanel();
+        panel = new FlexPanel();
         panel.add(tabbedPane, BorderLayout.CENTER);
         panel.add(hiddenHolderPanel, BorderLayout.SOUTH);
 
@@ -105,7 +104,12 @@ public class TabbedClientContainerView extends AbstractClientContainerView {
     }
 
     @Override
-    public void removeImpl(int index, ClientComponent child, FlexPanel view) {
+    protected FlexPanel wrapBorderImpl(ClientComponent child) {
+        return null;
+    }
+
+    @Override
+    public void removeImpl(int index, ClientComponent child) {
         int visibleIndex = visibleChildren.indexOf(child);
         if (visibleIndex != -1) {
             visibleChildren.remove(visibleIndex);
@@ -114,14 +118,14 @@ public class TabbedClientContainerView extends AbstractClientContainerView {
     }
 
     @Override
-    public void updateLayout() {
+    public void updateLayout(boolean[] childrenVisible) {
         int childCnt = childrenViews.size();
         for (int i = 0; i < childCnt; i++) {
             ClientComponent child = children.get(i);
             Component childView = childrenViews.get(i);
 
             int index = visibleChildren.indexOf(child);
-            if (childView.isVisible()) {
+            if (childrenVisible[i]) {
                 if (index == -1) {
                     index = BaseUtils.relativePosition(child, children, visibleChildren);
                     visibleChildren.add(index, child);
@@ -133,10 +137,19 @@ public class TabbedClientContainerView extends AbstractClientContainerView {
                 tabbedPane.removeTab(index);
             }
         }
+
+        super.updateLayout(childrenVisible);
     }
 
-    public ContainerViewPanel getPanel() {
+    public FlexPanel getView() {
         return panel;
+    }
+
+    @Override
+    public void updateCaption(ClientContainer clientContainer) {
+        int index = getTabIndex(clientContainer);
+        if(index >= 0)
+            tabbedPane.setTitleAt(index, clientContainer.caption);
     }
 
     private int getTabIndex(ClientComponent component) {
@@ -152,12 +165,6 @@ public class TabbedClientContainerView extends AbstractClientContainerView {
             currentChild = component;
             tabbedPane.activateTab(index);
         }
-    }
-
-    public void updateTabCaption(ClientComponent component) {
-        int index = getTabIndex(component);
-        if(index >= 0)
-            tabbedPane.setTitleAt(index, component.getCaption());
     }
 
     public class TabbedPane extends JTabbedPane {

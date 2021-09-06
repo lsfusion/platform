@@ -493,7 +493,7 @@ public class ClientFormController implements AsyncListener {
         filterPanel.setBorder(BorderFactory.createEmptyBorder(0, 2, 0 , 2));
         filterPanel.add(filterView);
         
-        formLayout.add(filterGroup, filterPanel);
+        formLayout.addBaseComponent(filterGroup, filterPanel);
 
         if (filterGroup.groupObject == null) {
             return;
@@ -1716,12 +1716,10 @@ public class ClientFormController implements AsyncListener {
 
         // update captions (actually we could've set them directly to the containers, but tabbed pane physically adds / removes that views, so the check if there is a tab is required there)
         ClientFormLayout layout = getLayout();
-        if(clientContainer.isTab())
-            ((TabbedClientContainerView)layout.getContainerView(clientContainer.container)).updateTabCaption(clientContainer);
-        else if(clientContainer.main)
+        if(clientContainer.main)
             updateFormCaption();
         else
-            layout.getContainerView(clientContainer).updateCaption();
+            layout.getContainerView(clientContainer.container).updateCaption(clientContainer);
     }
 
     private abstract class RmiCheckNullFormRequest<T> extends RmiRequest<T> {

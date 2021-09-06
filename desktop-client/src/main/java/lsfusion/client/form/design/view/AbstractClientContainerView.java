@@ -35,12 +35,12 @@ public abstract class AbstractClientContainerView implements ClientContainerView
 
         int index = BaseUtils.relativePosition(child, container.children, children);
 
-        //todo:
-        // if panel is inside linear container, and there are several dynamic components fixing tab flex basis to avoid
-        boolean fixFlexBasis = false;//view instanceof FlexTabbedPanel && child.getFlex() > 0 && container.getFlexCount() > 1;
+        child.installMargins(view);
+
+        boolean fixFlexBasis = child.isTab() && child.getFlex() > 0 && container.getFlexCount() > 1;
 
         children.add(index, child);
-        childrenViews.add(index, view = wrapAndOverflowView(child, view, fixFlexBasis));
+        childrenViews.add(index, wrapAndOverflowView(child, view, fixFlexBasis));
 
         addImpl(index, child, view);
     }
@@ -49,7 +49,7 @@ public abstract class AbstractClientContainerView implements ClientContainerView
         boolean isAutoSized = child.getSize(vertical) == null;
         boolean isOppositeAutoSized = child.getSize(!vertical) == null;
 
-        if((!(isOppositeAutoSized && isAutoSized) || fixFlexBasis) && (child.size.height > 0 || child.size.width > 0)) { // child is tab, since basis is fixed, strictly speaking this all check is an optimization
+        if((!(isOppositeAutoSized && isAutoSized) || fixFlexBasis) && this instanceof LinearClientContainerView) { // child is tab, since basis is fixed, strictly speaking this all check is an optimization
             JScrollPane scroll = new JScrollPane() {
                 @Override
                 public void updateUI() {
@@ -60,15 +60,24 @@ public abstract class AbstractClientContainerView implements ClientContainerView
             scroll.getVerticalScrollBar().setUnitIncrement(14);
             scroll.getHorizontalScrollBar().setUnitIncrement(14);
             ClientColorUtils.designComponent(scroll, container.design);
-
-            ContainerViewPanel panel = new ContainerViewPanel();
-            // to forward a mouse wheel event in nested scroll pane to the parent scroll pane
             JLayer<JScrollPane> scrollLayer = new JLayer<>(scroll, new MouseWheelScrollLayerUI());
-            panel.add(scrollLayer, BorderLayout.CENTER);
             scroll.setViewportView(view);
+
+            FlexPanel panel = new FlexPanel();
+            // to forward a mouse wheel event in nested scroll pane to the parent scroll pane
+            panel.add(scrollLayer, BorderLayout.CENTER);
             setSizes(panel, child);
 
             view = panel;
+        }
+
+        FlexPanel wrapPanel = wrapBorderImpl(child);
+        if(wrapPanel != null) {
+            // one of the main problem is that stretch (opposite direction) can give you flex-basis 0, and "appropriate" auto size, but with flex (main direction) you can not obtain this effect (actually we can by setting shrink !!!!), so we have to look at size
+            // now since we have auto size we'll use the option without shrink
+            wrapPanel.addFillFlex(view, isAutoSized ? null : 0); // we need zero basis, because overflow:auto is set for a view (not for this panel), and with auto size view will overflow this captionpanel
+            // wrapPanel.addFillStretch could also be used in theory
+            view = wrapPanel;
         }
 
         return view;
@@ -99,10 +108,10 @@ public abstract class AbstractClientContainerView implements ClientContainerView
             throw new IllegalStateException("Child wasn't added");
         }
 
-        children.remove(index);
-        FlexPanel view = childrenViews.remove(index);
+        removeImpl(index, child);
 
-        removeImpl(index, child, view);
+        children.remove(index);
+        childrenViews.remove(index);
     }
 
     protected boolean isTopContainerView() {
@@ -129,79 +138,17 @@ public abstract class AbstractClientContainerView implements ClientContainerView
         return childrenViews.get(index);
     }
 
-    public void updateLayout() {
+    public void updateLayout(boolean[] childrenVisible) {
         //do nothing by default
     }
 
     @Override
-    public FlexPanel getView() {
-        return getPanel();
-    }
-    public abstract ContainerViewPanel getPanel();
+    public abstract FlexPanel getView();
     protected abstract void addImpl(int index, ClientComponent child, FlexPanel view);
-    protected abstract void removeImpl(int index, ClientComponent child, FlexPanel view);
+    protected abstract FlexPanel wrapBorderImpl(ClientComponent child);
+    protected abstract void removeImpl(int index, ClientComponent child);
 
-    public void updateCaption() {
-        getPanel().updateCaption();
-    }
-
-    public class ContainerViewPanel extends FlexPanel {
-        public ContainerViewPanel(boolean vertical, FlexAlignment alignment) {
-            super(vertical, alignment);
-            initBorder();
-        }
-
-        private TitledBorder titledBorder;
-
-        public ContainerViewPanel() {
-            initBorder();
-        }
-
-        private void initBorder() {
-            if (hasCaption()) {
-                titledBorder = new TitledBorder(container.caption);
-//                updateCaption();
-                setBorder(titledBorder);
-            }
-
-            container.installMargins(this);
-        }
-
-        @Override
-        public boolean isValidateRoot() {
-            return isTopContainerView();
-        }
-
-//        @Override
-//        public void validate() {
-//            if (isTopContainerView()) {
-//                formLayout.preValidateMainContainer();
-//            }
-//            super.validate();
-//        }
-//
-//        @Override
-//        protected void validateTree() {
-//            if (isTopContainerView()) {
-//                formLayout.preValidateMainContainer();
-//            }
-//            super.validateTree();
-//        }
-
-        @Override
-        public Dimension getMaxPreferredSize() {
-            throw new UnsupportedOperationException(); // по идее должен обрабатываться по ветке ContainerView.getMaxPreferredSize
-        }
-
-        public void updateCaption() {
-            String caption = container.caption;
-            assert caption != null;
-//            titledBorder.setTitle(caption);
-//            repaint()
-            // we have to reset titled border, setTitle / repaint doesnt'work sonewhy
-            setBorder(new TitledBorder(caption));
-        }
-    }
+    public abstract void updateCaption(ClientContainer clientContainer);
 
     public FlexPanel getChildView(ClientComponent child) {
         int index = children.indexOf(child);

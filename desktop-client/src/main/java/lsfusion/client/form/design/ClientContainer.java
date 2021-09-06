@@ -232,4 +232,15 @@ public class ClientContainer extends ClientComponent {
             return PropertyReadType.CONTAINER_CAPTION;
         }
     };
+
+    public int getFlexCount() {
+        if(isTabbed())
+            return 0;
+
+        int count = 0;
+        for(ClientComponent child : children)
+            if(child.getFlex() > 0)
+                count++;
+        return count;
+    }
 }

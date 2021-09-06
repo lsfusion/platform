@@ -73,11 +73,11 @@ public class PropertyPanelController {
     }
 
     public void addView(ClientFormLayout formLayout) {
-        formLayout.add(property, viewsPanel);
+        formLayout.addBaseComponent(property, viewsPanel);
     }
 
     public void removeView(ClientFormLayout formLayout) {
-        formLayout.remove(property, viewsPanel);
+        formLayout.removeBaseComponent(property, viewsPanel);
     }
 
     public void setVisible(boolean visible) {

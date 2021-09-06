@@ -8,7 +8,6 @@ import lsfusion.client.form.design.ClientContainer;
 import lsfusion.client.form.filter.user.ClientFilter;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.view.MainFrame;
-import lsfusion.interop.form.event.KeyInputEvent;
 
 import javax.swing.*;
 import java.awt.*;
@@ -131,26 +130,35 @@ public class ClientFormLayout extends JPanel {
         autoShowHideContainers(mainContainer);
     }
 
-    private void autoShowHideContainers(ClientContainer container) {
-        ClientContainerView containerView = containerViews.get(container);
-//        if (!containerView.getView().isValid()) { // непонятная проверка, valid достаточно непредсказуемая штука и логически не сильно связано с логикой visibility container'ов + вызывается огранич
-            int childCnt = containerView.getChildrenCount();
-            boolean hasVisible = false;
-            for (int i = 0; i < childCnt; ++i) {
-                ClientComponent child = containerView.getChild(i);
-                Component childView = containerView.getChildView(i);
-                if (child instanceof ClientContainer) {
-                    autoShowHideContainers((ClientContainer) child);
-                }
+    private boolean autoShowHideContainers(ClientContainer container) {
+        ClientContainerView containerView = getContainerView(container);
+        boolean hasVisible = false;
+        int size = containerView.getChildrenCount();
+        boolean[] childrenVisible = new boolean[size];
+        for (int i = 0; i < size; ++i) {
+            ClientComponent child = containerView.getChild(i);
 
-                //difference between desktop and web: ClientFilter is not dialog box, it not extend ClientContainer and is in children list
-                if (childView.isVisible() && !(child instanceof ClientFilter)) {
-                    hasVisible = true;
-                }
+            boolean childVisible;
+            if (child instanceof ClientContainer)
+                childVisible = autoShowHideContainers((ClientContainer) child);
+            else {
+                FlexPanel childView = baseComponentViews.get(child); // we have to use baseComponentView (and not a wrapper in getChildView), since it has relevant visible state
+                childVisible = childView != null && childView.isVisible();
             }
-            containerView.getView().setVisible(hasVisible);
-            containerView.updateLayout();
-//        }
+
+            childrenVisible[i] = childVisible;
+            hasVisible = hasVisible || childVisible;
+        }
+        containerView.updateLayout(childrenVisible);
+        return hasVisible;
+    }
+
+    private Map<ClientComponent, FlexPanel> baseComponentViews = new HashMap<>();
+
+    public void addBaseComponent(ClientComponent component, FlexPanel view) {
+        assert !(component instanceof ClientContainer);
+        baseComponentViews.put(component, view);
+        add(component, view);
     }
 
     // добавляем визуальный компонент
@@ -170,6 +178,12 @@ public class ClientFormLayout extends JPanel {
             }
         }
         return false;
+    }
+
+    public void removeBaseComponent(ClientComponent key, Component view) {
+        assert !(key instanceof ClientContainer);
+        baseComponentViews.remove(key);
+        remove(key, view);
     }
 
     // удаляем визуальный компонент
