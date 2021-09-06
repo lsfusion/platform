@@ -176,8 +176,9 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
     }
 
     private void cancelAsyncValues() {
-        assert isThisCellEditor();
-        if (suggestBox.isLoading)
+        // this assertion is incorrect in desktop client (unlike in web-client)
+//        assert isThisCellEditor();
+        if (isThisCellEditor() && suggestBox.isLoading)
             asyncChange.getForm().getAsyncValues(property, asyncChange.getColumnKey(0, 0), null, actionSID, new AsyncCallback<Pair<List<Async>, Boolean>>() {
                 @Override
                 public void done(Pair<List<Async>, Boolean> result) {
