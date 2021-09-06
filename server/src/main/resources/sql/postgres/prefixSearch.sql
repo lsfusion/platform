@@ -12,8 +12,7 @@ RETURN to_tsquery(config,
                 '[\s\|]*\|[\s\|]*','|', 'g'),
             '\s+', ':* & ', 'g'),
         '|', ':* | '),
-    ':*')
-END);
+    ':*'));
 EXCEPTION WHEN OTHERS THEN
         RETURN websearch_to_tsquery(config, querytext);
 END;
