@@ -137,7 +137,6 @@ import java.util.function.Function;
 import java.util.regex.Pattern;
 
 import static lsfusion.base.BaseUtils.*;
-import static lsfusion.server.logics.classes.data.time.DateTimeConverter.getWriteDate;
 import static lsfusion.server.physics.dev.id.resolve.BusinessLogicsResolvingUtils.findElementByCanonicalName;
 import static lsfusion.server.physics.dev.id.resolve.BusinessLogicsResolvingUtils.findElementByCompoundName;
 
@@ -2012,7 +2011,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
                 LocalDate newDate = LocalDate.now();
                 if (currentDate == null || !currentDate.equals(newDate)) {
                     logger.info(String.format("ChangeCurrentDate started: from %s to %s", currentDate, newDate));
-                    timeLM.currentDate.change(getWriteDate(newDate), session);
+                    timeLM.currentDate.change(newDate, session);
                     session.applyException(this, stack);
                     logger.info("ChangeCurrentDate finished");
                 }
