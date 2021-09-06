@@ -97,7 +97,7 @@ public abstract class IntervalClass extends DataClass<BigDecimal> {
     @Override
     public BigDecimal read(Object value) {
         int length = value instanceof String ? ((String) value).split("[.]").length : 0;
-        return value == null || length > 2  ? getDefaultValue() : new BigDecimal(String.valueOf(value));
+        return value == null || length > 2  ? null : new BigDecimal(String.valueOf(value));
     }
 
     @Override
