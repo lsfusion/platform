@@ -95,7 +95,10 @@ import lsfusion.server.logics.form.stat.struct.imports.plain.table.ImportTableAc
 import lsfusion.server.logics.form.stat.struct.imports.plain.xls.ImportXLSAction;
 import lsfusion.server.logics.form.struct.AutoFormEntity;
 import lsfusion.server.logics.form.struct.FormEntity;
-import lsfusion.server.logics.form.struct.filter.*;
+import lsfusion.server.logics.form.struct.filter.ContextFilterEntity;
+import lsfusion.server.logics.form.struct.filter.ContextFilterSelector;
+import lsfusion.server.logics.form.struct.filter.FilterEntity;
+import lsfusion.server.logics.form.struct.filter.RegularFilterGroupEntity;
 import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
@@ -563,7 +566,7 @@ public abstract class LogicsModule {
 
         ImOrderSet<ClassPropertyInterface> listInterfaces = formAction.getFriendlyOrderInterfaces();
 
-        ActionMapImplement<X, ClassPropertyInterface> formImplement = (ActionMapImplement<X, ClassPropertyInterface>) PropertyFact.createSessionScopeAction(scope, formAction.interfaces, formAction.getImplement(), SetFact.EMPTY());
+        ActionMapImplement<X, ClassPropertyInterface> formImplement = (ActionMapImplement<X, ClassPropertyInterface>) PropertyFact.createSessionScopeAction(scope, formAction.interfaces, formAction.getImplement(), caption, SetFact.EMPTY());
 
         return addAction(group, new LA<>(formImplement.action, listInterfaces.mapOrder(formImplement.mapping.reverse())));
     }

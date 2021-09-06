@@ -14,7 +14,6 @@ import lsfusion.interop.form.property.Compare;
 import lsfusion.server.data.expr.formula.CustomFormulaSyntax;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.query.PartitionType;
-import lsfusion.server.language.action.LA;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.change.AddObjectAction;
 import lsfusion.server.logics.action.change.ChangeClassAction;
@@ -54,7 +53,6 @@ import lsfusion.server.logics.property.implement.PropertyImplement;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.implement.PropertyRevImplement;
-import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.property.set.*;
 import lsfusion.server.logics.property.value.NullValueProperty;
@@ -891,13 +889,19 @@ public class PropertyFact {
         return changeAction.getImplement(listInterfaces);
     }
     public static <L extends PropertyInterface, P extends PropertyInterface> ActionMapImplement<?, L> createNewSessionAction(ImSet<L> innerInterfaces, ActionMapImplement<?, L> action, boolean singleApply, boolean newSQL, FunctionSet<SessionDataProperty> migrateSessionProperties, boolean isNested) {
+        return createNewSessionAction(innerInterfaces, action, LocalizedString.NONAME, singleApply, newSQL, migrateSessionProperties, isNested);
+    }
+    public static <L extends PropertyInterface, P extends PropertyInterface> ActionMapImplement<?, L> createNewSessionAction(ImSet<L> innerInterfaces, ActionMapImplement<?, L> action, LocalizedString caption, boolean singleApply, boolean newSQL, FunctionSet<SessionDataProperty> migrateSessionProperties, boolean isNested) {
         ImOrderSet<L> listInterfaces = innerInterfaces.toOrderSet();
-        NewSessionAction aggAction = new NewSessionAction(LocalizedString.NONAME, listInterfaces, action, singleApply, newSQL, migrateSessionProperties, isNested);
+        NewSessionAction aggAction = new NewSessionAction(caption, listInterfaces, action, singleApply, newSQL, migrateSessionProperties, isNested);
         return aggAction.getImplement(listInterfaces);
     }
     public static <T extends PropertyInterface> ActionMapImplement<?, T> createSessionScopeAction(FormSessionScope scope, ImSet<T> innerInterfaces, ActionMapImplement<?, T> action, FunctionSet<SessionDataProperty> migrateSessionProps) {
+        return createSessionScopeAction(scope, innerInterfaces, action, LocalizedString.NONAME, migrateSessionProps);
+    }
+    public static <T extends PropertyInterface> ActionMapImplement<?, T> createSessionScopeAction(FormSessionScope scope, ImSet<T> innerInterfaces, ActionMapImplement<?, T> action, LocalizedString caption, FunctionSet<SessionDataProperty> migrateSessionProps) {
         if(scope.isNewSession())
-            return createNewSessionAction(innerInterfaces, action, false, false, migrateSessionProps, scope.isNestedSession());
+            return createNewSessionAction(innerInterfaces, action, caption, false, false, migrateSessionProps, scope.isNestedSession());
         return action;
     }
     public static <L extends PropertyInterface, P extends PropertyInterface> ActionMapImplement<?, L> createNewThreadAction(ImSet<L> innerInterfaces, ActionMapImplement<?, L> action, PropertyInterfaceImplement<L> period, PropertyInterfaceImplement<L> delay, PropertyInterfaceImplement<L> connection) {
