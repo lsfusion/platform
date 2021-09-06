@@ -662,12 +662,12 @@ public class SwingUtils {
     private static boolean greaterEquals(double a, double b) {
         return a - b > -0.001;
     }
-    private static boolean equals(double a, double b) {
+    public static boolean equals(double a, double b) {
         return Math.abs(a - b) < 0.001;
     }
 
     // prefs на double'ах чтобы не "дрожало", из-за преобразований в разные стороны (строго говоря наверное без adjustTableFixed и overflow дрожать не будет)
-    public static void calculateNewFlexes(int column, int delta, int viewWidth, double[] prefs, double[] flexes, int[] basePrefs, double[] baseFlexes, boolean overflow) {
+    public static double calculateNewFlexes(int column, double delta, int viewWidth, double[] prefs, double[] flexes, int[] basePrefs, double[] baseFlexes, boolean overflow) {
         // проблема в том, что в desktop-client'е вся resizing model построена что у колонки не может увеличиться размер за счет левой части (так как колонке сразу же выставляется delta расположения мышки и получается что одна и та же delta применяется по многу раз, по этой же причине в desktop-client'е не поддерживается resizing fixed колонок) 
         boolean removeLeftPref = false; // вообще так как removeLeftFlex false, логично иметь симметричное поведение, но больше не меньше (removeRightPref и add*Pref не имеют смысла, так как вся delta просто идет в pref колонки)
 
@@ -680,13 +680,13 @@ public class SwingUtils {
         while(column >= 0 && baseFlexes[column] == 0)
             column--;
         if(column < 0) // нет левой flex колонки - ничего не делаем
-            return;
+            return 0;
 
         int rightFlex = column + 1;
         while(rightFlex < baseFlexes.length && baseFlexes[rightFlex] == 0)
             rightFlex++;
         if(rightFlex >= baseFlexes.length) // не нашли правй flex - ничего не делаем
-            return;        
+            return 0;
 
         // считаем общий текущий preferred
         double totalPref = 0;
@@ -699,7 +699,7 @@ public class SwingUtils {
         double exceedPrefWidth = totalPref - viewWidth;
         if(greater(exceedPrefWidth, 0.0)) {
             if(!overflow)
-                return;
+                return 0;
 
             double prefReduceDelta = Math.min(-delta, exceedPrefWidth);
             delta += prefReduceDelta;
@@ -718,7 +718,7 @@ public class SwingUtils {
         }
 
         if(delta == 0) // все расписали
-            return;
+            return 0;
 
         double flexWidth = -exceedPrefWidth;
         assert greaterEquals(flexWidth, 0.0);
@@ -729,7 +729,7 @@ public class SwingUtils {
 
         //если flexWidth все еще равно 0 - вываливаемся (так как нельзя меньше preferred опускаться)
         if(equals(flexWidth,0.0))
-            return;
+            return 0;
 
         // запускаем изменение flex'а (пропорциональное)
         double totalFlex = 0;
@@ -805,6 +805,7 @@ public class SwingUtils {
                 prefs[column] += flexWidth * ((flexes[column] + restFlex) / totalFlex);
             }
         }
+        return restFlex;
     }
 
     private static void adjustFlexesToFixedTableLayout(int viewWidth, double[] prefs, boolean[] flexes, double[] flexValues) {
