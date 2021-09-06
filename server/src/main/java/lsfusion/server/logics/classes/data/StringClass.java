@@ -333,7 +333,7 @@ public class StringClass extends DataClass<String> {
     @Override
     public OverJDBField formatDBF(String fieldName) throws JDBFException {
         ExtInt charLength = getCharLength();
-        return new OverJDBField(fieldName, 'C', Math.min(charLength.isUnlimited() ? Integer.MAX_VALUE : charLength.getValue(), 253), 0);
+        return OverJDBField.createField(fieldName, 'C', Math.min(charLength.isUnlimited() ? Integer.MAX_VALUE : charLength.getValue(), 253), 0);
     }
 
     @Override

@@ -108,7 +108,7 @@ public class IntegerClass extends IntClass<Integer> {
 
     @Override
     public OverJDBField formatDBF(String fieldName) throws JDBFException {
-        return new OverJDBField(fieldName, 'N', Math.min(getWhole(), 253), getScale());
+        return OverJDBField.createField(fieldName, 'N', Math.min(getWhole(), 253), getScale());
     }
 
     @Override

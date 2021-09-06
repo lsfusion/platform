@@ -190,7 +190,7 @@ public class DateTimeClass extends TimeSeriesClass<LocalDateTime> {
 
     @Override
     public OverJDBField formatDBF(String fieldName) throws JDBFException {
-        return new OverJDBField(fieldName, 'D', 8, 0);
+        return OverJDBField.createField(fieldName, 'D', 8, 0);
     }
 
     @Override

@@ -183,7 +183,7 @@ public class ZDateTimeClass extends TimeSeriesClass<Instant> {
 
     @Override
     public OverJDBField formatDBF(String fieldName) throws JDBFException {
-        return new OverJDBField(fieldName, 'D', 8, 0);
+        return OverJDBField.createField(fieldName, 'D', 8, 0);
     }
 
     @Override
