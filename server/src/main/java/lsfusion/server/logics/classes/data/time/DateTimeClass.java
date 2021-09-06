@@ -31,7 +31,6 @@ import java.time.format.FormatStyle;
 import java.util.Locale;
 
 import static lsfusion.base.DateConverter.*;
-import static lsfusion.server.logics.classes.data.time.DateTimeConverter.getWriteDateTime;
 
 public class DateTimeClass extends TimeSeriesClass<LocalDateTime> {
 
@@ -70,7 +69,7 @@ public class DateTimeClass extends TimeSeriesClass<LocalDateTime> {
     }
 
     public LocalDateTime getDefaultValue() {
-        return getWriteDateTime(LocalDateTime.now());
+        return LocalDateTime.now();
     }
 
     public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {

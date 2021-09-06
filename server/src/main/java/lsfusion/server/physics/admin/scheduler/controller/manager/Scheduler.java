@@ -564,7 +564,7 @@ public class Scheduler extends MonitorServer implements InitializingBean {
 
                 BL.schedulerLM.scheduledTaskScheduledTaskLog.change(scheduledTaskObject, (ExecutionEnvironment) session, taskLogObject);
                 BL.schedulerLM.propertyScheduledTaskLog.change(message, session, taskLogObject);
-                BL.schedulerLM.dateScheduledTaskLog.change(getWriteDateTime(LocalDateTime.now()), session, taskLogObject);
+                BL.schedulerLM.dateScheduledTaskLog.change(LocalDateTime.now(), session, taskLogObject);
                 if(e != null)
                     BL.schedulerLM.exceptionOccurredScheduledTaskLog.change(true, session, taskLogObject);
                 BL.schedulerLM.resultScheduledTaskLog.change(result, session, taskLogObject);
@@ -603,7 +603,7 @@ public class Scheduler extends MonitorServer implements InitializingBean {
                 BL.schedulerLM.lsfStackScheduledClientTaskLog.change(lsfStack, session, clientTaskLog);
             if(logMessage.failed)
                 BL.schedulerLM.failedScheduledClientTaskLog.change(true, session, clientTaskLog);
-            BL.schedulerLM.dateScheduledClientTaskLog.change(getWriteDateTime(new Timestamp(logMessage.time)), session, clientTaskLog);
+            BL.schedulerLM.dateScheduledClientTaskLog.change(sqlTimestampToLocalDateTime(new Timestamp(logMessage.time)), session, clientTaskLog);
         }
     }
 

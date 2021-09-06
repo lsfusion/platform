@@ -28,8 +28,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Calendar;
 
-import static lsfusion.server.logics.classes.data.time.DateTimeConverter.getWriteDateTime;
-
 public class SystemEventsLogicsModule extends ScriptingLogicsModule {
 
     private final AuthenticationLogicsModule authenticationLM;
@@ -245,7 +243,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
             typeException.change(errorType, session, exceptionObject);
             erTraceException.change(javaStack, session, exceptionObject);
             lsfTraceException.change(lsfStack, session, exceptionObject);
-            dateException.change(getWriteDateTime(LocalDateTime.now()), session, exceptionObject);
+            dateException.change(LocalDateTime.now(), session, exceptionObject);
 
             session.applyException(bl, stack);
         }
