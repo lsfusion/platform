@@ -142,9 +142,9 @@ public class PostgreSQLSyntax extends DefaultSQLSyntax {
     }
 
     @Override
-    public String getPrefixSearch() {
+    public String getPrefixSearchQuery() {
         int dbMajorVersion = ((PostgreDataAdapter) ThreadLocalContext.getDbManager().getAdapter()).getDbMajorVersion();
-        return dbMajorVersion >= 11 ? super.getPrefixSearch() : "prefixSearchOld";
+        return dbMajorVersion >= 11 ? super.getPrefixSearchQuery() : "prefixSearchOld";
     }
 
     @Override

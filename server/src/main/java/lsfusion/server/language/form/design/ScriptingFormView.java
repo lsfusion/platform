@@ -16,8 +16,10 @@ import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
+import lsfusion.server.physics.dev.debug.DebugInfo;
 
 import java.util.List;
+import java.util.function.Supplier;
 
 public class ScriptingFormView {
     private final FormView view;
@@ -54,9 +56,9 @@ public class ScriptingFormView {
         return parent;
     }
 
-    public void setObjectProperty(Object propertyReceiver, String propertyName, Object propertyValue) throws ScriptingErrorLog.SemanticErrorException {
+    public void setObjectProperty(Object propertyReceiver, String propertyName, Object propertyValue, Supplier<DebugInfo.DebugPoint> debugPoint) throws ScriptingErrorLog.SemanticErrorException {
         try {
-            ViewProxyUtil.setObjectProperty(propertyReceiver, propertyName, propertyValue);
+            ViewProxyUtil.setObjectProperty(propertyReceiver, propertyName, propertyValue, debugPoint);
         } catch (Exception e) {
             errLog.emitUnableToSetPropertyError(parser, propertyName, e.getMessage());
         }

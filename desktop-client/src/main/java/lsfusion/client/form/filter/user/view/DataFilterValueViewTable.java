@@ -111,8 +111,12 @@ class DataFilterValueViewTable extends JTable implements TableTransferHandler.Ta
 
     @Override
     public void editingStopped(ChangeEvent e) {
-        super.editingStopped(e);
+        // inside editingStopped setValueAt is called before editor is being removed
+        // setValueAt requests synchronous filter apply, which in applyFormChanges may call commitCurrentEditing()
+        // and this will result in one more editingStopped() call with nested synchronous apply filter request
+        // so clearCurrentEditingTable should go before editingStopped
         logicsSupplier.getFormController().clearCurrentEditingTable(this);
+        super.editingStopped(e);
     }
 
     @Override

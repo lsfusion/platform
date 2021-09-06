@@ -16,15 +16,4 @@ var getRanges = function (wnd, rangeToday, rangeYesterday, rangeLast7Days, range
     };
 }
 
-var lsfParams = new Map();
-
-var loadCustomScriptIfNoExist = function (url) {
-    var scripts = document.getElementsByTagName('script');
-    for (var i = scripts.length; i--;) {
-        if (scripts[i].src === url)
-            return;
-    }
-    let scriptElement = document.createElement('script');
-    scriptElement.setAttribute('src', url);
-    document.body.appendChild(scriptElement);
-}
+var lsfParams = {};

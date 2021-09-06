@@ -1,10 +1,10 @@
 package lsfusion.gwt.client.navigator.controller.dispatch;
 
-import com.google.gwt.user.client.rpc.AsyncCallback;
 import lsfusion.gwt.client.action.GActivateFormAction;
 import lsfusion.gwt.client.action.GFormAction;
 import lsfusion.gwt.client.action.GMaximizeFormAction;
 import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
+import lsfusion.gwt.client.controller.remote.action.RequestAsyncCallback;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.controller.remote.action.navigator.ContinueNavigatorAction;
 import lsfusion.gwt.client.controller.remote.action.navigator.ThrowInNavigatorAction;
@@ -24,13 +24,13 @@ public class GNavigatorActionDispatcher extends GwtActionDispatcher {
     }
 
     @Override
-    protected void throwInServerInvocation(long requestIndex, Throwable t, int continueIndex, AsyncCallback<ServerResponseResult> callback) {
-        MainFrame.navigatorDispatchAsync.execute(new ThrowInNavigatorAction(t, requestIndex, continueIndex), callback);
+    protected void throwInServerInvocation(long requestIndex, Throwable t, int continueIndex, RequestAsyncCallback<ServerResponseResult> callback) {
+        MainFrame.syncDispatch(new ThrowInNavigatorAction(t, requestIndex, continueIndex), callback, true);
     }
 
     @Override
-    protected void continueServerInvocation(long requestIndex, Object[] actionResults, int continueIndex, AsyncCallback<ServerResponseResult> callback) {
-        MainFrame.navigatorDispatchAsync.execute(new ContinueNavigatorAction(actionResults, requestIndex, continueIndex), callback);
+    protected void continueServerInvocation(long requestIndex, Object[] actionResults, int continueIndex, RequestAsyncCallback<ServerResponseResult> callback) {
+        MainFrame.syncDispatch(new ContinueNavigatorAction(actionResults, requestIndex, continueIndex), callback, true);
     }
 
     @Override

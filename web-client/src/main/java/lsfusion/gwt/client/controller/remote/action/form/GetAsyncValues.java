@@ -19,7 +19,5 @@ public class GetAsyncValues extends FormRequestCountingAction<ListResult> {
         this.actionSID = actionSID;
         this.value = value;
         this.index = index;
-
-        requestIndex = -1;
     }
 }

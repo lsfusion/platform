@@ -173,6 +173,24 @@ public class DateConverter {
         throw new ParseException();
     }
 
+    public static Instant smartParseInstant(String dateString) {
+        dateString = dateString.trim();
+        if(dateString.isEmpty())
+            return null;
+
+        for (String regexp : ZONED_DATETIME_FORMAT_REGEXPS.keySet()) {
+            if (dateString.toLowerCase().matches(regexp)) {
+                return ZonedDateTime.parse(dateString, DateTimeFormatter.ofPattern(ZONED_DATETIME_FORMAT_REGEXPS.get(regexp))).toInstant();
+            }
+        }
+
+        dateString = dateString.replaceAll(DATE_SYMBOLS_REGEXP, "").trim();
+        if(dateString.isEmpty())
+            return null;
+
+        throw new ParseException();
+    }
+
     public static LocalDate sqlDateToLocalDate(java.sql.Date value) {
         return value != null ? value.toLocalDate() : null;
     }

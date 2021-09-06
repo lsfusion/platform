@@ -191,7 +191,8 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
 
     @Override
     public AsyncMapEventExec<ClassPropertyInterface> calculateAsyncEventExec(boolean optimistic, boolean recursive) {
-        return new AsyncMapOpenForm<>(form, forbidDuplicate, getModalityType().isModalWindow(), null, mapObjects.size() == 1 ? mapObjects.singleValue() : null);
+        ModalityType modalityType = getModalityType();
+        return new AsyncMapOpenForm<>(form, forbidDuplicate, modalityType.isModal(), modalityType.isWindow(), null, mapObjects.size() == 1 ? mapObjects.singleValue() : null);
     }
 
     private ModalityType getModalityType() {

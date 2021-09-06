@@ -1,32 +1,49 @@
 package lsfusion.gwt.client.form.property.panel.view;
 
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
+import lsfusion.gwt.client.base.Pair;
+import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.panel.controller.GPropertyPanelController;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.classes.view.ActionCellRenderer;
 
-import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
+import static lsfusion.gwt.client.form.property.cell.classes.view.ActionCellRenderer.ASYNCIMAGE;
 
 public class ActionPanelRenderer extends PanelRenderer {
 
 //    private final GFormController form;
 
-    public ActionPanelRenderer(final GFormController form, ActionOrPropertyValueController controller, final GPropertyDraw property, GGroupObjectValue columnKey) {
-        super(form, controller, property, columnKey);
+    private Label label;
+    public ActionPanelRenderer(final GFormController form, ActionOrPropertyValueController controller, final GPropertyDraw property, GGroupObjectValue columnKey, GPropertyPanelController.CaptionContainer captionContainer) {
+        super(form, controller, property, columnKey, captionContainer);
 
-        value.setDynamic(false);
+        // we don't need to wrap value in any container (which is important for LinearContainerView since it can override set baseSizes)
+        // because any panel renderer is wrapped in renderersPanel (see getComponent usage)
+        Pair<Integer, Integer> valueSizes = value.setDynamic(false);
+        assert !property.isAutoDynamicHeight();
+        if(captionContainer != null) {
+            // creating virtual value component with the same size as value and return it as a value
+            label = new Label();
+
+            boolean vertical = true;
+            Integer baseSize = vertical ? valueSizes.second : valueSizes.first;
+            FlexPanel.setBaseSize(label, vertical, baseSize);  // oppositeAndFixed - false, since we're setting the size for the main direction
+
+            captionContainer.put(value, valueSizes, property.getPanelCaptionAlignment());
+        }
 
         finalizeInit();
     }
 
     @Override
     public Widget getComponent() {
-        return value;
+        return label != null ? label : value;
     }
 
     @Override
@@ -51,15 +68,11 @@ public class ActionPanelRenderer extends PanelRenderer {
     }
 
     // interface for refresh button
-    private String nullImage = null;
     public void setLoadingImage(String iconPath) {
         Element renderElement = value.getRenderElement();
         if(iconPath == null) {
-            if(nullImage != null) {
-                ActionCellRenderer.setImage(renderElement, nullImage, null, false);
-                nullImage = null;
-            }
+            ActionCellRenderer.setImage(renderElement, renderElement.getPropertyString(ASYNCIMAGE), false);
         } else
-            GwtClientUtils.setThemeImage(iconPath, imageUrl -> ActionCellRenderer.setImage(renderElement, imageUrl, nullImage == null ? s -> { nullImage = s; } : null, false));
+            GwtClientUtils.setThemeImage(iconPath, imageUrl -> ActionCellRenderer.setImage(renderElement, imageUrl, false));
     }
 }

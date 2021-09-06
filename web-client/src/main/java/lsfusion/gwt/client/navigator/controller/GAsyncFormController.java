@@ -11,4 +11,6 @@ public interface GAsyncFormController {
     boolean checkNotCompleted();
 
     boolean onServerInvocationResponse(); // true if we need to check for obsolete asyncForms
+
+    boolean canShowDockedModal();
 }

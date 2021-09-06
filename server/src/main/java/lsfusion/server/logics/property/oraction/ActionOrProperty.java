@@ -50,6 +50,7 @@ import lsfusion.server.logics.property.classes.infer.AlgType;
 import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.physics.admin.Settings;
+import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameParser;
@@ -262,6 +263,11 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
 
     @NFLazy
     public void setEventAction(String eventActionSID, ActionMapImplement<?, T> eventActionImplement) {
+        if(eventActionSID.equals(CHANGE_WYS)) { // CHANGE_WYS, temp check
+            ServerLoggers.startLogger.info("WARNING! CHANGE_WYS is deprecated, use LIST clause in INPUT / DIALOG operator instead " + this);
+            return;
+        }
+
         if (eventActions == null || eventActions instanceof EmptyRevMap) {
             eventActions = MapFact.mMap(MapFact.override());
         }
@@ -644,8 +650,8 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
 
         // для всех
         private ClassViewType viewType;
-        private String customRenderFunctions;
-        private String customEditorFunctions;
+        private String customRenderFunction;
+        private String customEditorFunction;
         private boolean customTextEdit;
         private boolean customReplaceEdit;
         private PivotOptions pivotOptions;
@@ -656,8 +662,8 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         public void proceedDefaultDraw(PropertyDrawEntity<?> entity, FormEntity form) {
             entity.shouldBeLast = BaseUtils.nvl(shouldBeLast, false);
             entity.viewType = viewType;
-            entity.customRenderFunctions = customRenderFunctions;
-            entity.customEditorFunctions = customEditorFunctions;
+            entity.customRenderFunction = customRenderFunction;
+            entity.customEditorFunction = customEditorFunction;
             entity.customTextEdit = customTextEdit;
             entity.customReplaceEdit = customReplaceEdit;
             entity.askConfirm = BaseUtils.nvl(askConfirm, false);
@@ -751,10 +757,10 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
             
             if(viewType == null)
                 setViewType(options.viewType);
-            if (customRenderFunctions == null)
-                setCustomRenderFunctions(options.customRenderFunctions);
-            if (customEditorFunctions == null)
-                setCustomEditorFunctions(options.customEditorFunctions);
+            if (customRenderFunction == null)
+                setCustomRenderFunction(options.customRenderFunction);
+            if (customEditorFunction == null)
+                setCustomEditorFunction(options.customEditorFunction);
             setCustomTextEdit(options.customTextEdit);
             setCustomReplaceEdit(options.customReplaceEdit);
             if(pivotOptions == null)
@@ -864,12 +870,12 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
             this.viewType = viewType;
         }
         
-        public void setCustomRenderFunctions(String customRenderFunctions) {
-            this.customRenderFunctions = customRenderFunctions;
+        public void setCustomRenderFunction(String customRenderFunction) {
+            this.customRenderFunction = customRenderFunction;
         }
 
-        public void setCustomEditorFunctions(String customEditorFunctions) {
-            this.customEditorFunctions = customEditorFunctions;
+        public void setCustomEditorFunction(String customEditorFunction) {
+            this.customEditorFunction = customEditorFunction;
         }
 
         public void setCustomTextEdit(boolean customTextEdit) {

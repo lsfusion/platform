@@ -9,9 +9,9 @@ import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.base.Dimension;
 import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.exception.ErrorHandlingCallback;
 import lsfusion.gwt.client.base.result.NumberResult;
 import lsfusion.gwt.client.base.view.WindowHiddenHandler;
+import lsfusion.gwt.client.controller.remote.action.PriorityErrorHandlingCallback;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.event.GKeyStroke;
@@ -46,8 +46,11 @@ public abstract class FormContainer<W extends Widget> {
 
     protected abstract void setContent(Widget widget);
 
-    public void setFormVisible() {
-        form.setFormVisible();
+    public void onAsyncInitialized() {
+        assert !async;
+        // if it's an active form setting focus
+        if(MainFrame.getAssertCurrentForm() == this)
+            onSyncFocus(true);
     }
 
     public abstract void show();
@@ -56,30 +59,32 @@ public abstract class FormContainer<W extends Widget> {
 
     private Element focusedElement;
     public void onFocus(boolean add) {
-        if(!async) {
-            form.gainedFocus();
-        }
-
         MainFrame.setCurrentForm(this);
         assert !MainFrame.isModalPopup();
 
-        if(!async) {
-            if(add || focusedElement == null)
-                form.focusFirstWidget();
-            else
-                focusedElement.focus();
-        }
+        if(!async)
+            onSyncFocus(add);
     }
 
     public void onBlur(boolean remove) {
-        if(!async) {
-            form.lostFocus();
-            focusedElement = remove ? null : GwtClientUtils.getFocusedChild(contentWidget.getElement());
-        }
+        if(!async)
+            onSyncBlur(remove);
 
-        //todo
-        //assert MainFrame.getAssertCurrentForm() == this;
+        assert MainFrame.getAssertCurrentForm() == this;
         MainFrame.setCurrentForm(null);
+    }
+
+    private void onSyncFocus(boolean add) {
+        if(add || focusedElement == null)
+            form.focusFirstWidget();
+        else
+            focusedElement.focus();
+        form.gainedFocus();
+    }
+
+    private void onSyncBlur(boolean remove) {
+        form.lostFocus();
+        focusedElement = remove ? null : GwtClientUtils.getFocusedChild(contentWidget.getElement());
     }
 
     public void initForm(FormsController formsController, GForm gForm, WindowHiddenHandler hiddenHandler, boolean isDialog, Event initFilterEvent) {
@@ -132,9 +137,9 @@ public abstract class FormContainer<W extends Widget> {
         if (initFilterEvent != null) {
             Event event = initFilterEvent;
             if (GKeyStroke.isPossibleStartFilteringEvent(event) && !GKeyStroke.isSpaceKeyEvent(event)) {
-                form.getInitialFilterProperty(new ErrorHandlingCallback<NumberResult>() {
+                form.getInitialFilterProperty(new PriorityErrorHandlingCallback<NumberResult>() {
                     @Override
-                    public void success(NumberResult result) {
+                    public void onSuccess(NumberResult result) {
                         Integer initialFilterPropertyID = (Integer) result.value;
 
                         if (initialFilterPropertyID != null) {

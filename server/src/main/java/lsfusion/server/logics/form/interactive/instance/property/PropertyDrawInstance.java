@@ -48,9 +48,22 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         return null;
     }
 
-    public <P extends PropertyInterface> Pair<InputValueList<?>, Boolean> getAsyncValueList(String actionSID, FormInstance formInstance, ImMap<ObjectInstance, ? extends ObjectValue> keys) {
+    public static class AsyncValueList {
+        public final InputValueList<?> list;
+        public final boolean newSession;
+        public final boolean strict;
+
+        public AsyncValueList(InputValueList<?> list, boolean newSession, boolean strict) {
+            this.list = list;
+            this.newSession = newSession;
+            this.strict = strict;
+        }
+    }
+
+    public <P extends PropertyInterface> AsyncValueList getAsyncValueList(String actionSID, FormInstance formInstance, ImMap<ObjectInstance, ? extends ObjectValue> keys) {
         ActionOrPropertyObjectEntity<P, ?> mapEntity;
         InputListEntity<?, P> list;
+        boolean strict;
         if(actionSID.equals(ServerResponse.FILTER)) {
             PropertyObjectEntity<P> drawProperty = (PropertyObjectEntity<P>) entity.getDrawProperty();
             list = drawProperty.getFilterInputList(entity.getToDraw(formInstance.entity));
@@ -59,12 +72,15 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
             if(BaseUtils.nvl(entity.defaultChangeEventScope, PropertyDrawEntity.DEFAULT_FILTER_EVENTSCOPE) == FormSessionScope.NEWSESSION)
                 list = list.newSession();
             mapEntity = drawProperty;
+            strict = false;
         } else {
             ActionObjectEntity<P> eventAction = (ActionObjectEntity<P>) entity.getEventAction(actionSID, formInstance.entity);
-            list = ((AsyncMapChange<P>) eventAction.property.getAsyncEventExec(entity.optimisticAsync)).list;
+            AsyncMapChange<P> asyncExec = (AsyncMapChange<P>) eventAction.property.getAsyncEventExec(entity.optimisticAsync);
+            list = asyncExec.list;
+            strict = asyncExec.inputList.strict;
             mapEntity = eventAction;
         }
-        return formInstance.instanceFactory.getInstance(mapEntity).getRemappedPropertyObject(keys).getValueList(list);
+        return formInstance.instanceFactory.getInstance(mapEntity).getRemappedPropertyObject(keys).getValueList(list, strict);
     }
 
     private ActionOrPropertyObjectInstance<?, ?> propertyObject;

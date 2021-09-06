@@ -131,6 +131,7 @@ public abstract class GAbstractContainerView {
         // (!isAutoSized || hasCaption) // conflict since we want visible for one direction and auto for another (or we want to stretch caption for the whole container)
         if(isOppositeAutoSized && child.isStretch()) {
             wrapPanel = new FlexPanel(!vertical); // this container will have upper container size, but since the default overflow is visible, inner component with overflow:auto
+            wrapPanel.setStyleName("oppositeStretchAutoSizePanel"); // just to identify this div in dom
             wrapPanel.addFillFlex(view, null);
             view = wrapPanel;
         }

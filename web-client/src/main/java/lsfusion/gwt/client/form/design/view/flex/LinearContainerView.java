@@ -44,14 +44,19 @@ public class LinearContainerView extends GAbstractContainerView {
             panel = new FlexPanel(vertical, justifyContent);
         else {
             panel = new FlexPanel(!vertical);
+            // we don't want this panel to be resized, because we don't set overflow, and during resize container can get fixed size (and then if inner container resized it's content overflows outer border)
+            // however resizing inner component also causes troubles, because when you increase components base size, parent components base size also is changed which leads to immediate relayouting, and if the explicit base size is larger than auto base size, there is a leap
+            // plus in that case column resizing is not that ergonomic, because it can be shrinked if you resize a component different from the component you used to extend the column
+            // so it seems that having childrenResizable true is the lesser evil
+//            panel.childrenResizable = false;
 
             columns = new FlexPanel[columnsCount];
             captionColumns = new FlexPanel[columnsCount];
             childrenCaptions = new ArrayList<>();
             for (int i = 0; i < columnsCount; i++) {
                 if(alignCaptions) {
-                    FlexPanel captionColumn = new FlexPanel(vertical);
-                    panel.add(captionColumn); // however it seems that GFlexAlignment.STRETCH is also possible
+                    FlexPanel captionColumn = new FlexPanel(vertical, justifyContent);
+                    panel.add(captionColumn, GFlexAlignment.STRETCH); // we need the same alignment as used for the "main" column (it's important if justifyContent is used)
                     captionColumns[i] = captionColumn;
                 }
 
@@ -104,12 +109,18 @@ public class LinearContainerView extends GAbstractContainerView {
             child.installMargins(captionPanel); // need the same margins as property value
 
             childrenCaptions.add(index, captionPanel);
-            ((GPropertyPanelController.Panel) view).captionContainer = (widget, valueSizes, alignment) -> {
-                captionPanel.add(widget, alignment);
+            ((GPropertyPanelController.Panel) view).captionContainer = (captionWidget, valueSizes, alignment) -> {
+                assert vertical; // because of aligncaptions first check (isVertical())
+                captionPanel.add(captionWidget, alignment);
+
                 Integer baseSize = vertical ? valueSizes.second : valueSizes.first;
 
-                captionPanel.baseSize = baseSize; // it's called after it is first time added to the container, so we store it in some field for further adding, removing (actually it's needed for component "shifting", when we need to add/remove latter components)
-                FlexPanel.setBaseSize(captionPanel, vertical, baseSize);  // oppositeAndFixed - false, since we're settings size for main direction
+                Integer size = child.getSize(vertical);
+                if (size != null)
+                    baseSize = size;
+
+                captionPanel.baseSize = baseSize; // this code line is called after captionPanel is first time added to the container, so we store it in some field for further adding, removing (actually it's needed for component "shifting", when we need to add/remove latter components)
+                FlexPanel.setBaseSize(captionPanel, vertical, baseSize);  // oppositeAndFixed - false, since we're setting the size for the main direction
             };
         }
 
@@ -198,7 +209,7 @@ public class LinearContainerView extends GAbstractContainerView {
                 int captionMain = 0;
 
                 for (int j = 0; j < rows; j++) {
-                    int index = i * columnsCount + j;
+                    int index = j * columnsCount + i;
                     if(index < size) {
                         if(alignCaptions) {
                             Dimension captionPref = GwtClientUtils.calculateMaxPreferredSize(childrenCaptions.get(index));

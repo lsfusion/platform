@@ -20,6 +20,7 @@ import lsfusion.client.form.property.async.ClientAsyncOpenForm;
 import lsfusion.client.form.view.ClientFormDockable;
 import lsfusion.client.form.view.ClientModalForm;
 import lsfusion.client.navigator.ClientNavigator;
+import lsfusion.client.navigator.controller.AsyncFormController;
 import lsfusion.client.view.DockableMainFrame;
 import lsfusion.client.view.MainFrame;
 import lsfusion.interop.form.print.ReportGenerationData;
@@ -130,7 +131,7 @@ public class FormsController implements ColorThemeChangeListener {
         openedForms.add(page);
     }
 
-    public ClientFormDockable openForm(Long requestIndex, ClientNavigator navigator, String canonicalName, String formSID, boolean forbidDuplicate, RemoteFormInterface remoteForm, byte[] firstChanges, MainFrame.FormCloseListener closeListener) {
+    public ClientFormDockable openForm(AsyncFormController asyncFormController, ClientNavigator navigator, String canonicalName, String formSID, boolean forbidDuplicate, RemoteFormInterface remoteForm, byte[] firstChanges, MainFrame.FormCloseListener closeListener) {
         ClientFormDockable page = getDuplicateForm(canonicalName, forbidDuplicate);
         if(page != null) {
             page.toFront();
@@ -138,7 +139,7 @@ public class FormsController implements ColorThemeChangeListener {
         } else {
 
             ClientForm clientForm = ClientFormController.deserializeClientForm(remoteForm);
-            page = forms.removeAsyncForm(requestIndex);
+            page = asyncFormController.removeAsyncForm();
 
             boolean asyncOpened = page != null;
             if (!asyncOpened) {
@@ -160,15 +161,15 @@ public class FormsController implements ColorThemeChangeListener {
 
     //we don't want flashing, so we use timer
     Timer openFormTimer;
-    public void asyncOpenForm(Long requestIndex, ClientAsyncOpenForm asyncOpenForm) {
+    public void asyncOpenForm(AsyncFormController asyncFormController, ClientAsyncOpenForm asyncOpenForm) {
         if (getDuplicateForm(asyncOpenForm.canonicalName, asyncOpenForm.forbidDuplicate) == null) {
             openFormTimer = new Timer(100, e -> {
                 if(openFormTimer != null) {
-                    if (requestIndex > lastCompletedRequest) { //request is not completed yet
-                        ClientFormDockable page = new ClientFormDockable(asyncOpenForm.canonicalName, asyncOpenForm.caption, FormsController.this, openedForms, requestIndex, true);
+                    if (asyncFormController.checkNotCompleted()) { //request is not completed yet
+                        ClientFormDockable page = new ClientFormDockable(asyncOpenForm.canonicalName, asyncOpenForm.caption, FormsController.this, openedForms, asyncFormController, true);
                         page.asyncInit();
                         openForm(page);
-                        forms.addAsyncForm(requestIndex, page);
+                        asyncFormController.putAsyncForm(page);
                     }
                     openFormTimer = null;
                 }

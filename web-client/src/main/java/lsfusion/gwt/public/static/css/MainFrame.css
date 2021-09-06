@@ -279,13 +279,16 @@ input[type=checkbox]:focus {
 /* ------------ Caption panel ------------ */
 .captionPanel {
     position: relative;
-    margin: 9px 1px 1px 1px;
+}
 
+.oppositeStretchAutoSizePanel {
+}
+
+.captionPanelWithLegend {
+    margin: 1px;
     padding: 1px;
     border: 1px solid var(--panel-border-color);
     border-radius: var(--panel-border-radius);
-
-    padding-top: 3px;
 }
 
 .captionPanelLegend {

@@ -42,6 +42,13 @@ public class ModalForm extends FormContainer<ResizableModalWindow> {
     private FormContainer prevForm;
 
     @Override
+    public void onAsyncInitialized() {
+        contentWidget.show();
+
+        super.onAsyncInitialized();
+    }
+
+    @Override
     public void show() {
         prevForm = MainFrame.getAssertCurrentForm();
         if(prevForm != null) // if there were no currentForm

@@ -12,6 +12,8 @@ public class ServerResponse implements Serializable {
     public static final String GROUP_CHANGE = "groupChange";
     public static final String EDIT_OBJECT = "editObject";
 
+    public static final String CHANGE_WYS = "change_wys";
+
     public static final ImList<String> changeEvents = ListFact.toList(CHANGE, GROUP_CHANGE);
     public static final ImList<String> events = ListFact.add(EDIT_OBJECT, changeEvents);
 
@@ -21,9 +23,6 @@ public class ServerResponse implements Serializable {
 
     public static final String INPUT = "input";
     public static final String FILTER = "filter";
-
-    public static final String RECHECK = "recheck";
-    public static final String CANCELED = "canceled";
 
     public final ClientAction[] actions;
     public final boolean resumeInvocation;

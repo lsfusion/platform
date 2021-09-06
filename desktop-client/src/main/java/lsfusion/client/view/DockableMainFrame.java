@@ -22,7 +22,6 @@ import bibliothek.gui.dock.util.color.ColorManager;
 import com.google.common.base.Throwables;
 import lsfusion.base.ReflectionUtils;
 import lsfusion.base.lambda.EProvider;
-import lsfusion.base.lambda.ERunnable;
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.base.TableManager;
 import lsfusion.client.base.log.Log;
@@ -43,6 +42,7 @@ import lsfusion.client.form.view.ClientFormDockable;
 import lsfusion.client.navigator.ClientNavigator;
 import lsfusion.client.navigator.ClientNavigatorAction;
 import lsfusion.client.navigator.NavigatorData;
+import lsfusion.client.navigator.controller.AsyncFormController;
 import lsfusion.client.navigator.controller.NavigatorController;
 import lsfusion.client.navigator.controller.dispatch.ClientNavigatorActionDispatcher;
 import lsfusion.client.navigator.window.ClientAbstractWindow;
@@ -129,8 +129,8 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
 
         mainNavigator = new ClientNavigator(remoteNavigator, navigatorData.root, navigatorData.windows) {
             @Override
-            public void openAction(ClientNavigatorAction action, int modifiers) {
-                executeNavigatorAction(action, (modifiers & InputEvent.CTRL_MASK) != 0);
+            public long openAction(ClientNavigatorAction action, int modifiers, boolean sync) {
+                return executeNavigatorAction(action, (modifiers & InputEvent.CTRL_MASK) != 0, sync);
             }
         };
 
@@ -206,43 +206,40 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
         Toolkit.getDefaultToolkit().getSystemEventQueue().push(new EditorEventQueue());
     }
 
-    private void executeNavigatorAction(ClientNavigatorAction action, boolean suppressForbidDuplicate) {
-        executeNavigatorAction(action.getCanonicalName(), 1, null, suppressForbidDuplicate, action.asyncExec == null);
+    private long executeNavigatorAction(ClientNavigatorAction action, boolean suppressForbidDuplicate, boolean sync) {
+        return executeNavigatorAction(action.getCanonicalName(), 1, null, suppressForbidDuplicate, sync);
     }
 
     public void executeNavigatorAction(final String actionSID, final int type, final Runnable action, Boolean suppressForbidDuplicate) {
         executeNavigatorAction(actionSID, type, action, suppressForbidDuplicate, true);
     }
 
-    private void executeNavigatorAction(final String actionSID, final int type, final Runnable action, Boolean suppressForbidDuplicate, boolean sync) {
+    private long executeNavigatorAction(final String actionSID, final int type, final Runnable action, Boolean suppressForbidDuplicate, boolean sync) {
         if (action != null) {
             if (lock.tryLock()) {
-                tryExecuteNavigatorAction(actionSID, type, suppressForbidDuplicate, sync);
+                return tryExecuteNavigatorAction(actionSID, type, suppressForbidDuplicate, sync);
             } else {
-                SwingUtils.invokeLater(new ERunnable() {
-                    @Override
-                    public void run() throws Exception {
-                        Timer timer = new Timer(1000, new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                action.run();
-                            }
-                        });
-                        timer.setRepeats(false);
-                        timer.start();
-                    }
+                SwingUtils.invokeLater(() -> {
+                    Timer timer = new Timer(1000, e -> action.run());
+                    timer.setRepeats(false);
+                    timer.start();
                 });
+                return -1;
             }
         } else {
             lock.lock();
-            tryExecuteNavigatorAction(actionSID, type, suppressForbidDuplicate, sync);
+            return tryExecuteNavigatorAction(actionSID, type, suppressForbidDuplicate, sync);
         }
+    }
+
+    public AsyncFormController getAsyncFormController(long requestIndex) {
+        return actionDispatcher.getAsyncFormController(requestIndex);
     }
 
     private void processServerResponse(ServerResponse serverResponse) throws IOException {
         //ХАК: serverResponse == null теоретически может быть при реконнекте, когда RMI-поток убивается и remote-method возвращает null
         if (serverResponse != null) {
-            actionDispatcher.dispatchResponse(serverResponse);
+            actionDispatcher.dispatchServerResponse(serverResponse);
         }
     }
 
@@ -254,7 +251,7 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
         });
     }
 
-    private void tryExecuteNavigatorAction(final String actionSID, final int type, final Boolean suppressForbidDuplicate, boolean sync) {
+    private long tryExecuteNavigatorAction(final String actionSID, final int type, final Boolean suppressForbidDuplicate, boolean sync) {
         try {
             RmiRequest<ServerResponse> request = new RmiRequest<ServerResponse>("executeNavigatorAction") {
                 @Override
@@ -285,6 +282,7 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
             } else {
                 rmiQueue.asyncRequest(request);
             }
+            return request.getRequestIndex();
         } finally {
             lock.unlock();
         }
@@ -318,16 +316,12 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
         formsController.getForms().clear();
     }
 
-    public void asyncOpenForm(ClientAsyncOpenForm asyncOpenForm) {
-        asyncOpenForm(rmiQueue.getNextRmiRequestIndex(), asyncOpenForm);
+    public void asyncOpenForm(ClientAsyncOpenForm asyncOpenForm, long requestIndex) {
+        asyncOpenForm(getAsyncFormController(requestIndex), asyncOpenForm);
     }
 
-    public void asyncOpenForm(Long requestIndex, ClientAsyncOpenForm asyncOpenForm) {
-        formsController.asyncOpenForm(requestIndex, asyncOpenForm);
-    }
-
-    public void removeOpenForm(Long requestIndex) {
-        formsController.getForms().removeAsyncForm(requestIndex);
+    public void asyncOpenForm(AsyncFormController asyncFormController, ClientAsyncOpenForm asyncOpenForm) {
+        formsController.asyncOpenForm(asyncFormController, asyncOpenForm);
     }
 
     @Override
@@ -538,9 +532,9 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
     }
 
     @Override
-    public ClientFormDockable runForm(Long requestIndex, String canonicalName, String formSID, boolean forbidDuplicate, RemoteFormInterface remoteForm, byte[] firstChanges, FormCloseListener closeListener) {
+    public ClientFormDockable runForm(AsyncFormController asyncFormController, String canonicalName, String formSID, boolean forbidDuplicate, RemoteFormInterface remoteForm, byte[] firstChanges, FormCloseListener closeListener) {
         try {
-            return formsController.openForm(requestIndex, mainNavigator, canonicalName, formSID, forbidDuplicate, remoteForm, firstChanges, closeListener);
+            return formsController.openForm(asyncFormController, mainNavigator, canonicalName, formSID, forbidDuplicate, remoteForm, firstChanges, closeListener);
         } catch (Exception e) {
             if(closeListener != null)
                 closeListener.formClosed(true);

@@ -30,6 +30,10 @@ public abstract class ClientNavigatorElement {
 
     public ClientAsyncExec asyncExec;
 
+    public boolean isDesktopAsync() {
+        return asyncExec != null && asyncExec.isDesktopEnabled(true);
+    }
+
     protected boolean hasChildren = false;
     public ClientNavigatorWindow window;
 

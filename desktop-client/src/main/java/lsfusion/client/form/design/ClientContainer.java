@@ -98,7 +98,11 @@ public class ClientContainer extends ClientComponent {
 
     @Override
     public String getCaption() {
-        return caption;
+        return getNotNullCaption();
+    }
+    
+    public String getNotNullCaption() {
+        return BaseUtils.nullToString(caption);
     }
 
     public ContainerType getType() {
@@ -221,7 +225,8 @@ public class ClientContainer extends ClientComponent {
 
         public void update(Map<ClientGroupObjectValue, Object> readKeys, boolean updateKeys, TableController controller) {
             assert BaseUtils.singleKey(readKeys).isEmpty();
-            controller.getFormController().setContainerCaption(ClientContainer.this, BaseUtils.nullToString(BaseUtils.singleValue(readKeys)));
+            Object containerCaption = BaseUtils.singleValue(readKeys);
+            controller.getFormController().setContainerCaption(ClientContainer.this, containerCaption != null ? containerCaption.toString() : null);
         }
 
         public int getID() {

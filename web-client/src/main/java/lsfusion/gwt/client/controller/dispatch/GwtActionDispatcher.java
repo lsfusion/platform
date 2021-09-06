@@ -5,16 +5,17 @@ import com.google.gwt.typedarrays.client.Uint8ArrayNative;
 import com.google.gwt.typedarrays.shared.ArrayBuffer;
 import com.google.gwt.typedarrays.shared.Uint8Array;
 import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.xhr.client.XMLHttpRequest;
 import lsfusion.gwt.client.action.*;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Result;
-import lsfusion.gwt.client.base.exception.ErrorHandlingCallback;
 import lsfusion.gwt.client.base.exception.GExceptionManager;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.log.GLog;
 import lsfusion.gwt.client.base.view.DialogBoxHelper;
+import lsfusion.gwt.client.controller.remote.action.RequestAsyncCallback;
+import lsfusion.gwt.client.controller.remote.action.RequestCountingErrorHandlingCallback;
+import lsfusion.gwt.client.controller.remote.action.RequestErrorHandlingCallback;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.controller.remote.action.navigator.LogClientExceptionAction;
 import lsfusion.gwt.client.form.view.FormContainer;
@@ -32,24 +33,46 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     Object[] currentActionResults = null;
     private int currentActionIndex = -1;
     private int currentContinueIndex = -1;
+    private Runnable currentOnFinished = null;
 
     protected abstract void onServerInvocationResponse(ServerResponseResult response);
 
-    public void dispatchServerResponse(ServerResponseResult response) {
-        dispatchServerResponse(response, -1);
+    public static abstract class ServerResponseCallback extends RequestCountingErrorHandlingCallback<ServerResponseResult> {
+
+        private final boolean disableForbidDuplicate;
+
+        public ServerResponseCallback(boolean disableForbidDuplicate) {
+            this.disableForbidDuplicate = disableForbidDuplicate;
+        }
+
+        protected abstract GwtActionDispatcher getDispatcher();
+
+        @Override
+        public void onSuccess(ServerResponseResult result, Runnable onFinished) {
+            if (disableForbidDuplicate) {
+                for (GAction action : result.actions) // it's a hack, but the whole forbidDuplicate mechanism is a one big hack
+                    if (action instanceof GFormAction)
+                        ((GFormAction) action).forbidDuplicate = false;
+            }
+            getDispatcher().dispatchServerResponse(result, onFinished);
+        }
     }
-    public void dispatchServerResponse(ServerResponseResult response, int continueIndex) {
+
+    public void dispatchServerResponse(ServerResponseResult response, Runnable onFinished) {
+        dispatchServerResponse(response, -1, onFinished);
+    }
+    public void dispatchServerResponse(ServerResponseResult response, int continueIndex, Runnable onFinished) {
         assert response != null;
         assert !dispatchingPaused;
         onServerInvocationResponse(response);
 
-        dispatchResponse(response, continueIndex);
+        dispatchResponse(response, continueIndex, onFinished);
     }
     public void continueDispatchResponse() {
         assert dispatchingPaused;
-        dispatchResponse(null, -1);
+        dispatchResponse(null, -1, null);
     }
-    public void dispatchResponse(ServerResponseResult response, int continueIndex) {
+    public void dispatchResponse(ServerResponseResult response, int continueIndex, Runnable onFinished) {
         Object[] actionResults;
         Throwable actionThrowable = null;
         int beginIndex;
@@ -58,11 +81,13 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
             actionResults = currentActionResults;
             continueIndex = currentContinueIndex;
             response = currentResponse;
+            onFinished = currentOnFinished;
 
             currentActionIndex = -1;
             currentContinueIndex = -1;
             currentActionResults = null;
             currentResponse = null;
+            currentOnFinished = null;
             dispatchingPaused = false;
         } else {
             beginIndex = 0;
@@ -90,6 +115,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
                 currentActionResults = actionResults;
                 currentActionIndex = i;
                 currentContinueIndex = continueIndex;
+                currentOnFinished = onFinished;
                 return;
             }
 
@@ -100,11 +126,11 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
             continueIndex++;
 
             final int fContinueIndex = continueIndex;
-            ErrorHandlingCallback<ServerResponseResult> continueRequestCallback =
-                    new ErrorHandlingCallback<ServerResponseResult>() {
+            RequestErrorHandlingCallback<ServerResponseResult> continueRequestCallback =
+                    new RequestErrorHandlingCallback<ServerResponseResult>() {
                         @Override
-                        public void success(ServerResponseResult response) {
-                            dispatchServerResponse(response, fContinueIndex);
+                        public void onSuccess(ServerResponseResult response, Runnable onFinished) {
+                            dispatchServerResponse(response, fContinueIndex, onFinished);
                         }
                     };
             if (actionThrowable == null) {
@@ -113,19 +139,16 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
                 throwInServerInvocation(response.requestIndex, LogClientExceptionAction.fromWebClientToWebServer(actionThrowable), continueIndex, continueRequestCallback);
             }
         } else {
+            onFinished.run();
+
             if (actionThrowable != null)
                 throw GExceptionManager.propagate(actionThrowable);
-            postDispatchResponse(response);
         }
     }
 
-    protected void postDispatchResponse(ServerResponseResult response) {
-        assert !response.resumeInvocation;
-    }
+    protected abstract void throwInServerInvocation(long requestIndex, Throwable t, int continueIndex, RequestAsyncCallback<ServerResponseResult> callback);
 
-    protected abstract void throwInServerInvocation(long requestIndex, Throwable t, int continueIndex, AsyncCallback<ServerResponseResult> callback);
-
-    protected abstract void continueServerInvocation(long requestIndex, Object[] actionResults, int continueIndex, AsyncCallback<ServerResponseResult> callback);
+    protected abstract void continueServerInvocation(long requestIndex, Object[] actionResults, int continueIndex, RequestAsyncCallback<ServerResponseResult> callback);
 
     // synchronization is guaranteed pretty tricky
     // in RemoteDispatchAsync there is a linked list q of all executing actions, where all responses are queued, and all continue invoications are put into it's beginning
@@ -158,6 +181,10 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
             }
             continueDispatchResponse();
         }
+    }
+
+    public boolean canShowDockedModal() {
+        return true;
     }
 
     @Override
@@ -356,6 +383,11 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
             public boolean onServerInvocationResponse() {
                 lastCompletedRequest = requestIndex;
                 return asyncForms.containsKey(requestIndex);
+            }
+
+            @Override
+            public boolean canShowDockedModal() {
+                return GwtActionDispatcher.this.canShowDockedModal();
             }
         };
     }

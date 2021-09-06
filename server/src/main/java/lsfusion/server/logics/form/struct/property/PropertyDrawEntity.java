@@ -54,6 +54,7 @@ import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
+import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import javax.swing.*;
@@ -87,8 +88,8 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     public Boolean shouldBeLast;
     public ClassViewType viewType; // assert not null, after initialization
-    public String customRenderFunctions; 
-    public String customEditorFunctions;
+    public String customRenderFunction;
+    public String customEditorFunction;
     public boolean customTextEdit;
     public boolean customReplaceEdit;
     public String eventID;
@@ -371,6 +372,11 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     public void setEventAction(String actionSID, ActionObjectSelector eventAction) {
+        if(actionSID.equals(CHANGE_WYS)) { // CHANGE_WYS, temp check
+            ServerLoggers.startLogger.info("WARNING! CHANGE_WYS is deprecated, use LIST clause in INPUT / DIALOG operator instead " + this);
+            return;
+        }
+
         if(eventActions ==null) {
             eventActions = new HashMap<>();
         }

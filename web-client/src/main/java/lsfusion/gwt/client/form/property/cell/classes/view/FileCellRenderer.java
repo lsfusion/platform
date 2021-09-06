@@ -18,4 +18,9 @@ public class FileCellRenderer extends FileBasedCellRenderer {
         GwtClientUtils.setThemeImage(value == null ? ICON_EMPTY : ICON_FILE, sb::append);
         return sb.toString();
     }
+
+    @Override
+    public boolean isAutoDynamicHeight() {
+        return false;
+    }
 }

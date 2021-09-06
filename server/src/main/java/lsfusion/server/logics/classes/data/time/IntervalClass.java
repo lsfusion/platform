@@ -11,6 +11,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
+import java.util.Date;
 
 import static lsfusion.base.DateConverter.formatInterval;
 import static lsfusion.base.DateConverter.parseInterval;
@@ -101,7 +102,8 @@ public abstract class IntervalClass extends DataClass<BigDecimal> {
 
     @Override
     public BigDecimal getDefaultValue() {
-        return null;
+        long time = new Date().getTime() / 1000;
+        return new BigDecimal(time + "." + time);
     }
 
     @Override

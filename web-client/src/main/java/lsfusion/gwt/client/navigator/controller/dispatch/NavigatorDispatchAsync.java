@@ -1,12 +1,14 @@
 package lsfusion.gwt.client.navigator.controller.dispatch;
 
-import com.google.gwt.user.client.rpc.AsyncCallback;
 import lsfusion.gwt.client.RemoteDispatchAsync;
+import lsfusion.gwt.client.base.result.ListResult;
+import lsfusion.gwt.client.base.result.VoidResult;
+import lsfusion.gwt.client.controller.remote.action.BaseAction;
+import lsfusion.gwt.client.controller.remote.action.PriorityErrorHandlingCallback;
 import lsfusion.gwt.client.controller.remote.action.RequestAction;
-import lsfusion.gwt.client.controller.remote.action.navigator.NavigatorAction;
-import lsfusion.gwt.client.controller.remote.action.navigator.NavigatorRequestAction;
-import lsfusion.gwt.client.controller.remote.action.navigator.NavigatorRequestCountingAction;
+import lsfusion.gwt.client.controller.remote.action.navigator.*;
 import net.customware.gwt.dispatch.shared.Result;
+import net.customware.gwt.dispatch.shared.general.StringResult;
 
 public class NavigatorDispatchAsync extends RemoteDispatchAsync {
 
@@ -16,29 +18,36 @@ public class NavigatorDispatchAsync extends RemoteDispatchAsync {
         this.sessionID = sessionID;
     }
 
-    public <A extends NavigatorAction<R>, R extends Result> long execute(A action, AsyncCallback<R> callback, boolean direct) {
-        executeQueue(action, callback, direct);
-        if(action instanceof NavigatorRequestAction) {
-            return ((NavigatorRequestAction) action).requestIndex;
-        } else {
-            return -1;
-        }
-    }
-    public <A extends NavigatorAction<R>, R extends Result> long execute(final A action, final AsyncCallback<R> callback) {
-        return execute(action, callback, false);
-    }
-
     @Override
-    protected <A extends RequestAction<R>, R extends Result> void fillAction(A action) {
+    protected <A extends BaseAction<R>, R extends Result> void fillAction(A action) {
         ((NavigatorAction) action).sessionID = sessionID;
     }
 
     @Override
-    protected <A extends RequestAction<R>, R extends Result> void fillQueuedAction(A action) {
-        if (action instanceof NavigatorRequestAction) {
-            if(action instanceof NavigatorRequestCountingAction)
-                ((NavigatorRequestCountingAction) action).requestIndex = nextRequestIndex++;
-            ((NavigatorRequestAction) action).lastReceivedRequestIndex = lastReceivedRequestIndex;
-        }
+    public void getServerActionMessage(PriorityErrorHandlingCallback<StringResult> callback) {
+        executePriority(new GetRemoteNavigatorActionMessage(), callback);
+    }
+
+    @Override
+    public void getServerActionMessageList(PriorityErrorHandlingCallback<ListResult> callback) {
+        executePriority(new GetRemoteNavigatorActionMessageList(), callback);
+    }
+
+    @Override
+    public void interrupt(boolean cancelable) {
+        executePriority(new InterruptNavigator(cancelable), new PriorityErrorHandlingCallback<>());
+    }
+
+    @Override
+    protected void showAsync(boolean set) {
+    }
+
+    @Override
+    protected <A extends RequestAction<R>, R extends Result> long fillQueuedAction(A action) {
+        NavigatorRequestAction navigatorRequestAction = (NavigatorRequestAction) action;
+        if(action instanceof NavigatorRequestCountingAction)
+            navigatorRequestAction.requestIndex = nextRequestIndex++;
+        navigatorRequestAction.lastReceivedRequestIndex = lastReceivedRequestIndex;
+        return navigatorRequestAction.requestIndex;
     }
 }

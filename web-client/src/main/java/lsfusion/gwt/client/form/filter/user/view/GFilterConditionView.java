@@ -230,6 +230,7 @@ public class GFilterConditionView extends FlexPanel {
     }
 
     public void startEditing(Event keyEvent) {
+        // scheduleDeferred to fix focus issues with quick filter (adding condition by char key) 
         Scheduler.get().scheduleDeferred(() -> valueView.startEditing(keyEvent));
     }
 }

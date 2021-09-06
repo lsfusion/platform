@@ -200,21 +200,21 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
             addUserFilterProperty(propertyDrawEntity, version);
         }
 
-        for (ImList<PropertyDrawEntity> pivotColumn : entity.getPivotColumnsList()) {
+        for (ImList<PropertyDrawEntity> pivotColumn : entity.getNFPivotColumnsListIt(version)) {
             addPivotColumn(pivotColumn, version);
         }
 
-        for (ImList<PropertyDrawEntity> pivotRow : entity.getPivotRowsList()) {
+        for (ImList<PropertyDrawEntity> pivotRow : entity.getNFPivotRowsListIt(version)) {
             addPivotRow(pivotRow, version);
         }
 
-        for (PropertyDrawEntity pivotMeasure : entity.getPivotMeasuresList()) {
+        for (PropertyDrawEntity pivotMeasure : entity.getNFPivotMeasuresListIt(version)) {
             addPivotMeasure(pivotMeasure, version);
         }
 
         initButtons(version);
     }
-    
+
     public void addUserFilterProperty(PropertyDrawEntity userFilterProperty, Version version) {
         GroupObjectEntity groupObjectEntity = userFilterProperty.getToDraw(entity);
         PropertyDrawView propertyDrawView = get(userFilterProperty);

@@ -529,28 +529,22 @@ public class ScriptingFormEntity {
         if (options.getViewType() != null) {
             property.viewType = options.getViewType();
         }
-        String customRenderFunctions = options.getCustomRenderFunctions();
-        if (customRenderFunctions != null) {
-            String pattern = "[a-zA-Z]+\\w*:[a-zA-Z]+\\w*:[a-zA-Z]+\\w*";
-            if (customRenderFunctions.matches(pattern)) {
-                property.customRenderFunctions = customRenderFunctions;
+        String customRenderFunction = options.getCustomRenderFunction();
+        if (customRenderFunction != null) {
+            if (!customRenderFunction.isEmpty()) {
+                property.customRenderFunction = customRenderFunction;
             } else {
-                LM.getErrLog().emitCustomPropertyRenderFunctionsError(LM.getParser(), property.getSID(), customRenderFunctions);
+                LM.getErrLog().emitCustomPropertyViewFunctionError(LM.getParser(), property.getSID(), customRenderFunction, true);
             }
         }
-        String customEditorFunctions = options.getCustomEditorFunctions();
+        String customEditorFunction = options.getCustomEditorFunction();
         property.customTextEdit = options.isCustomTextEdit();
         property.customReplaceEdit = options.isCustomReplaceEdit();
-        if (customEditorFunctions != null) {
-            String customTextEditPattern = "[a-zA-Z]+\\w*:[a-zA-Z]+\\w*";
-            String customReplaceEditPattern = "[a-zA-Z]+\\w*:[a-zA-Z]+\\w*:[a-zA-Z]+\\w*:[a-zA-Z]+\\w*:([a-zA-Z]+\\w*)?";
-            String customEditPattern = "[a-zA-Z]+\\w*:[a-zA-Z]+\\w*:([a-zA-Z]+\\w*)?";
-            if ((customEditorFunctions.matches(customTextEditPattern) && options.isCustomTextEdit()) ||
-                    (customEditorFunctions.matches(customReplaceEditPattern) && options.isCustomReplaceEdit()) ||
-                    (customEditorFunctions.matches(customEditPattern) && !options.isCustomTextEdit() && !options.isCustomReplaceEdit())) {
-                property.customEditorFunctions = customEditorFunctions;
+        if (customEditorFunction != null) {
+            if (!customEditorFunction.isEmpty()) {
+                property.customEditorFunction = customEditorFunction;
             } else {
-                LM.getErrLog().emitCustomPropertyEditorFunctionsError(LM.getParser(), property.getSID(), customEditorFunctions, options.isCustomTextEdit(), options.isCustomReplaceEdit());
+                LM.getErrLog().emitCustomPropertyViewFunctionError(LM.getParser(), property.getSID(), customRenderFunction, false);
             }
         }
 

@@ -4,11 +4,11 @@ import com.google.gwt.core.client.Duration;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.Pair;
-import lsfusion.gwt.client.base.exception.ErrorHandlingCallback;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.base.jsni.NativeStringMap;
@@ -16,6 +16,7 @@ import lsfusion.gwt.client.base.view.DialogBoxHelper;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
+import lsfusion.gwt.client.controller.remote.action.RequestErrorHandlingCallback;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
@@ -937,7 +938,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         }
     }
 
-    private void doResetPreferences(final boolean forAllUsers, final boolean completeReset, final ErrorHandlingCallback<ServerResponseResult> callback) {
+    private void doResetPreferences(final boolean forAllUsers, final boolean completeReset, final AsyncCallback<ServerResponseResult> callback) {
         GGridUserPreferences prefs;
         if (forAllUsers) {
             prefs = completeReset ? null : userGridPreferences;
@@ -946,15 +947,15 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
             prefs = generalGridPreferences;
         }
         
-        form.saveUserPreferences(currentGridPreferences, forAllUsers, completeReset, getHiddenProps(prefs), new ErrorHandlingCallback<ServerResponseResult>() {
+        form.saveUserPreferences(currentGridPreferences, forAllUsers, completeReset, getHiddenProps(prefs), new AsyncCallback<ServerResponseResult>() {
             @Override
-            public void failure(Throwable caught) {
+            public void onFailure(Throwable caught) {
                 resetCurrentPreferences(false);
-                callback.failure(caught);
+                callback.onFailure(caught);
             }
 
             @Override
-            public void success(ServerResponseResult result) {
+            public void onSuccess(ServerResponseResult result) {
                 if (forAllUsers) {
                     generalGridPreferences.resetPreferences();
                     if (completeReset) {
@@ -964,12 +965,12 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
                     userGridPreferences.resetPreferences();
                 }
                 resetCurrentPreferences(false);
-                callback.success(result);
+                callback.onSuccess(result);
             }
         });
     }
     
-    public void resetPreferences(boolean forAll, boolean complete, final ErrorHandlingCallback<ServerResponseResult> callback) {
+    public void resetPreferences(boolean forAll, boolean complete, final AsyncCallback<ServerResponseResult> callback) {
         currentGridPreferences.resetPreferences();
 
         if (forAll) {
@@ -979,7 +980,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         }
     }
 
-    public void saveCurrentPreferences(final boolean forAllUsers, final ErrorHandlingCallback<ServerResponseResult> callback) {
+    public void saveCurrentPreferences(final boolean forAllUsers, final AsyncCallback<ServerResponseResult> callback) {
         currentGridPreferences.setHasUserPreferences(true);
 
         if (!properties.isEmpty()) {
@@ -990,22 +991,22 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
                 prefs = currentGridPreferences;
             }
 
-            form.saveUserPreferences(currentGridPreferences, forAllUsers, false, getHiddenProps(prefs), new ErrorHandlingCallback<ServerResponseResult>() {
+            form.saveUserPreferences(currentGridPreferences, forAllUsers, false, getHiddenProps(prefs), new AsyncCallback<ServerResponseResult>() {
                 @Override
-                public void success(ServerResponseResult result) {
+                public void onSuccess(ServerResponseResult result) {
                     if (forAllUsers) {
                         generalGridPreferences = new GGridUserPreferences(currentGridPreferences);
                         resetCurrentPreferences(false);
                     } else {
                         userGridPreferences = new GGridUserPreferences(currentGridPreferences);
                     }
-                    callback.success(result);
+                    callback.onSuccess(result);
                 }
 
                 @Override
-                public void failure(Throwable caught) {
+                public void onFailure(Throwable caught) {
                     resetCurrentPreferences(false);
-                    callback.failure(caught);
+                    callback.onFailure(caught);
                 }
             });
         }

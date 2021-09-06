@@ -1,13 +1,12 @@
 package lsfusion.gwt.client.form.controller.dispatch;
 
-import com.google.gwt.user.client.rpc.AsyncCallback;
-import lsfusion.gwt.client.controller.remote.action.form.FormRequestAction;
-import net.customware.gwt.dispatch.shared.Action;
+import lsfusion.gwt.client.controller.remote.action.RequestAsyncCallback;
 import net.customware.gwt.dispatch.shared.Result;
 
 public class QueuedAction<R extends Result> {
-    public Action<R> action;
-    public AsyncCallback<R> callback;
+    public RequestAsyncCallback<R> callback;
+
+    public long requestIndex;
 
     public boolean succeeded = false;
     public boolean finished = false;
@@ -16,8 +15,8 @@ public class QueuedAction<R extends Result> {
 
     public Boolean preProceeded;
 
-    public QueuedAction(Action action, AsyncCallback callback, boolean preProceed) {
-        this.action = action;
+    public QueuedAction(long requestIndex, RequestAsyncCallback callback, boolean preProceed) {
+        this.requestIndex = requestIndex;
         this.callback = callback;
         this.preProceeded = preProceed ? false : null;
     }
@@ -34,17 +33,14 @@ public class QueuedAction<R extends Result> {
         this.throwable = t;
     }
 
-    public void proceed() {
+    public void proceed(Runnable onFinished) {
         assert finished;
 
         if (succeeded) {
-            callback.onSuccess(result);
+            callback.onSuccess(result, onFinished);
         } else {
             callback.onFailure(throwable);
+            onFinished.run();
         }
-    }
-
-    public long getRequestIndex() {
-        return action instanceof FormRequestAction ? ((FormRequestAction) action).requestIndex : -1;
     }
 }

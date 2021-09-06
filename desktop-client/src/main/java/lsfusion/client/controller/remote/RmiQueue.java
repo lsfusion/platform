@@ -17,6 +17,8 @@ import lsfusion.client.base.log.ClientLoggers;
 import lsfusion.client.controller.MainController;
 import lsfusion.client.controller.dispatch.DispatcherInterface;
 import lsfusion.client.controller.dispatch.DispatcherListener;
+import lsfusion.client.form.view.ClientFormDockable;
+import lsfusion.client.navigator.controller.AsyncFormController;
 import lsfusion.interop.base.exception.FatalRemoteClientException;
 import lsfusion.interop.base.exception.RemoteAbandonedException;
 import lsfusion.interop.base.exception.RemoteHandledException;
@@ -24,10 +26,7 @@ import org.apache.log4j.Logger;
 
 import javax.swing.*;
 import java.rmi.RemoteException;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Queue;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
@@ -352,8 +351,9 @@ public class RmiQueue implements DispatcherListener {
         }
     }
 
-    public <T> void asyncRequest(final RmiRequest<T> request) {
+    public <T> long asyncRequest(final RmiRequest<T> request) {
         asyncRequest(request, false);
+        return request.getRequestIndex();
     }
 
     public <T> void asyncRequest(final RmiRequest<T> request, boolean preProceed) {
@@ -645,7 +645,31 @@ public class RmiQueue implements DispatcherListener {
         boolean isFirst();
     }
 
-    public long getNextRmiRequestIndex() {
-        return nextRmiRequestIndex;
+    private long lastCompletedRequest = -1L;
+    private Map<Long, ClientFormDockable> asyncForms = new HashMap<>();
+
+    public AsyncFormController getAsyncFormController(long requestIndex) {
+        return new AsyncFormController() {
+            @Override
+            public ClientFormDockable removeAsyncForm() {
+                return asyncForms.remove(requestIndex);
+            }
+
+            @Override
+            public void putAsyncForm(ClientFormDockable container) {
+                asyncForms.put(requestIndex, container);
+            }
+
+            @Override
+            public boolean checkNotCompleted() {
+                return requestIndex > lastCompletedRequest;
+            }
+
+            @Override
+            public boolean onServerInvocationResponse() {
+                lastCompletedRequest = requestIndex;
+                return asyncForms.containsKey(requestIndex);
+            }
+        };
     }
 }

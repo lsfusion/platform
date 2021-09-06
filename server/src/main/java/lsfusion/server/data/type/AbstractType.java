@@ -46,7 +46,7 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
     // CAST который возвращает NULL, если не может этого сделать 
     public String getSafeCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv, Type typeFrom, boolean isArith) {
         if(hasSafeCast()) {
-            boolean isInt = isArith || typeFrom instanceof IntegralClass;
+            boolean isInt = isArith || typeFrom instanceof IntegralClass || typeFrom instanceof ObjectType;
             if(!(isInt && Settings.get().getSafeCastIntType() == 2)) {
                 typeEnv.addNeedSafeCast(this, isInt);
                 return syntax.getSafeCastNameFnc(this, isInt) + "(" + value + ")";
@@ -113,6 +113,10 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
         String s = o instanceof FileData ? new String(((FileData) o).getRawFile().getBytes(), charset) :  (String) o;
         if(isParseNullValue(s))
             return null;
+        return parseHTTPNotNullString(s, charset);
+    }
+
+    protected T parseHTTPNotNullString(String s, Charset charset) throws ParseException {
         return parseString(s);
     }
 
@@ -120,6 +124,10 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
     public Object formatHTTP(T value, Charset charset) {
         if(value == null)
             return getParseNullValue();
+        return formatHTTPNotNullString(value, charset);
+    }
+
+    protected String formatHTTPNotNullString(T value, Charset charset) {
         return formatString(value);
     }
 

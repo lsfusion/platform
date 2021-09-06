@@ -138,6 +138,14 @@ public class ThreadLocalContext {
         return get().getCurrentUser();
     }
 
+    public static Long getCurrentComputer() {
+        return get().getCurrentComputer();
+    }
+
+    public static Long getCurrentConnection() {
+        return get().getCurrentConnection();
+    }
+
     public static Long getCurrentRole() {
         return get().getCurrentUserRole();
     }

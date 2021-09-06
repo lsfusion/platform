@@ -60,8 +60,7 @@ public class GFilterView extends FlexPanel implements GFilterConditionView.UIHan
         addConditionButton = new GToolbarButton(ADD_ICON_PATH, messages.formQueriesFilterAddCondition()) {
             @Override
             public ClickHandler getClickHandler() {
-                // pass add filter key down event to start editing immediately
-                return event -> addCondition(GKeyStroke.createAddUserFilterKeyEvent());
+                return event -> addCondition();
             }
         };
         addConditionButton.addStyleName("userFilterButton");
@@ -92,6 +91,11 @@ public class GFilterView extends FlexPanel implements GFilterConditionView.UIHan
         filterContainer.clear();
         conditionViews.clear();
         controller.allRemoved();
+    }
+    
+    public void addCondition() {
+        // pass add filter key down event to start editing immediately
+        addCondition(GKeyStroke.createAddUserFilterKeyEvent());
     }
 
     public void addCondition(Event keyEvent) {
@@ -144,10 +148,15 @@ public class GFilterView extends FlexPanel implements GFilterConditionView.UIHan
 
     public void toggleToolsVisible() {
         toolsVisible = !toolsVisible;
-        for (GFilterConditionView view : conditionViews.values()) {
-            view.setToolsVisible(toolsVisible);
+
+        if (!conditionViews.isEmpty()) {
+            for (GFilterConditionView view : conditionViews.values()) {
+                view.setToolsVisible(toolsVisible);
+            }
+        } else if (toolsVisible) {
+            addCondition();
         }
-        
+
         addConditionButton.setVisible(toolsVisible);
         resetConditionsButton.setVisible(toolsVisible);
     }

@@ -13,7 +13,7 @@ import java.util.List;
 import static javax.swing.BorderFactory.*;
 
 public abstract class FilterOptionSelector<T> extends JTextField {
-    JPopupMenu menu = new JPopupMenu();
+    JScrollPopupMenu menu = new JScrollPopupMenu();
     protected T currentValue;
 
     public FilterOptionSelector() {
@@ -23,6 +23,8 @@ public abstract class FilterOptionSelector<T> extends JTextField {
     public FilterOptionSelector(List<T> items) {
         setEditable(false);
         setFocusable(false);
+        
+        menu.setMaximumVisibleRows(12);
 
         setBorder(createCompoundBorder(
                 createCompoundBorder(

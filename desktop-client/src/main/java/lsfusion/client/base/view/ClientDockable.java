@@ -11,6 +11,7 @@ import bibliothek.gui.dock.control.focus.DefaultFocusRequest;
 import com.jhlabs.image.PointFilter;
 import lsfusion.client.form.controller.FormsController;
 import lsfusion.client.form.view.ClientFormDockable;
+import lsfusion.client.navigator.controller.AsyncFormController;
 import org.jdesktop.jxlayer.JXLayer;
 import org.jdesktop.jxlayer.plaf.effect.BufferedImageOpEffect;
 import org.jdesktop.jxlayer.plaf.ext.LockableUI;
@@ -33,7 +34,7 @@ public abstract class ClientDockable extends DefaultMultipleCDockable {
 
     private final CustomCloseAction closeAction;
 
-    protected Long requestIndex;
+    protected AsyncFormController asyncFormController;
     public boolean async;
 
     protected ClientDockable(String canonicalName, FormsController formsController) {

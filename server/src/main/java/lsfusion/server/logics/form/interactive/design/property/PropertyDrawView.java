@@ -377,8 +377,8 @@ public class PropertyDrawView extends ComponentView {
         else
             outStream.writeByte(DataType.ACTION);
         
-        pool.writeString(outStream, entity.customRenderFunctions);
-        pool.writeString(outStream, entity.customEditorFunctions);
+        pool.writeString(outStream, entity.customRenderFunction);
+        pool.writeString(outStream, entity.customEditorFunction);
         pool.writeBoolean(outStream, entity.customTextEdit);
         pool.writeBoolean(outStream, entity.customReplaceEdit);
 
@@ -518,7 +518,8 @@ public class PropertyDrawView extends ComponentView {
     public boolean isHorizontalValueFlex() {
         if(valueFlex != null)
             return valueFlex;
-        return isProperty() && getType().isFlex();
+        Type type;
+        return isProperty() && (type = getType()) != null && type.isFlex();
     }
 
     public String getAskConfirmMessage() {
@@ -549,7 +550,10 @@ public class PropertyDrawView extends ComponentView {
 
     public FlexAlignment getValueAlignment() {
         if (valueAlignment == null && isProperty()) {
-            return getType().getValueAlignment();
+            Type type = getType();
+            if(type != null)
+                return type.getValueAlignment();
+            return FlexAlignment.START;
         }
         return valueAlignment;
     }

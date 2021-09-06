@@ -49,7 +49,7 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
     }
 
     public interface CaptionContainer {
-        void put(Widget widget, Pair<Integer, Integer> valueSizes, GFlexAlignment alignment);
+        void put(Widget captionWidget, Pair<Integer, Integer> valueSizes, GFlexAlignment alignment);
     }
 
     public static class Panel extends FlexPanel {

@@ -194,7 +194,7 @@ public class ChangeClassAction<T extends PropertyInterface, I extends PropertyIn
     @Override
     public AsyncMapEventExec<PropertyInterface> calculateAsyncEventExec(boolean optimistic, boolean recursive) {
         if ((where == null || BaseUtils.hashEquals(mapInterfaces.valuesSet(),innerInterfaces)) && valueClass instanceof UnknownClass)
-            return new AsyncMapRemove<>(interfaces.single());
+            return new AsyncMapRemove<>(mapInterfaces.reverse().get(changeInterface));
         return null;
     }
 

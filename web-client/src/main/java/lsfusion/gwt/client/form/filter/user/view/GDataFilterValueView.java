@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.form.filter.user.view;
 
 import com.google.gwt.user.client.Event;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.ResizableSimplePanel;
 import lsfusion.gwt.client.classes.data.GLogicalType;
@@ -57,15 +58,17 @@ public class GDataFilterValueView extends ResizableSimplePanel {
     }
 
     public void startEditing(Event keyEvent) {
-        if (!(cell.getProperty().baseType instanceof GLogicalType)) {
-            if (isAddUserFilterKeyEvent(keyEvent) || isReplaceUserFilterKeyEvent(keyEvent)) {
-                cell.startEditing(keyEvent);
+        if (GwtClientUtils.isShowing(cell)) { // suggest box may appear in (0,0) if filter is already gone (as it's called in scheduleDeferred)
+            if (!(cell.getProperty().baseType instanceof GLogicalType)) {
+                if (isAddUserFilterKeyEvent(keyEvent) || isReplaceUserFilterKeyEvent(keyEvent)) {
+                    cell.startEditing(keyEvent);
+                } else {
+                    cell.onEditEvent(new EventHandler(keyEvent));
+                }
             } else {
-                cell.onEditEvent(new EventHandler(keyEvent));
+                // to be able to apply on Enter
+                filterValue.value = (Serializable) cell.getValue();
             }
-        } else {
-            // to be able to apply on Enter
-            filterValue.value = (Serializable) cell.getValue();
         }
     }
 }

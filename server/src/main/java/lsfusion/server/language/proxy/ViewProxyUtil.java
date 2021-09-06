@@ -4,9 +4,11 @@ import lsfusion.base.col.heavy.SoftHashMap;
 import lsfusion.interop.form.design.FontInfo;
 import lsfusion.server.language.converters.FontInfoConverter;
 import lsfusion.server.language.converters.KeyStrokeConverter;
+import lsfusion.server.physics.dev.debug.DebugInfo;
 import org.apache.commons.beanutils.*;
 
 import javax.swing.*;
+import java.util.function.Supplier;
 
 public class ViewProxyUtil {
     static {
@@ -17,10 +19,12 @@ public class ViewProxyUtil {
 
     private static final SoftHashMap<Object, ViewProxy> viewProxies = new SoftHashMap<>();
 
+    public static final ThreadLocal<Supplier<DebugInfo.DebugPoint>> setDebugPoint = new ThreadLocal<>();
+
     /**
      * not thread-safe
      */
-    public static void setObjectProperty(Object propertyReceiver, String propertyName, Object propertyValue) {
+    public static void setObjectProperty(Object propertyReceiver, String propertyName, Object propertyValue, Supplier<DebugInfo.DebugPoint> debugPoint) {
         if (propertyReceiver == null) {
             throw new RuntimeException("object is undefined");
         }
@@ -36,10 +40,13 @@ public class ViewProxyUtil {
             throw new RuntimeException("property doesn't exist");
         }
 
+        setDebugPoint.set(debugPoint);
         try {
             BeanUtils.setProperty(viewProxy, propertyName, propertyValue);
         } catch (Exception e) {
             throw new RuntimeException("property can't be set: " + e.getMessage());
+        } finally {
+            setDebugPoint.set(null);
         }
     }
 

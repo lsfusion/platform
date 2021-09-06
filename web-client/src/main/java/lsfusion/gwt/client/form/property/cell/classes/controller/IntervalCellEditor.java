@@ -41,34 +41,35 @@ public class IntervalCellEditor implements CellEditor {
         var thisObj = this;
         var time = intervalType === 'TIME';
         var date = intervalType === 'DATE';
+        var messages = @lsfusion.gwt.client.ClientMessages.Instance::get()();
 
         parentEl.daterangepicker({
             locale: {
-                applyLabel: @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("applyLabel"),
-                cancelLabel: @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("cancelLabel"),
-                customRangeLabel: @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("customRangeLabel"),
+                applyLabel: messages.@lsfusion.gwt.client.ClientMessages::applyLabel()(),
+                cancelLabel: messages.@lsfusion.gwt.client.ClientMessages::cancelLabel()(),
+                customRangeLabel: messages.@lsfusion.gwt.client.ClientMessages::customRangeLabel()(),
                 daysOfWeek: [
-                    @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("daysOfWeekSU"),
-                    @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("daysOfWeekMO"),
-                    @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("daysOfWeekTU"),
-                    @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("daysOfWeekWE"),
-                    @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("daysOfWeekTH"),
-                    @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("daysOfWeekFR"),
-                    @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("daysOfWeekSA")
+                    messages.@lsfusion.gwt.client.ClientMessages::daysOfWeekSU()(),
+                    messages.@lsfusion.gwt.client.ClientMessages::daysOfWeekMO()(),
+                    messages.@lsfusion.gwt.client.ClientMessages::daysOfWeekTU()(),
+                    messages.@lsfusion.gwt.client.ClientMessages::daysOfWeekWE()(),
+                    messages.@lsfusion.gwt.client.ClientMessages::daysOfWeekTH()(),
+                    messages.@lsfusion.gwt.client.ClientMessages::daysOfWeekFR()(),
+                    messages.@lsfusion.gwt.client.ClientMessages::daysOfWeekSA()()
                 ],
                 monthNames: [
-                    @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("monthJanuary"),
-                    @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("monthFebruary"),
-                    @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("monthMarch"),
-                    @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("monthApril"),
-                    @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("monthMay"),
-                    @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("monthJune"),
-                    @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("monthJuly"),
-                    @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("monthAugust"),
-                    @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("monthSeptember"),
-                    @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("monthOctober"),
-                    @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("monthNovember"),
-                    @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("monthDecember")
+                    messages.@lsfusion.gwt.client.ClientMessages::monthJanuary()(),
+                    messages.@lsfusion.gwt.client.ClientMessages::monthFebruary()(),
+                    messages.@lsfusion.gwt.client.ClientMessages::monthMarch()(),
+                    messages.@lsfusion.gwt.client.ClientMessages::monthApril()(),
+                    messages.@lsfusion.gwt.client.ClientMessages::monthMay()(),
+                    messages.@lsfusion.gwt.client.ClientMessages::monthJune()(),
+                    messages.@lsfusion.gwt.client.ClientMessages::monthJuly()(),
+                    messages.@lsfusion.gwt.client.ClientMessages::monthAugust()(),
+                    messages.@lsfusion.gwt.client.ClientMessages::monthSeptember()(),
+                    messages.@lsfusion.gwt.client.ClientMessages::monthOctober()(),
+                    messages.@lsfusion.gwt.client.ClientMessages::monthNovember()(),
+                    messages.@lsfusion.gwt.client.ClientMessages::monthDecember()()
                 ],
                 "firstDay": 1
             },
@@ -77,13 +78,13 @@ public class IntervalCellEditor implements CellEditor {
             timePicker: !date,
             timePicker24Hour: true,
             autoApply: false,
-            ranges: !time ? $wnd.getRanges($wnd, @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("today"),
-                @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("yesterday"),
-                @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("last7Days"),
-                @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("last30Days"),
-                @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("thisMonth"),
-                @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("lastMonth"),
-                @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("clear")): undefined,
+            ranges: !time ? $wnd.getRanges($wnd, messages.@lsfusion.gwt.client.ClientMessages::today()(),
+                    messages.@lsfusion.gwt.client.ClientMessages::yesterday()(),
+                    messages.@lsfusion.gwt.client.ClientMessages::last7Days()(),
+                    messages.@lsfusion.gwt.client.ClientMessages::last30Days()(),
+                    messages.@lsfusion.gwt.client.ClientMessages::thisMonth()(),
+                    messages.@lsfusion.gwt.client.ClientMessages::lastMonth()(),
+                    messages.@lsfusion.gwt.client.ClientMessages::clear()()): undefined,
             singleDatePicker: singleDatePicker,
             alwaysShowCalendars: true // need to use with ranges
         });

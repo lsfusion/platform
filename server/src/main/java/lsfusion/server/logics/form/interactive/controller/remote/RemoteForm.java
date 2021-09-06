@@ -2,6 +2,7 @@ package lsfusion.server.logics.form.interactive.controller.remote;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
+import lsfusion.base.ExceptionUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.Result;
 import lsfusion.base.col.ListFact;
@@ -25,6 +26,7 @@ import lsfusion.interop.form.order.user.Order;
 import lsfusion.interop.form.print.FormPrintType;
 import lsfusion.interop.form.print.ReportGenerationData;
 import lsfusion.interop.form.property.PropertyGroupType;
+import lsfusion.interop.form.property.cell.Async;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.controller.context.AbstractContext;
@@ -80,7 +82,6 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static lsfusion.base.BaseUtils.deserializeObject;
-import static lsfusion.interop.action.ServerResponse.CANCELED;
 import static lsfusion.interop.action.ServerResponse.CHANGE;
 
 // фасад для работы с клиентом
@@ -702,7 +703,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
     }
 
     @Override
-    public String[] getAsyncValues(long requestIndex, long lastReceivedRequestIndex, int propertyID, byte[] fullKey, String actionSID, String value, int asyncIndex) throws RemoteException {
+    public Async[] getAsyncValues(long requestIndex, long lastReceivedRequestIndex, int propertyID, byte[] fullKey, String actionSID, String value, int asyncIndex) throws RemoteException {
         try {
             // we're setting cacelable thread we're sure that global branch is used and it can be canceled without consequences
             // however in some cases we might wanna cancel pessimistic requests too (when statement supports that), but it may cause some troubles because there is no transaction, so the consequences are unpredictable (plus it's pretty rare case)
@@ -728,7 +729,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                     actualValue.set(null); // canceling async values query, but we still need to register that request (in processRMIRequest)
             }
 
-            String[] result;
+            Async[] result;
             if(requestIndex >= 0)
                 result = processRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
                     // we need to recheck since asyncLastIndex can be updated and we don't need this query anymore (actualValue will be set to null)
@@ -749,10 +750,15 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                     asyncLastThread = null;
             }
 
+            if(Thread.interrupted()) // to guarantee that this thread will drop interrupted "mark" (if it is was set before dropping asyncLastThread)
+                throw new InterruptedException();
+
             return result;
         } catch (Throwable t) { // interrupted for example
+            if(ExceptionUtils.getRootCause(t) instanceof InterruptedException)
+                Thread.interrupted(); // we want to reset interrupted state, otherwise RemoteExceptionsAspect will rethrow InterruptedException to the client, where it is not always ignored (for example getPessimisticValues)
             ServerLoggers.sqlSuppLog(t);
-            return new String[] {ServerResponse.CANCELED};
+            return new Async[] {Async.CANCELED};
 //            throw Throwables.propagate(e);
         }
     }
@@ -761,14 +767,14 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
     private int asyncLastIndex = 0;
     private final Object asyncLock = new Object();
 
-    public String[] getAsyncValues(int propertyID, byte[] fullKey, String actionSID, String value, Boolean optimistic, Supplier<Boolean> optimisticRun) throws SQLException, SQLHandledException, IOException {
+    public Async[] getAsyncValues(int propertyID, byte[] fullKey, String actionSID, String value, Boolean optimistic, Supplier<Boolean> optimisticRun) throws SQLException, SQLHandledException, IOException {
         if(value == null)
-            return new String[] {CANCELED};
+            return new Async[] {Async.CANCELED};
 
         PropertyDrawInstance propertyDraw = form.getPropertyDraw(propertyID);
         ImMap<ObjectInstance, ? extends ObjectValue> keys = deserializeKeysValues(fullKey);
 
-        String[] result = form.getAsyncValues(propertyDraw, keys, actionSID, value, optimistic, optimisticRun);
+        Async[] result = form.getAsyncValues(propertyDraw, keys, actionSID, value, optimistic, optimisticRun);
 
         if (logger.isTraceEnabled()) {
             logger.trace(String.format("getAsyncValues Action. propertyDrawID: %s. Result: %s", propertyDraw.getSID(), result));

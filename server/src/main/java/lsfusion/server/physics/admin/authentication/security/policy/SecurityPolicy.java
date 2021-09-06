@@ -1,5 +1,6 @@
 package lsfusion.server.physics.admin.authentication.security.policy;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
@@ -18,6 +19,10 @@ public class SecurityPolicy {
 
     public SecurityPolicy(List<RoleSecurityPolicy> policies) {
         this.policies = policies;
+    }
+
+    public SecurityPolicy add(RoleSecurityPolicy policy) {
+        return new SecurityPolicy(BaseUtils.add(policies, policy));
     }
 
     public boolean checkNavigatorPermission(NavigatorElement navigatorElement) {

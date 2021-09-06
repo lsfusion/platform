@@ -9,9 +9,11 @@ import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFOrderSet;
 import lsfusion.server.language.ScriptParsingException;
+import lsfusion.server.language.proxy.ViewProxyUtil;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.interactive.design.object.GridView;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
+import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.io.DataInputStream;
@@ -118,6 +120,8 @@ public class ContainerView extends ComponentView {
     }
 
     public void setType(ContainerType type) {
+        if(type != COLUMNS && this.type == COLUMNS && columns > 1) // temp check
+            ServerLoggers.startLogger.info("WARNING! Now container " + this + "  will have " + columns + " columns. Debug point : " + ViewProxyUtil.setDebugPoint.get());
         this.type = type;
     }
 

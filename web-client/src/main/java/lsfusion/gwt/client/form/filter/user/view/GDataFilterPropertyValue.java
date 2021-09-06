@@ -22,7 +22,7 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
     public boolean enterPressed;
 
     public GDataFilterPropertyValue(GPropertyDraw property, GGroupObjectValue columnKey, GFormController form, Consumer<Object> afterCommit, Runnable onCancel) {
-        super(property, columnKey, form, (columnKeyValue, value) -> {});
+        super(property, columnKey, form, false, (columnKeyValue, value) -> {});
 
         this.afterCommit = afterCommit;
         this.onCancel = onCancel;

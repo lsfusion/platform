@@ -96,7 +96,7 @@ public abstract class ActionOrPropertyObjectInstance<P extends PropertyInterface
         return property.toString();
     }
 
-    public Pair<InputValueList<?>, Boolean> getValueList(InputListEntity<?, P> listProperty) {
-        return new Pair<>(listProperty.map(getInterfaceObjectValues()), listProperty.newSession);
+    public PropertyDrawInstance.AsyncValueList getValueList(InputListEntity<?, P> listProperty, boolean strict) {
+        return new PropertyDrawInstance.AsyncValueList(listProperty.map(getInterfaceObjectValues()), listProperty.newSession, strict);
     }
 }

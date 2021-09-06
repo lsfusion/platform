@@ -3,32 +3,60 @@ package lsfusion.gwt.client.base.busy;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.PopupPanel;
-import lsfusion.gwt.client.base.exception.ErrorHandlingCallback;
 import lsfusion.gwt.client.base.result.ListResult;
+import lsfusion.gwt.client.controller.remote.action.PriorityErrorHandlingCallback;
 import lsfusion.gwt.client.view.MainFrame;
 import lsfusion.gwt.client.view.ServerMessageProvider;
-
-import java.util.List;
 
 public class GBusyDialogDisplayer extends LoadingManager {
     public static final int MESSAGE_UPDATE_PERIOD = 1000;
 
     private final PopupPanel blockingPanel;
     private final GBusyDialog busyDialog;
-    private final Timer timer;
     private boolean visible;
 
-    private ServerMessageProvider messageProvider;
+    private final Timer showTimer;
+    private final Timer hideTimer;
 
     public GBusyDialogDisplayer(ServerMessageProvider messageProvider) {
-        this.messageProvider = messageProvider;
-
         blockingPanel = new BlockingPanel();
         busyDialog = new GBusyDialog();
-        timer = new Timer() {
+        showTimer = new Timer() {
             @Override
             public void run() {
+                assert visible;
+                blockingPanel.hide();
                 busyDialog.makeMaskVisible(true);
+
+                busyDialog.center();
+                busyDialog.scheduleButtonEnabling();
+
+                Scheduler.get().scheduleFixedPeriod(() -> {
+                    if (busyDialog.needInterrupt != null) {
+                        messageProvider.interrupt(!busyDialog.needInterrupt);
+                        busyDialog.needInterrupt = null;
+                        return true;
+                    } else if (visible) {
+                        messageProvider.getServerActionMessageList(new PriorityErrorHandlingCallback<ListResult>() {
+                            @Override
+                            public void onSuccess(ListResult result) {
+                                if (visible) {
+                                    busyDialog.updateBusyDialog(result.value);
+                                }
+                            }
+                        });
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }, MESSAGE_UPDATE_PERIOD);
+            }
+        };
+
+        hideTimer = new Timer() {
+            @Override
+            public void run() {
+                stop(true);
             }
         };
     }
@@ -40,49 +68,27 @@ public class GBusyDialogDisplayer extends LoadingManager {
     public void start() {
         if (!visible) {
             blockingPanel.center();
-            busyDialog.showBusyDialog();
             busyDialog.makeMaskVisible(false);
-            timer.schedule((int) MainFrame.busyDialogTimeout);
 
-            Scheduler.get().scheduleFixedPeriod(new Scheduler.RepeatingCommand() {
-                @Override
-                public boolean execute() {
-                    blockingPanel.hide();
-                    if (busyDialog.needInterrupt != null) {
-                        messageProvider.interrupt(!busyDialog.needInterrupt);
-                        busyDialog.needInterrupt = null;
-                        return true;
-                    } else if (visible) {
-                        messageProvider.getServerActionMessageList(new ErrorHandlingCallback<ListResult>() {
-                            @Override
-                            public void success(ListResult result) {
-                                updateBusyDialog(result.value);
-                            }
-                        });
-                        return true;
-                    } else {
-                        return false;
-                    }
-                }
-            }, MESSAGE_UPDATE_PERIOD);
-
+            showTimer.schedule((int) MainFrame.busyDialogTimeout);
             visible = true;
         }
+        hideTimer.cancel();
     }
 
-    private void updateBusyDialog(List message) {
-        if (visible) {
-            busyDialog.updateBusyDialog(message);
-        }
-    }
+    public void stop(boolean immediate) {
+        if (!visible)
+            return;
 
-    public void stop() {
-        if (visible) {
+        if(immediate) {
             blockingPanel.hide();
             busyDialog.hideBusyDialog();
-            timer.cancel();
+
+            showTimer.cancel();
+
             visible = false;
-        }
+        } else
+            hideTimer.schedule((int) MainFrame.busyDialogTimeout);
     }
 
     private class BlockingPanel extends PopupPanel {

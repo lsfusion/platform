@@ -26,7 +26,7 @@ public class ClientAsyncAddRemove extends ClientAsyncInputExec {
 
     @Override
     public boolean exec(ClientFormController form, EditPropertyDispatcher dispatcher, ClientPropertyDraw property, ClientGroupObjectValue columnKey, String actionSID) throws IOException {
-        form.asyncAddRemove(property, columnKey, actionSID, this);
+        form.asyncAddRemove(property, dispatcher, columnKey, actionSID, this);
         return true;
     }
 }

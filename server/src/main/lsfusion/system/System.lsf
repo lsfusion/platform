@@ -367,6 +367,7 @@ META applicationForm(sid, name)
         OBJECTS {
             NEW pane {
                 fill = 1;
+                width = 0;
                 type = TABBED;
                 NEW commons {
                     caption = '{system.form.sid.name.caption.commons}';

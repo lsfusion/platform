@@ -9,6 +9,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.*;
 import com.google.gwt.user.client.ui.impl.TextBoxImpl;
 import lsfusion.gwt.client.ClientMessages;
+import lsfusion.gwt.client.base.GAsync;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.view.CopyPasteUtils;
@@ -32,6 +33,7 @@ import java.util.List;
 
 import static com.google.gwt.dom.client.BrowserEvents.BLUR;
 import static com.google.gwt.dom.client.BrowserEvents.KEYDOWN;
+import static lsfusion.gwt.client.base.GwtClientUtils.isShowing;
 import static lsfusion.gwt.client.base.GwtClientUtils.nvl;
 
 public abstract class TextBasedCellEditor implements ReplaceCellEditor {
@@ -70,7 +72,7 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
 
     @Override
     public void startEditing(Event event, Element parent, Object oldValue) {
-        String value = tryFormatInputText(oldValue);
+        String value = property.clearText ? "" : tryFormatInputText(oldValue);
         if(hasList) {
             suggestBox.showSuggestionList();
             suggestBox.setValue(value);
@@ -240,7 +242,7 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
     public void validateAndCommit(Element parent, Integer contextAction, boolean cancelIfInvalid, boolean blurred) {
         validateAndCommit(parent, contextAction, cancelIfInvalid, blurred, false);
     }
-    
+
     public void validateAndCommit(Element parent, Integer contextAction, boolean cancelIfInvalid, boolean blurred, boolean enterPressed) {
         String stringValue = contextAction != null ? suggestBox.getValue() : getCurrentText(parent); //if button pressed, input element is button
         if(hasList && strict && contextAction == null && !suggestBox.isValidValue(stringValue)) {
@@ -268,6 +270,12 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
     }
     protected ValueBoxBase<String> createTextBoxBase() {
         return new TextBox();
+    }
+
+    protected boolean isThisCellEditor() {
+        boolean showing = isShowing(suggestBox);
+        assert (editManager.isEditing() && this == editManager.getCellEditor()) == showing;
+        return showing;
     }
 
     public Element createInputElement() {
@@ -310,9 +318,18 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
 
                     suggestBox.updateDecoration(false, true, true);
 
-                    if (emptyQuery && !suggestBox.isSuggestionListShowing()) { // to show empty popup immediately
-                        callback.onSuggestionsReady(request, new Response(new ArrayList<>()));
-                        setMinWidth(suggestBox, false);
+                    if (emptyQuery) { // to show empty popup immediately
+                        // add timer to avoid blinking when empty popup is followed by non-empty one
+                        Timer t = new Timer() {
+                            @Override
+                            public void run() {
+                                if (isThisCellEditor() && !suggestBox.isSuggestionListShowing()) {
+                                    callback.onSuggestionsReady(request, new Response(new ArrayList<>()));
+                                    setMinWidth(suggestBox, false);
+                                }
+                            }
+                        };
+                        t.schedule(100);
                     }
 
                     assert delayTimer == null;
@@ -326,38 +343,34 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
                     execTimer.schedule(1000);
                     delayTimer = execTimer;
 
-                    editManager.getAsyncValues(query, new AsyncCallback<Pair<ArrayList<String>, Boolean>>() {
+                    editManager.getAsyncValues(query, new AsyncCallback<Pair<ArrayList<GAsync>, Boolean>>() {
                         @Override
                         public void onFailure(Throwable caught) {
-                            if (editManager.isEditing() && suggestBox.isSuggestionListShowing())
+                            if (isThisCellEditor()) //  && suggestBox.isSuggestionListShowing()
                                 cancelAndFlushDelayed(execTimer);
                         }
 
                         @Override
-                        public void onSuccess(Pair<ArrayList<String>, Boolean> result) {
-                            if (editManager.isEditing() && suggestBox.isSuggestionListShowing()) {
+                        public void onSuccess(Pair<ArrayList<GAsync>, Boolean> result) {
+                            if (isThisCellEditor()) { //  && suggestBox.isSuggestionListShowing() in desktop this check leads to "losing" result, since suggest box can be not shown yet (!), however maybe in web-client it's needed for some reason (but there can be the risk of losing result)
                                 suggestBox.setAutoSelectEnabled(strict && !emptyQuery);
-                                suggestBox.setLatestSuggestions(result.first);
+                                List<String> rawSuggestions = new ArrayList<>();
                                 List<Suggestion> suggestionList = new ArrayList<>();
-                                for (String suggestion : result.first) {
+                                for (GAsync suggestion : result.first) {
+                                    rawSuggestions.add(suggestion.rawString);
                                     suggestionList.add(new Suggestion() {
                                         @Override
                                         public String getDisplayString() {
-                                            int start = suggestion.toLowerCase().indexOf(query.toLowerCase());
-                                            if (start >= 0) {
-                                                int end = start + query.length();
-                                                return suggestion.substring(0, start) + "<strong>" + suggestion.substring(start, end) + "</strong>" + suggestion.substring(end);
-                                            } else {
-                                                return suggestion;
-                                            }
+                                            return suggestion.displayString; // .replace("<b>", "<strong>").replace("</b>", "</strong>");
                                         }
 
                                         @Override
                                         public String getReplacementString() {
-                                            return suggestion;
+                                            return suggestion.rawString;
                                         }
                                     });
                                 }
+                                suggestBox.setLatestSuggestions(rawSuggestions);
                                 callback.onSuggestionsReady(request, new Response(suggestionList));
                                 setMinWidth(suggestBox, true);
 
@@ -410,14 +423,15 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
                 @Override
                 public void hideSuggestions() { // in theory should be in SuggestOracle, but now it's readonly
                     // canceling query
-                    if(editManager.isEditing() && isLoading())
-                        editManager.getAsyncValues(null, new AsyncCallback<Pair<ArrayList<String>, Boolean>>() {
+                    assert isThisCellEditor();
+                    if (isLoading())
+                        editManager.getAsyncValues(null, new AsyncCallback<Pair<ArrayList<GAsync>, Boolean>>() {
                             @Override
                             public void onFailure(Throwable caught) {
                             }
 
                             @Override
-                            public void onSuccess(Pair<ArrayList<String>, Boolean> result) {
+                            public void onSuccess(Pair<ArrayList<GAsync>, Boolean> result) {
                                 // assert CANCELED returned
                             }
                         });
@@ -504,6 +518,7 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
 
             noResultsLabel = new Label(messages.noResults());
             noResultsLabel.getElement().addClassName("item"); //to be like suggestion item
+            noResultsLabel.getElement().addClassName("noResultsLabel");
             panel.add(noResultsLabel);
 
             emptyLabel = new Label();
