@@ -5,14 +5,8 @@ import lsfusion.server.data.caches.hash.HashContext;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.query.compile.CompileSource;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
-import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
-import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.physics.admin.Settings;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class MatchWhere extends BinaryWhere<MatchWhere> {
 
@@ -57,14 +51,13 @@ public class MatchWhere extends BinaryWhere<MatchWhere> {
 
     @Override
     protected String getBaseSource(CompileSource compile) {
-        Type type = operator1.getType(compile.keyType);
         String source = operator1.getSource(compile);
         String match = operator2.getSource(compile);
 
         String language = Settings.get().getFilterMatchLanguage();
         String matchString = getMatch(compile.syntax, source, match, language);
 
-        String likeString = source + (type instanceof StringClass && ((StringClass) type).caseInsensitive ? " " + compile.syntax.getInsensitiveLike() + " " : " LIKE ")
+        String likeString = source + (" " + compile.syntax.getInsensitiveLike() + " ")
                 + "(" + ("'%' " + compile.syntax.getStringConcatenate() + " ") + match + (" " + compile.syntax.getStringConcatenate() + " '%'") + ")";
 
         return "(" + matchString + " OR " + likeString + ")";
