@@ -33,14 +33,15 @@ public class QueuedAction<R extends Result> {
         this.throwable = t;
     }
 
-    public void proceed(Runnable onFinished) {
+    public void proceed(Runnable onDispatchFinished) {
         assert finished;
 
         if (succeeded) {
-            callback.onSuccess(result, onFinished);
+            callback.onSuccess(result, onDispatchFinished);
         } else {
             callback.onFailure(throwable);
-            onFinished.run();
+            if(onDispatchFinished != null)
+                onDispatchFinished.run();
         }
     }
 }

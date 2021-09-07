@@ -560,8 +560,8 @@ public class GFormController extends ResizableSimplePanel implements EditManager
                     if (isShowing(GFormController.this)) {
                         asyncDispatch(new GetRemoteChanges(true, false), new ServerResponseCallback() {
                             @Override
-                            public void onSuccess(ServerResponseResult response, Runnable onFinished) {
-                                super.onSuccess(response, onFinished);
+                            public void onSuccess(ServerResponseResult response, Runnable onDispatchFinished) {
+                                super.onSuccess(response, onDispatchFinished);
                                 if (!formHidden) {
                                     scheduleRefresh();
                                 }
@@ -795,11 +795,11 @@ public class GFormController extends ResizableSimplePanel implements EditManager
     public long changeGroupObject(final GGroupObject group, GGroupObjectValue key) {
         long requestIndex = asyncDispatch(new ChangeGroupObject(group.ID, key), new ServerResponseCallback() {
             @Override
-            public void onSuccess(ServerResponseResult response, Runnable onFinished) {
+            public void onSuccess(ServerResponseResult response, Runnable onDispatchFinished) {
                 // not sure what for it was used
                 // DeferredRunner.get().commitDelayedGroupObjectChange(group);
 
-                super.onSuccess(response, onFinished);
+                super.onSuccess(response, onDispatchFinished);
             }
         });
         pendingChangeCurrentObjectsRequests.put(group, requestIndex);
@@ -957,29 +957,27 @@ public class GFormController extends ResizableSimplePanel implements EditManager
         }
 
         ExecuteEventAction executeEventAction = new ExecuteEventAction(IDs, fullCurrentKeys, actionSID, externalChanges, pushAsyncResults);
-        ServerResponseCallback serverResponseCallback = getServerResponseEditCallback(editContext, editEvent);
+        ServerResponseCallback serverResponseCallback = new ServerResponseCallback() {
+            @Override
+            protected Runnable getOnRequestFinished() {
+                return () -> {
+                    actionDispatcher.editContext = null;
+                    actionDispatcher.editEvent = null;
+                };
+            }
+
+            @Override
+            public void onSuccess(ServerResponseResult response, Runnable onDispatchFinished) {
+                actionDispatcher.editContext = editContext;
+                actionDispatcher.editEvent = editEvent;
+                super.onSuccess(response, onDispatchFinished);
+            }
+        };
 
         if(sync)
             return syncDispatch(executeEventAction, serverResponseCallback);
         else
             return asyncDispatch(executeEventAction, serverResponseCallback);
-    }
-
-    private ServerResponseCallback getServerResponseEditCallback(EditContext editContext, Event editEvent) {
-        ServerResponseCallback serverResponseCallback = new ServerResponseCallback() {
-            @Override
-            public void onSuccess(ServerResponseResult response, Runnable onFinished) {
-                actionDispatcher.editContext = editContext;
-                actionDispatcher.editEvent = editEvent;
-                super.onSuccess(response, () -> {
-                    actionDispatcher.editContext = null;
-                    actionDispatcher.editEvent = null;
-
-                    onFinished.run();
-                });
-            }
-        };
-        return serverResponseCallback;
     }
 
     public long asyncResponseDispatch(final FormRequestCountingAction<ServerResponseResult> action) {
@@ -1272,10 +1270,11 @@ public class GFormController extends ResizableSimplePanel implements EditManager
         protected abstract void onSuccess(T result);
 
         @Override
-        public void onSuccess(T result, Runnable onFinished) {
+        public void onSuccess(T result, Runnable onDispatchFinished) {
             onSuccess(result);
 
-            onFinished.run();
+            if(onDispatchFinished != null)
+                onDispatchFinished.run();
         }
     }
 
@@ -1284,10 +1283,11 @@ public class GFormController extends ResizableSimplePanel implements EditManager
         protected abstract void onSuccess(T result);
 
         @Override
-        public void onSuccess(T result, Runnable onFinished) {
+        public void onSuccess(T result, Runnable onDispatchFinished) {
             onSuccess(result);
 
-            onFinished.run();
+            if(onDispatchFinished != null)
+                onDispatchFinished.run();
         }
     }
 

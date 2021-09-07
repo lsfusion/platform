@@ -14,11 +14,13 @@ import lsfusion.server.logics.form.interactive.controller.remote.serialization.S
 import lsfusion.server.logics.form.interactive.design.object.GridView;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.physics.admin.log.ServerLoggers;
+import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.function.Supplier;
 
 import static lsfusion.interop.form.design.ContainerType.*;
 
@@ -120,8 +122,10 @@ public class ContainerView extends ComponentView {
     }
 
     public void setType(ContainerType type) {
-        if(type != COLUMNS && this.type == COLUMNS && columns > 1) // temp check
-            ServerLoggers.startLogger.info("WARNING! Now container " + this + "  will have " + columns + " columns. Debug point : " + ViewProxyUtil.setDebugPoint.get());
+        if(type != COLUMNS && this.type == COLUMNS && columns > 1) { // temp check
+            Supplier<DebugInfo.DebugPoint> debugPoint = ViewProxyUtil.setDebugPoint.get();
+            ServerLoggers.startLogger.info("WARNING! Now container " + this + "  will have " + columns + " columns. Debug point : " + (debugPoint != null ? debugPoint.get() : "unknown"));
+        }
         this.type = type;
     }
 

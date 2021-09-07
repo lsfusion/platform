@@ -7,7 +7,7 @@ public class Async implements Serializable {
     public final String rawString;
 
     public static final Async RECHECK = new Async("RECHECK", "RECHECK");
-    public static final Async CANCELED = new Async("RECHECK", "CANCELED");
+    public static final Async CANCELED = new Async("CANCELED", "CANCELED");
 
     public Async(String displayString, String rawString) {
         this.displayString = displayString;

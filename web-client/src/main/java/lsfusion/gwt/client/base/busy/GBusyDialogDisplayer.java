@@ -31,20 +31,14 @@ public class GBusyDialogDisplayer extends LoadingManager {
                 busyDialog.center();
                 busyDialog.scheduleButtonEnabling();
 
+                updateBusyDialog(messageProvider); // we want immediate update, to avoid leaps
                 Scheduler.get().scheduleFixedPeriod(() -> {
                     if (busyDialog.needInterrupt != null) {
                         messageProvider.interrupt(!busyDialog.needInterrupt);
                         busyDialog.needInterrupt = null;
                         return true;
                     } else if (visible) {
-                        messageProvider.getServerActionMessageList(new PriorityErrorHandlingCallback<ListResult>() {
-                            @Override
-                            public void onSuccess(ListResult result) {
-                                if (visible) {
-                                    busyDialog.updateBusyDialog(result.value);
-                                }
-                            }
-                        });
+                        updateBusyDialog(messageProvider);
                         return true;
                     } else {
                         return false;
@@ -59,6 +53,17 @@ public class GBusyDialogDisplayer extends LoadingManager {
                 stop(true);
             }
         };
+    }
+
+    private void updateBusyDialog(ServerMessageProvider messageProvider) {
+        messageProvider.getServerActionMessageList(new PriorityErrorHandlingCallback<ListResult>() {
+            @Override
+            public void onSuccess(ListResult result) {
+                if (visible) {
+                    busyDialog.updateBusyDialog(result.value);
+                }
+            }
+        });
     }
 
     public boolean isVisible() {

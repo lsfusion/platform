@@ -33,7 +33,8 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     Object[] currentActionResults = null;
     private int currentActionIndex = -1;
     private int currentContinueIndex = -1;
-    private Runnable currentOnFinished = null;
+    private Runnable currentOnDispatchFinished = null;
+    private Runnable currentOnRequestFinished = null;
 
     protected abstract void onServerInvocationResponse(ServerResponseResult response);
 
@@ -47,32 +48,45 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
 
         protected abstract GwtActionDispatcher getDispatcher();
 
+        protected Runnable getOnRequestFinished() {
+            return null;
+        }
+
         @Override
-        public void onSuccess(ServerResponseResult result, Runnable onFinished) {
+        public void onSuccess(ServerResponseResult result, Runnable onDispatchFinished) {
             if (disableForbidDuplicate) {
                 for (GAction action : result.actions) // it's a hack, but the whole forbidDuplicate mechanism is a one big hack
                     if (action instanceof GFormAction)
                         ((GFormAction) action).forbidDuplicate = false;
             }
-            getDispatcher().dispatchServerResponse(result, onFinished);
+            getDispatcher().dispatchServerResponse(result, onDispatchFinished, getOnRequestFinished());
+        }
+
+        @Override
+        public void onFailure(Throwable caught) {
+            Runnable onRequestFinished = getOnRequestFinished();
+            if(onRequestFinished != null)
+                onRequestFinished.run();
+
+            super.onFailure(caught);
         }
     }
 
-    public void dispatchServerResponse(ServerResponseResult response, Runnable onFinished) {
-        dispatchServerResponse(response, -1, onFinished);
+    public void dispatchServerResponse(ServerResponseResult response, Runnable onDispatchFinished, Runnable onRequestFinished) {
+        dispatchServerResponse(response, -1, onDispatchFinished, onRequestFinished);
     }
-    public void dispatchServerResponse(ServerResponseResult response, int continueIndex, Runnable onFinished) {
+    public void dispatchServerResponse(ServerResponseResult response, int continueIndex, Runnable onDispatchFinished, Runnable onRequestFinished) {
         assert response != null;
         assert !dispatchingPaused;
         onServerInvocationResponse(response);
 
-        dispatchResponse(response, continueIndex, onFinished);
+        dispatchResponse(response, continueIndex, onDispatchFinished, onRequestFinished);
     }
     public void continueDispatchResponse() {
         assert dispatchingPaused;
-        dispatchResponse(null, -1, null);
+        dispatchResponse(null, -1, null, null);
     }
-    public void dispatchResponse(ServerResponseResult response, int continueIndex, Runnable onFinished) {
+    public void dispatchResponse(ServerResponseResult response, int continueIndex, Runnable onDispatchFinished, Runnable onRequestFinished) {
         Object[] actionResults;
         Throwable actionThrowable = null;
         int beginIndex;
@@ -81,13 +95,15 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
             actionResults = currentActionResults;
             continueIndex = currentContinueIndex;
             response = currentResponse;
-            onFinished = currentOnFinished;
+            onDispatchFinished = currentOnDispatchFinished;
+            onRequestFinished = currentOnRequestFinished;
 
             currentActionIndex = -1;
             currentContinueIndex = -1;
             currentActionResults = null;
             currentResponse = null;
-            currentOnFinished = null;
+            currentOnDispatchFinished = null;
+            currentOnRequestFinished = null;
             dispatchingPaused = false;
         } else {
             beginIndex = 0;
@@ -115,22 +131,34 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
                 currentActionResults = actionResults;
                 currentActionIndex = i;
                 currentContinueIndex = continueIndex;
-                currentOnFinished = onFinished;
+                currentOnDispatchFinished = onDispatchFinished;
+                currentOnRequestFinished = onRequestFinished;
                 return;
             }
 
             actionResults[i] = dispatchResult;
         }
 
+        if(onDispatchFinished != null)
+            onDispatchFinished.run();
+
         if (response.resumeInvocation) {
             continueIndex++;
 
             final int fContinueIndex = continueIndex;
+            Runnable fOnRequestFinished = onRequestFinished;
             RequestErrorHandlingCallback<ServerResponseResult> continueRequestCallback =
                     new RequestErrorHandlingCallback<ServerResponseResult>() {
                         @Override
-                        public void onSuccess(ServerResponseResult response, Runnable onFinished) {
-                            dispatchServerResponse(response, fContinueIndex, onFinished);
+                        public void onSuccess(ServerResponseResult response, Runnable onDispatchFinished) {
+                            dispatchServerResponse(response, fContinueIndex, onDispatchFinished, fOnRequestFinished);
+                        }
+
+                        @Override
+                        public void onFailure(Throwable caught) {
+                            if(fOnRequestFinished != null)
+                                fOnRequestFinished.run();
+                            super.onFailure(caught);
                         }
                     };
             if (actionThrowable == null) {
@@ -139,7 +167,8 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
                 throwInServerInvocation(response.requestIndex, LogClientExceptionAction.fromWebClientToWebServer(actionThrowable), continueIndex, continueRequestCallback);
             }
         } else {
-            onFinished.run();
+            if(onRequestFinished != null)
+                onRequestFinished.run();
 
             if (actionThrowable != null)
                 throw GExceptionManager.propagate(actionThrowable);

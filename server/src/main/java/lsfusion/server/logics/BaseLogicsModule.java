@@ -853,13 +853,16 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     @Override
     @IdentityStrongLazy
     public Pair<LP, ActionObjectSelector> getObjValueProp(FormEntity formEntity, ObjectEntity obj) {
-        LP value = object;
-
-        if (formEntity.getCanonicalName() != null && !obj.noClasses()) {
-            value = wrapProperty(value); // wrapping because all other form operators create new actions / properties
-            String name = objValuePrefix + getFormPrefix(formEntity) + getObjectPrefix(obj); // issue #47
-            makePropertyPublic(value, name, obj.baseClass.getResolveSet());
-        }
+        LP value;
+        if(!obj.noClasses()) {
+            value = object(obj.baseClass); // we want this property to have classes (i.e. getType to return correct type)
+            if (formEntity.getCanonicalName() != null) {
+                value = wrapProperty(value); // wrapping because all other form operators create new actions / properties
+                String name = objValuePrefix + getFormPrefix(formEntity) + getObjectPrefix(obj); // issue #47
+                makePropertyPublic(value, name, obj.baseClass.getResolveSet());
+            }
+        } else
+            value = object;
 
         ActionObjectSelector onChange = null;
         if (!obj.noClasses() && obj.baseClass instanceof DataClass && obj.groupTo.viewType.isPanel()) {
