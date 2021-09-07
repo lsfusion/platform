@@ -312,9 +312,8 @@ public class FilterView extends JComponentPanel implements FilterConditionView.U
         for (Map.Entry<ClientPropertyFilter, FilterConditionView> entry : conditionViews.entrySet()) {
             if (entry.getValue().allowNull || !entry.getKey().nullValue()) {
                 result.add(entry.getKey());
-                
-                entry.getValue().isApplied = true;
             }
+            entry.getValue().isConfirmed = true;
         }
         
         controller.applyFilters(result, focusFirstComponent);

@@ -55,7 +55,8 @@ public class FilterConditionView extends JPanel {
     private boolean isLast = false;
     private boolean toolsVisible;
     
-    public boolean isApplied;
+    // may not be applied without "Allow NULL", but we want to keep condition visible
+    public boolean isConfirmed;
     
     public FilterConditionView(ClientPropertyFilter ifilter, TableController logicsSupplier, UIHandler iuiHandler, boolean toolsVisible, boolean readSelectedValue) {
         condition = ifilter;
@@ -144,7 +145,7 @@ public class FilterConditionView extends JPanel {
             @Override
             public void editingCancelled() {
                 super.editingCancelled();
-                if (!isApplied) {
+                if (!isConfirmed) {
                     uiHandler.removeCondition(condition);
                 }
             }
