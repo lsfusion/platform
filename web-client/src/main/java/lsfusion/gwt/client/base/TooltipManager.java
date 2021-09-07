@@ -5,9 +5,7 @@ import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.*;
 import com.google.gwt.user.client.Cookies;
-import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.FocusPanel;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
@@ -21,6 +19,8 @@ import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.view.PopupDialogPanel;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
 import lsfusion.gwt.client.view.MainFrame;
+
+import java.util.Date;
 
 import static com.google.gwt.dom.client.BrowserEvents.*;
 
@@ -43,7 +43,7 @@ public class TooltipManager {
     public static TooltipManager get() {
         return instance;
     }
-    
+
     public static void registerWidget(Widget widget, final TooltipHelper tooltipHelper) {
         widget.addDomHandler(event -> get().showTooltip(event.getClientX(), event.getClientY(), tooltipHelper), MouseOverEvent.getType());
         widget.addDomHandler(event -> get().hideTooltip(tooltipHelper), MouseDownEvent.getType());
@@ -66,13 +66,13 @@ public class TooltipManager {
         mouseY = offsetY;
         currentText = tooltipText;
 
-        if(tooltipText != null) {
+        if (tooltipText != null) {
             mouseIn = true;
 
             Scheduler.get().scheduleFixedDelay(() -> {
                 if (mouseIn && tooltipText.equals(currentText)) {
-                    if(tooltipHelper.stillShowTooltip()) {
-                        if(tooltip != null) { // need this to avoid blinking when hiding / showing tooltip
+                    if (tooltipHelper.stillShowTooltip()) {
+                        if (tooltip != null) { // need this to avoid blinking when hiding / showing tooltip
                             tooltipHtml.setHTML(tooltipText);
                             GwtClientUtils.setPopupPosition(tooltip, mouseX, mouseY);
                         } else {
@@ -103,83 +103,54 @@ public class TooltipManager {
         String projectLSFDir = MainFrame.projectLSFDir;
 
         if (projectLSFDir != null) {
-            panel.add(createDebugLinkWidget(tooltipHelper, projectLSFDir, true));
+            panel.add(getCommand(tooltipHelper, projectLSFDir));
         } else {
-            String cookieDebugPath = Cookies.getCookie("debugPath");
+            VerticalPanel verticalPanel = new VerticalPanel();
+            verticalPanel.setVisible(false);
 
-            if (cookieDebugPath == null) {
-                VerticalPanel verticalPanel = new VerticalPanel();
-                verticalPanel.setVisible(false);
+            TextBox textBox = new TextBox();
+            textBox.getElement().getStyle().setMarginLeft(5, Style.Unit.PX);
+            textBox.getElement().getStyle().setProperty("padding", "0px 3px");
+            textBox.getElement().setPropertyString("placeholder", messages.absolutePathToLsfusionDir());
+            textBox.setText(Cookies.getCookie("debugPath"));
 
-                Anchor fakeShowInEditorLink = new Anchor(ClientMessages.Instance.get().showInEditor());
-                fakeShowInEditorLink.addClickHandler(event -> {
-                    fakeShowInEditorLink.setVisible(false);
-                    verticalPanel.setVisible(true);
-                });
-                panel.add(fakeShowInEditorLink);
+            HorizontalPanel userPathPanel = new HorizontalPanel();
+            userPathPanel.add(new Label(messages.enterPath()));
+            userPathPanel.add(textBox);
+            verticalPanel.add(userPathPanel);
+            verticalPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 
-                Label topLabel = new Label(messages.debugPathNotConfigured());
-                topLabel.getElement().getStyle().setColor("red");
-                verticalPanel.add(topLabel);
+            Button button = new Button(messages.applyLabel());
+            button.getElement().getStyle().setProperty("padding", "0px 3px");
+            button.addClickHandler(event -> {
+                String textBoxText = textBox.getText();
+                if (!textBoxText.trim().isEmpty())
+                    Cookies.setCookie("debugPath", textBoxText, new Date(System.currentTimeMillis() + 2592000000L)); //cookies expire after 30 days
+                else
+                    Cookies.removeCookie("debugPath");
 
-                TextBox textBox = new TextBox();
-                textBox.getElement().getStyle().setMarginLeft(5, Style.Unit.PX);
-                textBox.getElement().getStyle().setProperty("padding", "0px 3px");
-                textBox.getElement().setPropertyString("placeholder", messages.absolutePathToLsfusionDir());
+                hide();
+            });
+            button.getElement().getStyle().setMarginTop(5, Style.Unit.PX);
+            verticalPanel.add(button);
 
-                HorizontalPanel useDefaultPanel = new HorizontalPanel();
-                useDefaultPanel.add(new Label(messages.useDefaultPath()));
-                CheckBox checkBox = new CheckBox();
-                checkBox.getElement().getStyle().setMarginLeft(5, Style.Unit.PX);
-                useDefaultPanel.add(checkBox);
-                useDefaultPanel.getElement().getStyle().setMarginTop(5, Style.Unit.PX);
-                verticalPanel.add(useDefaultPanel);
+            HorizontalPanel horizontalPanel = new HorizontalPanel();
+            String debugPath = Cookies.getCookie("debugPath");
+            horizontalPanel.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
+            horizontalPanel.add(getCommand(tooltipHelper, debugPath == null ? "use_default_path" : debugPath));
 
-                HorizontalPanel userPathPanel = new HorizontalPanel();
-                userPathPanel.add(new Label(messages.enterPath()));
-                userPathPanel.add(textBox);
-                verticalPanel.add(userPathPanel);
-
-                verticalPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
-                Button button = new Button(messages.applyLabel());
-                button.getElement().getStyle().setProperty("padding", "0px 3px");
-                button.addClickHandler(event -> {
-
-                    String textBoxText = textBox.getText();
-                    String cookieValue = checkBox.getValue() ? "use_default_path" : (!textBoxText.trim().isEmpty()) ? textBoxText : null;
-                    if (cookieValue != null)
-                        Cookies.setCookie("debugPath", cookieValue);
-
-                    hide();
-                });
-                button.getElement().getStyle().setMarginTop(5, Style.Unit.PX);
-                verticalPanel.add(button);
-
-                panel.add(verticalPanel);
-            } else {
-                panel.add(createDebugLinkWidget(tooltipHelper, cookieDebugPath, false));
-            }
-        }
-    }
-
-    private HorizontalPanel createDebugLinkWidget(TooltipHelper tooltipHelper, String projectLSFDir, boolean isLocal) {
-        HorizontalPanel horizontalPanel = new HorizontalPanel();
-        horizontalPanel.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
-        horizontalPanel.add(new HTML(getCommand(tooltipHelper, projectLSFDir)));
-        if (!isLocal) {
-            GToolbarButton clearCookiesButton = new GToolbarButton("view_hide.png") {
+            GToolbarButton preferencesButton = new GToolbarButton("userPreferences.png") {
                 @Override
                 public ClickHandler getClickHandler() {
-                    return event -> {
-                        Cookies.removeCookie("debugPath");
-                        hide();
-                    };
+                    return event -> verticalPanel.setVisible(!verticalPanel.isVisible());
                 }
             };
-            clearCookiesButton.getElement().getStyle().setMarginLeft(10, Style.Unit.PX);
-            horizontalPanel.add(clearCookiesButton);
+            preferencesButton.getElement().getStyle().setMarginLeft(10, Style.Unit.PX);
+            horizontalPanel.add(preferencesButton);
+
+            panel.add(horizontalPanel);
+            panel.add(verticalPanel);
         }
-        return horizontalPanel;
     }
 
     private void hide() {
@@ -223,11 +194,11 @@ public class TooltipManager {
         }
     }
 
-    public static String getCommand(TooltipHelper tooltipHelper, String projectLSFDir) {
+    public static HTML getCommand(TooltipHelper tooltipHelper, String projectLSFDir) {
         String creationPath = tooltipHelper.getCreationPath();
         String result = "";
 
-        if (projectLSFDir != null && creationPath != null) {
+        if (creationPath != null) {
             //use "**" instead "="
             String command = "--line**" + Integer.parseInt(creationPath.substring(creationPath.lastIndexOf("(") + 1, creationPath.lastIndexOf(":"))) +
                     "&path**" + projectLSFDir + tooltipHelper.getPath();
@@ -235,7 +206,7 @@ public class TooltipManager {
             result = "<a href=\"lsfusion-protocol://" + command.replaceAll(" ", "++").replaceAll("\\\\", "/") +
                     "\" target=\"_blank\">" + messages.showInEditor() + "</a>";
         }
-        return result;
+        return new HTML(result);
     }
 
 }

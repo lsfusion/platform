@@ -181,50 +181,6 @@ public class LSFTooltipManager {
         return timer;
     }
 
-    private static JComponent createDebugLinkComponent(String path, String creationPath, String projectLSFDir, boolean isLocal, Timer closeTimer) {
-        JPanel horizontalPanel = new JPanel(new HorizontalLayout());
-        JTextPane showInEditorLink = getLinkComponent(projectLSFDir, creationPath, path, closeTimer);
-        showInEditorLink.addHyperlinkListener(e -> {
-            try {
-                if (HyperlinkEvent.EventType.ACTIVATED.equals(e.getEventType())) {
-                    //stub for using custom-protocol
-                    URL url = new URL(null, e.getDescription(), new URLStreamHandler() {
-                        @Override
-                        protected URLConnection openConnection(URL u) {
-                            return null;
-                        }
-                    });
-                    Desktop.getDesktop().browse(url.toURI());
-                }
-            } catch (IOException | URISyntaxException ex) {
-                throw Throwables.propagate(ex);
-            }
-        });
-
-        horizontalPanel.add(showInEditorLink);
-
-        //possibility change the path
-        if (!isLocal) {
-            JButton userDebugPathResetButton = new JButton(new ImageIcon(ClientImages.get("view_hide.png").getImage()));
-            userDebugPathResetButton.setContentAreaFilled(false);
-            userDebugPathResetButton.setBorderPainted(false);
-            userDebugPathResetButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
-
-            userDebugPathResetButton.addMouseListener(new MouseAdapter() {
-                @Override
-                public void mouseClicked(MouseEvent e) {
-                    MainController.userDebugPath = null;
-                    balloonTip.hide();
-                }
-            });
-            addDefaultComponentMouseListeners(userDebugPathResetButton, closeTimer);
-
-            horizontalPanel.add(userDebugPathResetButton);
-        }
-
-        return horizontalPanel;
-    }
-
     private static JPanel createTooltipPanel(String tooltipText, String path, String creationPath, Timer closeTimer) {
         JPanel tooltipPanel = new JPanel(new VerticalLayout());
         tooltipPanel.add(new JLabel(tooltipText));
@@ -233,88 +189,95 @@ public class LSFTooltipManager {
         if (MainController.showDetailedInfo) {
             String projectLSFDir = MainController.projectLSFDir;
 
-            if (projectLSFDir != null) { // when running locally
-//            if (projectLSFDir == null) { // when running locally
-                tooltipPanel.add(createDebugLinkComponent(path, creationPath, projectLSFDir, true, closeTimer));
+            if (projectLSFDir != null) {
+                tooltipPanel.add(getLinkComponent(projectLSFDir, creationPath, path, closeTimer));
             } else {
-                if (MainController.userDebugPath == null) {
-                    JPanel verticalPanel = new JPanel(new VerticalLayout());
-                    verticalPanel.setVisible(false);
+                JPanel buttonPanel = new JPanel(new VerticalLayout());
+                buttonPanel.setVisible(false);
 
-                    JTextPane fakeShowInEditorLink = getLinkComponent(null, creationPath, path, closeTimer);
-                    fakeShowInEditorLink.addMouseListener(new MouseAdapter() {
-                        @Override
-                        public void mouseClicked(MouseEvent e) {
-                            fakeShowInEditorLink.setVisible(false);
-                            verticalPanel.setVisible(true);
-                            int height = 0;
-                            Component[] components = verticalPanel.getComponents();
-                            for (Component component : components) {
-                                height += component.getHeight();
-                            }
-                            balloonTip.setSize(balloonTip.getWidth(), balloonTip.getHeight() + height - fakeShowInEditorLink.getHeight());
-                        }
-                    });
-
-                    tooltipPanel.add(fakeShowInEditorLink);
-
-                    JLabel topLabel = new JLabel(getString("debug.path.not.configured"));
-                    topLabel.setForeground(Color.RED);
-                    verticalPanel.add(topLabel);
-
-                    JButton useDefaultPathButton = new JButton(getString("use.default.path"));
-                    useDefaultPathButton.addMouseListener(new MouseAdapter() {
-                        @Override
-                        public void mouseClicked(MouseEvent e) {
-                            MainController.userDebugPath = "use_default_path";
-                            balloonTip.hide();
-                        }
-                    });
-                    addDefaultComponentMouseListeners(useDefaultPathButton, closeTimer);
-                    verticalPanel.add(useDefaultPathButton);
-
-                    JButton selectProjectDirButton = new JButton(getString("select.lsfusion.dir"));
-                    selectProjectDirButton.addMouseListener(new MouseAdapter() {
-                        @Override
-                        public void mouseClicked(MouseEvent e) {
+                JButton selectProjectDirButton = new JButton(MainController.userDebugPath == null ? getString("select.lsfusion.dir") : "reset");
+                selectProjectDirButton.addMouseListener(new MouseAdapter() {
+                    @Override
+                    public void mouseClicked(MouseEvent e) {
+                        if (MainController.userDebugPath == null) {
                             JFileChooser fileChooser = new JFileChooser();
                             fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
                             fileChooser.setDialogTitle(getString("select.lsfusion.dir"));
                             MainController.userDebugPath =
-                                    fileChooser.showOpenDialog(verticalPanel) == JFileChooser.APPROVE_OPTION ? fileChooser.getSelectedFile().getAbsolutePath() : null;
-                        }
-                    });
-                    addDefaultComponentMouseListeners(selectProjectDirButton, closeTimer);
-                    verticalPanel.add(selectProjectDirButton);
+                                    fileChooser.showOpenDialog(tooltipPanel) == JFileChooser.APPROVE_OPTION ? fileChooser.getSelectedFile().getAbsolutePath() : null;
 
-                    tooltipPanel.add(verticalPanel);
-                } else {
-                    tooltipPanel.add(createDebugLinkComponent(path, creationPath, MainController.userDebugPath, false, closeTimer));
-                }
+                        } else {
+                            MainController.userDebugPath = null;
+                        }
+                        balloonTip.hide();
+                    }
+                });
+                addDefaultComponentMouseListeners(selectProjectDirButton, closeTimer);
+                buttonPanel.add(selectProjectDirButton);
+
+                JPanel horizontalPanel = new JPanel(new HorizontalLayout());
+                horizontalPanel.add(getLinkComponent(MainController.userDebugPath == null ? "use_default_path" : MainController.userDebugPath, creationPath, path, closeTimer));
+
+                JButton preferencesButton = new JButton(new ImageIcon(ClientImages.get("userPreferences.png").getImage()));
+                preferencesButton.setContentAreaFilled(false);
+                preferencesButton.setBorderPainted(false);
+                preferencesButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+                preferencesButton.addMouseListener(new MouseAdapter() {
+                    @Override
+                    public void mouseClicked(MouseEvent e) {
+                        boolean panelVisible = buttonPanel.isVisible();
+                        buttonPanel.setVisible(!panelVisible);
+
+                        int height = buttonPanel.getComponent(0).getHeight();
+
+                        balloonTip.setSize(balloonTip.getWidth(), balloonTip.getHeight() + (panelVisible ? -height : height));
+                    }
+                });
+                addDefaultComponentMouseListeners(preferencesButton, closeTimer);
+                horizontalPanel.add(preferencesButton);
+
+                tooltipPanel.add(horizontalPanel);
+                tooltipPanel.add(buttonPanel);
             }
         }
         return tooltipPanel;
     }
 
     private static JTextPane getLinkComponent(String projectLSFDir, String creationPath, String path, Timer closeTimer) {
-        JTextPane showInEditorLink = new JTextPane();
-        showInEditorLink.setEditable(false);
-        showInEditorLink.setContentType("text/html");
+        JTextPane showInEditorLink = null;
 
-        String link;
-        if (projectLSFDir != null && creationPath != null) {
+        if (creationPath != null) {
+            showInEditorLink = new JTextPane();
+            showInEditorLink.setEditable(false);
+            showInEditorLink.setContentType("text/html");
             //use "**" instead "="
             String command = "--line**" + Integer.parseInt(creationPath.substring(creationPath.lastIndexOf("(") + 1, creationPath.lastIndexOf(":"))) +
                     "&path**" + Paths.get(projectLSFDir, path);
             //replace spaces and slashes because this link going through url
-            link = "<a href=\"lsfusion-protocol://" + command.replaceAll(" ", "++").replaceAll("\\\\", "/") +
+            String link = "<a href=\"lsfusion-protocol://" + command.replaceAll(" ", "++").replaceAll("\\\\", "/") +
                     "\" target=\"_blank\">" + getString("show.in.editor") + "</a>";
-        } else {
-            link = "<a href=\"\">" + getString("show.in.editor") + "</a>";
-        }
-        showInEditorLink.setText(link);
-        addDefaultComponentMouseListeners(showInEditorLink, closeTimer);
+            showInEditorLink.setText(link);
+            addDefaultComponentMouseListeners(showInEditorLink, closeTimer);
 
+            showInEditorLink.addHyperlinkListener(e -> {
+                try {
+                    if (HyperlinkEvent.EventType.ACTIVATED.equals(e.getEventType())) {
+                        //stub for using custom-protocol
+                        URL url = new URL(null, e.getDescription(), new URLStreamHandler() {
+                            @Override
+                            protected URLConnection openConnection(URL u) {
+                                return null;
+                            }
+                        });
+                        Desktop.getDesktop().browse(url.toURI());
+                        balloonTip.hide();
+                    }
+                } catch (IOException | URISyntaxException ex) {
+                    throw Throwables.propagate(ex);
+                }
+            });
+        }
         return showInEditorLink;
     }
 

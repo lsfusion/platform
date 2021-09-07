@@ -132,9 +132,7 @@ public interface ClientMessages extends Messages {
     String propertyTooltipHotkey();
     String showInEditor();
     String enterPath();
-    String useDefaultPath();
     String absolutePathToLsfusionDir();
-    String debugPathNotConfigured();
 
     String propertyEmptyCaption();
 
