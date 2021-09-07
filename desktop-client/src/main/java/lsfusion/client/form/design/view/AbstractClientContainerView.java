@@ -1,7 +1,6 @@
 package lsfusion.client.form.design.view;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.client.base.view.ClientColorUtils;
 import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.design.ClientContainer;
 import lsfusion.interop.base.view.FlexAlignment;
@@ -21,7 +20,7 @@ public abstract class AbstractClientContainerView implements ClientContainerView
     protected final boolean vertical;
 
     protected final List<ClientComponent> children = new ArrayList<>();
-    protected final List<FlexPanel> childrenViews = new ArrayList<>();
+    protected final List<Component> childrenViews = new ArrayList<>();
 
     public AbstractClientContainerView(ClientContainer container) {
         this.container = container;
@@ -30,7 +29,7 @@ public abstract class AbstractClientContainerView implements ClientContainerView
     }
 
     @Override
-    public void add(ClientComponent child, FlexPanel view) {
+    public void add(ClientComponent child, JComponent view) {
         assert child != null && view != null && container.children.contains(child);
 
         int index = BaseUtils.relativePosition(child, container.children, children);
@@ -45,29 +44,16 @@ public abstract class AbstractClientContainerView implements ClientContainerView
         addImpl(index, child, view);
     }
 
-    private FlexPanel wrapAndOverflowView(ClientComponent child, FlexPanel view, boolean fixFlexBasis) {
+    private Component wrapAndOverflowView(ClientComponent child, Component view, boolean fixFlexBasis) {
         boolean isAutoSized = child.getSize(vertical) == null;
         boolean isOppositeAutoSized = child.getSize(!vertical) == null;
 
+        // somewhy it doesn't work properly for tabbed client container, but it's not that important for now
         if((!(isOppositeAutoSized && isAutoSized) || fixFlexBasis) && this instanceof LinearClientContainerView) { // child is tab, since basis is fixed, strictly speaking this all check is an optimization
-            JScrollPane scroll = new JScrollPane() {
-                @Override
-                public void updateUI() {
-                    super.updateUI();
-                    setBorder(null); // is set on every color theme change in installDefaults()
-                }
-            };
-            scroll.getVerticalScrollBar().setUnitIncrement(14);
-            scroll.getHorizontalScrollBar().setUnitIncrement(14);
-            ClientColorUtils.designComponent(scroll, container.design);
-            JLayer<JScrollPane> scrollLayer = new JLayer<>(scroll, new MouseWheelScrollLayerUI());
-            scroll.setViewportView(view);
-
-            FlexPanel panel = new FlexPanel();
-            // to forward a mouse wheel event in nested scroll pane to the parent scroll pane
-            panel.add(scrollLayer, BorderLayout.CENTER);
-            setSizes(panel, child);
-
+            JPanel panel = new JPanel(new BorderLayout());
+            wrapOverflowAuto(panel, view);
+//            ClientColorUtils.designComponent(scroll, container.design);
+//            setSizes(panel, child);
             view = panel;
         }
 
@@ -81,6 +67,23 @@ public abstract class AbstractClientContainerView implements ClientContainerView
         }
 
         return view;
+    }
+
+    public static void wrapOverflowAuto(Container container, Component view) {
+        JScrollPane scroll = new JScrollPane() {
+            @Override
+            public void updateUI() {
+                super.updateUI();
+                setBorder(null); // is set on every color theme change in installDefaults()
+            }
+        };
+        scroll.getVerticalScrollBar().setUnitIncrement(14);
+        scroll.getHorizontalScrollBar().setUnitIncrement(14);
+        JLayer<JScrollPane> scrollLayer = new JLayer<>(scroll, new MouseWheelScrollLayerUI());
+        scroll.setViewportView(view);
+
+        // to forward a mouse wheel event in nested scroll pane to the parent scroll pane
+        container.add(scrollLayer, BorderLayout.CENTER);
     }
 
     public static void setSizes(FlexPanel view, ClientComponent child) {
@@ -143,14 +146,14 @@ public abstract class AbstractClientContainerView implements ClientContainerView
     }
 
     @Override
-    public abstract FlexPanel getView();
-    protected abstract void addImpl(int index, ClientComponent child, FlexPanel view);
+    public abstract JComponent getView();
+    protected abstract void addImpl(int index, ClientComponent child, Component view);
     protected abstract FlexPanel wrapBorderImpl(ClientComponent child);
     protected abstract void removeImpl(int index, ClientComponent child);
 
     public abstract void updateCaption(ClientContainer clientContainer);
 
-    public FlexPanel getChildView(ClientComponent child) {
+    public Component getChildView(ClientComponent child) {
         int index = children.indexOf(child);
         return index != -1 ? childrenViews.get(index) : null;
     }
@@ -159,8 +162,10 @@ public abstract class AbstractClientContainerView implements ClientContainerView
     // можно было бы попробовать общую схему LayoutManager'ов использовать, но проблема в том что каждый ContainerView может создавать внутренние компоненты с не определенными LayoutManager'ами, а как через них протянуть признак что нужен max, а не обычный size непонятно
     // поэтому пока используем логику из Web-Client'а (где LayoutManager'ом вообще CSS является)
 
-    public static Dimension calculateMaxPreferredSize(FlexPanel component) {
-        return component.getMaxPreferredSize();
+    public static Dimension calculateMaxPreferredSize(Component component) {
+        if(component instanceof FlexPanel)
+            return ((FlexPanel)component).getMaxPreferredSize();
+        return component.getPreferredSize();
     }
 
     protected Dimension getChildMaxPreferredSize(Map<ClientContainer, ClientContainerView> containerViews, int index) {
@@ -178,7 +183,7 @@ public abstract class AbstractClientContainerView implements ClientContainerView
     public static Dimension getMaxPreferredSize(ClientContainer child, Map<ClientContainer, ClientContainerView> containerViews, boolean max) {
         return overrideSize(child, containerViews.get(child).getMaxPreferredSize(containerViews), max);
     }
-    private static Dimension getMaxPreferredSize(ClientComponent child, FlexPanel childView) { // тут как и в GwtClientUtils.calculateMaxPreferredSize возможно нужна проверка на isVisible
+    private static Dimension getMaxPreferredSize(ClientComponent child, Component childView) { // тут как и в GwtClientUtils.calculateMaxPreferredSize возможно нужна проверка на isVisible
         return overrideSize(child, calculateMaxPreferredSize(childView), true);
     }
 
@@ -241,7 +246,7 @@ public abstract class AbstractClientContainerView implements ClientContainerView
         return dimension;
     }
 
-    public static void add(FlexPanel panel, FlexPanel widget, ClientComponent component, int beforeIndex) {
+    public static void add(FlexPanel panel, Component widget, ClientComponent component, int beforeIndex) {
         boolean vertical = panel.isVertical();
         panel.add(widget, beforeIndex, component.getAlignment(), component.getFlex(), component.getSize(vertical));
 

@@ -5,7 +5,6 @@ import lsfusion.client.base.focus.FormFocusTraversalPolicy;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.design.ClientContainer;
-import lsfusion.client.form.filter.user.ClientFilter;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.view.MainFrame;
 
@@ -33,7 +32,7 @@ public class ClientFormLayout extends JPanel {
     @SuppressWarnings({"FieldCanBeLocal"})
     private FocusListener focusListener;
 
-    public FlexPanel getComponentView(ClientContainer container) {
+    public Component getComponentView(ClientContainer container) {
         return getContainerView(container).getView();
     }
 
@@ -49,20 +48,8 @@ public class ClientFormLayout extends JPanel {
         setLayout(new BorderLayout());
 
         addContainers(mainContainer);
-        
-        JScrollPane scroll = new JScrollPane() {
-            @Override
-            public void updateUI() {
-                super.updateUI();
-                setBorder(null); // is set on every color theme change in installDefaults()
-            }
-        };
-        scroll.getVerticalScrollBar().setUnitIncrement(14);
-        scroll.getHorizontalScrollBar().setUnitIncrement(14);
-        scroll.setViewportView(getComponentView(mainContainer));
-        // to forward a mouse wheel event in nested scroll pane to the parent scroll pane
-        JLayer<JScrollPane> scrollLayer = new JLayer<>(scroll, new MouseWheelScrollLayerUI());
-        add(scrollLayer, BorderLayout.CENTER);
+
+        AbstractClientContainerView.wrapOverflowAuto(this, getComponentView(mainContainer));
 
         // приходится делать StrongRef, иначе он тут же соберется сборщиком мусора так как ContainerFocusListener держит его как WeakReference
         focusListener = new FocusAdapter() {
@@ -142,7 +129,7 @@ public class ClientFormLayout extends JPanel {
             if (child instanceof ClientContainer)
                 childVisible = autoShowHideContainers((ClientContainer) child);
             else {
-                FlexPanel childView = baseComponentViews.get(child); // we have to use baseComponentView (and not a wrapper in getChildView), since it has relevant visible state
+                Component childView = baseComponentViews.get(child); // we have to use baseComponentView (and not a wrapper in getChildView), since it has relevant visible state
                 childVisible = childView != null && childView.isVisible();
             }
 
@@ -153,16 +140,16 @@ public class ClientFormLayout extends JPanel {
         return hasVisible;
     }
 
-    private Map<ClientComponent, FlexPanel> baseComponentViews = new HashMap<>();
+    private Map<ClientComponent, Component> baseComponentViews = new HashMap<>();
 
-    public void addBaseComponent(ClientComponent component, FlexPanel view) {
+    public void addBaseComponent(ClientComponent component, JComponent view) {
         assert !(component instanceof ClientContainer);
         baseComponentViews.put(component, view);
         add(component, view);
     }
 
     // добавляем визуальный компонент
-    public boolean add(ClientComponent key, FlexPanel view) {
+    public boolean add(ClientComponent key, JComponent view) {
         if (key.container != null) { // container can be null when component should be layouted manually
             ClientContainerView containerView = containerViews.get(key.container);
             if (containerView != null && !containerView.hasChild(key)) {

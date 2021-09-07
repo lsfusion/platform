@@ -120,20 +120,20 @@ public class FlexPanel extends JPanel implements MouseMotionListener {
         add(widget, getChildren().size(), alignment);
     }
 
-    public void add(JComponent widget, int beforeIndex, FlexAlignment alignment) {
+    public void add(Component widget, int beforeIndex, FlexAlignment alignment) {
         add(widget, beforeIndex, alignment, 0, null); // maybe here it also makes sense to set basis to 0 as in addFill, but for now it's used mostly in vertical container for simple components
     }
 
-    public void addFillFlex(JComponent widget, Integer flexBasis) {
+    public void addFillFlex(Component widget, Integer flexBasis) {
         addFill(widget, getChildren().size(), flexBasis);
     }
 
-    public void addFill(JComponent widget, int beforeIndex, Integer flexBasis) {
+    public void addFill(Component widget, int beforeIndex, Integer flexBasis) {
         add(widget, beforeIndex, FlexAlignment.STRETCH, 1, flexBasis);
     }
 
     //main add method
-    public void add(JComponent widget, int beforeIndex, FlexAlignment alignment, double flex, Integer flexBasis) {
+    public void add(Component widget, int beforeIndex, FlexAlignment alignment, double flex, Integer flexBasis) {
         add(widget, new FlexConstraints(alignment, flex), beforeIndex);
 
         LayoutData layoutData = impl.insertChild(widget, beforeIndex, alignment, flex, flexBasis, vertical);
@@ -219,7 +219,7 @@ public class FlexPanel extends JPanel implements MouseMotionListener {
         for (int i = widgetNumber; i >= 0; i--) {
             Component child = children.get(i);
             LayoutData layoutData = getLayoutData(child);
-            if (layoutData.baseFlex > 0 && child.isVisible())
+            if (layoutData != null && layoutData.baseFlex > 0 && child.isVisible())
                 return true;
         }
         return false;

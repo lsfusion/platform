@@ -28,7 +28,7 @@ public class TabbedClientContainerView extends AbstractClientContainerView {
 
     private final ClientFormController form;
 
-    private final FlexPanel panel;
+    private final JComponent panel;
     private final JPanel hiddenHolderPanel;
     private final TabbedPane tabbedPane;
 
@@ -51,7 +51,7 @@ public class TabbedClientContainerView extends AbstractClientContainerView {
 
         hiddenHolderPanel = new JPanel(null);
 
-        panel = new FlexPanel();
+        panel = new JPanel(new BorderLayout());
         panel.add(tabbedPane, BorderLayout.CENTER);
         panel.add(hiddenHolderPanel, BorderLayout.SOUTH);
 
@@ -99,7 +99,7 @@ public class TabbedClientContainerView extends AbstractClientContainerView {
     }
 
     @Override
-    public void addImpl(int index, ClientComponent child, FlexPanel view) {
+    public void addImpl(int index, ClientComponent child, Component view) {
         hiddenHolderPanel.add(view);
     }
 
@@ -141,7 +141,7 @@ public class TabbedClientContainerView extends AbstractClientContainerView {
         super.updateLayout(childrenVisible);
     }
 
-    public FlexPanel getView() {
+    public JComponent getView() {
         return panel;
     }
 

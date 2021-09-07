@@ -6,6 +6,7 @@ import lsfusion.client.form.design.ClientContainer;
 import lsfusion.client.form.object.panel.controller.PropertyPanelController;
 import lsfusion.interop.base.view.FlexAlignment;
 
+import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -80,7 +81,7 @@ public class LinearClientContainerView extends AbstractClientContainerView {
     }
 
     public CaptionPanel getCaptionPanel(ClientContainer container) {
-        FlexPanel childPanel = getChildView(container);
+        Component childPanel = getChildView(container);
 
         CaptionPanel caption = null;
         if(childPanel instanceof CaptionPanel)
@@ -91,7 +92,7 @@ public class LinearClientContainerView extends AbstractClientContainerView {
     }
 
     @Override
-    public void addImpl(int index, ClientComponent child, FlexPanel view) {
+    public void addImpl(int index, ClientComponent child, Component view) {
         if (alignCaptions) { // when adding PropertyPanelController.Panel is empty, so we have to do everything wit callback
             AlignCaptionPanel captionPanel = new AlignCaptionPanel(!vertical);
 
@@ -219,7 +220,7 @@ public class LinearClientContainerView extends AbstractClientContainerView {
     }
 
     @Override
-    public FlexPanel getView() {
+    public JComponent getView() {
         return panel;
     }
 }
