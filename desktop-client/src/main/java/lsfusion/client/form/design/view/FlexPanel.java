@@ -46,14 +46,12 @@ public class FlexPanel extends JPanel implements MouseMotionListener {
             @Override
             public void mousePressed(MouseEvent e) {
                 super.mousePressed(e);
-                System.out.println("pressed");
                 checkResizeEvent(FlexPanel.this, e);
             }
 
             @Override
             public void mouseReleased(MouseEvent e) {
                 super.mouseReleased(e);
-                System.out.println("released");
                 checkResizeEvent(FlexPanel.this, e);
             }
         });
@@ -61,7 +59,6 @@ public class FlexPanel extends JPanel implements MouseMotionListener {
 
     @Override
     protected void processMouseMotionEvent(MouseEvent e) {
-        System.out.println(e);
         checkResizeEvent(FlexPanel.this, e);
     }
 
@@ -89,14 +86,12 @@ public class FlexPanel extends JPanel implements MouseMotionListener {
             @Override
             public void mousePressed(MouseEvent e) {
                 super.mousePressed(e);
-                System.out.println("pressed");
                 checkResizeEvent(FlexPanel.this, e);
             }
 
             @Override
             public void mouseReleased(MouseEvent e) {
                 super.mouseReleased(e);
-                System.out.println("released");
                 checkResizeEvent(FlexPanel.this, e);
             }
         });
