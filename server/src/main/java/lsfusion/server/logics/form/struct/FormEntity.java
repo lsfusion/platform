@@ -176,14 +176,19 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     public Iterable<RegularFilterGroupEntity> getRegularFilterGroupsIt() {
         return regularFilterGroups.getIt();
     }
-    public ImList<RegularFilterGroupEntity> getRegularFilterGroupsList() {
-        return regularFilterGroups.getList();
+    public ImOrderSet<RegularFilterGroupEntity> getRegularFilterGroupsList() {
+        return regularFilterGroups.getOrderSet();
     }
     public Iterable<RegularFilterGroupEntity> getNFRegularFilterGroupsIt(Version version) {
         return regularFilterGroups.getNFIt(version);        
     }
     public Iterable<RegularFilterGroupEntity> getNFRegularFilterGroupsListIt(Version version) { // предполагается все с одной версией, равной текущей (конструирование FormView)
         return regularFilterGroups.getNFListIt(version);
+    }
+
+    public ImSet<FilterEntity> getDefaultRegularFilters() {
+        return getRegularFilterGroupsList().filterOrder(element -> element.getDefault() >= 0)
+                .mapMergeOrderSetValues(entity -> entity.filters.getOrderSet().get(entity.getDefault()).filter).getSet();
     }
 
     public NFList<PropertyDrawEntity> userFilters = NFFact.list();
@@ -460,9 +465,15 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return null;
     }
 
-    @IdentityLazy
     public ImMap<GroupObjectEntity, ImSet<FilterEntity>> getGroupFixedFilters(final ImSet<GroupObjectEntity> excludeGroupObjects) {
-        return getGroupFilters(getFixedFilters(), excludeGroupObjects);
+        return getGroupFixedFilters(excludeGroupObjects, false);
+    }
+    @IdentityLazy
+    public ImMap<GroupObjectEntity, ImSet<FilterEntity>> getGroupFixedFilters(final ImSet<GroupObjectEntity> excludeGroupObjects, boolean includeDefaultRegular) {
+        ImSet<FilterEntity> filters = getFixedFilters();
+        if(includeDefaultRegular)
+            filters = filters.merge(getDefaultRegularFilters());
+        return getGroupFilters(filters, excludeGroupObjects);
     }
 
     public <T extends FilterEntityInstance> ImMap<GroupObjectEntity, ImSet<T>> getGroupFilters(ImSet<T> filters, ImSet<GroupObjectEntity> excludeGroupObjects) {
@@ -494,7 +505,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
         mapObjects = mapObjects.removeRev(object);
 
-        ImSet<FilterEntity> filters = getGroupFixedFilters(SetFact.EMPTY()).get(groupObject);
+        ImSet<FilterEntity> filters = getGroupFixedFilters(SetFact.EMPTY(), true).get(groupObject);
         if(filters == null)
             filters = SetFact.EMPTY();
         ImSet<? extends ContextFilterEntity<?, P, ObjectEntity>> contextFilterEntities = filters.mapSetValues((FilterEntity filterEntity) -> ((FilterEntity<?>) filterEntity).getContext());

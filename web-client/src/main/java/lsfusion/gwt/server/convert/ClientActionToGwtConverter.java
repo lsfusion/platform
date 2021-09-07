@@ -199,9 +199,9 @@ public class ClientActionToGwtConverter extends ObjectConverter {
 
     @Converter(from = Async.class)
     public GAsync convertAsync(Async async) {
-        if(async == Async.CANCELED)
+        if(async.equals(Async.CANCELED))
             return GAsync.CANCELED;
-        if(async == Async.RECHECK)
+        if(async.equals(Async.RECHECK))
             return GAsync.RECHECK;
         return new GAsync(async.displayString, async.rawString);
     }
