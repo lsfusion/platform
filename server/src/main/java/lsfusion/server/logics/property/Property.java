@@ -2228,14 +2228,14 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return getInterfaceStat(MapFact.EMPTYREV(), alotHeur);
     }
     
-    private Stat getInterfaceStat(ImRevMap<T, ? extends Expr> fixedExprs) {
+    private Stat getInterfaceStat(ImRevMap<T, StaticParamNullableExpr> fixedExprs) {
         return getInterfaceStat(fixedExprs, false);
     }
 
     @IdentityStartLazy
     @StackMessage("{message.core.property.get.interface.class.stats}")
     @ThisMessage
-    private Stat getInterfaceStat(ImRevMap<T, ? extends Expr> fixedExprs, boolean alotHeur) {
+    private Stat getInterfaceStat(ImRevMap<T, StaticParamNullableExpr> fixedExprs, boolean alotHeur) {
         ImRevMap<T, KeyExpr> innerKeys = KeyExpr.getMapKeys(interfaces.removeIncl(fixedExprs.keys()));
         ImMap<T, Expr> innerExprs = MapFact.addExcl(innerKeys, fixedExprs); // we need some virtual values
 
@@ -2273,9 +2273,9 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
     @IdentityLazy
     public Stat getDistinctStat(ImSet<T> interfaces) {
-//        ImMap<T, ValueClass> interfaceClasses = getInterfaceClasses(ClassType.forPolicy).filter(interfaces);
-//        ImRevMap<T, StaticParamNullableExpr> paramExprs = interfaceClasses.mapRevValues(StaticParamNullableExpr::new);
-        ImRevMap<T, NullableKeyExpr> paramExprs = getMapNotNullKeys().filterRev(interfaces);
+        // maybe later it makes sense to fill params without classes with some "default" classes
+        ImMap<T, ValueClass> interfaceClasses = getInterfaceClasses(ClassType.forPolicy).filter(interfaces);
+        ImRevMap<T, StaticParamNullableExpr> paramExprs = interfaceClasses.mapRevValues(StaticParamNullableExpr::new);
         return getInterfaceStat(paramExprs).div(getValueStat(paramExprs));
     }
 
