@@ -28,13 +28,11 @@ public class ResizeHandler {
     // it's important that checkResize event should be called for cursorElement element (otherwise, cursor will be incorrect)
     public static <C> void checkResizeEvent(ResizeHelper helper, FlexPanel cursorElement, /*Supplier<Integer> childIndexSupplier, */MouseEvent event) {
         if(!(cursorElement instanceof FilterView) && !(cursorElement instanceof ToolbarView)) {
-            System.out.println("checkResizeEvent");
             int eventType = event.getID();
             if (eventType == MouseEvent.MOUSE_MOVED || eventType == MouseEvent.MOUSE_PRESSED && resizeHandler == null) {
                 ResizedChild resizedChild = getResizedChild(helper, event, cursorElement/*, childIndexSupplier*/);
                 //Style cursorStyle = cursorElement.getStyle();
                 if (resizedChild != null && resizedChild.mainBorder && helper.isChildResizable(cursorElement, resizedChild.index)) {
-                    System.out.println("setCursor resize");
                     cursorElement.setCursor(Cursor.getPredefinedCursor(helper.isVertical() ? Cursor.N_RESIZE_CURSOR : Cursor.E_RESIZE_CURSOR));
 
                     if (eventType == MouseEvent.MOUSE_PRESSED) {
@@ -46,7 +44,6 @@ public class ResizeHandler {
                         //stopPropagation(event, true, false);
                     }
                 } else {
-                    System.out.println("setCursor default");
                     cursorElement.setCursor(Cursor.getDefaultCursor());
 
                     // this container can be not resizable, but the inner one can be resizable, however it will not get a mouse move event if the cursor is to the right
@@ -119,7 +116,6 @@ public class ResizeHandler {
         for(int i=0,size=helper.getChildCount(panel);i<size;i++) {
             if(helper.isChildVisible(panel, i)) {
                 int right = getAbsolutePosition(helper, i, false, panel);
-                System.out.println(String.format("mainBorder: %s (mouse %s, right %s)",  Math.abs(mouse - right), mouse, right));
                 boolean mainBorder = Math.abs(mouse - right) < ANCHOR_WIDTH;
                 if (mainBorder || right > mouse) {
                     int oppositeRight = getAbsolutePosition(!helper.isVertical(), helper.getChildElement(panel, i), false);

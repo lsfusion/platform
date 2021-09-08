@@ -100,11 +100,17 @@ public class LinearClientContainerView extends AbstractClientContainerView {
 
             childrenCaptions.add(index, captionPanel);
             ((PropertyPanelController.Panel) view).captionContainer = (widget, valueSizes, alignment) -> {
+                assert vertical; // because of aligncaptions first check (isVertical())
                 captionPanel.add(widget, alignment);
+
                 Integer baseSize = vertical ? valueSizes.second : valueSizes.first;
 
+                Integer size = child.getSize(vertical);
+                if (size != null)
+                    baseSize = size;
+
                 captionPanel.baseSize = baseSize; // it's called after it is first time added to the container, so we store it in some field for further adding, removing (actually it's needed for component "shifting", when we need to add/remove latter components)
-                FlexPanel.setBaseSize(captionPanel, vertical, baseSize);  // oppositeAndFixed - false, since we're settings size for main direction
+                FlexPanel.setBaseSize(captionPanel, vertical, baseSize + 6 /*to look like in web*/);  // oppositeAndFixed - false, since we're settings size for main direction
             };
         }
 

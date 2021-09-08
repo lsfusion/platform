@@ -95,8 +95,6 @@ public class DataPanelView extends JPanel implements PanelView {
         setOpaque(false);
         setToolTip(property.getPropertyCaption());
 
-        property.installMargins(this);
-
         if (property.eventID != null) {
             valueEventListener = new ValueEventListener() {
                 @Override
@@ -238,9 +236,9 @@ public class DataPanelView extends JPanel implements PanelView {
             if (BaseUtils.isRedundantString(text)) {
                 label.setBorder(BorderFactory.createEmptyBorder());
             } else {
-                label.setBorder(BorderFactory.createEmptyBorder(3, //todo: 3 is magic number to look like in web
+                label.setBorder(BorderFactory.createEmptyBorder(0,
                         tableFirst && labelMarginRight != null && !labelMarginRight ? getDataPanelLabelMargin() : 0,
-                        3,
+                        0,
                         tableFirst && labelMarginRight != null && labelMarginRight ? 0 : getDataPanelLabelMargin()));
             }
         }

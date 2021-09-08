@@ -158,13 +158,13 @@ public class FlexPanel extends JPanel implements MouseMotionListener {
                 if (oppositeAndFixed) {
                     element.setSize(new Dimension(element.getSize().width, size)); //set height
                 } else {
-                    element.setMinimumSize(new Dimension(element.getMinimumSize().width, size)); //set minHeight
+                    element.setPreferredSize(new Dimension(element.getPreferredSize().width, size)); //set minHeight
                 }
             } else {
                 if (oppositeAndFixed) {
                     element.setSize(new Dimension(size, element.getSize().height)); //set width
                 } else {
-                    element.setMinimumSize(new Dimension(size, element.getMinimumSize().height)); //set minWidth
+                    element.setPreferredSize(new Dimension(size, element.getPreferredSize().height)); //set minWidth
                 }
             }
         }
