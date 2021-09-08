@@ -56,6 +56,7 @@ public class PropertyPanelController {
         });
 
         viewsPanel = new Panel(property.panelColumnVertical, FlexAlignment.START);
+        viewsPanel.debugContainer = this;
     }
 
     public boolean forceEdit() {
@@ -167,7 +168,8 @@ public class PropertyPanelController {
             for (ClientGroupObjectValue columnKey : columnKeys) {
                 PanelView view = views.get(columnKey);
                 if (view != null && view.getComponent().getParent() != viewsPanel) {
-                    viewsPanel.add(view.getComponent(), new FlexConstraints(property.getAlignment(), property.getValueWidth(viewsPanel)));
+//                    viewsPanel.add(view.getComponent(), new FlexConstraints(property.getAlignment(), property.getValueWidth(viewsPanel)));
+                    viewsPanel.addFill(view.getComponent());
                 }
             }
         }

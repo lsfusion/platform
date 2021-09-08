@@ -223,7 +223,7 @@ public class TabbedClientContainerView extends AbstractClientContainerView {
             
             proxyPanel.setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1));
 
-            proxyPanel.add(childView, new FlexConstraints(child.getAlignment(), child.getFlex()));
+            proxyPanel.add(childView, child.getAlignment(), child.getFlex());
 
             insertTab(child.getCaption(), null, proxyPanel, null, index);
 //            updateTabCaption(child);

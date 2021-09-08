@@ -46,7 +46,7 @@ public class CaptionPanel extends FlexPanel {
 //            titledBorder.setTitle(caption);
 //            repaint()
         // we have to reset titled border, setTitle / repaint doesnt'work sonewhy
-        titledBorder = new TitledBorder(caption);
+        titledBorder = caption != null ? new TitledBorder(caption) : null;
         setBorder(titledBorder);
     }
 }

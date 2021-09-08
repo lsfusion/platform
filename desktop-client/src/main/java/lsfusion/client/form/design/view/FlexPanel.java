@@ -25,6 +25,8 @@ public class FlexPanel extends JPanel implements MouseMotionListener {
 
     private final boolean vertical;
 
+    public Object debugContainer;
+
     private static Map<Component, LayoutData> layoutDataMap = new HashMap<>();
 
     public static LayoutData getLayoutData(Component widget) {
@@ -46,28 +48,38 @@ public class FlexPanel extends JPanel implements MouseMotionListener {
             @Override
             public void mousePressed(MouseEvent e) {
                 super.mousePressed(e);
-                checkResizeEvent(FlexPanel.this, e);
+                checkResizeEvent(e);
             }
 
             @Override
             public void mouseReleased(MouseEvent e) {
                 super.mouseReleased(e);
-                checkResizeEvent(FlexPanel.this, e);
+                checkResizeEvent(e);
             }
         });
     }
 
     @Override
     protected void processMouseMotionEvent(MouseEvent e) {
-        checkResizeEvent(FlexPanel.this, e);
+        checkResizeEvent(e);
     }
 
-    private void checkResizeEvent(FlexPanel panel, MouseEvent e) {
-        ResizeHandler.checkResizeEvent(resizeHelper, FlexPanel.this, e);
+    public void checkResizeEvent(MouseEvent e) {
+        checkResizeEvent(e, FlexPanel.this, true);
+    }
+    public void checkResizeEvent(MouseEvent e, Component cursorElement, boolean propagateToUpper) {
+        ResizeHandler.checkResizeEvent(resizeHelper, cursorElement, e);
 
-        Container parent = panel.getParent();
-        if(parent instanceof FlexPanel) {
-            ((FlexPanel) parent).checkResizeEvent((FlexPanel) parent, e);
+        if(propagateToUpper && !e.isConsumed()) {
+            Container parent = this;
+            while(true) {
+                parent = parent.getParent();
+                if(parent instanceof FlexPanel || parent == null)
+                    break;
+            }
+            if (parent != null) {
+                ((FlexPanel) parent).checkResizeEvent(e);
+            }
         }
     }
 
@@ -86,13 +98,13 @@ public class FlexPanel extends JPanel implements MouseMotionListener {
             @Override
             public void mousePressed(MouseEvent e) {
                 super.mousePressed(e);
-                checkResizeEvent(FlexPanel.this, e);
+                checkResizeEvent(e);
             }
 
             @Override
             public void mouseReleased(MouseEvent e) {
                 super.mouseReleased(e);
-                checkResizeEvent(FlexPanel.this, e);
+                checkResizeEvent(e);
             }
         });
 
@@ -100,12 +112,12 @@ public class FlexPanel extends JPanel implements MouseMotionListener {
 
     @Override
     public void mouseDragged(MouseEvent e) {
-        checkResizeEvent(FlexPanel.this, e);
+        checkResizeEvent(e);
     }
 
     @Override
     public void mouseMoved(MouseEvent e) {
-        checkResizeEvent(FlexPanel.this, e);
+        checkResizeEvent(e);
     }
 
     public boolean isVertical() {
@@ -128,8 +140,20 @@ public class FlexPanel extends JPanel implements MouseMotionListener {
         addFill(widget, getChildren().size(), flexBasis);
     }
 
+    public void addFill(Component widget) {
+        addFill(widget, getChildren().size());;
+    }
+
+    public void addFill(Component widget, int beforeIndex) {
+        addFill(widget, beforeIndex, vertical ? null : 0);
+    }
+
     public void addFill(Component widget, int beforeIndex, Integer flexBasis) {
         add(widget, beforeIndex, FlexAlignment.STRETCH, 1, flexBasis);
+    }
+
+    public void add(Component widget, FlexAlignment alignment, double flex) {
+        add(widget, getChildren().size(), alignment, flex, null);
     }
 
     //main add method
@@ -172,39 +196,39 @@ public class FlexPanel extends JPanel implements MouseMotionListener {
 
     private ResizeHelper resizeHelper = new ResizeHelper() {
         @Override
-        public int getChildCount(FlexPanel panel) {
-            return panel.getChildren().size();
+        public int getChildCount() {
+            return getChildren().size();
         }
 
         @Override
-        public Component getChildElement(FlexPanel panel, int index) {
-            return panel.getChildren().get(index);
+        public Component getChildElement(int index) {
+            return getChildren().get(index);
         }
 
         @Override
-        public Component getChildWidget(FlexPanel panel, int index) {
-            return panel.getChildren().get(index);
+        public Component getChildWidget(int index) {
+            return getChildren().get(index);
         }
 
         @Override
-        public void resizeChild(FlexPanel panel, int index, int delta) {
-            resizeWidget(panel, index, delta);
+        public void resizeChild(int index, int delta) {
+            resizeWidget(index, delta);
         }
         @Override
-        public boolean isChildResizable(FlexPanel panel, int index) {
-            if(!isWidgetResizable(panel, index))
+        public boolean isChildResizable(int index) {
+            if(!isWidgetResizable(index))
                 return false;
 
             // optimization, if it is the last element, and there is a "resizable" parent, we consider this element to be not resizable (assuming that this "resizable" parent will be resized)
-            if(index == panel.getChildren().size() - 1 && getParentSameFlexPanel(panel, vertical) != null)
+            if(index == getChildren().size() - 1 && getParentSameFlexPanel(vertical) != null)
                 return false;
 
             return true;
         }
 
         @Override
-        public boolean isChildVisible(FlexPanel panel, int index) {
-            return panel.getChildren().get(index).isVisible();
+        public boolean isChildVisible(int index) {
+            return getChildren().get(index).isVisible();
         }
 
         @Override
@@ -214,8 +238,8 @@ public class FlexPanel extends JPanel implements MouseMotionListener {
     };
 
     // the resize algorithm assumes that there should be flex column to the left, to make
-    public boolean isWidgetResizable(FlexPanel panel, int widgetNumber) {
-        List<Component> children = panel.getChildren();
+    public boolean isWidgetResizable(int widgetNumber) {
+        List<Component> children = getChildren();
         for (int i = widgetNumber; i >= 0; i--) {
             Component child = children.get(i);
             LayoutData layoutData = getLayoutData(child);
@@ -230,8 +254,14 @@ public class FlexPanel extends JPanel implements MouseMotionListener {
         return Arrays.stream(getComponents()).filter(component -> !(component instanceof FilterView) && !(component instanceof ToolbarView)).collect(Collectors.toList());
     }
 
+    @Override
+    public void add(Component comp, Object constraints) {
+        throw new UnsupportedOperationException("main add method should be used instead");
+//        super.add(comp, constraints);
+    }
+
     // we need to guarantee somehow that resizing this parent container will lead to the same resizing of this container
-    public Pair<FlexPanel, Integer> getParentSameFlexPanel(FlexPanel panel, boolean vertical) {
+    public Pair<FlexPanel, Integer> getParentSameFlexPanel(boolean vertical) {
 //        if(1==1) return null;
         Container parent = getParent();
         if(!(parent instanceof FlexPanel)) // it's some strange layouting, ignore it
@@ -241,10 +271,10 @@ public class FlexPanel extends JPanel implements MouseMotionListener {
         if(vertical != flexParent.vertical) {
             LayoutData layoutData = getLayoutData(this);
             if(layoutData.alignment == FlexAlignment.STRETCH)
-                return flexParent.getParentSameFlexPanel(panel, vertical);
+                return flexParent.getParentSameFlexPanel(vertical);
         } else {
             int index = flexParent.getChildren().indexOf(this);
-            if(flexParent.isWidgetResizable(flexParent, index))
+            if(flexParent.isWidgetResizable(index))
                 return new Pair<>(flexParent, index);
         }
         return null;
@@ -292,13 +322,13 @@ public class FlexPanel extends JPanel implements MouseMotionListener {
         }
     }
 
-    public void resizeWidget(FlexPanel panel, int widgetNumber, double delta) {
-        Pair<FlexPanel, Integer> parentSameFlexPanel = panel.getParentSameFlexPanel(panel, vertical);
+    public void resizeWidget(int widgetNumber, double delta) {
+        Pair<FlexPanel, Integer> parentSameFlexPanel = getParentSameFlexPanel(vertical);
 
         List<Component> children = new ArrayList<>();
         int i = 0;
         int invisibleBefore = 0;
-        for(Component child : panel.getChildren()) {
+        for(Component child : getChildren()) {
             if (child.isVisible())
                 children.add(child);
             else if(i < widgetNumber) {
@@ -352,7 +382,7 @@ public class FlexPanel extends JPanel implements MouseMotionListener {
         double restDelta = SwingUtils.calculateNewFlexes(widgetNumber, delta, viewWidth, prefs, flexes, basePrefs, baseFlexes,  parentSameFlexPanel == null);
 
         if(parentSameFlexPanel != null && !SwingUtils.equals(restDelta, 0.0))
-            parentSameFlexPanel.first.resizeWidget(panel, parentSameFlexPanel.second, restDelta);
+            parentSameFlexPanel.first.resizeWidget(parentSameFlexPanel.second, restDelta);
 
         i = 0;
         for(Component widget : children) {

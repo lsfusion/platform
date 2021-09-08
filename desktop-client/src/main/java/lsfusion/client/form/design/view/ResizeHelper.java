@@ -4,14 +4,14 @@ import java.awt.*;
 
 public interface ResizeHelper {
 
-    int getChildCount(FlexPanel panel);
+    int getChildCount();
 
-    /*Element*/Component getChildElement(FlexPanel panel, int index);
-    /*Widget*/Component getChildWidget(FlexPanel panel, int index);
+    /*Element*/Component getChildElement(int index);
+    /*Widget*/Component getChildWidget(int index);
 
-    void resizeChild(FlexPanel panel, int index, int delta);
-    boolean isChildResizable(FlexPanel panel, int index);
-    boolean isChildVisible(FlexPanel panel, int index);
+    void resizeChild(int index, int delta);
+    boolean isChildResizable(int index);
+    boolean isChildVisible(int index);
 
     boolean isVertical();
 }

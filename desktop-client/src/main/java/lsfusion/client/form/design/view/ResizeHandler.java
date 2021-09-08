@@ -10,11 +10,11 @@ public class ResizeHandler {
     public static final int ANCHOR_WIDTH = 10;
     public static ResizeHandler resizeHandler = null;
 
-    private final ResizeHelper helper;
 
     //private HandlerRegistration previewHandlerReg;
 
-    private static int initalMouse;
+    private static ResizeHelper helper;
+    private static int initialMouse;
     private static int index;
 
     public ResizeHandler(ResizeHelper helper, int index) {
@@ -23,16 +23,18 @@ public class ResizeHandler {
         /*
         previewHandlerReg = Event.addNativePreviewHandler(this);
         this.initalMouse = getAbsoluteRight();*/
+
+        this.initialMouse = getAbsoluteRight();
     }
 
     // it's important that checkResize event should be called for cursorElement element (otherwise, cursor will be incorrect)
-    public static <C> void checkResizeEvent(ResizeHelper helper, FlexPanel cursorElement, /*Supplier<Integer> childIndexSupplier, */MouseEvent event) {
+    public static <C> void checkResizeEvent(ResizeHelper helper, Component cursorElement, /*Supplier<Integer> childIndexSupplier, */MouseEvent event) {
         if(!(cursorElement instanceof FilterView) && !(cursorElement instanceof ToolbarView)) {
             int eventType = event.getID();
-            if (eventType == MouseEvent.MOUSE_MOVED || eventType == MouseEvent.MOUSE_PRESSED && resizeHandler == null) {
-                ResizedChild resizedChild = getResizedChild(helper, event, cursorElement/*, childIndexSupplier*/);
+            if ((eventType == MouseEvent.MOUSE_MOVED || eventType == MouseEvent.MOUSE_PRESSED) && resizeHandler == null) {
+                ResizedChild resizedChild = getResizedChild(helper, event/*, childIndexSupplier*/);
                 //Style cursorStyle = cursorElement.getStyle();
-                if (resizedChild != null && resizedChild.mainBorder && helper.isChildResizable(cursorElement, resizedChild.index)) {
+                if (resizedChild != null && resizedChild.mainBorder && helper.isChildResizable(resizedChild.index)) {
                     cursorElement.setCursor(Cursor.getPredefinedCursor(helper.isVertical() ? Cursor.N_RESIZE_CURSOR : Cursor.E_RESIZE_CURSOR));
 
                     if (eventType == MouseEvent.MOUSE_PRESSED) {
@@ -49,11 +51,11 @@ public class ResizeHandler {
                     // this container can be not resizable, but the inner one can be resizable, however it will not get a mouse move event if the cursor is to the right
                     // so we push this event down to that container
                     // in theory we should check that event is trigger to the right of this child widget, but since this child widget can have paddings / margins, we'll just do some extra work
-//                if(resizedChild != null && resizedChild.outsideBorder) {
-//                    Widget childWidget = helper.getChildWidget(resizedChild.index);
-//                    if (childWidget instanceof FlexPanel)
-//                        ((FlexPanel)childWidget).checkResizeEvent(event, cursorElement);
-//                }
+                    if(resizedChild != null && resizedChild.outsideBorder) {
+                        Component childWidget = helper.getChildWidget(resizedChild.index);
+                        if (childWidget instanceof FlexPanel)
+                            ((FlexPanel)childWidget).checkResizeEvent(event, cursorElement, false);
+                    }
                 }
             }
 
@@ -62,16 +64,9 @@ public class ResizeHandler {
                 //NativeEvent nativeEvent = event.getNativeEvent();
                 //stopPropagation(nativeEvent);
                 if (eventType == MouseEvent.MOUSE_DRAGGED) {
-                    int client = getEventPosition(helper, event);
+                    int client = getEventPosition(ResizeHandler.helper, event);
 
-                    //resizeHeaders(client);
-                    int dragX = event.getX() - initalMouse;
-                    if (Math.abs(dragX) > 2) {
-                        helper.resizeChild(cursorElement, index, dragX);
-                        initalMouse = Math.max(event.getX(), getAbsoluteRight(helper, cursorElement)); // делается max, чтобы при resize'е влево растягивание шло с момента когда курсор вернется на правый край колонки (вправо там другие проблемы)
-                    }
-
-
+                    resizeHeaders(client);
                 } else if (eventType == MouseEvent.MOUSE_RELEASED) {
                     //previewHandlerReg.removeHandler();
                     resizeHandler = null;
@@ -94,8 +89,8 @@ public class ResizeHandler {
         return getEventPosition(helper.isVertical(), event);
     }
 
-    private static int getAbsolutePosition(ResizeHelper helper, int index, boolean left, FlexPanel panel) {
-        return getAbsolutePosition(helper, helper.getChildElement(panel, index), left);
+    private static int getAbsolutePosition(ResizeHelper helper, int index, boolean left) {
+        return getAbsolutePosition(helper, helper.getChildElement(index), left);
     }
 
     private static class ResizedChild {
@@ -110,15 +105,15 @@ public class ResizeHandler {
         }
     }
 
-    private static ResizedChild getResizedChild(ResizeHelper helper, MouseEvent event, FlexPanel panel/*, Supplier<Integer> childIndexSupplier*/) {
+    private static ResizedChild getResizedChild(ResizeHelper helper, MouseEvent event /*, Supplier<Integer> childIndexSupplier*/) {
         int mouse = getEventPosition(helper, event);
 
-        for(int i=0,size=helper.getChildCount(panel);i<size;i++) {
-            if(helper.isChildVisible(panel, i)) {
-                int right = getAbsolutePosition(helper, i, false, panel);
+        for(int i = 0, size = helper.getChildCount(); i<size; i++) {
+            if(helper.isChildVisible(i)) {
+                int right = getAbsolutePosition(helper, i, false);
                 boolean mainBorder = Math.abs(mouse - right) < ANCHOR_WIDTH;
                 if (mainBorder || right > mouse) {
-                    int oppositeRight = getAbsolutePosition(!helper.isVertical(), helper.getChildElement(panel, i), false);
+                    int oppositeRight = getAbsolutePosition(!helper.isVertical(), helper.getChildElement(i), false);
                     int oppositeMouse = getEventPosition(!helper.isVertical(), event);
                     return new ResizedChild(i, mainBorder, (oppositeRight >= oppositeMouse && oppositeMouse - oppositeRight < ANCHOR_WIDTH) || right >= mouse);
                 }
@@ -127,8 +122,8 @@ public class ResizeHandler {
         return null;
     }
 
-    private static int getAbsoluteRight(ResizeHelper helper, FlexPanel panel) {
-        return getAbsolutePosition(helper, index, false, panel);
+    private static int getAbsoluteRight() {
+        return getAbsolutePosition(helper, index, false);
     }
 
 //    @Override
@@ -148,11 +143,11 @@ public class ResizeHandler {
 //        }
 //    }
 
-    private void resizeHeaders(FlexPanel panel, int clientX) {
-        int dragX = clientX - initalMouse;
+    private static void resizeHeaders(int clientX) {
+        int dragX = clientX - initialMouse;
         if (Math.abs(dragX) > 2) {
-            helper.resizeChild(panel, index, dragX);
-            initalMouse = Math.max(clientX, getAbsoluteRight(helper, panel)); // делается max, чтобы при resize'е влево растягивание шло с момента когда курсор вернется на правый край колонки (вправо там другие проблемы)
+            helper.resizeChild(index, dragX);
+            initialMouse = Math.max(clientX, getAbsoluteRight()); // делается max, чтобы при resize'е влево растягивание шло с момента когда курсор вернется на правый край колонки (вправо там другие проблемы)
         }
     }
 }

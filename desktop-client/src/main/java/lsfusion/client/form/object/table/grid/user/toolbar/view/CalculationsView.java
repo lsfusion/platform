@@ -16,9 +16,9 @@ public class CalculationsView extends FlexPanel {
     
     public CalculationsView() {
         super(false);
-        add(averageLabel, new FlexConstraints(FlexAlignment.CENTER, 0));
-        add(sumLabel, new FlexConstraints(FlexAlignment.CENTER, 0));
-        add(quantityLabel, new FlexConstraints(FlexAlignment.CENTER, 0));
+        add(averageLabel, FlexAlignment.CENTER, 0.0);
+        add(sumLabel, FlexAlignment.CENTER, 0.0);
+        add(quantityLabel, FlexAlignment.CENTER, 0.0);
     }
 
     public void updateSelectionInfo(int quantity, String sum, String avg) {

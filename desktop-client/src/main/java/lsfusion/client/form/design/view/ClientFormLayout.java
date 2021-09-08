@@ -101,7 +101,12 @@ public class ClientFormLayout extends JPanel {
 
         containerViews.put(container, containerView);
 
-        add(container, containerView.getView());
+        JComponent viewWidget = containerView.getView();
+        add(container, viewWidget);
+
+        // debug info
+        if (container.getSID() != null && viewWidget instanceof FlexPanel)
+            ((FlexPanel) viewWidget).debugContainer = container;
 
         for (ClientComponent child : container.children) {
             if (child instanceof ClientContainer) {

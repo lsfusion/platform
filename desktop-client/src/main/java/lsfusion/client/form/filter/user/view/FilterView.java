@@ -85,8 +85,8 @@ public class FilterView extends FlexPanel implements FilterConditionView.UIHandl
         condContainer.setBorder(BorderFactory.createEmptyBorder(2, 0, 2, 0));
         condContainer.setLayout(new FlexLayout(condContainer, false, START));
 
-        add(condContainer, new FlexConstraints(CENTER, 1));
-        add(buttonPanel, new FlexConstraints(CENTER, 0));
+        add(condContainer, CENTER, 1.0);
+        add(buttonPanel, CENTER, 0.0);
     }
 
     private void initUIHandlers() {

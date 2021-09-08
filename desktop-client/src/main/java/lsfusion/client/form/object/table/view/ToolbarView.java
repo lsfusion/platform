@@ -22,7 +22,7 @@ public class ToolbarView extends FlexPanel {
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.X_AXIS));
         mainPanel.setAlignmentY(Component.TOP_ALIGNMENT);
 
-        add(mainPanel, new FlexConstraints(FlexAlignment.CENTER, 0));
+        add(mainPanel, FlexAlignment.CENTER, 0.0);
     }
     
     public void addSeparator() {
