@@ -8,6 +8,9 @@ import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.classes.ClientType;
 import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.form.controller.ClientFormController;
+import lsfusion.client.form.design.view.widget.ButtonWidget;
+import lsfusion.client.form.design.view.FlexPanel;
+import lsfusion.client.form.design.view.widget.Widget;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.async.ClientInputList;
@@ -18,8 +21,6 @@ import lsfusion.client.form.property.cell.controller.dispatch.EditPropertyDispat
 import lsfusion.client.form.property.table.view.ClientPropertyContextMenuPopup;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.base.view.FlexAlignment;
-import lsfusion.interop.base.view.FlexConstraints;
-import lsfusion.interop.base.view.FlexLayout;
 import lsfusion.interop.form.event.KeyInputEvent;
 import lsfusion.interop.form.event.KeyStrokes;
 
@@ -31,7 +32,7 @@ import static javax.swing.SwingUtilities.isRightMouseButton;
 import static lsfusion.client.base.SwingUtils.overrideSize;
 import static lsfusion.client.form.property.cell.EditBindingMap.getPropertyKeyPressActionSID;
 
-public class ActionPanelView extends JButton implements PanelView, EditPropertyHandler {
+public class ActionPanelView extends ButtonWidget implements PanelView, EditPropertyHandler {
     private final EditPropertyDispatcher editDispatcher;
 
     private final ClientPropertyDraw property;
@@ -40,7 +41,7 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
     private Object value;
     private boolean readOnly;
 
-    private JPanel panel;
+//    private FlexPanel panel;
 
     public ActionPanelView(final ClientPropertyDraw iproperty, final ClientGroupObjectValue icolumnKey, final ClientFormController iform) {
         super((String)null, ClientImages.getImage(iproperty.design.getImageHolder()));
@@ -121,10 +122,10 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
             }
         });
 
-        panel = new JPanel(null);
-        panel.setLayout(new FlexLayout(panel, true, FlexAlignment.CENTER));
-        panel.add(this, new FlexConstraints(property.getAlignment(), 1));
-        property.installMargins(panel);
+//        panel = new FlexPanel(true, FlexAlignment.CENTER);
+//        panel.add(this, property.getAlignment(), 1.0);
+//        property.installMargins(panel);
+        DataPanelView.setDynamic(this, false, property);
 
         if(property.panelCaptionVertical) {
             setVerticalTextPosition(SwingConstants.BOTTOM);
@@ -175,8 +176,8 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
         return property.toString();
     }
 
-    public JComponent getComponent() {
-        return panel;
+    public Widget getWidget() {
+        return this;
     }
 
     public JComponent getFocusComponent() {

@@ -220,7 +220,15 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public PanelView getPanelView(ClientFormController form, ClientGroupObjectValue columnKey, PropertyPanelController.CaptionContainer captionContainer) {
         return baseType.getPanelView(this, columnKey, form, captionContainer);
     }
-    
+
+    // padding has to be included for grid column for example, and not for panel property (since flex, width, min-width, etc. doesn't include padding)
+    public int getValueWidthWithPadding(JComponent component) {
+        return getValueWidth(component) + 1 * 2;
+    }
+    public int getValueHeightWithPadding(JComponent component) {
+        return getValueHeight(component) + 1 * 2;
+    }
+
     public int getValueWidth() {
         if (valueSize != null) {
             return valueSize.width;

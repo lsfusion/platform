@@ -1,8 +1,10 @@
 package lsfusion.client.form.filter.user.view;
 
 import lsfusion.client.controller.remote.RmiQueue;
+import lsfusion.client.form.design.view.*;
 import lsfusion.client.form.design.view.FlexPanel;
-import lsfusion.client.form.design.view.FlexPanel;
+import lsfusion.client.form.design.view.widget.ButtonWidget;
+import lsfusion.client.form.design.view.widget.Widget;
 import lsfusion.client.form.filter.user.ClientFilter;
 import lsfusion.client.form.filter.user.ClientPropertyFilter;
 import lsfusion.client.form.filter.user.controller.FilterController;
@@ -11,8 +13,6 @@ import lsfusion.client.form.object.table.controller.TableController;
 import lsfusion.client.form.object.table.grid.user.toolbar.view.ToolbarGridButton;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.panel.view.DataPanelView;
-import lsfusion.interop.base.view.FlexConstraints;
-import lsfusion.interop.base.view.FlexLayout;
 import lsfusion.interop.form.event.KeyStrokes;
 
 import javax.swing.*;
@@ -39,11 +39,11 @@ public class FilterView extends FlexPanel implements FilterConditionView.UIHandl
     private ClientFilter filterComponent;
     private boolean initialized = false;
 
-    private JButton addConditionButton;
-    private JButton resetConditionsButton;
+    private ButtonWidget addConditionButton;
+    private ButtonWidget resetConditionsButton;
 
-    private JPanel buttonPanel;
-    private JPanel condContainer;
+    private FlexPanel buttonPanel;
+    private FlexPanel condContainer;
 
     private final Map<ClientPropertyFilter, FilterConditionView> conditionViews = new LinkedHashMap<>();
 
@@ -74,16 +74,14 @@ public class FilterView extends FlexPanel implements FilterConditionView.UIHandl
     }
 
     private void initLayout() {
-        buttonPanel = new JPanel();
-        buttonPanel.setLayout(new FlexLayout(buttonPanel, false, START));
+        buttonPanel = new FlexPanel(false, START);
 
-        buttonPanel.add(addConditionButton, new FlexConstraints(CENTER, 0));
-        buttonPanel.add(Box.createHorizontalStrut(2), new FlexConstraints(CENTER, 0));
-        buttonPanel.add(resetConditionsButton, new FlexConstraints(CENTER, 0));
+        buttonPanel.add(addConditionButton, CENTER, 0.0);
+        buttonPanel.add(Filler.createHorizontalStrut(2), CENTER, 0.0);
+        buttonPanel.add(resetConditionsButton, CENTER, 0.0);
 
-        condContainer = new JPanel();
+        condContainer = new FlexPanel(false, START);
         condContainer.setBorder(BorderFactory.createEmptyBorder(2, 0, 2, 0));
-        condContainer.setLayout(new FlexLayout(condContainer, false, START));
 
         add(condContainer, CENTER, 1.0);
         add(buttonPanel, CENTER, 0.0);
@@ -238,7 +236,7 @@ public class FilterView extends FlexPanel implements FilterConditionView.UIHandl
         FilterConditionView condView = new FilterConditionView(condition, logicsSupplier, this, toolsVisible, readSelectedValue);
         conditionViews.put(condition, condView);
 
-        condContainer.add(condView, new FlexConstraints(CENTER, 0));
+        condContainer.add(condView, CENTER, 0.0);
 
         updateConditionsLastState();
 
@@ -295,7 +293,7 @@ public class FilterView extends FlexPanel implements FilterConditionView.UIHandl
     public void removeCondition(ClientPropertyFilter condition) {
         FilterConditionView view = conditionViews.get(condition);
         if (view != null) {
-            condContainer.remove(view);
+            condContainer.remove((Widget) view);
             conditionViews.remove(condition);
 
             updateConditionsLastState();

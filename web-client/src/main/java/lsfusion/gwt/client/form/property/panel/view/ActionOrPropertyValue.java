@@ -107,9 +107,9 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
             borderWidget.addStyleName("actionPanelRendererValue");
 
         // if widget is wrapped into absolute positioned simple panel, we need to include paddings (since borderWidget doesn't include them)
-        boolean isStatic = borderWidget != this;
-        int valueWidth = isStatic ? property.getValueWidthWithPadding(null) : property.getValueWidth(null);
-        int valueHeight = isStatic ? property.getValueHeightWithPadding(null) : property.getValueHeight(null);
+        boolean hasBorder = borderWidget != this;
+        int valueWidth = hasBorder ? property.getValueWidthWithPadding(null) : property.getValueWidth(null);
+        int valueHeight = hasBorder ? property.getValueHeightWithPadding(null) : property.getValueHeight(null);
         // about the last parameter oppositeAndFixed, here it's tricky since we don't know where this borderWidget will be added, however it seems that all current stacks assume that they are added with STRETCH alignment
         FlexPanel.setBaseSize(borderWidget, false, valueWidth);
         FlexPanel.setBaseSize(borderWidget, true, valueHeight);

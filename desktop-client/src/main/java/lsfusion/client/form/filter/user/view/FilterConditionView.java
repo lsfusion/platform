@@ -2,13 +2,15 @@ package lsfusion.client.form.filter.user.view;
 
 import lsfusion.base.Pair;
 import lsfusion.client.controller.remote.RmiQueue;
+import lsfusion.client.form.design.view.*;
+import lsfusion.client.form.design.view.widget.LabelWidget;
+import lsfusion.client.form.design.view.widget.SeparatorWidget;
+import lsfusion.client.form.design.view.widget.Widget;
 import lsfusion.client.form.filter.user.ClientPropertyFilter;
 import lsfusion.client.form.object.table.controller.TableController;
 import lsfusion.client.form.object.table.grid.user.toolbar.view.ToolbarGridButton;
 import lsfusion.client.form.view.Column;
 import lsfusion.interop.base.view.FlexAlignment;
-import lsfusion.interop.base.view.FlexConstraints;
-import lsfusion.interop.base.view.FlexLayout;
 import lsfusion.interop.form.event.KeyStrokes;
 import lsfusion.interop.form.property.Compare;
 
@@ -18,11 +20,10 @@ import java.awt.*;
 import java.util.List;
 import java.util.*;
 
-import static javax.swing.Box.createHorizontalStrut;
 import static lsfusion.client.ClientResourceBundle.getString;
 import static lsfusion.client.base.view.SwingDefaults.*;
 
-public class FilterConditionView extends JPanel {
+public class FilterConditionView extends FlexPanel {
     public interface UIHandler {
         void removeCondition(ClientPropertyFilter condition);
         void applyFilters(boolean focusFirstComponent);
@@ -37,18 +38,18 @@ public class FilterConditionView extends JPanel {
 
     private Map<Column, String> columns = new HashMap<>();
     
-    private JLabel propertyLabel;
+    private LabelWidget propertyLabel;
     private FilterOptionSelector<Column> propertyView;
 
-    private JLabel compareLabel;
+    private LabelWidget compareLabel;
     private FilterCompareSelector compareView;
     
     private DataFilterValueView valueView;
     
-    private JPanel deleteButtonWrapper;
+    private FlexPanel deleteButtonWrapper;
     
-    private JPanel junctionSeparator;
-    private JPanel junctionViewWrapper;
+    private FlexPanel junctionSeparator;
+    private FlexPanel junctionViewWrapper;
 
     public boolean allowNull = false;
 
@@ -58,11 +59,10 @@ public class FilterConditionView extends JPanel {
     public boolean isApplied;
     
     public FilterConditionView(ClientPropertyFilter ifilter, TableController logicsSupplier, UIHandler iuiHandler, boolean toolsVisible, boolean readSelectedValue) {
+        super(false, FlexAlignment.START);
         condition = ifilter;
         uiHandler = iuiHandler;
         this.toolsVisible = toolsVisible;
-
-        setLayout(new FlexLayout(this, false, FlexAlignment.START));
 
         List<Pair<Column, String>> selectedColumns = logicsSupplier.getSelectedColumns();
         for (Pair<Column, String> column : selectedColumns) {
@@ -77,7 +77,7 @@ public class FilterConditionView extends JPanel {
                 0,
                 getTableCellMargins().right + getComponentBorderWidth());
         
-        propertyLabel = new JLabel(currentCaption);
+        propertyLabel = new LabelWidget(currentCaption);
         propertyLabel.setBorder(labelBorder);
         addCentered(propertyLabel);
 
@@ -100,7 +100,7 @@ public class FilterConditionView extends JPanel {
         }
         addCentered(propertyView);
 
-        compareLabel = new JLabel();
+        compareLabel = new LabelWidget();
         updateCompareLabelText();
         compareLabel.setBorder(labelBorder);
         addCentered(compareLabel);
@@ -152,24 +152,21 @@ public class FilterConditionView extends JPanel {
         valueView.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 2));
         addCentered(valueView);
 
-        deleteButtonWrapper = new JPanel();
-        deleteButtonWrapper.setLayout(new FlexLayout(deleteButtonWrapper, false, FlexAlignment.START));
+        deleteButtonWrapper = new FlexPanel(false, FlexAlignment.START);
         ToolbarGridButton deleteButton = new ToolbarGridButton(DELETE_ICON_PATH, getString("form.queries.filter.remove.condition"), new Dimension(getComponentHeight(), getComponentHeight()));
         deleteButton.addActionListener(e -> RmiQueue.runAction(() -> uiHandler.removeCondition(condition)));
-        deleteButtonWrapper.add(deleteButton, new FlexConstraints());
-        deleteButtonWrapper.add(Box.createHorizontalStrut(2), new FlexConstraints());
+        deleteButtonWrapper.add((Widget)deleteButton);
+        deleteButtonWrapper.add(Filler.createHorizontalStrut(2));
         addCentered(deleteButtonWrapper);
 
-        junctionSeparator = new JPanel();
-        junctionSeparator.setLayout(new FlexLayout(junctionSeparator, false, FlexAlignment.START));
+        junctionSeparator = new FlexPanel(false, FlexAlignment.START);
         int separatorMarginWidth = getComponentHeight() / 2;
-        junctionSeparator.add(createHorizontalStrut(separatorMarginWidth), new FlexConstraints());
-        junctionSeparator.add(new JSeparator(SwingConstants.VERTICAL), new FlexConstraints(FlexAlignment.STRETCH, 0));
-        junctionSeparator.add(createHorizontalStrut(separatorMarginWidth - 2), new FlexConstraints()); // 2 for margin compensation 
-        add(junctionSeparator, new FlexConstraints(FlexAlignment.STRETCH, 0));
+        junctionSeparator.add(Filler.createHorizontalStrut(separatorMarginWidth));
+        junctionSeparator.add(new SeparatorWidget(SwingConstants.VERTICAL), FlexAlignment.STRETCH, 0.0);
+        junctionSeparator.add(Filler.createHorizontalStrut(separatorMarginWidth - 2)); // 2 for margin compensation
+        add(junctionSeparator, FlexAlignment.STRETCH, 0.0);
 
-        junctionViewWrapper = new JPanel();
-        junctionViewWrapper.setLayout(new FlexLayout(junctionViewWrapper, false, FlexAlignment.START));
+        junctionViewWrapper = new FlexPanel(false, FlexAlignment.START);
         ToolbarGridButton junctionView = new ToolbarGridButton(SEPARATOR_ICON_PATH, getString("form.queries.or")) {
             @Override
             public void addListener() {
@@ -181,8 +178,8 @@ public class FilterConditionView extends JPanel {
             }
         };
         junctionView.showBackground(!condition.junction);
-        junctionViewWrapper.add(junctionView, new FlexConstraints());
-        junctionViewWrapper.add(Box.createHorizontalStrut(2), new FlexConstraints());
+        junctionViewWrapper.add((Widget) junctionView);
+        junctionViewWrapper.add(Filler.createHorizontalStrut(2));
         addCentered(junctionViewWrapper);
 
         setToolsVisible(toolsVisible);
@@ -196,8 +193,8 @@ public class FilterConditionView extends JPanel {
         compareLabel.setToolTipText(negationString + condition.compare.getTooltipText());
     }
 
-    private void addCentered(Component component) {
-        add(component, new FlexConstraints(FlexAlignment.CENTER, 0));
+    private void addCentered(Widget component) {
+        add(component, FlexAlignment.CENTER, 0.0);
     }
 
     @Override

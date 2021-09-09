@@ -1,8 +1,8 @@
 package lsfusion.client.form.object.table.grid.user.toolbar.view;
 
 import lsfusion.client.form.design.view.FlexPanel;
+import lsfusion.client.form.design.view.widget.LabelWidget;
 import lsfusion.interop.base.view.FlexAlignment;
-import lsfusion.interop.base.view.FlexConstraints;
 
 import javax.swing.*;
 
@@ -10,9 +10,9 @@ import static lsfusion.client.ClientResourceBundle.getString;
 import static lsfusion.client.StartupProperties.dotSeparator;
 
 public class CalculationsView extends FlexPanel {
-    private JLabel averageLabel = new JLabel();
-    private JLabel sumLabel = new JLabel();
-    private JLabel quantityLabel = new JLabel();
+    private LabelWidget averageLabel = new LabelWidget();
+    private LabelWidget sumLabel = new LabelWidget();
+    private LabelWidget quantityLabel = new LabelWidget();
     
     public CalculationsView() {
         super(false);

@@ -1,14 +1,14 @@
 package lsfusion.client.form.design.view;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.client.base.SwingUtils;
-import lsfusion.client.form.filter.user.view.FilterView;
-import lsfusion.client.form.object.table.view.ToolbarView;
+import lsfusion.client.form.design.view.widget.PanelWidget;
+import lsfusion.client.form.design.view.widget.Widget;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.base.view.FlexConstraints;
 import lsfusion.interop.base.view.FlexLayout;
 
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -17,23 +17,19 @@ import java.util.List;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static lsfusion.client.base.SwingUtils.overrideSize;
-
-public class FlexPanel extends JPanel implements MouseMotionListener {
+public class FlexPanel extends PanelWidget implements MouseMotionListener {
 
     protected static FlexPanelImpl impl = FlexPanelImpl.get();
 
     private final boolean vertical;
 
-    public Object debugContainer;
+    private static Map<Widget, LayoutData> layoutDataMap = new HashMap<>();
 
-    private static Map<Component, LayoutData> layoutDataMap = new HashMap<>();
-
-    public static LayoutData getLayoutData(Component widget) {
+    public static LayoutData getLayoutData(Widget widget) {
         return layoutDataMap.get(widget);
     }
 
-    public static void setLayoutData(Component widget, LayoutData layoutData) {
+    public static void setLayoutData(Widget widget, LayoutData layoutData) {
         layoutDataMap.put(widget, layoutData);
     }
 
@@ -124,89 +120,89 @@ public class FlexPanel extends JPanel implements MouseMotionListener {
         return vertical;
     }
 
-    public void add(JComponent widget) {
+    public void add(Widget widget) {
         add(widget, FlexAlignment.START);
     }
 
-    public void add(JComponent widget, FlexAlignment alignment) {
-        add(widget, getChildren().size(), alignment);
+    public void add(Widget widget, FlexAlignment alignment) {
+        add(widget, getChildrenCount(), alignment);
     }
 
-    public void add(Component widget, int beforeIndex, FlexAlignment alignment) {
+    private int getChildrenCount() {
+        return getChildren().size();
+    }
+
+    public void add(Widget widget, int beforeIndex, FlexAlignment alignment) {
         add(widget, beforeIndex, alignment, 0, null); // maybe here it also makes sense to set basis to 0 as in addFill, but for now it's used mostly in vertical container for simple components
     }
 
-    public void addFillFlex(Component widget, Integer flexBasis) {
-        addFill(widget, getChildren().size(), flexBasis);
+    public void addFillFlex(Widget widget, Integer flexBasis) {
+        addFill(widget, getChildrenCount(), flexBasis);
     }
 
-    public void addFill(Component widget) {
-        addFill(widget, getChildren().size());;
+    public void addFill(Widget widget) {
+        addFill(widget, getChildrenCount());;
     }
 
-    public void addFill(Component widget, int beforeIndex) {
-        addFill(widget, beforeIndex, vertical ? null : 0);
+    public void addFill(Widget widget, int beforeIndex) {
+        addFill(widget, beforeIndex, null);
     }
 
-    public void addFill(Component widget, int beforeIndex, Integer flexBasis) {
+    public void addFill(Widget widget, int beforeIndex, Integer flexBasis) {
         add(widget, beforeIndex, FlexAlignment.STRETCH, 1, flexBasis);
     }
 
-    public void add(Component widget, FlexAlignment alignment, double flex) {
-        add(widget, getChildren().size(), alignment, flex, null);
+    public void add(Widget widget, FlexAlignment alignment, double flex) {
+        add(widget, alignment, flex, null);
+    }
+
+    public void add(Widget widget, FlexAlignment alignment, double flex, Integer flexBasis) {
+        add(widget, getChildrenCount(), alignment, flex, flexBasis);
     }
 
     //main add method
-    public void add(Component widget, int beforeIndex, FlexAlignment alignment, double flex, Integer flexBasis) {
-        add(widget, new FlexConstraints(alignment, flex), beforeIndex);
+    public void add(Widget widget, int beforeIndex, FlexAlignment alignment, double flex, Integer flexBasis) {
+        add(widget.getComponent(), new FlexConstraints(alignment, flex), beforeIndex);
 
         LayoutData layoutData = impl.insertChild(widget, beforeIndex, alignment, flex, flexBasis, vertical);
         setLayoutData(widget, layoutData);
     }
 
-    public static void setBaseSize(Component widget, boolean vertical, Integer size) {
+    public void remove(Widget widget) {
+        remove(widget.getComponent());
+    }
+
+    public static void setBaseSize(Widget widget, boolean vertical, Integer size) {
         setBaseSize(widget, vertical, size, false);
     }
 
-    public static void setBaseSize(Component element, boolean vertical, Integer size, boolean oppositeAndFixed) {
-
-        //todo: в вебе ещё есть clearProperty, непонятно, как это реализовать
-//        String propName = vertical ? (oppositeAndFixed ? "height" : "minHeight") : (oppositeAndFixed ? "width" : "minWidth");
-//        if(size != null)
-//            element.getStyle().setProperty(propName, size + "px");
-//        else
-//            element.getStyle().clearProperty(propName);
-
-        if(size != null) {
-            if (vertical) {
-                if (oppositeAndFixed) {
-                    element.setSize(new Dimension(element.getSize().width, size)); //set height
-                } else {
-                    element.setPreferredSize(new Dimension(element.getPreferredSize().width, size)); //set minHeight
-                }
-            } else {
-                if (oppositeAndFixed) {
-                    element.setSize(new Dimension(size, element.getSize().height)); //set width
-                } else {
-                    element.setPreferredSize(new Dimension(size, element.getPreferredSize().height)); //set minWidth
-                }
-            }
+    public static void setBaseSize(Widget element, boolean vertical, Integer size, boolean oppositeAndFixed) {
+        if (vertical) {
+            element.setComponentSize(new Dimension(element.getComponentSize().width, size != null ? size : -1)); //set minHeight
+//            if (oppositeAndFixed && size != null) {
+//                element.setSize(new Dimension(element.getSize().width, size)); //set height
+//            }
+        } else {
+            element.setComponentSize(new Dimension(size != null ? size : -1, element.getComponentSize().height)); //set minWidth
+//            if (oppositeAndFixed && size != null) {
+//                element.setSize(new Dimension(size, element.getSize().height)); //set width
+//            }
         }
     }
 
     private ResizeHelper resizeHelper = new ResizeHelper() {
         @Override
         public int getChildCount() {
-            return getChildren().size();
+            return getChildrenCount();
         }
 
         @Override
         public Component getChildElement(int index) {
-            return getChildren().get(index);
+            return getChildren().get(index).getComponent();
         }
 
         @Override
-        public Component getChildWidget(int index) {
+        public Widget getChildWidget(int index) {
             return getChildren().get(index);
         }
 
@@ -220,7 +216,7 @@ public class FlexPanel extends JPanel implements MouseMotionListener {
                 return false;
 
             // optimization, if it is the last element, and there is a "resizable" parent, we consider this element to be not resizable (assuming that this "resizable" parent will be resized)
-            if(index == getChildren().size() - 1 && getParentSameFlexPanel(vertical) != null)
+            if(index == getChildrenCount() - 1 && getParentSameFlexPanel(vertical) != null)
                 return false;
 
             return true;
@@ -239,9 +235,9 @@ public class FlexPanel extends JPanel implements MouseMotionListener {
 
     // the resize algorithm assumes that there should be flex column to the left, to make
     public boolean isWidgetResizable(int widgetNumber) {
-        List<Component> children = getChildren();
+        List<Widget> children = getChildren();
         for (int i = widgetNumber; i >= 0; i--) {
-            Component child = children.get(i);
+            Widget child = children.get(i);
             LayoutData layoutData = getLayoutData(child);
             if (layoutData != null && layoutData.baseFlex > 0 && child.isVisible())
                 return true;
@@ -250,8 +246,8 @@ public class FlexPanel extends JPanel implements MouseMotionListener {
     }
 
     //ignore FilterView
-    private List<Component> getChildren() {
-        return Arrays.stream(getComponents()).filter(component -> !(component instanceof FilterView) && !(component instanceof ToolbarView)).collect(Collectors.toList());
+    private List<Widget> getChildren() {
+        return BaseUtils.immutableCast(Arrays.stream(getComponents()).filter(component -> component instanceof Widget).collect(Collectors.toList()));
     }
 
     @Override
@@ -278,21 +274,6 @@ public class FlexPanel extends JPanel implements MouseMotionListener {
                 return new Pair<>(flexParent, index);
         }
         return null;
-    }
-
-    private Dimension componentSize;
-
-    public void setComponentSize(Dimension componentSize) {
-        this.componentSize = componentSize;
-    }
-
-    @Override
-    public Dimension getPreferredSize() {
-        return overrideSize(super.getPreferredSize(), componentSize);
-    }
-
-    public Dimension getMaxPreferredSize() {
-        return getPreferredSize();
     }
 
     public static final class LayoutData {
@@ -325,10 +306,10 @@ public class FlexPanel extends JPanel implements MouseMotionListener {
     public void resizeWidget(int widgetNumber, double delta) {
         Pair<FlexPanel, Integer> parentSameFlexPanel = getParentSameFlexPanel(vertical);
 
-        List<Component> children = new ArrayList<>();
+        List<Widget> children = new ArrayList<>();
         int i = 0;
         int invisibleBefore = 0;
-        for(Component child : getChildren()) {
+        for(Widget child : getChildren()) {
             if (child.isVisible())
                 children.add(child);
             else if(i < widgetNumber) {
@@ -346,7 +327,7 @@ public class FlexPanel extends JPanel implements MouseMotionListener {
         double[] baseFlexes = new double[size];
 
         i = 0;
-        for(Component widget : children) {
+        for(Widget widget : children) {
             LayoutData layoutData = getLayoutData(widget);
             if (layoutData.flexBasis == null || layoutData.baseFlexBasis == null)
                 impl.setFlex(widget, 0, null, vertical);
@@ -362,10 +343,10 @@ public class FlexPanel extends JPanel implements MouseMotionListener {
         // we'll do it in different cycles to minimize the quantity of layouting
         int margins = 0;
         i = 0;
-        for(Component widget : children) {
+        for(Widget widget : children) {
             LayoutData layoutData = getLayoutData(widget);
 
-            int realSize = impl.getSize(widget, vertical); // calculating size
+            int realSize = impl.getSize(widget.getComponent(), vertical); // calculating size
             if(layoutData.flexBasis == null || layoutData.baseFlexBasis == null) {
                 if(layoutData.flexBasis == null)
                     prefs[i] = realSize;
@@ -385,7 +366,7 @@ public class FlexPanel extends JPanel implements MouseMotionListener {
             parentSameFlexPanel.first.resizeWidget(parentSameFlexPanel.second, restDelta);
 
         i = 0;
-        for(Component widget : children) {
+        for(Widget widget : children) {
             LayoutData layoutData = getLayoutData(widget);
 
             Integer newPref = (int) Math.round(prefs[i]);

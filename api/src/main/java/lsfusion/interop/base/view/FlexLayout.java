@@ -59,6 +59,8 @@ public class FlexLayout extends CachableLayout<FlexConstraints> {
     public void layoutContainer(Container parent) {
         checkParent(parent);
 
+//        System.out.println("Layouting " + target);
+
         Dimension size = target.getSize();
         Insets in = target.getInsets();
 
@@ -119,6 +121,9 @@ public class FlexLayout extends CachableLayout<FlexConstraints> {
                 }
 
                 Rectangle bounds = child.getBounds();
+
+//                System.out.println("\t" + child + "\n\t\t" + bounds);
+
                 if (bounds.x != xOffset || bounds.y != yOffset || bounds.width != width || bounds.height != height) {
                     child.setBounds(xOffset, yOffset, width, height);
                 }

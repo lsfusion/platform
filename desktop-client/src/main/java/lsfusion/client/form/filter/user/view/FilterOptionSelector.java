@@ -2,6 +2,7 @@ package lsfusion.client.form.filter.user.view;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.client.base.view.SwingDefaults;
+import lsfusion.client.form.design.view.widget.TextFieldWidget;
 
 import javax.swing.*;
 import java.awt.*;
@@ -12,7 +13,7 @@ import java.util.List;
 
 import static javax.swing.BorderFactory.*;
 
-public abstract class FilterOptionSelector<T> extends JTextField {
+public abstract class FilterOptionSelector<T> extends TextFieldWidget {
     JScrollPopupMenu menu = new JScrollPopupMenu();
     protected T currentValue;
 

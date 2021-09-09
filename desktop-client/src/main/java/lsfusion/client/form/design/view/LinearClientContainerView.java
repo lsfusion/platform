@@ -3,10 +3,10 @@ package lsfusion.client.form.design.view;
 import lsfusion.client.base.view.ClientColorUtils;
 import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.design.ClientContainer;
+import lsfusion.client.form.design.view.widget.Widget;
 import lsfusion.client.form.object.panel.controller.PropertyPanelController;
 import lsfusion.interop.base.view.FlexAlignment;
 
-import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -47,7 +47,7 @@ public class LinearClientContainerView extends AbstractClientContainerView {
             for (int i = 0; i < columnsCount; i++) {
                 if(alignCaptions) {
                     FlexPanel captionColumn = new FlexPanel(vertical);
-                    panel.add(captionColumn); // however it seems that FlexAlignment.STRETCH is also possible
+                    panel.add((Widget)captionColumn); // however it seems that FlexAlignment.STRETCH is also possible
                     captionColumns[i] = captionColumn;
                 }
 
@@ -81,7 +81,7 @@ public class LinearClientContainerView extends AbstractClientContainerView {
     }
 
     public CaptionPanel getCaptionPanel(ClientContainer container) {
-        Component childPanel = getChildView(container);
+        Widget childPanel = getChildView(container);
 
         CaptionPanel caption = null;
         if(childPanel instanceof CaptionPanel)
@@ -92,7 +92,7 @@ public class LinearClientContainerView extends AbstractClientContainerView {
     }
 
     @Override
-    public void addImpl(int index, ClientComponent child, Component view) {
+    public void addImpl(int index, ClientComponent child, Widget view) {
         if (alignCaptions) { // when adding PropertyPanelController.Panel is empty, so we have to do everything wit callback
             AlignCaptionPanel captionPanel = new AlignCaptionPanel(!vertical);
 
@@ -110,7 +110,7 @@ public class LinearClientContainerView extends AbstractClientContainerView {
                     baseSize = size;
 
                 captionPanel.baseSize = baseSize; // it's called after it is first time added to the container, so we store it in some field for further adding, removing (actually it's needed for component "shifting", when we need to add/remove latter components)
-                FlexPanel.setBaseSize(captionPanel, vertical, baseSize + 6 /*to look like in web*/);  // oppositeAndFixed - false, since we're settings size for main direction
+                FlexPanel.setBaseSize(captionPanel, vertical, baseSize /*to look like in web*/);  // oppositeAndFixed - false, since we're settings size for main direction
             };
         }
 
@@ -171,7 +171,7 @@ public class LinearClientContainerView extends AbstractClientContainerView {
         (isSimple() ? panel : columns[columnIndex]).remove(childrenViews.get(index));
 
         if(alignCaptions)
-            captionColumns[columnIndex].remove(childrenCaptions.get(index));
+            captionColumns[columnIndex].remove((Widget) childrenCaptions.get(index));
     }
 
     @Override
@@ -226,7 +226,7 @@ public class LinearClientContainerView extends AbstractClientContainerView {
     }
 
     @Override
-    public JComponent getView() {
+    public Widget getView() {
         return panel;
     }
 }

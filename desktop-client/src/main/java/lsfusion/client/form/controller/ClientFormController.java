@@ -32,9 +32,9 @@ import lsfusion.client.form.controller.dispatch.ClientFormActionDispatcher;
 import lsfusion.client.form.controller.remote.serialization.ClientSerializationPool;
 import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.design.ClientContainer;
-import lsfusion.client.form.design.view.ClientFormLayout;
-import lsfusion.client.form.design.view.FlexPanel;
-import lsfusion.client.form.design.view.TabbedClientContainerView;
+import lsfusion.client.form.design.view.*;
+import lsfusion.client.form.design.view.widget.ComboBoxWidget;
+import lsfusion.client.form.design.view.widget.Widget;
 import lsfusion.client.form.filter.ClientRegularFilter;
 import lsfusion.client.form.filter.ClientRegularFilterGroup;
 import lsfusion.client.form.filter.ClientRegularFilterWrapper;
@@ -415,7 +415,7 @@ public class ClientFormController implements AsyncListener {
     }
 
     private void createMultipleFilterComponent(final ClientRegularFilterGroup filterGroup) {
-        final JComboBox comboBox = new JComboBox();
+        final ComboBoxWidget comboBox = new ComboBoxWidget();
         comboBox.addItem(new ClientRegularFilterWrapper(getString("form.all")));
         for (final ClientRegularFilter filter : filterGroup.filters) {
             comboBox.addItem(new ClientRegularFilterWrapper(filter));
@@ -489,7 +489,7 @@ public class ClientFormController implements AsyncListener {
         }
     }
 
-    private void addFilterView(ClientRegularFilterGroup filterGroup, JComponent filterView) {
+    private void addFilterView(ClientRegularFilterGroup filterGroup, Widget filterView) {
         FlexPanel filterPanel = new FlexPanel(false);
         filterPanel.setBorder(BorderFactory.createEmptyBorder(0, 2, 0 , 2));
         filterPanel.add(filterView);

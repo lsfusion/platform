@@ -1,5 +1,7 @@
 package lsfusion.client.form.design.view;
 
+import lsfusion.client.form.design.view.widget.Widget;
+
 import java.awt.*;
 
 public class CaptionPanel extends FlexPanel {
@@ -35,7 +37,7 @@ public class CaptionPanel extends FlexPanel {
 //        }
 
     public Dimension getMaxPreferredSize() {
-        return adjustMaxPreferredSize(AbstractClientContainerView.calculateMaxPreferredSize(getComponent(1)));
+        return adjustMaxPreferredSize(AbstractClientContainerView.calculateMaxPreferredSize((Widget)getComponent(1)));
     }
 
     public Dimension adjustMaxPreferredSize(Dimension dimension) {

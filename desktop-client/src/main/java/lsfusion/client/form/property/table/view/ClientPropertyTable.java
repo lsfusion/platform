@@ -8,6 +8,7 @@ import lsfusion.client.classes.ClientActionClass;
 import lsfusion.client.classes.ClientType;
 import lsfusion.client.classes.data.ClientTextClass;
 import lsfusion.client.form.controller.ClientFormController;
+import lsfusion.client.form.design.view.widget.TableWidget;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.property.ClientPropertyDraw;
@@ -40,7 +41,7 @@ import java.util.EventObject;
 
 import static lsfusion.client.form.property.cell.EditBindingMap.*;
 
-public abstract class ClientPropertyTable extends JTable implements TableTransferHandler.TableInterface, AsyncChangeCellTableInterface {
+public abstract class ClientPropertyTable extends TableWidget implements TableTransferHandler.TableInterface, AsyncChangeCellTableInterface {
     private final EditPropertyDispatcher editDispatcher;
     protected final EditBindingMap editBindingMap = new EditBindingMap(true);
     private final CellTableContextMenuHandler contextMenuHandler = new CellTableContextMenuHandler(this);

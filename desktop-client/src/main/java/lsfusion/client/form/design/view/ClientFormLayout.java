@@ -5,6 +5,8 @@ import lsfusion.client.base.focus.FormFocusTraversalPolicy;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.design.ClientContainer;
+import lsfusion.client.form.design.view.widget.PanelWidget;
+import lsfusion.client.form.design.view.widget.Widget;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.view.MainFrame;
 
@@ -14,7 +16,7 @@ import java.awt.event.*;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ClientFormLayout extends JPanel {
+public class ClientFormLayout extends PanelWidget {
 
     public Dimension getMaxPreferredSize() {
         return AbstractClientContainerView.getMaxPreferredSize(mainContainer,containerViews, false); // в BOX container'е берем явный size (предполагая что он используется не как базовый размер с flex > 0, а конечный)
@@ -32,7 +34,7 @@ public class ClientFormLayout extends JPanel {
     @SuppressWarnings({"FieldCanBeLocal"})
     private FocusListener focusListener;
 
-    public Component getComponentView(ClientContainer container) {
+    public Widget getComponentView(ClientContainer container) {
         return getContainerView(container).getView();
     }
 
@@ -101,12 +103,12 @@ public class ClientFormLayout extends JPanel {
 
         containerViews.put(container, containerView);
 
-        JComponent viewWidget = containerView.getView();
+        Widget viewWidget = containerView.getView();
         add(container, viewWidget);
 
         // debug info
-        if (container.getSID() != null && viewWidget instanceof FlexPanel)
-            ((FlexPanel) viewWidget).debugContainer = container;
+        if (container.getSID() != null)
+            viewWidget.setDebugContainer(container);
 
         for (ClientComponent child : container.children) {
             if (child instanceof ClientContainer) {
@@ -134,7 +136,7 @@ public class ClientFormLayout extends JPanel {
             if (child instanceof ClientContainer)
                 childVisible = autoShowHideContainers((ClientContainer) child);
             else {
-                Component childView = baseComponentViews.get(child); // we have to use baseComponentView (and not a wrapper in getChildView), since it has relevant visible state
+                Widget childView = baseComponentViews.get(child); // we have to use baseComponentView (and not a wrapper in getChildView), since it has relevant visible state
                 childVisible = childView != null && childView.isVisible();
             }
 
@@ -145,16 +147,16 @@ public class ClientFormLayout extends JPanel {
         return hasVisible;
     }
 
-    private Map<ClientComponent, Component> baseComponentViews = new HashMap<>();
+    private Map<ClientComponent, Widget> baseComponentViews = new HashMap<>();
 
-    public void addBaseComponent(ClientComponent component, JComponent view) {
+    public void addBaseComponent(ClientComponent component, Widget view) {
         assert !(component instanceof ClientContainer);
         baseComponentViews.put(component, view);
         add(component, view);
     }
 
     // добавляем визуальный компонент
-    public boolean add(ClientComponent key, JComponent view) {
+    public boolean add(ClientComponent key, Widget view) {
         if (key.container != null) { // container can be null when component should be layouted manually
             ClientContainerView containerView = containerViews.get(key.container);
             if (containerView != null && !containerView.hasChild(key)) {
@@ -164,7 +166,7 @@ public class ClientFormLayout extends JPanel {
                 containerView.add(key, view);
 
                 if (key.defaultComponent) {
-                    policy.addDefault(view);
+                    policy.addDefault(view.getComponent());
                 }
                 return true;
             }
@@ -172,14 +174,14 @@ public class ClientFormLayout extends JPanel {
         return false;
     }
 
-    public void removeBaseComponent(ClientComponent key, Component view) {
+    public void removeBaseComponent(ClientComponent key, Widget view) {
         assert !(key instanceof ClientContainer);
         baseComponentViews.remove(key);
         remove(key, view);
     }
 
     // удаляем визуальный компонент
-    public boolean remove(ClientComponent key, Component view) {
+    public boolean remove(ClientComponent key, Widget view) {
         if (key.container != null) { // see add method
             ClientContainerView containerView = containerViews.get(key.container);
             if (containerView != null && containerView.hasChild(key)) {
@@ -188,7 +190,7 @@ public class ClientFormLayout extends JPanel {
 
                 containerView.remove(key);
                 if (key.defaultComponent) {
-                    policy.removeDefault(view);
+                    policy.removeDefault(view.getComponent());
                 }
                 return true;
             }

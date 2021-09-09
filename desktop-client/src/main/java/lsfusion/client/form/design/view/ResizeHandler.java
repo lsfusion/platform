@@ -1,5 +1,6 @@
 package lsfusion.client.form.design.view;
 
+import lsfusion.client.form.design.view.widget.Widget;
 import lsfusion.client.form.filter.user.view.FilterView;
 import lsfusion.client.form.object.table.view.ToolbarView;
 
@@ -52,7 +53,7 @@ public class ResizeHandler {
                     // so we push this event down to that container
                     // in theory we should check that event is trigger to the right of this child widget, but since this child widget can have paddings / margins, we'll just do some extra work
                     if(resizedChild != null && resizedChild.outsideBorder) {
-                        Component childWidget = helper.getChildWidget(resizedChild.index);
+                        Widget childWidget = helper.getChildWidget(resizedChild.index);
                         if (childWidget instanceof FlexPanel)
                             ((FlexPanel)childWidget).checkResizeEvent(event, cursorElement, false);
                     }
