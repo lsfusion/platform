@@ -8,24 +8,59 @@ else
     console.error("google key does not exist");
 
 function customGoogleAutocomplete() {
-    if (mapApiKeyGoogle == null)
-        window.alert("google key does not exist");
     return {
         render: (element, editor) => {
-            let autocompleteOptions = {
-                types: ['address'],
-                componentRestrictions: {
-                country: lsfParams.googleMapAutocompleteCountry
+            if (mapApiKeyGoogle != null) {
+                let autocompleteOptions = {
+                    types: ['address'],
+                    componentRestrictions: {
+                        country: lsfParams.googleMapAutocompleteCountry
+                    }
+                };
+
+                editor.setDeferredCommitOnBlur(true);
+
+                new google.maps.places.Autocomplete(element, autocompleteOptions);
+            } else {
+                let tooltipElement = document.createElement('tooltip')
+                tooltipElement.style.setProperty("position", "fixed");
+                tooltipElement.style.setProperty("color", "red");
+                tooltipElement.style.setProperty("font-weight", "bold");
+
+                let firstLineText = document.createTextNode("Google API key does not set");
+                let secondLineText = document.createTextNode("Autocomplete is not available");
+                let thirdLineText = document.createTextNode("Contact your administrator");
+                tooltipElement.appendChild(firstLineText);
+                tooltipElement.appendChild(document.createElement("br"));
+                tooltipElement.appendChild(secondLineText);
+                tooltipElement.appendChild(document.createElement("br"));
+                tooltipElement.appendChild(thirdLineText);
+
+                element.onmouseover = function (event) {
+                    removeTooltipElement(tooltipElement);
+
+                    tooltipElement.style.top = (event.pageY + 10) + 'px';
+                    tooltipElement.style.left = (event.pageX + 10) + 'px';
+                    document.body.appendChild(tooltipElement);
                 }
-            };
 
-            editor.setDeferredCommitOnBlur(true);
+                element.onmouseout = function () {
+                    removeTooltipElement(tooltipElement);
+                };
 
-            new google.maps.places.Autocomplete(element, autocompleteOptions);
+                element.onkeypress = function () {
+                    removeTooltipElement(tooltipElement);
+                };
+            }
         },
-        clear : (element) => {
+        clear: (element) => {
             // remove autocomplete elements from <body>. https://stackoverflow.com/questions/33049322/no-way-to-remove-google-places-autocomplete
             $(".pac-container").remove();
         }
     };
+}
+
+function removeTooltipElement(element) {
+    if (document.contains(element))
+        document.getElementsByTagName('tooltip')[0].remove();// Remove last tooltip
 }
