@@ -14,21 +14,27 @@ public class PopupDialogPanel extends PopupPanel {
     public PopupDialogPanel() {
         super(true, false);
 
-        addCloseHandler(event -> {
-            MainFrame.setModalPopup(false);
-            if(focusedElement != null)
-                focusedElement.focus();
-        });
+        addCloseHandler(event -> onClose());
     }
 
     private Element focusedElement;
 
     @Override
     public void show() {
-        focusedElement = GwtClientUtils.getFocusedElement();
-        MainFrame.setModalPopup(true);
+        onShow();
 
         super.show();
+    }
+
+    public void onShow() {
+        focusedElement = GwtClientUtils.getFocusedElement();
+        MainFrame.setModalPopup(true);
+    }
+
+    public void onClose() {
+        MainFrame.setModalPopup(false);
+        if(focusedElement != null)
+            focusedElement.focus();
     }
 
     public boolean tooltipFocused = false;

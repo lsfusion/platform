@@ -8,7 +8,7 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 public class CurrentConnectionProperty extends CurrentEnvironmentProperty {
 
     public CurrentConnectionProperty(ValueClass paramClass) {
-        super(LocalizedString.create("{logics.property.current.connection}"), SQLSession.connectionParam, paramClass.getUpSet());
+        super(LocalizedString.create("{logics.property.current.connection}"), SQLSession.connectionParam, paramClass);
 
         finalizeInit();
     }

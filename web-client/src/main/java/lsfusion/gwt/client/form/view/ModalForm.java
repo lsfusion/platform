@@ -4,13 +4,14 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.ResizableModalWindow;
 import lsfusion.gwt.client.form.controller.FormsController;
+import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
 import lsfusion.gwt.client.view.MainFrame;
 
 public class ModalForm extends FormContainer<ResizableModalWindow> {
 
 
-    public ModalForm(FormsController formsController, Long requestIndex, String caption, boolean async) {
-        super(formsController, requestIndex, async);
+    public ModalForm(FormsController formsController, GAsyncFormController asyncFormController, String caption, boolean async) {
+        super(formsController, asyncFormController, async);
 
         if(async) {
             GwtClientUtils.setThemeImage(loadingAsyncImage, imageUrl -> setContent(createLoadingWidget(imageUrl)), false);
@@ -39,6 +40,13 @@ public class ModalForm extends FormContainer<ResizableModalWindow> {
     }
 
     private FormContainer prevForm;
+
+    @Override
+    public void onAsyncInitialized() {
+        contentWidget.show();
+
+        super.onAsyncInitialized();
+    }
 
     @Override
     public void show() {

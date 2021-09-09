@@ -1,6 +1,7 @@
 package lsfusion.server.logics;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.Pair;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
@@ -20,6 +21,7 @@ import lsfusion.server.data.expr.formula.*;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.sql.lambda.SQLCallable;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.ScriptingLogicsModule;
@@ -33,21 +35,22 @@ import lsfusion.server.logics.classes.data.AnyValuePropertyHolder;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.LogicalClass;
 import lsfusion.server.logics.classes.data.integral.DoubleClass;
+import lsfusion.server.logics.classes.data.time.IntervalClass;
 import lsfusion.server.logics.classes.user.BaseClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.constraint.PropertyFormEntity;
 import lsfusion.server.logics.event.PrevScope;
+import lsfusion.server.logics.form.interactive.action.change.ActionObjectSelector;
 import lsfusion.server.logics.form.interactive.action.change.FormAddObjectAction;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.action.input.RequestResult;
 import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
-import lsfusion.server.logics.form.interactive.property.IntervalValueProperty;
-import lsfusion.server.logics.form.interactive.property.ObjectValueProperty;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
+import lsfusion.server.logics.form.interactive.action.async.AsyncChange;
 import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.logics.navigator.window.AbstractWindow;
 import lsfusion.server.logics.navigator.window.NavigatorWindow;
@@ -58,6 +61,7 @@ import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.classes.data.FormulaImplProperty;
 import lsfusion.server.logics.property.classes.data.NotFormulaProperty;
+import lsfusion.server.logics.property.classes.infer.AlgType;
 import lsfusion.server.logics.property.classes.user.ClassDataProperty;
 import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
@@ -82,6 +86,7 @@ import java.util.List;
 import java.util.function.Function;
 
 import static com.google.common.collect.Iterables.size;
+import static lsfusion.server.physics.dev.id.name.PropertyCanonicalNameUtils.intervalPrefix;
 import static lsfusion.server.physics.dev.id.name.PropertyCanonicalNameUtils.objValuePrefix;
 
 public class BaseLogicsModule extends ScriptingLogicsModule {
@@ -148,6 +153,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public LP<?> appPort;
     public LP<?> exportName;
     public LP<?> scheme;
+    public LP<?> method;
     public LP<?> webHost;
     public LP<?> webPort;
     public LP<?> contextPath;
@@ -323,8 +329,12 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     }
 
     @IdentityInstanceLazy
-    public LA<?> getNewSessionFormEdit() {
-        return addSessionScopeAProp(FormSessionScope.NEWSESSION, getFormEdit());
+    public LA<?> getFormEditObject() {
+        try {
+            return findAction("formEditObject[Object]");
+        } catch (ScriptingErrorLog.SemanticErrorException e) {
+            throw Throwables.propagate(e);
+        }
     }
 
     @IdentityLazy
@@ -473,6 +483,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         appPort = findProperty("appPort[]");
         exportName = findProperty("exportName[]");
         scheme = findProperty("scheme[]");
+        method = findProperty("method[]");
         webHost = findProperty("webHost[]");
         webPort = findProperty("webPort[]");
         contextPath = findProperty("contextPath[]");
@@ -695,7 +706,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
     @Override
     @IdentityStrongLazy
-    protected LP addCastProp(DataClass castClass) {
+    public LP addCastProp(DataClass castClass) {
         return addProperty(null, new LP<>(new FormulaImplProperty(LocalizedString.create("castTo" + castClass.toString()), 1, new CastFormulaImpl(castClass))));
     }
 
@@ -762,13 +773,16 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
                 getLCPByUniqueName(namePrefix + "IntervalDate"),
                 getLCPByUniqueName(namePrefix + "IntervalDateTime"),
                 getLCPByUniqueName(namePrefix + "IntervalTime"),
+                getLCPByUniqueName(namePrefix + "IntervalZDateTime"),
                 getLCPByUniqueName(namePrefix + "Boolean"),
+                getLCPByUniqueName(namePrefix + "TBoolean"),
                 getLCPByUniqueName(namePrefix + "Date"),
                 getLCPByUniqueName(namePrefix + "Time"),
                 getLCPByUniqueName(namePrefix + "Color"),
                 getLCPByUniqueName(namePrefix + "WordFile"),
                 getLCPByUniqueName(namePrefix + "ImageFile"),
                 getLCPByUniqueName(namePrefix + "PdfFile"),
+                getLCPByUniqueName(namePrefix + "DbfFile"),
                 getLCPByUniqueName(namePrefix + "RawFile"),
                 getLCPByUniqueName(namePrefix + "File"),
                 getLCPByUniqueName(namePrefix + "ExcelFile"),
@@ -781,6 +795,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
                 getLCPByUniqueName(namePrefix + "WordLink"),
                 getLCPByUniqueName(namePrefix + "ImageLink"),
                 getLCPByUniqueName(namePrefix + "PdfLink"),
+                getLCPByUniqueName(namePrefix + "DbfLink"),
                 getLCPByUniqueName(namePrefix + "RawLink"),
                 getLCPByUniqueName(namePrefix + "Link"),
                 getLCPByUniqueName(namePrefix + "ExcelLink"),
@@ -837,19 +852,57 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
     @Override
     @IdentityStrongLazy
-    public LP getObjValueProp(FormEntity formEntity, ObjectEntity obj) {
-        LP result = addProp(new ObjectValueProperty(obj));
-        if (formEntity.getCanonicalName() != null && !obj.noClasses()) {
-            String name = objValuePrefix + formEntity.getCanonicalName().replace('.', '_') + "_" + obj.getSID(); // issue #47
-            makePropertyPublic(result, name, obj.baseClass.getResolveSet());
+    public Pair<LP, ActionObjectSelector> getObjValueProp(FormEntity formEntity, ObjectEntity obj) {
+        LP value;
+        if(!obj.noClasses()) {
+            value = object(obj.baseClass); // we want this property to have classes (i.e. getType to return correct type)
+            if (formEntity.getCanonicalName() != null) {
+                value = wrapProperty(value); // wrapping because all other form operators create new actions / properties
+                String name = objValuePrefix + getFormPrefix(formEntity) + getObjectPrefix(obj); // issue #47
+                makePropertyPublic(value, name, obj.baseClass.getResolveSet());
+            }
+        } else
+            value = object;
+
+        ActionObjectSelector onChange = null;
+        if (!obj.noClasses() && obj.baseClass instanceof DataClass && obj.groupTo.viewType.isPanel()) {
+            DataClass dataClass = (DataClass) obj.baseClass;
+
+            LP targetProp = getRequestedValueProperty(dataClass);
+
+            LA<?> input = addInputAProp(dataClass, targetProp, false);
+
+            onChange = PropertyFact.createRequestAction(SetFact.<ClassPropertyInterface>EMPTY(), input.getImplement(), obj.getSeekPanelAction(this, targetProp), null).mapObjects(MapFact.EMPTYREV());
         }
-        return result;
+        return new Pair<>(value, onChange);
     }
 
     @Override
     @IdentityStrongLazy
-    public LP getObjIntervalProp(ObjectEntity objectFrom, ObjectEntity objectTo, LP<?> intervalProperty) {
-        return addProp(new IntervalValueProperty(objectFrom, objectTo, intervalProperty));
+    public Pair<LP, ActionObjectSelector> getObjIntervalProp(FormEntity formEntity, ObjectEntity objectFrom, ObjectEntity objectTo, LP intervalProperty, LP fromIntervalProperty, LP toIntervalProperty) {
+        LP value = intervalProperty;
+
+        if (formEntity.getCanonicalName() != null) {
+            value = wrapProperty(value); // wrapping because all other form operators create new actions / properties
+            String name = intervalPrefix + getFormPrefix(formEntity) + getObjectPrefix(objectFrom) + getObjectPrefix(objectTo); // issue #47
+            makePropertyPublic(value, name, objectFrom.baseClass.getResolveSet(), objectTo.baseClass.getResolveSet());
+        }
+
+        ActionObjectSelector onChange = null;
+        if(objectFrom.groupTo.viewType.isPanel() && objectTo.groupTo.viewType.isPanel()) {
+            DataClass dataClass = (IntervalClass) intervalProperty.getActionOrProperty().getValueClass(AlgType.defaultType);
+
+            LP targetProp = getRequestedValueProperty(dataClass);
+
+            LA<?> input = addInputAProp(dataClass, targetProp, false);
+
+            onChange = PropertyFact.createRequestAction(SetFact.<ClassPropertyInterface>EMPTY(), input.getImplement(),
+                    PropertyFact.createListAction(SetFact.<ClassPropertyInterface>EMPTY(),
+                            objectFrom.getSeekPanelAction(this, addJProp(fromIntervalProperty, targetProp)),
+                            objectTo.getSeekPanelAction(this, addJProp(toIntervalProperty, targetProp))), null).mapObjects(MapFact.EMPTYREV());
+        }
+
+        return new Pair<>(value, onChange);
     }
 
     @Override
@@ -863,9 +916,10 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         setAddActionOptions(result, obj);
         
         if (formEntity.getCanonicalName() != null) {
-            String name = "_NEW_" + formEntity.getCanonicalName().replace('.', '_') + "_" + obj.getSID() + (explicitClass != null ? getClassPrefix(cls) : "");
+            String name = "_NEW" + getFormPrefix(formEntity) + getObjectPrefix(obj) + (explicitClass != null ? getClassPrefix(cls) : "");
             makeActionPublic(result, name, cls.getResolveSet());
         }
+
         return result;
     }
 
@@ -879,43 +933,43 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
     @IdentityStrongLazy
     public LA getFormNavigatorAction(FormEntity form) {
-        LA<?> result = addIFAProp(LocalizedString.NONAME, form, SetFact.EMPTYORDER(), false, WindowFormType.DOCKED, true);
+        LA<?> result = addIFAProp(null, LocalizedString.NONAME, form, SetFact.EMPTYORDER(), FormSessionScope.OLDSESSION, false, WindowFormType.DOCKED, true);
 
-        String contextPrefix = getFormPrefix(form);
-        String name = "_NAVIGATORFORM" + contextPrefix;
-
-        makeActionPublic(result, name, new ArrayList<>());
+        if(form.getCanonicalName() != null) {
+            String name = "_NAVIGATORFORM" + getFormPrefix(form);
+            makeActionPublic(result, name, new ArrayList<>());
+        }
         
         return result;
     }
 
     @IdentityStrongLazy
-    public LA getAddFormAction(CustomClass cls, FormEntity contextForm, ObjectEntity contextObject, FormSessionScope scope) {
-        LA<?> result = addAddFormAction(cls, contextObject, scope);
-        // issue #47 Потенциальное совпадение канонических имен различных свойств
-        String contextPrefix = getFormPrefix(contextForm) + getObjectPrefix(contextObject);
-        String name = "_ADDFORM" + scope + contextPrefix + getClassPrefix(cls);
+    public LA getAddFormAction(CustomClass cls, FormEntity formEntity, ObjectEntity contextObject) {
+        LA<?> result = addNewEditAction(cls, contextObject);
 
-        makeActionPublic(result, name, new ArrayList<>());
+        if(formEntity.getCanonicalName() != null) {
+            String name = "_ADDFORMNEWSESSION" + getFormPrefix(formEntity) + getObjectPrefix(contextObject) + getClassPrefix(cls); // issue #47
+            makeActionPublic(result, name, new ArrayList<>());
+        }
 
         return result;
     }
 
     @IdentityStrongLazy
-    public LA getEditFormAction(CustomClass cls, FormSessionScope scope) {
-        LA<?> result = addEditFormAction(scope, cls);
-        // issue #47 Потенциальное совпадение канонических имен различных свойств
-        String name = "_EDITFORM" + scope + getClassPrefix(cls);
+    public LA getEditFormAction(CustomClass cls) {
+        LA<?> result = addEditFormAction(cls);
+
+        String name = "_EDITFORMNEWSESSION" + getClassPrefix(cls); // issue #47
         makeActionPublic(result, name, cls.getResolveSet());
 
         return result;
     }
 
     @IdentityStrongLazy
-    public LA getDeleteAction(CustomClass cls, FormSessionScope scope) {
-        LA res = addDeleteAction(cls, scope);
+    public LA getDeleteAction(CustomClass cls) {
+        LA res = addDeleteAction(cls);
 
-        String name = "_DELETE" + (scope == FormSessionScope.OLDSESSION ? "SESSION" : (scope == FormSessionScope.NESTEDSESSION ? scope : ""));
+        String name = "_DELETE";
         makeActionPublic(res, name, cls.getResolveSet());
         return res;
     }
@@ -925,7 +979,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     }
 
     private static String getFormPrefix(FormEntity formEntity) {
-        return formEntity.isNamed() ? "_" + formEntity.getCanonicalName().replace('.', '_') : "";
+        return "_" + formEntity.getCanonicalName().replace('.', '_');
     }
 
     private static String getObjectPrefix(ObjectEntity objectEntity) {
@@ -946,11 +1000,12 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         return pushPopRequestValue(true, env, callable);
     }
 
-    public <R> R pushPopRequestValue(boolean push, ExecutionEnvironment env, SQLCallable<R> callable) throws SQLException, SQLHandledException {
-        return pushRequestValue(getRequestPushedProperty(), push, env, callable);
+    public <R> R popRequest(ExecutionEnvironment env, SQLCallable<R> callable) throws SQLException, SQLHandledException {
+        return pushPopRequestValue(false, env, callable);
     }
 
-    public <R> R pushRequestValue(LP requestProperty, boolean push, ExecutionEnvironment env, SQLCallable<R> callable) throws SQLException, SQLHandledException {
+    public <R> R pushPopRequestValue(boolean push, ExecutionEnvironment env, SQLCallable<R> callable) throws SQLException, SQLHandledException {
+        LP requestProperty = getRequestPushedProperty();
         Object prevValue = requestProperty.read(env);
         requestProperty.change(push ? true : null, env);
         try {
@@ -972,22 +1027,23 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         return getRequestCanceledProperty().read(env) != null;
     }
 
-    public <R> R pushRequestedValue(ObjectValue value, Type type, ExecutionEnvironment env, SQLCallable<R> callable) throws SQLException, SQLHandledException {
-        if(value != null) {
+    public <R> R pushRequestedValue(Object value, AsyncChange asyncChange, ExecutionEnvironment env, SQLCallable<R> callable) throws SQLException, SQLHandledException {
+        if(asyncChange != null) {
             dropRequestCanceled(env);
-            getRequestedValueProperty().write(type, value, env);
+            asyncChange.targetProp.change(DataObject.getValue(value, asyncChange.changeType), env);
             return pushRequest(env, callable);
         } else
             return callable.call();
     }
 
-    // defaultchange'и + обратная совместимость
+    @Deprecated
     public ObjectValue getRequestedValue(Type type, ExecutionEnvironment env, SQLCallable<ObjectValue> request) throws SQLException, SQLHandledException {
+        LP<?> targetProp = getRequestedValueProperty().getLP(type);
         if(isRequestPushed(env))
-            return getRequestedValueProperty().read(type, env);
+            return targetProp.readClasses(env);
 
         ObjectValue result = request.call();
-        writeRequested(RequestResult.get(result, type, null), env);
+        writeRequested(RequestResult.get(result, type, targetProp), env);
         return result;
     }
 
@@ -998,12 +1054,8 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
             requestCanceledProperty.change(true, env);
         } else {
             requestCanceledProperty.change((Object)null, env);
-            for(RequestResult requestResult : requestResults) {
-                if (requestResult.targetProp == null)
-                    getRequestedValueProperty().write(requestResult.type, requestResult.chosenValue, env);
-                else
-                    requestResult.targetProp.change(requestResult.chosenValue, env);
-            }
+            for(RequestResult requestResult : requestResults)
+                requestResult.targetProp.change(requestResult.chosenValue, env);
         }
     }
 
@@ -1011,10 +1063,8 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public ImSet<Property> getRequestChangeProps(int count, Function<Integer, Type> type, Function<Integer, LP> targetProp) {
         return SetFact.toOrderExclSet(count, i -> {
             LP prop = targetProp.apply(i);
-            if(prop == null)
-                return getRequestedValueProperty().getLCP(type.apply(i)).property;
-            else
-                return prop.property;
+            assert prop != null;
+            return prop.property;
         }).getSet().addExcl(getRequestCanceledProperty().property);
     }
 }

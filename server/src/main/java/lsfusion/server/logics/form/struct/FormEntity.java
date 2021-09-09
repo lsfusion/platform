@@ -35,6 +35,8 @@ import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.LogicalClass;
+import lsfusion.server.logics.classes.user.CustomClass;
+import lsfusion.server.logics.form.interactive.action.input.InputFilterEntity;
 import lsfusion.server.logics.form.interactive.action.lifecycle.FormToolbarAction;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
@@ -46,10 +48,7 @@ import lsfusion.server.logics.form.stat.FormGroupHierarchyCreator;
 import lsfusion.server.logics.form.stat.GroupObjectHierarchy;
 import lsfusion.server.logics.form.stat.StaticDataGenerator;
 import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
-import lsfusion.server.logics.form.struct.filter.FilterEntity;
-import lsfusion.server.logics.form.struct.filter.FilterEntityInstance;
-import lsfusion.server.logics.form.struct.filter.RegularFilterEntity;
-import lsfusion.server.logics.form.struct.filter.RegularFilterGroupEntity;
+import lsfusion.server.logics.form.struct.filter.*;
 import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
@@ -58,8 +57,8 @@ import lsfusion.server.logics.form.struct.order.OrderEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawExtraType;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
-import lsfusion.server.logics.form.struct.property.async.AsyncAddRemove;
-import lsfusion.server.logics.form.struct.property.async.AsyncEventExec;
+import lsfusion.server.logics.form.interactive.action.async.AsyncAddRemove;
+import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
 import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyClassImplement;
 import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyObjectEntity;
 import lsfusion.server.logics.property.Property;
@@ -177,14 +176,24 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     public Iterable<RegularFilterGroupEntity> getRegularFilterGroupsIt() {
         return regularFilterGroups.getIt();
     }
-    public ImList<RegularFilterGroupEntity> getRegularFilterGroupsList() {
-        return regularFilterGroups.getList();
+    public ImOrderSet<RegularFilterGroupEntity> getRegularFilterGroupsList() {
+        return regularFilterGroups.getOrderSet();
     }
     public Iterable<RegularFilterGroupEntity> getNFRegularFilterGroupsIt(Version version) {
         return regularFilterGroups.getNFIt(version);        
     }
     public Iterable<RegularFilterGroupEntity> getNFRegularFilterGroupsListIt(Version version) { // предполагается все с одной версией, равной текущей (конструирование FormView)
         return regularFilterGroups.getNFListIt(version);
+    }
+
+    public ImSet<FilterEntity> getDefaultRegularFilters() {
+        return getRegularFilterGroupsList().filterOrder(element -> element.getDefault() >= 0)
+                .mapMergeOrderSetValues(entity -> entity.filters.getOrderSet().get(entity.getDefault()).filter).getSet();
+    }
+
+    public NFList<PropertyDrawEntity> userFilters = NFFact.list();
+    public Iterable<PropertyDrawEntity> getUserFiltersIt(Version version) {
+        return userFilters.getNFListIt(version);
     }
 
     private NFOrderMap<PropertyDrawEntity<?>,Boolean> defaultOrders = NFFact.orderMap();
@@ -204,12 +213,24 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     private NFOrderSet<ImList<PropertyDrawEntity>> pivotRows = NFFact.orderSet();
     private NFOrderSet<PropertyDrawEntity> pivotMeasures = NFFact.orderSet();
 
+    public Iterable<ImList<PropertyDrawEntity>> getNFPivotColumnsListIt(Version version) {
+        return pivotColumns.getNFListIt(version);
+    }
+
     public ImList<ImList<PropertyDrawEntity>> getPivotColumnsList() {
         return pivotColumns.getList();
     }
 
+    public Iterable<ImList<PropertyDrawEntity>> getNFPivotRowsListIt(Version version) {
+        return pivotRows.getNFListIt(version);
+    }
+
     public ImList<ImList<PropertyDrawEntity>> getPivotRowsList() {
         return pivotRows.getList();
+    }
+
+    public Iterable<PropertyDrawEntity> getNFPivotMeasuresListIt(Version version) {
+        return pivotMeasures.getNFListIt(version);
     }
 
     public ImList<PropertyDrawEntity> getPivotMeasuresList() {
@@ -250,7 +271,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     }
 
     public void initDefaultElements(Version version) {
-        BaseLogicsModule baseLM = ThreadLocalContext.getBusinessLogics().LM;
+        BaseLogicsModule baseLM = ThreadLocalContext.getBaseLM();
 
         LA<PropertyInterface> formOk = baseLM.getFormOk();
         LA<PropertyInterface> formClose = baseLM.getFormClose();
@@ -271,7 +292,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
     private void initDefaultGroupElements(GroupObjectEntity group, Version version) {
         if(group.viewType.isList() && !group.isInTree()) {
-            BaseLogicsModule baseLM = ThreadLocalContext.getBusinessLogics().LM;
+            BaseLogicsModule baseLM = ThreadLocalContext.getBaseLM();
 
             PropertyDrawEntity propertyDraw = addPropertyDraw(baseLM.count, version);
             propertyDraw.setToDraw(group);
@@ -444,14 +465,27 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return null;
     }
 
-    @IdentityLazy
     public ImMap<GroupObjectEntity, ImSet<FilterEntity>> getGroupFixedFilters(final ImSet<GroupObjectEntity> excludeGroupObjects) {
-        return getGroupFilters(getFixedFilters(), excludeGroupObjects);
+        return getGroupFixedFilters(excludeGroupObjects, false);
+    }
+    @IdentityLazy
+    public ImMap<GroupObjectEntity, ImSet<FilterEntity>> getGroupFixedFilters(final ImSet<GroupObjectEntity> excludeGroupObjects, boolean includeDefaultRegular) {
+        ImSet<FilterEntity> filters = getFixedFilters();
+        if(includeDefaultRegular)
+            filters = filters.merge(getDefaultRegularFilters());
+        return getGroupFilters(filters, excludeGroupObjects);
     }
 
     public <T extends FilterEntityInstance> ImMap<GroupObjectEntity, ImSet<T>> getGroupFilters(ImSet<T> filters, ImSet<GroupObjectEntity> excludeGroupObjects) {
         return filters.group(key -> {
             GroupObjectEntity applyObject = key.getApplyObject(FormEntity.this, excludeGroupObjects);
+            return applyObject == null ? GroupObjectEntity.NULL : applyObject;
+        });
+    }
+    // in theory upper method could be used but we can't do that with inheritance because of O generic type
+    public <P extends PropertyInterface> ImMap<GroupObjectEntity, ImSet<ContextFilterEntity<?, P, ObjectEntity>>> getGroupContextFilters(ImSet<ContextFilterEntity<?, P, ObjectEntity>> filters) {
+        return filters.group(key -> {
+            GroupObjectEntity applyObject = getApplyObject(key.getObjects(), SetFact.EMPTY());
             return applyObject == null ? GroupObjectEntity.NULL : applyObject;
         });
     }
@@ -462,6 +496,25 @@ public class FormEntity implements FormSelector<ObjectEntity> {
             GroupObjectEntity applyObject = key.getApplyObject(FormEntity.this, excludeGroupObjects, supportGroupColumns);
             return applyObject == null ? GroupObjectEntity.NULL : applyObject;
         });
+    }
+
+    public <P extends PropertyInterface> InputFilterEntity<?, P> getInputFilterEntity(ObjectEntity object, ImSet<ContextFilterEntity<?, P, ObjectEntity>> contextFilters, ImRevMap<ObjectEntity, P> mapObjects) {
+        assert object.baseClass instanceof CustomClass;
+        GroupObjectEntity groupObject = object.groupTo;
+        assert groupObject.getObjects().size() == 1;
+
+        mapObjects = mapObjects.removeRev(object);
+
+        ImSet<FilterEntity> filters = getGroupFixedFilters(SetFact.EMPTY(), true).get(groupObject);
+        if(filters == null)
+            filters = SetFact.EMPTY();
+        ImSet<? extends ContextFilterEntity<?, P, ObjectEntity>> contextFilterEntities = filters.mapSetValues((FilterEntity filterEntity) -> ((FilterEntity<?>) filterEntity).getContext());
+
+        ImSet<ContextFilterEntity<?, P, ObjectEntity>> contextGroupFilters = getGroupContextFilters(contextFilters).get(groupObject);
+        if(contextGroupFilters == null)
+            contextGroupFilters = SetFact.EMPTY();
+
+        return groupObject.getInputFilterEntity(SetFact.addExclSet(contextFilterEntities, contextGroupFilters), mapObjects);
     }
 
     // correlated with FormGroupHierarchyCreator.addDependenciesToGraph
@@ -574,20 +627,16 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     public MetaExternal getMetaExternal(final SecurityPolicy policy) {
         final ImMap<GroupObjectEntity, ImOrderSet<PropertyDrawEntity>> groupProperties = getAllGroupProperties(SetFact.EMPTY(), false);
 
-        return new MetaExternal(getGroups().mapValues(new Function<GroupObjectEntity, GroupMetaExternal>() {
-            public GroupMetaExternal apply(GroupObjectEntity value) {
-                ImOrderSet<PropertyDrawEntity> properties = groupProperties.get(value);
-                if(properties == null)
-                    properties = SetFact.EMPTYORDER();
+        return new MetaExternal(getGroups().mapValues((GroupObjectEntity group) -> {
+            ImOrderSet<PropertyDrawEntity> properties = groupProperties.get(group);
+            if(properties == null)
+                properties = SetFact.EMPTYORDER();
 
-                return new GroupMetaExternal(properties.getSet().mapValues(new Function<PropertyDrawEntity, PropMetaExternal>() {
-                    public PropMetaExternal apply(PropertyDrawEntity value) {
-                        AsyncEventExec asyncEventExec = ((PropertyDrawEntity<?>) value).getAsyncEventExec(FormEntity.this, policy, CHANGE);
-                        Boolean newDelete = asyncEventExec instanceof AsyncAddRemove ? ((AsyncAddRemove) asyncEventExec).add : null;
-                        return new PropMetaExternal(ThreadLocalContext.localize(value.getCaption()), value.isProperty() ? value.getType().getJSONType() : "action", newDelete);
-                    }
+            return new GroupMetaExternal(properties.getSet().mapValues((PropertyDrawEntity property) ->  {
+                    AsyncEventExec asyncEventExec = ((PropertyDrawEntity<?>) property).getAsyncEventExec(FormEntity.this, policy, CHANGE, true);
+                    Boolean newDelete = asyncEventExec instanceof AsyncAddRemove ? ((AsyncAddRemove) asyncEventExec).add : null;
+                    return new PropMetaExternal(ThreadLocalContext.localize(property.getCaption()), property.isProperty() ? property.getType().getJSONType() : "action", newDelete);
                 }));
-            }
         }));
     }
 
@@ -1137,6 +1186,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         propertyDraws.finalizeChanges();
         fixedFilters.finalizeChanges();
         eventActions.finalizeChanges();
+        userFilters.finalizeChanges();
         defaultOrders.finalizeChanges();
         fixedOrders.finalizeChanges();
         
@@ -1349,6 +1399,14 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     public void setEditType(PropertyDrawEntity property, PropertyEditType editType) {
         property.setEditType(editType);
     }
+    
+    public void addUserFilter(PropertyDrawEntity property, Version version) {
+        userFilters.add(property, version);
+        
+        FormView richDesign = getNFRichDesign(version);
+        if(richDesign !=null)
+            richDesign.addUserFilterProperty(property, version);
+    }
 
     public void addDefaultOrder(PropertyDrawEntity property, boolean ascending, Version version) {
         defaultOrders.add(property, ascending, version);
@@ -1431,6 +1489,11 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return object.baseClass;
     }
 
+    @Override
+    public boolean isSingleGroup(ObjectEntity object) {
+        return object.groupTo.getObjects().size() == 1;
+    }
+
     @IdentityLazy
     public ImSet<ObjectEntity> getObjects() {
         MExclSet<ObjectEntity> mObjects = SetFact.mExclSet();
@@ -1477,5 +1540,16 @@ public class FormEntity implements FormSelector<ObjectEntity> {
             for(ActionObjectEntity<?> eventAction : eventActions)
                 consumer.accept(eventAction, null);
         }
+    }
+
+    @Override
+    public FormSelector<ObjectEntity> merge(FormSelector formSelector) {
+        if(!(formSelector instanceof FormEntity))
+            return null;
+        
+        if(BaseUtils.hashEquals(this, formSelector))
+            return this;
+        
+        return null;
     }
 }

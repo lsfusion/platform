@@ -3,6 +3,7 @@ package lsfusion.gwt.client.classes.data;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.async.GInputList;
 import lsfusion.gwt.client.form.property.cell.classes.controller.FileCellEditor;
 import lsfusion.gwt.client.form.property.cell.classes.view.FileCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
@@ -40,7 +41,7 @@ public abstract class GFileType extends GDataType {
     }
 
     @Override
-    public CellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
+    public CellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList) {
         return new FileCellEditor(editManager, description, storeName, validContentTypes);
     }
 

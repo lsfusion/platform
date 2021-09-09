@@ -83,14 +83,19 @@ public final class ClassCanonicalNameUtils {
         put("DOUBLE", DoubleClass.instance);
         put("LONG", LongClass.instance);
         put("BOOLEAN", LogicalClass.instance);
+        put("TBOOLEAN", LogicalClass.threeStateInstance);
         put("DATE", DateClass.instance);
         put("DATETIME", DateTimeClass.instance );
         put("ZDATETIME", ZDateTimeClass.instance );
+        put("DATEINTERVAL", DateIntervalClass.instance);
+        put("DATETIMEINTERVAL", DateTimeIntervalClass.instance);
+        put("TIMEINTERVAL", TimeIntervalClass.instance);
         put("TIME", TimeClass.instance);
         put("YEAR", YearClass.instance);
         put("WORDFILE", WordClass.get());
         put("IMAGEFILE", ImageClass.get());
         put("PDFFILE", PDFClass.get());
+        put("DBFFILE", DBFClass.get());
         put("RAWFILE", CustomStaticFormatFileClass.get());
         put("FILE", DynamicFormatFileClass.get());
         put("EXCELFILE", ExcelClass.get());
@@ -103,6 +108,7 @@ public final class ClassCanonicalNameUtils {
         put("WORDLINK", WordLinkClass.get(false));
         put("IMAGELINK", ImageLinkClass.get(false));
         put("PDFLINK", PDFLinkClass.get(false));
+        put("DBFLINK", DBFLinkClass.get(false));
         put("RAWLINK", CustomStaticFormatLinkClass.get());
         put("LINK", DynamicFormatLinkClass.get(false));
         put("EXCELLINK", ExcelLinkClass.get(false));
@@ -121,7 +127,7 @@ public final class ClassCanonicalNameUtils {
         assert !name.contains(" ");
         if (scriptedSimpleDataClassNames.containsKey(name)) {
             return scriptedSimpleDataClassNames.get(name);
-        } else if (name.matches("^((BPSTRING\\[\\d+\\])|(BPISTRING\\[\\d+\\])|(STRING\\[\\d+\\])|(ISTRING\\[\\d+\\])|(NUMERIC\\[\\d+,\\d+\\])|(INTERVAL\\[(DATE|DATETIME|TIME)\\]))$")) {
+        } else if (name.matches("^((BPSTRING\\[\\d+\\])|(BPISTRING\\[\\d+\\])|(STRING\\[\\d+\\])|(ISTRING\\[\\d+\\])|(NUMERIC\\[\\d+,\\d+\\])|(INTERVAL\\[(DATE|DATETIME|TIME|ZDATETIME)\\]))$")) {
             if (name.startsWith("BPSTRING[")) {
                 name = name.substring("BPSTRING[".length(), name.length() - 1);
                 return StringClass.get(new ExtInt(Integer.parseInt(name)));
@@ -151,14 +157,19 @@ public final class ClassCanonicalNameUtils {
         put("DOUBLE", DoubleClass.instance);
         put("LONG", LongClass.instance);
         put("BOOLEAN", LogicalClass.instance);
+        put("TBOOLEAN", LogicalClass.threeStateInstance);
         put("DATE", DateClass.instance);
         put("DATETIME", DateTimeClass.instance);
         put("ZDATETIME", ZDateTimeClass.instance);
+        put("DATEINTERVAL", DateIntervalClass.instance);
+        put("DATETIMEINTERVAL", DateTimeIntervalClass.instance);
+        put("TIMEINTERVAL", TimeIntervalClass.instance);
         put("TIME", TimeClass.instance);
         put("YEAR", YearClass.instance);
         put("WORDFILE", WordClass.get());
         put("IMAGEFILE", ImageClass.get());
         put("PDFFILE", PDFClass.get());
+        put("DBFFILE", DBFClass.get());
         put("RAWFILE", CustomStaticFormatFileClass.get());
         put("FILE", DynamicFormatFileClass.get());
         put("EXCELFILE", ExcelClass.get());
@@ -171,6 +182,7 @@ public final class ClassCanonicalNameUtils {
         put("WORDLINK", WordLinkClass.get(false));
         put("IMAGELINK", ImageLinkClass.get(false));
         put("PDFLINK", PDFLinkClass.get(false));
+        put("DBFLINK", DBFLinkClass.get(false));
         put("RAWLINK", CustomStaticFormatLinkClass.get());
         put("LINK", DynamicFormatLinkClass.get(false));
         put("EXCELLINK", ExcelLinkClass.get(false));

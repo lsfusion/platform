@@ -28,7 +28,7 @@ public class UnknownSQLSyntax extends DefaultSQLSyntax {
     }
 
     @Override
-    public String getSelect(String from, String exprs, String where, String orderBy, String groupBy, String having, String top) {
+    public String getSelect(String from, String exprs, String where, String orderBy, String groupBy, String having, String top, boolean distinct) {
         throw new UnsupportedOperationException();
     }
 

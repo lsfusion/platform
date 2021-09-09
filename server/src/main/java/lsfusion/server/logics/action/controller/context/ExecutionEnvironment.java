@@ -25,6 +25,7 @@ import lsfusion.server.logics.classes.user.ConcreteObjectClass;
 import lsfusion.server.logics.form.interactive.instance.FormEnvironment;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
+import lsfusion.server.logics.form.interactive.action.async.PushAsyncResult;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.data.DataProperty;
@@ -54,9 +55,9 @@ public abstract class ExecutionEnvironment extends MutableClosedObject<Object> {
             getSession().changeProperty(change, mapChanges.get(change));
     }
 
-    public <P extends PropertyInterface> FlowResult execute(Action<P> property, ImMap<P, ? extends ObjectValue> change, FormEnvironment<P> formEnv, DataObject pushAddObject, ExecutionStack stack) throws SQLException, SQLHandledException {
+    public <P extends PropertyInterface> FlowResult execute(Action<P> property, ImMap<P, ? extends ObjectValue> change, FormEnvironment<P> formEnv, PushAsyncResult pushedAsyncResult, ExecutionStack stack) throws SQLException, SQLHandledException {
         // hasMoreSessionUsages is true since we don't know what gonna happen next
-        return property.execute(new ExecutionContext<>(change, pushAddObject, this, null, formEnv, stack, true)); 
+        return property.execute(new ExecutionContext<>(change, pushedAsyncResult, this, null, formEnv, stack, true));
     }
 
     public void cancel(ExecutionStack stack) throws SQLException, SQLHandledException {

@@ -17,7 +17,7 @@ import java.text.ParseException;
 public class ClientCustomStaticFormatFileClass extends ClientStaticFormatFileClass {
 
     public final String filterDescription;
-    public final String filterExtensions[];
+    public final String[] filterExtensions;
 
     public ClientCustomStaticFormatFileClass(String filterDescription, String[] filterExtensions, boolean multiple, boolean storeName) {
         super(multiple, storeName);
@@ -28,6 +28,11 @@ public class ClientCustomStaticFormatFileClass extends ClientStaticFormatFileCla
     @Override
     public String[] getExtensions() {
         return filterExtensions;
+    }
+
+    @Override
+    public String getDescription() {
+        return toString();
     }
 
     public byte getTypeId() {

@@ -8,10 +8,12 @@ import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
+import lsfusion.server.logics.action.session.change.StructChanges;
 import lsfusion.server.logics.event.PrevScope;
 import lsfusion.server.logics.property.AggregateProperty;
 import lsfusion.server.logics.property.CalcType;
 import lsfusion.server.logics.property.Property;
+import lsfusion.server.logics.property.cases.CaseUnionProperty;
 import lsfusion.server.logics.property.classes.infer.CalcClassType;
 import lsfusion.server.logics.property.classes.infer.ExClassSet;
 import lsfusion.server.logics.property.classes.infer.InferType;
@@ -21,6 +23,8 @@ import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.drilldown.form.DrillDownFormEntity;
 import lsfusion.server.physics.admin.drilldown.form.OldDrillDownFormEntity;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
+
+import java.util.Set;
 
 public class OldProperty<T extends PropertyInterface> extends SessionProperty<T> {
 
@@ -44,7 +48,27 @@ public class OldProperty<T extends PropertyInterface> extends SessionProperty<T>
     }
 
     protected Expr calculateExpr(ImMap<T, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
-        return property.getExpr(joinImplement, calcType); // возвращаем старое значение
+        return property.getPrevExpr(joinImplement, calcType, propChanges);
+    }
+
+    @Override
+    public ImSet<Property> calculateUsedChanges(StructChanges propChanges) {
+        return property.getUsedChanges(propChanges.getPrev());
+    }
+
+    @Override
+    protected boolean calculateHasGlobalPreread(boolean events) {
+        return property.hasGlobalPreread(false); // we have to break a recursion
+    }
+
+    @Override
+    protected boolean calculateHasPreread(StructChanges structChanges) {
+        return property.hasPreread(structChanges.getPrev());
+    }
+
+    @Override
+    public boolean calculateCheckRecursions(ImSet<CaseUnionProperty> abstractPath, ImSet<Property> path, Set<Property> marks) {
+        return property.checkRecursions(abstractPath, path, marks);
     }
 
     @Override
@@ -110,6 +134,6 @@ public class OldProperty<T extends PropertyInterface> extends SessionProperty<T>
     }
 
     private boolean hideOlds() {
-        return Settings.get().isUseEventValuePrevHeuristic() && property instanceof AggregateProperty && ((AggregateProperty)property).hasAlotKeys();
+        return Settings.get().isUseEventValuePrevHeuristic() && property.hasAlotKeys();
     }
 }

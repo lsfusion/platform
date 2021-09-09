@@ -152,10 +152,14 @@ name = DATA STRING[100] (Item);
 revenue = DATA NUMERIC[16,2] (Item, DATE, DATE);
 
 FORM revenues 'Product turnovers'
-    OBJECTS interval = (dateFrom 'Date (from)' = DATE, dateTo 'Date (to)' = DATE) PANEL, // declaring a group of objects, consisting of 2 objects of the Date class with the appropriate captions, which will always be displayed as a panel
+    // declaring a group of objects, consisting of 2 objects of the Date class with the appropriate captions,
+    // which will always be displayed as a panel
+    OBJECTS interval = (dateFrom 'Date (from)' = DATE, dateTo 'Date (to)' = DATE) PANEL, 
             i = Item // adding a list of products
-    PROPERTIES VALUE(dateFrom), VALUE(dateTo) // adding to the form the properties of the date objects values, with which the user can select dates
-    PROPERTIES name(i), revenue(i, dateFrom, dateTo) // adding the product name and the property with the product turnover for the date interval
+    // adding to the form the properties of the date objects values, with which the user can select dates
+    PROPERTIES VALUE(dateFrom), VALUE(dateTo) 
+    // adding the product name and the property with the product turnover for the date interval
+    PROPERTIES name(i), revenue(i, dateFrom, dateTo) 
 ;
 ```
 
@@ -165,10 +169,12 @@ FORM revenues 'Product turnovers'
 labelFile = DATA STRING[100] (Item);
 printLabelFile (Item i)= OVERRIDE labelFile(i), 'MyModule_printLabel_i.jrxml' IF i IS Item;
 FORM printLabel 'Price tag printing'
-    OBJECTS i = Item               // adding the product for which the price tag will be printed
-    REPORT printLabelFile(i)       // marking that a file whose name is stored in the printLabelFile property should be used as a template (it is assumed that the i value will be passed in the OBJECTS block)
-                                   // for example, the user can input myLabel1.jrxml there, then the system will use a file named myLabel1.jrxml
-//  ... other properties required for printing
+    OBJECTS i = Item  // adding the product for which the price tag will be printed
+    // marking that a file whose name is stored in the printLabelFile property should be used as a template 
+    // (it is assumed that the i value will be passed in the OBJECTS block)
+    REPORT printLabelFile(i)       
+    // for example, the user can input myLabel1.jrxml there, then the system will use a file named myLabel1.jrxml
+    //  ... other properties required for printing
 ;
 ```
   

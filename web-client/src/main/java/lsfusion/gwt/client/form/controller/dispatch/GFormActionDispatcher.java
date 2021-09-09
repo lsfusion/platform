@@ -1,21 +1,21 @@
 package lsfusion.gwt.client.form.controller.dispatch;
 
 import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.rpc.AsyncCallback;
 import lsfusion.gwt.client.action.*;
 import lsfusion.gwt.client.base.Result;
 import lsfusion.gwt.client.base.log.GLog;
 import lsfusion.gwt.client.base.view.DialogBoxHelper;
 import lsfusion.gwt.client.classes.GObjectClass;
 import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
+import lsfusion.gwt.client.controller.remote.action.RequestAsyncCallback;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.form.classes.view.ClassChosenHandler;
 import lsfusion.gwt.client.form.controller.GFormController;
-import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
-import lsfusion.gwt.client.form.property.cell.controller.ExecuteEditContext;
+import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
 import lsfusion.gwt.client.navigator.window.GModalityType;
 import lsfusion.gwt.client.view.MainFrame;
+import lsfusion.interop.action.ServerResponse;
 
 public class GFormActionDispatcher extends GwtActionDispatcher {
     protected final GFormController form;
@@ -25,29 +25,39 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
     }
 
     @Override
-    protected void continueServerInvocation(long requestIndex, Object[] actionResults, int continueIndex, AsyncCallback<ServerResponseResult> callback) {
+    protected void continueServerInvocation(long requestIndex, Object[] actionResults, int continueIndex, RequestAsyncCallback<ServerResponseResult> callback) {
         form.continueServerInvocation(requestIndex, actionResults, continueIndex, callback);
     }
 
     @Override
-    protected void throwInServerInvocation(long requestIndex, Throwable t, int continueIndex, AsyncCallback<ServerResponseResult> callback) {
+    protected void throwInServerInvocation(long requestIndex, Throwable t, int continueIndex, RequestAsyncCallback<ServerResponseResult> callback) {
         form.throwInServerInvocation(requestIndex, t, continueIndex, callback);
     }
 
     @Override
+    public boolean canShowDockedModal() {
+        return !form.isWindow();
+    }
+
+    @Override
     public void execute(final GFormAction action) {
-        if (form.isModal() && action.modalityType == GModalityType.DOCKED_MODAL) {
+        if (action.modalityType == GModalityType.DOCKED_MODAL && !canShowDockedModal()) {
             action.modalityType = GModalityType.MODAL;
         }
 
         if (action.modalityType.isModal()) {
             pauseDispatching();
         }
-        form.openForm(getDispatchingIndex(), action.form, action.modalityType, action.forbidDuplicate, getEditEvent(), () -> {
+        form.openForm(getDispatchingIndex(), action.form, action.modalityType, action.forbidDuplicate, editEvent, () -> {
             if (action.modalityType.isModal()) {
                 continueDispatching();
             }
         });
+    }
+
+    @Override
+    protected void onServerInvocationResponse(ServerResponseResult response) {
+        form.onServerInvocationResponse(response);
     }
 
     @Override
@@ -121,21 +131,8 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
 
     // editing (INPUT) functionality
 
-    private Event editEvent;
-    private ExecuteEditContext editContext;
-    private String actionSID;
-
-    public long executePropertyActionSID(Event event, String actionSID, ExecuteEditContext editContext) {
-        this.editEvent = event;
-        this.editContext = editContext;
-        this.actionSID = actionSID;
-
-        return form.executeEventAction(editContext.getProperty(), editContext.getColumnKey(), actionSID);
-    }
-
-    protected Event getEditEvent() {
-        return editEvent;
-    }
+    public Event editEvent;
+    public EditContext editContext; // needed for some input operations (input, update edit value)
 
     @Override
     public Object execute(GRequestUserInputAction action) {
@@ -144,17 +141,17 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
 
         // we should not drop at least editSetValue since GUpdateEditValueAction might use it
         Result<Object> result = new Result<>();
-        form.edit(action.readType, editEvent, action.hasOldValue, action.oldValue,
-                value -> form.changeEditPropertyValue(editContext, actionSID, action.readType, value, getDispatchingIndex()), // we'll be optimists and assume that this value will stay
-                value -> continueDispatching(new GUserInputResult(value), result),
-                () -> continueDispatching(GUserInputResult.canceled, result), editContext);
+        // we'll be optimists and assume that this value will stay
+        form.editProperty(action.readType, editEvent, action.hasOldValue, action.oldValue, action.inputList,
+                (value, requestIndex) -> continueDispatching(value, result),
+                () -> continueDispatching(GUserInputResult.canceled, result), editContext, ServerResponse.INPUT, getDispatchingIndex());
         return result.result;
     }
 
     @Override
     public void execute(GUpdateEditValueAction action) {
-        editContext.setValue(action.value);
-
-        form.update(editContext.getProperty(), editContext.getRenderElement(), action.value, editContext.getUpdateContext());
+        if(editContext != null) {
+            form.update(editContext, action.value);
+        }
     }
 }

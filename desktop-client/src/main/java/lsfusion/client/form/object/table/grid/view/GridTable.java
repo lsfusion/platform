@@ -7,7 +7,6 @@ import lsfusion.base.ReflectionUtils;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.base.view.SwingDefaults;
-import lsfusion.client.classes.data.ClientLogicalClass;
 import lsfusion.client.classes.data.ClientTextClass;
 import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.form.ClientForm;
@@ -25,13 +24,13 @@ import lsfusion.client.form.order.user.MultiLineHeaderRenderer;
 import lsfusion.client.form.order.user.TableSortableHeaderManager;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.table.view.ClientPropertyTable;
+import lsfusion.client.form.view.Column;
 import lsfusion.client.tooltip.LSFTooltipManager;
 import lsfusion.client.view.MainFrame;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.design.FontInfo;
 import lsfusion.interop.form.event.BindingMode;
 import lsfusion.interop.form.event.KeyStrokes;
-import lsfusion.interop.form.event.MouseInputEvent;
 import lsfusion.interop.form.object.table.grid.user.design.GroupObjectUserPreferences;
 import lsfusion.interop.form.order.Scroll;
 import lsfusion.interop.form.order.user.Order;
@@ -290,17 +289,6 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
             }
         });
 
-        addMouseListener(new MouseAdapter() {
-            public void mouseClicked(MouseEvent e) {
-                ClientPropertyDraw property = getSelectedProperty();
-                //игнорируем double click по editable boolean
-                boolean ignore = property != null && property.baseType instanceof ClientLogicalClass && !property.isReadOnly();
-                if (!ignore) {
-                    form.processBinding(new MouseInputEvent(e), null, () -> groupObject, false);
-                }
-            }
-        });
-
         //имитируем продвижение фокуса вперёд, если изначально попадаем на нефокусную ячейку
         addFocusListener(new FocusAdapter() {
             public void focusGained(FocusEvent e) {
@@ -434,7 +422,7 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
     private ClientFormController.Binding getQuickSearchFilterBinding() {
         ClientFormController.Binding binding = new ClientFormController.Binding(groupObject, -200, KeyStrokes::isSuitableStartFilteringEvent) {
             @Override
-            public boolean pressed(KeyEvent ke) {
+            public boolean pressed(InputEvent ke) {
                 if(!editPerformed) {
                     if (groupObject.grid.quickSearch) {
                         quickSearch(ke);
@@ -593,7 +581,7 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
             if (!samePropAsPrevious)
                 form.addPropertyBindings(property, () -> new ClientFormController.Binding(property.groupObject, 0) {
                     @Override
-                    public boolean pressed(KeyEvent ke) {
+                    public boolean pressed(InputEvent ke) {
                         int leadRow = getSelectionModel().getLeadSelectionIndex();
                         if (leadRow != -1 && !isEditing()) {
                             keyController.stopRecording();
@@ -772,7 +760,7 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
             }
             setRowKeysAndCurrentObject(irowKeys, rowKey);
         } else {
-            setRowKeysAndCurrentObject(removeList(rowKeys, rowKey), currentObject.equals(rowKey) ? getNearObject(singleValue(rowKey), rowKeys) : null);
+            setRowKeysAndCurrentObject(removeList(rowKeys, rowKey), currentObject.equals(rowKey) ? getNearObject(rowKey, rowKeys) : null);
         }
     }
 
@@ -1221,6 +1209,36 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
 
     public Object getSelectedValue(ClientPropertyDraw property, ClientGroupObjectValue columnKey) {
         return getSelectedValue(model.getPropertyIndex(property, columnKey));
+    }
+
+    @Override
+    public List<Pair<Column, String>> getFilterColumns() {
+        List<Pair<Column, String>> result = new ArrayList<>();
+        for(ClientPropertyDraw property : properties)
+            for(ClientGroupObjectValue columnKey : columnKeys.get(property))
+                result.add(getSelectedColumn(property, columnKey));
+        return result;
+    }
+
+    public Pair<Column, String> getSelectedColumn(ClientPropertyDraw property, ClientGroupObjectValue columnKey) {
+        return new Pair<>(new Column(property, columnKey), getPropertyCaption(property, columnKey));
+    }
+
+    protected String getPropertyCaption(ClientPropertyDraw property, ClientGroupObjectValue columnKey) {
+        String userCaption = getUserCaption(property);
+        if (userCaption != null)
+            return userCaption;
+
+        return getPropertyCaption(captions.get(property), property, columnKey);
+    }
+
+    public static String getPropertyCaption(Map<ClientGroupObjectValue, Object> propCaptions, ClientPropertyDraw property, ClientGroupObjectValue columnKey) {
+        String caption;
+        if (propCaptions != null)
+            caption = property.getDynamicCaption(propCaptions.get(columnKey));
+        else
+            caption = property.getCaptionOrEmpty();
+        return caption;
     }
 
     private Object getSelectedValue(int col) {

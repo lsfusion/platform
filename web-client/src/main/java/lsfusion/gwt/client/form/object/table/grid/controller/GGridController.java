@@ -15,6 +15,7 @@ import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.design.view.GAbstractContainerView;
+import lsfusion.gwt.client.form.filter.user.GFilter;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
@@ -26,11 +27,12 @@ import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GCalculateSu
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GCountQuantityButton;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
 import lsfusion.gwt.client.form.object.table.grid.view.*;
-import lsfusion.gwt.client.form.object.table.view.GridPanel;
 import lsfusion.gwt.client.form.property.*;
 import lsfusion.gwt.client.form.view.Column;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.setupFillParent;
 
@@ -39,10 +41,6 @@ public class GGridController extends GAbstractTableController {
 
     public GGroupObject groupObject;
 
-    private Widget gridView;
-    private ResizableSimplePanel gridContainerView;
-    public Widget recordView;
-
     private GTableView table;
 
     private static boolean isList(GGroupObject groupObject) {
@@ -50,6 +48,11 @@ public class GGridController extends GAbstractTableController {
     }
     public boolean isList() {
         return groupObject.viewType.isList();
+    }
+    
+    @Override
+    public GFilter getFilterComponent() {
+        return groupObject.userFilter;
     }
 
     public GPivotOptions getPivotOptions() {
@@ -69,46 +72,9 @@ public class GGridController extends GAbstractTableController {
         this.groupObject = groupObject;
 
         if (isList()) {
-            boolean autoSize = groupObject.grid.autoSize;
-
-            ResizableSimplePanel gridContainerView = new ResizableSimplePanel();
-            gridContainerView.setStyleName("gridResizePanel");
-            if(autoSize) { // убираем default'ый minHeight
-                gridContainerView.getElement().getStyle().setProperty("minHeight", "0px");
-                gridContainerView.getElement().getStyle().setProperty("minWidth", "0px");
-            }
-            this.gridContainerView = gridContainerView;
-
-            Widget gridView = gridContainerView;
-
-            // proceeding recordView
-            GContainer record = groupObject.grid.record;
-            if(record != null) {
-                GAbstractContainerView recordView = getFormLayout().getContainerView(record);
-                recordView.addUpdateLayoutListener(requestIndex -> table.updateRecordLayout(requestIndex));
-                this.recordView = recordView.getView();
-
-                // we need to add recordview somewhere, to attach it (events, listeners, etc.)
-                ResizableComplexPanel virtualGridView = new ResizableComplexPanel();
-                virtualGridView.setMain(gridView);
-                setupFillParent(gridView.getElement());
-
-                // need to wrap recordView to setVisible false recordView's parent and not recordView itself (since it will be moved and shown by table view implementation)
-                ResizableSimplePanel virtualRecordView = new ResizableSimplePanel();
-                virtualRecordView.add(this.recordView);
-                virtualRecordView.setVisible(false);
-                virtualGridView.add(virtualRecordView);
-
-                gridView = virtualGridView;
-            }
-
-            this.gridView = new GridPanel(gridView, gridContainerView);
+            initGridView(groupObject.grid.autoSize, groupObject.grid.record, requestIndex -> table.updateRecordLayout(requestIndex));
 
             this.userPreferences = userPreferences;
-
-            getFormLayout().addBaseComponent(groupObject.grid, this.gridView, getDefaultFocusReceiver());
-
-            configureToolbar();
 
             setUpdateMode(false);
             switch (groupObject.listViewType) { // we don't have to do changeListViewType, since it's a first start and it should be set on server
@@ -135,7 +101,7 @@ public class GGridController extends GAbstractTableController {
             updateSettingsButton();
         }
     }
-    
+
     private GGridUserPreferences[] userPreferences;
     private void setGridTableView() {
         changeTableView(new GGridTable(formController, this, userPreferences));
@@ -217,7 +183,7 @@ public class GGridController extends GAbstractTableController {
     private void changeTableView(GTableView table) {
         assert isList();
 
-        gridContainerView.setFillWidget(table.getThisWidget());
+        changeGridView(table.getThisWidget());
         
         this.table = table;
         updateSettingsButton();
@@ -235,7 +201,7 @@ public class GGridController extends GAbstractTableController {
     private GToolbarButton mapTableButton;
     private GToolbarButton calendarTableButton;
 
-    private void configureToolbar() {
+    protected void configureToolbar() {
         assert isList();
 
         gridTableButton = new GToolbarButton("grid.png", messages.formGridTableView()) {
@@ -299,7 +265,7 @@ public class GGridController extends GAbstractTableController {
         if(showFilter() || groupObject.toolbar.showGridSettings) {
 
             if (showFilter()) {
-                addFilterButton();
+                addUserFilterComponent();
             }
 
             if (groupObject.toolbar.showGridSettings) {
@@ -536,6 +502,11 @@ public class GGridController extends GAbstractTableController {
                 toolbarView.setVisible(isVisible);
 
             formController.setFiltersVisible(groupObject, isVisible);
+            
+            if (userFilters != null) {
+                userFilters.update();
+                userFilters.setVisible(isVisible);
+            }
         }
     }
 
@@ -616,7 +587,7 @@ public class GGridController extends GAbstractTableController {
 
     @Override
     protected boolean showFilter() {
-        return isList() && groupObject.filter.visible;
+        return isList() && groupObject.userFilter.visible;
     }
 
     @Override

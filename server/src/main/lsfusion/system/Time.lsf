@@ -89,20 +89,24 @@ sumWeekFrom (DATE date, INTEGER int) = sum(date, int * 7) IF date IS DATE AND in
 sumWeekTo (DATE date, INTEGER int) = sum(date, int * 7 + 6) IF date IS DATE AND int IS INTEGER;
 
 // datetime interval
-dateTimeInterval(DATETIME dateTimeFrom, DATETIME dateTimeTo) = [FORMULA INTERVAL[DATETIME] PG '(EXTRACT (EPOCH FROM $1::timestamptz)  || \'.\' || EXTRACT (EPOCH FROM $2::timestamptz))'](dateTimeFrom AS DATETIME, dateTimeTo AS DATETIME);
-intervalDateTimeFrom(INTERVAL[DATETIME] dateTimeInterval) = [FORMULA DATETIME PG 'to_timestamp(trunc ($1))'](dateTimeInterval AS INTERVAL[DATETIME]);
-intervalDateTimeTo(INTERVAL[DATETIME] dateTimeInterval) = [FORMULA DATETIME PG 'to_timestamp(SPLIT_PART($1::TEXT, \'.\', 2)::NUMERIC)'](dateTimeInterval AS INTERVAL[DATETIME]);
+interval(DATETIME dateTimeFrom, DATETIME dateTimeTo) = [FORMULA INTERVAL[DATETIME] PG '(EXTRACT (EPOCH FROM $1)  || \'.\' || EXTRACT (EPOCH FROM $2))'](dateTimeFrom AS DATETIME, dateTimeTo AS DATETIME);
+from(INTERVAL[DATETIME] dateTimeInterval) = [FORMULA DATETIME PG 'to_timestamp(trunc ($1)) AT TIME ZONE \'UTC\''](dateTimeInterval AS INTERVAL[DATETIME]);
+to(INTERVAL[DATETIME] dateTimeInterval) = [FORMULA DATETIME PG 'to_timestamp(SPLIT_PART($1::TEXT, \'.\', 2)::NUMERIC) AT TIME ZONE \'UTC\''](dateTimeInterval AS INTERVAL[DATETIME]);
 
 // date interval 
-dateInterval(DATE dateFrom, DATE dateTo) = [FORMULA INTERVAL[DATE] PG '(EXTRACT (EPOCH FROM $1::date)  || \'.\' || EXTRACT (EPOCH FROM $2::date))'](dateFrom AS DATE, dateTo AS DATE);
-intervalDateFrom(INTERVAL[DATE] dateInterval) = [FORMULA DATE PG 'to_timestamp(trunc ($1))::date'](dateInterval AS INTERVAL[DATE]);
-intervalDateTo(INTERVAL[DATE] dateInterval) = [FORMULA DATE PG 'to_timestamp(SPLIT_PART($1::TEXT, \'.\', 2)::NUMERIC)::date'](dateInterval AS INTERVAL[DATE]);
+interval(DATE dateFrom, DATE dateTo) = [FORMULA INTERVAL[DATE] PG '(EXTRACT (EPOCH FROM $1)  || \'.\' || EXTRACT (EPOCH FROM $2))'](dateFrom AS DATE, dateTo AS DATE);
+from(INTERVAL[DATE] dateInterval) = [FORMULA DATE PG 'to_timestamp(trunc ($1)) AT TIME ZONE \'UTC\''](dateInterval AS INTERVAL[DATE]);
+to(INTERVAL[DATE] dateInterval) = [FORMULA DATE PG 'to_timestamp(SPLIT_PART($1::TEXT, \'.\', 2)::NUMERIC) AT TIME ZONE \'UTC\''](dateInterval AS INTERVAL[DATE]);
 
 // time interval
-timeInterval(TIME timeFrom, TIME timeTo) = [FORMULA INTERVAL[TIME] PG '(EXTRACT (EPOCH FROM $1::timetz)  || \'.\' || EXTRACT (EPOCH FROM $2::timetz))'](timeFrom AS TIME, timeTo AS TIME);
-intervalTimeFrom(INTERVAL[TIME] timeInterval) = [FORMULA TIME PG 'to_timestamp(trunc ($1))::time'](timeInterval AS INTERVAL[TIME]);
-intervalTimeTo(INTERVAL[TIME] timeInterval) = [FORMULA TIME PG 'to_timestamp(SPLIT_PART($1::TEXT, \'.\', 2)::NUMERIC)::time'](timeInterval AS INTERVAL[TIME]);
+interval(TIME timeFrom, TIME timeTo) = [FORMULA INTERVAL[TIME] PG '(EXTRACT (EPOCH FROM $1)  || \'.\' || EXTRACT (EPOCH FROM $2))'](timeFrom AS TIME, timeTo AS TIME);
+from(INTERVAL[TIME] timeInterval) = [FORMULA TIME PG '(to_timestamp(trunc ($1)) AT TIME ZONE \'UTC\')::time'](timeInterval AS INTERVAL[TIME]);
+to(INTERVAL[TIME] timeInterval) = [FORMULA TIME PG '(to_timestamp(SPLIT_PART($1::TEXT, \'.\', 2)::NUMERIC) AT TIME ZONE \'UTC\')::time'](timeInterval AS INTERVAL[TIME]);
 
+// zDatetime interval
+interval(ZDATETIME zDateTimeFrom, ZDATETIME zDateTimeTo) = [FORMULA INTERVAL[ZDATETIME] PG '(EXTRACT (EPOCH FROM $1)  || \'.\' || EXTRACT (EPOCH FROM $2))'](zDateTimeFrom AS ZDATETIME, zDateTimeTo AS ZDATETIME);
+from(INTERVAL[ZDATETIME] zDateTimeInterval) = [FORMULA ZDATETIME PG 'to_timestamp(trunc ($1))'](zDateTimeInterval AS INTERVAL[ZDATETIME]);
+to(INTERVAL[ZDATETIME] zDateTimeInterval) = [FORMULA ZDATETIME PG 'to_timestamp(SPLIT_PART($1::TEXT, \'.\', 2)::NUMERIC)'](zDateTimeInterval AS INTERVAL[ZDATETIME]);
 // --------------------------------- Месяца ------------------------ //
 
 CLASS Month '{time.month}' {

@@ -50,8 +50,5 @@ public class ClientSerializationPool extends SerializationPool<ClientForm> {
         addMapping(ClientPropertyDraw.class);
         addMapping(ClientRegularFilter.class);
         addMapping(ClientRegularFilterGroup.class);
-        addMapping(ClientAsyncAddRemove.class);
-        addMapping(ClientAsyncChange.class);
-        addMapping(ClientAsyncOpenForm.class);
     }
 }

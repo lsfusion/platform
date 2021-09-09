@@ -4,7 +4,7 @@ import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.type.ConcatenateType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.language.action.LA;
-import lsfusion.server.logics.BusinessLogics;
+import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.ValueClassSet;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
@@ -15,7 +15,6 @@ import lsfusion.server.logics.property.classes.IsClassProperty;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.io.DataOutputStream;
-import java.io.IOException;
 import java.util.Arrays;
 
 public class ConcatenateValueClass implements ValueClass {
@@ -79,7 +78,7 @@ public class ConcatenateValueClass implements ValueClass {
     }
 
     @Override
-    public LA getDefaultOpenAction(BusinessLogics BL) {
+    public LA getDefaultOpenAction(BaseLogicsModule baseLM) {
         return null;
     }
 

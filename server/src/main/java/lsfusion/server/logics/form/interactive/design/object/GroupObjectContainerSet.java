@@ -11,6 +11,7 @@ import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
 // сейчас полный клон TreeGroupContainerSet, потом надо рефакторить
 public class GroupObjectContainerSet {
     public static final String BOX_CONTAINER = "BOX";
+        public static final String USERFILTER_COMPONENT = "USERFILTER";
         public static final String GRIDBOX_CONTAINER = "GRIDBOX";
             public static final String CLASSCHOOSER_COMPONENT = "CLASSCHOOSER";
             public static final String GRID_COMPONENT = "GRID";
@@ -21,7 +22,6 @@ public class GroupObjectContainerSet {
                 public static final String FILTERGROUPS_CONTAINER = "FILTERGROUPS";
                     public static final String FILTERGROUP_COMPONENT = "FILTERGROUP";
                 public static final String TOOLBAR_CONTAINER = "TOOLBAR";
-        public static final String USERFILTER_COMPONENT = "USERFILTER";
         public static final String PANEL_CONTAINER = "PANEL";
             public static final String GROUP_CONTAINER = "GROUP";
     
@@ -77,8 +77,8 @@ public class GroupObjectContainerSet {
         String sid = group.getPropertyGroupContainerSID();
 
         set.boxContainer = factory.createContainer(); // контейнер всей группы
-        set.boxContainer.setCaption(group.getCaption());
         set.boxContainer.setSID(DefaultFormView.getBoxContainerSID(sid));
+        set.boxContainer.setCaption(group.getCaption());
 
         set.gridBoxContainer = factory.createContainer(); // контейнер грида внутрь
         set.gridBoxContainer.setSID(DefaultFormView.getGridBoxContainerSID(sid));
@@ -108,9 +108,9 @@ public class GroupObjectContainerSet {
         set.boxContainer.setChildrenAlignment(FlexAlignment.START);
         set.boxContainer.setAlignment(FlexAlignment.STRETCH);
         set.boxContainer.setFlex(1);
+        set.boxContainer.add(group.getUserFilter(), version);
         set.boxContainer.add(set.gridBoxContainer, version);
         set.boxContainer.add(set.toolbarBoxContainer, version);
-        set.boxContainer.add(group.getUserFilter(), version);
         set.boxContainer.add(set.panelContainer, version);
 
         set.gridBoxContainer.setType(ContainerType.CONTAINERH);
@@ -150,7 +150,7 @@ public class GroupObjectContainerSet {
         set.panelContainer.add(set.groupContainer, version);
 
         set.groupContainer.setType(ContainerType.COLUMNS);
-        set.groupContainer.setColumns(4);
+        set.groupContainer.setColumns(DefaultFormView.GROUP_CONTAINER_COLUMNS_COUNT);
 
         group.getToolbarSystem().setMargin(2);
         group.getToolbarSystem().setAlignment(FlexAlignment.CENTER);

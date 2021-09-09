@@ -142,7 +142,7 @@ public class ClientForm extends ContextIdentityObject implements ClientCustomSer
     }
 
     public String getCaption() {
-        return mainContainer.caption;
+        return mainContainer.getNotNullCaption();
     }
 
     public String getTooltip(String caption) {

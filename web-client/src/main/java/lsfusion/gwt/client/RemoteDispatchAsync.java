@@ -2,19 +2,23 @@ package lsfusion.gwt.client;
 
 import com.allen_sauer.gwt.log.client.Log;
 import com.google.gwt.core.client.Duration;
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import lsfusion.gwt.client.base.AsyncCallbackEx;
+import lsfusion.gwt.client.base.busy.GBusyDialogDisplayer;
+import lsfusion.gwt.client.base.busy.LoadingManager;
 import lsfusion.gwt.client.controller.dispatch.DispatchAsyncWrapper;
-import lsfusion.gwt.client.controller.remote.action.RequestAction;
-import lsfusion.gwt.client.controller.remote.action.form.FormRequestAction;
+import lsfusion.gwt.client.controller.remote.action.*;
+import lsfusion.gwt.client.controller.remote.action.form.GetAsyncValues;
 import lsfusion.gwt.client.form.controller.dispatch.QueuedAction;
+import lsfusion.gwt.client.view.ServerMessageProvider;
 import net.customware.gwt.dispatch.client.DefaultExceptionHandler;
-import net.customware.gwt.dispatch.shared.Action;
 import net.customware.gwt.dispatch.shared.Result;
 
 import java.util.LinkedList;
 
-public abstract class RemoteDispatchAsync {
+public abstract class RemoteDispatchAsync implements ServerMessageProvider {
     private final DispatchAsyncWrapper gwtDispatch = new DispatchAsyncWrapper(new DefaultExceptionHandler());
 
     protected long nextRequestIndex = 0;
@@ -22,48 +26,89 @@ public abstract class RemoteDispatchAsync {
 
     private final LinkedList<QueuedAction> q = new LinkedList<>();
 
-    protected abstract <A extends RequestAction<R>, R extends Result> void fillQueuedAction(A action);
-    protected abstract <A extends RequestAction<R>, R extends Result> void fillAction(A action);
+    public LoadingManager loadingManager;
 
-    public <A extends RequestAction<R>, R extends Result> long execute(A action, AsyncCallback<R> callback, boolean direct) {
-        fillAction(action);
-        queueAction(action, callback, direct);
-        if(action instanceof FormRequestAction) {
-            return ((FormRequestAction<?>) action).requestIndex;
-        } else {
-            return -1;
+    public RemoteDispatchAsync() {
+        loadingManager = new GBusyDialogDisplayer(this);
+    }
+
+    protected abstract <A extends BaseAction<R>, R extends Result> void fillAction(A action);
+    protected abstract <A extends RequestAction<R>, R extends Result> long fillQueuedAction(A action);
+
+    public <A extends RequestCountingAction<R>, R extends Result> long asyncExecute(A action, RequestCountingAsyncCallback<R> callback) {
+        return executeQueue(action, callback, false, false);
+    }
+
+    public <A extends RequestAction<R>, R extends Result> long syncExecute(A action, RequestAsyncCallback<R> callback, boolean continueInvocation) {
+        return executeQueue(action, callback, true, continueInvocation);
+    }
+
+    public <A extends PriorityAction<R>, R extends Result> void executePriority(final A action, final PriorityAsyncCallback<R> callback) {
+        gwtExecute((BaseAction<R>) action, callback);
+    }
+
+    public int syncCount;
+    public int flushCount;
+    public int asyncCount;
+
+    private static final int ASYNC_TIME_OUT = 20;
+
+    private Timer asyncTimer = new Timer() {
+        @Override
+        public void run() {
+            showAsync(true);
+        }
+    };
+
+    protected abstract void showAsync(boolean set);
+
+    public void onAsyncStarted() {
+        if(asyncCount == 0)
+            asyncTimer.schedule(ASYNC_TIME_OUT);
+        asyncCount++;
+    }
+
+    public void onAsyncFinished() {
+        asyncCount--;
+        if (asyncCount == 0) {
+            asyncTimer.cancel();
+            showAsync(false);
         }
     }
 
-    public <A extends RequestAction<R>, R extends Result> void executePriority(final A action, final AsyncCallback<R> callback) {
-        fillAction(action);
-        Log.debug("Executing priority action: " + action.toString());
-        executeInternal(action, callback);
-    }
-
-    protected void onAsyncStarted() {
-    }
-
-    protected void onAsyncFinished() {
-    }
-
-    protected <A extends RequestAction<R>, R extends Result> void queueAction(final A action, final AsyncCallback<R> callback, boolean direct) {
-        Log.debug("Queueing action: " + action.toString());
-
-        final QueuedAction queuedAction = new QueuedAction(action, callback);
-        fillQueuedAction(action);
+    public <A extends RequestAction<R>, R extends Result> long executeQueue(A action, RequestAsyncCallback<R> callback, boolean sync, boolean continueInvocation) {
         // in desktop there is direct query mechanism (for continuing single invocating), which blocks EDT, and guarantee synchronization
         // in web there is no such mechanism, so we'll put the queued action to the very beginning of the queue
         // otherwise there might be deadlock, when, for example, between ExecuteEventAction and continueServerInvocation there was changePageSize
-        if (direct) {
+        long requestIndex = fillQueuedAction(action);
+        final QueuedAction queuedAction = new QueuedAction(requestIndex, callback, action instanceof GetAsyncValues);
+        if (continueInvocation) {
             q.add(0, queuedAction);
         } else {
             q.add(queuedAction);
         }
 
-        onAsyncStarted();
+        if(sync) {
+            // actually we want the rule :
+            //      started = syncCount > 0 && flushCount == 0
+            // so all the checks is an incremental when set(started) do start; when dropped(start) do stop
+            if (syncCount == 0 && flushCount == 0)
+                loadingManager.start();
+            syncCount++;
+        } else
+            onAsyncStarted();
 
-        executeInternal(action, new AsyncCallbackEx<R>() {
+        gwtExecute((BaseAction<R>) action, new AsyncCallbackEx<R>() {
+            @Override
+            public void preProcess() {
+                if(sync) {
+                    syncCount--;
+                    if (syncCount == 0 && flushCount == 0)
+                        loadingManager.stop(true);
+                } else
+                    onAsyncFinished();
+            }
+
             @Override
             public void failure(Throwable caught) {
                 queuedAction.failed(caught);
@@ -76,26 +121,46 @@ public abstract class RemoteDispatchAsync {
 
             @Override
             public void postProcess() {
-                flushCompletedRequests();
-                onAsyncFinished();
+                flushCompletedRequests(() -> {
+                    if(syncCount > 0 && flushCount == 0)
+                        loadingManager.stop(false);
+                    flushCount++;
+                    }, () -> {
+                    flushCount--;
+                    if(syncCount > 0 && flushCount == 0)
+                        loadingManager.start();
+                });
             }
         });
+
+        return requestIndex;
     }
 
     protected boolean isEditing() {
         return false;
     }
 
-    public void flushCompletedRequests() {
-        if (!isEditing()) {
+    public void flushCompletedRequests(Runnable preProceed, Runnable postProceed) {
+        if (isEditing()) {
+            q.forEach(action -> {
+                if (action.preProceeded != null && !action.preProceeded && action.finished) {
+                    preProceed.run();
+                    action.proceed(postProceed);
+                    action.preProceeded = true;
+                }
+            });
+        } else {
             while (!q.isEmpty() && q.peek().finished) {
-                QueuedAction remove = q.remove();
-
-                long requestIndex = remove.getRequestIndex();
-                if(requestIndex >= 0)
+                QueuedAction action = q.remove();
+                long requestIndex = action.requestIndex;
+                if (requestIndex >= 0) {
                     lastReceivedRequestIndex = requestIndex;
+                }
 
-                remove.proceed();
+                if (action.preProceeded == null || !action.preProceeded) {
+                    preProceed.run();
+                    action.proceed(postProceed);
+                }
             }
         }
     }
@@ -104,8 +169,11 @@ public abstract class RemoteDispatchAsync {
         return false;
     }
 
-    protected <A extends Action<R>, R extends Result> void executeInternal(final A action, final AsyncCallback<R> callback) {
+    protected <A extends BaseAction<R>, R extends Result> void gwtExecute(final A action, final AsyncCallback<R> callback) {
         if (!isClosed()) {
+            fillAction(action);
+            Log.debug("Executing action: " + action.toString());
+
             final double startExecTime = Duration.currentTimeMillis();
             gwtDispatch.execute(action, new AsyncCallbackEx<R>() {
                 @Override
@@ -115,19 +183,15 @@ public abstract class RemoteDispatchAsync {
                 }
 
                 @Override
-                public void failure(Throwable caught) {
-                    callback.onFailure(caught);
-                }
-
-                @Override
                 public void success(R result) {
                     callback.onSuccess(result);
                 }
+
+                @Override
+                public void failure(Throwable caught) {
+                    callback.onFailure(caught);
+                }
             });
         }
-    }
-
-    public long getNextRequestIndex() {
-        return nextRequestIndex;
     }
 }

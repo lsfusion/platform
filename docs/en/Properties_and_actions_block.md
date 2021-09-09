@@ -346,11 +346,16 @@ region = DATA Region (Customer);
 FORM order 'Order'
     OBJECTS o = Order PANEL // adding an order object to the form
     PROPERTIES VALUE(o), // adding the order ID in the database
-               date(o), time(o), series(o), number(o), // adding properties date/time of order, series/order number
-               nameCustomer(o), // adding the name of the customer, which by default will be available for editing
-                                     // here, when the user tries to edit it, a dialog will be called for the customer choice - a form for which the LIST customer parameter is set
+               // adding properties date/time of order, series/order number
+               date(o), time(o), series(o), number(o), 
+               // adding the name of the customer, which by default will be available for editing
+               // here, when the user tries to edit it, a dialog will be called for the customer choice -
+               // a form for which the LIST customer parameter is set     
+               nameCustomer(o), 
                note(o), // adding a note
-               sum(o) READONLY // adding the order amount without the possibility of editing, since it is automatically calculated based on the sum of rows
+               // adding the order amount without the possibility of editing, since it is automatically
+               // calculated based on the sum of rows
+               sum(o) READONLY 
 
     OBJECTS d = OrderDetail // adding the order line object
     PROPERTIES(d) // all properties in this block will have an order line input
@@ -361,49 +366,75 @@ FORM order 'Order'
                   DELETE // adding an action that will delete the order line
     FILTERS order(d) == o // indicating that only lines related to this order should be shown
 
-    OBJECTS s = Sku // adding a sku object to which the totals for each sku in the order will be written
-    PROPERTIES(s) name READONLY // adding a name, while making a note that it cannot be edited on this form
+    // adding a sku object to which the totals for each sku in the order will be written
+    OBJECTS s = Sku 
+    // adding a name, while making a note that it cannot be edited on this form
+    PROPERTIES(s) name READONLY 
 
-    PROPERTIES quantity(o, s) // adding a property that will display the ordered quantity by sku in this order
-               ON CHANGE changeQuantity(o, s) // by default, even though the property is not marked READONLY and nothing will happen when the user tries to change it, since quantity is an aggregated property
-                                                           // in this case, a note is made that when the user tries to change, the changeQuantity action will be called
-                                                           // an algorithm is written in this property that will create/delete order lines or change the quantity in them
-               READONLYIF stopOrder(s) // making the property unavailable for editing, if the order is prohibited for this sku
-               BACKGROUND stopOrder(s) // in addition, in this case, this cell is highlighted with custom background so that the user can see such positions in advance
+    // adding a property that will display the ordered quantity by sku in this order
+    PROPERTIES quantity(o, s) 
+               // by default, even though the property is not marked READONLY and nothing will happen when the user
+               // tries to change it, since quantity is an aggregated property. In this case, a note is made that 
+               // when the user tries to change, the changeQuantity action will be called. An algorithm is written
+               // in this property that will create/delete order lines or change the quantity in them
+               ON CHANGE changeQuantity(o, s) 
+               // making  the property unavailable for editing, if the order is prohibited for this sku
+               READONLYIF stopOrder(s) 
+               // in addition, in this case, this cell is highlighted with custom background so that the user 
+               // can see such positions in advance
+               BACKGROUND stopOrder(s) 
 
     EDIT Order OBJECT o // marking the form as a form for editing orders
 ;
 
 EXTEND FORM order // expanding the form with the Mixin concept
-    PROPERTIES onStock(s) BEFORE quantity(d), // adding the property of the current balance to the form before the quantity in the order
-               ordered(s) BEFORE quantity(d) // adding to the form the quantity of already ordered products within all orders
+    // adding the property of the current balance to the form before the quantity in the order
+    PROPERTIES onStock(s) BEFORE quantity(d), 
+    // adding to the form the quantity of already ordered products within all orders
+               ordered(s) BEFORE quantity(d) 
 ;
 
 FORM orders 'Orders'
     OBJECTS o = Order
-    PROPERTIES(o) READONLY VALUE, date, number // all properties in this block are unavailable for editing
-    PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE // adding predefined NEW and EDIT actions that will call the order form to add orders
+    // all properties in this block are unavailable for editing
+    PROPERTIES(o) READONLY VALUE, date, number 
+    // adding predefined NEW and EDIT actions that will call the order form to add orders
+    PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE 
 ;
 
-// creating a "report" in which orders for a certain interval will be visible in the context of customers in a particular region
+// creating a "report" in which orders for a certain interval will be visible in the context of customers 
+// in a particular region
 FORM orderReport 'Sales by warehouse'
-    OBJECTS interval = (dateFrom 'Date (from)' = DATE, dateTo 'Date (to)' = DATE) PANEL // declaring a group of objects, consisting of 2 objects of the Date class with the appropriate captions, which will always be displayed as a panel
-    PROPERTIES dateFrom = VALUE(dateFrom), dateTo = VALUE(dateTo) // adding to the form the properties of the date objects values, with which the user can select dates
-                                                                        // in addition, assigning to these properties on the form names dateFrom and dateTo, respectively
+    // declaring a group of objects, consisting of 2 objects of the Date class with the appropriate captions, 
+    // which will always be displayed as a panel
+    OBJECTS interval = (dateFrom 'Date (from)' = DATE, dateTo 'Date (to)' = DATE) PANEL 
+    // adding to the form the properties of the date objects values, with which the user can select dates
+    // in addition, assigning to these properties on the form names dateFrom and dateTo, respectively
+    PROPERTIES dateFrom = VALUE(dateFrom), dateTo = VALUE(dateTo) 
 
     OBJECTS r = Region PANEL // adding a region object, by which customers will be filtered
-    PROPERTIES(r) name SELECTOR // adding the property region name, at the same time marking that when editing it, the dialog for choosing a region should be called, the selected value of which will be used as the current value
+    // adding the property region name, at the same time marking that when editing it, the dialog for choosing 
+    // a region should be called, the selected value of which will be used as the current value
+    PROPERTIES(r) name SELECTOR 
 
-    OBJECTS c = Customer // adding the customers object
-                         // specifically not adding a single property so that it is "invisible", but it is needed in order to display customers in columns
+    // adding the customers object, specifically not adding a single property so that it is "invisible", 
+    // but it is needed in order to display customers in columns
+    OBJECTS c = Customer 
+                         
     FILTERS region(c) == r // setting a filter so that customers are only from this region
 
-    OBJECTS s = Sku // adding a sku object, in the table of which basic information will be displayed
-    PROPERTIES(s) name READONLY // adding the sku name and making it READONLY, otherwise the user will be able to change the product names directly in the report
+    // adding a sku object, in the table of which basic information will be displayed
+    OBJECTS s = Sku 
+    // adding the sku name and making it READONLY, otherwise the user will be able to change the product names
+    // directly in the report
+    PROPERTIES(s) name READONLY 
 
-    PROPERTIES = [ GROUP SUM quantity(OrderDetail d) IF date(d) >= dateFrom AND date(d) <= dateTo BY sku(d), customer(d)](s, c)
-                // adding a property in which the quantity of ordered sku by customers for a certain date interval is calculated
-               COLUMNS (c) // marking that customers should be displayed in columns, with the same number of columns as there will be rows in the customer object, taking into account filters, and they will be displayed in the same order
-               HEADER name(c) // setting that the name of the customer will be used as the column heading
+    // adding a property in which the quantity of ordered sku by customers for a certain date interval is calculated
+    PROPERTIES = 
+        [GROUP SUM quantity(OrderDetail d) IF date(d) >= dateFrom AND date(d) <= dateTo BY sku(d), customer(d)](s, c)
+        COLUMNS (c) // marking that customers should be displayed in columns, with the same number of columns 
+                    // as there will be rows in the customer object, taking into account filters, and they will be
+                    // displayed in the same order
+        HEADER name(c) // setting that the name of the customer will be used as the column heading
 ;
 ```

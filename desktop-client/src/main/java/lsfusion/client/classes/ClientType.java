@@ -7,6 +7,7 @@ import lsfusion.client.form.property.cell.EditBindingMap;
 import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
 import lsfusion.client.form.property.cell.view.PropertyRenderer;
 import lsfusion.client.form.property.panel.view.PanelView;
+import lsfusion.client.form.property.table.view.AsyncChangeInterface;
 import lsfusion.interop.form.property.Compare;
 
 import java.awt.*;
@@ -18,9 +19,9 @@ public interface ClientType {
 
     PanelView getPanelView(ClientPropertyDraw key, ClientGroupObjectValue columnKey, ClientFormController form);
 
-    PropertyEditor getChangeEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, Object value);
+    PropertyEditor getChangeEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, AsyncChangeInterface asyncChange, Object value);
 
-    PropertyEditor getValueEditorComponent(ClientFormController form, ClientPropertyDraw property, Object value);
+    PropertyEditor getValueEditorComponent(ClientFormController form, ClientPropertyDraw property, AsyncChangeInterface asyncChange, Object value);
 
     Object parseString(String s) throws ParseException;
 

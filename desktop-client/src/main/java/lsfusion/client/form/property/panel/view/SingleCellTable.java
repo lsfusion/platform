@@ -45,6 +45,11 @@ public abstract class SingleCellTable extends ClientPropertyTable {
         super.setIntercellSpacing(new Dimension(getSingleCellTableIntercellSpacing(), getSingleCellTableIntercellSpacing()));
     }
 
+    @Override
+    protected ClientPropertyDraw getSelectedProperty() {
+        return model.getProperty();
+    }
+
     public void setProperty(ClientPropertyDraw property) {
         setName(property.getPropertyCaption());
         model.setProperty(property);

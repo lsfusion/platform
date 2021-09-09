@@ -36,6 +36,10 @@ public class UpdateCurrentClassesSession {
         rollbackInfo.add(run);
     }
 
+    public ImSet<Property> getChangedProps() {
+        return changes.getChangedProps(baseClass);
+    }
+
     private final class DataModifier extends DataSessionModifier {
 
         public DataModifier() throws SQLException, SQLHandledException {
@@ -50,7 +54,7 @@ public class UpdateCurrentClassesSession {
 
         @Override
         protected ImSet<Property> getChangedProps() {
-            return changes.getChangedProps(baseClass);
+            return UpdateCurrentClassesSession.this.getChangedProps();
         }
 
         @Override

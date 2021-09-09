@@ -19,11 +19,6 @@ public class DockableRepository {
     private List<String> formsList = new ArrayList<>();
 
     /**
-     * opened async forms
-     */
-    private Map<Long, ClientFormDockable> asyncForms = new HashMap<>();
-
-    /**
      * Writes the formsList of this repository into <code>out</code>.
      * @param out the stream to write into
      * @throws IOException if an I/O error occurs
@@ -71,17 +66,5 @@ public class DockableRepository {
 
     public List<String> getFormsList() {
         return new ArrayList<>(formsList);
-    }
-
-    public void addAsyncForm(Long requestIndex, ClientFormDockable asyncForm) {
-        asyncForms.put(requestIndex, asyncForm);
-    }
-
-    public boolean hasAsyncForm(Long requestIndex) {
-        return asyncForms.containsKey(requestIndex);
-    }
-
-    public ClientFormDockable removeAsyncForm(Long requestIndex) {
-        return asyncForms.remove(requestIndex);
     }
 }

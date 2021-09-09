@@ -1,7 +1,7 @@
-body, textarea, input, button, .gwt-Button, .gwt-Label, .gwt-TextBox, .gwt-TreeItem, .gwt-TabBarItem, .gwt-DialogBox .Caption,
+body, textarea, input, button, select, .gwt-Button, .gwt-Label, .gwt-TextBox, .gwt-TreeItem, .gwt-TabBarItem, .gwt-DialogBox .Caption,
 .messageBox-messageContainer, .ResizableWindow-header, .captionPanelLegend, .checkBoxFilter, .comboBoxFilter,
 .filterDialogHeader, .gwt-ProgressBar-shell .gwt-ProgressBar-text,
-.pvtRenderer, .pvtAggregator, .pvtCheckContainer, .pvtFilterBox input[type=text], .customFontPresenter,
+.pvtRenderer, .pvtAggregator, .pvtCheckContainer, .pvtFilterBox input[type=text], 
 table.pvtTable, table.pvtTable tbody tr th, table.pvtTable thead tr th {
     font-size: 9pt;
 }
@@ -245,12 +245,13 @@ input[type=checkbox]:focus {
 /* ------------ Panel Renderer related styles ------------ */
 .dataPanelRendererPanel {
     white-space: nowrap;
-    cursor: default;
+
+    cursor: default; /* need this since text by default gets "editing" cursor, however it overrides for example resize cursor, but it's not clear what to do with it */
 }
 
 .panelRendererValue, button {
     background: var(--component-background-color);
-    border: 1px solid var(--component-border-color);
+    border: 1px solid var(--component-border-color); /* should correspond to the result in ActionOrPropertyValue.setBaseSize */
 }
 
 .propertyPanelRendererValue {
@@ -277,15 +278,16 @@ input[type=checkbox]:focus {
 
 /* ------------ Caption panel ------------ */
 .captionPanel {
-    padding-top: 1px;
+    position: relative;
 }
 
-.captionPanelContainer {
-    overflow: visible;
-    position: relative;
+.oppositeStretchAutoSizePanel {
+}
+
+.captionPanelWithLegend {
+    margin: 1px;
+    padding: 1px;
     border: 1px solid var(--panel-border-color);
-    margin: 9px 1px 1px 1px;
-    padding: 2px 1px 1px 1px;
     border-radius: var(--panel-border-radius);
 }
 
@@ -294,6 +296,7 @@ input[type=checkbox]:focus {
     top: -1.0em;
     left: 0.25em;
     white-space: nowrap;
+    margin-top: 1px;
     padding: 0 0.25em;
     background-color: var(--background-color);
     color: var(--caption-panel-legend-color);
@@ -404,7 +407,7 @@ input[type=checkbox]:focus {
     margin: 0 2px;
 }
 
-.checkBoxFilter label {
+.checkBoxFilter label, .userFilterNegationCheckBox label {
     vertical-align: middle;
 }
 
@@ -412,31 +415,31 @@ input[type=checkbox]:focus {
     margin: auto 2px;
 }
 
-.dataFilterValueTablePanel {
-    border: 1px solid var(--component-border-color);
-    border-radius: var(--textfield-border-radius);
-    margin: 2px 2px 2px 0;
-    min-height: 16px !important;
+.userFiltersPanel {
+    margin-top: 2px;
 }
 
-.dataFilterValueTablePanelFocused {
-    border: 1px solid var(--focus-color);
-    border-radius: var(--textfield-border-radius);
+.userFilterLabel {
+    cursor: default;
+    margin: 0 3px 0 5px;
 }
 
-.filterDialogHeader {
-    position: relative;
-    padding: 1px 5px 1px 4px !important;
+.userFilterListBox, .userFilterDataPropertyValue, .userFilterSelector, .userFilterButton {
+    margin: 0 0 0 2px;
 }
 
-.filterDialogCaption {
-    position: absolute;
-    top: 50%;
-    transform: translate(0, -50%);
+.userFilterSelector {
+    cursor: default;
+    padding: 2px;
+    color: var(--text-color); /* overrides .gwt-TextBox-readonly style */
 }
 
-.filterListBox {
-    margin: 0 2px 0 0;
+.userFilterNegationCheckBox input {
+    margin-left: 3px;
+}
+
+.userFilterJunctionSeparator {
+    margin: 0 7px 0 12px;
 }
 
 .gwt-ProgressBar-shell {

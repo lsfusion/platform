@@ -27,10 +27,13 @@ Create the `MBA` module in which the relation between the `A` and `B` class will
 ```lsf
 MODULE MBA;
 
-REQUIRE MA, MB; // specifying that the MBA module depends on the MA and MB modules so that the system elements declared in them can be used in that module
+// specifying that the MBA module depends on the MA and MB modules so 
+// that the system elements declared in them can be used in that module
+REQUIRE MA, MB; 
 
 EXTEND CLASS B : A; // inheriting class B from A
-a(ba) += b(ba); // specifying that for the abstract property a, property B should be used as an implementation
+// specifying that for the abstract property a, property B should be used as an implementation
+a(ba) += b(ba); 
 ```
 
 Therefore, the `MA` and `MB` modules do not directly depend on each other and the relation between them can be enabled (disabled) by linking (unlinking) the `MBA` module. Note that the `MBA` module extends the functionality of the `MB` module without any changes to its code.
@@ -44,7 +47,8 @@ MODULE MyModule;
 
 META defineMyClass (className) // declaring the defineMyClass metacode with the className parameter
     CLASS className; // declaring a class named className
-    myProperty###className = DATA BPSTRING[20] (className); // adding a property named myProperty + className for the created class
+    // adding a property named myProperty + className for the created class
+    myProperty###className = DATA BPSTRING[20] (className); 
 END
 ```
 
@@ -55,5 +59,7 @@ CLASS MySuperClass;
 
 @defineMyClass(MyClass); // calling the metacode that will create the class and property
 
-EXTEND CLASS MyClass : MySuperClass; // inheriting MyClass from MySuperClass, while MyClass will "will receive" all the properties that are declared for the MySuperClass class
+// inheriting MyClass from MySuperClass, while MyClass will "will receive"
+// all the properties that are declared for the MySuperClass class
+EXTEND CLASS MyClass : MySuperClass; 
 ```

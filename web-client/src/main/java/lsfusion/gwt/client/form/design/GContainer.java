@@ -45,6 +45,9 @@ public class GContainer extends GComponent {
     }
 
     public int getFlexCount() {
+        if(isTabbed())
+            return 0;
+
         int count = 0;
         for(GComponent child : children)
             if(child.getFlex() > 0)
@@ -115,12 +118,39 @@ public class GContainer extends GComponent {
         return type == HORIZONTAL_SPLIT_PANE;
     }
 
-    public boolean isVertical() {
-        return isLinearVertical() || isSplitVertical();
-    }
-
     public boolean isHorizontal() {
         return isLinearHorizontal() || isSplitHorizontal();
+    }
+
+    public boolean isVertical() {
+        return isLinearVertical() || isSplitVertical() || isColumns() || isTabbed();
+    }
+
+    public boolean isSingleElement() {
+        return children.size() == 1;
+    }
+    public boolean isAlignCaptions() {
+        if(!isVertical()) // later maybe it makes sense to support align captions for horizontal containers, but with no-wrap it doesn't make much sense
+            return false;
+
+        int notActions = 0;
+        // only simple property draws
+        for(GComponent child : children) {
+            if(!(child instanceof GPropertyDraw) || ((GPropertyDraw) child).hasColumnGroupObjects() || (child.autoSize && ((GPropertyDraw) child).isAutoDynamicHeight()) || child.flex > 0 || ((GPropertyDraw) child).panelCaptionVertical)
+                return false;
+
+            if(!((GPropertyDraw)child).isAction())
+                notActions++;
+        }
+
+        if(notActions <= 1)
+            return false;
+
+        return true;
+    }
+
+    public boolean isLastChild(GComponent child) {
+        return children.indexOf(child) == children.size() - 1;
     }
 
     public boolean isLinearVertical() {

@@ -15,6 +15,7 @@ import org.aspectj.lang.annotation.DeclarePrecedence;
                    "lsfusion.server.data.caches.QueryCacheAspect, " +
                    "lsfusion.server.logics.property.caches.MapCacheAspect, " +
                    "lsfusion.server.physics.exec.hint.WrapComplexityAspect, " +
-                   "lsfusion.server.base.controller.stack.ExecutionStackAspect")
+                   "lsfusion.server.base.controller.stack.ExecutionStackAspect, " +
+                   "lsfusion.server.physics.admin.log.sql.SQLSessionLoggerAspect") // we need this after ExecutionStackAspect to have relevant sql time
 public class OrderAspect {
 }

@@ -1,10 +1,7 @@
 package lsfusion.gwt.client.form.controller;
 
 import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.dom.client.BrowserEvents;
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.EventTarget;
-import com.google.gwt.dom.client.NativeEvent;
+import com.google.gwt.dom.client.*;
 import com.google.gwt.event.dom.client.*;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
@@ -19,14 +16,8 @@ import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.GFormChanges;
 import lsfusion.gwt.client.GFormChangesDTO;
 import lsfusion.gwt.client.action.GAction;
-import lsfusion.gwt.client.action.GFormAction;
 import lsfusion.gwt.client.action.GLogMessageAction;
 import lsfusion.gwt.client.base.*;
-import lsfusion.gwt.client.base.busy.GBusyDialogDisplayer;
-import lsfusion.gwt.client.base.busy.LoadingBlocker;
-import lsfusion.gwt.client.base.busy.LoadingManager;
-import lsfusion.gwt.client.base.exception.ErrorHandlingCallback;
-import lsfusion.gwt.client.base.jsni.Function2;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.base.result.ListResult;
@@ -39,7 +30,9 @@ import lsfusion.gwt.client.base.view.WindowHiddenHandler;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.classes.GObjectClass;
 import lsfusion.gwt.client.classes.GType;
+import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
 import lsfusion.gwt.client.controller.remote.DeferredRunner;
+import lsfusion.gwt.client.controller.remote.action.*;
 import lsfusion.gwt.client.controller.remote.action.form.*;
 import lsfusion.gwt.client.controller.remote.action.logics.GenerateID;
 import lsfusion.gwt.client.controller.remote.action.logics.GenerateIDResult;
@@ -58,10 +51,7 @@ import lsfusion.gwt.client.form.filter.GRegularFilter;
 import lsfusion.gwt.client.form.filter.GRegularFilterGroup;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilterDTO;
-import lsfusion.gwt.client.form.object.GGroupObject;
-import lsfusion.gwt.client.form.object.GGroupObjectValue;
-import lsfusion.gwt.client.form.object.GGroupObjectValueBuilder;
-import lsfusion.gwt.client.form.object.GObject;
+import lsfusion.gwt.client.form.object.*;
 import lsfusion.gwt.client.form.object.panel.controller.GPanelController;
 import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController;
 import lsfusion.gwt.client.form.object.table.controller.GPropertyController;
@@ -86,6 +76,7 @@ import lsfusion.gwt.client.form.property.cell.classes.controller.CustomTextCellE
 import lsfusion.gwt.client.form.property.cell.classes.view.ActionCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.*;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
+import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 import lsfusion.gwt.client.form.property.panel.view.ActionPanelRenderer;
@@ -93,16 +84,16 @@ import lsfusion.gwt.client.form.property.table.view.GPropertyContextMenuPopup;
 import lsfusion.gwt.client.form.view.FormContainer;
 import lsfusion.gwt.client.form.view.FormDockable;
 import lsfusion.gwt.client.form.view.ModalForm;
+import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
 import lsfusion.gwt.client.navigator.window.GModalityType;
 import lsfusion.gwt.client.view.MainFrame;
-import lsfusion.gwt.client.view.ServerMessageProvider;
 import lsfusion.gwt.client.view.StyleDefaults;
 import net.customware.gwt.dispatch.shared.Result;
-import net.customware.gwt.dispatch.shared.general.StringResult;
 
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -112,11 +103,9 @@ import static lsfusion.gwt.client.base.GwtSharedUtils.putToDoubleNativeMap;
 import static lsfusion.gwt.client.base.GwtSharedUtils.removeFromDoubleMap;
 import static lsfusion.gwt.client.base.view.ColorUtils.getDisplayColor;
 import static lsfusion.gwt.client.form.property.cell.GEditBindingMap.CHANGE;
-import static lsfusion.gwt.client.form.property.cell.GEditBindingMap.isEditableAwareEditEvent;
+import static lsfusion.gwt.client.form.property.cell.GEditBindingMap.isChangeEvent;
 
-public class GFormController extends ResizableSimplePanel implements ServerMessageProvider, EditManager {
-    private static final int ASYNC_TIME_OUT = 20;
-
+public class GFormController extends ResizableSimplePanel implements EditManager {
     private FormDispatchAsync dispatcher;
 
     private final GFormActionDispatcher actionDispatcher;
@@ -145,14 +134,9 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
     private final LinkedHashMap<Long, ModifyObject> pendingModifyObjectRequests = new LinkedHashMap<>();
     private final NativeSIDMap<GGroupObject, Long> pendingChangeCurrentObjectsRequests = new NativeSIDMap<>();
-    private final NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Change>> pendingChangePropertyRequests = new NativeSIDMap<>();
+    private final NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Change>> pendingChangePropertyRequests = new NativeSIDMap<>(); // assert that should contain columnKeys + list keys if property is in list
 
     private boolean hasColumnGroupObjects;
-
-    private Timer asyncTimer;
-    private ActionPanelRenderer asyncView;
-
-    private LoadingManager loadingManager = MainFrame.busyDialog ? new GBusyDialogDisplayer(this) : new LoadingBlocker(this);
 
     private static Timer linkEditModeTimer;
 
@@ -172,13 +156,6 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
         formLayout = new GFormLayout(this, form.mainContainer);
         setFillWidget(formLayout);
-
-        asyncTimer = new Timer() {
-            @Override
-            public void run() {
-                asyncView.setLoadingImage("loading.gif");
-            }
-        };
 
         if (form.sID != null) {
             getElement().setAttribute("lsfusion-form", form.sID);
@@ -217,11 +194,11 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
         super.onBrowserEvent(event);
 
-        checkFormEvent(event, (handler, preview) -> checkMouseEvent(handler, preview, null, false));
+        checkGlobalMouseEvent(event);
     }
 
-    public long getNextRequestIndex() {
-        return dispatcher.getNextRequestIndex();
+    private void checkGlobalMouseEvent(Event event) {
+        checkFormEvent(event, (handler, preview) -> checkMouseEvent(handler, preview, null, false));
     }
 
     private interface CheckEvent {
@@ -478,7 +455,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
         hasColumnGroupObjects = false;
         for (GPropertyDraw property : form.propertyDraws) {
-            if (property.columnGroupObjects != null && !property.columnGroupObjects.isEmpty()) {
+            if (property.hasColumnGroupObjects()) {
                 hasColumnGroupObjects = true;
             }
         }
@@ -566,7 +543,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     public void executeNotificationAction(final Integer idNotification) throws IOException {
-        syncDispatch(new ExecuteNotification(idNotification), new ServerResponseCallback());
+        syncResponseDispatch(new ExecuteNotification(idNotification));
     }
 
     private void initializeAutoRefresh() {
@@ -581,10 +558,10 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             public boolean execute() {
                 if (!formHidden) {
                     if (isShowing(GFormController.this)) {
-                        dispatcher.execute(new GetRemoteChanges(true, false), new ServerResponseCallback() {
+                        asyncDispatch(new GetRemoteChanges(true, false), new ServerResponseCallback() {
                             @Override
-                            public void success(ServerResponseResult response) {
-                                super.success(response);
+                            public void onSuccess(ServerResponseResult response, Runnable onDispatchFinished) {
+                                super.onSuccess(response, onDispatchFinished);
                                 if (!formHidden) {
                                     scheduleRefresh();
                                 }
@@ -612,50 +589,18 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     public void getRemoteChanges(boolean forceLocalEvents) {
-        dispatcher.execute(new GetRemoteChanges(forceLocalEvents), new ServerResponseCallback());
+        asyncResponseDispatch(new GetRemoteChanges(forceLocalEvents));
     }
 
     private boolean formVisible = false;
 
     public void gainedFocus() {
-        dispatcher.execute(new GainedFocus(), new ServerResponseCallback());
+        asyncResponseDispatch(new GainedFocus());
         formVisible = true;
     }
 
     public void lostFocus() {
         formVisible = false;
-    }
-
-    public void setFormVisible() {
-        this.formVisible = true;
-    }
-
-    public void hidePopup() {
-        for (GGridController controller : controllers.values()) {
-            if(controller.filter != null) {
-                controller.filter.hideDialog();
-            }
-        }
-
-        for (GTreeGroupController treeController : treeControllers.values()) {
-            if(treeController.filter != null) {
-                treeController.filter.hideDialog();
-            }
-        }
-    }
-
-    public void restorePopup() {
-        for (GGridController controller : controllers.values()) {
-            if(controller.filter != null) {
-                controller.filter.restoreDialog();
-            }
-        }
-
-        for (GTreeGroupController treeController : treeControllers.values()) {
-            if(treeController.filter != null) {
-                treeController.filter.restoreDialog();
-            }
-        }
     }
 
     public void applyRemoteChanges(GFormChangesDTO changesDTO) {
@@ -769,35 +714,27 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     private void modifyFormChangesWithChangePropertyAsyncs(final int currentDispatchingRequestIndex, final GFormChanges fc) {
-        pendingChangePropertyRequests.foreachEntry(new Function2<GPropertyDraw, NativeHashMap<GGroupObjectValue, Change>>() {
-            @Override
-            public void apply(final GPropertyDraw property, NativeHashMap<GGroupObjectValue, Change> values) {
-                values.foreachEntry(new Function2<GGroupObjectValue, Change>() {
-                    @Override
-                    public void apply(GGroupObjectValue keys, Change change) {
-                        long requestIndex = change.requestIndex;
-                        if (requestIndex <= currentDispatchingRequestIndex) {
+        pendingChangePropertyRequests.foreachEntry((property, values) -> values.foreachEntry((keys, change) -> {
+            long requestIndex = change.requestIndex;
+            if (requestIndex <= currentDispatchingRequestIndex) {
 
-                            removeFromDoubleMap(pendingChangePropertyRequests, property, keys);
+                removeFromDoubleMap(pendingChangePropertyRequests, property, keys);
 
-                            if(getPropertyController(property).isPropertyShown(property) && !fc.dropProperties.contains(property)) {
-                                NativeHashMap<GGroupObjectValue, Object> propertyValues = fc.properties.get(property);
-                                if (propertyValues == null) {
-                                    // включаем изменение на старое значение, если ответ с сервера пришел, а новое значение нет
-                                    propertyValues = new NativeHashMap<>();
-                                    fc.properties.put(property, propertyValues);
-                                    fc.updateProperties.add(property);
-                                }
-
-                                if (fc.updateProperties.contains(property) && !propertyValues.containsKey(keys)) {
-                                    propertyValues.put(keys, change.oldValue);
-                                }
-                            }
-                        }
+                if(getPropertyController(property).isPropertyShown(property) && !fc.dropProperties.contains(property)) {
+                    NativeHashMap<GGroupObjectValue, Object> propertyValues = fc.properties.get(property);
+                    if (propertyValues == null) {
+                        // включаем изменение на старое значение, если ответ с сервера пришел, а новое значение нет
+                        propertyValues = new NativeHashMap<>();
+                        fc.properties.put(property, propertyValues);
+                        fc.updateProperties.add(property);
                     }
-                });
+
+                    if (fc.updateProperties.contains(property) && !propertyValues.containsKey(keys)) {
+                        propertyValues.put(keys, change.oldValue);
+                    }
+                }
             }
-        });
+        }));
 
         pendingChangePropertyRequests.foreachEntry((property, values) -> {
             final NativeHashMap<GGroupObjectValue, Object> propertyValues = fc.properties.get(property);
@@ -809,10 +746,6 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
                 });
             }
         });
-    }
-
-    public GGridController getGridController(GGroupObject group) {
-        return controllers.get(group);
     }
 
     public GAbstractTableController getGroupObjectController(GGroupObject group) {
@@ -836,7 +769,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         if (isDockedModal)
             ((FormDockable)formContainer).block();
 
-        FormContainer blockingForm = formsController.openForm(requestIndex, form, modalityType, forbidDuplicate, initFilterEvent, () -> {
+        FormContainer blockingForm = formsController.openForm(getAsyncFormController(requestIndex), form, modalityType, forbidDuplicate, initFilterEvent, () -> {
             if(isDockedModal) {
                 ((FormDockable)formContainer).unblock();
 
@@ -851,15 +784,22 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             ((FormDockable)formContainer).setBlockingForm((FormDockable) blockingForm);
     }
 
+    public void onServerInvocationResponse(ServerResponseResult response) {
+        formsController.onServerInvocationResponse(response, getAsyncFormController(response.requestIndex));
+    }
+
     public void showClassDialog(GObjectClass baseClass, GObjectClass defaultClass, boolean concreate, final ClassChosenHandler classChosenHandler) {
         GClassDialog.showDialog(baseClass, defaultClass, concreate, classChosenHandler);
     }
 
     public long changeGroupObject(final GGroupObject group, GGroupObjectValue key) {
-        long requestIndex = dispatcher.execute(new ChangeGroupObject(group.ID, key), new ServerResponseCallback() {
+        long requestIndex = asyncDispatch(new ChangeGroupObject(group.ID, key), new ServerResponseCallback() {
             @Override
-            public void preProcess() {
-                DeferredRunner.get().commitDelayedGroupObjectChange(group);
+            public void onSuccess(ServerResponseResult response, Runnable onDispatchFinished) {
+                // not sure what for it was used
+                // DeferredRunner.get().commitDelayedGroupObjectChange(group);
+
+                super.onSuccess(response, onDispatchFinished);
             }
         });
         pendingChangeCurrentObjectsRequests.put(group, requestIndex);
@@ -868,7 +808,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
     // has to be called setCurrentKey before
     public void changeGroupObjectLater(final GGroupObject group, final GGroupObjectValue key) {
-        DeferredRunner.get().scheduleDelayedGroupObjectChange(group, new DeferredRunner.AbstractCommand() {
+        DeferredRunner.get().scheduleGroupObjectChange(group, new DeferredRunner.AbstractCommand() {
             @Override
             public void execute() {
                 changeGroupObject(group, key);
@@ -886,7 +826,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             for (int i = 0; i < propertyColumns; i++) {
                 GPropertyDraw property = propertyList.get(i);
                 String sCell = i < sRow.size() ? sRow.get(i) : null;
-                valueRow.add(property.parseChangeValueOrNull(sCell));
+                valueRow.add(property.parsePaste(sCell, property.getExternalChangeType()));
             }
             values.add(valueRow);
         }
@@ -896,20 +836,25 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             propertyIdList.add(propertyDraw.ID);
         }
 
-        syncDispatch(new PasteExternalTable(propertyIdList, columnKeys, values), new ServerResponseCallback());
-
+        syncResponseDispatch(new PasteExternalTable(propertyIdList, columnKeys, values));
     }
 
-    public void pasteSingleValue(GPropertyDraw property, GGroupObjectValue columnKey, String sValue) {
-        Serializable value = (Serializable) property.parseChangeValueOrNull(sValue);
-        syncDispatch(new PasteSingleCellValue(property.ID, columnKey, value), new ServerResponseCallback());
+    public void pasteValue(EditContext editContext, String sValue) {
+        GPropertyDraw property = editContext.getProperty();
+        GType pasteType = property.getExternalChangeType();
+        Serializable value = (Serializable) property.parsePaste(sValue, pasteType);
+
+        changeProperty(editContext, value);
+
+        if(property.canUseChangeValueForRendering(pasteType))
+            update(editContext, value);
     }
 
     public void changePageSizeAfterUnlock(final GGroupObject groupObject, final int pageSize) {
         Scheduler.get().scheduleFixedPeriod(new Scheduler.RepeatingCommand() {
             @Override
             public boolean execute() {
-                if (loadingManager.isVisible()) {
+                if (dispatcher.loadingManager.isVisible()) {
                     return true;
                 } else {
                     changePageSizeLater(groupObject, pageSize);
@@ -929,16 +874,11 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     private void changePageSize(GGroupObject groupObject, int pageSize) {
-        dispatcher.execute(new ChangePageSize(groupObject.ID, pageSize), new ServerResponseCallback());
+        asyncResponseDispatch(new ChangePageSize(groupObject.ID, pageSize));
     }
 
     public void scrollToEnd(GGroupObject group, boolean toEnd) {
-        syncDispatch(new ScrollToEnd(group.ID, toEnd), new ServerResponseCallback());
-    }
-
-    public long executeEventAction(GPropertyDraw property, GGroupObjectValue columnKey, String actionSID) {
-        DeferredRunner.get().commitDelayedGroupObjectChange(property.groupObject);
-        return syncDispatch(new ExecuteEventAction(property.ID, getFullCurrentKey(columnKey), actionSID), new ServerResponseCallback());
+        syncResponseDispatch(new ScrollToEnd(group.ID, toEnd));
     }
 
     public void executePropertyEventAction(EventHandler handler, boolean isBinding, ExecuteEditContext editContext) {
@@ -950,7 +890,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         if(BrowserEvents.CONTEXTMENU.equals(event.getType())) {
             handler.consume();
             GPropertyContextMenuPopup.show(property, event.getClientX(), event.getClientY(), actionSID -> {
-                actionDispatcher.executePropertyActionSID(event, actionSID, editContext);
+                executePropertyEventAction(editContext, actionSID, event);
             });
         } else {
             String actionSID;
@@ -965,99 +905,149 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             }
 
             // hasChangeAction check is important for quickfilter not to consume event (however with propertyReadOnly, checkCanBeChanged there will be still some problems)
-            if (isEditableAwareEditEvent(actionSID) && (editContext.isReadOnly() || !property.hasChangeAction))
-                    return;
+            if (isChangeEvent(actionSID) && (editContext.isReadOnly() || !property.hasChangeAction))
+                return;
             if(GEditBindingMap.EDIT_OBJECT.equals(actionSID) && !property.hasEditObjectAction)
                 return;
 
             handler.consume();
 
-            GAsyncEventExec asyncEventExec = property.getAsyncEventExec(actionSID);
-
-            if (asyncEventExec != null) {
-                if (property.askConfirm) {
-                    blockingConfirm("lsFusion", property.askConfirmMessage, false, chosenOption -> {
-                        if (chosenOption == DialogBoxHelper.OptionType.YES) {
-                            asyncEventExec.exec(this, property, event, editContext, actionSID);
-                        }
-                    });
-                } else {
-                    asyncEventExec.exec(this, property, event, editContext, actionSID);
-                }
-                return;
-            }
-
-            actionDispatcher.executePropertyActionSID(event, actionSID, editContext);
+            executePropertyEventAction(editContext, actionSID, event);
         }
     }
 
-    public void asyncChange(Event event, ExecuteEditContext editContext, String actionSID, GAsyncChange asyncChange) {
-        GType changeType = asyncChange.changeType;
-        edit(changeType, event, false, null,
-                value -> changeEditPropertyValue(editContext, actionSID, changeType, value, null),
-                value -> {}, () -> {}, editContext);
-    }
+    public void executePropertyEventAction(EditContext editContext, String actionSID, Event event) {
+        GPropertyDraw property = editContext.getProperty();
+        GAsyncEventExec asyncEventExec = property.getAsyncEventExec(actionSID);
 
-    public void asyncOpenForm(GAsyncOpenForm asyncOpenForm, ExecuteEditContext editContext, String actionSID) {
-        long requestIndex = dispatcher.execute(new ExecuteEventAction(editContext.getProperty().ID, getFullCurrentKey(editContext.getColumnKey()), actionSID),
-                new ServerResponseCallback() {
-                    @Override
-                    public void success(ServerResponseResult response) {
-                        super.success(response);
-                        formsController.setLastCompletedRequest(response.requestIndex);
-                        //GFormAction will close asyncForm, if there is no GFormAction in response,
-                        //we should close this erroneous asyncForm
-                        if (formsController.hasAsyncForm(response.requestIndex)) {
-                            if (Arrays.stream(response.actions).noneMatch(a -> a instanceof GFormAction)) {
-                                FormContainer formContainer = formsController.removeAsyncForm(response.requestIndex);
-                                if(formContainer instanceof FormDockable) {
-                                    ((FormDockable) formContainer).closePressed();
-                                } else {
-                                    formContainer.hide();
-                                }
-                            }
-                        }
+        if (asyncEventExec != null) {
+            if (isChangeEvent(actionSID) && property.askConfirm) {
+                blockingConfirm("lsFusion", property.askConfirmMessage, false, chosenOption -> {
+                    if (chosenOption == DialogBoxHelper.OptionType.YES) {
+                        asyncEventExec.exec(this, event, editContext, actionSID);
                     }
                 });
-        formsController.asyncOpenForm(requestIndex, asyncOpenForm);
+            } else {
+                asyncEventExec.exec(this, event, editContext, actionSID);
+            }
+            return;
+        }
+
+        syncExecutePropertyEventAction(editContext, actionSID, event);
     }
 
-    public void changeEditPropertyValue(ExecuteEditContext editContext, String actionSID, GType changeType, Object value, Long changeRequestIndex) {
-        Object oldValue = editContext.getValue();
-
-        GPropertyDraw property = editContext.getProperty();
-        if(property.canUseChangeValueForRendering(changeType)) // changing model, to rerender new value
-            editContext.setValue(value);
-
-        changeProperty(property, editContext.getColumnKey(), actionSID, (Serializable) value, oldValue, changeRequestIndex);
+    public long asyncExecutePropertyEventAction(String actionSID, EditContext editContext, Event editEvent, GPushAsyncResult pushAsyncResult) {
+        return asyncExecutePropertyEventAction(actionSID, editContext, editEvent, new GPropertyDraw[] {editContext.getProperty()}, new boolean[]{false}, new GGroupObjectValue[] {editContext.getColumnKey()}, new GPushAsyncResult[]{pushAsyncResult});
+    }
+    public long asyncExecutePropertyEventAction(String actionSID, EditContext editContext, Event editEvent, GPropertyDraw[] properties, boolean[] externalChanges, GGroupObjectValue[] fullKeys, GPushAsyncResult[] pushAsyncResults) {
+        return executePropertyEventAction(actionSID, false, editContext, editEvent, properties, externalChanges, fullKeys, pushAsyncResults);
+    }
+    public long syncExecutePropertyEventAction(EditContext editContext, Event editEvent, GPropertyDraw property, GGroupObjectValue columnKey, String actionSID) {
+        return executePropertyEventAction(actionSID, true, editContext, editEvent, new GPropertyDraw[]{property}, new boolean[]{false}, new GGroupObjectValue[]{columnKey}, new GPushAsyncResult[] {null});
     }
 
-    public void continueServerInvocation(long requestIndex, Object[] actionResults, int continueIndex, AsyncCallback<ServerResponseResult> callback) {
+    private long executePropertyEventAction(String actionSID, boolean sync, EditContext editContext, Event editEvent, GPropertyDraw[] properties, boolean[] externalChanges, GGroupObjectValue[] fullKeys, GPushAsyncResult[] pushAsyncResults) {
+        int length = properties.length;
+        int[] IDs = new int[length];
+        GGroupObjectValue[] fullCurrentKeys = new GGroupObjectValue[length];
+        for (int i = 0; i < length; i++) {
+            GPropertyDraw property = properties[i];
+            IDs[i] = property.ID;
+            fullCurrentKeys[i] = getFullCurrentKey(property, fullKeys[i]);
+        }
+
+        ExecuteEventAction executeEventAction = new ExecuteEventAction(IDs, fullCurrentKeys, actionSID, externalChanges, pushAsyncResults);
+        ServerResponseCallback serverResponseCallback = new ServerResponseCallback() {
+            @Override
+            protected Runnable getOnRequestFinished() {
+                return () -> {
+                    actionDispatcher.editContext = null;
+                    actionDispatcher.editEvent = null;
+                };
+            }
+
+            @Override
+            public void onSuccess(ServerResponseResult response, Runnable onDispatchFinished) {
+                actionDispatcher.editContext = editContext;
+                actionDispatcher.editEvent = editEvent;
+                super.onSuccess(response, onDispatchFinished);
+            }
+        };
+
+        if(sync)
+            return syncDispatch(executeEventAction, serverResponseCallback);
+        else
+            return asyncDispatch(executeEventAction, serverResponseCallback);
+    }
+
+    public long asyncResponseDispatch(final FormRequestCountingAction<ServerResponseResult> action) {
+        return asyncDispatch(action, new ServerResponseCallback());
+    }
+    public long syncResponseDispatch(final FormRequestCountingAction<ServerResponseResult> action) {
+        return syncDispatch(action, new ServerResponseCallback());
+    }
+
+    public void syncExecutePropertyEventAction(EditContext editContext, String actionSID, Event event) {
+        syncExecutePropertyEventAction(editContext, event, editContext.getProperty(), editContext.getColumnKey(), actionSID);
+    }
+
+    public void asyncChange(Event event, EditContext editContext, String actionSID, GAsyncChange asyncChange) {
+        editProperty(asyncChange.changeType, event, false, null, asyncChange.inputList, (value, requestIndex) -> {
+            // it seems that it's better to do everything after commit to avoid potential problems with focus, etc.
+            Integer contextAction = value.getContextAction();
+            if (contextAction != null/* && requestIndex.result >= 0*/) {
+                GAsyncExec actionAsync = asyncChange.inputList.actionAsyncs[contextAction];
+                if (actionAsync != null) actionAsync.exec(getAsyncFormController(requestIndex), formsController);
+            }
+        }, () -> {}, editContext, actionSID, null);
+    }
+
+    public void asyncOpenForm(GAsyncOpenForm asyncOpenForm, EditContext editContext, Event editEvent, String actionSID) {
+        long requestIndex = asyncExecutePropertyEventAction(actionSID, editContext, editEvent, null);
+        formsController.asyncOpenForm(getAsyncFormController(requestIndex), asyncOpenForm);
+    }
+
+    public GAsyncFormController getAsyncFormController(long requestIndex) {
+        return actionDispatcher.getAsyncFormController(requestIndex);
+    }
+
+    public long changeEditPropertyValue(EditContext editContext, Event editEvent, String actionSID, GType changeType, GUserInputResult result, Long changeRequestIndex) {
+        assert changeType != null;
+        long requestIndex = changeProperty(editContext, editEvent, changeType, actionSID, result, changeRequestIndex);
+
+        if(editContext.getProperty().canUseChangeValueForRendering(changeType)) // changing model, to rerender new value after finishEditing
+            editContext.setValue(result.getValue());
+
+        return requestIndex;
+    }
+
+    public void continueServerInvocation(long requestIndex, Object[] actionResults, int continueIndex, RequestAsyncCallback<ServerResponseResult> callback) {
         syncDispatch(new ContinueInvocation(requestIndex, actionResults, continueIndex), callback, true);
     }
 
-    public void throwInServerInvocation(long requestIndex, Throwable throwable, int continueIndex, AsyncCallback<ServerResponseResult> callback) {
+    public void throwInServerInvocation(long requestIndex, Throwable throwable, int continueIndex, RequestAsyncCallback<ServerResponseResult> callback) {
         syncDispatch(new ThrowInInvocation(requestIndex, throwable, continueIndex), callback, true);
     }
 
-    public <T extends Result> long syncDispatch(final FormAction<T> action, AsyncCallback<T> callback) {
+    public <T extends Result> long asyncDispatch(final FormRequestCountingAction<T> action, RequestCountingAsyncCallback<T> callback) {
+        return dispatcher.asyncExecute(action, callback);
+    }
+
+    public <T extends Result> long syncDispatch(final FormRequestCountingAction<T> action, RequestCountingAsyncCallback<T> callback) {
         return syncDispatch(action, callback, false);
     }
 
-    public <T extends Result> long syncDispatch(final FormAction<T> action, AsyncCallback<T> callback, boolean direct) {
-        //todo: возможно понадобится сделать чтото более сложное как в
-        //todo: http://stackoverflow.com/questions/2061699/disable-user-interaction-in-a-gwt-container
-        loadingManager.start();
-        return dispatcher.execute(action, new WrapperAsyncCallbackEx<T>(callback) {
-            @Override
-            public void preProcess() {
-                loadingManager.stop();
-            }
-        }, direct);
+    public <T extends Result> long syncDispatch(final FormRequestAction<T> action, RequestAsyncCallback<T> callback, boolean continueInvocation) {
+        return dispatcher.syncExecute(action, callback, continueInvocation);
     }
 
-    public GGroupObjectValue getFullCurrentKey(GGroupObjectValue propertyKey) {
+    public GGroupObjectValue getFullCurrentKey(GPropertyDraw property, GGroupObjectValue propertyKey) {
+        DeferredRunner.get().commitDelayedGroupObjectChange(property.groupObject);
+
         GGroupObjectValueBuilder fullKey = new GGroupObjectValueBuilder();
+
+        // there was a check that if groupObject is list, then currentKey should not be empty, but I'm not sure what for this check was needed
+//        property.groupObject isList isEmpty() ??
 
         for (GGridController group : controllers.values()) {
             fullKey.putAll(group.getCurrentKey());
@@ -1075,108 +1065,123 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         return fullKey.toGroupObjectValue();
     }
 
-    public void changeProperty(GPropertyDraw property, GGroupObjectValue columnKey, String actionSID, Serializable value, Object oldValue, Long changeRequestIndex) {
-        GGroupObjectValue rowKey = GGroupObjectValue.EMPTY;
-        if(property.isList) {
-            rowKey = getGroupObjectController(property.groupObject).getCurrentKey();
-            if(rowKey.isEmpty())
-                return;
-        }
-        changeProperties(new GPropertyDraw[]{property}, actionSID, new GGroupObjectValue[]{rowKey}, new GGroupObjectValue[]{columnKey}, new Serializable[]{value}, new Object[]{oldValue}, changeRequestIndex);
+    // for custom renderer and paste
+    public void changeProperty(EditContext editContext, Object value) {
+        changeProperty(editContext, null, GPropertyDraw.externalChangeTypeUsage, GEditBindingMap.CHANGE, new GUserInputResult(value), null);
     }
 
-    public void changeProperties(GPropertyDraw[] properties, String actionSID, GGroupObjectValue[] rowKeys, GGroupObjectValue[] columnKeys, Serializable[] values, Object[] oldValues, Long changeRequestIndex) {
+    public long changeProperty(EditContext editContext, Event editEvent, GType changeType, String actionSID, GUserInputResult result, Long changeRequestIndex) {
+        GPropertyDraw property = editContext.getProperty();
+        GGroupObjectValue rowKey = GGroupObjectValue.EMPTY;
+        if(property.isList) {
+            DeferredRunner.get().commitDelayedGroupObjectChange(property.groupObject);
+
+            rowKey = getGroupObjectController(property.groupObject).getCurrentKey(); // we need rowKey for pendingChangeRequests
+            assert !rowKey.isEmpty();
+        }
+        return changeProperties(actionSID, editContext, editEvent, new GPropertyDraw[]{property}, new GType[]{changeType}, new GGroupObjectValue[] {rowKey}, new GGroupObjectValue[]{editContext.getColumnKey()}, new GUserInputResult[]{result}, new Object[]{editContext.getValue()}, changeRequestIndex);
+    }
+
+    public long changeProperties(String actionSID, EditContext editContext, Event editEvent, GPropertyDraw[] properties, GType[] changeTypes, GGroupObjectValue[] rowKeys, GGroupObjectValue[] columnKeys, GUserInputResult[] values, Object[] oldValues, Long changeRequestIndex) {
         int length = properties.length;
-        int[] IDs = new int[length];
-        GGroupObjectValue[] fullCurrentKeys = new GGroupObjectValue[length];
+        GGroupObjectValue[] fullKeys = new GGroupObjectValue[length];
+        boolean[] externalChanges = new boolean[length];
+        GPushAsyncResult[] pushAsyncResults = new GPushAsyncResult[length];
         for (int i = 0; i < length; i++) {
-            GGroupObjectValue fullKey = GGroupObjectValue.getFullKey(rowKeys[i], columnKeys[i]);
-            IDs[i] = properties[i].ID;
-            fullCurrentKeys[i] = getFullCurrentKey(fullKey);
+            fullKeys[i] = GGroupObjectValue.getFullKey(rowKeys[i], columnKeys[i]);
+            externalChanges[i] = changeTypes[i] == null;
+            pushAsyncResults[i] = new GPushAsyncChange(values[i]);
         }
 
         if(changeRequestIndex == null)
-            changeRequestIndex = dispatcher.execute(new ChangeProperties(IDs, fullCurrentKeys, values, new Long[length], actionSID), new ServerResponseCallback());
+            changeRequestIndex = asyncExecutePropertyEventAction(actionSID, editContext, editEvent, properties, externalChanges, fullKeys, pushAsyncResults);
 
         for (int i = 0; i < length; i++) {
-            GGroupObjectValue fullKey = GGroupObjectValue.getFullKey(rowKeys[i], columnKeys[i]);
-            putToDoubleNativeMap(pendingChangePropertyRequests, properties[i], fullKey, new Change(changeRequestIndex, values[i], oldValues[i], properties[i].canUseChangeValueForRendering()));
+            GPropertyDraw property = properties[i];
+            GType changeType = changeTypes[i];
+            if(changeType == null) {
+                assert actionSID.equals(CHANGE);
+                changeType = property.getExternalChangeType();
+            }
+            putToDoubleNativeMap(pendingChangePropertyRequests, property, fullKeys[i], new Change(changeRequestIndex, values[i].getValue(), oldValues[i], property.canUseChangeValueForRendering(changeType)));
         }
+
+        return changeRequestIndex;
     }
 
-    public void asyncAddRemove(GPropertyDraw property, ExecuteEditContext editContext, String actionSID, GAsyncAddRemove asyncAddRemove) {
-        GGroupObjectValue columnKey = editContext.getColumnKey();
-        final GObject object = asyncAddRemove.object;
+    public void asyncAddRemove(EditContext editContext, Event editEvent, String actionSID, GAsyncAddRemove asyncAddRemove) {
+        final GObject object = form.getObject(asyncAddRemove.object);
         final boolean add = asyncAddRemove.add;
 
-        GGridController controller = getGridController(asyncAddRemove.object.groupObject);
+        GGridController controller = controllers.get(object.groupObject);
+
         final int position = controller.getSelectedRow();
 
         if (add) {
-            MainFrame.logicsDispatchAsync.execute(new GenerateID(), new ErrorHandlingCallback<GenerateIDResult>() {
+            MainFrame.logicsDispatchAsync.execute(new GenerateID(), new PriorityErrorHandlingCallback<GenerateIDResult>() {
                 @Override
-                public void success(GenerateIDResult result) {
-                    executeModifyObject(property, columnKey, actionSID, object, add, result.ID, new GGroupObjectValue(object.ID, result.ID), position);
+                public void onSuccess(GenerateIDResult result) {
+                    executeModifyObject(editContext, editEvent, actionSID, object, add, new GPushAsyncAdd(result.ID), new GGroupObjectValue(object.ID, new GCustomObjectValue(result.ID, null)), position);
                 }
             });
         } else {
+            DeferredRunner.get().commitDelayedGroupObjectChange(object.groupObject);
+
             final GGroupObjectValue value = controllers.get(object.groupObject).getCurrentKey();
             if(value.isEmpty())
                 return;
-            final long ID = (Long) value.getValue(0);
-            executeModifyObject(property, columnKey, actionSID, object, add, ID, value, position);
+            executeModifyObject(editContext, editEvent, actionSID, object, add, null, value, position);
         }
     }
 
-    private void executeModifyObject(GPropertyDraw property, GGroupObjectValue columnKey, String actionSID, GObject object, boolean add, long ID, GGroupObjectValue value, int position) {
-        final GGroupObjectValue fullCurrentKey = getFullCurrentKey(columnKey); // чтобы не изменился
+    private void executeModifyObject(EditContext editContext, Event editEvent, String actionSID, GObject object, boolean add, GPushAsyncResult pushAsyncResult, GGroupObjectValue value, int position) {
+        long requestIndex = asyncExecutePropertyEventAction(actionSID, editContext, editEvent, pushAsyncResult);
 
-        controllers.get(object.groupObject).modifyGroupObject(value, add, -1);
-
-        long requestIndex = dispatcher.execute(new ChangeProperties(new int[]{property.ID}, new GGroupObjectValue[]{fullCurrentKey}, new Serializable[]{null}, new Long[]{add ? ID : null}, actionSID), new ServerResponseCallback());
         pendingChangeCurrentObjectsRequests.put(object.groupObject, requestIndex);
         pendingModifyObjectRequests.put(requestIndex, new ModifyObject(object, add, value, position));
+
+        controllers.get(object.groupObject).modifyGroupObject(value, add, -1);
     }
 
     public void changePropertyOrder(GPropertyDraw property, GGroupObjectValue columnKey, GOrder modiType) {
-        syncDispatch(new ChangePropertyOrder(property.ID, columnKey, modiType), new ServerResponseCallback());
+        syncResponseDispatch(new ChangePropertyOrder(property.ID, columnKey, modiType));
     }
 
     public void setPropertyOrders(GGroupObject groupObject, List<Integer> propertyList, List<GGroupObjectValue> columnKeyList, List<Boolean> orderList) {
-        syncDispatch(new SetPropertyOrders(groupObject.ID, propertyList, columnKeyList, orderList), new ServerResponseCallback());
+        syncResponseDispatch(new SetPropertyOrders(groupObject.ID, propertyList, columnKeyList, orderList));
     }
 
     public void expandGroupObjectRecursive(GGroupObject group, boolean current) {
         DeferredRunner.get().commitDelayedGroupObjectChange(group);
-        syncDispatch(new ExpandGroupObjectRecursive(group.ID, current), new ServerResponseCallback());
+        syncResponseDispatch(new ExpandGroupObjectRecursive(group.ID, current));
     }
 
     public void expandGroupObject(GGroupObject group, GGroupObjectValue value) {
         DeferredRunner.get().commitDelayedGroupObjectChange(group);
-        syncDispatch(new ExpandGroupObject(group.ID, value), new ServerResponseCallback());
+        syncResponseDispatch(new ExpandGroupObject(group.ID, value));
     }
 
     public void collapseGroupObjectRecursive(GGroupObject group, boolean current) {
         DeferredRunner.get().commitDelayedGroupObjectChange(group);
-        syncDispatch(new CollapseGroupObjectRecursive(group.ID, current), new ServerResponseCallback());
+        syncResponseDispatch(new CollapseGroupObjectRecursive(group.ID, current));
     }
 
     public void collapseGroupObject(GGroupObject group, GGroupObjectValue value) {
         DeferredRunner.get().commitDelayedGroupObjectChange(group);
-        syncDispatch(new CollapseGroupObject(group.ID, value), new ServerResponseCallback());
+        syncResponseDispatch(new CollapseGroupObject(group.ID, value));
     }
 
     public void setTabVisible(GContainer tabbedPane, GComponent visibleComponent) {
-        dispatcher.execute(new SetTabVisible(tabbedPane.ID, visibleComponent.ID), new ServerResponseCallback());
+        asyncResponseDispatch(new SetTabVisible(tabbedPane.ID, visibleComponent.ID));
         onResize();
     }
 
     public void closePressed() {
-        syncDispatch(new ClosePressed(), new ServerResponseCallback());
+        syncResponseDispatch(new ClosePressed());
     }
 
     private void setRemoteRegularFilter(GRegularFilterGroup filterGroup, GRegularFilter filter) {
-        syncDispatch(new SetRegularFilter(filterGroup.ID, (filter == null) ? -1 : filter.ID), new ServerResponseCallback());
+        syncResponseDispatch(new SetRegularFilter(filterGroup.ID, (filter == null) ? -1 : filter.ID));
     }
 
     public void changeFilter(GGroupObject groupObject, ArrayList<GPropertyFilter> conditions) {
@@ -1211,7 +1216,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             }
         });
 
-        dispatcher.execute(new SetUserFilters(filters), new ServerResponseCallback());
+        asyncResponseDispatch(new SetUserFilters(filters));
     }
 
     public void setViewFilters(ArrayList<GPropertyFilter> conditions, int pageSize) {
@@ -1221,7 +1226,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             filters.add(filter.getFilterDTO());
         }
 
-        dispatcher.execute(new SetViewFilters(filters, pageSize), new ServerResponseCallback());
+        asyncResponseDispatch(new SetViewFilters(filters, pageSize));
     }
 
     public void quickFilter(Event event, int initialFilterPropertyID) {
@@ -1232,8 +1237,8 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         }
     }
 
-    public void getInitialFilterProperty(ErrorHandlingCallback<NumberResult> callback) {
-        dispatcher.execute(new GetInitialFilterProperty(), callback);
+    public void getInitialFilterProperty(PriorityErrorHandlingCallback<NumberResult> callback) {
+        dispatcher.executePriority(new GetInitialFilterProperty(), callback);
     }
 
     public void focusProperty(GPropertyDraw propertyDraw) {
@@ -1260,19 +1265,45 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             ((TabbedContainerView)formLayout.getContainerView(component.container)).activateTab(component);
     }
 
+    public abstract static class CustomCallback<T> implements RequestCountingAsyncCallback<T> {
+
+        protected abstract void onSuccess(T result);
+
+        @Override
+        public void onSuccess(T result, Runnable onDispatchFinished) {
+            onSuccess(result);
+
+            if(onDispatchFinished != null)
+                onDispatchFinished.run();
+        }
+    }
+
+    public abstract static class CustomErrorHandlingCallback<T> extends RequestCountingErrorHandlingCallback<T> {
+
+        protected abstract void onSuccess(T result);
+
+        @Override
+        public void onSuccess(T result, Runnable onDispatchFinished) {
+            onSuccess(result);
+
+            if(onDispatchFinished != null)
+                onDispatchFinished.run();
+        }
+    }
+
     public void countRecords(final GGroupObject groupObject) {
-        dispatcher.execute(new CountRecords(groupObject.ID), new ErrorHandlingCallback<NumberResult>() {
+        asyncDispatch(new CountRecords(groupObject.ID), new CustomErrorHandlingCallback<NumberResult>() {
             @Override
-            public void success(NumberResult result) {
+            public void onSuccess(NumberResult result) {
                 controllers.get(groupObject).showRecordQuantity((Integer) result.value);
             }
         });
     }
 
     public void calculateSum(final GGroupObject groupObject, final GPropertyDraw propertyDraw, GGroupObjectValue columnKey) {
-        dispatcher.execute(new CalculateSum(propertyDraw.ID, columnKey), new ErrorHandlingCallback<NumberResult>() {
+        asyncDispatch(new CalculateSum(propertyDraw.ID, columnKey), new CustomErrorHandlingCallback<NumberResult>() {
             @Override
-            public void success(NumberResult result) {
+            public void onSuccess(NumberResult result) {
                 controllers.get(groupObject).showSum(result.value, propertyDraw);
             }
         });
@@ -1294,7 +1325,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
                 columnKeys[i] = columnKeysList.get(i);
             }
         }
-        return dispatcher.execute(new ChangeMode(groupObject.ID, setGroup, propertyIDs, columnKeys, aggrProps, aggrType, pageSize, forceRefresh, updateMode, viewType), new ServerResponseCallback());
+        return asyncResponseDispatch(new ChangeMode(groupObject.ID, setGroup, propertyIDs, columnKeys, aggrProps, aggrType, pageSize, forceRefresh, updateMode, viewType));
     }
 
     public GFormUserPreferences getUserPreferences() {
@@ -1310,65 +1341,52 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     public void runGroupReport(Integer groupObjectID) {
-        syncDispatch(new GroupReport(groupObjectID, getUserPreferences()), new ErrorHandlingCallback<GroupReportResult>() {
+        syncDispatch(new GroupReport(groupObjectID, getUserPreferences()), new CustomErrorHandlingCallback<GroupReportResult>() {
             @Override
-            public void success(GroupReportResult result) {
+            public void onSuccess(GroupReportResult result) {
                 GwtClientUtils.downloadFile(result.filename, "lsfReport", result.extension);
             }
         });
     }
 
-    public void saveUserPreferences(GGridUserPreferences userPreferences, boolean forAllUsers, boolean completeOverride, String[] hiddenProps, final ErrorHandlingCallback<ServerResponseResult> callback) {
-        syncDispatch(new SaveUserPreferencesAction(userPreferences.convertPreferences(), forAllUsers, completeOverride, hiddenProps), new ServerResponseCallback() {
+    public void saveUserPreferences(GGridUserPreferences userPreferences, boolean forAllUsers, boolean completeOverride, String[] hiddenProps, final AsyncCallback<ServerResponseResult> callback) {
+        syncDispatch(new SaveUserPreferencesAction(userPreferences.convertPreferences(), forAllUsers, completeOverride, hiddenProps), new CustomErrorHandlingCallback<ServerResponseResult>() {
             @Override
-            public void success(ServerResponseResult response) {
+            public void onSuccess(ServerResponseResult response) {
                 for (GAction action : response.actions) {
                     if (action instanceof GLogMessageAction) {
                         actionDispatcher.execute((GLogMessageAction) action);
-                        callback.failure(new Throwable());
+                        callback.onFailure(new Throwable());
                         return;
                     }
                 }
-                callback.success(response);
+                callback.onSuccess(response);
             }
 
             @Override
-            public void failure(Throwable caught) {
-                callback.failure(caught);
+            public void onFailure(Throwable caught) {
+                callback.onFailure(caught);
+
+                super.onFailure(caught);
             }
         });
     }
 
     public void refreshUPHiddenProps(String groupObjectSID, String[] propSids) {
-        syncDispatch(new RefreshUPHiddenPropsAction(groupObjectSID, propSids), new ServerResponseCallback());
+        syncResponseDispatch(new RefreshUPHiddenPropsAction(groupObjectSID, propSids));
     }
 
     public List<GPropertyDraw> getPropertyDraws() {
         return form.propertyDraws;
     }
 
+    private ActionPanelRenderer asyncView;
     public void setAsyncView(ActionPanelRenderer asyncView) {
         this.asyncView = asyncView;
     }
-
-    int asyncCount;
-
-    public void onAsyncStarted() {
-        if (asyncView != null) {
-            if(asyncCount == 0)
-                asyncTimer.schedule(ASYNC_TIME_OUT);
-            asyncCount++;
-        }
-    }
-
-    public void onAsyncFinished() {
-        if (asyncView != null) {
-            asyncCount--;
-            if (asyncCount == 0) {
-                asyncTimer.cancel();
-                asyncView.setLoadingImage(null);
-            }
-        }
+    public void showAsync(boolean set) {
+        if(asyncView != null)
+            asyncView.setLoadingImage(set ? "loading.gif" : null);
     }
 
     public void previewBlurEvent(Event event) {
@@ -1382,15 +1400,15 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     private boolean previewLoadingManagerSinkEvents(Event event) {
         //focus() can trigger blur event, blur finishes editing. Editing calls syncDispatch.
         //If isEditing() and loadingManager isVisible() then flushCompletedRequests is not executed and syncDispatch is blocked.
-        return !(loadingManager.isVisible() && DataGrid.checkSinkEvents(event));
+        return !(dispatcher.loadingManager.isVisible() && DataGrid.checkSinkEvents(event));
     }
 
     protected void onFormHidden(int closeDelay) {
         FormDispatchAsync closeDispatcher = dispatcher;
         Scheduler.get().scheduleDeferred(() -> {
-            closeDispatcher.execute(new Close(closeDelay), new ErrorHandlingCallback<VoidResult>() {
+            closeDispatcher.executePriority(new Close(closeDelay), new PriorityErrorHandlingCallback<VoidResult>() {
                 @Override
-                public void failure(Throwable caught) { // supressing errors
+                public void onFailure(Throwable caught) { // supressing errors
                 }
             });
             closeDispatcher.close();
@@ -1436,7 +1454,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         return formLayout.getMaxPreferredSize();
     }
 
-    public boolean isModal() {
+    public boolean isWindow() {
         return formContainer instanceof ModalForm;
     }
 
@@ -1465,32 +1483,15 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         return objects;
     }
 
-    @Override
-    public void getServerActionMessage(ErrorHandlingCallback<StringResult> callback) {
-        dispatcher.executePriority(new GetRemoteActionMessage(), callback);
-    }
-
-    @Override
-    public void getServerActionMessageList(ErrorHandlingCallback<ListResult> callback) {
-        dispatcher.executePriority(new GetRemoteActionMessageList(), callback);
-    }
-
-    @Override
-    public void interrupt(boolean cancelable) {
-        dispatcher.executePriority(new Interrupt(cancelable), new ErrorHandlingCallback<VoidResult>());
-    }
-
     public void setContainerCaption(GContainer container, String caption) {
         container.caption = caption;
 
         // update captions (actually we could've set them directly to the containers, but tabbed pane physically adds / removes that views, so the check if there is a tab is required there)
         GFormLayout layout = formLayout;
-        if(container.isTab())
-            ((TabbedContainerView)layout.getContainerView(container.container)).updateTabCaption(container);
-        else if(container.main)
+        if(container.main)
             updateFormCaption();
         else
-            layout.getContainerView(container).updateCaption();
+            layout.getContainerView(container.container).updateCaption(container);
     }
 
     private static final class Change {
@@ -1543,11 +1544,15 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         panelController.focusFirstWidget();
     }
 
-    private class ServerResponseCallback extends ErrorHandlingCallback<ServerResponseResult> {
+    private class ServerResponseCallback extends GwtActionDispatcher.ServerResponseCallback {
+
+        public ServerResponseCallback() {
+            super(false);
+        }
 
         @Override
-        public void success(ServerResponseResult response) {
-            actionDispatcher.dispatchResponse(response);
+        protected GwtActionDispatcher getDispatcher() {
+            return actionDispatcher;
         }
     }
 
@@ -1811,33 +1816,148 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
     private EditContext editContext;
 
-    private Consumer<Object> editBeforeCommit;
-    private Consumer<Object> editAfterCommit;
+    private Consumer<GUserInputResult> editBeforeCommit;
+    private Consumer<GUserInputResult> editAfterCommit;
     private Runnable editCancel;
 
     private Element focusedElement;
     private Object forceSetFocus;
 
+    @Override
     public boolean isEditing() {
         return editContext != null;
     }
 
-    public void edit(GType type, Event event, boolean hasOldValue, Object oldValue, Consumer<Object> beforeCommit, Consumer<Object> afterCommit, Runnable cancel, EditContext editContext) {
+    @Override
+    public CellEditor getCellEditor() {
+        return cellEditor;
+    }
+
+    private String editAsyncValuesSID;
+    private boolean editAsyncUsePessimistic; // optimimization
+    // shouldn't be zeroed when editing ends, since we assume that there is only one live input on the form
+    private int editAsyncIndex;
+    private int editLastReceivedAsyncIndex;
+    // we don't want to proceed results if "later" request results where proceeded
+    private AsyncCallback<Pair<ArrayList<GAsync>, Boolean>> checkLast(int index, AsyncCallback<Pair<ArrayList<GAsync>, Boolean>> callback) {
+        return new AsyncCallback<Pair<ArrayList<GAsync>, Boolean>>() {
+            @Override
+            public void onFailure(Throwable caught) {
+                if(index >= editLastReceivedAsyncIndex) {
+                    editLastReceivedAsyncIndex = index;
+                    callback.onFailure(caught);
+                }
+            }
+
+            @Override
+            public void onSuccess(Pair<ArrayList<GAsync>, Boolean> result) {
+                if(index >= editLastReceivedAsyncIndex) {
+                    editLastReceivedAsyncIndex = index;
+                    if(!result.second && index < editAsyncIndex - 1)
+                        result = new Pair<>(result.first, true);
+                    callback.onSuccess(result);
+                }
+            }
+        };
+    }
+
+    // synchronous call (with request indices, etc.)
+    private void getPessimisticValues(int propertyID, GGroupObjectValue columnKey, String actionSID, String value, int index, AsyncCallback<Pair<ArrayList<GAsync>, Boolean>> callback) {
+        asyncDispatch(new GetAsyncValues(propertyID, columnKey, actionSID, value, index), new CustomCallback<ListResult>() {
+            @Override
+            public void onFailure(Throwable caught) {
+                callback.onFailure(caught);
+            }
+
+            @Override
+            public void onSuccess(ListResult result) {
+                callback.onSuccess(new Pair<>(result.value, false));
+            }
+        });
+    }
+
+    public void getAsyncValues(String value, AsyncCallback<Pair<ArrayList<GAsync>, Boolean>> callback) {
+        if(editContext != null) { // just in case
+            GPropertyDraw property = editContext.getProperty();
+            int editIndex = editAsyncIndex++;
+            AsyncCallback<Pair<ArrayList<GAsync>, Boolean>> fCallback = checkLast(editIndex, callback);
+
+            GGroupObjectValue currentKey = getFullCurrentKey(property, editContext.getColumnKey());
+            final String actionSID = editAsyncValuesSID;
+
+            if (!editAsyncUsePessimistic)
+                dispatcher.executePriority(new GetPriorityAsyncValues(property.ID, currentKey, actionSID, value, editIndex), new PriorityAsyncCallback<ListResult>() {
+                    @Override
+                    public void onFailure(Throwable caught) {
+                        fCallback.onFailure(caught);
+                    }
+
+                    @Override
+                    public void onSuccess(ListResult result) {
+                        if (result.value == null) { // optimistic request failed, running pessimistic one, with request indices, etc.
+                            editAsyncUsePessimistic = true;
+                            getPessimisticValues(property.ID, currentKey, actionSID, value, editIndex, fCallback);
+                        } else {
+                            boolean moreResults = false;
+                            ArrayList<GAsync> values = result.value;
+                            if(values.size() > 0) {
+                                GAsync lastResult = values.get(values.size() - 1);
+                                if(lastResult.equals(GAsync.RECHECK)) {
+                                    values = removeLast(values);
+
+                                    moreResults = true;
+                                    getPessimisticValues(property.ID, currentKey, actionSID, value, editIndex, fCallback);
+                                } else if(values.size() == 1 && lastResult.equals(GAsync.CANCELED)) // ignoring CANCELED results
+                                    return;
+                            }
+                            fCallback.onSuccess(new Pair<>(values, moreResults));
+                        }
+                    }
+                });
+            else
+                getPessimisticValues(property.ID, currentKey, actionSID, value, editIndex, fCallback);
+        }
+    }
+
+    public void editProperty(GType type, Event event, boolean hasOldValue, Object oldValue, GInputList inputList, BiConsumer<GUserInputResult, Long> afterCommit, Runnable cancel, EditContext editContext, String actionSID, Long dispatchingIndex) {
+        lsfusion.gwt.client.base.Result<Long> requestIndex = new lsfusion.gwt.client.base.Result<>();
+        edit(type, event, hasOldValue, oldValue, inputList, // actually it's assumed that actionAsyncs is used only here, in all subsequent calls it should not be referenced
+                value -> {
+                    requestIndex.set(changeEditPropertyValue(editContext, event, actionSID, type, value, dispatchingIndex)); // actually ServerResponse.INPUT shouldn't be passed inside changeEditPropertyValue but it's needed only if dispatchingIndex is null
+                },
+                value -> {
+                    afterCommit.accept(value, requestIndex.result);
+
+//                    // it seems that it's better to do everything after commit to avoid potential problems with focus, etc.
+//                    Integer contextAction = value.getContextAction();
+//                    if(contextAction != null/* && requestIndex.result >= 0*/) {
+//                        GAsyncExec actionAsync = inputList.actionAsyncs[contextAction];
+//                        if(actionAsync != null)
+//                            actionAsync.exec(getAsyncFormController(requestIndex.result), formsController);
+//                    }
+                },
+                cancel, editContext, actionSID);
+    }
+
+    public void edit(GType type, Event event, boolean hasOldValue, Object oldValue, GInputList inputList, Consumer<GUserInputResult> beforeCommit, Consumer<GUserInputResult> afterCommit,
+                     Runnable cancel, EditContext editContext, String editAsyncValuesSID) {
         assert this.editContext == null;
         GPropertyDraw property = editContext.getProperty();
         CellEditor cellEditor;
-        String customEditorFunctions = property.customEditorFunctions;
-        if (customEditorFunctions != null) {
-            cellEditor = property.customTextEdit ? new CustomTextCellEditor(this, property, customEditorFunctions) :
-                    (property.customReplaceEdit ? new CustomReplaceCellEditor(this, property, customEditorFunctions) :
-                            new CustomCellEditor(this, property, customEditorFunctions));
+        String customEditorFunction = property.customEditorFunction;
+        if (customEditorFunction != null) {
+            cellEditor = property.customTextEdit ? new CustomTextCellEditor(this, property, customEditorFunction) :
+                    (property.customReplaceEdit ? new CustomReplaceCellEditor(this, property, customEditorFunction) :
+                            new CustomCellEditor(this, property, customEditorFunction));
         } else
-            cellEditor = type.createGridCellEditor(this, property);
+            cellEditor = type.createGridCellEditor(this, property, inputList);
 
         if (cellEditor != null) {
             editBeforeCommit = beforeCommit;
             editAfterCommit = afterCommit;
             editCancel = cancel;
+
+            this.editAsyncValuesSID = editAsyncValuesSID;
 
             this.editContext = editContext;
 
@@ -1868,14 +1988,15 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     @Override
-    public void commitEditing(Object value, boolean blurred) {
-        editBeforeCommit.accept(value);
+    public void commitEditing(GUserInputResult result, boolean blurred) {
+        editBeforeCommit.accept(result);
         editBeforeCommit = null;
 
         finishEditing(blurred);
 
-        editAfterCommit.accept(value);
-        editAfterCommit = null;
+        Consumer<GUserInputResult> editAfterCommit = this.editAfterCommit;
+        this.editAfterCommit = null;
+        editAfterCommit.accept(result);
     }
 
     @Override
@@ -1892,6 +2013,8 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
         EditContext editContext = this.editContext;
         this.editContext = null;
+        this.editAsyncUsePessimistic = false;
+        this.editAsyncValuesSID = null;
 
         Element renderElement = editContext.getRenderElement();
         if(cellEditor instanceof ReplaceCellEditor) {
@@ -1917,22 +2040,28 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     public void render(GPropertyDraw property, Element element, RenderContext renderContext) {
-        if(isEditedOrAsync(property, element)) {
+        if(isEdited(element)) {
             assert false;
             return;
         }
 
         property.getCellRenderer().renderStatic(element, renderContext);
     }
+    // "external" update - paste + server update edit value
+    public void update(EditContext editContext, Object value) {
+        editContext.setValue(value);
+
+        update(editContext.getProperty(), editContext.getRenderElement(), value, editContext.getUpdateContext());
+    }
     public void update(GPropertyDraw property, Element element, Object value, UpdateContext updateContext) {
-        if(isEditedOrAsync(property, element))
+        if(isEdited(element))
             return;
 
         property.getCellRenderer().renderDynamic(element, value, updateContext);
     }
 
-    public boolean isEditedOrAsync(GPropertyDraw property, Element element) {
-        return (editContext != null && editContext.getRenderElement() == element) || (property.drawAsync && asyncCount > 0);
+    public boolean isEdited(Element element) {
+        return editContext != null && editContext.getRenderElement() == element;
     }
 
     public static void setBackgroundColor(Element element, String color) {
@@ -1961,8 +2090,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
     public static void setDynamicImage(Element element, Object value) { // assert that property.hasDynamicImage
         ActionCellRenderer.setImage(element, value instanceof String && !value.equals("null") ?
-                getDownloadURL((String) value, null, null, false) :
-                "", null, true);
+                getDownloadURL((String) value, null, null, false) : "", true);
     }
 
     public void onPropertyBrowserEvent(EventHandler handler, Element cellParent, Element focusElement, Consumer<EventHandler> onOuterEditBefore,

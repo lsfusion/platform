@@ -1,49 +1,56 @@
 package lsfusion.gwt.client.form.filter.user.view;
 
 import com.google.gwt.user.client.Event;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
+import lsfusion.gwt.client.base.view.ResizableSimplePanel;
+import lsfusion.gwt.client.classes.data.GLogicalType;
 import lsfusion.gwt.client.form.filter.user.GDataFilterValue;
-import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
+import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.controller.GTableController;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
 import java.io.Serializable;
 
-public class GDataFilterValueView extends GFilterValueView {
+import static lsfusion.gwt.client.form.event.GKeyStroke.isAddUserFilterKeyEvent;
+import static lsfusion.gwt.client.form.event.GKeyStroke.isReplaceUserFilterKeyEvent;
+
+public class GDataFilterValueView extends ResizableSimplePanel {
     private final GDataFilterValue filterValue;
     private final GTableController logicsSupplier;
 
     public GDataFilterPropertyValue cell;
 
-    public GDataFilterValueView(GFilterValueListener listener, GDataFilterValue filterValue, GPropertyDraw property, GTableController logicsSupplier) {
-        super(listener);
-        this.filterValue = filterValue;
+    public GDataFilterValueView(GDataFilterValue filterValue, GTableController logicsSupplier) {
+        this.filterValue = filterValue != null ? filterValue : new GDataFilterValue();
         this.logicsSupplier = logicsSupplier;
 
-        cell = new GDataFilterPropertyValue(property, logicsSupplier.getForm(), value -> valueChanged(value));
+        addStyleName("userFilterDataPropertyValue");
+    }
+
+    public void changeProperty(GPropertyDraw property, GGroupObjectValue columnKey) {
+        filterValue.value = null;
+        changeProperty(property, columnKey, true);
+    }
+
+    public void changeProperty(GPropertyDraw property, GGroupObjectValue columnKey, boolean readSelectedValue) {
+        cell = new GDataFilterPropertyValue(property, columnKey, logicsSupplier.getForm(), this::valueChanged, this::editingCancelled);
+        
         cell.setStatic(this, true);
-    }
 
-    @Override
-    public void propertySet(GPropertyFilter condition) {
-        changeProperty(condition.property);
-    }
-
-    @Override
-    public void propertyChanged(GPropertyFilter condition) {
-        filterValue.value = (Serializable) logicsSupplier.getSelectedValue(condition.property, condition.columnKey);
-
-        changeProperty(condition.property);
-    }
-
-    private void changeProperty(GPropertyDraw property) {
-        cell.changeProperty(property);
-        cell.updateValue(filterValue.value);
+        if (readSelectedValue) {
+            cell.updateValue(logicsSupplier.getSelectedValue(property, columnKey));
+        } else {
+            cell.updateValue(filterValue.value);
+        }
     }
 
     public void valueChanged(Object value) {
         filterValue.value = (Serializable) value;
-        listener.valueChanged();
+    }
+    
+    public void editingCancelled() {
+        cell.updateValue(filterValue.value);
     }
 
     public void focusOnValue() {
@@ -51,11 +58,17 @@ public class GDataFilterValueView extends GFilterValueView {
     }
 
     public void startEditing(Event keyEvent) {
-        cell.onEditEvent(new EventHandler(keyEvent));
-    }
-
-    @Override
-    public int getWidth(GPropertyDraw property) {
-        return property.getValueWidth(null);
+        if (GwtClientUtils.isShowing(cell)) { // suggest box may appear in (0,0) if filter is already gone (as it's called in scheduleDeferred)
+            if (!(cell.getProperty().baseType instanceof GLogicalType)) {
+                if (isAddUserFilterKeyEvent(keyEvent) || isReplaceUserFilterKeyEvent(keyEvent)) {
+                    cell.startEditing(keyEvent);
+                } else {
+                    cell.onEditEvent(new EventHandler(keyEvent));
+                }
+            } else {
+                // to be able to apply on Enter
+                filterValue.value = (Serializable) cell.getValue();
+            }
+        }
     }
 }

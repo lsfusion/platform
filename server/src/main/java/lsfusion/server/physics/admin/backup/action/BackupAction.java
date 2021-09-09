@@ -25,8 +25,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static lsfusion.base.file.IOUtils.readFileToString;
-import static lsfusion.server.logics.classes.data.time.DateTimeConverter.getWriteDate;
-import static lsfusion.server.logics.classes.data.time.DateTimeConverter.getWriteTime;
 
 public class BackupAction extends InternalAction {
 
@@ -57,8 +55,8 @@ public class BackupAction extends InternalAction {
 
                 DataObject backupObject = newContext.addObject((ConcreteCustomClass) findClass("Backup"));
                 LocalDateTime currentDateTime = LocalDateTime.now();
-                findProperty("date[Backup]").change(getWriteDate(currentDateTime.toLocalDate()), newContext, backupObject);
-                findProperty("time[Backup]").change(getWriteTime(currentDateTime.toLocalTime()), newContext, backupObject);
+                findProperty("date[Backup]").change(currentDateTime.toLocalDate(), newContext, backupObject);
+                findProperty("time[Backup]").change(currentDateTime.toLocalTime(), newContext, backupObject);
                 findProperty("file[Backup]").change(backupFilePath, newContext, backupObject);
                 findProperty("name[Backup]").change(backupFileName + backupFileExtension, newContext, backupObject);
                 findProperty("fileLog[Backup]").change(backupFileLogPath, newContext, backupObject);
@@ -78,9 +76,6 @@ public class BackupAction extends InternalAction {
                 backupObject = new DataObject((Long)backupObject.object, (ConcreteCustomClass)findClass("Backup")); // обновляем класс после backup
 
                 context.getDbManager().backupDB(context, backupFileName, threadCount, excludeTables);
-
-                findProperty("backupFilePath[]").change(backupFilePath, context.getSession());
-                findProperty("backupFileName[]").change(backupFileName + backupFileExtension, context.getSession());
 
                 findProperty("log[Backup]").change(readFileToString(backupFileLogPath), newContext, backupObject);
                 newContext.apply();

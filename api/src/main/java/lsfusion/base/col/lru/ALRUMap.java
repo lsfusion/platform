@@ -294,10 +294,14 @@ public abstract class ALRUMap<E extends ALRUMap.AEntry<E>, S extends ALRUMap.ASe
             MAddCol<E> entries = ListFact.mAddCol(size);
             try {
                 E entry = tail.getBefore();
-                while (entry != head) {
-                    assert entry != tail;
-                    entries.add(entry);
-                    entry = entry.getBefore();
+                if(entry != tail) { // if not empty, since tail is a fake entry
+                    while (true) {
+                        assert entry != tail;
+                        entries.add(entry);
+                        if (entry == head)
+                            break;
+                        entry = entry.getBefore();
+                    }
                 }
             } finally {
                 changeLock.unlock();

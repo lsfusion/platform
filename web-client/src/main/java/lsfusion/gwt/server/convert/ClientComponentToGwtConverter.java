@@ -17,10 +17,7 @@ import lsfusion.client.form.object.table.grid.ClientGrid;
 import lsfusion.client.form.object.table.grid.user.toolbar.ClientCalculations;
 import lsfusion.client.form.object.table.tree.ClientTreeGroup;
 import lsfusion.client.form.property.ClientPropertyDraw;
-import lsfusion.client.form.property.async.ClientAsyncAddRemove;
-import lsfusion.client.form.property.async.ClientAsyncChange;
 import lsfusion.client.form.property.async.ClientAsyncEventExec;
-import lsfusion.client.form.property.async.ClientAsyncOpenForm;
 import lsfusion.client.form.property.cell.EditBindingMap;
 import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
@@ -42,9 +39,6 @@ import lsfusion.gwt.client.form.object.table.grid.user.toolbar.GCalculations;
 import lsfusion.gwt.client.form.object.table.grid.view.GListViewType;
 import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
 import lsfusion.gwt.client.form.property.*;
-import lsfusion.gwt.client.form.property.async.GAsyncAddRemove;
-import lsfusion.gwt.client.form.property.async.GAsyncChange;
-import lsfusion.gwt.client.form.property.async.GAsyncOpenForm;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.navigator.window.GModalityType;
 import lsfusion.interop.base.view.FlexAlignment;
@@ -69,6 +63,7 @@ import static lsfusion.gwt.server.convert.StaticConverters.convertColor;
 public class ClientComponentToGwtConverter extends CachedObjectConverter {
 
     private final ClientTypeToGwtConverter typeConverter = ClientTypeToGwtConverter.getInstance();
+    private final ClientAsyncToGwtConverter asyncConverter = ClientAsyncToGwtConverter.getInstance();
     private GForm form;
 
     public ClientComponentToGwtConverter(String logicsName) {
@@ -83,11 +78,9 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         component.container = convertOrCast(clientComponent.container);
         component.defaultComponent = clientComponent.defaultComponent;
 
-        if (clientComponent.size != null) {
-            component.width = clientComponent.size.width;
-            component.height = clientComponent.size.height;
-        }
-        
+        component.width = clientComponent.size.width;
+        component.height = clientComponent.size.height;
+
         component.autoSize = clientComponent.autoSize;
 
         component.setFlex(clientComponent.flex);
@@ -211,6 +204,9 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
     public GFilter convertFilter(ClientFilter clientFilter) {
         GFilter filter = initGwtComponent(clientFilter, new GFilter());
         filter.visible = clientFilter.visible;
+        for (ClientPropertyDraw property : clientFilter.properties) {
+            filter.properties.add(convertOrCast(property));
+        }        
         return filter;
     }
     
@@ -254,11 +250,12 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.integrationSID = clientPropertyDraw.getIntegrationSID();
         
         propertyDraw.customRenderFunction = clientPropertyDraw.customRenderFunction;
-        propertyDraw.customEditorFunctions = clientPropertyDraw.customEditorFunctions;
+        propertyDraw.customEditorFunction = clientPropertyDraw.customEditorFunction;
         propertyDraw.customTextEdit = clientPropertyDraw.customTextEdit;
         propertyDraw.customReplaceEdit = clientPropertyDraw.customReplaceEdit;
 
         propertyDraw.toolTip = clientPropertyDraw.toolTip;
+        propertyDraw.clearText = clientPropertyDraw.clearText;
         propertyDraw.tableName = clientPropertyDraw.tableName;
         propertyDraw.interfacesCaptions = clientPropertyDraw.interfacesCaptions;
         propertyDraw.interfacesTypes = new GClass[clientPropertyDraw.interfacesTypes.length];
@@ -281,12 +278,12 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         }
 
         propertyDraw.baseType = typeConverter.convertOrCast(clientPropertyDraw.baseType);
-        propertyDraw.changeWYSType = typeConverter.convertOrCast(clientPropertyDraw.changeWYSType);
         propertyDraw.returnClass = typeConverter.convertOrCast(clientPropertyDraw.returnClass);
 
+        propertyDraw.externalChangeType = typeConverter.convertOrCast(clientPropertyDraw.externalChangeType);
         propertyDraw.asyncExecMap = new HashMap<>();
         for(Map.Entry<String, ClientAsyncEventExec> entry : clientPropertyDraw.asyncExecMap.entrySet()) {
-            propertyDraw.asyncExecMap.put(entry.getKey(), convertOrCast(entry.getValue()));
+            propertyDraw.asyncExecMap.put(entry.getKey(), asyncConverter.convertOrCast(entry.getValue()));
         }
 
         propertyDraw.askConfirm = clientPropertyDraw.askConfirm;
@@ -358,6 +355,8 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         }
 
         propertyDraw.panelCaptionVertical = clientPropertyDraw.panelCaptionVertical;
+        propertyDraw.panelCaptionLast = clientPropertyDraw.panelCaptionLast;
+        propertyDraw.panelCaptionAlignment = convertFlexAlignment(clientPropertyDraw.panelCaptionAlignment);
         
         propertyDraw.panelColumnVertical = clientPropertyDraw.panelColumnVertical;
         
@@ -545,7 +544,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         }
         groupObject.grid = convertOrCast(clientGroupObject.grid);
         groupObject.toolbar = convertOrCast(clientGroupObject.toolbar);
-        groupObject.filter = convertOrCast(clientGroupObject.filter);
+        groupObject.userFilter = convertOrCast(clientGroupObject.userFilter);
 
         groupObject.viewType = GClassViewType.valueOf(clientGroupObject.viewType.name());
         groupObject.listViewType = GListViewType.valueOf(clientGroupObject.listViewType.name());
@@ -576,27 +575,9 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
     }
 
     @Cached
-    @Converter(from = ClientAsyncAddRemove.class)
-    public GAsyncAddRemove convertOpenForm(ClientAsyncAddRemove clientAddRemove) {
-        return new GAsyncAddRemove(convertOrCast(clientAddRemove.object), clientAddRemove.add);
-    }
-
-    @Cached
-    @Converter(from = ClientAsyncChange.class)
-    public GAsyncChange convertOpenForm(ClientAsyncChange clientChangeType) {
-        return new GAsyncChange(typeConverter.convertOrCast(clientChangeType.changeType));
-    }
-
-    @Cached
-    @Converter(from = ClientAsyncOpenForm.class)
-    public GAsyncOpenForm convertOpenForm(ClientAsyncOpenForm asyncOpenForm) {
-        return new GAsyncOpenForm(asyncOpenForm.canonicalName, asyncOpenForm.caption, asyncOpenForm.forbidDuplicate, asyncOpenForm.modal);
-    }
-
-    @Cached
     @Converter(from = PivotOptions.class)
     public GPivotOptions convertPivotOptions(PivotOptions pivotOptions) {
-        return new GPivotOptions(pivotOptions.getType(), convertGroupType(pivotOptions.getAggregation()), pivotOptions.getShowSettings());
+        return new GPivotOptions(pivotOptions.getType(), convertGroupType(pivotOptions.getAggregation()), pivotOptions.getShowSettings(), pivotOptions.getConfigFunction());
     }
 
     @Cached
@@ -608,12 +589,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
     @Cached
     @Converter(from = ClientObject.class)
     public GObject convertObject(ClientObject clientObject) {
-        GObject object = new GObject();
-        object.ID = clientObject.ID;
-        object.sID = clientObject.getSID();
-        object.groupObject = convertOrCast(clientObject.groupObject);
-        object.caption = clientObject.getCaption();
-        return object;
+        return new GObject(convertOrCast(clientObject.groupObject), clientObject.getCaption(), clientObject.ID, clientObject.getSID());
     }
 
     @Cached

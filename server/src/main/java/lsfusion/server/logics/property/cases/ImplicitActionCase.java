@@ -25,4 +25,9 @@ public class ImplicitActionCase extends AbstractActionCase<PropertyInterface> {
     protected boolean getSameNamespace() {
         return sameNamespace;
     }
+
+    @Override
+    public boolean isOptimisticAsync() {
+        return false;
+    }
 }

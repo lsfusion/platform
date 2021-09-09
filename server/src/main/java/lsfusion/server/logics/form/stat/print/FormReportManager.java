@@ -446,11 +446,16 @@ public abstract class FormReportManager extends FormDataManager {
             ImOrderSet<ObjectEntity> objects = serializeObjects(outStream, propData.objects.get(propertyData));
 
             ImMap<ImMap<ObjectEntity, Object>, Object> values = propData.data.getValue(i);
-            outStream.writeInt(values.size());
-            for(int j=0,sizeJ=values.size();j<sizeJ;j++) {
-                serializeObjectValues(outStream, objects, values.getKey(j));
-                BaseUtils.serializeObject(outStream, values.getValue(j));
-            }
+            int notNullCount = 0;
+            for (int j=0,sizeJ=values.size();j<sizeJ;j++)
+                if (values.getValue(j) != null)
+                    notNullCount++;
+            outStream.writeInt(notNullCount);
+            for(int j=0,sizeJ=values.size();j<sizeJ;j++)
+                if (values.getValue(j) != null) {
+                    serializeObjectValues(outStream, objects, values.getKey(j));
+                    BaseUtils.serializeObject(outStream, values.getValue(j));
+                }
         }
 
         // serializing property draws

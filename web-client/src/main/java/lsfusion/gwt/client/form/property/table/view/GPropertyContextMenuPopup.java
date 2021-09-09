@@ -1,9 +1,10 @@
 package lsfusion.gwt.client.form.property.table.view;
 
-import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
+import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.view.PopupDialogPanel;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
@@ -30,18 +31,18 @@ public class GPropertyContextMenuPopup {
         final MenuBar menuBar = new MenuBar(true);
         for (final Map.Entry<String, String> item : contextMenuItems.entrySet()) {
             final String actionSID = item.getKey();
-            String caption = item.getValue();
-            MenuItem menuItem = new MenuItem(caption, new Scheduler.ScheduledCommand() {
-                @Override
-                public void execute() {
-                    popup.hide();
-                    selectionListener.onMenuItemSelected(actionSID);
-                }
+            MenuItem menuItem = new MenuItem(ensureMenuItemCaption(item.getValue()), () -> {
+                popup.hide();
+                selectionListener.onMenuItemSelected(actionSID);
             });
 
             menuBar.addItem(menuItem);
         }
 
         GwtClientUtils.showPopupInWindow(popup, menuBar, x, y);
+    }
+    
+    private static String ensureMenuItemCaption(String caption) {
+        return !GwtSharedUtils.isRedundantString(caption) ? caption : EscapeUtils.UNICODE_NBSP; 
     }
 }

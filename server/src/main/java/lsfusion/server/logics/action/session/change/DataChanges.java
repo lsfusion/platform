@@ -56,9 +56,6 @@ public class DataChanges extends AbstractValuesContext<DataChanges> {
     public PropertyChanges getPropertyChanges() {
         return new PropertyChanges(changes, true);
     }
-    public PropertyChanges add(PropertyChanges add) {
-        return getPropertyChanges().add(add);
-    }
 
     public ImSet<DataProperty> getProperties() {
         return changes.keys();

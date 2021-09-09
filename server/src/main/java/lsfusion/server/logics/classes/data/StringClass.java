@@ -232,7 +232,8 @@ public class StringClass extends DataClass<String> {
     }
 
     public boolean calculateStat() {
-        return length.less(new ExtInt(400));
+        return true; // we need stats at least for isValueUnique heuristics
+//        return length.less(new ExtInt(400));
     }
 
     public StringClass extend(int times) {
@@ -332,7 +333,7 @@ public class StringClass extends DataClass<String> {
     @Override
     public OverJDBField formatDBF(String fieldName) throws JDBFException {
         ExtInt charLength = getCharLength();
-        return new OverJDBField(fieldName, 'C', Math.min(charLength.isUnlimited() ? Integer.MAX_VALUE : charLength.getValue(), 253), 0);
+        return OverJDBField.createField(fieldName, 'C', Math.min(charLength.isUnlimited() ? Integer.MAX_VALUE : charLength.getValue(), 253), 0);
     }
 
     @Override

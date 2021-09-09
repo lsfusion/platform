@@ -15,7 +15,8 @@ import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFOrderSet;
 import lsfusion.server.base.version.interfaces.NFProperty;
 import lsfusion.server.logics.BaseLogicsModule;
-import lsfusion.server.logics.form.struct.property.async.AsyncExec;
+import lsfusion.server.logics.form.interactive.action.async.AsyncExec;
+import lsfusion.server.logics.form.interactive.action.async.AsyncSerializer;
 import lsfusion.server.logics.navigator.window.NavigatorWindow;
 import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 import lsfusion.server.physics.dev.debug.DebugInfo;
@@ -253,11 +254,7 @@ public abstract class NavigatorElement {
 
         IOUtils.writeImageIcon(outStream, imageHolder);
 
-        AsyncExec asyncExec = getAsyncExec();
-        outStream.writeInt(asyncExec != null ? asyncExec.getType() : -1);
-        if(asyncExec != null) {
-            asyncExec.serialize(outStream);
-        }
+        AsyncSerializer.serializeEventExec(getAsyncExec(), outStream);
     }
 
     public void setDebugPoint(DebugInfo.DebugPoint debugPoint) {

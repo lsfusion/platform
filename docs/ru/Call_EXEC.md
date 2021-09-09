@@ -11,12 +11,14 @@ title: 'Вызов (EXEC)'
 ### Примеры
 
 ```lsf
+// объявление действие importData с двумя параметрами
 importData(Sku sku, Order order)  {
     MESSAGE 'Run import for ' + id(sku) + ' ' + customer(order);
-}                                    // объявленное выше действие importData с двумя параметрами
+}
 
 order = DATA Order (OrderDetail) NONULL DELETE;
-runImport(OrderDetail d)  { importData(sku(d), order(d)); } // объявление действия runImport, которое будет вызывать importData
+// объявление действия runImport, которое будет вызывать importData
+runImport(OrderDetail d) { importData(sku(d), order(d)); } 
 ```
 
 

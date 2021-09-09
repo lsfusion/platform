@@ -6,14 +6,16 @@ import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.Dimension;
+import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.view.FlexPanel;
-import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.base.view.ResizableComplexPanel;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
+import lsfusion.gwt.client.form.object.panel.controller.GPropertyPanelController;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.getOffsetSize;
+import static lsfusion.gwt.client.view.StyleDefaults.DATA_PANEL_LABEL_MARGIN;
 
 public class PropertyPanelRenderer extends PanelRenderer {
 
@@ -22,31 +24,49 @@ public class PropertyPanelRenderer extends PanelRenderer {
     private final Label label;
     
     private final boolean vertical;
+    private final boolean tableFirst;
+    
+    private Boolean labelMarginRight = null;
 
-    public PropertyPanelRenderer(final GFormController form, GPropertyDraw property, GGroupObjectValue columnKey) {
-        super(form, property, columnKey);
+    public PropertyPanelRenderer(final GFormController form, ActionOrPropertyValueController controller, GPropertyDraw property, GGroupObjectValue columnKey, GPropertyPanelController.CaptionContainer captionContainer) {
+        super(form, controller, property, columnKey, captionContainer);
 
         vertical = property.panelCaptionVertical;
+        tableFirst = property.isPanelCaptionLast();
 
         panel = new Panel(vertical);
         panel.addStyleName("dataPanelRendererPanel");
 
         label = new Label();
-//        label.addStyleName("customFontPresenter");
-        if (this.property.captionFont != null) {
+        if (this.property.captionFont != null)
             this.property.captionFont.apply(label.getElement().getStyle());
-        }
-        panel.add(label, GFlexAlignment.CENTER);
 
-        // we need to wrap into simple panel to make layout independent from property value
+        if (!tableFirst && captionContainer == null)
+            panel.add(label, property.getPanelCaptionAlignment());
+
+        // we need to wrap into simple panel to make layout independent from property value (make flex-basis 0 for upper components)
         ResizableComplexPanel simplePanel = new ResizableComplexPanel();
         panel.addFill(simplePanel); // getWidth(), getHeight()
 
+        if (tableFirst && captionContainer == null)
+            panel.add(label, property.getPanelCaptionAlignment());
+
+        if (!vertical)
+            labelMarginRight = captionContainer != null || !tableFirst;
+
+        Pair<Integer, Integer> valueSizes;
         if(property.autoSize) { // we still need a panel to append corners
+            assert captionContainer == null;
             simplePanel.getElement().getStyle().setPosition(Style.Position.RELATIVE); // for corners (setStatic sets position absolute, so we don't need to do this for setStatic)
-            value.setDynamic(simplePanel, true);
+            valueSizes = value.setDynamic(simplePanel, true);
+            if(property.isAutoDynamicHeight())
+                valueSizes = null;
         } else
-            value.setStatic(simplePanel, true);
+            valueSizes = value.setStatic(simplePanel, true);
+
+        if(captionContainer != null && valueSizes != null)
+            captionContainer.put(label, valueSizes, property.getPanelCaptionAlignment());
+
         appendCorners(property, simplePanel); // it's a hack to add
 
         finalizeInit();
@@ -73,8 +93,12 @@ public class PropertyPanelRenderer extends PanelRenderer {
 
     protected void setLabelText(String text) {
         label.setText(text);
-        if (!vertical) {
-            label.getElement().getStyle().setMarginRight(text.isEmpty() ? 0 : 4, Style.Unit.PX);
+        if (labelMarginRight != null) {
+            if (labelMarginRight) {
+                label.getElement().getStyle().setMarginRight(text.isEmpty() ? 0 : DATA_PANEL_LABEL_MARGIN, Style.Unit.PX);
+            } else {
+                label.getElement().getStyle().setMarginLeft(text.isEmpty() ? 0 : DATA_PANEL_LABEL_MARGIN, Style.Unit.PX);
+            }
         }
     }
 

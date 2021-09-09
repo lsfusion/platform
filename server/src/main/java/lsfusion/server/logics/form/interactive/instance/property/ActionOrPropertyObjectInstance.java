@@ -1,6 +1,7 @@
 package lsfusion.server.logics.form.interactive.instance.property;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.Pair;
 import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
@@ -9,6 +10,8 @@ import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
+import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
+import lsfusion.server.logics.form.interactive.action.input.InputValueList;
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
@@ -31,6 +34,8 @@ public abstract class ActionOrPropertyObjectInstance<P extends PropertyInterface
         this.property = property;
         this.mapping = (ImMap<P, PropertyObjectInterfaceInstance>) mapping;
     }
+    
+    public abstract ActionOrPropertyObjectInstance<P, ?> getRemappedPropertyObject(ImMap<? extends PropertyObjectInterfaceInstance, ? extends ObjectValue> mapKeyValues);
 
     // получает GRID в котором рисоваться
     public GroupObjectInstance getApplyObject() {
@@ -64,17 +69,17 @@ public abstract class ActionOrPropertyObjectInstance<P extends PropertyInterface
         return mapping.replaceValues(mapKeyValues);
     }
 
-    protected ImMap<P, PropertyObjectInterfaceInstance> remapSkippingEqualsObjectInstances(ImMap<? extends PropertyObjectInterfaceInstance, DataObject> mapKeyValues) {
-        return replaceEqualObjectInstances((ImMap<PropertyObjectInterfaceInstance, DataObject>) mapKeyValues);
+    protected ImMap<P, PropertyObjectInterfaceInstance> remapSkippingEqualsObjectInstances(ImMap<? extends PropertyObjectInterfaceInstance, ? extends ObjectValue> mapKeyValues) {
+        return replaceEqualObjectInstances((ImMap<PropertyObjectInterfaceInstance, ? extends ObjectValue>) mapKeyValues);
     }
 
-    private ImMap<P, PropertyObjectInterfaceInstance> replaceEqualObjectInstances(final ImMap<PropertyObjectInterfaceInstance, DataObject> mapKeyValues) {
+    private ImMap<P, PropertyObjectInterfaceInstance> replaceEqualObjectInstances(final ImMap<PropertyObjectInterfaceInstance, ? extends ObjectValue> mapKeyValues) {
         return mapping.mapValues(value -> {
-            DataObject mapValue = mapKeyValues.get(value);
+            ObjectValue mapValue = mapKeyValues.get(value);
             if (mapValue != null) {
                 if (value instanceof ObjectInstance) {
-                    Object currentValue = value.getObjectValue().getValue();
-                    if (!BaseUtils.nullEquals(currentValue, mapValue.getValue())) {
+                    ObjectValue currentValue = value.getObjectValue();
+                    if (!BaseUtils.hashEquals(currentValue, mapValue)) {
                         value = mapValue;
                     }
                 } else {
@@ -89,5 +94,9 @@ public abstract class ActionOrPropertyObjectInstance<P extends PropertyInterface
     @Override
     public String toString() {
         return property.toString();
+    }
+
+    public PropertyDrawInstance.AsyncValueList getValueList(InputListEntity<?, P> listProperty, boolean strict) {
+        return new PropertyDrawInstance.AsyncValueList(listProperty.map(getInterfaceObjectValues()), listProperty.newSession, strict);
     }
 }

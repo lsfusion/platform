@@ -82,6 +82,8 @@ public class ClientFormLayout extends JPanel {
                 requestFocusInWindow();
             }
         });
+
+        enableEvents(AWTEvent.MOUSE_EVENT_MASK);
     }
 
     public void directProcessKeyEvent(KeyEvent e) {
@@ -206,14 +208,32 @@ public class ClientFormLayout extends JPanel {
         return null;
     }
 
+    private void checkMouseEvent(MouseEvent e, boolean preview) {
+        form.checkMouseEvent(e, preview, null, () -> null, false);
+    }
+
+    private void checkKeyEvent(KeyStroke ks, boolean preview, KeyEvent e, int condition, boolean pressed) {
+        form.checkKeyEvent(ks, e, preview, null, () -> null, false, condition, pressed);
+    }
+
+    @Override
+    protected void processMouseEvent(MouseEvent e) {
+        checkMouseEvent(e, true);
+
+        super.processMouseEvent(e);
+
+        checkMouseEvent(e, false);
+    }
+
     @Override
     protected boolean processKeyBinding(KeyStroke ks, KeyEvent ke, int condition, boolean pressed) {
-        if (condition == JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT) {
-            if(pressed && form.processBinding(new KeyInputEvent(ks), ke, () -> getGroupObject(ke.getComponent()), false))
-                return true;
-        }
+        checkKeyEvent(ks, true, ke, condition, pressed);
 
-        return super.processKeyBinding(ks, ke, condition, pressed);
+        boolean consumed = ke.isConsumed() || super.processKeyBinding(ks, ke, condition, pressed);
+
+        checkKeyEvent(ks, false, ke, condition, pressed);
+
+        return consumed || ke.isConsumed();
     }
 
     public boolean directProcessKeyBinding(KeyStroke ks, KeyEvent ke, int condition, boolean pressed) {

@@ -26,9 +26,11 @@ import lsfusion.server.logics.LogicsModule.InsertType;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.ColorClass;
 import lsfusion.server.logics.classes.data.file.ImageClass;
+import lsfusion.server.logics.classes.data.time.TimeSeriesClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
+import lsfusion.server.logics.form.interactive.action.change.ActionObjectSelector;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.struct.FormEntity;
@@ -48,6 +50,7 @@ import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
+import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
@@ -262,9 +265,13 @@ public class ScriptingFormEntity {
         return object;
     }
 
-    private ImOrderSet<ObjectEntity> getTwinMappingObject(List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
+    private ImOrderSet<ObjectEntity> getTwinTimeSeriesMappingObject(String property, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
         checkParamCount(mapping.size(), 2);
-        return getMappingObjects(SetFact.fromJavaOrderSet(mapping));
+        ImOrderSet<ObjectEntity> mappingObjects = getMappingObjects(SetFact.fromJavaOrderSet(mapping));
+        checkTimeSeriesParam(mappingObjects.get(0), property);
+        checkTimeSeriesParam(mappingObjects.get(1), property);
+        checkEqualParamClasses(mappingObjects.get(0), mappingObjects.get(1), property);
+        return mappingObjects;
     }
 
     private ObjectEntity getObjectEntity(String name) throws ScriptingErrorLog.SemanticErrorException {
@@ -323,15 +330,6 @@ public class ScriptingFormEntity {
         return null; 
     }
 
-    private FormSessionScope override(FormPropertyOptions options, FormSessionScope scope) {
-        Boolean newSession = options.isNewSession();
-        if(newSession != null && newSession) {
-            Boolean nested = options.isNested();
-            return (nested != null && nested ? FormSessionScope.NESTEDSESSION : FormSessionScope.NEWSESSION);
-        }
-        return scope;
-    }
-
     public void addScriptedPropertyDraws(List<? extends ScriptingLogicsModule.AbstractFormActionOrPropertyUsage> properties, List<String> aliases, List<LocalizedString> captions, FormPropertyOptions commonOptions, List<FormPropertyOptions> options, Version version, List<DebugInfo.DebugPoint> points) throws ScriptingErrorLog.SemanticErrorException {
         boolean reverse = commonOptions.getInsertType() == FIRST || commonOptions.getNeighbourPropertyDraw() != null && commonOptions.getInsertType() == AFTER;
         
@@ -342,11 +340,12 @@ public class ScriptingFormEntity {
 
             FormPropertyOptions propertyOptions = commonOptions.overrideWith(options.get(i));
 
-            FormSessionScope scope = override(propertyOptions, FormSessionScope.OLDSESSION);
+            FormSessionScope scope = propertyOptions.getFormSessionScope();
             
             LAP<?, ?> property = null;
             ImOrderSet<ObjectEntity> objects = null;
             String forceIntegrationSID = null;
+            ActionObjectSelector forceChangeAction = null;
             if(pDrawUsage instanceof ScriptingLogicsModule.FormPredefinedUsage) {
                 ScriptingLogicsModule.FormPredefinedUsage prefefUsage = (ScriptingLogicsModule.FormPredefinedUsage) pDrawUsage;
                 ScriptingLogicsModule.NamedPropertyUsage pUsage = prefefUsage.property;
@@ -354,9 +353,11 @@ public class ScriptingFormEntity {
                 String propertyName = pUsage.name;
                 if (propertyName.equals("VALUE")) {
                     ObjectEntity obj = getSingleMappingObject(mapping);
-                    property = LM.getObjValueProp(form, obj);
+                    Pair<LP, ActionObjectSelector> valueProp = LM.getObjValueProp(form, obj);
+                    property = valueProp.first;
+                    forceChangeAction = valueProp.second;
                     objects = SetFact.singletonOrder(obj);
-                } else if (propertyName.equals("NEW") && scope == OLDSESSION) {
+                } else if (propertyName.equals("NEW") && nvl(scope, PropertyDrawEntity.DEFAULT_ACTION_EVENTSCOPE) == OLDSESSION) {
                     ObjectEntity obj = getSingleCustomClassMappingObject(propertyName, mapping);
                     CustomClass explicitClass = getSingleAddClass(pUsage);
                     property = LM.getAddObjectAction(form, obj, explicitClass);
@@ -365,24 +366,28 @@ public class ScriptingFormEntity {
                 } else if (propertyName.equals("NEWEDIT") || propertyName.equals("NEW")) {
                     ObjectEntity obj = getSingleCustomClassMappingObject(propertyName, mapping);
                     CustomClass explicitClass = getSingleAddClass(pUsage);
-                    property = LM.getAddFormAction(form, obj, explicitClass, scope, version);
+                    property = LM.getAddFormAction(form, obj, explicitClass);
                     objects = SetFact.EMPTYORDER();
                 } else if (propertyName.equals("EDIT")) {
                     ObjectEntity obj = getSingleCustomClassMappingObject(propertyName, mapping);
                     CustomClass explicitClass = getSingleAddClass(pUsage);
-                    property = LM.getEditFormAction(obj, explicitClass, scope, version);
+                    property = LM.getEditFormAction(obj, explicitClass);
                     objects = SetFact.singletonOrder(obj);
                 } else if (propertyName.equals("DELETE")) {
                     ObjectEntity obj = getSingleCustomClassMappingObject(propertyName, mapping);
-                    property = LM.getDeleteAction(obj, scope);
+                    property = LM.getDeleteAction(obj);
                     objects = SetFact.singletonOrder(obj);
                     forceIntegrationSID = propertyName;
                 } else if (propertyName.equals("INTERVAL")) {
-                    objects = getTwinMappingObject(mapping);
+                    objects = getTwinTimeSeriesMappingObject(propertyName, mapping);
                     Iterator<ObjectEntity> iterator = objects.iterator();
                     ObjectEntity objectFrom = iterator.next();
                     ObjectEntity objectTo = iterator.next();
-                    property = LM.getObjIntervalProp(objectFrom, objectTo, LM.findProperty(getIntervalPropertyName(objectFrom)));
+                    TimeSeriesClass timeClass = (TimeSeriesClass) objectFrom.baseClass;
+                    LP<?>[] intProps = LM.findProperties(timeClass.getIntervalProperty(), timeClass.getFromIntervalProperty(), timeClass.getToIntervalProperty());
+                    Pair<LP, ActionObjectSelector> intervalProp = LM.getObjIntervalProp(form, objectFrom, objectTo, intProps[0], intProps[1], intProps[2]);
+                    property = intervalProp.first;
+                    forceChangeAction = intervalProp.second;
                 }
             }
             Result<Pair<ActionOrProperty, String>> inherited = new Result<>();
@@ -407,6 +412,14 @@ public class ScriptingFormEntity {
                 propertyDraw = form.addPropertyDraw(propertyObject, formPath, property.listInterfaces, propertyOptions.getInsertType() == FIRST, version);
             propertyDraw.setScriptIndex(Pair.create(debugPoint.line, debugPoint.offset));
 
+            if(forceChangeAction != null)
+                propertyDraw.setEventAction(ServerResponse.CHANGE, forceChangeAction);
+
+            // temporary check
+            if(nvl(scope, PropertyDrawEntity.DEFAULT_ACTION_EVENTSCOPE) != OLDSESSION && !(pDrawUsage instanceof ScriptingLogicsModule.FormPredefinedUsage) && (propertyOptions.getEventActions() == null || !propertyOptions.getEventActions().containsKey(ServerResponse.CHANGE)))
+                ServerLoggers.startLogger.info("WARNING! Now default change event action will work in new session " + propertyDraw);
+
+            propertyDraw.defaultChangeEventScope = scope;
 
             if(forceIntegrationSID != null) // for NEW, DELETE will set integration SID for js integration
                 propertyDraw.setIntegrationSID(forceIntegrationSID);
@@ -430,16 +443,6 @@ public class ScriptingFormEntity {
         }
     }
 
-    private String getIntervalPropertyName(ObjectEntity object) {
-        String objectSid = object.baseClass.getSID();
-        int timeIndex = objectSid.indexOf("TIME");
-        String type = timeIndex < 1 ? objectSid.toLowerCase() :
-                objectSid.substring(0, timeIndex).toLowerCase() +
-                        objectSid.charAt(timeIndex) +
-                        objectSid.substring(timeIndex + 1).toLowerCase();
-        return type + "Interval" + "[" + type.toUpperCase() + ", " + type.toUpperCase() + "]";
-    }
-
     private void checkParamCount(int size, int expectedSize) throws ScriptingErrorLog.SemanticErrorException {
         if (size != expectedSize)
             LM.getErrLog().emitParamCountError(LM.getParser(), expectedSize, size);
@@ -449,9 +452,29 @@ public class ScriptingFormEntity {
         checkCustomClassParam(param.baseClass, propertyName);
     }
 
+    private void checkTimeSeriesParam(ObjectEntity param, String propertyName) throws ScriptingErrorLog.SemanticErrorException {
+        checkTimeSeriesParam(param.baseClass, propertyName);
+    }
+
+    private void checkEqualParamClasses(ObjectEntity param1, ObjectEntity param2, String propertyName) throws ScriptingErrorLog.SemanticErrorException {
+        checkEqualParamClasses(param1.baseClass, param2.baseClass, propertyName);
+    }
+
     private void checkCustomClassParam(ValueClass cls, String propertyName) throws ScriptingErrorLog.SemanticErrorException {
         if (!(cls instanceof CustomClass)) {
             LM.getErrLog().emitCustomClassExpectedError(LM.getParser(), propertyName);
+        }
+    }
+
+    private void checkTimeSeriesParam(ValueClass cls, String propertyName) throws ScriptingErrorLog.SemanticErrorException {
+        if (!(cls instanceof TimeSeriesClass)) {
+            LM.getErrLog().emitTimeSeriesExpectedError(LM.getParser(), propertyName);
+        }
+    }
+
+    private void checkEqualParamClasses(ValueClass cls1, ValueClass cls2, String propertyName) throws ScriptingErrorLog.SemanticErrorException {
+        if (!(BaseUtils.hashEquals(cls1, cls2))) {
+            LM.getErrLog().emitEqualParamClassesExpectedError(LM.getParser(), propertyName);
         }
     }
 
@@ -506,28 +529,22 @@ public class ScriptingFormEntity {
         if (options.getViewType() != null) {
             property.viewType = options.getViewType();
         }
-        String customRenderFunctions = options.getCustomRenderFunctions();
-        if (customRenderFunctions != null) {
-            String pattern = "[a-zA-Z]+\\w*:[a-zA-Z]+\\w*:[a-zA-Z]+\\w*";
-            if (customRenderFunctions.matches(pattern)) {
-                property.customRenderFunctions = customRenderFunctions;
+        String customRenderFunction = options.getCustomRenderFunction();
+        if (customRenderFunction != null) {
+            if (!customRenderFunction.isEmpty()) {
+                property.customRenderFunction = customRenderFunction;
             } else {
-                LM.getErrLog().emitCustomPropertyRenderFunctionsError(LM.getParser(), property.getSID(), customRenderFunctions);
+                LM.getErrLog().emitCustomPropertyViewFunctionError(LM.getParser(), property.getSID(), customRenderFunction, true);
             }
         }
-        String customEditorFunctions = options.getCustomEditorFunctions();
+        String customEditorFunction = options.getCustomEditorFunction();
         property.customTextEdit = options.isCustomTextEdit();
         property.customReplaceEdit = options.isCustomReplaceEdit();
-        if (customEditorFunctions != null) {
-            String customTextEditPattern = "[a-zA-Z]+\\w*:[a-zA-Z]+\\w*";
-            String customReplaceEditPattern = "[a-zA-Z]+\\w*:[a-zA-Z]+\\w*:[a-zA-Z]+\\w*:[a-zA-Z]+\\w*:([a-zA-Z]+\\w*)?";
-            String customEditPattern = "[a-zA-Z]+\\w*:[a-zA-Z]+\\w*:([a-zA-Z]+\\w*)?";
-            if ((customEditorFunctions.matches(customTextEditPattern) && options.isCustomTextEdit()) ||
-                    (customEditorFunctions.matches(customReplaceEditPattern) && options.isCustomReplaceEdit()) ||
-                    (customEditorFunctions.matches(customEditPattern) && !options.isCustomTextEdit() && !options.isCustomReplaceEdit())) {
-                property.customEditorFunctions = customEditorFunctions;
+        if (customEditorFunction != null) {
+            if (!customEditorFunction.isEmpty()) {
+                property.customEditorFunction = customEditorFunction;
             } else {
-                LM.getErrLog().emitCustomPropertyEditorFunctionsError(LM.getParser(), property.getSID(), customEditorFunctions, options.isCustomTextEdit(), options.isCustomReplaceEdit());
+                LM.getErrLog().emitCustomPropertyViewFunctionError(LM.getParser(), property.getSID(), customRenderFunction, false);
             }
         }
 
@@ -549,6 +566,10 @@ public class ScriptingFormEntity {
         if (optimisticAsync != null && optimisticAsync) {
             property.optimisticAsync = true;
         }
+
+        Boolean isSelector = options.getSelector();
+        if(isSelector != null && isSelector)
+            property.setEventAction(ServerResponse.CHANGE, property::getSelectorAction);
 
         Map<String, ActionObjectEntity> eventActions = options.getEventActions();
         if (eventActions != null) {
@@ -574,11 +595,6 @@ public class ScriptingFormEntity {
         PropertyEditType editType = options.getEditType();
         if (editType != null)
             property.setEditType(editType);
-
-        Boolean isSelector = options.getSelector();
-        ActionObjectEntity selectorAction;
-        if(isSelector != null && isSelector && (selectorAction = property.getSelectorAction(form, version)) != null)
-            property.setEventAction(ServerResponse.CHANGE, selectorAction);
 
         String eventID = options.getEventId();
         if (eventID != null)
@@ -754,6 +770,12 @@ public class ScriptingFormEntity {
     public ActionObjectEntity addActionObject(ScriptingLogicsModule.AbstractFormActionUsage property) throws ScriptingErrorLog.SemanticErrorException {
         MappedActionOrProperty prop = LM.getPropertyWithMapping(form, property, null);
         return form.addPropertyObject((LA)prop.property, prop.mapping);
+    }
+    
+    public void addScriptedUserFilters(List<PropertyDrawEntity> properties, Version version) {
+        for (PropertyDrawEntity property : properties) {
+            form.addUserFilter(property, version);
+        }
     }
 
     public void addScriptedDefaultOrder(List<PropertyDrawEntity> properties, List<Boolean> orders, boolean first, Version version) {

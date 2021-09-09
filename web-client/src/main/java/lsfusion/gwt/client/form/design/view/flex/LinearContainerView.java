@@ -1,61 +1,241 @@
 package lsfusion.gwt.client.form.design.view.flex;
 
-import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.base.Dimension;
+import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.view.CaptionPanel;
 import lsfusion.gwt.client.base.view.FlexPanel;
+import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.design.view.GAbstractContainerView;
-import lsfusion.gwt.client.form.design.view.TabbedContainerView;
+import lsfusion.gwt.client.form.object.panel.controller.GPropertyPanelController;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class LinearContainerView extends GAbstractContainerView {
-    private final FlexPanel panel;
 
-    private final Widget view;
+    protected final FlexPanel panel;
 
-    private final boolean hasSeveralFlexes;
+    protected final int columnsCount;
+    protected final boolean alignCaptions;
+
+    protected FlexPanel[] columns;
+    protected FlexPanel[] captionColumns;
+    protected List<AlignCaptionPanel> childrenCaptions;
+    protected List<Integer> childrenCaptionBaseSizes;
 
     public LinearContainerView(GContainer container) {
         super(container);
 
-        assert container.isLinear();
+        assert !container.isTabbed();
 
-        panel = new FlexPanel(container.isVertical(), container.getFlexJustify());
-        panel.getElement().getStyle().setOverflow(Style.Overflow.HIDDEN);
+        columnsCount = container.columns;
 
-        hasSeveralFlexes = container.getFlexCount() > 1;
+        GFlexAlignment justifyContent = container.getFlexJustify(); // when there is free space (there is no non-zero flex)
 
-        view = initBorder(panel);
+        // later containers with explicit sizes can be included
+        // plus also in simple containers we can wrap consecutive property views into some flexpanel, but it requires a lot more complex logics
+        alignCaptions = container.isAlignCaptions();
+
+        if(isSimple())
+            panel = new FlexPanel(vertical, justifyContent);
+        else {
+            panel = new FlexPanel(!vertical);
+            // we don't want this panel to be resized, because we don't set overflow, and during resize container can get fixed size (and then if inner container resized it's content overflows outer border)
+            // however resizing inner component also causes troubles, because when you increase components base size, parent components base size also is changed which leads to immediate relayouting, and if the explicit base size is larger than auto base size, there is a leap
+            // plus in that case column resizing is not that ergonomic, because it can be shrinked if you resize a component different from the component you used to extend the column
+            // so it seems that having childrenResizable true is the lesser evil
+//            panel.childrenResizable = false;
+
+            columns = new FlexPanel[columnsCount];
+            captionColumns = new FlexPanel[columnsCount];
+            childrenCaptions = new ArrayList<>();
+            for (int i = 0; i < columnsCount; i++) {
+                if(alignCaptions) {
+                    FlexPanel captionColumn = new FlexPanel(vertical, justifyContent);
+                    panel.add(captionColumn, GFlexAlignment.STRETCH); // we need the same alignment as used for the "main" column (it's important if justifyContent is used)
+                    captionColumns[i] = captionColumn;
+                }
+
+                FlexPanel column = new FlexPanel(vertical, justifyContent);
+                panel.addFillFlex(column, null); // we're using null flex basis to make columns behaviour similar to manually defined containers
+                columns[i] = column;
+            }
+        }
+    }
+
+    public boolean isSimple() {
+        return isSingleColumn() && !alignCaptions;
+    }
+
+    private boolean isSingleColumn() {
+        return columnsCount == 1;
     }
 
     @Override
-    protected void addImpl(int index, GComponent child, final Widget view) {
-        if(child.getFlex() > 0 && hasSeveralFlexes && view instanceof TabbedContainerView.Panel)
-            ((TabbedContainerView.Panel)view).setBeforeSelectionHandler(tabIndex -> {
-                if(tabIndex > 0)
-                    panel.fixFlexBasis((TabbedContainerView.Panel)view);
-            });
+    public void updateCaption(GContainer container) {
+        getCaptionPanel(container).setCaption(container.caption);
+    }
 
-        child.installMargins(view);
+    public CaptionPanel getCaptionPanel(GContainer container) {
+        FlexPanel childPanel = (FlexPanel) getChildView(container);
 
-//        if(child.hasMargins()) {
-//            FlexPanel proxyPanel = new FlexPanel(container.isLinearVertical());
-//            proxyPanel.addFill(view);
-//            view = proxyPanel;
-//        }
-        add(panel, view, child, index);
+        // if we have caption it has to be either FlexCaptionPanel, or it is wrapped into one more flexPanel (see addImpl)
+        CaptionPanel caption;
+        if(childPanel instanceof CaptionPanel)
+            caption = (CaptionPanel) childPanel;
+        else
+            caption = (CaptionPanel) childPanel.getWidget(0);
+        return caption;
+    }
+
+    private static class AlignCaptionPanel extends FlexPanel {
+        public AlignCaptionPanel(boolean vertical) {
+            super(vertical);
+        }
+
+        public Integer baseSize;
     }
 
     @Override
-    protected void removeImpl(int index, GComponent child, Widget view) {
-//        if (child.hasMargins()) {
-//            view.getParent().removeFromParent();
-//        }
-        view.removeFromParent();
+    protected void addImpl(int index, GComponent child, Widget view) {
+        if(alignCaptions) { // when adding GPropertyPanelController.Panel is empty, so we have to do everything wit callback
+            AlignCaptionPanel captionPanel = new AlignCaptionPanel(!vertical);
+            captionPanel.addStyleName("dataPanelRendererPanel"); // just like in PanelRenderer for no-wrap
+
+            child.installMargins(captionPanel); // need the same margins as property value
+
+            childrenCaptions.add(index, captionPanel);
+            ((GPropertyPanelController.Panel) view).captionContainer = (captionWidget, valueSizes, alignment) -> {
+                assert vertical; // because of aligncaptions first check (isVertical())
+                captionPanel.add(captionWidget, alignment);
+
+                Integer baseSize = vertical ? valueSizes.second : valueSizes.first;
+
+                Integer size = child.getSize(vertical);
+                if (size != null)
+                    baseSize = size;
+
+                captionPanel.baseSize = baseSize; // this code line is called after captionPanel is first time added to the container, so we store it in some field for further adding, removing (actually it's needed for component "shifting", when we need to add/remove latter components)
+                FlexPanel.setBaseSize(captionPanel, vertical, baseSize);  // oppositeAndFixed - false, since we're setting the size for the main direction
+            };
+        }
+
+        if(isSingleColumn())
+            addChildrenView(index, 0);
+        else { // collections are already updated
+            removeChildrenViews(index + 1, -1);
+            addChildrenViews(index, 0);
+        }
+    }
+
+    protected FlexPanel wrapBorderImpl(GComponent child) {
+        GContainer childContainer;
+        if(child instanceof GContainer && (childContainer = (GContainer) child).caption != null)
+            return new CaptionPanel(childContainer.caption, vertical);
+        return null;
+    }
+
+    @Override
+    protected void removeImpl(int index, GComponent child) {
+        if(isSingleColumn())
+            removeChildrenView(index, 0);
+        else { // collections are not yet updated
+            removeChildrenViews(index, 0);
+            addChildrenViews(index + 1,  -1);
+        }
+
+        if(alignCaptions)
+            childrenCaptions.remove(index);
+    }
+
+    private void addChildrenViews(int startFrom, int offset) {
+        for (int index = startFrom, size = children.size(); index < size; index++)
+            addChildrenView(index, offset);
+    }
+
+    private void removeChildrenViews(int startFrom, int offset) {
+        for (int index = startFrom, size = children.size(); index < size; index++)
+            removeChildrenView(index, offset);
+    }
+
+    private void addChildrenView(int index, int offset) {
+        int rowIndex = (index + offset) / columnsCount;
+        int columnIndex = (index + offset) % columnsCount;
+
+        add(isSimple() ? panel : columns[columnIndex], childrenViews.get(index), children.get(index), rowIndex);
+
+        if(alignCaptions) {
+            AlignCaptionPanel captionPanel = childrenCaptions.get(index);
+            captionColumns[columnIndex].add(captionPanel, rowIndex, GFlexAlignment.START, 0, captionPanel.baseSize);
+        }
+    }
+
+    @Override
+    public void updateLayout(long requestIndex, boolean[] childrenVisible) {
+        for (int i = 0, size = children.size(); i < size; i++) {
+            GComponent child = children.get(i);
+            if(child instanceof GContainer) // optimization
+                childrenViews.get(i).setVisible(childrenVisible[i]);
+        }
+
+        super.updateLayout(requestIndex, childrenVisible);
+    }
+
+    private void removeChildrenView(int index, int offset) {
+        int columnIndex = (index + offset) % columnsCount;
+
+        (isSimple() ? panel : columns[columnIndex]).remove(childrenViews.get(index));
+
+        if(alignCaptions)
+            captionColumns[columnIndex].remove(childrenCaptions.get(index));
+    }
+
+    @Override
+    public Dimension getMaxPreferredSize(Map<GContainer, GAbstractContainerView> containerViews) {
+        int size = children.size();
+
+        int main = 0;
+        int opposite = 0;
+
+        if (size > 0) {
+            int rows = (size - 1) / columnsCount + 1;
+            for (int i = 0; i < columnsCount; i++) {
+                int columnCross = 0;
+                int columnMain = 0;
+                int captionMain = 0;
+
+                for (int j = 0; j < rows; j++) {
+                    int index = j * columnsCount + i;
+                    if(index < size) {
+                        if(alignCaptions) {
+                            Dimension captionPref = GwtClientUtils.calculateMaxPreferredSize(childrenCaptions.get(index));
+                            captionMain = Math.max(captionMain, vertical ? captionPref.width : captionPref.height);
+                        }
+
+                        Dimension childPref = getChildMaxPreferredSize(containerViews, index);
+
+                        GComponent child = children.get(index);
+                        if(child instanceof GContainer && ((GContainer) child).caption != null) // adding border
+                            childPref = getCaptionPanel((GContainer) child).adjustMaxPreferredSize(childPref);
+
+                        columnMain = Math.max(columnMain, vertical ? childPref.width : childPref.height);
+                        columnCross += vertical ? childPref.height : childPref.width; // captions cross is equal to columnCross
+                    }
+                }
+                opposite = Math.max(opposite, columnCross);
+                main += columnMain + captionMain;
+            }
+        }
+
+        return new Dimension(vertical ? main : opposite, vertical ? opposite : main);
     }
 
     @Override
     public Widget getView() {
-        return view;
+        return panel;
     }
 }

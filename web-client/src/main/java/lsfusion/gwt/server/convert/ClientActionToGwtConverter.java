@@ -6,11 +6,15 @@ import lsfusion.client.classes.ClientObjectClass;
 import lsfusion.client.classes.ClientTypeSerializer;
 import lsfusion.client.form.ClientFormChanges;
 import lsfusion.client.form.controller.remote.proxy.RemoteFormProxy;
+import lsfusion.client.form.property.async.ClientAsyncSerializer;
+import lsfusion.client.form.property.async.ClientInputList;
 import lsfusion.gwt.client.GFormChangesDTO;
 import lsfusion.gwt.client.action.*;
+import lsfusion.gwt.client.base.GAsync;
 import lsfusion.gwt.client.base.GProgressBar;
 import lsfusion.gwt.client.classes.GObjectClass;
 import lsfusion.gwt.client.classes.GType;
+import lsfusion.gwt.client.form.property.async.GInputList;
 import lsfusion.gwt.client.navigator.window.GModalityType;
 import lsfusion.gwt.client.view.GColorTheme;
 import lsfusion.gwt.server.FileUtils;
@@ -19,6 +23,7 @@ import lsfusion.http.provider.form.FormSessionObject;
 import lsfusion.interop.ProgressBar;
 import lsfusion.interop.action.*;
 import lsfusion.interop.form.ModalityType;
+import lsfusion.interop.form.property.cell.Async;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 import lsfusion.interop.session.ExternalHttpMethod;
 import lsfusion.interop.session.HttpClientAction;
@@ -43,6 +48,7 @@ public class ClientActionToGwtConverter extends ObjectConverter {
 
     private final ClientTypeToGwtConverter typeConverter = ClientTypeToGwtConverter.getInstance();
     private final ClientFormChangesToGwtConverter valuesConverter = ClientFormChangesToGwtConverter.getInstance();
+    private final ClientAsyncToGwtConverter asyncConverter = ClientAsyncToGwtConverter.getInstance();
 
     private ClientActionToGwtConverter() {
     }
@@ -132,7 +138,9 @@ public class ClientActionToGwtConverter extends ObjectConverter {
 
         Object value = deserializeServerValue(action.oldValue);
 
-        return new GRequestUserInputAction(type, value, action.hasOldValue);
+        GInputList inputList = asyncConverter.convertOrCast(ClientAsyncSerializer.deserializeInputList(action.inputList));
+
+        return new GRequestUserInputAction(type, value, action.hasOldValue, inputList);
     }
 
     private Object deserializeServerValue(byte[] valueBytes) throws IOException {
@@ -187,6 +195,15 @@ public class ClientActionToGwtConverter extends ObjectConverter {
     @Converter(from = ProgressBar.class)
     public GProgressBar convertProgressBar(ProgressBar progressBar) {
         return new GProgressBar(progressBar.message, progressBar.progress, progressBar.total, progressBar.getParams());
+    }
+
+    @Converter(from = Async.class)
+    public GAsync convertAsync(Async async) {
+        if(async.equals(Async.CANCELED))
+            return GAsync.CANCELED;
+        if(async.equals(Async.RECHECK))
+            return GAsync.RECHECK;
+        return new GAsync(async.displayString, async.rawString);
     }
 
     @Converter(from = LoadLinkClientAction.class)

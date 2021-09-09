@@ -7,6 +7,7 @@ import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.classes.*;
 import lsfusion.client.classes.data.ClientFormatClass;
 import lsfusion.client.classes.data.ClientIntegralClass;
+import lsfusion.client.classes.data.ClientLogicalClass;
 import lsfusion.client.classes.data.ClientLongClass;
 import lsfusion.client.controller.MainController;
 import lsfusion.client.form.controller.ClientFormController;
@@ -18,11 +19,14 @@ import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.object.table.controller.TableController;
 import lsfusion.client.form.property.async.ClientAsyncChange;
 import lsfusion.client.form.property.async.ClientAsyncEventExec;
+import lsfusion.client.form.property.async.ClientAsyncSerializer;
+import lsfusion.client.form.property.async.ClientInputList;
 import lsfusion.client.form.property.cell.EditBindingMap;
 import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
 import lsfusion.client.form.property.cell.classes.view.FormatPropertyRenderer;
 import lsfusion.client.form.property.cell.view.PropertyRenderer;
 import lsfusion.client.form.property.panel.view.PanelView;
+import lsfusion.client.form.property.table.view.AsyncChangeInterface;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.event.KeyInputEvent;
@@ -37,8 +41,8 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.text.*;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 import static lsfusion.base.BaseUtils.isRedundantString;
 import static lsfusion.base.BaseUtils.nullTrim;
@@ -73,8 +77,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public ClientType baseType;
     public ClientClass returnClass;
 
-    // асинхронные интерфейсы
-    public ClientType changeWYSType;
+    public ClientType externalChangeType;
     public Map<String, ClientAsyncEventExec> asyncExecMap;
     public boolean askConfirm;
     public String askConfirmMessage;
@@ -105,7 +108,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public PropertyEditType editType = PropertyEditType.EDITABLE;
 
     public boolean panelCaptionVertical;
-    public boolean panelCaptionAfter;
+    public Boolean panelCaptionLast;
+    public FlexAlignment panelCaptionAlignment;
 
     public boolean panelColumnVertical;
 
@@ -142,7 +146,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public boolean hide;
 
     public String customRenderFunction;
-    public String customEditorFunctions;
+    public String customEditorFunction;
     public boolean customTextEdit;
     public boolean customReplaceEdit;
 
@@ -154,6 +158,14 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public boolean notNull;
 
     public ClientPropertyDraw() {
+    }
+
+    public Compare getDefaultCompare() {
+        return defaultCompare != null ? defaultCompare : baseType.getDefaultCompare();
+    }
+
+    public Compare[] getFilterCompares() {
+        return baseType.getFilterCompares();
     }
 
     public KeyInputEvent getChangeKey() {
@@ -194,8 +206,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return editBindingMap == null ? null : editBindingMap.getContextMenuItems();
     }
 
-    public PropertyEditor getValueEditorComponent(ClientFormController form, Object value) {
-        return baseType.getValueEditorComponent(form, this, value);
+    public PropertyEditor getValueEditorComponent(ClientFormController form, AsyncChangeInterface asyncChange, Object value) {
+        return baseType.getValueEditorComponent(form, this, asyncChange, value);
     }
 
     public PropertyRenderer getRendererComponent() {
@@ -371,11 +383,11 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     }
 
     public Object parseChangeValueOrNull(String s) {
-        if (changeWYSType == null) {
+        if (externalChangeType == null) {
             return null;
         }
         try {
-            return changeWYSType.parseString(s);
+            return externalChangeType.parseString(s);
         } catch (ParseException pe) {
             return null;
         }
@@ -386,12 +398,20 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     }
 
     public boolean canUsePasteValueForRendering() {
-        return changeWYSType != null && baseType.getTypeClass() == changeWYSType.getTypeClass();
+        return externalChangeType != null && baseType.getTypeClass() == externalChangeType.getTypeClass();
     }
 
     public boolean canUseChangeValueForRendering() {
         ClientType changeType = getChangeType();
         return changeType != null && baseType.getTypeClass() == changeType.getTypeClass();
+    }
+
+    public boolean isPanelCaptionLast() {
+        return panelCaptionLast != null ? panelCaptionLast : (baseType instanceof ClientLogicalClass && !panelCaptionVertical && container.isVertical());
+    }
+
+    public FlexAlignment getPanelCaptionAlignment() {
+        return (panelCaptionAlignment != null && panelCaptionAlignment != FlexAlignment.STRETCH) ? panelCaptionAlignment : FlexAlignment.CENTER;
     }
 
     public String formatString(Object obj) throws ParseException {
@@ -434,7 +454,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         pool.writeObject(outStream, focusable);
 
         outStream.writeBoolean(panelCaptionVertical);
-        outStream.writeBoolean(panelCaptionAfter);
+        pool.writeObject(outStream, panelCaptionLast);
+        pool.writeObject(outStream, panelCaptionAlignment);
 
         outStream.writeBoolean(panelColumnVertical);
 
@@ -478,7 +499,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         editType = PropertyEditType.deserialize(inStream.readByte());
 
         panelCaptionVertical = inStream.readBoolean();
-        panelCaptionAfter = inStream.readBoolean();
+        panelCaptionLast = pool.readObject(inStream);
+        panelCaptionAlignment = pool.readObject(inStream);
 
         panelColumnVertical = inStream.readBoolean();
 
@@ -488,15 +510,15 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         hide = inStream.readBoolean();
 
         baseType = ClientTypeSerializer.deserializeClientType(inStream);
-        if (inStream.readBoolean()) {
-            changeWYSType = ClientTypeSerializer.deserializeClientType(inStream);
-        }
 
+        if (inStream.readBoolean()) {
+            externalChangeType = ClientTypeSerializer.deserializeClientType(inStream);
+        }
         asyncExecMap = new HashMap<>();
         int asyncExecSize = inStream.readInt();
         for (int i = 0; i < asyncExecSize; ++i) {
             String key = pool.readString(inStream);
-            ClientAsyncEventExec value = pool.deserializeObject(inStream);
+            ClientAsyncEventExec value = ClientAsyncSerializer.deserializeEventExec(inStream);
             asyncExecMap.put(key, value);
         }
 
@@ -557,7 +579,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         returnClass = ClientTypeSerializer.deserializeClientClass(inStream);
         
         customRenderFunction = pool.readString(inStream);
-        customEditorFunctions = pool.readString(inStream);
+        customEditorFunction = pool.readString(inStream);
         customTextEdit = pool.readBoolean(inStream);
         customReplaceEdit = pool.readBoolean(inStream);
 
@@ -607,6 +629,12 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return changeType != null ? changeType.changeType : null;
     }
 
+    public ClientInputList getInputList() {
+        ClientAsyncEventExec asyncExec = asyncExecMap.get(ServerResponse.CHANGE);
+        ClientAsyncChange changeType = asyncExec instanceof ClientAsyncChange ? (ClientAsyncChange) asyncExec : null;
+        return changeType != null ? changeType.inputList : null;
+    }
+
     private void initEditBindingMap() {
         if (editBindingMap == null) {
             editBindingMap = new EditBindingMap(false);
@@ -632,6 +660,10 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     public String getDynamicCaption(Object captionValue) {
         return BaseUtils.toCaption(captionValue);
+    }
+
+    public String getCaptionOrEmpty() {
+        return caption == null ? "" : caption;
     }
 
     @Override
@@ -695,7 +727,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
                 String ifaceClasses = BaseUtils.toString(", ", interfacesTypes);
                 String returnClass = this.returnClass.toString();
                 String script = creationScript != null ? escapeLineBreakHTML(escapeHTML(creationScript)) : "";
-
+                
                 return String.format(TOOL_TIP_FORMAT + DETAILED_TOOL_TIP_FORMAT,
                         propCaption, changeKeyText, canonicalName, tableName, ifaceObjects, ifaceClasses, returnClass,
                         script, scriptPath, propertyFormName, scriptFormPath);

@@ -19,7 +19,6 @@ import lsfusion.server.data.expr.value.ValueExpr;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
-import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
@@ -51,7 +50,6 @@ import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.SQLException;
-import java.util.function.Function;
 
 public class IsClassProperty extends SimpleIncrementProperty<ClassPropertyInterface> {
 

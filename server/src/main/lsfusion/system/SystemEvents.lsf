@@ -74,6 +74,7 @@ FORM clientTypes
 
 CLASS ConnectionStatus '{system.events.connection.status}' {
     connectedConnection '{system.events.connection.status.connected}',
+    disconnectingConnection '{system.events.connection.status.disconnecting}',
     disconnectedConnection '{system.events.connection.status.disconnected}'
 }
 TABLE connectionStatus (ConnectionStatus);
@@ -124,17 +125,18 @@ nameConnectionStatus '{system.events.connection.status}' (Connection connection)
 connectTime '{system.events.connect.time.connection}' = DATA DATETIME (Connection);
 connectDate '{system.events.connect.date.connection}' (Connection c) = DATE(connectTime(c));
 disconnectTime '{system.events.disconnect.time.connection}' = DATA DATETIME (Connection);
-disconnectTime (Connection connection) <- currentDateTime() WHEN SET(connectionStatus(connection) == ConnectionStatus.disconnectedConnection);
+disconnectTime (Connection connection) <- currentDateTime() WHEN SET(connectionStatus(connection) = ConnectionStatus.disconnectedConnection);
 
 currentLaunch = DATA Launch();
 launch = DATA Launch(Connection);
 
 serverShutdown INTERNAL  'lsfusion.server.physics.admin.systemevents.ShutdownAction' (Connection);
-shutdown '{system.events.shutdown}' (Connection connection)  { 
-    IF connectionStatus(connection) == ConnectionStatus.connectedConnection THEN {
-            NEWSESSION { NEWTHREAD shutdown(); CONNECTION connection; }
-            serverShutdown(connection);
-        }
+shutdown '{system.events.shutdown}' (Connection c)  { 
+    IF connectionStatus(c) = ConnectionStatus.connectedConnection OR connectionStatus(c) = ConnectionStatus.disconnectingConnection THEN {
+        NEWSESSION { connectionStatus(c) <- ConnectionStatus.disconnectingConnection; APPLY; }
+        NEWSESSION { NEWTHREAD shutdown(); CONNECTION c; }
+        serverShutdown(c);
+    }
 } CONFIRM;
 
 platformVersion = DATA TEXT();
@@ -152,14 +154,15 @@ onStarted() + {
         currentLaunch() <- launch;
     }
 
-    connectionStatus(connection) <- ConnectionStatus.disconnectedConnection 
-        WHERE connectionStatus(connection) == ConnectionStatus.connectedConnection AND currentLaunch() != launch(connection);
+    connectionStatus(Connection c) <- ConnectionStatus.disconnectedConnection 
+        WHERE (connectionStatus(c) = ConnectionStatus.connectedConnection OR connectionStatus(c) = ConnectionStatus.disconnectingConnection)
+              AND currentLaunch() != launch(c);
 }
 
 reconnect '{system.events.reconnect.custom.user}' (CustomUser user)  { 
-    FOR user(Connection conn) == user AND connectionStatus(conn) == ConnectionStatus.connectedConnection DO {
-            NEWSESSION { NEWTHREAD reconnect(); CONNECTION conn; }
-        }
+    FOR user(Connection c) == user AND connectionStatus(c) = ConnectionStatus.connectedConnection DO {
+        NEWSESSION { NEWTHREAD reconnect(); CONNECTION c; }
+    }
 } CONFIRM;
 
 shutdown '{system.events.shutdown}' (CustomUser user)  { 

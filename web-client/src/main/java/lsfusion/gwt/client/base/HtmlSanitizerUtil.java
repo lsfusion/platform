@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.base;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.safehtml.shared.HtmlSanitizer;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
@@ -16,13 +17,15 @@ public class HtmlSanitizerUtil implements HtmlSanitizer {
     private static final HtmlSanitizerUtil INSTANCE = new HtmlSanitizerUtil();
 
     private static final Set<String> TAG_WHITELIST = new HashSet<>(
-            Arrays.asList("a", "abbr", "acronym", "address", "area", "b", "big", "blockquote", "br",
-                    "button", "caption", "center", "cite", "code", "col", "colgroup", "dd", "del",
-                    "dfn", "dir", "div", "dl", "dt", "em", "fieldset", "font", "form", "h1", "h2",
-                    "h3", "h4", "h5", "h6", "hr", "i", "img", "input", "ins", "kbd", "label", "legend",
-                    "li", "map", "menu", "ol", "optgroup", "option", "p", "pre", "q", "s", "samp",
-                    "select", "small", "span", "strike", "strong", "sub", "sup", "table", "tbody", "td",
-                    "textarea", "tfoot", "th", "thead", "tr", "tt", "u", "ul", "var"));
+            Arrays.asList("a", "abbr", "acronym", "address", "altGlyph", "altGlyphDef", "altGlyphItem", "animate", "animateMotion",
+                    "animateTransform", "area", "b", "big", "blockquote", "br", "button", "caption", "center", "circle", "cite",
+                    "clipPath", "code", "col", "colgroup", "color-profile", "dd", "defs", "del", "desc", "dfn", "dir", "div", "dl",
+                    "dt", "ellipse", "em", "feBlend", "fieldset", "font", "form", "g", "h1", "h2", "h3", "h4", "h5", "h6", "hr", "i",
+                    "image", "img", "input", "ins", "kbd", "label", "legend", "li", "line", "linearGradient", "map", "marker", "mask",
+                    "menu", "ol", "optgroup", "option", "p", "path", "pattern", "polygon", "polyline", "pre", "q", "radialGradient",
+                    "rect", "s", "samp", "select", "small", "span", "stop", "strike", "strong", "sub", "sup", "svg", "table", "tbody",
+                    "td", "text", "textarea", "tfoot", "th", "thead", "tr", "tref", "tspan", "tt", "u", "ul", "use", "var"
+            ));
 
     /**
      * Return a singleton SimpleHtmlSanitizer instance.
@@ -95,11 +98,11 @@ public class HtmlSanitizerUtil implements HtmlSanitizer {
                     tagStart = 1;
                 }
                 tag = segment.substring(tagStart, tagEnd);
-                String exist = tag.replaceAll("\040.*", ""); // for attributes
+                String exist = tag.replaceAll("([\n ]).*", ""); // for attributes
                 if (TAG_WHITELIST.contains(exist)) {
                     isValidTag = true;
                 } else {
-                    System.out.println("not in whitelist tag=" + tag);
+                    GWT.log("not in whitelist tag=" + tag);
                 }
 
             }

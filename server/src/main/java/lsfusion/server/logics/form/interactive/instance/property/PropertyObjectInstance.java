@@ -9,7 +9,7 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.type.Type;
-import lsfusion.server.data.value.DataObject;
+import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.classes.ValueClass;
@@ -33,7 +33,7 @@ public class PropertyObjectInstance<P extends PropertyInterface> extends ActionO
         super(property, mapping);
     }
 
-    public PropertyObjectInstance<P> getRemappedPropertyObject(ImMap<? extends PropertyObjectInterfaceInstance, DataObject> mapKeyValues) {
+    public PropertyObjectInstance<P> getRemappedPropertyObject(ImMap<? extends PropertyObjectInterfaceInstance, ? extends ObjectValue> mapKeyValues) {
         return new PropertyObjectInstance<>(property, remapSkippingEqualsObjectInstances(mapKeyValues));
     }
 
@@ -82,7 +82,7 @@ public class PropertyObjectInstance<P extends PropertyInterface> extends ActionO
         WhereBuilder changedWhere = new WhereBuilder();
         if(disableHint) { // hack - needed because finding out if property really changed with hints can be a huge overhead (for example if it is hidden), so we'll disable hints
             modifier.getPropertyChanges(); // hack - however reading propertyChanges can lead to notifySourceChange where hints can be used, so will read it before disabling
-            AutoHintsAspect.pushDisabledRepeat();
+            AutoHintsAspect.pushDisabledComplex();
         }
         try {
             Expr result = getExpr(keys, modifier, changedWhere);
@@ -90,7 +90,7 @@ public class PropertyObjectInstance<P extends PropertyInterface> extends ActionO
                 return true;
         } finally {
             if(disableHint)
-                AutoHintsAspect.popDisabledRepeat();
+                AutoHintsAspect.popDisabledComplex();
         }
         return !changedWhere.toWhere().isFalse();
     } 

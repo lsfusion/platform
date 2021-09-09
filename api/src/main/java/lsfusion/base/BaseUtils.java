@@ -62,7 +62,7 @@ public class BaseUtils {
     private static final int STRING_SERIALIZATION_CHUNK_SIZE = 65535/3;
 
     public static Integer getApiVersion() {
-        return 157;
+        return 163;
     }
 
     public static String getPlatformVersion() {
@@ -598,8 +598,10 @@ public class BaseUtils {
     }
 
     public static Object deserializeObject(DataInputStream inStream) throws IOException {
+        return deserializeObject(inStream, inStream.readByte());
+    }
 
-        int objectType = inStream.readByte();
+    public static Object deserializeObject(DataInputStream inStream, int objectType) throws IOException {
 
         if (objectType == 0) {
             return null;
@@ -796,10 +798,14 @@ public class BaseUtils {
         return b.toByteArray();
     }
 
-    public static Object deserializeCustomObject(byte[] bytes) throws IOException, ClassNotFoundException {
+    public static Object deserializeCustomObject(byte[] bytes) throws IOException {
         ByteArrayInputStream b = new ByteArrayInputStream(bytes);
         ObjectInputStream o = new ObjectInputStream(b);
-        return o.readObject();
+        try {
+            return o.readObject();
+        } catch (ClassNotFoundException e) {
+            throw Throwables.propagate(e);
+        }
     }
     
     public static void serializeString(DataOutputStream outStream, String str) throws IOException {
@@ -1253,7 +1259,7 @@ public class BaseUtils {
         return replaced;
     }
 
-    public static Long nullToZero(Long value) {
+    public static long nullToZero(Long value) {
         return value == null ? 0 : value;
     }
 
@@ -1371,6 +1377,16 @@ public class BaseUtils {
                 }
                 groupSet.add(key);
             }
+        }
+        return result;
+    }
+
+    public static <G, K> Map<G, Long> groupSum(Group<G, K> getter, Map<K, Long> map) { // assert что keys - set
+        Map<G, Long> result = new HashMap<>();
+        for (Map.Entry<K, Long> entry : map.entrySet()) {
+            K key = entry.getKey();
+            G group = getter.group(key);
+            result.put(group, nvl(result.get(group),0L) + entry.getValue());
         }
         return result;
     }
@@ -2498,26 +2514,19 @@ public class BaseUtils {
             keyValues.put(key, values);
     }
 
-    public static <K, V, M extends Map<K, V>> M getNearObject(V findValue, List<M> keys) {
+    public static <V> V getNearObject(V findValue, List<V> keys) {
         if (keys.size() <= 1)
             return null;
 
-        M nearObject = null;
-        for (M key : keys) {
-            if (key.values().contains(findValue) && nearObject == null) {
+        V nearObject = null;
+        for (V key : keys) {
+            if (key.equals(findValue) && nearObject == null) {
                 int index = keys.indexOf(key);
                 index = index == keys.size() - 1 ? index - 1 : index + 1;
                 nearObject = keys.get(index);
             }
         }
         return nearObject;
-    }
-
-    public static <K, V, M extends Map<K, V>> V getNearValue(K findKey, V findValue, List<M> keys) {
-        M nearObject = getNearObject(findValue, keys);
-        if (nearObject != null)
-            return nearObject.get(findKey);
-        return null;
     }
 
     private static final char[] randomsymbols = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray();
@@ -2630,6 +2639,15 @@ public class BaseUtils {
 
     public static String dateToString(String format, LocalDate d) {
         return d != null ? d.format(DateTimeFormatter.ofPattern(format)) : "";
+    }
+
+    public static int indexOf(String string, int ch, int count) {
+        int start = 0;
+        for(int i=0;i<count;i++) {
+            start = string.indexOf(ch, start);
+            if(start < 0) break;
+        }
+        return start;
     }
 
     public static String packWords(String string, int reqLength) {
@@ -2900,6 +2918,26 @@ public class BaseUtils {
             } catch (Exception e) {
                 throw Throwables.propagate(e);
             }
+        }
+    }
+
+    public static void writeObject(DataOutputStream outStream, Object object) throws IOException {
+        outStream.writeBoolean(object != null);
+        if (object != null) {
+            new ObjectOutputStream(outStream).writeObject(object);
+        }
+    }
+
+    public static <T> T readObject(DataInputStream inStream) throws IOException {
+        try {
+            if (inStream.readBoolean()) {
+                T object = (T) new ObjectInputStream(inStream).readObject();
+                return object;
+            } else {
+                return null;
+            }
+        } catch (ClassNotFoundException e) {
+            throw new IOException(getString("serialization.can.not.read.object"), e);
         }
     }
 }

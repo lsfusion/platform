@@ -86,8 +86,8 @@ grammar LsfLogics;
     import javax.mail.Message;
     import java.awt.*;
     import java.math.BigDecimal;
-    import java.util.List;
     import java.util.*;
+    import java.util.function.*;
     import java.time.*;
 
     import static java.util.Arrays.asList;
@@ -193,10 +193,8 @@ grammar LsfLogics;
 		return getCurrentDebugPoint();
 	}
 
-	public void setObjectProperty(Object propertyReceiver, String propertyName, Object propertyValue) throws ScriptingErrorLog.SemanticErrorException {
-		if (inMainParseState()) {
-			$designStatement::design.setObjectProperty(propertyReceiver, propertyName, propertyValue);
-		}
+	public void setObjectProperty(Object propertyReceiver, String propertyName, Object propertyValue, Supplier<DebugInfo.DebugPoint> debugPoint) throws ScriptingErrorLog.SemanticErrorException {
+        $designStatement::design.setObjectProperty(propertyReceiver, propertyName, propertyValue, debugPoint);
 	}
 
 	public List<GroupObjectEntity> getGroupObjectsList(List<String> ids, Version version) throws ScriptingErrorLog.SemanticErrorException {
@@ -208,6 +206,10 @@ grammar LsfLogics;
 
 	public TypedParameter TP(String className, String paramName) throws ScriptingErrorLog.SemanticErrorException {
 		return self.new TypedParameter(className, paramName);
+	}
+
+	public TypedParameter TP(String paramName) throws ScriptingErrorLog.SemanticErrorException {
+		return self.new TypedParameter((ValueClass)null, paramName);
 	}
 
 	@Override
@@ -410,6 +412,7 @@ scope {
 		|	formEventsList
 		|	filterGroupDeclaration
 		|	extendFilterGroupDeclaration
+		|	userFiltersDeclaration
 		|	formOrderByList
 	    |   formPivotOptionsDeclaration
 		|	dialogFormDeclaration
@@ -644,16 +647,16 @@ propertyClassViewType returns [ClassViewType type]
 	|   'TOOLBAR' {$type = ClassViewType.TOOLBAR;}
 	;
 
-propertyCustomView returns [String customRenderFunctions, String customEditorFunctions, boolean textEdit, boolean replaceEdit]
+propertyCustomView returns [String customRenderFunction, String customEditorFunction, boolean textEdit, boolean replaceEdit]
 @init {
     boolean isEditText = false;
     boolean isReplaceEditor = false;
 }
-	:	'CUSTOM' ('RENDER' renderFun=stringLiteral { $customRenderFunctions = $renderFun.val;})? 
+	:	'CUSTOM' ('RENDER' renderFun=stringLiteral { $customRenderFunction = $renderFun.val;})?
 		('EDIT' (
 		    type=PRIMITIVE_TYPE {self.checkCustomPropertyViewTextOption($type.text); isEditText = true;}
 		    | 'REPLACE' {isReplaceEditor = true;})?
-		editFun=stringLiteral {$customEditorFunctions = $editFun.val; $textEdit = isEditText; $replaceEdit = isReplaceEditor;})?
+		editFun=stringLiteral {$customEditorFunction = $editFun.val; $textEdit = isEditText; $replaceEdit = isReplaceEditor;})?
 	;
 
 listViewType returns [ListViewType type, PivotOptions options, String customRenderFunction, String mapTileProvider]
@@ -803,7 +806,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 	    |   'SELECTOR' { $options.setSelector(true); }
 		|	'HINTNOUPDATE' { $options.setHintNoUpdate(true); }
 		|	'HINTTABLE' { $options.setHintTable(true); }
-        |   (('NEWSESSION' | 'NESTEDSESSION' { $options.setNested(true); } ) { $options.setNewSession(true); })
+        |   fs = formSessionScopeClause { $options.setFormSessionScope($fs.result); }
 		|	'OPTIMISTICASYNC' { $options.setOptimisticAsync(true); }
 		|	'COLUMNS' (columnsName=stringLiteral)? '(' ids=nonEmptyIdList ')' { $options.setColumns($columnsName.text, getGroupObjectsList($ids.ids, self.getVersion())); }
 		|	'SHOWIF' propObj=formPropertyObject { $options.setShowIf($propObj.property); }
@@ -814,7 +817,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|	'HEADER' propObj=formPropertyObject { $options.setHeader($propObj.property); }
 		|	'FOOTER' propObj=formPropertyObject { $options.setFooter($propObj.property); }
 		|	viewType=propertyClassViewType { $options.setViewType($viewType.type); }
-		|	customView=propertyCustomView { $options.setCustomRenderFunctions($customView.customRenderFunctions); $options.setCustomEditorFunctions($customView.customEditorFunctions); $options.setCustomTextEdit($customView.textEdit); $options.setCustomReplaceEdit($customView.replaceEdit);}
+		|	customView=propertyCustomView { $options.setCustomRenderFunction($customView.customRenderFunction); $options.setCustomEditorFunction($customView.customEditorFunction); $options.setCustomTextEdit($customView.textEdit); $options.setCustomReplaceEdit($customView.replaceEdit);}
 		|	pgt=propertyGroupType { $options.setAggrFunc($pgt.type); }
 		|	pla=propertyLastAggr { $options.setLastAggr($pla.properties, $pla.desc); }
 		|	pf=propertyFormula { $options.setFormula($pf.formula, $pf.operands); }
@@ -1287,6 +1290,20 @@ filterSetDefault returns [boolean isDefault = false]
 	:	('DEFAULT' { $isDefault = true; })?
 	;
 
+userFiltersDeclaration
+@init {
+	List<PropertyDrawEntity> properties = new ArrayList<>();
+}
+@after {
+	if (inMainParseState()) {
+		$formStatement::form.addScriptedUserFilters(properties, self.getVersion());
+	}
+}
+	:	'USERFILTERS'
+		prop=formPropertyDraw { properties.add($prop.property); }
+		(',' prop=formPropertyDraw { properties.add($prop.property); } )*
+	;
+
 formOrderByList
 @init {
 	boolean ascending = true;
@@ -1343,6 +1360,7 @@ pivotOptions returns [PivotOptions options = new PivotOptions()]
     (   t=stringLiteral { $options.setType($t.val); }
     |   a=propertyGroupType { $options.setAggregation($a.type); }
     |   ('SETTINGS'  { $options.setShowSettings(true); } | 'NOSETTINGS'  { $options.setShowSettings(false); })
+    |   ('CONFIG'  sLiteral=stringLiteral { $options.setConfigFunction($sLiteral.val); })
     )*
     ;
 
@@ -1448,17 +1466,22 @@ propertyExpression[List<TypedParameter> context, boolean dynamic] returns [LPWit
 
 propertyExpressionOrContextIndependent[List<TypedParameter> context, boolean dynamic, boolean needFullContext] returns [LPWithParams property, LPContextIndependent ci]
     :   exprOrNotExpr=propertyExpressionOrNot[context, dynamic, needFullContext] { $property = $exprOrNotExpr.property;  }
-        { if(inMainParseState()) { $ci = self.checkTLAInExpr($exprOrNotExpr.property, $exprOrNotExpr.ci); } }
+        { if(inMainParseState()) { $ci = self.checkCIInExpr($exprOrNotExpr.property, $exprOrNotExpr.ci); } }
 ;
 
 propertyExpressionOrTrivialLA[List<TypedParameter> context] returns [LPWithParams property, LPTrivialLA la]
     :   exprOrNotExpr=propertyExpressionOrNot[context, false, false] { $property = $exprOrNotExpr.property;  }
-        { if(inMainParseState()) { $la = self.checkCIInExpr($exprOrNotExpr.ci); } }
+        { if(inMainParseState()) { $la = self.checkTLAInExpr($exprOrNotExpr.property, $exprOrNotExpr.ci); } }
 ;
 
 propertyExpressionOrLiteral[List<TypedParameter> context] returns [LPWithParams property, LPLiteral literal]
     :   exprOrNotExpr=propertyExpressionOrNot[context, false, false] { $property = $exprOrNotExpr.property;  }
         { if(inMainParseState()) { $literal = self.checkLiteralInExpr($exprOrNotExpr.property, $exprOrNotExpr.ci); } }
+;
+
+propertyExpressionOrCompoundID[List<TypedParameter> context] returns [LPWithParams property, LPCompoundID id]
+    :   exprOrNotExpr=propertyExpressionOrNot[context, false, false] { $property = $exprOrNotExpr.property;  }
+        { if(inMainParseState()) { $id = self.checkCompoundIDInExpr($exprOrNotExpr.property, $exprOrNotExpr.ci); } }
 ;
 
 propertyExpressionOrNot[List<TypedParameter> context, boolean dynamic, boolean needFullContext] returns [LPWithParams property, LPNotExpr ci]
@@ -1718,20 +1741,25 @@ simplePE[List<TypedParameter> context, boolean dynamic] returns [LPWithParams pr
 
 	
 expressionPrimitive[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property, LPNotExpr ci]
-	:	param=singleParameter[context, dynamic] { $property = $param.property; }
+	:	param=singleParameter[context, dynamic] { $property = $param.property; $ci = $param.ci; }
 	|	expr=expressionFriendlyPD[context, dynamic] { $property = $expr.property; $ci = $expr.ci; }
 	;
 
-singleParameter[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
+singleParameter[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property, LPNotExpr ci]
 @init {
-	String className = null;
+	TypedParameter parameter = null;
 }
 @after {
 	if (inMainParseState()) {
-		$property = new LPWithParams(null, self.getParamIndex(TP(className, $paramName.text), $context, $dynamic, insideRecursion));
+		Pair<LPWithParams, LPNotExpr> constantProp = self.addSingleParameter(parameter, $context, $dynamic, insideRecursion);
+        $property = constantProp.first;
+        $ci = constantProp.second;
 	}
 }
-	:	(clsId=classId { className = $clsId.sid; })? paramName=parameter
+	:
+	    tp = typedParameter { parameter = $tp.param; }
+	    |
+	    rp = RECURSIVE_PARAM { parameter = TP($rp.text); }
 	;
 	
 expressionFriendlyPD[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property, LPNotExpr ci]
@@ -1756,7 +1784,7 @@ expressionFriendlyPD[List<TypedParameter> context, boolean dynamic] returns [LPW
 	|	signDef=signaturePropertyDefinition[context, dynamic] { $property = $signDef.property; }
 	|	activeTabDef=activeTabPropertyDefinition[context, dynamic] { $property = $activeTabDef.property; }
 	|	roundProp=roundPropertyDefinition[context, dynamic] { $property = $roundProp.property; }
-	|	constDef=constantProperty { $property = new LPWithParams($constDef.property); $ci = $constDef.literal; }
+	|	constDef=constantProperty { $property = new LPWithParams($constDef.property); $ci = $constDef.ci; }
 	;
 
 contextIndependentPD[List<TypedParameter> context, boolean dynamic, boolean innerPD] returns [LP property, List<ResolveClassSet> signature, List<Integer> usedContext = Collections.emptyList()]
@@ -2744,8 +2772,8 @@ viewTypeSetting [LAP property]
 customViewSetting [LAP property]
 @after {
 	if (inMainParseState()) {
-		self.setCustomRenderFunctions(property, $customView.customRenderFunctions);
-		self.setCustomEditorFunctions(property, $customView.customEditorFunctions);
+		self.setCustomRenderFunction(property, $customView.customRenderFunction);
+		self.setCustomEditorFunction(property, $customView.customEditorFunction);
 		self.setCustomTextEdit(property, $customView.textEdit);
 		self.setCustomReplaceEdit(property, $customView.replaceEdit);
 	}
@@ -3223,6 +3251,7 @@ manageSessionClause returns [ManageSessionType result]
 formSessionScopeClause returns [FormSessionScope result]
     :	'NEWSESSION' { $result = FormSessionScope.NEWSESSION; }
 	|	'NESTEDSESSION' { $result = FormSessionScope.NESTEDSESSION; }
+	|   'THISSESSION' { $result = FormSessionScope.OLDSESSION; }
     ;
 
 noCancelClause returns [boolean result]
@@ -3387,6 +3416,8 @@ formActionProps[String objectName, ValueClass objectClass, List<TypedParameter> 
     Boolean outNull = false;
     NamedPropertyUsage outProp = null;
 
+    LPWithParams listProp = null;
+
     LPWithParams changeProp = null;
 
     boolean assign = false;
@@ -3395,7 +3426,7 @@ formActionProps[String objectName, ValueClass objectClass, List<TypedParameter> 
     DebugInfo.DebugPoint assignDebugPoint = null;
 }
 @after {
-    $props = new FormActionProps(in, inNull, out, outParamNum, outNull, outProp, constraintFilter, assign, changeProp, assignDebugPoint);
+    $props = new FormActionProps(in, inNull, out, outParamNum, outNull, outProp, constraintFilter, assign, listProp, changeProp, assignDebugPoint);
 }
     :   (EQ expr=propertyExpression[context, dynamic] { in = $expr.property; } ('NULL' { inNull = true; } )? )?
         (
@@ -3415,6 +3446,7 @@ formActionProps[String objectName, ValueClass objectClass, List<TypedParameter> 
             ('NULL' { outNull = true; })? 
 //            ('TO' pUsage=propertyUsage { outProp = $pUsage.propUsage; } )?
             (('CONSTRAINTFILTER' { constraintFilter = true; } ) (EQ consExpr=propertyExpression[context, dynamic] { changeProp = $consExpr.property; } )?)?
+            ('LIST' listExpr=propertyExpression[newContext, dynamic] { listProp = $listExpr.property; } )?
         )?
     ;
 
@@ -3463,9 +3495,11 @@ externalActionDefinitionBody [List<TypedParameter> context, boolean dynamic] ret
         $action = self.addScriptedExternalDBFAction($type.conStr, $type.charset, params, context, $tl.propUsages);
       } else if($type.format == ExternalFormat.JAVA) {
         $action = self.addScriptedExternalJavaAction(params, context, $tl.propUsages);
+      } else if($type.format == ExternalFormat.UDP) {
+        $action = self.addScriptedExternalUDPAction($type.clientAction, $type.conStr, params, context);
       } else if($type.format == ExternalFormat.HTTP) {
-        $action = self.addScriptedExternalHTTPAction($type.clientAction, $type.method, $type.conStr, $type.bodyUrl, $type.bodyParamNames, $type.headers, $type.cookies,
-            $type.headersTo, $type.cookiesTo, params, context, $tl.propUsages);
+        $action = self.addScriptedExternalHTTPAction($type.clientAction, $type.method, $type.conStr, $type.bodyUrl, $type.bodyParamNames, $type.bodyParamHeadersList,
+            $type.headers, $type.cookies, $type.headersTo, $type.cookiesTo, params, context, $tl.propUsages);
       } else if($type.format == ExternalFormat.LSF) {
         $action = self.addScriptedExternalLSFAction($type.conStr, $type.exec, $type.eval, $type.action, params, context, $tl.propUsages);
       }
@@ -3477,12 +3511,15 @@ externalActionDefinitionBody [List<TypedParameter> context, boolean dynamic] ret
 	    ('TO' tl = nonEmptyPropertyUsageList)?
 	;
 
-externalFormat [List<TypedParameter> context, boolean dynamic] returns [ExternalFormat format, ExternalHttpMethod method, boolean clientAction, LPWithParams conStr, LPWithParams bodyUrl, LPWithParams exec, List<String> bodyParamNames = new ArrayList<>(), NamedPropertyUsage headers, NamedPropertyUsage cookies, NamedPropertyUsage headersTo, NamedPropertyUsage cookiesTo, boolean eval = false, boolean action = false, String charset]
+externalFormat [List<TypedParameter> context, boolean dynamic] returns [ExternalFormat format, ExternalHttpMethod method, boolean clientAction, LPWithParams conStr, LPWithParams bodyUrl, LPWithParams exec, List<String> bodyParamNames = new ArrayList<>(), List<NamedPropertyUsage> bodyParamHeadersList = new ArrayList<>(), NamedPropertyUsage headers, NamedPropertyUsage cookies, NamedPropertyUsage headersTo, NamedPropertyUsage cookiesTo, boolean eval = false, boolean action = false, String charset]
 	:	'SQL'	{ $format = ExternalFormat.DB; } conStrVal = propertyExpression[context, dynamic] { $conStr = $conStrVal.property; } 'EXEC' execVal = propertyExpression[context, dynamic] { $exec = $execVal.property; }
+	|	'UDP'	{ $format = ExternalFormat.UDP; } ('CLIENT' { $clientAction = true; })?
+	            conStrVal = propertyExpression[context, dynamic] { $conStr = $conStrVal.property; }
 	|	'HTTP'	{ $format = ExternalFormat.HTTP; } ('CLIENT' { $clientAction = true; })?
 	            (methodVal = externalHttpMethod { $method = $methodVal.method; })? conStrVal = propertyExpression[context, dynamic] { $conStr = $conStrVal.property; }
 	            ('BODYURL' bodyUrlVal = propertyExpression[context, dynamic] { $bodyUrl = $bodyUrlVal.property; })?
 	            ('BODYPARAMNAMES' firstName=stringLiteral { $bodyParamNames.add($firstName.val); } (',' nextName=stringLiteral { $bodyParamNames.add($nextName.val); })*)?
+                ('BODYPARAMHEADERS' firstProp = propertyUsage { $bodyParamHeadersList.add($firstProp.propUsage); } (',' nextProp = propertyUsage { $bodyParamHeadersList.add($nextProp.propUsage); })*)?
 	            ('HEADERS' headersVal = propertyUsage { $headers = $headersVal.propUsage; })?
 	            ('COOKIES' cookiesVal = propertyUsage { $cookies = $cookiesVal.propUsage; })?
 	            ('HEADERSTO' headersToVal = propertyUsage { $headersTo = $headersToVal.propUsage; })?
@@ -3632,7 +3669,7 @@ asyncUpdateActionDefinitionBody[List<TypedParameter> context, boolean dynamic] r
 
 seekObjectActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
 @init {
-	UpdateType type = UpdateType.FIRST;
+	UpdateType type = null;
 	List<String> objNames = new ArrayList<>();
 	List<LPWithParams> lps = new ArrayList<>(); 
 }
@@ -3642,7 +3679,7 @@ seekObjectActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
 		                      : self.addScriptedGroupObjectSeekProp($gobj.sid, objNames, lps, type);
 	}
 }
-	:	'SEEK' ('FIRST' | 'LAST' { type = UpdateType.LAST; } | 'NULL' { type = UpdateType.NULL; })?
+	:	'SEEK' ('FIRST' { type = UpdateType.FIRST; } | 'LAST' { type = UpdateType.LAST; } | 'NULL' { type = UpdateType.NULL; })?
 		(	obj=formObjectID EQ pe=propertyExpression[context, dynamic]
 		|	gobj=formGroupObjectID ('OBJECTS' list=seekObjectsList[context, dynamic] { objNames = $list.objects; lps = $list.values; })?
 		)
@@ -3749,34 +3786,54 @@ inputActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams ac
 @init {
 	List<TypedParameter> newContext = new ArrayList<TypedParameter>(context);
 	boolean assign = false;
+	boolean constraintFilter = false;
 	DebugInfo.DebugPoint assignDebugPoint = null;
 
     NamedPropertyUsage outProp = null;
     LPWithParams changeProp = null;
+    LPWithParams listProp = null;
+    LPWithParams whereProp = null;
 }
 @after {
 	if (inMainParseState()) {
-		$action = self.addScriptedInputAProp($in.dataClass, $in.initValue, outProp, $dDB.action, $dDB.elseAction, context, newContext, assign, changeProp, assignDebugPoint);
+		$action = self.addScriptedInputAProp($in.valueClass, $in.initValue, outProp, $dDB.action, $dDB.elseAction, context, newContext, assign, constraintFilter, changeProp, listProp, whereProp, assignDebugPoint, $fs.result);
 	}
 }
 	:	'INPUT'
 	    in=mappedInput[newContext]
-        ( { assignDebugPoint = getCurrentDebugPoint(); } 
-            'CHANGE' { assign = true; }
+        ( { assignDebugPoint = getCurrentDebugPoint(); }// copy paste of 'CHANGE' in formActionProps
+            'CHANGE' { assign = true; constraintFilter = true; }
             (EQ consExpr=propertyExpression[context, false])? { changeProp = $consExpr.property; }
+            ('NOCONSTRAINTFILTER' { constraintFilter = false; } )?
+            ('NOCHANGE' { assign = false; assignDebugPoint = null; } )?
         )?
+        {
+            List<TypedParameter> newListContext = new ArrayList<TypedParameter>(context);
+            boolean listDynamic;
+            if($in.valueClass instanceof DataClass) {
+                newListContext = new ArrayList<TypedParameter>(context);
+                listDynamic = true;
+            } else {
+                newListContext = newContext;
+                listDynamic = false;
+            }
+        }
+	    ('LIST' listExpr=propertyExpression[newListContext, listDynamic] { listProp = $listExpr.property; })?
+        ('WHERE' whereExpr=propertyExpression[newListContext, listDynamic] { whereProp = $whereExpr.property; })?
+        fs=formSessionScopeClause?
 //		('TO' pUsage=propertyUsage { outProp = $pUsage.propUsage; } )?
         dDB=doInputBody[context, newContext]
 	;
 	
-mappedInput[List<TypedParameter> context] returns [DataClass dataClass, LPWithParams initValue]
+mappedInput[List<TypedParameter> context] returns [ValueClass valueClass, LPWithParams initValue = null]
 @init {
     String varName = "object"; // for INPUT =f() CHANGE and INPUT LONG;
 }
 @after {
 	if (inMainParseState()) {
-		$dataClass = self.getInputDataClass(varName, context, $ptype.text, $pe.property, insideRecursion);
-		$initValue = $pe.property;
+		$valueClass = self.getInputValueClass(varName, context, $pe.id != null ? $pe.id.name : $ptype.text, $pe.property, insideRecursion);
+		if($pe.id == null)
+    		$initValue = $pe.property;
 	}
 }
     :    
@@ -3787,7 +3844,7 @@ mappedInput[List<TypedParameter> context] returns [DataClass dataClass, LPWithPa
     |	
     ( 
         (varID=ID { varName = $varID.text; } )?
-        EQ pe=propertyExpression[context, false]
+        EQ pe=propertyExpressionOrCompoundID[context]
     )
 ;
 
@@ -3815,7 +3872,7 @@ activateActionDefinitionBody[List<TypedParameter> context, boolean dynamic] retu
 	}
 }
 	:	'ACTIVATE'
-		(	'FORM' fName=compoundID { form = self.findForm($fName.sid); }
+		(	'FORM' fName=compoundID { if (inMainParseState()) { form = self.findForm($fName.sid); } }
 		|	'TAB' fc = formComponentID { form = $fc.form; component = $fc.component; }
 		|   'PROPERTY' fp = formPropertyID { propertyDraw = $fp.propertyDraw; }
 		)
@@ -4100,10 +4157,12 @@ scope {
 	List<TypedParameter> context = new ArrayList<>();
 	LAWithParams action = null;
 	LPWithParams when = null;
+
+	boolean optimisticAsync = false;
 }
 @after {
 	if (inMainParseState()) {
-        self.addImplementationToAbstractAction($prop.propUsage, $list.params, action, when);
+        self.addImplementationToAbstractAction($prop.propUsage, $list.params, action, when, optimisticAsync);
 	}
 }
 	:	'ACTION'?
@@ -4122,6 +4181,7 @@ scope {
                     action.getLP().setExplicitClasses(self.getClassesFromTypedParams(context)); // just like in action declaration we need full context, and explicit classes (that will add implicit IF paramater IS class even if there is no parameter usage in body)
             }             
         }
+        ('OPTIMISTICASYNC' { optimisticAsync = true; } )?
 	;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -4771,7 +4831,10 @@ propertySelector[ScriptingFormView formView] returns [PropertyDrawView propertyV
 	;
 
 setObjectPropertyStatement[Object propertyReceiver] returns [String id, Object value]
-	:	ID EQ componentPropertyValue ';'  { setObjectProperty($propertyReceiver, $ID.text, $componentPropertyValue.value); }
+	:	ID EQ componentPropertyValue ';'  {
+            if(inMainParseState())
+	            setObjectProperty($propertyReceiver, $ID.text, $componentPropertyValue.value, () -> getCurrentDebugPoint());
+        }
 	;
 
 componentPropertyValue returns [Object value] //commented literals are in designPropertyObject
@@ -4782,6 +4845,7 @@ componentPropertyValue returns [Object value] //commented literals are in design
 	//|   d=doubleLiteral { $value = $d.val; }
 	|   dim=dimensionLiteral { $value = $dim.val; }
 	|   b=booleanLiteral { $value = $b.val; }
+	|   tb=tbooleanLiteral { $value = $tb.val; }
 	|   intB=boundsIntLiteral { $value = $intB.val; }
 	|   doubleB=boundsDoubleLiteral { $value = $doubleB.val; }
 	|   contType=containerTypeLiteral { $value = $contType.val; }
@@ -4883,6 +4947,7 @@ metaCodeLiteral
 	|	UDOUBLE_LITERAL
 	|	ULONG_LITERAL
 	|	LOGICAL_LITERAL
+	|	T_LOGICAL_LITERAL
 	|	DATE_LITERAL
 	|	DATETIME_LITERAL
 	|	TIME_LITERAL
@@ -4904,10 +4969,6 @@ mappedProperty returns [NamedPropertyUsage propUsage, List<TypedParameter> mappi
 		'('
 		list=typedParameterList { $mapping = $list.params; }
 		')'
-	;
-
-parameter
-	:	ID | RECURSIVE_PARAM
 	;
 
 typedParameter returns [TypedParameter param]
@@ -5055,16 +5116,16 @@ nonEmptyPropertyExpressionList[List<TypedParameter> context, boolean dynamic] re
 		(',' next=propertyExpression[context, dynamic] { $props.add($next.property); })* 
 	;
 	
-constantProperty returns [LP property, LPLiteral literal]
+constantProperty returns [LP property, LPNotExpr ci]
 @init {
 	ScriptingLogicsModule.ConstType cls = null;
 	Object value = null;
 }
 @after {
 	if (inMainParseState()) {
-		Pair<LP, LPLiteral> constantProp = self.addConstantProp(cls, value);
+		Pair<LP, LPNotExpr> constantProp = self.addConstantProp(cls, value);
 		$property = constantProp.first;
-		$literal = constantProp.second;
+		$ci = constantProp.second;
 	}
 }
 	:	lit = literal { cls = $lit.cls; value = $lit.value; }
@@ -5076,7 +5137,8 @@ literal returns [ScriptingLogicsModule.ConstType cls, Object value]
 	|	vnum=unumericLiteral   { $cls = ScriptingLogicsModule.ConstType.NUMERIC; $value = $vnum.val; }
 	|	vdouble=udoubleLiteral { $cls = ScriptingLogicsModule.ConstType.REAL; $value = $vdouble.val; }
 	|	vstr=localizedStringLiteralNoID	{ $cls = ScriptingLogicsModule.ConstType.STRING; $value = $vstr.val; }
-	|	vbool=booleanLiteral	{ $cls = ScriptingLogicsModule.ConstType.LOGICAL; $value = $vbool.val;  { if (inMainParseState()) self.getChecks().checkBooleanUsage($vbool.val); }}
+	|	vbool=booleanLiteral	{ $cls = ScriptingLogicsModule.ConstType.LOGICAL; $value = $vbool.val; { if (inMainParseState()) self.getChecks().checkBooleanUsage($vbool.val); }}
+	|	vtbool=tbooleanLiteral	{ $cls = ScriptingLogicsModule.ConstType.TLOGICAL; $value = $vtbool.val; }
 	|	vdate=dateLiteral	{ $cls = ScriptingLogicsModule.ConstType.DATE; $value = $vdate.val; }
 	|	vdatetime=dateTimeLiteral { $cls = ScriptingLogicsModule.ConstType.DATETIME; $value = $vdatetime.val; }
 	|	vtime=timeLiteral 	{ $cls = ScriptingLogicsModule.ConstType.TIME; $value = $vtime.val; }
@@ -5237,6 +5299,10 @@ booleanLiteral returns [boolean val]
 	:	bool=LOGICAL_LITERAL { $val = Boolean.valueOf($bool.text); }
 	;
 
+tbooleanLiteral returns [boolean val]
+	:	bool=T_LOGICAL_LITERAL { $val = self.tBooleanToBoolean($bool.text); }
+	;
+
 dimensionLiteral returns [Dimension val]
 	:	'(' x=intLiteral ',' y=intLiteral ')' { $val = new Dimension($x.val, $y.val); }
 	;
@@ -5345,18 +5411,19 @@ fragment STRING_LITERAL_ID_FRAGMENT : ID_FRAGMENT | STRING_LITERAL_FRAGMENT;
 fragment STRING_LITERAL_NEXTID_FRAGMENT : NEXTID_FRAGMENT | STRING_LITERAL_FRAGMENT;
 fragment STRING_META_FRAGMENT : (STRING_LITERAL_ID_FRAGMENT ('###' | '##'))* STRING_LITERAL_FRAGMENT (('###' | '##') STRING_LITERAL_NEXTID_FRAGMENT)*;
 
-fragment INTERVAL_TYPE : 'DATE' | 'DATETIME' | 'TIME';
+fragment INTERVAL_TYPE : 'DATE' | 'DATETIME' | 'TIME' | 'ZDATETIME';
 
-PRIMITIVE_TYPE  :	'INTEGER' | 'DOUBLE' | 'LONG' | 'BOOLEAN' | 'DATE' | 'DATETIME' | 'ZDATETIME' | 'YEAR'
-                |   'TEXT' | 'RICHTEXT' | 'TIME' | 'WORDFILE' | 'IMAGEFILE' | 'PDFFILE' | 'RAWFILE'
+PRIMITIVE_TYPE  :	'INTEGER' | 'DOUBLE' | 'LONG' | 'BOOLEAN' | 'TBOOLEAN' | 'DATE' | 'DATETIME' | 'ZDATETIME' | 'YEAR'
+                |   'TEXT' | 'RICHTEXT' | 'TIME' | 'WORDFILE' | 'IMAGEFILE' | 'PDFFILE' | 'DBFFILE' | 'RAWFILE'
 				| 	'FILE' | 'EXCELFILE' | 'TEXTFILE' | 'CSVFILE' | 'HTMLFILE' | 'JSONFILE' | 'XMLFILE' | 'TABLEFILE'
-				|   'WORDLINK' | 'IMAGELINK'
-				|   'PDFLINK' | 'RAWLINK' | 'LINK' | 'EXCELLINK' | 'TEXTLINK' | 'CSVLINK' | 'HTMLLINK' | 'JSONLINK' | 'XMLLINK' | 'TABLELINK'
+				|   'WORDLINK' | 'IMAGELINK' | 'PDFLINK' | 'DBFLINK'
+				|   'RAWLINK' | 'LINK' | 'EXCELLINK' | 'TEXTLINK' | 'CSVLINK' | 'HTMLLINK' | 'JSONLINK' | 'XMLLINK' | 'TABLELINK'
 				|   ('BPSTRING' ('[' DIGITS ']')?) | ('BPISTRING' ('[' DIGITS ']')?)
 				|	('STRING' ('[' DIGITS ']')?) | ('ISTRING' ('[' DIGITS ']')?) | 'NUMERIC' ('[' DIGITS ',' DIGITS ']')? | 'COLOR'
 				|   ('INTERVAL' ('[' INTERVAL_TYPE ']'));
 LOGICAL_LITERAL :	'TRUE' | 'FALSE';
-NULL_LITERAL	:	'NULL';	
+T_LOGICAL_LITERAL:	'TTRUE' | 'TFALSE';
+NULL_LITERAL	:	'NULL';
 ID				:	ID_META_FRAGMENT;
 STRING_LITERAL	:	STRING_META_FRAGMENT;
 WS				:	(NEWLINE | SPACE) { $channel=HIDDEN; };

@@ -11,6 +11,8 @@ import lsfusion.gwt.client.form.property.*;
 
 import java.util.ArrayList;
 
+import static java.lang.Boolean.TRUE;
+
 public class GPanelController extends GPropertyController {
 
     private final NativeSIDMap<GPropertyDraw, GPropertyPanelController> propertyControllers = new NativeSIDMap<>();
@@ -46,17 +48,22 @@ public class GPanelController extends GPropertyController {
             propertyController.setColumnKeys(columnKeys);
         }
         propertyController.setPropertyValues(values, updateKeys);
+
+        updatedProperties.put(property, Boolean.TRUE);
     }
 
     @Override
     public void removeProperty(GPropertyDraw property) {
-        GPropertyPanelController propController = propertyControllers.remove(property);
+        propertyControllers.remove(property);
 
-        getFormLayout().removeBaseComponent(property, propController.getView());
+        getFormLayout().removeBaseComponent(property);
     }
 
+    private NativeSIDMap<GPropertyDraw, Boolean> updatedProperties = new NativeSIDMap<>();
+
     public void update() {
-        propertyControllers.foreachValue(GPropertyPanelController::update);
+        updatedProperties.foreachKey(property -> propertyControllers.get(property).update());
+        updatedProperties.clear();
     }
 
     public boolean isEmpty() {
@@ -69,27 +76,42 @@ public class GPanelController extends GPropertyController {
 
     @Override
     public void updateCellBackgroundValues(GBackgroundReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
-        propertyControllers.get(formController.getProperty(reader.propertyID)).setCellBackgroundValues(values);
+        GPropertyDraw property = formController.getProperty(reader.propertyID);
+        propertyControllers.get(property).setCellBackgroundValues(values);
+
+        updatedProperties.put(property, TRUE);
     }
 
     @Override
     public void updateCellForegroundValues(GForegroundReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
-        propertyControllers.get(formController.getProperty(reader.propertyID)).setCellForegroundValues(values);
+        GPropertyDraw property = formController.getProperty(reader.propertyID);
+        propertyControllers.get(property).setCellForegroundValues(values);
+
+        updatedProperties.put(property, TRUE);
     }
 
     @Override
     public void updateImageValues(GImageReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
-        propertyControllers.get(formController.getProperty(reader.propertyID)).setImages(values);
+        GPropertyDraw property = formController.getProperty(reader.propertyID);
+        propertyControllers.get(property).setImages(values);
+
+        updatedProperties.put(property, TRUE);
     }
 
     @Override
     public void updatePropertyCaptions(GCaptionReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
-        propertyControllers.get(formController.getProperty(reader.propertyID)).setPropertyCaptions(values);
+        GPropertyDraw property = formController.getProperty(reader.propertyID);
+        propertyControllers.get(property).setPropertyCaptions(values);
+
+        updatedProperties.put(property, TRUE);
     }
 
     @Override
     public void updateShowIfValues(GShowIfReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
-        propertyControllers.get(formController.getProperty(reader.propertyID)).setShowIfs(values);
+        GPropertyDraw property = formController.getProperty(reader.propertyID);
+        propertyControllers.get(property).setShowIfs(values);
+
+        updatedProperties.put(property, TRUE); // in grid it is a little bit different (when removing showif, updatedProperties is not flagged), however it's not that important
     }
 
     @Override
@@ -98,7 +120,10 @@ public class GPanelController extends GPropertyController {
 
     @Override
     public void updateReadOnlyValues(GReadOnlyReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
-        propertyControllers.get(formController.getProperty(reader.propertyID)).setReadOnlyValues(values);
+        GPropertyDraw property = formController.getProperty(reader.propertyID);
+        propertyControllers.get(property).setReadOnlyValues(values);
+
+        updatedProperties.put(property, TRUE);
     }
 
     @Override

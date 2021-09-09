@@ -29,7 +29,8 @@ testNestedSession ()  {
 
     MESSAGE (GROUP SUM 1 IF name(Sku s) == 'aaa'); // возвращает все строки
     CANCEL;
-    MESSAGE (GROUP SUM 1 IF name(Sku s) == 'aaa'); // возвращает NULL, если в базе не было раньше Sku с именем aaa
+    // возвращает NULL, если в базе не было раньше Sku с именем aaa
+    MESSAGE (GROUP SUM 1 IF name(Sku s) == 'aaa'); 
 
 }
 
@@ -40,7 +41,8 @@ FORM sku
 newNestedSession()  {
     NESTEDSESSION {
         NEW s = Sku {
-            // показывает форму, но любые изменения в ней не будут применены в базу данных, а будут сохранены в "верхней сессии"
+            // показывает форму, но любые изменения в ней не будут применены в базу данных,
+            // а будут сохранены в "верхней сессии"
             SHOW sku OBJECTS s = s;
         }
     }

@@ -51,6 +51,7 @@ appHost = DATA LOCAL NESTED TEXT();
 appPort = DATA LOCAL NESTED INTEGER();
 exportName = DATA LOCAL NESTED TEXT();
 scheme = DATA LOCAL NESTED TEXT();
+method = DATA LOCAL NESTED TEXT();
 webHost = DATA LOCAL NESTED TEXT();
 webPort = DATA LOCAL NESTED INTEGER();
 contextPath = DATA LOCAL NESTED TEXT();
@@ -211,13 +212,16 @@ exportZDateTime = DATA LOCAL ZDATETIME ();
 exportIntervalDate = DATA LOCAL INTERVAL[DATE] ();
 exportIntervalDateTime = DATA LOCAL INTERVAL[DATETIME] ();
 exportIntervalTime = DATA LOCAL INTERVAL[TIME] ();
+exportIntervalZDateTime = DATA LOCAL INTERVAL[ZDATETIME] ();
 exportBoolean = DATA LOCAL BOOLEAN ();
+exportTBoolean = DATA LOCAL TBOOLEAN ();
 exportDate = DATA LOCAL DATE ();
 exportTime = DATA LOCAL TIME ();
 exportColor = DATA LOCAL COLOR ();
 exportWordFile = DATA LOCAL WORDFILE ();
 exportImageFile = DATA LOCAL IMAGEFILE ();
 exportPdfFile = DATA LOCAL PDFFILE ();
+exportDbfFile = DATA LOCAL DBFFILE ();
 exportRawFile = DATA LOCAL RAWFILE ();
 exportFile = DATA LOCAL FILE ();
 exportExcelFile = DATA LOCAL EXCELFILE ();
@@ -230,6 +234,7 @@ exportTableFile = DATA LOCAL TABLEFILE ();
 exportWordLink = DATA LOCAL WORDLINK ();
 exportImageLink = DATA LOCAL IMAGELINK ();
 exportPdfLink = DATA LOCAL PDFLINK ();
+exportDbfLink = DATA LOCAL DBFLINK ();
 exportRawLink = DATA LOCAL RAWLINK ();
 exportLink = DATA LOCAL LINK ();
 exportExcelLink = DATA LOCAL EXCELLINK ();    
@@ -282,13 +287,16 @@ requestedZDateTime = DATA LOCAL NESTED ZDATETIME ();
 requestedIntervalDate = DATA LOCAL NESTED INTERVAL[DATE] ();
 requestedIntervalDateTime = DATA LOCAL NESTED INTERVAL[DATETIME] ();
 requestedIntervalTime = DATA LOCAL NESTED INTERVAL[TIME] ();
+requestedIntervalZDateTime = DATA LOCAL NESTED INTERVAL[ZDATETIME] ();
 requestedBoolean = DATA LOCAL NESTED BOOLEAN ();
+requestedTBoolean = DATA LOCAL NESTED TBOOLEAN ();
 requestedDate = DATA LOCAL NESTED DATE ();
 requestedTime = DATA LOCAL NESTED TIME ();
 requestedColor = DATA LOCAL NESTED COLOR ();
 requestedWordFile = DATA LOCAL NESTED WORDFILE ();
 requestedImageFile = DATA LOCAL NESTED IMAGEFILE ();
 requestedPdfFile = DATA LOCAL NESTED PDFFILE ();
+requestedDbfFile = DATA LOCAL NESTED DBFFILE ();
 requestedRawFile = DATA LOCAL NESTED RAWFILE ();
 requestedFile = DATA LOCAL NESTED FILE ();
 requestedExcelFile = DATA LOCAL NESTED EXCELFILE ();
@@ -301,6 +309,7 @@ requestedTableFile = DATA LOCAL NESTED TABLEFILE ();
 requestedWordLink = DATA LOCAL NESTED WORDLINK ();
 requestedImageLink = DATA LOCAL NESTED IMAGELINK ();
 requestedPdfLink = DATA LOCAL NESTED PDFLINK ();
+requestedDbfLink = DATA LOCAL NESTED DBFLINK ();
 requestedRawLink = DATA LOCAL NESTED RAWLINK ();
 requestedLink = DATA LOCAL NESTED LINK ();
 requestedExcelLink = DATA LOCAL NESTED EXCELLINK ();    
@@ -314,8 +323,11 @@ requestedTableLink = DATA LOCAL NESTED TABLELINK ();
 isActiveForm = DATA LOCAL BOOLEAN ();
 
 edit '{logics.edit}'  ABSTRACT MULTI OVERRIDE FIRST ( Object) TOOLBAR;
-edit(Object o) + {  SHOW EDIT Object =o DOCKED; } // since now SHOW fills request props, we don't need to do DIALOG, and without dialog there is no REQUEST wrapping, so group change for example will work
+// since now SHOW fills request props, we don't need to do DIALOG, and without dialog there is no REQUEST wrapping, so group change for example will work
+edit(Object o) + {  SHOW EDIT Object =o DOCKED; } OPTIMISTICASYNC; //  
 formEdit(Object o)  { edit(o); }
+
+formEditObject(Object o)  { NEWSESSION formEdit(o); }
 
 // private, only for interactive usage (for other purposes use operator DELETE)
 delete '{logics.delete}'  ABSTRACT MULTI OVERRIDE FIRST ( Object) IMAGE 'delete.png' CHANGEKEY 'DELETE' HIDE TOOLBAR;
@@ -355,6 +367,7 @@ META applicationForm(sid, name)
         OBJECTS {
             NEW pane {
                 fill = 1;
+                width = 0;
                 type = TABBED;
                 NEW commons {
                     caption = '{system.form.sid.name.caption.commons}';

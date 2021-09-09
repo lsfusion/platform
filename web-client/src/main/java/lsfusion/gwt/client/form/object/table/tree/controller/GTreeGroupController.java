@@ -5,11 +5,10 @@ import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.GFormChanges;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
-import lsfusion.gwt.client.base.view.ResizableSimplePanel;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GFont;
-import lsfusion.gwt.client.form.object.table.view.GridPanel;
+import lsfusion.gwt.client.form.filter.user.GFilter;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
@@ -21,7 +20,9 @@ import lsfusion.gwt.client.form.object.table.tree.view.GTreeTable;
 import lsfusion.gwt.client.form.property.*;
 import lsfusion.gwt.client.form.view.Column;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.isShowing;
 
@@ -29,12 +30,10 @@ public class GTreeGroupController extends GAbstractTableController {
 
     private final GTreeGroup treeGroup;
 
-    private final Panel treeView;
-
     private final GTreeTable tree;
     
-    private final GExpandTreeButton expandTreeButton;
-    private final GExpandTreeButton expandTreeCurrentButton;
+    private GExpandTreeButton expandTreeButton;
+    private GExpandTreeButton expandTreeCurrentButton;
 
     public GTreeGroupController(GTreeGroup iTreeGroup, GFormController iFormController, GForm iForm) {
         super(iFormController, iTreeGroup.toolbar, true);
@@ -42,29 +41,26 @@ public class GTreeGroupController extends GAbstractTableController {
 
         tree = new GTreeTable(iFormController, iForm, this, treeGroup, treeGroup.autoSize);
 
-        ResizableSimplePanel resizePanel = new ResizableSimplePanel();
-        resizePanel.setStyleName("gridResizePanel");
-        resizePanel.setFillWidget(tree);
+        initGridView(treeGroup.autoSize, null, null);
 
-        if(treeGroup.autoSize) { // убираем default'ый minHeight
-            resizePanel.getElement().getStyle().setProperty("minHeight", "0px");
-            resizePanel.getElement().getStyle().setProperty("minWidth", "0px");
-        }
+        changeGridView(tree);
+    }
 
-        treeView = new GridPanel(resizePanel, resizePanel);
-
-        getFormLayout().addBaseComponent(treeGroup, treeView, getDefaultFocusReceiver());
-
-        addFilterButton();
+    protected void configureToolbar() {
+        addUserFilterComponent();
 
         addToolbarSeparator();
-        
+
         expandTreeCurrentButton = new GExpandTreeButton(this, true);
         addToToolbar(expandTreeCurrentButton);
         expandTreeButton = new GExpandTreeButton(this, false);
         addToToolbar(expandTreeButton);
     }
-    
+
+    @Override
+    public GFilter getFilterComponent() {
+        return treeGroup.filter;
+    }
     public GFont getFont() {
         return treeGroup.font;
     }
@@ -105,13 +101,18 @@ public class GTreeGroupController extends GAbstractTableController {
 
         boolean isTreeVisible = tree.getColumnCount() > 1;
 
-        treeView.setVisible(isTreeVisible);
+        gridView.setVisible(isTreeVisible);
 
         if (toolbarView != null)
             toolbarView.setVisible(isTreeVisible);
 
         for (GGroupObject groupObject : treeGroup.groups)
             formController.setFiltersVisible(groupObject, isTreeVisible);
+
+        if (userFilters != null) {
+            userFilters.update();
+            userFilters.setVisible(isTreeVisible);
+        }
 
         if(expandTreeButton != null) {
             expandTreeButton.update(this);

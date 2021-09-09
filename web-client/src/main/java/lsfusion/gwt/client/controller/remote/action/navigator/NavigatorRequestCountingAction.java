@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.controller.remote.action.navigator;
 
-import net.customware.gwt.dispatch.shared.Result;
+import lsfusion.gwt.client.controller.remote.action.RequestCountingAction;
+import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 
-public class NavigatorRequestCountingAction<R extends Result> extends NavigatorRequestAction {
+public abstract class NavigatorRequestCountingAction extends NavigatorRequestAction implements RequestCountingAction<ServerResponseResult> {
 }

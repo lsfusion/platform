@@ -26,7 +26,7 @@ public class RichTextAreaToolbar extends Composite {
     
     private boolean textAreaReady = false;
 
-    private FlexPanel toolbarPanel = new FlexPanel(false, GFlexAlignment.START);
+    private FlexPanel toolbarPanel = new FlexPanel();
     
     private PushButton undo;
     private PushButton redo;

@@ -144,14 +144,13 @@ To access design components, you can use their names or address property compone
 |`echoSymbols`|Specifying that a set of `*` characters will be displayed instead of the property value. Used for passwords, for example|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`changeKey`|The key that will trigger the property change event. The definition principle is similar to specifying a parameter in [Keystroke.getKeystroke(String)](https://docs.oracle.com/javase/8/docs/api/javax/swing/KeyStroke.html#getKeyStroke-java.lang.String-)|String literal|`NULL`|`'ctrl F6'`<br/>`'BACK_SPACE'`<br/>`'alt shift X'`|
 |`showChangeKey`|Specifying that the property caption will include that name of the key shortcut that will trigger the change event|Extended Boolean literal|`TRUE`|`TRUE`<br/>`FALSE`|
-|`editOnSingleClick`|Specifying that change event should be triggered after the property component is clicked once|Extended Boolean literal|depends on the property|`TRUE`<br/>`FALSE`|
-|`focusable`|Specifying that the property (action) component or a table column can get focus|Extended Boolean literal|changeKey = `NULL`|`TRUE`<br/>`FALSE`|
+|`editOnSingleClick`|Specifying that change event should be triggered after the property component is clicked once<br/>**deprecated, use `changeOnSingleClick` instead**|Extended Boolean literal|depends on the property|`TRUE`<br/>`FALSE`|
+|`changeOnSingleClick`|Specifying that change event should be triggered after the property component is clicked once|Extended Boolean literal|depends on the property|`TRUE`<br/>`FALSE`||`focusable`|Specifying that the property (action) component or a table column can get focus|Extended Boolean literal|changeKey = `NULL`|`TRUE`<br/>`FALSE`|
 |`captionFont`|The font that will be used to display the property caption|String literal|depends on the component|`'Tahoma bold italic 16'`<br/>`'Times 12'`|
 |`hide`|Specifying that the property (action) component should be always hidden|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`imagePath`|The path to the file with the image to be displayed as an action icon. The path is specified relative to the `images` folder|String literal|`NULL`|`'image.png'`|
 |`maxValue`|The maximum numerical value that the property component can have|Integer literal|`NULL`|`1000000`<br/>`5000000000L`|
 |`notNull`|Specifies that in case of a `NULL` property value, the component of this property should be highlighted|Extended Boolean literal|depends on the property|`TRUE`<br/>`FALSE`|
-|`panelCaptionAbove`|Indicates that the captions of property or action components should be drawn above the value on the panel<br/>**removed in 5.0, use `panelCaptionVertical` instead**|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`panelCaptionVertical`|Indicates that the captions of property or action components should be drawn above the value on the panel|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`panelCaptionAfter`|Indicates that the value should be drawn on the panel prior to thee property caption|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`regexp`|The regular expression that the property value must match during input|String literal|`NULL`|`'^((8\|\\+7)[\\- ]?)?(\\(?\\d\{3\}\\)?[\\- ]?)?[\\d\\- ]\{7,10\}$'`|
@@ -231,8 +230,10 @@ To access design components, you can use their names or address property compone
 
 ```lsf
 DESIGN order { // customizing the design of the form, starting with the default design
-    // marking that all changes to the hierarchy will occur for the topmost container
-    NEW orderPane FIRST { // creating a new container as the very first one before the system buttons, in which we put two containers - header and specifications
+               // marking that all changes to the hierarchy will occur for the topmost container
+    // creating a new container as the very first one before the system buttons, 
+    // in which we put two containers - header and specifications
+    NEW orderPane FIRST { 
         fill = 1; // specifying that the container should occupy all the space available to it
         type = SPLITV; // specifying that the container will be a vertical splitter
         MOVE BOX(o) { // moving everything related to the object o to the new container
@@ -241,15 +242,18 @@ DESIGN order { // customizing the design of the form, starting with the default 
                 NEW headerRow1 { // creating a container - the first row
                     type = CONTAINERH;
                     MOVE PROPERTY(date(o)) { // moving the order date property
-                        caption = 'Date of the edited order'; // "override" the property caption in the form design (instead of the standard one)
-                        toolTip = 'Input here the date the order was made'; //setting a hint for the order date property
+                        // "override" the property caption in the form design (instead of the standard one)
+                        caption = 'Date of the edited order'; 
+                        // setting a hint for the order date property
+                        toolTip = 'Input here the date the order was made'; 
                         background = #00FFFF; // making the background red
                     }
                     MOVE PROPERTY(time(o)) { // moving the order time property
                         foreground = #FF00FF; // making the color green
                     }
                     MOVE PROPERTY(number(o)) { // moving the order number property
-                        charWidth = 5; // setting that the user should preferably be shown 5 characters
+                        // setting that the user should preferably be shown 5 characters
+                        charWidth = 5; 
                     }
                     MOVE PROPERTY(series(o)); // moving the order series property
                 }
@@ -261,13 +265,17 @@ DESIGN order { // customizing the design of the form, starting with the default 
 
             size = (400, 300); //specifying that the container o.box should have a base size of 400x300 pixels
         }
-        NEW detailPane { // creating a container that will store various specifications for the order
-            type = TABBED; // marking that this container should be a tab panel, where its descendats are tabs
+        // creating a container that will store various specifications for the order
+        NEW detailPane { 
+            // marking that this container should be a tab panel, where its descendats are tabs
+            type = TABBED; 
             MOVE BOX(d) { // adding a container with order lines as one of the tabs in the top panel
                 caption = 'Lines'; // setting the caption of the tab panel
-                PROPERTY(index(d)) { focusable = FALSE; } // making the row number column never have focus
+                // making the row number column never have focus
+                PROPERTY(index(d)) { focusable = FALSE; } 
                 GRID(d) {
-                    defaultComponent = TRUE; // making sure that by default the focus when opening the form is set to the row table
+                    // making sure that by default the focus when opening the form is set to the row table
+                    defaultComponent = TRUE; 
                 }
             }
             MOVE BOX(s) { // adding a container with sku totals as one of the detailPane tabs
@@ -279,7 +287,8 @@ DESIGN order { // customizing the design of the form, starting with the default 
 
 // splitting the form definition into two statements (the second statement can be transferred to another module)
 DESIGN order {
-    REMOVE TOOLBARLEFT; // removing from the hierarchy the container with the print and export buttons to xls, thereby making them invisible
+    // removing the container with print and export to xls buttons from the hierarchy, thereby making them invisible
+    REMOVE TOOLBARLEFT; 
 }
 ```
 

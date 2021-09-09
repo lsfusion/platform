@@ -1,10 +1,7 @@
 package lsfusion.server.logics.form.stat.struct.export.plain.csv;
 
 import lsfusion.base.col.SetFact;
-import lsfusion.base.col.interfaces.immutable.ImList;
-import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.immutable.ImOrderMap;
-import lsfusion.base.col.interfaces.immutable.ImOrderSet;
+import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.file.RawFileData;
 import lsfusion.interop.session.ExternalUtils;
 import lsfusion.server.data.sql.exception.SQLHandledException;
@@ -37,14 +34,14 @@ public class ExportCSVAction<O extends ObjectSelector> extends ExportPlainAction
     private final String separator;
 
     public ExportCSVAction(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls,
-                           ImOrderSet<PropertyInterface> orderContextInterfaces, ImList<ContextFilterSelector<?, PropertyInterface, O>> contextFilters,
+                           ImOrderSet<PropertyInterface> orderContextInterfaces, ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters,
                            FormIntegrationType staticType, ImMap<GroupObjectEntity, LP> exportFiles, Integer selectTop, String charset, boolean noHeader,
                            String separator, boolean noEscape) {
         this(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, exportFiles, selectTop, charset, noHeader, separator, noEscape, false);
     }
 
     public ExportCSVAction(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls,
-                           ImOrderSet<PropertyInterface> orderContextInterfaces, ImList<ContextFilterSelector<?, PropertyInterface, O>> contextFilters,
+                           ImOrderSet<PropertyInterface> orderContextInterfaces, ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters,
                            FormIntegrationType staticType, ImMap<GroupObjectEntity, LP> exportFiles, Integer selectTop, String charset, boolean noHeader,
                            String separator, boolean noEscape, boolean useCaptionInsteadOfIntegrationSID) {
         super(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, exportFiles, selectTop,

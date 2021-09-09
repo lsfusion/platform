@@ -4,6 +4,7 @@ import lsfusion.base.file.IOUtils;
 import lsfusion.base.file.SerializableImageIconHolder;
 import lsfusion.client.controller.MainController;
 import lsfusion.client.form.property.async.ClientAsyncExec;
+import lsfusion.client.form.property.async.ClientAsyncSerializer;
 import lsfusion.client.navigator.window.ClientNavigatorWindow;
 import lsfusion.interop.form.remote.serialization.SerializationUtil;
 
@@ -30,6 +31,10 @@ public abstract class ClientNavigatorElement {
 
     public ClientAsyncExec asyncExec;
 
+    public boolean isDesktopAsync() {
+        return asyncExec != null && asyncExec.isDesktopEnabled(true);
+    }
+
     protected boolean hasChildren = false;
     public ClientNavigatorWindow window;
 
@@ -44,7 +49,7 @@ public abstract class ClientNavigatorElement {
 
         imageHolder = IOUtils.readImageIcon(inStream);
 
-        asyncExec = ClientAsyncExec.deserialize(inStream);
+        asyncExec = (ClientAsyncExec) ClientAsyncSerializer.deserializeEventExec(inStream);
     }
 
     public String getCanonicalName() {

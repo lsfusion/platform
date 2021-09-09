@@ -133,8 +133,9 @@ public class PartitionProperty<T extends PropertyInterface> extends SimpleIncrem
 
         if(changedWhere!=null) { // изменившиеся ряды (orderWhere) -> ряды с изменившимися partition'ами -> изменившиеся записи
             changedWhere.add(getPartitionWhere(orderWhere.toWhere(), partitionImplements, exprs, orderExprs, mapExprs.result));
-            changedWhere.add(getPartitionWhere(orderWhere.toWhere(), getPartitionImplements(mapKeys, calcType, PropertyChanges.EMPTY, null),
-                    getExprImplements(mapKeys, calcType, PropertyChanges.EMPTY, null), getOrderImplements(mapKeys, calcType, PropertyChanges.EMPTY, null), mapExprs.result));
+            PropertyChanges prevPropChanges = getPrevPropChanges(calcType, propChanges);
+            changedWhere.add(getPartitionWhere(orderWhere.toWhere(), getPartitionImplements(mapKeys, calcType, prevPropChanges, null),
+                    getExprImplements(mapKeys, calcType, prevPropChanges, null), getOrderImplements(mapKeys, calcType, prevPropChanges, null), mapExprs.result));
         }
 
         return PartitionExpr.create(partitionType, exprs, orderExprs, ordersNotNull, partitionImplements.values().toSet(), mapExprs.result, null, calcType instanceof CalcClassType);

@@ -82,7 +82,7 @@ public class FormContainerSet {
         set.groupContainer = contFactory.createContainer();
         set.groupContainer.setSID(DefaultFormView.getGroupContainerSID(""));
         set.groupContainer.setType(ContainerType.COLUMNS);
-        set.groupContainer.setColumns(2);
+        set.groupContainer.setColumns(DefaultFormView.GROUP_CONTAINER_COLUMNS_COUNT);
 
         set.toolbarLeftContainer = contFactory.createContainer();
         set.toolbarLeftContainer.setSID(DefaultFormView.getToolbarLeftContainerSID());

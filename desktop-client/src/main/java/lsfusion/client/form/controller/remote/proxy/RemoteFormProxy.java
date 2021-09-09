@@ -10,8 +10,8 @@ import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.GroupObjectUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.toolbar.FormGrouping;
 import lsfusion.interop.form.print.FormPrintType;
-import lsfusion.interop.form.print.ReportGenerationData;
 import lsfusion.interop.form.property.PropertyGroupType;
+import lsfusion.interop.form.property.cell.Async;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 
 import java.rmi.RemoteException;
@@ -293,9 +293,10 @@ public class RemoteFormProxy extends RemoteRequestObjectProxy<RemoteFormInterfac
         return result;
     }
 
-    public ServerResponse executeEventAction(long requestIndex, long lastReceivedRequestIndex, int propertyID, byte[] fullKey, String actionSID) throws RemoteException {
+    @Override
+    public ServerResponse executeEventAction(long requestIndex, long lastReceivedRequestIndex, String actionSID, int[] propertyIDs, byte[][] fullKeys, boolean[] externalChanges, byte[][] pushAsyncResults) throws RemoteException {
         logRemoteMethodStartCall("executeEventAction");
-        ServerResponse result = target.executeEventAction(requestIndex, lastReceivedRequestIndex, propertyID, fullKey, actionSID);
+        ServerResponse result = target.executeEventAction(requestIndex, lastReceivedRequestIndex, actionSID, propertyIDs, fullKeys, externalChanges, pushAsyncResults);
         logRemoteMethodEndCall("executeEventAction", result);
         return result;
     }
@@ -308,10 +309,8 @@ public class RemoteFormProxy extends RemoteRequestObjectProxy<RemoteFormInterfac
         return result;
     }
 
-    public ServerResponse changeProperties(long requestIndex, long lastReceivedRequestIndex, String actionSID, int[] propertyIDs, byte[][] fullKeys, byte[][] pushChanges, Long[] pushAdds) throws RemoteException {
-        logRemoteMethodStartCall("changeProperties");
-        ServerResponse result = target.changeProperties(requestIndex, lastReceivedRequestIndex, actionSID, propertyIDs, fullKeys, pushChanges, pushAdds);
-        logRemoteMethodEndCall("changeProperties", result);
-        return result;
+    @Override
+    public Async[] getAsyncValues(long requestIndex, long lastReceivedRequestIndex, int propertyID, byte[] fullKey, String actionSID, String value, int index) throws RemoteException {
+        return target.getAsyncValues(requestIndex, lastReceivedRequestIndex, propertyID, fullKey, actionSID, value, index);
     }
 }

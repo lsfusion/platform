@@ -3,6 +3,7 @@ package lsfusion.gwt.client.classes.data;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.form.property.GExtInt;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.async.GInputList;
 import lsfusion.gwt.client.form.property.cell.classes.controller.TextCellEditor;
 import lsfusion.gwt.client.form.property.cell.classes.controller.rich.RichTextCellEditor;
 import lsfusion.gwt.client.form.property.cell.classes.view.TextCellRenderer;
@@ -33,8 +34,8 @@ public class GTextType extends GStringType {
     }
 
     @Override
-    public CellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
-        return rich ? new RichTextCellEditor(editManager, editProperty) : new TextCellEditor(editManager, editProperty);
+    public CellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList) {
+        return rich ? new RichTextCellEditor(editManager, editProperty) : new TextCellEditor(editManager, editProperty, inputList);
     }
 
     @Override

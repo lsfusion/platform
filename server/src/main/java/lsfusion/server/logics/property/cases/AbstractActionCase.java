@@ -7,9 +7,11 @@ import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 import java.util.List;
 
-public class AbstractActionCase<P extends PropertyInterface> extends AbstractCase<P, PropertyInterfaceImplement<P>, ActionMapImplement<?, P>> {
+public abstract class AbstractActionCase<P extends PropertyInterface> extends AbstractCase<P, PropertyInterfaceImplement<P>, ActionMapImplement<?, P>> {
 
     public AbstractActionCase(PropertyInterfaceImplement<P> where, ActionMapImplement<?, P> implement, List<ResolveClassSet> signature) {
         super(where, implement, signature);
     }
+    
+    public abstract boolean isOptimisticAsync(); 
 }

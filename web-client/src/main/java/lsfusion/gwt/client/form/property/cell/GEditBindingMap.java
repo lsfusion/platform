@@ -18,11 +18,10 @@ public class GEditBindingMap implements Serializable {
     public static final String CHANGE = "change";
     public static final String GROUP_CHANGE = "groupChange";
     public static final String EDIT_OBJECT = "editObject";
-    public static final String CHANGE_WYS = "change_wys";
 
-    private static final List<String> changeEvents = Arrays.asList(CHANGE, CHANGE_WYS, GROUP_CHANGE);
+    private static final List<String> changeEvents = Arrays.asList(CHANGE, GROUP_CHANGE);
 
-    public static boolean isEditableAwareEditEvent(String actionSID) {
+    public static boolean isChangeEvent(String actionSID) {
         return changeEvents.contains(actionSID);
     }
 
@@ -55,8 +54,8 @@ public class GEditBindingMap implements Serializable {
         }
         return null;
     }
-    public static String getDefaultEventSID(Event event, EditEventFilter editEventFilter, boolean hasEditObjectAction) {
-        if (hasEditObjectAction && isEditObjectEvent(event)) // has to be before isChangeEvent, since also handles MOUSE CHANGE event
+    public static String getDefaultEventSID(Event event, EditEventFilter editEventFilter, boolean hasEditObjectAction, boolean hasChangeAction) {
+        if (isEditObjectEvent(event, hasEditObjectAction, hasChangeAction)) // has to be before isChangeEvent, since also handles MOUSE CHANGE event
             return EDIT_OBJECT;
         if (GMouseStroke.isChangeEvent(event))
             return CHANGE;

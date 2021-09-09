@@ -493,13 +493,13 @@ public class GwtClientUtils {
                 prevTotalFlexes += prevFlex;
             }
         }
-        assert newTotalFlexes < prevTotalFlexes;
+        assert greaterEquals(prevTotalFlexes, newTotalFlexes);
         flexes[column] += prevTotalFlexes - newTotalFlexes;
         prefs[column] = basePrefs[column];
         return newFlexWidth;
     }
 
-    private static boolean greater(double a, double b) {
+    public static boolean greater(double a, double b) {
         return a - b > 0.001;
     }
 
@@ -507,12 +507,14 @@ public class GwtClientUtils {
         return a - b > -0.001;
     }
 
-    private static boolean equals(double a, double b) {
+    public static boolean equals(double a, double b) {
         return Math.abs(a - b) < 0.001;
     }
 
+    // this algorithm assumes that all prefs are known and can be changed
     // prefs на double'ах чтобы не "дрожало", из-за преобразований в разные стороны (строго говоря наверное без adjustTableFixed и overflow дрожать не будет)
-    public static void calculateNewFlexes(int column, int delta, int viewWidth, double[] prefs, double[] flexes, int[] basePrefs, double[] baseFlexes, boolean overflow) {
+    // viewfixed if view is fixed we can convert flex to pref, otherwise we can't
+    public static double calculateNewFlexes(int column, double delta, int viewWidth, double[] prefs, double[] flexes, int[] basePrefs, double[] baseFlexes, boolean viewFixed) {
         boolean removeLeftPref = true; // вообще так как removeLeftFlex false, логично иметь симметричное поведение, но больше не меньше (removeRightPref и add*Pref не имеют смысла, так как вся delta просто идет в pref колонки)
 
         // ищем первую динамическую компоненту слева (она должна получить +delta, соответственно правая часть -delta)
@@ -524,13 +526,7 @@ public class GwtClientUtils {
         while (column >= 0 && baseFlexes[column] == 0)
             column--;
         if (column < 0) // нет левой flex колонки - ничего не делаем
-            return;
-
-        int rightFlex = column + 1;
-        while (rightFlex < baseFlexes.length && baseFlexes[rightFlex] == 0)
-            rightFlex++;
-        if (rightFlex >= baseFlexes.length) // не нашли правй flex - ничего не делаем
-            return;
+            return delta;
 
         // считаем общий текущий preferred
         double totalPref = 0;
@@ -541,10 +537,7 @@ public class GwtClientUtils {
         // сначала списываем delta справа налево pref (но не меньше basePref), ПОКА сумма pref > viewWidth !!! ( то есть flex не работает, работает ширина контейнера или minTableWidth в таблице)
         // тут можно было бы если идет расширение - delta > 0.0, viewWidth приравнять totalPref (соответственно запретить adjust, то есть pref'ы остались такими же) и reduce'ить остальные, но это пойдет в разрез с уменьшением (когда нужно уменьшать pref'ы иначе в исходное состояние не вернешься), поэтому логичнее исходить из концепции когда если есть scroll тогда просто расширяем колонки, если нет scroll'а пытаемся уместить все без скролла
         double exceedPrefWidth = totalPref - viewWidth;
-        if (greater(exceedPrefWidth, 0.0)) {
-            if (!overflow)
-                return;
-
+        if (greaterEquals(exceedPrefWidth, 0.0)) {
             double prefReduceDelta = Math.min(-delta, exceedPrefWidth);
             delta += prefReduceDelta;
             for (int i = column; i >= 0; i--) {
@@ -561,8 +554,8 @@ public class GwtClientUtils {
             exceedPrefWidth = 0;
         }
 
-        if (delta == 0) // все расписали
-            return;
+        if (equals(delta, 0.0)) // все расписали
+            return delta;
 
         double flexWidth = -exceedPrefWidth;
         assert greaterEquals(flexWidth, 0.0);
@@ -573,11 +566,10 @@ public class GwtClientUtils {
 
         //если flexWidth все еще равно 0 - вываливаемся (так как нельзя меньше preferred опускаться)
         if (equals(flexWidth, 0.0))
-            return;
+            return delta; // or maybe 0.0
 
         // запускаем изменение flex'а (пропорциональное)
         double totalFlex = 0;
-        double totalBaseFlex = 0;
         double totalRightFlexes = 0.0;
         double totalRightBaseFlexes = 0.0;
         for (int i = 0; i < flexes.length; i++) {
@@ -588,67 +580,44 @@ public class GwtClientUtils {
                 totalRightBaseFlexes += baseFlex;
             }
             totalFlex += flex;
-            totalBaseFlex += baseFlex;
         }
 
         // flex колонки увеличиваем на нужную величину, соответственно остальные flex'ы надо уменьшить на эту величину
-        double toAddFlex = (double) delta * totalFlex / (double) flexWidth;
+        double toAddFlex = delta * totalFlex / flexWidth;
         if (greater(0.0, toAddFlex + flexes[column])) // не shrink'аем, но и левые столбцы не уменьшаются (то есть removeLeftFlex false)
             toAddFlex = -flexes[column];
 
-        // сначала уменьшаем правые flex'ы
-        double restFlex = 0.0;
+        double restFlex = 0.0; // flex that wasn't added to the right flexes
         double toAddRightFlex = toAddFlex;
-        if (toAddRightFlex > totalRightFlexes) {
-            restFlex = toAddRightFlex - totalRightFlexes;
-            toAddRightFlex = totalRightFlexes;
-        }
-        for (int i = column + 1; i < flexes.length; i++) {
-            if (greater(totalRightFlexes, 0.0))
-                flexes[i] -= flexes[i] * toAddRightFlex / totalRightFlexes;
-            else {
-                assert equals(flexes[i], 0.0);
-                flexes[i] = -baseFlexes[i] * toAddRightFlex / totalRightBaseFlexes;
+        if(equals(totalRightBaseFlexes, 0.0)) { // if there are no right flex columns, we don't change flexes
+            restFlex = toAddRightFlex;
+        } else {
+            if (toAddRightFlex > totalRightFlexes) { // we don't want to have negative flexes
+                restFlex = toAddRightFlex - totalRightFlexes;
+                toAddRightFlex = totalRightFlexes;
             }
-        }
-
-
-        // может остаться delta, тогда раскидываем ее для левых компонент
-        boolean addLeftFlex = !overflow; // (если не overflow, потому как в противном случае все же не очень естественное поведение)
-        if (addLeftFlex && greater(restFlex, 0.0)) {
-            double totalLeftFlexes = totalFlex - totalRightFlexes - flexes[column];
-            double totalLeftBaseFlexes = totalBaseFlex - totalRightBaseFlexes - baseFlexes[column];
-
-            double toAddLeftFlex = restFlex; // надо изменять preferred - то есть overflow'ить / добавлять scroll по сути
-            restFlex = 0.0;
-            if (toAddLeftFlex > totalLeftFlexes) {
-                restFlex = toAddLeftFlex - totalLeftFlexes;
-                toAddLeftFlex = totalLeftFlexes;
-            }
-            for (int i = 0; i < column; i++) {
-                if (greater(totalLeftFlexes, 0.0))
-                    flexes[i] -= flexes[i] * toAddLeftFlex / totalLeftFlexes;
+            for (int i = column + 1; i < flexes.length; i++) {
+                if (greater(totalRightFlexes, 0.0))
+                    flexes[i] -= flexes[i] * toAddRightFlex / totalRightFlexes;
                 else {
                     assert equals(flexes[i], 0.0);
-                    flexes[i] = -baseFlexes[i] * toAddLeftFlex / totalLeftBaseFlexes;
+                    flexes[i] = -baseFlexes[i] * toAddRightFlex / totalRightBaseFlexes;
                 }
             }
         }
 
-        toAddFlex = toAddFlex - restFlex;
-        flexes[column] += toAddFlex;
+        flexes[column] += toAddFlex - restFlex;
 
         // если и так осталась, то придется давать preferred (соответственно flex не имеет смысла) и "здравствуй" scroll
-        if (greater(restFlex, 0.0)) {
-            assert !addLeftFlex || equals(flexes[column], totalFlex); // по сути записываем все в эту колонку
-            if (overflow) {
-                if (!addLeftFlex) {
-                    for (int i = 0; i < column; i++)
-                        prefs[i] += flexWidth * flexes[i] / totalFlex;
-                }
-                prefs[column] += flexWidth * ((flexes[column] + restFlex) / totalFlex);
-            }
+        if (!equals(restFlex, 0.0) && viewFixed) {
+            // we can't increase / decrease right part using flexes (we're out of it they are zero already, since restflex is not zero), so we have to use prefs instead
+            // assert that right flexes are zero (so moving flex width to prefs in left part won't change anything)
+            for (int i = 0; i < column; i++)
+                prefs[i] += flexWidth * flexes[i] / totalFlex;
+            prefs[column] += flexWidth * ((flexes[column] + restFlex) / totalFlex);
+            restFlex = 0.0;
         }
+        return restFlex * flexWidth / totalFlex;
     }
 
     private static void adjustFlexesToFixedTableLayout(int viewWidth, double[] prefs, boolean[] flexes, double[] flexValues) {
@@ -670,7 +639,7 @@ public class GwtClientUtils {
         }
     }
 
-    // изменяется prefs
+    //  prefs parameter is filled
     public static void calculateNewFlexesForFixedTableLayout(int column, int delta, int viewWidth, double[] prefs, int[] basePrefs, boolean[] flexes) {
         double[] flexValues = new double[prefs.length];
         double[] baseFlexValues = new double[prefs.length];
@@ -737,6 +706,28 @@ public class GwtClientUtils {
     public static String getCurrentLanguage() {
         return getCurrentLocaleName().substring(0, 2);
     }
+
+    public static native int getHeight(Element element) /*-{
+        return parseInt($wnd.getComputedStyle(element, null).height);
+    }-*/;
+
+    public static native int getWidth(Element element) /*-{
+        return parseInt($wnd.getComputedStyle(element, null).width);
+    }-*/;
+
+    public static native int getFullHeight(Element element) /*-{
+        var computedStyle = $wnd.getComputedStyle(element, null);
+        return element.offsetHeight + parseInt(computedStyle.marginTop) + parseInt(computedStyle.marginBottom);
+    }-*/;
+
+    public static native int getFullWidth(Element element) /*-{
+        var computedStyle = $wnd.getComputedStyle(element, null);
+        return element.offsetWidth + parseInt(computedStyle.marginLeft) + parseInt(computedStyle.marginRight);
+    }-*/;
+
+    public static native void setProperty(Style style, String property, String value, String priority) /*-{
+        style.setProperty(property, value, priority);
+    }-*/;
 
     public static native Element getFocusedElement() /*-{
         return $doc.activeElement;
@@ -878,6 +869,10 @@ public class GwtClientUtils {
         return obj1.equals(obj2);
     }
 
+    public static int nullHash(Object obj) {
+        return obj == null ? 0 : obj.hashCode();
+    }
+
     public static Element getElement(Node node) {
         if(node == null)
             return null;
@@ -918,6 +913,13 @@ public class GwtClientUtils {
             element = element.getParentElement();
         }
         return null;
+    }
+
+    public static <T> ArrayList<T> removeLast(ArrayList<T> values) {
+        ArrayList<T> newValues = new ArrayList<>();
+        for (int i = 0; i < values.size() - 1; i++)
+            newValues.add(values.get(i));
+        return newValues;
     }
 
     //when used in gwt-javascript, so as not to pass many parameters to the native-method and get localized strings directly

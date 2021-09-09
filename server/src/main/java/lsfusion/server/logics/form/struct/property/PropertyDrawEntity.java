@@ -1,6 +1,7 @@
 package lsfusion.server.logics.form.struct.property;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
@@ -21,14 +22,21 @@ import lsfusion.server.base.caches.IdentityStartLazy;
 import lsfusion.server.base.caches.IdentityStrongLazy;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.version.Version;
+import lsfusion.server.data.expr.value.StaticParamNullableExpr;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.sql.lambda.SQLCallable;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.language.action.LA;
+import lsfusion.server.language.property.LP;
+import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.action.Action;
-import lsfusion.server.logics.action.ExplicitAction;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
-import lsfusion.server.logics.classes.data.DataClass;
+import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.user.CustomClass;
+import lsfusion.server.logics.form.interactive.action.change.ActionObjectSelector;
+import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
+import lsfusion.server.logics.form.interactive.action.input.InputFilterEntity;
+import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
 import lsfusion.server.logics.form.interactive.controller.init.InstanceFactory;
 import lsfusion.server.logics.form.interactive.controller.init.Instantiable;
 import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
@@ -40,11 +48,13 @@ import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.order.OrderEntity;
-import lsfusion.server.logics.form.struct.property.async.AsyncEventExec;
+import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
 import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyObjectEntity;
+import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
+import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import javax.swing.*;
@@ -53,6 +63,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import static lsfusion.interop.action.ServerResponse.*;
 import static lsfusion.server.logics.form.struct.property.PropertyDrawExtraType.*;
@@ -68,7 +79,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     private String mouseBinding;
     private Map<KeyStroke, String> keyBindings;
     private OrderedMap<String, LocalizedString> contextMenuBindings;
-    private Map<String, ActionObjectEntity<?>> eventActions;
+    private Map<String, ActionObjectSelector> eventActions;
 
     public boolean optimisticAsync;
 
@@ -77,8 +88,8 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     public Boolean shouldBeLast;
     public ClassViewType viewType; // assert not null, after initialization
-    public String customRenderFunctions; 
-    public String customEditorFunctions;
+    public String customRenderFunction;
+    public String customEditorFunction;
     public boolean customTextEdit;
     public boolean customReplaceEdit;
     public String eventID;
@@ -208,14 +219,6 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         this.inheritedProperty = inheritedProperty;
     }
 
-    public DataClass getRequestInputType(FormEntity form, SecurityPolicy policy, String actionSID) {
-        return getRequestInputType(actionSID, form, policy, optimisticAsync);
-    }
-
-    public DataClass getWYSRequestInputType(FormEntity form, SecurityPolicy policy) {
-        return getRequestInputType(CHANGE_WYS, form, policy, true); // wys is optimistic by default
-    }
-    
     public boolean isProperty() {
         return getValueActionOrProperty() instanceof PropertyObjectEntity;
     }
@@ -224,26 +227,18 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return getValueProperty();
     }
 
-    public DataClass getRequestInputType(String actionSID, FormEntity form, SecurityPolicy securityPolicy, boolean optimistic) {
-        ActionObjectEntity<?> changeAction = getEventAction(actionSID, form, securityPolicy);
-
-        if (changeAction != null) {
-            return (DataClass)changeAction.property.getSimpleRequestInputType(optimistic);
-        }
-        return null;
-    }
-
-    public AsyncEventExec getAsyncEventExec(FormEntity form, SecurityPolicy policy, String actionSID) {
+    // for all external calls will set optimistic to true
+    public AsyncEventExec getAsyncEventExec(FormEntity form, SecurityPolicy policy, String actionSID, boolean externalChange) {
         ActionObjectEntity<?> changeAction = getEventAction(actionSID, form, policy);
         if (changeAction != null) {
-            return changeAction.getAsyncEventExec(form, optimisticAsync);
+            return changeAction.getAsyncEventExec(form, getToDraw(form), optimisticAsync || externalChange);
         }
         return null;
     }
 
     private boolean isChange(String eventActionSID) {
         // GROUP_CHANGE can also be in context menu binding (see Property constructor)
-        boolean isEdit = CHANGE.equals(eventActionSID) || CHANGE_WYS.equals(eventActionSID) || GROUP_CHANGE.equals(eventActionSID);
+        boolean isEdit = CHANGE.equals(eventActionSID) || GROUP_CHANGE.equals(eventActionSID);
         assert isEdit || hasContextMenuBinding(eventActionSID) || hasKeyBinding(eventActionSID);
         return isEdit;
     }
@@ -285,46 +280,67 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     public ActionObjectEntity<?> getEventAction(String actionId, FormEntity form) {
         if (eventActions != null) {
-            ActionObjectEntity eventAction = eventActions.get(actionId);
-            if (eventAction != null)
+            ActionObjectSelector eventSelector = eventActions.get(actionId);
+            ActionObjectEntity<?> eventAction;
+            if (eventSelector != null && (eventAction = eventSelector.getAction(form)) != null)
                 return eventAction;
         }
 
         ActionOrProperty<P> eventProperty = getEventProperty();
-        ActionMapImplement<?, P> eventActionImplement = eventProperty.getEventAction(actionId);
+        ImRevMap<P, ObjectEntity> eventMapping = getEditMapping();
+
+        ActionMapImplement<?, P> eventActionImplement = eventProperty.getExplicitEventAction(actionId);
         if(eventActionImplement != null)
-            return eventActionImplement.mapObjects(getEditMapping());
+            return eventActionImplement.mapObjects(eventMapping);
 
         // default implementations for group change and change wys
-        if (GROUP_CHANGE.equals(actionId) || CHANGE_WYS.equals(actionId)) {
+        if (GROUP_CHANGE.equals(actionId)) {
+            // if there is no explicit default handler, then generate one
             ActionObjectEntity<?> eventAction = getEventAction(CHANGE, form);
-            if (eventAction != null) {
-                if (GROUP_CHANGE.equals(actionId)) // if there is no group change, then generate one
-                    return eventAction.getGroupChange(getToDraw(form));
-                else { // if CHANGE action requests DataClass, then use this action
-                    assert CHANGE_WYS.equals(actionId);
-                    if (eventAction.property.getSimpleRequestInputType(true) != null) // wys is optimistic by default
-                        return eventAction;
-                    else {
-                        ActionMapImplement<?, P> defaultWYSAction = eventProperty.getDefaultWYSAction();
-                        if(defaultWYSAction != null) // assert getSimpleRequestInputType != null
-                            return defaultWYSAction.mapObjects(getEditMapping());
-                    }
-                }
-            }
+            if (eventAction != null)
+                return eventAction.getGroupChange(getToDraw(form));
+        } else { // default handler
+            eventActionImplement = eventProperty.getDefaultEventAction(actionId, actionId.equals(CHANGE) ? defaultChangeEventScope : null, ListFact.EMPTY());
+            if (eventActionImplement != null)
+                return eventActionImplement.mapObjects(eventMapping);
         }
         return null;
     }
 
-    public ActionObjectEntity<?> getSelectorAction(FormEntity entity, Version version) {
-        GroupObjectEntity groupObject = getNFToDraw(entity, version);
-        if(groupObject != null) {
-            for (ObjectEntity objectInstance : getObjectInstances().filter(groupObject.getObjects())) {
-                if (objectInstance.baseClass instanceof CustomClass) {
-                    ExplicitAction dialogAction = objectInstance.getChangeAction();
-                    return new ActionObjectEntity<>(dialogAction, MapFact.EMPTYREV());
-                }
-            }
+    public <X extends PropertyInterface> ActionObjectEntity<?> getSelectorAction(FormEntity entity) {
+        GroupObjectEntity groupObject = getToDraw(entity);
+        ImSet<ObjectEntity> objects;
+        ObjectEntity object;
+        ValueClass valueClass;
+        if(groupObject != null && (objects = groupObject.getObjects()).size() == 1 &&
+                (object = objects.single()).groupTo.viewType.isPanel() && (valueClass = object.baseClass) instanceof CustomClass) {
+            CustomClass customClass = (CustomClass)valueClass;
+
+            ImRevMap<ObjectEntity, PropertyInterface> mapObjects = entity.getObjects().mapRevValues((Supplier<PropertyInterface>) PropertyInterface::new);
+            PropertyInterface objectInterface = mapObjects.get(object);
+
+            BaseLogicsModule lm = ThreadLocalContext.getBaseLM();
+
+            LP targetProp = lm.getRequestedValueProperty(customClass);
+
+            // now we don't respect contextFilters (3rd parameter), however later, maybe we can pass it here from formInstance in most call trees
+            InputFilterEntity<?, PropertyInterface> filter = entity.getInputFilterEntity(object, SetFact.EMPTY(), mapObjects);
+            assert !filter.mapValues.valuesSet().contains(objectInterface);
+
+            PropertyObjectEntity<X> listProperty = (PropertyObjectEntity<X>) getDrawProperty();
+            ImRevMap<ObjectEntity, PropertyInterface> listMapObjects = mapObjects.removeRev(object);
+            InputListEntity<X, PropertyInterface> list = new InputListEntity<>(listProperty.property, listProperty.mapping.innerJoin(listMapObjects));
+            ImRevMap<PropertyInterface, StaticParamNullableExpr> listMapParamExprs = listMapObjects.reverse().mapRevValues(ObjectEntity::getParamExpr);
+
+            // filter orderInterfaces to only used in view and filter
+            ImOrderSet<PropertyInterface> orderUsedInterfaces = listMapObjects.valuesSet().toOrderSet();
+
+            // first parameter - object, other used orderInterfaces
+            LA<?> dialogInput = lm.addDialogInputAProp(customClass, targetProp, BaseUtils.nvl(defaultChangeEventScope, DEFAULT_SELECTOR_EVENTSCOPE), orderUsedInterfaces, list, listMapParamExprs, objectEntity -> SetFact.singleton(filter.getFilter(objectEntity)));
+
+            ImOrderSet<PropertyInterface> allOrderUsedInterfaces = SetFact.addOrderExcl(SetFact.singletonOrder(objectInterface), orderUsedInterfaces);
+            return PropertyFact.createRequestAction(allOrderUsedInterfaces.getSet(), dialogInput.getImplement(allOrderUsedInterfaces),
+                    object.getSeekPanelAction(lm, targetProp), null).mapObjects(mapObjects.reverse());
         }
         return null;
     }
@@ -355,12 +371,24 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         contextMenuBindings.put(actionSID, caption);
     }
 
-    public void setEventAction(String actionSID, ActionObjectEntity<?> eventAction) {
+    public void setEventAction(String actionSID, ActionObjectSelector eventAction) {
+        if(actionSID.equals(CHANGE_WYS)) { // CHANGE_WYS, temp check
+            ServerLoggers.startLogger.info("WARNING! CHANGE_WYS is deprecated, use LIST clause in INPUT / DIALOG operator instead " + this);
+            return;
+        }
+
         if(eventActions ==null) {
             eventActions = new HashMap<>();
         }
         eventActions.put(actionSID, eventAction);
     }
+
+    public FormSessionScope defaultChangeEventScope = null;
+    public static FormSessionScope DEFAULT_ACTION_EVENTSCOPE = FormSessionScope.OLDSESSION;
+    public static FormSessionScope DEFAULT_SELECTOR_EVENTSCOPE = FormSessionScope.OLDSESSION;
+    public static FormSessionScope DEFAULT_CUSTOMCHANGE_EVENTSCOPE = FormSessionScope.OLDSESSION;
+    public static FormSessionScope DEFAULT_FILTER_EVENTSCOPE = FormSessionScope.OLDSESSION;
+    public static FormSessionScope DEFAULT_DATACHANGE_EVENTSCOPE = FormSessionScope.NEWSESSION; // since when data changed in the same session, it immediately leads to pessimistic async values which gives a big overhead in most cases
 
     private ActionOrProperty<P> getEventProperty() {
         return propertyObject.property;

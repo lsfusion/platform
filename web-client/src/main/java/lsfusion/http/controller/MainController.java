@@ -267,7 +267,7 @@ public class MainController {
         String contentTypeString = request.getContentType();
         Charset charset = getCharsetFromContentType(contentTypeString != null ? ContentType.parse(contentTypeString) : null);
         return new ExternalRequest(new String[0], params, charset == null ? null : charset.toString(), new String[0], new String[0], null,
-                null, null, null, null, request.getScheme(), request.getServerName(), request.getServerPort(), request.getContextPath(),
+                null, null, null, null, request.getScheme(), request.getMethod(), request.getServerName(), request.getServerPort(), request.getContextPath(),
                 request.getServletPath(), request.getPathInfo() == null ? "" : request.getPathInfo(), request.getQueryString() != null ? request.getQueryString() : "");
     }
 

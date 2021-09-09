@@ -39,6 +39,16 @@ public abstract class AbstractClientContainerView implements ClientContainerView
     }
 
     public static void setSizes(JComponentPanel view, ClientComponent child) {
+        //temp fix
+        if (child.alignment == FlexAlignment.STRETCH) {
+            if (child.container.isVertical()) {
+                if (child.size.width == 0) 
+                    child.size = new Dimension(-1, child.size.height);
+            } else {
+                if (child.size.height == 0) 
+                    child.size = new Dimension(child.size.width, -1);
+            }
+        }
         view.setComponentSize(child.size);
     }
     public static void add(JPanel panel, JComponentPanel view, int index, Object constraints, ClientComponent child) {
@@ -105,17 +115,14 @@ public abstract class AbstractClientContainerView implements ClientContainerView
             initBorder();
         }
 
-        private TitledBorder titledBorder;
-
         public ContainerViewPanel() {
             initBorder();
         }
 
         private void initBorder() {
             if (hasCaption()) {
-                titledBorder = new TitledBorder(container.caption);
 //                updateCaption();
-                setBorder(titledBorder);
+                setBorder(new TitledBorder(container.caption));
             }
 
             container.installMargins(this);
@@ -149,11 +156,14 @@ public abstract class AbstractClientContainerView implements ClientContainerView
 
         public void updateCaption() {
             String caption = container.caption;
-            assert caption != null;
 //            titledBorder.setTitle(caption);
 //            repaint()
             // we have to reset titled border, setTitle / repaint doesnt'work sonewhy
-            setBorder(new TitledBorder(caption));
+            if (caption != null) {
+                setBorder(new TitledBorder(caption));
+            } else {
+                setBorder(null);
+            }
         }
     }
 
@@ -190,16 +200,17 @@ public abstract class AbstractClientContainerView implements ClientContainerView
     }
 
     private static Dimension overrideSize(ClientComponent child, Dimension dimension, boolean max) {
-        if(child.size == null)
+        Dimension childSize = child.size;
+        if(childSize == null)
             return dimension;
         
-        int width = child.size.width;
+        int width = childSize.width;
         if(width == -1)
             width = dimension.width;
         else if(max)        
             width = BaseUtils.max(width, dimension.width);
         
-        int preferredHeight = child.size.height;
+        int preferredHeight = childSize.height;
         if(preferredHeight == -1)
             preferredHeight = dimension.height;
         else if(max)

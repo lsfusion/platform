@@ -4,11 +4,11 @@ import com.google.gwt.core.client.Duration;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.Pair;
-import lsfusion.gwt.client.base.exception.ErrorHandlingCallback;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.base.jsni.NativeStringMap;
@@ -16,12 +16,12 @@ import lsfusion.gwt.client.base.view.DialogBoxHelper;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
+import lsfusion.gwt.client.controller.remote.action.RequestErrorHandlingCallback;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
-import lsfusion.gwt.client.form.object.GGroupObjectValueBuilder;
 import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGridUserPreferences;
@@ -33,6 +33,7 @@ import lsfusion.gwt.client.form.object.table.view.GridDataRecord;
 import lsfusion.gwt.client.form.order.user.GGridSortableHeaderManager;
 import lsfusion.gwt.client.form.order.user.GOrder;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 
 import java.util.*;
 
@@ -578,11 +579,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
                 int newColumnIndex = GwtSharedUtils.relativePosition(property, form.getPropertyDraws(), properties);
 
                 properties.add(newColumnIndex, property);
-                bindingEventIndices.add(newColumnIndex, form.addPropertyBindings(property, event -> {
-                    int column = getPropertyIndex(property, null);
-                    if(column >= 0 && getSelectedRow() >= 0)
-                        onEditEvent(new EventHandler(event), true, getSelectedCell(column), getSelectedElement(column));
-                }, GGridTable.this));
+                bindingEventIndices.add(newColumnIndex, form.addPropertyBindings(property, event -> onBinding(property, event), GGridTable.this));
 
                 this.columnKeys.put(property, columnKeys);
 
@@ -607,6 +604,12 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         
         updatedProperties.put(property, TRUE);
         dataUpdated = true;
+    }
+
+    public void onBinding(GPropertyDraw property, Event event) {
+        int column = getPropertyIndex(property, null);
+        if(column >= 0 && getSelectedRow() >= 0)
+            onEditEvent(new EventHandler(event), true, getSelectedCell(column), getSelectedElement(column));
     }
 
     public void setKeys(ArrayList<GGroupObjectValue> keys) {
@@ -790,18 +793,10 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     }
 
     @Override
-    public void pasteData(final List<List<String>> table) {
-        final int selectedColumn = getSelectedColumn();
-
-        if (selectedColumn == -1 || table.isEmpty()) {
-            return;
-        }
-
+    public void pasteData(Cell cell, Element parent, final List<List<String>> table) {
         final int tableColumns = getMaxColumnsCount(table);
-
-        boolean singleC = table.size() == 1 && tableColumns == 1;
-
-        if (!singleC) {
+        final int selectedColumn = getSelectedColumn();
+        if (table.size() > 1 || tableColumns > 1) {
             DialogBoxHelper.showConfirmBox("lsFusion", messages.formGridSureToPasteMultivalue(), false, new DialogBoxHelper.CloseCallback() {
                 @Override
                 public void closed(DialogBoxHelper.OptionType chosenOption) {
@@ -820,10 +815,9 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
                     }
                 }
             });
-        } else if (!table.get(0).isEmpty()) {
-            GGroupObjectValue fullKey = new GGroupObjectValueBuilder(getSelectedKey(), getColumnKey(selectedColumn)).toGroupObjectValue();
-            form.pasteSingleValue(getProperty(selectedColumn), fullKey, table.get(0).get(0));
+            return;
         }
+        super.pasteData(cell, parent, table);
     }
 
     @Override
@@ -900,12 +894,14 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         }
     }
 
+    // editing set value (in EditContext), changes model and value itself
     public void setValueAt(Cell cell, Object value) {
         GridDataRecord rowRecord = getGridRow(cell);
         GridColumn column = getGridColumn(cell);
 
-        column.setValue(rowRecord, value);
-        values.get(column.property).put(rowRecord.getKey(), value);
+        column.setValue(rowRecord, value); // updating inner model
+
+        values.get(column.property).put(rowRecord.getKey(), value); // updating outer model - controller
     }
 
     public Map<Map<GPropertyDraw, GGroupObjectValue>, Boolean> getOrderDirections() {
@@ -942,7 +938,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         }
     }
 
-    private void doResetPreferences(final boolean forAllUsers, final boolean completeReset, final ErrorHandlingCallback<ServerResponseResult> callback) {
+    private void doResetPreferences(final boolean forAllUsers, final boolean completeReset, final AsyncCallback<ServerResponseResult> callback) {
         GGridUserPreferences prefs;
         if (forAllUsers) {
             prefs = completeReset ? null : userGridPreferences;
@@ -951,15 +947,15 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
             prefs = generalGridPreferences;
         }
         
-        form.saveUserPreferences(currentGridPreferences, forAllUsers, completeReset, getHiddenProps(prefs), new ErrorHandlingCallback<ServerResponseResult>() {
+        form.saveUserPreferences(currentGridPreferences, forAllUsers, completeReset, getHiddenProps(prefs), new AsyncCallback<ServerResponseResult>() {
             @Override
-            public void failure(Throwable caught) {
+            public void onFailure(Throwable caught) {
                 resetCurrentPreferences(false);
-                callback.failure(caught);
+                callback.onFailure(caught);
             }
 
             @Override
-            public void success(ServerResponseResult result) {
+            public void onSuccess(ServerResponseResult result) {
                 if (forAllUsers) {
                     generalGridPreferences.resetPreferences();
                     if (completeReset) {
@@ -969,12 +965,12 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
                     userGridPreferences.resetPreferences();
                 }
                 resetCurrentPreferences(false);
-                callback.success(result);
+                callback.onSuccess(result);
             }
         });
     }
     
-    public void resetPreferences(boolean forAll, boolean complete, final ErrorHandlingCallback<ServerResponseResult> callback) {
+    public void resetPreferences(boolean forAll, boolean complete, final AsyncCallback<ServerResponseResult> callback) {
         currentGridPreferences.resetPreferences();
 
         if (forAll) {
@@ -984,7 +980,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         }
     }
 
-    public void saveCurrentPreferences(final boolean forAllUsers, final ErrorHandlingCallback<ServerResponseResult> callback) {
+    public void saveCurrentPreferences(final boolean forAllUsers, final AsyncCallback<ServerResponseResult> callback) {
         currentGridPreferences.setHasUserPreferences(true);
 
         if (!properties.isEmpty()) {
@@ -995,22 +991,22 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
                 prefs = currentGridPreferences;
             }
 
-            form.saveUserPreferences(currentGridPreferences, forAllUsers, false, getHiddenProps(prefs), new ErrorHandlingCallback<ServerResponseResult>() {
+            form.saveUserPreferences(currentGridPreferences, forAllUsers, false, getHiddenProps(prefs), new AsyncCallback<ServerResponseResult>() {
                 @Override
-                public void success(ServerResponseResult result) {
+                public void onSuccess(ServerResponseResult result) {
                     if (forAllUsers) {
                         generalGridPreferences = new GGridUserPreferences(currentGridPreferences);
                         resetCurrentPreferences(false);
                     } else {
                         userGridPreferences = new GGridUserPreferences(currentGridPreferences);
                     }
-                    callback.success(result);
+                    callback.onSuccess(result);
                 }
 
                 @Override
-                public void failure(Throwable caught) {
+                public void onFailure(Throwable caught) {
                     resetCurrentPreferences(false);
-                    callback.failure(caught);
+                    callback.onFailure(caught);
                 }
             });
         }

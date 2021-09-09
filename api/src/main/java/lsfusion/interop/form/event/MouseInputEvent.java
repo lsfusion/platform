@@ -15,7 +15,7 @@ public class MouseInputEvent extends InputEvent {
         this.mouseEvent = mouseEvent;
     }
 
-    public MouseInputEvent(MouseEvent e) {
+    public MouseInputEvent(MouseEvent e, boolean doubleClick) {
         String event = "";
         if (e.isAltDown()) {
             event += "alt ";
@@ -26,7 +26,7 @@ public class MouseInputEvent extends InputEvent {
         if (e.isShiftDown()) {
             event += "shift ";
         }
-        this.mouseEvent = event + (e.getClickCount() == 1 ? CLK : DBLCLK);
+        this.mouseEvent = event + (doubleClick ? DBLCLK : CLK);
     }
 
     public MouseInputEvent(String mouseEvent, Map<String, BindingMode> bindingModes) {

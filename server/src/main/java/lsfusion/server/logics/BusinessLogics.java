@@ -90,7 +90,6 @@ import lsfusion.server.physics.admin.SystemProperties;
 import lsfusion.server.physics.admin.authentication.AuthenticationLogicsModule;
 import lsfusion.server.physics.admin.authentication.security.SecurityLogicsModule;
 import lsfusion.server.physics.admin.authentication.security.controller.manager.SecurityManager;
-import lsfusion.server.physics.admin.interpreter.EvalUtils;
 import lsfusion.server.physics.admin.log.LogInfo;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.admin.monitor.StatusMessage;
@@ -133,13 +132,11 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 
 import static lsfusion.base.BaseUtils.*;
-import static lsfusion.server.logics.classes.data.time.DateTimeConverter.getWriteDate;
 import static lsfusion.server.physics.dev.id.resolve.BusinessLogicsResolvingUtils.findElementByCanonicalName;
 import static lsfusion.server.physics.dev.id.resolve.BusinessLogicsResolvingUtils.findElementByCompoundName;
 
@@ -1607,12 +1604,12 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     }
 
     @IdentityLazy
-    public ImOrderSet<Property> getCheckConstrainedProperties() {
-        return BaseUtils.immutableCast(getPropertyList().filterOrder(property -> property instanceof Property && ((Property) property).checkChange != Property.CheckType.CHECK_NO));
+    public ImSet<Property> getCheckConstrainedProperties() {
+        return BaseUtils.immutableCast(getPropertyList().getSet().filterFn(property -> property instanceof Property && ((Property) property).checkChange != Property.CheckType.CHECK_NO));
     }
 
-    public ImOrderSet<Property> getCheckConstrainedProperties(Property<?> changingProp) {
-        return BaseUtils.immutableCast(getCheckConstrainedProperties().filterOrder(property -> property.checkChange == Property.CheckType.CHECK_ALL ||
+    public ImSet<Property> getCheckConstrainedProperties(Property<?> changingProp) {
+        return BaseUtils.immutableCast(getCheckConstrainedProperties().filterFn(property -> property.checkChange == Property.CheckType.CHECK_ALL ||
                 property.checkChange == Property.CheckType.CHECK_SOME && property.checkProperties.contains(changingProp)));
     }
 
@@ -1833,8 +1830,8 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
             SQLSession.updateThreadAllocatedBytesMap();
             Map<Long, Thread> threadMap = ThreadUtils.getThreadMap();
 
-            ConcurrentHashMap<Long, HashMap<CacheType, Long>> hitStats = MapFact.getGlobalConcurrentHashMap(CacheStats.getCacheHitStats());
-            ConcurrentHashMap<Long, HashMap<CacheType, Long>> missedStats = MapFact.getGlobalConcurrentHashMap(CacheStats.getCacheMissedStats());
+            HashMap<Long, HashMap<CacheType, Long>> hitStats = new HashMap<>(CacheStats.getCacheHitStats());
+            HashMap<Long, HashMap<CacheType, Long>> missedStats = new HashMap<>(CacheStats.getCacheMissedStats());
             CacheStats.resetStats();
 
             long totalHit = 0;
@@ -1919,9 +1916,9 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
             
             if (logTotal) {
                 allocatedBytesLogger.info(String.format("Exceeded: sum: %s, \t\t\tmissed-hit: All: %s-%s, %s",
-                        humanReadableByteCount(bytesSum), exceededMisses, exceededMissesHits, getStringMap(exceededHitMap, exceededMissedMap)));
+                        humanReadableByteCount(bytesSum), exceededMisses, exceededMissesHits, CacheStats.getAbsoluteString(exceededHitMap, exceededMissedMap)));
                 allocatedBytesLogger.info(String.format("Total: sum: %s, elapsed %sms, missed-hit: All: %s-%s, %s",
-                        humanReadableByteCount(totalBytesSum), System.currentTimeMillis() - time, totalMissed, totalHit, getStringMap(totalHitMap, totalMissedMap)));
+                        humanReadableByteCount(totalBytesSum), System.currentTimeMillis() - time, totalMissed, totalHit, CacheStats.getAbsoluteString(totalHitMap, totalMissedMap)));
             }
         }
     }
@@ -1972,28 +1969,19 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         return String.format("%.1f %sB", bytes / Math.pow(unit, exp), pre);
     }
 
-    private String getStringMap(HashMap<CacheType, Long> hitStats, HashMap<CacheType, Long> missedStats) {
-        String result = "";
-        for (int i = 0; i < CacheType.values().length; i++) {
-            CacheType type = CacheType.values()[i];
-            result += type + ": " + nullToZero(missedStats.get(type)) + "-" + nullToZero(hitStats.get(type));
-            if (i < CacheType.values().length - 1) {
-                result += "; ";
-            }
-        }
-        return result;
-    }
-
     private void sumMap(HashMap<CacheType, Long> target, HashMap<CacheType, Long> source) {
         for (CacheType type : CacheType.values()) {
             target.put(type, nullToZero(target.get(type)) + nullToZero(source.get(type)));
         }
     }
 
-    public List<Scheduler.SchedulerTask> getSystemTasks(Scheduler scheduler) {
+    public List<Scheduler.SchedulerTask> getSystemTasks(Scheduler scheduler, boolean isServer) {
         List<Scheduler.SchedulerTask> result = new ArrayList<>();
-        result.add(getChangeCurrentDateTask(scheduler));
-        result.add(getChangeDataCurrentDateTimeTask(scheduler));
+        if(isServer) {
+            result.add(getChangeCurrentDateTask(scheduler));
+            result.add(getChangeDataCurrentDateTimeTask(scheduler));
+        }
+        result.add(getFlushAsyncValuesCachesTask(scheduler));
 
         if(!SystemProperties.inDevMode) { // чтобы не мешать при включенных breakPoint'ах
             result.add(getOpenFormCountUpdateTask(scheduler));
@@ -2023,7 +2011,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
                 LocalDate newDate = LocalDate.now();
                 if (currentDate == null || !currentDate.equals(newDate)) {
                     logger.info(String.format("ChangeCurrentDate started: from %s to %s", currentDate, newDate));
-                    timeLM.currentDate.change(getWriteDate(newDate), session);
+                    timeLM.currentDate.change(newDate, session);
                     session.applyException(this, stack);
                     logger.info("ChangeCurrentDate finished");
                 }
@@ -2081,7 +2069,11 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     private Scheduler.SchedulerTask getFlushPendingTransactionCleanersTask(Scheduler scheduler) {
         return scheduler.createSystemTask(stack -> DataSession.flushPendingTransactionCleaners(), false, Settings.get().getFlushPendingTransactionCleanersThreshold(), false, "Flush Pending Transaction Cleaners");
     }
-    
+
+    private Scheduler.SchedulerTask getFlushAsyncValuesCachesTask(Scheduler scheduler) {
+        return scheduler.createSystemTask(stack -> getDbManager().flushChanges(), false, Settings.get().getFlushAsyncValuesCaches(), false, "Flush async values caches");
+    }
+
     private Scheduler.SchedulerTask getRestartConnectionsTask(Scheduler scheduler) {
         final Result<Double> prevStart = new Result<>(0.0);
         return scheduler.createSystemTask(stack -> SQLSession.restartConnections(prevStart), false, Settings.get().getPeriodRestartConnections(), false, "Connection restart");
@@ -2159,7 +2151,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
             if (user != null) {
                 userMessage += String.format(", Comp. %s, User %s, Roles %s", computer == null ? "unknown" : computer, user, userRoles);
             }
-            userMessage += String.format(", missed-hit: All: %s-%s, %s", userMissed, userHit, getStringMap(userHitMap, userMissedMap));
+            userMessage += String.format(", missed-hit: All: %s-%s, %s", userMissed, userHit, CacheStats.getAbsoluteString(userHitMap, userMissedMap));
 
             return userMessage;
         }

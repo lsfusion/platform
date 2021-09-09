@@ -60,7 +60,7 @@ public class ClientTypeToGwtConverter extends ObjectConverter {
 
     @Converter(from = ClientLogicalClass.class)
     public GLogicalType convertLogicalClass(ClientLogicalClass clientLogicalClass) {
-        return GLogicalType.instance;
+        return clientLogicalClass.threeState ? GLogicalType.threeStateInstance : GLogicalType.instance;
     }
 
     @Converter(from = ClientTimeClass.class)
@@ -88,6 +88,11 @@ public class ClientTypeToGwtConverter extends ObjectConverter {
         return GIntervalType.getInstance(clientTimeIntervalClass.getIntervalType());
     }
 
+    @Converter(from = ClientZDateTimeIntervalClass.class)
+    public GIntervalType convertIntervalClass(ClientZDateTimeIntervalClass clientZDateTimeIntervalClass) {
+        return GIntervalType.getInstance(clientZDateTimeIntervalClass.getIntervalType());
+    }
+
     @Converter(from = ClientZDateTimeClass.class)
     public GZDateTimeType convertDateTimeClass(ClientZDateTimeClass clientDateTimeClass) {
         return GZDateTimeType.instance;
@@ -113,6 +118,11 @@ public class ClientTypeToGwtConverter extends ObjectConverter {
     @Converter(from = ClientPDFClass.class)
     public GPDFType convertPDFClass(ClientPDFClass pdfClass) {
         return initializeFileClass(pdfClass, new GPDFType());
+    }
+
+    @Converter(from = ClientDBFClass.class)
+    public GDBFType convertDBFClass(ClientDBFClass dbfClass) {
+        return initializeFileClass(dbfClass, new GDBFType());
     }
 
     @Converter(from = ClientImageClass.class)
@@ -175,6 +185,11 @@ public class ClientTypeToGwtConverter extends ObjectConverter {
     @Converter(from = ClientPDFLinkClass.class)
     public GPDFLinkType convertPDFClass(ClientPDFLinkClass pdfClass) {
         return initializeLinkClass(pdfClass, new GPDFLinkType());
+    }
+
+    @Converter(from = ClientDBFLinkClass.class)
+    public GDBFLinkType convertDBFClass(ClientDBFLinkClass dbfClass) {
+        return initializeLinkClass(dbfClass, new GDBFLinkType());
     }
 
     @Converter(from = ClientImageLinkClass.class)

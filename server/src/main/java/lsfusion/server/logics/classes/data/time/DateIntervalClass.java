@@ -1,14 +1,12 @@
 package lsfusion.server.logics.classes.data.time;
 
 import lsfusion.interop.classes.DataType;
-import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.FormatStyle;
+import java.time.LocalDate;
+
+import static lsfusion.base.DateConverter.*;
 
 public class DateIntervalClass extends IntervalClass {
 
@@ -29,23 +27,17 @@ public class DateIntervalClass extends IntervalClass {
     }
 
     @Override
-    public String getString(Object value, SQLSyntax syntax) {
-        throw new RuntimeException("not supported");
-    }
-
-    @Override
-    public String formatString(BigDecimal value) {
-        return getLocalDateTime(value, true).format(DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT))
-                + " - " + getLocalDateTime(value, false).format(DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT));
-    }
-
-    @Override
     public byte getTypeID() {
         return DataType.DATEINTERVAL;
     }
 
     @Override
-    public Object extractValue(LocalDateTime localDateTime) {
-        return localDateTime.toLocalDate();
+    protected Long parse(String date) {
+        return localDateTimeToUTCEpoch(LocalDate.parse(date, DATE_FORMATTER).atStartOfDay());
+    }
+
+    @Override
+    protected String format(Long epoch) {
+        return epochToLocalDateTime(epoch).toLocalDate().format(DATE_FORMATTER);
     }
 }

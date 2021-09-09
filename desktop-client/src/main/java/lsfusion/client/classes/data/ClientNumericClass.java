@@ -5,6 +5,7 @@ import lsfusion.client.classes.ClientTypeClass;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.cell.classes.controller.DoublePropertyEditor;
 import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
+import lsfusion.client.form.property.table.view.AsyncChangeInterface;
 import lsfusion.interop.classes.DataType;
 import lsfusion.interop.form.property.ExtInt;
 
@@ -74,7 +75,8 @@ public class ClientNumericClass extends ClientDoubleClass {
         return ClientResourceBundle.getString("logics.classes.number") + (precision.isUnlimited() ? "" : ("[" + precision.value + "," + scale.value + "]"));
     }
 
-    public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
+    @Override
+    public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property, AsyncChangeInterface asyncChange) {
         return new DoublePropertyEditor(value, property.maxValue, getEditFormat(property), property, BigDecimal.class, property.hasMask());
     }
 

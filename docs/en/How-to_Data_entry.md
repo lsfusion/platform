@@ -25,9 +25,11 @@ NAVIGATOR {
 
 ```lsf
 changeName(Book b)  {
-     INPUT s = ISTRING[100] // inputting ISTRING[100] "to parameter" s (automatically wrapped in REQUEST, that is, group adjustments, PASTE, etc. are available)
-                     DO // checking for requestCanceled
-                          name(b) <- s;
+    // inputting ISTRING[100] "to parameter" s 
+    // (automatically wrapped in REQUEST, that is, group adjustments, PASTE, etc. are available)
+    INPUT s = ISTRING[100] 
+        DO // checking for requestCanceled
+             name(b) <- s;
 }
 
 EXTEND FORM books
@@ -94,13 +96,18 @@ We need to replace the book selection mechanism on the order form so that the ge
 
 ```lsf
 changeNameBook(Genre g, Order o)  {
-          DIALOG booksByGenre OBJECTS // (automatically wrapped in REQUEST, that is, group adjustments, PASTE, etc. are available)
-                g = g NULL, // NULL input allowed
-                b = book(o) NULL INPUT bk NULL CONSTRAINTFILTER
-                    // book(o) NULL - substituting book(o) to the input (if necessary, the input can be omitted, that is, the user can simply write b INPUT ..., which in turn is equivalent to b=NULL NULL INPUT ...)
-                    // INPUT b NULL - returning the value of this object "to parameter" bk (return NULL is allowed, that is, there will be a reset button). Since the TO option is not specified, the result will be written to the requestedObject
-                    // CONSTRAINTFILTER - taking into account the constraints for object b on the assumption that the result will be written to the property passed to the input (in this case book(o),
-                    // if necessary, another expression can be specified in the form CONSTRAINTFILTER = dataBook(o)
+    // (automatically wrapped in REQUEST, that is, group adjustments, PASTE, etc. are available)
+    DIALOG booksByGenre OBJECTS 
+          g = g NULL, // NULL input allowed
+          b = book(o) NULL INPUT bk NULL CONSTRAINTFILTER
+          // book(o) NULL - substituting book(o) to the input (if necessary, the input can be omitted, that is, 
+          //   the user can simply write b INPUT ..., which in turn is equivalent to b=NULL NULL INPUT ...)
+          // INPUT bk NULL - returning the value of this object "to parameter" bk (return NULL is allowed, that is, 
+          //   there will be a reset button). Since the TO option is not specified, the result will be written 
+          //   to the requestedObject
+          // CONSTRAINTFILTER - taking into account the constraints for object b on the assumption that the result 
+          //   will be written to the property passed to the input (in this case book(o)),
+          //   if necessary, another expression can be specified in the form CONSTRAINTFILTER = dataBook(o)
     DO // checking for requestCanceled
         book(o) <- bk;
 }

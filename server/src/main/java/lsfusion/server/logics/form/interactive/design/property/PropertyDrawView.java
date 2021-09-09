@@ -16,6 +16,9 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.TypeSerializer;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.StringClass;
+import lsfusion.server.logics.form.interactive.action.async.AsyncChange;
+import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
+import lsfusion.server.logics.form.interactive.action.async.AsyncSerializer;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerContext;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
@@ -28,7 +31,6 @@ import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawExtraType;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
-import lsfusion.server.logics.form.struct.property.async.AsyncEventExec;
 import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyObjectEntity;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.infer.ClassType;
@@ -49,7 +51,8 @@ import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
 
-import static lsfusion.interop.action.ServerResponse.*;
+import static lsfusion.interop.action.ServerResponse.CHANGE;
+import static lsfusion.interop.action.ServerResponse.EDIT_OBJECT;
 import static lsfusion.server.logics.form.struct.property.PropertyDrawExtraType.*;
 
 public class PropertyDrawView extends ComponentView {
@@ -83,7 +86,8 @@ public class PropertyDrawView extends ComponentView {
     public Boolean focusable;
 
     public boolean panelCaptionVertical = false;
-    public boolean panelCaptionAfter;
+    public Boolean panelCaptionLast;
+    public FlexAlignment panelCaptionAlignment;
 
     public boolean panelColumnVertical = false;
 
@@ -123,9 +127,12 @@ public class PropertyDrawView extends ComponentView {
     public boolean isProperty() {
         return entity.isProperty();
     }
-    
-    public Type getChangeWYSType(ServerContext context) {
-        return entity.getWYSRequestInputType(context.entity, context.securityPolicy);
+
+    // we force optimistic async event scheme for external calls (since this calls assume that async push should exist)
+    // for that purpose we have to send to client that type to do parsing, rendering, etc.
+    public Type getExternalChangeType(ServerContext context) {
+        AsyncEventExec asyncEventExec = entity.getAsyncEventExec(context.entity, context.securityPolicy, CHANGE, true);
+        return asyncEventExec instanceof AsyncChange ? ((AsyncChange) asyncEventExec).changeType : null;
     }
 
     @Override
@@ -144,10 +151,10 @@ public class PropertyDrawView extends ComponentView {
         return super.getBaseDefaultAlignment(formEntity);
     }
 
-    public Map<String, AsyncEventExec> getAsyncExec(ServerContext context) {
+    public Map<String, AsyncEventExec> getAsyncEventExec(ServerContext context) {
         Map<String, AsyncEventExec> asyncExecMap = new HashMap<>();
         for (String actionId : ServerResponse.events) {
-            AsyncEventExec asyncEventExec = entity.getAsyncEventExec(context.entity, context.securityPolicy, actionId);
+            AsyncEventExec asyncEventExec = entity.getAsyncEventExec(context.entity, context.securityPolicy, actionId, false);
             if (asyncEventExec != null) {
                 asyncExecMap.put(actionId, asyncEventExec);
             }
@@ -249,7 +256,7 @@ public class PropertyDrawView extends ComponentView {
         if(defaultCompare != null)
             defaultCompare.serialize(outStream);
         else if(Settings.get().isDefaultCompareForStringContains() && isProperty() && getType() instanceof StringClass)
-            Compare.CONTAINS.serialize(outStream);
+            Compare.MATCH.serialize(outStream);
         else
             outStream.writeByte(-1);
 
@@ -273,7 +280,8 @@ public class PropertyDrawView extends ComponentView {
         outStream.writeByte(entity.getEditType().serialize());
 
         outStream.writeBoolean(panelCaptionVertical);
-        outStream.writeBoolean(panelCaptionAfter);
+        pool.writeObject(outStream, panelCaptionLast);
+        pool.writeObject(outStream, panelCaptionAlignment);
 
         outStream.writeBoolean(panelColumnVertical);
         
@@ -290,19 +298,17 @@ public class PropertyDrawView extends ComponentView {
             outStream.writeByte(DataType.ACTION);
         }
 
-        // асинхронные интерфейсы
-
-        Type changeWYSType = getChangeWYSType(pool.context);
-        outStream.writeBoolean(changeWYSType != null);
-        if (changeWYSType != null) {
-            TypeSerializer.serializeType(outStream, changeWYSType);
+        Type externalChangeType = getExternalChangeType(pool.context);
+        outStream.writeBoolean(externalChangeType != null);
+        if (externalChangeType != null) {
+            TypeSerializer.serializeType(outStream, externalChangeType);
         }
 
-        Map<String, AsyncEventExec> asyncExecMap = getAsyncExec(pool.context);
+        Map<String, AsyncEventExec> asyncExecMap = getAsyncEventExec(pool.context);
         outStream.writeInt(asyncExecMap.size());
         for (Map.Entry<String, AsyncEventExec> entry : asyncExecMap.entrySet()) {
             pool.writeString(outStream, entry.getKey());
-            pool.serializeObject(outStream, entry.getValue());
+            AsyncSerializer.serializeEventExec(entry.getValue(), outStream);
         }
 
         outStream.writeBoolean(entity.askConfirm);
@@ -371,8 +377,8 @@ public class PropertyDrawView extends ComponentView {
         else
             outStream.writeByte(DataType.ACTION);
         
-        pool.writeString(outStream, entity.customRenderFunctions);
-        pool.writeString(outStream, entity.customEditorFunctions);
+        pool.writeString(outStream, entity.customRenderFunction);
+        pool.writeString(outStream, entity.customEditorFunction);
         pool.writeBoolean(outStream, entity.customTextEdit);
         pool.writeBoolean(outStream, entity.customReplaceEdit);
 
@@ -460,7 +466,8 @@ public class PropertyDrawView extends ComponentView {
         focusable = pool.readObject(inStream);
 
         panelCaptionVertical = inStream.readBoolean();
-        panelCaptionAfter = inStream.readBoolean();
+        panelCaptionLast = pool.readObject(inStream);
+        panelCaptionAlignment = pool.readObject(inStream);
 
         panelColumnVertical = inStream.readBoolean();
 
@@ -512,7 +519,8 @@ public class PropertyDrawView extends ComponentView {
     public boolean isHorizontalValueFlex() {
         if(valueFlex != null)
             return valueFlex;
-        return isProperty() && getType().isFlex();
+        Type type;
+        return isProperty() && (type = getType()) != null && type.isFlex();
     }
 
     public String getAskConfirmMessage() {
@@ -543,7 +551,10 @@ public class PropertyDrawView extends ComponentView {
 
     public FlexAlignment getValueAlignment() {
         if (valueAlignment == null && isProperty()) {
-            return getType().getValueAlignment();
+            Type type = getType();
+            if(type != null)
+                return type.getValueAlignment();
+            return FlexAlignment.START;
         }
         return valueAlignment;
     }

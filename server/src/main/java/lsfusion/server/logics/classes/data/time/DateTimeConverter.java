@@ -1,37 +1,10 @@
 package lsfusion.server.logics.classes.data.time;
 
-import java.sql.Date;
-import java.sql.Time;
-import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 public class DateTimeConverter {
-
-    public static LocalDate getWriteDate(Object value) {
-        if (value instanceof LocalDate) {
-            return (LocalDate) value;
-        } else {
-            return sqlDateToLocalDate((Date) value);
-        }
-    }
-
-    public static LocalTime getWriteTime(Object value) {
-        if (value instanceof LocalTime) {
-            return (LocalTime) value;
-        } else {
-            return sqlTimeToLocalTime((Time) value);
-        }
-    }
-
-    public static LocalDateTime getWriteDateTime(Object value) {
-        if (value instanceof LocalDateTime) {
-            return (LocalDateTime) value;
-        } else {
-            return sqlTimestampToLocalDateTime((Timestamp) value);
-        }
-    }
 
     public static java.sql.Time localTimeToSqlTime(LocalTime value) {
         return value != null ? java.sql.Time.valueOf(value) : null;

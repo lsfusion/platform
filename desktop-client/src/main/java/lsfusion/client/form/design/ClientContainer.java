@@ -27,7 +27,7 @@ public class ClientContainer extends ClientComponent {
 
     public FlexAlignment childrenAlignment = FlexAlignment.START;
 
-    public int columns = 4;
+    public int columns = 1;
 
     public List<ClientComponent> children = new ArrayList<>();
 
@@ -90,7 +90,11 @@ public class ClientContainer extends ClientComponent {
 
     @Override
     public String getCaption() {
-        return caption;
+        return getNotNullCaption();
+    }
+    
+    public String getNotNullCaption() {
+        return BaseUtils.nullToString(caption);
     }
 
     public ContainerType getType() {
@@ -100,15 +104,6 @@ public class ClientContainer extends ClientComponent {
     public void setType(ContainerType type) {
         this.type = type;
         updateDependency(this, "type");
-    }
-
-    public int getColumns() {
-        return columns;
-    }
-
-    public void setColumns(int columns) {
-        this.columns = columns;
-        updateDependency(this, "columns");
     }
 
     public boolean isTabbed() {
@@ -205,7 +200,8 @@ public class ClientContainer extends ClientComponent {
 
         public void update(Map<ClientGroupObjectValue, Object> readKeys, boolean updateKeys, TableController controller) {
             assert BaseUtils.singleKey(readKeys).isEmpty();
-            controller.getFormController().setContainerCaption(ClientContainer.this, BaseUtils.nullToString(BaseUtils.singleValue(readKeys)));
+            Object containerCaption = BaseUtils.singleValue(readKeys);
+            controller.getFormController().setContainerCaption(ClientContainer.this, containerCaption != null ? containerCaption.toString() : null);
         }
 
         public int getID() {

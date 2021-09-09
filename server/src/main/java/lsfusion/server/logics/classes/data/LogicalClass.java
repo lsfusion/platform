@@ -25,13 +25,21 @@ import java.sql.SQLException;
 
 public class LogicalClass extends DataClass<Boolean> {
 
-    public static final LogicalClass instance = new LogicalClass();
+    public static final LogicalClass instance = new LogicalClass(false);
+    
+    public static final LogicalClass threeStateInstance = new LogicalClass(true);
 
     static {
         DataClass.storeClass(instance);
+        DataClass.storeClass(threeStateInstance);
     }
 
-    private LogicalClass() { super(LocalizedString.create("{classes.logical}"));}
+    public final boolean threeState;
+    
+    private LogicalClass(boolean threeState) { 
+        super(LocalizedString.create("{classes.logical}"));
+        this.threeState = threeState;
+    }
 
     public int getReportPreferredWidth() { return 50; }
 
@@ -46,11 +54,11 @@ public class LogicalClass extends DataClass<Boolean> {
     }
 
     public byte getTypeID() {
-        return DataType.LOGICAL;
+        return threeState ? DataType.TLOGICAL : DataType.LOGICAL;
     }
 
     public DataClass getCompatible(DataClass compClass, boolean or) {
-        return compClass instanceof LogicalClass ?this:null;
+        return compClass instanceof LogicalClass && threeState == ((LogicalClass) compClass).threeState ? this : null;
     }
 
     public Boolean getDefaultValue() {
@@ -81,9 +89,17 @@ public class LogicalClass extends DataClass<Boolean> {
     }
 
     public Boolean read(Object value) {
-        if(value instanceof Boolean)
-            return (Boolean)value ? true : null;
-        if(value!=null) return true;
+        if (threeState) {
+            if (value instanceof Boolean)
+                return (Boolean) value;
+            else if (value != null)
+                return value == (Integer) 1;
+        } else {
+            if (value instanceof Boolean)
+                return (Boolean) value ? true : null;
+            else if (value != null)
+                return true;
+        }
         return null;
     }
 
@@ -96,13 +112,12 @@ public class LogicalClass extends DataClass<Boolean> {
         return true;
     }
     public String getString(Object value, SQLSyntax syntax) {
-        assert (Boolean)value;
-        return syntax.getBitString(true);
+        return syntax.getBitString((Boolean) value);
     }
 
     public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax) throws SQLException {
         assert (Boolean)value;
-        statement.setByte(num, (byte)1);
+        statement.setByte(num, (byte) (threeState ? ((Boolean) value ? 1 : 0) : 1));
     }
 
 /*    public boolean isSafeString(Object value) {
@@ -155,7 +170,7 @@ public class LogicalClass extends DataClass<Boolean> {
 
     @Override
     public Object formatJSON(Boolean object) {
-        return object != null;
+        return formatBoolean(object);
     }
 
     @Override
@@ -165,18 +180,27 @@ public class LogicalClass extends DataClass<Boolean> {
 
     @Override
     public void formatXLS(Boolean object, Cell cell, ExportXLSWriter.Styles styles) {
-        cell.setCellValue(object != null);
+        Boolean result = formatBoolean(object);
+        if(result != null) {
+            cell.setCellValue(result);
+        }
+    }
+
+    private Boolean formatBoolean(Boolean object) {
+        if (threeState)
+            return object;
+        else
+            return object != null && object ? true : null;
     }
 
     public Boolean parseString(String s) throws ParseException {
-        try {
-            boolean b = Boolean.parseBoolean(s);
-            if(b)
+        if (s != null) {
+            if (s.equalsIgnoreCase("true"))
                 return true;
-            return null;
-        } catch (Exception e) {
-            throw ParseException.propagateWithMessage("Error parsing boolean: " + s, e);
+            else if (threeState && s.equalsIgnoreCase("false"))
+                return false;
         }
+        return null;
     }
 
     @Override
@@ -185,7 +209,7 @@ public class LogicalClass extends DataClass<Boolean> {
     }
 
     public String getSID() {
-        return "BOOLEAN";
+        return threeState ? "TBOOLEAN" : "BOOLEAN";
     }
 
     @Override
@@ -195,7 +219,7 @@ public class LogicalClass extends DataClass<Boolean> {
 
     @Override
     public OverJDBField formatDBF(String fieldName) throws JDBFException {
-        return new OverJDBField(fieldName, 'L', 1, 0);
+        return OverJDBField.createField(fieldName, 'L', 1, 0);
     }
 
     public boolean calculateStat() {

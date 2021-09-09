@@ -6,9 +6,6 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.SystemUtils;
 import lsfusion.client.SplashScreen;
 import lsfusion.client.base.view.SwingDefaults;
-import lsfusion.client.classes.data.ClientDateIntervalClass;
-import lsfusion.client.classes.data.ClientDateTimeIntervalClass;
-import lsfusion.client.classes.data.ClientTimeIntervalClass;
 import lsfusion.client.controller.MainController;
 import lsfusion.client.controller.remote.ConnectionLostManager;
 import lsfusion.client.controller.remote.ReconnectWorker;
@@ -17,6 +14,7 @@ import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.controller.remote.proxy.RemoteFormProxy;
 import lsfusion.client.form.print.view.EditReportInvoker;
 import lsfusion.client.form.view.ClientFormDockable;
+import lsfusion.client.navigator.controller.AsyncFormController;
 import lsfusion.interop.action.ICleanListener;
 import lsfusion.interop.action.ReportPath;
 import lsfusion.interop.base.exception.AppServerNotAvailableException;
@@ -53,6 +51,7 @@ import java.math.BigDecimal;
 import java.rmi.RemoteException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.Callable;
@@ -172,9 +171,9 @@ public abstract class MainFrame extends JFrame {
     public static DateFormat dateFormat;
     public static DateFormat timeFormat;
     public static DateFormat dateTimeFormat;
-    public static ClientDateTimeIntervalClass.DateTimeIntervalFormat dateTimeIntervalFormat;
-    public static ClientDateIntervalClass.DateIntervalFormat dateIntervalFormat;
-    public static ClientTimeIntervalClass.TimeIntervalFormat timeIntervalFormat;
+    public static DateTimeFormatter dateFormatter;
+    public static DateTimeFormatter timeFormatter;
+    public static DateTimeFormatter dateTimeFormatter;
     public static Date wideFormattableDate;
     public static Date wideFormattableDateTime;
     public static BigDecimal wideFormattableDateTimeInterval;
@@ -194,22 +193,21 @@ public abstract class MainFrame extends JFrame {
 
         //dateFormat = DateFormat.getDateInstance(DateFormat.SHORT);
         dateFormat = new SimpleDateFormat(localePreferences.dateFormat);
+        dateFormatter = DateTimeFormatter.ofPattern(((SimpleDateFormat) MainFrame.dateFormat).toPattern());
         if (twoDigitYearStartDate != null) {
             ((SimpleDateFormat) dateFormat).set2DigitYearStart(twoDigitYearStartDate);
         }
 
         //timeFormat = DateFormat.getTimeInstance(DateFormat.MEDIUM);
         timeFormat = new SimpleDateFormat(localePreferences.timeFormat);
+        timeFormatter = DateTimeFormatter.ofPattern(((SimpleDateFormat) MainFrame.timeFormat).toPattern());
 
         //dateTimeFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM);
         dateTimeFormat = new SimpleDateFormat(localePreferences.dateFormat + " " + localePreferences.timeFormat);
+        dateTimeFormatter = DateTimeFormatter.ofPattern(((SimpleDateFormat) MainFrame.dateTimeFormat).toPattern());
         if (twoDigitYearStartDate != null) {
             ((SimpleDateFormat) dateTimeFormat).set2DigitYearStart(twoDigitYearStartDate);
         }
-
-        dateTimeIntervalFormat = new ClientDateTimeIntervalClass.DateTimeIntervalFormat();
-        dateIntervalFormat = new ClientDateIntervalClass.DateIntervalFormat();
-        timeIntervalFormat = new ClientTimeIntervalClass.TimeIntervalFormat();
 
         wideFormattableDate = createWideFormattableDate();
         wideFormattableDateTime = createWideFormattableDate();
@@ -471,5 +469,5 @@ public abstract class MainFrame extends JFrame {
 
     public abstract Integer runReport(boolean isModal, String formCaption, ReportGenerationData generationData, String printerName, EditReportInvoker editInvoker) throws IOException, ClassNotFoundException;
 
-    public abstract ClientFormDockable runForm(Long requestIndex, String canonicalName, String formSID, boolean forbidDuplicate, RemoteFormInterface remoteForm, byte[] firstChanges, FormCloseListener closeListener);
+    public abstract ClientFormDockable runForm(AsyncFormController asyncFormController, String canonicalName, String formSID, boolean forbidDuplicate, RemoteFormInterface remoteForm, byte[] firstChanges, FormCloseListener closeListener);
 }

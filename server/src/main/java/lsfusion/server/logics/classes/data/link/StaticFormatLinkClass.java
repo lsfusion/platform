@@ -3,7 +3,7 @@ package lsfusion.server.logics.classes.data.link;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.language.action.LA;
-import lsfusion.server.logics.BusinessLogics;
+import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.classes.data.DataClass;
 
 public abstract class StaticFormatLinkClass extends LinkClass {
@@ -21,8 +21,8 @@ public abstract class StaticFormatLinkClass extends LinkClass {
     }
 
     @Override
-    public LA getDefaultOpenAction(BusinessLogics BL) {
-        return BL.LM.openRawLink;
+    public LA getDefaultOpenAction(BaseLogicsModule baseLM) {
+        return baseLM.openRawLink;
     }
 
     @Override

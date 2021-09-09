@@ -2,10 +2,12 @@ package lsfusion.server.logics.form.interactive.design.object;
 
 import lsfusion.base.identity.IDGenerator;
 import lsfusion.interop.form.object.AbstractGroupObject;
+import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerIdentitySerializable;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.filter.FilterView;
+import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyGroupContainerView;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
@@ -94,6 +96,10 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
     @Override
     public String getPropertyGroupContainerSID() {
         return getSID();
+    }
+    
+    public void addUserFilter(PropertyDrawView property, Version version) {
+        userFilter.addProperty(property, version);
     }
 
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream) throws IOException {

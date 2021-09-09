@@ -34,6 +34,11 @@ public class Stat {
         this(count == 0 ? 0 : (int) Math.round(getDegree(count, countDeg)), true);
     }
 
+    public Stat(long count, boolean ceil) {
+        this(count == 0 ? 0 : (int) Math.ceil(getDegree(count, 1)), true);
+        assert ceil;
+    }
+
     public Stat(int count, boolean isDeg) {
         assert isDeg;
         deg = count;

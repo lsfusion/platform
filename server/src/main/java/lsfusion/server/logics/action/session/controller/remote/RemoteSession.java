@@ -2,9 +2,7 @@ package lsfusion.server.logics.action.session.controller.remote;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.Result;
-import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
-import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.base.exception.AuthenticationException;
 import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.session.ExternalRequest;
@@ -22,7 +20,6 @@ import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.logics.classes.data.StringClass;
-import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.navigator.controller.env.ChangesController;
 import lsfusion.server.logics.navigator.controller.env.FormController;
 import lsfusion.server.logics.property.Property;
@@ -32,6 +29,7 @@ import lsfusion.server.physics.admin.authentication.controller.remote.RemoteConn
 import lsfusion.server.physics.admin.authentication.security.controller.manager.SecurityManager;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.dev.integration.external.to.ExternalHTTPAction;
+import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -54,15 +52,27 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
     }
 
     @Override
-    public ExternalResponse exec(String action, ExternalRequest request) {
+    public ExternalResponse exec(String actionName, ExternalRequest request) {
         ExternalResponse result;
         try {
-            if(action != null) {
-                LA property = businessLogics.findActionByCompoundName(action);
-                if (property != null) {
-                    result = executeExternal(property, request);
+            if(actionName != null) {
+                LA action;
+                String findActionName = actionName;
+                while(true) { // we're doing greedy search for all subpathes to find appropriate "endpoint" action
+                    int lastSlash = findActionName.lastIndexOf('/'); // if it is url
+                    String checkActionName = findActionName;
+                    if(lastSlash >= 0) // optimization
+                        checkActionName = checkActionName.replace('/', '_');
+
+                    if((action = businessLogics.findActionByCompoundName(checkActionName)) != null || lastSlash < 0)
+                        break;
+
+                    findActionName = findActionName.substring(0, lastSlash);
+                }
+                if (action != null) {
+                    result = executeExternal(action, request);
                 } else {
-                    throw new RuntimeException(String.format("Action %s was not found", action));
+                    throw new RuntimeException(String.format("Action %s was not found", actionName));
                 }
             } else {
                 throw new RuntimeException("Action was not specified");
@@ -183,6 +193,9 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
         if (request.scheme != null) {
             businessLogics.LM.scheme.change(request.scheme, session);
         }
+        if (request.method != null) {
+            businessLogics.LM.method.change(request.method, session);
+        }
         if (request.webHost != null) {
             businessLogics.LM.webHost.change(request.webHost, session);
         }
@@ -253,17 +266,8 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
     @Override
     protected ChangesController createChangesController() {
         return new ChangesController() {
-            public void regChange(ImSet<Property> changes, DataSession session) {
-            }
-
-            public ImSet<Property> update(DataSession session, FormInstance form) {
-                return SetFact.EMPTY();
-            }
-
-            public void registerForm(FormInstance form) {
-            }
-
-            public void unregisterForm(FormInstance form) {
+            protected DBManager getDbManager() {
+                return dbManager;
             }
         };
     }

@@ -9,8 +9,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public interface Reader<T> {
-    T read(Object value);
-
     ExtInt getCharLength();
     int getSize(T value);
 

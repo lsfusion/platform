@@ -39,7 +39,7 @@ When executing the `whoAmI` action, all the actions added as an implementation w
 
 ### Example 2
 
-Suppose that we need to implement an action that copies an object (e. g. the `Book` class) with its semantics defined in multiple modules. This can be implemented as follows:
+Suppose that we need to implement an action that copies an object (e.g. the `Book` class) with its semantics defined in multiple modules. This can be implemented as follows:
 
 Declare the `Book` class and the actions to copy it:
 
@@ -47,7 +47,8 @@ Declare the `Book` class and the actions to copy it:
 MODULE Book;
 
 CLASS Book; // declaring class "book"
-overCopy  ABSTRACT ( Book, Book); // abstract action that takes an input two books and is "entry point", to which other modules can add realization
+// abstract action that takes an input two books and is "entry point", to which other modules can add realization
+overCopy ABSTRACT (Book, Book); 
 copy (Book book)  { // creating action on book copy
     NEW b = Book { // adding new book
         overCopy(b, book);

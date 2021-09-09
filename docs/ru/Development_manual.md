@@ -56,7 +56,7 @@ title: 'Разработка (ручная)'
         <repository>
             <id>lsfusion</id>
             <name>lsFusion Public Repository</name>
-            <url>http://repo.lsfusion.org</url>
+            <url>https://repo.lsfusion.org</url>
         </repository>
     </repositories>
 

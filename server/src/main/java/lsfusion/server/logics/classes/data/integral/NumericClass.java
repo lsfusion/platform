@@ -188,11 +188,17 @@ public class NumericClass extends IntegralClass<BigDecimal> {
 
     @Override
     public OverJDBField formatDBF(String fieldName) throws JDBFException {
-        return new OverJDBField(fieldName, 'N', Math.min(getPrecision(), 253), Math.min(getScale(), 253));
+        return OverJDBField.createField(fieldName, 'N', Math.min(getPrecision(), 253), Math.min(getScale(), 253));
     }
 
     @Override
     public Stat getTypeStat() {
         return new Stat(10, isUnlimited() ? Settings.get().getMaxNumericPrecision() : precision.value);
+    }
+
+    @Override
+    public int getSize(BigDecimal value) {
+        assert precision.isUnlimited();
+        return value.precision();
     }
 }

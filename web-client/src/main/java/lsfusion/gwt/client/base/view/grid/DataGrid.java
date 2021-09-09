@@ -29,6 +29,7 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.event.GMouseStroke;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 import lsfusion.gwt.client.view.ColorThemeChangeListener;
@@ -326,6 +327,11 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
         CellBasedWidgetImpl.get().sinkEvents(widget, getBrowserDragDropEvents());
     }
 
+    public static boolean isFakeBlur(Event event, Element blur) {
+        EventTarget focus = event.getRelatedEventTarget();
+        return focus != null && blur.isOrHasChild(Element.as(focus));
+    }
+
     public static Element getTargetAndCheck(Element element, Event event) {
         EventTarget eventTarget = event.getEventTarget();
         //it seems that now all this is not needed
@@ -457,8 +463,8 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
 
         TableSectionElement targetTableSection = null;
 
-        if (target == getTableDataFocusElement() || target == getTableElement()) { // need this when focus is on grid and not cell itself, so we need to propagate key events there
-            // usually all events has target getTableDataFocusElement, but ONPASTE when focus is on grid somewhy has target tableElement
+        if (target == getTableDataFocusElement() || GKeyStroke.isPasteFromClipboardEvent(event)) { // need this when focus is on grid and not cell itself, so we need to propagate key events there
+            // usually all events has target getTableDataFocusElement, but ONPASTE when focus is on grid somewhy has target tableElement (in last version something has changed and now target is copied cell, however it is also undesirable)
             if (checkSinkGlobalEvents(event)) {
                 targetTableSection = tbody;
 
@@ -614,8 +620,12 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
 
         int selectedColumn = getSelectedColumn();
         // Decrement the keyboard selected column.
-        if (index <= selectedColumn)
-            setSelectedColumn(selectedColumn - 1);
+        if (index <= selectedColumn) {
+            if (selectedColumn == 0 && columns.size() > 0)
+                setSelectedColumn(0);
+            else
+                setSelectedColumn(selectedColumn - 1);
+        }
     }
 
     /**
@@ -776,7 +786,7 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
     }
 
     public void setSelectedColumn(int column) {
-        assert column >= 0 : "Column must be zero or greater";
+        assert column >= 0 || columns.size() == 0 : "Column must be zero or greater";
 
         if (getSelectedColumn() == column)
             return;
@@ -961,7 +971,7 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
         return null;
     }
 
-    protected final TableSectionElement getTableHeadElement() {
+    public final TableSectionElement getTableHeadElement() {
         if(!noHeaders)
             return tableHeader.getSection();
         return null;
@@ -970,17 +980,18 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
     protected abstract boolean previewEvent(Element target, Event event);
 
     protected void onFocus() {
-        DataGrid.sinkPasteEvent(getTableDataFocusElement());
-
         if(isFocused)
             return;
+        DataGrid.sinkPasteEvent(getTableDataFocusElement());
         isFocused = true;
         focusedChanged();
     }
 
     protected void onBlur(Event event) {
-        if(!isFocused)
+        if(!isFocused || isFakeBlur(event, getElement()))
             return;
+        //if !isFocused should be replaced to assert; isFocused must be true, but sometimes is not (related to LoadingManager)
+        //assert isFocused;
         isFocused = false;
         focusedChanged();
     }
@@ -1421,6 +1432,15 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
             headerBuilder.update(columnsChanged);
         if (!noFooters)
             footerBuilder.update(columnsChanged);
+    }
+
+    public Element getHeaderElement(int element) {
+        assert !noHeaders;
+        return headerBuilder.getHeaderRow().getCells().getItem(element);
+    }
+
+    public Element getHeader() {
+        return headerBuilder.getHeaderRow();
     }
 
     // mechanism is slightly different - removing redundant columns, resetting others, however there is no that big difference from other updates so will leave it this way

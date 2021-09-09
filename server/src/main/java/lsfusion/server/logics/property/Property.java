@@ -25,8 +25,10 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.PullExpr;
 import lsfusion.server.data.expr.classes.IsClassType;
 import lsfusion.server.data.expr.key.KeyExpr;
+import lsfusion.server.data.expr.key.NullableKeyExpr;
 import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.query.GroupType;
+import lsfusion.server.data.expr.value.StaticParamNullableExpr;
 import lsfusion.server.data.expr.value.ValueExpr;
 import lsfusion.server.data.expr.where.cases.CaseExpr;
 import lsfusion.server.data.expr.where.classes.data.CompareWhere;
@@ -39,8 +41,7 @@ import lsfusion.server.data.query.build.QueryBuilder;
 import lsfusion.server.data.query.modify.ModifyQuery;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.exception.SQLHandledException;
-import lsfusion.server.data.stat.PropStat;
-import lsfusion.server.data.stat.TableStatKeys;
+import lsfusion.server.data.stat.*;
 import lsfusion.server.data.table.*;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.DataObject;
@@ -58,7 +59,6 @@ import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
-import lsfusion.server.logics.action.implement.ActionImplement;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.session.change.*;
@@ -74,6 +74,7 @@ import lsfusion.server.logics.classes.StaticClass;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.OrderClass;
+import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.struct.ConcatenateValueClass;
 import lsfusion.server.logics.classes.user.BaseClass;
 import lsfusion.server.logics.classes.user.CustomClass;
@@ -82,13 +83,15 @@ import lsfusion.server.logics.classes.user.set.OrClassSet;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.classes.user.set.ResolveUpClassSet;
 import lsfusion.server.logics.event.*;
-import lsfusion.server.logics.form.interactive.action.change.DefaultWYSObjectAction;
+import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
+import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
-import lsfusion.server.logics.form.interactive.dialogedit.ClassFormEntity;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.property.checked.ConstraintCheckChangeProperty;
+import lsfusion.server.logics.form.open.ObjectSelector;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.ValueClassWrapper;
+import lsfusion.server.logics.form.struct.filter.ContextFilterEntity;
 import lsfusion.server.logics.form.struct.property.PropertyClassImplement;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyClassImplement;
@@ -106,7 +109,6 @@ import lsfusion.server.logics.property.value.NullValueProperty;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.SystemProperties;
 import lsfusion.server.physics.admin.drilldown.form.DrillDownFormEntity;
-import lsfusion.server.physics.admin.log.LogTime;
 import lsfusion.server.physics.dev.debug.PropertyDebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.dev.id.name.DBNamingPolicy;
@@ -114,14 +116,15 @@ import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import lsfusion.server.physics.exec.db.table.ImplementTable;
 import lsfusion.server.physics.exec.db.table.MapKeysTable;
 import lsfusion.server.physics.exec.db.table.TableFactory;
+import lsfusion.server.physics.exec.hint.AutoHintsAspect;
 
 import java.sql.SQLException;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.function.Function;
 
-import static lsfusion.server.base.controller.thread.ThreadLocalContext.getBusinessLogics;
 import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
+import static lsfusion.server.logics.property.oraction.ActionOrPropertyUtils.*;
 
 public abstract class Property<T extends PropertyInterface> extends ActionOrProperty<T> implements MapKeysInterface<T> {
 
@@ -586,7 +589,6 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
 
     // есть assertion, что не должен возвращать изменение null -> null, то есть или старое или новое не null, для подр. см usage
-    @LogTime
     @ThisMessage
     public PropertyChange<T> getIncrementChange(Modifier modifier) throws SQLException, SQLHandledException {
         return getIncrementChange(modifier.getPropertyChanges());
@@ -751,9 +753,9 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return readTable;
     }
     
-    public PropertyChange<T> getPrevChange(PropertyChangeTableUsage<T> table) {
+    public PropertyChange<T> getPrevChange(PropertyChangeTableUsage<T> table, PropertyChanges prevChanges) {
         ImRevMap<T, KeyExpr> mapKeys = getMapKeys();
-        return new PropertyChange<>(mapKeys, getExpr(mapKeys), table.join(mapKeys).getWhere());
+        return new PropertyChange<>(mapKeys, getExpr(mapKeys, prevChanges), table.join(mapKeys).getWhere());
     }
 
     public PropertyChangeTableUsage<T> readChangeTable(String debugInfo, SQLSession session, PropertyChange<T> change, BaseClass baseClass, QueryEnvironment env) throws SQLException, SQLHandledException {
@@ -771,15 +773,18 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     public CheckType checkChange = CheckType.CHECK_NO;
     public ImSet<Property<?>> checkProperties = null;
 
-    public ImOrderSet<ConstraintCheckChangeProperty<?, T>> getCheckProperties() {
-        return getBusinessLogics().getCheckConstrainedProperties(this).
-                    filterOrder(property -> depends(property, this)).
-                    mapOrderSetValues(property -> ((Property<?>)property).getMaxChangeProperty(Property.this));
+    public <O extends ObjectSelector> ImSet<ContextFilterEntity<?, T, O>> getCheckFilters(O object) {
+        return ThreadLocalContext.getBusinessLogics().getCheckConstrainedProperties(this).filterFn(property -> depends(property, this)).
+                mapSetValues(property -> {
+                    ConstraintCheckChangeProperty<?, T> changeProperty = ((Property<?>) property).getMaxChangeProperty(this);
+                    Pair<ImRevMap<ConstraintCheckChangeProperty.Interface<T>, T>, ConstraintCheckChangeProperty.Interface<T>> mapInterfaces = changeProperty.getMapInterfaces();
+                    return new ContextFilterEntity<>(changeProperty, mapInterfaces.first, MapFact.singletonRev(mapInterfaces.second, object));
+                });
     }
 
     public PropertyChanges getChangeModifier(PropertyChanges changes, boolean toNull) {
         // строим Where для изменения
-        return getPullDataChanges(changes, toNull).add(changes);
+        return getPullDataChanges(changes, toNull).getPropertyChanges().add(changes);
     }
 
     private ImSet<Property> recDepends;
@@ -789,7 +794,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
             recDepends = calculateRecDepends();
         return recDepends;
     }
-    
+
     public int getEstComplexity() {
         return getRecDepends().size();
     }
@@ -908,19 +913,26 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
                 return false; // no hint will be "thrown" (since it requires reading'an expr)
         }
 
-        for(Property property : getDepends())
-            if(property.hasPreread(structChanges))
-                return true;
+        return calculateHasPreread(structChanges);
+    }
+
+    protected boolean calculateHasPreread(StructChanges structChanges) {
         return false;
     }
-    @IdentityLazy
+
     public boolean hasGlobalPreread() {
+        return hasGlobalPreread(true);
+    }
+
+    @IdentityLazy
+    public boolean hasGlobalPreread(boolean events) {
         if(isPreread())
             return true;
 
-        for(Property property : getDepends())
-            if(property.hasGlobalPreread())
-                return true;
+        return calculateHasGlobalPreread(events);
+    }
+
+    protected boolean calculateHasGlobalPreread(boolean events) {
         return false;
     }
 
@@ -1033,7 +1045,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         if(modify!=null) {
             if(isPreread()) { // вообще rightJoin, но вдруг случайно мимо AutoHint'а может пройти
                 ImMap<T, Expr> joinValues = getJoinValues(joinImplement); Pair<ObjectValue, Boolean> row;
-                if(joinValues!=null && (row = modify.preread.readValues.get(joinValues))!=null) {
+                if(joinValues!=null && (row = modify.preread.readValues.get(new Pair<>(joinValues, hasChanges(propChanges))))!=null) {
                     if(changedWhere!=null) changedWhere.add(row.second ? Where.TRUE() : Where.FALSE());
                     return row.first.getExpr();
                 }
@@ -1060,11 +1072,11 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
                 WhereBuilder changedExprWhere = new WhereBuilder();
                 Expr changedExpr = calculateExpr(joinImplement, calcType, propChanges, changedExprWhere);
                 if (changedWhere != null) changedWhere.add(changedExprWhere.toWhere());
-                return changedExpr.ifElse(changedExprWhere.toWhere(), getExpr(joinImplement));
+                return changedExpr.ifElse(changedExprWhere.toWhere(), getPrevExpr(joinImplement, calcType, propChanges));
             }
         }
 
-        if(calcType.isStatAlot() && explicitClasses != null && this instanceof AggregateProperty && !((AggregateProperty)this).hasAlotKeys() && getType() != null) {
+        if(calcType.isStatAlot() && explicitClasses != null && this instanceof AggregateProperty && !hasAlotKeys() && getType() != null) {
             assert SystemProperties.lightStart;
             assert !hasChanges(propChanges) && modify == null;
             return getVirtualTableExpr(joinImplement, AlgType.statAlotType); // тут собственно смысл в том чтобы класс брать из сигнатуры и не высчитывать
@@ -1347,8 +1359,21 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return getClassValueWhere(AlgType.storedType).remap(MapFact.addRevExcl(mapTable.mapKeys, "value", storedField)); //
     }
 
-    public Object read(ExecutionContext context) throws SQLException, SQLHandledException {
-        return read(context.getSession().sql, MapFact.EMPTY(), context.getModifier(), context.getQueryEnv());
+    public Pair<ObjectValue, Boolean> readClassesChanged(SQLSession session, ImMap<T, ObjectValue> keys, BaseClass baseClass, Modifier modifier, boolean hasChanges, QueryEnvironment env) throws SQLException, SQLHandledException {
+        String readValue = "readvalue"; String readChanged = "readChanged";
+        QueryBuilder<T, Object> readQuery = new QueryBuilder<>(SetFact.EMPTY());
+        WhereBuilder changedWhere = new WhereBuilder();
+        readQuery.addProperty(readValue, getExpr(ObjectValue.getMapExprs(keys), modifier, !hasChanges, changedWhere));
+        readQuery.addProperty(readChanged, ValueExpr.get(changedWhere.toWhere()));
+        ImMap<Object, ObjectValue> result = readQuery.executeClasses(session, env, baseClass).singleValue();
+        return new Pair<>(result.get(readValue), !result.get(readChanged).isNull());
+    }
+
+    public ObjectValue readClasses(SQLSession session, ImMap<T, Expr> keys, BaseClass baseClass, Modifier modifier, QueryEnvironment env) throws SQLException, SQLHandledException {
+        String readValue = "readvalue";
+        QueryBuilder<T, Object> readQuery = new QueryBuilder<>(SetFact.EMPTY());
+        readQuery.addProperty(readValue, getExpr(keys, modifier));
+        return readQuery.executeClasses(session, env, baseClass).singleValue().get(readValue);
     }
 
     public Object read(SQLSession session, ImMap<T, ? extends ObjectValue> keys, Modifier modifier, QueryEnvironment env) throws SQLException, SQLHandledException {
@@ -1383,23 +1408,6 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return readClasses(env.getSession(), MapFact.EMPTY(), env.getModifier(), env.getQueryEnv());
     }
 
-    public ObjectValue readClasses(SQLSession session, ImMap<T, Expr> keys, BaseClass baseClass, Modifier modifier, QueryEnvironment env) throws SQLException, SQLHandledException {
-        String readValue = "readvalue";
-        QueryBuilder<T, Object> readQuery = new QueryBuilder<>(SetFact.EMPTY());
-        readQuery.addProperty(readValue, getExpr(keys, modifier));
-        return readQuery.executeClasses(session, env, baseClass).singleValue().get(readValue);
-    }
-
-    public Pair<ObjectValue, Boolean> readClassesChanged(SQLSession session, ImMap<T, ObjectValue> keys, BaseClass baseClass, Modifier modifier, QueryEnvironment env) throws SQLException, SQLHandledException {
-        String readValue = "readvalue"; String readChanged = "readChanged";
-        QueryBuilder<T, Object> readQuery = new QueryBuilder<>(SetFact.EMPTY());
-        WhereBuilder changedWhere = new WhereBuilder();
-        readQuery.addProperty(readValue, getExpr(ObjectValue.getMapExprs(keys), modifier, changedWhere));
-        readQuery.addProperty(readChanged, ValueExpr.get(changedWhere.toWhere()));
-        ImMap<Object, ObjectValue> result = readQuery.executeClasses(session, env, baseClass).singleValue();
-        return new Pair<>(result.get(readValue), !result.get(readChanged).isNull());
-    }
-
     public Object read(ExecutionEnvironment env, ImMap<T, ? extends ObjectValue> keys) throws SQLException, SQLHandledException {
         return read(env.getSession().sql, keys, env.getModifier(), env.getQueryEnv());
     }
@@ -1426,12 +1434,12 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     // используется для оптимизации - если Stored то попытать использовать это значение
     protected abstract boolean useSimpleIncrement();
 
-    public PropertyChanges getUsedDataChanges(PropertyChanges propChanges) {
-        return propChanges.filter(getUsedDataChanges(propChanges.getStruct()));
+    public PropertyChanges getUsedDataChanges(PropertyChanges propChanges, CalcDataType type) {
+        return propChanges.filter(getUsedDataChanges(propChanges.getStruct(), type));
     }
 
-    public ImSet<Property> getUsedDataChanges(StructChanges propChanges) {
-        return calculateUsedDataChanges(propChanges);
+    public ImSet<Property> getUsedDataChanges(StructChanges propChanges, CalcDataType type) {
+        return calculateUsedDataChanges(propChanges, type);
     }
 
     public DataChanges getDataChanges(PropertyChange<T> change, Modifier modifier) throws SQLException, SQLHandledException {
@@ -1450,37 +1458,41 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
     protected DataChanges getPullDataChanges(PropertyChanges changes, boolean toNull) {
         ImRevMap<T, KeyExpr> mapKeys = getMapKeys();
-        return getDataChanges(new PropertyChange<>(mapKeys, toNull ? CaseExpr.NULL() : getChangeExpr(), CompareWhere.compare(mapKeys, getChangeExprs())), changes, null);
+        return getDataChanges(new PropertyChange<>(mapKeys, toNull ? CaseExpr.NULL() : getChangeExpr(), CompareWhere.compare(mapKeys, getChangeExprs())), CalcDataType.PULLEXPR, changes, null);
     }
 
-    public DataChanges getJoinDataChanges(ImMap<T, ? extends Expr> implementExprs, Expr expr, Where where, GroupType groupType, PropertyChanges propChanges, WhereBuilder changedWhere) {
+    public DataChanges getJoinDataChanges(ImMap<T, ? extends Expr> implementExprs, Expr expr, Where where, GroupType groupType, PropertyChanges propChanges, CalcDataType type, WhereBuilder changedWhere) {
         ImRevMap<T, KeyExpr> mapKeys = getMapKeys();
         WhereBuilder changedImplementWhere = cascadeWhere(changedWhere);
         DataChanges result = getDataChanges(new PropertyChange<>(mapKeys,
                 GroupExpr.create(implementExprs, expr, where, groupType, mapKeys),
                 GroupExpr.create(implementExprs, where, mapKeys).getWhere()),
-                propChanges, changedImplementWhere);
+                type, propChanges, changedImplementWhere);
         if (changedWhere != null)
             changedWhere.add(new Query<>(mapKeys, changedImplementWhere.toWhere()).join(implementExprs).getWhere());// нужно перемаппить назад
         return result;
     }
 
+    public DataChanges getDataChanges(PropertyChange<T> change, PropertyChanges propChanges, WhereBuilder changedWhere) {
+        return getDataChanges(change, CalcDataType.EXPR, propChanges, changedWhere);
+    }
+
     @StackMessage("{message.core.property.data.changes}")
     @PackComplex
     @ThisMessage
-    public DataChanges getDataChanges(PropertyChange<T> change, PropertyChanges propChanges, WhereBuilder changedWhere) {
+    public DataChanges getDataChanges(PropertyChange<T> change, CalcDataType type, PropertyChanges propChanges, WhereBuilder changedWhere) {
         if (change.where.isFalse()) // оптимизация
             return DataChanges.EMPTY;
 
-        return calculateDataChanges(change, changedWhere, propChanges);
+        return calculateDataChanges(change, type, changedWhere, propChanges);
     }
 
-    protected ImSet<Property> calculateUsedDataChanges(StructChanges propChanges) {
+    protected ImSet<Property> calculateUsedDataChanges(StructChanges propChanges, CalcDataType type) {
         return SetFact.EMPTY();
     }
 
     // для оболочки чтобы всем getDataChanges можно было бы timeChanges вставить
-    protected DataChanges calculateDataChanges(PropertyChange<T> change, WhereBuilder changedWhere, PropertyChanges propChanges) {
+    protected DataChanges calculateDataChanges(PropertyChange<T> change, CalcDataType type, WhereBuilder changedWhere, PropertyChanges propChanges) {
         return DataChanges.EMPTY;
     }
 
@@ -1517,7 +1529,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
 
     public void setNotNull(ImMap<T, DataObject> values, ExecutionEnvironment env, ExecutionStack stack, boolean notNull, boolean check) throws SQLException, SQLHandledException {
-        if(!check || (read(env.getSession().sql, values, env.getModifier(), env.getQueryEnv())!=null) != notNull) {
+        if(!check || (read(env, values)!=null) != notNull) {
             ActionMapImplement<?, T> action = getSetNotNullAction(notNull);
             if(action!=null)
                 action.execute(new ExecutionContext<>(values, env, stack));
@@ -1556,6 +1568,10 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return new PropertyMapImplement<>(this, getIdentityInterfaces());
     }
 
+    public <V> PropertyImplement<T, V> getSingleImplement(V map) {
+        return new PropertyImplement<T, V>(this, MapFact.singleton(interfaces.single(), map));
+    }
+
     public <V extends PropertyInterface> PropertyMapImplement<T, V> getImplement(ImOrderSet<V> list) {
         return new PropertyMapImplement<>(this, getMapInterfaces(list));
     }
@@ -1564,10 +1580,6 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return new PropertyMapImplement<>(this, mapping);
     }
 
-    // важно для подсветки
-    public boolean canBeChanged() { // предполагается что все сверху кэшируется
-        return canBeChanged(false);
-    }
     @IdentityLazy
     public boolean canBeGlobalChanged() { // есть не Local'ы changed
         return canBeChanged(true);
@@ -1600,110 +1612,55 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         }
     }
 
-    private <X extends PropertyInterface> ActionMapImplement<?, T> createJoinAction(LA<X> action, PropertyMapImplement<?, T> implement) {
-        return PropertyFact.createJoinAction(new ActionImplement<>(action.action, MapFact.singleton(action.listInterfaces.single(), implement)));
+    public static boolean isDefaultWYSInput(ValueClass valueClass) {
+        return valueClass instanceof StringClass;
     }
-    private <X extends PropertyInterface> ActionMapImplement<?, T> createJoinAction(LA<X> action) {
-        return createJoinAction(action, getImplement());
-    }
-    private <X extends PropertyInterface> ActionMapImplement<?, T> getDefaultEditObjectAction(BaseLogicsModule lm) {
-        // formEdit(property(...))
-        return createJoinAction(lm.getNewSessionFormEdit());
-    }
-    private <X extends PropertyInterface> ActionMapImplement<?, T> getDefaultAsyncUpdateAction(BaseLogicsModule lm, ImList<Property> viewProperties, PropertyMapImplement<?, T> resultValue) {
-        for(int i=viewProperties.size()-1;i>=0;i--) {
-            Property<X> viewProperty = viewProperties.get(i);
-            resultValue = PropertyFact.createJoin(new PropertyImplement<>(viewProperty, MapFact.singleton(viewProperty.interfaces.single(), resultValue)));
-        }
-        // IF NOT requestCanceled() ASYNCUPDATE requestedProperty(...)
-        return PropertyFact.createIfAction(SetFact.EMPTY(), PropertyFact.createNot(lm.getRequestCanceledProperty().getImplement()),
-                                                    createJoinAction(lm.addAsyncUpdateAProp(), resultValue), null);
-    }    
-    private <X extends PropertyInterface> Pair<ActionMapImplement<?, T>, PropertyMapImplement<?, T>> getDefaultMainInputAction(BaseLogicsModule lm) {
-        ValueClass valueClass = getValueClass(ClassType.editValuePolicy);
-        Property targetProp = lm.getRequestedValueProperty(valueClass);
-
-        ActionMapImplement<?, T> action;
-        if(valueClass instanceof CustomClass) {
-            // DIALOG LIST valueCLass INPUT object=property(...) CONSTRAINTFILTER
-            CustomClass customClass = (CustomClass) valueClass;
-            
-            // selectors could be used, but since this method is used after logics initialization, getting form, check properties here is more effective
-            ClassFormEntity dialogForm = customClass.getDialogForm(lm);
-            ImOrderSet<ConstraintCheckChangeProperty<?, T>> checkProperties = getCheckProperties();
-            if(checkProperties.isEmpty()) { // optimization
-                action = createJoinAction(lm.addInputAProp(dialogForm.form, dialogForm.object, targetProp));
-            } else {
-                LP<T> lp = new LP<>(this);
-                action = ((LA<X>) lm.addContextInputAProp(dialogForm.form, dialogForm.object, targetProp, lp, checkProperties)).getImplement(lp.listInterfaces);
-            }    
-        } else
-            // INPUT valueCLass
-            action = lm.addInputAProp((DataClass) valueClass, targetProp, false).action.getImplement();
-
-        return new Pair<>(action, targetProp.getImplement()); 
-    }
-    private Pair<ActionMapImplement<?, T>, PropertyMapImplement<?, T>> getDefaultInputAction(BaseLogicsModule lm, ImList<Property> viewProperies) {
-        MList<ActionMapImplement<?, T>> mList = ListFact.mList();
-
-        // adaptive canBeChanged, to provide better ergonomics for abstracts
-        mList.add(PropertyFact.createCheckCanBeChangedAction(interfaces, getImplement()));
-
-        // main input
-        Pair<ActionMapImplement<?, T>, PropertyMapImplement<?, T>> input = getDefaultMainInputAction(lm);
-        mList.add(input.first);
-
-        // we need to update edited value to provide WYSIWYG
-        if(!viewProperies.isEmpty())
-            mList.add(getDefaultAsyncUpdateAction(lm, viewProperies, input.second));
-
-        ActionMapImplement<?, T> exInputAction = PropertyFact.createListAction(interfaces, mList.immutableList());
-        return new Pair<>(exInputAction, input.second);
-    }
-
+    
     @IdentityStrongLazy // STRONG for using in security policy
-    public ActionMapImplement<?, T> getDefaultEventAction(String eventActionSID, ImList<Property> viewProperties) {
+    public ActionMapImplement<?, T> getDefaultEventAction(String eventActionSID, FormSessionScope defaultChangeEventScope, ImList<Property> viewProperties) {
 //        ImMap<T, ValueClass> interfaceClasses = getInterfaceClasses(ClassType.tryEditPolicy); // так как в определении propertyDraw также используется FULL, а не ASSERTFULL
 //        if(interfaceClasses.size() < interfaces.size()) // не все классы есть
 //            return null;
-
-        if(eventActionSID.equals(ServerResponse.CHANGE_WYS)) // like GROUP_CHANGE will be proceeded in PropertyDrawEntity
-            return null;
 
         BaseLogicsModule lm = getBaseLM();
 
         if(eventActionSID.equals(ServerResponse.EDIT_OBJECT)) {
             ValueClass editClass = getValueClass(ClassType.tryEditPolicy);
-            LA defaultOpenAction = editClass != null ? editClass.getDefaultOpenAction(getBusinessLogics()) : null;
-            return defaultOpenAction != null ? createJoinAction(defaultOpenAction) : null;
+            LA<?> defaultOpenAction = editClass != null ? editClass.getDefaultOpenAction(lm) : null;
+            return defaultOpenAction != null ? PropertyFact.createJoinAction(defaultOpenAction.action, getImplement()) : null;
         }
 
-        if (!canBeChanged()) // optimization
-            return null;
-        
-        Pair<ActionMapImplement<?, T>, PropertyMapImplement<?, T>> input = getDefaultInputAction(lm, viewProperties);
-        return PropertyFact.createRequestAction(interfaces, input.first, 
-                                PropertyFact.createSetAction(interfaces, getImplement(), input.second), null); // INPUT scripted input generates FOR, but now it's not important
-    }
+        assert eventActionSID.equals(ServerResponse.CHANGE);
 
-    @Override
-    @IdentityStrongLazy // STRONG for using in security policy
-    public ActionMapImplement<?, T> getDefaultWYSAction() {
-        ImMap<T, ValueClass> interfaceClasses = getInterfaceClasses(ClassType.tryEditPolicy); // because in property draw definition also FULL is used (and not ASSERTFULL)
-        if(interfaceClasses.size() < interfaces.size()) // we don't have all classes
+        if (!canBeChanged(false)) // optimization
             return null;
 
-        ValueClass valueClass = getValueClass(ClassType.tryEditPolicy);
-        if (!(valueClass instanceof CustomClass))
-            return null;
+        ValueClass valueClass = getValueClass(ClassType.editValuePolicy);
 
-        if (!canBeChanged())
-            return null;
+        LP targetProp = lm.getRequestedValueProperty(valueClass);
 
-        ImOrderSet<T> listInterfaces = interfaceClasses.keys().toOrderSet();
-        ImList<ValueClass> listValues = listInterfaces.mapList(interfaceClasses);
-        DefaultWYSObjectAction<T> changeAction = new DefaultWYSObjectAction<>(LocalizedString.NONAME, this, listInterfaces, listValues, (CustomClass) valueClass);
-        return changeAction.getImplement(listInterfaces);
+        ActionMapImplement<?, T> action;
+        if(valueClass instanceof CustomClass) {
+            InputListEntity<?, T> list = !viewProperties.isEmpty() ? new InputListEntity<>(PropertyFact.createViewProperty(viewProperties).property, MapFact.EMPTYREV()) : null;
+
+            // DIALOG LIST valueCLass INPUT object=property(...) CONSTRAINTFILTER
+            LP<T> lp = new LP<>(this);
+            ImOrderSet<T> orderInterfaces = lp.listInterfaces; // actually we don't need all interfaces in dialog input action itself (only used one in checkfilters), but for now it doesn't matter
+
+            // selectors could be used, but since this method is used after logics initialization, getting form, check properties here is more effective
+            LA<?> inputAction = lm.addDialogInputAProp((CustomClass) valueClass, targetProp, BaseUtils.nvl(defaultChangeEventScope, PropertyDrawEntity.DEFAULT_CUSTOMCHANGE_EVENTSCOPE), orderInterfaces, list, MapFact.EMPTYREV(), objectEntity -> getCheckFilters(objectEntity));
+
+            action = ((LA<?>) lm.addJoinAProp(inputAction, BaseUtils.add(directLI(lp), getUParams(orderInterfaces.size())))).getImplement(orderInterfaces);
+        } else {
+            // INPUT valueCLass
+            action = lm.addInputAProp((DataClass) valueClass, targetProp, false, SetFact.EMPTYORDER(),
+                    isDefaultWYSInput(valueClass) ? new InputListEntity<>(this, MapFact.EMPTYREV()) : null, BaseUtils.nvl(defaultChangeEventScope, PropertyDrawEntity.DEFAULT_DATACHANGE_EVENTSCOPE), null, ListFact.EMPTY()).getImplement();
+        }
+
+        return PropertyFact.createRequestAction(interfaces,
+                            // adaptive canBeChanged, to provide better ergonomics for abstracts
+                            PropertyFact.createListAction(interfaces, PropertyFact.createCheckCanBeChangedAction(interfaces, getImplement()), action),
+                                PropertyFact.createSetAction(interfaces, getImplement(), targetProp.getImplement()), null); // INPUT scripted input generates FOR, but now it's not important
     }
 
     public boolean setNotNull;
@@ -1902,7 +1859,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
             Expr newExpr = query.getExpr("value");
             fullQuery.addProperty("value", newExpr);
             
-            Expr dbExpr = getExpr(fullQuery.getMapExprs());
+            Expr dbExpr = getPrevExpr(fullQuery.getMapExprs(), calcType, propChanges);
             Where fullWhere = newExpr.getWhere().or(dbExpr.getWhere());
             if(!DBManager.PROPERTY_REUPDATE && isStored())
                 fullWhere = fullWhere.and(newExpr.compare(dbExpr, Compare.EQUALS).not());            
@@ -1948,8 +1905,17 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return aspectGetExpr(joinImplement, calcType, propChanges, changedWhere);
     }
 
+    protected PropertyChanges getPrevPropChanges(PropertyChanges propChanges) {
+        return getPrevPropChanges(CalcType.EXPR, propChanges);
+    }
+    protected PropertyChanges getPrevPropChanges(CalcType calcType, PropertyChanges propChanges) {
+        return PropertyChanges.PREVEXPR(calcType, propChanges);
+    }
+    public Expr getPrevExpr(ImMap<T, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges) {
+        return getExpr(joinImplement, calcType, getPrevPropChanges(calcType, propChanges), null);
+    }
     public Expr getExpr(ImMap<T, ? extends Expr> joinImplement) {
-        return getExpr(joinImplement, PropertyChanges.EMPTY);
+        return getExpr(joinImplement, CalcType.EXPR);
     }
     public Expr getExpr(ImMap<T, ? extends Expr> joinImplement, CalcType calcType) {
         return getExpr(joinImplement, calcType, PropertyChanges.EMPTY, null);
@@ -1958,7 +1924,13 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return getExpr(joinImplement, modifier, null);
     }
     public Expr getExpr(ImMap<T, ? extends Expr> joinImplement, Modifier modifier, WhereBuilder changedWhere) throws SQLException, SQLHandledException {
-        return getExpr(joinImplement, modifier.getPropertyChanges(), changedWhere);
+        return getExpr(joinImplement, modifier, false, changedWhere);
+    }
+    public Expr getExpr(ImMap<T, ? extends Expr> joinImplement, Modifier modifier, boolean prevChanges, WhereBuilder changedWhere) throws SQLException, SQLHandledException {
+        PropertyChanges propertyChanges = modifier.getPropertyChanges();
+        if(prevChanges)
+            propertyChanges = propertyChanges.getPrev();
+        return getExpr(joinImplement, propertyChanges, changedWhere);
     }
     public Expr getExpr(ImMap<T, ? extends Expr> joinImplement, PropertyChanges propChanges) {
         return getExpr(joinImplement, propChanges, null);
@@ -2098,20 +2070,43 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
             // по идее эта проверка не нужна, так как при кидании hint'а есть проверка на changed.getFullStatKeys().less значения, но там есть проблема с интервалами так как x<=a<=b вернет маленькую статистику, и пропустит такой хинт, после чего возникнет висячий ключ
             // вообще правильнее либо statType специальный сделать, либо поддержку интервалов при компиляции (хотя с double'ами все равно будет проблема)
             // этот фикс решит проблему в большинстве случаев (кроме когда в свойсте явный интервал, что очень редко имеет смысл)
-            if(this instanceof AggregateProperty && ((AggregateProperty)this).hasAlotKeys()) 
+            if(hasAlotKeys())
                 return false;
         }
 
         return true;
     }
-    
+
     @IdentityStartLazy
-    public long getComplexity() {
+    public Long getComplexity(boolean simple) {
+        if(simple)
+            AutoHintsAspect.pushDisabledComplex();
         try {
-            return getExpr(getMapKeys(), defaultModifier).getComplexity(false);
+            Expr expr = getExpr(getMapKeys(), defaultModifier);
+            if(simple && expr == null)
+                return null;
+            return expr.getComplexity(false);
         } catch (SQLException | SQLHandledException e) {
             throw Throwables.propagate(e);
+        } finally {
+            if(simple)
+                AutoHintsAspect.popDisabledComplex();
         }
+    }
+
+    public long getSimpleComplexity() {
+        Long complexity = getComplexity(true);
+        if(complexity == null)
+            return Settings.get().getLimitHintComplexComplexity();
+        return complexity;
+    }
+
+    public long getComplexity() {
+        Long complexity = getComplexity(true);
+        if(complexity != null)
+            return complexity;
+
+        return getComplexity(false);
     }
 
     public void recalculateClasses(SQLSession sql, BaseClass baseClass) throws SQLException, SQLHandledException {
@@ -2197,16 +2192,17 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return SetFact.EMPTY();
     }
     
-    protected boolean checkRecursions(ImSet<CaseUnionProperty> abstractPath, ImSet<Property> path, Set<Property> marks) {
+    public boolean checkRecursions(ImSet<CaseUnionProperty> abstractPath, ImSet<Property> path, Set<Property> marks) {
         if(path != null)
             path = path.addExcl(this);
         else {
             if(!marks.add(this))
                 return false;
         }
-        for(Property depend : getDepends())
-            if(depend.checkRecursions(abstractPath, path, marks))
-                return true;
+        return calculateCheckRecursions(abstractPath, path, marks);
+    }
+
+    public boolean calculateCheckRecursions(ImSet<CaseUnionProperty> abstractPath, ImSet<Property> path, Set<Property> marks) {
         return false;
     }
 
@@ -2218,5 +2214,110 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
             return (ApplyStoredEvent)event;
         }
         return null;
+    }
+    
+    public Stat getInterfaceStat() {
+        return getInterfaceStat(false);
+    }
+
+    private static <T> Stat getStatRows(ImRevMap<T, KeyExpr> mapKeys, Where where) {
+        return where.getFullStatKeys(mapKeys.valuesSet(), StatType.PROP_STATS).getRows();
+    }
+
+    private Stat getInterfaceStat(boolean alotHeur) {
+        return getInterfaceStat(MapFact.EMPTYREV(), alotHeur);
+    }
+    
+    private Stat getInterfaceStat(ImRevMap<T, StaticParamNullableExpr> fixedExprs) {
+        return getInterfaceStat(fixedExprs, false);
+    }
+
+    @IdentityStartLazy
+    @StackMessage("{message.core.property.get.interface.class.stats}")
+    @ThisMessage
+    private Stat getInterfaceStat(ImRevMap<T, StaticParamNullableExpr> fixedExprs, boolean alotHeur) {
+        ImRevMap<T, KeyExpr> innerKeys = KeyExpr.getMapKeys(interfaces.removeIncl(fixedExprs.keys()));
+        ImMap<T, Expr> innerExprs = MapFact.addExcl(innerKeys, fixedExprs); // we need some virtual values
+
+        // we don't need to fight with inconsistent caches, since now finalizeProps goes after initStoredTask (because now there is a dependency finalizeProps -> initIndices to avoid problems with getIndices cache)
+        // however it seems that STAT_ALOT is needed to lower complexity in light start mode 
+        Expr expr = alotHeur ? calculateExpr(innerExprs, CalcType.STAT_ALOT, PropertyChanges.EMPTY, null) : getExpr(innerExprs); // check if is called after stats if filled
+//        Expr expr = calculateStatExpr(mapKeys, alotHeur);
+
+        Where where = expr.getWhere();
+
+        innerKeys = innerKeys.filterInclValuesRev(BaseUtils.immutableCast(where.getOuterKeys())); // ignoring "free" keys (having free keys breaks a lot of assertions in statistic calculations)
+        return getStatRows(innerKeys, where);
+    }
+
+    @IdentityStartLazy
+    @StackMessage("{message.core.property.get.interface.class.stats}")
+    @ThisMessage
+    public Stat getValueStat(ImRevMap<T, ? extends Expr> fixedExprs) {
+        ImRevMap<T, KeyExpr> innerKeys = KeyExpr.getMapKeys(interfaces.removeIncl(fixedExprs.keys()));
+        ImMap<T, Expr> innerExprs = MapFact.addExcl(innerKeys, fixedExprs); // we need some virtual values
+
+        Expr expr = getExpr(innerExprs); // check if is called after stats if filled
+//        Expr expr = calculateStatExpr(innerExprs, false);
+
+        ImRevMap<Integer, KeyExpr> mapKeys = KeyExpr.getMapKeys(SetFact.singleton(0));
+        Where where = GroupExpr.create(MapFact.singleton(0, expr), Where.TRUE(), mapKeys).getWhere();
+
+        mapKeys = mapKeys.filterInclValuesRev(BaseUtils.immutableCast(where.getOuterKeys())); // ignoring "free" keys just like in getInterfaceStat (needed because where for example can be FALSE)
+        return getStatRows(mapKeys, where);
+    }
+
+    protected ImRevMap<T, NullableKeyExpr> getMapNotNullKeys() {
+        return interfaces.mapRevValues((i, value) -> new NullableKeyExpr(i));
+    }
+
+    @IdentityLazy
+    public Stat getDistinctStat(ImSet<T> interfaces) {
+        // maybe later it makes sense to fill params without classes with some "default" classes
+        ImMap<T, ValueClass> interfaceClasses = getInterfaceClasses(ClassType.forPolicy).filter(interfaces);
+        ImRevMap<T, StaticParamNullableExpr> paramExprs = interfaceClasses.mapRevValues(StaticParamNullableExpr::new);
+        return getInterfaceStat(paramExprs).div(getValueStat(paramExprs));
+    }
+
+    // it's heuristics anyway, so why not to try to guess uniqueness by name
+    private static ImSet<String> predefinedValueUniqueNames = SetFact.toSet("name", "id", "number");
+    public boolean isValueUnique(ImRevMap<T, StaticParamNullableExpr> fixedExprs) {
+        assert isValueFull(fixedExprs);
+        String name = getName();
+        return ((name != null && predefinedValueUniqueNames.contains(name)) || isValueUnique(getInterfaceStat(fixedExprs), getValueStat(fixedExprs))); // getClassProperty().property.getInterfaceStat()
+    }
+
+    public boolean isValueFull(ImRevMap<T, StaticParamNullableExpr> fixedExprs) {
+        return isFull(interfaces.removeIncl(fixedExprs.keys()), AlgType.statAlotType);
+    }
+
+    public InputListEntity<?, T> getFilterInputList(ImRevMap<T, StaticParamNullableExpr> fixedExprs) {
+        if(isValueFull(fixedExprs))
+            return new InputListEntity<>(this, fixedExprs.keys().toRevMap());
+        return null;
+    }
+
+    public boolean hasAlotKeys() {
+//        if(1==1) return false;
+        if(SystemProperties.lightStart) {
+            if (!isFull(AlgType.statAlotType))
+                return true;
+            if (isStored())
+                return false;
+            return aspectDebugHasAlotKeys();
+        }
+        return hasAlotKeys(getInterfaceStat());
+    }
+
+    protected boolean aspectDebugHasAlotKeys() {
+        return hasAlotKeys(getInterfaceStat(true));
+    }
+
+    private final static Stat ALOT_THRESHOLD = Stat.ALOT.reduce(2); // ALOT stat can be reduced a little bit, but there still will be ALOT keys, so will take sqrt
+    private static boolean hasAlotKeys(Stat stat) {
+        return ALOT_THRESHOLD.lessEquals(stat);
+    }
+    protected static boolean isValueUnique(Stat rowStat, Stat valueStat) {
+        return !valueStat.less(rowStat);
     }
 }

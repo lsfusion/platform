@@ -22,6 +22,10 @@ public class ExceptionUtils {
         return result;
     }
 
+    public static String getPlainStackTrace() {
+        return getStackTrace().replace('\n', '\t');
+    }
+
     public static String getStackTrace() {
         return getStackTrace(new Exception());
     }

@@ -21,6 +21,7 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.action.session.DataSession;
+import lsfusion.server.logics.action.session.change.PropertyChange;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.action.session.table.SessionTableUsage;
 import lsfusion.server.logics.classes.user.BaseClass;
@@ -202,9 +203,10 @@ public abstract class StaticDataGenerator<SDP extends PropertyReaderEntity> {
             Modifier modifier = formInterface.getModifier();
             
             // adding filters, orders and properties for parent groups
+            Where queryWhere = Where.TRUE();
             if (parentTable != null) {
                 Join<CompareEntity> parentJoin = parentTable.join(mapExprs);
-                queryBuilder.and(parentJoin.getWhere());
+                queryWhere = queryWhere.and(parentJoin.getWhere());
                 for (CompareEntity order : parentOrders.keyIt())
                     queryBuilder.addProperty(order, parentJoin.getExpr(order));
             }
@@ -212,14 +214,22 @@ public abstract class StaticDataGenerator<SDP extends PropertyReaderEntity> {
             // adding objects for value groups 
             mapExprs = addObjectValues(valueGroups, mapExprs); // strictly speaking for current InteractiveDataInterface filters / orders implementation there's no need to add this exprs
 
+            // getting "value exprs" for filters
+            mapExprs = PropertyChange.simplifyExprs(mapExprs, queryWhere);
+
             // adding filters, orders for this group
-            queryBuilder.and(getWhere(thisGroups.getSet(), valueGroups, mapExprs));
+            queryWhere = queryWhere.and(getWhere(thisGroups.getSet(), valueGroups, mapExprs));
+
+            // getting "value exprs" for orders
+            mapExprs = PropertyChange.simplifyExprs(mapExprs, queryWhere);
+
             ImOrderMap<CompareEntity, Boolean> thisOrders = getOrders(thisGroups, valueGroups);
             for (CompareEntity order : thisOrders.keyIt())
                 queryBuilder.addProperty(order, order.getEntityExpr(mapExprs, modifier));
 
             ImOrderMap<CompareEntity, Boolean> allOrders = parentOrders.addOrderExcl(thisOrders);
 
+            queryBuilder.and(queryWhere);
             final Query<ObjectEntity, CompareEntity> query = queryBuilder.getQuery();
 
             // reading types
@@ -269,15 +279,19 @@ public abstract class StaticDataGenerator<SDP extends PropertyReaderEntity> {
                     QueryBuilder<ObjectEntity, SDP> propQueryBuilder = new QueryBuilder<>(objects);
                     ImMap<ObjectEntity, Expr> mapPropExprs = propQueryBuilder.getMapExprs();
 
-                    propQueryBuilder.and(keysTable.getGroupWhere(mapPropExprs));
+                    queryWhere = keysTable.getGroupWhere(mapPropExprs);
+
+                    // getting "value exprs" for properties
+                    mapPropExprs = PropertyChange.simplifyExprs(mapPropExprs, queryWhere);
 
                     // adding objects for value groups
                     mapPropExprs = addObjectValues(valueGroups, mapPropExprs);
-                    
+
                     // adding properties
                     for (SDP queryProp : props)
                         propQueryBuilder.addProperty(queryProp, queryProp.getPropertyObjectEntity().getExpr(mapPropExprs, modifier));
 
+                    propQueryBuilder.and(queryWhere);
                     Query<ObjectEntity, SDP> propQuery = propQueryBuilder.getQuery();
                     final ImOrderMap<ImMap<ObjectEntity, Object>, ImMap<SDP, Object>> propData = propQuery.execute(sql, formInterface.getQueryEnv());
 

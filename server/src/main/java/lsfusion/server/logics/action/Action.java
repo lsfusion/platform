@@ -36,10 +36,14 @@ import lsfusion.server.logics.action.session.changed.ChangedProperty;
 import lsfusion.server.logics.action.session.changed.OldProperty;
 import lsfusion.server.logics.action.session.changed.SessionProperty;
 import lsfusion.server.logics.classes.ValueClass;
-import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.event.*;
+import lsfusion.server.logics.form.interactive.action.async.AsyncExec;
+import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
+import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapExec;
+import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapRemove;
+import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.interactive.instance.FormEnvironment;
 import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
@@ -50,7 +54,6 @@ import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
-import lsfusion.server.logics.form.struct.property.async.AsyncExec;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.classes.IsClassProperty;
@@ -500,44 +503,74 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
     }
 
     @Override
-    public ActionMapImplement<?, P> getDefaultEventAction(String eventActionSID, ImList<Property> viewProperties) {
-        if(eventActionSID.equals(ServerResponse.CHANGE_WYS) || eventActionSID.equals(ServerResponse.EDIT_OBJECT))
+    public ActionMapImplement<?, P> getDefaultEventAction(String eventActionSID, FormSessionScope defaultChangeEventScope, ImList<Property> viewProperties) {
+        if(eventActionSID.equals(ServerResponse.EDIT_OBJECT))
             return null;
-        return getImplement();
+        return PropertyFact.createSessionScopeAction(BaseUtils.nvl(defaultChangeEventScope, PropertyDrawEntity.DEFAULT_ACTION_EVENTSCOPE), interfaces, getImplement(), SetFact.EMPTY());
     }
 
-    /**
-     * возвращает тип для "простого" редактирования, когда этот action используется в качестве действия для редактирования </br>
-     * assert, что тип будет DataClass, т.к. для остальных такое редактирование невозможно...
-     * @param optimistic - если true, то если для некоторых случаев нельзя вывести тип, то эти случае будут игнорироваться
-     */
-    public Type getSimpleRequestInputType(boolean optimistic) {
-        return getSimpleRequestInputType(optimistic, false);
+    private AsyncMapEventExec<P> forceAsyncEventExec;
+
+    public void setSimpleDelete() {
+        this.forceAsyncEventExec = new AsyncMapRemove<>(interfaces.single());
     }
-    // по сути protected (recursive usage)
-    public Type getSimpleRequestInputType(boolean optimistic, boolean inRequest) {
+
+    public AsyncMapEventExec<P> getAsyncEventExec(boolean optimistic) {
+        return getAsyncEventExec(optimistic, false);
+    }
+    @IdentityInstanceLazy
+    public AsyncMapEventExec<P> getAsyncEventExec(boolean optimistic, boolean recursive) {
+        if(forceAsyncEventExec != null)
+            return forceAsyncEventExec;
+
+        return calculateAsyncEventExec(optimistic, recursive);
+    }
+    protected AsyncMapEventExec<P> calculateAsyncEventExec(boolean optimistic, boolean recursive) {
         return null;
     }
 
-    // по аналогии с верхним, assert что !hasChildren
-    public CustomClass getSimpleAdd() {
-        return null;
+    protected static <X extends PropertyInterface> AsyncMapEventExec<X> getBranchAsyncEventExec(ImList<ActionMapImplement<?, X>> actions, boolean optimistic, boolean recursive) {
+        return getFlowAsyncEventExec(actions, optimistic, recursive);
+    }
+    protected static <X extends PropertyInterface> AsyncMapEventExec<X> getListAsyncEventExec(ImList<ActionMapImplement<?, X>> actions, boolean recursive) {
+        return getFlowAsyncEventExec(actions, true, recursive);
+    }
+    private static <X extends PropertyInterface> AsyncMapEventExec<X> getFlowAsyncEventExec(ImList<ActionMapImplement<?, X>> actions, boolean optimistic, boolean recursive) {
+        AsyncMapEventExec<X> asyncExec = null;
+        int nonAsync = 0;
+        int nonRecursive = 0;
+        for (ActionMapImplement<?, X> action : actions) {
+            if(action != null) {
+                AsyncMapEventExec<X> asyncActionExec = action.mapAsyncEventExec(optimistic, recursive);
+                if (asyncActionExec != null) {
+                    if(asyncActionExec != AsyncMapExec.RECURSIVE())
+                        nonRecursive++;
+
+                    if (asyncExec == null || asyncExec == AsyncMapExec.RECURSIVE()) {
+                        asyncExec = asyncActionExec;
+                    } else {
+                        if(asyncActionExec != AsyncMapExec.RECURSIVE()) {
+                            asyncExec = asyncExec.merge(asyncActionExec);
+                            if (asyncExec == null)
+                                return null;
+                        }
+                    }
+                } else
+                    nonAsync++;
+            }
+        }
+
+        if(!optimistic && nonAsync >= nonRecursive)
+            return null;
+
+        return asyncExec;
     }
 
-    private boolean isSimpleDelete;
-    
-    public void setSimpleDelete(boolean isSimpleDelete) {
-        assert interfaces.size() == 1;
-        this.isSimpleDelete = isSimpleDelete;
-    }
-
-    public P getSimpleDelete() {
-        if(isSimpleDelete)
-            return interfaces.single();
-        return null;
-    }
-
+    // for navigator / input
     public AsyncExec getAsyncExec() {
+        AsyncMapEventExec<?> asyncExec = getAsyncEventExec(false);
+        if(asyncExec instanceof AsyncMapExec)
+            return ((AsyncMapExec<?>) asyncExec).map();
         return null;
     }
 

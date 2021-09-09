@@ -3,11 +3,14 @@ package lsfusion.gwt.client.form.object.panel.controller;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
+import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.view.FlexPanel;
+import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.panel.view.ActionOrPropertyValueController;
 import lsfusion.gwt.client.form.property.panel.view.ActionPanelRenderer;
 import lsfusion.gwt.client.form.property.panel.view.PanelRenderer;
 
@@ -15,7 +18,7 @@ import java.util.ArrayList;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.isShowing;
 
-public class GPropertyPanelController {
+public class GPropertyPanelController implements ActionOrPropertyValueController {
     private boolean columnsUpdated = true;
 
     public GPropertyDraw property;
@@ -24,7 +27,7 @@ public class GPropertyPanelController {
 
     public NativeHashMap<GGroupObjectValue, PanelRenderer> renderers;
 
-    public FlexPanel renderersPanel;
+    public Panel renderersPanel;
 
     private ArrayList<GGroupObjectValue> columnKeys;
     // it doesn't make sense to make this maps Native since they come from server and are built anyway
@@ -42,7 +45,20 @@ public class GPropertyPanelController {
         this.form = form;
         renderers = new NativeHashMap<>();
 
-        renderersPanel = new FlexPanel(property.panelColumnVertical);
+        renderersPanel = new Panel(property.panelColumnVertical); // needed for groups-to-columns
+    }
+
+    public interface CaptionContainer {
+        void put(Widget captionWidget, Pair<Integer, Integer> valueSizes, GFlexAlignment alignment);
+    }
+
+    public static class Panel extends FlexPanel {
+
+        public Panel(boolean vertical) {
+            super(vertical);
+        }
+
+        public CaptionContainer captionContainer;
     }
 
     public Widget getView() {
@@ -62,7 +78,7 @@ public class GPropertyPanelController {
                             renderersPanel.add(GwtClientUtils.createHorizontalStrut(4));
                         }
                         
-                        PanelRenderer newRenderer = property.createPanelRenderer(form, columnKey);
+                        PanelRenderer newRenderer = property.createPanelRenderer(form, this, columnKey, renderersPanel.captionContainer);
                         newRenderer.setReadOnly(property.isReadOnly());
                         Widget component = newRenderer.getComponent();
                         if(!property.hide) {
@@ -137,6 +153,11 @@ public class GPropertyPanelController {
             return true;
         }
         return false;
+    }
+
+    @Override
+    public void setValue(GGroupObjectValue columnKey, Object value) {
+        values.put(columnKey, value);
     }
 
     public void setPropertyValues(NativeHashMap<GGroupObjectValue, Object> valueMap, boolean updateKeys) {

@@ -4,6 +4,7 @@ import com.google.gwt.i18n.client.DateTimeFormat;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.async.GInputList;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.classes.GTimeDTO;
 import lsfusion.gwt.client.form.property.cell.classes.controller.TimeCellEditor;
@@ -32,7 +33,7 @@ public class GTimeType extends GFormatType<DateTimeFormat> {
     }
 
     @Override
-    public CellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
+    public CellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList) {
         return new TimeCellEditor(editManager, editProperty);
     }
 

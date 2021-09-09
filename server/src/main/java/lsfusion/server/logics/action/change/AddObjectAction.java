@@ -25,6 +25,8 @@ import lsfusion.server.logics.classes.user.AbstractCustomClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.ObjectClass;
+import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapAdd;
+import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.data.DataProperty;
@@ -70,7 +72,9 @@ public class AddObjectAction<T extends PropertyInterface, I extends PropertyInte
 
         assert where==null || result==null || innerInterfaces.containsAll(where.mapping.valuesSet().merge(result.mapping.valuesSet()));
     }
-    
+
+    // not sure that we gonna support this branch
+    @Deprecated
     protected boolean needDialog() {
         return valueClass instanceof AbstractCustomClass;  // || (forceDialog && valueClass.hasChildren())
     }
@@ -111,9 +115,9 @@ public class AddObjectAction<T extends PropertyInterface, I extends PropertyInte
     }
 
     @Override
-    public CustomClass getSimpleAdd() {
+    public AsyncMapEventExec<PropertyInterface> calculateAsyncEventExec(boolean optimistic, boolean recursive) {
         if(where==null && !needDialog())
-            return valueClass;
+            return new AsyncMapAdd<>(valueClass);
         return null;
     }
 

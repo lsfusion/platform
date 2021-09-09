@@ -30,6 +30,7 @@ public class ConfirmAction extends MessageAction {
         
         this.yesNo = yesNo;
         this.targetProp = targetProp;
+        assert !(yesNo && targetProp == null);
     }
 
     @Override

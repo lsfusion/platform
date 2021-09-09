@@ -2,32 +2,40 @@ package lsfusion.client.form.filter.user.view;
 
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.classes.data.ClientTextClass;
-import lsfusion.client.controller.remote.RmiQueue;
+import lsfusion.client.form.controller.ClientFormController;
+import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.object.table.controller.TableController;
 import lsfusion.client.form.property.ClientPropertyDraw;
+import lsfusion.client.form.property.async.ClientAsyncExec;
+import lsfusion.client.form.property.async.ClientInputList;
 import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
 import lsfusion.client.form.property.cell.controller.PropertyTableCellEditor;
 import lsfusion.client.form.property.cell.view.PropertyRenderer;
+import lsfusion.client.form.property.table.view.AsyncChangeInterface;
+import lsfusion.client.form.property.table.view.AsyncInputComponent;
 import lsfusion.client.form.property.table.view.TableTransferHandler;
+import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.event.KeyStrokes;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.text.JTextComponent;
 import java.awt.*;
-import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.text.ParseException;
 import java.util.EventObject;
 import java.util.List;
 
-class DataFilterValueViewTable extends JTable implements TableTransferHandler.TableInterface {
+class DataFilterValueViewTable extends JTable implements TableTransferHandler.TableInterface, AsyncChangeInterface {
     private DataFilterValueView valueFilterView;
     private final Model model;
     private EventObject editEvent;
     private final TableController logicsSupplier;
+
+    public static final ClientInputList FILTER = new ClientInputList(new String[0], new ClientAsyncExec[0], false);
 
     public DataFilterValueViewTable(DataFilterValueView valueFilterView, ClientPropertyDraw property, TableController ilogicsSupplier) {
         super(new Model());
@@ -39,7 +47,7 @@ class DataFilterValueViewTable extends JTable implements TableTransferHandler.Ta
 
         SwingUtils.setupClientTable(this);
         SwingUtils.setupSingleCellTable(this);
-        getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStrokes.getF2(), "none");
+        getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStrokes.getF3(), "none");
 
         //вырезаем Ввод, чтобы он обработался кнопкой apply
         getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStrokes.getEnter(), "none");
@@ -92,6 +100,10 @@ class DataFilterValueViewTable extends JTable implements TableTransferHandler.Ta
                 editor.requestFocusInWindow();
                 logicsSupplier.getFormController().setCurrentEditingTable(this);
             }
+
+            if (editorComp instanceof AsyncInputComponent) {
+                ((AsyncInputComponent) editorComp).initEditor();
+            }
         }
 
         return result;
@@ -99,14 +111,26 @@ class DataFilterValueViewTable extends JTable implements TableTransferHandler.Ta
 
     @Override
     public void editingStopped(ChangeEvent e) {
-        super.editingStopped(e);
+        // inside editingStopped setValueAt is called before editor is being removed
+        // setValueAt requests synchronous filter apply, which in applyFormChanges may call commitCurrentEditing()
+        // and this will result in one more editingStopped() call with nested synchronous apply filter request
+        // so clearCurrentEditingTable should go before editingStopped
         logicsSupplier.getFormController().clearCurrentEditingTable(this);
+        super.editingStopped(e);
     }
 
     @Override
     public void editingCanceled(ChangeEvent e) {
         super.editingCanceled(e);
         logicsSupplier.getFormController().clearCurrentEditingTable(this);
+        valueFilterView.editingCancelled();
+    }
+
+    @Override
+    public void removeEditor() {
+        super.removeEditor();
+        logicsSupplier.getFormController().clearCurrentEditingTable(this);
+        valueFilterView.editingCancelled();
     }
 
     @Override
@@ -165,6 +189,41 @@ class DataFilterValueViewTable extends JTable implements TableTransferHandler.Ta
         setRowHeight(valueHeight);
     }
 
+    @Override
+    public EventObject getCurrentEditEvent() {
+        return editEvent;
+    }
+
+    @Override
+    public ClientInputList getCurrentInputList() {
+        return FILTER;
+    }
+
+    @Override
+    public String getCurrentActionSID() {
+        return ServerResponse.FILTER;
+    }
+
+    @Override
+    public Integer getContextAction() {
+        return null; //no need, no actions in filter
+    }
+
+    @Override
+    public void setContextAction(Integer contextAction) {
+        //no need, no actions in filter
+    }
+
+    @Override
+    public ClientGroupObjectValue getColumnKey(int row, int col) {
+        return valueFilterView.getColumnKey();
+    }
+
+    @Override
+    public ClientFormController getForm() {
+        return logicsSupplier.getFormController();
+    }
+
     private final class Renderer extends JComponent implements TableCellRenderer {
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
@@ -176,30 +235,15 @@ class DataFilterValueViewTable extends JTable implements TableTransferHandler.Ta
 
     private final class Editor extends AbstractCellEditor implements PropertyTableCellEditor {
         private PropertyEditor propertyEditor;
+        public boolean enterPressed;
 
         @Override
         public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
-            propertyEditor = getProperty().getValueEditorComponent(valueFilterView.getForm(), value);
+            propertyEditor = getProperty().getValueEditorComponent(valueFilterView.getForm(), DataFilterValueViewTable.this, value);
             propertyEditor.setTableEditor(this);
 
             if (propertyEditor != null) {
-                Component editorComponent = propertyEditor.getComponent(null, null, editEvent);
-
-                editorComponent.addKeyListener(new KeyAdapter() {
-                    @Override
-                    public void keyPressed(final KeyEvent e) {
-                        RmiQueue.runAction(new Runnable() {
-                            @Override
-                            public void run() {
-                                if (KeyEvent.VK_ENTER == e.getKeyCode() && stopCellEditing()) {
-                                    valueFilterView.applyQuery();
-                                }
-                            }
-                        });
-                    }
-                });
-
-                return editorComponent;
+                return propertyEditor.getComponent(null, null, editEvent);
             }
 
             return null;
@@ -221,6 +265,16 @@ class DataFilterValueViewTable extends JTable implements TableTransferHandler.Ta
         }
 
         @Override
+        public void preCommit(boolean enterPressed) {
+            this.enterPressed = enterPressed;
+        }
+
+        @Override
+        public void postCommit() {
+            enterPressed = false;
+        }
+
+        @Override
         public boolean stopCellEditing() {
             return propertyEditor.stopCellEditing() && super.stopCellEditing();
         }
@@ -229,6 +283,11 @@ class DataFilterValueViewTable extends JTable implements TableTransferHandler.Ta
         public Object getCellEditorValue() {
             return propertyEditor.getCellEditorValue();
         }
+    }
+    
+    public boolean editorEnterPressed() {
+        TableCellEditor editor = getCellEditor();
+        return editor != null && ((Editor) editor).enterPressed;
     }
 
     private static final class Model extends AbstractTableModel {

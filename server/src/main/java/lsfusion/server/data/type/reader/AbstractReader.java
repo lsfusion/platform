@@ -17,10 +17,6 @@ public abstract class AbstractReader<T> implements Reader<T> {
         mResult.exclAdd(name, source);
     }
 
-    public T read(ResultSet set, SQLSyntax syntax, String name) throws SQLException {
-        return read(set.getObject(name));
-    }
-
     public int getSize(T value) {
         throw new UnsupportedOperationException();
     }

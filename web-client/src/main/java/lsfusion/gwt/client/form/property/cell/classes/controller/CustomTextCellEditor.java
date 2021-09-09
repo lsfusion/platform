@@ -13,16 +13,12 @@ import java.text.ParseException;
 
 public class CustomTextCellEditor extends TextBasedCellEditor {
 
-    private final String renderFunction;
-    private final String clearRenderFunction;
+    private final String customEditorFunction;
     private boolean deferredCommitOnBlur = true;
 
-    public CustomTextCellEditor(EditManager editManager, GPropertyDraw property, String customEditorFunctions) {
+    public CustomTextCellEditor(EditManager editManager, GPropertyDraw property, String customEditorFunction) {
         super(editManager, property);
-
-        String[] functions = customEditorFunctions.split(":");
-        renderFunction = functions[0];
-        clearRenderFunction = functions[1];
+        this.customEditorFunction = customEditorFunction;
     }
 
     @Override
@@ -52,7 +48,7 @@ public class CustomTextCellEditor extends TextBasedCellEditor {
     }-*/;
 
     protected native void render(Element element, JavaScriptObject editor)/*-{
-        $wnd[this.@CustomTextCellEditor::renderFunction](element, editor);
+        $wnd[this.@CustomTextCellEditor::customEditorFunction]().render(element, editor);
     }-*/;
 
     @Override
@@ -62,16 +58,16 @@ public class CustomTextCellEditor extends TextBasedCellEditor {
     }
 
     protected native void clearRender(Element element)/*-{
-        $wnd[this.@CustomTextCellEditor::clearRenderFunction](element);
+        $wnd[this.@CustomTextCellEditor::customEditorFunction]().clear(element);
     }-*/;
 
     @Override
-    public void validateAndCommit(Element parent, boolean cancelIfInvalid, boolean blurred) {
+    public void validateAndCommit(Element parent, Integer contextAction, boolean cancelIfInvalid, boolean blurred) {
         //some libraries set values after the blur. to solve this there is a SmartScheduler that sets the values in the field before the blur
         if (deferredCommitOnBlur) {
-            SmartScheduler.getInstance().scheduleDeferred(() -> super.validateAndCommit(parent, cancelIfInvalid, blurred));
+            SmartScheduler.getInstance().scheduleDeferred(() -> super.validateAndCommit(parent, contextAction, cancelIfInvalid, blurred));
         } else {
-            super.validateAndCommit(parent, cancelIfInvalid, blurred);
+            super.validateAndCommit(parent, contextAction, cancelIfInvalid, blurred);
         }
     }
 }

@@ -11,27 +11,19 @@ import com.google.gwt.event.logical.shared.ResizeHandler;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.client.ClientMessages;
-import lsfusion.gwt.client.action.GAction;
-import lsfusion.gwt.client.action.GFormAction;
 import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.WrapperAsyncCallbackEx;
-import lsfusion.gwt.client.base.busy.GBusyDialogDisplayer;
-import lsfusion.gwt.client.base.busy.LoadingBlocker;
 import lsfusion.gwt.client.base.busy.LoadingManager;
 import lsfusion.gwt.client.base.exception.*;
 import lsfusion.gwt.client.base.log.GLog;
-import lsfusion.gwt.client.base.result.ListResult;
 import lsfusion.gwt.client.base.result.VoidResult;
 import lsfusion.gwt.client.base.view.DialogBoxHelper;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.controller.dispatch.LogicsDispatchAsync;
 import lsfusion.gwt.client.controller.remote.GConnectionLostManager;
-import lsfusion.gwt.client.controller.remote.action.CreateNavigatorAction;
+import lsfusion.gwt.client.controller.remote.action.*;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.controller.remote.action.navigator.*;
 import lsfusion.gwt.client.form.controller.FormsController;
@@ -40,7 +32,6 @@ import lsfusion.gwt.client.form.event.GMouseStroke;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GColorPreferences;
 import lsfusion.gwt.client.form.view.FormContainer;
 import lsfusion.gwt.client.navigator.ConnectionInfo;
-import lsfusion.gwt.client.navigator.GNavigatorAction;
 import lsfusion.gwt.client.navigator.controller.GNavigatorController;
 import lsfusion.gwt.client.navigator.controller.dispatch.GNavigatorActionDispatcher;
 import lsfusion.gwt.client.navigator.controller.dispatch.NavigatorDispatchAsync;
@@ -59,9 +50,7 @@ import java.util.Map;
 import static lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder.IGNORE_DBLCLICK_CHECK;
 
 // scope - every single tab (not browser) even for static
-public class MainFrame implements EntryPoint, ServerMessageProvider {
-    private static final ClientMessages messages = ClientMessages.Instance.get();
-
+public class MainFrame implements EntryPoint {
     public static LogicsDispatchAsync logicsDispatchAsync;
     public static NavigatorDispatchAsync navigatorDispatchAsync;
 
@@ -90,36 +79,22 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
 
     private LoadingManager loadingManager;
 
-    @Override
-    public void getServerActionMessage(ErrorHandlingCallback<StringResult> callback) {
-        navigatorDispatchAsync.executePriority(new GetRemoteNavigatorActionMessage(), callback);
+    // async dispatch
+    public <T extends Result> long asyncDispatch(final ExecuteNavigatorAction action, RequestCountingAsyncCallback<ServerResponseResult> callback) {
+        return navigatorDispatchAsync.asyncExecute(action, callback);
     }
 
-    @Override
-    public void getServerActionMessageList(ErrorHandlingCallback<ListResult> callback) {
-        navigatorDispatchAsync.executePriority(new GetRemoteNavigatorActionMessageList(), callback);
+    public <T extends Result> long syncDispatch(final ExecuteNavigatorAction action, RequestCountingAsyncCallback<ServerResponseResult> callback) {
+        return syncDispatch(action, callback, false);
     }
 
-    @Override
-    public void interrupt(boolean cancelable) {
-        navigatorDispatchAsync.executePriority(new InterruptNavigator(cancelable), new ErrorHandlingCallback<VoidResult>());
-    }
-
-    public <T extends Result> void syncDispatch(final ExecuteNavigatorAction action, AsyncCallback<ServerResponseResult> callback) {
-        //todo: may be need something more sophisticated
-        //todo: http://stackoverflow.com/questions/2061699/disable-user-interaction-in-a-gwt-container
-        loadingManager.start();
-        navigatorDispatchAsync.execute(action, new WrapperAsyncCallbackEx<ServerResponseResult>(callback) {
-            @Override
-            public void preProcess() {
-                loadingManager.stop();
-            }
-        });
+    public static <T extends Result> long syncDispatch(final NavigatorRequestAction action, RequestAsyncCallback<ServerResponseResult> callback, boolean continueInvocation) {
+        return navigatorDispatchAsync.syncExecute(action, callback, continueInvocation);
     }
 
     public static void cleanRemote(Runnable runnable, boolean connectionLost) {
         if (navigatorDispatchAsync != null && !connectionLost) { // dispatcher may be not initialized yet (at first look up logics call)
-            navigatorDispatchAsync.execute(new CloseNavigator(), new AsyncCallback<VoidResult>() {
+            navigatorDispatchAsync.executePriority(new CloseNavigator(), new PriorityAsyncCallback<VoidResult>() {
                 public void onFailure(Throwable caught) {
                     runnable.run();
                 }
@@ -224,12 +199,10 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
         currentForm = null;
 
         // we need to read settings first to have loadingManager set (for syncDispatch)
-        navigatorDispatchAsync.execute(new GetClientSettings(), new ErrorHandlingCallback<GetClientSettingsResult>() {
+        navigatorDispatchAsync.executePriority(new GetClientSettings(), new PriorityErrorHandlingCallback<GetClientSettingsResult>() {
             @Override
-            public void success(GetClientSettingsResult result) {
-                busyDialog = result.busyDialog;
+            public void onSuccess(GetClientSettingsResult result) {
                 busyDialogTimeout = Math.max(result.busyDialogTimeout - 500, 500); //минимальный таймаут 500мс + всё равно возникает задержка около 500мс
-                loadingManager = busyDialog ? new GBusyDialogDisplayer(MainFrame.this) : new LoadingBlocker(MainFrame.this); // почему-то в busyDialog не работает showBusyDialog и blockingPanel
                 devMode = result.devMode;
                 projectLSFDir = result.projectLSFDir;
                 showDetailedInfo = result.showDetailedInfo;
@@ -266,29 +239,18 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
         final Linker<GNavigatorActionDispatcher> actionDispatcherLink = new Linker<>();
         final FormsController formsController = new FormsController(windowsController) {
             @Override
-            public void executeNavigatorAction(GNavigatorAction action, final NativeEvent event) {
-                syncDispatch(new ExecuteNavigatorAction(action.canonicalName, 1), new ErrorHandlingCallback<ServerResponseResult>() {
-                    @Override
-                    public void success(ServerResponseResult result) {
-                        if(event.getCtrlKey()) {
-                            for (GAction action : result.actions) // хак, но весь механизм forbidDuplicate один большой хак
-                                if (action instanceof GFormAction)
-                                    ((GFormAction) action).forbidDuplicate = false;
-                        }
-                        actionDispatcherLink.link.dispatchResponse(result);
-                        setLastCompletedRequest(result.requestIndex);
-                    }
-                });
+            public <T extends Result> long syncDispatch(ExecuteNavigatorAction action, RequestCountingAsyncCallback<ServerResponseResult> callback) {
+                return MainFrame.this.syncDispatch(action, callback);
             }
 
             @Override
-            public void executeNotificationAction(String actionSID, int type) {
-                syncDispatch(new ExecuteNavigatorAction(actionSID, type), new ErrorHandlingCallback<ServerResponseResult>() {
-                    @Override
-                    public void success(ServerResponseResult result) {
-                        actionDispatcherLink.link.dispatchResponse(result);
-                    }
-                });
+            public <T extends Result> long asyncDispatch(ExecuteNavigatorAction action, RequestCountingAsyncCallback<ServerResponseResult> callback) {
+                return MainFrame.this.asyncDispatch(action, callback);
+            }
+
+            @Override
+            public GNavigatorActionDispatcher getDispatcher() {
+                return actionDispatcherLink.link;
             }
         };
 
@@ -335,11 +297,10 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
             public boolean execute() {
                 if (shouldRepeatPingRequest && !GConnectionLostManager.shouldBeBlocked()) {
                     setShouldRepeatPingRequest(false);
-                    navigatorDispatchAsync.execute(new ClientPushMessage(), new ErrorHandlingCallback<ClientMessageResult>() {
+                    navigatorDispatchAsync.executePriority(new ClientPushMessage(), new PriorityErrorHandlingCallback<ClientMessageResult>() {
                         @Override
-                        public void success(ClientMessageResult result) {
+                        public void onSuccess(ClientMessageResult result) {
                             setShouldRepeatPingRequest(true);
-                            super.success(result);
                             for (Integer idNotification : result.notificationList) {
                                 FormContainer<?> currentForm = MainFrame.getCurrentForm();
                                 GFormController form = currentForm != null ? currentForm.getForm() : null;
@@ -356,9 +317,9 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
                         }
 
                         @Override
-                        public void failure(Throwable caught) {
+                        public void onFailure(Throwable caught) {
                             setShouldRepeatPingRequest(true);
-                            super.failure(caught);
+                            super.onFailure(caught);
                         }
                     });
                 }
@@ -447,9 +408,9 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
     }
 
     private void initializeWindows(final FormsController formsController, final WindowsController windowsController, final GNavigatorController navigatorController, final Linker<GAbstractWindow> formsWindowLink, final Linker<Map<GAbstractWindow, Widget>> commonWindowsLink) {
-        navigatorDispatchAsync.execute(new GetNavigatorInfo(), new ErrorHandlingCallback<GetNavigatorInfoResult>() {
+        navigatorDispatchAsync.executePriority(new GetNavigatorInfo(), new PriorityErrorHandlingCallback<GetNavigatorInfoResult>() {
             @Override
-            public void success(GetNavigatorInfoResult result) {
+            public void onSuccess(GetNavigatorInfoResult result) {
                 GwtClientUtils.removeLoaderFromHostedPage();
 
                 GAbstractWindow formsWindow = result.forms;
@@ -488,15 +449,15 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
         Integer screenHeight = Window.getClientHeight();
         mobile = screenWidth <= StyleDefaults.maxMobileWidth;
         logicsDispatchAsync = new LogicsDispatchAsync(host, port, exportName);
-        logicsDispatchAsync.execute(new CreateNavigatorAction(new ConnectionInfo(screenWidth + "x" + screenHeight, mobile)), new ErrorHandlingCallback<StringResult>() {
+        logicsDispatchAsync.execute(new CreateNavigatorAction(new ConnectionInfo(screenWidth + "x" + screenHeight, mobile)), new PriorityErrorHandlingCallback<StringResult>() {
             @Override
-            public void success(StringResult result) {
+            public void onSuccess(StringResult result) {
                 navigatorDispatchAsync = new NavigatorDispatchAsync(result.get());
                 initializeFrame();
             }
 
             @Override
-            public void failure(Throwable caught) {
+            public void onFailure(Throwable caught) {
                 if(caught instanceof AuthenticationDispatchException) { // token is invalid, then we need to relogin (and actually need to logout, to reauthenticate and get new token) - it's the only place on client where token is checked
                     GwtClientUtils.logout();
                 } else if(caught instanceof RemoteMessageDispatchException) {
@@ -512,7 +473,7 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
                         }
                     }.schedule(2000);
                 } else {
-                    super.failure(caught);
+                    super.onFailure(caught);
                 }
             }
         });

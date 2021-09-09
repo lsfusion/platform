@@ -101,6 +101,13 @@ public abstract class AList<K> extends AColObject implements ImList<K> {
         return -1;
     }
 
+    public boolean containsNull() {
+        for(int i=0,size=size();i<size;i++)
+            if(get(i) == null)
+                return true;
+        return false;
+    }
+
     public ImMap<Integer, K> toIndexedMap() {
         return mapListMapValues(i -> i);
     }
@@ -174,13 +181,6 @@ public abstract class AList<K> extends AColObject implements ImList<K> {
         MList<M> mResult = ListFact.mList(size());
         for(int i=0,size=size();i<size;i++)
             mResult.add(getter.apply(get(i)));
-        return mResult.immutableList();
-    }
-
-    public <M> ImList<M> mapListValues(IntFunction<M> getter) {
-        MList<M> mResult = ListFact.mList(size());
-        for(int i=0,size=size();i<size;i++)
-            mResult.add(getter.apply(i));
         return mResult.immutableList();
     }
 

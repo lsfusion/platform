@@ -1,6 +1,7 @@
 package lsfusion.interop.form.event;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.util.EventObject;
@@ -50,8 +51,8 @@ public class KeyStrokes {
         return KeyStroke.getKeyStroke(KeyEvent.VK_END, InputEvent.CTRL_DOWN_MASK);
     }
 
-    public static KeyStroke getF2() {
-        return KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0);
+    public static KeyStroke getF3() {
+        return KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0);
     }
 
     public static KeyStroke getF6() {
@@ -62,8 +63,12 @@ public class KeyStrokes {
         return KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0);
     }
 
+    public static KeyEvent createAddUserFilterKeyEvent(Component component) {
+        return new KeyEvent(component, KeyEvent.KEY_PRESSED, System.currentTimeMillis(), 0, KeyEvent.VK_SPACE, KeyEvent.CHAR_UNDEFINED);
+    }
+    
     public static KeyStroke getFilterKeyStroke(int modifier) {
-        return KeyStroke.getKeyStroke(KeyEvent.VK_F2, modifier);
+        return KeyStroke.getKeyStroke(KeyEvent.VK_F3, modifier);
     }
 
     public static KeyStroke getRemoveFiltersKeyStroke() {
@@ -86,8 +91,11 @@ public class KeyStrokes {
         return KeyStroke.getKeyStroke(KeyEvent.VK_F12, 0);
     }
 
-    public static boolean isEditObjectEvent(EventObject event) {
-        return isKeyEvent(event, KeyEvent.VK_F9) || MouseStrokes.isDblClickEvent(event);
+    public static boolean isEditObjectEvent(EventObject event, boolean hasEditObjectAction, boolean hasChangeAction) {
+        return hasEditObjectAction && (
+                isKeyEvent(event, KeyEvent.VK_F9) ||
+                (!hasChangeAction && MouseStrokes.isDblClickEvent(event)) ||
+                (event instanceof InputEvent && ((InputEvent) event).isControlDown() && MouseStrokes.isDownEvent(event))); // ctrl doesn't work for now since it is used for a cell selection
     }
 
     public static boolean isKeyEvent(EventObject event, int keyCode) {
@@ -120,6 +128,10 @@ public class KeyStrokes {
 
     public static boolean isEscapeEvent(EventObject event) {
         return isKeyEvent(event, KeyEvent.VK_ESCAPE);
+    }
+    
+    public static boolean isTabEvent(EventObject event) {
+        return isKeyEvent(event, KeyEvent.VK_TAB);
     }
 
     public static boolean isDigitKeyEvent(EventObject event) {
@@ -164,7 +176,8 @@ public class KeyStrokes {
                    !keyEvent.isControlDown() &&
                    !KeyStrokes.isShiftEvent(keyEvent) &&
                    !KeyStrokes.isCharUndefinedEvent(keyEvent) &&
-                   !KeyStrokes.isEscapeEvent(keyEvent);
+                   !KeyStrokes.isEscapeEvent(keyEvent) &&
+                   !KeyStrokes.isTabEvent(keyEvent);
         }
         return false;
     }

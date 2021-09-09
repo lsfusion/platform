@@ -11,11 +11,6 @@ import java.sql.SQLException;
 public class CustomReader<T> implements Reader<Integer> {
 
     @Override
-    public Integer read(Object value) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public ExtInt getCharLength() {
        return new ExtInt(30);
     }

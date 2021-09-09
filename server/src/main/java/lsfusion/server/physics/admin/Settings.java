@@ -146,6 +146,10 @@ public class Settings implements Cloneable {
 
     private int limitIncrementCoeff = 1;
 
+    private int limitHintComplexComplexity = 1000;
+
+    private int limitHintPrereadComplexity = 50;
+
     private int limitHintIncrementComplexity = 50; // есть проблема когда идет G(очень большого числа данных) = значение, статистика нормальная, сложность большая, начинает hint'ить что мешает проталкиванию
 
     private int limitHintIncrementValueComplexity = 1000; // есть проблема когда идет G(очень большого числа данных) = значение, статистика нормальная, сложность большая, начинает hint'ить что мешает проталкиванию
@@ -701,6 +705,22 @@ public class Settings implements Cloneable {
         this.limitIncrementCoeff = limitIncrementCoeff;
     }
 
+    public int getLimitHintPrereadComplexity() {
+        return limitHintPrereadComplexity;
+    }
+
+    public void setLimitHintPrereadComplexity(int limitHintPrereadComplexity) {
+        this.limitHintPrereadComplexity = limitHintPrereadComplexity;
+    }
+
+    public int getLimitHintComplexComplexity() {
+        return limitHintComplexComplexity;
+    }
+
+    public void setLimitHintComplexComplexity(int limitHintComplexComplexity) {
+        this.limitHintComplexComplexity = limitHintComplexComplexity;
+    }
+
     public int getLimitHintIncrementComplexity() {
         return limitHintIncrementComplexity;
     }
@@ -1234,6 +1254,16 @@ public class Settings implements Cloneable {
         this.flushPendingTransactionCleanersThreshold = flushPendingTransactionCleanersThreshold;
     }
 
+    private int flushAsyncValuesCaches = 1;
+
+    public int getFlushAsyncValuesCaches() {
+        return flushAsyncValuesCaches;
+    }
+
+    public void setFlushAsyncValuesCaches(int flushAsyncValuesCaches) {
+        this.flushAsyncValuesCaches = flushAsyncValuesCaches;
+    }
+
     private int tempTablesTimeThreshold = 240; // время сколько будет гарантированно жить таблица (в секундах), нужно для предотвращения ротации кэшей, должно быть соизмеримо со стандартным временем использования
     private int tempTablesCountThreshold = 40; // очищать таблицы, когда их общее количество превысило данный порог * количество соединений
 
@@ -1503,14 +1533,42 @@ public class Settings implements Cloneable {
         this.logTimeThreshold = logTimeThreshold;
     }
     
-    private long allocatedBytesThreshold = 100 * 1024 * 1024;
-    
-    public long getAllocatedBytesThreshold() {
-        return allocatedBytesThreshold;
+    private long explainTopAppThreshold = 0;
+    private long explainAppThreshold = 1000;
+
+    public long getExplainAppThreshold() {
+        return explainAppThreshold;
+    }
+
+    public void setExplainAppThreshold(long explainAppThreshold) {
+        this.explainAppThreshold = explainAppThreshold;
+    }
+
+    public long getExplainTopAppThreshold() {
+        return explainTopAppThreshold;
+    }
+
+    public void setExplainTopAppThreshold(long explainTopAppThreshold) {
+        this.explainTopAppThreshold = explainTopAppThreshold;
+    }
+
+    private long explainTopAllocatedBytesThreshold = 0;
+    private long explainAllocatedBytesThreshold = 0;
+
+    public long getExplainAllocatedBytesThreshold() {
+        return explainAllocatedBytesThreshold;
     }
     
-    public void setAllocatedBytesThreshold(long allocatedBytesThreshold) {
-        this.allocatedBytesThreshold = allocatedBytesThreshold;
+    public void setExplainAllocatedBytesThreshold(long explainAllocatedBytesThreshold) {
+        this.explainAllocatedBytesThreshold = explainAllocatedBytesThreshold;
+    }
+
+    public long getExplainTopAllocatedBytesThreshold() {
+        return explainTopAllocatedBytesThreshold;
+    }
+
+    public void setExplainTopAllocatedBytesThreshold(long explainTopAllocatedBytesThreshold) {
+        this.explainTopAllocatedBytesThreshold = explainTopAllocatedBytesThreshold;
     }
 
     // в перерасчете / проверке агрегаций можно использовать InconsistentExpr, но тогда появляются лишние join'ы (а значит нужно еще больше памяти)
@@ -1661,6 +1719,7 @@ public class Settings implements Cloneable {
         this.subQueriesPessQueryCoeff = subQueriesPessQueryCoeff;
     }
 
+    private int explainTopThreshold = 0;
     private int explainThreshold = 100;
 
     public int getExplainThreshold() {
@@ -1669,6 +1728,14 @@ public class Settings implements Cloneable {
 
     public void setExplainThreshold(int explainThreshold) {
         this.explainThreshold = explainThreshold;
+    }
+
+    public int getExplainTopThreshold() {
+        return explainTopThreshold;
+    }
+
+    public void setExplainTopThreshold(int explainTopThreshold) {
+        this.explainTopThreshold = explainTopThreshold;
     }
 
     private boolean useMaxDivisionLength = true;
@@ -2407,6 +2474,7 @@ public class Settings implements Cloneable {
         this.useGroupLastOpt = useGroupLastOpt;
     }
 
+    // In 5.0 CONTAINS is gone. It sets MATCH(SEARCH) instead. Maybe should be renamed.
     private boolean defaultCompareForStringContains = false;
 
     public boolean isDefaultCompareForStringContains() {
@@ -2634,6 +2702,43 @@ public class Settings implements Cloneable {
         this.groupIntegrationHierarchyOldOrder = groupIntegrationHierarchyOldOrder;
     }
 
+    private int asyncValuesLongCacheThreshold = 4;
+    private double asyncValuesExtraReadCoeff = 1.5;
+    private int asyncValuesNeededCount = 15;
+    private int asyncValuesMaxReadCount = 1000;
+
+    public int getAsyncValuesLongCacheThreshold() {
+        return asyncValuesLongCacheThreshold;
+    }
+
+    public void setAsyncValuesLongCacheThreshold(int asyncValuesLongCacheThreshold) {
+        this.asyncValuesLongCacheThreshold = asyncValuesLongCacheThreshold;
+    }
+
+    public double getAsyncValuesExtraReadCoeff() {
+        return asyncValuesExtraReadCoeff;
+    }
+
+    public void setAsyncValuesExtraReadCoeff(double asyncValuesExtraReadCoeff) {
+        this.asyncValuesExtraReadCoeff = asyncValuesExtraReadCoeff;
+    }
+
+    public int getAsyncValuesNeededCount() {
+        return asyncValuesNeededCount;
+    }
+
+    public void setAsyncValuesNeededCount(int asyncValuesNeededCount) {
+        this.asyncValuesNeededCount = asyncValuesNeededCount;
+    }
+
+    public int getAsyncValuesMaxReadCount() {
+        return asyncValuesMaxReadCount;
+    }
+
+    public void setAsyncValuesMaxReadCount(int asyncValuesMaxReadCount) {
+        this.asyncValuesMaxReadCount = asyncValuesMaxReadCount;
+    }
+
     private int externalHttpServerThreadCount = 10;
 
     public int getExternalHttpServerThreadCount() {
@@ -2674,13 +2779,23 @@ public class Settings implements Cloneable {
         this.sessionConfigTimeout = sessionConfigTimeout;
     }
 
-    private String filterMatchLanguages = "english"; //comma separated
+    private String filterMatchLanguage = "english"; //comma separated
 
-    public String getFilterMatchLanguages() {
-        return filterMatchLanguages;
+    public String getFilterMatchLanguage() {
+        return filterMatchLanguage;
     }
 
-    public void setFilterMatchLanguages(String filterMatchLanguages) {
-        this.filterMatchLanguages = filterMatchLanguages;
+    public void setFilterMatchLanguage(String filterMatchLanguage) {
+        this.filterMatchLanguage = filterMatchLanguage;
+    }
+    
+    private boolean trueSerializable = false;
+
+    public boolean isTrueSerializable() {
+        return trueSerializable;
+    }
+
+    public void setTrueSerializable(boolean trueSerializable) {
+        this.trueSerializable = trueSerializable;
     }
 }

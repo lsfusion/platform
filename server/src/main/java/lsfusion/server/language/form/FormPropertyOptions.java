@@ -8,6 +8,7 @@ import lsfusion.interop.form.property.PropertyEditType;
 import lsfusion.interop.form.property.PropertyGroupType;
 import lsfusion.server.logics.LogicsModule.InsertType;
 import lsfusion.server.logics.action.Action;
+import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
@@ -37,8 +38,8 @@ public class FormPropertyOptions {
     private PropertyObjectEntity header;
     private PropertyObjectEntity footer;
     private ClassViewType viewType;
-    private String customRenderFunctions;
-    private String customEditorFunctions;
+    private String customRenderFunction;
+    private String customEditorFunction;
     private boolean customTextEdit;
     private boolean customReplaceEdit;
     private GroupObjectEntity toDraw;
@@ -66,10 +67,9 @@ public class FormPropertyOptions {
     private PropertyDrawEntity quickFilterPropertyDraw;
     private String neighbourPropertyText;
 
-    private InsertType insertType; 
-    
-    private Boolean newSession;
-    private Boolean isNested;
+    private InsertType insertType;
+
+    private FormSessionScope formSessionScope;
 
     //integration options
     private Boolean attr;
@@ -89,20 +89,12 @@ public class FormPropertyOptions {
         this.formulaOperands = ListFact.fromJavaList(formulaOperands);
     }
 
-    public void setNewSession(Boolean newSession) {
-        this.newSession = newSession;
+    public FormSessionScope getFormSessionScope() {
+        return formSessionScope;
     }
-    
-    public void setNested(Boolean isNested) {
-        this.isNested = isNested;
-    }
-    
-    public Boolean isNewSession() {
-        return newSession;
-    }
-    
-    public Boolean isNested() {
-        return isNested;
+
+    public void setFormSessionScope(FormSessionScope formSessionScope) {
+        this.formSessionScope = formSessionScope;
     }
 
     public Boolean getSelector() {
@@ -197,16 +189,16 @@ public class FormPropertyOptions {
         this.viewType = viewType;
     }
     
-    public String getCustomRenderFunctions() {
-        return customRenderFunctions;
+    public String getCustomRenderFunction() {
+        return customRenderFunction;
     }
     
-    public void setCustomRenderFunctions(String customRenderFunctions) {
-        this.customRenderFunctions = customRenderFunctions;
+    public void setCustomRenderFunction(String customRenderFunction) {
+        this.customRenderFunction = customRenderFunction;
     }
 
-    public void setCustomEditorFunctions(String customEditorFunctions) {
-        this.customEditorFunctions = customEditorFunctions;
+    public void setCustomEditorFunction(String customEditorFunction) {
+        this.customEditorFunction = customEditorFunction;
     }
 
     public void setCustomTextEdit(boolean customTextEdit) {
@@ -217,8 +209,8 @@ public class FormPropertyOptions {
         this.customReplaceEdit = customReplaceEdit;
     }
 
-    public String getCustomEditorFunctions() {
-        return customEditorFunctions;
+    public String getCustomEditorFunction() {
+        return customEditorFunction;
     }
 
     public boolean isCustomTextEdit() {
@@ -439,8 +431,7 @@ public class FormPropertyOptions {
     public FormPropertyOptions overrideWith(FormPropertyOptions overrides) {
         FormPropertyOptions merged = new FormPropertyOptions();
 
-        merged.setNewSession(nvl(overrides.isNewSession(), newSession));
-        merged.setNested(nvl(overrides.isNested(), isNested));
+        merged.setFormSessionScope(nvl(overrides.getFormSessionScope(), formSessionScope));
         merged.setEditType(nvl(overrides.getEditType(), editType));
         merged.setSelector(nvl(overrides.getSelector(), isSelector));
         merged.setHintNoUpdate(nvl(overrides.getHintNoUpdate(), hintNoUpdate));
@@ -455,8 +446,8 @@ public class FormPropertyOptions {
         merged.setHeader(nvl(overrides.getHeader(), header));
         merged.setFooter(nvl(overrides.getFooter(), footer));
         merged.setViewType(nvl(overrides.getViewType(), viewType));
-        merged.setCustomRenderFunctions(nvl(overrides.getCustomRenderFunctions(), customRenderFunctions));
-        merged.setCustomEditorFunctions(nvl(overrides.getCustomEditorFunctions(), customEditorFunctions));
+        merged.setCustomRenderFunction(nvl(overrides.getCustomRenderFunction(), customRenderFunction));
+        merged.setCustomEditorFunction(nvl(overrides.getCustomEditorFunction(), customEditorFunction));
         merged.setCustomTextEdit(nvl(overrides.isCustomTextEdit(), customTextEdit));
         merged.setCustomReplaceEdit(nvl(overrides.isCustomReplaceEdit(), customReplaceEdit));
         merged.setToDraw(nvl(overrides.getToDraw(), toDraw));

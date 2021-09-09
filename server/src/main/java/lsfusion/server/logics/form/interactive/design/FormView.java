@@ -196,19 +196,33 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
             addRegularFilterGroupBase(filterGroup, version);
         }
 
-        for (ImList<PropertyDrawEntity> pivotColumn : entity.getPivotColumnsList()) {
+        for (PropertyDrawEntity propertyDrawEntity : entity.getUserFiltersIt(version)) {
+            addUserFilterProperty(propertyDrawEntity, version);
+        }
+
+        for (ImList<PropertyDrawEntity> pivotColumn : entity.getNFPivotColumnsListIt(version)) {
             addPivotColumn(pivotColumn, version);
         }
 
-        for (ImList<PropertyDrawEntity> pivotRow : entity.getPivotRowsList()) {
+        for (ImList<PropertyDrawEntity> pivotRow : entity.getNFPivotRowsListIt(version)) {
             addPivotRow(pivotRow, version);
         }
 
-        for (PropertyDrawEntity pivotMeasure : entity.getPivotMeasuresList()) {
+        for (PropertyDrawEntity pivotMeasure : entity.getNFPivotMeasuresListIt(version)) {
             addPivotMeasure(pivotMeasure, version);
         }
 
         initButtons(version);
+    }
+
+    public void addUserFilterProperty(PropertyDrawEntity userFilterProperty, Version version) {
+        GroupObjectEntity groupObjectEntity = userFilterProperty.getToDraw(entity);
+        PropertyDrawView propertyDrawView = get(userFilterProperty);
+        if (groupObjectEntity.isInTree()) {
+            get(groupObjectEntity.treeGroup).addUserFilter(propertyDrawView, version);
+        } else {
+            get(groupObjectEntity).addUserFilter(propertyDrawView, version);
+        }
     }
 
     public void addDefaultOrder(PropertyDrawEntity property, boolean ascending, Version version) {
@@ -602,7 +616,7 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
     }
 
     public void setCaption(LocalizedString caption) {
-        this.mainContainer.caption = caption;
+        this.mainContainer.setCaption(caption);
     }
 
     public void setChangeKey(PropertyDrawView property, KeyStroke keyStroke) {

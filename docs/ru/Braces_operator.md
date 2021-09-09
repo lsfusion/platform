@@ -54,10 +54,10 @@ CLASS Order;
 currency = DATA Currency (Order);
 customer = DATA STRING[100] (Order);
 copy 'Копировать' (Order old)  {
-    NEW new = Order {                                   // создается действие, состоящее из последовательного выполнения двух действий
-        currency(new) <- currency(old);                 // точка с запятой указывается после каждого оператора
+    NEW new = Order {  // создается действие, состоящее из последовательного выполнения двух действий
+        currency(new) <- currency(old); // точка с запятой указывается после каждого оператора
         customer(new) <- customer(old);
-    }                                                   // в этой строке точка с запятой не ставится, потому что оператор заканчивается на }
+    } // в этой строке точка с запятой не ставится, потому что оператор заканчивается на }
 }
 
 loadDefaultCurrency(ISTRING[30] name, INTEGER code)  {

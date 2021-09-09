@@ -17,5 +17,5 @@ public abstract class ClientNavigator {
         this.windows = windows;
     }
 
-    public abstract void openAction(ClientNavigatorAction action, int modifiers);
+    public abstract long openAction(ClientNavigatorAction action, int modifiers, boolean sync);
 }

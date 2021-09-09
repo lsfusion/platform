@@ -141,23 +141,30 @@ CLASS Document;
 
 // declaring the Documents form
 FORM documents 'Documents'
-    OBJECTS d = Document // Adding one object of the Document class. The object will be available by this name in the DESIGN, SHOW, EXPORT, DIALOG, etc. operators.
+    // Adding one object of the Document class. The object will be available by this name 
+    // in the DESIGN, SHOW, EXPORT, DIALOG, etc. operators.
+    OBJECTS d = Document 
 
 
     // ... adding properties and filters to the form
 
-    LIST Document OBJECT d // marking that this form should be used when it is necessary to select a document, while the d object should be used as a return value
+    // marking that this form should be used when it is necessary to select a document, 
+    // while the d object should be used as a return value
+    LIST Document OBJECT d 
 ;
 
 CLASS Item;
 
 // declaring the Product form
 FORM item 'Product'
-    OBJECTS i = Item PANEL // adding an object of the Item class and marking that it should be displayed in the panel (i.e., only one value is visible)
+    // adding an object of the Item class and marking that it should be displayed
+    // in the panel (i.e., only one value is visible)
+    OBJECTS i = Item PANEL 
 
     // ... adding properties and filters to the form
 
-    EDIT Item OBJECT i // marking that this form should be used when it is necessary to add or edit a product
+    // marking that this form should be used when it is necessary to add or edit a product
+    EDIT Item OBJECT i 
 ;
 
 // declaring a form with a list of Products
@@ -166,7 +173,8 @@ FORM items 'Products'
 
     // ... adding properties and filters to the form
 
-    PROPERTIES(i) NEWSESSION NEW, EDIT // adding buttons that will create and edit the product using the item form
+    // adding buttons that will create and edit the product using the item form
+    PROPERTIES(i) NEWSESSION NEW, EDIT 
 ;
 
 CLASS Invoice;
@@ -181,9 +189,11 @@ FORM printInvoice
 
 // splitting the form definition into two statements (the second statement can be transferred to another module)
 EXTEND FORM printInvoice
-    OBJECTS d = InvoiceDetail // adding invoice lines, each of which will be used in the report as a detail
+    // adding invoice lines, each of which will be used in the report as a detail
+    OBJECTS d = InvoiceDetail 
 
     // ... adding properties and filters to the form
 ;
-print (Invoice invoice)  { PRINT printInvoice OBJECTS i = invoice; } // declaring an action that will open the invoice print form
+// declaring an action that will open the invoice print form
+print (Invoice invoice)  { PRINT printInvoice OBJECTS i = invoice; } 
 ```

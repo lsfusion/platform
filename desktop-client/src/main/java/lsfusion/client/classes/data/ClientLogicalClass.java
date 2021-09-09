@@ -8,6 +8,7 @@ import lsfusion.client.form.property.cell.classes.controller.LogicalPropertyEdit
 import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
 import lsfusion.client.form.property.cell.classes.view.LogicalPropertyRenderer;
 import lsfusion.client.form.property.cell.view.PropertyRenderer;
+import lsfusion.client.form.property.table.view.AsyncChangeInterface;
 import lsfusion.interop.classes.DataType;
 
 import java.awt.*;
@@ -15,10 +16,18 @@ import java.text.ParseException;
 
 public class ClientLogicalClass extends ClientDataClass implements ClientTypeClass {
 
-    public final static ClientLogicalClass instance = new ClientLogicalClass();
+    public final static ClientLogicalClass instance = new ClientLogicalClass(false);
+
+    public final static ClientLogicalClass threeStateInstance = new ClientLogicalClass(true);
+
+    public final boolean threeState;
+
+    public ClientLogicalClass(boolean threeState) {
+        this.threeState = threeState;
+    }
 
     public byte getTypeId() {
-        return DataType.LOGICAL;
+        return threeState ? DataType.TLOGICAL : DataType.LOGICAL;
     }
 
     @Override
@@ -27,11 +36,12 @@ public class ClientLogicalClass extends ClientDataClass implements ClientTypeCla
     }
 
     public PropertyRenderer getRendererComponent(ClientPropertyDraw property) {
-        return new LogicalPropertyRenderer(property);
+        return new LogicalPropertyRenderer(property, threeState);
     }
 
-    public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
-        return new LogicalPropertyEditor(value);
+    @Override
+    public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property, AsyncChangeInterface asyncChange) {
+        return new LogicalPropertyEditor(value, threeState);
     }
 
     public Object parseString(String s) throws ParseException {
