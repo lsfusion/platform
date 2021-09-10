@@ -7,6 +7,7 @@ import lsfusion.client.navigator.ClientNavigatorElement;
 import lsfusion.client.navigator.ClientNavigatorFolder;
 import lsfusion.client.navigator.controller.INavigatorController;
 import lsfusion.client.navigator.window.ClientToolBarNavigatorWindow;
+import lsfusion.client.tooltip.LSFTooltipManager;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.base.view.FlexConstraints;
 import lsfusion.interop.base.view.FlexLayout;
@@ -68,7 +69,7 @@ public class ToolBarNavigatorView extends NavigatorView {
         };
         button.setIcon(new IndentedIcon(ClientImages.getImage(element.imageHolder), indent));
 
-        button.setToolTipText(element.getTooltip());
+        LSFTooltipManager.initTooltip(button, element.getTooltip(), element.path, element.creationPath);
         button.addMouseListener(new NavigatorMouseAdapter(element));
         button.setVerticalTextPosition(window.verticalTextPosition);
         button.setHorizontalTextPosition(window.horizontalTextPosition);

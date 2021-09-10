@@ -58,6 +58,7 @@ public class MainFrame implements EntryPoint {
 
     // settings    
     public static boolean devMode;
+    public static String projectLSFDir;
     public static boolean showDetailedInfo;
     public static boolean forbidDuplicateForms;
     public static boolean busyDialog;
@@ -203,6 +204,7 @@ public class MainFrame implements EntryPoint {
             public void onSuccess(GetClientSettingsResult result) {
                 busyDialogTimeout = Math.max(result.busyDialogTimeout - 500, 500); //минимальный таймаут 500мс + всё равно возникает задержка около 500мс
                 devMode = result.devMode;
+                projectLSFDir = result.projectLSFDir;
                 showDetailedInfo = result.showDetailedInfo;
                 forbidDuplicateForms = result.forbidDuplicateForms;
                 showNotDefinedStrings = result.showNotDefinedStrings;

@@ -47,6 +47,14 @@ public abstract class PanelRenderer {
             public boolean stillShowTooltip() {
                 return label.isAttached() && label.isVisible();
             }
+
+            public String getPath() {
+                return property.path;
+            }
+
+            public String getCreationPath() {
+                return property.creationPath;
+            }
         });
         if (this.property.captionFont != null) {
             this.property.captionFont.apply(label.getElement().getStyle());

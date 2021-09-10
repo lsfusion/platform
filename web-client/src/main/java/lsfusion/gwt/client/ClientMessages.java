@@ -129,6 +129,9 @@ public interface ClientMessages extends Messages {
     String propertyTooltipFormPropertyName();
     String propertyTooltipFormPropertyDeclaration();
     String propertyTooltipHotkey();
+    String showInEditor();
+    String enterPath();
+    String absolutePathToLsfusionDir();
 
     String propertyEmptyCaption();
 

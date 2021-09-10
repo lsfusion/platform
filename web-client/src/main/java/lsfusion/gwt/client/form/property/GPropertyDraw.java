@@ -69,6 +69,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public GClass[] interfacesTypes;
     public String creationScript;
     public String creationPath;
+    public String path;
     public String formPath;
 
     public GGroupObject groupObject;
@@ -185,7 +186,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public boolean panelCaptionVertical;
     public Boolean panelCaptionLast;
     public GFlexAlignment panelCaptionAlignment;
-    
+
     public boolean panelColumnVertical;
     
     public GFlexAlignment valueAlignment;
@@ -407,7 +408,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public boolean isPanelCaptionLast() {
         return panelCaptionLast != null ? panelCaptionLast : (baseType instanceof GLogicalType && !panelCaptionVertical && container.isVertical());
     }
-    
+
     public GFlexAlignment getPanelCaptionAlignment() {
         return (panelCaptionAlignment != null && panelCaptionAlignment != GFlexAlignment.STRETCH) ? panelCaptionAlignment : GFlexAlignment.CENTER;
     }

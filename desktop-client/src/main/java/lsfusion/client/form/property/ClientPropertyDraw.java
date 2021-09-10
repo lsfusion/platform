@@ -152,6 +152,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     public String creationScript;
     public String creationPath;
+    public String path;
     public String formPath;
     
     public boolean notNull;
@@ -162,7 +163,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public Compare getDefaultCompare() {
         return defaultCompare != null ? defaultCompare : baseType.getDefaultCompare();
     }
-    
+
     public Compare[] getFilterCompares() {
         return baseType.getFilterCompares();
     }
@@ -404,11 +405,11 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         ClientType changeType = getChangeType();
         return changeType != null && baseType.getTypeClass() == changeType.getTypeClass();
     }
-    
+
     public boolean isPanelCaptionLast() {
         return panelCaptionLast != null ? panelCaptionLast : (baseType instanceof ClientLogicalClass && !panelCaptionVertical && container.isVertical());
     }
-    
+
     public FlexAlignment getPanelCaptionAlignment() {
         return (panelCaptionAlignment != null && panelCaptionAlignment != FlexAlignment.STRETCH) ? panelCaptionAlignment : FlexAlignment.CENTER;
     }
@@ -509,7 +510,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         hide = inStream.readBoolean();
 
         baseType = ClientTypeSerializer.deserializeClientType(inStream);
-        
+
         if (inStream.readBoolean()) {
             externalChangeType = ClientTypeSerializer.deserializeClientType(inStream);
         }
@@ -586,6 +587,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         creationScript = pool.readString(inStream);
         creationPath = pool.readString(inStream);
+        path = pool.readString(inStream);
         formPath = pool.readString(inStream);
 
         String mouseBinding = pool.readString(inStream);
@@ -663,7 +665,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public String getCaptionOrEmpty() {
         return caption == null ? "" : caption;
     }
-    
+
     @Override
     public String toString() {
         if (!isRedundantString(caption))

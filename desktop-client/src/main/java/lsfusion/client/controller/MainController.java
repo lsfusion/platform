@@ -72,10 +72,13 @@ public class MainController {
     public static boolean useRequestTimeout;
     public static boolean showNotDefinedStrings;
     public static boolean showDetailedInfo;
+    public static String projectLSFDir;
+    public static boolean inDevMode;
     public static boolean forbidDuplicateForms;
     public static long timeDiffServerClientLog = 1000;
     public static ColorPreferences colorPreferences;
     public static ColorTheme colorTheme = ColorTheme.DEFAULT;
+    public static String userDebugPath;
 
     // lifecycle
 

@@ -26,6 +26,10 @@ import lsfusion.client.form.property.cell.EditBindingMap;
 import lsfusion.client.form.property.cell.controller.ClientAbstractCellEditor;
 import lsfusion.client.form.property.cell.controller.dispatch.EditPropertyDispatcher;
 import lsfusion.client.form.property.cell.view.ClientAbstractCellRenderer;
+import lsfusion.client.form.property.table.view.CellTableContextMenuHandler;
+import lsfusion.client.form.property.table.view.CellTableInterface;
+import lsfusion.client.form.property.table.view.InternalEditEvent;
+import lsfusion.client.tooltip.LSFTooltipManager;
 import lsfusion.client.form.property.table.view.*;
 import lsfusion.client.form.view.Column;
 import lsfusion.interop.action.ServerResponse;
@@ -479,9 +483,9 @@ public class TreeGroupTable extends ClientFormTreeTable implements AsyncChangeCe
 //        setColumnSizes(tableColumn, pref, pref, pref);
 
         getColumnModel().getSelectionModel().setSelectionInterval(0, 0);
-        
+
         setTreeCellRenderer(new DefaultTreeCellRenderer() {
-            // it's rather hard to properly set up these colors via UIDefaults 
+            // it's rather hard to properly set up these colors via UIDefaults
             @Override
             public Color getBackgroundSelectionColor() {
                 return SwingDefaults.getSelectionColor();
@@ -544,7 +548,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements AsyncChangeCe
             getColumnModel().getSelectionModel().setLeadSelectionIndex(pos <= currentSelectedColumn ? currentSelectedColumn + 1 : currentSelectedColumn);
         }
 
-        tableColumn.setToolTipText(property.getTooltipText(model.getColumnName(pos)));
+        LSFTooltipManager.initTooltip(getTableHeader(), model, this);
 
         columnsMap.put(property, tableColumn);
 

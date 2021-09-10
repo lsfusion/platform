@@ -264,6 +264,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         }
         propertyDraw.creationScript = clientPropertyDraw.creationScript;
         propertyDraw.creationPath = clientPropertyDraw.creationPath;
+        propertyDraw.path = clientPropertyDraw.path;
         propertyDraw.formPath = clientPropertyDraw.formPath;
 
         propertyDraw.groupObject = convertOrCast(clientPropertyDraw.groupObject);

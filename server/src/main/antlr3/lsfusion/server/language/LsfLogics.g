@@ -175,18 +175,18 @@ grammar LsfLogics;
 
 	public DebugInfo.DebugPoint getCurrentDebugPoint(boolean previous) {
 		if (!$propertyStatement.isEmpty()) {
-			return self.getParser().getGlobalDebugPoint(self.getName(), previous, $propertyStatement::topName, $propertyStatement::topCaption);
+			return self.getParser().getGlobalDebugPoint(self.getName(), self.getPath(), previous, $propertyStatement::topName, $propertyStatement::topCaption);
 		}
 		if (!$actionStatement.isEmpty()) {
-			return self.getParser().getGlobalDebugPoint(self.getName(), previous, $actionStatement::topName, $actionStatement::topCaption);
+			return self.getParser().getGlobalDebugPoint(self.getName(), self.getPath(), previous, $actionStatement::topName, $actionStatement::topCaption);
 		}
 		if (!$overridePropertyStatement.isEmpty()) {
-			return self.getParser().getGlobalDebugPoint(self.getName(), previous, $overridePropertyStatement::topName, null);
+			return self.getParser().getGlobalDebugPoint(self.getName(), self.getPath(), previous, $overridePropertyStatement::topName, null);
 		}
 		if (!$overrideActionStatement.isEmpty()) {
-			return self.getParser().getGlobalDebugPoint(self.getName(), previous, $overrideActionStatement::topName, null);
+			return self.getParser().getGlobalDebugPoint(self.getName(), self.getPath(), previous, $overrideActionStatement::topName, null);
 		}
-		return self.getParser().getGlobalDebugPoint(self.getName(), previous);
+		return self.getParser().getGlobalDebugPoint(self.getName(), self.getPath(), previous);
 	}
 
 	public DebugInfo.DebugPoint getEventDebugPoint() {

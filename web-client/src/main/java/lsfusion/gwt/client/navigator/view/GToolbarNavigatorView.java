@@ -1,7 +1,6 @@
 package lsfusion.gwt.client.navigator.view;
 
 import com.google.gwt.dom.client.Style;
-import com.google.gwt.event.dom.client.*;
 import com.google.gwt.user.client.ui.CellPanel;
 import com.google.gwt.user.client.ui.HasAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
@@ -77,6 +76,16 @@ public class GToolbarNavigatorView extends GNavigatorView {
             @Override
             public String getTooltip() {
                 return element.getTooltipText();
+            }
+
+            @Override
+            public String getPath() {
+                return element.path;
+            }
+
+            @Override
+            public String getCreationPath() {
+                return element.creationPath;
             }
 
             @Override

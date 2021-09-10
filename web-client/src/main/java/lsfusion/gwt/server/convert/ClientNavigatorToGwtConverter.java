@@ -33,6 +33,7 @@ public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
         element.canonicalName = clientElement.getCanonicalName();
         element.caption = clientElement.caption;
         element.creationPath = clientElement.creationPath;
+        element.path = clientElement.path;
         element.children = new ArrayList<>();
 
         element.image = createImage(clientElement.imageHolder, "navigator", false);

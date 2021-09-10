@@ -30,11 +30,11 @@ public class PropertyObjectEntity<P extends PropertyInterface> extends ActionOrP
     }
 
     public PropertyObjectEntity(Property<P> property, ImRevMap<P, ObjectEntity> mapping) {
-        super(property, mapping, null, null);
+        super(property, mapping, null, null, null);
     }
 
-    public PropertyObjectEntity(Property<P> property, ImRevMap<P, ObjectEntity> mapping, String creationScript, String creationPath) {
-        super(property, mapping, creationScript, creationPath);
+    public PropertyObjectEntity(Property<P> property, ImRevMap<P, ObjectEntity> mapping, String creationScript, String creationPath, String path) {
+        super(property, mapping, creationScript, creationPath, path);
     }
 
     @Override
