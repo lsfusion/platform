@@ -37,6 +37,7 @@ import com.google.gwt.safehtml.shared.annotations.IsSafeHtml;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Event.NativePreviewEvent;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 
@@ -705,7 +706,16 @@ public class MenuBar extends Widget implements PopupListener, HasAnimation,
     switch (DOM.eventGetType(event)) {
       //todo: replaced ONCLICK to ONMOUSEDOWN
       case Event.ONMOUSEDOWN: {
-        FocusPanel.impl.focus(getElement());
+        // in Firefox FocusImpl calls focus() immediately
+        // (in suggest box blur event is called before menu item select action, which leads to commit editing problems)
+        // while in FocusImplSafari (Chrome) this is done with 0 delay timeout.
+        // doing the same here for equal behavior
+        Timer t = new Timer() {
+          public void run() {
+            FocusPanel.impl.focus(getElement());
+          }
+        };
+        t.schedule(0);
         // Fire an item's command when the user clicks on it.
         if (item != null) {
           doItemAction(item, true, true);
