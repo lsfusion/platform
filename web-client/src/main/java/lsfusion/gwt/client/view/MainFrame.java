@@ -447,7 +447,7 @@ public class MainFrame implements EntryPoint {
         String exportName = Window.Location.getParameter("exportName");
         Integer screenWidth = Window.getClientWidth();
         Integer screenHeight = Window.getClientHeight();
-        mobile = screenWidth <= StyleDefaults.maxMobileWidth;
+        mobile = Math.min(screenHeight, screenWidth) <= StyleDefaults.maxMobileWidthHeight;
         logicsDispatchAsync = new LogicsDispatchAsync(host, port, exportName);
         logicsDispatchAsync.execute(new CreateNavigatorAction(new ConnectionInfo(screenWidth + "x" + screenHeight, mobile)), new PriorityErrorHandlingCallback<StringResult>() {
             @Override
