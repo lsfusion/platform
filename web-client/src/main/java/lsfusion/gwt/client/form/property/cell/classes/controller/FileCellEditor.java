@@ -22,32 +22,29 @@ import org.moxieapps.gwt.uploader.client.File;
 import org.moxieapps.gwt.uploader.client.Uploader;
 
 import java.util.ArrayList;
-
-import static lsfusion.gwt.client.base.GwtSharedUtils.isRedundantString;
+import java.util.List;
 
 public class FileCellEditor implements CellEditor {
     private static final ClientMessages messages = ClientMessages.Instance.get();
     private EditManager editManager;
     private boolean storeName;
-    private String description;
-    private ArrayList<String> validContentTypes; // null if FILE (with any extension/contenttype)
+    private List<String> validExtensions; // null if FILE (with any extension/contenttype)
 
     private Uploader newVersionUploader;
     private FileInfo fileInfo = new FileInfo();
     
-    public FileCellEditor(EditManager editManager, String description, boolean storeName, ArrayList<String> validContentTypes) {
+    public FileCellEditor(EditManager editManager, boolean storeName, List<String> validExtensions) {
         this.editManager = editManager;
         this.storeName = storeName;
-        this.validContentTypes = validContentTypes;
-        this.description = description;
+        this.validExtensions = validExtensions;
     }
 
     private boolean addFilesToUploader(JsArray files) {
         JsArray validFiles = JsArray.createArray().cast();
         for (int i = 0; i < files.length(); i++) {
             File file = files.get(i).cast();
-            String type = file.getType(); //some input files may have empty type
-            if ((validContentTypes == null || emptyValidContentType() || isRedundantString(type) || validContentTypes.contains(type)) && (validFiles.length() == 0)) {
+            String extension = GwtClientUtils.getFileExtension(file.getName()).toLowerCase();
+            if ((validExtensions == null || emptyValidExtension() || validExtensions.contains(extension)) && (validFiles.length() == 0)) {
                 validFiles.push(file);
             }
         }
@@ -61,14 +58,14 @@ public class FileCellEditor implements CellEditor {
         return hasValidFiles;
     }
 
-    private boolean emptyValidContentType() {
-        return validContentTypes.size() == 1 && validContentTypes.get(0).isEmpty();
+    private boolean emptyValidExtension() {
+        return validExtensions.size() == 1 && validExtensions.get(0).isEmpty();
     }
 
     public void commit() {
         ArrayList<String> fileSIDS = new ArrayList<>();
         fileSIDS.add(fileInfo.filePrefix + "_" + fileInfo.fileName);
-        editManager.commitEditing(new GFilesDTO(fileSIDS, false, storeName, validContentTypes == null));
+        editManager.commitEditing(new GFilesDTO(fileSIDS, false, storeName, validExtensions == null));
         newVersionUploader = null;
     }
 
@@ -125,10 +122,10 @@ public class FileCellEditor implements CellEditor {
 
     private InputElement createFileInputElement() {
         InputElement inputElement = Document.get().createFileInputElement();
-        if(validContentTypes != null) {
+        if(validExtensions != null) {
             String accept = "";
-            for(String type : validContentTypes) {
-                accept += (accept.isEmpty() ? "" : ",") + type;
+            for(String type : validExtensions) {
+                accept += (accept.isEmpty() ? "" : ",") + "." + type;
             }
             inputElement.setAccept(accept);
         }
@@ -160,25 +157,6 @@ public class FileCellEditor implements CellEditor {
                     commit();
                     return true;
                 });
-
-        String validFileTypes = null;
-        if (validContentTypes != null) {
-            validFileTypes = "";
-            int count = 0;
-            for (String extension : validContentTypes) {
-                validFileTypes += extension;
-                count++;
-                if (count < validContentTypes.size()) {
-                    validFileTypes += ",";
-                }
-            }
-        }
-        if (validFileTypes != null) {
-            newVersionUploader.setFileTypes(validFileTypes);
-        }
-        if (description != null) {
-            newVersionUploader.setFileTypesDescription(description);
-        }
 
         return newVersionUploader;
     }

@@ -936,4 +936,9 @@ public class GwtClientUtils {
         }
         return name != null ? prototype[name]() : name;
     }-*/;
+
+    public static String getFileExtension(String filename) {
+        int index = filename.lastIndexOf(".");
+        return (index == -1) ? "" : filename.substring(index + 1);
+    }
 }
