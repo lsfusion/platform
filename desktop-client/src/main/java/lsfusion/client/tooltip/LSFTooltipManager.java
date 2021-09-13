@@ -34,19 +34,22 @@ public class LSFTooltipManager {
 
     private static BalloonTip balloonTip;
     private static int index;
+    private static final Timer closeTimer = new Timer(500, e -> {
+        if (balloonTip != null && balloonTip.isShowing())
+            closeBalloon();
+    }) {
+        @Override
+        public boolean isRepeats() {
+            return false;
+        }
+    };
 
     public static void initTooltip(JComponent component, String tooltipText, String path, String creationPath) {
-        Timer closeTimer = getCloseTimer();
-
-        Timer tooltipTimer = new Timer(1500, evt -> balloonTip = new BalloonTip(component, createTooltipPanel(tooltipText, path, creationPath, closeTimer),
-                new LSFTooltipStyle(), false));
-
-        setComponentMouseListeners(component, closeTimer, tooltipTimer);
+        setComponentMouseListeners(component, new Timer(1500, evt -> balloonTip = new BalloonTip(component, createTooltipPanel(tooltipText, path, creationPath),
+                new LSFTooltipStyle(), false)));
     }
 
     public static void initTooltip(JComponent component, Object model, JTable gridTable) {
-        Timer closeTimer = getCloseTimer();
-
         Timer tooltipTimer = new Timer(1500, evt -> {
 
             JPanel tooltipPanel;
@@ -54,11 +57,11 @@ public class LSFTooltipManager {
                 int modelIndex = gridTable.getColumnModel().getColumn(index).getModelIndex();
                 GridTable table = (GridTable) gridTable;
                 tooltipPanel = createTooltipPanel(table.getModel().getColumnProperty(modelIndex).getTooltipText(table.getColumnCaption(index)),
-                        table.getModel().getColumnProperty(modelIndex).path, table.getModel().getColumnProperty(modelIndex).creationPath, closeTimer);
+                        table.getModel().getColumnProperty(modelIndex).path, table.getModel().getColumnProperty(modelIndex).creationPath);
             } else {
                 ClientPropertyDraw property = ((TreeGroupTable) gridTable).getProperty(0, index);
                 tooltipPanel = createTooltipPanel(property.getTooltipText(((GroupTreeTableModel) model).getColumnName(index)),
-                        property.path, property.creationPath, closeTimer);
+                        property.path, property.creationPath);
             }
 
             BasicBalloonTipPositioner positioner = new BasicBalloonTipPositioner(15, 15) {
@@ -105,16 +108,16 @@ public class LSFTooltipManager {
                 else if (model instanceof GroupTreeTableModel)
                     newIndex = ((GroupTreeTableModel) model).getColumnIndexAtX(e.getPoint().x, (TreeGroupTable) gridTable);
 
-                if (!tooltipTimer.isRunning() && balloonTip != null && !balloonTip.isShowing() && newIndex != -1) {
+                if (!tooltipTimer.isRunning() && balloonTip != null && !balloonTip.isShowing() && newIndex != -1)
                     tooltipTimer.start();
-                } else if (index != newIndex && balloonTip != null && balloonTip.isShowing()) {
-                    balloonTip.closeBalloon();
-                }
+                else if (index != newIndex && balloonTip != null && balloonTip.isShowing())
+                    closeBalloon();
+
                 index = newIndex;
             }
         });
 
-        setComponentMouseListeners(component, closeTimer, tooltipTimer);
+        setComponentMouseListeners(component, tooltipTimer);
     }
 
     private static class LSFTooltipStyle extends ToolTipBalloonStyle {
@@ -153,44 +156,35 @@ public class LSFTooltipManager {
         }
     }
 
-    private static void setComponentMouseListeners(JComponent component, Timer closeTimer, Timer tooltipTimer) {
+    private static void setComponentMouseListeners(JComponent component, Timer tooltipTimer) {
         tooltipTimer.setRepeats(false);
         component.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
                 if (balloonTip != null && balloonTip.isShowing())
-                    balloonTip.closeBalloon();
+                    closeBalloon();
                 tooltipTimer.start();
             }
 
             @Override
             public void mouseExited(MouseEvent e) {
                 tooltipTimer.stop();
-                if (balloonTip != null && balloonTip.isShowing())
+                if (balloonTip != null && balloonTip.isShowing() && !closeTimer.isRunning())
                     closeTimer.start();
             }
         });
     }
 
-    private static Timer getCloseTimer() {
-        Timer timer = new Timer(500, e -> {
-            if (balloonTip != null && balloonTip.isShowing())
-                balloonTip.closeBalloon();
-        });
-        timer.setRepeats(false);
-        return timer;
-    }
-
-    private static JPanel createTooltipPanel(String tooltipText, String path, String creationPath, Timer closeTimer) {
+    private static JPanel createTooltipPanel(String tooltipText, String path, String creationPath) {
         JPanel tooltipPanel = new JPanel(new VerticalLayout());
         tooltipPanel.add(new JLabel(tooltipText));
-        addDefaultComponentMouseListeners(tooltipPanel, closeTimer);
+        addDefaultComponentMouseListeners(tooltipPanel);
 
-        if (MainController.showDetailedInfo) {
+        if (MainController.showDetailedInfo && creationPath != null && path != null) {
             String projectLSFDir = MainController.projectLSFDir;
 
             if (projectLSFDir != null) {
-                tooltipPanel.add(getLinkComponent(projectLSFDir, creationPath, path, closeTimer));
+                tooltipPanel.add(getLinkComponent(projectLSFDir, creationPath, path));
             } else {
                 JPanel buttonPanel = new JPanel(new VerticalLayout());
                 buttonPanel.setVisible(false);
@@ -209,14 +203,14 @@ public class LSFTooltipManager {
                         } else {
                             MainController.userDebugPath = null;
                         }
-                        balloonTip.hide();
+                        closeBalloon();
                     }
                 });
-                addDefaultComponentMouseListeners(selectProjectDirButton, closeTimer);
+                addDefaultComponentMouseListeners(selectProjectDirButton);
                 buttonPanel.add(selectProjectDirButton);
 
                 JPanel horizontalPanel = new JPanel(new HorizontalLayout());
-                horizontalPanel.add(getLinkComponent(MainController.userDebugPath == null ? "use_default_path" : MainController.userDebugPath, creationPath, path, closeTimer));
+                horizontalPanel.add(getLinkComponent(MainController.userDebugPath == null ? "use_default_path" : MainController.userDebugPath, creationPath, path));
 
                 JButton preferencesButton = new JButton(new ImageIcon(ClientImages.get("userPreferences.png").getImage()));
                 preferencesButton.setContentAreaFilled(false);
@@ -234,7 +228,7 @@ public class LSFTooltipManager {
                         balloonTip.setSize(balloonTip.getWidth(), balloonTip.getHeight() + (panelVisible ? -height : height));
                     }
                 });
-                addDefaultComponentMouseListeners(preferencesButton, closeTimer);
+                addDefaultComponentMouseListeners(preferencesButton);
                 horizontalPanel.add(preferencesButton);
 
                 tooltipPanel.add(horizontalPanel);
@@ -244,54 +238,62 @@ public class LSFTooltipManager {
         return tooltipPanel;
     }
 
-    private static JTextPane getLinkComponent(String projectLSFDir, String creationPath, String path, Timer closeTimer) {
-        JTextPane showInEditorLink = null;
+    private static JTextPane getLinkComponent(String projectLSFDir, String creationPath, String path) {
+        JTextPane showInEditorLink = new JTextPane();
+        showInEditorLink.setEditable(false);
+        showInEditorLink.setContentType("text/html");
+        //use "**" instead "="
+        String command = "--line**" + Integer.parseInt(creationPath.substring(creationPath.lastIndexOf("(") + 1, creationPath.lastIndexOf(":"))) +
+                "&path**" + Paths.get(projectLSFDir, path);
+        //replace spaces and slashes because this link going through url
+        String link = "<a href=\"lsfusion-protocol://" + command.replaceAll(" ", "++").replaceAll("\\\\", "/") +
+                "\" target=\"_blank\">" + getString("show.in.editor") + "</a>";
+        showInEditorLink.setText(link);
+        addDefaultComponentMouseListeners(showInEditorLink);
 
-        if (creationPath != null) {
-            showInEditorLink = new JTextPane();
-            showInEditorLink.setEditable(false);
-            showInEditorLink.setContentType("text/html");
-            //use "**" instead "="
-            String command = "--line**" + Integer.parseInt(creationPath.substring(creationPath.lastIndexOf("(") + 1, creationPath.lastIndexOf(":"))) +
-                    "&path**" + Paths.get(projectLSFDir, path);
-            //replace spaces and slashes because this link going through url
-            String link = "<a href=\"lsfusion-protocol://" + command.replaceAll(" ", "++").replaceAll("\\\\", "/") +
-                    "\" target=\"_blank\">" + getString("show.in.editor") + "</a>";
-            showInEditorLink.setText(link);
-            addDefaultComponentMouseListeners(showInEditorLink, closeTimer);
-
-            showInEditorLink.addHyperlinkListener(e -> {
-                try {
-                    if (HyperlinkEvent.EventType.ACTIVATED.equals(e.getEventType())) {
-                        //stub for using custom-protocol
-                        URL url = new URL(null, e.getDescription(), new URLStreamHandler() {
-                            @Override
-                            protected URLConnection openConnection(URL u) {
-                                return null;
-                            }
-                        });
-                        Desktop.getDesktop().browse(url.toURI());
-                        balloonTip.hide();
-                    }
-                } catch (IOException | URISyntaxException ex) {
-                    throw Throwables.propagate(ex);
+        showInEditorLink.addHyperlinkListener(e -> {
+            try {
+                if (HyperlinkEvent.EventType.ACTIVATED.equals(e.getEventType())) {
+                    //stub for using custom-protocol
+                    URL url = new URL(null, e.getDescription(), new URLStreamHandler() {
+                        @Override
+                        protected URLConnection openConnection(URL u) {
+                            return null;
+                        }
+                    });
+                    Desktop.getDesktop().browse(url.toURI());
+                    closeBalloon();
                 }
-            });
-        }
+            } catch (IOException | URISyntaxException ex) {
+                throw Throwables.propagate(ex);
+            }
+        });
+
         return showInEditorLink;
     }
 
-    private static void addDefaultComponentMouseListeners(JComponent component, Timer timer) {
+    private static void addDefaultComponentMouseListeners(JComponent component) {
         component.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
-                timer.stop();
+                closeTimer.stop();
             }
 
             @Override
             public void mouseExited(MouseEvent e) {
-                timer.start();
+                closeTimer.start();
             }
         });
+    }
+
+    //We need to manually manage tooltip closure because we have support for tooltips on table and tree headers
+    private static void closeBalloon() {
+        Container parent = balloonTip.getParent();
+        for (Component parentComponent : parent.getComponents()) {
+            if (parentComponent instanceof BalloonTip)
+                parent.remove(parentComponent);
+        }
+        parent.revalidate();
+        parent.repaint();
     }
 }
