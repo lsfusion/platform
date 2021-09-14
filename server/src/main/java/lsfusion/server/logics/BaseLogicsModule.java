@@ -141,6 +141,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public LP<?> canceled;
 
     public LP statusHttp;
+    public LP statusHttpTo;
     public LP timeoutHttp;
     
     public LP<?> headers;
@@ -471,6 +472,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 //        cancel = findAction("cancel[]");
 
         statusHttp = findProperty("statusHttp[]");
+        statusHttpTo = findProperty("statusHttpTo[]");
         timeoutHttp = findProperty("timeoutHttp[]");
 
         headers = findProperty("headers[TEXT]");

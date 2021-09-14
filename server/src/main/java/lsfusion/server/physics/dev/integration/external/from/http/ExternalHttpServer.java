@@ -31,6 +31,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
 
+import static lsfusion.base.BaseUtils.nvl;
+
 public class ExternalHttpServer extends MonitorServer {
 
     private LogicsInstance logicsInstance;
@@ -121,7 +123,7 @@ public class ExternalHttpServer extends MonitorServer {
                 if (response.response != null)
                     sendResponse(request, response);
                 else
-                    sendOKResponse(request);
+                    sendOKResponse(request, response.statusHttp);
 
             } catch (Exception e) {
                 ServerLoggers.systemLogger.error("ExternalHttpServer error: ", e);
@@ -169,18 +171,19 @@ public class ExternalHttpServer extends MonitorServer {
             return headerValuesArray;
         }
 
-        private void sendOKResponse(HttpExchange request) throws IOException {
-            sendResponse(request, "Executed successfully".getBytes(), false);
+        private void sendOKResponse(HttpExchange request, Integer statusHttp) throws IOException {
+            sendResponse(request, "Executed successfully".getBytes(), statusHttp, false);
         }
 
         private void sendErrorResponse(HttpExchange request, String response) throws IOException {
-            sendResponse(request, response.getBytes(), true);
+            sendResponse(request, response.getBytes(), null, true);
         }
 
-        private void sendResponse(HttpExchange request, byte[] response, boolean error) throws IOException {
+        private void sendResponse(HttpExchange request, byte[] response, Integer statusHttp, boolean error) throws IOException {
             request.getResponseHeaders().add("Content-Type", "text/html; charset=utf-8");
-            ServerLoggers.httpServerLogger.info(request.getRequestURI() + " response: " + (error ? HttpServletResponse.SC_INTERNAL_SERVER_ERROR : HttpServletResponse.SC_OK));
-            request.sendResponseHeaders(error ? HttpServletResponse.SC_INTERNAL_SERVER_ERROR : HttpServletResponse.SC_OK, response.length);
+            statusHttp = nvl(statusHttp, error ? HttpServletResponse.SC_INTERNAL_SERVER_ERROR : HttpServletResponse.SC_OK);
+            ServerLoggers.httpServerLogger.info(request.getRequestURI() + " response: " + statusHttp);
+            request.sendResponseHeaders(statusHttp, response.length);
             OutputStream os = request.getResponseBody();
             os.write(response);
             os.close();
@@ -195,6 +198,7 @@ public class ExternalHttpServer extends MonitorServer {
             String[] headerValues = responseHttpEntity.headerValues;
             String[] cookieNames = responseHttpEntity.cookieNames;
             String[] cookieValues = responseHttpEntity.cookieValues;
+            Integer statusHttp = nvl(responseHttpEntity.statusHttp, HttpServletResponse.SC_OK);
 
             boolean hasContentType = false;
             boolean hasContentDisposition = false;
@@ -221,8 +225,8 @@ public class ExternalHttpServer extends MonitorServer {
             if(contentDisposition != null && !hasContentDisposition)
                 response.getResponseHeaders().add("Content-Disposition", contentDisposition);
             response.getResponseHeaders().add("Access-Control-Allow-Origin","*");
-            ServerLoggers.httpServerLogger.info(response.getRequestURI() + "response: " + HttpServletResponse.SC_OK);
-            response.sendResponseHeaders(HttpServletResponse.SC_OK, responseEntity.getContentLength());
+            ServerLoggers.httpServerLogger.info(response.getRequestURI() + "response: " + statusHttp);
+            response.sendResponseHeaders(statusHttp, responseEntity.getContentLength());
             responseEntity.writeTo(response.getResponseBody());
         }
     }

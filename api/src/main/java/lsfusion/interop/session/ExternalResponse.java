@@ -10,11 +10,14 @@ public class ExternalResponse implements Serializable {
     public final String[] cookieNames;
     public final String[] cookieValues;
 
-    public ExternalResponse(Object[] results, String[] headerNames, String[] headerValues, String[] cookieNames, String[] cookieValues) {
+    public final Integer statusHttp;
+
+    public ExternalResponse(Object[] results, String[] headerNames, String[] headerValues, String[] cookieNames, String[] cookieValues, Integer statusHttp) {
         this.results = results;
         this.headerNames = headerNames;
         this.headerValues = headerValues;
         this.cookieNames = cookieNames;
         this.cookieValues = cookieValues;
+        this.statusHttp = statusHttp;
     }
 }
