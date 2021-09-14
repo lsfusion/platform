@@ -36,6 +36,8 @@ import lsfusion.server.base.controller.thread.AssertSynchronized;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.expr.Expr;
+import lsfusion.server.data.expr.formula.FormulaUnionExpr;
+import lsfusion.server.data.expr.formula.StringOverrideFormulaImpl;
 import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.query.GroupType;
@@ -1104,7 +1106,10 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 ImMap<ObjectInstance, Expr> keys = overrideColumnKeys(mapKeys, columnKeys);
                 String propertyKey = getSID(property, i);
                 mKeyExprMap.revAdd(propertyKey, new KeyExpr("expr"));
-                mExprMap.exclAdd(propertyKey, property.getDrawInstance().getExpr(keys, getModifier()));
+                Expr propExpr = property.getDrawInstance().getExpr(keys, getModifier());
+                // override to support NULLs
+                Expr expr = FormulaUnionExpr.create(StringOverrideFormulaImpl.instance, ListFact.toList(propExpr, ValueExpr.IMPOSSIBLESTRING));
+                mExprMap.exclAdd(propertyKey, expr);
             }
         }
         ImRevMap<String, KeyExpr> keyExprMap = mKeyExprMap.immutableRev();
@@ -1148,10 +1153,20 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             }
         }
 
+        // to get real key values, not converted to String
+        for (PropertyDrawInstance property : toGroup.keyIt()) {
+            int i = 0;
+            for (ImMap<ObjectInstance, DataObject> columnKeys : toGroup.get(property)) {
+                i++;
+                Expr expr = property.getDrawInstance().getExpr(overrideColumnKeys(mapKeys, columnKeys), getModifier());
+                Expr gexpr = GroupExpr.create(exprMap, expr, groupObject.getWhere(mapKeys, getModifier()), GroupType.ANY, keyExprMap);
+                query.addProperty(getSID(property, i) + "_key", gexpr);
+            }
+        }
+
         Map<List<Object>, List<Object>> resultMap = new OrderedMap<>();
         ImOrderMap<ImMap<String, Object>, ImMap<String, Object>> result = query.execute(this);
         for (int j = 0, size = result.size(); j < size; j++) {
-            ImMap<String, Object> one = result.getKey(j);
             ImMap<String, Object> oneValue = result.getValue(j);
 
             List<Object> groupList = new ArrayList<>();
@@ -1159,7 +1174,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
             for (PropertyDrawInstance propertyDraw : toGroup.keyIt()) {
                 for (int i = 1; i <= toGroup.get(propertyDraw).size(); i++) {
-                    groupList.add(one.get(getSID(propertyDraw,i)));
+                    groupList.add(oneValue.get(getSID(propertyDraw, i) + "_key"));
                 }
             }
             int index = 1;
