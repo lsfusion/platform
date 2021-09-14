@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.rmi.RemoteException;
 import java.util.Enumeration;
 import java.util.List;
@@ -82,7 +83,7 @@ public class ExternalLogicsAndSessionRequestHandler extends ExternalRequestHandl
             if (responseHttpEntity.response != null) {
                 sendResponse(response, responseHttpEntity);
             } else {
-                sendResponse(response, getString(request, "executed.successfully"), Charset.forName("UTF-8"));
+                sendResponse(response, getString(request, "executed.successfully"), StandardCharsets.UTF_8, responseHttpEntity.statusHttp);
             }
 
         } catch (RemoteException e) {
