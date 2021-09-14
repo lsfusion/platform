@@ -5,10 +5,10 @@ import lsfusion.client.base.focus.FormFocusTraversalPolicy;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.design.ClientContainer;
-import lsfusion.client.form.filter.user.ClientFilter;
+import lsfusion.client.form.design.view.widget.PanelWidget;
+import lsfusion.client.form.design.view.widget.Widget;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.view.MainFrame;
-import lsfusion.interop.form.event.KeyInputEvent;
 
 import javax.swing.*;
 import java.awt.*;
@@ -16,7 +16,7 @@ import java.awt.event.*;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ClientFormLayout extends JPanel {
+public class ClientFormLayout extends PanelWidget {
 
     public Dimension getMaxPreferredSize() {
         return AbstractClientContainerView.getMaxPreferredSize(mainContainer,containerViews, false); // в BOX container'е берем явный size (предполагая что он используется не как базовый размер с flex > 0, а конечный)
@@ -34,11 +34,13 @@ public class ClientFormLayout extends JPanel {
     @SuppressWarnings({"FieldCanBeLocal"})
     private FocusListener focusListener;
 
-    public JComponentPanel getComponentView(ClientContainer container) {
+    public Widget getComponentView(ClientContainer container) {
         return getContainerView(container).getView();
     }
 
     public ClientFormLayout(ClientFormController iform, ClientContainer imainContainer) {
+        super(new BorderLayout());
+
         this.form = iform;
         this.mainContainer = imainContainer;
 
@@ -47,23 +49,10 @@ public class ClientFormLayout extends JPanel {
         setFocusCycleRoot(true);
         setFocusTraversalPolicy(policy);
 
-        setLayout(new BorderLayout());
-
         addContainers(mainContainer);
-        
-        JScrollPane scroll = new JScrollPane() {
-            @Override
-            public void updateUI() {
-                super.updateUI();
-                setBorder(null); // is set on every color theme change in installDefaults()
-            }
-        };
-        scroll.getVerticalScrollBar().setUnitIncrement(14);
-        scroll.getHorizontalScrollBar().setUnitIncrement(14);
-        scroll.setViewportView(getComponentView(mainContainer));
-        // to forward a mouse wheel event in nested scroll pane to the parent scroll pane
-        JLayer<JScrollPane> scrollLayer = new JLayer<>(scroll, new MouseWheelScrollLayerUI());
-        add(scrollLayer, BorderLayout.CENTER);
+
+        Widget mainView = getComponentView(mainContainer);
+        add(AbstractClientContainerView.wrapOverflowAuto(mainView, mainContainer.isVertical()).getComponent(), BorderLayout.CENTER);
 
         // приходится делать StrongRef, иначе он тут же соберется сборщиком мусора так как ContainerFocusListener держит его как WeakReference
         focusListener = new FocusAdapter() {
@@ -98,15 +87,15 @@ public class ClientFormLayout extends JPanel {
     private void addContainers(ClientContainer container) {
         ClientContainerView containerView;
         if (container.isLinear()) {
-            containerView = new LinearClientContainerView(this, container);
+            containerView = new LinearClientContainerView(container);
         } else if (container.isSplit()) {
-            containerView = new SplitClientContainerView(this, container);
+            containerView = new LinearClientContainerView(container);
         } else if (container.isTabbed()) {
-            containerView = new TabbedClientContainerView(this, container, form);
+            containerView = new TabbedClientContainerView(container, form);
         } else if (container.isColumns()) {
-            containerView = new ColumnsClientContainerView(this, container);
+            containerView = new LinearClientContainerView(container);
         } else if (container.isScroll()) {
-            containerView = new ScrollClientContainerView(this, container);
+            containerView = new LinearClientContainerView(container);
         } else if (container.isFlow()) {
             throw new IllegalStateException("Flow isn't implemented yet");
         } else {
@@ -115,7 +104,12 @@ public class ClientFormLayout extends JPanel {
 
         containerViews.put(container, containerView);
 
-        add(container, containerView.getView());
+        Widget viewWidget = containerView.getView();
+        // debug info
+        if (container.getSID() != null)
+            viewWidget.setDebugContainer(container);
+
+        add(container, viewWidget);
 
         for (ClientComponent child : container.children) {
             if (child instanceof ClientContainer) {
@@ -124,37 +118,43 @@ public class ClientFormLayout extends JPanel {
         }
     }
 
-    // вообще раньше была в validate, calculatePreferredSize видимо для устранения каких-то визуальных эффектов
-    // но для activeTab нужно вызвать предварительно, так как вкладка может только-только появится
-    // пока убрал (чтобы было как в вебе), но если будут какие-то нежелательные эффекты, можно будет вернуть а в activeElements поставить только по условию, что есть activeTabs или activeProps
-    public void preValidateMainContainer() { // hideEmptyContainerViews 
+    public void autoShowHideContainers() { // hideEmptyContainerViews
         autoShowHideContainers(mainContainer);
     }
 
-    private void autoShowHideContainers(ClientContainer container) {
-        ClientContainerView containerView = containerViews.get(container);
-//        if (!containerView.getView().isValid()) { // непонятная проверка, valid достаточно непредсказуемая штука и логически не сильно связано с логикой visibility container'ов + вызывается огранич
-            int childCnt = containerView.getChildrenCount();
-            boolean hasVisible = false;
-            for (int i = 0; i < childCnt; ++i) {
-                ClientComponent child = containerView.getChild(i);
-                Component childView = containerView.getChildView(i);
-                if (child instanceof ClientContainer) {
-                    autoShowHideContainers((ClientContainer) child);
-                }
+    private boolean autoShowHideContainers(ClientContainer container) {
+        ClientContainerView containerView = getContainerView(container);
+        boolean hasVisible = false;
+        int size = containerView.getChildrenCount();
+        boolean[] childrenVisible = new boolean[size];
+        for (int i = 0; i < size; ++i) {
+            ClientComponent child = containerView.getChild(i);
 
-                //difference between desktop and web: ClientFilter is not dialog box, it not extend ClientContainer and is in children list
-                if (childView.isVisible() && !(child instanceof ClientFilter)) {
-                    hasVisible = true;
-                }
+            boolean childVisible;
+            if (child instanceof ClientContainer)
+                childVisible = autoShowHideContainers((ClientContainer) child);
+            else {
+                Widget childView = baseComponentViews.get(child); // we have to use baseComponentView (and not a wrapper in getChildView), since it has relevant visible state
+                childVisible = childView != null && childView.isVisible();
             }
-            containerView.getView().setVisible(hasVisible);
-            containerView.updateLayout();
-//        }
+
+            childrenVisible[i] = childVisible;
+            hasVisible = hasVisible || childVisible;
+        }
+        containerView.updateLayout(childrenVisible);
+        return hasVisible;
+    }
+
+    private Map<ClientComponent, Widget> baseComponentViews = new HashMap<>();
+
+    public void addBaseComponent(ClientComponent component, Widget view) {
+        assert !(component instanceof ClientContainer);
+        baseComponentViews.put(component, view);
+        add(component, view);
     }
 
     // добавляем визуальный компонент
-    public boolean add(ClientComponent key, JComponentPanel view) {
+    public boolean add(ClientComponent key, Widget view) {
         if (key.container != null) { // container can be null when component should be layouted manually
             ClientContainerView containerView = containerViews.get(key.container);
             if (containerView != null && !containerView.hasChild(key)) {
@@ -164,7 +164,7 @@ public class ClientFormLayout extends JPanel {
                 containerView.add(key, view);
 
                 if (key.defaultComponent) {
-                    policy.addDefault(view);
+                    policy.addDefault(view.getComponent());
                 }
                 return true;
             }
@@ -172,8 +172,14 @@ public class ClientFormLayout extends JPanel {
         return false;
     }
 
+    public void removeBaseComponent(ClientComponent key, Widget view) {
+        assert !(key instanceof ClientContainer);
+        baseComponentViews.remove(key);
+        remove(key, view);
+    }
+
     // удаляем визуальный компонент
-    public boolean remove(ClientComponent key, Component view) {
+    public boolean remove(ClientComponent key, Widget view) {
         if (key.container != null) { // see add method
             ClientContainerView containerView = containerViews.get(key.container);
             if (containerView != null && containerView.hasChild(key)) {
@@ -182,7 +188,7 @@ public class ClientFormLayout extends JPanel {
 
                 containerView.remove(key);
                 if (key.defaultComponent) {
-                    policy.removeDefault(view);
+                    policy.removeDefault(view.getComponent());
                 }
                 return true;
             }

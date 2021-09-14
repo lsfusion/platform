@@ -21,4 +21,9 @@ public abstract class FilePropertyRenderer extends LabelPropertyRenderer {
         }
         super.setValue(value);
     }
+
+    @Override
+    public boolean isAutoDynamicHeight() {
+        return false;
+    }
 }

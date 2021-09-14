@@ -6,8 +6,6 @@ import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.Result;
 import lsfusion.gwt.client.base.view.FlexPanel;
 
 import java.util.function.Supplier;
@@ -23,7 +21,7 @@ public class ResizeHandler implements Event.NativePreviewHandler {
 
     private HandlerRegistration previewHandlerReg;
 
-    private int initalMouse;
+    private int initialMouse;
     private final int index;
 
     public ResizeHandler(ResizeHelper helper, int index) {
@@ -31,7 +29,7 @@ public class ResizeHandler implements Event.NativePreviewHandler {
         this.index = index;
 
         previewHandlerReg = Event.addNativePreviewHandler(this);
-        this.initalMouse = getAbsoluteRight();
+        this.initialMouse = getAbsoluteRight();
     }
 
     // it's important that checkResize event should be called for cursorElement element (otherwise, cursor will be incorrect)
@@ -148,10 +146,10 @@ public class ResizeHandler implements Event.NativePreviewHandler {
     }
 
     private void resizeHeaders(int clientX) {
-        int dragX = clientX - initalMouse;
+        int dragX = clientX - initialMouse;
         if (Math.abs(dragX) > 2) {
             helper.resizeChild(index, dragX);
-            initalMouse = Math.max(clientX, getAbsoluteRight()); // делается max, чтобы при resize'е влево растягивание шло с момента когда курсор вернется на правый край колонки (вправо там другие проблемы)
+            initialMouse = Math.max(clientX, getAbsoluteRight()); // делается max, чтобы при resize'е влево растягивание шло с момента когда курсор вернется на правый край колонки (вправо там другие проблемы)
         }
     }
 }

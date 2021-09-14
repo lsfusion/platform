@@ -32,9 +32,9 @@ import lsfusion.client.form.controller.dispatch.ClientFormActionDispatcher;
 import lsfusion.client.form.controller.remote.serialization.ClientSerializationPool;
 import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.design.ClientContainer;
-import lsfusion.client.form.design.view.ClientFormLayout;
-import lsfusion.client.form.design.view.JComponentPanel;
-import lsfusion.client.form.design.view.TabbedClientContainerView;
+import lsfusion.client.form.design.view.*;
+import lsfusion.client.form.design.view.widget.ComboBoxWidget;
+import lsfusion.client.form.design.view.widget.Widget;
 import lsfusion.client.form.filter.ClientRegularFilter;
 import lsfusion.client.form.filter.ClientRegularFilterGroup;
 import lsfusion.client.form.filter.ClientRegularFilterWrapper;
@@ -151,7 +151,7 @@ public class ClientFormController implements AsyncListener {
     private final Map<ClientGroupObject, GridController> controllers = new LinkedHashMap<>();
     private final Map<ClientTreeGroup, TreeGroupController> treeControllers = new LinkedHashMap<>();
 
-    private final Map<ClientGroupObject, List<JComponentPanel>> filterViews = new HashMap<>();
+    private final Map<ClientGroupObject, List<FlexPanel>> filterViews = new HashMap<>();
 
     private final boolean isDialog;
     private final boolean isWindow;
@@ -415,7 +415,7 @@ public class ClientFormController implements AsyncListener {
     }
 
     private void createMultipleFilterComponent(final ClientRegularFilterGroup filterGroup) {
-        final JComboBox comboBox = new JComboBox();
+        final ComboBoxWidget comboBox = new ComboBoxWidget();
         comboBox.addItem(new ClientRegularFilterWrapper(getString("form.all")));
         for (final ClientRegularFilter filter : filterGroup.filters) {
             comboBox.addItem(new ClientRegularFilterWrapper(filter));
@@ -489,18 +489,18 @@ public class ClientFormController implements AsyncListener {
         }
     }
 
-    private void addFilterView(ClientRegularFilterGroup filterGroup, JComponent filterView) {
-        JComponentPanel filterPanel = new JComponentPanel();
+    private void addFilterView(ClientRegularFilterGroup filterGroup, Widget filterView) {
+        FlexPanel filterPanel = new FlexPanel(false);
         filterPanel.setBorder(BorderFactory.createEmptyBorder(0, 2, 0 , 2));
-        filterPanel.add(filterView, BorderLayout.CENTER);
+        filterPanel.add(filterView);
         
-        formLayout.add(filterGroup, filterPanel);
+        formLayout.addBaseComponent(filterGroup, filterPanel);
 
         if (filterGroup.groupObject == null) {
             return;
         }
 
-        List<JComponentPanel> groupFilters = filterViews.get(filterGroup.groupObject);
+        List<FlexPanel> groupFilters = filterViews.get(filterGroup.groupObject);
         if (groupFilters == null) {
             groupFilters = new ArrayList<>();
             filterViews.put(filterGroup.groupObject, groupFilters);
@@ -509,7 +509,7 @@ public class ClientFormController implements AsyncListener {
     }
 
     public void setFiltersVisible(ClientGroupObject groupObject, boolean visible) {
-        List<JComponentPanel> groupFilters = filterViews.get(groupObject);
+        List<FlexPanel> groupFilters = filterViews.get(groupObject);
         if (groupFilters != null) {
             for (JComponent filterView : groupFilters) {
                 filterView.setVisible(visible);
@@ -699,15 +699,11 @@ public class ClientFormController implements AsyncListener {
             treeController.processFormChanges(formChanges, currentGridObjects);
         }
         
-        formLayout.preValidateMainContainer();
+        formLayout.autoShowHideContainers();
         
         activateElements(formChanges, firstChanges);
 
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                formLayout.revalidate();
-            }
-        });
+        SwingUtilities.invokeLater(() -> formLayout.revalidate());
     }
     
     private void activateElements(ClientFormChanges formChanges, boolean firstChanges) {
@@ -1696,12 +1692,10 @@ public class ClientFormController implements AsyncListener {
 
         // update captions (actually we could've set them directly to the containers, but tabbed pane physically adds / removes that views, so the check if there is a tab is required there)
         ClientFormLayout layout = getLayout();
-        if(clientContainer.isTab())
-            ((TabbedClientContainerView)layout.getContainerView(clientContainer.container)).updateTabCaption(clientContainer);
-        else if(clientContainer.main)
+        if(clientContainer.main)
             updateFormCaption();
         else
-            layout.getContainerView(clientContainer).updateCaption();
+            layout.getContainerView(clientContainer.container).updateCaption(clientContainer);
     }
 
     private abstract class RmiCheckNullFormRequest<T> extends RmiRequest<T> {

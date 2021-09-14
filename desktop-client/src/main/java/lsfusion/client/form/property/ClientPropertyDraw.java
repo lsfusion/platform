@@ -16,6 +16,7 @@ import lsfusion.client.form.controller.remote.serialization.ClientSerializationP
 import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientGroupObjectValue;
+import lsfusion.client.form.object.panel.controller.PropertyPanelController;
 import lsfusion.client.form.object.table.controller.TableController;
 import lsfusion.client.form.property.async.ClientAsyncChange;
 import lsfusion.client.form.property.async.ClientAsyncEventExec;
@@ -217,10 +218,18 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return renderer;
     }
 
-    public PanelView getPanelView(ClientFormController form, ClientGroupObjectValue columnKey) {
-        return baseType.getPanelView(this, columnKey, form);
+    public PanelView getPanelView(ClientFormController form, ClientGroupObjectValue columnKey, PropertyPanelController.CaptionContainer captionContainer) {
+        return baseType.getPanelView(this, columnKey, form, captionContainer);
     }
-    
+
+    // padding has to be included for grid column for example, and not for panel property (since flex, width, min-width, etc. doesn't include padding)
+    public int getValueWidthWithPadding(JComponent component) {
+        return getValueWidth(component) + 1 * 2;
+    }
+    public int getValueHeightWithPadding(JComponent component) {
+        return getValueHeight(component) + 1 * 2;
+    }
+
     public int getValueWidth() {
         if (valueSize != null) {
             return valueSize.width;
@@ -619,6 +628,10 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         notNull = inStream.readBoolean();
     }
 
+    public boolean hasColumnGroupObjects() {
+        return columnGroupObjects != null && !columnGroupObjects.isEmpty();
+    }
+
     public ClientAsyncEventExec getAsyncEventExec(String actionSID) {
         return asyncExecMap.get(actionSID);
     }
@@ -719,7 +732,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
             String scriptPath = creationPath != null ? escapeLineBreakHTML(creationPath) : "";
             String scriptFormPath = formPath != null ? escapeLineBreakHTML(formPath) : "";
             
-            if (baseType instanceof ClientActionClass) {
+            if (isAction()) {
                 return String.format(TOOL_TIP_FORMAT + DETAILED_ACTION_TOOL_TIP_FORMAT,
                         propCaption, changeKeyText, canonicalName, ifaceObjects, scriptPath, propertyFormName, scriptFormPath);
             } else {
@@ -737,6 +750,14 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     private String escapeHTML(String value) {
         return value.replace("<", "&lt;").replace(">", "&gt;");
+    }
+
+    public boolean isAutoDynamicHeight() {
+        return getRendererComponent().isAutoDynamicHeight();
+    }
+
+    public boolean isAction() {
+        return baseType instanceof ClientActionClass;
     }
 
     public class CaptionReader implements ClientPropertyReader {

@@ -1,7 +1,8 @@
 package lsfusion.client.form.object.table.grid.view;
 
 import lsfusion.client.form.controller.ClientFormController;
-import lsfusion.client.form.design.view.JComponentPanel;
+import lsfusion.client.form.design.view.FlexPanel;
+import lsfusion.client.form.design.view.widget.ScrollPaneWidget;
 import lsfusion.client.form.object.table.grid.ClientGrid;
 import lsfusion.client.form.object.table.grid.controller.GridController;
 import lsfusion.client.form.object.table.grid.user.design.GridUserPreferences;
@@ -9,8 +10,8 @@ import lsfusion.client.form.object.table.grid.user.design.GridUserPreferences;
 import javax.swing.*;
 import java.awt.*;
 
-public class GridView extends JComponentPanel {
-    final JScrollPane pane;
+public class GridView extends FlexPanel {
+    final ScrollPaneWidget pane;
 
     private final ClientGrid grid;
     private final GridTable gridTable;
@@ -22,6 +23,7 @@ public class GridView extends JComponentPanel {
     }
 
     public GridView(GridController iGridController, ClientFormController form, GridUserPreferences[] iuserPreferences, boolean tabVertical, boolean verticalScroll) {
+        super(false);
         gridController = iGridController;
 
         grid = gridController.getGroupObject().grid;
@@ -30,7 +32,7 @@ public class GridView extends JComponentPanel {
 
         gridTable.setTabVertical(tabVertical);
 
-        pane = new JScrollPane(gridTable) {
+        pane = new ScrollPaneWidget(gridTable) {
             @Override
             public void doLayout() {
                 // хак, чтобы не изменялся ряд при изменении размеров таблицы,
@@ -77,9 +79,9 @@ public class GridView extends JComponentPanel {
 
         gridTable.configureEnclosingScrollPane(pane);
 
-        grid.installMargins(this);
+//        grid.installMargins(this);
 
-        add(pane, BorderLayout.CENTER);
+        addFillFlex(pane, null);
     }
 
     public GridController getGridController() {

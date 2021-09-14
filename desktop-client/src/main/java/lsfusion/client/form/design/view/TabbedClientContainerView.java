@@ -6,10 +6,10 @@ import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.design.ClientContainer;
+import lsfusion.client.form.design.view.widget.PanelWidget;
+import lsfusion.client.form.design.view.widget.Widget;
 import lsfusion.client.form.object.table.grid.view.GridTable;
-import lsfusion.interop.base.view.FlexAlignment;
-import lsfusion.interop.base.view.FlexConstraints;
-import lsfusion.interop.form.design.CachableLayout;
+import lsfusion.interop.base.view.FlexLayout;
 import lsfusion.interop.form.event.KeyStrokes;
 
 import javax.swing.*;
@@ -29,7 +29,7 @@ public class TabbedClientContainerView extends AbstractClientContainerView {
 
     private final ClientFormController form;
 
-    private final ContainerViewPanel panel;
+    private final PanelWidget panel;
     private final JPanel hiddenHolderPanel;
     private final TabbedPane tabbedPane;
 
@@ -37,8 +37,8 @@ public class TabbedClientContainerView extends AbstractClientContainerView {
 
     private ClientComponent currentChild;
 
-    public TabbedClientContainerView(ClientFormLayout formLayout, ClientContainer icontainer, ClientFormController iform) {
-        super(formLayout, icontainer);
+    public TabbedClientContainerView(ClientContainer icontainer, ClientFormController iform) {
+        super(icontainer);
         assert container.isTabbed();
 
         this.form = iform;
@@ -52,7 +52,7 @@ public class TabbedClientContainerView extends AbstractClientContainerView {
 
         hiddenHolderPanel = new JPanel(null);
 
-        panel = new ContainerViewPanel();
+        panel = new PanelWidget(new BorderLayout());
         panel.add(tabbedPane, BorderLayout.CENTER);
         panel.add(hiddenHolderPanel, BorderLayout.SOUTH);
 
@@ -100,12 +100,17 @@ public class TabbedClientContainerView extends AbstractClientContainerView {
     }
 
     @Override
-    public void addImpl(int index, ClientComponent child, JComponentPanel view) {
-        hiddenHolderPanel.add(view);
+    public void addImpl(int index, ClientComponent child, Widget view) {
+        hiddenHolderPanel.add(view.getComponent());
     }
 
     @Override
-    public void removeImpl(int index, ClientComponent child, JComponentPanel view) {
+    protected FlexPanel wrapBorderImpl(ClientComponent child) {
+        return null;
+    }
+
+    @Override
+    public void removeImpl(int index, ClientComponent child) {
         int visibleIndex = visibleChildren.indexOf(child);
         if (visibleIndex != -1) {
             visibleChildren.remove(visibleIndex);
@@ -114,14 +119,14 @@ public class TabbedClientContainerView extends AbstractClientContainerView {
     }
 
     @Override
-    public void updateLayout() {
+    public void updateLayout(boolean[] childrenVisible) {
         int childCnt = childrenViews.size();
         for (int i = 0; i < childCnt; i++) {
             ClientComponent child = children.get(i);
-            Component childView = childrenViews.get(i);
+            Widget childView = childrenViews.get(i);
 
             int index = visibleChildren.indexOf(child);
-            if (childView.isVisible()) {
+            if (childrenVisible[i]) {
                 if (index == -1) {
                     index = BaseUtils.relativePosition(child, children, visibleChildren);
                     visibleChildren.add(index, child);
@@ -129,14 +134,23 @@ public class TabbedClientContainerView extends AbstractClientContainerView {
                 }
             } else if (index != -1) {
                 visibleChildren.remove(index);
-                hiddenHolderPanel.add(childView);
+                hiddenHolderPanel.add(childView.getComponent());
                 tabbedPane.removeTab(index);
             }
         }
+
+        super.updateLayout(childrenVisible);
     }
 
-    public ContainerViewPanel getPanel() {
+    public Widget getView() {
         return panel;
+    }
+
+    @Override
+    public void updateCaption(ClientContainer clientContainer) {
+        int index = getTabIndex(clientContainer);
+        if(index >= 0)
+            tabbedPane.setTitleAt(index, clientContainer.caption);
     }
 
     private int getTabIndex(ClientComponent component) {
@@ -154,12 +168,6 @@ public class TabbedClientContainerView extends AbstractClientContainerView {
         }
     }
 
-    public void updateTabCaption(ClientComponent component) {
-        int index = getTabIndex(component);
-        if(index >= 0)
-            tabbedPane.setTitleAt(index, component.getCaption());
-    }
-
     public class TabbedPane extends JTabbedPane {
         public TabbedPane() {
             super(SwingConstants.TOP, JTabbedPane.SCROLL_TAB_LAYOUT);
@@ -167,15 +175,15 @@ public class TabbedClientContainerView extends AbstractClientContainerView {
 
         @Override
         public Dimension getMinimumSize() {
-            return layoutSize(CachableLayout.minSizeGetter);
+            return layoutSize(Component::getMinimumSize);
         }
 
         @Override
         public Dimension getPreferredSize() {
-            return layoutSize(CachableLayout.prefSizeGetter);
+            return layoutSize(Component::getPreferredSize);
         }
 
-        private Dimension layoutSize(CachableLayout.ComponentSizeGetter sizeGetter) {
+        private Dimension layoutSize(FlexLayout.ComponentSizeGetter sizeGetter) {
             Dimension pref = super.getPreferredSize();
 
             //заново считаем максимальный размер и вычитаем его, т. к. размеры таб-панели зависят от LAF
@@ -204,9 +212,9 @@ public class TabbedClientContainerView extends AbstractClientContainerView {
             return pref;
         }
 
-        public void addTab(int index, ClientComponent child, Component childView) {
+        public void addTab(int index, ClientComponent child, Widget childView) {
             // добавляем не сам компонент, а proxyPanel, чтобы TabbedPane не управляла его видимостью и не мешала логике autohide'ов
-            JComponentPanel proxyPanel = new JComponentPanel(true, FlexAlignment.START) {
+            FlexPanel proxyPanel = new FlexPanel(true) {
                 @Override
                 public void validate() {
                     super.validate();
@@ -216,7 +224,8 @@ public class TabbedClientContainerView extends AbstractClientContainerView {
             
             proxyPanel.setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1));
 
-            proxyPanel.add(childView, new FlexConstraints(child.getAlignment(), child.getFlex()));
+            AbstractClientContainerView.add(proxyPanel, childView, child, 0);
+//            proxyPanel.add(childView, child.getAlignment(), child.getFlex());
 
             insertTab(child.getCaption(), null, proxyPanel, null, index);
 //            updateTabCaption(child);

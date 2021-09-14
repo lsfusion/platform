@@ -36,4 +36,9 @@ public class LogicalPropertyRenderer extends PropertyRenderer {
         getComponent().setSelected(value != null && (Boolean) value);
         getComponent().setEnabled(!threeState || value != null);
     }
+
+    @Override
+    public boolean isAutoDynamicHeight() {
+        return false;
+    }
 }

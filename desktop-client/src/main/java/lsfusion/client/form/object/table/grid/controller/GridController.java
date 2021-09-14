@@ -84,7 +84,7 @@ public class GridController extends AbstractTableController {
 
         if (groupObject != null) {
             calculationsView = new CalculationsView();
-            formLayout.add(groupObject.calculations, calculationsView);
+            formLayout.addBaseComponent(groupObject.calculations, calculationsView);
             
             if (groupObject.userFilter.visible) {
                 filter = new FilterController(this, groupObject.userFilter) {
@@ -113,7 +113,7 @@ public class GridController extends AbstractTableController {
                 filter.getView().addActionsToInputMap((GridTable) table);
             }
 
-            formLayout.add(groupObject.grid, view);
+            formLayout.addBaseComponent(groupObject.grid, view);
 
             configureToolbar();
         }

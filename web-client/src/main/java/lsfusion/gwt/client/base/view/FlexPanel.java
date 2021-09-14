@@ -18,7 +18,6 @@ import java.util.List;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.calculateStackMaxPreferredSize;
 
-// выполняет роль JComponentPanel в desktop
 public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesResize, HasMaxPreferredSize {
 
     protected static FlexPanelImpl impl = FlexPanelImpl.get();

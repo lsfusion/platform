@@ -138,6 +138,10 @@ public abstract class PropertyRenderer {
     protected String getRequiredStringValue() {
         return MainController.showNotDefinedStrings ? REQUIRED_STRING : "";
     }
+
+    public boolean isAutoDynamicHeight() {
+        return true;
+    }
 }
 
 

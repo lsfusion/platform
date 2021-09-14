@@ -1,12 +1,13 @@
 package lsfusion.client.form.property.panel.view;
 
+import lsfusion.client.form.design.view.widget.Widget;
 import lsfusion.client.form.property.cell.controller.dispatch.EditPropertyDispatcher;
 
 import javax.swing.*;
 import java.awt.*;
 
 public interface PanelView {
-    JComponent getComponent();
+    Widget getWidget();
     JComponent getFocusComponent();
     void setValue(Object ivalue);
     void setReadOnly(boolean readOnly);

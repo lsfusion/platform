@@ -2,6 +2,7 @@ package lsfusion.client.form.filter.user.view;
 
 import lsfusion.client.classes.data.ClientLogicalClass;
 import lsfusion.client.form.controller.ClientFormController;
+import lsfusion.client.form.design.view.widget.PanelWidget;
 import lsfusion.client.form.filter.user.ClientDataFilterValue;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.object.table.controller.TableController;
@@ -13,7 +14,7 @@ import javax.swing.table.TableCellEditor;
 import java.awt.*;
 import java.util.EventObject;
 
-public abstract class DataFilterValueView extends JPanel {
+public abstract class DataFilterValueView extends PanelWidget {
     private final ClientDataFilterValue filterValue;
     public DataFilterValueViewTable valueTable;
 

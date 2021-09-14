@@ -31,4 +31,9 @@ public class TextBasedPropertyRenderer extends LabelPropertyRenderer {
             SwingUtils.drawHorizontalLine((Graphics2D) g, SwingDefaults.getNotNullLineColor(), 4, getComponent().getWidth() - 6, getComponent().getHeight() - 3);
         }
     }
+
+    @Override
+    public boolean isAutoDynamicHeight() {
+        return false;
+    }
 }

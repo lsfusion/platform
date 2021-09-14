@@ -1,29 +1,28 @@
 package lsfusion.client.form.object.table.view;
 
-import lsfusion.client.form.design.view.JComponentPanel;
+import lsfusion.client.form.design.view.FlexPanel;
+import lsfusion.client.form.design.view.widget.PanelWidget;
 import lsfusion.client.form.object.table.ClientToolbar;
 import lsfusion.interop.base.view.FlexAlignment;
-import lsfusion.interop.base.view.FlexConstraints;
-import lsfusion.interop.base.view.FlexLayout;
 
 import javax.swing.*;
 import java.awt.*;
 
-public class ToolbarView extends JComponentPanel {
-    private JPanel mainPanel;
+public class ToolbarView extends FlexPanel {
+    private PanelWidget mainPanel;
 
     public ToolbarView(ClientToolbar toolbar) {
-        setLayout(new FlexLayout(this, false, FlexAlignment.START));
+        super(false);
         initBottomContainer();
-        toolbar.installMargins(this);
+//        toolbar.installMargins(this);
     }
 
     private void initBottomContainer() {
-        mainPanel = new JPanel();
+        mainPanel = new PanelWidget();
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.X_AXIS));
         mainPanel.setAlignmentY(Component.TOP_ALIGNMENT);
 
-        add(mainPanel, new FlexConstraints(FlexAlignment.CENTER, 0));
+        add(mainPanel, FlexAlignment.CENTER, 0.0);
     }
     
     public void addSeparator() {

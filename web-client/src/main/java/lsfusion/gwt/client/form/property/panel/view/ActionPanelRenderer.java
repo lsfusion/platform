@@ -25,6 +25,7 @@ public class ActionPanelRenderer extends PanelRenderer {
 
         // we don't need to wrap value in any container (which is important for LinearContainerView since it can override set baseSizes)
         // because any panel renderer is wrapped in renderersPanel (see getComponent usage)
+        // however addFill there will override value sizes set in setDynamic, but it doesn't matter now
         Pair<Integer, Integer> valueSizes = value.setDynamic(false);
         assert !property.isAutoDynamicHeight();
         if(captionContainer != null) {

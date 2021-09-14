@@ -3,16 +3,15 @@ package lsfusion.client.navigator.view;
 import com.formdev.flatlaf.ui.FlatButtonBorder;
 import lsfusion.client.base.view.ClientImages;
 import lsfusion.client.base.view.SwingDefaults;
+import lsfusion.client.form.design.view.FlexPanel;
+import lsfusion.client.form.design.view.widget.ToggleButtonWidget;
 import lsfusion.client.navigator.ClientNavigatorElement;
 import lsfusion.client.navigator.ClientNavigatorFolder;
 import lsfusion.client.navigator.controller.INavigatorController;
 import lsfusion.client.navigator.window.ClientToolBarNavigatorWindow;
 import lsfusion.client.tooltip.LSFTooltipManager;
 import lsfusion.interop.base.view.FlexAlignment;
-import lsfusion.interop.base.view.FlexConstraints;
-import lsfusion.interop.base.view.FlexLayout;
 
-import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
 import java.awt.event.ItemEvent;
@@ -25,16 +24,15 @@ import static lsfusion.client.base.view.SwingDefaults.getSelectionColor;
 import static lsfusion.client.base.view.SwingDefaults.getToggleButtonHoverBackground;
 
 public class ToolBarNavigatorView extends NavigatorView {
-    private final JPanel toolBarPanel;
+    private final FlexPanel toolBarPanel;
     private final ClientToolBarNavigatorWindow window;
     private ClientNavigatorElement selected;
 
     public ToolBarNavigatorView(ClientToolBarNavigatorWindow iWindow, INavigatorController controller) {
-        super(iWindow, new JPanel(), controller);
+        super(iWindow, new FlexPanel(iWindow.isVertical(), FlexAlignment.START), controller);
         window = iWindow;
 
-        toolBarPanel = (JPanel) getComponent();
-        toolBarPanel.setLayout(new FlexLayout(toolBarPanel, iWindow.isVertical(), FlexAlignment.START));
+        toolBarPanel = (FlexPanel) getComponent();
     }
 
     @Override
@@ -55,7 +53,7 @@ public class ToolBarNavigatorView extends NavigatorView {
     }
 
     private void addElement(ClientNavigatorElement element, Set<ClientNavigatorElement> newElements, int indent) {
-        JToggleButton button = new JToggleButton(element.toString()) {
+        ToggleButtonWidget button = new ToggleButtonWidget(element.toString()) {
             @Override
             public void updateUI() {
                 super.updateUI();
@@ -116,7 +114,7 @@ public class ToolBarNavigatorView extends NavigatorView {
             button.setSelected(true);
         }
 
-        toolBarPanel.add(button, new FlexConstraints(FlexAlignment.STRETCH, 0));
+        toolBarPanel.add(button, FlexAlignment.STRETCH, 0.0);
 
         if (element.window == null || element.window.equals(window)) {
             for (ClientNavigatorElement childEl : element.children) {

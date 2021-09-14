@@ -47,7 +47,7 @@ public abstract class FilterController {
     }
     
     public void addView(ClientFormLayout layout) {
-        layout.add(filter, getView());
+        layout.addBaseComponent(filter, getView());
     }
 
     public TableController getLogicsSupplier() {

@@ -84,7 +84,7 @@ public class TreeGroupController extends AbstractTableController {
             addToToolbar(expandTreeButton);
         }
 
-        formLayout.add(treeGroup, view);
+        formLayout.addBaseComponent(treeGroup, view);
 
         // вот так вот приходится делать, чтобы "узнавать" к какому GroupObject относится этот Component
         view.putClientProperty("groupObject", lastGroupObject);
