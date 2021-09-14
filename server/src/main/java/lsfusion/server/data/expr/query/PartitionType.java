@@ -144,7 +144,8 @@ public abstract class PartitionType implements AggrType {
         protected PartitionCalc getPartitionCalc(SQLSyntax syntax, Type type, TypeEnvironment typeEnv, MExclSet<PartitionCalc> mCalcTokens, ImList<PartitionToken> exprs, ImOrderMap<PartitionToken, CompileOrder> orders, ImSet<PartitionToken> partitions) {
             // 1-й пробег высчитываем огругленную и часть, и первую запись на которую ра
             PartitionCalc.Aggr part = new PartitionCalc.Aggr("SUM", ListFact.singleton(exprs.get(0)), partitions);
-            PartitionCalc round = new PartitionCalc("ROUND(CAST((prm1*prm2/prm3) AS numeric)," + roundLen + ")", part, exprs.get(0), exprs.get(1)); // тут местами перепутаны параметры получаются, см. конструктор
+            String proportion = "CASE WHEN prm1 IS NOT NULL AND prm2 IS NOT NULL AND prm3 IS NOT NULL AND " + syntax.getNotZero("prm3", type, typeEnv) + " IS NULL THEN 0 ELSE prm1*prm2/prm3";
+            PartitionCalc round = new PartitionCalc("ROUND(CAST((" + proportion + ") AS numeric)," + roundLen + ")", part, exprs.get(0), exprs.get(1)); // тут местами перепутаны параметры получаются, см. конструктор
             PartitionCalc number = new PartitionCalc(new PartitionCalc.Aggr("ROW_NUMBER", orders, partitions));
             mCalcTokens.exclAdd(number);
             // 2-й пробег - результат
