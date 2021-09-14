@@ -3,10 +3,9 @@ package lsfusion.client.form.design.view;
 import lsfusion.base.BaseUtils;
 import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.design.ClientContainer;
-import lsfusion.client.form.design.view.widget.PanelWidget;
+import lsfusion.client.form.design.view.widget.ScrollPaneWidget;
 import lsfusion.client.form.design.view.widget.Widget;
 
-import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,7 +36,8 @@ public abstract class AbstractClientContainerView implements ClientContainerView
 
         child.installMargins(view.getComponent());
 
-        boolean fixFlexBasis = child.isTab() && child.getFlex() > 0 && container.getFlexCount() > 1;
+        boolean fixFlexBasis = false; // we don't need this for now, since tabbed pane in desktop uses max preferredSize
+        // child.isTab() && child.getFlex() > 0 && container.getFlexCount() > 1;
 
         children.add(index, child);
         childrenViews.add(index, wrapAndOverflowView(child, view, fixFlexBasis));
@@ -50,16 +50,12 @@ public abstract class AbstractClientContainerView implements ClientContainerView
         boolean isOppositeAutoSized = child.getSize(!vertical) == null;
 
         // somewhy it doesn't work properly for tabbed client container, but it's not that important for now
-        if((!(isOppositeAutoSized && isAutoSized) || fixFlexBasis) && this instanceof LinearClientContainerView) { // child is tab, since basis is fixed, strictly speaking this all check is an optimization
-            PanelWidget panel = new PanelWidget(new BorderLayout());
-            wrapOverflowAuto(panel, view);
-//            ClientColorUtils.designComponent(scroll, container.design);
-//            setSizes(panel, child);
-            view = panel;
-        }
+        if((!(isOppositeAutoSized && isAutoSized) || fixFlexBasis) && this instanceof LinearClientContainerView) // child is tab, since basis is fixed, strictly speaking this all check is an optimization
+            view = wrapOverflowAuto(view, !isOppositeAutoSized? vertical : null);
 
         FlexPanel wrapPanel = wrapBorderImpl(child);
         if(wrapPanel != null) {
+            wrapPanel.setDebugContainer(wrapDebugContainer("BORDER", view));
             // one of the main problem is that stretch (opposite direction) can give you flex-basis 0, and "appropriate" auto size, but with flex (main direction) you can not obtain this effect (actually we can by setting shrink !!!!), so we have to look at size
             // now since we have auto size we'll use the option without shrink
             wrapPanel.addFillFlex(view, isAutoSized ? null : 0); // we need zero basis, because overflow:auto is set for a view (not for this panel), and with auto size view will overflow this captionpanel
@@ -67,24 +63,45 @@ public abstract class AbstractClientContainerView implements ClientContainerView
             view = wrapPanel;
         }
 
+        // we don't need this in desktop client
+//        if(isOppositeAutoSized && child.isStretch()) {
+//            wrapPanel = new FlexPanel(!vertical); // this container will have upper container size, but since the default overflow is visible, inner component with overflow:auto
+//            wrapPanel.setStyleName("oppositeStretchAutoSizePanel"); // just to identify this div in dom
+//            wrapPanel.addFillFlex(view, null);
+//            view = wrapPanel;
+//        }
         return view;
     }
 
-    public static void wrapOverflowAuto(PanelWidget container, Widget view) {
-        JScrollPane scroll = new JScrollPane() {
+    public static Object wrapDebugContainer(String prefix, Widget widget) {
+        return new Object() {
+            @Override
+            public String toString() {
+                return prefix + " [ " + widget.getDebugContainer() + " ] ";
+            }
+        };
+    }
+    public static Widget wrapOverflowAuto(Widget view, Boolean oppositeFixedVertical) {
+//        assert view instanceof Scrollable;
+        ScrollPaneWidget scroll = new ScrollPaneWidget(view.getComponent()) {
             @Override
             public void updateUI() {
                 super.updateUI();
                 setBorder(null); // is set on every color theme change in installDefaults()
             }
         };
+        // need this to force view use getFlexPreferredSize for STRETCH not auto sized direction instead of getPreferredSize (web browser does that)
+        if(oppositeFixedVertical != null && view instanceof FlexPanel && oppositeFixedVertical.equals(((FlexPanel) view).isVertical())) {
+            scroll.oppositeFixedFlexPanel = (FlexPanel) view;
+            ((FlexPanel) view).oppositeFixedScrollPane = scroll;
+        }
+
         scroll.getVerticalScrollBar().setUnitIncrement(14);
         scroll.getHorizontalScrollBar().setUnitIncrement(14);
-        JLayer<JScrollPane> scrollLayer = new JLayer<>(scroll, new MouseWheelScrollLayerUI());
-        scroll.setViewportView(view.getComponent());
-
         // to forward a mouse wheel event in nested scroll pane to the parent scroll pane
-        container.add(scrollLayer, BorderLayout.CENTER);
+        scroll.setDebugContainer(wrapDebugContainer("SCROLL", view));
+
+        return scroll;
     }
 
     @Override
@@ -233,8 +250,8 @@ public abstract class AbstractClientContainerView implements ClientContainerView
 
         Integer crossSize = component.getSize(!vertical);
         boolean isStretch = component.isStretch();
-        if(isStretch && crossSize != null && crossSize.equals(0)) // for opposite direction and stretch zero does not make any sense (it is zero by default)
-            crossSize = null;
+//        if(isStretch && crossSize != null && crossSize.equals(0)) // for opposite direction and stretch zero does not make any sense (it is zero by default)
+//            crossSize = null;
         FlexPanel.setBaseSize(widget, !vertical, crossSize, !isStretch);
     }
 }

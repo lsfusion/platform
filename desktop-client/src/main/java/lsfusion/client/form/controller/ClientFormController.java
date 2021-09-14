@@ -699,15 +699,11 @@ public class ClientFormController implements AsyncListener {
             treeController.processFormChanges(formChanges, currentGridObjects);
         }
         
-        formLayout.preValidateMainContainer();
+        formLayout.autoShowHideContainers();
         
         activateElements(formChanges, firstChanges);
 
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                formLayout.revalidate();
-            }
-        });
+        SwingUtilities.invokeLater(() -> formLayout.revalidate());
     }
     
     private void activateElements(ClientFormChanges formChanges, boolean firstChanges) {

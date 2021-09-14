@@ -9,7 +9,7 @@ import lsfusion.client.form.design.ClientContainer;
 import lsfusion.client.form.design.view.widget.PanelWidget;
 import lsfusion.client.form.design.view.widget.Widget;
 import lsfusion.client.form.object.table.grid.view.GridTable;
-import lsfusion.interop.form.design.CachableLayout;
+import lsfusion.interop.base.view.FlexLayout;
 import lsfusion.interop.form.event.KeyStrokes;
 
 import javax.swing.*;
@@ -175,15 +175,15 @@ public class TabbedClientContainerView extends AbstractClientContainerView {
 
         @Override
         public Dimension getMinimumSize() {
-            return layoutSize(CachableLayout.minSizeGetter);
+            return layoutSize(Component::getMinimumSize);
         }
 
         @Override
         public Dimension getPreferredSize() {
-            return layoutSize(CachableLayout.prefSizeGetter);
+            return layoutSize(Component::getPreferredSize);
         }
 
-        private Dimension layoutSize(CachableLayout.ComponentSizeGetter sizeGetter) {
+        private Dimension layoutSize(FlexLayout.ComponentSizeGetter sizeGetter) {
             Dimension pref = super.getPreferredSize();
 
             //заново считаем максимальный размер и вычитаем его, т. к. размеры таб-панели зависят от LAF
@@ -224,7 +224,8 @@ public class TabbedClientContainerView extends AbstractClientContainerView {
             
             proxyPanel.setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1));
 
-            proxyPanel.add(childView, child.getAlignment(), child.getFlex());
+            AbstractClientContainerView.add(proxyPanel, childView, child, 0);
+//            proxyPanel.add(childView, child.getAlignment(), child.getFlex());
 
             insertTab(child.getCaption(), null, proxyPanel, null, index);
 //            updateTabCaption(child);

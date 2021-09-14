@@ -9,7 +9,6 @@ import lsfusion.client.classes.ClientType;
 import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.design.view.widget.ButtonWidget;
-import lsfusion.client.form.design.view.FlexPanel;
 import lsfusion.client.form.design.view.widget.Widget;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.property.ClientPropertyDraw;
@@ -20,7 +19,6 @@ import lsfusion.client.form.property.cell.controller.EditPropertyHandler;
 import lsfusion.client.form.property.cell.controller.dispatch.EditPropertyDispatcher;
 import lsfusion.client.form.property.table.view.ClientPropertyContextMenuPopup;
 import lsfusion.interop.action.ServerResponse;
-import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.event.KeyInputEvent;
 import lsfusion.interop.form.event.KeyStrokes;
 
@@ -29,7 +27,6 @@ import java.awt.*;
 import java.awt.event.*;
 
 import static javax.swing.SwingUtilities.isRightMouseButton;
-import static lsfusion.client.base.SwingUtils.overrideSize;
 import static lsfusion.client.form.property.cell.EditBindingMap.getPropertyKeyPressActionSID;
 
 public class ActionPanelView extends ButtonWidget implements PanelView, EditPropertyHandler {
@@ -234,7 +231,7 @@ public class ActionPanelView extends ButtonWidget implements PanelView, EditProp
         }
         int borderCorrection = SwingDefaults.getButtonBorderWidth() * 2;
         int overrideWidth = propertyValueWidth > 0 ? propertyValueWidth + borderCorrection : baseSize.width;
-        return overrideSize(baseSize, new Dimension(overrideWidth, property.getValueHeight(this) + borderCorrection));  // тут видимо потому что caption'а нет
+        return new Dimension(overrideWidth, property.getValueHeight(this) + borderCorrection);  // тут видимо потому что caption'а нет
     }
 
     @Override

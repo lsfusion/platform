@@ -2,6 +2,7 @@ package lsfusion.client.form.design.view;
 
 import lsfusion.client.form.design.view.widget.Widget;
 import lsfusion.interop.base.view.FlexAlignment;
+import lsfusion.interop.base.view.FlexLayout;
 
 import java.awt.*;
 
@@ -84,10 +85,11 @@ public class FlexPanelImpl {
         parent.getStyle().setProperty("display", visible ? getDisplayFlexValue() : "none");
     }*/
 
-    public FlexPanel.LayoutData insertChild(Widget child, int beforeIndex, FlexAlignment alignment, double flex, Integer flexBasis, boolean vertical) {
-        FlexPanel.LayoutData layoutData = new FlexPanel.LayoutData(alignment, flex, flexBasis);
+    public LayoutData insertChild(FlexLayout layout, Widget child, int beforeIndex, FlexAlignment alignment, double flex, Integer flexBasis, boolean vertical) {
+        LayoutData layoutData = new LayoutData(alignment, flex, flexBasis);
+        child.setLayoutData(layoutData);
 
-        setFlex(child, layoutData, vertical);
+        setFlex(layout, child, layoutData, vertical);
         setAlignment(alignment);
 
         //DOM.insertChild(parent.<com.google.gwt.user.client.Element>cast(), child.<com.google.gwt.user.client.Element>cast(), beforeIndex);
@@ -103,13 +105,7 @@ public class FlexPanelImpl {
         return flexBasis == null ? "auto" : flexBasis + "px";
     }
 
-    public void setFlex(Widget child, double flex, Integer flexBasis, boolean vertical) {
-        // it's important to set min-width, min-height, because flex-basis is automatically set to min-height if it's smaller (test case in LinearContainerView)
-        FlexPanel.setBaseSize(child, vertical, flexBasis, false); // last parameter is false because we're setting main size
-        //child.getStyle().setProperty(getFlexAttrName(), getFlexValue(flex, getFlexBasisString(flexBasis)));
-    }
-
-/*    public int getFullSize(Element child, boolean vertical) {
+    /*    public int getFullSize(Element child, boolean vertical) {
         return vertical ? GwtClientUtils.getFullHeight(child) : GwtClientUtils.getFullWidth(child);
 //        return child.getPropertyInt(vertical ? "offsetHeight" : "offsetWidth");
     }*/
@@ -123,8 +119,16 @@ public class FlexPanelImpl {
                     child.getPropertyInt(vertical ? "marginBottom" : "marginRight");
     }*/
 
-    public void setFlex(Widget child, FlexPanel.LayoutData layoutData, boolean vertical) {
-        setFlex(child, layoutData.flex, layoutData.flexBasis, vertical);
+    public void setFlex(FlexLayout layout, Widget child, LayoutData layoutData, boolean vertical) {
+        setFlex(layout, child, layoutData.flexBasis, vertical);
+    }
+    public void setFlex(FlexLayout layout, Widget child, Integer flexBasis, boolean vertical) {
+        // it's important to set min-width, min-height, because flex-basis is automatically set to min-height if it's smaller (test case in LinearContainerView)
+        FlexPanel.setBaseSize(child, vertical, flexBasis, null); // last parameter is null because we're setting main size
+        //child.getStyle().setProperty(getFlexAttrName(), getFlexValue(flex, getFlexBasisString(flexBasis)));
+//        JComponent component = child.getComponent();
+//        layout.setConstraints(component, new FlexConstraints(layoutData.alignment, layoutData.flex));
+        child.getComponent().invalidate();
     }
 
 /*    public void setFlexBasis(FlexPanel.LayoutData layoutData, Element child, int flexBasis, boolean vertical) {

@@ -95,6 +95,7 @@ public class LinearClientContainerView extends AbstractClientContainerView {
     public void addImpl(int index, ClientComponent child, Widget view) {
         if (alignCaptions) { // when adding PropertyPanelController.Panel is empty, so we have to do everything wit callback
             AlignCaptionPanel captionPanel = new AlignCaptionPanel(!vertical);
+            captionPanel.setDebugContainer(wrapDebugContainer("CAPTION", view));
 
             child.installMargins(captionPanel); // need the same margins as property value
 
@@ -110,7 +111,8 @@ public class LinearClientContainerView extends AbstractClientContainerView {
                     baseSize = size;
 
                 captionPanel.baseSize = baseSize; // it's called after it is first time added to the container, so we store it in some field for further adding, removing (actually it's needed for component "shifting", when we need to add/remove latter components)
-                FlexPanel.setBaseSize(captionPanel, vertical, baseSize /*to look like in web*/);  // oppositeAndFixed - false, since we're settings size for main direction
+                // oppositeAndFixed - null, since we're settings size for main direction
+                FlexPanel.setBaseSize(captionPanel, vertical, baseSize, null);
             };
         }
 

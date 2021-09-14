@@ -39,6 +39,8 @@ public class ClientFormLayout extends PanelWidget {
     }
 
     public ClientFormLayout(ClientFormController iform, ClientContainer imainContainer) {
+        super(new BorderLayout());
+
         this.form = iform;
         this.mainContainer = imainContainer;
 
@@ -47,11 +49,10 @@ public class ClientFormLayout extends PanelWidget {
         setFocusCycleRoot(true);
         setFocusTraversalPolicy(policy);
 
-        setLayout(new BorderLayout());
-
         addContainers(mainContainer);
 
-        AbstractClientContainerView.wrapOverflowAuto(this, getComponentView(mainContainer));
+        Widget mainView = getComponentView(mainContainer);
+        add(AbstractClientContainerView.wrapOverflowAuto(mainView, mainContainer.isVertical()).getComponent(), BorderLayout.CENTER);
 
         // приходится делать StrongRef, иначе он тут же соберется сборщиком мусора так как ContainerFocusListener держит его как WeakReference
         focusListener = new FocusAdapter() {
@@ -104,11 +105,11 @@ public class ClientFormLayout extends PanelWidget {
         containerViews.put(container, containerView);
 
         Widget viewWidget = containerView.getView();
-        add(container, viewWidget);
-
         // debug info
         if (container.getSID() != null)
             viewWidget.setDebugContainer(container);
+
+        add(container, viewWidget);
 
         for (ClientComponent child : container.children) {
             if (child instanceof ClientContainer) {
@@ -117,10 +118,7 @@ public class ClientFormLayout extends PanelWidget {
         }
     }
 
-    // вообще раньше была в validate, calculatePreferredSize видимо для устранения каких-то визуальных эффектов
-    // но для activeTab нужно вызвать предварительно, так как вкладка может только-только появится
-    // пока убрал (чтобы было как в вебе), но если будут какие-то нежелательные эффекты, можно будет вернуть а в activeElements поставить только по условию, что есть activeTabs или activeProps
-    public void preValidateMainContainer() { // hideEmptyContainerViews 
+    public void autoShowHideContainers() { // hideEmptyContainerViews
         autoShowHideContainers(mainContainer);
     }
 

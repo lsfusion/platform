@@ -54,7 +54,7 @@ public class PropertyPanelController {
         });
 
         viewsPanel = new Panel(property.panelColumnVertical, FlexAlignment.START);
-        viewsPanel.setDebugContainer(this);
+        viewsPanel.setDebugContainer(property);
     }
 
     public boolean forceEdit() {
@@ -132,7 +132,7 @@ public class PropertyPanelController {
         public CaptionContainer captionContainer;
     }
 
-    void update(Color rowBackground, Color rowForeground) {
+    public void update(Color rowBackground, Color rowForeground) {
         Map<ClientGroupObjectValue, PanelView> newViews = new HashMap<>();
 
         List<ClientGroupObjectValue> columnKeys = this.columnKeys != null ? this.columnKeys : ClientGroupObjectValue.SINGLE_EMPTY_KEY_LIST;

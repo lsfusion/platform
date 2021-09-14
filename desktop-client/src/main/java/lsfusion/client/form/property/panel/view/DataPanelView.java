@@ -16,7 +16,6 @@ import lsfusion.client.form.property.cell.controller.dispatch.EditPropertyDispat
 import lsfusion.client.form.property.cell.controller.dispatch.SimpleChangePropertyDispatcher;
 import lsfusion.client.view.MainFrame;
 import lsfusion.interop.base.view.FlexAlignment;
-import lsfusion.interop.form.design.CachableLayout;
 import lsfusion.interop.form.event.ValueEvent;
 import lsfusion.interop.form.event.ValueEventListener;
 
@@ -85,7 +84,7 @@ public class DataPanelView extends FlexPanel implements PanelView {
             setDynamic(table, true, property);
         } else {
             add(table, FlexAlignment.STRETCH, 1.0);
-            Pair<Integer, Integer> valueSizes = setStatic(table, property);
+            Pair<Integer, Integer> valueSizes = setStatic(table, property, property.panelCaptionVertical);
             if(captionContainer != null)
                 captionContainer.put(label, valueSizes, this.property.getPanelCaptionAlignment());
         }
@@ -125,8 +124,8 @@ public class DataPanelView extends FlexPanel implements PanelView {
 
     // copy of ActionOrPropertyValue methods
 
-    public static Pair<Integer, Integer> setStatic(Widget widget, ClientPropertyDraw property) {
-        return setBaseSize(widget, true, property);
+    public static Pair<Integer, Integer> setStatic(Widget widget, ClientPropertyDraw property, boolean vertical) {
+        return setBaseSize(widget, true, property, vertical);
     }
 
     public static Pair<Integer, Integer> setDynamic(Widget widget, boolean hasBorder, ClientPropertyDraw property) {
@@ -134,14 +133,14 @@ public class DataPanelView extends FlexPanel implements PanelView {
         return null;
     }
 
-    public static Pair<Integer, Integer> setBaseSize(Widget widget, boolean hasBorder, ClientPropertyDraw property) {
+    public static Pair<Integer, Integer> setBaseSize(Widget widget, boolean hasBorder, ClientPropertyDraw property, boolean vertical) {
         // if widget is wrapped into absolute positioned simple panel, we need to include paddings (since borderWidget doesn't include them)
         JComponent component = widget.getComponent();
         int valueWidth = hasBorder ? property.getValueWidthWithPadding(component) : property.getValueWidth(component);
         int valueHeight = hasBorder ? property.getValueHeightWithPadding(component) : property.getValueHeight(component);
         // about the last parameter oppositeAndFixed, here it's tricky since we don't know where this borderWidget will be added, however it seems that all current stacks assume that they are added with STRETCH alignment
-        FlexPanel.setBaseSize(widget, false, valueWidth);
-        FlexPanel.setBaseSize(widget, true, valueHeight);
+        setBaseSize(widget, false, valueWidth, vertical ? false : null); // STRETCH in upper call
+        setBaseSize(widget, true, valueHeight, !vertical ? false : null);
         // it seems that there is one more margin pixel in desktop
         return new Pair<>(valueWidth + 2 + 2, valueHeight + 2 + 2); // should correspond to margins (now border : 1px which equals to 2px) in panelRendererValue style
     }
@@ -292,86 +291,5 @@ public class DataPanelView extends FlexPanel implements PanelView {
     @Override
     public EditPropertyDispatcher getEditPropertyDispatcher() {
         return table.getEditPropertyDispatcher();
-    }
-
-    private class DataPanelLayout extends CachableLayout {
-
-        public DataPanelLayout() {
-            super(DataPanelView.this, false);
-        }
-
-        @Override
-        protected Dimension layoutSize(Container parent, ComponentSizeGetter sizeGetter) {
-            Dimension labelSize = sizeGetter.get(label);
-            Dimension tableSize = sizeGetter.get(table);
-            int width;
-            int height;
-            if (property.panelCaptionVertical) {
-                width = max(labelSize.width, tableSize.width);
-                height = limitedSum(labelSize.height, tableSize.height);
-            } else {
-                width = limitedSum(8, labelSize.width, tableSize.width);
-                height = max(labelSize.height, tableSize.height);
-            }
-
-            return new Dimension(width, height);
-        }
-
-        @Override
-        public void layoutContainer(Container parent) {
-            boolean vertical = property.panelCaptionVertical;
-
-            Insets in = parent.getInsets();
-
-            int width = parent.getWidth() - in.left - in.right;
-            int height = parent.getHeight() - in.top - in.bottom;
-
-            Dimension labelPref = label.getPreferredSize();
-            Dimension tablePref = table.getPreferredSize();
-
-            int tableSpace = width;
-            int tableLeft = in.left;
-            int tableTop = in.top;
-            int tableHeight = height;
-            if (vertical) {
-                tableHeight -= labelPref.height;
-                if (!tableFirst) {
-                    tableTop += labelPref.height;
-                }
-            } else {
-                //horizontal
-                tableSpace = max(0, tableSpace - 4 - labelPref.width - 4);
-                if (!tableFirst) {
-                    tableLeft += 4 + labelPref.width + 4;
-                }
-            }
-
-            int tableWidth = tableSpace;
-            if (property.getAlignment() != FlexAlignment.STRETCH) {
-                tableWidth = Math.min(tableSpace, tablePref.width);
-                if (property.getAlignment() == FlexAlignment.END) {
-                    tableLeft += tableSpace - tableWidth;
-                } else if (property.getAlignment() == FlexAlignment.CENTER) {
-                    tableLeft += (tableSpace - tableWidth)/2;
-                }
-            }
-
-            int labelWidth = vertical ? width : labelPref.width;
-            int labelHeight = labelPref.height;
-            int labelLeft = in.left;
-            int labelTop = in.top;
-
-            if (vertical) {
-                if (tableFirst) {
-                    labelTop += tableHeight;
-                }
-            } else {
-                labelTop += max(0, height - labelHeight)/2;
-                labelLeft += tableFirst ? 4 + tableSpace + 4 : 4;
-            }
-
-            label.setBounds(labelLeft, labelTop, labelWidth, labelHeight);
-            table.setBounds(tableLeft, tableTop, tableWidth, tableHeight);
-        }
     }
 }
