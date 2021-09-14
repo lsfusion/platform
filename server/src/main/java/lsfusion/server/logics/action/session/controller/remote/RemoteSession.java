@@ -242,7 +242,10 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
         ImOrderMap<String, String> cookies = ExternalHTTPAction.readPropertyValues(dataSession, businessLogics.LM.cookiesTo).toOrderMap();
         String[] cookieNames = cookies.keyOrderSet().toArray(new String[cookies.size()]);
         String[] cookieValues = cookies.valuesList().toArray(new String[cookies.size()]);
-        return new ExternalResponse(returns.toArray(), headerNames, headerValues, cookieNames, cookieValues);
+
+        Integer statusHttp = (Integer) businessLogics.LM.statusHttpTo.read(dataSession);
+
+        return new ExternalResponse(returns.toArray(), headerNames, headerValues, cookieNames, cookieValues, statusHttp);
     }
 
     private Object formatReturnValue(Object returnValue, Property returnProperty) {

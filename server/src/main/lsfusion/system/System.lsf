@@ -39,6 +39,7 @@ cancel  { CANCEL; }
 
 statusHttp = DATA LOCAL INTEGER();
 failedHttp = statusHttp() < 200 OR statusHttp() >= 300;
+statusHttpTo = DATA LOCAL NESTED INTEGER();
 timeoutHttp() = DATA LOCAL INTEGER ();
 
 headers = DATA LOCAL NESTED TEXT(TEXT);    

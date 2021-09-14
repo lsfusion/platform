@@ -132,9 +132,9 @@ public class ExternalUtils {
 
             if (singleFileExtension.result != null) // если возвращается один файл, задаем ему имя
                 contentDisposition = "filename=" + (returns.isEmpty() ? filename : returns.get(0)).replace(',', '_') + "." + singleFileExtension.result;
-            return new ExternalResponse(entity, contentDisposition, execResult.headerNames, execResult.headerValues, execResult.cookieNames, execResult.cookieValues);
+            return new ExternalResponse(entity, contentDisposition, execResult.headerNames, execResult.headerValues, execResult.cookieNames, execResult.cookieValues, execResult.statusHttp);
         }
-        return new ExternalResponse(null, null, null, null, null, null);
+        return new ExternalResponse(null, null, null, null, null, null, null);
     }
 
     public static String getBodyUrl(Object[] results, boolean returnBodyUrl) {
@@ -297,14 +297,16 @@ public class ExternalUtils {
         public final String[] headerValues;
         public final String[] cookieNames;
         public final String[] cookieValues;
+        public final Integer statusHttp;
 
-        public ExternalResponse(HttpEntity response, String contentDisposition, String[] headerNames, String[] headerValues, String[] cookieNames, String[] cookieValues) {
+        public ExternalResponse(HttpEntity response, String contentDisposition, String[] headerNames, String[] headerValues, String[] cookieNames, String[] cookieValues, Integer statusHttp) {
             this.response = response;
             this.contentDisposition = contentDisposition;
             this.headerNames = headerNames;
             this.headerValues = headerValues;
             this.cookieNames = cookieNames;
             this.cookieValues = cookieValues;
+            this.statusHttp = statusHttp;
         }
     }
 }
