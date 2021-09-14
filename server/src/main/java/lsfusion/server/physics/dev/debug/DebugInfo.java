@@ -3,10 +3,13 @@ package lsfusion.server.physics.dev.debug;
 import lsfusion.base.Pair;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
+import java.net.URL;
+
 public class DebugInfo {
 
     public static class DebugPoint {
         public final String moduleName;
+        public final String path;
         public final int line;
         public final int offset;
         public boolean isInsideNonEnabledMeta;
@@ -14,8 +17,9 @@ public class DebugInfo {
         public String topName;
         public LocalizedString topCaption;
         
-        public DebugPoint(String moduleName, int line, int offset, boolean isInsideNonEnabledMeta, String topName, LocalizedString topCaption) {
+        public DebugPoint(String moduleName, String path, int line, int offset, boolean isInsideNonEnabledMeta, String topName, LocalizedString topCaption) {
             this.moduleName = moduleName;
+            this.path = path;
             this.line = line;
             this.offset = offset;
             this.isInsideNonEnabledMeta = isInsideNonEnabledMeta;

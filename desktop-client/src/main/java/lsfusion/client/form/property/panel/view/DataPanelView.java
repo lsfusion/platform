@@ -14,6 +14,7 @@ import lsfusion.client.form.object.panel.controller.PropertyPanelController;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.cell.controller.dispatch.EditPropertyDispatcher;
 import lsfusion.client.form.property.cell.controller.dispatch.SimpleChangePropertyDispatcher;
+import lsfusion.client.tooltip.LSFTooltipManager;
 import lsfusion.client.view.MainFrame;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.event.ValueEvent;
@@ -281,7 +282,7 @@ public class DataPanelView extends FlexPanel implements PanelView {
     }
 
     public void setToolTip(String caption) {
-        label.setToolTipText(property.getTooltipText(caption));
+        LSFTooltipManager.initTooltip(label, property.getTooltipText(caption), property.path, property.creationPath);
     }
 
     public Icon getIcon() {

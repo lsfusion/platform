@@ -20,6 +20,7 @@ public abstract class ActionOrPropertyObjectEntity<P extends PropertyInterface, 
         //нужен для десериализации
         creationScript = null;
         creationPath = null;
+        path = null;
     }
 
     public String toString() {
@@ -34,11 +35,12 @@ public abstract class ActionOrPropertyObjectEntity<P extends PropertyInterface, 
         return property.hashCode() * 31 + mapping.hashCode();
     }
 
-    public ActionOrPropertyObjectEntity(T property, ImRevMap<P, ObjectEntity> mapping, String creationScript, String creationPath) {
+    public ActionOrPropertyObjectEntity(T property, ImRevMap<P, ObjectEntity> mapping, String creationScript, String creationPath, String path) {
         this.property = property;
         this.mapping = mapping;
         this.creationScript = creationScript==null ? null : creationScript.substring(0, Math.min(10000, creationScript.length()));
         this.creationPath = creationPath;
+        this.path = path;
         assert !mapping.containsNull();
         assert property.interfaces.equals(mapping.keys());
     }
@@ -49,6 +51,7 @@ public abstract class ActionOrPropertyObjectEntity<P extends PropertyInterface, 
 
     protected final String creationScript;
     protected final String creationPath;
+    protected final String path;
 
     public String getCreationScript() {
         return creationScript;
@@ -58,11 +61,15 @@ public abstract class ActionOrPropertyObjectEntity<P extends PropertyInterface, 
         return creationPath;
     }
 
-    public static <I extends PropertyInterface, T extends ActionOrProperty<I>> ActionOrPropertyObjectEntity<I, ?> create(T property, ImRevMap<I, ObjectEntity> map, String creationScript, String creationPath) {
+    public String getPath() {
+        return path;
+    }
+
+    public static <I extends PropertyInterface, T extends ActionOrProperty<I>> ActionOrPropertyObjectEntity<I, ?> create(T property, ImRevMap<I, ObjectEntity> map, String creationScript, String creationPath, String path) {
         if(property instanceof Property)
-            return new PropertyObjectEntity<>((Property<I>) property, map, creationScript, creationPath);
+            return new PropertyObjectEntity<>((Property<I>) property, map, creationScript, creationPath, path);
         else
-            return new ActionObjectEntity<>((Action<I>) property, map, creationScript, creationPath);
+            return new ActionObjectEntity<>((Action<I>) property, map, creationScript, creationPath, path);
     }
 
     public abstract <X extends PropertyInterface> PropertyObjectEntity<?> getDrawProperty(PropertyObjectEntity<X> readOnly);

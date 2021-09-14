@@ -232,12 +232,17 @@ public abstract class NavigatorElement {
     public String getCreationPath() {
         return debugPoint.toString();
     }
+
+    public String getPath() {
+        return debugPoint.path;
+    }
     
     public void serialize(DataOutputStream outStream) throws IOException {
         outStream.writeByte(getTypeID());
 
         SerializationUtil.writeString(outStream, canonicalName);
         SerializationUtil.writeString(outStream, getCreationPath());
+        SerializationUtil.writeString(outStream, getPath());
 
         outStream.writeUTF(ThreadLocalContext.localize(caption));
         outStream.writeBoolean(hasChildren());

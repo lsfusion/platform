@@ -61,7 +61,7 @@ import static lsfusion.client.ClientResourceBundle.getString;
 
 public abstract class MainFrame extends JFrame {
     private final static Logger logger = Logger.getLogger(MainController.class);
-    
+
     public static MainFrame instance;
     public static void load() {
         try {
@@ -106,6 +106,8 @@ public abstract class MainFrame extends JFrame {
             MainController.busyDialog = clientSettings.busyDialog;
             MainController.busyDialogTimeout = Math.max(clientSettings.busyDialogTimeout, 1000); //минимальный таймаут 1000мс
             MainController.useRequestTimeout = clientSettings.useRequestTimeout;
+            MainController.projectLSFDir = clientSettings.projectLSFDir;
+            MainController.inDevMode = clientSettings.devMode;
             MainController.showDetailedInfo = clientSettings.showDetailedInfo;
             MainController.forbidDuplicateForms = clientSettings.forbidDuplicateForms;
             MainController.showNotDefinedStrings = clientSettings.showNotDefinedStrings;

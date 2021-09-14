@@ -31,7 +31,11 @@ public class IntervalPropertyEditor extends JDateChooser implements PropertyEdit
 
     private void configureButtons(boolean addButtons) {
         if (addButtons) {
-            JButton leftButton = new JButton(new ImageIcon(this.getClass().getResource("/com/toedter/calendar/images/JDateChooserIcon.gif")));
+            JButton leftButton = new JButton(new ImageIcon(this.getClass().getResource("/com/toedter/calendar/images/JDateChooserIcon.gif"))) {
+                public boolean isFocusable() {
+                    return false;
+                }
+            };
             leftButton.setMargin(new Insets(0, 0, 0, 0));
             leftButton.addActionListener(this);
             this.add(leftButton, "West");
@@ -65,6 +69,13 @@ public class IntervalPropertyEditor extends JDateChooser implements PropertyEdit
         } catch (Exception e) {
             return defaultValue;
         }
+    }
+
+    @SuppressWarnings("deprecation")
+    @Override
+    public void setNextFocusableComponent(Component comp) {
+        super.setNextFocusableComponent(comp);
+        DatePropertyEditor.setNextFocusableComponent(comp, dateEditor, popup, jcalendar);
     }
 
     @Override
@@ -112,12 +123,12 @@ public class IntervalPropertyEditor extends JDateChooser implements PropertyEdit
                 long l = date.getTime() / 1000;
                 String[] split = s.split("\\.");
 
-                if (split.length < 2) //there is no interval, only one date or there are some errors on input
+                if (split.length < 2 && defaultValue == null) //there is no interval, only one date or there are some errors on input
                     s = String.valueOf(l);
                 else if (left)
-                    s = s.replaceFirst(split[0], String.valueOf(l));
+                    s = split.length < 2 ? l + "." + defaultValue : s.replaceFirst(split[0], String.valueOf(l));
                 else if (right)
-                    s = s.replaceAll("." + split[1], "." + l);
+                    s = split.length < 2 ? defaultValue + "." + l : s.replaceAll("." + split[1], "." + l);
 
                 defaultValue = s;
             }

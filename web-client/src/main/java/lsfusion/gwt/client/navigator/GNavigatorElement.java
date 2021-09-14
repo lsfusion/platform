@@ -19,6 +19,7 @@ public abstract class GNavigatorElement implements Serializable {
     public String canonicalName;
     public String caption;
     public String creationPath;
+    public String path;
     public ImageHolder image;
 
     public GAsyncExec asyncExec;
@@ -41,9 +42,9 @@ public abstract class GNavigatorElement implements Serializable {
 
     public String getTooltipText() {
         return MainFrame.showDetailedInfo ?
-                GwtSharedUtils.stringFormat("<html><b>%s</b>" + 
-                        createTooltipHorizontalSeparator() + 
-                        "<b>sID:</b> %s<br><b>" + ClientMessages.Instance.get().tooltipPath() + 
+                GwtSharedUtils.stringFormat("<html><b>%s</b>" +
+                        createTooltipHorizontalSeparator() +
+                        "<b>sID:</b> %s<br><b>" + ClientMessages.Instance.get().tooltipPath() +
                         ":</b> %s</html>", caption, canonicalName, creationPath) : caption;
     }
 }

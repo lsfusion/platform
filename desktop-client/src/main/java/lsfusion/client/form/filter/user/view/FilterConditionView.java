@@ -56,7 +56,8 @@ public class FilterConditionView extends FlexPanel {
     private boolean isLast = false;
     private boolean toolsVisible;
     
-    public boolean isApplied;
+    // may not be applied without "Allow NULL", but we want to keep condition visible
+    public boolean isConfirmed;
     
     public FilterConditionView(ClientPropertyFilter ifilter, TableController logicsSupplier, UIHandler iuiHandler, boolean toolsVisible, boolean readSelectedValue) {
         super(false, FlexAlignment.START);
@@ -144,7 +145,7 @@ public class FilterConditionView extends FlexPanel {
             @Override
             public void editingCancelled() {
                 super.editingCancelled();
-                if (!isApplied) {
+                if (!isConfirmed) {
                     uiHandler.removeCondition(condition);
                 }
             }

@@ -56,7 +56,8 @@ public class GFilterConditionView extends FlexPanel {
     private boolean isLast = false;
     private boolean toolsVisible;
 
-    public boolean isApplied;
+    // may not be applied without "Allow NULL", but we want to keep condition visible
+    public boolean isConfirmed;
 
     public GFilterConditionView(GPropertyFilter iCondition, GTableController logicsSupplier, final UIHandler handler, boolean toolsVisible, boolean readSelectedValue) {
         this.condition = iCondition;
@@ -133,7 +134,7 @@ public class GFilterConditionView extends FlexPanel {
             @Override
             public void editingCancelled() {
                 super.editingCancelled();
-                if (!isApplied) {
+                if (!isConfirmed) {
                     handler.removeCondition(condition);
                 }
             }
