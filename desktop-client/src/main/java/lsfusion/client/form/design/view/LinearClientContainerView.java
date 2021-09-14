@@ -46,8 +46,8 @@ public class LinearClientContainerView extends AbstractClientContainerView {
             childrenCaptions = new ArrayList<>();
             for (int i = 0; i < columnsCount; i++) {
                 if(alignCaptions) {
-                    FlexPanel captionColumn = new FlexPanel(vertical);
-                    panel.add((Widget)captionColumn); // however it seems that FlexAlignment.STRETCH is also possible
+                    FlexPanel captionColumn = new FlexPanel(vertical, justifyContent);
+                    panel.add((Widget)captionColumn, FlexAlignment.STRETCH); // however it seems that FlexAlignment.STRETCH is also possible
                     captionColumns[i] = captionColumn;
                 }
 
@@ -112,7 +112,7 @@ public class LinearClientContainerView extends AbstractClientContainerView {
 
                 captionPanel.baseSize = baseSize; // it's called after it is first time added to the container, so we store it in some field for further adding, removing (actually it's needed for component "shifting", when we need to add/remove latter components)
                 // oppositeAndFixed - null, since we're settings size for main direction
-                FlexPanel.setBaseSize(captionPanel, vertical, baseSize, null);
+                FlexPanel.setBaseSize(captionPanel, vertical, baseSize);
             };
         }
 

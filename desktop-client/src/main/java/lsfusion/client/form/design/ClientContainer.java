@@ -145,14 +145,18 @@ public class ClientContainer extends ClientComponent {
         if(!isVertical()) // later maybe it makes sense to support align captions for horizontal containers, but with no-wrap it doesn't make much sense
             return false;
 
-        if(children.size() <= 1)
-            return false;
-
+        int notActions = 0;
         // only simple property draws
         for(ClientComponent child : children) {
-            if(!(child instanceof ClientPropertyDraw) || ((ClientPropertyDraw) child).hasColumnGroupObjects() || child.autoSize || child.flex > 0 || ((ClientPropertyDraw) child).panelCaptionVertical)
+            if(!(child instanceof ClientPropertyDraw) || ((ClientPropertyDraw) child).hasColumnGroupObjects() || (child.autoSize && ((ClientPropertyDraw) child).isAutoDynamicHeight()) || child.flex > 0 || ((ClientPropertyDraw) child).panelCaptionVertical)
                 return false;
+
+            if(!((ClientPropertyDraw)child).isAction())
+                notActions++;
         }
+
+        if(notActions <= 1)
+            return false;
 
         return true;
     }

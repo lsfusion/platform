@@ -114,7 +114,7 @@ public class FlexPanel extends PanelWidget {
         remove(widget.getComponent());
     }
 
-    public static void setBaseSize(Widget element, boolean vertical, Integer size, Boolean oppositeFixed) {
+    public static void setBaseSize(Widget element, boolean vertical, Integer size) {
         assert size == null || size >= 0;
         if(vertical)
             element.setFlexHeight(size);

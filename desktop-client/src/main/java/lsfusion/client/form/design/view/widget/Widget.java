@@ -1,5 +1,6 @@
 package lsfusion.client.form.design.view.widget;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.client.form.design.view.LayoutData;
 import lsfusion.interop.base.view.FlexComponent;
 import lsfusion.interop.base.view.FlexConstraints;
@@ -45,8 +46,8 @@ public interface Widget extends FlexComponent {
         Dimension actualSize = getPreferredSize();
         Integer flexWidth = getFlexWidth();
         Integer flexHeight = getFlexHeight();
-        return new Dimension(flexWidth != null && (vertical == null || !vertical) ? flexWidth : actualSize.width,
-                flexHeight != null && (vertical == null || vertical) ? flexHeight : actualSize.height);
+        return new Dimension(flexWidth != null ? (vertical == null || !vertical ? flexWidth : BaseUtils.max(flexWidth, actualSize.width)) : actualSize.width,
+                flexHeight != null ? (vertical == null || vertical ? flexHeight : BaseUtils.max(flexHeight, actualSize.height)) : actualSize.height);
     }
     @Override
     default FlexConstraints getFlexConstraints() {

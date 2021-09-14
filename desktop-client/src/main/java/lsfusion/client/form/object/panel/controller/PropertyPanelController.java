@@ -34,7 +34,7 @@ public class PropertyPanelController {
 
     private Map<ClientGroupObjectValue, PanelView> views;
 
-    private final Panel viewsPanel;
+    private final Panel renderersPanel;
 
     public PropertyPanelController(final ClientFormController form, final PanelController panelController, ClientPropertyDraw property) {
 
@@ -53,8 +53,8 @@ public class PropertyPanelController {
             }
         });
 
-        viewsPanel = new Panel(property.panelColumnVertical, FlexAlignment.START);
-        viewsPanel.setDebugContainer(property);
+        renderersPanel = new Panel(property.panelColumnVertical);
+        renderersPanel.setDebugContainer("CONTROLLER [" + property + "]");
     }
 
     public boolean forceEdit() {
@@ -72,15 +72,15 @@ public class PropertyPanelController {
     }
 
     public void addView(ClientFormLayout formLayout) {
-        formLayout.addBaseComponent(property, viewsPanel);
+        formLayout.addBaseComponent(property, renderersPanel);
     }
 
     public void removeView(ClientFormLayout formLayout) {
-        formLayout.removeBaseComponent(property, viewsPanel);
+        formLayout.removeBaseComponent(property, renderersPanel);
     }
 
     public void setVisible(boolean visible) {
-        viewsPanel.setVisible(visible);
+        renderersPanel.setVisible(visible);
     }
 
     public void setPropertyValues(Map<ClientGroupObjectValue, Object> valueMap, boolean update) {
@@ -125,8 +125,8 @@ public class PropertyPanelController {
 
     public static class Panel extends FlexPanel {
 
-        public Panel(boolean vertical, FlexAlignment alignment) {
-            super(vertical, alignment);
+        public Panel(boolean vertical) {
+            super(vertical);
         }
 
         public CaptionContainer captionContainer;
@@ -140,7 +140,7 @@ public class PropertyPanelController {
             if (showIfs == null || showIfs.get(columnKey) != null) {
                 PanelView view = views != null ? views.remove(columnKey) : null;
                 if (view == null && (!property.hide || property.changeKey != null)) {
-                    view = property.getPanelView(form, columnKey, viewsPanel.captionContainer);
+                    view = property.getPanelView(form, columnKey, renderersPanel.captionContainer);
                     view.setReadOnly(property.isReadOnly());
 
                     view.getEditPropertyDispatcher().setUpdateEditValueCallback(result -> values.put(columnKey, result));
@@ -154,7 +154,7 @@ public class PropertyPanelController {
         }
 
         if(views != null && !property.hide) {
-            views.values().forEach(panelView -> viewsPanel.remove(panelView.getWidget()));
+            views.values().forEach(panelView -> renderersPanel.remove(panelView.getWidget()));
         }
         views = newViews;
 
@@ -165,9 +165,9 @@ public class PropertyPanelController {
         if (!property.hide) {
             for (ClientGroupObjectValue columnKey : columnKeys) {
                 PanelView view = views.get(columnKey);
-                if (view != null && view.getWidget().getParent() != viewsPanel.getComponent()) {
+                if (view != null && view.getWidget().getParent() != renderersPanel.getComponent()) {
 //                    viewsPanel.add(view.getComponent(), new FlexConstraints(property.getAlignment(), property.getValueWidth(viewsPanel)));
-                    viewsPanel.addFill(view.getWidget());
+                    renderersPanel.addFill(view.getWidget());
                 }
             }
         }

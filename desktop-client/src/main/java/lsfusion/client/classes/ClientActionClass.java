@@ -45,7 +45,7 @@ public class ClientActionClass extends ClientDataClass implements ClientTypeClas
 
     @Override
     public PanelView getPanelView(ClientPropertyDraw key, ClientGroupObjectValue columnKey, ClientFormController form, PropertyPanelController.CaptionContainer captionContainer) {
-        return new ActionPanelView(key, columnKey, form);
+        return new ActionPanelView(key, columnKey, form, captionContainer);
     }
 
     @Override

@@ -249,9 +249,9 @@ public abstract class AbstractClientContainerView implements ClientContainerView
         panel.add(widget, beforeIndex, component.getAlignment(), component.getFlex(), component.getSize(vertical));
 
         Integer crossSize = component.getSize(!vertical);
-        boolean isStretch = component.isStretch();
+//        boolean isStretch = component.isStretch();
 //        if(isStretch && crossSize != null && crossSize.equals(0)) // for opposite direction and stretch zero does not make any sense (it is zero by default)
 //            crossSize = null;
-        FlexPanel.setBaseSize(widget, !vertical, crossSize, !isStretch);
+        FlexPanel.setBaseSize(widget, !vertical, crossSize); // !isStretch
     }
 }

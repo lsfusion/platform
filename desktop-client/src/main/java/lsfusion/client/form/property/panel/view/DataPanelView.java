@@ -78,17 +78,21 @@ public class DataPanelView extends FlexPanel implements PanelView {
             add(label, property.getPanelCaptionAlignment(), 0.0);
         }
 
+        Pair<Integer, Integer> valueSizes;
         if(property.autoSize) {
             assert captionContainer == null;
             add(table, FlexAlignment.STRETCH, 1.0);
-            setDynamic(table, true, property);
+            valueSizes = setDynamic(table, true, property);
+            if(property.isAutoDynamicHeight())
+                valueSizes = null;
         } else {
             add(table, FlexAlignment.STRETCH, 1.0);
-            Pair<Integer, Integer> valueSizes = setStatic(table, property, property.panelCaptionVertical);
-            if(captionContainer != null)
-                captionContainer.put(label, valueSizes, this.property.getPanelCaptionAlignment());
+            valueSizes = setStatic(table, property);
         }
-        
+
+        if(captionContainer != null && valueSizes != null)
+            captionContainer.put(label, valueSizes, property.getPanelCaptionAlignment());
+
         if (tableFirst && captionContainer == null) {
             add(label, property.getPanelCaptionAlignment(), 0.0);
         }
@@ -124,23 +128,23 @@ public class DataPanelView extends FlexPanel implements PanelView {
 
     // copy of ActionOrPropertyValue methods
 
-    public static Pair<Integer, Integer> setStatic(Widget widget, ClientPropertyDraw property, boolean vertical) {
-        return setBaseSize(widget, true, property, vertical);
+    public static Pair<Integer, Integer> setStatic(Widget widget, ClientPropertyDraw property) {
+        return setBaseSize(widget, true, property);
     }
 
     public static Pair<Integer, Integer> setDynamic(Widget widget, boolean hasBorder, ClientPropertyDraw property) {
         // leaving sizes -1 = auto ?? it won't work since it seems that table will return 0 preferred size
-        return null;
+        return setBaseSize(widget, hasBorder, property);
     }
 
-    public static Pair<Integer, Integer> setBaseSize(Widget widget, boolean hasBorder, ClientPropertyDraw property, boolean vertical) {
+    public static Pair<Integer, Integer> setBaseSize(Widget widget, boolean hasBorder, ClientPropertyDraw property) {
         // if widget is wrapped into absolute positioned simple panel, we need to include paddings (since borderWidget doesn't include them)
         JComponent component = widget.getComponent();
         int valueWidth = hasBorder ? property.getValueWidthWithPadding(component) : property.getValueWidth(component);
         int valueHeight = hasBorder ? property.getValueHeightWithPadding(component) : property.getValueHeight(component);
         // about the last parameter oppositeAndFixed, here it's tricky since we don't know where this borderWidget will be added, however it seems that all current stacks assume that they are added with STRETCH alignment
-        setBaseSize(widget, false, valueWidth, vertical ? false : null); // STRETCH in upper call
-        setBaseSize(widget, true, valueHeight, !vertical ? false : null);
+        setBaseSize(widget, false, valueWidth); // STRETCH in upper call
+        setBaseSize(widget, true, valueHeight);
         // it seems that there is one more margin pixel in desktop
         return new Pair<>(valueWidth + 2 + 2, valueHeight + 2 + 2); // should correspond to margins (now border : 1px which equals to 2px) in panelRendererValue style
     }

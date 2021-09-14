@@ -730,7 +730,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
             String scriptPath = creationPath != null ? escapeLineBreakHTML(creationPath) : "";
             String scriptFormPath = formPath != null ? escapeLineBreakHTML(formPath) : "";
             
-            if (baseType instanceof ClientActionClass) {
+            if (isAction()) {
                 return String.format(TOOL_TIP_FORMAT + DETAILED_ACTION_TOOL_TIP_FORMAT,
                         propCaption, changeKeyText, canonicalName, ifaceObjects, scriptPath, propertyFormName, scriptFormPath);
             } else {
@@ -748,6 +748,14 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     private String escapeHTML(String value) {
         return value.replace("<", "&lt;").replace(">", "&gt;");
+    }
+
+    public boolean isAutoDynamicHeight() {
+        return getRendererComponent().isAutoDynamicHeight();
+    }
+
+    public boolean isAction() {
+        return baseType instanceof ClientActionClass;
     }
 
     public class CaptionReader implements ClientPropertyReader {
