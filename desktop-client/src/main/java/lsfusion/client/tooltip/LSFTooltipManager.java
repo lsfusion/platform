@@ -247,7 +247,7 @@ public class LSFTooltipManager {
                 "&path**" + Paths.get(projectLSFDir, path);
         //replace spaces and slashes because this link going through url
         String link = "<a href=\"lsfusion-protocol://" + command.replaceAll(" ", "++").replaceAll("\\\\", "/") +
-                "\" target=\"_blank\">" + getString("show.in.editor") + "</a>";
+                "\" target=\"_blank\">" + getString("show.in.editor") + "</a> &ensp; " + "(<a href=\"https://github.com/lsfusion/platform/issues/649\" target=\"_blank\"> ? </a>)";
         showInEditorLink.setText(link);
         addDefaultComponentMouseListeners(showInEditorLink);
 

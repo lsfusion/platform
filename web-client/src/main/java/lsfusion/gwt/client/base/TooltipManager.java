@@ -204,7 +204,7 @@ public class TooltipManager {
                     "&path**" + projectLSFDir + tooltipHelper.getPath();
             //replace spaces and slashes because this command going through url
             result = "<a href=\"lsfusion-protocol://" + command.replaceAll(" ", "++").replaceAll("\\\\", "/") +
-                    "\" target=\"_blank\">" + messages.showInEditor() + "</a>";
+                    "\" target=\"_blank\">" + messages.showInEditor() + "</a> &ensp; " + "(<a href=\"https://github.com/lsfusion/platform/issues/649\" target=\"_blank\"> ? </a>)";
         }
         return new HTML(result);
     }
