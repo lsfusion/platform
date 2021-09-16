@@ -225,7 +225,7 @@ public class ExternalHttpServer extends MonitorServer {
             if(contentDisposition != null && !hasContentDisposition)
                 response.getResponseHeaders().add("Content-Disposition", contentDisposition);
             response.getResponseHeaders().add("Access-Control-Allow-Origin","*");
-            ServerLoggers.httpServerLogger.info(response.getRequestURI() + "response: " + statusHttp);
+            ServerLoggers.httpServerLogger.info(response.getRequestURI() + " response: " + statusHttp);
             response.sendResponseHeaders(statusHttp, responseEntity.getContentLength());
             responseEntity.writeTo(response.getResponseBody());
         }
