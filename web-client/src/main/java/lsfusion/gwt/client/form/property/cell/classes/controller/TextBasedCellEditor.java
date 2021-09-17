@@ -3,6 +3,7 @@ package lsfusion.gwt.client.form.property.cell.classes.controller;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.event.dom.client.MouseDownEvent;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -529,6 +530,8 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
             bottomPanel.setWidth("100%");
             bottomPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
             bottomPanel.getElement().addClassName("suggestPopupBottomPanel");
+            // block mouse down events to prevent focus issues
+            bottomPanel.addDomHandler(GwtClientUtils::stopPropagation, MouseDownEvent.getType());
             panel.add(bottomPanel);
 
             HorizontalPanel buttonsPanel = new HorizontalPanel();
