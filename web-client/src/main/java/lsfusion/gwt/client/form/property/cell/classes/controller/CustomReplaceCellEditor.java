@@ -88,8 +88,8 @@ public class CustomReplaceCellEditor extends RequestReplaceValueCellEditor imple
         return customEditor['render' + functionName] !== undefined;
     }-*/;
 
-    public static native void render(String functionName, JavaScriptObject customEditor, Element element, JavaScriptObject controller)/*-{
-        customEditor['render' + functionName](element, controller);
+    public static native void render(String functionName, JavaScriptObject customEditor, Element element, JavaScriptObject controller, Object value)/*-{
+        customEditor['render' + functionName](element, controller, value);
     }-*/;
 
     private void forceCommit(Element parent) {
