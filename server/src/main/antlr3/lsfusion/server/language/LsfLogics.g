@@ -647,16 +647,9 @@ propertyClassViewType returns [ClassViewType type]
 	|   'TOOLBAR' {$type = ClassViewType.TOOLBAR;}
 	;
 
-propertyCustomView returns [String customRenderFunction, String customEditorFunction, boolean textEdit, boolean replaceEdit]
-@init {
-    boolean isEditText = false;
-    boolean isReplaceEditor = false;
-}
-	:	'CUSTOM' ('RENDER' renderFun=stringLiteral { $customRenderFunction = $renderFun.val;})?
-		('EDIT' (
-		    type=PRIMITIVE_TYPE {self.checkCustomPropertyViewTextOption($type.text); isEditText = true;}
-		    | 'REPLACE' {isReplaceEditor = true;})?
-		editFun=stringLiteral {$customEditorFunction = $editFun.val; $textEdit = isEditText; $replaceEdit = isReplaceEditor;})?
+propertyCustomView returns [String customRenderFunction, String customEditorFunction]
+	:	'CUSTOM' (renderFun=stringLiteral { $customRenderFunction = $renderFun.val;})?
+		('CHANGE' { $customEditorFunction = "DEFAULT"; } (editFun=stringLiteral {$customEditorFunction = $editFun.val; })?)? // "DEFAULT" is hardcoded and used in GFormController.edit
 	;
 
 listViewType returns [ListViewType type, PivotOptions options, String customRenderFunction, String mapTileProvider]
@@ -817,7 +810,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|	'HEADER' propObj=formPropertyObject { $options.setHeader($propObj.property); }
 		|	'FOOTER' propObj=formPropertyObject { $options.setFooter($propObj.property); }
 		|	viewType=propertyClassViewType { $options.setViewType($viewType.type); }
-		|	customView=propertyCustomView { $options.setCustomRenderFunction($customView.customRenderFunction); $options.setCustomEditorFunction($customView.customEditorFunction); $options.setCustomTextEdit($customView.textEdit); $options.setCustomReplaceEdit($customView.replaceEdit);}
+		|	customView=propertyCustomView { $options.setCustomRenderFunction($customView.customRenderFunction); $options.setCustomEditorFunction($customView.customEditorFunction); }
 		|	pgt=propertyGroupType { $options.setAggrFunc($pgt.type); }
 		|	pla=propertyLastAggr { $options.setLastAggr($pla.properties, $pla.desc); }
 		|	pf=propertyFormula { $options.setFormula($pf.formula, $pf.operands); }
@@ -2774,8 +2767,6 @@ customViewSetting [LAP property]
 	if (inMainParseState()) {
 		self.setCustomRenderFunction(property, $customView.customRenderFunction);
 		self.setCustomEditorFunction(property, $customView.customEditorFunction);
-		self.setCustomTextEdit(property, $customView.textEdit);
-		self.setCustomReplaceEdit(property, $customView.replaceEdit);
 	}
 }
 	:	customView=propertyCustomView

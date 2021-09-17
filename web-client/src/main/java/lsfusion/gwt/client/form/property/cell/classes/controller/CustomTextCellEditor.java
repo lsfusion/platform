@@ -2,72 +2,75 @@ package lsfusion.gwt.client.form.property.cell.classes.controller;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Element;
-import lsfusion.gwt.client.controller.SmartScheduler;
-import lsfusion.gwt.client.base.GwtClientUtils;
+import com.google.gwt.dom.client.InputElement;
 import lsfusion.gwt.client.base.Pair;
+import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.cell.controller.CellEditor;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
+import lsfusion.gwt.client.form.property.cell.view.CustomCellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 
-import java.text.ParseException;
+public class CustomTextCellEditor extends TextBasedCellEditor implements CustomCellEditor {
 
-public class CustomTextCellEditor extends TextBasedCellEditor {
+    private final String renderFunction;
+    private final JavaScriptObject customEditor;
 
-    private final String customEditorFunction;
-    private boolean deferredCommitOnBlur = true;
+    @Override
+    public String getRenderFunction() {
+        return renderFunction;
+    }
 
-    public CustomTextCellEditor(EditManager editManager, GPropertyDraw property, String customEditorFunction) {
+    @Override
+    public JavaScriptObject getCustomEditor() {
+        return customEditor;
+    }
+
+    public CustomTextCellEditor(EditManager editManager, GPropertyDraw property, String renderFunction, JavaScriptObject customEditor) {
         super(editManager, property);
-        this.customEditorFunction = customEditorFunction;
+
+        this.renderFunction = renderFunction;
+        this.customEditor = customEditor;
+    }
+
+    // we're working with input element here
+    public InputElement getCustomElement(Element parent) {
+        return getInputElement(parent);
     }
 
     @Override
-    protected Object tryParseInputText(String inputText, boolean onCommit) throws ParseException {
-        return inputText == null || inputText.isEmpty() ? null : inputText;
+    public void render(Element cellParent, RenderContext renderContext, Pair<Integer, Integer> renderedSize, Object oldValue) {
+        super.render(cellParent, renderContext, renderedSize, oldValue);
+
+        CustomCellEditor.super.render(cellParent, renderContext, renderedSize, oldValue);
     }
 
     @Override
-    protected Element setupInputElement(Element cellParent, RenderContext renderContext, Pair<Integer, Integer> renderedSize) {
-        Element input = super.setupInputElement(cellParent, renderContext, renderedSize);
-        render(input, getEditor());
+    public Object getValue(Element parent, Integer contextAction) {
+        if(CustomReplaceCellEditor.hasGetValue(customEditor))
+            return CustomCellEditor.super.getValue(parent, contextAction);
 
-        return input;
+        return super.getValue(parent, contextAction);
     }
-
-    public void setDeferredCommitOnBlur(boolean deferredCommitOnBlur) {
-        this.deferredCommitOnBlur = deferredCommitOnBlur;
-    }
-
-    protected native JavaScriptObject getEditor()/*-{
-        var thisObj = this;
-        return {
-            setDeferredCommitOnBlur: function (deferredCommitOnBlur) {
-                return thisObj.@CustomTextCellEditor::setDeferredCommitOnBlur(*)(deferredCommitOnBlur);
-            }
-        }
-    }-*/;
-
-    protected native void render(Element element, JavaScriptObject editor)/*-{
-        $wnd[this.@CustomTextCellEditor::customEditorFunction]().render(element, editor);
-    }-*/;
 
     @Override
     public void clearRender(Element cellParent, RenderContext renderContext) {
-        clearRender(cellParent);
-        GwtClientUtils.removeAllChildren(cellParent);
+        super.clearRender(cellParent, renderContext);
+
+        CustomCellEditor.super.clearRender(cellParent, renderContext);
     }
 
-    protected native void clearRender(Element element)/*-{
-        $wnd[this.@CustomTextCellEditor::customEditorFunction]().clear(element);
-    }-*/;
+    @Override
+    public void onBeforeFinish(Element parent, boolean cancel) {
+        super.onBeforeFinish(parent, cancel);
+
+        CustomCellEditor.super.onBeforeFinish(parent, cancel);
+    }
 
     @Override
-    public void validateAndCommit(Element parent, Integer contextAction, boolean cancelIfInvalid, boolean blurred) {
-        //some libraries set values after the blur. to solve this there is a SmartScheduler that sets the values in the field before the blur
-        if (deferredCommitOnBlur) {
-            SmartScheduler.getInstance().scheduleDeferred(() -> super.validateAndCommit(parent, contextAction, cancelIfInvalid, blurred));
-        } else {
-            super.validateAndCommit(parent, contextAction, cancelIfInvalid, blurred);
-        }
+    public void onBrowserEvent(Element parent, EventHandler handler) {
+        super.onBrowserEvent(parent, handler);
+
+        CustomCellEditor.super.onBrowserEvent(parent, handler);
     }
 }

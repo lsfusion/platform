@@ -16,7 +16,7 @@ import static lsfusion.gwt.client.view.StyleDefaults.*;
 public class TextCellEditor extends TextBasedCellEditor {
 
     public TextCellEditor(EditManager editManager, GPropertyDraw property, GInputList inputList) {
-        super(editManager, property, "textarea", inputList);
+        super(editManager, property, inputList);
     }
 
     @Override
@@ -40,12 +40,7 @@ public class TextCellEditor extends TextBasedCellEditor {
     }
 
     @Override
-    protected String tryParseInputText(String inputText, boolean onCommit) {
-        return (inputText == null || inputText.isEmpty()) ? null : inputText;
-    }
-
-    @Override
-    protected boolean checkEnterEvent(Event event) {
+    public boolean checkEnterEvent(Event event) {
         return event.getShiftKey();
     }
 }

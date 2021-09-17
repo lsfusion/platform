@@ -69,6 +69,8 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
 
     public abstract GGroupObjectValue getColumnKey(Cell editCell);
 
+    public abstract GGroupObjectValue getRowKey(Cell editCell);
+
     public abstract void setValueAt(Cell cell, Object value);
 
     public abstract Object getValueAt(Cell cell);
@@ -130,6 +132,11 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
             @Override
             public GGroupObjectValue getColumnKey() {
                 return GPropertyTable.this.getColumnKey(editCell);
+            }
+
+            @Override
+            public GGroupObjectValue getRowKey() {
+                return GPropertyTable.this.getRowKey(editCell);
             }
 
             @Override

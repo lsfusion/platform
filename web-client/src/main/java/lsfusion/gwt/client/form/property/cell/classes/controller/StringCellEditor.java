@@ -20,11 +20,6 @@ public class StringCellEditor extends TextBasedCellEditor {
     }
 
     @Override
-    protected String tryParseInputText(String inputText, boolean onCommit) {
-        return inputText.isEmpty() ? null : inputText;
-    }
-
-    @Override
     protected String tryFormatInputText(Object value) {
         if (value == null) {
             return "";

@@ -70,9 +70,8 @@ import lsfusion.gwt.client.form.property.GPropertyGroupType;
 import lsfusion.gwt.client.form.property.GPropertyReader;
 import lsfusion.gwt.client.form.property.async.*;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
-import lsfusion.gwt.client.form.property.cell.classes.controller.CustomCellEditor;
 import lsfusion.gwt.client.form.property.cell.classes.controller.CustomReplaceCellEditor;
-import lsfusion.gwt.client.form.property.cell.classes.controller.CustomTextCellEditor;
+import lsfusion.gwt.client.form.property.cell.classes.controller.RequestCellEditor;
 import lsfusion.gwt.client.form.property.cell.classes.view.ActionCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.*;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
@@ -905,7 +904,8 @@ public class GFormController extends ResizableSimplePanel implements EditManager
             }
 
             // hasChangeAction check is important for quickfilter not to consume event (however with propertyReadOnly, checkCanBeChanged there will be still some problems)
-            if (isChangeEvent(actionSID) && (editContext.isReadOnly() || !property.hasChangeAction))
+            if (isChangeEvent(actionSID) &&
+                    (editContext.isReadOnly() || !property.hasChangeAction || (property.customRenderFunction != null && property.customChangeFunction == null))) // we're ignoring change if we use CUSTOM render function without CUSTOM CHANGE set
                 return;
             if(GEditBindingMap.EDIT_OBJECT.equals(actionSID) && !property.hasEditObjectAction)
                 return;
@@ -1073,10 +1073,11 @@ public class GFormController extends ResizableSimplePanel implements EditManager
     public long changeProperty(EditContext editContext, Event editEvent, GType changeType, String actionSID, GUserInputResult result, Long changeRequestIndex) {
         GPropertyDraw property = editContext.getProperty();
         GGroupObjectValue rowKey = GGroupObjectValue.EMPTY;
-        if(property.isList) {
-            DeferredRunner.get().commitDelayedGroupObjectChange(property.groupObject);
-
-            rowKey = getGroupObjectController(property.groupObject).getCurrentKey(); // we need rowKey for pendingChangeRequests
+        if(property.isList) {  // we need rowKey for pendingChangeRequests
+//            DeferredRunner.get().commitDelayedGroupObjectChange(property.groupObject);
+//
+//            rowKey = getGroupObjectController(property.groupObject).getCurrentKey();
+            rowKey = editContext.getRowKey(); // because for example in custom renderer editContext can be not the currentKey
             assert !rowKey.isEmpty();
         }
         return changeProperties(actionSID, editContext, editEvent, new GPropertyDraw[]{property}, new GType[]{changeType}, new GGroupObjectValue[] {rowKey}, new GGroupObjectValue[]{editContext.getColumnKey()}, new GUserInputResult[]{result}, new Object[]{editContext.getValue()}, changeRequestIndex);
@@ -1696,8 +1697,9 @@ public class GFormController extends ResizableSimplePanel implements EditManager
     }
 
     public void checkCommitEditing() {
-        if(cellEditor != null)
-            cellEditor.commitEditing(getEditElement());
+        RequestCellEditor requestCellEditor = getRequestCellEditor();
+        if(requestCellEditor != null)
+            requestCellEditor.commit(getEditElement(), CommitReason.FORCED);
     }
 
     private boolean bindPreview(GBindingEnv binding, boolean isMouse, boolean preview) {
@@ -1816,21 +1818,15 @@ public class GFormController extends ResizableSimplePanel implements EditManager
 
     private EditContext editContext;
 
-    private Consumer<GUserInputResult> editBeforeCommit;
-    private Consumer<GUserInputResult> editAfterCommit;
+    private BiConsumer<GUserInputResult, CommitReason> editBeforeCommit;
+    private BiConsumer<GUserInputResult, CommitReason> editAfterCommit;
     private Runnable editCancel;
 
     private Element focusedElement;
     private Object forceSetFocus;
 
-    @Override
     public boolean isEditing() {
         return editContext != null;
-    }
-
-    @Override
-    public CellEditor getCellEditor() {
-        return cellEditor;
     }
 
     private String editAsyncValuesSID;
@@ -1922,11 +1918,11 @@ public class GFormController extends ResizableSimplePanel implements EditManager
     public void editProperty(GType type, Event event, boolean hasOldValue, Object oldValue, GInputList inputList, BiConsumer<GUserInputResult, Long> afterCommit, Runnable cancel, EditContext editContext, String actionSID, Long dispatchingIndex) {
         lsfusion.gwt.client.base.Result<Long> requestIndex = new lsfusion.gwt.client.base.Result<>();
         edit(type, event, hasOldValue, oldValue, inputList, // actually it's assumed that actionAsyncs is used only here, in all subsequent calls it should not be referenced
-                value -> {
-                    requestIndex.set(changeEditPropertyValue(editContext, event, actionSID, type, value, dispatchingIndex)); // actually ServerResponse.INPUT shouldn't be passed inside changeEditPropertyValue but it's needed only if dispatchingIndex is null
+                (inputResult, commitReason) -> {
+                    requestIndex.set(changeEditPropertyValue(editContext, event, actionSID, type, inputResult, dispatchingIndex)); // actually ServerResponse.INPUT shouldn't be passed inside changeEditPropertyValue but it's needed only if dispatchingIndex is null
                 },
-                value -> {
-                    afterCommit.accept(value, requestIndex.result);
+                (inputResult, commitReason) -> {
+                    afterCommit.accept(inputResult, requestIndex.result);
 
 //                    // it seems that it's better to do everything after commit to avoid potential problems with focus, etc.
 //                    Integer contextAction = value.getContextAction();
@@ -1939,17 +1935,16 @@ public class GFormController extends ResizableSimplePanel implements EditManager
                 cancel, editContext, actionSID);
     }
 
-    public void edit(GType type, Event event, boolean hasOldValue, Object oldValue, GInputList inputList, Consumer<GUserInputResult> beforeCommit, Consumer<GUserInputResult> afterCommit,
+    public void edit(GType type, Event event, boolean hasOldValue, Object oldValue, GInputList inputList, BiConsumer<GUserInputResult, CommitReason> beforeCommit, BiConsumer<GUserInputResult, CommitReason> afterCommit,
                      Runnable cancel, EditContext editContext, String editAsyncValuesSID) {
         assert this.editContext == null;
         GPropertyDraw property = editContext.getProperty();
+
         CellEditor cellEditor;
-        String customEditorFunction = property.customEditorFunction;
-        if (customEditorFunction != null) {
-            cellEditor = property.customTextEdit ? new CustomTextCellEditor(this, property, customEditorFunction) :
-                    (property.customReplaceEdit ? new CustomReplaceCellEditor(this, property, customEditorFunction) :
-                            new CustomCellEditor(this, property, customEditorFunction));
-        } else
+        String customChangeFunction = property.customChangeFunction;
+        if (customChangeFunction != null && !customChangeFunction.equals("DEFAULT")) // see LsfLogics.g propertyCustomView rule
+            cellEditor = CustomReplaceCellEditor.create(this, property, customChangeFunction);
+        else
             cellEditor = type.createGridCellEditor(this, property, inputList);
 
         if (cellEditor != null) {
@@ -1961,7 +1956,10 @@ public class GFormController extends ResizableSimplePanel implements EditManager
 
             this.editContext = editContext;
 
-            Element element = editContext.getRenderElement();
+            if(!hasOldValue) // property.baseType.equals(type) actually there should be something like compatible, but there is no such method for now, so we'll do this check in editors
+                oldValue = editContext.getValue();
+
+            Element element = getEditElement();
             if (cellEditor instanceof ReplaceCellEditor) {
                 focusedElement = GwtClientUtils.getFocusedElement();
                 if(!editContext.isFocusable()) // assert that otherwise it's already has focus
@@ -1976,27 +1974,30 @@ public class GFormController extends ResizableSimplePanel implements EditManager
 
                 cellRenderer.clearRender(element, renderContext); // dropping previous render
 
-                ((ReplaceCellEditor)cellEditor).render(element, renderContext, renderedSize); // rendering new one, filling inputElement
+                ((ReplaceCellEditor)cellEditor).render(element, renderContext, renderedSize, oldValue); // rendering new one, filling inputElement
             }
 
             this.cellEditor = cellEditor; // not sure if it should before or after startEditing, but definitely after removeAllChildren, since it leads to blur for example
-            if(!hasOldValue) // property.baseType.equals(type) actually there should be something like compatible, but there is no such method for now, so we'll do this check in editors
-                oldValue = editContext.getValue();
-            cellEditor.startEditing(event, getEditElement(), oldValue);
+            cellEditor.start(event, element, oldValue);
         } else
             cancel.run();
     }
 
+    // only request cell editor can be long-living
+    protected RequestCellEditor getRequestCellEditor() {
+        return (RequestCellEditor)cellEditor;
+    }
+
     @Override
-    public void commitEditing(GUserInputResult result, boolean blurred) {
-        editBeforeCommit.accept(result);
+    public void commitEditing(GUserInputResult result, CommitReason commitReason) {
+        editBeforeCommit.accept(result, commitReason);
         editBeforeCommit = null;
 
-        finishEditing(blurred);
+        finishEditing(commitReason.equals(CommitReason.BLURRED));
 
-        Consumer<GUserInputResult> editAfterCommit = this.editAfterCommit;
-        this.editAfterCommit = null;
-        editAfterCommit.accept(result);
+        BiConsumer<GUserInputResult, CommitReason> editAfterCommit = this.editAfterCommit;
+        this.editAfterCommit = null; // it seems this is needed because after commit another editing can be started
+        editAfterCommit.accept(result, commitReason);
     }
 
     @Override
@@ -2008,7 +2009,10 @@ public class GFormController extends ResizableSimplePanel implements EditManager
     }
 
     private void finishEditing(boolean blurred) {
+        Element renderElement = getEditElement();
+
         CellEditor cellEditor = this.cellEditor;
+        cellEditor.stop(renderElement);
         this.cellEditor = null;
 
         EditContext editContext = this.editContext;
@@ -2016,7 +2020,6 @@ public class GFormController extends ResizableSimplePanel implements EditManager
         this.editAsyncUsePessimistic = false;
         this.editAsyncValuesSID = null;
 
-        Element renderElement = editContext.getRenderElement();
         if(cellEditor instanceof ReplaceCellEditor) {
             RenderContext renderContext = editContext.getRenderContext();
             ((ReplaceCellEditor) cellEditor).clearRender(renderElement, renderContext);
@@ -2096,9 +2099,10 @@ public class GFormController extends ResizableSimplePanel implements EditManager
     public void onPropertyBrowserEvent(EventHandler handler, Element cellParent, Element focusElement, Consumer<EventHandler> onOuterEditBefore,
                                        Consumer<EventHandler> onEdit, Consumer<EventHandler> onOuterEditAfter, Consumer<EventHandler> onCut,
                                        Consumer<EventHandler> onPaste, boolean panel) {
-        boolean isPropertyEditing = cellEditor != null && getEditElement() == cellParent;
+        RequestCellEditor requestCellEditor = getRequestCellEditor();
+        boolean isPropertyEditing = requestCellEditor != null && getEditElement() == cellParent;
         if(isPropertyEditing)
-            cellEditor.onBrowserEvent(getEditElement(), handler);
+            requestCellEditor.onBrowserEvent(getEditElement(), handler);
 
         if(DataGrid.getBrowserTooltipMouseEvents().contains(handler.event.getType())) // just not to have problems in debugger
             return;

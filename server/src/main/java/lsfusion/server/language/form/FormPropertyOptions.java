@@ -40,8 +40,6 @@ public class FormPropertyOptions {
     private ClassViewType viewType;
     private String customRenderFunction;
     private String customEditorFunction;
-    private boolean customTextEdit;
-    private boolean customReplaceEdit;
     private GroupObjectEntity toDraw;
     private OrderedMap<String, LocalizedString> contextMenuBindings;
     private Map<KeyStroke, String> keyBindings;
@@ -201,24 +199,8 @@ public class FormPropertyOptions {
         this.customEditorFunction = customEditorFunction;
     }
 
-    public void setCustomTextEdit(boolean customTextEdit) {
-        this.customTextEdit = customTextEdit;
-    }
-
-    public void setCustomReplaceEdit(boolean customReplaceEdit) {
-        this.customReplaceEdit = customReplaceEdit;
-    }
-
     public String getCustomEditorFunction() {
         return customEditorFunction;
-    }
-
-    public boolean isCustomTextEdit() {
-        return customTextEdit;
-    }
-
-    public boolean isCustomReplaceEdit() {
-        return customReplaceEdit;
     }
 
     public void setToDraw(GroupObjectEntity toDraw) {
@@ -448,8 +430,6 @@ public class FormPropertyOptions {
         merged.setViewType(nvl(overrides.getViewType(), viewType));
         merged.setCustomRenderFunction(nvl(overrides.getCustomRenderFunction(), customRenderFunction));
         merged.setCustomEditorFunction(nvl(overrides.getCustomEditorFunction(), customEditorFunction));
-        merged.setCustomTextEdit(nvl(overrides.isCustomTextEdit(), customTextEdit));
-        merged.setCustomReplaceEdit(nvl(overrides.isCustomReplaceEdit(), customReplaceEdit));
         merged.setToDraw(nvl(overrides.getToDraw(), toDraw));
         merged.setEventActions(nvl(overrides.getEventActions(), eventActions));
         merged.setContextMenuBindings(nvl(overrides.getContextMenuBindings(), contextMenuBindings));

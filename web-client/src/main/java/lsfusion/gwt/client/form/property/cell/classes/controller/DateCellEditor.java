@@ -5,15 +5,11 @@ import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.*;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
-import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
-import com.google.gwt.user.datepicker.client.CalendarModel;
-import com.google.gwt.user.datepicker.client.DatePicker;
-import com.google.gwt.user.datepicker.client.DefaultCalendarView;
-import com.google.gwt.user.datepicker.client.DefaultMonthSelector;
+import com.google.gwt.user.datepicker.client.*;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.view.ResizableVerticalPanel;
@@ -36,41 +32,45 @@ public class DateCellEditor extends PopupBasedCellEditor {
 
     public DateCellEditor(EditManager editManager, GPropertyDraw property) {
         super(editManager, property, Style.TextAlign.RIGHT);
-
-        datePicker.addValueChangeHandler(new ValueChangeHandler<Date>() {
-            @Override
-            public void onValueChange(ValueChangeEvent<Date> event) {
-                onDateChanged(event);
-            }
-        });
-
-        editBox.addKeyPressHandler(new KeyPressHandler() {
-            @Override
-            public void onKeyPress(KeyPressEvent event) {
-                if (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_ENTER) {
-                    onCommitEvent(event);
-                }
-            }
-        });
     }
 
     @Override
-    protected Widget createPopupComponent() {
+    protected Widget createPopupComponent(Element parent) {
         ResizableVerticalPanel panel = new ResizableVerticalPanel();
 
         editBox = new TextBox();
         editBox.addStyleName("dateTimeEditorBox");
         editBox.setHeight(StyleDefaults.VALUE_HEIGHT_STRING);
         panel.add(editBox);
+        editBox.addKeyPressHandler(new KeyPressHandler() {
+            @Override
+            public void onKeyPress(KeyPressEvent event) {
+                if (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_ENTER) {
+                    onCommitEvent(event, parent);
+                }
+            }
+        });
+
 
         datePicker = new GDatePicker();
         panel.add(datePicker);
+        datePicker.addValueChangeHandler(event -> onDateChanged(event, parent));
+        datePicker.getCalendarView().addDomHandler(event -> {
+            EventTarget eventTarget = event.getNativeEvent().getEventTarget();
+            if (eventTarget != null) {
+                String className = Element.as(eventTarget).getClassName();
+                if (className.contains("datePickerDay") && !className.contains("datePickerDayIsFiller")) {
+                    DateCellEditor.this.onCommitEvent(event, parent);
+                }
+            }
+        }, DoubleClickEvent.getType());
+
 
         return panel;
     }
 
     @Override
-    public void startEditing(Event event, Element parent, Object oldValue) {
+    public void start(Event event, Element parent, Object oldValue) {
         String input = null;
         boolean selectAll = true;
         if (GKeyStroke.isCharDeleteKeyEvent(event)) {
@@ -93,7 +93,7 @@ public class DateCellEditor extends PopupBasedCellEditor {
                 input != null ? input : formatToString(oldDate != null ? oldDate : new Date())
         );
 
-        super.startEditing(event, parent, oldDate);
+        super.start(event, parent, oldDate);
 
         editBox.getElement().focus();
         if (selectAll) {
@@ -114,19 +114,21 @@ public class DateCellEditor extends PopupBasedCellEditor {
         return null;
     }
 
-    protected void onDateChanged(ValueChangeEvent<Date> event) {
-        commitEditing(GDateDTO.fromDate(event.getValue()));
+    protected void onDateChanged(ValueChangeEvent<Date> event, Element parent) {
+        commitValue(parent, GDateDTO.fromDate(event.getValue()));
     }
 
-    protected void onCommitEvent(DomEvent event) {
+    protected void onCommitEvent(DomEvent event, Element parent) {
         GwtClientUtils.stopPropagation(event);
-        commit();
+        validateAndCommit(parent, false);
     }
 
-    public void commit() {
+    @Override
+    public Object getValue(Element parent, Integer contextAction) {
         try {
-            commitEditing(parseString(editBox.getValue()));
+            return parseString(editBox.getValue());
         } catch (ParseException ignored) {
+            return RequestValueCellEditor.invalid;
         }
     }
 
@@ -141,16 +143,10 @@ public class DateCellEditor extends PopupBasedCellEditor {
                     return DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.YEAR_MONTH);
                 }
             });
-            
-            getView().addDomHandler(event -> {
-                EventTarget eventTarget = event.getNativeEvent().getEventTarget();
-                if (eventTarget != null) {
-                    String className = Element.as(eventTarget).getClassName();
-                    if (className.contains("datePickerDay") && !className.contains("datePickerDayIsFiller")) {
-                        DateCellEditor.this.onCommitEvent(event);
-                    }
-                }
-            }, DoubleClickEvent.getType());
+        }
+
+        public CalendarView getCalendarView() {
+            return getView();
         }
     }
 }

@@ -9,7 +9,7 @@ else
 
 function customGoogleAutocomplete() {
     return {
-        render: (element, editor) => {
+        renderInput: (element, controller) => {
             if (mapApiKeyGoogle != null) {
                 let autocompleteOptions = {
                     types: ['address'],
@@ -18,7 +18,9 @@ function customGoogleAutocomplete() {
                     }
                 };
 
-                editor.setDeferredCommitOnBlur(true);
+                // it's tricky here, we don't use onSelectedEvent, but use side effect that autocomplete is rendered outside element
+                // so blur happens on that selection event, which eventually leads to commit. But blur happens before value is set, so we defer onBlur
+                controller.setDeferredCommitOnBlur(true);
 
                 new google.maps.places.Autocomplete(element, autocompleteOptions);
             } else {

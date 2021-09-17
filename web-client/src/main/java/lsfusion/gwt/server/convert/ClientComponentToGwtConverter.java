@@ -250,9 +250,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.integrationSID = clientPropertyDraw.getIntegrationSID();
         
         propertyDraw.customRenderFunction = clientPropertyDraw.customRenderFunction;
-        propertyDraw.customEditorFunction = clientPropertyDraw.customEditorFunction;
-        propertyDraw.customTextEdit = clientPropertyDraw.customTextEdit;
-        propertyDraw.customReplaceEdit = clientPropertyDraw.customReplaceEdit;
+        propertyDraw.customChangeFunction = clientPropertyDraw.customChangeFunction;
 
         propertyDraw.toolTip = clientPropertyDraw.toolTip;
         propertyDraw.clearText = clientPropertyDraw.clearText;

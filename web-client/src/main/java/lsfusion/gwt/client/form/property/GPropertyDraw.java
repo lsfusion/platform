@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form.property;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.ClientMessages;
@@ -58,9 +59,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public String integrationSID;
     
     public String customRenderFunction;
-    public String customEditorFunction;
-    public boolean customTextEdit;
-    public boolean customReplaceEdit;
+    public String customChangeFunction;
 
     public String toolTip;
     public boolean clearText;
@@ -248,7 +247,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
             if (renderer instanceof FormatCellRenderer) {
                 ((FormatCellRenderer) renderer).updateFormat();
             } else
-                assert false;
+                assert renderer instanceof CustomCellRenderer;
         }
     }
 

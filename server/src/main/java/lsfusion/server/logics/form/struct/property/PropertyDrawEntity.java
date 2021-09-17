@@ -90,8 +90,6 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public ClassViewType viewType; // assert not null, after initialization
     public String customRenderFunction;
     public String customEditorFunction;
-    public boolean customTextEdit;
-    public boolean customReplaceEdit;
     public String eventID;
 
     private String formPath;

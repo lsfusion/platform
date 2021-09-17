@@ -828,6 +828,11 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     }
 
     @Override
+    public GGroupObjectValue getRowKey(Cell editCell) {
+        return getTreeGridRow(editCell).getKey();
+    }
+
+    @Override
     public Object getValueAt(Cell cell) {
         GTreeGridRecord record = getTreeGridRow(cell);
         return record == null ? null : tree.getValue(record.getGroup(), cell.getColumnIndex(), record.getKey());

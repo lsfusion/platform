@@ -16,17 +16,18 @@ import lsfusion.gwt.client.base.view.ProgressBar;
 import lsfusion.gwt.client.base.view.WindowBox;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.property.cell.classes.GFilesDTO;
-import lsfusion.gwt.client.form.property.cell.controller.CellEditor;
+import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
+import lsfusion.gwt.client.form.property.cell.controller.KeepCellEditor;
 import org.moxieapps.gwt.uploader.client.File;
 import org.moxieapps.gwt.uploader.client.Uploader;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class FileCellEditor implements CellEditor {
+public class FileCellEditor extends ARequestValueCellEditor implements KeepCellEditor {
+
     private static final ClientMessages messages = ClientMessages.Instance.get();
-    private EditManager editManager;
     private boolean storeName;
     private List<String> validExtensions; // null if FILE (with any extension/contenttype)
 
@@ -34,12 +35,12 @@ public class FileCellEditor implements CellEditor {
     private FileInfo fileInfo = new FileInfo();
     
     public FileCellEditor(EditManager editManager, boolean storeName, List<String> validExtensions) {
-        this.editManager = editManager;
+        super(editManager);
         this.storeName = storeName;
         this.validExtensions = validExtensions;
     }
 
-    private boolean addFilesToUploader(JsArray files) {
+    private boolean addFilesToUploader(JsArray files, Element parent) {
         JsArray validFiles = JsArray.createArray().cast();
         for (int i = 0; i < files.length(); i++) {
             File file = files.get(i).cast();
@@ -51,7 +52,7 @@ public class FileCellEditor implements CellEditor {
 
         boolean hasValidFiles = validFiles.length() > 0;
         if(hasValidFiles) {
-            newVersionUploader = createUploader();
+            newVersionUploader = createUploader(parent);
             newVersionUploader.addFilesToQueue(validFiles);
             newVersionUploader.startUpload();
         }
@@ -62,34 +63,37 @@ public class FileCellEditor implements CellEditor {
         return validExtensions.size() == 1 && validExtensions.get(0).isEmpty();
     }
 
-    public void commit() {
-        ArrayList<String> fileSIDS = new ArrayList<>();
-        fileSIDS.add(fileInfo.filePrefix + "_" + fileInfo.fileName);
-        editManager.commitEditing(new GFilesDTO(fileSIDS, false, storeName, validExtensions == null));
+    @Override
+    public void onBeforeFinish(Element parent, boolean cancel) {
+        if(cancel && newVersionUploader != null)
+            newVersionUploader.cancelUpload();
         newVersionUploader = null;
     }
 
-    public void cancel() {
-        if(newVersionUploader != null) {
-            newVersionUploader.cancelUpload();
-        }
-        editManager.cancelEditing();
-        newVersionUploader = null;
+    private boolean uploaded = false;
+
+    @Override
+    public Object getValue(Element parent, Integer contextAction) {
+        if(!uploaded)
+            return RequestValueCellEditor.invalid;
+        ArrayList<String> fileSIDS = new ArrayList<>();
+        fileSIDS.add(fileInfo.filePrefix + "_" + fileInfo.fileName);
+        return new GFilesDTO(fileSIDS, false, storeName, validExtensions == null);
     }
 
     @Override
-    public void startEditing(Event editEvent, Element parent, Object oldValue) {
+    public void start(Event editEvent, Element parent, Object oldValue) {
         if(GKeyStroke.isDropEvent(editEvent)) {
-            drop(editEvent);
+            drop(editEvent, parent);
         } else {
             click(parent, createFileInputElement());
         }
     }
 
-    private void drop(Event editEvent) {
+    private void drop(Event editEvent, Element parent) {
         JsArray droppedFiles = Uploader.getDroppedFiles(editEvent);
-        if(!addFilesToUploader(droppedFiles))
-            cancel();
+        if(!addFilesToUploader(droppedFiles, parent))
+            cancel(parent);
     }
 
     private native void click(Element parent, Element inputElement) /*-{
@@ -97,9 +101,8 @@ public class FileCellEditor implements CellEditor {
 
         var needToCancel = true;
         inputElement.onchange = function () {
-            needToCancel = !instance.@FileCellEditor::addFilesToUploader(*)(this.files);
+            needToCancel = !instance.@FileCellEditor::addFilesToUploader(*)(this.files, parent);
         }
-
 
         //in grid focus returns to DataGrid, not cell
         var dataGrid = @GwtClientUtils::getParentWithClass(*)(parent, @lsfusion.gwt.client.base.view.grid.DataGrid::DATA_GRID_CLASS);
@@ -110,7 +113,7 @@ public class FileCellEditor implements CellEditor {
         parent.onfocus = function () {
             setTimeout(function () {//onfocus event fires before onchange event, so we need a timeout
                 if (needToCancel) {
-                    instance.@FileCellEditor::cancel(*)();
+                    instance.@FileCellEditor::cancel(*)(parent);
                     needToCancel = false;
                 }
                 parent.onfocus = null;
@@ -132,8 +135,8 @@ public class FileCellEditor implements CellEditor {
         return inputElement;
     }
 
-    private Uploader createUploader() {
-        LoadingBox loadingBox = new LoadingBox(this::cancel);
+    private Uploader createUploader(Element parent) {
+        LoadingBox loadingBox = new LoadingBox(() -> cancel(parent));
 
         Uploader newVersionUploader = new Uploader();
         newVersionUploader.setUploadURL(GwtClientUtils.getWebAppBaseURL() + "uploadFile")
@@ -154,7 +157,8 @@ public class FileCellEditor implements CellEditor {
                 })
                 .setUploadSuccessHandler(uploadSuccessEvent -> {
                     loadingBox.hideLoadingBox();
-                    commit();
+                    uploaded = true;
+                    validateAndCommit(parent, true, CommitReason.FORCED);
                     return true;
                 });
 

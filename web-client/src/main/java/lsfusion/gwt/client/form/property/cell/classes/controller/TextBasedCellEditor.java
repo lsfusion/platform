@@ -2,7 +2,6 @@ package lsfusion.gwt.client.form.property.cell.classes.controller;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.*;
-import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.MouseDownEvent;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
@@ -22,9 +21,8 @@ import lsfusion.gwt.client.form.property.async.GInputList;
 import lsfusion.gwt.client.form.property.cell.classes.controller.suggest.SuggestBox;
 import lsfusion.gwt.client.form.property.cell.classes.controller.suggest.TextBox;
 import lsfusion.gwt.client.form.property.cell.classes.view.TextBasedCellRenderer;
+import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
-import lsfusion.gwt.client.form.property.cell.controller.ReplaceCellEditor;
-import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 
 import java.text.ParseException;
@@ -33,17 +31,14 @@ import java.util.Collection;
 import java.util.List;
 
 import static com.google.gwt.dom.client.BrowserEvents.BLUR;
-import static com.google.gwt.dom.client.BrowserEvents.KEYDOWN;
 import static lsfusion.gwt.client.base.GwtClientUtils.isShowing;
 import static lsfusion.gwt.client.base.GwtClientUtils.nvl;
 
-public abstract class TextBasedCellEditor implements ReplaceCellEditor {
+public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor {
     private static final ClientMessages messages = ClientMessages.Instance.get();
     private static TextBoxImpl textBoxImpl = GWT.create(TextBoxImpl.class);
 
     protected final GPropertyDraw property;
-    protected final EditManager editManager;
-    protected final String inputElementTagName;
 
     boolean hasList;
     boolean strict;
@@ -55,12 +50,7 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
     }
 
     public TextBasedCellEditor(EditManager editManager, GPropertyDraw property, GInputList inputList) {
-        this(editManager, property, "input", inputList);
-    }
-
-    public TextBasedCellEditor(EditManager editManager, GPropertyDraw property, String inputElementTagName, GInputList inputList) {
-        this.inputElementTagName = inputElementTagName;
-        this.editManager = editManager;
+        super(editManager);
         this.property = property;
         this.hasList = inputList != null && !disableSuggest();
         this.strict = inputList != null && inputList.strict;
@@ -72,7 +62,7 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
     }
 
     @Override
-    public void startEditing(Event event, Element parent, Object oldValue) {
+    public void start(Event event, Element parent, Object oldValue) {
         String value = property.clearText ? "" : tryFormatInputText(oldValue);
         if(hasList) {
             suggestBox.showSuggestionList();
@@ -118,38 +108,16 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
                 isCorrect = false; // this thing is needed to disable inputting incorrect symbols
 
             handler.consume(isCorrect, false);
-        } else if (KEYDOWN.equals(type)) {
-            int keyCode = event.getKeyCode();
-            if (keyCode == KeyCodes.KEY_ENTER) {
-                enterPressed(handler, parent);
-            } else if (keyCode == KeyCodes.KEY_ESCAPE) {
-                escapePressed(handler, parent);
-            }
-//                else
-//                if (keyCode == KeyCodes.KEY_DOWN) {
-//                    handler.consume();
-//                    arrowPressed(event, parent, true);
-//                } else if (keyCode == KeyCodes.KEY_UP) {
-//                    handler.consume();
-//                    arrowPressed(event, parent, false);
-//                }
-        } else if (BLUR.equals(type)) {
+        } if (BLUR.equals(type)) {
             //restore focus and ignore blur if refresh button pressed
             if(hasList && suggestBox.display.isRefreshButtonPressed()) {
                 suggestBox.display.setRefreshButtonPressed(false);
                 suggestBox.setFocus(true);
                 return;
             }
-            // Cancel the change. Ensure that we are blurring the input element and
-            // not the parent element itself.
-            EventTarget eventTarget = event.getEventTarget();
-            if (Element.is(eventTarget)) {
-                Element target = Element.as(eventTarget);
-                if (inputElementTagName.equals(target.getTagName().toLowerCase())) {
-                    validateAndCommit(parent, true, true);
-                }
-            }
         }
+
+        super.onBrowserEvent(parent, handler);
     }
     
     private boolean checkInputValidity(Element parent, String stringToAdd) {
@@ -159,8 +127,13 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
         String currentValue = getCurrentText(parent);
         String firstPart = currentValue == null ? "" : currentValue.substring(0, cursorPosition);
         String secondPart = currentValue == null ? "" : currentValue.substring(cursorPosition + selectionLength);
-        
-        return isStringValid(firstPart + stringToAdd + secondPart);
+
+        try {
+            tryParseInputText(firstPart + stringToAdd + secondPart, false);
+            return true;
+        } catch (ParseException e) {
+            return false;
+        }
     }
     
     protected boolean isStringValid(String string) {
@@ -169,25 +142,6 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
             return true;
         } catch (ParseException e) {
             return false;
-        }
-    }
-
-    protected boolean checkEnterEvent(Event event) {
-        return GKeyStroke.isPlainKeyEvent(event);
-    }
-    protected void enterPressed(EventHandler handler, Element parent) {
-        if(checkEnterEvent(handler.event)) {
-            handler.consume();
-            validateAndCommit(parent, false, false, true);
-        }
-    }
-    protected void escapePressed(EventHandler handler, Element parent) {
-        if(GKeyStroke.isPlainKeyEvent(handler.event)) {
-            handler.consume();
-            if(hasList) {
-                suggestBox.hideSuggestions();
-            }
-            editManager.cancelEditing();
         }
     }
 
@@ -215,54 +169,27 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
     }
 
     @Override
-    public void render(Element cellParent, RenderContext renderContext, Pair<Integer, Integer> renderedSize) {
+    public void render(Element cellParent, RenderContext renderContext, Pair<Integer, Integer> renderedSize, Object oldValue) {
         cellParent.appendChild(setupInputElement(cellParent, renderContext, renderedSize));
-    }
-
-    @Override
-    public void clearRender(Element cellParent, RenderContext renderContext) {
-        GwtClientUtils.removeAllChildren(cellParent);
     }
 
     protected boolean isMultiLine() {
         return false;
     }
 
-    public void commitEditing(Element parent) {
-        validateAndCommit(parent, true, false);
+    public void onBeforeFinish(Element parent, boolean cancel) {
+        if(hasList)
+            suggestBox.hideSuggestions();
     }
 
-    public void validateAndCommit(Element parent, boolean cancelIfInvalid, boolean blurred) {
-        validateAndCommit(parent, null, cancelIfInvalid, blurred);
-    }
-
-    public void validateAndCommit(Element parent, boolean cancelIfInvalid, boolean blurred, boolean enterPressed) {
-        validateAndCommit(parent, null, cancelIfInvalid, blurred, enterPressed);
-    }
-
-    public void validateAndCommit(Element parent, Integer contextAction, boolean cancelIfInvalid, boolean blurred) {
-        validateAndCommit(parent, contextAction, cancelIfInvalid, blurred, false);
-    }
-
-    public void validateAndCommit(Element parent, Integer contextAction, boolean cancelIfInvalid, boolean blurred, boolean enterPressed) {
-        String stringValue = contextAction != null ? suggestBox.getValue() : getCurrentText(parent); //if button pressed, input element is button
-        if(hasList && strict && contextAction == null && !suggestBox.isValidValue(stringValue)) {
-            if (cancelIfInvalid) {
-                suggestBox.hideSuggestions();
-                editManager.cancelEditing();
-            }
-            return;
-        }
-
+    public Object getValue(Element parent, Integer contextAction) {
+        String stringValue = contextAction != null ? suggestBox.getValue() : getCurrentText(parent);
+        if(hasList && strict && contextAction == null && !suggestBox.isValidValue(stringValue))
+            return RequestValueCellEditor.invalid;
         try {
-            if(hasList) {
-                suggestBox.hideSuggestions();
-            }
-            editManager.commitEditing(new GUserInputResult(tryParseInputText(stringValue, true), contextAction, enterPressed), blurred);
-        } catch (ParseException ignore) {
-            if (cancelIfInvalid) {
-                editManager.cancelEditing();
-            }
+            return tryParseInputText(stringValue, true); //if button pressed, input element is button
+        } catch (ParseException e) {
+            return RequestValueCellEditor.invalid;
         }
     }
 
@@ -274,8 +201,9 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
     }
 
     protected boolean isThisCellEditor() {
+        assert hasList;
         boolean showing = isShowing(suggestBox);
-        assert (editManager.isEditing() && this == editManager.getCellEditor()) == showing;
+//        assert (editManager.isEditing() && this == editManager.getCellEditor()) == showing;
         return showing;
     }
 
@@ -456,7 +384,9 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
         return getInputElement(parent).getValue();
     }
 
-    protected abstract Object tryParseInputText(String inputText, boolean onCommit) throws ParseException;
+    protected Object tryParseInputText(String inputText, boolean onCommit) throws ParseException {
+        return inputText == null || inputText.isEmpty() ? null : inputText;
+    }
 
     protected String tryFormatInputText(Object value) {
         return value == null ? "" : value.toString();
@@ -549,7 +479,7 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
                 GwtClientUtils.setThemeImage(actions[index] + ".png", (image -> buttonsPanel.add(new SuggestPopupButton(new Image(image)) {
                     @Override
                     protected void onClickStart() {
-                        validateAndCommit(suggestBox.getElement(), index, true, false);
+                        validateAndCommit(suggestBox.getElement(), index, true, CommitReason.OTHER);
                     }
                 })));
             }
@@ -562,7 +492,7 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
         protected void showSuggestions(SuggestBox suggestBox, Collection<? extends SuggestOracle.Suggestion> suggestions, boolean isDisplayStringHTML, boolean isAutoSelectEnabled, SuggestBox.SuggestionCallback callback) {
             super.showSuggestions(suggestBox, suggestions, isDisplayStringHTML, isAutoSelectEnabled, suggestion -> {
                 callback.onSuggestionSelected(suggestion);
-                commitEditing(suggestBox.getElement().getParentElement());
+                validateAndCommit(suggestBox.getElement().getParentElement(),  true);
             });
         }
 

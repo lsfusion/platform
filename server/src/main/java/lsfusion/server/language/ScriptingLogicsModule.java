@@ -1316,20 +1316,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         property.setCustomRenderFunction(customRenderFunction);
     }
 
-    public void checkCustomPropertyViewTextOption(String editType) throws ScriptingErrorLog.SemanticErrorException {
-        checks.checkCustomPropertyEditType(editType);
-    }
-
     public void setCustomEditorFunction(LAP property, String customEditorFunction) {
         property.setCustomEditorFunction(customEditorFunction);
-    }
-
-    public void setCustomTextEdit(LAP property, boolean customTextEdit) {
-        property.setCustomTextEdit(customTextEdit);
-    }
-
-    public void setCustomReplaceEdit(LAP property, boolean customReplaceEdit) {
-        property.setCustomReplaceEdit(customReplaceEdit);
     }
 
     public void setPivotOptions(LAP property, PivotOptions pivotOptions) {

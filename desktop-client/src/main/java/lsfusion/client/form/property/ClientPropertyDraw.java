@@ -147,9 +147,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public boolean hide;
 
     public String customRenderFunction;
-    public String customEditorFunction;
-    public boolean customTextEdit;
-    public boolean customReplaceEdit;
+    public String customChangeFunction;
 
     public String creationScript;
     public String creationPath;
@@ -588,9 +586,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         returnClass = ClientTypeSerializer.deserializeClientClass(inStream);
         
         customRenderFunction = pool.readString(inStream);
-        customEditorFunction = pool.readString(inStream);
-        customTextEdit = pool.readBoolean(inStream);
-        customReplaceEdit = pool.readBoolean(inStream);
+        customChangeFunction = pool.readString(inStream);
 
         eventID = pool.readString(inStream);
 

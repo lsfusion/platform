@@ -32,8 +32,8 @@ public class TimeCellEditor extends TextBasedCellEditor {
     }
 
     @Override
-    public void startEditing(Event event, Element parent, Object oldValue) {
+    public void start(Event event, Element parent, Object oldValue) {
         GTimeDTO time = oldValue instanceof GTimeDTO ? (GTimeDTO)oldValue : midday;
-        super.startEditing(event, parent, format.format(time.toTime()));
+        super.start(event, parent, format.format(time.toTime()));
     }
 }

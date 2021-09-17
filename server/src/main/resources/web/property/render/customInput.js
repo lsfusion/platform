@@ -76,7 +76,7 @@ class CustomInput {
             inputElement.onchange = function () {
                 let date = new Date(this.value);
                 if (date.getTime() !== new Date(value).getTime())
-                    controller.changeValue(null, !isNaN(date) ? controller.toDateDTO(date.getFullYear(), date.getMonth() + 1, date.getDate()) : null);
+                    controller.changeValue(!isNaN(date) ? controller.toDateDTO(date.getFullYear(), date.getMonth() + 1, date.getDate()) : null);
             }
         }
     }
@@ -95,7 +95,7 @@ class CustomInputRange extends CustomInput {
         return (inputElement, value) => {
             inputElement.onchange = function () {
                 if (value !== parseInt(this.value))
-                    controller.changeValue(null, parseInt(this.value));
+                    controller.changeValue(parseInt(this.value));
             }
         }
     }
@@ -121,7 +121,7 @@ class CustomInputWeek extends CustomInput {
         return (inputElement, value) => {
             inputElement.onchange = function () {
                 if ((value == null ? "" : value).toString() !== this.value)
-                    controller.changeValue(null, this.value);
+                    controller.changeValue(this.value);
             }
         };
 
@@ -150,7 +150,7 @@ class CustomInputTime extends CustomInput {
             inputElement.onchange = function () {
                 let timeParts = this.value.split(':');
                 if ((value == null ? "" : value).toString() !== this.value)
-                    controller.changeValue(null, timeParts.length === 2 ? controller.toTimeDTO(parseInt(timeParts[0], 10), parseInt(timeParts[1], 10), 0) : null);
+                    controller.changeValue(timeParts.length === 2 ? controller.toTimeDTO(parseInt(timeParts[0], 10), parseInt(timeParts[1], 10), 0) : null);
             }
         };
     }
@@ -166,7 +166,7 @@ class CustomInputDateTime extends CustomInput {
             inputElement.onchange = function () {
                 let date = new Date(this.value);
                 if (date.getTime() !== new Date(value).getTime())
-                    controller.changeValue(null, !isNaN(date) ? controller.toDateTimeDTO(date.getFullYear(), date.getMonth() + 1, date.getDate(),
+                    controller.changeValue(!isNaN(date) ? controller.toDateTimeDTO(date.getFullYear(), date.getMonth() + 1, date.getDate(),
                         date.getHours(), date.getMinutes(), date.getSeconds()) : null);
             }
         };

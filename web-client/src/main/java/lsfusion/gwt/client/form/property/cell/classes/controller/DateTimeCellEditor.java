@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form.property.cell.classes.controller;
 
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import lsfusion.gwt.client.base.GwtSharedUtils;
@@ -32,7 +33,7 @@ public class DateTimeCellEditor extends DateCellEditor {
     }
 
     @Override
-    protected void onDateChanged(ValueChangeEvent<Date> event) {
+    protected void onDateChanged(ValueChangeEvent<Date> event, Element parent) {
         Date value = datePicker.getValue();
         value.setHours(0);
         value.setMinutes(0);

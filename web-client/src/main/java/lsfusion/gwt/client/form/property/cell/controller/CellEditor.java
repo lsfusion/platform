@@ -6,11 +6,7 @@ import lsfusion.gwt.client.base.view.EventHandler;
 
 public interface CellEditor {
 
-    default void onBrowserEvent(Element parent, EventHandler handler) {
+    void start(Event editEvent, Element parent, Object oldValue);
+    default void stop(Element parent) {
     }
-
-    default void commitEditing(Element parent) { // force commit (on binding)
-    }
-
-    void startEditing(Event editEvent, Element parent, Object oldValue);
 }

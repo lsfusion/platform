@@ -762,6 +762,11 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         return true;
     }
 
+    @Override
+    public GGroupObjectValue getRowKey(Cell editCell) {
+        return getGridRow(editCell).getKey();
+    }
+
     public Object getValueAt(Cell cell) {
         GridColumn column = getGridColumn(cell);
         GridDataRecord rowValue = getGridRow(cell);

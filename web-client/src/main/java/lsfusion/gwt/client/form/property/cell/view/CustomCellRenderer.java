@@ -28,7 +28,7 @@ public class CustomCellRenderer extends CellRenderer<Object> {
     @Override
     public void renderDynamicContent(Element element, Object value, UpdateContext updateContext) {
         setRendererValue(element,
-                getController(fromObject(updateContext.getCustomRendererValueChangeConsumer()), updateContext.isPropertyReadOnly()),
+                getController(updateContext.getCustomRendererValueChangeConsumer(), updateContext.isPropertyReadOnly()),
                 fromObject(value));
     }
 
@@ -50,21 +50,17 @@ public class CustomCellRenderer extends CellRenderer<Object> {
         return value == null ? "" : value.toString();
     }
     
-    protected void changeValue(JavaScriptObject event, JavaScriptObject valueChangeConsumerObject, JavaScriptObject value) {
-        if (event != null)
-            GwtClientUtils.stopPropagation(this.<NativeEvent>toObject(event));
-        
-        Consumer<Object> valueChangeConsumer = this.toObject(valueChangeConsumerObject);
+    protected void changeValue(Consumer<Object> valueChangeConsumer, JavaScriptObject value) {
         if (valueChangeConsumer != null) {
             valueChangeConsumer.accept(toObject(value));
         }
     }
 
-    protected native JavaScriptObject getController(JavaScriptObject valueChangeConsumer, Boolean isReadOnly)/*-{
+    protected native JavaScriptObject getController(Consumer<Object> valueChangeConsumer, Boolean isReadOnly)/*-{
         var thisObj = this;
         return {
-            changeValue: function (event, value) {
-                return thisObj.@CustomCellRenderer::changeValue(*)(event, valueChangeConsumer, value);
+            changeValue: function (value) {
+                return thisObj.@CustomCellRenderer::changeValue(*)(valueChangeConsumer, value);
             },
             isReadOnly: function () {
                 return isReadOnly;
@@ -81,7 +77,6 @@ public class CustomCellRenderer extends CellRenderer<Object> {
         }
     }-*/;
 
-    
     protected native final <T> JavaScriptObject fromObject(T object) /*-{
         return object;
     }-*/;

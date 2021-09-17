@@ -3,36 +3,45 @@ package lsfusion.gwt.client.form.property.cell.classes.controller;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.classes.data.GIntervalType;
-import lsfusion.gwt.client.form.property.cell.controller.CellEditor;
+import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
+import lsfusion.gwt.client.form.property.cell.controller.WindowValueCellEditor;
+import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
 
 import java.math.BigDecimal;
 import java.util.Date;
 
-public class IntervalCellEditor implements CellEditor {
+public class IntervalCellEditor extends WindowValueCellEditor {
 
-    private final EditManager editManager;
     private final String intervalType;
     private final GIntervalType interval;
 
     public IntervalCellEditor(EditManager editManager, String intervalType, GIntervalType interval) {
-        this.editManager = editManager;
+        super(editManager);
         this.intervalType = intervalType;
         this.interval = interval;
     }
 
-    public void validateAndCommit(Long dateFrom, Long dateTo) {
+    @Override
+    public Object getValue(Element parent, Integer contextAction) {
+        //todo:getCurrentValue
+        return RequestValueCellEditor.invalid;
+    }
+
+    private Object getDateValue(Long dateFrom, Long dateTo) {
         if (dateFrom != null && dateTo != null)
-            editManager.commitEditing(new BigDecimal(dateFrom + "." + dateTo));
-        else if (dateFrom == null && dateTo == null)
-            editManager.commitEditing(null);
-        else
-            editManager.cancelEditing();
+            return new BigDecimal(dateFrom + "." + dateTo);
+        return null;
     }
 
     @Override
-    public void startEditing(Event event, Element parent, Object oldValue) {
+    public void start(Event event, Element parent, Object oldValue) {
         createPicker(parent, interval.getDate(oldValue, true), interval.getDate(oldValue, false), intervalType, false);
+    }
+
+    @Override
+    public void stop(Element parent) {
+        // todo:removePicker
     }
 
     protected native void createPicker(Element parent, Date startDate, Date endDate, String intervalType, boolean singleDatePicker)/*-{
@@ -105,7 +114,8 @@ public class IntervalCellEditor implements CellEditor {
             var dateTo = endDate.isValid() != null ? (intervalType === 'ZDATETIME' ? endDate.unix() :
                 Date.UTC(endDate.year(), endDate.month(), endDate.date(), endDate.hour(), endDate.minute(), endDate.second()) / 1000) : null;
 
-            thisObj.@lsfusion.gwt.client.form.property.cell.classes.controller.IntervalCellEditor::validateAndCommit(*)(dateFrom, dateTo);
+            thisObj.@lsfusion.gwt.client.form.property.cell.classes.controller.IntervalCellEditor::commitValue(*)(parent,
+                thisObj.@lsfusion.gwt.client.form.property.cell.classes.controller.IntervalCellEditor::getDateValue(*)(dateFrom, dateTo));
         });
 
     }-*/;

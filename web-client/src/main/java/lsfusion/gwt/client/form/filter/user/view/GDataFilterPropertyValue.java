@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form.filter.user.view;
 
+import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.form.controller.GFormController;
@@ -7,6 +8,7 @@ import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.async.GAsyncExec;
 import lsfusion.gwt.client.form.property.async.GInputList;
+import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
 import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
 import lsfusion.gwt.client.form.property.panel.view.ActionOrPropertyValue;
 import lsfusion.interop.action.ServerResponse;
@@ -77,17 +79,17 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
                 false,
                 null,
                 FILTER,
-                result -> setValue(result.getValue()),
-                this::acceptCommit,
+                (result, commitReason) -> setValue(result.getValue()),
+                (result, commitReason) -> acceptCommit(result, commitReason.equals(CommitReason.ENTERPRESSED)),
                 onCancel,
                 this,
                 ServerResponse.FILTER);
     }
     
-    private void acceptCommit(GUserInputResult result) {
-        enterPressed = result.isEnterPressed();
+    private void acceptCommit(GUserInputResult result, boolean enterPressed) {
+        this.enterPressed = enterPressed;
         afterCommit.accept(result.getValue());
-        enterPressed = false;
+        this.enterPressed = false;
     }
 
     @Override

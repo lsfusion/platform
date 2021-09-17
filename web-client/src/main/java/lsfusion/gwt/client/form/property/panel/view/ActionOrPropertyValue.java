@@ -183,6 +183,11 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
         return columnKey;
     }
 
+    @Override
+    public GGroupObjectValue getRowKey() {
+        throw new UnsupportedOperationException();
+    }
+
     public RenderContext getRenderContext() {
         return this;
     }

@@ -538,8 +538,6 @@ public class ScriptingFormEntity {
             }
         }
         String customEditorFunction = options.getCustomEditorFunction();
-        property.customTextEdit = options.isCustomTextEdit();
-        property.customReplaceEdit = options.isCustomReplaceEdit();
         if (customEditorFunction != null) {
             if (!customEditorFunction.isEmpty()) {
                 property.customEditorFunction = customEditorFunction;

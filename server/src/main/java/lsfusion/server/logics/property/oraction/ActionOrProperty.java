@@ -652,8 +652,6 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         private ClassViewType viewType;
         private String customRenderFunction;
         private String customEditorFunction;
-        private boolean customTextEdit;
-        private boolean customReplaceEdit;
         private PivotOptions pivotOptions;
 
         // для всех 
@@ -664,8 +662,6 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
             entity.viewType = viewType;
             entity.customRenderFunction = customRenderFunction;
             entity.customEditorFunction = customEditorFunction;
-            entity.customTextEdit = customTextEdit;
-            entity.customReplaceEdit = customReplaceEdit;
             entity.askConfirm = BaseUtils.nvl(askConfirm, false);
             entity.askConfirmMessage = askConfirmMessage;
             entity.eventID = eventID;
@@ -761,8 +757,6 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
                 setCustomRenderFunction(options.customRenderFunction);
             if (customEditorFunction == null)
                 setCustomEditorFunction(options.customEditorFunction);
-            setCustomTextEdit(options.customTextEdit);
-            setCustomReplaceEdit(options.customReplaceEdit);
             if(pivotOptions == null)
                 setPivotOptions(options.pivotOptions);
             
@@ -876,14 +870,6 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
 
         public void setCustomEditorFunction(String customEditorFunction) {
             this.customEditorFunction = customEditorFunction;
-        }
-
-        public void setCustomTextEdit(boolean customTextEdit) {
-            this.customTextEdit = customTextEdit;
-        }
-
-        public void setCustomReplaceEdit(boolean customReplaceEdit) {
-            this.customReplaceEdit = customReplaceEdit;
         }
 
         public void setPivotOptions(PivotOptions pivotOptions) {

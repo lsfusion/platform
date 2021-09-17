@@ -14,6 +14,8 @@ public interface EditContext {
     GPropertyDraw getProperty();
     GGroupObjectValue getColumnKey();
 
+    GGroupObjectValue getRowKey();
+
     Element getRenderElement();
 
     Object getValue();

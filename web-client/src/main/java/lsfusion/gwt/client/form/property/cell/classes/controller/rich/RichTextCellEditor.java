@@ -36,20 +36,10 @@ public class RichTextCellEditor extends DialogBasedCellEditor {
         textArea.setHTML(EscapeUtils.sanitizeHtml(oldValue == null ? "" : oldValue.toString()));
         
         Button btnOk = new Button(messages.ok());
-        btnOk.addClickHandler(new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent event) {
-                commit();
-            }
-        });
+        btnOk.addClickHandler(event -> validateAndCommit(parent, false));
 
         Button btnCancel = new Button(messages.cancel());
-        btnCancel.addClickHandler(new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent event) {
-                cancel();
-            }
-        });
+        btnCancel.addClickHandler(event -> cancel(parent));
 
         RichTextAreaToolbar toolbar = new RichTextAreaToolbar(textArea);
         
@@ -79,27 +69,18 @@ public class RichTextCellEditor extends DialogBasedCellEditor {
             int keyCode = event.getNativeKeyCode();
             if (keyCode == KeyCodes.KEY_ENTER && event.isControlKeyDown()) {
                 GwtClientUtils.stopPropagation(event);
-                commit();
+                validateAndCommit(parent, false);
             } else if (keyCode == KeyCodes.KEY_ESCAPE) {
                 GwtClientUtils.stopPropagation(event);
-                cancel();
+                cancel(parent);
             }
         });
         
         return mainPane;
     }
-    
+
     @Override
-    protected void onCloseClick() {
-        cancel();
-    }
-
-    public void commit() {
-        Object currentText = textArea.getHTML();
-        commitEditing(currentText);
-    }
-
-    private void cancel() {
-        cancelEditing();
+    public Object getValue(Element parent, Integer contextAction) {
+        return textArea.getHTML();
     }
 }

@@ -10,12 +10,7 @@ import java.util.ArrayList;
 public interface EditManager {
     void getAsyncValues(String value, AsyncCallback<Pair<ArrayList<GAsync>, Boolean>> callback);
 
-    default void commitEditing(Object value) {
-        commitEditing(new GUserInputResult(value), false);
-    }
-    void commitEditing(GUserInputResult result, boolean blurred);  // assert if blurred then editor rerender dom
+    void commitEditing(GUserInputResult result, CommitReason commitReason);  // assert if blurred then editor rerender dom
 
     void cancelEditing();
-    boolean isEditing();
-    CellEditor getCellEditor();
 }
