@@ -29,7 +29,7 @@ public interface CustomCellEditor extends RequestValueCellEditor { // ,RequestVa
     }
 
     default void onBeforeFinish(Element parent, boolean cancel) {
-        CustomReplaceCellEditor.onBeforeFinish(getCustomEditor(), getCustomElement(parent));
+        CustomReplaceCellEditor.onBeforeFinish(getCustomEditor(), getCustomElement(parent), cancel);
     }
 
     default void onBrowserEvent(Element parent, EventHandler handler) {

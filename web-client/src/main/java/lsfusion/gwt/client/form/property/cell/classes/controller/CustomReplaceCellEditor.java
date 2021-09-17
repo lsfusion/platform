@@ -126,9 +126,9 @@ public class CustomReplaceCellEditor extends RequestReplaceValueCellEditor imple
             customEditor.clear(element);
     }-*/;
 
-    public static native void onBeforeFinish(JavaScriptObject customEditor, Element element)/*-{
+    public static native void onBeforeFinish(JavaScriptObject customEditor, Element element, boolean cancel)/*-{
         if (customEditor.onBeforeFinish !== undefined)
-            customEditor.onBeforeFinish(element);
+            customEditor.onBeforeFinish(element, cancel);
     }-*/;
 
     public static native void onBrowserEvent(JavaScriptObject customEditor, Event event, Element element)/*-{
