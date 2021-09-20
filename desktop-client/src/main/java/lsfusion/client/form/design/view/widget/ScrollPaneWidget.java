@@ -23,14 +23,14 @@ public class ScrollPaneWidget extends JScrollPane implements Widget {
     }
 
     // for a scrollpane opposite fixed direction we want to have actual size instead of flex-basis size (web browser does that)
-    public FlexPanel oppositeFixedFlexPanel;
+    public FlexPanel wrapFlexPanel;
 
     @Override
     public Dimension getPreferredSize() {
-        if(oppositeFixedFlexPanel != null) {
+        if(wrapFlexPanel != null) {
 //            assert oppositeStretchFixedFlexPanel == getViewport().getView();
-            assert oppositeFixedFlexPanel.oppositeFixedScrollPane == this;
-            return preferredLayoutSize(this, oppositeFixedFlexPanel::getDefaultPreferredSize); // we call getDefaultPreferredSize to use getPreferredSize instead of getFlexPreferredSize in FlexPanel
+            assert wrapFlexPanel.wrapScrollPane == this;
+            return preferredLayoutSize(this, wrapFlexPanel::getDefaultPreferredSize); // we call getDefaultPreferredSize to use getPreferredSize instead of getFlexPreferredSize in FlexPanel
         }
         return super.getPreferredSize();
     }

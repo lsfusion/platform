@@ -67,13 +67,16 @@ public class FlexLayout implements LayoutManager2, Serializable {
         return prefSize = layoutSizeWithInsets(parent, child -> ((FlexComponent)child).getFlexPreferredSize(vertical));
     }
 
-    public Dimension preferredFlexLayoutSize(Container parent) {
+    public Dimension preferredFlexLayoutSize(Container parent, boolean fixedHorz, boolean fixedVert) {
         checkParent(parent);
         if (prefFlexSize != null) {
             return prefFlexSize;
         }
 
-        return prefFlexSize = layoutSizeWithInsets(parent, child -> ((FlexComponent)child).getFlexPreferredSize(null));
+        boolean fFixedHorz = fixedHorz || !vertical;
+        boolean fFixedVert = fixedVert || vertical;
+        return prefFlexSize = layoutSizeWithInsets(parent, child ->
+                ((FlexComponent) child).getFlexPreferredSize(fFixedHorz ? (fFixedVert ? null : (Boolean)false) : (Boolean)true));
     }
 
     protected Dimension layoutSizeWithInsets(Container parent, ComponentSizeGetter sizeGetter) {

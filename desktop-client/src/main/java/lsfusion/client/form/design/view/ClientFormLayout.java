@@ -52,7 +52,7 @@ public class ClientFormLayout extends PanelWidget {
         addContainers(mainContainer);
 
         Widget mainView = getComponentView(mainContainer);
-        add(AbstractClientContainerView.wrapOverflowAuto(mainView, mainContainer.isVertical()).getComponent(), BorderLayout.CENTER);
+        add(AbstractClientContainerView.wrapOverflowAuto(mainView, true, true).getComponent(), BorderLayout.CENTER);
 
         // приходится делать StrongRef, иначе он тут же соберется сборщиком мусора так как ContainerFocusListener держит его как WeakReference
         focusListener = new FocusAdapter() {

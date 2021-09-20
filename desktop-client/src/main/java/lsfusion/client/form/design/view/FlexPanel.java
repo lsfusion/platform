@@ -88,13 +88,18 @@ public class FlexPanel extends PanelWidget {
 
         LayoutData layoutData = impl.insertChild(getFlexLayout(), widget, beforeIndex, alignment, flex, flexBasis, vertical);
         widget.setLayoutData(layoutData);
+
+        if(alignment == FlexAlignment.STRETCH) // in web STRETCH alignment assumes that flex size is 0 by default
+            FlexPanel.setBaseSize(widget, !isVertical(), 0);
     }
 
     private FlexLayout getFlexLayout() {
         return (FlexLayout) getLayout();
     }
 
-    public ScrollPaneWidget oppositeFixedScrollPane;
+    public ScrollPaneWidget wrapScrollPane;
+    public boolean wrapFixedHorz;
+    public boolean wrapFixedVert;
     public Dimension getDefaultPreferredSize() {
         return super.getPreferredSize();
     }
@@ -102,10 +107,10 @@ public class FlexPanel extends PanelWidget {
     // we need this to give inner STRETCH component upper size to have appropriate scroll
     @Override
     public Dimension getPreferredSize() {
-        if(oppositeFixedScrollPane != null) {
+        if(wrapScrollPane != null) {
             assert getFlexHeight() == null && getFlexWidth() == null;
-            assert oppositeFixedScrollPane.oppositeFixedFlexPanel == this;
-            return getFlexLayout().preferredFlexLayoutSize(this);
+            assert wrapScrollPane.wrapFlexPanel == this;
+            return getFlexLayout().preferredFlexLayoutSize(this, wrapFixedHorz, wrapFixedVert);
         }
         return super.getPreferredSize();
     }

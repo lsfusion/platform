@@ -50,8 +50,8 @@ public abstract class AbstractClientContainerView implements ClientContainerView
         boolean isOppositeAutoSized = child.getSize(!vertical) == null;
 
         // somewhy it doesn't work properly for tabbed client container, but it's not that important for now
-        if((!(isOppositeAutoSized && isAutoSized) || fixFlexBasis) && this instanceof LinearClientContainerView) // child is tab, since basis is fixed, strictly speaking this all check is an optimization
-            view = wrapOverflowAuto(view, !isOppositeAutoSized? vertical : null);
+        if((!(isOppositeAutoSized && isAutoSized) || fixFlexBasis)) // child is tab, since basis is fixed, strictly speaking this all check is an optimization
+            view = wrapOverflowAuto(view, vertical ? !isOppositeAutoSized : !isAutoSized, vertical ? !isAutoSized : !isOppositeAutoSized);
 
         FlexPanel wrapPanel = wrapBorderImpl(child);
         if(wrapPanel != null) {
@@ -81,7 +81,7 @@ public abstract class AbstractClientContainerView implements ClientContainerView
             }
         };
     }
-    public static Widget wrapOverflowAuto(Widget view, Boolean oppositeFixedVertical) {
+    public static Widget wrapOverflowAuto(Widget view, boolean fixedHorz, boolean fixedVert) {
 //        assert view instanceof Scrollable;
         ScrollPaneWidget scroll = new ScrollPaneWidget(view.getComponent()) {
             @Override
@@ -91,9 +91,12 @@ public abstract class AbstractClientContainerView implements ClientContainerView
             }
         };
         // need this to force view use getFlexPreferredSize for STRETCH not auto sized direction instead of getPreferredSize (web browser does that)
-        if(oppositeFixedVertical != null && view instanceof FlexPanel && oppositeFixedVertical.equals(((FlexPanel) view).isVertical())) {
-            scroll.oppositeFixedFlexPanel = (FlexPanel) view;
-            ((FlexPanel) view).oppositeFixedScrollPane = scroll;
+        if(view instanceof FlexPanel) {
+            scroll.wrapFlexPanel = (FlexPanel) view;
+            FlexPanel flexView = (FlexPanel) view;
+            flexView.wrapScrollPane = scroll;
+            flexView.wrapFixedHorz = fixedHorz;
+            flexView.wrapFixedVert = fixedVert;
         }
 
         scroll.getVerticalScrollBar().setUnitIncrement(14);
