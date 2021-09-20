@@ -27,7 +27,6 @@ import lsfusion.client.form.property.cell.controller.ClientAbstractCellEditor;
 import lsfusion.client.form.property.cell.controller.dispatch.EditPropertyDispatcher;
 import lsfusion.client.form.property.cell.view.ClientAbstractCellRenderer;
 import lsfusion.client.form.property.table.view.CellTableContextMenuHandler;
-import lsfusion.client.form.property.table.view.CellTableInterface;
 import lsfusion.client.form.property.table.view.InternalEditEvent;
 import lsfusion.client.tooltip.LSFTooltipManager;
 import lsfusion.client.form.property.table.view.*;

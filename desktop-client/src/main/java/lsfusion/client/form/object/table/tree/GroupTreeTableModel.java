@@ -392,7 +392,7 @@ public class GroupTreeTableModel extends DefaultTreeTableModel {
         for(int column = 0; column < getColumnCount(); column++) {
             xPosition = xPosition - treeGroupTable.getColumn(column).getWidth();
             if (xPosition < 0)
-                return treeGroupTable.getProperty(0, column) != null ? column : -1;
+                return getColumnProperty(column) != null ? column : -1;
         }
         return -1;
     }
