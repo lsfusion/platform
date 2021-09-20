@@ -48,6 +48,7 @@ public class SwingDefaults {
     private static Color notDefinedForeground;
     private static Color logPanelErrorColor;
     private static Color titledBorderTitleColor;
+    private static Color panelBorderColor;
     private static Color dockableBorderColor;
     private static Color tabbedPaneUnderlineColor;
     private static Color tabbedPaneFocusColor;
@@ -82,6 +83,7 @@ public class SwingDefaults {
         notDefinedForeground = null;
         logPanelErrorColor = null;
         titledBorderTitleColor = null;
+        panelBorderColor = null;
         dockableBorderColor = null;
         tabbedPaneUnderlineColor = null;
         tabbedPaneFocusColor = null;
@@ -299,6 +301,13 @@ public class SwingDefaults {
             }
         }
         return titledBorderTitleColor;
+    }
+
+    public static Color getPanelBorderColor() {
+        if (panelBorderColor == null) {
+            panelBorderColor = getColor("Separator.foreground");
+        }
+        return panelBorderColor;
     }
     
     public static Color getComponentBorderColor() {

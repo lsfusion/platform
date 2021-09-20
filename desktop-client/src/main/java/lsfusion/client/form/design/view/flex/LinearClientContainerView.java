@@ -1,8 +1,12 @@
-package lsfusion.client.form.design.view;
+package lsfusion.client.form.design.view.flex;
 
 import lsfusion.client.base.view.ClientColorUtils;
 import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.design.ClientContainer;
+import lsfusion.client.form.design.view.AbstractClientContainerView;
+import lsfusion.client.form.design.view.CaptionPanel;
+import lsfusion.client.form.design.view.ClientContainerView;
+import lsfusion.client.form.design.view.FlexPanel;
 import lsfusion.client.form.design.view.widget.Widget;
 import lsfusion.client.form.object.panel.controller.PropertyPanelController;
 import lsfusion.interop.base.view.FlexAlignment;
