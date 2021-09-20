@@ -83,6 +83,8 @@ public class DateCellEditor extends PopupBasedCellEditor {
 
         Date oldDate = valueAsDate(oldValue);
 
+        super.start(event, parent, oldDate);
+
         if (oldDate != null) {
             datePicker.setValue(oldDate);
             datePicker.setCurrentMonth(oldDate);
@@ -92,8 +94,6 @@ public class DateCellEditor extends PopupBasedCellEditor {
         editBox.setValue(
                 input != null ? input : formatToString(oldDate != null ? oldDate : new Date())
         );
-
-        super.start(event, parent, oldDate);
 
         editBox.getElement().focus();
         if (selectAll) {

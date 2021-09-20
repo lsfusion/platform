@@ -59,6 +59,8 @@ public class ColorCellEditor extends PopupBasedCellEditor {
 
     @Override
     public void start(Event editEvent, Element parent, Object oldValue) {
+        super.start(editEvent, parent, oldValue);
+
         if (oldValue instanceof ColorDTO) {
             try {
                 colorPicker.setHex(((ColorDTO)oldValue).value);
@@ -66,7 +68,5 @@ public class ColorCellEditor extends PopupBasedCellEditor {
                 throw new IllegalStateException("can't convert string value to color");
             }
         }
-
-        super.start(editEvent, parent, oldValue);
     }
 }
