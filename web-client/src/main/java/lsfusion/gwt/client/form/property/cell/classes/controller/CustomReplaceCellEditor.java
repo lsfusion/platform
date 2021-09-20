@@ -71,7 +71,7 @@ public class CustomReplaceCellEditor extends RequestReplaceValueCellEditor imple
         if(hasRenderFunction(functionName, customEditor))
             return new CustomTextCellEditor(editManager, property, functionName, customEditor);
 
-        functionName = "Window";
+        functionName = "Dialog";
         if(hasRenderFunction(functionName, customEditor))
             return new CustomWindowCellEditor(editManager, property, functionName, customEditor);
 
