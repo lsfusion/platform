@@ -110,8 +110,9 @@ public class FlexPanel extends PanelWidget {
         return super.getPreferredSize();
     }
 
-    public void remove(Widget widget) {
+    public boolean remove(Widget widget) {
         remove(widget.getComponent());
+        return true;
     }
 
     public static void setBaseSize(Widget element, boolean vertical, Integer size) {
@@ -307,5 +308,13 @@ public class FlexPanel extends PanelWidget {
 
         // need revalidate to repaint
         formLayout.revalidate();
+    }
+
+    public Widget getWidget(int i) {
+        return (Widget) getComponent(i);
+    }
+
+    public int getWidgetIndex(Widget child) {
+        return Arrays.asList(getComponents()).indexOf(child);
     }
 }

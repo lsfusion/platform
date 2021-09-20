@@ -1129,7 +1129,7 @@ public class ClientFormController implements AsyncListener {
         }
     }
 
-    public void setTabVisible(final ClientContainer container, final ClientComponent component) throws IOException {
+    public void setTabVisible(final ClientContainer container, final ClientComponent component) {
         rmiQueue.asyncRequest(new ProcessServerResponseRmiRequest("setTabVisible") {
             @Override
             protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {

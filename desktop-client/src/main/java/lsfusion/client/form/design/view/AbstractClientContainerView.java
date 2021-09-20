@@ -3,6 +3,7 @@ package lsfusion.client.form.design.view;
 import lsfusion.base.BaseUtils;
 import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.design.ClientContainer;
+import lsfusion.client.form.design.view.flex.LinearClientContainerView;
 import lsfusion.client.form.design.view.widget.ScrollPaneWidget;
 import lsfusion.client.form.design.view.widget.Widget;
 

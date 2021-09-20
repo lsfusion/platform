@@ -132,14 +132,13 @@ public class ClientContainer extends ClientComponent {
         return type == HORIZONTAL_SPLIT_PANE;
     }
 
-    public boolean isVertical() {
-        return isLinearVertical() || isSplitVertical() || isColumns();
-    }
-
     public boolean isHorizontal() {
         return isLinearHorizontal() || isSplitHorizontal();
     }
 
+    public boolean isVertical() {
+        return isLinearVertical() || isSplitVertical() || isColumns() || isTabbed();
+    }
 
     public boolean isAlignCaptions() {
         if(!isVertical()) // later maybe it makes sense to support align captions for horizontal containers, but with no-wrap it doesn't make much sense

@@ -5,6 +5,7 @@ import lsfusion.client.base.focus.FormFocusTraversalPolicy;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.design.ClientContainer;
+import lsfusion.client.form.design.view.flex.LinearClientContainerView;
 import lsfusion.client.form.design.view.widget.PanelWidget;
 import lsfusion.client.form.design.view.widget.Widget;
 import lsfusion.client.form.object.ClientGroupObject;
@@ -91,7 +92,7 @@ public class ClientFormLayout extends PanelWidget {
         } else if (container.isSplit()) {
             containerView = new LinearClientContainerView(container);
         } else if (container.isTabbed()) {
-            containerView = new TabbedClientContainerView(container, form);
+            containerView = new TabbedClientContainerView(form, container);
         } else if (container.isColumns()) {
             containerView = new LinearClientContainerView(container);
         } else if (container.isScroll()) {
