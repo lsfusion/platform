@@ -1,5 +1,6 @@
 package lsfusion.client.navigator.view;
 
+import lsfusion.client.form.design.view.widget.ScrollPaneWidget;
 import lsfusion.client.navigator.ClientNavigatorElement;
 import lsfusion.client.navigator.controller.INavigatorController;
 import lsfusion.client.navigator.window.ClientNavigatorWindow;
@@ -17,9 +18,9 @@ public abstract class NavigatorView {
         this.window = window;
         
         if (window.drawScrollBars) {
-            component = new JScrollPane(iComponent);
-            ((JScrollPane) component).getVerticalScrollBar().setUnitIncrement(14);
-            ((JScrollPane) component).getHorizontalScrollBar().setUnitIncrement(14);
+            component = new ScrollPaneWidget(iComponent);
+            ((ScrollPaneWidget) component).getVerticalScrollBar().setUnitIncrement(14);
+            ((ScrollPaneWidget) component).getHorizontalScrollBar().setUnitIncrement(14);
         } else {
             component = iComponent;   
         }
@@ -33,7 +34,7 @@ public abstract class NavigatorView {
     }
 
     public Component getComponent() {
-        return window.drawScrollBars ? ((JScrollPane) component).getViewport().getView() : component;
+        return window.drawScrollBars ? ((ScrollPaneWidget) component).getViewport().getView() : component;
     }
 
     public abstract void refresh(Set<ClientNavigatorElement> newElements);
