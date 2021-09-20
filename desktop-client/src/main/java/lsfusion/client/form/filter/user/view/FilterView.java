@@ -1,7 +1,7 @@
 package lsfusion.client.form.filter.user.view;
 
 import lsfusion.client.controller.remote.RmiQueue;
-import lsfusion.client.form.design.view.*;
+import lsfusion.client.form.design.view.Filler;
 import lsfusion.client.form.design.view.FlexPanel;
 import lsfusion.client.form.design.view.widget.ButtonWidget;
 import lsfusion.client.form.design.view.widget.Widget;
@@ -240,8 +240,8 @@ public class FilterView extends FlexPanel implements FilterConditionView.UIHandl
 
         updateConditionsLastState();
 
-        condContainer.revalidate();
-        condContainer.repaint();
+        // fixes filter draw delay (appeared after commit 9211b3d5)
+        controller.getLogicsSupplier().getFormController().getLayout().revalidate();
 
         if (keyEvent != null) {
             condView.startEditing(keyEvent);
