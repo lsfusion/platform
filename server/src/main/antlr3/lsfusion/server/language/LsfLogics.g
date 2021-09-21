@@ -3387,6 +3387,7 @@ formActionProps[String objectName, ValueClass objectClass, List<TypedParameter> 
             ('NULL' { outNull = true; })? 
 //            ('TO' pUsage=propertyUsage { outProp = $pUsage.propUsage; } )?
             (('CONSTRAINTFILTER' { constraintFilter = true; } ) (EQ consExpr=propertyExpression[context, dynamic] { changeProp = $consExpr.property; } )?)?
+            ('LIST' listExpr=propertyExpression[newContext, dynamic] {} )?
         )?
     ;
 
