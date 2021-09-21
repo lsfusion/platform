@@ -1,7 +1,10 @@
 package lsfusion.gwt.client.form.property.cell.classes.controller;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.dom.client.*;
+import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.InputElement;
+import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.MouseDownEvent;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
@@ -548,6 +551,20 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
 
         private void init() {
             getElement().addClassName("suggestPopupButton");
+        }
+
+        @Override
+        public void setFocus(boolean focused) {
+            // in Firefox FocusImpl calls focus() immediately
+            // (in suggest box blur event is called before button action performed, which leads to commit editing problems)
+            // while in FocusImplSafari (Chrome) this is done with 0 delay timeout.
+            // doing the same here for equal behavior (see also MenuBar.setFocus())
+            Timer t = new Timer() {
+                public void run() {
+                    SuggestPopupButton.super.setFocus(focused);
+                }
+            };
+            t.schedule(0);
         }
     }
 

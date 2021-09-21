@@ -533,7 +533,24 @@ public class MenuBar extends Widget implements PopupListener, HasAnimation,
    * Give this MenuBar focus.
    */
   public void focus() {
-    FocusPanel.impl.focus(getElement());
+    setFocus(true);
+  }
+  
+  public void setFocus(boolean focus) {
+    // in Firefox FocusImpl calls focus() immediately
+    // (in suggest box blur event is called before menu item select action, which leads to commit editing problems)
+    // while in FocusImplSafari (Chrome) this is done with 0 delay timeout.
+    // doing the same here for equal behavior (see also TextBasedCellEditor.setFocus())
+    Timer t = new Timer() {
+      public void run() {
+        if (focus) {
+          FocusPanel.impl.focus(getElement());
+        } else {
+          FocusPanel.impl.blur(getElement());
+        }
+      }
+    };
+    t.schedule(0);
   }
 
   /**
@@ -706,16 +723,7 @@ public class MenuBar extends Widget implements PopupListener, HasAnimation,
     switch (DOM.eventGetType(event)) {
       //todo: replaced ONCLICK to ONMOUSEDOWN
       case Event.ONMOUSEDOWN: {
-        // in Firefox FocusImpl calls focus() immediately
-        // (in suggest box blur event is called before menu item select action, which leads to commit editing problems)
-        // while in FocusImplSafari (Chrome) this is done with 0 delay timeout.
-        // doing the same here for equal behavior
-        Timer t = new Timer() {
-          public void run() {
-            FocusPanel.impl.focus(getElement());
-          }
-        };
-        t.schedule(0);
+        focus();
         // Fire an item's command when the user clicks on it.
         if (item != null) {
           doItemAction(item, true, true);
@@ -1005,7 +1013,7 @@ public class MenuBar extends Widget implements PopupListener, HasAnimation,
       closeAllParents();
 
       // Remove the focus from the menu
-      FocusPanel.impl.blur(getElement());
+      setFocus(false);
 
       // Fire the item's command. The command must be fired in the same event
       // loop or popup blockers will prevent popups from opening.
