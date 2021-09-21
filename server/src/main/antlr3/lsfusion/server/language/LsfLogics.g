@@ -103,7 +103,7 @@ grammar LsfLogics;
 @lexer::members {
 	public ScriptingLogicsModule self;
 	public ScriptParser.State parseState;
-	
+
 	@Override
 	public void emitErrorMessage(String msg) {
 		if (isFirstFullParse() || parseState == ScriptParser.State.PRE) { 
@@ -138,7 +138,7 @@ grammar LsfLogics;
 @members {
 	public ScriptingLogicsModule self;
 	public ScriptParser.State parseState;
-	
+
 	private boolean insideRecursion = false;
 	
 	public boolean inParseState(ScriptParser.State parseState) {
@@ -1238,7 +1238,7 @@ designOrFormExprDeclaration[ScriptingFormView design, List<TypedParameter> extra
 
 		$mapping = self.getUsedNames(context, $expr.property.usedParams);
 		$signature = self.getUsedClasses(context, $expr.property.usedParams);
-	}	
+	}
 }
 	:	expr=propertyExpressionOrLiteral[context] { if (inMainParseState()) { $property = self.checkSingleParam($expr.property).getLP(); } }
 	;
@@ -4902,7 +4902,7 @@ metaCodeStatement
             }
 		}
 		'{'
-		statements 
+		statements
 		'}'
 		{
             if(oldState != null)
@@ -4910,7 +4910,7 @@ metaCodeStatement
 
             if(!inGenMetaParseState()) // we want to skip generated statements, so grabbing only topmost rules
                 self.getParser().skipMetaDeclCode(); // we want to skip generated statements
-		} 
+		}
 		)? // for intellij plugin
 		';'	
 	;
@@ -5242,7 +5242,7 @@ stringLiteral returns [String val]
 // there are some rules where ID is not desirable (see usages), where there is an ID
 // it makes sense to be synchronized with noIDCheck in LSF.bnf in idea-plugin
 localizedStringLiteralNoID returns [LocalizedString val]
-	:	s=STRING_LITERAL { $val = self.transformLocalizedStringLiteral($s.text); } 
+	:	s=STRING_LITERAL { $val = self.transformLocalizedStringLiteral($s.text); }
 	;
 
 localizedStringLiteral returns [LocalizedString val]
@@ -5356,7 +5356,7 @@ emailAttachFormat returns [AttachmentFormat val]
 udoubleLiteral returns [double val]
 	:	d=UDOUBLE_LITERAL { $val = self.createScriptedDouble($d.text.substring(0, $d.text.length() - 1)); }
 	;	
-		
+
 unumericLiteral returns [BigDecimal val]
 	:	u=UNUMERIC_LITERAL { $val = self.createScriptedNumeric($u.text); }
 	;
