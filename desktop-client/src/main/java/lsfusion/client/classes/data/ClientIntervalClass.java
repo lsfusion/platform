@@ -2,15 +2,23 @@ package lsfusion.client.classes.data;
 
 import lsfusion.client.classes.ClientTypeClass;
 import lsfusion.client.form.property.ClientPropertyDraw;
+import lsfusion.client.form.property.cell.classes.controller.IntervalPropertyEditor;
+import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
 import lsfusion.client.form.property.cell.classes.view.FormatPropertyRenderer;
 import lsfusion.client.form.property.cell.view.PropertyRenderer;
+import lsfusion.client.form.property.table.view.AsyncChangeInterface;
 import lsfusion.client.view.MainFrame;
 
 import java.awt.*;
+import java.math.BigDecimal;
+import java.text.FieldPosition;
+import java.text.Format;
 import java.text.ParseException;
+import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
-import java.time.Instant;
-import java.util.Date;
+
+import static lsfusion.base.DateConverter.formatInterval;
+import static lsfusion.base.DateConverter.parseInterval;
 
 public abstract class ClientIntervalClass extends ClientFormatClass<SimpleDateFormat> implements ClientTypeClass {
 
@@ -22,6 +30,8 @@ public abstract class ClientIntervalClass extends ClientFormatClass<SimpleDateFo
                 return ClientTimeIntervalClass.instance;
             case "DATETIME":
                 return ClientDateTimeIntervalClass.instance;
+            case "ZDATETIME":
+                return ClientZDateTimeIntervalClass.instance;
         }
         return null;
     }
@@ -33,17 +43,17 @@ public abstract class ClientIntervalClass extends ClientFormatClass<SimpleDateFo
         return new FormatPropertyRenderer(property){};
     }
 
+    protected abstract Long parse(String date);
+    protected abstract String format(Long epoch);
+
     @Override
     public Object parseString(String s) throws ParseException {
-        throw new ParseException("Doesnt support convertation", 0);
+        return parseInterval(s, this::parse);
     }
 
-    public static Date getDateFromInterval(Object o, boolean from) {
-        String object = String.valueOf(o);
-        int indexOfDecimal = object.indexOf(".");
-        String dateValue = indexOfDecimal < 0 ? object : from ? object.substring(0, indexOfDecimal) : object.substring(indexOfDecimal + 1);
-
-        return Date.from(Instant.ofEpochSecond(Long.parseLong(dateValue)));
+    @Override
+    public String formatString(Object obj) {
+        return formatInterval(obj, this::format);
     }
 
     @Override
@@ -61,4 +71,39 @@ public abstract class ClientIntervalClass extends ClientFormatClass<SimpleDateFo
         return super.getFullWidthString(widthString, fontMetrics, propertyDraw) + MainFrame.getIntUISize(18);
     }
 
+    @Override
+    protected PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property, AsyncChangeInterface asyncChange) {
+        return new IntervalPropertyEditor(value, true, this);
+    }
+
+    public static class IntervalFormat extends Format {
+        private final ClientIntervalClass intervalClass;
+
+        public IntervalFormat(ClientIntervalClass intervalClass) {
+            this.intervalClass = intervalClass;
+        }
+
+        @Override
+        public StringBuffer format(Object o, StringBuffer stringBuffer, FieldPosition fieldPosition) {
+            if (o instanceof BigDecimal)
+                return new StringBuffer(intervalClass.formatString(o));
+
+            return null;
+        }
+
+        @Override
+        public Object parseObject(String s, ParsePosition parsePosition) {
+            return null;
+        }
+    }
+
+    private IntervalFormat intervalFormat = null;
+
+    @Override
+    public Format getDefaultFormat() {
+        if (intervalFormat == null)
+            intervalFormat = new IntervalFormat(this);
+
+        return intervalFormat;
+    }
 }

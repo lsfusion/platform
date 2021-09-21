@@ -1,6 +1,5 @@
 package lsfusion.server.logics.form.struct.property;
 
-import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
@@ -11,10 +10,10 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
+import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
 import lsfusion.server.logics.form.interactive.controller.init.InstanceFactory;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInstance;
 import lsfusion.server.logics.form.struct.FormEntity;
-import lsfusion.server.logics.form.struct.filter.ContextFilterInstance;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.order.OrderEntity;
@@ -31,23 +30,16 @@ public class PropertyObjectEntity<P extends PropertyInterface> extends ActionOrP
     }
 
     public PropertyObjectEntity(Property<P> property, ImRevMap<P, ObjectEntity> mapping) {
-        super(property, mapping, null, null);
+        super(property, mapping, null, null, null);
     }
 
-    public PropertyObjectEntity(Property<P> property, ImRevMap<P, ObjectEntity> mapping, String creationScript, String creationPath) {
-        super(property, mapping, creationScript, creationPath);
+    public PropertyObjectEntity(Property<P> property, ImRevMap<P, ObjectEntity> mapping, String creationScript, String creationPath, String path) {
+        super(property, mapping, creationScript, creationPath, path);
     }
 
     @Override
     public PropertyObjectInstance<P> getInstance(InstanceFactory instanceFactory) {
         return instanceFactory.getInstance(this);
-    }
-
-    public ContextFilterInstance<P> getRemappedInstance(final ObjectEntity oldObject, final ObjectEntity newObject, InstanceFactory instanceFactory) {
-        P oldObjectInterface = mapping.reverse().get(oldObject);
-        return new ContextFilterInstance<>(property, 
-                            mapping.removeValues(oldObject).mapValues((ObjectEntity object) -> object.getInstance(instanceFactory).getObjectValue()), 
-                            oldObjectInterface != null ? MapFact.singletonRev(oldObjectInterface, newObject) : MapFact.EMPTYREV());
     }
 
     @Override
@@ -74,5 +66,10 @@ public class PropertyObjectEntity<P extends PropertyInterface> extends ActionOrP
     @Override
     public <X extends PropertyInterface> PropertyObjectEntity<?> getDrawProperty(PropertyObjectEntity<X> readOnly) {
         return this;
+    }
+
+    public InputListEntity<?, P> getFilterInputList(GroupObjectEntity grid) {
+        // remapping all objects except ones in the grid
+        return property.getFilterInputList(mapping.filterFnValuesRev(value -> !grid.getObjects().contains(value)).mapRevValues(ObjectEntity::getParamExpr));
     }
 }

@@ -8,7 +8,7 @@ import static lsfusion.gwt.client.base.view.ColorUtils.*;
 import static lsfusion.gwt.client.view.MainFrame.colorTheme;
 
 public class StyleDefaults {
-    public static int maxMobileWidth = 600;
+    public static int maxMobileWidthHeight = 600;
 
     public static final int VALUE_HEIGHT = 20;
     public static final String VALUE_HEIGHT_STRING = VALUE_HEIGHT + "px";
@@ -20,6 +20,8 @@ public class StyleDefaults {
 
     public static final int CELL_HORIZONTAL_PADDING = 3;
     public static final int BUTTON_HORIZONTAL_PADDING = 14;
+    
+    public static final int DATA_PANEL_LABEL_MARGIN = 4;
 
     public static final int DEFAULT_FONT_PT_SIZE = 9;
 

@@ -5,6 +5,7 @@ import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.classes.data.ClientDataClass;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.object.ClientGroupObjectValue;
+import lsfusion.client.form.object.panel.controller.PropertyPanelController;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.cell.classes.controller.ActionPropertyEditor;
 import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
@@ -12,6 +13,7 @@ import lsfusion.client.form.property.cell.classes.view.ActionPropertyRenderer;
 import lsfusion.client.form.property.cell.view.PropertyRenderer;
 import lsfusion.client.form.property.panel.view.ActionPanelView;
 import lsfusion.client.form.property.panel.view.PanelView;
+import lsfusion.client.form.property.table.view.AsyncChangeInterface;
 import lsfusion.interop.classes.DataType;
 
 import java.awt.*;
@@ -41,11 +43,13 @@ public class ClientActionClass extends ClientDataClass implements ClientTypeClas
         return new ActionPropertyRenderer(property);
     }
 
-    public PanelView getPanelView(ClientPropertyDraw key, ClientGroupObjectValue columnKey, ClientFormController form) {
-        return new ActionPanelView(key, columnKey, form);
+    @Override
+    public PanelView getPanelView(ClientPropertyDraw key, ClientGroupObjectValue columnKey, ClientFormController form, PropertyPanelController.CaptionContainer captionContainer) {
+        return new ActionPanelView(key, columnKey, form, captionContainer);
     }
 
-    protected PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
+    @Override
+    protected PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property, AsyncChangeInterface asyncChange) {
         return new ActionPropertyEditor(property);
     }
 

@@ -87,6 +87,9 @@ public final class ClassCanonicalNameUtils {
         put("DATE", DateClass.instance);
         put("DATETIME", DateTimeClass.instance );
         put("ZDATETIME", ZDateTimeClass.instance );
+        put("DATEINTERVAL", DateIntervalClass.instance);
+        put("DATETIMEINTERVAL", DateTimeIntervalClass.instance);
+        put("TIMEINTERVAL", TimeIntervalClass.instance);
         put("TIME", TimeClass.instance);
         put("YEAR", YearClass.instance);
         put("WORDFILE", WordClass.get());
@@ -124,7 +127,7 @@ public final class ClassCanonicalNameUtils {
         assert !name.contains(" ");
         if (scriptedSimpleDataClassNames.containsKey(name)) {
             return scriptedSimpleDataClassNames.get(name);
-        } else if (name.matches("^((BPSTRING\\[\\d+\\])|(BPISTRING\\[\\d+\\])|(STRING\\[\\d+\\])|(ISTRING\\[\\d+\\])|(NUMERIC\\[\\d+,\\d+\\])|(INTERVAL\\[(DATE|DATETIME|TIME)\\]))$")) {
+        } else if (name.matches("^((BPSTRING\\[\\d+\\])|(BPISTRING\\[\\d+\\])|(STRING\\[\\d+\\])|(ISTRING\\[\\d+\\])|(NUMERIC\\[\\d+,\\d+\\])|(INTERVAL\\[(DATE|DATETIME|TIME|ZDATETIME)\\]))$")) {
             if (name.startsWith("BPSTRING[")) {
                 name = name.substring("BPSTRING[".length(), name.length() - 1);
                 return StringClass.get(new ExtInt(Integer.parseInt(name)));
@@ -158,6 +161,9 @@ public final class ClassCanonicalNameUtils {
         put("DATE", DateClass.instance);
         put("DATETIME", DateTimeClass.instance);
         put("ZDATETIME", ZDateTimeClass.instance);
+        put("DATEINTERVAL", DateIntervalClass.instance);
+        put("DATETIMEINTERVAL", DateTimeIntervalClass.instance);
+        put("TIMEINTERVAL", TimeIntervalClass.instance);
         put("TIME", TimeClass.instance);
         put("YEAR", YearClass.instance);
         put("WORDFILE", WordClass.get());

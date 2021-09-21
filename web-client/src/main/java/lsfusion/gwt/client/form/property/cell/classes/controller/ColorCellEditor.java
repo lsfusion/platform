@@ -1,8 +1,6 @@
 package lsfusion.gwt.client.form.property.cell.classes.controller;
 
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.FlowPanel;
@@ -25,17 +23,17 @@ public class ColorCellEditor extends PopupBasedCellEditor {
     }
 
     @Override
-    protected Widget createPopupComponent() {
+    protected Widget createPopupComponent(Element parent) {
         colorPicker = new ColorPicker();
 
         Button btnOk = new Button(messages.ok());
-        btnOk.addClickHandler(event -> commit());
+        btnOk.addClickHandler(event -> validateAndCommit(parent, false));
 
         Button btnCancel = new Button(messages.cancel());
-        btnCancel.addClickHandler(event -> onCancel());
+        btnCancel.addClickHandler(event -> cancel(parent));
 
         Button btnReset = new Button(messages.reset());
-        btnReset.addClickHandler(event -> reset());
+        btnReset.addClickHandler(event -> reset(parent));
 
         FlowPanel bottomPane = new FlowPanel();
         bottomPane.add(btnOk);
@@ -50,16 +48,19 @@ public class ColorCellEditor extends PopupBasedCellEditor {
         return mainPane;
     }
 
-    public void commit() {
-        commitEditing(new ColorDTO(colorPicker.getHexColor()));
+    @Override
+    public Object getValue(Element parent, Integer contextAction) {
+        return new ColorDTO(colorPicker.getHexColor());
     }
 
-    public void reset() {
-        commitEditing((ColorDTO) null);
+    public void reset(Element parent) {
+        commitValue(parent, (ColorDTO) null);
     }
 
     @Override
-    public void startEditing(Event editEvent, Element parent, Object oldValue) {
+    public void start(Event editEvent, Element parent, Object oldValue) {
+        super.start(editEvent, parent, oldValue);
+
         if (oldValue instanceof ColorDTO) {
             try {
                 colorPicker.setHex(((ColorDTO)oldValue).value);
@@ -67,7 +68,5 @@ public class ColorCellEditor extends PopupBasedCellEditor {
                 throw new IllegalStateException("can't convert string value to color");
             }
         }
-
-        super.startEditing(editEvent, parent, oldValue);
     }
 }

@@ -167,7 +167,7 @@ public class GBusyDialog extends WindowBox {
         getGlassElement().getStyle().setOpacity(visible ? 0.3 : 0);
     }
 
-    public void showBusyDialog() {
+    public void scheduleButtonEnabling() {
         longActionTimer = new Timer() {
             @Override
             public void run() {
@@ -188,14 +188,11 @@ public class GBusyDialog extends WindowBox {
         btnReconnect.setEnabled(false);
         btnCancel.setEnabled(false);
         btnInterrupt.setEnabled(false);
-        longActionTimer.cancel();
+        if(longActionTimer != null)
+            longActionTimer.cancel();
     }
 
-    public void updateBusyDialog(List message) {
-            setStackMessageDevMode(message);
-    }
-
-    public void setStackMessageDevMode(List messageList) {
+    public void updateBusyDialog(List messageList) {
         if (prevMessageList == null)
             prevMessageList = new ArrayList(messageList.size());
         boolean changed = false;
@@ -279,8 +276,6 @@ public class GBusyDialog extends WindowBox {
                 }
             }
         }
-        if(!isShowing())
-            center();
     }
 
     private boolean windowResized() {

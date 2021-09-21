@@ -5,7 +5,6 @@ import lsfusion.base.Pair;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
-import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.base.caches.IdentityLazy;
@@ -18,6 +17,7 @@ import lsfusion.server.logics.form.open.stat.ExportAction;
 import lsfusion.server.logics.form.open.stat.FormStaticAction;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
+import lsfusion.server.logics.form.struct.filter.ContextFilterEntity;
 import lsfusion.server.logics.form.struct.filter.ContextFilterInstance;
 import lsfusion.server.logics.form.struct.filter.ContextFilterSelector;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
@@ -33,6 +33,7 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 import org.apache.commons.lang3.ArrayUtils;
 
 import java.sql.SQLException;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 // вообще по хорошему надо бы generiть интерфейсы, но тогда с DataChanges (из-за дебилизма generics в современных языках) будут проблемы
@@ -64,14 +65,14 @@ public abstract class FormAction<O extends ObjectSelector> extends SystemExplici
 
     // CONTEXT
     protected final ImSet<ClassPropertyInterface> contextInterfaces;
-    protected final ImSet<ContextFilterSelector<?, ClassPropertyInterface, O>> contextFilters;
+    protected final ImSet<ContextFilterSelector<ClassPropertyInterface, O>> contextFilters;
 
     public <C extends PropertyInterface> FormAction(LocalizedString caption,
-                      FormSelector<O> form,
-                      final ImList<O> objectsToSet,
-                      final ImList<Boolean> nulls,
-                      ImOrderSet<C> orderContextInterfaces, ImList<ContextFilterSelector<?, C, O>> contextFilters,
-                      ValueClass... extraValueClasses) {
+                                                    FormSelector<O> form,
+                                                    final ImList<O> objectsToSet,
+                                                    final ImList<Boolean> nulls,
+                                                    ImOrderSet<C> orderContextInterfaces, ImSet<ContextFilterSelector<C, O>> contextFilters, Consumer<ImRevMap<C, ClassPropertyInterface>> mapContext,
+                                                    ValueClass... extraValueClasses) {
         super(caption, getValueClasses(form, objectsToSet, orderContextInterfaces.size(), extraValueClasses));
 
         this.form = form;
@@ -84,8 +85,9 @@ public abstract class FormAction<O extends ObjectSelector> extends SystemExplici
 
         ImRevMap<C, ClassPropertyInterface> mapContextInterfaces = orderContextInterfaces.mapSet(orderInterfaces.subOrder(objectsToSet.size(), objectsToSet.size() + orderContextInterfaces.size()));
         this.contextInterfaces = mapContextInterfaces.valuesSet();
-        this.contextFilters = contextFilters.mapListValues((Function<ContextFilterSelector<?, C, O>, ContextFilterSelector<?, ClassPropertyInterface, O>>)
-                filter -> filter.map(mapContextInterfaces)).toOrderExclSet().getSet();
+        this.contextFilters = contextFilters.mapSetValues(filter -> filter.map(mapContextInterfaces));
+        if(mapContext != null)
+            mapContext.accept(mapContextInterfaces);
     }
 
     protected abstract void executeInternal(FormEntity form, ImMap<ObjectEntity, ? extends ObjectValue> mapObjectValues, ExecutionContext<ClassPropertyInterface> context, ImRevMap<ObjectEntity, O> mapResolvedObjects, ImSet<ContextFilterInstance> contextFilters) throws SQLException, SQLHandledException;
@@ -96,13 +98,16 @@ public abstract class FormAction<O extends ObjectSelector> extends SystemExplici
         if(resolvedForm == null)
             return;
 
-        // context filters
-        MExclSet<ContextFilterInstance> mContextFilters = SetFact.mExclSet();
-        for(ContextFilterSelector<?, ClassPropertyInterface, O> contextFilter : this.contextFilters)
-            mContextFilters.exclAddAll(contextFilter.getInstances(context.getKeys(), resolvedForm.second.reverse()));
-        ImSet<ContextFilterInstance> contextFilters = mContextFilters.immutable();
+        executeInternal(resolvedForm.first, resolvedForm.second.rightJoin(mapObjectValues), context, resolvedForm.second,
+                getContextFilterEntities().mapSetValues(entity -> entity.getInstance(context.getKeys(), resolvedForm.second.reverse())));
+    }
 
-        executeInternal(resolvedForm.first, resolvedForm.second.rightJoin(mapObjectValues), context, resolvedForm.second, contextFilters);
+    @IdentityInstanceLazy
+    public ImSet<ContextFilterEntity<?, ClassPropertyInterface, O>> getContextFilterEntities() {
+        return ContextFilterSelector.getEntities(contextFilters);
+    }
+    public ImSet<ContextFilterSelector<ClassPropertyInterface, O>> getContextFilterSelectors() {
+        return contextFilters;
     }
 
     @Override
@@ -121,7 +126,7 @@ public abstract class FormAction<O extends ObjectSelector> extends SystemExplici
     public PropertyMapImplement<?, ClassPropertyInterface> calcWhereProperty() {
         PropertyMapImplement<?, ClassPropertyInterface> result = super.calcWhereProperty();
         if(!contextFilters.isEmpty()) { // filters don't stop form from showing, however they can be used for param classes, so we're using the same hack as in SystemAction
-            PropertyMapImplement<?, ClassPropertyInterface> contextFilterWhere = PropertyFact.createUnion(interfaces, contextFilters.mapSetValues((Function<ContextFilterSelector<?, ClassPropertyInterface, O>, PropertyMapImplement<?, ClassPropertyInterface>>) filter -> filter.getWhereProperty(mapObjects)).addExcl(PropertyFact.createTrue()).toList());
+            PropertyMapImplement<?, ClassPropertyInterface> contextFilterWhere = PropertyFact.createUnion(interfaces, contextFilters.mapSetValues((Function<ContextFilterSelector<ClassPropertyInterface, O>, PropertyMapImplement<?, ClassPropertyInterface>>) filter -> filter.getWhereProperty(mapObjects)).addExcl(PropertyFact.createTrue()).toList());
             result = PropertyFact.createAnd(result, contextFilterWhere);
         }
         return result;

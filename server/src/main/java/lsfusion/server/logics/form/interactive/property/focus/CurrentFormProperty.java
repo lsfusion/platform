@@ -8,7 +8,7 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 public class CurrentFormProperty extends CurrentEnvironmentProperty {
 
     public CurrentFormProperty(ValueClass paramClass) {
-        super(LocalizedString.create("{logics.property.current.form}"), SQLSession.formParam, paramClass.getUpSet());
+        super(LocalizedString.create("{logics.property.current.form}"), SQLSession.formParam, paramClass);
 
         finalizeInit();
     }

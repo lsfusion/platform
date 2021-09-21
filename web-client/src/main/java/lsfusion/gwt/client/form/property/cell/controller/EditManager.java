@@ -1,12 +1,16 @@
 package lsfusion.gwt.client.form.property.cell.controller;
 
-import java.util.function.Consumer;
+import com.google.gwt.user.client.rpc.AsyncCallback;
+import lsfusion.gwt.client.base.GAsync;
+import lsfusion.gwt.client.base.Pair;
+import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
+
+import java.util.ArrayList;
 
 public interface EditManager {
-    default void commitEditing(Object value) {
-        commitEditing(value, false);
-    }
-    void commitEditing(Object value, boolean blurred);  // assert if blurred then editor rerender dom
+    void getAsyncValues(String value, AsyncCallback<Pair<ArrayList<GAsync>, Boolean>> callback);
+
+    void commitEditing(GUserInputResult result, CommitReason commitReason);  // assert if blurred then editor rerender dom
 
     void cancelEditing();
 }

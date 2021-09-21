@@ -55,6 +55,7 @@ import lsfusion.server.physics.admin.authentication.controller.remote.RemoteConn
 import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 import lsfusion.server.physics.admin.log.RemoteLoggerAspect;
 import lsfusion.server.physics.admin.log.ServerLoggers;
+import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import org.apache.log4j.Logger;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -74,7 +75,7 @@ import java.util.List;
 import java.util.*;
 
 import static lsfusion.base.BaseUtils.nvl;
-import static lsfusion.server.logics.classes.data.time.DateTimeConverter.getWriteDateTime;
+import static lsfusion.server.logics.classes.data.time.DateTimeConverter.sqlTimestampToLocalDateTime;
 
 // it would be better if there was NavigatorInstance (just like FormInstance and LogicsInstance), but for now will leave it this way
 public class RemoteNavigator extends RemoteConnection implements RemoteNavigatorInterface, FocusListener, CustomClassListener, RemoteFormListener {
@@ -102,6 +103,8 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
 
         setContext(new RemoteNavigatorContext(this));
         initContext(logicsInstance, token, navigatorInfo.session, stack);
+
+        changesSync = new ChangesSync(dbManager);
         
         ServerLoggers.remoteLifeLog("NAVIGATOR OPEN : " + this);
 
@@ -190,17 +193,25 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         }
     }
 
-    private static class WeakChangesUserProvider implements ChangesController { // чтобы помочь сборщику мусора и устранить цикл
+    private static class WeakChangesUserProvider extends ChangesController { // чтобы помочь сборщику мусора и устранить цикл
         WeakReference<ChangesSync> weakThis;
 
         private WeakChangesUserProvider(ChangesSync dbManager) {
             this.weakThis = new WeakReference<>(dbManager);
         }
 
-        public void regChange(ImSet<Property> changes, DataSession session) {
+        @Override
+        public DBManager getDbManager() {
             ChangesSync changesSync = weakThis.get();
             if(changesSync != null)
-                changesSync.regChange(changes, session);
+                return changesSync.getDbManager();
+            return null;
+        }
+
+        public void regLocalChange(ImSet<Property> changes, DataSession session) {
+            ChangesSync changesSync = weakThis.get();
+            if(changesSync != null)
+                changesSync.regLocalChange(changes, session);
         }
 
         public ImSet<Property> update(DataSession session, FormInstance form) {
@@ -242,6 +253,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         boolean forbidDuplicateForms;
         boolean showDetailedInfo;
         boolean devMode;
+        String projectLSFDir;
         ColorTheme colorTheme;
         ColorPreferences colorPreferences;
 
@@ -254,6 +266,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
             showDetailedInfo = businessLogics.securityLM.showDetailedInfoCustomUser.read(session, user) != null;
 
             devMode = SystemProperties.inDevMode || businessLogics.serviceLM.devMode.read(session) != null;
+            projectLSFDir = SystemProperties.projectLSFDir;
 
             String colorThemeStaticName = (String) businessLogics.authenticationLM.colorThemeStaticName.read(session, user);
             String colorThemeString = colorThemeStaticName != null ? colorThemeStaticName.substring(colorThemeStaticName.indexOf(".") + 1) : null; 
@@ -270,7 +283,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
             throw Throwables.propagate(e);
         }
         return new ClientSettings(localePreferences, currentUserName, fontSize, useBusyDialog, Settings.get().getBusyDialogTimeout(),
-                useRequestTimeout, devMode, showDetailedInfo, forbidDuplicateForms, Settings.get().isShowNotDefinedStrings(),
+                useRequestTimeout, devMode, projectLSFDir, showDetailedInfo, forbidDuplicateForms, Settings.get().isShowNotDefinedStrings(),
                 Settings.get().isPivotOnlySelectedColumn(), colorTheme, colorPreferences);
     }
 
@@ -338,8 +351,8 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
                 if(computerValue instanceof DataObject) {
                     DataObject computerObject = (DataObject)computerValue;
                     for (Map.Entry<Long, List<Long>> pingEntry : entry.getValue().entrySet()) {
-                        DataObject dateFrom = new DataObject(getWriteDateTime(new Timestamp(pingEntry.getKey())), DateTimeClass.instance);
-                        DataObject dateTo = new DataObject(getWriteDateTime(new Timestamp(pingEntry.getValue().get(0))), DateTimeClass.instance);
+                        DataObject dateFrom = new DataObject(sqlTimestampToLocalDateTime(new Timestamp(pingEntry.getKey())), DateTimeClass.instance);
+                        DataObject dateTo = new DataObject(sqlTimestampToLocalDateTime(new Timestamp(pingEntry.getValue().get(0))), DateTimeClass.instance);
                         businessLogics.systemEventsLM.pingComputerDateTimeFromDateTimeTo.change(pingEntry.getValue().get(1).intValue(), session, computerObject, dateFrom, dateTo);
                         if (pingEntry.getValue().size() >= 6) {
                             businessLogics.systemEventsLM.minTotalMemoryComputerDateTimeFromDateTimeTo.change(pingEntry.getValue().get(2).intValue(), session, computerObject, dateFrom, dateTo);
@@ -600,12 +613,22 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
 
     }
     // обмен изменениями между сессиями в рамках одного подключения
-    private static class ChangesSync implements ChangesController {
+    private static class ChangesSync extends ChangesController {
+
+        private DBManager dbManager;
 
         private final Map<Property, LastChanges> changes = MapFact.mAddRemoveMap();
         private final WeakIdentityHashMap<FormInstance, Long> formStamps = new WeakIdentityHashMap<>();
         private long minPrevUpdatedStamp = 0;
         private long currentStamp = 0;
+
+        public ChangesSync(DBManager dbManager) {
+            this.dbManager = dbManager;
+        }
+
+        public DBManager getDbManager() {
+            return dbManager;
+        }
 
         private void updateLastStamp(long prevStamp) {
             assert !formStamps.isEmpty();
@@ -620,7 +643,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
             }
         }
 
-        public synchronized void regChange(ImSet<Property> updateChanges, DataSession session) {
+        public synchronized void regLocalChange(ImSet<Property> updateChanges, DataSession session) {
             currentStamp++;
 
             for(Property change : updateChanges) {
@@ -679,7 +702,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         }
     }
 
-    private ChangesSync changesSync = new ChangesSync();
+    private final ChangesSync changesSync;
 
     @Override
     protected String notSafeToString() {

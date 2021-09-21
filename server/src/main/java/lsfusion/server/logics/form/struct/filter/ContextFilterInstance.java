@@ -14,7 +14,6 @@ import lsfusion.server.logics.form.interactive.instance.filter.FilterInstance;
 import lsfusion.server.logics.form.interactive.instance.filter.NotNullFilterInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
-import lsfusion.server.logics.form.interactive.property.checked.PullChangeProperty;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -34,7 +33,7 @@ public class ContextFilterInstance<P extends PropertyInterface> implements Filte
         this.mapObjects = mapObjects;
     }
 
-    public FilterInstance getFilter(InstanceFactory factory) {
+    public FilterInstance getInstance(InstanceFactory factory) {
         return new NotNullFilterInstance<>(
                 new PropertyObjectInstance<>(property, 
                         MapFact.<P, PropertyObjectInterfaceInstance>addExcl(mapValues, mapObjects.mapValues(entity -> factory.getInstance(entity)))));
@@ -46,9 +45,5 @@ public class ContextFilterInstance<P extends PropertyInterface> implements Filte
 
     public Where getWhere(ImMap<ObjectEntity, ? extends Expr> mapKeys, Modifier modifier) throws SQLException, SQLHandledException {
         return property.getExpr(ObjectValue.getMapExprs(mapValues).addExcl(mapObjects.join(mapKeys)), modifier).getWhere();
-    }
-
-    public static ImSet<PullChangeProperty> getPullProps(ImSet<ContextFilterInstance> filters) {
-        return filters.filterFn(element -> element.property instanceof PullChangeProperty).mapSetValues(value -> ((PullChangeProperty)value.property));        
     }
 }

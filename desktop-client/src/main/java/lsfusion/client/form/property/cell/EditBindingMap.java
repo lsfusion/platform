@@ -25,8 +25,8 @@ public class EditBindingMap {
             setMouseAction(ServerResponse.CHANGE);
     }
 
-    public String getEventSID(EventObject editEvent, EditEventFilter editEventFilter, boolean hasEditObjectAction) {
-        if (hasEditObjectAction && KeyStrokes.isEditObjectEvent(editEvent)) // has to be before isChangeEvent, since also handles MOUSE CHANGE event
+    public String getEventSID(EventObject editEvent, EditEventFilter editEventFilter, boolean hasEditObjectAction, boolean hasChangeAction) {
+        if (KeyStrokes.isEditObjectEvent(editEvent, hasEditObjectAction, hasChangeAction)) // has to be before isChangeEvent, since also handles MOUSE CHANGE event
             return ServerResponse.EDIT_OBJECT;
 
         if (editEvent instanceof KeyEvent) {
@@ -81,8 +81,8 @@ public class EditBindingMap {
         return mouseBinding;
     }
 
-    public static boolean isEditableAwareEditEvent(String actionSID) {
-        return ServerResponse.changeEvents.indexOf(actionSID) >= 0;
+    public static boolean isChangeEvent(String actionSID) {
+        return ServerResponse.isChangeEvent(actionSID);
     }
 
     public static String getPropertyEventActionSID(EventObject e, ClientPropertyDraw property, EditBindingMap overrideMap) {
@@ -91,13 +91,13 @@ public class EditBindingMap {
 
         String actionSID = null;
         if (property.editBindingMap != null) {
-            actionSID = property.editBindingMap.getEventSID(e, eventFilter, property.hasEditObjectAction);
+            actionSID = property.editBindingMap.getEventSID(e, eventFilter, property.hasEditObjectAction, property.hasChangeAction);
         }
 
         if (actionSID == null) {
             actionSID = overrideMap.getKeyPressAction(e);
             if (actionSID == null) {
-                actionSID = overrideMap.getEventSID(e, eventFilter, property.hasEditObjectAction);
+                actionSID = overrideMap.getEventSID(e, eventFilter, property.hasEditObjectAction, property.hasChangeAction);
             }
         }
         return actionSID;

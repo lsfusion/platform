@@ -29,7 +29,6 @@ import lsfusion.server.logics.action.session.table.SingleKeyTableUsage;
 import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.data.integral.LongClass;
 import lsfusion.server.logics.classes.data.time.DateTimeClass;
-import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.physics.admin.Settings;
@@ -46,7 +45,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 import static lsfusion.base.BaseUtils.trimToEmpty;
-import static lsfusion.server.logics.classes.data.time.DateTimeConverter.*;
+import static lsfusion.server.logics.classes.data.time.DateTimeConverter.sqlTimestampToLocalDateTime;
 
 public class UpdateProcessMonitorAction extends ProcessDumpAction {
 
@@ -166,7 +165,7 @@ public class UpdateProcessMonitorAction extends ProcessDumpAction {
             case "idThreadProcess":
                 return idThread == null ? NullValue.instance : new DataObject(idThread);
             case "dateTimeCallProcess":
-                return sqlProcess.dateTimeCall == null ? NullValue.instance : new DataObject(getWriteDateTime(sqlProcess.dateTimeCall), DateTimeClass.instance);
+                return sqlProcess.dateTimeCall == null ? NullValue.instance : new DataObject(sqlProcess.dateTimeCall, DateTimeClass.instance);
             case "querySQLProcess":
                 return sqlProcess.query == null ? NullValue.instance : new DataObject(sqlProcess.query);
             case "fullQuerySQLProcess":
@@ -178,7 +177,7 @@ public class UpdateProcessMonitorAction extends ProcessDumpAction {
             case "addressUserSQLProcess":
                 return sqlProcess.addressUser == null ? NullValue.instance : new DataObject(sqlProcess.addressUser);
             case "dateTimeSQLProcess":
-                return sqlProcess.dateTime == null ? NullValue.instance : new DataObject(getWriteDateTime(sqlProcess.dateTime), DateTimeClass.instance);
+                return sqlProcess.dateTime == null ? NullValue.instance : new DataObject(sqlProcess.dateTime, DateTimeClass.instance);
             case "isActiveSQLProcess":
                 return DataObject.create(sqlProcess.isActive != null && sqlProcess.isActive);
             case "inTransactionSQLProcess":
@@ -186,7 +185,7 @@ public class UpdateProcessMonitorAction extends ProcessDumpAction {
                     ServerLoggers.assertLog(sqlProcess.baseInTransaction.equals(true), "FUSION AND BASE INTRANSACTION DIFFERS");
                 return DataObject.create(sqlProcess.baseInTransaction != null ? sqlProcess.baseInTransaction : sqlProcess.fusionInTransaction);
             case "startTransactionSQLProcess":
-                return sqlProcess.startTransaction == null ? NullValue.instance : new DataObject(getWriteDateTime(new Timestamp(sqlProcess.startTransaction)), DateTimeClass.instance);
+                return sqlProcess.startTransaction == null ? NullValue.instance : new DataObject(sqlTimestampToLocalDateTime(new Timestamp(sqlProcess.startTransaction)), DateTimeClass.instance);
             case "attemptCountSQLProcess":
                 return sqlProcess.attemptCount == null ? NullValue.instance : new DataObject(sqlProcess.attemptCount);
             case "statusSQLProcess":

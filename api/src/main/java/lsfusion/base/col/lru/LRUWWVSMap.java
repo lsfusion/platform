@@ -1,12 +1,12 @@
 package lsfusion.base.col.lru;
 
-import lsfusion.base.Pair;
-
+import java.lang.ref.Reference;
 import java.lang.ref.ReferenceQueue;
+import java.lang.ref.WeakReference;
 
 import static lsfusion.base.col.lru.LRUUtil.hash;
 
-public class LRUWWVSMap<K, W, V> extends ALRUKWMap<Pair<K, W>, LRUWWVSMap.AEntry<K, W, V>, LRUWWVSMap.ASegment> {
+public class LRUWWVSMap<K, W, V> extends ALRUKWMap<K, LRUWWVSMap.AEntry<K, W, V>, LRUWWVSMap.ASegment> {
 
     public LRUWWVSMap(LRUUtil.Strategy expireStrategy) {
         super(expireStrategy);
@@ -41,7 +41,30 @@ public class LRUWWVSMap<K, W, V> extends ALRUKWMap<Pair<K, W>, LRUWWVSMap.AEntry
         return hash(31 * System.identityHashCode(wKey) + System.identityHashCode(sKey));
     }
 
-    class ASegment extends ALRUKWMap<Pair<K, W>, AEntry<K, W, V>, ASegment>.ASegment {
+    class ASegment extends ALRUKWMap<K, AEntry<K, W, V>, ASegment>.ASegment {
+
+        protected ReferenceQueue<W> ref2Queue = new ReferenceQueue<>();
+
+        @Override
+        protected void updateLRU() {
+            Reference<? extends W> poll = ref2Queue.poll();
+            if(poll!=null) {
+                changeLock.lock();
+                try {
+                    while(poll!=null) {
+                        AEntry<K, W, V> pollEntry = ((AEntry<K,W,V>.Weak2Key) poll).getEntry();
+                        if(pollEntry.isValid())
+                            removeLRU(pollEntry);
+                        poll = ref2Queue.poll();
+                    }
+                }
+                finally{
+                    changeLock.unlock();
+                }
+            }
+
+            super.updateLRU();
+        }
 
         protected ASegment(int initialCapacity, float loadFactor) {
             super(initialCapacity, loadFactor);
@@ -54,14 +77,13 @@ public class LRUWWVSMap<K, W, V> extends ALRUKWMap<Pair<K, W>, LRUWWVSMap.AEntry
 
         @Override
         protected AEntry<K, W, V> createTail() {
-            return new AEntry<>(new Pair<>(null, null), refQueue, null, -1, null, 0);
+            return new AEntry<>(null, null, refQueue, ref2Queue, null, -1, null, 0);
         }
 
         public final V get(K sKey, W wKey, int hash) {
             final AEntry<K, W, V>[] t = (AEntry<K, W, V>[]) table;
             for (AEntry<K, W, V> e = t[indexFor(hash, t.length)]; e != null; e = e.next) {
-                Pair<K, W> pair = e.get();
-                if (pair != null && pair.first == sKey && pair.second == wKey) {
+                if (e.get() == sKey && e.key.get() == wKey) {
                     recordAccess(e);
                     updateLRU();
                     return e.value;
@@ -76,15 +98,14 @@ public class LRUWWVSMap<K, W, V> extends ALRUKWMap<Pair<K, W>, LRUWWVSMap.AEntry
             try {
                 int i = indexFor(hash, table.length);
                 for (AEntry<K, W, V> e = (AEntry<K, W, V> ) table[i]; e != null; e = e.next) {
-                    Pair<K, W> pair = e.get();
-                    if (pair != null && pair.first == sKey && pair.second == wKey) {
+                    if (e.get() == sKey && e.key.get() == wKey) {
                         V oldValue = e.value;
                         e.value = value;
                         recordAccess(e);
                         return oldValue;
                     }
                 }
-                AEntry<K, W, V> e = new AEntry<>(sKey, wKey, refQueue, (AEntry<K, W, V>) table[i], hash, value, currentTime);
+                AEntry<K, W, V> e = new AEntry<K, W, V>(sKey, wKey, refQueue, ref2Queue, (AEntry<K, W, V>) table[i], hash, value, currentTime);
 
                 regEntry(e, i);
             } finally {
@@ -95,18 +116,27 @@ public class LRUWWVSMap<K, W, V> extends ALRUKWMap<Pair<K, W>, LRUWWVSMap.AEntry
         }
     }
 
-    static class AEntry<K, W, V> extends ALRUKWMap.AEntry<Pair<K, W>, AEntry<K, W, V>> {
+    static class AEntry<K, W, V> extends ALRUKWMap.AEntry<K, AEntry<K, W, V>> {
 
+        Weak2Key key;
         V value;
 
-        AEntry(Pair<K, W> weak, ReferenceQueue<Pair<K, W>> refQueue, AEntry<K, W, V> n, int hash, V value, int t) {
-            super(weak, refQueue, n, hash, t);
+        class Weak2Key extends WeakReference<W> {
 
-            this.value = value;
+            public Weak2Key(W referent, ReferenceQueue<? super W> q) {
+                super(referent, q);
+            }
+
+            public AEntry<K, W, V> getEntry() {
+                return AEntry.this;
+            }
         }
 
-        AEntry(K key, W weak, ReferenceQueue<Pair<K, W>> refQueue, AEntry<K, W, V> n, int hash, V value, int t) {
-            this(new Pair<>(key, weak), refQueue, n, hash, value, t);
+        AEntry(K key, W weak, ReferenceQueue<K> refQueue, ReferenceQueue<W> ref2Queue, AEntry<K, W, V> n, int hash, V value, int t) {
+            super(key, refQueue, n, hash, t);
+
+            this.key = new Weak2Key(weak, ref2Queue);
+            this.value = value;
         }
     }
 }

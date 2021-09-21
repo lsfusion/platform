@@ -1,10 +1,12 @@
 package lsfusion.client.base.view;
 
+import lsfusion.client.form.design.view.widget.ButtonWidget;
+
 import javax.swing.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
-public class FlatRolloverButton extends JButton {
+public class FlatRolloverButton extends ButtonWidget {
     private boolean showBackground;
 
     public FlatRolloverButton() {

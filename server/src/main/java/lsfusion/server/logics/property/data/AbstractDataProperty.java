@@ -42,4 +42,9 @@ public abstract class AbstractDataProperty extends Property<ClassPropertyInterfa
     public boolean usesSession() {
         return true;
     }
+
+    @Override
+    public boolean hasAlotKeys() {
+        return false;
+    }
 }

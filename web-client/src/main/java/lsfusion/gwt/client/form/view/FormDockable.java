@@ -11,6 +11,7 @@ import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
 
 import static lsfusion.gwt.client.view.StyleDefaults.VALUE_HEIGHT;
 
@@ -18,8 +19,8 @@ public final class FormDockable extends FormContainer<FormDockable.ContentWidget
     private TabWidget tabWidget;
     private FormDockable blockingForm; //GFormController
 
-    public FormDockable(FormsController formsController, Long requestIndex, String caption, boolean async) {
-        super(formsController, requestIndex, async);
+    public FormDockable(FormsController formsController, GAsyncFormController asyncFormController, String caption, boolean async) {
+        super(formsController, asyncFormController, async);
 
         tabWidget = new TabWidget(caption);
         tabWidget.setBlocked(false);
@@ -71,7 +72,7 @@ public final class FormDockable extends FormContainer<FormDockable.ContentWidget
 
     public void closePressed() {
         if(async) {
-            formsController.removeAsyncForm(requestIndex);
+            asyncFormController.removeAsyncForm();
             formsController.removeDockable(this);
             formsController.ensureTabSelected();
         } else {

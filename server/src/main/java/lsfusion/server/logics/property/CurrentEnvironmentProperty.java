@@ -6,6 +6,7 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.value.CurrentEnvironmentExpr;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
+import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
 import lsfusion.server.logics.property.classes.infer.ExClassSet;
 import lsfusion.server.logics.property.classes.infer.InferType;
@@ -16,9 +17,9 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 public abstract class CurrentEnvironmentProperty extends NoIncrementProperty<PropertyInterface> {
     
     private final String paramString; 
-    private final AndClassSet paramClass;
+    private final ValueClass paramClass;
 
-    public CurrentEnvironmentProperty(LocalizedString caption, String paramString, AndClassSet paramClass) {
+    public CurrentEnvironmentProperty(LocalizedString caption, String paramString, ValueClass paramClass) {
         super(caption, SetFact.EMPTYORDER());
         this.paramString = paramString;
         this.paramClass = paramClass;
@@ -40,7 +41,7 @@ public abstract class CurrentEnvironmentProperty extends NoIncrementProperty<Pro
 
     @Override
     protected ExClassSet calcInferValueClass(ImMap<PropertyInterface, ExClassSet> inferred, InferType inferType) {
-        return ExClassSet.toEx(paramClass.toResolve());
+        return ExClassSet.toEx(paramClass.getResolveSet());
     }
 
     @Override

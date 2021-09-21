@@ -1,6 +1,5 @@
 package lsfusion.gwt.server.convert;
 
-import lsfusion.base.MIMETypeUtils;
 import lsfusion.client.classes.ClientActionClass;
 import lsfusion.client.classes.ClientObjectClass;
 import lsfusion.client.classes.ClientObjectType;
@@ -88,6 +87,11 @@ public class ClientTypeToGwtConverter extends ObjectConverter {
         return GIntervalType.getInstance(clientTimeIntervalClass.getIntervalType());
     }
 
+    @Converter(from = ClientZDateTimeIntervalClass.class)
+    public GIntervalType convertIntervalClass(ClientZDateTimeIntervalClass clientZDateTimeIntervalClass) {
+        return GIntervalType.getInstance(clientZDateTimeIntervalClass.getIntervalType());
+    }
+
     @Converter(from = ClientZDateTimeClass.class)
     public GZDateTimeType convertDateTimeClass(ClientZDateTimeClass clientDateTimeClass) {
         return GZDateTimeType.instance;
@@ -96,16 +100,13 @@ public class ClientTypeToGwtConverter extends ObjectConverter {
     private <T extends GFileType> T initializeFileClass(ClientFileClass clientFileClass, T fileClass) {
         fileClass.multiple = clientFileClass.multiple;
         fileClass.storeName = clientFileClass.storeName;
-        if (clientFileClass instanceof ClientStaticFormatFileClass) { 
-            ArrayList<String> validContentTypes = new ArrayList<>();
+        if (clientFileClass instanceof ClientStaticFormatFileClass) {
+            ArrayList<String> validExtensions = new ArrayList<>();
             for (String extension : ((ClientStaticFormatFileClass) clientFileClass).getExtensions()) {
-                if (extension != null && !extension.isEmpty() && !extension.equals("*.*") && !extension.equals("*")) {
-                    validContentTypes.add(MIMETypeUtils.MIMETypeForFileExtension(extension.toLowerCase()));
-                } else {
-                    validContentTypes.add(extension);
-                }
+                validExtensions.add(extension.toLowerCase());
             }
-            fileClass.validContentTypes = validContentTypes;
+            fileClass.validExtensions = validExtensions;
+
         }
         return fileClass;
     }

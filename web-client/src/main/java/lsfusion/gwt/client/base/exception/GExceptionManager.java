@@ -7,8 +7,10 @@ import com.google.gwt.core.shared.SerializableThrowable;
 import com.google.gwt.logging.impl.StackTracePrintStream;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.result.VoidResult;
+import lsfusion.gwt.client.controller.remote.action.PriorityErrorHandlingCallback;
 import lsfusion.gwt.client.controller.remote.action.form.FormRequestAction;
 import lsfusion.gwt.client.controller.remote.action.navigator.LogClientExceptionAction;
+import lsfusion.gwt.client.controller.remote.action.navigator.NavigatorRequestAction;
 import lsfusion.gwt.client.navigator.controller.dispatch.NavigatorDispatchAsync;
 import lsfusion.gwt.client.view.MainFrame;
 import net.customware.gwt.dispatch.shared.Action;
@@ -34,10 +36,11 @@ public class GExceptionManager {
         try {
             NavigatorDispatchAsync dispatcher = MainFrame.navigatorDispatchAsync;
             if(dispatcher != null) { // dispatcher may be not initialized yet (at first look up logics call)
-                dispatcher.execute(action, new ErrorHandlingCallback<VoidResult>() {
+                dispatcher.executePriority(action, new PriorityErrorHandlingCallback<VoidResult>() {
                     @Override
-                    public void failure(Throwable caught) {
+                    public void onFailure(Throwable caught) {
                         loggingFailed(caught, throwable);
+                        super.onFailure(caught);
                     }
                 });
             }
@@ -63,14 +66,15 @@ public class GExceptionManager {
             try {
                 NavigatorDispatchAsync dispatcher = MainFrame.navigatorDispatchAsync;
                 if(dispatcher != null) { // dispatcher may be not initialized yet (at first look up logics call)
-                    dispatcher.execute(new LogClientExceptionAction(t), new ErrorHandlingCallback<VoidResult>() {
+                    dispatcher.executePriority(new LogClientExceptionAction(t), new PriorityErrorHandlingCallback<VoidResult>() {
                         @Override
-                        public void failure(Throwable caught) {
+                        public void onFailure(Throwable caught) {
                             Log.error("Error logging unreported client exception", caught);
+                            super.onFailure(caught);
                         }
 
                         @Override
-                        public void success(VoidResult result) {
+                        public void onSuccess(VoidResult result) {
                             synchronized (unreportedThrowables) {
                                 unreportedThrowables.remove(t);
                             }
@@ -95,6 +99,8 @@ public class GExceptionManager {
         long reqId;
         if (action instanceof FormRequestAction) {
             reqId = ((FormRequestAction) action).requestIndex;
+        } else if(action instanceof NavigatorRequestAction) {
+            reqId = ((NavigatorRequestAction) action).requestIndex;
         } else {
             int ind = -1;
             for (Map.Entry<Action, List<NonFatalHandledException>> actionListEntry : failedNotFatalHandledRequests.entrySet()) {

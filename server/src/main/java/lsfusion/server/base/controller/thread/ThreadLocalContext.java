@@ -16,6 +16,7 @@ import lsfusion.server.base.controller.remote.context.ContextAwarePendingRemoteO
 import lsfusion.server.base.controller.remote.manager.RmiServer;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.ObjectValue;
+import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
@@ -28,7 +29,9 @@ import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.controller.manager.RestartManager;
 import lsfusion.server.logics.form.interactive.ManageSessionType;
-import lsfusion.server.logics.form.interactive.dialogedit.DialogRequest;
+import lsfusion.server.logics.form.interactive.action.async.InputList;
+import lsfusion.server.logics.form.interactive.action.input.InputContext;
+import lsfusion.server.logics.form.interactive.action.input.InputResult;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.listener.CustomClassListener;
 import lsfusion.server.logics.form.struct.FormEntity;
@@ -135,6 +138,14 @@ public class ThreadLocalContext {
         return get().getCurrentUser();
     }
 
+    public static Long getCurrentComputer() {
+        return get().getCurrentComputer();
+    }
+
+    public static Long getCurrentConnection() {
+        return get().getCurrentConnection();
+    }
+
     public static Long getCurrentRole() {
         return get().getCurrentUserRole();
     }
@@ -149,6 +160,9 @@ public class ThreadLocalContext {
 
     public static BusinessLogics getBusinessLogics() {
         return getLogicsInstance().getBusinessLogics();
+    }
+    public static BaseLogicsModule getBaseLM() {
+        return getBusinessLogics().LM;
     }
 
     public static NavigatorsManager getNavigatorsManager() {
@@ -203,12 +217,14 @@ public class ThreadLocalContext {
         return get().createFormInstance(formEntity, inputObjects, mapObjects, session, isModal, noCancel, manageSession, stack, checkOnOk, showDrop, interactive, isFloat, contextFilters, readonly);
     }
 
-    public static ObjectValue inputUserObject(DialogRequest dialogRequest, ExecutionStack stack) throws SQLException, SQLHandledException {
-        return get().requestUserObject(dialogRequest, stack);
+    public static InputContext lockInputContext() {
+        return get().lockInputContext();
     }
-
-    public static ObjectValue inputUserData(DataClass dataClass, Object oldValue, boolean hasOldValue) {
-        return get().requestUserData(dataClass, oldValue, hasOldValue);
+    public static void unlockInputContext() {
+        get().unlockInputContext();
+    }
+    public static InputResult inputUserData(DataClass dataClass, Object oldValue, boolean hasOldValue, InputContext inputContext, InputList inputList) {
+        return get().inputUserData(dataClass, oldValue, hasOldValue, inputContext, inputList);
     }
 
     public static ObjectValue requestUserClass(CustomClass baseClass, CustomClass defaultValue, boolean concrete) {

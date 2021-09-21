@@ -26,8 +26,7 @@ public abstract class BaseClassFormEntity extends AutoFormEntity {
         ImList<ActionOrPropertyClassImplement> idProps = LM.getRecognizeGroup().getActionOrProperties(cls, version);
         if(idProps.isEmpty()) {
             // we need at least one prop (otherwise there will be no grid in dialog)
-            LP objValueProp = LM.getObjValueProp(this, object);
-            PropertyDrawEntity objectValue = addPropertyDraw(objValueProp, version, object);
+            PropertyDrawEntity objectValue = addValuePropertyDraw(LM, object, version);
             objectValue.setEditType(PropertyEditType.READONLY);
         }
 

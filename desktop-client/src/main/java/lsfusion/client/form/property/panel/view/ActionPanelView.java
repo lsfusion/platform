@@ -1,6 +1,7 @@
 package lsfusion.client.form.property.panel.view;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.Pair;
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.base.view.ClientColorUtils;
 import lsfusion.client.base.view.ClientImages;
@@ -8,17 +9,22 @@ import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.classes.ClientType;
 import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.form.controller.ClientFormController;
+import lsfusion.client.form.design.view.AbstractClientContainerView;
+import lsfusion.client.form.design.view.FlexPanel;
+import lsfusion.client.form.design.view.widget.ButtonWidget;
+import lsfusion.client.form.design.view.widget.LabelWidget;
+import lsfusion.client.form.design.view.widget.Widget;
 import lsfusion.client.form.object.ClientGroupObjectValue;
+import lsfusion.client.form.object.panel.controller.PropertyPanelController;
 import lsfusion.client.form.property.ClientPropertyDraw;
+import lsfusion.client.form.property.async.ClientInputList;
 import lsfusion.client.form.property.cell.classes.controller.DialogBasedPropertyEditor;
 import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
 import lsfusion.client.form.property.cell.controller.EditPropertyHandler;
 import lsfusion.client.form.property.cell.controller.dispatch.EditPropertyDispatcher;
 import lsfusion.client.form.property.table.view.ClientPropertyContextMenuPopup;
+import lsfusion.client.tooltip.LSFTooltipManager;
 import lsfusion.interop.action.ServerResponse;
-import lsfusion.interop.base.view.FlexAlignment;
-import lsfusion.interop.base.view.FlexConstraints;
-import lsfusion.interop.base.view.FlexLayout;
 import lsfusion.interop.form.event.KeyInputEvent;
 import lsfusion.interop.form.event.KeyStrokes;
 
@@ -27,10 +33,9 @@ import java.awt.*;
 import java.awt.event.*;
 
 import static javax.swing.SwingUtilities.isRightMouseButton;
-import static lsfusion.client.base.SwingUtils.overrideSize;
 import static lsfusion.client.form.property.cell.EditBindingMap.getPropertyKeyPressActionSID;
 
-public class ActionPanelView extends JButton implements PanelView, EditPropertyHandler {
+public class ActionPanelView extends ButtonWidget implements PanelView, EditPropertyHandler {
     private final EditPropertyDispatcher editDispatcher;
 
     private final ClientPropertyDraw property;
@@ -39,9 +44,11 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
     private Object value;
     private boolean readOnly;
 
-    private JPanel panel;
+//    private FlexPanel panel;
 
-    public ActionPanelView(final ClientPropertyDraw iproperty, final ClientGroupObjectValue icolumnKey, final ClientFormController iform) {
+    private LabelWidget label;
+
+    public ActionPanelView(final ClientPropertyDraw iproperty, final ClientGroupObjectValue icolumnKey, final ClientFormController iform, PropertyPanelController.CaptionContainer captionContainer) {
         super((String)null, ClientImages.getImage(iproperty.design.getImageHolder()));
 
         this.property = iproperty;
@@ -67,7 +74,7 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
         //we have 'ENTER' binding for tab action, so this 'ENTER' binding should have higher priority
         form.addBinding(new KeyInputEvent(KeyStrokes.getEnter()), new ClientFormController.Binding(property.groupObject, 0, eventObject -> eventObject.getSource() == ActionPanelView.this) {
             @Override
-            public boolean pressed(KeyEvent ke) {
+            public boolean pressed(InputEvent ke) {
                 return form.commitCurrentEditing() && executePropertyEventAction(ServerResponse.CHANGE);
             }
 
@@ -120,10 +127,24 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
             }
         });
 
-        panel = new JPanel(null);
-        panel.setLayout(new FlexLayout(panel, true, FlexAlignment.CENTER));
-        panel.add(this, new FlexConstraints(property.getAlignment(), 1));
-        property.installMargins(panel);
+//        panel = new FlexPanel(true, FlexAlignment.CENTER);
+//        panel.add(this, property.getAlignment(), 1.0);
+//        property.installMargins(panel);
+        // we don't need to wrap value in any container (which is important for LinearContainerView since it can override set baseSizes)
+        // because any panel renderer is wrapped in renderersPanel (see getComponent usage)
+        Pair<Integer, Integer> valueSizes = DataPanelView.setDynamic(this, false, property);
+        assert !property.isAutoDynamicHeight();
+        if(captionContainer != null) {
+            // creating virtual value component with the same size as value and return it as a value
+            label = new LabelWidget();
+            label.setDebugContainer(AbstractClientContainerView.wrapDebugContainer("LABEL", this));
+
+            boolean vertical = true;
+            Integer baseSize = (vertical ? valueSizes.second : valueSizes.first) - 4; // it seems that 4 is the differrence between button insets (6) and label "future" insets (2)
+            FlexPanel.setBaseSize(label, vertical, baseSize);  // oppositeAndFixed - false, since we're setting the size for the main direction
+
+            captionContainer.put(this, valueSizes, property.getPanelCaptionAlignment());
+        }
 
         if(property.panelCaptionVertical) {
             setVerticalTextPosition(SwingConstants.BOTTOM);
@@ -174,12 +195,12 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
         return property.toString();
     }
 
-    public JComponent getComponent() {
-        return panel;
+    public Widget getWidget() {
+        return label != null ? label : this;
     }
 
     public JComponent getFocusComponent() {
-        return this;
+        return getWidget().getComponent();
     }
 
     public void setValue(Object value) {
@@ -220,7 +241,8 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
     }
 
     public void setToolTip(String caption) {
-        setToolTipText(property.getTooltipText(!BaseUtils.isRedundantString(property.toolTip) ? property.toolTip : caption));
+        LSFTooltipManager.initTooltip(this, property.getTooltipText(!BaseUtils.isRedundantString(property.toolTip) ? property.toolTip : caption),
+                property.path, property.creationPath);
     }
 
     @Override
@@ -232,12 +254,12 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
         }
         int borderCorrection = SwingDefaults.getButtonBorderWidth() * 2;
         int overrideWidth = propertyValueWidth > 0 ? propertyValueWidth + borderCorrection : baseSize.width;
-        return overrideSize(baseSize, new Dimension(overrideWidth, property.getValueHeight(this) + borderCorrection));  // тут видимо потому что caption'а нет
+        return new Dimension(overrideWidth, property.getValueHeight(this) + borderCorrection);  // тут видимо потому что caption'а нет
     }
 
     @Override
-    public boolean requestValue(ClientType valueType, Object oldValue) {
-        PropertyEditor propertyEditor = valueType.getChangeEditorComponent(ActionPanelView.this, form, property, null);
+    public boolean requestValue(ClientType valueType, Object oldValue, ClientInputList inputList, String actionSID) {
+        PropertyEditor propertyEditor = valueType.getChangeEditorComponent(ActionPanelView.this, form, property, null, null);
 
         assert propertyEditor != null;
 

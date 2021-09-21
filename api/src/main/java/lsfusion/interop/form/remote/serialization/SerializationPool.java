@@ -1,5 +1,6 @@
 package lsfusion.interop.form.remote.serialization;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.context.ApplicationContext;
@@ -203,24 +204,14 @@ public abstract class SerializationPool<C> {
     }
 
     public void writeObject(DataOutputStream outStream, Object object) throws IOException {
-        outStream.writeBoolean(object != null);
-        if (object != null) {
-            new ObjectOutputStream(outStream).writeObject(object);
-        }
+        BaseUtils.writeObject(outStream, object);
     }
 
     public <T> T readObject(DataInputStream inStream) throws IOException {
-        try {
-            if (inStream.readBoolean()) {
-                T object = (T) new ObjectInputStream(inStream).readObject();
-                setInstanceContext(object);
-                return object;
-            } else {
-                return null;
-            }
-        } catch (ClassNotFoundException e) {
-            throw new IOException(getString("serialization.can.not.read.object"), e);
-        }
+        T object = BaseUtils.readObject(inStream);
+        if(object != null)
+            setInstanceContext(object);
+        return object;
     }
 
     public void writeString(DataOutputStream outStream, String str) throws IOException {

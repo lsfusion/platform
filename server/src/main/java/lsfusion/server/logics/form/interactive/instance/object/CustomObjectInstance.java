@@ -67,7 +67,7 @@ public class CustomObjectInstance extends ObjectInstance {
         return gridClass;
     }
 
-    ObjectValue value = NullValue.instance;
+    private ObjectValue value = NullValue.instance;
 
     public void changeValue(SessionChanges session, ObjectValue changeValue) throws SQLException, SQLHandledException {
         if(changeValue.equals(value)) return;

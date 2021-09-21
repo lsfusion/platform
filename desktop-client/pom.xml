@@ -120,6 +120,12 @@
         </dependency>
 
         <dependency>
+            <groupId>net.java.balloontip</groupId>
+            <artifactId>balloontip</artifactId>
+            <version>1.2.4.1</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.jboss.netty</groupId>
             <artifactId>netty</artifactId>
         </dependency>
@@ -210,5 +216,12 @@
             <artifactId>commons-text</artifactId>
             <version>1.8</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.glazedlists</groupId>
+            <artifactId>glazedlists</artifactId>
+            <version>1.11.0</version>
+        </dependency>
+
     </dependencies>
 </project>

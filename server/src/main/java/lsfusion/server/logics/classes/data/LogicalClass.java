@@ -219,7 +219,7 @@ public class LogicalClass extends DataClass<Boolean> {
 
     @Override
     public OverJDBField formatDBF(String fieldName) throws JDBFException {
-        return new OverJDBField(fieldName, 'L', 1, 0);
+        return OverJDBField.createField(fieldName, 'L', 1, 0);
     }
 
     public boolean calculateStat() {

@@ -245,6 +245,30 @@ public class CustomRestoreAction extends InternalAction {
         }
     }
 
+    private LocalDate getWriteDate(Object value) {
+        if (value instanceof LocalDate) {
+            return (LocalDate) value;
+        } else {
+            return sqlDateToLocalDate((Date) value);
+        }
+    }
+
+    private LocalTime getWriteTime(Object value) {
+        if (value instanceof LocalTime) {
+            return (LocalTime) value;
+        } else {
+            return sqlTimeToLocalTime((Time) value);
+        }
+    }
+
+    private LocalDateTime getWriteDateTime(Object value) {
+        if (value instanceof LocalDateTime) {
+            return (LocalDateTime) value;
+        } else {
+            return sqlTimestampToLocalDateTime((Timestamp) value);
+        }
+    }
+
     private void writeRows(ExecutionContext context, ImOrderSet<LP> props, MExclMap<ImMap<KeyField, DataObject>, ImMap<LP, ObjectValue>> mRows,
                            List<Object> keys, Set<String> replaceOnlyNullSet)
             throws SQLException, SQLHandledException {

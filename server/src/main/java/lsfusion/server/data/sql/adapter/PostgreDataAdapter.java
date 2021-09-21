@@ -74,7 +74,7 @@ public class PostgreDataAdapter extends DataAdapter {
         Connection connect = null;
         while(connect == null) {
             try {
-                connect = DriverManager.getConnection("jdbc:postgresql://" + server + "/postgres?user=" + userID + "&password=" + password);
+                connect = DriverManager.getConnection("jdbc:postgresql://" + server + "/postgres?user=" + userID + "&password=" + password); //  + "&loggerLevel=TRACE&loggerFile=pgjdbc.log"
                 dbMajorVersion = connect.getMetaData().getDatabaseMajorVersion();
             } catch (PSQLException e) {
                 ServerLoggers.startLogger.error(String.format("%s (host: %s, user: %s)", e.getMessage(), server, userID));

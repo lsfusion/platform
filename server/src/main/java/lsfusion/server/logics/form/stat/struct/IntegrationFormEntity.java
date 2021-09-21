@@ -1,6 +1,7 @@
 package lsfusion.server.logics.form.stat.struct;
 
 import lsfusion.base.col.MapFact;
+import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.server.base.version.Version;
@@ -61,22 +62,22 @@ public class IntegrationFormEntity<P extends PropertyInterface> extends AutoForm
         for(int i=0,size=properties.size();i<size;i++) {
             PropertyDrawEntity propertyDraw;
 
-            Property<M> addProperty;
-            ImRevMap<M, ObjectEntity> addMapping;
+            boolean isNamed = false;
+            ImSet<ObjectEntity> addObjects;
             PropertyInterfaceImplement<P> property = properties.get(i);
             if(property instanceof PropertyMapImplement) {
                 PropertyMapImplement<M, P> mapProperty = (PropertyMapImplement<M, P>) property;
-                addProperty = mapProperty.property;
-                addMapping = mapProperty.mapping.join(mapObjects);
+                Property<M> addProperty = mapProperty.property;
+                ImRevMap<M, ObjectEntity> addMapping = mapProperty.mapping.join(mapObjects);
+                propertyDraw = addPropertyDraw(addProperty, addMapping, version);
+                addObjects = addMapping.valuesSet();
+                isNamed = addProperty.isNamed();
             } else {
                 ObjectEntity object = mapObjects.get((P)property);
-                LP<M> objValueProp = LM.getObjValueProp(this, object);
-                addProperty = objValueProp.property;
-                addMapping = objValueProp.getRevMap(object);
+                propertyDraw = addValuePropertyDraw(LM, object, version);
+                addObjects = SetFact.singleton(object);
             }
 
-            propertyDraw = addPropertyDraw(addProperty, addMapping, version);
-            
             String alias = aliases.get(i);
             if(alias != null) {
                 if(literals.get(i)) {
@@ -85,14 +86,14 @@ public class IntegrationFormEntity<P extends PropertyInterface> extends AutoForm
                 } else
                     mapAliases.exclAdd(alias, propertyDraw);
             } else {
-                if(!addProperty.isNamed() && (properties.size() - orders.size()) == 1) // if there is only one property, without name, setting default name - value
+                if(!isNamed && (properties.size() - orders.size()) == 1) // if there is only one property, without name, setting default name - value
                     alias = "value";
             }
             setFinalPropertyDrawSID(propertyDraw, alias);
 
             propertyDraw.group = Group.NOGROUP; // without group
 
-            if(groupObject != null && !addMapping.valuesSet().intersect(groupObject.getObjects()))
+            if(groupObject != null && !addObjects.intersect(groupObject.getObjects()))
                 propertyDraw.toDraw = groupObject;
 
             if(attr)

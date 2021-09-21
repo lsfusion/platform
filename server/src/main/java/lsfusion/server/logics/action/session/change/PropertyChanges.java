@@ -54,7 +54,7 @@ public class PropertyChanges extends AbstractValuesContext<PropertyChanges> {
         return new PropertyChanges(mvResult.immutableValue());
     }
 
-    public PropertyChanges() {
+    private PropertyChanges() {
         changes = MapFact.EMPTY();
     }
     public final static PropertyChanges EMPTY = new PropertyChanges();

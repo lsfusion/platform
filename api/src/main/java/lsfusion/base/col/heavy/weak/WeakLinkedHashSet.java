@@ -1,5 +1,7 @@
 package lsfusion.base.col.heavy.weak;
 
+import lsfusion.base.BaseUtils;
+
 import java.util.Map;
 import java.util.WeakHashMap;
 
@@ -38,5 +40,11 @@ public class WeakLinkedHashSet<L> {
         }
         
         return first;
+    }
+
+    public L single() {
+        if(map.size() == 1)
+            return BaseUtils.singleKey(map);
+        return null;
     }
 }

@@ -170,4 +170,8 @@ public abstract class CellRenderer<T> {
     }
 
     public abstract String format(T value);
+
+    public boolean isAutoDynamicHeight() {
+        return true;
+    }
 }

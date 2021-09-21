@@ -17,6 +17,11 @@ public class ClientDBFClass extends ClientStaticFormatFileClass {
     }
 
     @Override
+    public String getDescription() {
+        return ClientResourceBundle.getString("logics.classes.dbf");
+    }
+
+    @Override
     public String[] getExtensions() {
         return new String[] {"dbf"};
     }
@@ -32,11 +37,6 @@ public class ClientDBFClass extends ClientStaticFormatFileClass {
 
     public byte getTypeId() {
         return DataType.DBF;
-    }
-
-    @Override
-    public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
-        return new FilePropertyEditor(multiple, storeName, ClientResourceBundle.getString("logics.classes.dbf"), getExtensions());
     }
 
     @Override

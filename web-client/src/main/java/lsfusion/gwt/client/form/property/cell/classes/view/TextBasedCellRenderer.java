@@ -160,4 +160,9 @@ public abstract class TextBasedCellRenderer<T> extends CellRenderer<T> {
         // assert that innerHTML has text inside, important to make paste work (otherwise DataGrid.sinkPasteEvent cannot put empty selection)
         element.setInnerHTML(innerHTML);
     }
+
+    @Override
+    public boolean isAutoDynamicHeight() {
+        return isMultiLine();
+    }
 }

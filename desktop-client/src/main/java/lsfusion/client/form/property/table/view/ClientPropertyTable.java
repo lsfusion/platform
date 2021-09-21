@@ -8,14 +8,17 @@ import lsfusion.client.classes.ClientActionClass;
 import lsfusion.client.classes.ClientType;
 import lsfusion.client.classes.data.ClientTextClass;
 import lsfusion.client.form.controller.ClientFormController;
+import lsfusion.client.form.design.view.widget.TableWidget;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.property.ClientPropertyDraw;
+import lsfusion.client.form.property.async.ClientInputList;
 import lsfusion.client.form.property.cell.EditBindingMap;
 import lsfusion.client.form.property.cell.controller.ClientAbstractCellEditor;
 import lsfusion.client.form.property.cell.controller.dispatch.EditPropertyDispatcher;
 import lsfusion.client.form.property.cell.view.ClientAbstractCellRenderer;
 import lsfusion.client.form.property.cell.view.PropertyRenderer;
+import lsfusion.client.form.property.panel.view.SingleCellTable;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.event.BindingMode;
 import lsfusion.interop.form.event.KeyInputEvent;
@@ -29,6 +32,7 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 import javax.swing.text.JTextComponent;
 import java.awt.*;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -37,7 +41,7 @@ import java.util.EventObject;
 
 import static lsfusion.client.form.property.cell.EditBindingMap.*;
 
-public abstract class ClientPropertyTable extends JTable implements TableTransferHandler.TableInterface, CellTableInterface {
+public abstract class ClientPropertyTable extends TableWidget implements TableTransferHandler.TableInterface, AsyncChangeCellTableInterface {
     private final EditPropertyDispatcher editDispatcher;
     protected final EditBindingMap editBindingMap = new EditBindingMap(true);
     private final CellTableContextMenuHandler contextMenuHandler = new CellTableContextMenuHandler(this);
@@ -50,6 +54,8 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
     protected int editCol;
     protected ClientType currentEditType;
     protected Object currentEditValue;
+    protected ClientInputList currentInputList;
+    protected String currentActionSID;
     protected boolean editPerformed;
     protected boolean commitingValue;
     
@@ -73,6 +79,8 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
         initializeActionMap();
 
         contextMenuHandler.install();
+
+        enableEvents(AWTEvent.MOUSE_EVENT_MASK); // just in case, because we override processMouseEvent (however there are addMouseListeners)
     }
 
     private void initializeActionMap() {
@@ -86,7 +94,7 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
     private ClientFormController.Binding getEnterBinding(boolean shiftPressed) {
         ClientFormController.Binding binding = new ClientFormController.Binding(groupObject, -100) {
             @Override
-            public boolean pressed(KeyEvent ke) {
+            public boolean pressed(InputEvent ke) {
                 tabAction(!shiftPressed);
                 return true;
             }
@@ -109,7 +117,29 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
     public Object getCurrentEditValue() {
         return currentEditValue;
     }
-    
+
+    public EventObject getCurrentEditEvent() {
+        return editEvent;
+    }
+
+    public ClientInputList getCurrentInputList() {
+        return currentInputList;
+    }
+
+    public String getCurrentActionSID() {
+        return currentActionSID;
+    }
+
+    Integer contextAction = null;
+    @Override
+    public Integer getContextAction() {
+        return contextAction;
+    }
+    @Override
+    public void setContextAction(Integer contextAction) {
+        this.contextAction = contextAction;
+    }
+
     @Override
     public Object getEditValue() {
         if(!checkEditBounds())
@@ -135,7 +165,7 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
             return false;
         }
 
-        if (isEditableAwareEditEvent(actionSID) && !isCellEditable(row, column)) {
+        if (isChangeEvent(actionSID) && !isCellEditable(row, column)) {
             return false;
         }
         if(ServerResponse.EDIT_OBJECT.equals(actionSID) && !property.hasEditObjectAction) {
@@ -167,7 +197,7 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
         return editRow < getRowCount() && editCol < getColumnCount();
     }
 
-    public boolean requestValue(ClientType valueType, Object oldValue) {
+    public boolean requestValue(ClientType valueType, Object oldValue, ClientInputList inputList, String actionSID) {
         quickLog("formTable.requestValue: " + valueType);
 
         //пока чтение значения можно вызывать только один раз в одном изменении...
@@ -177,6 +207,8 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
         // need this because we use getTableCellEditorComponent infrastructure and we need to pass currentEditValue there somehow
         currentEditType = valueType;
         currentEditValue = oldValue;
+        currentInputList = inputList;
+        currentActionSID = actionSID;
 
         if (!super.editCellAt(editRow, editCol, editEvent)) {
             return false;
@@ -185,6 +217,10 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
         // is checked in upper call
         assert checkEditBounds();
         prepareTextEditor();
+
+        if (editorComp instanceof AsyncInputComponent) {
+            ((AsyncInputComponent) editorComp).initEditor();
+        }
 
         editorComp.requestFocusInWindow();
 
@@ -243,7 +279,7 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
     private void commitValue(Object value) {
         quickLog("formTable.commitValue: " + value);
         commitingValue = true;
-        editDispatcher.commitValue(value);
+        editDispatcher.commitValue(value, contextAction);
         form.clearCurrentEditingTable(this);
     }
 
@@ -309,10 +345,34 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
         resizeAndRepaint();
     }
 
+    @Override
+    protected void processMouseEvent(MouseEvent e) {
+        checkMouseEvent(e, true);
+
+        super.processMouseEvent(e);
+
+        checkMouseEvent(e, false);
+    }
+
+    protected abstract ClientPropertyDraw getSelectedProperty();
+
+    private void checkMouseEvent(MouseEvent e, boolean preview) {
+        form.checkMouseEvent(e, preview, getSelectedProperty(), () -> groupObject, this instanceof SingleCellTable);
+    }
+
+    private void checkKeyEvent(KeyStroke ks, boolean preview, KeyEvent e, int condition, boolean pressed) {
+        form.checkKeyEvent(ks, e, preview, getSelectedProperty(), () -> groupObject, this instanceof SingleCellTable, condition, pressed);
+    }
+
     protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
+        checkKeyEvent(ks, true, e, condition, pressed);
+
         editPerformed = false;
-        boolean consumed = e.isConsumed() || super.processKeyBinding(ks, e, condition, pressed);
-        return consumed || editPerformed;
+        boolean consumed = e.isConsumed() || super.processKeyBinding(ks, e, condition, pressed) || editPerformed;
+
+        checkKeyEvent(ks, false, e, condition, pressed);
+
+        return consumed || e.isConsumed();
     }
 
     @Override
@@ -339,7 +399,7 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
 
     private MouseListener listener;
 
-    private boolean isSubstituteListener(MouseListener listener) {
+    private static boolean isSubstituteListener(MouseListener listener) {
         return listener != null && "javax.swing.plaf.basic.BasicTableUI$Handler".equals(listener.getClass().getName()) ||
                 "com.apple.laf.AquaTableUI$MouseInputHandler".equals(listener.getClass().getName());
     }

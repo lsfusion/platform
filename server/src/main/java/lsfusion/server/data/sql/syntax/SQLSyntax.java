@@ -108,7 +108,13 @@ public interface SQLSyntax {
     String getColorType();
     int getColorSQL();
 
-    String getSelect(String from, String exprs, String where, String orderBy, String groupBy, String having, String top);
+    default String getSelect(String from, String exprs, String where) {
+        return getSelect(from, exprs, where, "", "", false);
+    }
+    default String getSelect(String from, String exprs, String where, String orderBy, String top, boolean distinct) {
+        return getSelect(from, exprs, where, orderBy, "", "", top, distinct);
+    }
+    String getSelect(String from, String exprs, String where, String orderBy, String groupBy, String having, String top, boolean distinct);
 
     boolean nullUnionTrouble();
     String getUnionOrder(String union,String orderBy, String top);
@@ -124,7 +130,7 @@ public interface SQLSyntax {
     String getEpoch();
     String getDateTime();
 
-    String getPrefixSearch();
+    String getPrefixSearchQuery();
 
     String getInsensitiveLike();
 

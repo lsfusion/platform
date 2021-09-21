@@ -229,14 +229,21 @@ public class ScriptingLogicsModuleChecks {
     }
 
 
-    public void checkCIInExpr(ScriptingLogicsModule.LPNotExpr lcp) throws ScriptingErrorLog.SemanticErrorException {
+    public void checkNotCIInExpr(ScriptingLogicsModule.LPNotExpr lcp) throws ScriptingErrorLog.SemanticErrorException {
         if (lcp instanceof ScriptingLogicsModule.LPContextIndependent) {
             errLog.emitCIInExprError(parser);
         }
     }
-    public void checkTLAInExpr(ScriptingLogicsModule.LPNotExpr lcp) throws ScriptingErrorLog.SemanticErrorException {
-        if (lcp instanceof ScriptingLogicsModule.LPTrivialLA) {
+    public void checkNotTLAInExpr(LPWithParams lp, ScriptingLogicsModule.LPNotExpr lcp) throws ScriptingErrorLog.SemanticErrorException {
+        if (lcp instanceof ScriptingLogicsModule.LPTrivialLA && lp == null) {
             errLog.emitLAInExprError(parser);
+        }
+    }
+    public void checkNotCIDInExpr(ScriptingLogicsModule.LPNotExpr lcp) throws ScriptingErrorLog.SemanticErrorException {
+        if (lcp instanceof ScriptingLogicsModule.LPCompoundID) {
+            ScriptingErrorLog.SemanticErrorException error = ((ScriptingLogicsModule.LPCompoundID) lcp).error;
+            if (error != null)
+                throw error;
         }
     }
 
@@ -644,9 +651,5 @@ public class ScriptingLogicsModuleChecks {
         if(signatureParam == null) {
             errLog.emitSignatureParamError(parser);
         }
-    }
-    public void checkCustomPropertyEditType(String editType) throws ScriptingErrorLog.SemanticErrorException {
-        if (!editType.equals("TEXT"))
-            errLog.emitCustomPropertyWrongEditType(parser, editType);
     }
 }

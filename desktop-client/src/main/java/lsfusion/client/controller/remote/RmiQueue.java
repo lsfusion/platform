@@ -17,6 +17,8 @@ import lsfusion.client.base.log.ClientLoggers;
 import lsfusion.client.controller.MainController;
 import lsfusion.client.controller.dispatch.DispatcherInterface;
 import lsfusion.client.controller.dispatch.DispatcherListener;
+import lsfusion.client.form.view.ClientFormDockable;
+import lsfusion.client.navigator.controller.AsyncFormController;
 import lsfusion.interop.base.exception.FatalRemoteClientException;
 import lsfusion.interop.base.exception.RemoteAbandonedException;
 import lsfusion.interop.base.exception.RemoteHandledException;
@@ -24,10 +26,7 @@ import org.apache.log4j.Logger;
 
 import javax.swing.*;
 import java.rmi.RemoteException;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Queue;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
@@ -352,13 +351,18 @@ public class RmiQueue implements DispatcherListener {
         }
     }
 
-    public <T> void asyncRequest(final RmiRequest<T> request) {
+    public <T> long asyncRequest(final RmiRequest<T> request) {
+        asyncRequest(request, false);
+        return request.getRequestIndex();
+    }
+
+    public <T> void asyncRequest(final RmiRequest<T> request, boolean preProceed) {
         if (logger.isDebugEnabled()) {
             logger.debug("Async request: " + request);
         }
         request.setTimeoutParams(new Pair<>(3, 20));
 
-        execRmiRequestInternal(request);
+        execRmiRequestInternal(request, preProceed);
 
         request.onAsyncRequest();
 
@@ -382,6 +386,10 @@ public class RmiQueue implements DispatcherListener {
     }
 
     private <T> RmiFuture<T> execRmiRequestInternal(RmiRequest<T> request) {
+        return execRmiRequestInternal(request, false);
+    }
+
+    private <T> RmiFuture<T> execRmiRequestInternal(RmiRequest<T> request, boolean preProceed) {
         SwingUtils.assertDispatchThread();
 
         request.setRequestIndex(nextRmiRequestIndex++);
@@ -391,7 +399,7 @@ public class RmiQueue implements DispatcherListener {
             logger.debug("Executing request's thread: " + request);
         }
 
-        RmiFuture<T> rmiFuture = createRmiFuture(request);
+        RmiFuture<T> rmiFuture = createRmiFuture(request, preProceed);
 
         if (rmiFutures.isEmpty() && !dispatchingInProgress) {
             rmiFuture.setFirst(true);
@@ -414,8 +422,24 @@ public class RmiQueue implements DispatcherListener {
             return;
         }
 
-        //не обрабатываем результат, пока не закончится редактирование и не вызовется this.editingStopped()
-        if (!tableManager.isEditing()) {
+        //не обрабатываем результат (кроме с preProceeded), пока не закончится редактирование и не вызовется this.editingStopped()
+        if(tableManager.isEditing()) {
+            rmiFutures.forEach(future -> {
+                if(future.isDone() && future.preProceeded != null && !future.preProceeded) {
+                    try {
+                        dispatchingStarted();
+                        try {
+                            future.execCallback();
+                        } finally {
+                            dispatchingEnded();
+                        }
+                        future.preProceeded = true;
+                    } catch (Throwable t) {
+                        ClientExceptionManager.handle(t, false);
+                    }
+                }
+            });
+        } else {
             flushCompletedRequestsNow(false);
         }
     }
@@ -462,7 +486,9 @@ public class RmiQueue implements DispatcherListener {
         dispatchingStarted();
         
         try {
-            future.execCallback();
+            if(future.preProceeded == null || !future.preProceeded) {
+                future.execCallback();
+            }
         } finally {
             dispatchingEnded();
             
@@ -472,10 +498,14 @@ public class RmiQueue implements DispatcherListener {
             }
         }
     }
-    
+
     private <T> RmiFuture<T> createRmiFuture(final RmiRequest<T> request) {
+        return createRmiFuture(request, false);
+    }
+
+    private <T> RmiFuture<T> createRmiFuture(final RmiRequest<T> request, boolean preProceed) {
         RequestCallable<T> requestCallable = new RequestCallable<>(request, abandoned);
-        RmiFuture<T> future = new RmiFuture<>(request, requestCallable);
+        RmiFuture<T> future = new RmiFuture<>(request, requestCallable, preProceed);
         requestCallable.setFutureInterface(future);
         return future;
     }
@@ -526,10 +556,12 @@ public class RmiQueue implements DispatcherListener {
         private final RmiRequest<T> request;
         boolean executed;
         private boolean first = false;
+        private Boolean preProceeded;
 
-        public RmiFuture(final RmiRequest<T> request, final RequestCallable<T> requestCallable) {
+        public RmiFuture(final RmiRequest<T> request, final RequestCallable<T> requestCallable, boolean preProceed) {
             super(requestCallable);
             this.request = request;
+            this.preProceeded = preProceed ? false : null;
         }
 
         @Override
@@ -613,7 +645,31 @@ public class RmiQueue implements DispatcherListener {
         boolean isFirst();
     }
 
-    public long getNextRmiRequestIndex() {
-        return nextRmiRequestIndex;
+    private long lastCompletedRequest = -1L;
+    private Map<Long, ClientFormDockable> asyncForms = new HashMap<>();
+
+    public AsyncFormController getAsyncFormController(long requestIndex) {
+        return new AsyncFormController() {
+            @Override
+            public ClientFormDockable removeAsyncForm() {
+                return asyncForms.remove(requestIndex);
+            }
+
+            @Override
+            public void putAsyncForm(ClientFormDockable container) {
+                asyncForms.put(requestIndex, container);
+            }
+
+            @Override
+            public boolean checkNotCompleted() {
+                return requestIndex > lastCompletedRequest;
+            }
+
+            @Override
+            public boolean onServerInvocationResponse() {
+                lastCompletedRequest = requestIndex;
+                return asyncForms.containsKey(requestIndex);
+            }
+        };
     }
 }

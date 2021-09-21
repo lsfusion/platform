@@ -21,6 +21,8 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.rmi.RemoteException;
 
+import static lsfusion.base.BaseUtils.nvl;
+
 public abstract class ExternalRequestHandler extends LogicsRequestHandler implements HttpRequestHandler {
 
     protected abstract void handleRequest(LogicsSessionObject sessionObject, HttpServletRequest request, HttpServletResponse response) throws Exception;
@@ -70,8 +72,8 @@ public abstract class ExternalRequestHandler extends LogicsRequestHandler implem
         }
     }
 
-    protected void sendResponse(HttpServletResponse response, String message, Charset charset) throws IOException {
-        sendResponse(response, new ExternalUtils.ExternalResponse(new StringEntity(message, charset), null, null, null, null, null));
+    protected void sendResponse(HttpServletResponse response, String message, Charset charset, Integer statusHttp) throws IOException {
+        sendResponse(response, new ExternalUtils.ExternalResponse(new StringEntity(message, charset), null, null, null, null, null, statusHttp));
     }
 
     // copy of ExternalHTTPServer.sendResponse
@@ -83,6 +85,7 @@ public abstract class ExternalRequestHandler extends LogicsRequestHandler implem
         String[] headerValues = responseHttpEntity.headerValues;
         String[] cookieNames = responseHttpEntity.cookieNames;
         String[] cookieValues = responseHttpEntity.cookieValues;
+        Integer statusHttp = nvl(responseHttpEntity.statusHttp, HttpServletResponse.SC_OK);
 
         boolean hasContentType = false; 
         boolean hasContentDisposition = false;
@@ -109,6 +112,7 @@ public abstract class ExternalRequestHandler extends LogicsRequestHandler implem
             response.setContentType(contentType.getValue());
         if(contentDisposition != null && !hasContentDisposition)
             response.addHeader("Content-Disposition", contentDisposition);
+        response.setStatus(statusHttp);
         responseEntity.writeTo(response.getOutputStream());
     }
 }

@@ -19,7 +19,6 @@ import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.base.version.NFLazy;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.key.KeyExpr;
-import lsfusion.server.data.expr.value.StaticParamNullableExpr;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.stat.StatType;
@@ -29,12 +28,14 @@ import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.form.interactive.UpdateType;
+import lsfusion.server.logics.form.interactive.action.input.InputFilterEntity;
 import lsfusion.server.logics.form.interactive.controller.init.InstanceFactory;
 import lsfusion.server.logics.form.interactive.controller.init.Instantiable;
 import lsfusion.server.logics.form.interactive.instance.filter.FilterInstance;
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
+import lsfusion.server.logics.form.struct.filter.ContextFilterEntity;
 import lsfusion.server.logics.form.struct.filter.FilterEntityInstance;
 import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
@@ -43,6 +44,7 @@ import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.classes.IsClassProperty;
 import lsfusion.server.logics.property.implement.PropertyRevImplement;
+import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
@@ -92,11 +94,7 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         }
 
         public ImMap<ObjectInstance, ? extends Expr> process(FilterInstance filt, ImMap<ObjectInstance, ? extends Expr> mapKeys) {
-            return MapFact.addExcl(mapKeys, filt.getObjects().remove(mapKeys.keys()).mapValues(new Function<ObjectInstance, Expr>() {
-                public Expr apply(ObjectInstance value) {
-                    return new StaticParamNullableExpr(value.getBaseClass().getUpSet(), value.toString());
-                }
-            }));
+            return MapFact.addExcl(mapKeys, filt.getObjects().remove(mapKeys.keys()).mapValues((ObjectInstance value) -> value.entity.getParamExpr()));
         }
     }
     private static class NoUpProcessor implements GroupObjectInstance.FilterProcessor {
@@ -349,6 +347,13 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
             where = where.and(filt.getWhere(mapKeys, modifier));
         return where;
     }
+    private <P extends PropertyInterface> InputFilterEntity<?, P> getFilterInputFilterEntity(ImSet<ContextFilterEntity<?, P, ObjectEntity>> filters, ImRevMap<ObjectEntity, P> mapObjects) {
+        // assert single and filters objects contain this object
+        InputFilterEntity<?, P> result = null;
+        for(ContextFilterEntity<?, P, ObjectEntity> filt : filters)
+            result = InputFilterEntity.and(result, filt.getInputFilterEntity(getObjects().single(), mapObjects));
+        return result;
+    }
 
     private static ImMap<ObjectEntity, ValueClass> getGridClasses(ImSet<ObjectEntity> objects) {
         return objects.filterFn(element -> !element.noClasses()).mapValues((ObjectEntity value) -> value.baseClass);
@@ -356,13 +361,23 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
     public Where getClassWhere(ImMap<ObjectEntity, ? extends Expr> mapKeys, Modifier modifier) throws SQLException, SQLHandledException {
         return IsClassProperty.getWhere(getGridClasses(getObjects()), mapKeys, modifier, null);
     }
+    public <P extends PropertyInterface> InputFilterEntity<?, P> getClassInputFilterEntity() {
+        return new InputFilterEntity<>(IsClassProperty.getProperty(getGridClasses(getObjects())).property, MapFact.EMPTYREV());
+    }
 
     public Where getWhere(ImMap<ObjectEntity, ? extends Expr> mapKeys, Modifier modifier, ImSet<? extends FilterEntityInstance> filters) throws SQLException, SQLHandledException {
         return getFilterWhere(mapKeys, modifier, filters).and(getClassWhere(mapKeys, modifier));
+    }
+    public <P extends PropertyInterface> InputFilterEntity<?, P> getInputFilterEntity(ImSet<ContextFilterEntity<?, P, ObjectEntity>> filters, ImRevMap<ObjectEntity, P> mapObjects) {
+        return InputFilterEntity.and(getFilterInputFilterEntity(filters, mapObjects), getClassInputFilterEntity());
     }
 
     // hack where ImMap used (it does not support null keys)
     private GroupObjectEntity() {
     }
     public static final GroupObjectEntity NULL = new GroupObjectEntity();
+
+    public boolean isSimpleList() {
+        return getObjects().size() == 1 && viewType.isList() && !isInTree();
+    }
 }

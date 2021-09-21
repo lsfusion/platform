@@ -1,5 +1,6 @@
 package lsfusion.client.form.object.table.grid.user.toolbar.view;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.file.RawFileData;
 import lsfusion.client.base.view.SwingDefaults;
@@ -239,7 +240,7 @@ public class GroupingTreeTable extends JXTreeTable {
 
         private boolean containsAll(java.util.List<Object> parent, java.util.List<Object> child) {
             for (int i = 0; i < parent.size(); i++) {
-                if (!parent.get(i).equals(child.get(i))) {
+                if (!BaseUtils.nullEquals(parent.get(i), child.get(i))) {
                     return false;
                 }
             }

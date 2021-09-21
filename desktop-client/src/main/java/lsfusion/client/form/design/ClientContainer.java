@@ -1,10 +1,14 @@
 package lsfusion.client.form.design;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.controller.remote.serialization.ClientSerializationPool;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.object.table.controller.TableController;
+import lsfusion.client.form.object.table.grid.ClientGrid;
+import lsfusion.client.form.object.table.tree.ClientTreeGroup;
+import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.ClientPropertyReader;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.design.ContainerType;
@@ -27,7 +31,7 @@ public class ClientContainer extends ClientComponent {
 
     public FlexAlignment childrenAlignment = FlexAlignment.START;
 
-    public int columns = 1;
+    public int lines = 1;
 
     public List<ClientComponent> children = new ArrayList<>();
 
@@ -46,7 +50,7 @@ public class ClientContainer extends ClientComponent {
 
         pool.writeObject(outStream, childrenAlignment);
 
-        outStream.writeInt(columns);
+        outStream.writeInt(lines);
     }
 
     @Override
@@ -61,12 +65,16 @@ public class ClientContainer extends ClientComponent {
 
         childrenAlignment = pool.readObject(inStream);
 
-        columns = inStream.readInt();
+        lines = inStream.readInt();
     }
 
     @Override
     public String toString() {
         return caption + " (" + getID() + ")" + "[sid:" + getSID() + "]";
+    }
+
+    public FlexAlignment getFlexJustify() {
+        return childrenAlignment;
     }
 
     public void removeFromChildren(ClientComponent component) {
@@ -90,7 +98,11 @@ public class ClientContainer extends ClientComponent {
 
     @Override
     public String getCaption() {
-        return caption;
+        return getNotNullCaption();
+    }
+    
+    public String getNotNullCaption() {
+        return BaseUtils.nullToString(caption);
     }
 
     public ContainerType getType() {
@@ -120,12 +132,32 @@ public class ClientContainer extends ClientComponent {
         return type == HORIZONTAL_SPLIT_PANE;
     }
 
-    public boolean isVertical() {
-        return isLinearVertical() || isSplitVertical();
-    }
-
     public boolean isHorizontal() {
         return isLinearHorizontal() || isSplitHorizontal();
+    }
+
+    public boolean isVertical() {
+        return isLinearVertical() || isSplitVertical() || isColumns() || isTabbed();
+    }
+
+    public boolean isAlignCaptions() {
+        if(!isVertical()) // later maybe it makes sense to support align captions for horizontal containers, but with no-wrap it doesn't make much sense
+            return false;
+
+        int notActions = 0;
+        // only simple property draws
+        for(ClientComponent child : children) {
+            if(!(child instanceof ClientPropertyDraw) || ((ClientPropertyDraw) child).hasColumnGroupObjects() || (child.autoSize && ((ClientPropertyDraw) child).isAutoDynamicHeight()) || child.flex > 0 || ((ClientPropertyDraw) child).panelCaptionVertical)
+                return false;
+
+            if(!((ClientPropertyDraw)child).isAction())
+                notActions++;
+        }
+
+        if(notActions <= 1)
+            return false;
+
+        return true;
     }
 
     public boolean isLinearVertical() {
@@ -196,7 +228,8 @@ public class ClientContainer extends ClientComponent {
 
         public void update(Map<ClientGroupObjectValue, Object> readKeys, boolean updateKeys, TableController controller) {
             assert BaseUtils.singleKey(readKeys).isEmpty();
-            controller.getFormController().setContainerCaption(ClientContainer.this, BaseUtils.nullToString(BaseUtils.singleValue(readKeys)));
+            Object containerCaption = BaseUtils.singleValue(readKeys);
+            controller.getFormController().setContainerCaption(ClientContainer.this, containerCaption != null ? containerCaption.toString() : null);
         }
 
         public int getID() {
@@ -207,4 +240,15 @@ public class ClientContainer extends ClientComponent {
             return PropertyReadType.CONTAINER_CAPTION;
         }
     };
+
+    public int getFlexCount() {
+        if(isTabbed())
+            return 0;
+
+        int count = 0;
+        for(ClientComponent child : children)
+            if(child.getFlex() > 0)
+                count++;
+        return count;
+    }
 }

@@ -1,55 +1,38 @@
 package lsfusion.gwt.client.form.property.cell.classes.controller;
 
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.user.client.Event;
+import com.google.gwt.dom.client.InputElement;
+import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.view.EventHandler;
-import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.cell.controller.CellEditor;
-import lsfusion.gwt.client.form.property.cell.controller.EditManager;
+import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 
-public class CustomCellEditor implements CellEditor {
+public interface CustomCellEditor extends RequestValueCellEditor { // ,RequestValueCellEditor but it's class not an interface
 
-    private final EditManager editManager;
-    private final GPropertyDraw property;
-    private final String startEditingFunction;
-    private final String commitEditingFunction;
-    private final String onBrowserEventFunction;
-
-    public CustomCellEditor(EditManager editManager, GPropertyDraw property, String customEditorFunctions) {
-        this.editManager = editManager;
-        this.property = property;
-
-        String[] functions = customEditorFunctions.split(":");
-        this.startEditingFunction = functions[0];
-        this.commitEditingFunction = functions[1];
-        this.onBrowserEventFunction = functions[2];
+    default Element getCustomElement(Element parent) {
+        return parent;
     }
 
-    @Override
-    public void commitEditing(Element parent) {
-        commit(parent);
+    String getRenderFunction();
+    JavaScriptObject getCustomEditor();
+
+    default void render(Element cellParent, RenderContext renderContext, Pair<Integer, Integer> renderedSize, Object oldValue) {
+        CustomReplaceCellEditor.render(getRenderFunction(), getCustomEditor(), cellParent, CustomReplaceCellEditor.getController(this, cellParent), ARequestValueCellEditor.fromObject(oldValue));
     }
 
-    protected native void commit(Element element)/*-{
-        $wnd[this.@CustomCellEditor::commitEditingFunction](element);
-    }-*/;
-
-    @Override
-    public void startEditing(Event editEvent, Element parent, Object oldValue) {
-        startEditing(parent);
+    default void clearRender(Element cellParent, RenderContext renderContext) {
+        CustomReplaceCellEditor.clear(getCustomEditor(), cellParent);
     }
 
-    protected native void startEditing(Element element)/*-{
-        $wnd[this.@CustomCellEditor::startEditingFunction](element);
-    }-*/;
-
-    @Override
-    public void onBrowserEvent(Element parent, EventHandler handler) {
-        if (onBrowserEventFunction != null)
-            onBrowserEvent();
+    default Object getValue(Element parent, Integer contextAction) {
+        return CustomReplaceCellEditor.getValue(getCustomEditor(), parent); // "canceled" if we want to cancel
     }
 
-    protected native void onBrowserEvent()/*-{
-        $wnd[this.@CustomCellEditor::onBrowserEventFunction]();
-    }-*/;
+    default void onBeforeFinish(Element parent, boolean cancel) {
+        CustomReplaceCellEditor.onBeforeFinish(getCustomEditor(), getCustomElement(parent), cancel);
+    }
+
+    default void onBrowserEvent(Element parent, EventHandler handler) {
+        CustomReplaceCellEditor.onBrowserEvent(getCustomEditor(), handler.event, parent);
+    }
 }

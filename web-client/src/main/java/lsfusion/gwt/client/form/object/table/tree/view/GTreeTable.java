@@ -6,7 +6,6 @@ import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.jsni.JSNIHelper;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
@@ -336,7 +335,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         }
 
         @Override
-        public void onEditEvent(EventHandler handler, boolean isBinding, Cell editCell, Element editCellParent) {
+        public void onEditEvent(EventHandler handler, Cell editCell, Element editCellParent) {
             Event event = handler.event;
             boolean changeEvent = GMouseStroke.isChangeEvent(event);
             if (changeEvent || (treeGroupController.isExpandOnClick() && GMouseStroke.isDoubleChangeEvent(event))) { // we need to consume double click event to prevent treetable global dblclick binding (in this case node will be collapsed / expanded once again)
@@ -350,8 +349,6 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         }
 
         private void changeTreeState(Cell cell, Object value, NativeEvent event) {
-            GwtClientUtils.stopPropagation(event);
-
             Boolean open = ((GTreeColumnValue) value).getOpen();
             if (open != null) {
                 GTreeGridRecord record = getTreeGridRow(cell);
@@ -831,19 +828,14 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     }
 
     @Override
-    public Object getValueAt(Cell cell) {
-        GTreeGridRecord record = getTreeGridRow(cell);
-        return record == null ? null : tree.getValue(record.getGroup(), cell.getColumnIndex(), record.getKey());
+    public GGroupObjectValue getRowKey(Cell editCell) {
+        return getTreeGridRow(editCell).getKey();
     }
 
     @Override
-    public void pasteData(List<List<String>> table) {
-        if (!table.isEmpty() && !table.get(0).isEmpty()) {
-            GPropertyDraw property = getSelectedProperty();
-            if (property != null) {
-                form.pasteSingleValue(property, getSelectedKey(), table.get(0).get(0));
-            }
-        }
+    public Object getValueAt(Cell cell) {
+        GTreeGridRecord record = getTreeGridRow(cell);
+        return record == null ? null : tree.getValue(record.getGroup(), cell.getColumnIndex(), record.getKey());
     }
 
     @Override

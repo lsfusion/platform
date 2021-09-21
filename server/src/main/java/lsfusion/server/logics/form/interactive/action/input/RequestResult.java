@@ -15,6 +15,7 @@ public class RequestResult {
         this.chosenValue = chosenValue;
         this.type = type;
         this.targetProp = targetProp;
+        assert targetProp != null;
     }
 
     public static ImList<RequestResult> get(ObjectValue chosenValue, Type type, LP targetProp) {

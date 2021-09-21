@@ -8,7 +8,7 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 public class CurrentComputerProperty extends CurrentEnvironmentProperty {
 
     public CurrentComputerProperty(ValueClass paramClass) {
-        super(LocalizedString.create("{logics.property.current.computer}"), SQLSession.computerParam, paramClass.getUpSet());
+        super(LocalizedString.create("{logics.property.current.computer}"), SQLSession.computerParam, paramClass);
 
         finalizeInit();
     }

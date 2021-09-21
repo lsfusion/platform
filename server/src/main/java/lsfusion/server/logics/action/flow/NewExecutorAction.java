@@ -9,7 +9,7 @@ import lsfusion.server.base.task.TaskRunner;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
-import lsfusion.server.logics.classes.user.CustomClass;
+import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.classes.IsClassProperty;
@@ -74,13 +74,8 @@ public class NewExecutorAction extends AroundAspectAction {
     }
 
     @Override
-    public CustomClass getSimpleAdd() {
-        return aspectActionImplement.action.getSimpleAdd();
-    }
-
-    @Override
-    public PropertyInterface getSimpleDelete() {
-        return aspectActionImplement.action.getSimpleDelete();
+    public AsyncMapEventExec<PropertyInterface> calculateAsyncEventExec(boolean optimistic, boolean recursive) {
+        return aspectActionImplement.mapAsyncEventExec(optimistic, recursive);
     }
 
     @Override

@@ -24,13 +24,11 @@ import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.language.ScriptParsingException;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
-import lsfusion.server.logics.action.session.change.DataChanges;
-import lsfusion.server.logics.action.session.change.PropertyChange;
-import lsfusion.server.logics.action.session.change.PropertyChanges;
-import lsfusion.server.logics.action.session.change.StructChanges;
+import lsfusion.server.logics.action.session.change.*;
 import lsfusion.server.logics.action.session.changed.OldProperty;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
+import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.cases.graph.Graph;
 import lsfusion.server.logics.property.classes.infer.*;
@@ -104,10 +102,10 @@ public class CaseUnionProperty extends IncrementUnionProperty {
         return getCases().getCol().mapMergeSetValues(value -> value.implement);
     }
 
-    protected ImSet<Property> calculateUsedDataChanges(StructChanges propChanges) {
+    protected ImSet<Property> calculateUsedDataChanges(StructChanges propChanges, CalcDataType type) {
         MSet<Property> mPropValues = SetFact.mSet(); fillDepends(mPropValues, getProps());
         MSet<Property> mPropWheres = SetFact.mSet(); fillDepends(mPropWheres, getWheres());
-        return SetFact.add(propChanges.getUsedDataChanges(mPropValues.immutable()), propChanges.getUsedChanges(mPropValues.immutable()));
+        return SetFact.add(propChanges.getUsedDataChanges(type, mPropValues.immutable()), propChanges.getUsedChanges(mPropValues.immutable()));
     }
 
     public enum Type { CASE, MULTI, VALUE }
@@ -159,17 +157,17 @@ public class CaseUnionProperty extends IncrementUnionProperty {
         return false;
     }
 
-    protected DataChanges calculateDataChanges(PropertyChange<Interface> change, WhereBuilder changedWhere, PropertyChanges propChanges) {
+    protected DataChanges calculateDataChanges(PropertyChange<Interface> change, CalcDataType type, WhereBuilder changedWhere, PropertyChanges propChanges) {
         DataChanges result = DataChanges.EMPTY;
         for(CalcCase<Interface> operand : getCases()) {
             Where caseWhere;
             if(operand.isSimple()) {
                 WhereBuilder operandWhere = new WhereBuilder();
-                result = result.add(operand.implement.mapJoinDataChanges(change, GroupType.ASSERTSINGLE_CHANGE(), operandWhere, propChanges));
+                result = result.add(operand.implement.mapJoinDataChanges(change, type, GroupType.ASSERTSINGLE_CHANGE(), operandWhere, propChanges));
                 caseWhere = operandWhere.toWhere();
             } else {
                 caseWhere = operand.where.mapExpr(change.getMapExprs(), propChanges).getWhere();
-                result = result.add(operand.implement.mapJoinDataChanges(change.and(caseWhere), GroupType.ASSERTSINGLE_CHANGE(), null, propChanges));
+                result = result.add(operand.implement.mapJoinDataChanges(change.and(caseWhere), type, GroupType.ASSERTSINGLE_CHANGE(), null, propChanges));
             }
             if(changedWhere!=null) changedWhere.add(caseWhere);
 
@@ -261,13 +259,13 @@ public class CaseUnionProperty extends IncrementUnionProperty {
 
     @Override
     @IdentityStrongLazy // STRONG пришлось поставить из-за использования в политике безопасности
-    public ActionMapImplement<?, Interface> getDefaultEventAction(String eventActionSID, ImList<Property> viewProperties) {
+    public ActionMapImplement<?, Interface> getDefaultEventAction(String eventActionSID, FormSessionScope defaultChangeEventScope, ImList<Property> viewProperties) {
         // нужно создать List - if(where[classes]) {getEditAction(); return;}
         int lastNotNullAction = 0;
         ImList<CalcCase<Interface>> cases = getCases();
         MList<ActionCase<Interface>> mActionCases = ListFact.mList();
         for(CalcCase<Interface> propCase : cases) {
-            ActionMapImplement<?, Interface> eventAction = propCase.implement.mapEventAction(eventActionSID, viewProperties);
+            ActionMapImplement<?, Interface> eventAction = propCase.implement.mapEventAction(eventActionSID, defaultChangeEventScope, viewProperties);
             if(isExclusive) {
                 if(eventAction == null)
                     continue;                                
@@ -430,7 +428,7 @@ public class CaseUnionProperty extends IncrementUnionProperty {
         if(isAbstract())
             return new Inferred<>(classValueWhere.getCommonExClasses(interfaces)); // чтобы рекурсии не было
         
-        return op(getCases().mapListValues((Function<CalcCase<Interface>, Inferred<Interface>>) aCase -> aCase.where.mapInferInterfaceClasses(ExClassSet.notNull(commonValue), inferType).and(aCase.implement.mapInferInterfaceClasses(commonValue, inferType), inferType)), true, inferType);
+        return op(getCases().mapListValues(aCase -> aCase.where.mapInferInterfaceClasses(ExClassSet.notNull(commonValue), inferType).and(aCase.implement.mapInferInterfaceClasses(commonValue, inferType), inferType)), true, inferType);
     }
 
     @Override

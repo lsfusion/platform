@@ -1,26 +1,21 @@
 package lsfusion.gwt.client.form.property.panel.view;
 
-import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.FocusWidget;
-import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
+import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 
-import java.text.ParseException;
-
 import static lsfusion.gwt.client.base.GwtClientUtils.setupFillParent;
-import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
-import static lsfusion.gwt.client.base.view.ColorUtils.getDisplayColor;
 
 // property value renderer with editing
 public abstract class ActionOrPropertyValue extends FocusWidget implements EditContext, RenderContext, UpdateContext {
@@ -31,22 +26,33 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
         return value;
     }
 
+    // editing set value (in EditContext), changes model and value itself
     public void setValue(Object value) {
-        this.value = value;
+        this.value = value; // updating inner model
+
+        controller.setValue(columnKey, value); // updating outer model - controller
     }
 
     protected GPropertyDraw property;
+    protected GGroupObjectValue columnKey;
 
     protected GFormController form;
+    protected ActionOrPropertyValueController controller;
 
-    public ActionOrPropertyValue(GPropertyDraw property, GFormController form) {
+    private boolean globalCaptionIsDrawn;
+
+    public ActionOrPropertyValue(GPropertyDraw property, GGroupObjectValue columnKey, GFormController form, boolean globalCaptionIsDrawn, ActionOrPropertyValueController controller) {
         setElement(Document.get().createDivElement());
 
         DataGrid.initSinkEvents(this);
 
         this.property = property;
+        this.columnKey = columnKey;
 
         this.form = form;
+        this.controller = controller;
+
+        this.globalCaptionIsDrawn = globalCaptionIsDrawn;
 
         getRenderElement().setPropertyObject("groupObject", property.groupObject);
     }
@@ -76,20 +82,20 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
         return setBaseSize(isProperty);
     }
     // auto sized property with value
-    public void setDynamic(ResizableMainPanel panel, boolean isProperty) {
+    public Pair<Integer, Integer> setDynamic(ResizableMainPanel panel, boolean isProperty) {
         panel.setMain(this);
         com.google.gwt.dom.client.Element element = getElement();
         element.getStyle().setWidth(100, Style.Unit.PCT);
         element.getStyle().setHeight(100, Style.Unit.PCT);
         borderWidget = panel.getPanelWidget();
 
-        setBaseSize(isProperty);
+        return setBaseSize(isProperty);
     }
     // auto sized action with caption
-    public void setDynamic(boolean isProperty) {
+    public Pair<Integer, Integer> setDynamic(boolean isProperty) {
         borderWidget = this;
 
-        setBaseSize(isProperty);
+        return setBaseSize(isProperty);
     }
 
     public Pair<Integer, Integer> setBaseSize(boolean isProperty) {
@@ -101,9 +107,9 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
             borderWidget.addStyleName("actionPanelRendererValue");
 
         // if widget is wrapped into absolute positioned simple panel, we need to include paddings (since borderWidget doesn't include them)
-        boolean isStatic = borderWidget != this;
-        int valueWidth = isStatic ? property.getValueWidthWithPadding(null) : property.getValueWidth(null);
-        int valueHeight = isStatic ? property.getValueHeightWithPadding(null) : property.getValueHeight(null);
+        boolean hasBorder = borderWidget != this;
+        int valueWidth = hasBorder ? property.getValueWidthWithPadding(null) : property.getValueWidth(null);
+        int valueHeight = hasBorder ? property.getValueHeightWithPadding(null) : property.getValueHeight(null);
         // about the last parameter oppositeAndFixed, here it's tricky since we don't know where this borderWidget will be added, however it seems that all current stacks assume that they are added with STRETCH alignment
         FlexPanel.setBaseSize(borderWidget, false, valueWidth);
         FlexPanel.setBaseSize(borderWidget, true, valueHeight);
@@ -141,12 +147,23 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
                 handler -> CopyPasteUtils.putIntoClipboard(getRenderElement()), handler -> CopyPasteUtils.getFromClipboard(handler, line -> pasteValue(line.trim())), true);
     }
 
+    boolean isFocused;
     protected void onFocus(EventHandler handler) {
+        if(isFocused)
+            return;
         DataGrid.sinkPasteEvent(getFocusElement());
+        isFocused = true;
+
         borderWidget.addStyleName("panelRendererValueFocused");
     }
 
     protected void onBlur(EventHandler handler) {
+        if(!isFocused || DataGrid.isFakeBlur(handler.event, getElement())) {
+            return;
+        }
+        //if !isFocused should be replaced to assert; isFocused must be true, but sometimes is not (related to LoadingManager)
+        //assert isFocused;
+        isFocused = false;
         borderWidget.removeStyleName("panelRendererValueFocused");
     }
 
@@ -159,6 +176,16 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
     @Override
     public GPropertyDraw getProperty() {
         return property;
+    }
+
+    @Override
+    public GGroupObjectValue getColumnKey() {
+        return columnKey;
+    }
+
+    @Override
+    public GGroupObjectValue getRowKey() {
+        throw new UnsupportedOperationException();
     }
 
     public RenderContext getRenderContext() {
@@ -177,7 +204,7 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
 
     @Override
     public boolean globalCaptionIsDrawn() {
-        return false;
+        return globalCaptionIsDrawn;
     }
 
     @Override
@@ -193,23 +220,12 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
     public UpdateContext getUpdateContext() {
         return this;
     }
-    protected abstract void onPaste(Object objValue, String stringValue);
 
-    public void pasteValue(final String value) {
-        Scheduler.get().scheduleDeferred(() -> {
-            Object objValue = null;
-            try {
-                objValue = property.baseType.parseString(value, property.pattern);
-            } catch (ParseException ignored) {}
-            updateValue(objValue);
-
-            onPaste(objValue, value);
-        });
-    }
+    public abstract void pasteValue(final String value);
 
     public void updateValue(Object value) {
-        setValue(value);
+        this.value = value;
 
-        form.update(property, getRenderElement(), getValue(), this);
+        form.update(property, getRenderElement(), value, this);
     }
 }

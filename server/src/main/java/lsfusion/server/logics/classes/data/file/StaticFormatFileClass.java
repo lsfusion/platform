@@ -8,12 +8,13 @@ import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.language.action.LA;
-import lsfusion.server.logics.BusinessLogics;
+import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.form.stat.struct.FormIntegrationType;
 import org.apache.commons.net.util.Base64;
 
+import java.nio.charset.Charset;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -35,8 +36,8 @@ public abstract class StaticFormatFileClass extends FileClass<RawFileData> {
     }
 
     @Override
-    public LA getDefaultOpenAction(BusinessLogics BL) {
-        return BL.LM.openRawFile;
+    public LA getDefaultOpenAction(BaseLogicsModule baseLM) {
+        return baseLM.openRawFile;
     }
 
     public Class getReportJavaClass() {
@@ -54,8 +55,18 @@ public abstract class StaticFormatFileClass extends FileClass<RawFileData> {
     }
 
     @Override
+    protected RawFileData parseHTTPNotNullString(String s, Charset charset) {
+        return new RawFileData(s.getBytes(charset));
+    }
+
+    @Override
     protected RawFileData parseHTTPNotNull(FileData b) {
         return b.getRawFile();
+    }
+
+    @Override
+    protected String formatHTTPNotNullString(RawFileData value, Charset charset) {
+        return new String(value.getBytes(), charset);
     }
 
     @Override
@@ -110,7 +121,7 @@ public abstract class StaticFormatFileClass extends FileClass<RawFileData> {
     }
 
     public String formatString(RawFileData value) {
-        return value != null ? Base64.encodeBase64String(value.getBytes()) : null;
+        return value != null ? Base64.encodeBase64StringUnChunked(value.getBytes()) : null;
     }
 
     public abstract FormIntegrationType getIntegrationType();

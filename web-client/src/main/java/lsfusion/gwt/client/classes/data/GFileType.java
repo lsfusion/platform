@@ -3,6 +3,7 @@ package lsfusion.gwt.client.classes.data;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.async.GInputList;
 import lsfusion.gwt.client.form.property.cell.classes.controller.FileCellEditor;
 import lsfusion.gwt.client.form.property.cell.classes.view.FileCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
@@ -10,7 +11,7 @@ import lsfusion.gwt.client.form.property.cell.controller.CellEditor;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 
 import java.text.ParseException;
-import java.util.ArrayList;
+import java.util.List;
 
 import static lsfusion.gwt.client.form.filter.user.GCompare.EQUALS;
 import static lsfusion.gwt.client.form.filter.user.GCompare.NOT_EQUALS;
@@ -19,7 +20,7 @@ public abstract class GFileType extends GDataType {
     public boolean multiple;
     public boolean storeName;
     public String description;
-    public ArrayList<String> validContentTypes;
+    public List<String> validExtensions;
 
     public GFileType() {
     }
@@ -40,8 +41,8 @@ public abstract class GFileType extends GDataType {
     }
 
     @Override
-    public CellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
-        return new FileCellEditor(editManager, description, storeName, validContentTypes);
+    public CellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList) {
+        return new FileCellEditor(editManager, storeName, validExtensions);
     }
 
     @Override

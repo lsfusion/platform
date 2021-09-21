@@ -1,6 +1,7 @@
 package lsfusion.server.logics.classes.data.time;
 
 import com.hexiong.jdbf.JDBFException;
+import lsfusion.base.DateConverter;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.classes.DataType;
 import lsfusion.interop.form.property.ExtInt;
@@ -34,7 +35,7 @@ import java.util.Locale;
 import static lsfusion.base.DateConverter.instantToSqlTimestamp;
 import static lsfusion.base.DateConverter.sqlTimestampToInstant;
 
-public class ZDateTimeClass extends DataClass<Instant> {
+public class ZDateTimeClass extends TimeSeriesClass<Instant> {
 
     public final static ZDateTimeClass instance = new ZDateTimeClass();
 
@@ -152,13 +153,12 @@ public class ZDateTimeClass extends DataClass<Instant> {
     public Instant parseString(String s) throws ParseException {
         try {
             try {
-                //other date-time classes use smartParse with isEmpty check inside
-                return s.trim().isEmpty() ? null : Instant.parse(s); // actually DateTimeFormatter.ISO_INSTANT will be used
-            } catch (DateTimeParseException ignored) {
                 return ZonedDateTime.parse(s, DateTimeFormatter.ISO_DATE_TIME).toInstant();
+            } catch (DateTimeParseException ignored) {
             }
+            return DateConverter.smartParseInstant(s);
         } catch (Exception e) {
-            throw ParseException.propagateWithMessage("Error parsing datetime: " + s, e);
+            throw ParseException.propagateWithMessage("Error parsing zdatetime: " + s, e);
         }
     }
 
@@ -183,7 +183,7 @@ public class ZDateTimeClass extends DataClass<Instant> {
 
     @Override
     public OverJDBField formatDBF(String fieldName) throws JDBFException {
-        return new OverJDBField(fieldName, 'D', 8, 0);
+        return OverJDBField.createField(fieldName, 'D', 8, 0);
     }
 
     @Override
@@ -197,6 +197,21 @@ public class ZDateTimeClass extends DataClass<Instant> {
     @Override
     public boolean useIndexedJoin() {
         return true;
+    }
+
+    @Override
+    public String getIntervalProperty() {
+        return "interval[ZDATETIME,ZDATETIME]";
+    }
+
+    @Override
+    public String getFromIntervalProperty() {
+        return "from[INTERVAL[ZDATETIME]]";
+    }
+
+    @Override
+    public String getToIntervalProperty() {
+        return "to[INTERVAL[ZDATETIME]]";
     }
 }
 

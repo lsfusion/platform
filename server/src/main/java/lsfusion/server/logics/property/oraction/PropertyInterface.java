@@ -16,12 +16,15 @@ import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
+import lsfusion.server.logics.action.session.change.CalcDataType;
 import lsfusion.server.logics.action.session.change.DataChanges;
 import lsfusion.server.logics.action.session.change.PropertyChange;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.action.session.changed.OldProperty;
+import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
+import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.property.CalcType;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.cases.CalcCase;
@@ -111,7 +114,7 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
 
     public Expr changeExpr;
 
-    public DataChanges mapJoinDataChanges(ImMap<P, ? extends Expr> mapKeys, Expr expr, Where where, GroupType type, WhereBuilder changedWhere, PropertyChanges propChanges) {
+    public DataChanges mapJoinDataChanges(ImMap<P, ? extends Expr> mapKeys, Expr expr, Where where, GroupType groupType, WhereBuilder changedWhere, PropertyChanges propChanges, CalcDataType type) {
         return DataChanges.EMPTY;
     }
 
@@ -127,7 +130,11 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
         return remap.get((P)this);
     }
 
-    public ActionMapImplement<?, P> mapEventAction(String eventSID, ImList<Property> viewProperties) {
+    public ActionMapImplement<?, P> mapEventAction(String eventSID, FormSessionScope defaultChangeEventScope, ImList<Property> viewProperties) {
+        return null;
+    }
+
+    public Property<?> mapViewProperty(CustomClass customClass, ImList<Property> viewProperties) {
         return null;
     }
 
@@ -168,7 +175,7 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
         return 0;
     }
 
-    public DataChanges mapJoinDataChanges(PropertyChange<P> change, GroupType type, WhereBuilder changedWhere, PropertyChanges propChanges) {
+    public DataChanges mapJoinDataChanges(PropertyChange<P> change, CalcDataType type, GroupType groupType, WhereBuilder changedWhere, PropertyChanges propChanges) {
         return DataChanges.EMPTY;
     }
 

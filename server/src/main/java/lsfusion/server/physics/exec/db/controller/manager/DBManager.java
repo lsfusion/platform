@@ -5,6 +5,7 @@ import lsfusion.base.*;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
+import lsfusion.base.col.heavy.concurrent.weak.ConcurrentIdentityWeakHashSet;
 import lsfusion.base.col.implementations.abs.AMap;
 import lsfusion.base.col.implementations.abs.ASet;
 import lsfusion.base.col.interfaces.immutable.*;
@@ -12,10 +13,16 @@ import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
+import lsfusion.base.col.lru.LRUUtil;
+import lsfusion.base.col.lru.LRUWVSMap;
+import lsfusion.base.col.lru.LRUWWEVSMap;
 import lsfusion.base.file.RawFileData;
+import lsfusion.base.lambda.DProcessor;
+import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.interop.ProgressBar;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.form.property.ExtInt;
+import lsfusion.interop.form.property.cell.Async;
 import lsfusion.server.base.caches.IdentityStrongLazy;
 import lsfusion.server.base.controller.lifecycle.LifecycleEvent;
 import lsfusion.server.base.controller.manager.LogicsManager;
@@ -39,7 +46,7 @@ import lsfusion.server.data.sql.adapter.DataAdapter;
 import lsfusion.server.data.sql.connection.ExConnection;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
-import lsfusion.server.data.stat.StatKeys;
+import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.table.*;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
@@ -67,6 +74,7 @@ import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.ObjectValueClassSet;
 import lsfusion.server.logics.controller.manager.RestartManager;
+import lsfusion.server.logics.form.interactive.action.input.InputValueList;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.navigator.controller.env.*;
 import lsfusion.server.logics.property.AggregateProperty;
@@ -111,7 +119,6 @@ import static java.util.Arrays.asList;
 import static lsfusion.base.BaseUtils.isRedundantString;
 import static lsfusion.base.SystemUtils.getRevision;
 import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
-import static lsfusion.server.logics.classes.data.time.DateTimeConverter.getWriteDateTime;
 import static lsfusion.server.logics.property.oraction.ActionOrPropertyUtils.directLI;
 
 public class DBManager extends LogicsManager implements InitializingBean {
@@ -270,8 +277,12 @@ public class DBManager extends LogicsManager implements InitializingBean {
             } catch (Exception ignored) {
             }
             if(lcp != null) { // temporary for migration, так как могут на действиях стоять
-                Integer statsProperty = (Integer) values.get("overStatsProperty");
-                statsProperty = statsProperty == null ? getStatsProperty(lcp.property) : statsProperty;
+                Integer statsProperty = null;
+                if(lcp.property instanceof AggregateProperty) {
+                    statsProperty = (Integer) values.get("overStatsProperty");
+                    if (statsProperty == null)
+                        statsProperty = getPropertyInterfaceStat(lcp.property);
+                }
                 if (statsProperty == null || maxStatsProperty == null || statsProperty < maxStatsProperty) {
                     lcp.makeUserLoggable(LM, systemEventsLM, getNamingPolicy());
                 }
@@ -279,13 +290,11 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
 
-    public static Integer getStatsProperty (Property property) {
+    public static Integer getPropertyInterfaceStat(Property property) {
         Integer statsProperty = null;
-        if (property instanceof AggregateProperty) {
-            StatKeys classStats = ((AggregateProperty) property).getInterfaceClassStats();
-            if (classStats != null && classStats.getRows() != null)
-                statsProperty = classStats.getRows().getCount();
-        }
+        Stat interfaceStat = property.getInterfaceStat();
+        if (interfaceStat != null)
+            statsProperty = interfaceStat.getCount();
         return statsProperty;
     }
 
@@ -765,7 +774,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     private SQLSessionContextProvider contextProvider = new SQLSessionContextProvider() {
         @Override
         public Long getCurrentUser() {
-            return getSystemUser();
+            return ThreadLocalContext.getCurrentUser();
         }
 
         @Override
@@ -780,11 +789,11 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
         @Override
         public Long getCurrentComputer() {
-            return getServerComputer();
+            return ThreadLocalContext.getCurrentComputer();
         }
         
         public Long getCurrentConnection() {
-            return null;
+            return ThreadLocalContext.getCurrentConnection();
         }
     };
 
@@ -873,17 +882,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 },
                 () -> 0,
                 new ChangesController() {
-                    public void regChange(ImSet<Property> changes, DataSession session) {
-                    }
-
-                    public ImSet<Property> update(DataSession session, FormInstance form) {
-                        return SetFact.EMPTY();
-                    }
-
-                    public void registerForm(FormInstance form) {
-                    }
-
-                    public void unregisterForm(FormInstance form) {
+                    public DBManager getDbManager() {
+                        return DBManager.this;
                     }
                 }, Locale::getDefault, upOwner
         );
@@ -942,6 +942,127 @@ public class DBManager extends LogicsManager implements InitializingBean {
             }
         }
         return droppedTables;
+    }
+
+    // dropping caches when there are changes depending on inputListProperties
+    private static class Param {
+        public final ImMap<?, ObjectValue> mapValues;
+        public final String value;
+
+        public Param(ImMap<?, ObjectValue> mapValues, String value) {
+            this.mapValues = mapValues;
+            this.value = value;
+        }
+
+        public boolean equals(Object o) {
+            return this == o || o instanceof Param && mapValues.equals(((Param) o).mapValues) && value.equals(((Param) o).value);
+        }
+
+        public int hashCode() {
+            return mapValues.hashCode() * 31 + value.hashCode();
+        }
+    }
+    private static class ParamRef {
+        public Param param;
+
+        public ParamRef(Param param) {
+            this.param = param;
+        }
+
+        private void drop() {
+            param = null;
+        }
+    }
+    private static class ValueRef {
+        // it's the only strong value to keep it from garbage collected
+        public final ParamRef ref;
+        public final Async[] values;
+
+        public ValueRef(ParamRef ref, Async[] values) {
+            this.ref = ref;
+            this.values = values;
+        }
+    }
+
+    // need this to clean outdated caches
+    // could be done easier with timestamps (value and last changed), but this way cache will be cleaned faster
+    private final LRUWVSMap<Property<?>, ConcurrentIdentityWeakHashSet<ParamRef>> asyncValuesPropCache1 = new LRUWVSMap<>(LRUUtil.G1);
+    private final LRUWVSMap<Property<?>, ConcurrentIdentityWeakHashSet<ParamRef>> asyncValuesPropCache2 = new LRUWVSMap<>(LRUUtil.G2);
+
+    // we need weak ref, but regular equals (not identity)
+    private final LRUWWEVSMap<Property<?>, Param, ValueRef> asyncValuesValueCache1 = new LRUWWEVSMap<>(LRUUtil.G1);
+    private final LRUWWEVSMap<Property<?>, Param, ValueRef> asyncValuesValueCache2 = new LRUWWEVSMap<>(LRUUtil.G2);
+
+    public <P extends PropertyInterface> Async[] getAsyncValues(InputValueList<P> list, String value, boolean strict) throws SQLException, SQLHandledException {
+        if(Settings.get().isIsClustered()) // we don't want to use caches since they can be inconsistent
+            return readAsyncValues(list, value, strict);
+
+        LRUWVSMap<Property<?>, ConcurrentIdentityWeakHashSet<ParamRef>> asyncValuesPropCache;
+        LRUWWEVSMap<Property<?>, Param, ValueRef> asyncValuesValueCache;
+        if(value.length() >= Settings.get().getAsyncValuesLongCacheThreshold() || !list.mapValues.isEmpty()) {
+            asyncValuesPropCache = asyncValuesPropCache1;
+            asyncValuesValueCache = asyncValuesValueCache1;
+        } else {
+            asyncValuesPropCache = asyncValuesPropCache2;
+            asyncValuesValueCache = asyncValuesValueCache2;
+        }
+
+        // strict param is transient (it is used only for optimization purposes, so we won't use it in cache)
+        Param param = new Param(list.mapValues, value);
+
+        ValueRef valueRef = asyncValuesValueCache.get(list.property, param);
+        if(valueRef != null && valueRef.ref.param != null)
+            return valueRef.values;
+
+        // has to be before reading to be sure that ref will be dropped when changes are made
+        ParamRef ref = new ParamRef(param);
+        ConcurrentIdentityWeakHashSet<ParamRef> paramRefs = asyncValuesPropCache.get(list.property);
+        if(paramRefs == null) {
+            paramRefs = new ConcurrentIdentityWeakHashSet<>();
+            asyncValuesPropCache.put(list.property, paramRefs);
+        }
+        paramRefs.add(ref);
+
+        Async[] values = readAsyncValues(list, value, strict);
+        asyncValuesValueCache.put(list.property, param, new ValueRef(ref, values));
+
+        return values;
+    }
+
+    private <P extends PropertyInterface> Async[] readAsyncValues(InputValueList<P> list, String value, boolean strict) throws SQLException, SQLHandledException {
+        Async[] values;
+        try(DataSession session = createSession()) {
+            values = FormInstance.getAsyncValues(list, session, Property.defaultModifier, value, strict);
+        }
+        return values;
+    }
+
+    public void flushChanges() {
+        ImSet<Property> flushedChanges;
+        synchronized (changesListLock) {
+            flushedChanges = mChanges.immutable();
+        }
+        if(flushedChanges.isEmpty())
+            return;
+
+        FunctionSet<Property> changedSet = Property.getDependsOnSet(flushedChanges);
+        DProcessor<Property<?>, ConcurrentIdentityWeakHashSet<ParamRef>> dropCaches = (property, refs) -> {
+            if (property != null && changedSet.contains(property)) {
+                for (ParamRef ref : refs)
+                    ref.drop(); // dropping ref will eventually lead to garbage collection of entries in all lru caches, plus there is a check that cache is dropped
+            }
+        };
+        asyncValuesPropCache1.proceedSafeLockLRUEKeyValues(dropCaches);
+        asyncValuesPropCache2.proceedSafeLockLRUEKeyValues(dropCaches);
+    }
+
+    private final Object changesListLock = new Object();
+    private MSet<Property> mChanges = SetFact.mSet();
+
+    public void registerChange(ImSet<Property> properties) {
+        synchronized (changesListLock) {
+            mChanges.addAll(properties);
+        }
     }
 
     private static ImMap<String, ImRevMap<String, String>> getFieldToCanMap(DBStructure<?> dbStructure) {
@@ -1505,7 +1626,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             DataObject object = session.addObject(reflectionLM.dropColumn);
             reflectionLM.sidDropColumn.change(sid, session, object);
             reflectionLM.sidTableDropColumn.change(columnsToDrop.get(sid), session, object);
-            reflectionLM.timeDropColumn.change(getWriteDateTime(LocalDateTime.now()), session, object);
+            reflectionLM.timeDropColumn.change(LocalDateTime.now(), session, object);
             reflectionLM.revisionDropColumn.change(getRevision(SystemProperties.inDevMode), session, object);
         }
         apply(session);

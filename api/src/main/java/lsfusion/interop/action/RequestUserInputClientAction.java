@@ -1,16 +1,18 @@
 package lsfusion.interop.action;
 
-import java.io.IOException;
-
 public class RequestUserInputClientAction implements ClientAction {
     public final byte[] readType;
     public final byte[] oldValue;
     public final boolean hasOldValue;
     
-    public RequestUserInputClientAction(byte[] readType, byte[] oldValue, boolean hasOldValue) {
+    public final byte[] inputList;
+
+    public RequestUserInputClientAction(byte[] readType, byte[] oldValue, boolean hasOldValue, byte[] inputList) {
         this.readType = readType;
         this.oldValue = oldValue;
         this.hasOldValue = hasOldValue;
+        
+        this.inputList = inputList;
 //        assert hasOldValue || oldValue == null;
     }
 

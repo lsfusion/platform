@@ -33,6 +33,7 @@ public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
         element.canonicalName = clientElement.getCanonicalName();
         element.caption = clientElement.caption;
         element.creationPath = clientElement.creationPath;
+        element.path = clientElement.path;
         element.children = new ArrayList<>();
 
         element.image = createImage(clientElement.imageHolder, "navigator", false);
@@ -137,6 +138,6 @@ public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
     @Cached
     @Converter(from = ClientAsyncOpenForm.class)
     public GAsyncOpenForm convertOpenForm(ClientAsyncOpenForm asyncOpenForm) {
-        return new GAsyncOpenForm(asyncOpenForm.canonicalName, asyncOpenForm.caption, asyncOpenForm.forbidDuplicate, asyncOpenForm.modal);
+        return new GAsyncOpenForm(asyncOpenForm.canonicalName, asyncOpenForm.caption, asyncOpenForm.forbidDuplicate, asyncOpenForm.modal, asyncOpenForm.window);
     }
 }

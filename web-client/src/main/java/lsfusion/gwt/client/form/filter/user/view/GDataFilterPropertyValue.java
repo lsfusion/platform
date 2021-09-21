@@ -1,61 +1,46 @@
 package lsfusion.gwt.client.form.filter.user.view;
 
-import com.google.gwt.dom.client.BrowserEvents;
-import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.async.GAsyncExec;
+import lsfusion.gwt.client.form.property.async.GInputList;
+import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
+import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
 import lsfusion.gwt.client.form.property.panel.view.ActionOrPropertyValue;
+import lsfusion.interop.action.ServerResponse;
 
+import java.text.ParseException;
 import java.util.function.Consumer;
 
 public class GDataFilterPropertyValue extends ActionOrPropertyValue {
 
     private final Consumer<Object> afterCommit;
+    private final Runnable onCancel;
+    
+    public boolean enterPressed;
 
-    public GDataFilterPropertyValue(GPropertyDraw property, GFormController form, Consumer<Object> afterCommit) {
-        super(property, form);
+    public GDataFilterPropertyValue(GPropertyDraw property, GGroupObjectValue columnKey, GFormController form, Consumer<Object> afterCommit, Runnable onCancel) {
+        super(property, columnKey, form, false, (columnKeyValue, value) -> {});
 
         this.afterCommit = afterCommit;
+        this.onCancel = onCancel;
 
         finalizeInit();
     }
 
     @Override
-    protected void onPaste(Object objValue, String stringValue) {
+    public void pasteValue(String stringValue) {
+        Object objValue = null;
+        try {
+            objValue = property.baseType.parseString(stringValue, property.pattern);
+        } catch (ParseException ignored) {}
+        updateValue(objValue);
+
         afterCommit.accept(objValue);
-    }
-
-    // it's a hacky hack, however when filter will become docked it will go away
-    @Override
-    public EventHandler createEventHandler(Event event) {
-        return new EventHandler(event) {
-            @Override
-            public void consume(boolean propagateToNative, boolean propagateToUpper) {
-                if(BrowserEvents.KEYDOWN.equals(event.getType())) {
-                    int keyCode = event.getKeyCode();
-                    if (keyCode == KeyCodes.KEY_ESCAPE || keyCode == KeyCodes.KEY_ENTER)
-                        return;
-                }
-
-                super.consume(propagateToNative, propagateToUpper);
-            }
-        };
-    }
-
-    // there is some architecture bug in filters so for now will do this hack (later filter should rerender all GDataFilterValue)
-    public void changeProperty(GPropertyDraw property) {
-        Element renderElement = getRenderElement();
-
-        this.property.getCellRenderer().clearRender(renderElement, this);
-
-        this.property = property;
-
-        setBaseSize(true);
-
-        property.getCellRenderer().renderStatic(renderElement, this);
     }
 
     @Override
@@ -78,19 +63,39 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
         throw new UnsupportedOperationException();
     }
 
+    public static final GInputList FILTER = new GInputList(new String[0], new GAsyncExec[0], false);
+
     @Override
     protected void onEditEvent(EventHandler handler) {
         if(property.isFilterChange(handler.event)) {
             handler.consume();
-            form.edit(property.baseType, handler.event, false, null, this::setValue, afterCommit, () -> {}, this);
+            startEditing(handler.event);
         }
+    }
+    
+    protected void startEditing(Event event) {
+        form.edit(property.baseType,
+                event,
+                false,
+                null,
+                FILTER,
+                (result, commitReason) -> setValue(result.getValue()),
+                (result, commitReason) -> acceptCommit(result, commitReason.equals(CommitReason.ENTERPRESSED)),
+                onCancel,
+                this,
+                ServerResponse.FILTER);
+    }
+    
+    private void acceptCommit(GUserInputResult result, boolean enterPressed) {
+        this.enterPressed = enterPressed;
+        afterCommit.accept(result.getValue());
+        this.enterPressed = false;
     }
 
     @Override
     public Consumer<Object> getCustomRendererValueChangeConsumer() {
         return value -> {
-            setValue(value);
-            form.update(property, getRenderElement(), value, this);
+            updateValue(value);
             afterCommit.accept(value);
         };
     }
@@ -98,5 +103,12 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
     @Override
     public boolean isPropertyReadOnly() {
         return false;
+    }
+
+    @Override
+    protected void onBlur(EventHandler handler) {
+        form.previewBlurEvent(handler.event);
+
+        super.onBlur(handler);
     }
 }

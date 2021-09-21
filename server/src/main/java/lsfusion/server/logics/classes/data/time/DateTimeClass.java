@@ -31,9 +31,8 @@ import java.time.format.FormatStyle;
 import java.util.Locale;
 
 import static lsfusion.base.DateConverter.*;
-import static lsfusion.server.logics.classes.data.time.DateTimeConverter.getWriteDateTime;
 
-public class DateTimeClass extends DataClass<LocalDateTime> {
+public class DateTimeClass extends TimeSeriesClass<LocalDateTime> {
 
     public final static DateTimeClass instance = new DateTimeClass();
 
@@ -70,7 +69,7 @@ public class DateTimeClass extends DataClass<LocalDateTime> {
     }
 
     public LocalDateTime getDefaultValue() {
-        return getWriteDateTime(LocalDateTime.now());
+        return LocalDateTime.now();
     }
 
     public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {
@@ -190,7 +189,7 @@ public class DateTimeClass extends DataClass<LocalDateTime> {
 
     @Override
     public OverJDBField formatDBF(String fieldName) throws JDBFException {
-        return new OverJDBField(fieldName, 'D', 8, 0);
+        return OverJDBField.createField(fieldName, 'D', 8, 0);
     }
 
     @Override
@@ -204,5 +203,20 @@ public class DateTimeClass extends DataClass<LocalDateTime> {
     @Override
     public boolean useIndexedJoin() {
         return true;
+    }
+
+    @Override
+    public String getIntervalProperty() {
+        return "interval[DATETIME,DATETIME]";
+    }
+
+    @Override
+    public String getFromIntervalProperty() {
+        return "from[INTERVAL[DATETIME]]";
+    }
+
+    @Override
+    public String getToIntervalProperty() {
+        return "to[INTERVAL[DATETIME]]";
     }
 }

@@ -37,7 +37,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
-import static lsfusion.server.logics.classes.data.time.DateTimeConverter.getWriteDateTime;
 import static lsfusion.server.logics.classes.data.time.DateTimeConverter.sqlTimestampToLocalDateTime;
 
 public class ImportEMLAction extends EmailAction {
@@ -82,8 +81,8 @@ public class ImportEMLAction extends EmailAction {
                 emailLM.findProperty("account[Email]").change(accountObject, session, (DataObject) emailObject);
                 emailLM.findProperty("uid[Email]").change(uidObject.object, session, (DataObject) emailObject);
                 emailLM.findProperty("id[Email]").change(email.id, session, (DataObject) emailObject);
-                emailLM.findProperty("dateTimeSent[Email]").change(getWriteDateTime(email.dateTimeSent), session, (DataObject) emailObject);
-                emailLM.findProperty("dateTimeReceived[Email]").change(getWriteDateTime(LocalDateTime.now()), session, (DataObject) emailObject);
+                emailLM.findProperty("dateTimeSent[Email]").change(email.dateTimeSent, session, (DataObject) emailObject);
+                emailLM.findProperty("dateTimeReceived[Email]").change(LocalDateTime.now(), session, (DataObject) emailObject);
                 emailLM.findProperty("fromAddress[Email]").change(email.fromAddress, session, (DataObject) emailObject);
                 emailLM.findProperty("toAddress[Email]").change(nameAccount, session, (DataObject) emailObject);
                 emailLM.findProperty("subject[Email]").change(email.subject, session, (DataObject) emailObject);

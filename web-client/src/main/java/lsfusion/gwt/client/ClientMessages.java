@@ -52,6 +52,7 @@ public interface ClientMessages extends Messages {
     String formQueriesSumResult();
     String formQueriesUnableToCalculateSum();
     String formQueriesFilter();
+    String formQueriesFilterApply();
     String formQueriesFilterAddCondition();
     String formQueriesFilterRemoveCondition();
     String formQueriesFilterResetConditions();
@@ -87,10 +88,8 @@ public interface ClientMessages extends Messages {
     String formGridPreferencesFontStyleBold();
     String formGridPreferencesFontStyleItalic();
 
-    String formFilterConditionViewNot();
-    String formFilterConditionViewAnd();
     String formFilterConditionViewOr();
-    String formFilterDialogHeader();
+    String formFilterConditionAllowNull();
 
     String tooltipPath();
 
@@ -104,8 +103,8 @@ public interface ClientMessages extends Messages {
     String busyDialogLoading();
     String busyDialogReconnect();
 
-    String expandFilterWindow();
-    String hideFilterWindow();
+    String showUserFilterTools();
+    String hideUserFilterTools();
     String uncaughtGWTException();
     String formGridSureToPasteMultivalue();
 
@@ -130,6 +129,9 @@ public interface ClientMessages extends Messages {
     String propertyTooltipFormPropertyName();
     String propertyTooltipFormPropertyDeclaration();
     String propertyTooltipHotkey();
+    String showInEditor();
+    String enterPath();
+    String absolutePathToLsfusionDir();
 
     String propertyEmptyCaption();
 
@@ -176,12 +178,7 @@ public interface ClientMessages extends Messages {
     String typeXMLFileLinkCaption();
     String typeTableFileLinkCaption();
 
-    String filterCompareStartsWith();
-    String filterCompareContains();
-    String filterCompareEndsWith();
     String filterDataValue();
-    String filterObjectValue();
-    String filterPropertyValue();
 
     String multipleFilterComponentAll();
 
@@ -243,6 +240,8 @@ public interface ClientMessages extends Messages {
     String thisMonth();
     String lastMonth();
     String clear();
+
+    String noResults();
 
     class Instance {
         private static final ClientMessages instance = GWT.create(ClientMessages.class);

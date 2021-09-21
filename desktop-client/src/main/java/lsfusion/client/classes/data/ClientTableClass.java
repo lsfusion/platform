@@ -2,8 +2,6 @@ package lsfusion.client.classes.data;
 
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.form.property.ClientPropertyDraw;
-import lsfusion.client.form.property.cell.classes.controller.FilePropertyEditor;
-import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
 import lsfusion.client.form.property.cell.classes.view.TablePropertyRenderer;
 import lsfusion.client.form.property.cell.view.PropertyRenderer;
 import lsfusion.interop.classes.DataType;
@@ -21,6 +19,11 @@ public class ClientTableClass extends ClientStaticFormatFileClass {
         return new String[] {"table"};
     }
 
+    @Override
+    public String getDescription() {
+        return ClientResourceBundle.getString("logics.classes.table");
+    }
+
     public PropertyRenderer getRendererComponent(ClientPropertyDraw property) {
         return new TablePropertyRenderer(property);
     }
@@ -32,11 +35,6 @@ public class ClientTableClass extends ClientStaticFormatFileClass {
 
     public byte getTypeId() {
         return DataType.TABLE;
-    }
-
-    @Override
-    public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
-        return new FilePropertyEditor(multiple, storeName, ClientResourceBundle.getString("logics.classes.table"), getExtensions());
     }
 
     @Override

@@ -1,5 +1,7 @@
 package lsfusion.client.form.property.cell.classes.controller;
 
+import com.toedter.calendar.IDateEditor;
+import com.toedter.calendar.JCalendar;
 import com.toedter.calendar.JDateChooser;
 import com.toedter.calendar.JTextFieldDateEditor;
 import lsfusion.base.BaseUtils;
@@ -74,21 +76,15 @@ public class DatePropertyEditor extends JDateChooser implements PropertyEditor, 
         }
     }
 
-    @Override
-    public void setNextFocusableComponent(Component comp) {
-        super.setNextFocusableComponent(comp);
+    @SuppressWarnings("deprecation")
+    public static void setNextFocusableComponent(Component comp, IDateEditor dateEditor, JPopupMenu popup, JCalendar jcalendar) {
         ((JComponent) dateEditor).setNextFocusableComponent(comp);
 
-        // вот эту хрень приходится добавлять по той причине, что иначе так как popup вообще говоря не child таблицы,
-        // то при нажатии на что угодно - она тут же делает stopEditing...
+        // This has to be added for the reason that popup is not a child table, and when you click on anything - it immediately does stopEditing...
         if (comp instanceof JTable) {
-
             final JTable table = (JTable) comp;
-
             popup.addPopupMenuListener(new PopupMenuListener() {
-
                 Boolean oldValue;
-
                 public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
                     oldValue = (Boolean) table.getClientProperty("terminateEditOnFocusLost");
                     table.putClientProperty("terminateEditOnFocusLost", Boolean.FALSE);
@@ -101,14 +97,17 @@ public class DatePropertyEditor extends JDateChooser implements PropertyEditor, 
                 public void popupMenuCanceled(PopupMenuEvent e) {
                 }
             });
-
         }
-
-        // а вот эту хрень приходится добавлять потому что popupMenuWillBecomeInvisible срабатывает раньше чем
-        // проверяется на изменение фокуса
+        // This has to be added because popupMenuWillBecomeInvisible is triggered before it checks for focus changes
         SwingUtils.removeFocusable(jcalendar);
+        // It all works very badly anyway because of the popups
+    }
 
-        // к слову все равно это все дело очень хриво работает и все из-за долбанных popup'ов
+    @SuppressWarnings("deprecation")
+    @Override
+    public void setNextFocusableComponent(Component comp) {
+        super.setNextFocusableComponent(comp);
+        setNextFocusableComponent(comp, dateEditor, popup, jcalendar);
     }
 
     public void setTableEditor(PropertyTableCellEditor tableEditor) {

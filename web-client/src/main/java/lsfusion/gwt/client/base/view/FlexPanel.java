@@ -18,7 +18,6 @@ import java.util.List;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.calculateStackMaxPreferredSize;
 
-// выполняет роль JComponentPanel в desktop
 public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesResize, HasMaxPreferredSize {
 
     protected static FlexPanelImpl impl = FlexPanelImpl.get();
@@ -28,6 +27,8 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
     private final boolean vertical;
 
     private boolean visible = true;
+
+    public boolean childrenResizable = true;
 
     public FlexPanel() {
         this(false);
@@ -100,6 +101,9 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
         addFill(widget, getWidgetCount(), flexBasis);
     }
 
+    public void addFill(Widget widget, GFlexAlignment alignment) {
+        add(widget, getWidgetCount(), alignment, 1, null);
+    }
     public void addFill(Widget widget, int beforeIndex, Integer flexBasis) {
         add(widget, beforeIndex, GFlexAlignment.STRETCH, 1, flexBasis);
     }
@@ -270,8 +274,11 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
         }
     };
 
-    // the resize algorithm assumes that there should be flex column to the left, to make
+    // the resize algorithm assumes that there should be flex column to the right, to make
     public boolean isWidgetResizable(int widgetNumber) {
+        if(!childrenResizable)
+            return false;
+
         WidgetCollection children = getChildren();
         for(int i=widgetNumber;i>=0;i--) {
             Widget child = children.get(i);

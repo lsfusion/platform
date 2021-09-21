@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form.view;
 
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
@@ -20,7 +21,7 @@ public class Column {
         if (!(o instanceof Column)) return false;
         Column column = (Column) o;
         return property.equals(column.property) &&
-                columnKey.equals(column.columnKey);
+                GwtClientUtils.nullEquals(columnKey, column.columnKey);
     }
 
     @Override

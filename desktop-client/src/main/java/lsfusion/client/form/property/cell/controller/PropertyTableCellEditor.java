@@ -13,4 +13,7 @@ public interface PropertyTableCellEditor extends TableCellEditor {
      *  Добавлялось по причине исчезновения фокуса из области видимости при редактировании BOOLEAN свойств.
      */                                            
     void stopCellEditingLater();
+    
+    void preCommit(boolean enterPressed);
+    void postCommit();
 }

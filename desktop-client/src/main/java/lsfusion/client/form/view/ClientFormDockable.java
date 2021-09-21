@@ -8,6 +8,7 @@ import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.controller.CloseAllAction;
 import lsfusion.client.form.controller.FormsController;
 import lsfusion.client.navigator.ClientNavigator;
+import lsfusion.client.navigator.controller.AsyncFormController;
 import lsfusion.client.view.DockableMainFrame;
 import lsfusion.client.view.MainFrame;
 import lsfusion.interop.form.remote.RemoteFormInterface;
@@ -22,13 +23,13 @@ public class ClientFormDockable extends ClientDockable {
     private FormsController formsController;
     private ClientFormController form;
 
-    public ClientFormDockable(String canonicalName, String caption, FormsController formsController, List<ClientDockable> openedForms, Long requestIndex, boolean async) {
+    public ClientFormDockable(String canonicalName, String caption, FormsController formsController, List<ClientDockable> openedForms, AsyncFormController asyncFormController, boolean async) {
         super(canonicalName, formsController);
         setCaption(caption, null);
         addAction(new CloseAllAction(openedForms));
         this.formsController = formsController;
-        this.requestIndex = requestIndex;
         this.async = async;
+        this.asyncFormController = asyncFormController;
     }
 
     public void asyncInit() {
@@ -92,7 +93,7 @@ public class ClientFormDockable extends ClientDockable {
     @Override
     public void onClosing() {
         if(async) {
-            ((DockableMainFrame) MainFrame.instance).removeOpenForm(requestIndex);
+            asyncFormController.removeAsyncForm();
             super.onClosing();
         } else {
             RmiQueue.runAction(new Runnable() {

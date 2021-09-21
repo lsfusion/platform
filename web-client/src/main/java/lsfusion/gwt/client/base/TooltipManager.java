@@ -2,20 +2,33 @@ package lsfusion.gwt.client.base;
 
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.NativeEvent;
+import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.*;
+import com.google.gwt.user.client.Cookies;
+import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.FocusPanel;
 import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.HasHorizontalAlignment;
+import com.google.gwt.user.client.ui.HasVerticalAlignment;
+import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.TextBox;
+import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.view.PopupDialogPanel;
+import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
+import lsfusion.gwt.client.view.MainFrame;
+
+import java.util.Date;
 
 import static com.google.gwt.dom.client.BrowserEvents.*;
-import static lsfusion.gwt.client.base.GwtSharedUtils.isRedundantString;
 
 public class TooltipManager {
     private static final TooltipManager instance = new TooltipManager();
+    private static final ClientMessages messages = ClientMessages.Instance.get();
 
     private static final int DELAY_SHOW = 1500;
-    private static final int DELAY_HIDE = 100;
 
     private int mouseX;
     private int mouseY;
@@ -30,7 +43,7 @@ public class TooltipManager {
     public static TooltipManager get() {
         return instance;
     }
-    
+
     public static void registerWidget(Widget widget, final TooltipHelper tooltipHelper) {
         widget.addDomHandler(event -> get().showTooltip(event.getClientX(), event.getClientY(), tooltipHelper), MouseOverEvent.getType());
         widget.addDomHandler(event -> get().hideTooltip(tooltipHelper), MouseDownEvent.getType());
@@ -53,26 +66,29 @@ public class TooltipManager {
         mouseY = offsetY;
         currentText = tooltipText;
 
-        if(tooltipText != null) {
+        if (tooltipText != null) {
             mouseIn = true;
 
             Scheduler.get().scheduleFixedDelay(() -> {
                 if (mouseIn && tooltipText.equals(currentText)) {
-                    if(tooltipHelper.stillShowTooltip()) {
-                        if(tooltip != null) { // need this to avoid blinking when hiding / showing tooltip
+                    if (tooltipHelper.stillShowTooltip()) {
+                        if (tooltip != null) { // need this to avoid blinking when hiding / showing tooltip
                             tooltipHtml.setHTML(tooltipText);
                             GwtClientUtils.setPopupPosition(tooltip, mouseX, mouseY);
                         } else {
                             tooltip = new PopupDialogPanel();
+                            tooltip.addHandler(event -> get().hideTooltip(null), MouseOutEvent.getType());
                             tooltipHtml = new HTML(tooltipText, false);
-                            GwtClientUtils.showPopupInWindow(tooltip, new FocusPanel(tooltipHtml), mouseX, mouseY);
+
+                            VerticalPanel panel = new VerticalPanel();
+                            panel.add(new FocusPanel(tooltipHtml));
+                            addDebugLink(tooltipHelper, panel);
+
+                            GwtClientUtils.showPopupInWindow(tooltip, panel, mouseX, mouseY);
                         }
                     } else {
-                        if (tooltip != null) {
-                            tooltip.hide();
-                            tooltip = null;
-                            tooltipHtml = null;
-                        }
+                        if (tooltip != null)
+                            hide();
                     }
                 }
                 return false;
@@ -80,31 +96,79 @@ public class TooltipManager {
         }
     }
 
+    private void addDebugLink(TooltipHelper tooltipHelper, VerticalPanel panel) {
+        if (!MainFrame.showDetailedInfo)
+            return;
+
+        String projectLSFDir = MainFrame.projectLSFDir;
+
+        if (projectLSFDir != null) {
+            panel.add(getCommand(tooltipHelper, projectLSFDir));
+        } else {
+            VerticalPanel verticalPanel = new VerticalPanel();
+            verticalPanel.setVisible(false);
+
+            TextBox textBox = new TextBox();
+            textBox.getElement().getStyle().setMarginLeft(5, Style.Unit.PX);
+            textBox.getElement().getStyle().setProperty("padding", "0px 3px");
+            textBox.getElement().setPropertyString("placeholder", messages.absolutePathToLsfusionDir());
+            textBox.setText(Cookies.getCookie("debugPath"));
+
+            HorizontalPanel userPathPanel = new HorizontalPanel();
+            userPathPanel.add(new Label(messages.enterPath()));
+            userPathPanel.add(textBox);
+            verticalPanel.add(userPathPanel);
+            verticalPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+
+            Button button = new Button(messages.applyLabel());
+            button.getElement().getStyle().setProperty("padding", "0px 3px");
+            button.addClickHandler(event -> {
+                String textBoxText = textBox.getText();
+                if (!textBoxText.trim().isEmpty())
+                    Cookies.setCookie("debugPath", textBoxText, new Date(System.currentTimeMillis() + 2592000000L)); //cookies expire after 30 days
+                else
+                    Cookies.removeCookie("debugPath");
+
+                hide();
+            });
+            button.getElement().getStyle().setMarginTop(5, Style.Unit.PX);
+            verticalPanel.add(button);
+
+            HorizontalPanel horizontalPanel = new HorizontalPanel();
+            String debugPath = Cookies.getCookie("debugPath");
+            horizontalPanel.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
+            horizontalPanel.add(getCommand(tooltipHelper, debugPath == null ? "use_default_path" : debugPath));
+
+            GToolbarButton preferencesButton = new GToolbarButton("userPreferences.png") {
+                @Override
+                public ClickHandler getClickHandler() {
+                    return event -> verticalPanel.setVisible(!verticalPanel.isVisible());
+                }
+            };
+            preferencesButton.getElement().getStyle().setMarginLeft(10, Style.Unit.PX);
+            horizontalPanel.add(preferencesButton);
+
+            panel.add(horizontalPanel);
+            panel.add(verticalPanel);
+        }
+    }
+
+    private void hide() {
+        tooltip.hide();
+        tooltip = null;
+        tooltipHtml = null;
+    }
+
     public void hideTooltip(final TooltipHelper tooltipHelper) {
         mouseIn = false;
         currentText = "";
 
-        if(tooltipHelper != null) {
-            String tooltipText = tooltipHelper.getTooltip();
-
-            // we want to delay tooltip hiding to check if the next tooltip showing is the same (this way we'll avoid blinking)
-            Scheduler.get().scheduleFixedDelay(() -> {
-                if (!(mouseIn && GwtClientUtils.nullEquals(tooltipText, currentText))) {
-                    if (tooltip != null) {
-                        tooltip.hide();
-                        tooltip = null;
-                        tooltipHtml = null;
-                    }
-                }
-                return false;
-            }, DELAY_HIDE);
-        } else {
-            if (tooltip != null) {
-                tooltip.hide();
-                tooltip = null;
-                tooltipHtml = null;
+        Scheduler.get().scheduleDeferred(() -> {
+            if ((!(mouseIn && tooltipHelper != null && GwtClientUtils.nullEquals(tooltipHelper.getTooltip(), currentText)) && tooltip != null && !tooltip.tooltipFocused) ||
+                    tooltip != null && !tooltip.tooltipFocused) {
+                hide();
             }
-        }
+        });
     }
 
     // за время ожидания курсор может переместиться далеко от места, где вызвался showTooltip()
@@ -120,5 +184,29 @@ public class TooltipManager {
 
         // to check if nothing changed after tooltip delay
         public abstract boolean stillShowTooltip();
+
+        public String getPath() {
+            return null;
+        }
+
+        public String getCreationPath() {
+            return null;
+        }
     }
+
+    public static HTML getCommand(TooltipHelper tooltipHelper, String projectLSFDir) {
+        String creationPath = tooltipHelper.getCreationPath();
+        String result = "";
+
+        if (creationPath != null) {
+            //use "**" instead "="
+            String command = "--line**" + Integer.parseInt(creationPath.substring(creationPath.lastIndexOf("(") + 1, creationPath.lastIndexOf(":"))) +
+                    "&path**" + projectLSFDir + tooltipHelper.getPath();
+            //replace spaces and slashes because this command going through url
+            result = "<a href=\"lsfusion-protocol://" + command.replaceAll(" ", "++").replaceAll("\\\\", "/") +
+                    "\" target=\"_blank\">" + messages.showInEditor() + "</a> &ensp; " + "(<a href=\"https://github.com/lsfusion/platform/issues/649\" target=\"_blank\"> ? </a>)";
+        }
+        return new HTML(result);
+    }
+
 }

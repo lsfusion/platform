@@ -6,6 +6,7 @@ import lsfusion.client.form.property.cell.classes.controller.LinkPropertyEditor;
 import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
 import lsfusion.client.form.property.cell.classes.view.link.DynamicFormatLinkRenderer;
 import lsfusion.client.form.property.cell.view.PropertyRenderer;
+import lsfusion.client.form.property.table.view.AsyncChangeInterface;
 import lsfusion.interop.classes.DataType;
 
 public class ClientDynamicFormatLinkClass extends ClientLinkClass {
@@ -25,7 +26,7 @@ public class ClientDynamicFormatLinkClass extends ClientLinkClass {
     }
 
     @Override
-    public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
+    public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property, AsyncChangeInterface asyncChange) {
         return new LinkPropertyEditor(property, value);
     }
 

@@ -44,7 +44,7 @@
         <barcode4j.version>2.1</barcode4j.version>
         <swingx.version>1.6.1</swingx.version>
         <jxlayer.version>3.0.4</jxlayer.version>
-        <flatlaf.version>0.29</flatlaf.version>
+        <flatlaf.version>1.5</flatlaf.version>
         <jhlabs.filters.version>2.0.235</jhlabs.filters.version>
         <jcalendar.version>1.4</jcalendar.version>
         <jssc.version>0.8</jssc.version>

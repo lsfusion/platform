@@ -40,6 +40,23 @@ public abstract class ClientComponent extends ContextIdentityObject implements I
     public ClientComponent() {
     }
 
+    public Integer getSize(boolean vertical) {
+//        if (child.alignment == FlexAlignment.STRETCH) {
+//            if (child.container.isVertical()) {
+//                if (child.size.width == 0)
+//                    child.size = new Dimension(-1, child.size.height);
+//            } else {
+//                if (child.size.height == 0)
+//                    child.size = new Dimension(child.size.width, -1);
+//            }
+//        }
+
+        int size = vertical ? this.size.height : this.size.width;
+        if (size != -1)
+            return size;
+        return null;
+    }
+
     public boolean isTab() {
         return container != null && container.isTabbed();
     }
@@ -92,6 +109,10 @@ public abstract class ClientComponent extends ContextIdentityObject implements I
     public void setFlex(double flex) {
         this.flex = flex;
         updateDependency(this, "flex");
+    }
+
+    public boolean isStretch() {
+        return getAlignment() == FlexAlignment.STRETCH;
     }
 
     public FlexAlignment getAlignment() {

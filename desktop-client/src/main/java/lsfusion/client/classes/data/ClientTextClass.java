@@ -10,6 +10,7 @@ import lsfusion.client.form.property.cell.classes.controller.TextPropertyEditor;
 import lsfusion.client.form.property.cell.classes.controller.rich.RichTextPropertyEditor;
 import lsfusion.client.form.property.cell.classes.view.TextPropertyRenderer;
 import lsfusion.client.form.property.cell.view.PropertyRenderer;
+import lsfusion.client.form.property.table.view.AsyncChangeInterface;
 import lsfusion.interop.classes.DataType;
 import lsfusion.interop.form.property.ExtInt;
 
@@ -62,11 +63,12 @@ public class ClientTextClass extends ClientStringClass implements ClientTypeClas
     }
 
     @Override
-    public PropertyEditor getChangeEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, Object value) {
+    public PropertyEditor getChangeEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, AsyncChangeInterface asyncChange, Object value) {
         return rich ? new RichTextPropertyEditor(ownerComponent, value, property.design) : new TextPropertyEditor(ownerComponent, value, property.design);
     }
 
-    public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
+    @Override
+    public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property, AsyncChangeInterface asyncChange) {
         return rich ? new RichTextPropertyEditor(value, property.design) : new TextPropertyEditor(value, property.design);
     }
 

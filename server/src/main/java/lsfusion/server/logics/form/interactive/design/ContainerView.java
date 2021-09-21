@@ -9,14 +9,18 @@ import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFOrderSet;
 import lsfusion.server.language.ScriptParsingException;
+import lsfusion.server.language.proxy.ViewProxyUtil;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.interactive.design.object.GridView;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
+import lsfusion.server.physics.admin.log.ServerLoggers;
+import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.function.Supplier;
 
 import static lsfusion.interop.form.design.ContainerType.*;
 
@@ -30,7 +34,7 @@ public class ContainerView extends ComponentView {
 
     public FlexAlignment childrenAlignment = FlexAlignment.START;
 
-    public int columns = 1;
+    public int lines = 1;
     
     public PropertyObjectEntity<?> showIf;
 
@@ -69,13 +73,8 @@ public class ContainerView extends ComponentView {
         this.main = main;
     }
 
-    public void setCaption(Object caption) {
-        if(caption instanceof LocalizedString)
-            this.caption = (LocalizedString) caption;
-        else {
-            this.caption = LocalizedString.NONAME;
-            this.propertyCaption = (PropertyObjectEntity<?>) caption;
-        }
+    public void setCaption(LocalizedString caption) {
+        this.caption = caption;
     }
 
     public boolean isTabbedPane() {
@@ -123,6 +122,10 @@ public class ContainerView extends ComponentView {
     }
 
     public void setType(ContainerType type) {
+        if(type != COLUMNS && this.type == COLUMNS && lines > 1) { // temp check
+            Supplier<DebugInfo.DebugPoint> debugPoint = ViewProxyUtil.setDebugPoint.get();
+            ServerLoggers.startLogger.info("WARNING! Now container " + this + "  will have " + lines + " lines. Debug point : " + (debugPoint != null ? debugPoint.get() : "unknown"));
+        }
         this.type = type;
     }
 
@@ -130,8 +133,8 @@ public class ContainerView extends ComponentView {
         this.childrenAlignment = childrenAlignment;
     }
 
-    public void setColumns(int columns) {
-        this.columns = columns;
+    public void setLines(int lines) {
+        this.lines = lines;
     }
 
     public PropertyObjectEntity<?> getShowIf() {
@@ -225,7 +228,7 @@ public class ContainerView extends ComponentView {
 
         pool.writeObject(outStream, childrenAlignment);
 
-        outStream.writeInt(columns);
+        outStream.writeInt(lines);
     }
 
     @Override
@@ -242,7 +245,7 @@ public class ContainerView extends ComponentView {
 
         childrenAlignment = pool.readObject(inStream);
 
-        columns = inStream.readInt();
+        lines = inStream.readInt();
     }
 
     @Override

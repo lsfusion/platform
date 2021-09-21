@@ -24,7 +24,9 @@ public final class PropertyCanonicalNameUtils {
     static public final String logDropPropPrefix = "_LOGDROP_";
     static public final String drillDownPrefix = "_DRILLDOWN_";
     static public final String resetPrefix = "_RESET_";
-    static public final String objValuePrefix = "_OBJVALUE_";
+
+    static public final String objValuePrefix = "_OBJVALUE";
+    static public final String intervalPrefix = "_INTERVAL";
 
     static public String createName(String namespace, String name, ResolveClassSet... signature) {
         return createName(namespace, name, Arrays.asList(signature));

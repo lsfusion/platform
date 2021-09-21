@@ -20,10 +20,11 @@ import lsfusion.server.logics.action.flow.FlowResult;
 import lsfusion.server.logics.action.flow.ForAction;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.classes.change.ClassChange;
-import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.user.*;
 import lsfusion.server.logics.classes.user.set.OrObjectClassSet;
 import lsfusion.server.logics.form.interactive.UpdateType;
+import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
+import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapRemove;
 import lsfusion.server.logics.form.interactive.instance.object.CustomObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
@@ -39,6 +40,8 @@ import lsfusion.server.physics.dev.debug.ActionDelegationType;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.SQLException;
+import java.util.List;
+import java.util.Map;
 
 import static lsfusion.server.logics.property.PropertyFact.createChangeClassAction;
 
@@ -162,7 +165,8 @@ public class ChangeClassAction<T extends PropertyInterface, I extends PropertyIn
                 if (objectInstance instanceof ObjectInstance) {
                     CustomObjectInstance customObjectInstance = (CustomObjectInstance) objectInstance;
                     if(readClass instanceof UnknownClass || !((CustomClass) readClass).isChild(customObjectInstance.gridClass)) { // если удаляется
-                        nearObject = BaseUtils.getNearValue((ObjectInstance) objectInstance, dataObject, ListFact.toJavaMapList(customObjectInstance.groupTo.keys.keyOrderSet()));
+                        ImMap<ObjectInstance, DataObject> nearGroupObject = BaseUtils.getNearObject(MapFact.singleton((ObjectInstance) objectInstance, dataObject), customObjectInstance.groupTo.keys.keyOrderSet().toJavaList());
+                        nearObject = nearGroupObject != null ? nearGroupObject.singleValue() : null;
                         seekOther = true;
                     }
                 }
@@ -188,10 +192,10 @@ public class ChangeClassAction<T extends PropertyInterface, I extends PropertyIn
     }
 
     @Override
-    public PropertyInterface getSimpleDelete() {
+    public AsyncMapEventExec<PropertyInterface> calculateAsyncEventExec(boolean optimistic, boolean recursive) {
         if ((where == null || BaseUtils.hashEquals(mapInterfaces.valuesSet(),innerInterfaces)) && valueClass instanceof UnknownClass)
-            return interfaces.single();
-        return super.getSimpleDelete();
+            return new AsyncMapRemove<>(mapInterfaces.reverse().get(changeInterface));
+        return null;
     }
 
     @Override

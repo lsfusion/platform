@@ -12,13 +12,26 @@ public class ClientPropertyFilter {
 
     public ClientGroupObject groupObject;
     public ClientPropertyDraw property;
-    public ClientFilterValue value;
+    public ClientDataFilterValue value;
 
     public ClientGroupObjectValue columnKey; // nullable означает что надо текущий брать
 
     public boolean negation;
     public Compare compare;
     public boolean junction = true; //true - conjunction, false - disjunction
+
+    public ClientPropertyFilter(ClientGroupObject groupObject, ClientPropertyDraw property, ClientGroupObjectValue columnKey, Object value, Compare compare) {
+        this(groupObject, property, new ClientDataFilterValue(value), columnKey, false, compare, true);
+    }
+    public ClientPropertyFilter(ClientGroupObject groupObject, ClientPropertyDraw property, ClientDataFilterValue value, ClientGroupObjectValue columnKey, boolean negation, Compare compare, boolean junction) {
+        this.groupObject = groupObject;
+        this.property = property;
+        this.value = value;
+        this.columnKey = columnKey;
+        this.negation = negation;
+        this.compare = compare;
+        this.junction = junction;
+    }
 
     public void serialize(DataOutputStream outStream) throws IOException {
         outStream.writeInt(property.getID());
@@ -31,7 +44,7 @@ public class ClientPropertyFilter {
         outStream.writeBoolean(junction);
     }
 
-    public Compare getDefaultCompare() {
-        return property.defaultCompare != null ? property.defaultCompare : property.baseType.getDefaultCompare();
+    public boolean nullValue() {
+        return value.value == null;
     }
 }

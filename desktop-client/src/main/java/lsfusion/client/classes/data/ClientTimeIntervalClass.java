@@ -3,15 +3,15 @@ package lsfusion.client.classes.data;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.cell.classes.controller.IntervalPropertyEditor;
 import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
+import lsfusion.client.form.property.table.view.AsyncChangeInterface;
 import lsfusion.client.view.MainFrame;
 import lsfusion.interop.classes.DataType;
 
-import java.math.BigDecimal;
-import java.text.FieldPosition;
-import java.text.Format;
-import java.text.ParseException;
-import java.text.ParsePosition;
-import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalTime;
+
+import static lsfusion.base.DateConverter.epochToLocalDateTime;
+import static lsfusion.base.DateConverter.localDateTimeToUTCEpoch;
 
 public class ClientTimeIntervalClass extends ClientIntervalClass {
 
@@ -23,18 +23,8 @@ public class ClientTimeIntervalClass extends ClientIntervalClass {
     }
 
     @Override
-    public String formatString(Object obj) throws ParseException {
-        return getTimeIntervalDefaultFormat(obj).toString();
-    }
-
-    @Override
-    protected PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
-        return new IntervalPropertyEditor(value, (SimpleDateFormat) MainFrame.timeFormat, false);
-    }
-
-    @Override
-    public Format getDefaultFormat() {
-        return MainFrame.timeIntervalFormat;
+    protected PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property, AsyncChangeInterface asyncChange) {
+        return new IntervalPropertyEditor(value, false, this);
     }
 
     @Override
@@ -42,23 +32,13 @@ public class ClientTimeIntervalClass extends ClientIntervalClass {
         return "TIME";
     }
 
-    public static class TimeIntervalFormat extends Format {
-        @Override
-        public StringBuffer format(Object o, StringBuffer stringBuffer, FieldPosition fieldPosition) {
-            if (o instanceof BigDecimal) {
-                return getTimeIntervalDefaultFormat(o);
-            }
-            return null;
-        }
-
-        @Override
-        public Object parseObject(String s, ParsePosition parsePosition) {
-            return null;
-        }
+    @Override
+    protected Long parse(String date) {
+        return localDateTimeToUTCEpoch(LocalTime.parse(date, MainFrame.timeFormatter).atDate(LocalDate.now()));
     }
 
-    public static StringBuffer getTimeIntervalDefaultFormat(Object o) {
-        return new StringBuffer(MainFrame.timeFormat.format(getDateFromInterval(o, true))
-                + " - " + MainFrame.timeFormat.format(getDateFromInterval(o, false)));
+    @Override
+    protected String format(Long epoch) {
+        return epochToLocalDateTime(epoch).toLocalTime().format(MainFrame.timeFormatter);
     }
 }

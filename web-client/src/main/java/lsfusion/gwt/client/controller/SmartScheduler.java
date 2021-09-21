@@ -19,6 +19,13 @@ public class SmartScheduler extends SchedulerImpl {
         return instance;
     }
 
+    public void scheduleDeferred(boolean deferred, ScheduledCommand cmd) {
+        if(deferred)
+            scheduleDeferred(cmd);
+        else
+            cmd.execute();
+    }
+
     @Override
     public void scheduleDeferred(ScheduledCommand cmd) {
         id++;

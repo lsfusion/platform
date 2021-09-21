@@ -14,9 +14,13 @@ public class ContainerViewProxy extends ComponentViewProxy<ContainerView> {
     
     public void setCaption(Object caption) {
         if(caption instanceof LocalizedString)
-            target.caption = (LocalizedString) caption;
+            target.setCaption((LocalizedString) caption);
         else {
-            target.caption = LocalizedString.NONAME;
+            // we want to keep base name for example for form name prediction in async form opening
+            if (target.caption == null) {
+                // it's important for web-client to know that caption may appear as container caption is implemented as wrapper panel
+                target.caption = LocalizedString.NONAME;
+            }
             target.propertyCaption = (PropertyObjectEntity<?>) caption;
         }
     }
@@ -29,8 +33,13 @@ public class ContainerViewProxy extends ComponentViewProxy<ContainerView> {
         target.setChildrenAlignment(falign);
     }
 
+    //backward compatibility
     public void setColumns(int columns) {
-        target.columns = columns;
+        target.lines = columns;
+    }
+
+    public void setLines(int lines) {
+        target.lines = lines;
     }
 
     public void setShowIf(PropertyObjectEntity<?> showIf) {

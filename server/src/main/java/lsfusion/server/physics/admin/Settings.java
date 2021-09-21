@@ -1254,6 +1254,16 @@ public class Settings implements Cloneable {
         this.flushPendingTransactionCleanersThreshold = flushPendingTransactionCleanersThreshold;
     }
 
+    private int flushAsyncValuesCaches = 1;
+
+    public int getFlushAsyncValuesCaches() {
+        return flushAsyncValuesCaches;
+    }
+
+    public void setFlushAsyncValuesCaches(int flushAsyncValuesCaches) {
+        this.flushAsyncValuesCaches = flushAsyncValuesCaches;
+    }
+
     private int tempTablesTimeThreshold = 240; // время сколько будет гарантированно жить таблица (в секундах), нужно для предотвращения ротации кэшей, должно быть соизмеримо со стандартным временем использования
     private int tempTablesCountThreshold = 40; // очищать таблицы, когда их общее количество превысило данный порог * количество соединений
 
@@ -2464,6 +2474,7 @@ public class Settings implements Cloneable {
         this.useGroupLastOpt = useGroupLastOpt;
     }
 
+    // In 5.0 CONTAINS is gone. It sets MATCH(SEARCH) instead. Maybe should be renamed.
     private boolean defaultCompareForStringContains = false;
 
     public boolean isDefaultCompareForStringContains() {
@@ -2691,6 +2702,43 @@ public class Settings implements Cloneable {
         this.groupIntegrationHierarchyOldOrder = groupIntegrationHierarchyOldOrder;
     }
 
+    private int asyncValuesLongCacheThreshold = 4;
+    private double asyncValuesExtraReadCoeff = 1.5;
+    private int asyncValuesNeededCount = 15;
+    private int asyncValuesMaxReadCount = 1000;
+
+    public int getAsyncValuesLongCacheThreshold() {
+        return asyncValuesLongCacheThreshold;
+    }
+
+    public void setAsyncValuesLongCacheThreshold(int asyncValuesLongCacheThreshold) {
+        this.asyncValuesLongCacheThreshold = asyncValuesLongCacheThreshold;
+    }
+
+    public double getAsyncValuesExtraReadCoeff() {
+        return asyncValuesExtraReadCoeff;
+    }
+
+    public void setAsyncValuesExtraReadCoeff(double asyncValuesExtraReadCoeff) {
+        this.asyncValuesExtraReadCoeff = asyncValuesExtraReadCoeff;
+    }
+
+    public int getAsyncValuesNeededCount() {
+        return asyncValuesNeededCount;
+    }
+
+    public void setAsyncValuesNeededCount(int asyncValuesNeededCount) {
+        this.asyncValuesNeededCount = asyncValuesNeededCount;
+    }
+
+    public int getAsyncValuesMaxReadCount() {
+        return asyncValuesMaxReadCount;
+    }
+
+    public void setAsyncValuesMaxReadCount(int asyncValuesMaxReadCount) {
+        this.asyncValuesMaxReadCount = asyncValuesMaxReadCount;
+    }
+
     private int externalHttpServerThreadCount = 10;
 
     public int getExternalHttpServerThreadCount() {
@@ -2731,14 +2779,14 @@ public class Settings implements Cloneable {
         this.sessionConfigTimeout = sessionConfigTimeout;
     }
 
-    private String filterMatchLanguages = "english"; //comma separated
+    private String filterMatchLanguage = "english"; //comma separated
 
-    public String getFilterMatchLanguages() {
-        return filterMatchLanguages;
+    public String getFilterMatchLanguage() {
+        return filterMatchLanguage;
     }
 
-    public void setFilterMatchLanguages(String filterMatchLanguages) {
-        this.filterMatchLanguages = filterMatchLanguages;
+    public void setFilterMatchLanguage(String filterMatchLanguage) {
+        this.filterMatchLanguage = filterMatchLanguage;
     }
     
     private boolean trueSerializable = false;

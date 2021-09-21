@@ -29,9 +29,8 @@ import java.time.format.FormatStyle;
 import java.util.Date;
 
 import static lsfusion.base.DateConverter.*;
-import static lsfusion.server.logics.classes.data.time.DateTimeConverter.getWriteDate;
 
-public class DateClass extends DataClass<LocalDate> {
+public class DateClass extends TimeSeriesClass<LocalDate> {
 
     public final static DateClass instance = new DateClass();
 
@@ -62,7 +61,7 @@ public class DateClass extends DataClass<LocalDate> {
     }
 
     public LocalDate getDefaultValue() {
-        return getWriteDate(LocalDate.now());
+        return LocalDate.now();
     }
 
     public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {
@@ -173,7 +172,7 @@ public class DateClass extends DataClass<LocalDate> {
 
     @Override
     public OverJDBField formatDBF(String fieldName) throws JDBFException {
-        return new OverJDBField(fieldName, 'D', 8, 0);
+        return OverJDBField.createField(fieldName, 'D', 8, 0);
     }
 
     @Override
@@ -192,5 +191,20 @@ public class DateClass extends DataClass<LocalDate> {
     @Override
     public boolean useIndexedJoin() {
         return true;
+    }
+
+    @Override
+    public String getIntervalProperty() {
+        return "interval[DATE,DATE]";
+    }
+
+    @Override
+    public String getFromIntervalProperty() {
+        return "from[INTERVAL[DATE]]";
+    }
+
+    @Override
+    public String getToIntervalProperty() {
+        return "to[INTERVAL[DATE]]";
     }
 }

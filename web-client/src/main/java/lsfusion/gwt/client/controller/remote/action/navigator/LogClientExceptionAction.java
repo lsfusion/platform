@@ -8,7 +8,7 @@ import lsfusion.gwt.client.base.exception.StackedException;
 import lsfusion.gwt.client.base.result.VoidResult;
 import net.customware.gwt.dispatch.shared.DispatchException;
 
-public class LogClientExceptionAction extends NavigatorAction<VoidResult> {
+public class LogClientExceptionAction extends NavigatorPriorityAction<VoidResult> {
     public Throwable throwable;
 
     public LogClientExceptionAction() {

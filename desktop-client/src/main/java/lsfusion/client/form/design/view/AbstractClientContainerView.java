@@ -3,9 +3,10 @@ package lsfusion.client.form.design.view;
 import lsfusion.base.BaseUtils;
 import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.design.ClientContainer;
-import lsfusion.interop.base.view.FlexAlignment;
+import lsfusion.client.form.design.view.flex.LinearClientContainerView;
+import lsfusion.client.form.design.view.widget.ScrollPaneWidget;
+import lsfusion.client.form.design.view.widget.Widget;
 
-import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,45 +16,96 @@ import static java.lang.Math.max;
 
 public abstract class AbstractClientContainerView implements ClientContainerView {
 
-    protected final ClientFormLayout formLayout;
     protected final ClientContainer container;
 
-    protected final List<ClientComponent> children = new ArrayList<>();
-    protected final List<JComponentPanel> childrenViews = new ArrayList<>();
+    protected final boolean vertical;
 
-    public AbstractClientContainerView(ClientFormLayout formLayout, ClientContainer container) {
-        this.formLayout = formLayout;
+    protected final List<ClientComponent> children = new ArrayList<>();
+    protected final List<Widget> childrenViews = new ArrayList<>();
+
+    public AbstractClientContainerView(ClientContainer container) {
         this.container = container;
+
+        vertical = container.isVertical();
     }
 
     @Override
-    public void add(ClientComponent child, JComponentPanel view) {
+    public void add(ClientComponent child, Widget view) {
         assert child != null && view != null && container.children.contains(child);
 
         int index = BaseUtils.relativePosition(child, container.children, children);
 
+        child.installMargins(view.getComponent());
+
+        boolean fixFlexBasis = false; // we don't need this for now, since tabbed pane in desktop uses max preferredSize
+        // child.isTab() && child.getFlex() > 0 && container.getFlexCount() > 1;
+
         children.add(index, child);
-        childrenViews.add(index, view);
+        childrenViews.add(index, wrapAndOverflowView(child, view, fixFlexBasis));
 
         addImpl(index, child, view);
     }
 
-    public static void setSizes(JComponentPanel view, ClientComponent child) {
-        //temp fix
-        if (child.alignment == FlexAlignment.STRETCH) {
-            if (child.container.isVertical()) {
-                if (child.size.width == 0) 
-                    child.size = new Dimension(-1, child.size.height);
-            } else {
-                if (child.size.height == 0) 
-                    child.size = new Dimension(child.size.width, -1);
-            }
+    private Widget wrapAndOverflowView(ClientComponent child, Widget view, boolean fixFlexBasis) {
+        boolean isAutoSized = child.getSize(vertical) == null;
+        boolean isOppositeAutoSized = child.getSize(!vertical) == null;
+
+        // somewhy it doesn't work properly for tabbed client container, but it's not that important for now
+        if((!(isOppositeAutoSized && isAutoSized) || fixFlexBasis)) // child is tab, since basis is fixed, strictly speaking this all check is an optimization
+            view = wrapOverflowAuto(view, vertical ? !isOppositeAutoSized : !isAutoSized, vertical ? !isAutoSized : !isOppositeAutoSized);
+
+        FlexPanel wrapPanel = wrapBorderImpl(child);
+        if(wrapPanel != null) {
+            wrapPanel.setDebugContainer(wrapDebugContainer("BORDER", view));
+            // one of the main problem is that stretch (opposite direction) can give you flex-basis 0, and "appropriate" auto size, but with flex (main direction) you can not obtain this effect (actually we can by setting shrink !!!!), so we have to look at size
+            // now since we have auto size we'll use the option without shrink
+            wrapPanel.addFillFlex(view, isAutoSized ? null : 0); // we need zero basis, because overflow:auto is set for a view (not for this panel), and with auto size view will overflow this captionpanel
+            // wrapPanel.addFillStretch could also be used in theory
+            view = wrapPanel;
         }
-        view.setComponentSize(child.size);
+
+        // we don't need this in desktop client
+//        if(isOppositeAutoSized && child.isStretch()) {
+//            wrapPanel = new FlexPanel(!vertical); // this container will have upper container size, but since the default overflow is visible, inner component with overflow:auto
+//            wrapPanel.setStyleName("oppositeStretchAutoSizePanel"); // just to identify this div in dom
+//            wrapPanel.addFillFlex(view, null);
+//            view = wrapPanel;
+//        }
+        return view;
     }
-    public static void add(JPanel panel, JComponentPanel view, int index, Object constraints, ClientComponent child) {
-        setSizes(view, child);
-        panel.add(view, constraints, index);
+
+    public static Object wrapDebugContainer(String prefix, Widget widget) {
+        return new Object() {
+            @Override
+            public String toString() {
+                return prefix + " [ " + widget.getDebugContainer() + " ] ";
+            }
+        };
+    }
+    public static Widget wrapOverflowAuto(Widget view, boolean fixedHorz, boolean fixedVert) {
+//        assert view instanceof Scrollable;
+        ScrollPaneWidget scroll = new ScrollPaneWidget(view.getComponent()) {
+            @Override
+            public void updateUI() {
+                super.updateUI();
+                setBorder(null); // is set on every color theme change in installDefaults()
+            }
+        };
+        // need this to force view use getFlexPreferredSize for STRETCH not auto sized direction instead of getPreferredSize (web browser does that)
+        if(view instanceof FlexPanel) {
+            scroll.wrapFlexPanel = (FlexPanel) view;
+            FlexPanel flexView = (FlexPanel) view;
+            flexView.wrapScrollPane = scroll;
+            flexView.wrapFixedHorz = fixedHorz;
+            flexView.wrapFixedVert = fixedVert;
+        }
+
+        scroll.getVerticalScrollBar().setUnitIncrement(14);
+        scroll.getHorizontalScrollBar().setUnitIncrement(14);
+        // to forward a mouse wheel event in nested scroll pane to the parent scroll pane
+        scroll.setDebugContainer(wrapDebugContainer("SCROLL", view));
+
+        return scroll;
     }
 
     @Override
@@ -63,10 +115,10 @@ public abstract class AbstractClientContainerView implements ClientContainerView
             throw new IllegalStateException("Child wasn't added");
         }
 
-        children.remove(index);
-        JComponentPanel view = childrenViews.remove(index);
+        removeImpl(index, child);
 
-        removeImpl(index, child, view);
+        children.remove(index);
+        childrenViews.remove(index);
     }
 
     protected boolean isTopContainerView() {
@@ -89,85 +141,23 @@ public abstract class AbstractClientContainerView implements ClientContainerView
     }
 
     @Override
-    public Component getChildView(int index) {
+    public Widget getChildView(int index) {
         return childrenViews.get(index);
     }
 
-    public void updateLayout() {
+    public void updateLayout(boolean[] childrenVisible) {
         //do nothing by default
     }
 
     @Override
-    public JComponentPanel getView() {
-        return getPanel();
-    }
-    public abstract ContainerViewPanel getPanel();
-    protected abstract void addImpl(int index, ClientComponent child, JComponentPanel view);
-    protected abstract void removeImpl(int index, ClientComponent child, JComponentPanel view);
+    public abstract Widget getView();
+    protected abstract void addImpl(int index, ClientComponent child, Widget view);
+    protected abstract FlexPanel wrapBorderImpl(ClientComponent child);
+    protected abstract void removeImpl(int index, ClientComponent child);
 
-    public void updateCaption() {
-        getPanel().updateCaption();
-    }
+    public abstract void updateCaption(ClientContainer clientContainer);
 
-    public class ContainerViewPanel extends JComponentPanel {
-        public ContainerViewPanel(boolean vertical, FlexAlignment alignment) {
-            super(vertical, alignment);
-            initBorder();
-        }
-
-        private TitledBorder titledBorder;
-
-        public ContainerViewPanel() {
-            initBorder();
-        }
-
-        private void initBorder() {
-            if (hasCaption()) {
-                titledBorder = new TitledBorder(container.caption);
-//                updateCaption();
-                setBorder(titledBorder);
-            }
-
-            container.installMargins(this);
-        }
-
-        @Override
-        public boolean isValidateRoot() {
-            return isTopContainerView();
-        }
-
-//        @Override
-//        public void validate() {
-//            if (isTopContainerView()) {
-//                formLayout.preValidateMainContainer();
-//            }
-//            super.validate();
-//        }
-//
-//        @Override
-//        protected void validateTree() {
-//            if (isTopContainerView()) {
-//                formLayout.preValidateMainContainer();
-//            }
-//            super.validateTree();
-//        }
-
-        @Override
-        public Dimension getMaxPreferredSize() {
-            throw new UnsupportedOperationException(); // по идее должен обрабатываться по ветке ContainerView.getMaxPreferredSize
-        }
-
-        public void updateCaption() {
-            String caption = container.caption;
-            assert caption != null;
-//            titledBorder.setTitle(caption);
-//            repaint()
-            // we have to reset titled border, setTitle / repaint doesnt'work sonewhy
-            setBorder(new TitledBorder(caption));
-        }
-    }
-
-    public JComponentPanel getChildView(ClientComponent child) {
+    public Widget getChildView(ClientComponent child) {
         int index = children.indexOf(child);
         return index != -1 ? childrenViews.get(index) : null;
     }
@@ -176,7 +166,7 @@ public abstract class AbstractClientContainerView implements ClientContainerView
     // можно было бы попробовать общую схему LayoutManager'ов использовать, но проблема в том что каждый ContainerView может создавать внутренние компоненты с не определенными LayoutManager'ами, а как через них протянуть признак что нужен max, а не обычный size непонятно
     // поэтому пока используем логику из Web-Client'а (где LayoutManager'ом вообще CSS является)
 
-    public static Dimension calculateMaxPreferredSize(JComponentPanel component) {
+    public static Dimension calculateMaxPreferredSize(Widget component) {
         return component.getMaxPreferredSize();
     }
 
@@ -195,7 +185,7 @@ public abstract class AbstractClientContainerView implements ClientContainerView
     public static Dimension getMaxPreferredSize(ClientContainer child, Map<ClientContainer, ClientContainerView> containerViews, boolean max) {
         return overrideSize(child, containerViews.get(child).getMaxPreferredSize(containerViews), max);
     }
-    private static Dimension getMaxPreferredSize(ClientComponent child, JComponentPanel childView) { // тут как и в GwtClientUtils.calculateMaxPreferredSize возможно нужна проверка на isVisible
+    private static Dimension getMaxPreferredSize(ClientComponent child, Widget childView) { // тут как и в GwtClientUtils.calculateMaxPreferredSize возможно нужна проверка на isVisible
         return overrideSize(child, calculateMaxPreferredSize(childView), true);
     }
 
@@ -256,5 +246,16 @@ public abstract class AbstractClientContainerView implements ClientContainerView
             dimension.height += 20;
         }
         return dimension;
+    }
+
+    public static void add(FlexPanel panel, Widget widget, ClientComponent component, int beforeIndex) {
+        boolean vertical = panel.isVertical();
+        panel.add(widget, beforeIndex, component.getAlignment(), component.getFlex(), component.getSize(vertical));
+
+        Integer crossSize = component.getSize(!vertical);
+//        boolean isStretch = component.isStretch();
+//        if(isStretch && crossSize != null && crossSize.equals(0)) // for opposite direction and stretch zero does not make any sense (it is zero by default)
+//            crossSize = null;
+        FlexPanel.setBaseSize(widget, !vertical, crossSize); // !isStretch
     }
 }

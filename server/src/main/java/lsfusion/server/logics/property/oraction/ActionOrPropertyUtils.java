@@ -78,10 +78,11 @@ public class ActionOrPropertyUtils {
         return params;
     }
 
-    public static Integer[] getIntParams(LAP prop) {
+    public static Integer[] getIntParams(LAP prop, int from, int to) {
         Integer[] params  = new Integer[prop.listInterfaces.size()];
-        for(int i=0;i<prop.listInterfaces.size();i++)
-            params[i] = (i+1);
+        for(int i=0;i<prop.listInterfaces.size();i++) {
+            params[i] = (from == i + 1 ? to : i + 1);
+        }
         return params;
     }
 
@@ -153,27 +154,30 @@ public class ActionOrPropertyUtils {
 
     public static Compare stringToCompare(String compare) {
         switch (compare) {
+            // Left words for backward compatibility. Symbols should be used 
+            case "EQUALS":
             case "=":
                 return Compare.EQUALS;
+            case "GREATER":
             case ">":
                 return Compare.GREATER;
+            case "LESS":
             case "<":
                 return Compare.LESS;
+            case "GREATER_EQUALS":
             case ">=":
                 return Compare.GREATER_EQUALS;
+            case "LESS_EQUALS":
             case "<=":
                 return Compare.LESS_EQUALS;
+            case "NOT_EQUALS":
             case "!=":
                 return Compare.NOT_EQUALS;
-            case "START_WITH":
-                return Compare.START_WITH;
-            case "CONTAINS":
-                return Compare.CONTAINS;
-            case "ENDS_WITH":
-                return Compare.ENDS_WITH;
             case "LIKE":
+            case "=*":
                 return Compare.LIKE;
-            case "MATCH":
+            case "CONTAINS": // CONTAINS is gone. Should be removed soon
+            case "=@":
                 return Compare.MATCH;
             case "INARRAY":
                 return Compare.INARRAY;

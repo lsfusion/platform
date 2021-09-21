@@ -3,41 +3,45 @@ package lsfusion.gwt.client.form.property.cell.classes.controller;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.classes.data.GIntervalType;
-import lsfusion.gwt.client.form.property.cell.controller.CellEditor;
+import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
+import lsfusion.gwt.client.form.property.cell.controller.WindowValueCellEditor;
+import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
 
 import java.math.BigDecimal;
 import java.util.Date;
 
-public class IntervalCellEditor implements CellEditor {
+public class IntervalCellEditor extends WindowValueCellEditor {
 
-    private final EditManager editManager;
     private final String intervalType;
+    private final GIntervalType interval;
 
-    public IntervalCellEditor(EditManager editManager, String intervalType) {
-        this.editManager = editManager;
+    public IntervalCellEditor(EditManager editManager, String intervalType, GIntervalType interval) {
+        super(editManager);
         this.intervalType = intervalType;
-    }
-
-    public void validateAndCommit(Long dateFrom, Long dateTo) {
-        if (dateFrom != null && dateTo != null)
-            editManager.commitEditing(new BigDecimal(dateFrom + "." + dateTo));
-        else if (dateFrom == null && dateTo == null)
-            editManager.commitEditing(null);
-        else
-            editManager.cancelEditing();
+        this.interval = interval;
     }
 
     @Override
-    public void startEditing(Event event, Element parent, Object oldValue) {
-        createPicker(parent, getObjectDate(oldValue, true), getObjectDate(oldValue, false), intervalType, false);
+    public Object getValue(Element parent, Integer contextAction) {
+        //todo:getCurrentValue
+        return RequestValueCellEditor.invalid;
     }
 
-    private Date getObjectDate(Object oldValue, boolean from) {
-        String object = String.valueOf(oldValue);
-        int indexOfDecimal = object.indexOf(".");
+    private Object getDateValue(Long dateFrom, Long dateTo) {
+        if (dateFrom != null && dateTo != null)
+            return new BigDecimal(dateFrom + "." + dateTo);
+        return null;
+    }
 
-        return indexOfDecimal < 0 ? new Date() : GIntervalType.getTimestamp(from ? object.substring(0, indexOfDecimal) : object.substring(indexOfDecimal + 1));
+    @Override
+    public void start(Event event, Element parent, Object oldValue) {
+        createPicker(parent, interval.getDate(oldValue, true), interval.getDate(oldValue, false), intervalType, false);
+    }
+
+    @Override
+    public void stop(Element parent) {
+        // todo:removePicker
     }
 
     protected native void createPicker(Element parent, Date startDate, Date endDate, String intervalType, boolean singleDatePicker)/*-{
@@ -46,34 +50,35 @@ public class IntervalCellEditor implements CellEditor {
         var thisObj = this;
         var time = intervalType === 'TIME';
         var date = intervalType === 'DATE';
+        var messages = @lsfusion.gwt.client.ClientMessages.Instance::get()();
 
         parentEl.daterangepicker({
             locale: {
-                applyLabel: @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("applyLabel"),
-                cancelLabel: @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("cancelLabel"),
-                customRangeLabel: @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("customRangeLabel"),
+                applyLabel: messages.@lsfusion.gwt.client.ClientMessages::applyLabel()(),
+                cancelLabel: messages.@lsfusion.gwt.client.ClientMessages::cancelLabel()(),
+                customRangeLabel: messages.@lsfusion.gwt.client.ClientMessages::customRangeLabel()(),
                 daysOfWeek: [
-                    @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("daysOfWeekSU"),
-                    @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("daysOfWeekMO"),
-                    @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("daysOfWeekTU"),
-                    @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("daysOfWeekWE"),
-                    @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("daysOfWeekTH"),
-                    @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("daysOfWeekFR"),
-                    @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("daysOfWeekSA")
+                    messages.@lsfusion.gwt.client.ClientMessages::daysOfWeekSU()(),
+                    messages.@lsfusion.gwt.client.ClientMessages::daysOfWeekMO()(),
+                    messages.@lsfusion.gwt.client.ClientMessages::daysOfWeekTU()(),
+                    messages.@lsfusion.gwt.client.ClientMessages::daysOfWeekWE()(),
+                    messages.@lsfusion.gwt.client.ClientMessages::daysOfWeekTH()(),
+                    messages.@lsfusion.gwt.client.ClientMessages::daysOfWeekFR()(),
+                    messages.@lsfusion.gwt.client.ClientMessages::daysOfWeekSA()()
                 ],
                 monthNames: [
-                    @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("monthJanuary"),
-                    @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("monthFebruary"),
-                    @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("monthMarch"),
-                    @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("monthApril"),
-                    @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("monthMay"),
-                    @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("monthJune"),
-                    @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("monthJuly"),
-                    @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("monthAugust"),
-                    @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("monthSeptember"),
-                    @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("monthOctober"),
-                    @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("monthNovember"),
-                    @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("monthDecember")
+                    messages.@lsfusion.gwt.client.ClientMessages::monthJanuary()(),
+                    messages.@lsfusion.gwt.client.ClientMessages::monthFebruary()(),
+                    messages.@lsfusion.gwt.client.ClientMessages::monthMarch()(),
+                    messages.@lsfusion.gwt.client.ClientMessages::monthApril()(),
+                    messages.@lsfusion.gwt.client.ClientMessages::monthMay()(),
+                    messages.@lsfusion.gwt.client.ClientMessages::monthJune()(),
+                    messages.@lsfusion.gwt.client.ClientMessages::monthJuly()(),
+                    messages.@lsfusion.gwt.client.ClientMessages::monthAugust()(),
+                    messages.@lsfusion.gwt.client.ClientMessages::monthSeptember()(),
+                    messages.@lsfusion.gwt.client.ClientMessages::monthOctober()(),
+                    messages.@lsfusion.gwt.client.ClientMessages::monthNovember()(),
+                    messages.@lsfusion.gwt.client.ClientMessages::monthDecember()()
                 ],
                 "firstDay": 1
             },
@@ -82,13 +87,13 @@ public class IntervalCellEditor implements CellEditor {
             timePicker: !date,
             timePicker24Hour: true,
             autoApply: false,
-            ranges: !time ? $wnd.getRanges($wnd, @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("today"),
-                @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("yesterday"),
-                @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("last7Days"),
-                @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("last30Days"),
-                @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("thisMonth"),
-                @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("lastMonth"),
-                @lsfusion.gwt.client.base.GwtClientUtils::getLocalizedString(*)("clear")): undefined,
+            ranges: !time ? $wnd.getRanges($wnd, messages.@lsfusion.gwt.client.ClientMessages::today()(),
+                    messages.@lsfusion.gwt.client.ClientMessages::yesterday()(),
+                    messages.@lsfusion.gwt.client.ClientMessages::last7Days()(),
+                    messages.@lsfusion.gwt.client.ClientMessages::last30Days()(),
+                    messages.@lsfusion.gwt.client.ClientMessages::thisMonth()(),
+                    messages.@lsfusion.gwt.client.ClientMessages::lastMonth()(),
+                    messages.@lsfusion.gwt.client.ClientMessages::clear()()): undefined,
             singleDatePicker: singleDatePicker,
             alwaysShowCalendars: true // need to use with ranges
         });
@@ -104,9 +109,13 @@ public class IntervalCellEditor implements CellEditor {
         parentEl.on('hide.daterangepicker', function (ev, picker) {
             var startDate = picker.startDate;
             var endDate = picker.endDate;
-            var dateFrom = startDate.isValid() ? startDate.unix() : null;
-            var dateTo = endDate.isValid() != null ? endDate.unix() : null;
-            thisObj.@lsfusion.gwt.client.form.property.cell.classes.controller.IntervalCellEditor::validateAndCommit(*)(dateFrom, dateTo);
+            var dateFrom = startDate.isValid() ? (intervalType === 'ZDATETIME' ? startDate.unix() :
+                Date.UTC(startDate.year(), startDate.month(), startDate.date(), startDate.hour(), startDate.minute(), startDate.second()) / 1000) : null;
+            var dateTo = endDate.isValid() != null ? (intervalType === 'ZDATETIME' ? endDate.unix() :
+                Date.UTC(endDate.year(), endDate.month(), endDate.date(), endDate.hour(), endDate.minute(), endDate.second()) / 1000) : null;
+
+            thisObj.@lsfusion.gwt.client.form.property.cell.classes.controller.IntervalCellEditor::commitValue(*)(parent,
+                thisObj.@lsfusion.gwt.client.form.property.cell.classes.controller.IntervalCellEditor::getDateValue(*)(dateFrom, dateTo));
         });
 
     }-*/;

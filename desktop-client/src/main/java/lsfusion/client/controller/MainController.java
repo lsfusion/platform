@@ -72,10 +72,13 @@ public class MainController {
     public static boolean useRequestTimeout;
     public static boolean showNotDefinedStrings;
     public static boolean showDetailedInfo;
+    public static String projectLSFDir;
+    public static boolean inDevMode;
     public static boolean forbidDuplicateForms;
     public static long timeDiffServerClientLog = 1000;
     public static ColorPreferences colorPreferences;
     public static ColorTheme colorTheme = ColorTheme.DEFAULT;
+    public static String userDebugPath;
 
     // lifecycle
 
@@ -328,6 +331,7 @@ public class MainController {
         UIManager.put("Button.default.borderWidth", SwingDefaults.getButtonBorderWidth()); // differs in light and dark themes. make equal to have equal height.
         UIManager.put("TabbedPane.tabHeight", SwingDefaults.getComponentHeight());
         UIManager.put("ToggleButton.margin", SwingDefaults.getToggleButtonMargin());
+        UIManager.put("SplitPaneDivider.style", "plain");
 
         setUIDefaults();
         
@@ -575,7 +579,6 @@ public class MainController {
     
     // properties which depend on client settings and are stored in UIDefaults (not read in runtime)
     public static void setClientSettingsDependentUIDefaults() {
-        UIManager.put("Tree.selectionInactiveBackground", SwingDefaults.getFocusedTableRowBackground()); // JTree in TreeGroupTable draws inactive background on selection
         UIManager.put("Table.gridColor", SwingDefaults.getTableGridColor()); // Actually doesn't fully work. We have to update gridColor in JTable's updateUI() for existing tables
         UIManager.put("TableHeader.separatorColor", SwingDefaults.getTableGridColor());
         UIManager.put("TableHeader.bottomSeparatorColor", SwingDefaults.getTableGridColor());
@@ -591,7 +594,7 @@ public class MainController {
             SwingDefaults.reset();
             setUIDefaults();
             
-            FlatLaf.install(newLookAndFeel);
+            FlatLaf.setup(newLookAndFeel);
             FlatLaf.updateUI();
 
             for (ColorThemeChangeListener colorThemeChangeListener : new HashSet<>(colorThemeChangeListeners)) {

@@ -9,10 +9,7 @@ import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.where.Where;
-import lsfusion.server.logics.action.session.change.DataChanges;
-import lsfusion.server.logics.action.session.change.PropertyChange;
-import lsfusion.server.logics.action.session.change.PropertyChanges;
-import lsfusion.server.logics.action.session.change.StructChanges;
+import lsfusion.server.logics.action.session.change.*;
 import lsfusion.server.logics.action.session.changed.OldProperty;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.data.DataProperty;
@@ -79,7 +76,7 @@ public class ChangeEvent<C extends PropertyInterface> {
         if(!changes.hasChanges(usedChanges)) // для верхней оптимизации
             return usedChanges;
 
-        usedChanges = SetFact.add(writeTo.getUsedDataChanges(changes), usedChanges);
+        usedChanges = SetFact.add(writeTo.getUsedDataChanges(changes, CalcDataType.EXPR), usedChanges);
         if(writeFrom instanceof PropertyMapImplement)
             usedChanges = SetFact.add(((PropertyMapImplement<?, ?>) writeFrom).property.getUsedChanges(changes), usedChanges);
         return usedChanges;

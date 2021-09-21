@@ -1,5 +1,6 @@
 package lsfusion.server.logics.form.struct.filter;
 
+import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
@@ -44,9 +45,6 @@ public class FilterEntity<P extends PropertyInterface> implements Instantiable<F
     public PropertyObjectEntity<P> getImportProperty() {
         return property;
     }
-    public ContextFilterInstance getRemappedContextFilter(final ObjectEntity oldObject, final ObjectEntity newObject, final InstanceFactory instanceOldFactory) {
-        return property.getRemappedInstance(oldObject, newObject, instanceOldFactory);
-    }
 
     public Where getWhere(ImMap<ObjectEntity, ? extends Expr> mapKeys, Modifier modifier) throws SQLException, SQLHandledException {
         return property.getEntityExpr(mapKeys, modifier).getWhere();
@@ -58,5 +56,9 @@ public class FilterEntity<P extends PropertyInterface> implements Instantiable<F
 
     public GroupObjectEntity getApplyObject(FormEntity formEntity) {
         return getApplyObject(formEntity, SetFact.EMPTY());
+    }
+
+    public <V extends PropertyInterface> ContextFilterEntity<P, V, ObjectEntity> getContext() {
+        return new ContextFilterEntity<>(property.property, MapFact.EMPTYREV(), property.mapping);
     }
 }

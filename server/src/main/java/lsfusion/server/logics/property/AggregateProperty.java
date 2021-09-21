@@ -17,7 +17,6 @@ import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.join.classes.IsClassField;
-import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.expr.key.NullableKeyExpr;
 import lsfusion.server.data.expr.query.AggrType;
 import lsfusion.server.data.query.Query;
@@ -25,9 +24,6 @@ import lsfusion.server.data.query.build.QueryBuilder;
 import lsfusion.server.data.query.modify.ModifyQuery;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.exception.SQLHandledException;
-import lsfusion.server.data.stat.Stat;
-import lsfusion.server.data.stat.StatKeys;
-import lsfusion.server.data.stat.StatType;
 import lsfusion.server.data.table.TableOwner;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
@@ -44,15 +40,12 @@ import lsfusion.server.logics.property.classes.infer.*;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.Settings;
-import lsfusion.server.physics.admin.SystemProperties;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.Set;
-
-import static lsfusion.server.logics.classes.data.time.DateTimeConverter.getWriteDateTime;
 
 public abstract class AggregateProperty<T extends PropertyInterface> extends Property<T> {
 
@@ -157,65 +150,6 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Pro
         }
     }
 
-//    public List<Double> checkStats(SQLSession session, BaseClass baseClass) throws SQLException, SQLHandledException {
-//
-//        QueryBuilder<Object, Object> query = new QueryBuilder<Object, Object>(SetFact.EMPTY());
-//        Where where = getExpr(getMapKeys()).getWhere();
-//        try {
-//            Stat statRows = where.getStatRows();
-//            Stat maxStat = new Stat(5, true);
-//            boolean timeouted = false;
-//            if(!where.isFalse() && statRows.lessEquals(maxStat)) {
-//                ValueExpr one = new ValueExpr(1, IntegerClass.instance);
-//                query.addProperty("count", GroupExpr.create(MapFact.<Integer, Expr>EMPTY(), one,
-//                        where, GroupType.SUM, MapFact.<Integer, Expr>EMPTY()));
-//                Integer cnt;
-//                try {
-//                    cnt = (Integer)query.execute(session, DataSession.emptyEnv(OperationOwner.debug)).singleValue().singleValue();
-//                    if(cnt == null)
-//                        cnt = 0;
-//                } catch (SQLTimeoutException e) {
-//                    cnt = maxStat.getWeight();
-//                    timeouted = true;
-//                }
-//
-//                List<Double> list = new ArrayList<Double>();
-//                for(int i=0;i<4;i++) {
-//                    Settings.get().setPessStatType(i);
-//                    
-//                    Stat iStat = where.getStatRows();
-//                    if(timeouted)
-//                        iStat = iStat.min(maxStat);
-//                    
-//                    Stat calcStat = new Stat(cnt);
-//                    double diff = calcStat.getWeight() - (double) iStat.getWeight();
-//                    if (diff > 5.0)
-//                        diff = 5.0;
-//                    if (diff < -5.0)
-//                        diff = -5.0;
-//                    list.add(diff);
-//                }
-//                return list;
-//            }
-//        } catch (RuntimeException r) {
-//            assert r.getMessage().contains("no classes") || r.getMessage().contains("not supported");
-//            return null;
-//        }
-//        return null;
-//    }
-//
-    public Expr calculateExpr(ImMap<T, ? extends Expr> joinImplement) {
-        return calculateExpr(joinImplement, CalcType.EXPR, PropertyChanges.EMPTY, null);
-    }
-
-    public Expr calculateStatExpr(ImMap<T, ? extends Expr> joinImplement, boolean alotHeur) { // вызывается до stored, поэтому чтобы не было проблем с кэшами, сделано так
-        return calculateExpr(joinImplement, alotHeur ? CalcType.STAT_ALOT : CalcType.STAT, PropertyChanges.EMPTY, null);
-    }
-
-    public Expr calculateInconsistentExpr(ImMap<T, ? extends Expr> joinImplement) { // вызывается до stored, поэтому чтобы не было проблем с кэшами, сделано так
-        return calculateExpr(joinImplement, CalcType.RECALC, PropertyChanges.EMPTY, null);
-    }
-
     private Query<T, String> getRecalculateQuery(boolean outDB, BaseClass baseClass, boolean checkInconsistence) {
         return getRecalculateQuery(outDB, baseClass, checkInconsistence, null);
     }
@@ -228,7 +162,7 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Pro
             query.and(where.getWhere(query.getMapExprs()));
 
         Expr dbExpr = checkInconsistence ? getInconsistentExpr(query.getMapExprs(), baseClass) : getExpr(query.getMapExprs());
-        Expr calculateExpr = isFullProperty() ? calculateInconsistentExpr(query.getMapExprs()) : calculateExpr(query.getMapExprs());  // оптимизация - только для FULL свойств, так как в остальных лучше использовать кэш по EXPR
+        Expr calculateExpr = calculateExpr(query.getMapExprs(), isFullProperty() ? CalcType.RECALC : CalcType.EXPR, PropertyChanges.EMPTY, null);  // оптимизация - только для FULL свойств, так как в остальных лучше использовать кэш по EXPR
         if(outDB)
             query.addProperty("dbvalue", dbExpr);
         query.addProperty("calcvalue", calculateExpr);
@@ -255,7 +189,7 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Pro
 
         ObjectValue propertyObject = BL.reflectionLM.propertyCanonicalName.readClasses(session, new DataObject(getCanonicalName()));
         if (propertyObject instanceof DataObject)
-            BL.reflectionLM.lastRecalculateProperty.change(getWriteDateTime(LocalDateTime.now()), session, (DataObject) propertyObject);
+            BL.reflectionLM.lastRecalculateProperty.change(LocalDateTime.now(), session, (DataObject) propertyObject);
     }
 
     @StackMessage("{logics.info.recalculation.of.aggregated.property}")
@@ -303,44 +237,4 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Pro
     public boolean calcEmpty(CalcInfoType calcType) {
         return calculateQueryExpr(calcType).second.getWhere().isFalse();
     }
-
-    private ImRevMap<T, NullableKeyExpr> getMapNotNullKeys() {
-        return interfaces.mapRevValues((i, value) -> new NullableKeyExpr(i));
-    }
-
-    public StatKeys<T> getInterfaceClassStats() {
-        return getInterfaceClassStats(false);
-    }
-    
-    @IdentityStartLazy
-    @StackMessage("{message.core.property.get.interface.class.stats}")
-    @ThisMessage
-    public StatKeys<T> getInterfaceClassStats(boolean alotHeur) {
-        ImRevMap<T,KeyExpr> mapKeys = getMapKeys();
-        Where where = calculateStatExpr(mapKeys, alotHeur).getWhere();
-        mapKeys = mapKeys.filterInclValuesRev(BaseUtils.<ImSet<KeyExpr>>immutableCast(where.getOuterKeys()));
-        return where.getFullStatKeys(mapKeys.valuesSet(), StatType.PROP_STATS).mapBack(mapKeys);
-    }
-
-    public boolean hasAlotKeys() {
-//        if(1==1) return false;
-        if(SystemProperties.lightStart) {
-            if (!isFull(AlgType.statAlotType))
-                return true;
-            if (isStored())
-                return false;
-            return aspectDebugHasAlotKeys();
-        }
-        return hasAlotKeys(getInterfaceClassStats().getRows());
-    }
-
-    public boolean aspectDebugHasAlotKeys() {
-        return hasAlotKeys(getInterfaceClassStats(true).getRows());
-    }
-
-    private final static Stat ALOT_THRESHOLD = Stat.ALOT.reduce(2); // ALOT stat can be reduced a little bit, but there still will be ALOT keys, so will take sqrt
-    private static boolean hasAlotKeys(Stat stat) {
-        return ALOT_THRESHOLD.lessEquals(stat);
-    }
-
 }

@@ -24,6 +24,7 @@ public abstract class LAP<T extends PropertyInterface, P extends ActionOrPropert
     public ImOrderSet<T> listInterfaces;
     private String creationScript = null;
     private String creationPath = null;
+    private String path = null;
 
     public LAP(P property) {
         listInterfaces = property.getFriendlyOrderInterfaces();
@@ -147,20 +148,12 @@ public abstract class LAP<T extends PropertyInterface, P extends ActionOrPropert
         getActionOrProperty().drawOptions.setViewType(viewType);
     }
     
-    public void setCustomRenderFunctions(String customRenderFunctions) {
-        getActionOrProperty().drawOptions.setCustomRenderFunctions(customRenderFunctions);
+    public void setCustomRenderFunction(String customRenderFunction) {
+        getActionOrProperty().drawOptions.setCustomRenderFunction(customRenderFunction);
     }
 
-    public void setCustomEditorFunctions(String customEditorFunctions) {
-        getActionOrProperty().drawOptions.setCustomEditorFunctions(customEditorFunctions);
-    }
-
-    public void setCustomTextEdit(boolean customTextEdit) {
-        getActionOrProperty().drawOptions.setCustomTextEdit(customTextEdit);
-    }
-
-    public void setCustomReplaceEdit(boolean customReplaceEdit) {
-        getActionOrProperty().drawOptions.setCustomReplaceEdit(customReplaceEdit);
+    public void setCustomEditorFunction(String customEditorFunction) {
+        getActionOrProperty().drawOptions.setCustomEditorFunction(customEditorFunction);
     }
 
     public void setPivotOptions(PivotOptions pivotOptions) {
@@ -187,8 +180,16 @@ public abstract class LAP<T extends PropertyInterface, P extends ActionOrPropert
         this.creationPath = creationPath;
     }
 
+    public String getPath() {
+        return path;
+    }
+
+    public void setPath(String path) {
+        this.path = path;
+    }
+
     public ActionOrPropertyObjectEntity<T, ?> createObjectEntity(ImOrderSet<ObjectEntity> objects) {
-        return ActionOrPropertyObjectEntity.create(getActionOrProperty(), getRevMap(objects), creationScript, creationPath);
+        return ActionOrPropertyObjectEntity.create(getActionOrProperty(), getRevMap(objects), creationScript, creationPath, path);
     }
 
     public List<ResolveClassSet> getExplicitClasses() {

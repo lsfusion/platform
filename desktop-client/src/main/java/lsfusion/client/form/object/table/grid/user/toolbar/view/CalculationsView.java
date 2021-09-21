@@ -1,25 +1,24 @@
 package lsfusion.client.form.object.table.grid.user.toolbar.view;
 
-import lsfusion.client.form.design.view.JComponentPanel;
+import lsfusion.client.form.design.view.FlexPanel;
+import lsfusion.client.form.design.view.widget.LabelWidget;
 import lsfusion.interop.base.view.FlexAlignment;
-import lsfusion.interop.base.view.FlexConstraints;
-import lsfusion.interop.base.view.FlexLayout;
 
 import javax.swing.*;
 
 import static lsfusion.client.ClientResourceBundle.getString;
 import static lsfusion.client.StartupProperties.dotSeparator;
 
-public class CalculationsView extends JComponentPanel {
-    private JLabel averageLabel = new JLabel();
-    private JLabel sumLabel = new JLabel();
-    private JLabel quantityLabel = new JLabel();
+public class CalculationsView extends FlexPanel {
+    private LabelWidget averageLabel = new LabelWidget();
+    private LabelWidget sumLabel = new LabelWidget();
+    private LabelWidget quantityLabel = new LabelWidget();
     
     public CalculationsView() {
-        setLayout(new FlexLayout(this, false, FlexAlignment.START));
-        add(averageLabel, new FlexConstraints(FlexAlignment.CENTER, 0));
-        add(sumLabel, new FlexConstraints(FlexAlignment.CENTER, 0));
-        add(quantityLabel, new FlexConstraints(FlexAlignment.CENTER, 0));
+        super(false);
+        add(averageLabel, FlexAlignment.CENTER, 0.0);
+        add(sumLabel, FlexAlignment.CENTER, 0.0);
+        add(quantityLabel, FlexAlignment.CENTER, 0.0);
     }
 
     public void updateSelectionInfo(int quantity, String sum, String avg) {

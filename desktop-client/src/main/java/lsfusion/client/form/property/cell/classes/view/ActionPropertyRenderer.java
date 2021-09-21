@@ -48,4 +48,9 @@ public class ActionPropertyRenderer extends PropertyRenderer {
         }
         getComponent().setIcon(value == null ? null : defaultIcon);
     }
+
+    @Override
+    public boolean isAutoDynamicHeight() {
+        return false;
+    }
 }

@@ -9,8 +9,8 @@ import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.GroupObjectUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.toolbar.FormGrouping;
 import lsfusion.interop.form.print.FormPrintType;
-import lsfusion.interop.form.print.ReportGenerationData;
 import lsfusion.interop.form.property.PropertyGroupType;
+import lsfusion.interop.form.property.cell.Async;
 
 import java.rmi.RemoteException;
 import java.util.List;
@@ -65,13 +65,13 @@ public interface RemoteFormInterface extends RemoteRequestInterface {
 
     // events : properties
 
-    ServerResponse executeEventAction(long requestIndex, long lastReceivedRequestIndex, int propertyID, byte[] fullKey, String actionSID) throws RemoteException;
+    ServerResponse executeEventAction(long requestIndex, long lastReceivedRequestIndex, String actionSID, int[] propertyIDs, byte[][] fullKeys, boolean[] externalChanges, byte[][] pushAsyncResults) throws RemoteException;
 
     ServerResponse executeNotificationAction(long requestIndex, long lastReceivedRequestIndex, int idNotification) throws RemoteException;
 
     // async events : properties
 
-    ServerResponse changeProperties(long requestIndex, long lastReceivedRequestIndex, String actionSID, int[] propertyIDs, byte[][] fullKeys, byte[][] pushChanges, Long[] pushAdds) throws RemoteException;
+    Async[] getAsyncValues(long requestIndex, long lastReceivedRequestIndex, int propertyID, byte[] fullKey, String actionSID, String value, int index) throws RemoteException;
 
     // events : filters + orders
 

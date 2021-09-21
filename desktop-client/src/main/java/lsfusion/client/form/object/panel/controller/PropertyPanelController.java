@@ -1,18 +1,19 @@
 package lsfusion.client.form.object.panel.controller;
 
+import lsfusion.base.Pair;
 import lsfusion.base.file.RawFileData;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.design.view.ClientFormLayout;
-import lsfusion.client.form.design.view.JComponentPanel;
+import lsfusion.client.form.design.view.FlexPanel;
+import lsfusion.client.form.design.view.widget.Widget;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.cell.classes.view.ImagePropertyRenderer;
 import lsfusion.client.form.property.panel.view.PanelView;
 import lsfusion.interop.base.view.FlexAlignment;
-import lsfusion.interop.base.view.FlexConstraints;
 
 import java.awt.*;
-import java.awt.event.KeyEvent;
+import java.awt.event.InputEvent;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,7 +34,7 @@ public class PropertyPanelController {
 
     private Map<ClientGroupObjectValue, PanelView> views;
 
-    private JComponentPanel viewsPanel;
+    private final Panel renderersPanel;
 
     public PropertyPanelController(final ClientFormController form, final PanelController panelController, ClientPropertyDraw property) {
 
@@ -42,7 +43,7 @@ public class PropertyPanelController {
         this.property = property;
 
         form.addPropertyBindings(property, () -> new ClientFormController.Binding(property.groupObject, 0) {
-            public boolean pressed(KeyEvent ke) {
+            public boolean pressed(InputEvent ke) {
                 return forceEdit();
             }
             public boolean showing() {
@@ -52,7 +53,8 @@ public class PropertyPanelController {
             }
         });
 
-        viewsPanel = new JComponentPanel(property.panelColumnVertical, FlexAlignment.START);
+        renderersPanel = new Panel(property.panelColumnVertical);
+        renderersPanel.setDebugContainer("CONTROLLER [" + property + "]");
     }
 
     public boolean forceEdit() {
@@ -70,15 +72,15 @@ public class PropertyPanelController {
     }
 
     public void addView(ClientFormLayout formLayout) {
-        formLayout.add(property, viewsPanel);
+        formLayout.addBaseComponent(property, renderersPanel);
     }
 
     public void removeView(ClientFormLayout formLayout) {
-        formLayout.remove(property, viewsPanel);
+        formLayout.removeBaseComponent(property, renderersPanel);
     }
 
     public void setVisible(boolean visible) {
-        viewsPanel.setVisible(visible);
+        renderersPanel.setVisible(visible);
     }
 
     public void setPropertyValues(Map<ClientGroupObjectValue, Object> valueMap, boolean update) {
@@ -117,7 +119,20 @@ public class PropertyPanelController {
         this.imageValues = imageValues;
     }
 
-    void update(Color rowBackground, Color rowForeground) {
+    public interface CaptionContainer {
+        void put(Widget widget, Pair<Integer, Integer> valueSizes, FlexAlignment alignment);
+    }
+
+    public static class Panel extends FlexPanel {
+
+        public Panel(boolean vertical) {
+            super(vertical);
+        }
+
+        public CaptionContainer captionContainer;
+    }
+
+    public void update(Color rowBackground, Color rowForeground) {
         Map<ClientGroupObjectValue, PanelView> newViews = new HashMap<>();
 
         List<ClientGroupObjectValue> columnKeys = this.columnKeys != null ? this.columnKeys : ClientGroupObjectValue.SINGLE_EMPTY_KEY_LIST;
@@ -125,12 +140,12 @@ public class PropertyPanelController {
             if (showIfs == null || showIfs.get(columnKey) != null) {
                 PanelView view = views != null ? views.remove(columnKey) : null;
                 if (view == null && (!property.hide || property.changeKey != null)) {
-                    view = property.getPanelView(form, columnKey);
+                    view = property.getPanelView(form, columnKey, renderersPanel.captionContainer);
                     view.setReadOnly(property.isReadOnly());
 
                     view.getEditPropertyDispatcher().setUpdateEditValueCallback(result -> values.put(columnKey, result));
 
-                    panelController.addGroupObjectActions(view.getComponent());
+                    panelController.addGroupObjectActions(view.getWidget().getComponent());
                 }
                 if(view != null) {
                     newViews.put(columnKey, view);
@@ -139,7 +154,7 @@ public class PropertyPanelController {
         }
 
         if(views != null && !property.hide) {
-            views.values().forEach(panelView -> viewsPanel.remove(panelView.getComponent()));
+            views.values().forEach(panelView -> renderersPanel.remove(panelView.getWidget()));
         }
         views = newViews;
 
@@ -150,8 +165,9 @@ public class PropertyPanelController {
         if (!property.hide) {
             for (ClientGroupObjectValue columnKey : columnKeys) {
                 PanelView view = views.get(columnKey);
-                if (view != null && view.getComponent().getParent() != viewsPanel) {
-                    viewsPanel.add(view.getComponent(), new FlexConstraints(property.getAlignment(), property.getValueWidth(viewsPanel)));
+                if (view != null && view.getWidget().getParent() != renderersPanel.getComponent()) {
+//                    viewsPanel.add(view.getComponent(), new FlexConstraints(property.getAlignment(), property.getValueWidth(viewsPanel)));
+                    renderersPanel.addFill(view.getWidget());
                 }
             }
         }

@@ -2,7 +2,6 @@ package lsfusion.client.classes.data;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.client.form.property.ClientPropertyDraw;
-import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
 import lsfusion.client.form.property.cell.classes.view.IntegralPropertyRenderer;
 import lsfusion.client.form.property.cell.view.PropertyRenderer;
 
@@ -91,6 +90,4 @@ abstract public class ClientIntegralClass extends ClientFormatClass<NumberFormat
     public PropertyRenderer getRendererComponent(ClientPropertyDraw property) {
         return new IntegralPropertyRenderer(property);
     }
-
-    protected abstract PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property);
 }

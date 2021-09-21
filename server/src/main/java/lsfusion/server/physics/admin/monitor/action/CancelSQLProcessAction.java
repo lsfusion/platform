@@ -9,7 +9,6 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
-import java.sql.SQLException;
 import java.util.Iterator;
 
 public class CancelSQLProcessAction extends InternalAction {
@@ -27,9 +26,9 @@ public class CancelSQLProcessAction extends InternalAction {
         try {
             DataObject currentObject = context.getDataKeyValue(integerInterface);
             Integer processId = (Integer) findProperty("idSQLProcess[STRING[10]]").read(context, currentObject);
-            SQLSession cancelSession = SQLSession.getSQLSessionMap().get(processId);
-            if (cancelSession != null)
-                cancelSession.setForcedCancel(true);
+            SQLSession.ExecutingStatement cancelStatement = SQLSession.getExecutingStatementSQL(processId);
+            if (cancelStatement != null)
+                cancelStatement.forcedCancel = true;
             context.getSession().sql.executeDDL(context.getDbSyntax().getCancelActiveTaskQuery(processId));
         } catch (Exception e) {
             throw Throwables.propagate(e);

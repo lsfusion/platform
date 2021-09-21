@@ -18,8 +18,8 @@ import lsfusion.server.data.where.Where;
 
 public class SubQueryJoin extends QueryJoin<KeyExpr, SubQueryJoin.Query, SubQueryJoin, SubQueryJoin.QueryOuterContext> {
 
-    public SubQueryJoin(ImSet<KeyExpr> keys, ImSet<Value> values, InnerExprFollows<KeyExpr> innerFollows, Where inner, ImMap<KeyExpr, BaseExpr> group) {
-        this(keys, values, new Query(innerFollows, inner), group);
+    public SubQueryJoin(ImSet<KeyExpr> keys, ImSet<Value> values, InnerExprFollows<KeyExpr> innerFollows, Where inner, int top, ImMap<KeyExpr, BaseExpr> group) {
+        this(keys, values, new Query(innerFollows, inner, top), group);
     }
 
     protected SubQueryJoin(ImSet<KeyExpr> keys, ImSet<Value> values, Query inner, ImMap<KeyExpr, BaseExpr> group) {
@@ -28,26 +28,29 @@ public class SubQueryJoin extends QueryJoin<KeyExpr, SubQueryJoin.Query, SubQuer
 
     public static class Query extends QueryJoin.Query<KeyExpr, Query> {
         private final Where where;
+        private final int top;
 
-        public Query(InnerExprFollows<KeyExpr> follows, Where where) {
+        public Query(InnerExprFollows<KeyExpr> follows, Where where, int top) {
             super(follows);
             this.where = where;
+            this.top = top;
         }
 
         public Query(Query query, MapTranslate translate) {
             super(query, translate);
             this.where = query.where.translateOuter(translate);
+            this.top = query.top;
         }
 
         public boolean calcTwins(TwinImmutableObject o) {
-            return super.calcTwins(o) && where.equals(((Query) o).where);
+            return super.calcTwins(o) && where.equals(((Query) o).where) && top == ((Query) o).top;
         }
 
         protected boolean isComplex() {
             return true;
         }
         public int hash(HashContext hashContext) {
-            return 31 * super.hash(hashContext) + where.hashOuter(hashContext);
+            return 31 * (31 * super.hash(hashContext) + where.hashOuter(hashContext)) + top;
         }
 
         protected Query translate(MapTranslate translator) {
@@ -87,5 +90,9 @@ public class SubQueryJoin extends QueryJoin<KeyExpr, SubQueryJoin.Query, SubQuer
 
     public Where getWhere() {
         return query.where;
+    }
+
+    public int getTop() {
+        return query.top;
     }
 }

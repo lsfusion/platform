@@ -5,6 +5,7 @@ import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.classes.data.ClientLongClass;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.object.ClientGroupObjectValue;
+import lsfusion.client.form.object.panel.controller.PropertyPanelController;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.cell.EditBindingMap;
 import lsfusion.client.form.property.cell.classes.controller.IntegerPropertyEditor;
@@ -13,6 +14,7 @@ import lsfusion.client.form.property.cell.classes.view.IntegralPropertyRenderer;
 import lsfusion.client.form.property.cell.view.PropertyRenderer;
 import lsfusion.client.form.property.panel.view.DataPanelView;
 import lsfusion.client.form.property.panel.view.PanelView;
+import lsfusion.client.form.property.table.view.AsyncChangeInterface;
 import lsfusion.interop.classes.DataType;
 import lsfusion.interop.form.property.Compare;
 
@@ -51,16 +53,18 @@ public class ClientObjectType implements ClientType, ClientTypeClass {
         return new IntegralPropertyRenderer(property);
     }
 
-    public PanelView getPanelView(ClientPropertyDraw key, ClientGroupObjectValue columnKey, ClientFormController form) {
-        return new DataPanelView(form, key, columnKey);
+    public PanelView getPanelView(ClientPropertyDraw key, ClientGroupObjectValue columnKey, ClientFormController form, PropertyPanelController.CaptionContainer captionContainer) {
+        return new DataPanelView(form, key, columnKey, captionContainer);
     }
 
-    public PropertyEditor getChangeEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, Object value) {
+    @Override
+    public PropertyEditor getChangeEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, AsyncChangeInterface asyncChange, Object value) {
         assert false:"shouldn't be used anymore";
         return null;
     }
 
-    public PropertyEditor getValueEditorComponent(ClientFormController form, ClientPropertyDraw property, Object value) {
+    @Override
+    public PropertyEditor getValueEditorComponent(ClientFormController form, ClientPropertyDraw property, AsyncChangeInterface asyncChange, Object value) {
         return new IntegerPropertyEditor(value, ClientLongClass.instance.getDefaultFormat(), null, Long.class);
     }
 

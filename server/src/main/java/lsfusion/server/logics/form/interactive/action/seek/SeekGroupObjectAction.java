@@ -1,26 +1,25 @@
 package lsfusion.server.logics.form.interactive.action.seek;
 
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.interactive.UpdateType;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
-import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.SQLException;
-import java.util.List;
 
 public class SeekGroupObjectAction extends SeekAction {
 
     private final GroupObjectEntity groupObject;
-    private final List<ObjectEntity> objects;
+    private final ImOrderSet<ObjectEntity> objects;
     private UpdateType type;
 
-    public SeekGroupObjectAction(GroupObjectEntity groupObject, List<ObjectEntity> objects, UpdateType type, ValueClass... classes) {
+    public SeekGroupObjectAction(GroupObjectEntity groupObject, ImOrderSet<ObjectEntity> objects, UpdateType type, ValueClass... classes) {
         super(LocalizedString.NONAME, classes);
 
         this.groupObject = groupObject;
@@ -29,16 +28,6 @@ public class SeekGroupObjectAction extends SeekAction {
     }
 
     protected void executeForm(FormInstance form, ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        if (objects == null || objects.isEmpty()) {
-            groupObject.getInstance(form.instanceFactory).seek(type);
-        } else {
-            for (int i = 0; i < objects.size(); ++i) {
-                ObjectInstance instance = form.instanceFactory.getInstance(objects.get(i));
-                if (i == 0) {
-                    instance.groupTo.seek(type);
-                }
-                form.seekObject(instance, context.getKeyValue(getOrderInterfaces().get(i)), type);
-            }
-        }
+        form.seekObjects(groupObject.getInstance(form.instanceFactory), objects.mapOrderSetValues(form.instanceFactory::getInstance).mapOrderValues((int i) -> context.getKeyValue(getOrderInterfaces().get(i))), type);
     }
 }

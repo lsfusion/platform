@@ -13,8 +13,10 @@ import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.form.interactive.ManageSessionType;
+import lsfusion.server.logics.form.interactive.action.async.InputList;
+import lsfusion.server.logics.form.interactive.action.input.InputContext;
+import lsfusion.server.logics.form.interactive.action.input.InputResult;
 import lsfusion.server.logics.form.interactive.controller.remote.RemoteForm;
-import lsfusion.server.logics.form.interactive.dialogedit.DialogRequest;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.listener.CustomClassListener;
 import lsfusion.server.logics.form.interactive.listener.FocusListener;
@@ -37,9 +39,10 @@ public interface Context {
     RemoteForm createRemoteForm(FormInstance formInstance, ExecutionStack stack);
 
     void requestFormUserInteraction(FormInstance formInstance, ModalityType modalityType, boolean forbidDuplicate, ExecutionStack stack) throws SQLException, SQLHandledException;
-    
-    ObjectValue requestUserObject(DialogRequest dialogRequest, ExecutionStack stack) throws SQLException, SQLHandledException;
-    ObjectValue requestUserData(DataClass dataClass, Object oldValue, boolean hasOldValue);
+
+    InputContext lockInputContext();
+    void unlockInputContext();
+    InputResult inputUserData(DataClass dataClass, Object oldValue, boolean hasOldValue, InputContext inputContext, InputList inputList);
     ObjectValue requestUserClass(CustomClass baseClass, CustomClass defaultValue, boolean concrete);
 
     void pushLogMessage();

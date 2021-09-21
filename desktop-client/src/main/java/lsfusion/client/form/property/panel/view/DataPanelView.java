@@ -1,18 +1,22 @@
 package lsfusion.client.form.property.panel.view;
 
+import lsfusion.base.BaseUtils;
+import lsfusion.base.Pair;
 import lsfusion.base.SystemUtils;
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.design.view.ClientFormLayout;
+import lsfusion.client.form.design.view.FlexPanel;
+import lsfusion.client.form.design.view.widget.LabelWidget;
+import lsfusion.client.form.design.view.widget.Widget;
 import lsfusion.client.form.object.ClientGroupObjectValue;
+import lsfusion.client.form.object.panel.controller.PropertyPanelController;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.cell.controller.dispatch.EditPropertyDispatcher;
 import lsfusion.client.form.property.cell.controller.dispatch.SimpleChangePropertyDispatcher;
+import lsfusion.client.tooltip.LSFTooltipManager;
 import lsfusion.client.view.MainFrame;
 import lsfusion.interop.base.view.FlexAlignment;
-import lsfusion.interop.base.view.FlexConstraints;
-import lsfusion.interop.base.view.FlexLayout;
-import lsfusion.interop.form.design.CachableLayout;
 import lsfusion.interop.form.event.ValueEvent;
 import lsfusion.interop.form.event.ValueEventListener;
 
@@ -21,9 +25,10 @@ import java.awt.*;
 
 import static java.lang.Math.max;
 import static lsfusion.base.BaseUtils.nullEquals;
+import static lsfusion.client.base.view.SwingDefaults.getDataPanelLabelMargin;
 
-public class DataPanelView extends JPanel implements PanelView {
-    private final JLabel label;
+public class DataPanelView extends FlexPanel implements PanelView {
+    private final LabelWidget label;
 
     private final DataPanelViewTable table;
 
@@ -39,22 +44,28 @@ public class DataPanelView extends JPanel implements PanelView {
 
     private final SimpleChangePropertyDispatcher simpleDispatcher;
 
-    public DataPanelView(final ClientFormController iform, final ClientPropertyDraw iproperty, ClientGroupObjectValue icolumnKey) {
-        super(null);
+    private final boolean vertical;
+    private boolean tableFirst;
+
+    private Boolean labelMarginRight = null;
+
+    public DataPanelView(final ClientFormController iform, final ClientPropertyDraw property, ClientGroupObjectValue icolumnKey, PropertyPanelController.CaptionContainer captionContainer) {
+        super(property.panelCaptionVertical, FlexAlignment.CENTER);
 
         form = iform;
-        property = iproperty;
+        this.property = property;
         columnKey = icolumnKey;
         simpleDispatcher = form.getSimpleChangePropertyDispatcher();
 
-        setLayout(new FlexLayout(this, property.panelCaptionVertical, FlexAlignment.CENTER));
+        vertical = property.panelCaptionVertical;
+        tableFirst = property.isPanelCaptionLast();
 
         //игнорируем key.readOnly, чтобы разрешить редактирование,
         //readOnly будет проверяться на уровне сервера и обрезаться возвратом пустого changeType
         table = new DataPanelViewTable(iform, columnKey, property);
 
-        label = new JLabel();
-        label.setBorder(BorderFactory.createEmptyBorder(0,0,0,2));
+        label = new LabelWidget();
+        
         setLabelText(property.getEditCaption());
 
         property.design.designHeader(label);
@@ -64,13 +75,34 @@ public class DataPanelView extends JPanel implements PanelView {
             setFocusable(false);
         }
 
-        add(label, new FlexConstraints(FlexAlignment.CENTER, 0));
-        add(table, new FlexConstraints(FlexAlignment.STRETCH, 1));
+        if (!tableFirst && captionContainer == null) {
+            add(label, property.getPanelCaptionAlignment(), 0.0);
+        }
+
+        Pair<Integer, Integer> valueSizes;
+        if(property.autoSize) {
+            assert captionContainer == null;
+            add(table, FlexAlignment.STRETCH, 1.0);
+            valueSizes = setDynamic(table, true, property);
+            if(property.isAutoDynamicHeight())
+                valueSizes = null;
+        } else {
+            add(table, FlexAlignment.STRETCH, 1.0);
+            valueSizes = setStatic(table, property);
+        }
+
+        if(captionContainer != null && valueSizes != null)
+            captionContainer.put(label, valueSizes, property.getPanelCaptionAlignment());
+
+        if (tableFirst && captionContainer == null) {
+            add(label, property.getPanelCaptionAlignment(), 0.0);
+        }
+
+        if (!vertical)
+            labelMarginRight = captionContainer != null || !tableFirst;
 
         setOpaque(false);
         setToolTip(property.getPropertyCaption());
-
-        property.installMargins(this);
 
         if (property.eventID != null) {
             valueEventListener = new ValueEventListener() {
@@ -93,6 +125,29 @@ public class DataPanelView extends JPanel implements PanelView {
         } else {
             valueEventListener = null;
         }
+    }
+
+    // copy of ActionOrPropertyValue methods
+
+    public static Pair<Integer, Integer> setStatic(Widget widget, ClientPropertyDraw property) {
+        return setBaseSize(widget, true, property);
+    }
+
+    public static Pair<Integer, Integer> setDynamic(Widget widget, boolean hasBorder, ClientPropertyDraw property) {
+        // leaving sizes -1 = auto ?? it won't work since it seems that table will return 0 preferred size
+        return setBaseSize(widget, hasBorder, property);
+    }
+
+    public static Pair<Integer, Integer> setBaseSize(Widget widget, boolean hasBorder, ClientPropertyDraw property) {
+        // if widget is wrapped into absolute positioned simple panel, we need to include paddings (since borderWidget doesn't include them)
+        JComponent component = widget.getComponent();
+        int valueWidth = hasBorder ? property.getValueWidthWithPadding(component) : property.getValueWidth(component);
+        int valueHeight = hasBorder ? property.getValueHeightWithPadding(component) : property.getValueHeight(component);
+        // about the last parameter oppositeAndFixed, here it's tricky since we don't know where this borderWidget will be added, however it seems that all current stacks assume that they are added with STRETCH alignment
+        setBaseSize(widget, false, valueWidth); // STRETCH in upper call
+        setBaseSize(widget, true, valueHeight);
+        // it seems that there is one more margin pixel in desktop
+        return new Pair<>(valueWidth + 2 + 2, valueHeight + 2 + 2); // should correspond to margins (now border : 1px which equals to 2px) in panelRendererValue style
     }
 
     @Override
@@ -130,7 +185,7 @@ public class DataPanelView extends JPanel implements PanelView {
         table.setCellSelectionEnabled(focusable);
     }
 
-    public JComponent getComponent() {
+    public DataPanelView getWidget() {
         return this;
     }
 
@@ -208,6 +263,17 @@ public class DataPanelView extends JPanel implements PanelView {
     
     public void setLabelText(String text) {
         label.setText(text);
+
+        if (!property.panelCaptionVertical) {
+            if (BaseUtils.isRedundantString(text)) {
+                label.setBorder(BorderFactory.createEmptyBorder());
+            } else {
+                label.setBorder(BorderFactory.createEmptyBorder(0,
+                        tableFirst && labelMarginRight != null && !labelMarginRight ? getDataPanelLabelMargin() : 0,
+                        0,
+                        tableFirst && labelMarginRight != null && labelMarginRight ? 0 : getDataPanelLabelMargin()));
+            }
+        }
     }
 
     @Override
@@ -216,7 +282,7 @@ public class DataPanelView extends JPanel implements PanelView {
     }
 
     public void setToolTip(String caption) {
-        label.setToolTipText(property.getTooltipText(caption));
+        LSFTooltipManager.initTooltip(label, property.getTooltipText(caption), property.path, property.creationPath);
     }
 
     public Icon getIcon() {
@@ -230,87 +296,5 @@ public class DataPanelView extends JPanel implements PanelView {
     @Override
     public EditPropertyDispatcher getEditPropertyDispatcher() {
         return table.getEditPropertyDispatcher();
-    }
-
-    private class DataPanelLayout extends CachableLayout {
-
-        public DataPanelLayout() {
-            super(DataPanelView.this, false);
-        }
-
-        @Override
-        protected Dimension layoutSize(Container parent, ComponentSizeGetter sizeGetter) {
-            Dimension labelSize = sizeGetter.get(label);
-            Dimension tableSize = sizeGetter.get(table);
-            int width;
-            int height;
-            if (property.panelCaptionVertical) {
-                width = max(labelSize.width, tableSize.width);
-                height = limitedSum(labelSize.height, tableSize.height);
-            } else {
-                width = limitedSum(8, labelSize.width, tableSize.width);
-                height = max(labelSize.height, tableSize.height);
-            }
-
-            return new Dimension(width, height);
-        }
-
-        @Override
-        public void layoutContainer(Container parent) {
-            boolean vertical = property.panelCaptionVertical;
-            boolean tableFirst = property.panelCaptionAfter;
-
-            Insets in = parent.getInsets();
-
-            int width = parent.getWidth() - in.left - in.right;
-            int height = parent.getHeight() - in.top - in.bottom;
-
-            Dimension labelPref = label.getPreferredSize();
-            Dimension tablePref = table.getPreferredSize();
-
-            int tableSpace = width;
-            int tableLeft = in.left;
-            int tableTop = in.top;
-            int tableHeight = height;
-            if (vertical) {
-                tableHeight -= labelPref.height;
-                if (!tableFirst) {
-                    tableTop += labelPref.height;
-                }
-            } else {
-                //horizontal
-                tableSpace = max(0, tableSpace - 4 - labelPref.width - 4);
-                if (!tableFirst) {
-                    tableLeft += 4 + labelPref.width + 4;
-                }
-            }
-
-            int tableWidth = tableSpace;
-            if (property.getAlignment() != FlexAlignment.STRETCH) {
-                tableWidth = Math.min(tableSpace, tablePref.width);
-                if (property.getAlignment() == FlexAlignment.END) {
-                    tableLeft += tableSpace - tableWidth;
-                } else if (property.getAlignment() == FlexAlignment.CENTER) {
-                    tableLeft += (tableSpace - tableWidth)/2;
-                }
-            }
-
-            int labelWidth = vertical ? width : labelPref.width;
-            int labelHeight = labelPref.height;
-            int labelLeft = in.left;
-            int labelTop = in.top;
-
-            if (vertical) {
-                if (tableFirst) {
-                    labelTop += tableHeight;
-                }
-            } else {
-                labelTop += max(0, height - labelHeight)/2;
-                labelLeft += tableFirst ? 4 + tableSpace + 4 : 4;
-            }
-
-            label.setBounds(labelLeft, labelTop, labelWidth, labelHeight);
-            table.setBounds(tableLeft, tableTop, tableWidth, tableHeight);
-        }
     }
 }

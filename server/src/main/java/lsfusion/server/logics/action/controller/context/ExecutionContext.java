@@ -43,8 +43,8 @@ import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.controller.manager.RestartManager;
 import lsfusion.server.logics.form.interactive.ManageSessionType;
-import lsfusion.server.logics.form.interactive.action.input.RequestResult;
-import lsfusion.server.logics.form.interactive.dialogedit.DialogRequest;
+import lsfusion.server.logics.form.interactive.action.async.InputList;
+import lsfusion.server.logics.form.interactive.action.input.*;
 import lsfusion.server.logics.form.interactive.instance.FormEnvironment;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.object.CustomObjectInstance;
@@ -55,6 +55,9 @@ import lsfusion.server.logics.form.interactive.listener.CustomClassListener;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.filter.ContextFilterInstance;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
+import lsfusion.server.logics.form.interactive.action.async.PushAsyncAdd;
+import lsfusion.server.logics.form.interactive.action.async.PushAsyncChange;
+import lsfusion.server.logics.form.interactive.action.async.PushAsyncResult;
 import lsfusion.server.logics.navigator.controller.manager.NavigatorsManager;
 import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
@@ -156,7 +159,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         }
     }
 
-    private final DataObject pushedAddObject; // чисто для асинхронного добавления объектов
+    private final PushAsyncResult pushedAsyncResult; // чисто для асинхронного добавления объектов
 
     public final boolean hasMoreSessionUsages;
     
@@ -190,9 +193,9 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         this(keys, null, env, null, null, stack, false);
     }
 
-    public ExecutionContext(ImMap<P, ? extends ObjectValue> keys, DataObject pushedAddObject, ExecutionEnvironment env, ScheduledExecutorService executorService, FormEnvironment<P> form, ExecutionStack stack, boolean hasMoreSessionUsages) {
+    public ExecutionContext(ImMap<P, ? extends ObjectValue> keys, PushAsyncResult pushedAsyncResult, ExecutionEnvironment env, ScheduledExecutorService executorService, FormEnvironment<P> form, ExecutionStack stack, boolean hasMoreSessionUsages) {
         this.keys = keys;
-        this.pushedAddObject = pushedAddObject;
+        this.pushedAsyncResult = pushedAsyncResult;
         this.env = env;
         this.executorService = executorService;
         this.form = form;
@@ -201,11 +204,11 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
     }
     
     public ExecutionContext<P> override() { // для дебаггера
-        return new ExecutionContext<>(keys, pushedAddObject, env, executorService, form, stack, hasMoreSessionUsages);
+        return new ExecutionContext<>(keys, pushedAsyncResult, env, executorService, form, stack, hasMoreSessionUsages);
     }
     
-    public ExecutionContext<P> override(boolean hasMoreSessionUsages) { // для дебаггера
-        return new ExecutionContext<>(keys, pushedAddObject, env, executorService, form, stack, hasMoreSessionUsages);
+    public ExecutionContext<P> override(boolean hasMoreSessionUsages) {
+        return new ExecutionContext<>(keys, pushedAsyncResult, env, executorService, form, stack, hasMoreSessionUsages);
     }
 
     public void setParamsToInterfaces(ImRevMap<String, P> paramsToInterfaces) {
@@ -411,8 +414,8 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
 
     public static class NewSession<P extends PropertyInterface> extends ExecutionContext<P> implements AutoCloseable {
 
-        public NewSession(ImMap<P, ? extends ObjectValue> keys, DataObject pushedAddObject, DataSession session, ScheduledExecutorService executorService, FormEnvironment<P> form, ExecutionStack stack) {
-            super(keys, pushedAddObject, session, executorService, form, stack, false);
+        public NewSession(ImMap<P, ? extends ObjectValue> keys, PushAsyncResult pushedAsyncResult, DataSession session, ScheduledExecutorService executorService, FormEnvironment<P> form, ExecutionStack stack) {
+            super(keys, pushedAsyncResult, session, executorService, form, stack, false);
         }
 
         @Override
@@ -424,7 +427,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         return newSession(getSession().sql);
     }
     public NewSession<P> newSession(SQLSession sql) throws SQLException { // the same as override, bu 
-        return new NewSession<>(keys, pushedAddObject, getSession().createSession(sql), executorService, form, stack);
+        return new NewSession<>(keys, pushedAsyncResult, getSession().createSession(sql), executorService, form, stack);
     }
 
     public GroupObjectInstance getChangingPropertyToDraw() {
@@ -447,8 +450,12 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         return getEnv().getModifier();
     }
 
+    private DataObject getPushedAddObject() {
+        return pushedAsyncResult instanceof PushAsyncAdd ? ((PushAsyncAdd) pushedAsyncResult).value : null; 
+    }
+    
     public DataObject addObject(ConcreteCustomClass cls) throws SQLException, SQLHandledException {
-        return getSession().addObject(cls, pushedAddObject);
+        return getSession().addObject(cls, getPushedAddObject());
     }
 
     public DataObject addObject(ConcreteCustomClass cls, boolean autoSet) throws SQLException, SQLHandledException {
@@ -459,7 +466,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
     }
 
     public DataObject addObjectAutoSet(ConcreteCustomClass cls) throws SQLException, SQLHandledException {
-        return getSession().addObjectAutoSet(cls, pushedAddObject, getBL(), getClassListener());
+        return getSession().addObjectAutoSet(cls, getPushedAddObject(), getBL(), getClassListener());
     }
 
     public <T extends PropertyInterface> SinglePropertyTableUsage<T> addObjects(String debugInfo, ConcreteCustomClass cls, PropertyOrderSet<T> set) throws SQLException, SQLHandledException {
@@ -468,7 +475,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
 
     public DataObject formAddObject(ObjectEntity object, ConcreteCustomClass cls) throws SQLException, SQLHandledException {
         FormInstance form = getFormFlowInstance();
-        return form.addFormObject((CustomObjectInstance) form.instanceFactory.getInstance(object), cls, pushedAddObject, stack);
+        return form.addFormObject((CustomObjectInstance) form.instanceFactory.getInstance(object), cls, getPushedAddObject(), stack);
     }
 
     public void changeClass(PropertyObjectInterfaceInstance objectInstance, DataObject object, ConcreteObjectClass changeClass) throws SQLException, SQLHandledException {
@@ -527,15 +534,15 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
     }
 
     public ExecutionContext<P> override(ScheduledExecutorService newExecutorService) {
-        return new ExecutionContext<>(keys, pushedAddObject, env, newExecutorService, form, stack, hasMoreSessionUsages);
+        return new ExecutionContext<>(keys, pushedAsyncResult, env, newExecutorService, form, stack, hasMoreSessionUsages);
     }
 
     public ExecutionContext<P> override(ExecutionEnvironment newEnv, ExecutionStack stack) {
-        return new ExecutionContext<>(keys, pushedAddObject, newEnv, executorService, new FormEnvironment<>(null, null, newEnv.getFormInstance()), stack, hasMoreSessionUsages);
+        return new ExecutionContext<>(keys, pushedAsyncResult, newEnv, executorService, new FormEnvironment<>(null, null, newEnv.getFormInstance()), stack, hasMoreSessionUsages);
     }
 
     public ExecutionContext<P> override(ExecutionStack stack) {
-        return new ExecutionContext<>(keys, pushedAddObject, env, executorService, form, stack, hasMoreSessionUsages);
+        return new ExecutionContext<>(keys, pushedAsyncResult, env, executorService, form, stack, hasMoreSessionUsages);
     }
 
     public <T extends PropertyInterface> ExecutionContext<T> override(ImMap<T, ? extends ObjectValue> keys, ImMap<T, ? extends PropertyInterfaceImplement<P>> mapInterfaces) {
@@ -551,11 +558,11 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
     }
 
     public ExecutionContext<P> override(ImMap<P, ? extends ObjectValue> keys, boolean hasMoreSessionUsages) {
-        return new ExecutionContext<>(keys, pushedAddObject, env, executorService, form, stack, hasMoreSessionUsages);
+        return new ExecutionContext<>(keys, pushedAsyncResult, env, executorService, form, stack, hasMoreSessionUsages);
     }
 
     public <T extends PropertyInterface> ExecutionContext<T> override(ImMap<T, ? extends ObjectValue> keys, FormEnvironment<T> form) {
-        return new ExecutionContext<>(keys, pushedAddObject, env, executorService, form, stack, hasMoreSessionUsages);
+        return new ExecutionContext<>(keys, pushedAsyncResult, env, executorService, form, stack, hasMoreSessionUsages);
     }
 
     public QueryEnvironment getQueryEnv() {
@@ -596,19 +603,10 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
     }
 
     public <R> R popRequest(SQLCallable<R> callable) throws SQLException, SQLHandledException {
-        return getBL().LM.pushPopRequestValue(false, getEnv(), callable);
+        return getBL().LM.popRequest(getEnv(), callable);
     }
 
-    public <R> R pushRequestedValue(ObjectValue pushValue, Type pushType, SQLCallable<R> callable) throws SQLException, SQLHandledException {
-        return getBL().LM.pushRequestedValue(pushValue, pushType, getEnv(), callable);
-    }
-    
-    // чтение пользователя
-    public ObjectValue inputUserObject(final DialogRequest dialog) throws SQLException, SQLHandledException { // null если canceled
-        return requestUser(ObjectType.instance, () -> ThreadLocalContext.inputUserObject(dialog, stack));
-    }
-
-    // cannot use because of backward compatibility 
+    // cannot use because of backward compatibility
 //    public ObjectValue requestUserData(FileClass dataClass, Object oldValue) {
 //        assertNotUserInteractionInTransaction();
 //        ObjectValue userInput = pushedUserInput != null ? pushedUserInput : ThreadLocalContext.requestUserData(dataClass, oldValue);
@@ -627,28 +625,36 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         return getBL().LM.isRequestCanceled(getEnv());
     }
 
+    @Deprecated
     public ObjectValue requestUser(Type type, SQLCallable<ObjectValue> request) throws SQLException, SQLHandledException {
         assertNotUserInteractionInTransaction();
         return getBL().LM.getRequestedValue(type, getEnv(), request);
     }
 
+    @Deprecated
     public ObjectValue requestUserData(final DataClass dataClass, final Object oldValue) {
-        return requestUserData(dataClass, oldValue, true);
-    }
-
-    public ObjectValue requestUserData(final DataClass dataClass, final Object oldValue, boolean hasOldValue) {
         try {
-            return requestUser(dataClass, () -> ThreadLocalContext.inputUserData(dataClass, oldValue, hasOldValue));
+            return requestUser(dataClass, () -> {
+                InputResult inputResult = inputUserData(dataClass, oldValue, true, null, null);
+                return inputResult != null ? inputResult.value : null;
+            });
         } catch (SQLException | SQLHandledException e) {
             throw Throwables.propagate(e);
         }
     }
 
-    public ObjectValue inputUserData(DataClass dataClass, Object oldValue, boolean hasOldValue) {
+    public <T extends PropertyInterface> InputResult inputUserData(DataClass dataClass, Object oldValue, boolean hasOldValue, InputListEntity<T, P> list, InputList inputList) {
         assertNotUserInteractionInTransaction();
-        return ThreadLocalContext.inputUserData(dataClass, oldValue, hasOldValue);
+        if(pushedAsyncResult instanceof PushAsyncChange)
+            return ((PushAsyncChange) pushedAsyncResult).value;
+
+        InputContext<T> inputContext = null;
+        if(list != null)
+            inputContext = new InputContext<>(list.map(getKeys()), list.newSession, getSession(), getModifier(), inputList.strict);
+        return ThreadLocalContext.inputUserData(dataClass, oldValue, hasOldValue, inputContext, inputList);
     }
 
+    @Deprecated
     public ObjectValue requestUserClass(final CustomClass baseClass, final CustomClass defaultValue, final boolean concrete) throws SQLException, SQLHandledException {
         return requestUser(ObjectType.instance, () -> ThreadLocalContext.requestUserClass(baseClass, defaultValue, concrete));
     }

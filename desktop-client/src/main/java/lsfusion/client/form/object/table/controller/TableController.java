@@ -1,10 +1,12 @@
 package lsfusion.client.form.object.table.controller;
 
+import lsfusion.base.Pair;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.object.ClientObject;
 import lsfusion.client.form.property.ClientPropertyDraw;
+import lsfusion.client.form.view.Column;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -31,6 +33,7 @@ public interface TableController {
     ClientPropertyDraw getSelectedProperty();
     ClientGroupObjectValue getSelectedColumn();
     Object getSelectedValue(ClientPropertyDraw property, ClientGroupObjectValue columnKey);
+    List<Pair<Column, String>> getSelectedColumns();
 
     boolean changeOrders(ClientGroupObject groupObject, LinkedHashMap<ClientPropertyDraw, Boolean> value, boolean alreadySet);
 }

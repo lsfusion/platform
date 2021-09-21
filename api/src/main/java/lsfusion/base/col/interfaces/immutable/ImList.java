@@ -25,6 +25,7 @@ public interface ImList<K> extends Iterable<K> {
     ImCol<K> getCol();
 
     int indexOf(K key);
+    boolean containsNull();
     ImMap<Integer, K> toIndexedMap();
 
     ImList<K> addList(ImList<? extends K> list);
@@ -47,7 +48,6 @@ public interface ImList<K> extends Iterable<K> {
 
     <M> ImList<M> mapItListValues(Function<K, M> getter); // с последействием
 
-    <M> ImList<M> mapListValues(IntFunction<M> getter);
     <M> ImList<M> mapListValues(IntObjectFunction<K, M> getter);
     <M> ImList<M> mapListValues(Function<K, M> getter);
 

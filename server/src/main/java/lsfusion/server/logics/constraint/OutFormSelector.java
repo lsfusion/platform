@@ -36,6 +36,11 @@ public class OutFormSelector<P extends PropertyInterface> implements FormSelecto
     }
 
     @Override
+    public boolean isSingleGroup(ObjectSelector object) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public FormEntity getNFStaticForm() {
         return null;
     }
@@ -51,5 +56,10 @@ public class OutFormSelector<P extends PropertyInterface> implements FormSelecto
     @Override
     public Pair<FormEntity, ImRevMap<ObjectEntity, ObjectSelector>> getForm(BaseLogicsModule LM, DataSession session, ImMap<ObjectSelector, ? extends ObjectValue> mapObjectValues) {
         return new Pair<>(getStaticForm(LM), MapFact.EMPTYREV());
+    }
+
+    @Override
+    public FormSelector<ObjectSelector> merge(FormSelector formSelector) {
+        return null;
     }
 }

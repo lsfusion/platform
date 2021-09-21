@@ -1,142 +1,46 @@
 package lsfusion.client.form.design.view;
 
-import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.design.ClientContainer;
-import lsfusion.client.form.object.table.grid.view.GridTable;
-import lsfusion.interop.base.view.FlexAlignment;
-import lsfusion.interop.base.view.FlexConstraints;
-import lsfusion.interop.form.design.CachableLayout;
-import lsfusion.interop.form.event.KeyStrokes;
+import lsfusion.client.form.design.view.flex.FlexTabbedPanel;
+import lsfusion.client.form.design.view.widget.Widget;
 
-import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import java.awt.*;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
-import static java.lang.Math.max;
+import static lsfusion.base.BaseUtils.relativePosition;
 
 public class TabbedClientContainerView extends AbstractClientContainerView {
 
-    private final ClientFormController form;
+    protected final FlexTabbedPanel panel;
 
-    private final ContainerViewPanel panel;
-    private final JPanel hiddenHolderPanel;
-    private final TabbedPane tabbedPane;
+    protected final ArrayList<ClientComponent> visibleChildren = new ArrayList<>();
 
-    private final List<ClientComponent> visibleChildren = new ArrayList<>();
+    protected ClientComponent currentChild;
 
-    private ClientComponent currentChild;
+    public TabbedClientContainerView(final ClientFormController formController, final ClientContainer container) {
+        super(container);
 
-    public TabbedClientContainerView(ClientFormLayout formLayout, ClientContainer icontainer, ClientFormController iform) {
-        super(formLayout, icontainer);
         assert container.isTabbed();
 
-        this.form = iform;
-
-        // чтобы логика autohide работала нормально, нужно чтобы компоненты постоянно оставались в иерархии,
-        // чтобы от них нормально приходили invalidate'ы
-        // поэтому при удалении таба (при этом сам компонент удаляется из tabbedPane),
-        // компонент переносится в панель, которая ничего не лэйаутит и не влияет на размеры, но зато всегда присутсвует в иерархии
-
-        tabbedPane = new TabbedPane();
-
-        hiddenHolderPanel = new JPanel(null);
-
-        panel = new ContainerViewPanel();
-        panel.add(tabbedPane, BorderLayout.CENTER);
-        panel.add(hiddenHolderPanel, BorderLayout.SOUTH);
+        panel = new FlexTabbedPanel(vertical);
 
         if (container.children.size() > 0) {
             currentChild = container.children.get(0);
         }
 
-        initUIHandlers();
-    }
-
-    private void initUIHandlers() {
-        tabbedPane.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        int selectedIndex = tabbedPane.getSelectedIndex();
-                        if (selectedIndex != -1) {
-                            ClientComponent selectedChild = visibleChildren.get(selectedIndex);
-
-                            // вообще changeListener может вызваться при инициализации, но это проверка в том числе позволяет suppres'ить этот случай
-                            if (currentChild != selectedChild) {
-                                try {
-                                    currentChild = selectedChild;
-                                    form.setTabVisible(container, currentChild);
-                                } catch (IOException ex) {
-                                    throw Throwables.propagate(ex);
-                                }
-                            }
-                        }
-                    }
-                });
-            }
-        });
-
-        tabbedPane.addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyPressed(KeyEvent e) {
-                if (KeyStrokes.isEnterEvent(e)) {
-                    tabbedPane.transferFocus();
-                }
-            }
+        panel.setSelectionHandler(index -> {
+            onTabSelected(index, formController, container);
         });
     }
 
     @Override
-    public void addImpl(int index, ClientComponent child, JComponentPanel view) {
-        hiddenHolderPanel.add(view);
-    }
-
-    @Override
-    public void removeImpl(int index, ClientComponent child, JComponentPanel view) {
-        int visibleIndex = visibleChildren.indexOf(child);
-        if (visibleIndex != -1) {
-            visibleChildren.remove(visibleIndex);
-            tabbedPane.removeTab(visibleIndex);
-        }
-    }
-
-    @Override
-    public void updateLayout() {
-        int childCnt = childrenViews.size();
-        for (int i = 0; i < childCnt; i++) {
-            ClientComponent child = children.get(i);
-            Component childView = childrenViews.get(i);
-
-            int index = visibleChildren.indexOf(child);
-            if (childView.isVisible()) {
-                if (index == -1) {
-                    index = BaseUtils.relativePosition(child, children, visibleChildren);
-                    visibleChildren.add(index, child);
-                    tabbedPane.addTab(index, child, childView);
-                }
-            } else if (index != -1) {
-                visibleChildren.remove(index);
-                hiddenHolderPanel.add(childView);
-                tabbedPane.removeTab(index);
-            }
-        }
-    }
-
-    public ContainerViewPanel getPanel() {
-        return panel;
+    protected FlexPanel wrapBorderImpl(ClientComponent child) {
+        return null;
     }
 
     private int getTabIndex(ClientComponent component) {
@@ -150,113 +54,97 @@ public class TabbedClientContainerView extends AbstractClientContainerView {
         int index = getTabIndex(component);
         if(index >= 0) {
             currentChild = component;
-            tabbedPane.activateTab(index);
+            panel.selectTab(index);
         }
     }
 
-    public void updateTabCaption(ClientComponent component) {
-        int index = getTabIndex(component);
+    public void updateCaption(ClientContainer container) {
+        int index = getTabIndex(container);
         if(index >= 0)
-            tabbedPane.setTitleAt(index, component.getCaption());
+            panel.setTabCaption(index, container.caption);
     }
 
-    public class TabbedPane extends JTabbedPane {
-        public TabbedPane() {
-            super(SwingConstants.TOP, JTabbedPane.SCROLL_TAB_LAYOUT);
-        }
-
-        @Override
-        public Dimension getMinimumSize() {
-            return layoutSize(CachableLayout.minSizeGetter);
-        }
-
-        @Override
-        public Dimension getPreferredSize() {
-            return layoutSize(CachableLayout.prefSizeGetter);
-        }
-
-        private Dimension layoutSize(CachableLayout.ComponentSizeGetter sizeGetter) {
-            Dimension pref = super.getPreferredSize();
-
-            //заново считаем максимальный размер и вычитаем его, т. к. размеры таб-панели зависят от LAF
-            int maxWidth = 0;
-            int maxHeight = 0;
-            for (int i = 0; i < getTabCount(); i++) {
-                Component child = getComponentAt(i);
-                if (child != null) {
-                    Dimension size = sizeGetter.get(child);
-                    if (size != null) {
-                        maxWidth = max(maxWidth, size.width);
-                        maxHeight = max(maxHeight, size.height);
-                    }
-                }
+    protected void onTabSelected(int selectedIndex, ClientFormController formController, ClientContainer container) {
+        if (selectedIndex >= 0) {
+            ClientComponent selectedChild = visibleChildren.get(selectedIndex);
+            if (currentChild != selectedChild) {
+                currentChild = selectedChild;
+                formController.setTabVisible(container, selectedChild);
             }
-            pref.width -= maxWidth;
-            pref.height -= maxHeight;
-
-            Component selected = getSelectedComponent();
-            if (selected != null) {
-                Dimension d = sizeGetter.get(selected);
-                pref.width += d.width;
-                pref.height += d.height;
-            }
-
-            return pref;
-        }
-
-        public void addTab(int index, ClientComponent child, Component childView) {
-            // добавляем не сам компонент, а proxyPanel, чтобы TabbedPane не управляла его видимостью и не мешала логике autohide'ов
-            JComponentPanel proxyPanel = new JComponentPanel(true, FlexAlignment.START) {
-                @Override
-                public void validate() {
-                    super.validate();
-                    updatePageSizes(this);
-                }
-            };
-            
-            proxyPanel.setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1));
-
-            proxyPanel.add(childView, new FlexConstraints(child.getAlignment(), child.getFlex()));
-
-            insertTab(child.getCaption(), null, proxyPanel, null, index);
-//            updateTabCaption(child);
-        }
-
-        private void activateTab(int index) {
-            setSelectedIndex(index);
-        }
-
-        private void updatePageSizes(Container container) {
-            if (container.isVisible()) {
-                int childCnt = container.getComponentCount();
-                for (int i = 0; i < childCnt; ++i) {
-                    Component child = container.getComponent(i);
-                    if (child instanceof GridTable) {
-                        ((GridTable) child).updatePageSizeIfNeeded(false);
-                    } else if (child instanceof Container) {
-                        updatePageSizes((Container) child);
-                    }
-                }
-            }
-        }
-
-        public void removeTab(int index) {
-            removeTabAt(index);
         }
     }
 
-    public boolean isTabVisible(ClientComponent tab) {
-        return visibleChildren.contains(tab);
+    @Override
+    protected void addImpl(int index, ClientComponent child, Widget view) {
+        //adding is done in updateLayout()
+    }
+
+    @Override
+    protected void removeImpl(int index, ClientComponent child) {
+        int visibleIndex = visibleChildren.indexOf(child);
+        if (visibleIndex != -1) {
+            panel.removeTab(visibleIndex);
+            visibleChildren.remove(visibleIndex);
+        }
+    }
+
+    @Override
+    public Widget getView() {
+        return panel;
+    }
+
+    @Override
+    public void updateLayout(boolean[] childrenVisible) {
+        for (int i = 0, size = children.size(); i < size; i++) {
+            ClientComponent child = children.get(i);
+
+            int index = visibleChildren.indexOf(child);
+            if (childrenVisible[i]) {
+                if (index == -1) {
+                    index = relativePosition(child, children, visibleChildren);
+                    visibleChildren.add(index, child);
+                    panel.insertTab(childrenViews.get(i), getTabTitle(child), index, (deck, widget, beforeIndex) -> add(deck, widget, child, beforeIndex));
+                }
+            } else if (index != -1) {
+                visibleChildren.remove(index);
+                panel.removeTab(index);
+            }
+        }
+        ensureTabSelection();
+
+        super.updateLayout(childrenVisible);
     }
 
     @Override
     public Dimension getMaxPreferredSize(Map<ClientContainer, ClientContainerView> containerViews) {
-        int selected = tabbedPane.getSelectedIndex();
+        int selected = panel.getSelectedTab();
+        Dimension dimension;
         if (selected != -1) {
-            Dimension dimensions = getChildMaxPreferredSize(containerViews, selected);
-            dimensions.height += SwingDefaults.getComponentHeight() + 5; //little extra for borders, etc., getComponentHeight() - tab height
-            return dimensions;
+            dimension = getChildMaxPreferredSize(containerViews, selected);
+            dimension.height += SwingDefaults.getComponentHeight()  + 5; //little extra for borders, etc., getComponentHeight() - tab height
+            return dimension;
         }
         return new Dimension(0, 0);
+    }
+
+    private void ensureTabSelection() {
+        if (panel.getSelectedTab() == -1 && panel.getTabCount() != 0) {
+            panel.selectTab(0);
+        }
+    }
+
+    protected static String getTabTitle(ClientComponent child) {
+        String tabCaption = null;
+        if (child instanceof ClientContainer) {
+            tabCaption = ((ClientContainer) child).caption;
+        }
+        if (tabCaption == null) {
+            tabCaption = "";
+        }
+        return tabCaption;
+    }
+
+    public boolean isTabVisible(ClientComponent component) {
+        return visibleChildren.contains(component);
     }
 }

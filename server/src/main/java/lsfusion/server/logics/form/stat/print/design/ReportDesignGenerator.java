@@ -109,7 +109,7 @@ public class ReportDesignGenerator {
 
     public Map<ReportNode, JasperDesign> generate() throws JRException {
         try {
-            BaseLogicsModule baseLM = ThreadLocalContext.getBusinessLogics().LM;
+            BaseLogicsModule baseLM = ThreadLocalContext.getBaseLM();
             try(DataSession session = ThreadLocalContext.createSession()) {
                 charWidth = (Integer) baseLM.reportCharWidth.read(session);
                 rowHeight = (Integer) baseLM.reportRowHeight.read(session);
