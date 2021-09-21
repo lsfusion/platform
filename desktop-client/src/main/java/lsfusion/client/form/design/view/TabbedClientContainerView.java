@@ -40,12 +40,7 @@ public class TabbedClientContainerView extends AbstractClientContainerView {
 
     @Override
     protected FlexPanel wrapBorderImpl(ClientComponent child) {
-//      this wrapping is necessary because:
-//          we want border around the container
-//          autoShowHideContainers (automatical showing / hiding containers) uses setVisible, as well as TabbedDeckPanel (switching widgets), so they conflict with each other (however in current implementation only for base components)
-        FlexPanel proxyPanel = new FlexPanel(vertical);
-        //proxyPanel.setStyleName("gwt-TabPanelBottom");
-        return proxyPanel;
+        return null;
     }
 
     private int getTabIndex(ClientComponent component) {

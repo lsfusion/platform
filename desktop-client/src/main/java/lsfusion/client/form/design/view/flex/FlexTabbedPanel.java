@@ -14,21 +14,13 @@ public class FlexTabbedPanel extends FlexPanel {
 
     protected TabBar tabBar;
 
-    public FlexTabbedPanel() {
-        this(null, null);
-    }
-    public FlexTabbedPanel(String tabBarClass, Widget extraTabWidget) {
-        this(tabBarClass, extraTabWidget, true);
-    }
     public FlexTabbedPanel(boolean vertical) {
-        this(null, null, vertical);
+        this(null, vertical);
     }
-    private FlexTabbedPanel(String tabBarClass, Widget extraTabWidget, boolean vertical) {
+    private FlexTabbedPanel(Widget extraTabWidget, boolean vertical) {
         super(vertical);
 
         FlexTabBar tabBar = new FlexTabBar(extraTabWidget, !vertical);
-        //if (tabBarClass != null)
-        //    tabBar.addStyleName(tabBarClass);
         add((Widget) tabBar, FlexAlignment.STRETCH);
         tabBar.setBeforeSelectionHandler(this::onBeforeTabSelected);
         tabBar.setSelectionHandler(FlexTabbedPanel.this::onTabSelected);
@@ -48,14 +40,6 @@ public class FlexTabbedPanel extends FlexPanel {
 
         if(selectionHandler != null)
             selectionHandler.accept(tabIndex);
-
-        scheduleOnResize(this);
-    }
-
-    public static void scheduleOnResize(final Widget widget) {
-        //if (widget instanceof RequiresResize) {
-        //    Scheduler.get().scheduleDeferred(() -> ((RequiresResize) widget).onResize());
-        //}
     }
 
     private Consumer<Integer> beforeSelectionHandler;
@@ -70,13 +54,6 @@ public class FlexTabbedPanel extends FlexPanel {
         selectionHandler = handler;
     }
 
-//    @Override
-//    public void onResize() {
-//        if (isVisible() && visibleWidget instanceof RequiresResize) {
-//            ((RequiresResize) visibleWidget).onResize();
-//        }
-//    }
-
     /**
      * Adds a widget to the tab panel. If the Widget is already attached to the
      * TabPanel, it will be moved to the right-most index.
@@ -84,13 +61,6 @@ public class FlexTabbedPanel extends FlexPanel {
 
     public interface AddToDeck {
         void add(FlexPanel deck, Widget widget, int beforeIndex);
-    }
-    public void addTab(Widget w, String tabText) {
-        addTab(w, new LabelWidget(tabText));
-    }
-
-    public void addTab(Widget w, Widget tabWidget) {
-        insertTab(w, tabWidget, getTabCount(), FlexPanel::addFill);
     }
 
     public void insertTab(Widget widget, String tabText, int beforeIndex, AddToDeck addToDeck) {
@@ -152,7 +122,6 @@ public class FlexTabbedPanel extends FlexPanel {
 
     public void showTab(int index) {
         index = getTabIndex(index); // adding flex tab bar
-        //checkIndexBoundsForAccess(index);
 
         Widget oldWidget = visibleWidget;
         visibleWidget = getWidget(index);

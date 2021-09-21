@@ -8,17 +8,13 @@ import lsfusion.interop.base.view.FlexAlignment;
 
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
+import javax.swing.border.MatteBorder;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.function.Consumer;
 
-/** based on from com.google.gwt.user.client.ui.TabBar */
-public class FlexTabBar extends FlexPanel/*Composite*/ implements TabBar {
-
-    public interface Tab/* extends HasAllKeyHandlers, HasClickHandlers*/ {
-    }
+public class FlexTabBar extends FlexPanel implements TabBar {
 
     private final FlexPanel panel;
 
@@ -73,7 +69,7 @@ public class FlexTabBar extends FlexPanel/*Composite*/ implements TabBar {
 
         //todo: as gwt-TabBarItem. We need also outside emptyBorder as margin, but it is shown with same background as component
         //widget.getComponent().setBorder(new CompoundBorder(new CompoundBorder(new EmptyBorder(0, 0, 0, 5), new LineBorder(SwingDefaults.getPanelBorderColor())), new EmptyBorder(2, 5, 2, 5)));
-        widget.getComponent().setBorder(new CompoundBorder(new LineBorder(SwingDefaults.getPanelBorderColor()), new EmptyBorder(2, 5, 2, 5)));
+        widget.getComponent().setBorder(new CompoundBorder(new MatteBorder(1, 1, 0, 1, SwingDefaults.getPanelBorderColor()), new EmptyBorder(2, 5, 2, 5)));
 
         panel.add(widget, beforeIndex + 1, FlexAlignment.STRETCH);
 
