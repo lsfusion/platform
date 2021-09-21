@@ -30,7 +30,7 @@ public class LinearContainerView extends GAbstractContainerView {
     public LinearContainerView(GContainer container) {
         super(container);
 
-        assert !container.isTabbed();
+        assert !container.tabbed;
 
         linesCount = container.lines;
 

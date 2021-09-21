@@ -127,6 +127,8 @@ To access design components, you can use their names or address property compone
 |`childrenAlignment`|Alignment of child components inside a container. Acceptable values: `START`, `CENTER`, `END`|Alignment type|`START`|`CENTER`|
 |`columns`|Number of columns in a `COLUMNS` type container<br/>**deprecated since version 5, use `lines`**|Integer literal|`1`|`3`|
 |`lines`|Number of lines (rows or columns) in container|Integer literal|`1`|`3`|
+|`horizontal`|Container is horizontal|[Logical literal](Literals.md#booleanliteral)|`FALSE`|`TRUE`<br/>`FALSE`|
+|`tabbed`|Container is tabbed|[Logical literal](Literals.md#booleanliteral)|`FALSE`|`TRUE`<br/>`FALSE`|
 |`columnLabelsWidth`|Width of component captions in a `COLUMNS` type container.|Integer literal|`0`|`50`|
 |`showIf`|Specifies a condition under which the container will be displayed.|[Expression](Expression.md)|`NULL`|`isLeapYear(date)`<br/>`hasComplexity(a, b)`|
 

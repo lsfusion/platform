@@ -44,18 +44,10 @@ public class GFormLayout extends ResizableSimplePanel {
     }
 
     private static GAbstractContainerView createContainerView(GFormController form, GContainer container) {
-        if (container.isLinear()) {
-            return new LinearContainerView(container);
-        } else if (container.isSplit()) {
-            return new LinearContainerView(container);
-        } else if (container.isTabbed()) {
+        if (container.tabbed) {
             return new TabbedContainerView(form, container);
-        } else if (container.isColumns()) {
-            return new LinearContainerView(container);
-        } else if(container.isScroll()) {
-            return new LinearContainerView(container);
         } else {
-            throw new IllegalStateException("Incorrect container type");
+            return new LinearContainerView(container);
         }
     }
 
@@ -70,7 +62,7 @@ public class GFormLayout extends ResizableSimplePanel {
         // debug info
         if (container.sID != null) {
             viewWidget.getElement().setAttribute("lsfusion-container", container.sID);
-            viewWidget.getElement().setAttribute("lsfusion-container-type", container.type.name());
+            viewWidget.getElement().setAttribute("lsfusion-container-type", container.getContainerType());
         }
 
         for (GComponent child : container.children) {

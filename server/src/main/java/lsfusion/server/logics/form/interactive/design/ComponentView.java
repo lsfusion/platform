@@ -58,9 +58,9 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
             if(alignment == FlexAlignment.STRETCH) { // for stretch size = 0 is more predictable (it gives scroll only for that block, not the whole container)
                 // container with a single element is usually created for a scroll, and in that case it makes sense to have it auto sized
                 // for tabpane always has tab bar visible, so there are at least two elements and default size 0 gives more predictable behaviour
-                if(height == -2 && container.isHorizontal() && (container.getChildrenList().size() > 1 || container.isTabbedPane()))
+                if(height == -2 && container.isHorizontal() && (container.getChildrenList().size() > 1 || container.isTabbed()))
                     height = 0;
-                if(width == -2 && container.isVertical() && (container.getChildrenList().size() > 1 || container.isTabbedPane()))
+                if(width == -2 && !container.isHorizontal() && (container.getChildrenList().size() > 1 || container.isTabbed()))
                     width = 0;
             }
             if(width == -2 && container.isSplitHorizontal())
@@ -93,7 +93,7 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
     public double getDefaultFlex(FormEntity formEntity) {
         ContainerView container = getLayoutParamContainer();
         if (container != null) {
-            if (container.isTabbedPane())
+            if (container.isTabbed())
                 return 1;
         }
         return getBaseDefaultFlex(formEntity);
@@ -112,7 +112,7 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
     public FlexAlignment getDefaultAlignment(FormEntity formEntity) {
         ContainerView container = getLayoutParamContainer();
         if (container != null) {
-            if ((container.isScroll() || container.isSplit() || container.isTabbedPane()))
+            if ((container.isScroll() || container.isSplit() || container.isTabbed()))
                 return FlexAlignment.STRETCH;
         }
         return getBaseDefaultAlignment(formEntity);
@@ -211,7 +211,7 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
     }
     public ContainerView getTabbedContainer() { // when it is known that component is a tab of a tabbed pane
         ContainerView container = getContainer();
-        assert container.isTabbedPane();
+        assert container.isTabbed();
         return container;
     }
     public ContainerView getLayoutParamContainer() { // for using in default layouting parameters
@@ -239,7 +239,7 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
                 return null;
             if (parentContainer.showIf != null) 
                 return parent;
-            if (parentContainer.isTabbedPane()) 
+            if (parentContainer.isTabbed())
                 return this;
         }
         return parent.getLocalHideableContainer();
@@ -253,7 +253,7 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         if(parent instanceof ContainerView) {
             if (((ContainerView)parent).main)
                 return null;
-            if (((ContainerView)parent).isTabbedPane())
+            if (((ContainerView)parent).isTabbed())
                 return this;
         }
         return parent.getTabHiddenContainer();

@@ -146,7 +146,7 @@ public class PropertyDrawView extends ComponentView {
     @Override
     public FlexAlignment getBaseDefaultAlignment(FormEntity formEntity) {
         ContainerView container = getLayoutParamContainer();
-        if (container != null && container.isVertical() && isHorizontalValueFlex())
+        if (container != null && !container.isHorizontal() && isHorizontalValueFlex())
             return FlexAlignment.STRETCH;
         return super.getBaseDefaultAlignment(formEntity);
     }

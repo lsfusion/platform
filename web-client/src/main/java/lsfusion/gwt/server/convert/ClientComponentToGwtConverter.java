@@ -24,7 +24,6 @@ import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.classes.GClass;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
-import lsfusion.gwt.client.form.design.GContainerType;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.event.*;
 import lsfusion.gwt.client.form.filter.GRegularFilter;
@@ -127,28 +126,14 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         return font;
     }
 
-    private GContainerType convertContainerType(ContainerType containerType) {
-        switch (containerType) {
-            case CONTAINERH: return GContainerType.CONTAINERH;
-            case CONTAINERV: return GContainerType.CONTAINERV;
-            case COLUMNS: return GContainerType.COLUMNS;
-            case TABBED_PANE: return GContainerType.TABBED_PANE;
-            case VERTICAL_SPLIT_PANE: return GContainerType.VERTICAL_SPLIT_PANE;
-            case HORIZONTAL_SPLIT_PANE: return GContainerType.HORIZONTAL_SPLIT_PANE;
-            case SCROLL: return GContainerType.SCROLL;
-            case FLOW:
-                throw new IllegalStateException("FLOW container isn't yet supported");
-        }
-        throw new IllegalStateException("Unknown container type");
-    }
-
     @Cached
     @Converter(from = ClientContainer.class)
     public GContainer convertContainer(ClientContainer clientContainer) {
         GContainer container = initGwtComponent(clientContainer,  new GContainer());
 
         container.caption = clientContainer.caption;
-        container.type = convertContainerType(clientContainer.getType());
+        container.horizontal = clientContainer.horizontal;
+        container.tabbed = clientContainer.tabbed;
         container.childrenAlignment = convertFlexAlignment(clientContainer.childrenAlignment);
         container.lines = clientContainer.lines;
 

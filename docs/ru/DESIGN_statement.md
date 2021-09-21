@@ -127,6 +127,8 @@ title: 'Инструкция DESIGN'
 |`childrenAlignment`|Способ выравнивания дочерних компонентов внутри контейнера. Допустимые значения: `START`, `CENTER`, `END`|Тип выравнивания|`START`|`CENTER`|
 |`columns`|Количество колонок в контейнере типа `COLUMNS`<br/>**deprecated since version 5, используйте `lines`**|Целочисленный литерал|`1`|`3`|
 |`lines`|Количество линий (рядов или колонок) в контейнере|Целочисленный литерал|`1`|`3`|
+|`horizontal`|Горизонтальный контейнер|[Логический литерал](Literals.md#booleanliteral)|`FALSE`|`TRUE`<br/>`FALSE`|
+|`tabbed`|Контейнер с табами|[Логический литерал](Literals.md#booleanliteral)|`FALSE`|`TRUE`<br/>`FALSE`|
 |`columnLabelsWidth`|Ширина заголовков компонентов в контейнере типа `COLUMNS`|Целочисленный литерал|`0`|`50`|
 |`showIf`|Указание условия, при котором контейнер будет отображаться|[Выражение](Expression.md)|`NULL`|`isLeapYear(date)`<br/>`hasComplexity(a, b)`|
 

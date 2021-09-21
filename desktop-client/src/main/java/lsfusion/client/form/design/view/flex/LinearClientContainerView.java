@@ -30,7 +30,7 @@ public class LinearClientContainerView extends AbstractClientContainerView {
     public LinearClientContainerView(ClientContainer container) {
         super(container);
 
-        assert !container.isTabbed();
+        assert !container.tabbed;
 
         linesCount = container.lines;
 

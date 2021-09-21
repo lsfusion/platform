@@ -405,7 +405,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     }
 
     public boolean isPanelCaptionLast() {
-        return panelCaptionLast != null ? panelCaptionLast : (baseType instanceof GLogicalType && !panelCaptionVertical && container.isVertical());
+        return panelCaptionLast != null ? panelCaptionLast : (baseType instanceof GLogicalType && !panelCaptionVertical && !container.horizontal);
     }
 
     public GFlexAlignment getPanelCaptionAlignment() {

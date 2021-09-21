@@ -28,6 +28,14 @@ public class ContainerViewProxy extends ComponentViewProxy<ContainerView> {
     public void setType(ContainerType type) {
         target.setType(type);
     }
+
+    public void setHorizontal(boolean horizontal) {
+        target.setHorizontal(horizontal);
+    }
+
+    public void setTabbed(boolean tabbed) {
+        target.setTabbed(tabbed);
+    }
     
     public void setChildrenAlignment(FlexAlignment falign) {
         target.setChildrenAlignment(falign);

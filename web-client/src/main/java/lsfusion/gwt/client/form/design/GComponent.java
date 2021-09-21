@@ -50,7 +50,7 @@ public class GComponent implements Serializable {
     }
 
     public boolean isTab() {
-        return container != null && container.isTabbed();
+        return container != null && container.tabbed;
     }
 
     public double getFlex() {

@@ -25,7 +25,7 @@ public class TabbedClientContainerView extends AbstractClientContainerView {
     public TabbedClientContainerView(final ClientFormController formController, final ClientContainer container) {
         super(container);
 
-        assert container.isTabbed();
+        assert container.tabbed;
 
         panel = new FlexTabbedPanel(vertical);
 

@@ -12,14 +12,13 @@ import lsfusion.gwt.client.form.property.GPropertyReader;
 import java.util.ArrayList;
 import java.util.List;
 
-import static lsfusion.gwt.client.form.design.GContainerType.*;
-
 public class GContainer extends GComponent {
     public String caption;
 
     public boolean main;
 
-    public GContainerType type;
+    public boolean horizontal;
+    public boolean tabbed;
     public GFlexAlignment childrenAlignment;
 
     public int lines;
@@ -29,10 +28,10 @@ public class GContainer extends GComponent {
     @Override
     public String toString() {
         return "GContainer" +
-                "[" + sID + "]" +
-                "[" + type + "]{" +
-                "caption='" + caption + '\'' +
-                ", alignment=" + getAlignment() +
+                "[" + sID + "] " +
+                getContainerType() + ", " +
+                "caption='" + caption + "', " +
+                "alignment=" + getAlignment() +
                 '}';
     }
 
@@ -40,12 +39,8 @@ public class GContainer extends GComponent {
         return childrenAlignment;
     }
 
-    public boolean isTabbed() {
-        return type == TABBED_PANE;
-    }
-
     public int getFlexCount() {
-        if(isTabbed())
+        if(tabbed)
             return 0;
 
         int count = 0;
@@ -53,14 +48,6 @@ public class GContainer extends GComponent {
             if(child.getFlex() > 0)
                 count++;
         return count;
-    }
-
-    public boolean isSplit() {
-        return type == HORIZONTAL_SPLIT_PANE || type == VERTICAL_SPLIT_PANE;
-    }
-
-    public boolean isScroll() {
-        return type == SCROLL;
     }
 
     public List<GGrid> getAllGrids() {
@@ -110,27 +97,15 @@ public class GContainer extends GComponent {
         return null;
     }
 
-    public boolean isSplitVertical() {
-        return type == VERTICAL_SPLIT_PANE;
-    }
-
-    public boolean isSplitHorizontal() {
-        return type == HORIZONTAL_SPLIT_PANE;
-    }
-
-    public boolean isHorizontal() {
-        return isLinearHorizontal() || isSplitHorizontal();
-    }
-
-    public boolean isVertical() {
-        return isLinearVertical() || isSplitVertical() || isColumns() || isTabbed();
+    public String getContainerType() {
+        return "horizontal=" + horizontal + ", tabbed=" + tabbed;
     }
 
     public boolean isSingleElement() {
         return children.size() == 1;
     }
     public boolean isAlignCaptions() {
-        if(!isVertical()) // later maybe it makes sense to support align captions for horizontal containers, but with no-wrap it doesn't make much sense
+        if(horizontal) // later maybe it makes sense to support align captions for horizontal containers, but with no-wrap it doesn't make much sense
             return false;
 
         int notActions = 0;
@@ -147,26 +122,6 @@ public class GContainer extends GComponent {
             return false;
 
         return true;
-    }
-
-    public boolean isLastChild(GComponent child) {
-        return children.indexOf(child) == children.size() - 1;
-    }
-
-    public boolean isLinearVertical() {
-        return type == CONTAINERV;
-    }
-
-    public boolean isLinearHorizontal() {
-        return type == CONTAINERH;
-    }
-
-    public boolean isLinear() {
-        return isLinearVertical() || isLinearHorizontal();
-    }
-
-    public boolean isColumns() {
-        return type == COLUMNS;
     }
 
     private class GCaptionReader implements GPropertyReader {
@@ -186,6 +141,6 @@ public class GContainer extends GComponent {
         public String getNativeSID() {
             return sID;
         }
-    };
+    }
     public final GPropertyReader captionReader = new GCaptionReader();
 }

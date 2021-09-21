@@ -24,7 +24,7 @@ public class TabbedContainerView extends GAbstractContainerView {
     public TabbedContainerView(final GFormController formController, final GContainer container) {
         super(container);
 
-        assert container.isTabbed();
+        assert container.tabbed;
 
         panel = new FlexTabbedPanel(vertical);
 

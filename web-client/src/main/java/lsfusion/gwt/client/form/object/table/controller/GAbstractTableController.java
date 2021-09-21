@@ -216,11 +216,9 @@ public abstract class GAbstractTableController extends GPropertyController imple
 
     private void scrollToTop(GContainer container) {
         if (container != null) {
-            if (container.isScroll()) {
-                Element childElement = getFormLayout().getContainerView(container).getView().getElement().getFirstChildElement();
-                if (childElement != null && childElement.getScrollTop() != 0) {
-                    childElement.setScrollTop(0);
-                }
+            Element childElement = getFormLayout().getContainerView(container).getView().getElement().getFirstChildElement();
+            if (childElement != null && childElement.getScrollTop() != 0) {
+                childElement.setScrollTop(0);
             }
             scrollToTop(container.container);
         }

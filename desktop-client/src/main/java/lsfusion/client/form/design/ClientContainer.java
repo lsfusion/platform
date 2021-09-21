@@ -1,17 +1,13 @@
 package lsfusion.client.form.design;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.controller.remote.serialization.ClientSerializationPool;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.object.table.controller.TableController;
-import lsfusion.client.form.object.table.grid.ClientGrid;
-import lsfusion.client.form.object.table.tree.ClientTreeGroup;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.ClientPropertyReader;
 import lsfusion.interop.base.view.FlexAlignment;
-import lsfusion.interop.form.design.ContainerType;
 import lsfusion.interop.form.property.PropertyReadType;
 
 import java.io.DataInputStream;
@@ -21,13 +17,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static lsfusion.interop.form.design.ContainerType.*;
-
 public class ClientContainer extends ClientComponent {
 
     public String caption;
 
-    private ContainerType type = ContainerType.CONTAINERH;
+    public boolean horizontal;
+    public boolean tabbed;
 
     public FlexAlignment childrenAlignment = FlexAlignment.START;
 
@@ -46,7 +41,8 @@ public class ClientContainer extends ClientComponent {
 
         pool.writeString(outStream, caption);
 
-        pool.writeObject(outStream, type);
+        pool.writeBoolean(outStream, horizontal);
+        pool.writeBoolean(outStream, tabbed);
 
         pool.writeObject(outStream, childrenAlignment);
 
@@ -61,7 +57,8 @@ public class ClientContainer extends ClientComponent {
 
         caption = pool.readString(inStream);
 
-        type = pool.readObject(inStream);
+        horizontal = pool.readBoolean(inStream);
+        tabbed = pool.readBoolean(inStream);
 
         childrenAlignment = pool.readObject(inStream);
 
@@ -105,43 +102,10 @@ public class ClientContainer extends ClientComponent {
         return BaseUtils.nullToString(caption);
     }
 
-    public ContainerType getType() {
-        return type;
-    }
-
-    public void setType(ContainerType type) {
-        this.type = type;
-        updateDependency(this, "type");
-    }
-
-    public boolean isTabbed() {
-        return type == TABBED_PANE;
-    }
-
     public boolean main;
 
-    public boolean isSplit() {
-        return isSplitHorizontal() || isSplitVertical();
-    }
-
-    public boolean isSplitVertical() {
-        return type == VERTICAL_SPLIT_PANE;
-    }
-
-    public boolean isSplitHorizontal() {
-        return type == HORIZONTAL_SPLIT_PANE;
-    }
-
-    public boolean isHorizontal() {
-        return isLinearHorizontal() || isSplitHorizontal();
-    }
-
-    public boolean isVertical() {
-        return isLinearVertical() || isSplitVertical() || isColumns() || isTabbed();
-    }
-
     public boolean isAlignCaptions() {
-        if(!isVertical()) // later maybe it makes sense to support align captions for horizontal containers, but with no-wrap it doesn't make much sense
+        if(horizontal) // later maybe it makes sense to support align captions for horizontal containers, but with no-wrap it doesn't make much sense
             return false;
 
         int notActions = 0;
@@ -158,30 +122,6 @@ public class ClientContainer extends ClientComponent {
             return false;
 
         return true;
-    }
-
-    public boolean isLinearVertical() {
-        return type == CONTAINERV;
-    }
-
-    public boolean isLinearHorizontal() {
-        return type == CONTAINERH;
-    }
-
-    public boolean isLinear() {
-        return isLinearVertical() || isLinearHorizontal();
-    }
-
-    public boolean isColumns() {
-        return type == COLUMNS;
-    }
-
-    public boolean isScroll() {
-        return type == SCROLL;
-    }
-
-    public boolean isFlow() {
-        return type == FLOW;
     }
 
     public ClientContainer findContainerBySID(String sID) {
@@ -242,7 +182,7 @@ public class ClientContainer extends ClientComponent {
     };
 
     public int getFlexCount() {
-        if(isTabbed())
+        if(tabbed)
             return 0;
 
         int count = 0;

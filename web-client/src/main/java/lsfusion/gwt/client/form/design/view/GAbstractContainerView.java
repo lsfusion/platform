@@ -29,7 +29,7 @@ public abstract class GAbstractContainerView {
     protected GAbstractContainerView(GContainer container) {
         this.container = container;
 
-        vertical = container.isVertical();
+        vertical = !container.horizontal;
     }
 
     public void add(GComponent child, final Widget view) {

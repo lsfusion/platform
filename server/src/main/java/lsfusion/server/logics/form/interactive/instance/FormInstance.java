@@ -1749,7 +1749,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     protected Map<ContainerView, ComponentView> visibleTabs = new HashMap<>();
 
     public void setTabVisible(ContainerView view, ComponentView page) throws SQLException, SQLHandledException {
-        assert view.isTabbedPane();
+        assert view.isTabbed();
         updateActiveTabProperty(page);
         visibleTabs.put(view, page);
     }
