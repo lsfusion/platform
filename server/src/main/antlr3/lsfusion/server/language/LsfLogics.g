@@ -648,9 +648,10 @@ propertyClassViewType returns [ClassViewType type]
 	;
 
 propertyCustomView returns [String customRenderFunction, String customEditorFunction]
-	:	'CUSTOM' (renderFun=stringLiteral { $customRenderFunction = $renderFun.val;})?
+	:	'CUSTOM' ((renderFun=stringLiteral { $customRenderFunction = $renderFun.val;})
+	    | ((renderFun=stringLiteral { $customRenderFunction = $renderFun.val;})?
         // EDIT TEXT is a temporary fix for backward compatibility
-		(('CHANGE' | ('EDIT' PRIMITIVE_TYPE)) { $customEditorFunction = "DEFAULT"; } (editFun=stringLiteral {$customEditorFunction = $editFun.val; })?)? // "DEFAULT" is hardcoded and used in GFormController.edit
+		(('CHANGE' | ('EDIT' PRIMITIVE_TYPE)) { $customEditorFunction = "DEFAULT"; } (editFun=stringLiteral {$customEditorFunction = $editFun.val; })?))) // "DEFAULT" is hardcoded and used in GFormController.edit
 	;
 
 listViewType returns [ListViewType type, PivotOptions options, String customRenderFunction, String mapTileProvider]
