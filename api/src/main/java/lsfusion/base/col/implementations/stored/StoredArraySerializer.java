@@ -3,30 +3,21 @@ package lsfusion.base.col.implementations.stored;
 import java.io.*;
 
 public interface StoredArraySerializer {
-    byte[] serialize(Object o);
-    Object deserialize(int id, byte[] buf);
+    void serialize(Object o, ByteArrayOutputStream oStream);
+    Object deserialize(ByteArrayInputStream buf);
     
     int getId(Object o);
     
-    static byte[] serializeSerializable(Object o) throws IOException {
+    static void serializeSerializable(Object o, ByteArrayOutputStream outStream) throws IOException {
         assert o instanceof Serializable;
-
-        try (
-            ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-            ObjectOutputStream ostream = new ObjectOutputStream(bytes);
-        ) {
-            ostream.writeObject(o);
-            return bytes.toByteArray();
+        try (ObjectOutputStream objStream = new ObjectOutputStream(outStream)) {
+            objStream.writeObject(o);
         }
     }
 
-    static Object deserializeSerializable(byte[] buf) throws IOException, ClassNotFoundException {
-        try (
-            ByteArrayInputStream bytes = new ByteArrayInputStream(buf);
-            ObjectInputStream istream = new ObjectInputStream(bytes);
-        ) {
-            Object obj = istream.readObject();
-            return obj;
+    static Object deserializeSerializable(ByteArrayInputStream inpStream) throws IOException, ClassNotFoundException {
+        try (ObjectInputStream objStream = new ObjectInputStream(inpStream)) {
+            return objStream.readObject();
         }
     }
     
