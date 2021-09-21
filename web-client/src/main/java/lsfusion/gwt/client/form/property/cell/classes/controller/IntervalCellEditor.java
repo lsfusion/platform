@@ -1,12 +1,15 @@
 package lsfusion.gwt.client.form.property.cell.classes.controller;
 
+import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.user.client.Event;
+import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.classes.data.GIntervalType;
 import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.controller.WindowValueCellEditor;
-import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -35,14 +38,34 @@ public class IntervalCellEditor extends WindowValueCellEditor {
     }
 
     @Override
+    public void onBrowserEvent(Element parent, EventHandler handler) {
+        super.onBrowserEvent(parent, handler);
+        if (BrowserEvents.BLUR.equals(handler.event.getType())) {
+            EventTarget target = handler.event.getRelatedEventTarget();
+            if (target == null || isElementPickerChild(parent, target))
+                parent.focus();
+            else
+                commit(parent, CommitReason.BLURRED);
+        }
+    }
+
+    protected native boolean isElementPickerChild(JavaScriptObject parent, JavaScriptObject element)/*-{
+        return $(parent).data('daterangepicker').container.get(0).contains(element);
+    }-*/;
+
+    @Override
     public void start(Event event, Element parent, Object oldValue) {
         createPicker(parent, interval.getDate(oldValue, true), interval.getDate(oldValue, false), intervalType, false);
     }
 
     @Override
     public void stop(Element parent) {
-        // todo:removePicker
+        removePicker(parent);
     }
+
+    protected native void removePicker(JavaScriptObject parent)/*-{
+        $(parent).data('daterangepicker').remove();
+    }-*/;
 
     protected native void createPicker(Element parent, Date startDate, Date endDate, String intervalType, boolean singleDatePicker)/*-{
         window.$ = $wnd.jQuery;
