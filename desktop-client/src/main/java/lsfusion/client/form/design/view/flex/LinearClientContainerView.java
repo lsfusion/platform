@@ -20,11 +20,11 @@ public class LinearClientContainerView extends AbstractClientContainerView {
 
     protected final FlexPanel panel;
 
-    protected final int columnsCount;
+    protected final int linesCount;
     protected final boolean alignCaptions;
 
-    protected FlexPanel[] columns;
-    protected FlexPanel[] captionColumns;
+    protected FlexPanel[] lines;
+    protected FlexPanel[] captionLines;
     protected List<AlignCaptionPanel> childrenCaptions;
 
     public LinearClientContainerView(ClientContainer container) {
@@ -32,7 +32,7 @@ public class LinearClientContainerView extends AbstractClientContainerView {
 
         assert !container.isTabbed();
 
-        columnsCount = container.columns;
+        linesCount = container.lines;
 
         FlexAlignment justifyContent = container.getFlexJustify(); // when there is free space (there is no non-zero flex)
 
@@ -45,19 +45,19 @@ public class LinearClientContainerView extends AbstractClientContainerView {
         else {
             panel = new FlexPanel(!vertical, FlexAlignment.START);
 
-            columns = new FlexPanel[columnsCount];
-            captionColumns = new FlexPanel[columnsCount];
+            lines = new FlexPanel[linesCount];
+            captionLines = new FlexPanel[linesCount];
             childrenCaptions = new ArrayList<>();
-            for (int i = 0; i < columnsCount; i++) {
+            for (int i = 0; i < linesCount; i++) {
                 if(alignCaptions) {
-                    FlexPanel captionColumn = new FlexPanel(vertical, justifyContent);
-                    panel.add((Widget)captionColumn, FlexAlignment.STRETCH); // however it seems that FlexAlignment.STRETCH is also possible
-                    captionColumns[i] = captionColumn;
+                    FlexPanel captionLine = new FlexPanel(vertical, justifyContent);
+                    panel.add((Widget)captionLine, FlexAlignment.STRETCH); // however it seems that FlexAlignment.STRETCH is also possible
+                    captionLines[i] = captionLine;
                 }
 
-                FlexPanel column = new FlexPanel(vertical, justifyContent);
-                panel.addFillFlex(column, null); // we're using null flex basis to make columns behaviour similar to manually defined containers
-                columns[i] = column;
+                FlexPanel line = new FlexPanel(vertical, justifyContent);
+                panel.addFillFlex(line, null); // we're using null flex basis to make lines behaviour similar to manually defined containers
+                lines[i] = line;
             }
         }
 
@@ -65,11 +65,11 @@ public class LinearClientContainerView extends AbstractClientContainerView {
     }
 
     public boolean isSimple() {
-        return isSingleColumn() && !alignCaptions;
+        return isSingleLine() && !alignCaptions;
     }
 
-    private boolean isSingleColumn() {
-        return columnsCount == 1;
+    private boolean isSingleLine() {
+        return linesCount == 1;
     }
 
     private static class AlignCaptionPanel extends FlexPanel {
@@ -120,7 +120,7 @@ public class LinearClientContainerView extends AbstractClientContainerView {
             };
         }
 
-        if(isSingleColumn())
+        if(isSingleLine())
             addChildrenView(index, 0);
         else { // collections are already updated
             removeChildrenViews(index + 1, -1);
@@ -138,7 +138,7 @@ public class LinearClientContainerView extends AbstractClientContainerView {
 
     @Override
     public void removeImpl(int index, ClientComponent child) {
-        if(isSingleColumn())
+        if(isSingleLine())
             removeChildrenView(index, 0);
         else { // collections are not yet updated
             removeChildrenViews(index, 0);
@@ -160,24 +160,24 @@ public class LinearClientContainerView extends AbstractClientContainerView {
     }
 
     private void addChildrenView(int index, int offset) {
-        int rowIndex = (index + offset) / columnsCount;
-        int columnIndex = (index + offset) % columnsCount;
+        int rowIndex = (index + offset) / linesCount;
+        int lineIndex = (index + offset) % linesCount;
 
-        add(isSimple() ? panel : columns[columnIndex], childrenViews.get(index), children.get(index), rowIndex);
+        add(isSimple() ? panel : lines[lineIndex], childrenViews.get(index), children.get(index), rowIndex);
 
         if(alignCaptions) {
             AlignCaptionPanel captionPanel = childrenCaptions.get(index);
-            captionColumns[columnIndex].add(captionPanel, rowIndex, FlexAlignment.START, 0, captionPanel.baseSize);
+            captionLines[lineIndex].add(captionPanel, rowIndex, FlexAlignment.START, 0, captionPanel.baseSize);
         }
     }
 
     private void removeChildrenView(int index, int offset) {
-        int columnIndex = (index + offset) % columnsCount;
+        int lineIndex = (index + offset) % linesCount;
 
-        (isSimple() ? panel : columns[columnIndex]).remove(childrenViews.get(index));
+        (isSimple() ? panel : lines[lineIndex]).remove(childrenViews.get(index));
 
         if(alignCaptions)
-            captionColumns[columnIndex].remove((Widget) childrenCaptions.get(index));
+            captionLines[lineIndex].remove((Widget) childrenCaptions.get(index));
     }
 
     @Override
@@ -199,14 +199,14 @@ public class LinearClientContainerView extends AbstractClientContainerView {
         int opposite = 0;
 
         if (size > 0) {
-            int rows = (size - 1) / columnsCount + 1;
-            for (int i = 0; i < columnsCount; i++) {
-                int columnCross = 0;
-                int columnMain = 0;
+            int rows = (size - 1) / linesCount + 1;
+            for (int i = 0; i < linesCount; i++) {
+                int lineCross = 0;
+                int lineMain = 0;
                 int captionMain = 0;
 
                 for (int j = 0; j < rows; j++) {
-                    int index = j * columnsCount + i;
+                    int index = j * linesCount + i;
                     if(index < size) {
                         if(alignCaptions) {
                             Dimension captionPref = calculateMaxPreferredSize(childrenCaptions.get(index));
@@ -219,12 +219,12 @@ public class LinearClientContainerView extends AbstractClientContainerView {
                         if(child instanceof ClientContainer && ((ClientContainer) child).caption != null) // adding border
                             childPref = getCaptionPanel((ClientContainer) child).adjustMaxPreferredSize(childPref);
 
-                        columnMain = Math.max(columnMain, vertical ? childPref.width : childPref.height);
-                        columnCross += vertical ? childPref.height : childPref.width; // captions cross is equal to columnCross
+                        lineMain = Math.max(lineMain, vertical ? childPref.width : childPref.height);
+                        lineCross += vertical ? childPref.height : childPref.width; // captions cross is equal to lineCross
                     }
                 }
-                opposite = Math.max(opposite, columnCross);
-                main += columnMain + captionMain;
+                opposite = Math.max(opposite, lineCross);
+                main += lineMain + captionMain;
             }
         }
 

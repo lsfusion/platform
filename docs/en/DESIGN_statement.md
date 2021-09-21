@@ -125,7 +125,8 @@ To access design components, you can use their names or address property compone
 |`caption`|Container header|String literal|`NULL`|`'Caption'`|
 |`type`|Container type. Acceptable values:<br/>`CONTAINERV` - vertical container<br/>`CONTAINERH` - horizontal container<br/>`COLUMNS` - column container<br/>`SPLITV` - vertical splitter<br/>`SPLITH` - horizontal splitter<br/>`TABBED` - tabbed panel<br/>`SCROLL`– a scrollable container, cannot have more than one child|Container type|`CONTAINERV`|`CONTAINERH`<br/>`TABBED`|
 |`childrenAlignment`|Alignment of child components inside a container. Acceptable values: `START`, `CENTER`, `END`|Alignment type|`START`|`CENTER`|
-|`columns`|Number of columns in a `COLUMNS` type container|Integer literal|`4`|`3`|
+|`columns`|Number of columns in a `COLUMNS` type container<br/>**deprecated since version 5, use `lines`**|Integer literal|`1`|`3`|
+|`lines`|Number of lines (rows or columns) in container|Integer literal|`1`|`3`|
 |`columnLabelsWidth`|Width of component captions in a `COLUMNS` type container.|Integer literal|`0`|`50`|
 |`showIf`|Specifies a condition under which the container will be displayed.|[Expression](Expression.md)|`NULL`|`isLeapYear(date)`<br/>`hasComplexity(a, b)`|
 

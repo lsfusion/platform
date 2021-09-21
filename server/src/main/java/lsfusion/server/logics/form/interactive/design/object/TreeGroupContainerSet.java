@@ -134,7 +134,7 @@ public class TreeGroupContainerSet {
         set.panelContainer.add(set.groupContainer, version);
 
         set.groupContainer.setType(ContainerType.COLUMNS);
-        set.groupContainer.setColumns(DefaultFormView.GROUP_CONTAINER_COLUMNS_COUNT);
+        set.groupContainer.setLines(DefaultFormView.GROUP_CONTAINER_LINES_COUNT);
 
         treeGroup.getToolbarSystem().setMargin(2);
         treeGroup.getToolbarSystem().setAlignment(FlexAlignment.CENTER);

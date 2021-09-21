@@ -31,7 +31,7 @@ public class ClientContainer extends ClientComponent {
 
     public FlexAlignment childrenAlignment = FlexAlignment.START;
 
-    public int columns = 1;
+    public int lines = 1;
 
     public List<ClientComponent> children = new ArrayList<>();
 
@@ -50,7 +50,7 @@ public class ClientContainer extends ClientComponent {
 
         pool.writeObject(outStream, childrenAlignment);
 
-        outStream.writeInt(columns);
+        outStream.writeInt(lines);
     }
 
     @Override
@@ -65,7 +65,7 @@ public class ClientContainer extends ClientComponent {
 
         childrenAlignment = pool.readObject(inStream);
 
-        columns = inStream.readInt();
+        lines = inStream.readInt();
     }
 
     @Override

@@ -22,7 +22,7 @@ public class GContainer extends GComponent {
     public GContainerType type;
     public GFlexAlignment childrenAlignment;
 
-    public int columns;
+    public int lines;
 
     public ArrayList<GComponent> children = new ArrayList<>();
 

@@ -34,7 +34,7 @@ public class ContainerView extends ComponentView {
 
     public FlexAlignment childrenAlignment = FlexAlignment.START;
 
-    public int columns = 1;
+    public int lines = 1;
     
     public PropertyObjectEntity<?> showIf;
 
@@ -122,9 +122,9 @@ public class ContainerView extends ComponentView {
     }
 
     public void setType(ContainerType type) {
-        if(type != COLUMNS && this.type == COLUMNS && columns > 1) { // temp check
+        if(type != COLUMNS && this.type == COLUMNS && lines > 1) { // temp check
             Supplier<DebugInfo.DebugPoint> debugPoint = ViewProxyUtil.setDebugPoint.get();
-            ServerLoggers.startLogger.info("WARNING! Now container " + this + "  will have " + columns + " columns. Debug point : " + (debugPoint != null ? debugPoint.get() : "unknown"));
+            ServerLoggers.startLogger.info("WARNING! Now container " + this + "  will have " + lines + " lines. Debug point : " + (debugPoint != null ? debugPoint.get() : "unknown"));
         }
         this.type = type;
     }
@@ -133,8 +133,8 @@ public class ContainerView extends ComponentView {
         this.childrenAlignment = childrenAlignment;
     }
 
-    public void setColumns(int columns) {
-        this.columns = columns;
+    public void setLines(int lines) {
+        this.lines = lines;
     }
 
     public PropertyObjectEntity<?> getShowIf() {
@@ -228,7 +228,7 @@ public class ContainerView extends ComponentView {
 
         pool.writeObject(outStream, childrenAlignment);
 
-        outStream.writeInt(columns);
+        outStream.writeInt(lines);
     }
 
     @Override
@@ -245,7 +245,7 @@ public class ContainerView extends ComponentView {
 
         childrenAlignment = pool.readObject(inStream);
 
-        columns = inStream.readInt();
+        lines = inStream.readInt();
     }
 
     @Override

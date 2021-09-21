@@ -33,8 +33,13 @@ public class ContainerViewProxy extends ComponentViewProxy<ContainerView> {
         target.setChildrenAlignment(falign);
     }
 
+    //backward compatibility
     public void setColumns(int columns) {
-        target.columns = columns;
+        target.lines = columns;
+    }
+
+    public void setLines(int lines) {
+        target.lines = lines;
     }
 
     public void setShowIf(PropertyObjectEntity<?> showIf) {

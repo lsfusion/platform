@@ -41,7 +41,7 @@ public class DefaultFormView extends FormView {
         return getPropertyGroupContainer(property.getNFToDraw(entity, version));
     }
 
-    public static int GROUP_CONTAINER_COLUMNS_COUNT = 3;
+    public static int GROUP_CONTAINER_LINES_COUNT = 3;
 
     private PropertyGroupContainerView getPropertyGroupContainer(GroupObjectEntity groupObject) {
         if(groupObject == null)
@@ -498,7 +498,7 @@ public class DefaultFormView extends FormView {
 
             propGroupContainer = createContainer(currentGroup.caption, getPropGroupContainerSID(currentGroup, propertyContainer), Version.global());
             propGroupContainer.setType(ContainerType.COLUMNS);
-            propGroupContainer.setColumns(DefaultFormView.GROUP_CONTAINER_COLUMNS_COUNT);
+            propGroupContainer.setLines(DefaultFormView.GROUP_CONTAINER_LINES_COUNT);
 
             getPanelContainer(propertyDraw, version).add(propGroupContainer, Version.global());
 
