@@ -750,13 +750,11 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                     asyncLastThread = null;
             }
 
-            if(Thread.interrupted()) // to guarantee that this thread will drop interrupted "mark" (if it is was set before dropping asyncLastThread)
-                throw new InterruptedException();
-
             return result;
         } catch (Throwable t) { // interrupted for example
-            if(ExceptionUtils.getRootCause(t) instanceof InterruptedException)
-                Thread.interrupted(); // we want to reset interrupted state, otherwise RemoteExceptionsAspect will rethrow InterruptedException to the client, where it is not always ignored (for example getPessimisticValues)
+//            if(ExceptionUtils.getRootCause(t) instanceof InterruptedException)
+            Thread.interrupted(); // we want to reset interrupted state, otherwise RemoteExceptionsAspect will rethrow InterruptedException to the client, where it is not always ignored (for example getPessimisticValues)
+
             ServerLoggers.sqlSuppLog(t);
             return new Async[] {Async.CANCELED};
 //            throw Throwables.propagate(e);

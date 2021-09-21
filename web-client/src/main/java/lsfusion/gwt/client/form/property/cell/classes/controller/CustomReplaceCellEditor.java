@@ -65,7 +65,7 @@ public class CustomReplaceCellEditor extends RequestReplaceValueCellEditor imple
     // FACTORY
 
     public static CellEditor create(EditManager editManager, GPropertyDraw property, String customEditorFunction) {
-        JavaScriptObject customEditor = getCustomEditor(customEditorFunction);
+        JavaScriptObject customEditor = getCustomFunction(customEditorFunction);
 
         String functionName = "Input";
         if(hasRenderFunction(functionName, customEditor))
@@ -78,7 +78,7 @@ public class CustomReplaceCellEditor extends RequestReplaceValueCellEditor imple
         return new CustomReplaceCellEditor(editManager, property, "", customEditor);
     }
 
-    private static native JavaScriptObject getCustomEditor(String customEditorFunction)/*-{
+    public static native JavaScriptObject getCustomFunction(String customEditorFunction)/*-{
         return $wnd[customEditorFunction]();
     }-*/;
 
@@ -88,12 +88,16 @@ public class CustomReplaceCellEditor extends RequestReplaceValueCellEditor imple
         return customEditor['render' + functionName] !== undefined;
     }-*/;
 
-    public static native void render(String functionName, JavaScriptObject customEditor, Element element, JavaScriptObject controller, Object value)/*-{
+    public static native void render(String functionName, JavaScriptObject customEditor, Element element, JavaScriptObject controller, JavaScriptObject value)/*-{
         customEditor['render' + functionName](element, controller, value);
     }-*/;
 
     private void forceCommit(Element parent) {
         commit(parent, CommitReason.FORCED);
+    }
+
+    private void commitJSValue(Element parent, JavaScriptObject value) {
+        commitValue(parent, toObject(value));
     }
 
     public static native JavaScriptObject getController(CellEditor thisObj, Element cellParent)/*-{
@@ -103,7 +107,7 @@ public class CustomReplaceCellEditor extends RequestReplaceValueCellEditor imple
             },
             commit: function (value) {
                 if(arguments.length === 1)
-                    thisObj.@lsfusion.gwt.client.form.property.cell.classes.controller.ARequestValueCellEditor::commitValue(*)(cellParent, value);
+                    thisObj.@lsfusion.gwt.client.form.property.cell.classes.controller.CustomReplaceCellEditor::commitJSValue(*)(cellParent, value);
                 else
                     thisObj.@CustomReplaceCellEditor::forceCommit(*)(cellParent);
             },

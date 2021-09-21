@@ -17,7 +17,7 @@ public interface CustomCellEditor extends RequestValueCellEditor { // ,RequestVa
     JavaScriptObject getCustomEditor();
 
     default void render(Element cellParent, RenderContext renderContext, Pair<Integer, Integer> renderedSize, Object oldValue) {
-        CustomReplaceCellEditor.render(getRenderFunction(), getCustomEditor(), cellParent, CustomReplaceCellEditor.getController(this, cellParent), oldValue);
+        CustomReplaceCellEditor.render(getRenderFunction(), getCustomEditor(), cellParent, CustomReplaceCellEditor.getController(this, cellParent), ARequestValueCellEditor.fromObject(oldValue));
     }
 
     default void clearRender(Element cellParent, RenderContext renderContext) {

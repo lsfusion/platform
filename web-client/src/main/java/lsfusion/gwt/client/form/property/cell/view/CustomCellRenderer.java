@@ -5,44 +5,47 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.cell.classes.controller.CustomCellEditor;
+import lsfusion.gwt.client.form.property.cell.classes.controller.CustomReplaceCellEditor;
 
 import java.util.function.Consumer;
 
 public class CustomCellRenderer extends CellRenderer<Object> {
-    private final String customRenderFunction;
+    private final JavaScriptObject customRenderer;
 
     public CustomCellRenderer(GPropertyDraw property, String customRenderFunction) {
         super(property);
-        this.customRenderFunction = customRenderFunction;
+        this.customRenderer = CustomReplaceCellEditor.getCustomFunction(customRenderFunction);
     }
 
     @Override
     public void renderStaticContent(Element element, RenderContext renderContext) {
-        render(element);
+        render(customRenderer, element);
     }
 
-    protected native void render(Element element)/*-{
-        $wnd[this.@CustomCellRenderer::customRenderFunction]().render(element);
+    protected native void render(JavaScriptObject customRenderer, Element element)/*-{
+        customRenderer.render(element);
     }-*/;
 
     @Override
     public void renderDynamicContent(Element element, Object value, UpdateContext updateContext) {
-        setRendererValue(element,
+        setRendererValue(customRenderer, element,
                 getController(updateContext.getCustomRendererValueChangeConsumer(), updateContext.isPropertyReadOnly()),
                 fromObject(value));
     }
 
-    protected native void setRendererValue(Element element, JavaScriptObject controller, JavaScriptObject value)/*-{
-        $wnd[this.@CustomCellRenderer::customRenderFunction]().update(element, controller, value);
+    protected native void setRendererValue(JavaScriptObject customRenderer, Element element, JavaScriptObject controller, JavaScriptObject value)/*-{
+        customRenderer.update(element, controller, value);
     }-*/;
 
     @Override
     public void clearRenderContent(Element element, RenderContext renderContext) {
-        clear(element);
+        clear(customRenderer, element);
     }
     
-    protected native void clear(Element element)/*-{
-        $wnd[this.@CustomCellRenderer::customRenderFunction]().clear(element);
+    protected native void clear(JavaScriptObject customRenderer, Element element)/*-{
+        if (customRenderer.clear !== undefined)
+            customRenderer.clear(element);
     }-*/;
 
     @Override

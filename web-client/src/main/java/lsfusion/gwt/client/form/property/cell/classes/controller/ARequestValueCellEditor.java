@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form.property.cell.classes.controller;
 
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Element;
 import lsfusion.gwt.client.controller.SmartScheduler;
 import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
@@ -70,4 +71,11 @@ public abstract class ARequestValueCellEditor implements RequestValueCellEditor 
         });
     }
 
+    protected static native <T> JavaScriptObject fromObject(T object) /*-{
+        return object;
+    }-*/;
+
+    protected static native <T> T toObject(JavaScriptObject object) /*-{
+        return object;
+    }-*/;
 }
