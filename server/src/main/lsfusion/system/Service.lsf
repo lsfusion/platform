@@ -414,6 +414,8 @@ DESIGN settings {
     }
 }
 
+inDevMode = NATIVE BOOLEAN ();
+
 getServerSettings() {
     readResources('/web/.*');
     LOCAL jsonResourceFiles = JSONFILE ();

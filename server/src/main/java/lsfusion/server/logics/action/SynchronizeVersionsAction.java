@@ -25,7 +25,6 @@ public class SynchronizeVersionsAction extends InternalAction {
             findProperty("platformVersion[]").change(BaseUtils.getPlatformVersion(), context);
             findProperty("apiVersion[]").change(BaseUtils.getApiVersion(), context);
             findProperty("revisionVersion[]").change(BaseUtils.parseInt(getRevision(SystemProperties.inDevMode)), context);
-            findProperty("inDevMode[]").change(SystemProperties.inDevMode, context);
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             e.printStackTrace();
         }
