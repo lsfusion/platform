@@ -142,6 +142,7 @@ shutdown '{system.events.shutdown}' (Connection c)  {
 platformVersion = DATA TEXT();
 apiVersion = DATA INTEGER();
 revisionVersion = DATA INTEGER();
+inDevMode = DATA BOOLEAN();
 synchronizeVersions ()  INTERNAL  'lsfusion.server.logics.action.SynchronizeVersionsAction' ();    
 
 onStarted() + { 
