@@ -1,46 +1,29 @@
 package lsfusion.client.form.design.view.flex;
 
-import lsfusion.client.base.view.SwingDefaults;
-import lsfusion.client.form.design.view.FlexPanel;
-import lsfusion.client.form.design.view.widget.LabelWidget;
-import lsfusion.client.form.design.view.widget.Widget;
 import lsfusion.interop.base.view.FlexAlignment;
+import lsfusion.interop.base.view.FlexComponent;
+import lsfusion.interop.base.view.FlexConstraints;
 
-import javax.swing.border.CompoundBorder;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.MatteBorder;
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.function.Consumer;
 
-public class FlexTabBar extends FlexPanel implements TabBar {
+public class FlexTabBar extends JTabbedPane implements FlexComponent, TabBar {
 
-    private final FlexPanel panel;
+    private Integer selectedTab;
 
-    private Widget selectedTab;
+    public FlexTabBar(boolean vertical) {
+        super(vertical ? LEFT : TOP, SCROLL_TAB_LAYOUT);
 
-    public FlexTabBar(Widget extraTabWidget, boolean vertical) {
-        super(vertical);
-        panel = new FlexPanel(vertical);
-        if (extraTabWidget == null) {
-            initWidget(panel);
-        } else {
-            FlexPanel tabBarContainer = new FlexPanel(vertical);
-            tabBarContainer.addFill(panel);
-            tabBarContainer.add(extraTabWidget);
-            initWidget(tabBarContainer);
-        }
-
-        // first is to have an offset on the left, rest not sure what for
-        LabelWidget first = new LabelWidget();
-        LabelWidget rest = new LabelWidget();
-
-        first.setText("\u00A0");
-        rest.setText("\u00A0");
-
-        panel.add((Widget) first, FlexAlignment.STRETCH);
-        panel.addFill(rest);
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                super.mousePressed(e);
+                selectTab(getSelectedIndex());
+            }
+        });
     }
 
     private Consumer<Integer> beforeSelectionHandler;
@@ -57,66 +40,18 @@ public class FlexTabBar extends FlexPanel implements TabBar {
         if (selectedTab == null) {
             return -1;
         }
-        return panel.getWidgetIndex(selectedTab) - 1;
+        return selectedTab;
     }
 
-    public int getTabCount() {
-        return panel.getComponentCount() - 2;
-    }
-
-    public void insertTab(Widget widget, int beforeIndex) {
+    public void insertTab(String tabText, int beforeIndex) {
         checkInsertBeforeTabIndex(beforeIndex);
-
-        //todo: as gwt-TabBarItem. We need also outside emptyBorder as margin, but it is shown with same background as component
-        //widget.getComponent().setBorder(new CompoundBorder(new CompoundBorder(new EmptyBorder(0, 0, 0, 5), new LineBorder(SwingDefaults.getPanelBorderColor())), new EmptyBorder(2, 5, 2, 5)));
-        widget.getComponent().setBorder(new CompoundBorder(new MatteBorder(1, 1, 0, 1, SwingDefaults.getPanelBorderColor()), new EmptyBorder(2, 5, 2, 5)));
-
-        panel.add(widget, beforeIndex + 1, FlexAlignment.STRETCH);
-
-        //added instead of onBrowserEvent
-        widget.getComponent().addMouseListener(new MouseAdapter() {
-            @Override
-            public void mousePressed(MouseEvent e) {
-                super.mousePressed(e);
-                selectTabByTabWidget(widget);
-                widget.getComponent().setCursor(null);
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                super.mouseEntered(e);
-                if(e.getComponent() != selectedTab) {
-                    widget.getComponent().setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-                    setHoverStyle(widget, true);
-                }
-
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                super.mouseExited(e);
-                if(e.getComponent() != selectedTab) {
-                    widget.getComponent().setCursor(null);
-                    setHoverStyle(widget, false);
-                }
-            }
-        });
-    }
-
-    @Override
-    public Widget asWidget() {
-        return null;
+        insertTab(tabText, null, null, null, beforeIndex);
     }
 
     public void removeTab(int index) {
         checkTabIndex(index);
 
-        // (index + 1) to account for 'first' placeholder widget.
-        Widget toRemove = panel.getWidget(index + 1);
-        if (toRemove == selectedTab) {
-            selectedTab = null;
-        }
-        panel.remove(toRemove);
+        removeTabAt(index);
     }
 
     /**
@@ -132,14 +67,12 @@ public class FlexTabBar extends FlexPanel implements TabBar {
         beforeSelectionHandler.accept(index);
 
         // Check for -1.
-        setSelectionStyle(selectedTab, false);
         if (index == -1) {
             selectedTab = null;
             return true;
         }
 
-        selectedTab = panel.getWidget(index + 1);
-        setSelectionStyle(selectedTab, true);
+        selectedTab = index;
 
         selectionHandler.accept(index);
 
@@ -154,9 +87,7 @@ public class FlexTabBar extends FlexPanel implements TabBar {
     public void setTabText(int index, String text) {
         assert (index >= 0) && (index < getTabCount()) : "Tab index out of bounds";
 
-        Widget widget = panel.getWidget(index + 1);
-
-        widget.getComponent().add(new LabelWidget(text));
+        setTitleAt(index, text);
     }
 
     private void checkInsertBeforeTabIndex(int beforeIndex) {
@@ -171,51 +102,13 @@ public class FlexTabBar extends FlexPanel implements TabBar {
         }
     }
 
-    /**
-     * Selects the tab corresponding to the widget for the tab. To be clear the
-     * widget for the tab is not the widget INSIDE of the tab; it is the widget
-     * used to represent the tab itself.
-     * @param tabWidget The widget for the tab to be selected
-     * @return true if the tab corresponding to the widget for the tab could
-     *         located and selected, false otherwise
-     */
-    private boolean selectTabByTabWidget(Widget tabWidget) {
-        int numTabs = panel.getComponentCount() - 1;
-
-        for (int i = 1; i < numTabs; ++i) {
-            if (panel.getComponent(i) == tabWidget) {
-                return selectTab(i - 1);
-            }
-        }
-
-        return false;
+    @Override
+    public Dimension getFlexPreferredSize(Boolean vertical) {
+        return getPreferredSize();
     }
 
-    private void setSelectionStyle(Widget item, boolean selected) {
-        if (item != null) {
-            if (selected) {
-                item.getComponent().setOpaque(true);
-                item.getComponent().setBackground(SwingDefaults.getSelectionColor());
-            } else {
-                item.getComponent().setOpaque(false);
-                item.getComponent().setBackground(null);
-            }
-        }
-    }
-
-    public void setHoverStyle(Widget item, boolean entered) {
-        if (item != null) {
-            if (entered) {
-                item.getComponent().setOpaque(true);
-                item.getComponent().setBackground(SwingDefaults.getButtonPressedBackground());
-            } else {
-                item.getComponent().setOpaque(false);
-                item.getComponent().setBackground(null);
-            }
-        }
-    }
-
-    private void initWidget(FlexPanel panel) {
-        add((Widget) panel);
+    @Override
+    public FlexConstraints getFlexConstraints() {
+        return new FlexConstraints(FlexAlignment.STRETCH, 0);
     }
 }
