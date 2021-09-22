@@ -1,70 +1,74 @@
 package lsfusion.gwt.client.form.property.cell.classes.controller;
 
 import com.google.gwt.core.client.JavaScriptObject;
-import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.user.client.Event;
-import lsfusion.gwt.client.base.view.EventHandler;
+import com.google.gwt.user.client.ui.SimplePanel;
+import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.classes.data.GIntervalType;
-import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
+import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
-import lsfusion.gwt.client.form.property.cell.controller.WindowValueCellEditor;
 
 import java.math.BigDecimal;
 import java.util.Date;
 
-public class IntervalCellEditor extends WindowValueCellEditor {
+public class IntervalCellEditor extends PopupBasedCellEditor {
 
     private final String intervalType;
     private final GIntervalType interval;
 
-    public IntervalCellEditor(EditManager editManager, String intervalType, GIntervalType interval) {
-        super(editManager);
+    public IntervalCellEditor(EditManager editManager, GPropertyDraw property, String intervalType, GIntervalType interval) {
+        super(editManager, property);
         this.intervalType = intervalType;
         this.interval = interval;
     }
 
     @Override
     public Object getValue(Element parent, Integer contextAction) {
-        //todo:getCurrentValue
-        return RequestValueCellEditor.invalid;
+        String value = getPickerValue(parent, intervalType);
+        return value != null ? new BigDecimal(value) : null;
     }
 
-    private Object getDateValue(Long dateFrom, Long dateTo) {
-        if (dateFrom != null && dateTo != null)
-            return new BigDecimal(dateFrom + "." + dateTo);
-        return null;
-    }
+    protected native String getPickerValue(Element parent, String intervalType)/*-{
+        var picker = $(parent).data('daterangepicker');
 
-    @Override
-    public void onBrowserEvent(Element parent, EventHandler handler) {
-        super.onBrowserEvent(parent, handler);
-        if (BrowserEvents.BLUR.equals(handler.event.getType())) {
-            EventTarget target = handler.event.getRelatedEventTarget();
-            if (target == null || isElementPickerChild(parent, target))
-                parent.focus();
-            else
-                commit(parent, CommitReason.BLURRED);
-        }
-    }
+        var startDate = picker.startDate;
+        var endDate = picker.endDate;
+        var dateFrom = startDate.isValid() ? (intervalType === 'ZDATETIME' ? startDate.unix() :
+            Date.UTC(startDate.year(), startDate.month(), startDate.date(), startDate.hour(), startDate.minute(), startDate.second()) / 1000) : null;
+        var dateTo = endDate.isValid() != null ? (intervalType === 'ZDATETIME' ? endDate.unix() :
+            Date.UTC(endDate.year(), endDate.month(), endDate.date(), endDate.hour(), endDate.minute(), endDate.second()) / 1000) : null;
 
-    protected native boolean isElementPickerChild(JavaScriptObject parent, JavaScriptObject element)/*-{
-        return $(parent).data('daterangepicker').container.get(0).contains(element);
+        return dateFrom == null || dateTo == null ? null : dateFrom + '.' + dateTo;
     }-*/;
 
     @Override
     public void start(Event event, Element parent, Object oldValue) {
         createPicker(parent, interval.getDate(oldValue, true), interval.getDate(oldValue, false), intervalType, false);
+        super.start(event, parent, oldValue);
     }
 
     @Override
     public void stop(Element parent) {
+        popup.removeAutoHidePartner(getPickerElement(parent));
         removePicker(parent);
     }
 
     protected native void removePicker(JavaScriptObject parent)/*-{
         $(parent).data('daterangepicker').remove();
+    }-*/;
+
+    @Override
+    protected Widget createPopupComponent(Element parent) {
+        popup.addAutoHidePartner(getPickerElement(parent));
+        popup.setVisible(false);
+
+        //return fake widget
+        return new SimplePanel();
+    }
+
+    protected native Element getPickerElement(Element parent)/*-{
+        return $(parent).data('daterangepicker').container.get(0);
     }-*/;
 
     protected native void createPicker(Element parent, Date startDate, Date endDate, String intervalType, boolean singleDatePicker)/*-{
@@ -129,16 +133,8 @@ public class IntervalCellEditor extends WindowValueCellEditor {
             })
         }
 
-        parentEl.on('hide.daterangepicker', function (ev, picker) {
-            var startDate = picker.startDate;
-            var endDate = picker.endDate;
-            var dateFrom = startDate.isValid() ? (intervalType === 'ZDATETIME' ? startDate.unix() :
-                Date.UTC(startDate.year(), startDate.month(), startDate.date(), startDate.hour(), startDate.minute(), startDate.second()) / 1000) : null;
-            var dateTo = endDate.isValid() != null ? (intervalType === 'ZDATETIME' ? endDate.unix() :
-                Date.UTC(endDate.year(), endDate.month(), endDate.date(), endDate.hour(), endDate.minute(), endDate.second()) / 1000) : null;
-
-            thisObj.@lsfusion.gwt.client.form.property.cell.classes.controller.IntervalCellEditor::commitValue(*)(parent,
-                thisObj.@lsfusion.gwt.client.form.property.cell.classes.controller.IntervalCellEditor::getDateValue(*)(dateFrom, dateTo));
+        parentEl.on('hide.daterangepicker', function () {
+            thisObj.@IntervalCellEditor::commit(*)(parent, @lsfusion.gwt.client.form.property.cell.controller.CommitReason::BLURRED);
         });
 
     }-*/;
