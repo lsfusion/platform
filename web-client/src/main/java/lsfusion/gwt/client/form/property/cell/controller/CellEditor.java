@@ -7,6 +7,4 @@ import lsfusion.gwt.client.base.view.EventHandler;
 public interface CellEditor {
 
     void start(Event editEvent, Element parent, Object oldValue);
-    default void stop(Element parent) {
-    }
 }

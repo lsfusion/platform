@@ -42,9 +42,10 @@ public class IntervalCellEditor extends PopupBasedCellEditor {
     }-*/;
 
     @Override
-    public void stop(Element parent) {
+    public void stop(Element parent, boolean cancel) {
         popup.removeAutoHidePartner(getPickerElement(parent));
         removePicker(parent);
+        super.stop(parent, cancel);
     }
 
     protected native void removePicker(JavaScriptObject parent)/*-{

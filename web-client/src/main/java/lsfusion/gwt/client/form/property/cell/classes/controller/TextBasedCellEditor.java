@@ -180,9 +180,12 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
         return false;
     }
 
-    public void onBeforeFinish(Element parent, boolean cancel) {
+    @Override
+    public void clearRender(Element cellParent, RenderContext renderContext, boolean cancel) {
         if(hasList)
             suggestBox.hideSuggestions();
+
+        super.clearRender(cellParent, renderContext, cancel);
     }
 
     public Object getValue(Element parent, Integer contextAction) {

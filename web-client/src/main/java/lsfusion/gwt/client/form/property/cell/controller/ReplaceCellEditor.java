@@ -8,5 +8,5 @@ public interface ReplaceCellEditor extends CellEditor {
 
     void render(Element cellParent, RenderContext renderContext, Pair<Integer, Integer> renderedSize, Object oldValue);
 
-    void clearRender(Element cellParent, RenderContext renderContext);
+    void clearRender(Element cellParent, RenderContext renderContext, boolean cancel);
 }

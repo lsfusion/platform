@@ -15,4 +15,7 @@ public interface RequestCellEditor extends CellEditor {
 
     default void onBrowserEvent(Element parent, EventHandler handler) {
     }
+
+    default void stop(Element parent, boolean cancel) {
+    }
 }

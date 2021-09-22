@@ -1993,7 +1993,7 @@ public class GFormController extends ResizableSimplePanel implements EditManager
         editBeforeCommit.accept(result, commitReason);
         editBeforeCommit = null;
 
-        finishEditing(commitReason.equals(CommitReason.BLURRED));
+        finishEditing(commitReason.equals(CommitReason.BLURRED), false);
 
         BiConsumer<GUserInputResult, CommitReason> editAfterCommit = this.editAfterCommit;
         this.editAfterCommit = null; // it seems this is needed because after commit another editing can be started
@@ -2002,17 +2002,18 @@ public class GFormController extends ResizableSimplePanel implements EditManager
 
     @Override
     public void cancelEditing() {
-        finishEditing(false);
+        finishEditing(false, true);
 
         editCancel.run();
         editCancel = null;
     }
 
-    private void finishEditing(boolean blurred) {
+    private void finishEditing(boolean blurred, boolean cancel) {
         Element renderElement = getEditElement();
 
         CellEditor cellEditor = this.cellEditor;
-        cellEditor.stop(renderElement);
+        if(cellEditor instanceof RequestCellEditor)
+            ((RequestCellEditor)cellEditor).stop(renderElement, cancel);
         this.cellEditor = null;
 
         EditContext editContext = this.editContext;
@@ -2022,7 +2023,7 @@ public class GFormController extends ResizableSimplePanel implements EditManager
 
         if(cellEditor instanceof ReplaceCellEditor) {
             RenderContext renderContext = editContext.getRenderContext();
-            ((ReplaceCellEditor) cellEditor).clearRender(renderElement, renderContext);
+            ((ReplaceCellEditor) cellEditor).clearRender(renderElement, renderContext, cancel);
             editContext.getProperty().getCellRenderer().renderStatic(renderElement, renderContext);
 
             if(forceSetFocus != null) {

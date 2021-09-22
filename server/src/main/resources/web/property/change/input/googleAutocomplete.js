@@ -55,7 +55,7 @@ function customGoogleAutocomplete() {
                 };
             }
         },
-        clear: (element) => {
+        clear: (element, cancel) => {
             // remove autocomplete elements from <body>. https://stackoverflow.com/questions/33049322/no-way-to-remove-google-places-autocomplete
             $(".pac-container").remove();
         }
