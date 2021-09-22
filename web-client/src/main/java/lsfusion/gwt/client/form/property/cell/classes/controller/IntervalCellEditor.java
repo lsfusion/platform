@@ -2,7 +2,6 @@ package lsfusion.gwt.client.form.property.cell.classes.controller;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.classes.data.GIntervalType;
@@ -43,12 +42,6 @@ public class IntervalCellEditor extends PopupBasedCellEditor {
     }-*/;
 
     @Override
-    public void start(Event event, Element parent, Object oldValue) {
-        createPicker(parent, interval.getDate(oldValue, true), interval.getDate(oldValue, false), intervalType, false);
-        super.start(event, parent, oldValue);
-    }
-
-    @Override
     public void stop(Element parent) {
         popup.removeAutoHidePartner(getPickerElement(parent));
         removePicker(parent);
@@ -59,7 +52,8 @@ public class IntervalCellEditor extends PopupBasedCellEditor {
     }-*/;
 
     @Override
-    protected Widget createPopupComponent(Element parent) {
+    protected Widget createPopupComponent(Element parent, Object oldValue) {
+        createPicker(parent, interval.getDate(oldValue, true), interval.getDate(oldValue, false), intervalType, false);
         popup.addAutoHidePartner(getPickerElement(parent));
         popup.setVisible(false);
 

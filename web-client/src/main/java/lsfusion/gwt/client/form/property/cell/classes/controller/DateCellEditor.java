@@ -34,7 +34,7 @@ public class DateCellEditor extends PopupBasedCellEditor {
     }
 
     @Override
-    protected Widget createPopupComponent(Element parent) {
+    protected Widget createPopupComponent(Element parent, Object oldValue) {
         ResizableVerticalPanel panel = new ResizableVerticalPanel();
 
         editBox = new TextBox();

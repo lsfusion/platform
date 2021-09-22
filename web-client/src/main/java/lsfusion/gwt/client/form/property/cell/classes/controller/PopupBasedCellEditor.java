@@ -45,7 +45,7 @@ public abstract class PopupBasedCellEditor extends WindowValueCellEditor {
             }
         };
 
-        GwtClientUtils.showPopupInWindow(popup, createPopupComponent(parent), parent.getAbsoluteLeft(), parent.getAbsoluteBottom());
+        GwtClientUtils.showPopupInWindow(popup, createPopupComponent(parent, oldValue), parent.getAbsoluteLeft(), parent.getAbsoluteBottom());
     }
 
     @Override
@@ -53,5 +53,5 @@ public abstract class PopupBasedCellEditor extends WindowValueCellEditor {
         popup.hide();
     }
 
-    protected abstract Widget createPopupComponent(Element parent);
+    protected abstract Widget createPopupComponent(Element parent, Object oldValue);
 }
