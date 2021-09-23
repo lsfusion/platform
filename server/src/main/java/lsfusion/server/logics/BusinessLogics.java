@@ -112,11 +112,13 @@ import lsfusion.server.physics.dev.integration.external.to.mail.EmailLogicsModul
 import lsfusion.server.physics.dev.module.ModuleList;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import lsfusion.server.physics.exec.db.table.ImplementTable;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -1994,6 +1996,8 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
             result.add(getUpdateSavePointsInfoTask(scheduler));
             result.addAll(resetCustomReportsCacheTasks(scheduler));
             result.add(getProcessDumpTask(scheduler));
+        } else {
+            result.add(getCopyWebFilesToTargetTask(scheduler));
         }
         return result;
     }
@@ -2091,6 +2095,32 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
                 serviceLM.makeProcessDumpAction.execute(session, stack);
             }
         }, false, Settings.get().getPeriodProcessDump(), false, "Process Dump");
+    }
+
+    private Scheduler.SchedulerTask getCopyWebFilesToTargetTask(Scheduler scheduler) {
+        return scheduler.createSystemTask(stack -> {
+            Path resourcesPath = Paths.get(SystemProperties.userDir, "src/main/resources");
+            Path targetPath = Paths.get(SystemProperties.userDir, "target/classes");
+
+            //add or update files
+            Collection<File> resourcesFiles = FileUtils.listFiles(Paths.get(resourcesPath.toString(), "web/").toFile(), null, true);
+            for (File resourcesFile : resourcesFiles) {
+                File targetFile = new File(targetPath.toString(), resourcesFile.getAbsolutePath().replace(resourcesPath.toString(), ""));
+                if (targetFile.exists() && targetFile.lastModified() < resourcesFile.lastModified() || !targetFile.exists())
+                    FileUtils.copyFile(resourcesFile, targetFile);
+            }
+
+            //remove files
+            Collection<File> targetFiles = FileUtils.listFiles(Paths.get(targetPath.toString(), "web/").toFile(), null, true);
+            if (targetFiles.size() != resourcesFiles.size()) {
+                for (File targetFile : targetFiles) {
+                    File resourceFile = new File(resourcesPath.toString(), targetFile.getAbsolutePath().replace(targetPath.toString(), ""));
+                    if (!resourceFile.exists())
+                        targetFile.delete();
+                }
+            }
+
+        }, false, 3, false, "Copy files from 'resources/web' into target. Only for debug");
     }
 
     private Scheduler.SchedulerTask getAllocatedBytesUpdateTask(Scheduler scheduler) {
