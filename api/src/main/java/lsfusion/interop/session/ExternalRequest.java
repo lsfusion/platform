@@ -43,9 +43,10 @@ public class ExternalRequest implements Serializable {
                 null, null, null, null, null, null, null, null, null, null, null, null);
     }
 
-    public ExternalRequest(String query) {
+    public ExternalRequest(String scheme, String method, String webHost,
+                           Integer webPort, String contextPath, String servletPath, String pathInfo, String query) {
         this(new String[0], new Object[0], "utf-8", new String[0], new String[0], null,
-                null, null, null, null, null, null, null, null, null, null, null, query);
+                null, null, null, null, scheme, method, webHost, webPort, contextPath, servletPath, pathInfo, query);
     }
 
     public ExternalRequest(String[] returnNames, Object[] params, String charsetName,

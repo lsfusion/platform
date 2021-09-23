@@ -14,6 +14,7 @@ import lsfusion.interop.logics.ServerSettings;
 import lsfusion.interop.logics.remote.RemoteLogicsInterface;
 import lsfusion.interop.navigator.NavigatorInfo;
 import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
+import lsfusion.interop.session.ExternalRequest;
 import lsfusion.interop.session.SessionInfo;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -42,7 +43,9 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean 
     }
 
     public static SessionInfo getSessionInfo(HttpServletRequest request) {
-        return new SessionInfo(request.getRemoteHost(), request.getRemoteAddr(), null, null, null, null, request.getQueryString()); // we don't need client language and country because they were already provided when authenticating (see method above)
+        return new SessionInfo(request.getRemoteHost(), request.getRemoteAddr(), null, null, null, null, // we don't need client language and country because they were already provided when authenticating (see method above)
+                new ExternalRequest(request.getScheme(), request.getMethod(), request.getServerName(), request.getServerPort(),
+                        request.getContextPath(), request.getServletPath(), request.getPathInfo() == null ? "" : request.getPathInfo(), request.getQueryString()));
     }
 
     private static NavigatorInfo getNavigatorInfo(HttpServletRequest request, ConnectionInfo connectionInfo) {
