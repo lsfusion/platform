@@ -226,8 +226,7 @@ public class PropertyDrawView extends ComponentView {
     }
     
     private void setupShowIf(ReportDrawField field) {
-        // At the moment, only showif with no params is passing to the report
-        if (entity.hasPropertyExtra(PropertyDrawExtraType.SHOWIF) && entity.getPropertyExtra(PropertyDrawExtraType.SHOWIF).property.interfaces.size() == 0) {
+        if (entity.hasPropertyExtra(PropertyDrawExtraType.SHOWIF)) {
             field.addExtraType(ReportFieldExtraType.SHOWIF);
             field.setExtraTypeClass(ReportFieldExtraType.SHOWIF, getPropertyClass(entity.getPropertyExtra(PropertyDrawExtraType.SHOWIF)));
         }

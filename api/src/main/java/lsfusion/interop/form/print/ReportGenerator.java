@@ -231,6 +231,17 @@ public class ReportGenerator {
         return fieldName;
     }
 
+    // "fieldName.header[1]" -> "fieldName[1]"
+    public static String getBaseFieldNameWithIndex(String fullFieldName) {
+        String fieldName = removeIndexMarkerIfExists(fullFieldName);
+        String index = "";
+            index = fullFieldName.substring(fieldName.length());
+        if (!fieldName.equals(fullFieldName)) {
+        }
+        fieldName = getBaseFieldName(fullFieldName);
+        return fieldName + index;
+    }
+    
     private String findColumnFieldName(JRExpression expr, String subreportID) {
         String exprText = expr.getText();
         Matcher match = fieldPattern.matcher(exprText);
@@ -473,8 +484,7 @@ public class ReportGenerator {
                     String exprText = textElement.getExpression().getText();
                     if (exprText.startsWith("$F{")) {
                         String fieldName = getFieldName(exprText);
-                        // We need to check already divided fields as well
-                        if (hidingFieldsNames.contains(removeIndexMarkerIfExists(fieldName))) { 
+                        if (hidingFieldsNames.contains(fieldName)) { 
                             textFieldsToHide.add(textElement);
                         }
                     }
@@ -488,7 +498,7 @@ public class ReportGenerator {
         Set<String> hidingFieldsNames = new HashSet<>();
         for (JRField field : design.getFieldsList()) {
             if (isActiveShowIfField(field.getName(), subreportID)) {
-                String baseFieldName = getBaseFieldName(field.getName());
+                String baseFieldName = getBaseFieldNameWithIndex(field.getName());
                 hidingFieldsNames.add(baseFieldName);
             }
         }
