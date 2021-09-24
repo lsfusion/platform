@@ -414,9 +414,9 @@ DESIGN settings {
     }
 }
 
-getServerSettings() ABSTRACT LIST @@noauth;
+getServerSettings() ABSTRACT CASE @@noauth;
 
-getServerSettings() + {
+getServerSettings() + WHEN TRUE THEN {
     readResources('/web/.*');
     LOCAL jsonResourceFiles = JSONFILE ();
     EXPORT FROM file = resourceFiles(STRING str), name = substrFrom(str, 6) WHERE resourceFiles(str) TO jsonResourceFiles;
