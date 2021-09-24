@@ -27,6 +27,8 @@ import java.awt.print.PrinterAbortException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import static lsfusion.base.BaseUtils.nvl;
+
 public class ClientReportUtils {
 
     public static ExecutorService executorService = Executors.newSingleThreadExecutor();
@@ -50,6 +52,13 @@ public class ClientReportUtils {
         public void run() {
             try {
 
+                String printerTray = null;
+                if(printerName != null) {
+                    String[] splitted = printerName.split(";");
+                    printerName = splitted[0];
+                    printerTray = splitted.length > 1 ? splitted[1] : null;
+                }
+
                 JasperPrint print = new ReportGenerator(generationData).createReport(FormPrintType.PRINT);
                 print.setProperty(XlsReportConfiguration.PROPERTY_DETECT_CELL_TYPE, "true");
 
@@ -64,7 +73,7 @@ public class ClientReportUtils {
                     printRequestAttributeSet.add(sides);
                 }
 
-                String trayProp = print.getProperty(ReportGenerator.TRAY_PROPERTY_NAME);
+                String trayProp = nvl(printerTray, print.getProperty(ReportGenerator.TRAY_PROPERTY_NAME));
                 MediaTray tray = ReportGenerator.TRAY_VALUES.get(trayProp);
                 if (tray != null) {
                     printRequestAttributeSet.add(tray);
