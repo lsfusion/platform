@@ -52,8 +52,8 @@ getCoordinatesAddress  INTERNAL  'lsfusion.server.logics.classes.data.utils.geo.
 getCoordinates (STRING address)  { getCoordinatesAddress(address, calculateMapProvider()); }
 recalculateDistance  INTERNAL  'lsfusion.server.logics.classes.data.utils.geo.RecalculateDistancePOIAction' (POI);
 
-getAddressCoordinates  INTERNAL  'lsfusion.server.logics.classes.data.utils.geo.GetAddressCoordinatesAction' (NUMERIC[11,6], NUMERIC[11,6], MapProvider);
-getAddress(NUMERIC[11,6] latitude, NUMERIC[11,6] longitude) { getAddressCoordinates(latitude, longitude, calculateMapProvider()); }
+getAddressCoordinates  INTERNAL  'lsfusion.server.logics.classes.data.utils.geo.GetAddressCoordinatesAction' (NUMERIC[11,6], NUMERIC[11,6], MapProvider, STRING);
+getAddress(NUMERIC[11,6] latitude, NUMERIC[11,6] longitude) { getAddressCoordinates(latitude, longitude, calculateMapProvider(), lsfParams('googleGeocodingLanguage')); }
 
 calculateCoordinates '{geo.calculate.coordinates}'(POI POI) { 
 

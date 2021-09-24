@@ -365,6 +365,7 @@ dateFormat '{authentication.date.format.user}' (CustomUser user) = OVERRIDE (cli
 timeFormat '{authentication.time.format.user}' (CustomUser user) = OVERRIDE (clientTimeFormat(user) IF useClientDateTimeFormat(user)), userTimeFormat(user), defaultUserTimeFormat(), serverTimeFormat();
 
 lsfParams(STRING s) += country(currentUser()) IF s = 'googleMapAutocompleteCountry';
+lsfParams(STRING s) += language(currentUser()) IF s = 'googleGeocodingLanguage';
 
 // "duplicate" of loadLocalePreferences, but web-client needs this data just right after authentication
 getCurrentUserLocale() {
