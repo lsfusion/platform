@@ -414,6 +414,8 @@ DESIGN settings {
     }
 }
 
+inDevMode = NATIVE BOOLEAN ();
+
 getServerSettings() {
     readResources('/web/.*');
     LOCAL jsonResourceFiles = JSONFILE ();
@@ -423,7 +425,7 @@ getServerSettings() {
     EXPORT FROM key = STRING s, value = lsfParams(s) WHERE lsfParams(s) TO jsonLsfParams;
     
     generateJnlpUrls();
-    EXPORT FROM logicsName(), displayName(), logicsLogo(), logicsIcon(), platformVersion(), apiVersion(),
+    EXPORT FROM logicsName(), displayName(), logicsLogo(), logicsIcon(), platformVersion(), apiVersion(), inDevMode(),
                 sessionConfigTimeout=INTEGER(valueSetting('sessionConfigTimeout')), anonymousUI=(valueSetting('enableUI')='2'),
                 jnlpUrls=exportText(), resourceFiles=STRING(jsonResourceFiles()), disableRegistration=disableRole('selfRegister'),
                 lsfParams=STRING(jsonLsfParams());

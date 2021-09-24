@@ -6,6 +6,7 @@ import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.property.IsServerRestartingProperty;
+import lsfusion.server.physics.dev.property.IsDevProperty;
 import org.antlr.runtime.RecognitionException;
 
 import java.io.IOException;
@@ -50,6 +51,7 @@ public class ServiceLogicsModule extends ScriptingLogicsModule {
     public LP allowExcessAllocatedBytes;
 
     public LP transactTimeoutUser;
+    public LP inDevMode;
 
     public ServiceLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
         super(ServiceLogicsModule.class.getResourceAsStream("/system/Service.lsf"), "/system/Service.lsf", baseLM, BL);
@@ -59,6 +61,9 @@ public class ServiceLogicsModule extends ScriptingLogicsModule {
     public void initMainLogic() throws RecognitionException {
         isServerRestarting = addProperty(null, new LP<>(new IsServerRestartingProperty()));
         makePropertyPublic(isServerRestarting, "isServerRestarting", new ArrayList<>());
+
+        inDevMode = addProperty(null, new LP<>(IsDevProperty.instance));
+        makePropertyPublic(inDevMode, "inDevMode", new ArrayList<>());
         super.initMainLogic();
         // Управление сервером базы данных
         checkAggregationsAction = findAction("checkAggregationsAction[]");
