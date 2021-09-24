@@ -6,6 +6,7 @@ import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.navigator.ConnectionInfo;
 import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.http.authentication.LSFAuthenticationToken;
+import lsfusion.http.controller.MainController;
 import lsfusion.http.provider.SessionInvalidatedException;
 import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.connection.ClientType;
@@ -14,7 +15,6 @@ import lsfusion.interop.logics.ServerSettings;
 import lsfusion.interop.logics.remote.RemoteLogicsInterface;
 import lsfusion.interop.navigator.NavigatorInfo;
 import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
-import lsfusion.interop.session.ExternalRequest;
 import lsfusion.interop.session.SessionInfo;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -36,16 +36,15 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean 
 
     public String servSID = GwtSharedUtils.randomString(25);
     
-    public static SessionInfo getSessionInfo(Authentication auth) {
+    public static SessionInfo getSessionInfo(Authentication auth, HttpServletRequest request) {
         Locale clientLocale = LocaleContextHolder.getLocale();
         return new SessionInfo(SystemUtils.getLocalHostName(), ((WebAuthenticationDetails) auth.getDetails()).getRemoteAddress(), clientLocale.getLanguage(), clientLocale.getCountry(),
-                BaseUtils.getDatePattern(), BaseUtils.getTimePattern());
+                BaseUtils.getDatePattern(), BaseUtils.getTimePattern(), MainController.getExternalRequest(new Object[0], request));
     }
 
     public static SessionInfo getSessionInfo(HttpServletRequest request) {
         return new SessionInfo(request.getRemoteHost(), request.getRemoteAddr(), null, null, null, null, // we don't need client language and country because they were already provided when authenticating (see method above)
-                new ExternalRequest(request.getScheme(), request.getMethod(), request.getServerName(), request.getServerPort(),
-                        request.getContextPath(), request.getServletPath(), request.getPathInfo() == null ? "" : request.getPathInfo(), request.getQueryString()));
+                MainController.getExternalRequest(new Object[0], request));
     }
 
     private static NavigatorInfo getNavigatorInfo(HttpServletRequest request, ConnectionInfo connectionInfo) {
