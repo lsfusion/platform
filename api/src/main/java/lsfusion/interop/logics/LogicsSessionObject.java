@@ -36,7 +36,7 @@ public class LogicsSessionObject {
     public ServerSettings serverSettings; // caching
     public ServerSettings getServerSettings(SessionInfo sessionInfo, String contextPath, boolean noCache) throws RemoteException {
         if(serverSettings == null || serverSettings.inDevMode || noCache) {
-            ExternalResponse result = remoteLogics.exec(AuthenticationToken.ANONYMOUS, sessionInfo, "Service.getServerSettings[]", new ExternalRequest(sessionInfo.query));
+            ExternalResponse result = remoteLogics.exec(AuthenticationToken.ANONYMOUS, sessionInfo, "Service.getServerSettings[]", sessionInfo.externalRequest);
 
             JSONObject json = new JSONObject(new String(((FileData) result.results[0]).getRawFile().getBytes(), StandardCharsets.UTF_8));
             String logicsName = trimToNull(json.optString("logicsName"));

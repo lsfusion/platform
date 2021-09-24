@@ -416,7 +416,9 @@ DESIGN settings {
 
 inDevMode = NATIVE BOOLEAN ();
 
-getServerSettings() {
+getServerSettings() ABSTRACT CASE @@noauth;
+
+getServerSettings() + WHEN TRUE THEN {
     readResources('/web/.*');
     LOCAL jsonResourceFiles = JSONFILE ();
     EXPORT FROM file = resourceFiles(STRING str), name = substrFrom(str, 6) WHERE resourceFiles(str) TO jsonResourceFiles;
@@ -429,7 +431,7 @@ getServerSettings() {
                 sessionConfigTimeout=INTEGER(valueSetting('sessionConfigTimeout')), anonymousUI=(valueSetting('enableUI')='2'),
                 jnlpUrls=exportText(), resourceFiles=STRING(jsonResourceFiles()), disableRegistration=disableRole('selfRegister'),
                 lsfParams=STRING(jsonLsfParams());
-} @@noauth;
+};
 
 // logging for user
 
