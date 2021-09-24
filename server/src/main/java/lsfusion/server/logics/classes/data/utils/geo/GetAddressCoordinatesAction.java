@@ -27,7 +27,7 @@ public class GetAddressCoordinatesAction extends GeoAction {
     private final ClassPropertyInterface latitudeInterface;
     private final ClassPropertyInterface longitudeInterface;
     private final ClassPropertyInterface mapProviderInterface;
-    private final ClassPropertyInterface countryInterface;
+    private final ClassPropertyInterface languageInterface;
 
     public GetAddressCoordinatesAction(ScriptingLogicsModule LM, ValueClass... classes) {
         super(LM, classes);
@@ -36,7 +36,7 @@ public class GetAddressCoordinatesAction extends GeoAction {
         latitudeInterface = i.next();
         longitudeInterface = i.next();
         mapProviderInterface = i.next();
-        countryInterface = i.next();
+        languageInterface = i.next();
     }
 
     @Override
@@ -46,7 +46,7 @@ public class GetAddressCoordinatesAction extends GeoAction {
             BigDecimal latitude = (BigDecimal) context.getDataKeyValue(latitudeInterface).object;
             BigDecimal longitude = (BigDecimal) context.getDataKeyValue(longitudeInterface).object;
             DataObject mapProvider = context.getDataKeyValue(mapProviderInterface);
-            String language = (String) context.getDataKeyValue(countryInterface).object;
+            String language = (String) context.getDataKeyValue(languageInterface).object;
 
             String address;
             if (latitude != null && longitude != null) {
