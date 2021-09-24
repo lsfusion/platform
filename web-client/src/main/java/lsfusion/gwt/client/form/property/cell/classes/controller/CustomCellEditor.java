@@ -16,18 +16,18 @@ public interface CustomCellEditor extends RequestValueCellEditor { // ,RequestVa
     JavaScriptObject getCustomEditor();
 
     default void render(Element cellParent, RenderContext renderContext, Pair<Integer, Integer> renderedSize, Object oldValue) {
-        CustomReplaceCellEditor.render(getRenderFunction(), getCustomEditor(), cellParent, CustomReplaceCellEditor.getController(this, cellParent), ARequestValueCellEditor.fromObject(oldValue));
+        CustomReplaceCellEditor.render(getRenderFunction(), getCustomEditor(), getCustomElement(cellParent), CustomReplaceCellEditor.getController(this, cellParent), ARequestValueCellEditor.fromObject(oldValue));
     }
 
     default void clearRender(Element cellParent, RenderContext renderContext, boolean cancel) {
-        CustomReplaceCellEditor.clear(getCustomEditor(), cellParent, cancel);
+        CustomReplaceCellEditor.clear(getCustomEditor(), getCustomElement(cellParent), cancel);
     }
 
     default Object getValue(Element parent, Integer contextAction) {
-        return CustomReplaceCellEditor.getValue(getCustomEditor(), parent); // "canceled" if we want to cancel
+        return CustomReplaceCellEditor.getValue(getCustomEditor(), getCustomElement(parent)); // "canceled" if we want to cancel
     }
 
     default void onBrowserEvent(Element parent, EventHandler handler) {
-        CustomReplaceCellEditor.onBrowserEvent(getCustomEditor(), handler.event, parent);
+        CustomReplaceCellEditor.onBrowserEvent(getCustomEditor(), handler.event, getCustomElement(parent));
     }
 }
