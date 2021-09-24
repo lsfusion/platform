@@ -27,6 +27,7 @@ import java.awt.print.PrinterAbortException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import static lsfusion.base.BaseUtils.nullEmpty;
 import static lsfusion.base.BaseUtils.nvl;
 
 public class ClientReportUtils {
@@ -55,8 +56,8 @@ public class ClientReportUtils {
                 String printerTray = null;
                 if(printerName != null) {
                     String[] splitted = printerName.split(";");
-                    printerName = splitted[0];
-                    printerTray = splitted.length > 1 ? splitted[1] : null;
+                    printerName = nullEmpty(splitted[0]);
+                    printerTray = splitted.length > 1 ? nullEmpty(splitted[1]) : null;
                 }
 
                 JasperPrint print = new ReportGenerator(generationData).createReport(FormPrintType.PRINT);
