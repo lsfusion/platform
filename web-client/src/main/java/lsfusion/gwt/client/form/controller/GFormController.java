@@ -2114,9 +2114,9 @@ public class GFormController extends ResizableSimplePanel implements EditManager
         if(GMouseStroke.isChangeEvent(handler.event))
             focusElement.focus(); // it should be done on CLICK, but also on MOUSEDOWN, since we want to focus even if mousedown is later consumed
 
-        if(!previewLoadingManagerSinkEvents(handler.event)) {
+        /*if(!previewLoadingManagerSinkEvents(handler.event)) {
             return;
-        }
+        }*/
 
         checkMouseKeyEvent(handler, true, cellParent, panel);
 
