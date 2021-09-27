@@ -92,6 +92,9 @@ computer '{system.events.computer.connection}' = DATA Computer (Connection);
 hostnameComputer '{system.events.hostname.computer.connection}'(Connection connection) = hostname(computer(connection));
 
 remoteAddress '{system.events.remote.address.connection}' = DATA STRING[40] (Connection);
+webHost '{system.events.web.host.connection}' = DATA STRING (Connection);
+webPort '{system.events.web.port.connection}' = DATA INTEGER (Connection);
+contextPath '{system.events.context.path.connection}' = DATA STRING (Connection);
 
 user '{system.events.user.connection}' = DATA CustomUser (Connection);
 userLogin '{system.events.user.login.connection}' (Connection connection) = login(user(connection));
