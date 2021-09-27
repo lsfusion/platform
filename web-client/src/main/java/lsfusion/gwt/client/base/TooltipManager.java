@@ -76,7 +76,19 @@ public class TooltipManager {
                             tooltipHtml.setHTML(tooltipText);
                             GwtClientUtils.setPopupPosition(tooltip, mouseX, mouseY);
                         } else {
-                            tooltip = new PopupDialogPanel();
+                            tooltip = new PopupDialogPanel() {
+                                @Override
+                                protected void onAttach() {
+                                    addDomHandler(ev -> tooltipFocused = true, MouseOverEvent.getType());
+
+                                    addDomHandler(ev -> {
+                                        tooltipFocused = false;
+                                        hide();
+                                    }, MouseOutEvent.getType());
+
+                                    super.onAttach();
+                                }
+                            };
                             tooltip.addHandler(event -> get().hideTooltip(null), MouseOutEvent.getType());
                             tooltipHtml = new HTML(tooltipText, false);
 

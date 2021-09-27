@@ -1,8 +1,6 @@
 package lsfusion.gwt.client.base.view;
 
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.event.dom.client.MouseOutEvent;
-import com.google.gwt.event.dom.client.MouseOverEvent;
 import com.google.gwt.user.client.ui.PopupPanel;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.view.MainFrame;
@@ -38,16 +36,4 @@ public class PopupDialogPanel extends PopupPanel {
     }
 
     public boolean tooltipFocused = false;
-
-    @Override
-    protected void onAttach() {
-        addDomHandler(ev -> tooltipFocused = true, MouseOverEvent.getType());
-
-        addDomHandler(ev -> {
-            tooltipFocused = false;
-            hide();
-        }, MouseOutEvent.getType());
-
-        super.onAttach();
-    }
 }
