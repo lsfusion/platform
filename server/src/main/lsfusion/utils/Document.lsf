@@ -601,7 +601,7 @@ END
 // ----- Description ----- //
 META defineDocumentHeaderDescription(objectClass, caption)
     description '{document.description.object}' (objectClass o) =
-        STRING[200](CONCAT ' ', caption, '{document.desription.number} ' + seriesNumber(o), '{document.desription.of} ' + date(o)) CHARWIDTH 30;
+        STRING[200](CONCAT ' ', caption IF o IS objectClass, '{document.desription.number} ' + seriesNumber(o), '{document.desription.of} ' + date(o)) CHARWIDTH 30;
 END
 META defineDocumentAbstractHeaderDescription(objectClass)
     description '{document.description.object}' = ABSTRACT STRING[200] (objectClass) CHARWIDTH 30 MATERIALIZED;
