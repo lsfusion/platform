@@ -386,6 +386,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public static FormSessionScope DEFAULT_SELECTOR_EVENTSCOPE = FormSessionScope.OLDSESSION;
     public static FormSessionScope DEFAULT_CUSTOMCHANGE_EVENTSCOPE = FormSessionScope.OLDSESSION;
     public static FormSessionScope DEFAULT_FILTER_EVENTSCOPE = FormSessionScope.OLDSESSION;
+    public static FormSessionScope DEFAULT_VALUES_EVENTSCOPE = FormSessionScope.OLDSESSION;
     public static FormSessionScope DEFAULT_DATACHANGE_EVENTSCOPE = FormSessionScope.NEWSESSION; // since when data changed in the same session, it immediately leads to pessimistic async values which gives a big overhead in most cases
 
     private ActionOrProperty<P> getEventProperty() {

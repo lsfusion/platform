@@ -473,6 +473,10 @@ public class Query<K,V> extends IQuery<K,V> {
         return executeClasses(session.sql, session.env, session.baseClass, selectTop);
     }
 
+    public ImOrderMap<ImMap<K, DataObject>, ImMap<V, ObjectValue>> executeClasses(DataSession session, ImOrderMap<? extends V, Boolean> orders, int selectTop) throws SQLException, SQLHandledException {
+        return executeClasses(session.sql, orders, selectTop, session.baseClass, session.env);
+    }
+
     public ImOrderMap<ImMap<K, DataObject>, ImMap<V, ObjectValue>> executeClasses(SQLSession session, QueryEnvironment env, BaseClass baseClass) throws SQLException, SQLHandledException {
         return executeClasses(session, MapFact.EMPTYORDER(), 0, baseClass, env);
     }

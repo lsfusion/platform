@@ -4,8 +4,11 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.base.GAsync;
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.view.ColorUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
@@ -23,6 +26,7 @@ import lsfusion.gwt.client.form.property.cell.classes.GDateDTO;
 import lsfusion.gwt.client.form.property.cell.classes.GDateTimeDTO;
 import lsfusion.gwt.client.form.view.Column;
 import lsfusion.gwt.client.view.StyleDefaults;
+import lsfusion.interop.action.ServerResponse;
 
 import java.io.Serializable;
 import java.util.*;
@@ -34,13 +38,10 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
 
     protected final JavaScriptObject controller;
 
-    private final GFormController formController;
-
     public GSimpleStateTableView(GFormController form, GGridController grid) {
         super(form, grid);
 
         this.controller = getController();
-        this.formController = form;
         getDrawElement().getStyle().setProperty("zIndex", "0"); // need this because views like leaflet and some others uses z-indexes and therefore dialogs for example are shown below layers
 
         getElement().setTabIndex(0);
@@ -240,7 +241,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             Column column = columnMap.get(properties[i]);
             gProperties[i] = column.property;
             columnKeys[i] = column.columnKey;
-            rowKeys[i] = getKey(objects[i]);
+            rowKeys[i] = getChangeKey(objects[i]);
         }
 
         changeProperties(gProperties, rowKeys, columnKeys, newValues);
@@ -259,16 +260,14 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         return isCurrentKey(getKey(object));
     }
 
+    // change key can be outside view window, and can be obtained from getAsyncValues for example
+    protected GGroupObjectValue getChangeKey(JavaScriptObject object) {
+        if(hasKey(object, keysFieldName))
+            object = getValue(object, keysFieldName);
+        return toObject(object);
+    }
     protected GGroupObjectValue getKey(JavaScriptObject object) {
         return toObject(getValue(object, keysFieldName));
-    }
-    protected NativeHashMap<GGroupObjectValue, JavaScriptObject> buildKeyMap(JsArray<JavaScriptObject> objects) {
-        NativeHashMap<GGroupObjectValue, JavaScriptObject> map = new NativeHashMap<>();
-        for(int i=0,size=objects.length();i<size;i++) {
-            JavaScriptObject object = objects.get(i);
-            map.put(toObject(getValue(object, keysFieldName)), object);
-        }
-        return map;        
     }
 
     protected void changeDateTimeProperty(String property, JavaScriptObject object, int year, int month, int day, int hour, int minute, int second) {
@@ -305,7 +304,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         Column column = columnMap.get(property);
         filters.add(new GPropertyFilter(grid.groupObject, column.property, column.columnKey, leftBorder, GCompare.GREATER_EQUALS));
         filters.add(new GPropertyFilter(grid.groupObject, column.property, column.columnKey, rightBorder, GCompare.LESS_EQUALS));
-        formController.setViewFilters(filters, pageSize);
+        form.setViewFilters(filters, pageSize);
         setPageSize(pageSize);
     }
 
@@ -324,6 +323,31 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             }
         } else
             return ColorUtils.getDisplayColor(color);
+    }
+
+    protected void getAsyncValues(String value, String property, JavaScriptObject successCallBack, JavaScriptObject failureCallBack) {
+        Column column = columnMap.get(property);
+        form.getAsyncValues(value, column.property, column.columnKey, ServerResponse.VALUES, new AsyncCallback<Pair<ArrayList<GAsync>, Boolean>>() {
+            @Override
+            public void onFailure(Throwable caught) {
+                if(failureCallBack != null)
+                    GwtClientUtils.call(failureCallBack);
+            }
+
+            @Override
+            public void onSuccess(Pair<ArrayList<GAsync>, Boolean> result) {
+                JavaScriptObject[] results = new JavaScriptObject[result.first.size()];
+                for (GAsync suggestion : result.first) {
+                    JavaScriptObject object = GwtClientUtils.newObject();
+                    GwtClientUtils.setField(object, "displayString", fromString(suggestion.displayString));
+                    GwtClientUtils.setField(object, "rawString", fromString(suggestion.rawString));
+                    GwtClientUtils.setField(object, "key", fromObject(suggestion.key));
+                }
+                JavaScriptObject data = GwtClientUtils.newObject();
+                GwtClientUtils.setField(data, "data", fromObject(results));
+                GwtClientUtils.setField(data, "more", fromBoolean(result.second));
+                GwtClientUtils.call(successCallBack, data);
+         }});
     }
 
     protected native JavaScriptObject getController()/*-{
@@ -383,6 +407,9 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
                 if (color)
                     return color.toString();
                 return null;
+            },
+            getValues: function (property, value, successCallback, failureCallback) {
+                return thisObj.@GSimpleStateTableView::getAsyncValues(*)(property, value, successCallback, failureCallback);
             }
         };
     }-*/;

@@ -9,12 +9,11 @@ import lsfusion.gwt.server.convert.ClientActionToGwtConverter;
 import lsfusion.gwt.server.convert.GwtToClientConverter;
 import lsfusion.gwt.server.form.FormActionHandler;
 import lsfusion.http.provider.form.FormSessionObject;
-import lsfusion.interop.form.property.cell.Async;
+import lsfusion.client.form.property.cell.ClientAsync;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 
 import java.rmi.RemoteException;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 public class GetAsyncValuesHandler extends FormActionHandler<GetAsyncValues, ListResult> {
     private static GwtToClientConverter gwtConverter = GwtToClientConverter.getInstance();
@@ -32,15 +31,18 @@ public class GetAsyncValuesHandler extends FormActionHandler<GetAsyncValues, Lis
     @Override
     public ListResult executeEx(GetAsyncValues action, ExecutionContext context) throws RemoteException, AppServerNotAvailableDispatchException {
         FormSessionObject form = getFormSessionObject(action.formSessionID);
-        return convertAsyncValues(form.remoteForm.getAsyncValues(action.requestIndex, action.lastReceivedRequestIndex, action.propertyID, (byte[]) gwtConverter.convertOrCast(action.columnKey), action.actionSID, action.value, action.index));
+        return getAndConvertAsyncValues(form, action.requestIndex, action.lastReceivedRequestIndex, action.propertyID, (byte[]) gwtConverter.convertOrCast(action.columnKey), action.actionSID, action.value, action.index);
     }
 
-    public static ListResult convertAsyncValues(Async[] asyncValues) {
+    public static ListResult getAndConvertAsyncValues(FormSessionObject form, long requestIndex, long lastReceivedRequestIndex, int propertyID, byte[] fullKey, String actionSID, String value, int index) throws RemoteException {
+        return convertAsyncValues(ClientAsync.deserialize(form.remoteForm.getAsyncValues(requestIndex, lastReceivedRequestIndex, propertyID, fullKey, actionSID, value, index), form.clientForm));
+    }
+    public static ListResult convertAsyncValues(ClientAsync[] asyncValues) {
         if(asyncValues == null)
             return new ListResult(null);
 
         ArrayList<GAsync> gAsyncValues = new ArrayList<>();
-        for(Async asyncValue : asyncValues)
+        for(ClientAsync asyncValue : asyncValues)
             gAsyncValues.add(clientActionConverter.convertAsync(asyncValue));
         return new ListResult(gAsyncValues);
     }

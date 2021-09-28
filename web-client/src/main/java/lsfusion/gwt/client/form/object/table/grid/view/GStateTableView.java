@@ -523,8 +523,11 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
         }-*/;
     }
 
+    protected native final boolean hasKey(JavaScriptObject object, String key) /*-{
+        return object[key] !== undefined;
+    }-*/;
     protected native final JavaScriptObject getValue(JavaScriptObject object, String key) /*-{
-            return object[key];
+        return object[key];
     }-*/;
 
     protected native final JavaScriptObject fromString(String string) /*-{

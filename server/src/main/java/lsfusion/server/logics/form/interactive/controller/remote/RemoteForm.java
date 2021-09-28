@@ -2,7 +2,6 @@ package lsfusion.server.logics.form.interactive.controller.remote;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
-import lsfusion.base.ExceptionUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.Result;
 import lsfusion.base.col.ListFact;
@@ -26,7 +25,6 @@ import lsfusion.interop.form.order.user.Order;
 import lsfusion.interop.form.print.FormPrintType;
 import lsfusion.interop.form.print.ReportGenerationData;
 import lsfusion.interop.form.property.PropertyGroupType;
-import lsfusion.interop.form.property.cell.Async;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.controller.context.AbstractContext;
@@ -58,6 +56,7 @@ import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInstance;
 import lsfusion.server.logics.form.interactive.listener.RemoteFormListener;
+import lsfusion.server.logics.form.interactive.property.Async;
 import lsfusion.server.logics.form.stat.FormDataManager;
 import lsfusion.server.logics.form.stat.struct.FormIntegrationType;
 import lsfusion.server.logics.form.stat.struct.export.StaticExportData;
@@ -212,6 +211,22 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                 form.formRefresh();
             }
         }, forceLocalEvents);
+    }
+
+    private static byte[] serializeAsyncs(Async[] asyncs) {
+        try {
+            ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+            serializeAsyncs(asyncs, new DataOutputStream(outStream));
+            return outStream.toByteArray();
+        } catch (Exception e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
+    private static void serializeAsyncs(Async[] asyncs, DataOutputStream dataStream) throws IOException {
+        dataStream.writeInt(asyncs.length);
+        for(Async async : asyncs)
+            async.serialize(dataStream);
     }
 
     private ImMap<ObjectInstance, DataObject> deserializeDataKeysValues(byte[] keysArray) throws IOException {
@@ -703,7 +718,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
     }
 
     @Override
-    public Async[] getAsyncValues(long requestIndex, long lastReceivedRequestIndex, int propertyID, byte[] fullKey, String actionSID, String value, int asyncIndex) throws RemoteException {
+    public byte[] getAsyncValues(long requestIndex, long lastReceivedRequestIndex, int propertyID, byte[] fullKey, String actionSID, String value, int asyncIndex) throws RemoteException {
         try {
             // we're setting cacelable thread we're sure that global branch is used and it can be canceled without consequences
             // however in some cases we might wanna cancel pessimistic requests too (when statement supports that), but it may cause some troubles because there is no transaction, so the consequences are unpredictable (plus it's pretty rare case)
@@ -750,13 +765,13 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                     asyncLastThread = null;
             }
 
-            return result;
+            return serializeAsyncs(result);
         } catch (Throwable t) { // interrupted for example
 //            if(ExceptionUtils.getRootCause(t) instanceof InterruptedException)
             Thread.interrupted(); // we want to reset interrupted state, otherwise RemoteExceptionsAspect will rethrow InterruptedException to the client, where it is not always ignored (for example getPessimisticValues)
 
             ServerLoggers.sqlSuppLog(t);
-            return new Async[] {Async.CANCELED};
+            return serializeAsyncs(new Async[] {Async.CANCELED});
 //            throw Throwables.propagate(e);
         }
     }

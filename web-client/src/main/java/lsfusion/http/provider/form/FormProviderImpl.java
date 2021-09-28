@@ -65,7 +65,7 @@ public class FormProviderImpl implements FormProvider, InitializingBean, Disposa
 
         if (firstChanges != null)
             gForm.initialFormChanges = ClientFormChangesToGwtConverter.getInstance().convertOrCast(
-                    new ClientFormChanges(new DataInputStream(new ByteArrayInputStream(firstChanges)), clientForm),
+                    new ClientFormChanges(firstChanges, clientForm),
                     -1,
                     formSessionObject                    
             );

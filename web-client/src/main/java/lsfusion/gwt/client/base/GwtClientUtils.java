@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.base;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.event.dom.client.DomEvent;
@@ -941,4 +942,24 @@ public class GwtClientUtils {
         int index = filename.lastIndexOf(".");
         return (index == -1) ? "" : filename.substring(index + 1);
     }
+
+    public static native JavaScriptObject getGlobalField(String field)/*-{
+        return $wnd[customEditorFunction];
+    }-*/;
+    public static native JavaScriptObject getField(JavaScriptObject object, String field)/*-{
+        return object[field];
+    }-*/;
+    public static native JavaScriptObject call(JavaScriptObject object)/*-{
+        return object();
+    }-*/;
+    public static native JavaScriptObject call(JavaScriptObject object, Object param)/*-{
+        return object(param);
+    }-*/;
+    public static native JavaScriptObject newObject()/*-{
+        return {};
+    }-*/;
+    public static native void setField(JavaScriptObject object, String field, JavaScriptObject value)/*-{
+        return object[field];
+    }-*/;
+
 }
