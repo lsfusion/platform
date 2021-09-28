@@ -1168,17 +1168,24 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         String language = Settings.get().getFilterMatchLanguage();
         SQLSyntax syntax = session.sql.syntax;
         String match = "'" + value + "'";
-        ImOrderMap<ImMap<Q, DataObject>, ImMap<String, ObjectValue>> result = new Query<>(groupListKeys, MapFact.toMap(
-                "highlight", value.isEmpty() ? listExpr : FormulaExpr.createCustomFormula(MatchWhere.getHighlight(syntax, "prm1", match, language), StringClass.text, listExpr),
-                "rank", value.isEmpty() ? ValueExpr.COUNT : FormulaExpr.createCustomFormula(MatchWhere.getRank(syntax, "prm1", match, language), DoubleClass.instance, listExpr),
-                "count", countExpr), listWhere).executeClasses(session, MapFact.toOrderMap("rank", true, "count", true), neededCount);
+
+        MExclMap<String, Expr> mProps = MapFact.mExclMapMax(4);
+        mProps.exclAdd("highlight", value.isEmpty() ? listExpr : FormulaExpr.createCustomFormula(MatchWhere.getHighlight(syntax, "prm1", match, language), StringClass.text, listExpr));
+        mProps.exclAdd("rank", value.isEmpty() ? ValueExpr.COUNT : FormulaExpr.createCustomFormula(MatchWhere.getRank(syntax, "prm1", match, language), DoubleClass.instance, listExpr));
+        mProps.exclAdd("count", countExpr);
+        if(readObjects)
+            mProps.exclAdd("raw", listExpr);
+
+        ImOrderMap<ImMap<Q, DataObject>, ImMap<String, ObjectValue>> result = new Query<>(groupListKeys, mProps.immutable(), listWhere).executeClasses(session, MapFact.toOrderMap("rank", true, "count", true), neededCount);
 
         PropertyAsync<P>[] resultValues = new PropertyAsync[result.size()];
         int count = 0;
         for(int i = 0, size = result.size(); i < size; i++) {
             ImMap<String, ObjectValue> values = result.getValue(i);
             count += (Integer)values.get("count").getValue();
-            resultValues[i] = new PropertyAsync<P>((String)values.get("highlight").getValue(), (String)result.getKey(i).singleValue().getValue(), readObjects ? (ImMap<P, DataObject>)result.getKey(i) : null);
+            resultValues[i] = new PropertyAsync<P>((String)values.get("highlight").getValue(),
+                    readObjects ? (String)values.get("raw").getValue() : (String)result.getKey(i).singleValue().getValue(),
+                    readObjects ? (ImMap<P, DataObject>)result.getKey(i) : null);
         }
 
         return new Pair<>(resultValues, count);
