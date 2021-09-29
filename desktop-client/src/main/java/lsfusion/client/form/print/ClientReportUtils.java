@@ -24,11 +24,12 @@ import javax.print.attribute.standard.PrinterName;
 import javax.print.attribute.standard.SheetCollate;
 import javax.print.attribute.standard.Sides;
 import java.awt.print.PrinterAbortException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static lsfusion.base.BaseUtils.nullEmpty;
-import static lsfusion.base.BaseUtils.nvl;
 
 public class ClientReportUtils {
 
@@ -53,11 +54,16 @@ public class ClientReportUtils {
         public void run() {
             try {
 
-                String printerTray = null;
+                Map<String, String> printOptions = new HashMap<>();
                 if(printerName != null) {
                     String[] splitted = printerName.split(";");
                     printerName = nullEmpty(splitted[0]);
-                    printerTray = splitted.length > 1 ? nullEmpty(splitted[1]) : null;
+                    for(int i = 1; i < splitted.length; i++) {
+                        String[] entry = splitted[i].split("=");
+                        if(entry.length == 2) {
+                            printOptions.put(entry[0], entry[1]);
+                        }
+                    }
                 }
 
                 JasperPrint print = new ReportGenerator(generationData).createReport(FormPrintType.PRINT);
@@ -68,19 +74,19 @@ public class ClientReportUtils {
                 PrintRequestAttributeSet printRequestAttributeSet = new HashPrintRequestAttributeSet();
 //                printRequestAttributeSet.add(MediaSizeName.ISO_A4);
 
-                String sidesProp = print.getProperty(ReportGenerator.SIDES_PROPERTY_NAME);
+                String sidesProp = printOptions.getOrDefault(ReportGenerator.SIDES_PROPERTY_NAME, print.getProperty(ReportGenerator.SIDES_PROPERTY_NAME));
                 Sides sides = ReportGenerator.SIDES_VALUES.get(sidesProp);
                 if (sides != null) {
                     printRequestAttributeSet.add(sides);
                 }
 
-                String trayProp = nvl(printerTray, print.getProperty(ReportGenerator.TRAY_PROPERTY_NAME));
+                String trayProp = printOptions.getOrDefault(ReportGenerator.TRAY_PROPERTY_NAME, print.getProperty(ReportGenerator.TRAY_PROPERTY_NAME));
                 MediaTray tray = ReportGenerator.TRAY_VALUES.get(trayProp);
                 if (tray != null) {
                     printRequestAttributeSet.add(tray);
                 }
 
-                String sheetCollate = print.getProperty(ReportGenerator.SHEET_COLLATE_PROPERTY_NAME);
+                String sheetCollate = printOptions.getOrDefault(ReportGenerator.SHEET_COLLATE_PROPERTY_NAME, print.getProperty(ReportGenerator.SHEET_COLLATE_PROPERTY_NAME));
                 if ("true".equals(sheetCollate)) {
                     printRequestAttributeSet.add(SheetCollate.COLLATED);
                 } else if ("false".equals(sheetCollate)) {
