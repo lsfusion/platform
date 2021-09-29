@@ -20,10 +20,7 @@ import javax.print.attribute.HashPrintRequestAttributeSet;
 import javax.print.attribute.HashPrintServiceAttributeSet;
 import javax.print.attribute.PrintRequestAttributeSet;
 import javax.print.attribute.PrintServiceAttributeSet;
-import javax.print.attribute.standard.MediaTray;
-import javax.print.attribute.standard.PrinterName;
-import javax.print.attribute.standard.SheetCollate;
-import javax.print.attribute.standard.Sides;
+import javax.print.attribute.standard.*;
 import java.awt.print.PrinterAbortException;
 import java.util.HashMap;
 import java.util.Map;
@@ -92,6 +89,11 @@ public class ClientReportUtils {
                     printRequestAttributeSet.add(SheetCollate.COLLATED);
                 } else if ("false".equals(sheetCollate)) {
                     printRequestAttributeSet.add(SheetCollate.UNCOLLATED);
+                }
+
+                String copies = printOptions.get("copies");
+                if(copies != null) {
+                    printRequestAttributeSet.add(new Copies(Integer.parseInt(copies)));
                 }
 
                 PrintServiceAttributeSet printServiceAttributeSet = new HashPrintServiceAttributeSet();
