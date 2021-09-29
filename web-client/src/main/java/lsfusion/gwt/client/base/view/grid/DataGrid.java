@@ -1115,26 +1115,44 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
         isResolvingState = false;
     }
 
-    private int getLastVisibleRow(int tableBottom, int start) {
+    private int getLastVisibleRow(int rowTop, int rowBottom, int scrollTop, int scrollBottom, int start) {
         for (int i = start; i >= 0; i--) {
-            TableRowElement rowElement = getChildElement(i);
-            int rowBottom = rowElement.getOffsetTop() + rowElement.getClientHeight();
-            if (rowBottom <= tableBottom) {
-                return i;
+            Element newRowElement = getChildElement(i);
+            int newRowTop = newRowElement.getOffsetTop();
+            int newRowBottom = newRowTop + newRowElement.getClientHeight();
+
+            boolean newRowFullyVisible = newRowTop >= scrollTop && newRowTop <= scrollBottom && newRowBottom >= scrollTop && newRowBottom <= scrollBottom;
+            boolean newRowPartiallyVisible = newRowTop <= scrollBottom && newRowBottom >= scrollTop;
+            if (newRowPartiallyVisible) {
+                boolean rowPartiallyVisible = rowTop <= scrollBottom && rowBottom >= scrollTop;
+                if (!rowPartiallyVisible || newRowFullyVisible) {
+                    return i;
+                } else {
+                    break;
+                }
             }
         }
-        return 0;
+        return -1;
     }
 
-    private int getFirstVisibleRow(int tableTop, int start) {
+    private int getFirstVisibleRow(int rowTop, int rowBottom, int scrollTop, int scrollBottom, int start) {
         for (int i = start; i < getRowCount(); i++) {
-            TableRowElement rowElement = getChildElement(i);
-            int rowTop = rowElement.getOffsetTop();
-            if (rowTop >= tableTop) {
-                return i;
+            Element newRowElement = getChildElement(i);
+            int newRowTop = newRowElement.getOffsetTop();
+            int newRowBottom = newRowTop + newRowElement.getClientHeight();
+
+            boolean newRowFullyVisible = newRowTop >= scrollTop && newRowTop <= scrollBottom && newRowBottom >= scrollTop && newRowBottom <= scrollBottom;
+            boolean newRowPartiallyVisible = newRowTop <= scrollBottom && newRowBottom >= scrollTop;
+            if (newRowPartiallyVisible) {
+                boolean rowPartiallyVisible = rowTop <= scrollBottom && rowBottom >= scrollTop;
+                if (!rowPartiallyVisible || newRowFullyVisible) {
+                    return i;
+                } else {
+                    break;
+                }
             }
         }
-        return 0;
+        return -1;
     }
 
     public void checkSelectedRowVisible() {
@@ -1148,11 +1166,12 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
             int rowBottom = rowTop + rowElement.getClientHeight();
 
             int newRow = -1;
-            if (rowBottom > scrollTop + scrollHeight + 1) { // 1 for border
-                newRow = getLastVisibleRow(scrollTop + scrollHeight, selectedRow);
+            int scrollBottom = scrollTop + scrollHeight;
+            if (rowBottom > scrollBottom + 1) { // 1 for border
+                newRow = getLastVisibleRow(rowTop, rowBottom, scrollTop, scrollBottom, selectedRow - 1);
             }
             if (rowTop < scrollTop) {
-                newRow = getFirstVisibleRow(scrollTop, selectedRow);
+                newRow = getFirstVisibleRow(rowTop, rowBottom, scrollTop, scrollBottom, selectedRow + 1);
             }
             if (newRow != -1) {
                 changeSelectedRow(newRow);
