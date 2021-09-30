@@ -68,7 +68,8 @@ nameLanguageFromTranslation '{i18n.name.language.from}'() = name(languageFromTra
 languageToTranslation = DATA Language ();
 nameLanguageToTranslation '{i18n.name.language.to}'() = name(languageToTranslation());
 
-translate   INTERNAL  'lsfusion.server.physics.dev.i18n.action.TranslateAction' (TEXT, Language, Language);
+translateApiKey '{i18n.api.key}' = DATA STRING () CHARWIDTH 40;
+translate INTERNAL  'lsfusion.server.physics.dev.i18n.action.TranslateAction' (TEXT, Language, Language) NULL;
 
 translateTerm '{i18n.translate}'(DictionaryEntry dictionaryEntry)  { 
 
@@ -89,7 +90,8 @@ translate   INTERNAL  'lsfusion.server.physics.dev.i18n.action.TranslateDictiona
 WHEN LOCAL CHANGED (translationInput()) AND Dictionary dictionary IS Dictionary DO EXEC translate(dictionary, translationInput());
 
 FORM translation '{i18n.translation}'
-    PROPERTIES() translationInput, translationResult, nameLanguageFromTranslation, nameLanguageToTranslation,
+    PROPERTIES() translateApiKey, 
+                 translationInput, translationResult, nameLanguageFromTranslation, nameLanguageToTranslation,
                  translateText
 ;
 
@@ -97,6 +99,7 @@ DESIGN translation {
     NEW languages {
         caption = '{i18n.languages}';
         type = CONTAINERH;
+        MOVE PROPERTY(translateApiKey());
         MOVE PROPERTY(nameLanguageFromTranslation());
         MOVE PROPERTY(nameLanguageToTranslation());
     }
