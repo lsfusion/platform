@@ -74,8 +74,11 @@ public class TranslateAction extends InternalAction {
                     httppost.setEntity(new UrlEncodedFormEntity(params, "UTF-8"));
 
                     HttpResponse response = httpclient.execute(httppost);
+                    findProperty("translationCode[]").change(response.getStatusLine().getStatusCode(), context);
+
                     HttpEntity entity = response.getEntity();
 
+                    String result = null;
                     if (entity != null) {
                         try (InputStream instream = entity.getContent()) {
                             BufferedReader streamReader = new BufferedReader(new InputStreamReader(instream, "UTF-8"));
@@ -88,7 +91,6 @@ public class TranslateAction extends InternalAction {
                             String responseString = responseStrBuilder.toString();
                             JSONObject jsonObject = new JSONObject(responseString);
 
-                            String result = null;
                             if (jsonObject.has("data")) {
                                 JSONObject data = jsonObject.getJSONObject("data");
 
@@ -97,10 +99,10 @@ public class TranslateAction extends InternalAction {
                             } else {
                                 result = responseString;
                             }
-
-                            findProperty("translationResult[]").change(result, context);
                         }
                     }
+
+                    findProperty("translationResult[]").change(result, context);
                 }
             }
 
