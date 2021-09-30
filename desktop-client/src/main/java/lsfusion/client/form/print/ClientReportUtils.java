@@ -14,12 +14,10 @@ import net.sf.jasperreports.engine.export.JRPrintServiceExporter;
 import net.sf.jasperreports.engine.export.JRPrintServiceExporterParameter;
 import net.sf.jasperreports.export.XlsReportConfiguration;
 
+import javax.print.DocFlavor;
 import javax.print.PrintService;
 import javax.print.PrintServiceLookup;
-import javax.print.attribute.HashPrintRequestAttributeSet;
-import javax.print.attribute.HashPrintServiceAttributeSet;
-import javax.print.attribute.PrintRequestAttributeSet;
-import javax.print.attribute.PrintServiceAttributeSet;
+import javax.print.attribute.*;
 import javax.print.attribute.standard.*;
 import java.awt.print.PrinterAbortException;
 import java.util.HashMap;
@@ -64,10 +62,18 @@ public class ClientReportUtils {
                     }
                 }
 
+                PrintService printService = PrintServiceLookup.lookupDefaultPrintService();
+                if(printerName != null) {
+                    for (PrintService service : PrintServiceLookup.lookupPrintServices(DocFlavor.INPUT_STREAM.AUTOSENSE, new HashPrintRequestAttributeSet())) {
+                        if(service.getName().equals(printerName)) {
+                            printService = service;
+                            break;
+                        }
+                    }
+                }
+
                 JasperPrint print = new ReportGenerator(generationData).createReport(FormPrintType.PRINT, MainController.remoteLogics);
                 print.setProperty(XlsReportConfiguration.PROPERTY_DETECT_CELL_TYPE, "true");
-
-                PrintService defaultPrintService = PrintServiceLookup.lookupDefaultPrintService();
 
                 PrintRequestAttributeSet printRequestAttributeSet = new HashPrintRequestAttributeSet();
 //                printRequestAttributeSet.add(MediaSizeName.ISO_A4);
@@ -78,8 +84,19 @@ public class ClientReportUtils {
                     printRequestAttributeSet.add(sides);
                 }
 
+                MediaTray tray = null;
                 String trayProp = printOptions.getOrDefault(ReportGenerator.TRAY_PROPERTY_NAME, print.getProperty(ReportGenerator.TRAY_PROPERTY_NAME));
-                MediaTray tray = ReportGenerator.TRAY_VALUES.get(trayProp);
+                Object o = printService.getSupportedAttributeValues(Media.class, DocFlavor.SERVICE_FORMATTED.PAGEABLE, null);
+                if (o instanceof Media[]) {
+                    for (Media media : (Media[]) o) {
+                        if(media instanceof MediaTray) {
+                            if(media.toString().equals(trayProp)) {
+                                tray = (MediaTray) media;
+                            }
+                        }
+                    }
+                }
+
                 if (tray != null) {
                     printRequestAttributeSet.add(tray);
                 }
@@ -97,14 +114,11 @@ public class ClientReportUtils {
                 }
 
                 PrintServiceAttributeSet printServiceAttributeSet = new HashPrintServiceAttributeSet();
-                if(printerName != null)
-                    printServiceAttributeSet.add(new PrinterName(printerName, null));
+                printServiceAttributeSet.add(new PrinterName(printService.getName(), null));
 
                 JRPrintServiceExporter exporter = new JRPrintServiceExporter();
 
                 exporter.setParameter(JRExporterParameter.JASPER_PRINT, print);
-                if(printerName == null)
-                    exporter.setParameter(JRPrintServiceExporterParameter.PRINT_SERVICE, defaultPrintService);
                 exporter.setParameter(JRPrintServiceExporterParameter.PRINT_REQUEST_ATTRIBUTE_SET, printRequestAttributeSet);
                 exporter.setParameter(JRPrintServiceExporterParameter.PRINT_SERVICE_ATTRIBUTE_SET, printServiceAttributeSet);
                 exporter.setParameter(JRPrintServiceExporterParameter.DISPLAY_PAGE_DIALOG, Boolean.FALSE);
