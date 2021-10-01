@@ -108,9 +108,12 @@ public class ClientReportUtils {
                     printRequestAttributeSet.add(SheetCollate.UNCOLLATED);
                 }
 
-                String copies = printOptions.get("copies");
-                if(copies != null) {
-                    printRequestAttributeSet.add(new Copies(Integer.parseInt(copies)));
+                String copiesOption = printOptions.get("copies");
+                if(copiesOption != null) {
+                    Integer copies = Integer.parseInt(copiesOption);
+                    if(copies > 0) {
+                        printRequestAttributeSet.add(new Copies(copies));
+                    }
                 }
 
                 PrintServiceAttributeSet printServiceAttributeSet = new HashPrintServiceAttributeSet();
