@@ -28,15 +28,19 @@ import javax.mail.BodyPart;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.util.ByteArrayDataSource;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.Socket;
 import java.nio.charset.Charset;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -288,6 +292,22 @@ public class ExternalUtils {
             }
         }
         return entity;
+    }
+
+    public static byte[] sendTCP(byte[] fileBytes, String host, Integer port, Integer timeout) throws IOException {
+        try (Socket socket = new Socket(host, port)) {
+            if (timeout != null) {
+                socket.setSoTimeout(timeout);
+            }
+            try (OutputStream os = socket.getOutputStream(); InputStream is = socket.getInputStream()) {
+                os.write(fileBytes);
+                try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+                    byte[] buffer = new byte[1024];
+                    out.write(buffer, 0, is.read(buffer));
+                    return out.toByteArray();
+                }
+            }
+        }
     }
 
     public static void sendUDP(byte[] fileBytes, String host, Integer port) throws IOException {

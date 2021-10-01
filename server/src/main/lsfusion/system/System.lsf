@@ -37,6 +37,9 @@ logMessage = DATA LOCAL TEXT ();
 apply  { APPLY; }
 cancel  { CANCEL; }
 
+responseTcp = DATA LOCAL RAWFILE();
+timeoutTcp = DATA LOCAL INTEGER();
+
 statusHttp = DATA LOCAL INTEGER();
 failedHttp = statusHttp() < 200 OR statusHttp() >= 300;
 statusHttpTo = DATA LOCAL NESTED INTEGER();

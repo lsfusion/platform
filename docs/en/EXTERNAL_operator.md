@@ -11,6 +11,8 @@ The `EXTERNAL` operator creates an [action](Actions.md) that implements [accessi
 `externalCall` - an external call defined by one of the following syntaxes:
 
     HTTP [requestType] connectionStrExpr [BODYURL bodyStrExpr] [HEADERS headersPropertyId] [COOKIES cookiesPropertyId] [HEADERSTO headersToPropertyId] [COOKIESTO cookiesToPropertyId]
+    TCP [CLIENT] connectionStrExpr
+    UDP [CLIENT] connectionStrExpr
     SQL connectionStrExpr EXEC execStrExpr
     LSF connectionStrExpr lsfExecType execStrExpr
 
@@ -34,6 +36,18 @@ The `EXTERNAL` operator creates an action that makes a request to an external sy
     - `DELETE`
 
   The default value is `POST`.
+
+- `TCP`
+
+  Keyword. Specifies that the operator is executing a TCP request.
+
+- `UDP`
+
+  Keyword. Specifies that the operator is executing a UDP request.
+
+- `CLIENT`
+
+  Keyword. Specifies that the request is executing on the client. By default, the request is executed on the server.
 
 - `SQL`
 
