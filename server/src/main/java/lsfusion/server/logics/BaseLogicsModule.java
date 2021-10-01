@@ -140,6 +140,9 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public LA<?> apply;
     public LP<?> canceled;
 
+    public LP responseTcp;
+    public LP timeoutTcp;
+
     public LP statusHttp;
     public LP statusHttpTo;
     public LP timeoutHttp;
@@ -470,6 +473,9 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
         apply = findAction("apply[]");
 //        cancel = findAction("cancel[]");
+
+        responseTcp = findProperty("responseTcp[]");
+        timeoutTcp = findProperty("timeoutTcp[]");
 
         statusHttp = findProperty("statusHttp[]");
         statusHttpTo = findProperty("statusHttpTo[]");

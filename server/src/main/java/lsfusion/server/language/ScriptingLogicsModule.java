@@ -138,10 +138,7 @@ import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameUtils;
 import lsfusion.server.physics.dev.id.name.PropertyCompoundNameParser;
 import lsfusion.server.physics.dev.id.resolve.ResolvingErrors;
 import lsfusion.server.physics.dev.id.resolve.ResolvingErrors.ResolvingError;
-import lsfusion.server.physics.dev.integration.external.to.ExternalDBAction;
-import lsfusion.server.physics.dev.integration.external.to.ExternalDBFAction;
-import lsfusion.server.physics.dev.integration.external.to.ExternalHTTPAction;
-import lsfusion.server.physics.dev.integration.external.to.ExternalUDPAction;
+import lsfusion.server.physics.dev.integration.external.to.*;
 import lsfusion.server.physics.dev.integration.external.to.file.ReadAction;
 import lsfusion.server.physics.dev.integration.external.to.file.WriteAction;
 import lsfusion.server.physics.dev.integration.external.to.mail.SendEmailAction;
@@ -1915,6 +1912,10 @@ public class ScriptingLogicsModule extends LogicsModule {
     public LAWithParams addScriptedExternalDBFAction(LPWithParams connectionString, String charset, List<LPWithParams> params, List<TypedParameter> context, List<NamedPropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
         return addScriptedJoinAProp(addAProp(new ExternalDBFAction(getTypesForExternalAction(params, context), charset, findLPsNoParamsByPropertyUsage(toPropertyUsageList))),
                 BaseUtils.addList(connectionString, params));
+    }
+
+    public LAWithParams addScriptedExternalTCPAction(boolean clientAction, LPWithParams connectionString, List<LPWithParams> params, List<TypedParameter> context) throws ScriptingErrorLog.SemanticErrorException {
+        return addScriptedJoinAProp(addAProp(new ExternalTCPAction(clientAction, getTypesForExternalAction(params, context))), BaseUtils.addList(connectionString, params));
     }
 
     public LAWithParams addScriptedExternalUDPAction(boolean clientAction, LPWithParams connectionString, List<LPWithParams> params, List<TypedParameter> context) throws ScriptingErrorLog.SemanticErrorException {
