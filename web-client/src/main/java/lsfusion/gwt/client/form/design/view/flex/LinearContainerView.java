@@ -34,14 +34,14 @@ public class LinearContainerView extends GAbstractContainerView {
 
         linesCount = container.lines;
 
-        GFlexAlignment justifyContent = container.getFlexJustify(); // when there is free space (there is no non-zero flex)
+        GFlexAlignment flexAlignment = container.getFlexAlignment(); // when there is free space (there is no non-zero flex)
 
         // later containers with explicit sizes can be included
         // plus also in simple containers we can wrap consecutive property views into some flexpanel, but it requires a lot more complex logics
         alignCaptions = container.isAlignCaptions();
 
         if(isSimple())
-            panel = new FlexPanel(vertical, justifyContent);
+            panel = new FlexPanel(vertical, flexAlignment);
         else {
             panel = new FlexPanel(!vertical);
             // we don't want this panel to be resized, because we don't set overflow, and during resize container can get fixed size (and then if inner container resized it's content overflows outer border)
@@ -55,12 +55,12 @@ public class LinearContainerView extends GAbstractContainerView {
             childrenCaptions = new ArrayList<>();
             for (int i = 0; i < linesCount; i++) {
                 if(alignCaptions) {
-                    FlexPanel captionLine = new FlexPanel(vertical, justifyContent);
+                    FlexPanel captionLine = new FlexPanel(vertical, flexAlignment);
                     panel.add(captionLine, GFlexAlignment.STRETCH); // we need the same alignment as used for the "main" line (it's important if justifyContent is used)
                     captionLines[i] = captionLine;
                 }
 
-                FlexPanel line = new FlexPanel(vertical, justifyContent);
+                FlexPanel line = new FlexPanel(vertical, flexAlignment);
                 panel.addFillFlex(line, null); // we're using null flex basis to make lines behaviour similar to manually defined containers
                 lines[i] = line;
             }
@@ -158,7 +158,7 @@ public class LinearContainerView extends GAbstractContainerView {
     }
 
     private void removeChildrenViews(int startFrom, int offset) {
-        for (int index = startFrom, size = children.size(); index < size; index++)
+        for (int index = children.size() - 1; index >= startFrom; index--)
             removeChildrenView(index, offset);
     }
 
@@ -166,7 +166,7 @@ public class LinearContainerView extends GAbstractContainerView {
         int rowIndex = (index + offset) / linesCount;
         int lineIndex = (index + offset) % linesCount;
 
-        add(isSimple() ? panel : lines[lineIndex], childrenViews.get(index), children.get(index), rowIndex);
+        addChildrenWidget(isSimple() ? panel : lines[lineIndex], index, rowIndex);
 
         if(alignCaptions) {
             AlignCaptionPanel captionPanel = childrenCaptions.get(index);
@@ -186,12 +186,13 @@ public class LinearContainerView extends GAbstractContainerView {
     }
 
     private void removeChildrenView(int index, int offset) {
+        int rowIndex = (index + offset) / linesCount;
         int lineIndex = (index + offset) % linesCount;
 
-        (isSimple() ? panel : lines[lineIndex]).remove(childrenViews.get(index));
+        (isSimple() ? panel : lines[lineIndex]).remove(rowIndex);
 
         if(alignCaptions)
-            captionLines[lineIndex].remove(childrenCaptions.get(index));
+            captionLines[lineIndex].remove(rowIndex);
     }
 
     @Override

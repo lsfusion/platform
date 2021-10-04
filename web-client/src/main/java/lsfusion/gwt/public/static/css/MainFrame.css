@@ -287,8 +287,15 @@ input[type=checkbox]:focus {
 .captionPanelWithLegend {
     margin: 1px;
     padding: 1px;
-    border: 1px solid var(--panel-border-color);
-    border-radius: var(--panel-border-radius);
+    border-top: 1px solid var(--panel-border-color);
+    /*border-radius: var(--panel-border-radius);*/
+}
+
+.leftBorder {
+    border-left: 1px solid var(--panel-border-color);
+}
+.topBorder {
+    border-top: 1px solid var(--panel-border-color);
 }
 
 .captionPanelLegend {

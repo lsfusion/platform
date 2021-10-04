@@ -4,6 +4,7 @@ import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.Dimension;
 import lsfusion.gwt.client.base.focus.DefaultFocusReceiver;
+import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.ResizableSimplePanel;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
@@ -136,6 +137,8 @@ public class GFormLayout extends ResizableSimplePanel {
 
     public void hideEmptyContainerViews(int requestIndex) {
         autoShowHideContainers(mainContainer, requestIndex);
+
+        FlexPanel.autoStretchAndDrawBorders(getMainView());
     }
 
     private boolean autoShowHideContainers(GContainer container, long requestIndex) {

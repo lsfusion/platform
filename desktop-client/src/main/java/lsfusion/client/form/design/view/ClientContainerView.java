@@ -14,7 +14,6 @@ public interface ClientContainerView {
     boolean hasChild(ClientComponent child);
     int getChildrenCount();
     ClientComponent getChild(int index);
-    Widget getChildView(int index);
 
     Widget getView();
 

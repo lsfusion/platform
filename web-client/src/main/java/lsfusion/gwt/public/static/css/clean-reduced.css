@@ -964,8 +964,8 @@ button {
 }
 .gwt-TabPanelBottom {
     padding: 1px;
-    border: 1px solid var(--panel-border-color);
-    border-radius: var(--panel-border-radius);
+    border-top: 1px solid var(--panel-border-color);
+/*    border-radius: var(--panel-border-radius);*/
 }
 
 .gwt-TextArea {
@@ -1262,13 +1262,13 @@ td.datePickerMonth {
 .gwt-SplitLayoutPanel-HDragger {
     cursor: col-resize;
     width: 4px !important; /* is overriden by width with border in SplitLayoutPanel */
-    border-left: 1px solid var(--split-border-color);
+    /*border-left: 1px solid var(--split-border-color);*/
     border-right: 1px solid var(--split-border-color);
 }
 
 .gwt-SplitLayoutPanel-VDragger {
     cursor: row-resize;
     height: 4px !important; /* is overriden by width with border in SplitLayoutPanel */
-    border-top: 1px solid var(--split-border-color);
+    /*border-top: 1px solid var(--split-border-color);*/
     border-bottom: 1px solid var(--split-border-color);
 }

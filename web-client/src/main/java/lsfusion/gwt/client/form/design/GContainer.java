@@ -35,7 +35,7 @@ public class GContainer extends GComponent {
                 '}';
     }
 
-    public GFlexAlignment getFlexJustify() {
+    public GFlexAlignment getFlexAlignment() {
         return childrenAlignment;
     }
 

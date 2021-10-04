@@ -107,8 +107,8 @@ public class TabbedContainerView extends GAbstractContainerView {
                 if (index == -1) {
                     index = relativePosition(child, children, visibleChildren);
                     visibleChildren.add(index, child);
-                    panel.insertTab(childrenViews.get(i), getTabTitle(child), index, (deck, widget, beforeIndex) -> add(deck, widget, child, beforeIndex));
-                    // updateTabCaption(child);
+                    final int fi = i;
+                    panel.insertTab(getTabTitle(child), index, (deck, beforeIndex) -> addChildrenWidget(deck, fi, beforeIndex));
                 }
             } else if (index != -1) {
                 visibleChildren.remove(index);
