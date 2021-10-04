@@ -76,7 +76,7 @@ public class PrintUtils {
                         }
 
                         String trayValue = printOptions.getOrDefault(ReportGenerator.TRAY_PROPERTY_NAME, trayName);
-                        Media media = getTray(printer, flavor, attributeSet, trayValue);
+                        Media media = getTray(printer, trayValue);
                         if (media != null) {
                             attrSet.add(media);
                         }
@@ -110,9 +110,9 @@ public class PrintUtils {
         }
     }
 
-    private static Media getTray(PrintService printer, DocFlavor flavor, PrintRequestAttributeSet attributeSet, String trayName) {
+    private static Media getTray(PrintService printer, String trayName) {
         if(trayName != null) {
-            Media[] supportedMedia = (Media[]) printer.getSupportedAttributeValues(Media.class, flavor, attributeSet);
+            Media[] supportedMedia = (Media[]) printer.getSupportedAttributeValues(Media.class, DocFlavor.SERVICE_FORMATTED.PAGEABLE, null);
             if (supportedMedia != null) {
                 for (Media media : supportedMedia) {
                     if (media instanceof MediaTray) {
