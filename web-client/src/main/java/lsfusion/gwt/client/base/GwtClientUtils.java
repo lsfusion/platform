@@ -959,7 +959,7 @@ public class GwtClientUtils {
         return {};
     }-*/;
     public static native void setField(JavaScriptObject object, String field, JavaScriptObject value)/*-{
-        return object[field];
+        return object[field] = value;
     }-*/;
 
 }

@@ -325,7 +325,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             return ColorUtils.getDisplayColor(color);
     }
 
-    protected void getAsyncValues(String value, String property, JavaScriptObject successCallBack, JavaScriptObject failureCallBack) {
+    protected void getAsyncValues(String property, String value, JavaScriptObject successCallBack, JavaScriptObject failureCallBack) {
         Column column = columnMap.get(property);
         form.getAsyncValues(value, column.property, column.columnKey, ServerResponse.VALUES, new AsyncCallback<Pair<ArrayList<GAsync>, Boolean>>() {
             @Override
@@ -337,11 +337,12 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             @Override
             public void onSuccess(Pair<ArrayList<GAsync>, Boolean> result) {
                 JavaScriptObject[] results = new JavaScriptObject[result.first.size()];
-                for (GAsync suggestion : result.first) {
+                for (int i = 0; i < result.first.size(); i++) {
                     JavaScriptObject object = GwtClientUtils.newObject();
-                    GwtClientUtils.setField(object, "displayString", fromString(suggestion.displayString));
-                    GwtClientUtils.setField(object, "rawString", fromString(suggestion.rawString));
-                    GwtClientUtils.setField(object, "key", fromObject(suggestion.key));
+                    GwtClientUtils.setField(object, "displayString", fromString(result.first.get(i).displayString));
+                    GwtClientUtils.setField(object, "rawString", fromString(result.first.get(i).rawString));
+                    GwtClientUtils.setField(object, "key", fromObject(result.first.get(i).key));
+                    results[i] = object;
                 }
                 JavaScriptObject data = GwtClientUtils.newObject();
                 GwtClientUtils.setField(data, "data", fromObject(results));
