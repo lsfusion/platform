@@ -80,7 +80,7 @@ public class ClientReportUtils {
 
                 String sidesValue = printOptions.getOrDefault(ReportGenerator.SIDES_PROPERTY_NAME, print.getProperty(ReportGenerator.SIDES_PROPERTY_NAME));
                 Sides sides = ReportGenerator.SIDES_VALUES.get(sidesValue);
-                if (sides != null && printer.isAttributeValueSupported(sides, flavor, attrSet)) {
+                if (sides != null) {
                     attrSet.add(sides);
                 }
 
