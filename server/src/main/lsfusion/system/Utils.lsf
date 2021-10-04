@@ -114,6 +114,10 @@ columnsCount '{utils.excel.columns.count}' = DATA LOCAL INTEGER ();
 columnsCount '{utils.excel.columns.count}' (EXCELFILE file, INTEGER sheet)  INTERNAL  'lsfusion.server.logics.classes.data.utils.excel.ColumnsCountExcelAction';
 columnsCount '{utils.excel.columns.count}' (EXCELFILE file)  { columnsCount(file, NULL); }
 
+// ---------------------------------- Pdf file actions  ---------------------------------- //
+pagesCountPdf '{utils.pdf.pages.count}' = DATA LOCAL INTEGER ();
+pagesCountPdf '{utils.pdf.pages.count}'  INTERNAL  'lsfusion.server.logics.classes.data.utils.pdf.PagesCountPdfAction' (PDFFILE);
+
 // ---------------------------------- Генерация паролей  ---------------------------------- //
 generatedPassword 'Сгенерированный пароль' = DATA LOCAL TEXT();
 //length, use at least one digit requirement, use both registers requirement
