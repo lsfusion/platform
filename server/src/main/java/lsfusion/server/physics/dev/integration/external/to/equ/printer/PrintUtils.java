@@ -71,7 +71,7 @@ public class PrintUtils {
 
                         String sidesValue = printOptions.getOrDefault(ReportGenerator.SIDES_PROPERTY_NAME, duplex ? "two-sided-long-edge" : null);
                         Sides sides = ReportGenerator.SIDES_VALUES.get(sidesValue);
-                        if (sides != null && printer.isAttributeValueSupported(sides, flavor, attributeSet)) {
+                        if (sides != null) {
                             attrSet.add(sides);
                         }
 
