@@ -8,7 +8,7 @@ CLASS Computer '{authentication.computer}';
 TABLE computer (Computer);
 
 hostname '{authentication.host.name.computer}' = DATA ISTRING[100] (Computer) CHARWIDTH 10 IN id;
-computer = GROUP LAST Computer computer BY hostname(computer);
+computer = GROUP LAST Computer computer ORDER computer BY hostname(computer);
 
 FORM computer '{authentication.computer}'
     OBJECTS c = Computer PANEL

@@ -20,7 +20,7 @@ readonly '{chat.readonly}' (Chat c) = readonly(c, currentUser());
 
 dataName '{chat.name}' = DATA ISTRING[100] (Chat);
 nameOrLogin '{chat.name.or.login.user}' (CustomUser user) = OVERRIDE name(user), login(user);
-name '{chat.name}' (Chat chat) = (OVERRIDE dataName(chat), IF chat IS UserRole THEN '{chat.name.role}: ' + Security.name(chat) ELSE (GROUP CONCAT nameOrLogin(CustomUser user), ', ' IF in(chat, user) AND (NOT isDialog(chat) OR NOT user == currentUser()))) CHARWIDTH 15;
+name '{chat.name}' (Chat chat) = (OVERRIDE dataName(chat), IF chat IS UserRole THEN '{chat.name.role}: ' + Security.name(chat) ELSE (GROUP CONCAT nameOrLogin(CustomUser user), ', ' IF in(chat, user) AND (NOT isDialog(chat) OR NOT user == currentUser()) ORDER user)) CHARWIDTH 15;
 
 CLASS MessageStatus {
     sent '{chat.message.status.sent}',

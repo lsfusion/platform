@@ -33,7 +33,7 @@ Constraints are created using the [`CONSTRAINT` statement](CONSTRAINT_statement.
 ```lsf
 // balance not less than 0
 CONSTRAINT balance(Sku s, Stock st) < 0
-    MESSAGE 'The balance cannot be negative for ' + (GROUP CONCAT 'Product: ' + name(Sku ss) + ' Warehouse: ' + name(Stock sst), '\n' IF SET(balance(ss, sst) < 0));
+    MESSAGE 'The balance cannot be negative for ' + (GROUP CONCAT 'Product: ' + name(Sku ss) + ' Warehouse: ' + name(Stock sst), '\n' IF SET(balance(ss, sst) < 0) ORDER sst);
 
 barcode = DATA STRING[15] (Sku);
 // "emulation" security policy
