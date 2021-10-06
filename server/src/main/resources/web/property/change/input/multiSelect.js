@@ -1,18 +1,9 @@
-let selectInstance = null;
-let selectElement = document.createElement('select');
-
 function testMultiSelect(element, list, controller) {
-    //if not exist - create
-    if (!element.contains(selectElement)) {
-        //remove old instance
-        if (selectInstance != null) {
-            selectInstance.select2('destroy');
-            selectElement.innerHTML = '';
-        }
-
-        //create
+    if (element.firstChild == null) { //create
+        let selectElement = document.createElement('select');
         element.appendChild(selectElement);
-        selectInstance = $(selectElement).select2({
+
+        let selectInstance = $(selectElement).select2({
             ajax: {
                 transport: function (params, success, failure) {
                     let value = params.data.term;
@@ -20,76 +11,73 @@ function testMultiSelect(element, list, controller) {
                 },
                 processResults: function (data, params) {
                     return {
-                        results: mapProperties(data, controller)
+                        results: $.map(data.data, function (obj) {
+                            obj.id = obj.rawString;
+                            obj.text = obj.rawString;
+                            obj.disabled = controller.isPropertyReadOnly('selected', obj.key);
+                            return obj;
+                        })
                     };
                 }
             },
             multiple: true,
             placeholder: 'This is placeholder', //todo
             closeOnSelect: false,
-            data: mapProperties(list, controller),
+            data: $.map(list, function (obj) {
+                obj.id = obj.name;
+                obj.text = obj.name;
+                obj.disabled = controller.isPropertyReadOnly('selected', obj);
+                obj.key = controller.getKey(obj);
+                return obj;
+            }),
             allowClear: true,
             width: 'auto' //todo
         });
 
         selectInstance.on('select2:select', function (e) {
-            controller.changeProperty('selected', e.params.data.originalElement, true);
+            controller.changeProperty('selected', e.params.data.key, true);
         });
 
         selectInstance.on('select2:unselect', function (e) {
-            let data = e.params.data;
-            controller.changeProperty('selected', data.originalElement == null ? data.element.originalElement : data.originalElement, null);
+            controller.changeProperty('selected', e.params.data.key, null);
         });
 
-    } else { // if exist - update
-        let currentSelectedOptions = selectInstance.find(':selected');
-
-        //cancel pressed or delete all items
+    } else { // update
+        let selectInstance = $(element.firstChild);
         let selectContext = selectInstance.context;
-        if (currentSelectedOptions.length === 0 && list.length > 0) {
-            //remove all child elements
-            while (selectContext.firstChild) {
-                selectContext.removeChild(selectContext.lastChild);
-            }
-        }
+        let currentSelectedOptions = [];
+
+        Array.from(selectContext.children).forEach(option => {
+            if (!option.selected)
+                selectContext.removeChild(option);
+            else
+                currentSelectedOptions.push(option);
+        });
 
         //look items that are in list and unselected and select them
         for (let listElement of list) {
             let selected = false;
+            let key = controller.getKey(listElement);
             for (let i = 0; i < currentSelectedOptions.length; i++) {
-                if (listElement['#__key'].toString() === currentSelectedOptions[i].value) {
+                if (controller.isEquals(key, currentSelectedOptions[i].key)) {
                     selected = true;
                     currentSelectedOptions.splice(i, 1);
                     break;
                 }
             }
 
-            if (!selected) {
+            if (!selected && listElement.selected === true) {
                 // Append it to the select
-                let option = new Option(listElement.name, listElement['#__key'].toString(), listElement.selected, listElement.selected);
+                let option = new Option(listElement.name, listElement.name, listElement.selected, listElement.selected);
                 option.disabled = controller.isPropertyReadOnly('selected', listElement);
-                option.originalElement = listElement['#__key'];
+                option.key = key;
                 selectInstance.append(option);
+
+                selectInstance.select2('data').at(-1).key = key;
             }
         }
 
         // check if currentSelectedOptions not empty and remove elements
-        for (let findElement of currentSelectedOptions) {
-            findElement.selected = false;
-            selectContext.removeChild(findElement);
-            selectInstance.trigger('change');
-        }
+        currentSelectedOptions.forEach(currentSelectedOption => selectContext.removeChild(currentSelectedOption));
     }
-}
-
-function mapProperties(properties, controller) {
-    let isListProperty = Array.isArray(properties) && properties.length > 0 && properties[0].key == null;
-
-    return $.map(isListProperty ? properties : properties.data, function (obj) {
-        obj.id = isListProperty ? obj['#__key'].toString() : obj.key.toString();
-        obj.text = isListProperty ? obj.name : obj.rawString;
-        obj.disabled = controller.isPropertyReadOnly('selected', isListProperty ? obj : obj.key);
-        obj.originalElement = isListProperty ? obj['#__key'] : obj.key;
-        return obj;
-    });
 }

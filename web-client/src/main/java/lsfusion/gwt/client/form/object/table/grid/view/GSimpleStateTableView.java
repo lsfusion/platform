@@ -351,6 +351,10 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
          }});
     }
 
+    protected boolean isEquals(JavaScriptObject object1, JavaScriptObject object2) {
+        return object1.equals(object2);
+    }
+
     protected native JavaScriptObject getController()/*-{
         var thisObj = this;
         return {
@@ -411,6 +415,12 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             },
             getValues: function (property, value, successCallback, failureCallback) {
                 return thisObj.@GSimpleStateTableView::getAsyncValues(*)(property, value, successCallback, failureCallback);
+            },
+            getKey: function (object) {
+                return thisObj.@GSimpleStateTableView::getKey(*)(object);
+            },
+            isEquals: function (object1, object2) {
+                return thisObj.@GSimpleStateTableView::isEquals(*)(object1, object2);
             }
         };
     }-*/;
