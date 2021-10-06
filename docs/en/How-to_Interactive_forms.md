@@ -14,4 +14,4 @@ sidebar_label: Overview
 7.  [Navigator](How-to_Navigator.md). Adding forms to the  [navigator](Navigator.md).
 8.  [Matrix](How-to_Matrix.md). Building forms with a dynamic number of table columns.
 9.  [Table state](How-to_Table_status.md). Accessing current selections and orderings on a form.  
-      
+10. [Custom components](How-to_Custom_components.md). Using your own visual components written in JavaScript.
