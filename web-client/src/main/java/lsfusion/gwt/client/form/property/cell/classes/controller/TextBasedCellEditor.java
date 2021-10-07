@@ -157,8 +157,8 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
         if(textAlign != null)
             inputElement.getStyle().setTextAlign(textAlign);
 
-        inputElement.getStyle().setHeight(100, Style.Unit.PCT);
-        inputElement.getStyle().setWidth(100, Style.Unit.PCT); // input doesn't respect justify-content, stretch, plus we want to include paddings in input (to avoid having "selection border")
+        // input doesn't respect justify-content, stretch, plus we want to include paddings in input (to avoid having "selection border")
+        GwtClientUtils.setupPercentParent(inputElement);
 
         TextBasedCellRenderer.render(property, inputElement, renderContext, isMultiLine(), false);
 

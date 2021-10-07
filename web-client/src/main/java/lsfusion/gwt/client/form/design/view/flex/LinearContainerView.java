@@ -106,12 +106,12 @@ public class LinearContainerView extends GAbstractContainerView {
             AlignCaptionPanel captionPanel = new AlignCaptionPanel(!vertical);
             captionPanel.addStyleName("dataPanelRendererPanel"); // just like in PanelRenderer for no-wrap
 
-            child.installMargins(captionPanel); // need the same margins as property value
+//            child.installMargins(captionPanel); // need the same margins as property value
 
             childrenCaptions.add(index, captionPanel);
-            ((GPropertyPanelController.Panel) view).captionContainer = (captionWidget, valueSizes, alignment) -> {
+            ((GPropertyPanelController.Panel) view).captionContainer = (columnCaptionWidget, actualCaptionWidget, valueSizes, alignment) -> {
                 assert vertical; // because of aligncaptions first check (isVertical())
-                captionPanel.add(captionWidget, alignment);
+                captionPanel.add(columnCaptionWidget, alignment);
 
                 Integer baseSize = vertical ? valueSizes.second : valueSizes.first;
 
@@ -119,8 +119,12 @@ public class LinearContainerView extends GAbstractContainerView {
                 if (size != null)
                     baseSize = size;
 
-                captionPanel.baseSize = baseSize; // this code line is called after captionPanel is first time added to the container, so we store it in some field for further adding, removing (actually it's needed for component "shifting", when we need to add/remove latter components)
-                FlexPanel.setBaseSize(captionPanel, vertical, baseSize);  // oppositeAndFixed - false, since we're setting the size for the main direction
+                if(actualCaptionWidget == null) {
+                    captionPanel.baseSize = baseSize; // this code line is called after captionPanel is first time added to the container, so we store it in some field for further adding, removing (actually it's needed ONLY for component "shifting", when we component is removed and later is added once again)
+                    actualCaptionWidget = captionPanel;
+                }
+                actualCaptionWidget.addStyleName("alignPanelLabel");
+                FlexPanel.setBaseSize(actualCaptionWidget, vertical, baseSize);  // oppositeAndFixed - false, since we're setting the size for the main direction
             };
         }
 

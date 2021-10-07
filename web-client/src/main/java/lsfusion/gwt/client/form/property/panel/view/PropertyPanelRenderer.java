@@ -15,7 +15,6 @@ import lsfusion.gwt.client.form.object.panel.controller.GPropertyPanelController
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.getOffsetSize;
-import static lsfusion.gwt.client.view.StyleDefaults.DATA_PANEL_LABEL_MARGIN;
 
 public class PropertyPanelRenderer extends PanelRenderer {
 
@@ -38,6 +37,9 @@ public class PropertyPanelRenderer extends PanelRenderer {
         panel.addStyleName("dataPanelRendererPanel");
 
         label = new Label();
+        if(captionContainer == null) // we don't need margins, since captionContainer will have them
+            label.addStyleName("alignPanelLabel");
+
         if (this.property.captionFont != null)
             this.property.captionFont.apply(label.getElement().getStyle());
 
@@ -65,7 +67,7 @@ public class PropertyPanelRenderer extends PanelRenderer {
             valueSizes = value.setStatic(simplePanel, true);
 
         if(captionContainer != null && valueSizes != null)
-            captionContainer.put(label, valueSizes, property.getPanelCaptionAlignment());
+            captionContainer.put(label, null, valueSizes, property.getPanelCaptionAlignment());
 
         appendCorners(property, simplePanel); // it's a hack to add
 
@@ -91,14 +93,17 @@ public class PropertyPanelRenderer extends PanelRenderer {
         return label;
     }
 
+    private boolean notEmptyText;
     protected void setLabelText(String text) {
         label.setText(text);
-        if (labelMarginRight != null) {
-            if (labelMarginRight) {
-                label.getElement().getStyle().setMarginRight(text.isEmpty() ? 0 : DATA_PANEL_LABEL_MARGIN, Style.Unit.PX);
-            } else {
-                label.getElement().getStyle().setMarginLeft(text.isEmpty() ? 0 : DATA_PANEL_LABEL_MARGIN, Style.Unit.PX);
-            }
+
+        boolean notEmptyText = text != null && !text.isEmpty();
+        if(this.notEmptyText != notEmptyText) {
+            if(notEmptyText)
+                label.addStyleName("notEmptyPanelLabel");
+            else
+                label.removeStyleName("notEmptyPanelLabel");
+            this.notEmptyText = notEmptyText;
         }
     }
 

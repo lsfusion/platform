@@ -886,7 +886,7 @@ button {
 }
 
 .gwt-TabBar-vert {
-    padding-left: 2px;
+    padding-left: var(--border-padding);
 }
 .gwt-TabBar-vert .gwt-TabBarFirst {
     height: 3px;  /* first tab distance from the top */
@@ -896,7 +896,7 @@ button {
     width: 0;  /* to make it invisible when all tabs are wrapped */
 }
 .gwt-TabBar-horz {
-    padding-top: 2px;
+    padding-top: var(--border-padding);
 }
 .gwt-TabBar .gwt-TabBarFirst {
     width: 3px;  /* first tab distance from the left */
@@ -960,10 +960,10 @@ button {
 }
 
 .gwt-TabPanel {
-    margin: 0 1px 1px;
+    /*margin: 0 1px 1px;*/
 }
 .gwt-TabPanelBottom {
-    padding: 1px;
+    padding-top: var(--border-padding);
     border-top: 1px solid var(--panel-border-color);
 /*    border-radius: var(--panel-border-radius);*/
 }

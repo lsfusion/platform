@@ -38,7 +38,7 @@ public abstract class GAbstractContainerView {
 
         int index = relativePosition(child, container.children, children);
 
-        child.installMargins(view);
+//        child.installMargins(view);
 
         // if panel is inside linear container, and there are several dynamic components fixing tab flex basis to avoid
         boolean fixFlexBasis = view instanceof FlexTabbedPanel && child.getFlex() > 0 && container.getFlexCount() > 1;

@@ -451,6 +451,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
         // in a way similar to getParentSameFlexPanel (in web we assume that all intermediate panels are FlexPanel, in desktop we should do a recursion)
         if(widget instanceof FlexPanel) {
             Boolean prevBorder = null;
+            Widget prevWidget = null;
 
             FlexPanel flexPanel = (FlexPanel) widget;
             int childCount = flexPanel.getWidgetCount();
@@ -509,9 +510,12 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
                             right |= childBorders.right;
 
                             childWidget.removeStyleName("topBorder");
+                            childWidget.removeStyleName("bottomBorder");
                             if (prevBorder != null) {
-                                if (prevBorder && !childBorders.top)
+                                if (prevBorder && !childBorders.top) {
                                     childWidget.addStyleName("topBorder");
+                                    prevWidget.addStyleName("bottomBorder");
+                                }
                             } else
                                 top = childBorders.top;
 
@@ -521,14 +525,18 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
                             bottom |= childBorders.bottom;
 
                             childWidget.removeStyleName("leftBorder");
+                            childWidget.removeStyleName("rightBorder");
                             if (prevBorder != null) {
-                                if (prevBorder || childBorders.left)
+                                if (prevBorder || childBorders.left) {
                                     childWidget.addStyleName("leftBorder");
+                                    prevWidget.addStyleName("rightBorder");
+                                }
                             } else
                                 left = childBorders.left;
 
                             prevBorder = childBorders.right;
                         }
+                        prevWidget = childWidget;
                     }
                 }
             }
