@@ -2829,7 +2829,6 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LP addScriptedGProp(List<LPWithParams> groupProps, GroupingType type, List<LPWithParams> mainProps, List<LPWithParams> orderProps, boolean ascending, LPWithParams whereProp, List<ResolveClassSet> explicitInnerClasses) throws ScriptingErrorLog.SemanticErrorException {
-        checks.checkGPropOrderConsistence(type, orderProps.size());
         checks.checkGPropAggrConstraints(type, mainProps, groupProps);
         checks.checkGPropAggregateConsistence(type, mainProps.size());
         checks.checkGPropWhereConsistence(type, whereProp);

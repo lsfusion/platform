@@ -321,12 +321,6 @@ public class ScriptingLogicsModuleChecks {
         }
     }
 
-    public void checkGPropOrderConsistence(GroupingType type, int orderParamsCnt) throws ScriptingErrorLog.SemanticErrorException {
-        if (type != GroupingType.CONCAT && type != GroupingType.LAST && orderParamsCnt > 0) {
-            errLog.emitRedundantOrderGPropError(parser, type);
-        }
-    }
-
     public void checkGPropAggregateConsistence(GroupingType type, int aggrParamsCnt) throws ScriptingErrorLog.SemanticErrorException {
         if (type != GroupingType.CONCAT && aggrParamsCnt > 1) {
             errLog.emitMultipleAggrGPropError(parser, type);
