@@ -463,7 +463,7 @@ element.text.onkeydown = function(event) {
         if (event.ctrlKey)
             controller.changeValue(JSON.stringify({ action : 'send', value : element.text.innerHTML }))
         else
-            event.stopPropagation(); // останавливаем дальнейшую обработку нажатия клавиши ENTER
+            event.stopPropagation(); // stop further processing after pressing ENTER
 }
 
 element.text.onblur = function (event) {
