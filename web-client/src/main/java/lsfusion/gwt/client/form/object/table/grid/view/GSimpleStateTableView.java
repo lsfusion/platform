@@ -411,6 +411,9 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             },
             getValues: function (property, value, successCallback, failureCallback) {
                 return thisObj.@GSimpleStateTableView::getAsyncValues(*)(property, value, successCallback, failureCallback);
+            },
+            getKey: function (object) {
+                return thisObj.@GSimpleStateTableView::getKey(*)(object);
             }
         };
     }-*/;
