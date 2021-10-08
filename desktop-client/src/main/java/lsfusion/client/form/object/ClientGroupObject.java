@@ -9,6 +9,7 @@ import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.form.controller.remote.serialization.ClientIdentitySerializable;
 import lsfusion.client.form.controller.remote.serialization.ClientSerializationPool;
 import lsfusion.client.form.design.ClientComponent;
+import lsfusion.client.form.design.ClientContainer;
 import lsfusion.client.form.filter.user.ClientFilter;
 import lsfusion.client.form.object.table.ClientToolbar;
 import lsfusion.client.form.object.table.controller.TableController;
@@ -51,9 +52,10 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
 
     public boolean asyncInit;
 
+    public ClientContainer filtersContainer;
+    public List<ClientFilter> filters = new ArrayList<>();
     public ClientGrid grid;
     public ClientToolbar toolbar;
-    public ClientFilter userFilter;
     public ClientCalculations calculations;
 
     public List<ClientObject> objects = new ArrayList<>();
@@ -109,8 +111,8 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
     }
 
     @Override
-    public ClientComponent getUserFilter() {
-        return userFilter;
+    public ClientContainer getFiltersContainer() {
+        return filtersContainer;
     }
 
     @Override
@@ -122,7 +124,8 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
         pool.serializeCollection(outStream, objects);
         pool.serializeObject(outStream, grid);
         pool.serializeObject(outStream, toolbar);
-        pool.serializeObject(outStream, userFilter);
+        pool.serializeObject(outStream,filtersContainer);
+        pool.serializeCollection(outStream, filters);
         pool.serializeObject(outStream, calculations);
         outStream.writeBoolean(needVerticalScroll);
     }
@@ -142,7 +145,8 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
 
         grid = pool.deserializeObject(inStream);
         toolbar = pool.deserializeObject(inStream);
-        userFilter = pool.deserializeObject(inStream);
+        filtersContainer = pool.deserializeObject(inStream);
+        pool.deserializeCollection(filters, inStream);
         calculations = pool.deserializeObject(inStream);
 
         isRecursive = inStream.readBoolean();

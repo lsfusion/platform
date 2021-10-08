@@ -7,6 +7,7 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 import java.io.Serializable;
 
 public class GPropertyFilter {
+    public GFilter filter;
     public GGroupObject groupObject;
     public GPropertyDraw property;
     public GDataFilterValue value;
@@ -17,10 +18,11 @@ public class GPropertyFilter {
     public GCompare compare;
     public boolean junction; //true - conjunction, false - disjunction
 
-    public GPropertyFilter(GGroupObject groupObject, GPropertyDraw property, GGroupObjectValue columnKey, Object value, GCompare compare) {
-        this(groupObject, property, new GDataFilterValue((Serializable) value), columnKey, false, compare, true);
+    public GPropertyFilter(GFilter filter, GGroupObject groupObject, GGroupObjectValue columnKey, Object value, GCompare compare) {
+        this(filter, groupObject, filter.property, new GDataFilterValue((Serializable) value), columnKey, false, compare, true);
     }
-    public GPropertyFilter(GGroupObject groupObject, GPropertyDraw property, GDataFilterValue value, GGroupObjectValue columnKey, boolean negation, GCompare compare, boolean junction) {
+    public GPropertyFilter(GFilter filter, GGroupObject groupObject, GPropertyDraw property, GDataFilterValue value, GGroupObjectValue columnKey, boolean negation, GCompare compare, boolean junction) {
+        this.filter = filter;
         this.groupObject = groupObject;
         this.property = property;
         this.value = value;

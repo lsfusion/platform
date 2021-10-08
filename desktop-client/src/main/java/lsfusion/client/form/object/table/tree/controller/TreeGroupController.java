@@ -6,6 +6,8 @@ import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.form.ClientFormChanges;
 import lsfusion.client.form.controller.ClientFormController;
+import lsfusion.client.form.design.ClientContainer;
+import lsfusion.client.form.design.view.ClientContainerView;
 import lsfusion.client.form.design.view.ClientFormLayout;
 import lsfusion.client.form.filter.user.ClientPropertyFilter;
 import lsfusion.client.form.filter.user.controller.FilterController;
@@ -14,6 +16,7 @@ import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.object.panel.controller.PanelController;
 import lsfusion.client.form.object.table.controller.AbstractTableController;
 import lsfusion.client.form.object.table.grid.user.design.view.ExpandTreeButton;
+import lsfusion.client.form.object.table.grid.user.toolbar.view.ToolbarGridButton;
 import lsfusion.client.form.object.table.tree.ClientTreeGroup;
 import lsfusion.client.form.object.table.tree.TreeGroupNode;
 import lsfusion.client.form.object.table.tree.view.TreeGroupTable;
@@ -52,7 +55,8 @@ public class TreeGroupController extends AbstractTableController {
         lastGroupObject = BaseUtils.last(treeGroup.groups);
 
         if (!treeGroup.plainTreeMode) {
-            filter = new FilterController(this, treeGroup.filter) {
+            ClientContainerView filtersContainer = formLayout.getContainerView(treeGroup.filtersContainer);
+            filter = new FilterController(this, treeGroup.filters, filtersContainer) {
                 public void applyFilters(List<ClientPropertyFilter> conditions, boolean focusFirstComponent) {
                     RmiQueue.runAction(new Runnable() {
                         @Override
@@ -70,11 +74,9 @@ public class TreeGroupController extends AbstractTableController {
                 }
             };
 
-            filter.addView(formLayout);
-
             addToToolbar(filter.getToolbarButton());
 
-            filter.getView().addActionsToInputMap(tree);
+            filter.addActionsToInputMap(tree);
 
             addToolbarSeparator();
             
@@ -82,6 +84,12 @@ public class TreeGroupController extends AbstractTableController {
             addToToolbar(expandTreeCurrentButton);
             expandTreeButton = new ExpandTreeButton(this, false);
             addToToolbar(expandTreeButton);
+
+            ToolbarGridButton addFilterConditionButton = filter.getAddFilterConditionButton();
+            if (addFilterConditionButton != null) {
+                addToToolbar(addFilterConditionButton);
+            }
+            addToToolbar(filter.getResetFiltersButton());
         }
 
         formLayout.addBaseComponent(treeGroup, view);
@@ -150,10 +158,8 @@ public class TreeGroupController extends AbstractTableController {
             toolbarView.setVisible(isTreeVisible);
         }
 
-        if (filter != null) {
-            filter.update();
-            filter.setVisible(isTreeVisible);
-        }
+        filter.update();
+        filter.setVisible(isTreeVisible);
         
         for (ClientGroupObject groupObject : treeGroup.groups) {
             formController.setFiltersVisible(groupObject, isTreeVisible);
@@ -318,6 +324,11 @@ public class TreeGroupController extends AbstractTableController {
     @Override
     public List<Pair<Column, String>> getSelectedColumns() {
         return tree.getFilterColumns(getSelectedGroupObject());
+    }
+
+    @Override
+    public ClientContainer getFiltersContainer() {
+        return treeGroup.getFiltersContainer();
     }
 
     @Override

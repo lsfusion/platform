@@ -1,12 +1,12 @@
 package lsfusion.gwt.client.form.object.table.tree.controller;
 
-import com.google.gwt.user.client.ui.Panel;
 import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.GFormChanges;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
+import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.filter.user.GFilter;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
@@ -14,6 +14,7 @@ import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController;
 import lsfusion.gwt.client.form.object.table.grid.user.design.view.GExpandTreeButton;
+import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
 import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
 import lsfusion.gwt.client.form.object.table.tree.view.GTreeGridRecord;
 import lsfusion.gwt.client.form.object.table.tree.view.GTreeTable;
@@ -55,12 +56,19 @@ public class GTreeGroupController extends GAbstractTableController {
         addToToolbar(expandTreeCurrentButton);
         expandTreeButton = new GExpandTreeButton(this, false);
         addToToolbar(expandTreeButton);
+
+        GToolbarButton addFilterConditionButton = filter.getAddFilterConditionButton();
+        if (addFilterConditionButton != null) {
+            addToToolbar(addFilterConditionButton);
+        }
+        addToToolbar(filter.getResetFiltersButton());
     }
 
     @Override
-    public GFilter getFilterComponent() {
-        return treeGroup.filter;
+    public List<GFilter> getFilters() {
+        return treeGroup.filters;
     }
+
     public GFont getFont() {
         return treeGroup.font;
     }
@@ -109,9 +117,9 @@ public class GTreeGroupController extends GAbstractTableController {
         for (GGroupObject groupObject : treeGroup.groups)
             formController.setFiltersVisible(groupObject, isTreeVisible);
 
-        if (userFilters != null) {
-            userFilters.update();
-            userFilters.setVisible(isTreeVisible);
+        if (filter != null) {
+            filter.update();
+            filter.setVisible(isTreeVisible);
         }
 
         if(expandTreeButton != null) {
@@ -224,6 +232,11 @@ public class GTreeGroupController extends GAbstractTableController {
     @Override
     public List<Pair<Column, String>> getSelectedColumns() {
         return tree.getSelectedColumns(getSelectedGroupObject());
+    }
+
+    @Override
+    public GContainer getFiltersContainer() {
+        return treeGroup.filtersContainer;
     }
 
     public boolean focusFirstWidget() {

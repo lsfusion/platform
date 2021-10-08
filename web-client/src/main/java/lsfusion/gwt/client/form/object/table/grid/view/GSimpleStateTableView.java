@@ -15,6 +15,7 @@ import lsfusion.gwt.client.classes.data.GIntegralType;
 import lsfusion.gwt.client.classes.data.GLogicalType;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.filter.user.GCompare;
+import lsfusion.gwt.client.form.filter.user.GFilter;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
@@ -25,7 +26,8 @@ import lsfusion.gwt.client.form.view.Column;
 import lsfusion.gwt.client.view.StyleDefaults;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Predicate;
 
 import static lsfusion.gwt.client.base.view.grid.DataGrid.initSinkEvents;
@@ -303,8 +305,8 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         Object rightBorder = isDateTimeFilter ? new GDateTimeDTO(endYear, endMonth, endDay, 0, 0, 0) : new GDateDTO(endYear, endMonth, endDay);
 
         Column column = columnMap.get(property);
-        filters.add(new GPropertyFilter(grid.groupObject, column.property, column.columnKey, leftBorder, GCompare.GREATER_EQUALS));
-        filters.add(new GPropertyFilter(grid.groupObject, column.property, column.columnKey, rightBorder, GCompare.LESS_EQUALS));
+        filters.add(new GPropertyFilter(new GFilter(column.property), grid.groupObject, column.columnKey, leftBorder, GCompare.GREATER_EQUALS));
+        filters.add(new GPropertyFilter(new GFilter(column.property), grid.groupObject, column.columnKey, rightBorder, GCompare.LESS_EQUALS));
         formController.setViewFilters(filters, pageSize);
         setPageSize(pageSize);
     }

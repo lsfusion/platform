@@ -415,10 +415,6 @@ input[type=checkbox]:focus {
     margin: auto 2px;
 }
 
-.userFiltersPanel {
-    margin-top: 2px;
-}
-
 .userFilterLabel {
     cursor: default;
     margin: 0 3px 0 5px;

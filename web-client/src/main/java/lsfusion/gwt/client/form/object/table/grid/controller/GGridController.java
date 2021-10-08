@@ -1,20 +1,16 @@
 package lsfusion.gwt.client.form.object.table.grid.controller;
 
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.GFormChanges;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
-import lsfusion.gwt.client.base.view.ResizableComplexPanel;
-import lsfusion.gwt.client.base.view.ResizableSimplePanel;
 import lsfusion.gwt.client.classes.data.GIntegralType;
 import lsfusion.gwt.client.form.GUpdateMode;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
-import lsfusion.gwt.client.form.design.view.GAbstractContainerView;
 import lsfusion.gwt.client.form.filter.user.GFilter;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.object.GGroupObject;
@@ -34,8 +30,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-import static lsfusion.gwt.client.base.GwtClientUtils.setupFillParent;
-
 public class GGridController extends GAbstractTableController {
     private final ClientMessages messages = ClientMessages.Instance.get();
 
@@ -51,8 +45,13 @@ public class GGridController extends GAbstractTableController {
     }
     
     @Override
-    public GFilter getFilterComponent() {
-        return groupObject.userFilter;
+    public List<GFilter> getFilters() {
+        return groupObject.filters;
+    }
+
+    @Override
+    public GContainer getFiltersContainer() {
+        return groupObject.filtersContainer;
     }
 
     public GPivotOptions getPivotOptions() {
@@ -351,6 +350,12 @@ public class GGridController extends GAbstractTableController {
         forceUpdateTableButton.addStyleName("actionPanelRendererValue");
 
         addToToolbar(forceUpdateTableButton);
+
+        GToolbarButton addFilterConditionButton = filter.getAddFilterConditionButton();
+        if (addFilterConditionButton != null) {
+            addToToolbar(addFilterConditionButton);
+        }
+        addToToolbar(filter.getResetFiltersButton());
     }
 
     public void showRecordQuantity(int quantity) {
@@ -478,6 +483,8 @@ public class GGridController extends GAbstractTableController {
     public List<Pair<Column, String>> getSelectedColumns() {
         return table.getSelectedColumns();
     }
+    
+    
 
     @Override
     public void updateProperty(GPropertyDraw property, ArrayList<GGroupObjectValue> columnKeys, boolean updateKeys, NativeHashMap<GGroupObjectValue, Object> values) {
@@ -503,9 +510,9 @@ public class GGridController extends GAbstractTableController {
 
             formController.setFiltersVisible(groupObject, isVisible);
             
-            if (userFilters != null) {
-                userFilters.update();
-                userFilters.setVisible(isVisible);
+            if (filter != null) {
+                filter.update();
+                filter.setVisible(isVisible);
             }
         }
     }
@@ -587,7 +594,7 @@ public class GGridController extends GAbstractTableController {
 
     @Override
     protected boolean showFilter() {
-        return isList() && groupObject.userFilter.visible;
+        return isList();
     }
 
     @Override

@@ -1,11 +1,17 @@
 package lsfusion.server.logics.form.interactive.design.object;
 
+import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.identity.IDGenerator;
 import lsfusion.interop.base.view.FlexAlignment;
+import lsfusion.interop.form.design.ContainerType;
 import lsfusion.interop.form.object.table.tree.AbstractTreeGroup;
+import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
+import lsfusion.server.base.version.interfaces.NFSet;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerIdentitySerializable;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
+import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.interactive.design.filter.FilterView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
@@ -28,11 +34,21 @@ public class TreeGroupView extends ComponentView implements ServerIdentitySerial
     public TreeGroupEntity entity;
 
     public ToolbarView toolbarSystem;
-    public FilterView userFilter;
+    public NFSet<FilterView> filters;
+    public ImSet<FilterView> getFilters() {
+        return filters.getSet();
+    }
+    public Iterable<FilterView> getFiltersIt() {
+        return filters.getIt();
+    }
+
+    public ContainerView filtersContainer;
     
     public boolean expandOnClick = true;
 
     public int headerHeight = -1;
+
+    IDGenerator idGenerator;
 
     @Override
     public String getPropertyGroupContainerSID() {
@@ -52,8 +68,14 @@ public class TreeGroupView extends ComponentView implements ServerIdentitySerial
             groups.add(form.getNFGroupObject(group, version));
         }
 
-        toolbarSystem = new ToolbarView(form.idGenerator.idShift());
-        userFilter = new FilterView(form.idGenerator.idShift());
+        idGenerator = form.idGenerator;
+        toolbarSystem = new ToolbarView(idGenerator.idShift());
+
+        filtersContainer = new ContainerView(idGenerator.idShift());
+        filtersContainer.setType(ContainerType.CONTAINERH);
+        filtersContainer.setAlignment(FlexAlignment.STRETCH);
+        
+        filters = NFFact.orderSet();
     }
 
     @Override
@@ -72,16 +94,18 @@ public class TreeGroupView extends ComponentView implements ServerIdentitySerial
     }
 
     @Override
-    public ComponentView getUserFilter() {
-        return userFilter;
+    public ContainerView getFiltersContainer() {
+        return filtersContainer;
     }
 
     public void add(GroupObjectView group) {
         groups.add(group);
     }
 
-    public void addUserFilter(PropertyDrawView property, Version version) {
-        userFilter.addProperty(property, version);
+    public FilterView addFilter(PropertyDrawView property, Version version) {
+        FilterView filterView = new FilterView(idGenerator.idShift(), property);
+        filters.add(filterView, version);
+        return filterView;
     }
 
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream) throws IOException {
@@ -89,7 +113,8 @@ public class TreeGroupView extends ComponentView implements ServerIdentitySerial
 
         pool.serializeCollection(outStream, groups);
         pool.serializeObject(outStream, toolbarSystem);
-        pool.serializeObject(outStream, userFilter);
+        pool.serializeObject(outStream, filtersContainer);
+        pool.serializeCollection(outStream, getFilters());
 
         outStream.writeBoolean(entity.plainTreeMode);
         
@@ -103,7 +128,8 @@ public class TreeGroupView extends ComponentView implements ServerIdentitySerial
         
         groups = pool.deserializeList(inStream);
         toolbarSystem = pool.deserializeObject(inStream);
-        userFilter = pool.deserializeObject(inStream);
+        filtersContainer = pool.deserializeObject(inStream);
+        filters = NFFact.finalSet(pool.deserializeSet(inStream));
 
         expandOnClick = inStream.readBoolean();
 
@@ -117,6 +143,8 @@ public class TreeGroupView extends ComponentView implements ServerIdentitySerial
         super.finalizeAroundInit();
 
         toolbarSystem.finalizeAroundInit();
-        userFilter.finalizeAroundInit();
+        for (FilterView filter : getFiltersIt()) {
+            filter.finalizeAroundInit();
+        }
     }
 }

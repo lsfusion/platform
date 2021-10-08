@@ -35,6 +35,23 @@ public class GContainer extends GComponent {
                 '}';
     }
 
+    public void removeFromChildren(GComponent component) {
+        component.container = null;
+        children.remove(component);
+    }
+
+    public void add(GComponent component) {
+        add(children.size(), component);
+    }
+
+    public void add(int index, GComponent component) {
+        if (component.container != null) {
+            component.container.removeFromChildren(component);
+        }
+        children.add(index, component);
+        component.container = this;
+    }
+
     public GFlexAlignment getFlexJustify() {
         return childrenAlignment;
     }

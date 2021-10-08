@@ -1,11 +1,17 @@
 package lsfusion.server.logics.form.interactive.design.object;
 
+import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.identity.IDGenerator;
+import lsfusion.interop.base.view.FlexAlignment;
+import lsfusion.interop.form.design.ContainerType;
 import lsfusion.interop.form.object.AbstractGroupObject;
+import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
+import lsfusion.server.base.version.interfaces.NFSet;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerIdentitySerializable;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
+import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.filter.FilterView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyGroupContainerView;
@@ -20,11 +26,19 @@ import java.util.ArrayList;
 
 public class GroupObjectView extends ArrayList<ObjectView> implements ServerIdentitySerializable, PropertyGroupContainerView, AbstractGroupObject<ComponentView, LocalizedString> {
 
+    private IDGenerator idGen;
     public GroupObjectEntity entity;
 
     public GridView grid;
     public ToolbarView toolbarSystem;
-    public FilterView userFilter;
+    public NFSet<FilterView> filters;
+    public ImSet<FilterView> getFilters() {
+        return filters.getSet();
+    }
+    public Iterable<FilterView> getFiltersIt() {
+        return filters.getIt();
+    }
+    public ContainerView filtersContainer;
     public CalculationsView calculations;
 
     public Boolean needVerticalScroll = true;
@@ -44,6 +58,7 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
     }
 
     public GroupObjectView(IDGenerator idGen, GroupObjectEntity entity) {
+        this.idGen = idGen;
         this.entity = entity;
 
         for (ObjectEntity object : this.entity.getObjects())
@@ -51,7 +66,12 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
 
         grid = new GridView(idGen.idShift(), this);
         toolbarSystem = new ToolbarView(idGen.idShift());
-        userFilter = new FilterView(idGen.idShift());
+        
+        filtersContainer = new ContainerView(idGen.idShift());
+        filtersContainer.setType(ContainerType.CONTAINERH);
+        filtersContainer.setAlignment(FlexAlignment.STRETCH);
+        
+        filters = NFFact.orderSet();
         calculations = new CalculationsView(idGen.idShift()); 
     }
 
@@ -76,8 +96,8 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
     }
 
     @Override
-    public ComponentView getUserFilter() {
-        return userFilter;
+    public ContainerView getFiltersContainer() {
+        return filtersContainer;
     }
 
     @Override
@@ -98,8 +118,11 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
         return getSID();
     }
     
-    public void addUserFilter(PropertyDrawView property, Version version) {
-        userFilter.addProperty(property, version);
+    public FilterView addFilter(PropertyDrawView property, Version version) {
+        FilterView filter = new FilterView(idGen.idShift(), property);
+        filters.add(filter, version);
+        filtersContainer.add(filter, version);
+        return filter;
     }
 
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream) throws IOException {
@@ -114,7 +137,8 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
 
         pool.serializeObject(outStream, grid);
         pool.serializeObject(outStream, toolbarSystem);
-        pool.serializeObject(outStream, userFilter);
+        pool.serializeObject(outStream, filtersContainer);
+        pool.serializeCollection(outStream, getFilters());
         pool.serializeObject(outStream, calculations);
 
         outStream.writeBoolean(entity.isParent != null);
@@ -143,7 +167,8 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
 
         grid = pool.deserializeObject(inStream);
         toolbarSystem = pool.deserializeObject(inStream);
-        userFilter = pool.deserializeObject(inStream);
+        filtersContainer = pool.deserializeObject(inStream);
+        filters = NFFact.finalSet(pool.deserializeSet(inStream));
         calculations = pool.deserializeObject(inStream);
 
         needVerticalScroll = inStream.readBoolean();
@@ -152,7 +177,9 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
     public void finalizeAroundInit() {
         grid.finalizeAroundInit();
         toolbarSystem.finalizeAroundInit();
-        userFilter.finalizeAroundInit();
+        for (FilterView filter : getFiltersIt()) {
+            filter.finalizeAroundInit();
+        }
         calculations.finalizeAroundInit();
         
         for(ObjectView object : this) 

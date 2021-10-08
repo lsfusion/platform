@@ -18,7 +18,7 @@ public class TreeGroupContainerSet {
     private ContainerView toolbarBoxContainer;
     private ContainerView toolbarLeftContainer;
     private ContainerView toolbarRightContainer;
-    private ContainerView filtersContainer;
+    private ContainerView filterGroupsContainer;
     private ContainerView toolbarContainer;
 
     public ContainerView getBoxContainer() {
@@ -49,8 +49,8 @@ public class TreeGroupContainerSet {
         return toolbarRightContainer;
     }
 
-    public ContainerView getFiltersContainer() {
-        return filtersContainer;
+    public ContainerView getFilterGroupsContainer() {
+        return filterGroupsContainer;
     }
 
     public ContainerView getToolbarContainer() {
@@ -80,8 +80,8 @@ public class TreeGroupContainerSet {
         set.toolbarContainer = factory.createContainer(); // контейнер тулбара
         set.toolbarContainer.setSID(DefaultFormView.getToolbarContainerSID(sid));
 
-        set.filtersContainer = factory.createContainer(); // контейнер фильтров
-        set.filtersContainer.setSID(DefaultFormView.getFilterGroupsContainerSID(sid));
+        set.filterGroupsContainer = factory.createContainer(); // контейнер фильтров
+        set.filterGroupsContainer.setSID(DefaultFormView.getFilterGroupsContainerSID(sid));
 
         set.toolbarRightContainer = factory.createContainer();
         set.toolbarRightContainer.setSID(DefaultFormView.getToolbarRightContainerSID(sid));
@@ -93,7 +93,7 @@ public class TreeGroupContainerSet {
         set.boxContainer.setChildrenAlignment(FlexAlignment.START);
         set.boxContainer.setAlignment(FlexAlignment.STRETCH);
         set.boxContainer.setFlex(1);
-        set.boxContainer.add(treeGroup.getUserFilter(), version);
+        set.boxContainer.add(treeGroup.filtersContainer, version);
         set.boxContainer.add(set.gridContainer, version);
         set.boxContainer.add(set.toolbarBoxContainer, version);
         set.boxContainer.add(set.panelContainer, version);
@@ -118,12 +118,12 @@ public class TreeGroupContainerSet {
         set.toolbarRightContainer.setAlignment(FlexAlignment.CENTER);
         set.toolbarRightContainer.setChildrenAlignment(FlexAlignment.END);
         set.toolbarRightContainer.setFlex(1);
-        set.toolbarRightContainer.add(set.filtersContainer, version);
+        set.toolbarRightContainer.add(set.filterGroupsContainer, version);
         set.toolbarRightContainer.add(set.toolbarContainer, version);
 
-        set.filtersContainer.setType(ContainerType.CONTAINERH);
-        set.filtersContainer.setAlignment(FlexAlignment.CENTER);
-        set.filtersContainer.setChildrenAlignment(FlexAlignment.END);
+        set.filterGroupsContainer.setType(ContainerType.CONTAINERH);
+        set.filterGroupsContainer.setAlignment(FlexAlignment.CENTER);
+        set.filterGroupsContainer.setChildrenAlignment(FlexAlignment.END);
 
         set.toolbarContainer.setType(ContainerType.CONTAINERH);
         set.toolbarContainer.setAlignment(FlexAlignment.CENTER);
@@ -138,8 +138,6 @@ public class TreeGroupContainerSet {
 
         treeGroup.getToolbarSystem().setMargin(2);
         treeGroup.getToolbarSystem().setAlignment(FlexAlignment.CENTER);
-        treeGroup.getUserFilter().setAlignment(FlexAlignment.STRETCH);
-
 
         return set;
     }

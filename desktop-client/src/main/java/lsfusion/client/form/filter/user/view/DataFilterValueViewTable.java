@@ -1,6 +1,7 @@
 package lsfusion.client.form.filter.user.view;
 
 import lsfusion.client.base.SwingUtils;
+import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.classes.data.ClientTextClass;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.object.ClientGroupObjectValue;
@@ -288,6 +289,13 @@ class DataFilterValueViewTable extends JTable implements TableTransferHandler.Ta
     public boolean editorEnterPressed() {
         TableCellEditor editor = getCellEditor();
         return editor != null && ((Editor) editor).enterPressed;
+    }
+
+    @Override
+    public void updateUI() {
+        super.updateUI();
+
+        setBorder(SwingDefaults.getTextFieldBorder());
     }
 
     private static final class Model extends AbstractTableModel {

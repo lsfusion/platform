@@ -27,12 +27,6 @@ public abstract class FilterOptionSelector<T> extends TextFieldWidget {
         
         menu.setMaximumVisibleRows(12);
 
-        setBorder(createCompoundBorder(
-                createCompoundBorder(
-                        createEmptyBorder(0, 0, 0, 2),
-                        createLineBorder(SwingDefaults.getComponentBorderColor())),
-                createEmptyBorder(0, SwingDefaults.getTableCellMargins().left, 0, 0)));
-
         for (T item : items) {
             addMenuItem(item, item.toString());
         }
@@ -85,6 +79,17 @@ public abstract class FilterOptionSelector<T> extends TextFieldWidget {
 
     public void showMenu() {
         menu.show(this, 0, getHeight());
+    }
+
+    @Override
+    public void updateUI() {
+        super.updateUI();
+        
+        setBorder(createCompoundBorder(
+                createCompoundBorder(
+                        createEmptyBorder(0, 0, 0, 2),
+                        createLineBorder(SwingDefaults.getComponentBorderColor())),
+                createEmptyBorder(0, SwingDefaults.getTableCellMargins().left, 0, 0)));
     }
 
     public abstract void valueChanged(T value);

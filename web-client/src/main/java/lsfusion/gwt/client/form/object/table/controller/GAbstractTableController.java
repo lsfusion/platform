@@ -18,7 +18,7 @@ import lsfusion.gwt.client.form.event.GBindingEnv;
 import lsfusion.gwt.client.form.event.GInputEvent;
 import lsfusion.gwt.client.form.filter.user.GFilter;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
-import lsfusion.gwt.client.form.filter.user.controller.GUserFilters;
+import lsfusion.gwt.client.form.filter.user.controller.GFilterController;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.GObject;
@@ -36,7 +36,7 @@ import static lsfusion.gwt.client.base.GwtClientUtils.setupFillParent;
 
 public abstract class GAbstractTableController extends GPropertyController implements GTableController {
     protected final GToolbarView toolbarView;
-    public GUserFilters userFilters;
+    public GFilterController filter;
 
     protected Widget gridView;
     protected ResizableSimplePanel gridContainerView;
@@ -124,10 +124,10 @@ public abstract class GAbstractTableController extends GPropertyController imple
         }
     }
 
-    public abstract GFilter getFilterComponent();
+    public abstract List<GFilter> getFilters();
 
     public void addUserFilterComponent() {
-        userFilters = new GUserFilters(this, getFilterComponent()) {
+        filter = new GFilterController(this, getFilters(), getFormLayout().getContainerView(getFiltersContainer())) {
             @Override
             public void applyFilters(ArrayList<GPropertyFilter> conditions, boolean focusFirstComponent) {
                 changeFilter(conditions);
@@ -137,19 +137,12 @@ public abstract class GAbstractTableController extends GPropertyController imple
             }
 
             @Override
-            public void checkCommitEditing() {
-                formController.checkCommitEditing();
-            }
-
-            @Override
             public void addBinding(GInputEvent event, GBindingEnv env, GFormController.BindingExec pressed, Widget component) {
                 formController.addBinding(event, env, pressed, component, getSelectedGroupObject());
             }
         };
-        getFormLayout().addBaseComponent(getFilterComponent(), userFilters.getView(), null);
 
-
-        addToToolbar(userFilters.getToolbarButton());
+        addToToolbar(filter.getToolbarButton());
     }
 
     @Override
@@ -167,26 +160,26 @@ public abstract class GAbstractTableController extends GPropertyController imple
     }
 
     public void quickEditFilter(Event editEvent, GPropertyDraw propertyDraw, GGroupObjectValue columnKey) {
-        if (userFilters != null) {
-            userFilters.quickEditFilter(editEvent, propertyDraw, columnKey);
+        if (filter != null && filter.hasOwnContainer()) {
+            filter.quickEditFilter(editEvent, propertyDraw, columnKey);
         }
     }
 
     public void replaceFilter(Event event) {
-        if (userFilters != null) {
-            userFilters.addConditionPressed(true, event);
+        if (filter != null && filter.hasOwnContainer()) {
+            filter.addCondition(event, true);
         }
     }
 
     public void addFilter(Event event) {
-        if (userFilters != null) {
-            userFilters.addConditionPressed(false, event);
+        if (filter != null && filter.hasOwnContainer()) {
+            filter.addCondition(event, false);
         }
     }
 
     public void removeFilters() {
-        if (userFilters != null) {
-            userFilters.allRemovedPressed();
+        if (filter != null) {
+            filter.removeAllConditions();
         }
     }
 

@@ -2,6 +2,7 @@ package lsfusion.client.form.object.table.controller;
 
 import lsfusion.base.Pair;
 import lsfusion.client.form.controller.ClientFormController;
+import lsfusion.client.form.design.ClientContainer;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.object.ClientObject;
@@ -34,6 +35,8 @@ public interface TableController {
     ClientGroupObjectValue getSelectedColumn();
     Object getSelectedValue(ClientPropertyDraw property, ClientGroupObjectValue columnKey);
     List<Pair<Column, String>> getSelectedColumns();
+    
+    ClientContainer getFiltersContainer();
 
     boolean changeOrders(ClientGroupObject groupObject, LinkedHashMap<ClientPropertyDraw, Boolean> value, boolean alreadySet);
 }

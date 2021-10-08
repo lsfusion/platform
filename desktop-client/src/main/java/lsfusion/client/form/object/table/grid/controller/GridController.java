@@ -10,6 +10,8 @@ import lsfusion.client.classes.data.ClientIntegralClass;
 import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.form.ClientFormChanges;
 import lsfusion.client.form.controller.ClientFormController;
+import lsfusion.client.form.design.ClientContainer;
+import lsfusion.client.form.design.view.ClientContainerView;
 import lsfusion.client.form.design.view.ClientFormLayout;
 import lsfusion.client.form.filter.user.ClientPropertyFilter;
 import lsfusion.client.form.filter.user.controller.FilterController;
@@ -76,8 +78,8 @@ public class GridController extends AbstractTableController {
         panel = new PanelController(GridController.this.formController, formLayout) {
             protected void addGroupObjectActions(final JComponent comp) {
                 GridController.this.registerGroupObject(comp);
-                if(filter != null) {
-                    filter.getView().addActionsToPanelInputMap(comp);
+                if (filter != null) {
+                    filter.addActionsToPanelInputMap(comp);
                 }
             }
         };
@@ -85,32 +87,29 @@ public class GridController extends AbstractTableController {
         if (groupObject != null) {
             calculationsView = new CalculationsView();
             formLayout.addBaseComponent(groupObject.calculations, calculationsView);
-            
-            if (groupObject.userFilter.visible) {
-                filter = new FilterController(this, groupObject.userFilter) {
-                    public void applyFilters(List<ClientPropertyFilter> conditions, boolean focusFirstComponent) {
-                        RmiQueue.runAction(() -> {
-                            try {
-                                GridController.this.formController.changeFilter(groupObject, conditions);
-                                if (focusFirstComponent) {
-                                    SwingUtilities.invokeLater(() -> focusFirstComponent());
-                                }
-                            } catch (IOException e) {
-                                throw new RuntimeException(ClientResourceBundle.getString("errors.error.applying.filter"), e);
-                            }
-                        });
-                    }
-                };
 
-                filter.addView(formLayout);
-            }
+            ClientContainerView filtersContainer = formLayout.getContainerView(groupObject.filtersContainer);
+            filter = new FilterController(this, groupObject.filters, filtersContainer) {
+                public void applyFilters(List<ClientPropertyFilter> conditions, boolean focusFirstComponent) {
+                    RmiQueue.runAction(() -> {
+                        try {
+                            GridController.this.formController.changeFilter(groupObject, conditions);
+                            if (focusFirstComponent) {
+                                SwingUtilities.invokeLater(() -> focusFirstComponent());
+                            }
+                        } catch (IOException e) {
+                            throw new RuntimeException(ClientResourceBundle.getString("errors.error.applying.filter"), e);
+                        }
+                    });
+                }
+            };
 
             view = new GridView(this, formController, userPreferences, groupObject.grid.tabVertical, groupObject.grid.groupObject.needVerticalScroll);
             table = view.getTable();
 
             registerGroupObject(view);
-            if (filter != null && table instanceof GridTable) {
-                filter.getView().addActionsToInputMap((GridTable) table);
+            if (table instanceof GridTable) {
+                filter.addActionsToInputMap((GridTable) table);
             }
 
             formLayout.addBaseComponent(groupObject.grid, view);
@@ -142,10 +141,8 @@ public class GridController extends AbstractTableController {
         }
 
         boolean showSettings = groupObject.toolbar.showSettings && table instanceof GridTable;
-        if(filter != null || showSettings) {
-            if (filter != null) {
-                addToToolbar(filter.getToolbarButton());
-            }
+        if(showSettings) {
+            addToToolbar(filter.getToolbarButton());
 
             if (showSettings) {
                 ((GridTable) table).getTableHeader().addMouseListener(new MouseAdapter() {
@@ -251,6 +248,12 @@ public class GridController extends AbstractTableController {
         forceUpdateTableButton.setFocusable(false);
         forceUpdateTableButton.setVisible(false);
         addToToolbar(forceUpdateTableButton);
+
+        ToolbarGridButton addFilterConditionButton = filter.getAddFilterConditionButton();
+        if (addFilterConditionButton != null) {
+            addToToolbar(addFilterConditionButton);
+        }
+        addToToolbar(filter.getResetFiltersButton());
     }
 
     private boolean manual;
@@ -505,6 +508,11 @@ public class GridController extends AbstractTableController {
     }
 
     @Override
+    public ClientContainer getFiltersContainer() {
+        return getGroupObject().getFiltersContainer();
+    }
+
+    @Override
     public boolean changeOrders(ClientGroupObject groupObject, LinkedHashMap<ClientPropertyDraw, Boolean> orders, boolean alreadySet) {
         assert this.groupObject.equals(groupObject);
         if(isList()) {
@@ -556,7 +564,7 @@ public class GridController extends AbstractTableController {
     }
 
     public void quickEditFilter(KeyEvent initFilterKeyEvent, ClientPropertyDraw propertyDraw, ClientGroupObjectValue columnKey) {
-        if (filter != null) {
+        if (filter.hasOwnContainer()) {
             filter.quickEditFilter(initFilterKeyEvent, propertyDraw, columnKey);
         }
     }
@@ -591,10 +599,8 @@ public class GridController extends AbstractTableController {
                 toolbarView.setVisible(isVisible());
             }
 
-            if (filter != null) {
-                filter.update();
-                filter.setVisible(isVisible());
-            }
+            filter.update();
+            filter.setVisible(isVisible());
 
             if (calculationsView != null) {
                 calculationsView.setVisible(isVisible());

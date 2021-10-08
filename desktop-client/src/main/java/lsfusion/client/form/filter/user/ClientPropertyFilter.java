@@ -10,6 +10,7 @@ import java.io.IOException;
 
 public class ClientPropertyFilter {
 
+    public ClientFilter filter;
     public ClientGroupObject groupObject;
     public ClientPropertyDraw property;
     public ClientDataFilterValue value;
@@ -20,10 +21,11 @@ public class ClientPropertyFilter {
     public Compare compare;
     public boolean junction = true; //true - conjunction, false - disjunction
 
-    public ClientPropertyFilter(ClientGroupObject groupObject, ClientPropertyDraw property, ClientGroupObjectValue columnKey, Object value, Compare compare) {
-        this(groupObject, property, new ClientDataFilterValue(value), columnKey, false, compare, true);
+    public ClientPropertyFilter(ClientFilter filter, ClientGroupObject groupObject, ClientGroupObjectValue columnKey, Object value) {
+        this(filter, groupObject, filter.property, new ClientDataFilterValue(value), columnKey, false, filter.property.getDefaultCompare(), true);
     }
-    public ClientPropertyFilter(ClientGroupObject groupObject, ClientPropertyDraw property, ClientDataFilterValue value, ClientGroupObjectValue columnKey, boolean negation, Compare compare, boolean junction) {
+    public ClientPropertyFilter(ClientFilter filter, ClientGroupObject groupObject, ClientPropertyDraw property, ClientDataFilterValue value, ClientGroupObjectValue columnKey, boolean negation, Compare compare, boolean junction) {
+        this.filter = filter;
         this.groupObject = groupObject;
         this.property = property;
         this.value = value;
