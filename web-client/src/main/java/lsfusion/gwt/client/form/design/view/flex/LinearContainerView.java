@@ -139,7 +139,7 @@ public class LinearContainerView extends GAbstractContainerView {
     protected FlexPanel wrapBorderImpl(GComponent child) {
         GContainer childContainer;
         if(child instanceof GContainer && (childContainer = (GContainer) child).caption != null)
-            return new CaptionPanel(childContainer.caption, vertical);
+            return new CaptionPanel(childContainer.caption);
         return null;
     }
 

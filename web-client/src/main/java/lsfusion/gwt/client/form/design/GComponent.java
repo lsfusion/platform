@@ -61,9 +61,6 @@ public class GComponent implements Serializable {
         this.flex = flex;
     }
 
-    public boolean isStretch() {
-        return getAlignment() == GFlexAlignment.STRETCH;
-    }
     public GFlexAlignment getAlignment() {
         return alignment;
     }

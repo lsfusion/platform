@@ -27,7 +27,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
 
     private final boolean vertical;
 
-    private final GFlexAlignment flexAlignment;
+    private GFlexAlignment flexAlignment;
 
     private boolean visible = true;
 
@@ -41,11 +41,15 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
         this(vertical, GFlexAlignment.START);
     }
 
+    public void setFlexAlignment(GFlexAlignment flexAlignment) {
+        this.flexAlignment = flexAlignment;
+        assert !flexAlignment.equals(GFlexAlignment.STRETCH);
+    }
+
     public FlexPanel(boolean vertical, GFlexAlignment flexAlignment) {
         this.vertical = vertical;
 
         this.flexAlignment = flexAlignment;
-        assert !flexAlignment.equals(GFlexAlignment.STRETCH);
 
         parentElement = Document.get().createDivElement();
 
@@ -99,8 +103,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
 
     // we want to have the same behaviour as STRETCH : as flex-basis is 0, but auto size is relevant
     // in theory this can be substituted with if parent layout is autosized ? null : 0, but sometimes we don't know parent layout
-    public void addFillStretch(Widget widget) {
-        addFillFlex(widget, null);
+    public static void setFillShrink(Widget widget) {
         widget.getElement().getStyle().setProperty("flexShrink", "1");
     }
     public void addFillFlex(Widget widget, Integer flexBasis) {
@@ -469,7 +472,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
             for (int i = 0; i < childCount; i++) {
                 Widget childWidget = flexPanel.getWidget(i);
                 // we need to exclude absolutely positioned elements, since they are not used in flex layouting
-                if (childWidget.isVisible() && (!(flexPanel instanceof CaptionPanel && childWidget == ((CaptionPanel) flexPanel).legend))) {
+                if (childWidget.isVisible()) { // && (!(flexPanel instanceof CaptionPanel && childWidget == ((CaptionPanel) flexPanel).legend))) {
                     DrawBorders childBorders = autoStretchAndDrawBorders(childWidget);
                     if (childBorders != null) {
                         LayoutData layoutData = (LayoutData) childWidget.getLayoutData();
