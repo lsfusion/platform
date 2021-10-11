@@ -247,12 +247,12 @@ public class ScriptingLogicsModule extends LogicsModule {
     public void initIndexes(DBManager dbManager) throws RecognitionException {
         for (TemporaryIndexInfo info : tempIndicies) {
             checkIndexDifferentTables(info.params);
-            dbManager.addIndex(info.keyNames, IndexType.DEFAULT, info.params);
+            dbManager.addIndex(info.keyNames, info.params);
         }
         tempIndicies.clear();
-        
-        for (Map.Entry<LP, IndexType> entry : indexedProperties.entrySet()) {
-            dbManager.addIndex(entry.getKey(), entry.getValue());
+
+        for (int i = 0; i < indexedProperties.size(); i++) {
+            dbManager.addIndex(indexedProperties.get(i), indexTypes.get(i));
         }
         indexedProperties.clear();
     }
@@ -4458,16 +4458,20 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }  
 
-    private Map<LP, IndexType> indexedProperties = new HashMap<>();
+    private List<LP> indexedProperties = new ArrayList<>();
+    private List<IndexType> indexTypes = new ArrayList<>();
     private List<TemporaryIndexInfo> tempIndicies = new ArrayList<>();
             
     public void addScriptedIndex(LP lp, IndexType indexType) {
-        indexedProperties.put(lp, indexType);
+        indexedProperties.add(lp);
+        indexTypes.add(indexType);
 
         ImSet<StoredDataProperty> fullAggrProps;
         if(lp.property instanceof AggregateGroupProperty && (fullAggrProps = ((AggregateGroupProperty) lp.property).getFullAggrProps()) != null) {
-            for(StoredDataProperty fullAggrProp : fullAggrProps)
-                indexedProperties.put(new LP<>(fullAggrProp), indexType);
+            for(StoredDataProperty fullAggrProp : fullAggrProps) {
+                indexedProperties.add(new LP<>(fullAggrProp));
+                indexTypes.add(indexType);
+            }
         }
     }
 

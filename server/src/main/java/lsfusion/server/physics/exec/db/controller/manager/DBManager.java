@@ -156,7 +156,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
     private final ThreadLocal<SQLSession> threadLocalSql;
 
-    private final Map<ImList<PropertyObjectInterfaceImplement<String>>, Pair<Boolean, IndexType>> indexes = new HashMap<>();
+    private final Map<ImList<PropertyObjectInterfaceImplement<String>>, IndexOptions> indexes = new HashMap<>();
 
     private String defaultUserLanguage;
     private String defaultUserCountry;
@@ -186,6 +186,10 @@ public class DBManager extends LogicsManager implements InitializingBean {
     public void addIndex(LP lp, IndexType indexType) {
         ImOrderSet<String> keyNames = SetFact.toOrderExclSet(lp.listInterfaces.size(), i -> "key"+i);
         addIndex(keyNames, indexType, directLI(lp));
+    }
+
+    public void addIndex(ImOrderSet<String> keyNames, Object... params) {
+        addIndex(keyNames, IndexType.DEFAULT, params);
     }
 
     public void addIndex(ImOrderSet<String> keyNames, IndexType indexType, Object... params) {
@@ -323,10 +327,10 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
     public void checkIndices(SQLSession session) throws SQLException, SQLHandledException {
         try {
-            for (Map.Entry<NamedTable, Map<List<Field>, Pair<Boolean, IndexType>>> mapIndex : getIndicesMap().entrySet()) {
+            for (Map.Entry<NamedTable, Map<List<Field>, IndexOptions>> mapIndex : getIndicesMap().entrySet()) {
                 session.startTransaction(START_TIL, OperationOwner.unknown);
                 NamedTable table = mapIndex.getKey();
-                for (Map.Entry<List<Field>, Pair<Boolean, IndexType>> index : mapIndex.getValue().entrySet()) {
+                for (Map.Entry<List<Field>, IndexOptions> index : mapIndex.getValue().entrySet()) {
                     ImOrderSet<Field> fields = SetFact.fromJavaOrderSet(index.getKey());
                     if (!getThreadLocalSql().checkIndex(table, table.keys, fields, index.getValue()))
                         session.addIndex(table, table.keys, fields, index.getValue(), BusinessLogics.sqlLogger);
@@ -1089,14 +1093,14 @@ public class DBManager extends LogicsManager implements InitializingBean {
             newTableFieldToCan = getFieldToCanMap(newDBStructure);
         }
 
-        for (Map.Entry<NamedTable, Map<List<String>, Pair<Boolean, IndexType>>> oldTableIndices : oldDBStructure.tables.entrySet()) {
+        for (Map.Entry<NamedTable, Map<List<String>, IndexOptions>> oldTableIndices : oldDBStructure.tables.entrySet()) {
             NamedTable oldTable = oldTableIndices.getKey();
             NamedTable newTable = newDBStructure.getTable(oldTable.getName());
-            Map<List<Field>, Pair<Boolean, IndexType>> newTableIndices = null; Map<List<String>, Pair<Pair<Boolean, IndexType>, List<Field>>> newTableIndicesNames = null; ImMap<String, String> fieldOldToNew = MapFact.EMPTY();
+            Map<List<Field>, IndexOptions> newTableIndices = null; Map<List<String>, Pair<IndexOptions, List<Field>>> newTableIndicesNames = null; ImMap<String, String> fieldOldToNew = MapFact.EMPTY();
             if(newTable != null) {
                 newTableIndices = newDBStructure.tables.get(newTable);
                 newTableIndicesNames = new HashMap<>();
-                for (Map.Entry<List<Field>, Pair<Boolean, IndexType>> entry : newTableIndices.entrySet()) {
+                for (Map.Entry<List<Field>, IndexOptions> entry : newTableIndices.entrySet()) {
                     List<String> names = new ArrayList<>();
                     for (Field field : entry.getKey())
                         names.add(field.getName());
@@ -1112,7 +1116,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 }
             }
 
-            for (Map.Entry<List<String>, Pair<Boolean, IndexType>> oldIndex : oldTableIndices.getValue().entrySet()) {
+            for (Map.Entry<List<String>, IndexOptions> oldIndex : oldTableIndices.getValue().entrySet()) {
                 List<String> oldIndexKeys = oldIndex.getKey();
                 ImOrderSet<String> oldIndexKeysSet = SetFact.fromJavaOrderSet(oldIndexKeys);
 
@@ -1120,7 +1124,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
                 boolean drop = (newTable == null); // ушла таблица
                 if (!drop) {
-                    Pair<Pair<Boolean, IndexType>, List<Field>> newIndex = newTableIndicesNames.get(oldIndexKeys);
+                    Pair<IndexOptions, List<Field>> newIndex = newTableIndicesNames.get(oldIndexKeys);
                     if (newIndex != null && newIndex.first.equals(oldIndex.getValue())) {
                         newTableIndices.remove(newIndex.second); // не трогаем индекс
                     } else {
@@ -1538,8 +1542,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
             // создадим индексы в базе
             startLogger.info("Adding indices");
-            for (Map.Entry<NamedTable, Map<List<Field>, Pair<Boolean, IndexType>>> mapIndex : newDBStructure.tables.entrySet())
-                for (Map.Entry<List<Field>, Pair<Boolean, IndexType>> index : mapIndex.getValue().entrySet()) {
+            for (Map.Entry<NamedTable, Map<List<Field>, IndexOptions>> mapIndex : newDBStructure.tables.entrySet())
+                for (Map.Entry<List<Field>, IndexOptions> index : mapIndex.getValue().entrySet()) {
                     NamedTable table = mapIndex.getKey();
                     sql.addIndex(table, table.keys, SetFact.fromJavaOrderSet(index.getKey()), index.getValue(), oldDBStructure.getTable(table.getName()) == null ? null : startLogger); // если таблица новая нет смысла логировать
                 }
@@ -2225,7 +2229,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     public <Z extends PropertyInterface> void addIndex(ImList<PropertyObjectInterfaceImplement<String>> index, IndexType indexType) {
         PropertyRevImplement<Z, String> propertyImplement = (PropertyRevImplement<Z, String>) findProperty(index);
         if(propertyImplement != null) {
-            indexes.put(index, Pair.create(propertyImplement.property.getType() instanceof DataClass, indexType));
+            indexes.put(index, new IndexOptions(propertyImplement.property.getType() instanceof DataClass, indexType, Settings.get().getFilterMatchLanguage()));
             propertyImplement.property.markIndexed(propertyImplement.mapping, index);
         }
     }
@@ -2432,7 +2436,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         public int version;
         public MigrationVersion migrationVersion;
         public List<String> modulesList = new ArrayList<>();
-        public Map<NamedTable, Map<List<F>, Pair<Boolean, IndexType>>> tables = new HashMap<>();
+        public Map<NamedTable, Map<List<F>, IndexOptions>> tables = new HashMap<>();
         public List<DBStoredProperty> storedProperties = new ArrayList<>();
         public Set<DBConcreteClass> concreteClasses = new HashSet<>();
 
@@ -2464,13 +2468,13 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
 
-    public <P extends PropertyInterface> Map<NamedTable, Map<List<Field>, Pair<Boolean, IndexType>>> getIndicesMap() {
-        Map<NamedTable, Map<List<Field>, Pair<Boolean, IndexType>>> res = new HashMap<>();
+    public <P extends PropertyInterface> Map<NamedTable, Map<List<Field>, IndexOptions>> getIndicesMap() {
+        Map<NamedTable, Map<List<Field>, IndexOptions>> res = new HashMap<>();
         for (ImplementTable table : LM.tableFactory.getImplementTablesMap().valueIt()) {
             res.put(table, new HashMap<>());
         }
 
-        for (Map.Entry<ImList<PropertyObjectInterfaceImplement<String>>, Pair<Boolean, IndexType>> index : indexes.entrySet()) {
+        for (Map.Entry<ImList<PropertyObjectInterfaceImplement<String>>, IndexOptions> index : indexes.entrySet()) {
             ImList<PropertyObjectInterfaceImplement<String>> indexFields = index.getKey();
 
             if (indexFields.isEmpty()) {
@@ -2545,16 +2549,15 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 outDB.writeUTF(logicsModule.getName());
 
             outDB.writeInt(tables.size());
-            for (Map.Entry<NamedTable, Map<List<Field>, Pair<Boolean, IndexType>>> tableIndices : tables.entrySet()) {
+            for (Map.Entry<NamedTable, Map<List<Field>, IndexOptions>> tableIndices : tables.entrySet()) {
                 tableIndices.getKey().serialize(outDB);
                 outDB.writeInt(tableIndices.getValue().size());
-                for (Map.Entry<List<Field>, Pair<Boolean, IndexType>> index : tableIndices.getValue().entrySet()) {
+                for (Map.Entry<List<Field>, IndexOptions> index : tableIndices.getValue().entrySet()) {
                     outDB.writeInt(index.getKey().size());
                     for (Field indexField : index.getKey()) {
                         outDB.writeUTF(indexField.getName());
                     }
-                    outDB.writeBoolean(index.getValue().first);
-                    outDB.writeByte(index.getValue().second.serialize());
+                    index.getValue().serialize(outDB);
                 }
             }
 
@@ -2590,15 +2593,18 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
                 for (int i = inputDB.readInt(); i > 0; i--) {
                     SerializedTable prevTable = new SerializedTable(inputDB, LM.baseClass);
-                    Map<List<String>, Pair<Boolean, IndexType>> indices = new HashMap<>();
+                    Map<List<String>, IndexOptions> indices = new HashMap<>();
                     for (int j = inputDB.readInt(); j > 0; j--) {
                         List<String> index = new ArrayList<>();
                         for (int k = inputDB.readInt(); k > 0; k--) {
                             index.add(inputDB.readUTF());
                         }
-                        boolean prevOrdered = inputDB.readBoolean();
-                        IndexType indexType = version >= 32 ? IndexType.deserialize(inputDB.readByte()) : IndexType.DEFAULT;
-                        indices.put(index, Pair.create(prevOrdered, indexType));
+                        if (version >= 32) {
+                            indices.put(index, IndexOptions.deserialize(inputDB));
+                        } else {
+                            indices.put(index, new IndexOptions(inputDB.readBoolean()));
+                        }
+
                     }
                     tables.put(prevTable, indices);
                 }

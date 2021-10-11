@@ -7,6 +7,14 @@ public enum IndexType {
         return this == DEFAULT;
     }
 
+    public boolean isLike() {
+        return this == LIKE;
+    }
+
+    public boolean isMatch() {
+        return this == MATCH;
+    }
+
     public static IndexType deserialize(byte data) {
         switch (data) {
             case 0:
