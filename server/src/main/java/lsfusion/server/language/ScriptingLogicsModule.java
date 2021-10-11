@@ -27,6 +27,7 @@ import lsfusion.server.data.expr.formula.CustomFormulaSyntax;
 import lsfusion.server.data.expr.formula.SQLSyntaxType;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.query.PartitionType;
+import lsfusion.server.data.table.IndexType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.language.action.ActionSettings;
 import lsfusion.server.language.action.LA;
@@ -246,12 +247,12 @@ public class ScriptingLogicsModule extends LogicsModule {
     public void initIndexes(DBManager dbManager) throws RecognitionException {
         for (TemporaryIndexInfo info : tempIndicies) {
             checkIndexDifferentTables(info.params);
-            dbManager.addIndex(info.keyNames, info.params);
+            dbManager.addIndex(info.keyNames, IndexType.DEFAULT, info.params);
         }
         tempIndicies.clear();
         
-        for (LP property : indexedProperties) {
-            dbManager.addIndex(property);
+        for (Map.Entry<LP, IndexType> entry : indexedProperties.entrySet()) {
+            dbManager.addIndex(entry.getKey(), entry.getValue());
         }
         indexedProperties.clear();
     }
@@ -4456,17 +4457,17 @@ public class ScriptingLogicsModule extends LogicsModule {
             this.isCustomObjectClassTable = isCustomObjectClassTable;  
         }
     }  
-    
-    private List<LP> indexedProperties = new ArrayList<>();
+
+    private Map<LP, IndexType> indexedProperties = new HashMap<>();
     private List<TemporaryIndexInfo> tempIndicies = new ArrayList<>();
             
-    public void addScriptedIndex(LP lp) {
-        indexedProperties.add(lp);
+    public void addScriptedIndex(LP lp, IndexType indexType) {
+        indexedProperties.put(lp, indexType);
 
         ImSet<StoredDataProperty> fullAggrProps;
         if(lp.property instanceof AggregateGroupProperty && (fullAggrProps = ((AggregateGroupProperty) lp.property).getFullAggrProps()) != null) {
             for(StoredDataProperty fullAggrProp : fullAggrProps)
-                indexedProperties.add(new LP<>(fullAggrProp));
+                indexedProperties.put(new LP<>(fullAggrProp), indexType);
         }
     }
 
