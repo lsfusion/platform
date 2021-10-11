@@ -79,7 +79,11 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
         resetConditionsButton = new GToolbarButton(RESET_ICON_PATH, messages.formQueriesFilterResetConditions()) {
             @Override
             public ClickHandler getClickHandler() {
-                return event -> removeAllConditions();
+                return event -> {
+                    removeAllConditions();
+                    toggleToolsVisible();
+                    updateToolbarButton();
+                };
             }
         };
         resetConditionsButton.addStyleName("userFilterButton");

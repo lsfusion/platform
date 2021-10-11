@@ -52,8 +52,6 @@ public abstract class FilterController implements FilterConditionView.UIHandler 
         toolbarButton = new ToolbarGridButton(FILTER_ICON_PATH, getString("form.queries.filter.tools.show"));
         toolbarButton.addActionListener(ae -> {
             toggleToolsVisible();
-            toolbarButton.setToolTipText(toolsVisible ? getString("form.queries.filter.tools.hide") : getString("form.queries.filter.tools.show"));
-            toolbarButton.showBackground(toolsVisible);
         });
 
         if (hasOwnContainer()) {
@@ -63,7 +61,10 @@ public abstract class FilterController implements FilterConditionView.UIHandler 
         }
 
         resetConditionsButton = new ToolbarGridButton(RESET_ICON_PATH, getString("form.queries.filter.reset.conditions"));
-        resetConditionsButton.addActionListener(e -> removeAllConditions());
+        resetConditionsButton.addActionListener(e -> {
+            removeAllConditions();
+            toggleToolsVisible();
+        });
         resetConditionsButton.setVisible(false);
 
         if (filtersContainerComponent != null) {
@@ -183,6 +184,9 @@ public abstract class FilterController implements FilterConditionView.UIHandler 
             addConditionButton.setVisible(toolsVisible);
         }
         resetConditionsButton.setVisible(toolsVisible);
+
+        toolbarButton.setToolTipText(toolsVisible ? getString("form.queries.filter.tools.hide") : getString("form.queries.filter.tools.show"));
+        toolbarButton.showBackground(toolsVisible);
     }
 
     public ClientContainer getFiltersContainer() {
