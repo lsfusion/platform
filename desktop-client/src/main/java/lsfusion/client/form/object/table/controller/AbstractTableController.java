@@ -6,6 +6,7 @@ import lsfusion.client.form.filter.user.controller.FilterController;
 import lsfusion.client.form.object.ClientObject;
 import lsfusion.client.form.object.panel.controller.PanelController;
 import lsfusion.client.form.object.table.ClientToolbar;
+import lsfusion.client.form.object.table.grid.user.toolbar.view.ToolbarGridButton;
 import lsfusion.client.form.object.table.view.ToolbarView;
 
 import java.awt.*;
@@ -43,6 +44,15 @@ public abstract class AbstractTableController implements TableController {
     @Override
     public List<ClientObject> getObjects() {
         return formController.form.getObjects();
+    }
+    
+    public void initFilterButtons() {
+        addToToolbar(filter.getToolbarButton());
+        ToolbarGridButton addFilterConditionButton = filter.getAddFilterConditionButton();
+        if (addFilterConditionButton != null) {
+            addToToolbar(addFilterConditionButton);
+        }
+        addToToolbar(filter.getResetFiltersButton());
     }
 
     public void addToToolbar(Component component) {

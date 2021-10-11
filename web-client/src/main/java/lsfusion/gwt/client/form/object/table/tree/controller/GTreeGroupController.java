@@ -14,7 +14,6 @@ import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController;
 import lsfusion.gwt.client.form.object.table.grid.user.design.view.GExpandTreeButton;
-import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
 import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
 import lsfusion.gwt.client.form.object.table.tree.view.GTreeGridRecord;
 import lsfusion.gwt.client.form.object.table.tree.view.GTreeTable;
@@ -48,7 +47,7 @@ public class GTreeGroupController extends GAbstractTableController {
     }
 
     protected void configureToolbar() {
-        addUserFilterComponent();
+        initFilters();
 
         addToolbarSeparator();
 
@@ -56,12 +55,6 @@ public class GTreeGroupController extends GAbstractTableController {
         addToToolbar(expandTreeCurrentButton);
         expandTreeButton = new GExpandTreeButton(this, false);
         addToToolbar(expandTreeButton);
-
-        GToolbarButton addFilterConditionButton = filter.getAddFilterConditionButton();
-        if (addFilterConditionButton != null) {
-            addToToolbar(addFilterConditionButton);
-        }
-        addToToolbar(filter.getResetFiltersButton());
     }
 
     @Override

@@ -264,7 +264,9 @@ public class GGridController extends GAbstractTableController {
         if(showFilter() || groupObject.toolbar.showGridSettings) {
 
             if (showFilter()) {
-                addUserFilterComponent();
+                initFilters();
+
+                addToolbarSeparator();
             }
 
             if (groupObject.toolbar.showGridSettings) {
@@ -350,12 +352,6 @@ public class GGridController extends GAbstractTableController {
         forceUpdateTableButton.addStyleName("actionPanelRendererValue");
 
         addToToolbar(forceUpdateTableButton);
-
-        GToolbarButton addFilterConditionButton = filter.getAddFilterConditionButton();
-        if (addFilterConditionButton != null) {
-            addToToolbar(addFilterConditionButton);
-        }
-        addToToolbar(filter.getResetFiltersButton());
     }
 
     public void showRecordQuantity(int quantity) {

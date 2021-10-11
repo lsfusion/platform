@@ -23,6 +23,7 @@ import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.GObject;
 import lsfusion.gwt.client.form.object.table.GToolbar;
+import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
 import lsfusion.gwt.client.form.object.table.tree.view.GTreeTable;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.object.table.view.GToolbarView;
@@ -126,7 +127,7 @@ public abstract class GAbstractTableController extends GPropertyController imple
 
     public abstract List<GFilter> getFilters();
 
-    public void addUserFilterComponent() {
+    public void initFilters() {
         filter = new GFilterController(this, getFilters(), getFormLayout().getContainerView(getFiltersContainer())) {
             @Override
             public void applyFilters(ArrayList<GPropertyFilter> conditions, boolean focusFirstComponent) {
@@ -143,6 +144,11 @@ public abstract class GAbstractTableController extends GPropertyController imple
         };
 
         addToToolbar(filter.getToolbarButton());
+        GToolbarButton addFilterConditionButton = filter.getAddFilterConditionButton();
+        if (addFilterConditionButton != null) {
+            addToToolbar(addFilterConditionButton);
+        }
+        addToToolbar(filter.getResetFiltersButton());
     }
 
     @Override

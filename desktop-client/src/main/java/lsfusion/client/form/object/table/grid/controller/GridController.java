@@ -142,37 +142,37 @@ public class GridController extends AbstractTableController {
 
         boolean showSettings = groupObject.toolbar.showSettings && table instanceof GridTable;
         if(showSettings) {
-            addToToolbar(filter.getToolbarButton());
+            initFilterButtons();
 
-            if (showSettings) {
-                ((GridTable) table).getTableHeader().addMouseListener(new MouseAdapter() {
-                    @Override
-                    public void mouseReleased(MouseEvent e) {
-                        for (int i = 0; i < ((GridTable) table).getTableModel().getColumnCount(); ++i) {
-                            ((GridTable) table).setUserWidth(((GridTable) table).getTableModel().getColumnProperty(i), ((GridTable) table).getColumnModel().getColumn(i).getWidth());
+            addToolbarSeparator();
+
+            ((GridTable) table).getTableHeader().addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseReleased(MouseEvent e) {
+                    for (int i = 0; i < ((GridTable) table).getTableModel().getColumnCount(); ++i) {
+                        ((GridTable) table).setUserWidth(((GridTable) table).getTableModel().getColumnProperty(i), ((GridTable) table).getColumnModel().getColumn(i).getWidth());
+                    }
+                }
+            });
+            userPreferencesButton = new ToolbarGridButton(USER_PREFERENCES_ICON_PATH, getUserPreferencesButtonTooltip());
+            userPreferencesButton.showBackground(table.hasUserPreferences());
+
+            userPreferencesButton.addActionListener(e -> {
+                if(table instanceof GridTable) {
+                    UserPreferencesDialog dialog = new UserPreferencesDialog(MainFrame.instance, (GridTable) table, this, getFormController().hasCanonicalName()) {
+                        @Override
+                        public void preferencesChanged() {
+                            RmiQueue.runAction(() -> {
+                                userPreferencesButton.showBackground((((GridTable) table).generalPreferencesSaved() || ((GridTable) table).userPreferencesSaved()));
+                                userPreferencesButton.setToolTipText(getUserPreferencesButtonTooltip());
+                            });
                         }
-                    }
-                });
-                userPreferencesButton = new ToolbarGridButton(USER_PREFERENCES_ICON_PATH, getUserPreferencesButtonTooltip());
-                userPreferencesButton.showBackground(table.hasUserPreferences());
+                    };
+                    dialog.setVisible(true);
+                }
+            });
 
-                userPreferencesButton.addActionListener(e -> {
-                    if(table instanceof GridTable) {
-                        UserPreferencesDialog dialog = new UserPreferencesDialog(MainFrame.instance, (GridTable) table, this, getFormController().hasCanonicalName()) {
-                            @Override
-                            public void preferencesChanged() {
-                                RmiQueue.runAction(() -> {
-                                    userPreferencesButton.showBackground((((GridTable) table).generalPreferencesSaved() || ((GridTable) table).userPreferencesSaved()));
-                                    userPreferencesButton.setToolTipText(getUserPreferencesButtonTooltip());
-                                });
-                            }
-                        };
-                        dialog.setVisible(true);
-                    }
-                });
-
-                addToToolbar(userPreferencesButton);
-            }
+            addToToolbar(userPreferencesButton);
 
             addToolbarSeparator();
         }
@@ -248,12 +248,6 @@ public class GridController extends AbstractTableController {
         forceUpdateTableButton.setFocusable(false);
         forceUpdateTableButton.setVisible(false);
         addToToolbar(forceUpdateTableButton);
-
-        ToolbarGridButton addFilterConditionButton = filter.getAddFilterConditionButton();
-        if (addFilterConditionButton != null) {
-            addToToolbar(addFilterConditionButton);
-        }
-        addToToolbar(filter.getResetFiltersButton());
     }
 
     private boolean manual;
