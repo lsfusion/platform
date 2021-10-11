@@ -161,7 +161,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             columns.push(fromString(keysFieldName));
         return columns;
     }
-    
+
     protected final static String keysFieldName = "#__key";
 
     protected void changeSimpleGroupObject(JavaScriptObject object, boolean rendered, P elementClicked) {
@@ -351,6 +351,38 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
          }});
     }
 
+    NativeHashMap<GGroupObjectValue, JavaScriptObject> oldOptionsList = new NativeHashMap<>();
+    private JavaScriptObject getDiff(JsArray<JavaScriptObject> list) {
+        NativeHashMap<GGroupObjectValue, JavaScriptObject> mappedList = new NativeHashMap<>();
+        for (int i = 0; i < list.length(); i++) {
+            JavaScriptObject object = list.get(i);
+            mappedList.put(getKey(object), list.get(i));
+        }
+
+        List<JavaScriptObject> optionsToAdd = new ArrayList<>();
+        List<JavaScriptObject> optionsToUpdate = new ArrayList<>();
+        List<JavaScriptObject> optionsToRemove = new ArrayList<>();
+
+        mappedList.foreachEntry((key, value) -> {
+            JavaScriptObject oldValue = oldOptionsList.remove(key);
+            if (oldValue != null) {
+                if (!GwtClientUtils.isJSObjectPropertiesEquals(value, oldValue))
+                    optionsToUpdate.add(value);
+            } else {
+                optionsToAdd.add(value);
+            }
+        });
+
+        oldOptionsList.foreachValue(optionsToRemove::add);
+        oldOptionsList = mappedList;
+
+        JavaScriptObject object = GwtClientUtils.newObject();
+        GwtClientUtils.setField(object, "add", fromObject(optionsToAdd.toArray()));
+        GwtClientUtils.setField(object, "update", fromObject(optionsToUpdate.toArray()));
+        GwtClientUtils.setField(object, "remove", fromObject(optionsToRemove.toArray()));
+        return object;
+    }
+
     protected native JavaScriptObject getController()/*-{
         var thisObj = this;
         return {
@@ -414,6 +446,9 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             },
             getKey: function (object) {
                 return thisObj.@GSimpleStateTableView::getKey(*)(object);
+            },
+            getDiff: function (newList) {
+                return thisObj.@GSimpleStateTableView::getDiff(*)(newList);
             }
         };
     }-*/;

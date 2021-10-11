@@ -962,4 +962,13 @@ public class GwtClientUtils {
         return object[field] = value;
     }-*/;
 
+    public static native boolean isJSObjectPropertiesEquals(JavaScriptObject object1, JavaScriptObject object2)/*-{
+        var keys = Object.keys(object1);
+        for (var i = 0; i < keys.length; i++) {
+            if (!keys[i].startsWith('#') && object1[keys[i]] !== object2[keys[i]])
+                return false;
+        }
+        return true;
+    }-*/;
+
 }

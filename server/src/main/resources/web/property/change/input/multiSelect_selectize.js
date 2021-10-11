@@ -3,46 +3,57 @@ function selectize(element, list, controller) {
         controller.selectizeInstance = $(element).selectize({
             preload: 'focus',
             loadThrottle: 0,
-            load: function (query) {
+            load: function (query, callback) {
                 controller.getValues('name', query, (data) => {
+                    let options =[];
                     for (let dataElement of data.data) {
-                        let keyValue = dataElement.key.toString();
-                        if (!selectize.getOption(keyValue).length) {
-                            selectize.addOption({
-                                value: keyValue,
-                                text: dataElement.rawString,
-                                originalObject: dataElement.key
-                            });
-                        }
+                        options.push({
+                            value: dataElement.key.toString(),
+                            text: dataElement.rawString,
+                            originalObject: dataElement.key,
+                            async: true
+                        });
                     }
-                    selectize.open();
+                    callback(options);
                 }, null);
             },
             onItemAdd: function (value) {
-                let originalObject = this.options[value].originalObject;
-                if (!originalObject.selected)
-                    controller.changeProperty('selected', originalObject, true);
+                let option = this.options[value];
+                if (option.async) // change property only if option from .getValues() method
+                    controller.changeProperty('selected', option.originalObject, true);
             },
             onItemRemove: function (value) {
-                controller.changeProperty('selected', this.options[value].originalObject, null);
+                let option = this.options[value];
+                if (option != null) // if option == null so option has been removed by .removeOption() method
+                    controller.changeProperty('selected', option.originalObject, null);
             },
             plugins: ['remove_button']
         });
     }
 
     let selectize = controller.selectizeInstance[0].selectize;
-    if (list.length - selectize.items.length < 0) {
-        selectize.clear(true);
-        selectize.clearOptions(true);
+    let diff = controller.getDiff(list);
+
+    for (let option of diff.add) {
+        let selectizeOption = mapOption(option);
+        selectize.addOption(selectizeOption);
+        selectize.addItem(selectizeOption.value);
     }
 
-    for (let listElement of list) {
-        let keyValue = controller.getKey(listElement).toString();
-        selectize.addOption({
-            value: keyValue,
-            text: listElement.name,
-            originalObject: listElement
-        });
-        selectize.addItem(keyValue, true);
+    for (let option of diff.update) {
+        let selectizeOption = mapOption(option);
+        selectize.updateOption(selectizeOption.value, selectizeOption);
+    }
+
+    for (let option of diff.remove) {
+        selectize.removeOption(mapOption(option).value);
+    }
+
+    function mapOption(option) {
+        return {
+            value: controller.getKey(option).toString(),
+            text: option.name,
+            originalObject: option
+        }
     }
 }
