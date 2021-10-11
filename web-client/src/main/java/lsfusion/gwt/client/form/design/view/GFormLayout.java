@@ -1,10 +1,17 @@
 package lsfusion.gwt.client.form.design.view;
 
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
+import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.Dimension;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.focus.DefaultFocusReceiver;
+import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.ResizableSimplePanel;
+import lsfusion.gwt.client.base.view.grid.DataGrid;
+import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
@@ -14,6 +21,8 @@ import lsfusion.gwt.client.form.object.table.grid.GGrid;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+
+import static lsfusion.gwt.client.base.GwtClientUtils.getElement;
 
 public class GFormLayout extends ResizableSimplePanel {
 
@@ -37,6 +46,12 @@ public class GFormLayout extends ResizableSimplePanel {
         Widget view = getMainView();
         setFillWidget(view);
         view.getElement().getStyle().setOverflow(Style.Overflow.AUTO);
+
+        DataGrid.initSinkMouseEvents(this);
+    }
+
+    public FormsController getFormsController() {
+        return form.getFormsController();
     }
 
     private Widget getMainView() {
@@ -48,6 +63,26 @@ public class GFormLayout extends ResizableSimplePanel {
             return new TabbedContainerView(form, container);
         } else {
             return new LinearContainerView(container);
+        }
+    }
+
+    @Override
+    public void onBrowserEvent(Event event) {
+        Element target = DataGrid.getTargetAndCheck(getElement(), event);
+        if(target == null)
+            return;
+        if(!form.previewEvent(target, event))
+            return;
+
+        super.onBrowserEvent(event);
+
+        form.checkGlobalMouseEvent(event);
+    }
+
+    @Override
+    public void onResize() {
+        if (!form.isVisible()) {
+            super.onResize();
         }
     }
 
@@ -76,6 +111,9 @@ public class GFormLayout extends ResizableSimplePanel {
         return containerView;
     }
     public void addBaseComponent(GComponent component, Widget view, DefaultFocusReceiver focusReceiver) {
+        // we wish that all base components margins, paddings and borders should be zero (since we're setting them with topBorder and others)
+        // but it seems for now it's not always like that, however later it can be refactored
+//        assert GwtClientUtils.getAllMargins(view.getElement()) == 0;
         assert !(component instanceof GContainer);
         baseComponentViews.put(component, view);
         add(component, view, focusReceiver);
@@ -136,6 +174,8 @@ public class GFormLayout extends ResizableSimplePanel {
 
     public void hideEmptyContainerViews(int requestIndex) {
         autoShowHideContainers(mainContainer, requestIndex);
+
+        FlexPanel.autoStretchAndDrawBorders(getMainView());
     }
 
     private boolean autoShowHideContainers(GContainer container, long requestIndex) {

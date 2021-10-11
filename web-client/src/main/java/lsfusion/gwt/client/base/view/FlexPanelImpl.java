@@ -3,7 +3,6 @@ package lsfusion.gwt.client.base.view;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.DOM;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.form.design.view.flex.FlexTabbedPanel;
@@ -90,8 +89,8 @@ public class FlexPanelImpl {
     public FlexPanel.LayoutData insertChild(Element parent, Element child, int beforeIndex, GFlexAlignment alignment, double flex, Integer flexBasis, boolean vertical) {
         FlexPanel.LayoutData layoutData = new FlexPanel.LayoutData(child, alignment, flex, flexBasis);
 
-        setFlex(layoutData, child, vertical);
-        setAlignment(child, alignment);
+        updateFlex(layoutData, child, vertical);
+        updateAlignment(layoutData, child);
 
         DOM.insertChild(parent.<com.google.gwt.user.client.Element>cast(), child.<com.google.gwt.user.client.Element>cast(), beforeIndex);
 
@@ -129,16 +128,46 @@ public class FlexPanelImpl {
                     child.getPropertyInt(vertical ? "marginBottom" : "marginRight");
     }
 
-    public void setFlex(FlexPanel.LayoutData layoutData, Element child, boolean vertical) {
+    public void updateFlex(FlexPanel.LayoutData layoutData, Element child, boolean vertical) {
         setFlex(child, layoutData.flex, layoutData.flexBasis, vertical);
+    }
+
+    public void updateAlignment(FlexPanel.LayoutData layoutData, Element child) {
+        child.getStyle().setProperty(getAlignAttrName(), getAlignmentValue(layoutData.alignment));
     }
 
     public void setFlexBasis(FlexPanel.LayoutData layoutData, Element child, int flexBasis, boolean vertical) {
         layoutData.setFlexBasis(flexBasis); // also sets base flex basis
-        setFlex(child, layoutData.flex, flexBasis, vertical);
+        updateFlex(layoutData, child, vertical);
+    }
+    public void setFlex(FlexPanel.LayoutData layoutData, Element child, double flex, Integer flexBasis, boolean vertical) {
+        layoutData.flex = flex;
+        layoutData.flexBasis = flexBasis;
+        updateFlex(layoutData, child, vertical);
     }
 
-    public void fixFlexBasis(FlexPanel.LayoutData layoutData, FlexTabbedPanel child, boolean vertical) {
+    public void setStretchFlex(FlexPanel.LayoutData layoutData, Element child, boolean set, boolean vertical) {
+        if(!layoutData.isFlex()) {
+            double newFlex = set ? 1 : layoutData.baseFlex;
+            if(layoutData.flex != newFlex) { // for optimization purposes + there might be problems with setBaseSize, since some data components use it explicitly without setting LayoutData
+                layoutData.flex = newFlex;
+                updateFlex(layoutData, child, vertical);
+            }
+        }
+    }
+
+    public void setStretchAlignment(FlexPanel.LayoutData layoutData, Element child, boolean set, boolean vertical) {
+        if(!layoutData.baseAlignment.equals(GFlexAlignment.STRETCH)) {
+            GFlexAlignment newAlignment = set ? GFlexAlignment.STRETCH : layoutData.baseAlignment;
+            if(!newAlignment.equals(layoutData.alignment)) {
+                layoutData.alignment = newAlignment;
+                updateAlignment(layoutData, child);
+            }
+        }
+    }
+
+    public void fixFlexBasis(FlexTabbedPanel child, boolean vertical) {
+        FlexPanel.LayoutData layoutData = (FlexPanel.LayoutData) child.getLayoutData();
         if(layoutData.flexBasis != null)
             return;
 
@@ -148,21 +177,21 @@ public class FlexPanelImpl {
 
         Element childWidgetElement = child.getElement();
 
-        if(layoutData.flex == 0) // оптимизация если flex'а нет, этот размер и фиксируем 
+        if(!layoutData.isFlex()) // оптимизация если flex'а нет, этот размер и фиксируем
             layoutData.setFlexBasis(size);
         else {
             setFlex(childElement, 0, size, vertical);
 
             // у widget'a comoposite'а убираем растягивание
             setFlex(childWidgetElement, 0, null, vertical);
-            setAlignment(childWidgetElement, GFlexAlignment.START);
+//            setAlignment(childWidgetElement, GFlexAlignment.START);
 
             // измеряем ширину, запоминаем в базис
             int calcSize = getSize(childWidgetElement, vertical);
 
             // возвращаем растягивание
             setFlex(childWidgetElement, 1, null, vertical);
-            setAlignment(childWidgetElement, GFlexAlignment.STRETCH);
+//            setAlignment(childWidgetElement, GFlexAlignment.STRETCH);
 
             // выставляем расчитанный базис (возвращаем flex)
             setFlexBasis(layoutData, childElement, calcSize, vertical);
@@ -171,9 +200,5 @@ public class FlexPanelImpl {
 
     private String getFlexValue(double flex, String flexBasis) {
         return flex + " 0 " + flexBasis;
-    }
-
-    public void setAlignment(Element child, GFlexAlignment alignment) {
-        child.getStyle().setProperty(getAlignAttrName(), getAlignmentValue(alignment));
     }
 }

@@ -31,12 +31,7 @@ public class ActionPanelRenderer extends PanelRenderer {
         if(captionContainer != null) {
             // creating virtual value component with the same size as value and return it as a value
             label = new Label();
-
-            boolean vertical = true;
-            Integer baseSize = vertical ? valueSizes.second : valueSizes.first;
-            FlexPanel.setBaseSize(label, vertical, baseSize);  // oppositeAndFixed - false, since we're setting the size for the main direction
-
-            captionContainer.put(value, valueSizes, property.getPanelCaptionAlignment());
+            captionContainer.put(value, label, valueSizes, property.getPanelCaptionAlignment());
         }
 
         finalizeInit();

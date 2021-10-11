@@ -12,6 +12,7 @@ import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.resize.ResizeHandler;
 import lsfusion.gwt.client.base.resize.ResizeHelper;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
+import lsfusion.gwt.client.form.design.view.flex.FlexTabbedPanel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +27,8 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
 
     private final boolean vertical;
 
+    private GFlexAlignment flexAlignment;
+
     private boolean visible = true;
 
     public boolean childrenResizable = true;
@@ -38,12 +41,19 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
         this(vertical, GFlexAlignment.START);
     }
 
-    public FlexPanel(boolean vertical, GFlexAlignment justify) {
+    public void setFlexAlignment(GFlexAlignment flexAlignment) {
+        this.flexAlignment = flexAlignment;
+        assert !flexAlignment.equals(GFlexAlignment.STRETCH);
+    }
+
+    public FlexPanel(boolean vertical, GFlexAlignment flexAlignment) {
         this.vertical = vertical;
+
+        this.flexAlignment = flexAlignment;
 
         parentElement = Document.get().createDivElement();
 
-        impl.setupParentDiv(parentElement, vertical, justify);
+        impl.setupParentDiv(parentElement, vertical, flexAlignment);
 
         setElement(parentElement);
 
@@ -93,8 +103,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
 
     // we want to have the same behaviour as STRETCH : as flex-basis is 0, but auto size is relevant
     // in theory this can be substituted with if parent layout is autosized ? null : 0, but sometimes we don't know parent layout
-    public void addFillStretch(Widget widget) {
-        addFillFlex(widget, null);
+    public static void setFillShrink(Widget widget) {
         widget.getElement().getStyle().setProperty("flexShrink", "1");
     }
     public void addFillFlex(Widget widget, Integer flexBasis) {
@@ -161,10 +170,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
     }
 
     public void setChildFlexBasis(Widget w, int flexBasis) {
-        int index = getWidgetIndex(w);
-        if (index != -1) {
-            impl.setFlexBasis((LayoutData) w.getLayoutData(), w.getElement(), flexBasis, vertical);
-        }
+        impl.setFlexBasis((LayoutData) w.getLayoutData(), w.getElement(), flexBasis, vertical);
     }
 
     @Override
@@ -215,6 +221,12 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
         public double baseFlex;
         public Integer baseFlexBasis; // if null, than we have to get it similar to fixFlexBases by setting flexes to 0
 
+        public final GFlexAlignment baseAlignment;
+
+        public boolean isFlex() {
+            return baseFlex > 0;
+        }
+
         public void setFlexBasis(Integer flexBasis) {
             this.flexBasis = flexBasis;
             baseFlexBasis = flexBasis;
@@ -228,6 +240,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
 
             this.baseFlex = flex;
             this.baseFlexBasis = flexBasis;
+            this.baseAlignment = alignment;
         }
     }
 
@@ -283,7 +296,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
         for(int i=widgetNumber;i>=0;i--) {
             Widget child = children.get(i);
             LayoutData layoutData = (LayoutData) child.getLayoutData();
-            if(layoutData.baseFlex > 0 && child.isVisible())
+            if(layoutData.isFlex() && child.isVisible())
                 return true;
         }
         return false;
@@ -391,13 +404,175 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
             // if default (base) flex basis is auto and pref is equal to base flex basis, set flex basis to null (auto)
             if(newPref.equals(basePrefs[i]) && layoutData.baseFlexBasis == null)
                 newPref = null;
-            layoutData.flex = flexes[i];
-            layoutData.flexBasis = newPref;
-            impl.setFlex(layoutData, widget.getElement(), vertical);
+            impl.setFlex(layoutData, widget.getElement(), flexes[i], newPref, vertical);
 
             i++;
         }
 
         onResize();
+    }
+
+    private void setStretchFlex(Widget w, boolean set) {
+        impl.setStretchFlex((LayoutData) w.getLayoutData(), w.getElement(), set, vertical);
+    }
+
+    private void setStretchAlignment(Widget w, boolean set) {
+        impl.setStretchAlignment((LayoutData) w.getLayoutData(), w.getElement(), set, vertical);
+    }
+
+    private static class DrawBorders {
+        public final boolean top;
+        public final boolean bottom;
+        public final boolean left;
+        public final boolean right;
+
+        public final boolean hasBorders; // we want to stretch only containers that has border a) for optimization purposes, b) there can be some problems with base components, and their explicit setBaseSize
+        // null if not applicable
+        public final GFlexAlignment horzAlignment;
+        public final GFlexAlignment vertAlignment;
+
+        public DrawBorders(boolean top, boolean bottom, boolean left, boolean right, boolean hasBorders, GFlexAlignment horzAlignment, GFlexAlignment vertAlignment) {
+            this.top = top;
+            this.bottom = bottom;
+            this.left = left;
+            this.right = right;
+
+            this.hasBorders = hasBorders;
+            this.horzAlignment = horzAlignment;
+            assert horzAlignment == null || !horzAlignment.equals(GFlexAlignment.STRETCH);
+            this.vertAlignment = vertAlignment;
+            assert vertAlignment == null || !vertAlignment.equals(GFlexAlignment.STRETCH);
+        }
+    }
+
+    public static DrawBorders autoStretchAndDrawBorders(Widget widget) {
+        boolean top = false, bottom = false, left = false, right = false;
+
+        GFlexAlignment horzAlignment = null, vertAlignment = null;
+        boolean hasBorders = false;
+
+        // in a way similar to getParentSameFlexPanel (in web we assume that all intermediate panels are FlexPanel, in desktop we should do a recursion)
+        if(widget instanceof FlexPanel) {
+            Boolean prevBorder = null;
+            Widget prevWidget = null;
+
+            FlexPanel flexPanel = (FlexPanel) widget;
+            int childCount = flexPanel.getWidgetCount();
+
+            GFlexAlignment flexAlignment = flexPanel.flexAlignment;
+            GFlexAlignment oppositeAlignment = null;
+
+            Widget flexWidget = null;
+            boolean flexIs = false;
+            GFlexAlignment flexChildAlignment = null;
+            int flexCount = 0;
+            boolean singleElement = true;
+
+            boolean vertical = flexPanel.vertical;
+            for (int i = 0; i < childCount; i++) {
+                Widget childWidget = flexPanel.getWidget(i);
+                // we need to exclude absolutely positioned elements, since they are not used in flex layouting
+                if (childWidget.isVisible()) { // && (!(flexPanel instanceof CaptionPanel && childWidget == ((CaptionPanel) flexPanel).legend))) {
+                    DrawBorders childBorders = autoStretchAndDrawBorders(childWidget);
+                    if (childBorders != null) {
+                        LayoutData layoutData = (LayoutData) childWidget.getLayoutData();
+                        GFlexAlignment childAlignment = layoutData.baseAlignment;
+
+                        hasBorders |= childBorders.hasBorders;
+
+                        // OPPOSITE direction
+                        GFlexAlignment oppositeChildAlignment = vertical ? childBorders.horzAlignment : childBorders.vertAlignment;
+                        // opposite direction we can proceed immediately (and before chaging childAligment see below)
+                        flexPanel.setStretchAlignment(childWidget, hasBorders && oppositeChildAlignment != null && oppositeChildAlignment.equals(childAlignment));
+                        // if component is already stretched we're using the inner alignment
+                        if(childAlignment.equals(GFlexAlignment.STRETCH))
+                            childAlignment = oppositeChildAlignment;
+                        if(prevBorder == null) // first visible
+                            oppositeAlignment = childAlignment;
+                        else {
+                            singleElement = false;
+
+                            if(oppositeAlignment != null && (childAlignment == null || !oppositeAlignment.equals(childAlignment)))
+                                oppositeAlignment = null;
+                        }
+
+                        // MAIN direction
+                        boolean childMainFlex = layoutData.isFlex();
+                        if(prevBorder == null || flexAlignment.equals(GFlexAlignment.START)) {
+                            flexWidget = childWidget;
+                            flexIs = childMainFlex;
+                            flexChildAlignment = vertical ? childBorders.vertAlignment : childBorders.horzAlignment;
+                        }
+                        if(childMainFlex)
+                            flexCount++;
+                        flexPanel.setStretchFlex(childWidget, false);
+
+                        // drawing borders
+                        if (vertical) {
+                            left |= childBorders.left;
+                            right |= childBorders.right;
+
+                            childWidget.removeStyleName("topBorder");
+                            childWidget.removeStyleName("bottomBorder");
+                            if (prevBorder != null) {
+                                if (prevBorder && !childBorders.top) {
+                                    childWidget.addStyleName("topBorder");
+                                    prevWidget.addStyleName("bottomBorder");
+                                }
+                            } else
+                                top = childBorders.top;
+
+                            prevBorder = childBorders.bottom;
+                        } else {
+                            top |= childBorders.top;
+                            bottom |= childBorders.bottom;
+
+                            childWidget.removeStyleName("leftBorder");
+                            childWidget.removeStyleName("rightBorder");
+                            if (prevBorder != null) {
+                                if (prevBorder || childBorders.left) {
+                                    childWidget.addStyleName("leftBorder");
+                                    prevWidget.addStyleName("rightBorder");
+                                }
+                            } else
+                                left = childBorders.left;
+
+                            prevBorder = childBorders.right;
+                        }
+                        prevWidget = childWidget;
+                    }
+                }
+            }
+
+            if (prevBorder == null) // invisible, however it seems that it's needed only for columns container
+                return null;
+
+            if (vertical)
+                bottom = prevBorder;
+            else
+                right = prevBorder;
+
+            GFlexAlignment mainAlignment = null;
+            if(flexCount == 0 || flexCount == 1 && flexIs) { // if we have no stretched or only one stretched element (that we would stretch anyway)
+                if(flexCount == 0) {
+                    if (singleElement || !flexAlignment.equals(GFlexAlignment.CENTER)) { // we cannot stretch center element when there are several elements (it will break the centering)
+                        if (flexChildAlignment != null && flexChildAlignment.equals(flexAlignment) && hasBorders)
+                            flexPanel.setStretchFlex(flexWidget, true);
+
+                        mainAlignment = flexAlignment;
+                    }
+                } else // single already stretched element we're using the inner alignment
+                    mainAlignment = flexChildAlignment;
+            }
+
+            horzAlignment = vertical ? oppositeAlignment : mainAlignment;
+            vertAlignment = vertical ? mainAlignment : oppositeAlignment;
+        }
+
+
+        if (widget instanceof CaptionPanel || widget instanceof FlexTabbedPanel)
+            top = left = right = bottom = hasBorders = true;
+
+        return new DrawBorders(top, bottom, left, right, hasBorders, horzAlignment, vertAlignment);
     }
 }

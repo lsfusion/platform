@@ -104,7 +104,7 @@ public abstract class FormContainer<W extends Widget> {
             }
         };
 
-        setContent(form);
+        setContent(form.getWidget());
 
         Scheduler.get().scheduleDeferred(this::initQuickFilter);
         async = false;
@@ -123,12 +123,12 @@ public abstract class FormContainer<W extends Widget> {
             if (size.width > 0) {
                 int wndWidth = Window.getClientWidth();
                 size.width = min(size.width + 20, wndWidth - 20);
-                form.setWidth(size.width + "px");
+                form.formLayout.setWidth(size.width + "px");
             }
             if (size.height > 0) {
                 int wndHeight = Window.getClientHeight();
                 size.height = min(size.height, wndHeight - 100);
-                form.setHeight(size.height + "px");
+                form.formLayout.setHeight(size.height + "px");
             }
         }
     }
