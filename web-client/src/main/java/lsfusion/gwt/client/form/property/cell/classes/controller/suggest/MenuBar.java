@@ -1201,6 +1201,8 @@ public class MenuBar extends Widget implements PopupListener, HasAnimation,
     this.subMenuIcon = subMenuIcon;
 
     Element table = DOM.createTable();
+    //override default border-spacing: 2px
+    table.getStyle().setProperty("borderSpacing", "0px");
     body = DOM.createTBody();
     DOM.appendChild(table, body);
 
