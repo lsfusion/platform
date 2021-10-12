@@ -46,7 +46,7 @@ function selectize(element, list, controller) {
     }
 
     for (let option of diff.remove) {
-        selectize.removeOption(mapOption(option).value);
+        selectize.removeItem(mapOption(option).value);
     }
 
     function mapOption(option) {
