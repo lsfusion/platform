@@ -40,6 +40,6 @@ public class IndexOptions {
     @Override
     public boolean equals(Object o) {
         return this == o || o instanceof IndexOptions && order == ((IndexOptions) o).order && type.equals(((IndexOptions) o).type)
-                && (((IndexOptions) o).language == null/* backward compatibility for migration*/ || BaseUtils.nullEquals(language, ((IndexOptions) o).language));
+                && (!type.isMatch() || BaseUtils.nullEquals(language, ((IndexOptions) o).language));
     }
 }
