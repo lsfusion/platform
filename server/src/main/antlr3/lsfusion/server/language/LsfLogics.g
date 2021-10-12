@@ -2850,7 +2850,7 @@ indexSetting [LP property]
 		self.addScriptedIndex(property);
 	}
 }
-	:	'INDEXED'
+	:	'INDEXED' (('LIKE' { /*stub*/ }) | ('MATCH' { /*stub*/ }))?
 	;
 
 notNullDeleteSetting returns [DebugInfo.DebugPoint debugPoint]
