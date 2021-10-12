@@ -22,6 +22,7 @@ grammar LsfLogics;
     import lsfusion.server.base.version.Version;
     import lsfusion.server.data.expr.formula.SQLSyntaxType;
     import lsfusion.server.data.expr.query.PartitionType;
+    import lsfusion.server.data.table.IndexType;
     import lsfusion.server.language.ScriptParser;
     import lsfusion.server.language.ScriptingErrorLog;
     import lsfusion.server.language.ScriptingLogicsModule;
@@ -2902,12 +2903,15 @@ echoSymbolsSetting [LAP property]
 	;
 
 indexSetting [LP property]
+@init {
+	IndexType indexType = IndexType.DEFAULT;
+}
 @after {
 	if (inMainParseState()) {
-		self.addScriptedIndex(property);
+		self.addScriptedIndex(property, indexType);
 	}
 }
-	:	'INDEXED'
+	:	'INDEXED' (('LIKE' { indexType = IndexType.LIKE; }) | ('MATCH' { indexType = IndexType.MATCH; }))?
 	;
 
 notNullDeleteSetting returns [DebugInfo.DebugPoint debugPoint]
