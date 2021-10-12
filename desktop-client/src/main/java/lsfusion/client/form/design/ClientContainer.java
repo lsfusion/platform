@@ -82,14 +82,10 @@ public class ClientContainer extends ClientComponent {
     }
 
     public void add(ClientComponent component) {
-        add(children.size(), component);
-    }
-
-    public void add(int index, ClientComponent component) {
         if (component.container != null) {
             component.container.removeFromChildren(component);
         }
-        children.add(index, component);
+        children.add(component);
         component.container = this;
     }
 

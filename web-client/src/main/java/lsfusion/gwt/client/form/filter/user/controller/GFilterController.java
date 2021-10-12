@@ -147,7 +147,7 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
         GGroupObjectValue filterColumnKey = columnKey;
 
         if (filterProperty == null) {
-            filterProperty = logicsSupplier.getSelectedProperty();
+            filterProperty = logicsSupplier.getSelectedFilterProperty();
             if (filterProperty != null) {
                 filterColumnKey = logicsSupplier.getSelectedColumnKey();
             }
@@ -197,15 +197,11 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
             GFilterConditionView conditionView = new GFilterConditionView(condition, logicsSupplier, this, toolsVisible, readSelectedValue);
             conditionViews.put(condition, conditionView);
 
-            if (condition.filter.container == null) {
-                getFiltersContainer().add(condition.filter);
-            }
-            GFormLayout layout = logicsSupplier.getForm().getFormLayout();
-            layout.addBaseComponent(condition.filter, conditionView, null);
+            addConditionView(condition, conditionView);
 
             updateConditionsLastState();
 
-            layout.hideEmptyContainerViews(-1);
+            logicsSupplier.getForm().getFormLayout().hideEmptyContainerViews(-1);
 
             conditionView.focusOnValue();
 
@@ -213,6 +209,14 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
                 conditionView.startEditing(keyEvent);
             }
         }
+    }
+    
+    private void addConditionView(GPropertyFilter condition, GFilterConditionView conditionView) {
+        if (condition.filter.container == null) {
+            getFiltersContainer().add(condition.filter);
+        }
+        GFormLayout layout = logicsSupplier.getForm().getFormLayout();
+        layout.addBaseComponent(condition.filter, conditionView, null);
     }
 
     private void removeConditionView(GPropertyFilter condition) {

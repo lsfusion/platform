@@ -18,7 +18,7 @@ public interface GTableController {
     List<GPropertyDraw> getGroupObjectProperties();
     List<GObject> getObjects();
     List<GPropertyDraw> getPropertyDraws();
-    GPropertyDraw getSelectedProperty();
+    GPropertyDraw getSelectedFilterProperty();
     GGroupObjectValue getSelectedColumnKey();
     Object getSelectedValue(GPropertyDraw property, GGroupObjectValue columnKey);
     List<Pair<Column, String>> getSelectedColumns();

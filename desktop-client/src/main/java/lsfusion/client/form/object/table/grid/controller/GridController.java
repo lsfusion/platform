@@ -482,7 +482,7 @@ public class GridController extends AbstractTableController {
     }
 
     @Override
-    public ClientPropertyDraw getSelectedProperty() {
+    public ClientPropertyDraw getSelectedFilterProperty() {
         return table.getCurrentProperty();
     }
 

@@ -27,6 +27,8 @@ public class SwingDefaults {
 
     private static Color defaultThemeTableCellBackground;
     private static Color defaultThemePanelBackground;
+    
+    private static Border defaultButtonBorder;
 
     private static Color componentFocusBorderColor;
     private static Color buttonBackground;
@@ -68,6 +70,7 @@ public class SwingDefaults {
     private static Color panelBackground;
 
     public static void reset() {
+        defaultButtonBorder = null;
         componentFocusBorderColor = null;
         buttonBackground = null;
         buttonForeground = null;
@@ -447,6 +450,13 @@ public class SwingDefaults {
             defaultThemePanelBackground = getColor("Panel.background", DEFAULT);
         }
         return defaultThemePanelBackground;
+    }
+    
+    public static Border getDefaultButtonBorder() {
+        if (defaultButtonBorder == null) {
+            defaultButtonBorder = new JButton().getBorder(); 
+        }
+        return defaultButtonBorder;
     }
 
     

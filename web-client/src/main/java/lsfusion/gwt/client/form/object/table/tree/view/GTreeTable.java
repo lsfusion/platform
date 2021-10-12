@@ -776,10 +776,10 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         return treeGroupController;
     }
 
-    public GPropertyDraw getCurrentProperty() {
+    public GPropertyDraw getSelectedFilterProperty() {
         GPropertyDraw property = getSelectedProperty();
         if (property == null && getColumnCount() > 1) {
-            property = getColumnPropertyDraw(1);
+            property = getProperty(getSelectedCell(1));
         }
         return property;
     }

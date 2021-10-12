@@ -301,9 +301,10 @@ public class TreeGroupController extends AbstractTableController {
     }
 
     @Override
-    public ClientPropertyDraw getSelectedProperty() {
-        return tree.getSelectedProperty();
+    public ClientPropertyDraw getSelectedFilterProperty() {
+        return tree.getSelectedFilterProperty();
     }
+
     @Override
     public ClientGroupObjectValue getSelectedColumn() {
         return ClientGroupObjectValue.EMPTY; // пока не поддерживаются группы в колонки

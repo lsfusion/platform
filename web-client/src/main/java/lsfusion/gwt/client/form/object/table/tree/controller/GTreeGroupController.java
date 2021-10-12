@@ -208,8 +208,8 @@ public class GTreeGroupController extends GAbstractTableController {
     }
 
     @Override
-    public GPropertyDraw getSelectedProperty() {
-        return tree.getCurrentProperty();
+    public GPropertyDraw getSelectedFilterProperty() {
+        return tree.getSelectedFilterProperty();
     }
 
     @Override

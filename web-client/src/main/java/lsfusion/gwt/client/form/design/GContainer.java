@@ -41,14 +41,10 @@ public class GContainer extends GComponent {
     }
 
     public void add(GComponent component) {
-        add(children.size(), component);
-    }
-
-    public void add(int index, GComponent component) {
         if (component.container != null) {
             component.container.removeFromChildren(component);
         }
-        children.add(index, component);
+        children.add(component);
         component.container = this;
     }
 

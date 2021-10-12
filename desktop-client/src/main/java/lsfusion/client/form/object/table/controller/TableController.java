@@ -31,7 +31,7 @@ public interface TableController {
     List<ClientPropertyDraw> getGroupObjectProperties();
     List<ClientObject> getObjects();
     List<ClientPropertyDraw> getPropertyDraws();
-    ClientPropertyDraw getSelectedProperty();
+    ClientPropertyDraw getSelectedFilterProperty();
     ClientGroupObjectValue getSelectedColumn();
     Object getSelectedValue(ClientPropertyDraw property, ClientGroupObjectValue columnKey);
     List<Pair<Column, String>> getSelectedColumns();

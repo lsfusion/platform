@@ -198,7 +198,7 @@ public abstract class FilterController implements FilterConditionView.UIHandler 
         ClientGroupObjectValue filterColumnKey = columnKey;
 
         if (filterProperty == null) {
-            filterProperty = logicsSupplier.getSelectedProperty();
+            filterProperty = logicsSupplier.getSelectedFilterProperty();
             if (filterProperty != null) {
                 filterColumnKey = logicsSupplier.getSelectedColumn();
             }
@@ -260,20 +260,24 @@ public abstract class FilterController implements FilterConditionView.UIHandler 
 
         FilterConditionView condView = new FilterConditionView(condition, logicsSupplier, this, toolsVisible, readSelectedValue);
         conditionViews.put(condition, condView);
-
-        if (condition.filter.container == null) { // added by user
-            getFiltersContainer().add(condition.filter);
-        }
-        ClientFormLayout layout = logicsSupplier.getFormController().getLayout();
-        layout.addBaseComponent(condition.filter, condView);
+        
+        addConditionView(condition, condView);
 
         updateConditionsLastState();
 
-        layout.autoShowHideContainers();
+        logicsSupplier.getFormController().getLayout().autoShowHideContainers();
 
         if (keyEvent != null) {
             condView.startEditing(keyEvent);
         }
+    }
+    
+    private void addConditionView(ClientPropertyFilter condition, FilterConditionView conditionView) {
+        if (condition.filter.container == null) { // added by user
+            getFiltersContainer().add(condition.filter);
+        }
+        ClientFormLayout layout = logicsSupplier.getFormController().getLayout();
+        layout.addBaseComponent(condition.filter, conditionView);
     }
 
     private void removeConditionView(ClientPropertyFilter condition) {
