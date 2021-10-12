@@ -1866,10 +1866,15 @@ groupCDPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns
 	
 groupPropertyBodyDefinition[List<TypedParameter> context] returns [GroupingType type, List<LPWithParams> mainProps = new ArrayList<>(), List<LPWithParams> orderProps = new ArrayList<>(), boolean ascending = true, LPWithParams whereProp = null]
 	:	
-    	gt=groupingType { $type = $gt.type; }
-        mainList=nonEmptyPropertyExpressionList[context, true] { $mainProps = $mainList.props; }
-        ('ORDER' ('DESC' { $ascending = false; } )?
-        orderList=nonEmptyPropertyExpressionList[context, true] { $orderProps = $orderList.props; })?
+    	(
+    	    gt=groupingType { $type = $gt.type; }
+            mainList=nonEmptyPropertyExpressionList[context, true] { $mainProps = $mainList.props; }
+        |
+            gt=groupingTypeOrder { $type = $gt.type; }
+            mainList=nonEmptyPropertyExpressionList[context, true] { $mainProps = $mainList.props; }
+            ('ORDER' ('DESC' { $ascending = false; } )?
+            orderList=nonEmptyPropertyExpressionList[context, true] { $orderProps = $orderList.props; })
+        )
         ('WHERE' whereExpr=propertyExpression[context, true] { $whereProp = $whereExpr.property; } )?
     ;
 
@@ -1878,10 +1883,13 @@ groupingType returns [GroupingType type]
 	:	'SUM' 	{ $type = GroupingType.SUM; }
 	|	'MAX' 	{ $type = GroupingType.MAX; }
 	|	'MIN' 	{ $type = GroupingType.MIN; }
-	|	'CONCAT' { $type = GroupingType.CONCAT; }
 	|	'AGGR' { $type = GroupingType.AGGR; }
 	|	'NAGGR' { $type = GroupingType.NAGGR; }
 	|	'EQUAL'	{ $type = GroupingType.EQUAL; }	
+	;
+
+groupingTypeOrder returns [GroupingType type]
+	:	'CONCAT' { $type = GroupingType.CONCAT; }
 	|	'LAST'	{ $type = GroupingType.LAST; }
 	;
 

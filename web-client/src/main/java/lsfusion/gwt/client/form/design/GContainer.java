@@ -52,7 +52,7 @@ public class GContainer extends GComponent {
         component.container = this;
     }
 
-    public GFlexAlignment getFlexJustify() {
+    public GFlexAlignment getFlexAlignment() {
         return childrenAlignment;
     }
 

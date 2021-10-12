@@ -140,11 +140,6 @@ public abstract class AbstractClientContainerView implements ClientContainerView
         return children.get(index);
     }
 
-    @Override
-    public Widget getChildView(int index) {
-        return childrenViews.get(index);
-    }
-
     public void updateLayout(boolean[] childrenVisible) {
         //do nothing by default
     }

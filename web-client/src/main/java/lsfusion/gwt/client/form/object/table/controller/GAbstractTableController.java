@@ -33,8 +33,6 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 import java.util.ArrayList;
 import java.util.List;
 
-import static lsfusion.gwt.client.base.GwtClientUtils.setupFillParent;
-
 public abstract class GAbstractTableController extends GPropertyController implements GTableController {
     protected final GToolbarView toolbarView;
     public GFilterController filter;
@@ -45,7 +43,7 @@ public abstract class GAbstractTableController extends GPropertyController imple
 
     public void initGridView(boolean autoSize, GContainer record, GAbstractContainerView.UpdateLayoutListener listener) {
         ResizableSimplePanel gridContainerView = new ResizableSimplePanel();
-        gridContainerView.setStyleName("gridResizePanel");
+        gridContainerView.setStyleName("gridContainerPanel");
         if(autoSize) { // убираем default'ый minHeight
             gridContainerView.getElement().getStyle().setProperty("minHeight", "0px");
             gridContainerView.getElement().getStyle().setProperty("minWidth", "0px");
@@ -62,8 +60,7 @@ public abstract class GAbstractTableController extends GPropertyController imple
 
             // we need to add recordview somewhere, to attach it (events, listeners, etc.)
             ResizableComplexPanel virtualGridView = new ResizableComplexPanel();
-            virtualGridView.setMain(gridView);
-            setupFillParent(gridView.getElement());
+            virtualGridView.setFillMain(gridView);
 
             // need to wrap recordView to setVisible false recordView's parent and not recordView itself (since it will be moved and shown by table view implementation)
             ResizableSimplePanel virtualRecordView = new ResizableSimplePanel();
@@ -94,6 +91,7 @@ public abstract class GAbstractTableController extends GPropertyController imple
             toolbarView = null;
         } else {
             toolbarView = new GToolbarView();
+            toolbarView.addStyleName("gridToolbarContainerPanel");
             getFormLayout().addBaseComponent(toolbar, toolbarView, null);
         }
     }

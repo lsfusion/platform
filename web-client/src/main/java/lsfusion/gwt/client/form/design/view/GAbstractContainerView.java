@@ -4,6 +4,7 @@ import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.Dimension;
 import lsfusion.gwt.client.base.view.FlexPanel;
+import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.design.view.flex.FlexTabbedPanel;
@@ -37,7 +38,7 @@ public abstract class GAbstractContainerView {
 
         int index = relativePosition(child, container.children, children);
 
-        child.installMargins(view);
+//        child.installMargins(view);
 
         // if panel is inside linear container, and there are several dynamic components fixing tab flex basis to avoid
         boolean fixFlexBasis = view instanceof FlexTabbedPanel && child.getFlex() > 0 && container.getFlexCount() > 1;
@@ -107,8 +108,11 @@ public abstract class GAbstractContainerView {
         // else
         //      overflow: auto
 
-        boolean isAutoSized = child.getSize(vertical) == null;
-        boolean isOppositeAutoSized = child.getSize(!vertical) == null;
+        Integer size = child.getSize(vertical);
+        Integer oppositeSize = child.getSize(!vertical);
+
+        boolean isAutoSized = size == null;
+        boolean isOppositeAutoSized = oppositeSize == null;
 
         if(!(isOppositeAutoSized && isAutoSized) || fixFlexBasis) // child is tab, since basis is fixed, strictly speaking this all check is an optimization
             view.getElement().getStyle().setOverflow(Style.Overflow.AUTO);
@@ -119,17 +123,68 @@ public abstract class GAbstractContainerView {
         // we don't want to set flex-basis to 0 (since it can influence on parent container auto sizes), so we try to use strategies where flex-basis:auto is set
 
         // plus it's important to have auto for the view and not the flexcaptionPanel (since we don't want it to be scrolled), so there is one option left, with the same direction and 0 (or auto basis)
+
+        GFlexAlignment alignment = child.getAlignment();
+        boolean isStretch = alignment == GFlexAlignment.STRETCH;
+        boolean isWrappedOpposite = false;
+
         FlexPanel wrapPanel = wrapBorderImpl(child);
+
         if(wrapPanel != null) {
             // one of the main problem is that stretch (opposite direction) can give you flex-basis 0, and "appropriate" auto size, but with flex (main direction) you can not obtain this effect (actually we can by setting shrink !!!!), so we have to look at size
             // now since we have auto size we'll use the option without shrink
-            wrapPanel.addFillFlex(view, isAutoSized ? null : 0); // we need zero basis, because overflow:auto is set for a view (not for this panel), and with auto size view will overflow this captionpanel
-            // wrapPanel.addFillStretch could also be used in theory
+
+            boolean isFlex = child.getFlex() > 0;
+            GFlexAlignment flexAlignment = container.getFlexAlignment();
+
+            boolean wrapStretch;
+            GFlexAlignment wrapAlignment;
+            GFlexAlignment wrapFlexAlignment;
+            boolean wrapFlex;
+            boolean wrapAutoSized;
+            boolean wrapOppositeAutoSized;
+
+            // same direction, we're using the same parameters, otherwise - reversed
+            if(vertical == wrapPanel.isVertical()) {
+                wrapStretch = isStretch;
+                wrapAlignment = alignment;
+                wrapFlex = isFlex;
+                wrapFlexAlignment = flexAlignment;
+                wrapAutoSized = isAutoSized;
+                wrapOppositeAutoSized = isOppositeAutoSized;
+            } else {
+                wrapStretch = isFlex;
+                wrapAlignment = flexAlignment;
+                wrapFlex = isStretch;
+                wrapFlexAlignment = alignment;
+                wrapAutoSized = isOppositeAutoSized;
+                wrapOppositeAutoSized = isAutoSized;
+
+                isWrappedOpposite = true;
+            }
+
+            if(!wrapFlex && !wrapAutoSized)
+                wrapFlex = true;
+            if(!wrapStretch && !wrapOppositeAutoSized)
+                wrapStretch = true;
+
+            if(isWrappedOpposite && !wrapAutoSized) {
+                // here it's tricky, since we're reversing the direction, STRETCH, is not exactly the same as flex 1
+                // the difference is in calculating auto size, STRETCH 0 gives correct auto size, and flex 1 0 gives 0 auto size
+                // to have the same behaviour we're setting flex-shrink (otherwise we would have to create an extra container)
+                assert wrapFlex;
+                wrapAutoSized = true;
+                FlexPanel.setFillShrink(view);
+            }
+            // we might always have used STRETCH, flex=1, but we this way we will get caption panel auto stretch (and hence borders)
+            // we need zero basis, because overflow:auto is set for a view (not for this panel), and with auto size view will overflow this captionpanel
+            wrapPanel.setFlexAlignment(wrapFlex ? GFlexAlignment.START : wrapFlexAlignment);
+            wrapPanel.add(view, wrapPanel.getWidgetCount(), wrapStretch ? GFlexAlignment.STRETCH : wrapAlignment, wrapFlex ? 1 : 0, wrapAutoSized ? null : 0);
             view = wrapPanel;
         }
 
         // (!isAutoSized || hasCaption) // conflict since we want visible for one direction and auto for another (or we want to stretch caption for the whole container)
-        if(isOppositeAutoSized && child.isStretch()) {
+        if(isOppositeAutoSized && isStretch && !isWrappedOpposite) {
             wrapPanel = new FlexPanel(!vertical); // this container will have upper container size, but since the default overflow is visible, inner component with overflow:auto
             wrapPanel.setStyleName("oppositeStretchAutoSizePanel"); // just to identify this div in dom
             wrapPanel.addFillFlex(view, null);
@@ -158,10 +213,6 @@ public abstract class GAbstractContainerView {
 
     public GComponent getChild(int index) {
         return children.get(index);
-    }
-
-    public Widget getChildView(int index) {
-        return childrenViews.get(index);
     }
 
     public abstract void updateCaption(GContainer container);
@@ -227,13 +278,18 @@ public abstract class GAbstractContainerView {
 
     public static void add(FlexPanel panel, Widget widget, GComponent component, int beforeIndex) {
         boolean vertical = panel.isVertical();
-        panel.add(widget, beforeIndex, component.getAlignment(), component.getFlex(), component.getSize(vertical));
+        GFlexAlignment alignment = component.getAlignment();
+        panel.add(widget, beforeIndex, alignment, component.getFlex(), component.getSize(vertical));
 
         Integer crossSize = component.getSize(!vertical);
-        boolean isStretch = component.isStretch();
+        boolean isStretch = alignment == GFlexAlignment.STRETCH;
         if(isStretch && crossSize != null && crossSize.equals(0)) // for opposite direction and stretch zero does not make any sense (it is zero by default)
             crossSize = null;
         FlexPanel.setBaseSize(widget, !vertical, crossSize, !isStretch);
+    }
+
+    protected void addChildrenWidget(FlexPanel flexPanel, int i, int beforeIndex) {
+        add(flexPanel, childrenViews.get(i), children.get(i), beforeIndex);
     }
 
     protected abstract void addImpl(int index, GComponent child, Widget view);
