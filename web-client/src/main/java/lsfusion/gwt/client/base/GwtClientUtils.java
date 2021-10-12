@@ -944,7 +944,7 @@ public class GwtClientUtils {
     }
 
     public static native JavaScriptObject getGlobalField(String field)/*-{
-        return $wnd[customEditorFunction];
+        return $wnd[field];
     }-*/;
     public static native JavaScriptObject getField(JavaScriptObject object, String field)/*-{
         return object[field];
@@ -969,6 +969,16 @@ public class GwtClientUtils {
                 return false;
         }
         return true;
+    }-*/;
+
+    public static native boolean isFunctionContainsArguments(JavaScriptObject fn)/*-{
+        var str = fn.toString().replace(/\/\*[\s\S]*?\*\//g, '')
+            .replace(/\/\/(.)*\\/g, '')
+            .replace(/{[\s\S]*}/, '')
+            .replace(/=>/g, '')
+            .trim();
+
+        return str.substring(str.indexOf("(") + 1, str.length - 1).length > 0;
     }-*/;
 
 }

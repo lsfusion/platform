@@ -81,10 +81,10 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         if(popupObject != null && !isCurrentKey(popupKey)) // if another current key set hiding popup
             hidePopup();
 
-        render(getDrawElement(), list);
+        onUpdate(getDrawElement(), list);
     }
 
-    protected abstract void render(Element element, JsArray<JavaScriptObject> list);
+    protected abstract void onUpdate(Element element, JsArray<JavaScriptObject> list);
 
     @Override
     protected Element getRendererAreaElement() {

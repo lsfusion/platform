@@ -1,20 +1,15 @@
 package lsfusion.gwt.client.form.object.table.grid.controller;
 
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.GFormChanges;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
-import lsfusion.gwt.client.base.view.ResizableComplexPanel;
-import lsfusion.gwt.client.base.view.ResizableSimplePanel;
 import lsfusion.gwt.client.classes.data.GIntegralType;
 import lsfusion.gwt.client.form.GUpdateMode;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
-import lsfusion.gwt.client.form.design.GContainer;
-import lsfusion.gwt.client.form.design.view.GAbstractContainerView;
 import lsfusion.gwt.client.form.filter.user.GFilter;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.object.GGroupObject;
@@ -33,8 +28,6 @@ import lsfusion.gwt.client.form.view.Column;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-
-import static lsfusion.gwt.client.base.GwtClientUtils.setupFillParent;
 
 public class GGridController extends GAbstractTableController {
     private final ClientMessages messages = ClientMessages.Instance.get();
@@ -183,8 +176,11 @@ public class GGridController extends GAbstractTableController {
     private void changeTableView(GTableView table) {
         assert isList();
 
+        if (this.table != null)
+            this.table.onClear();
+
         changeGridView(table.getThisWidget());
-        
+        table.onRender();
         this.table = table;
         updateSettingsButton();
     }

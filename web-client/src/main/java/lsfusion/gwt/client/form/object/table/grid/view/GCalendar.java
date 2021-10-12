@@ -37,7 +37,7 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
     }
 
     @Override
-    protected void render(Element element, JsArray<JavaScriptObject> list) {
+    protected void onUpdate(Element element, JsArray<JavaScriptObject> list) {
         if (calendar == null) {
             //fullcalendar bug - https://github.com/fullcalendar/fullcalendar/issues/5863
             //to prevent this when calendar-element height less then ~350px

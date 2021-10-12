@@ -116,7 +116,7 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
     private Map<GGroupObjectValue, GroupMarker> groupMarkers = new HashMap<>();
     private ArrayList<JavaScriptObject> lines = new ArrayList<>(); // later also should be
     @Override
-    protected void render(Element renderElement, JsArray<JavaScriptObject> listObjects) {
+    protected void onUpdate(Element renderElement, JsArray<JavaScriptObject> listObjects) {
         if(map == null) {
             markerClusters = createMarkerClusters();
             map = createMap(renderElement, markerClusters, grid.getMapTileProvider());
