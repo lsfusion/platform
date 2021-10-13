@@ -96,6 +96,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.*;
 import static lsfusion.gwt.client.base.GwtSharedUtils.putToDoubleNativeMap;
@@ -1210,24 +1211,12 @@ public class GFormController extends ResizableSimplePanel implements EditManager
 
     private void applyCurrentFilters() {
         ArrayList<GPropertyFilterDTO> filters = new ArrayList<>();
-
-        currentFilters.foreachValue(groupFilters -> {
-            for (GPropertyFilter filter : groupFilters) {
-                filters.add(filter.getFilterDTO());
-            }
-        });
-
+        currentFilters.foreachValue(groupFilters -> groupFilters.stream().map(GPropertyFilter::getFilterDTO).collect(Collectors.toCollection(() -> filters)));
         asyncResponseDispatch(new SetUserFilters(filters));
     }
 
     public void setViewFilters(ArrayList<GPropertyFilter> conditions, int pageSize) {
-        ArrayList<GPropertyFilterDTO> filters = new ArrayList<>();
-
-        for (GPropertyFilter filter : conditions) {
-            filters.add(filter.getFilterDTO());
-        }
-
-        asyncResponseDispatch(new SetViewFilters(filters, pageSize));
+        asyncResponseDispatch(new SetViewFilters(conditions.stream().map(GPropertyFilter::getFilterDTO).collect(Collectors.toCollection(ArrayList::new)), pageSize));
     }
 
     public void quickFilter(Event event, int initialFilterPropertyID) {

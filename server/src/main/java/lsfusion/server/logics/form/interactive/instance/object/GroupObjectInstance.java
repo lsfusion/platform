@@ -228,10 +228,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         if(setFilters==null) {
             FilterInstance userComboFilter = combineUserFilters(userFilters);
             ImSet<FilterInstance> userComboSet = userComboFilter != null ? SetFact.singleton(userComboFilter) : userFilters.immutableOrder().getSet();
-            setFilters = fixedFilters.merge(userComboSet).merge(SetFact.fromJavaSet(regularFilters));
-
-            if (listViewType == ListViewType.CALENDAR)
-                setFilters = setFilters.merge(SetFact.fromJavaSet(viewFilters));
+            setFilters = fixedFilters.merge(userComboSet).merge(SetFact.fromJavaSet(regularFilters)).merge(SetFact.fromJavaSet(viewFilters));
         }
         return setFilters;
     }

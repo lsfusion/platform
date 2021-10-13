@@ -31,6 +31,7 @@ import lsfusion.interop.action.ServerResponse;
 import java.io.Serializable;
 import java.util.*;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import static lsfusion.gwt.client.base.view.grid.DataGrid.initSinkEvents;
 
@@ -296,15 +297,22 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         changeProperties(properties, objects, gDateDTOs);
     }
 
-    protected void setViewFilter(int startYear, int startMonth, int startDay, int endYear, int endMonth, int endDay, String property, boolean isDateTimeFilter, int pageSize) {
-        ArrayList<GPropertyFilter> filters = new ArrayList<>();
+    protected void setDateIntervalViewFilter(String property, int pageSize, int startYear, int startMonth, int startDay, int endYear, int endMonth, int endDay, boolean isDateTimeFilter) {
         Object leftBorder = isDateTimeFilter ? new GDateTimeDTO(startYear, startMonth, startDay, 0, 0, 0) : new GDateDTO(startYear, startMonth, startDay) ;
         Object rightBorder = isDateTimeFilter ? new GDateTimeDTO(endYear, endMonth, endDay, 0, 0, 0) : new GDateDTO(endYear, endMonth, endDay);
 
         Column column = columnMap.get(property);
-        filters.add(new GPropertyFilter(grid.groupObject, column.property, column.columnKey, leftBorder, GCompare.GREATER_EQUALS));
-        filters.add(new GPropertyFilter(grid.groupObject, column.property, column.columnKey, rightBorder, GCompare.LESS_EQUALS));
-        form.setViewFilters(filters, pageSize);
+        processSetViewFilters(pageSize, new GPropertyFilter(grid.groupObject, column.property, column.columnKey, leftBorder, GCompare.GREATER_EQUALS),
+                new GPropertyFilter(grid.groupObject, column.property, column.columnKey, rightBorder, GCompare.LESS_EQUALS));
+    }
+
+    protected void setNotNullViewFilter(String property, int pageSize) {
+        Column column = columnMap.get(property);
+        processSetViewFilters(pageSize, new GPropertyFilter(grid.groupObject, column.property, column.columnKey, true, GCompare.EQUALS));
+    }
+
+    private void processSetViewFilters(int pageSize, GPropertyFilter... filters) {
+        form.setViewFilters(Arrays.stream(filters).collect(Collectors.toCollection(ArrayList::new)), pageSize);
         setPageSize(pageSize);
     }
 
@@ -415,8 +423,11 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
                 var jsObject = thisObj.@GSimpleStateTableView::fromObject(*)(thisObj.@GSimpleStateTableView::getKey(*)(object));
                 return thisObj.@GSimpleStateTableView::changeSimpleGroupObject(*)(jsObject, rendered, elementClicked);
             },
-            setViewFilter: function (startYear, startMonth, startDay, endYear, endMonth, endDay,property, isDateTimeFilter, pageSize) {
-                thisObj.@GSimpleStateTableView::setViewFilter(*)(startYear, startMonth, startDay, endYear, endMonth, endDay, property, isDateTimeFilter, pageSize);
+            setDateIntervalViewFilter: function (property, pageSize, startYear, startMonth, startDay, endYear, endMonth, endDay, isDateTimeFilter) {
+                thisObj.@GSimpleStateTableView::setDateIntervalViewFilter(*)(property, pageSize, startYear, startMonth, startDay, endYear, endMonth, endDay, isDateTimeFilter);
+            },
+            setNotNullViewFilter: function (property, pageSize) {
+                thisObj.@GSimpleStateTableView::setNotNullViewFilter(*)(property, pageSize);
             },
             getCurrentDay: function (propertyName) {
                 return thisObj.@GSimpleStateTableView::getPropertyValue(*)(propertyName);
