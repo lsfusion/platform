@@ -29,18 +29,12 @@ public class GCustom extends GTippySimpleStateTableView {
             clear(renderFunction, getDrawElement());
     }
 
-    private boolean filterSet = false;
     @Override
     protected void onUpdate(Element element, JsArray<JavaScriptObject> list) {
-        if (filterSet) {
-            if (renderFunctionWithoutArguments)
-                update(renderFunction, element, controller, list);
-            else
-                runFunction(element, list, renderFunction, controller);
-        } else {
-            setNotNullViewFilter("selected", 1000);
-            filterSet = true;
-        }
+        if (renderFunctionWithoutArguments)
+            update(renderFunction, element, controller, list);
+        else
+            runFunction(element, list, renderFunction, controller);
     }
 
     @Override

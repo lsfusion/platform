@@ -32,22 +32,27 @@ function selectize() {
             });
         },
         update: (element, controller, list) => {
-            let selectizeInstance = controller.selectizeInstance[0].selectize;
-            let diff = controller.getDiff(list);
+            if (controller.booleanFilterSet) { //remove blinking
+                let selectizeInstance = controller.selectizeInstance[0].selectize;
+                let diff = controller.getDiff(list);
 
-            for (let option of diff.add) {
-                let selectizeOption = mapOption(option);
-                selectizeInstance.addOption(selectizeOption);
-                selectizeInstance.addItem(selectizeOption.value);
-            }
+                for (let option of diff.add) {
+                    let selectizeOption = mapOption(option);
+                    selectizeInstance.addOption(selectizeOption);
+                    selectizeInstance.addItem(selectizeOption.value);
+                }
 
-            for (let option of diff.update) {
-                let selectizeOption = mapOption(option);
-                selectizeInstance.updateOption(selectizeOption.value, selectizeOption);
-            }
+                for (let option of diff.update) {
+                    let selectizeOption = mapOption(option);
+                    selectizeInstance.updateOption(selectizeOption.value, selectizeOption);
+                }
 
-            for (let option of diff.remove) {
-                selectizeInstance.removeItem(mapOption(option).value);
+                for (let option of diff.remove) {
+                    selectizeInstance.removeItem(mapOption(option).value);
+                }
+            } else {
+                controller.setBooleanViewFilter('selected', 1000);
+                controller.booleanFilterSet = true;
             }
 
             function mapOption(option) {

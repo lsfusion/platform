@@ -302,16 +302,16 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         Object rightBorder = isDateTimeFilter ? new GDateTimeDTO(endYear, endMonth, endDay, 0, 0, 0) : new GDateDTO(endYear, endMonth, endDay);
 
         Column column = columnMap.get(property);
-        processSetViewFilters(pageSize, new GPropertyFilter(grid.groupObject, column.property, column.columnKey, leftBorder, GCompare.GREATER_EQUALS),
+        setViewFilters(pageSize, new GPropertyFilter(grid.groupObject, column.property, column.columnKey, leftBorder, GCompare.GREATER_EQUALS),
                 new GPropertyFilter(grid.groupObject, column.property, column.columnKey, rightBorder, GCompare.LESS_EQUALS));
     }
 
-    protected void setNotNullViewFilter(String property, int pageSize) {
+    protected void setBooleanViewFilter(String property, int pageSize) {
         Column column = columnMap.get(property);
-        processSetViewFilters(pageSize, new GPropertyFilter(grid.groupObject, column.property, column.columnKey, true, GCompare.EQUALS));
+        setViewFilters(pageSize, new GPropertyFilter(grid.groupObject, column.property, column.columnKey, true, GCompare.EQUALS));
     }
 
-    private void processSetViewFilters(int pageSize, GPropertyFilter... filters) {
+    private void setViewFilters(int pageSize, GPropertyFilter... filters) {
         form.setViewFilters(Arrays.stream(filters).collect(Collectors.toCollection(ArrayList::new)), pageSize);
         setPageSize(pageSize);
     }
@@ -426,8 +426,8 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             setDateIntervalViewFilter: function (property, pageSize, startYear, startMonth, startDay, endYear, endMonth, endDay, isDateTimeFilter) {
                 thisObj.@GSimpleStateTableView::setDateIntervalViewFilter(*)(property, pageSize, startYear, startMonth, startDay, endYear, endMonth, endDay, isDateTimeFilter);
             },
-            setNotNullViewFilter: function (property, pageSize) {
-                thisObj.@GSimpleStateTableView::setNotNullViewFilter(*)(property, pageSize);
+            setBooleanViewFilter: function (property, pageSize) {
+                thisObj.@GSimpleStateTableView::setBooleanViewFilter(*)(property, pageSize);
             },
             getCurrentDay: function (propertyName) {
                 return thisObj.@GSimpleStateTableView::getPropertyValue(*)(propertyName);

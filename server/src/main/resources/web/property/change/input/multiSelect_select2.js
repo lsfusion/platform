@@ -38,31 +38,36 @@ function select2() {
             });
         },
         update: (element, controller, list) => {
-            let select2Instance = controller.select2Instance;
+            if (controller.booleanFilterSet) { //remove blinking
+                let select2Instance = controller.select2Instance;
 
-            let diff = controller.getDiff(list);
-            let optionsParent = select2Instance.context;
-            let select2Options = Array.from(optionsParent.children);
+                let diff = controller.getDiff(list);
+                let optionsParent = select2Instance.context;
+                let select2Options = Array.from(optionsParent.children);
 
-            for (let option of diff.add) {
-                if (select2Options.filter(o => o.value === mapOption(option).value).length === 0)
+                for (let option of diff.add) {
+                    if (select2Options.filter(o => o.value === mapOption(option).value).length === 0)
+                        select2Instance.append(mapOption(option));
+                }
+
+                for (let option of diff.update) {
+                    removeOption(option);
                     select2Instance.append(mapOption(option));
-            }
+                }
 
-            for (let option of diff.update) {
-                removeOption(option);
-                select2Instance.append(mapOption(option));
-            }
+                for (let option of diff.remove) {
+                    removeOption(option);
+                }
 
-            for (let option of diff.remove) {
-                removeOption(option);
-            }
-
-            function removeOption(option) {
-                select2Options.forEach(o => {
-                    if (o.value === mapOption(option).value)
-                        optionsParent.removeChild(o);
-                });
+                function removeOption(option) {
+                    select2Options.forEach(o => {
+                        if (o.value === mapOption(option).value)
+                            optionsParent.removeChild(o);
+                    });
+                }
+            } else {
+                controller.setBooleanViewFilter('selected', 1000);
+                controller.booleanFilterSet = true;
             }
 
             function mapOption(option) {
