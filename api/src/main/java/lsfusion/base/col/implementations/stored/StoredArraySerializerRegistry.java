@@ -15,9 +15,12 @@ public class StoredArraySerializerRegistry implements StoredArraySerializer {
     private final Map<Integer, TriConsumer<Object, StoredArraySerializer, ByteArrayOutputStream>> serializeMap = new HashMap<>();
     private final Map<Integer, BiFunction<ByteArrayInputStream, StoredArraySerializer, Object>> deserializeMap = new HashMap<>();
     
+    private final int NULL_ID = 0;
+    private final int SERIALIZABLE_ID = 1; 
+    
     public int register(Class<?> cls, TriConsumer<Object, StoredArraySerializer, ByteArrayOutputStream> serializeFunc, 
                                       BiFunction<ByteArrayInputStream, StoredArraySerializer, Object> deserializeFunc) {
-        idMap.putIfAbsent(cls, idMap.size()+1); // id is 1-based, 0 is for Serializable interface 
+        idMap.putIfAbsent(cls, idMap.size()+2); // id is 2-based, 0 is for null, 1 is for Serializable interface 
         int id = idMap.get(cls);
         serializeMap.put(id, serializeFunc);
         deserializeMap.put(id, deserializeFunc);
@@ -31,11 +34,11 @@ public class StoredArraySerializerRegistry implements StoredArraySerializer {
             try (DataOutputStream dataStream = new DataOutputStream(oStream)) {
                 dataStream.writeShort(id);
             }
-            if (id != 0) {
-                serializeMap.get(id).accept(o, this, oStream);
-            } else {
+            if (id == SERIALIZABLE_ID) {
                 assert o instanceof Serializable;
                 StoredArraySerializer.serializeSerializable(o, oStream);
+            } else if (id != NULL_ID) {
+                serializeMap.get(id).accept(o, this, oStream);
             }
         } catch (IOException e) {
             throw new UncheckedIOException(e);  
@@ -49,11 +52,13 @@ public class StoredArraySerializerRegistry implements StoredArraySerializer {
         int id;
         try {
             id = dataStream.readShort();
-            if (id != 0) {
+            if (id == NULL_ID) {
+                return null;
+            } else if (id == SERIALIZABLE_ID) {
+                return StoredArraySerializer.deserializeSerializable(iStream);
+            } else {
                 assert deserializeMap.containsKey(id);
                 return deserializeMap.get(id).apply(iStream, this);
-            } else {
-                return StoredArraySerializer.deserializeSerializable(iStream);
             }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
@@ -64,13 +69,16 @@ public class StoredArraySerializerRegistry implements StoredArraySerializer {
 
     @Override
     public int getId(Object o) {
+        if (o == null) {
+            return NULL_ID;
+        } 
         Integer id = getId(o.getClass());
         if (id != null) {
             return id;
-        } else {
-            assert o instanceof Serializable;
-            return 0;
+        } else if (o instanceof Serializable) {
+            return SERIALIZABLE_ID;  
         }
+        throw new RuntimeException("Serialization of this object is not supported");
     }
     
     private Integer getId(Class<?> cls) {

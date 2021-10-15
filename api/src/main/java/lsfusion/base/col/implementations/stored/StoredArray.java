@@ -66,33 +66,23 @@ public class StoredArray<T> {
     public void set(int index, T element) {
         assert index >= 0 && index < size;
         try {
-            if (element == null) {
-                setNull(index);
-            } else {
-                ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-                serializer.serialize(element, outStream);
-                int newLen = outStream.size();
+            ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+            serializer.serialize(element, outStream);
+            int newLen = outStream.size();
 
-                seekToIndex(index);
-                int offset = indexFile.readInt();
-                int len = indexFile.readInt();
+            seekToIndex(index);
+            int offset = indexFile.readInt();
+            int len = indexFile.readInt();
 
-                int newOffset = (newLen <= len ? offset : (int) dataFile.length());
-                setIndexData(index, newOffset, newLen);
-                seekToObject(newOffset);
-                writeElementData(outStream.toByteArray());
-            }
+            int newOffset = (newLen <= len ? offset : (int) dataFile.length());
+            setIndexData(index, newOffset, newLen);
+            seekToObject(newOffset);
+            writeElementData(outStream.toByteArray());
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
     }
 
-    private void setNull(int index) throws IOException {
-        seekToIndex(index);
-        indexFile.readInt();
-        indexFile.writeInt(0);
-    }
-    
     // time-consuming operation
     public void insert(int index, T element) {
         assert index >= 0 && index <= size;
@@ -128,13 +118,10 @@ public class StoredArray<T> {
         assert index < size;
         try {
             int len = prepareForElementReading(index);
-            if (len > 0) {
-                return readElement(len);
-            }
+            return readElement(len);
         } catch (IOException e) {
             throw new UncheckedIOException(e); 
         }
-        return null;
     }
     
     public int size() {
@@ -157,11 +144,8 @@ public class StoredArray<T> {
     
     private void appendElement(T element) throws IOException {
         int offset = (int) dataFile.length();
-        int len = 0;
-        if (element != null) {
-            seekToObject(offset);
-            len = writeElement(element);
-        }
+        seekToObject(offset);
+        int len = writeElement(element);
         setIndexData(size, offset, len);
         ++size;
     }
@@ -180,14 +164,11 @@ public class StoredArray<T> {
     }
     
     private int writeElement(T element) throws IOException {
-        if (element != null) {
-            ByteArrayOutputStream oStream = new ByteArrayOutputStream();
-            serializer.serialize(element, oStream);
-            int len = oStream.size(); 
-            writeElementData(oStream.toByteArray());
-            return len;
-        }
-        return 0;
+        ByteArrayOutputStream oStream = new ByteArrayOutputStream();
+        serializer.serialize(element, oStream);
+        int len = oStream.size(); 
+        writeElementData(oStream.toByteArray());
+        return len;
     }
     
     private void writeElementData(byte[] elementData) throws IOException {

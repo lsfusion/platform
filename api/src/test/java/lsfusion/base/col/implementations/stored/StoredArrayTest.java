@@ -89,7 +89,7 @@ public class StoredArrayTest {
     public void checkUnserializableObjectAssert() {
         SerializableClass[] array = initArray();
         array[3] = new OtherSerializableClass("triangle", 5, true);
-        thrown.expect(AssertionError.class);
+        thrown.expect(RuntimeException.class);
         StoredArray<SerializableClass> stored = new StoredArray<>(array, serializer);
     }
 
