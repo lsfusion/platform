@@ -5,12 +5,16 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.implementations.abs.AMRevMap;
 import lsfusion.base.col.implementations.order.HOrderMap;
+import lsfusion.base.col.implementations.stored.StoredArraySerializer;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.mutable.AddValue;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImRevValueMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 
 // дублируем HSet
 public class HMap<K, V> extends AMRevMap<K, V> {
@@ -218,5 +222,21 @@ public class HMap<K, V> extends AMRevMap<K, V> {
     @Override
     public HSet<K> keys() {
         return new HSet<>(size, table, indexes);
+    }
+
+    public static void serialize(Object o, StoredArraySerializer serializer, ByteArrayOutputStream outStream) {
+        HMap<?, ?> map = (HMap<?, ?>) o;
+        serializer.serialize(map.size, outStream);
+        ArCol.serializeArray(map.table, serializer, outStream);
+        ArCol.serializeArray(map.vtable, serializer, outStream);
+        ArCol.serializeIntArray(map.indexes, serializer, outStream);
+    }
+
+    public static Object deserialize(ByteArrayInputStream inStream, StoredArraySerializer serializer) {
+        int size = (int) serializer.deserialize(inStream);
+        Object[] table = ArCol.deserializeArray(inStream, serializer);
+        Object[] vtable = ArCol.deserializeArray(inStream, serializer);
+        int[] indexes = ArCol.deserializeIntArray(inStream, serializer);
+        return new HMap<>(size, table, vtable, indexes);
     }
 }

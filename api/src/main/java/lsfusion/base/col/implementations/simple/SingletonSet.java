@@ -5,11 +5,14 @@ import lsfusion.base.Result;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
+import lsfusion.base.col.implementations.stored.StoredArraySerializer;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.mapvalue.*;
 import lsfusion.base.lambda.set.FunctionSet;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.IntFunction;
@@ -722,5 +725,15 @@ public class SingletonSet<K> implements ImSet<K>, ImList<K>, ImOrderSet<K> {
         if(newKey != key)
             return new SingletonSet<>(newKey);
         return this;
+    }
+
+    public static void serialize(Object o, StoredArraySerializer serializer, ByteArrayOutputStream outStream) {
+        SingletonSet<?> set = (SingletonSet<?>) o;
+        serializer.serialize(set.key, outStream);
+    }
+
+    public static Object deserialize(ByteArrayInputStream inStream, StoredArraySerializer serializer) {
+        Object key = serializer.deserialize(inStream);
+        return new SingletonSet<>(key);
     }
 }

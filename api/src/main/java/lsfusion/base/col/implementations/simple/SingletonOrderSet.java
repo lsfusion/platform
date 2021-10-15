@@ -1,9 +1,13 @@
 package lsfusion.base.col.implementations.simple;
 
 import lsfusion.base.col.implementations.abs.AOrderSet;
+import lsfusion.base.col.implementations.stored.StoredArraySerializer;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImOrderValueMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImRevValueMap;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 
 public class SingletonOrderSet<K> extends AOrderSet<K> {
 
@@ -36,5 +40,15 @@ public class SingletonOrderSet<K> extends AOrderSet<K> {
 
     public <M> ImRevValueMap<K, M> mapItOrderRevValues() {
         return new SingletonRevMap<>(set.get(0));
+    }
+
+    public static void serialize(Object o, StoredArraySerializer serializer, ByteArrayOutputStream outStream) {
+        SingletonOrderSet<?> set = (SingletonOrderSet<?>) o;
+        serializer.serialize(set.set, outStream);
+    }
+
+    public static Object deserialize(ByteArrayInputStream inStream, StoredArraySerializer serializer) {
+        SingletonSet<?> set = (SingletonSet<?>) serializer.deserialize(inStream);
+        return new SingletonOrderSet<>(set);
     }
 }

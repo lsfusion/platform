@@ -5,11 +5,18 @@ import lsfusion.base.col.implementations.ArIndexedMap;
 import lsfusion.base.col.implementations.ArIndexedSet;
 import lsfusion.base.col.implementations.ArSet;
 import lsfusion.base.col.implementations.abs.AMOrderSet;
+import lsfusion.base.col.implementations.stored.StoredArraySerializer;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImOrderValueMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImRevValueMap;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+
+import static lsfusion.base.col.implementations.ArCol.deserializeIntArray;
+import static lsfusion.base.col.implementations.ArCol.serializeIntArray;
 
 public class ArOrderIndexedSet<K> extends AMOrderSet<K> {
     
@@ -96,5 +103,17 @@ public class ArOrderIndexedSet<K> extends AMOrderSet<K> {
         }
 
         return this;
+    }
+
+    public static void serialize(Object o, StoredArraySerializer serializer, ByteArrayOutputStream outStream) {
+        ArOrderIndexedSet<?> set = (ArOrderIndexedSet<?>) o;
+        serializer.serialize(set.arSet, outStream);
+        serializeIntArray(set.order, serializer, outStream);
+    }
+
+    public static Object deserialize(ByteArrayInputStream inStream, StoredArraySerializer serializer) {
+        ArIndexedSet<?> set = (ArIndexedSet<?>) serializer.deserialize(inStream);
+        int[] order = deserializeIntArray(inStream, serializer);
+        return new ArOrderIndexedSet<>(set, order);
     }
 }

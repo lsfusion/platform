@@ -5,6 +5,7 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.implementations.abs.AMRevMap;
 import lsfusion.base.col.implementations.order.ArOrderIndexedMap;
+import lsfusion.base.col.implementations.stored.StoredArraySerializer;
 import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
@@ -13,6 +14,9 @@ import lsfusion.base.col.interfaces.mutable.AddValue;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImRevValueMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 
 public class ArIndexedMap<K, V> extends AMRevMap<K, V> {
 
@@ -470,5 +474,19 @@ public class ArIndexedMap<K, V> extends AMRevMap<K, V> {
         }
 
         return super.twins(map);
+    }
+
+    public static void serialize(Object o, StoredArraySerializer serializer, ByteArrayOutputStream outStream) {
+        ArIndexedMap<?, ?> map = (ArIndexedMap<?, ?>) o;
+        serializer.serialize(map.size, outStream);
+        ArCol.serializeArray(map.keys, serializer, outStream);
+        ArCol.serializeArray(map.values, serializer, outStream);
+    }
+
+    public static Object deserialize(ByteArrayInputStream inStream, StoredArraySerializer serializer) {
+        int size = (int)serializer.deserialize(inStream);
+        Object[] keys = ArCol.deserializeArray(inStream, serializer);
+        Object[] values = ArCol.deserializeArray(inStream, serializer);
+        return new ArIndexedMap<>(size, keys, values);
     }
 }

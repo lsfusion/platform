@@ -4,9 +4,13 @@ import lsfusion.base.col.ListFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.implementations.ArCol;
 import lsfusion.base.col.implementations.abs.AList;
+import lsfusion.base.col.implementations.stored.StoredArraySerializer;
 import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.mutable.MList;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 
 public class ArList<K> extends AList<K> implements MList<K> {
 
@@ -76,5 +80,15 @@ public class ArList<K> extends AList<K> implements MList<K> {
     }
     public void removeLast() {
         col.removeLast();
+    }
+
+    public static void serialize(Object o, StoredArraySerializer serializer, ByteArrayOutputStream outStream) {
+        ArList<?> list = (ArList<?>) o;
+        serializer.serialize(list.getCol(), outStream);
+    }
+
+    public static Object deserialize(ByteArrayInputStream inStream, StoredArraySerializer serializer) {
+        ArCol<?> col = (ArCol<?>) serializer.deserialize(inStream);
+        return new ArList<>(col);
     }
 }

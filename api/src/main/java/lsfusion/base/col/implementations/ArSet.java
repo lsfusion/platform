@@ -4,11 +4,15 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.implementations.abs.AMSet;
 import lsfusion.base.col.implementations.order.ArOrderSet;
+import lsfusion.base.col.implementations.stored.StoredArraySerializer;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImRevValueMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 
 public class ArSet<K> extends AMSet<K> {
 
@@ -277,5 +281,17 @@ public class ArSet<K> extends AMSet<K> {
     @Override
     public ImOrderSet<K> toOrderSet() {
         return new ArOrderSet<>(this);
+    }
+
+    public static void serialize(Object o, StoredArraySerializer serializer, ByteArrayOutputStream outStream) {
+        ArSet<?> set = (ArSet<?>) o;
+        serializer.serialize(set.size, outStream);
+        ArCol.serializeArray(set.array, serializer, outStream);    
+    }
+
+    public static Object deserialize(ByteArrayInputStream inStream, StoredArraySerializer serializer) {
+        int size = (int)serializer.deserialize(inStream);
+        Object[] array = ArCol.deserializeArray(inStream, serializer);
+        return new ArSet<>(size, array);
     }
 }

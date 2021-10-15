@@ -2,9 +2,13 @@ package lsfusion.base.col.implementations;
 
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.implementations.abs.ACol;
+import lsfusion.base.col.implementations.stored.StoredArraySerializer;
 import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.mutable.MCol;
 import lsfusion.base.col.interfaces.mutable.add.MAddCol;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 
 public class ArCol<K> extends ACol<K> implements MCol<K>, MAddCol<K> {
 
@@ -93,5 +97,49 @@ public class ArCol<K> extends ACol<K> implements MCol<K>, MAddCol<K> {
 
     public void removeLast() {
         size--;
+    }
+
+    public static void serialize(Object o, StoredArraySerializer serializer, ByteArrayOutputStream outStream) {
+        ArCol<?> col = (ArCol<?>) o;
+        serializer.serialize(col.size, outStream);
+        serializeArray(col.array, serializer, outStream);
+    }
+
+    public static Object deserialize(ByteArrayInputStream inStream, StoredArraySerializer serializer) {
+        int size = (int)serializer.deserialize(inStream);
+        Object[] array = deserializeArray(inStream, serializer);
+        return new ArCol<>(size, array);
+    }
+    
+    public static void serializeArray(Object[] array, StoredArraySerializer serializer, ByteArrayOutputStream outStream) {
+        serializer.serialize(array.length, outStream);
+        for (Object obj : array) {
+            serializer.serialize(obj, outStream);
+        }
+    } 
+    
+    public static Object[] deserializeArray(ByteArrayInputStream inStream, StoredArraySerializer serializer) {
+        int len = (int)serializer.deserialize(inStream);
+        Object[] array = new Object[len];
+        for (int i = 0; i < len; ++i) {
+            array[i] = serializer.deserialize(inStream);
+        }
+        return array;
+    }
+    
+    public static void serializeIntArray(int[] array, StoredArraySerializer serializer, ByteArrayOutputStream outStream) {
+        serializer.serialize(array.length, outStream);
+        for (int num : array) {
+            serializer.serialize(num, outStream);
+        }
+    }
+    
+    public static int[] deserializeIntArray(ByteArrayInputStream inStream, StoredArraySerializer serializer) {
+        int len = (int)serializer.deserialize(inStream);
+        int[] array = new int[len];
+        for (int i = 0; i < len; ++i) {
+            array[i] = (int) serializer.deserialize(inStream);
+        }
+        return array;
     }
 }

@@ -4,11 +4,15 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.implementations.*;
 import lsfusion.base.col.implementations.abs.AMWrapOrderMap;
+import lsfusion.base.col.implementations.stored.StoredArraySerializer;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.AddValue;
 import lsfusion.base.col.interfaces.mutable.MOrderExclMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImOrderValueMap;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 
 public class HOrderMap<K, V> extends AMWrapOrderMap<K, V, HMap<K, V>> {
     
@@ -88,5 +92,15 @@ public class HOrderMap<K, V> extends AMWrapOrderMap<K, V, HMap<K, V>> {
     @Override
     public ImOrderSet<K> keyOrderSet() {
         return new HOrderSet<>(new HSet<>(wrapMap.size, wrapMap.table, wrapMap.indexes));
+    }
+
+    public static void serialize(Object o, StoredArraySerializer serializer, ByteArrayOutputStream outStream) {
+        HOrderMap<?, ?> map = (HOrderMap<?, ?>) o;
+        serializer.serialize(map.wrapMap, outStream);
+    }
+
+    public static Object deserialize(ByteArrayInputStream inStream, StoredArraySerializer serializer) {
+        HMap<?, ?> map = (HMap<?, ?>) serializer.deserialize(inStream);
+        return new HOrderMap<>(map);
     }
 }

@@ -7,12 +7,16 @@ import lsfusion.base.col.implementations.ArIndexedMap;
 import lsfusion.base.col.implementations.ArMap;
 import lsfusion.base.col.implementations.ArSet;
 import lsfusion.base.col.implementations.abs.AMWrapOrderMap;
+import lsfusion.base.col.implementations.stored.StoredArraySerializer;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.AddValue;
 import lsfusion.base.col.interfaces.mutable.MOrderExclMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImOrderValueMap;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 
 public class ArOrderMap<K, V> extends AMWrapOrderMap<K, V, ArMap<K, V>> {
 
@@ -86,5 +90,15 @@ public class ArOrderMap<K, V> extends AMWrapOrderMap<K, V, ArMap<K, V>> {
     @Override
     public ImList<V> valuesList() {
         return new ArList<>(new ArCol<>(wrapMap.size, wrapMap.values));
+    }
+
+    public static void serialize(Object o, StoredArraySerializer serializer, ByteArrayOutputStream outStream) {
+        ArOrderMap<?, ?> map = (ArOrderMap<?, ?>) o;
+        serializer.serialize(map.wrapMap, outStream);
+    }
+
+    public static Object deserialize(ByteArrayInputStream inStream, StoredArraySerializer serializer) {
+        ArMap<?, ?> map = (ArMap<?, ?>) serializer.deserialize(inStream);
+        return new ArOrderMap<>(map);
     }
 }

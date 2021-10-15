@@ -6,9 +6,13 @@ import lsfusion.base.col.implementations.ArSet;
 import lsfusion.base.col.implementations.HMap;
 import lsfusion.base.col.implementations.HSet;
 import lsfusion.base.col.implementations.abs.AMWrapOrderSet;
+import lsfusion.base.col.implementations.stored.StoredArraySerializer;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImOrderValueMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImRevValueMap;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 
 public class HOrderSet<K> extends AMWrapOrderSet<K, HSet<K>> {
 
@@ -66,4 +70,13 @@ public class HOrderSet<K> extends AMWrapOrderSet<K, HSet<K>> {
         return this;
     }
 
+    public static void serialize(Object o, StoredArraySerializer serializer, ByteArrayOutputStream outStream) {
+        HOrderSet<?> set = (HOrderSet<?>) o;
+        serializer.serialize(set.wrapSet, outStream);
+    }
+
+    public static Object deserialize(ByteArrayInputStream inStream, StoredArraySerializer serializer) {
+        HSet<?> set = (HSet<?>) serializer.deserialize(inStream);
+        return new HOrderSet<>(set);
+    }
 }

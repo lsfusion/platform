@@ -5,9 +5,13 @@ import lsfusion.base.col.implementations.ArIndexedSet;
 import lsfusion.base.col.implementations.ArMap;
 import lsfusion.base.col.implementations.ArSet;
 import lsfusion.base.col.implementations.abs.AMWrapOrderSet;
+import lsfusion.base.col.implementations.stored.StoredArraySerializer;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImOrderValueMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImRevValueMap;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 
 public class ArOrderSet<K> extends AMWrapOrderSet<K, ArSet<K>> {
 
@@ -54,5 +58,15 @@ public class ArOrderSet<K> extends AMWrapOrderSet<K, ArSet<K>> {
         int[] order = new int[wrapSet.size];
         ArSet.sortArray(wrapSet.size, wrapSet.array, order);
         return new ArOrderIndexedSet<>(new ArIndexedSet<>(wrapSet.size, wrapSet.array), order);
+    }
+
+    public static void serialize(Object o, StoredArraySerializer serializer, ByteArrayOutputStream outStream) {
+        ArOrderSet<?> set = (ArOrderSet<?>) o;
+        serializer.serialize(set.wrapSet, outStream);
+    }
+
+    public static Object deserialize(ByteArrayInputStream inStream, StoredArraySerializer serializer) {
+        ArSet<?> set = (ArSet<?>) serializer.deserialize(inStream);
+        return new ArOrderSet<>(set);
     }
 }

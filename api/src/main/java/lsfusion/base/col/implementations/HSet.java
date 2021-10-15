@@ -5,11 +5,15 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.implementations.abs.AMSet;
 import lsfusion.base.col.implementations.order.HOrderSet;
+import lsfusion.base.col.implementations.stored.StoredArraySerializer;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImRevValueMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 
 public class HSet<T> extends AMSet<T> {
     public int size;
@@ -187,5 +191,19 @@ public class HSet<T> extends AMSet<T> {
     @Override
     public ImOrderSet<T> toOrderSet() {
         return new HOrderSet<>(this);
+    }
+
+    public static void serialize(Object o, StoredArraySerializer serializer, ByteArrayOutputStream outStream) {
+        HSet<?> set = (HSet<?>) o;
+        serializer.serialize(set.size, outStream);
+        ArCol.serializeArray(set.table, serializer, outStream);
+        ArCol.serializeIntArray(set.indexes, serializer, outStream);
+    }
+
+    public static Object deserialize(ByteArrayInputStream inStream, StoredArraySerializer serializer) {
+        int size = (int) serializer.deserialize(inStream);
+        Object[] array = ArCol.deserializeArray(inStream, serializer);
+        int[] indexes = ArCol.deserializeIntArray(inStream, serializer);
+        return new HSet<>(size, array, indexes);
     }
 }

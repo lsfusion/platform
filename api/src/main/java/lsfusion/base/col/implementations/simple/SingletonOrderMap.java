@@ -1,9 +1,13 @@
 package lsfusion.base.col.implementations.simple;
 
 import lsfusion.base.col.implementations.abs.AOrderMap;
+import lsfusion.base.col.implementations.stored.StoredArraySerializer;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImOrderValueMap;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 
 public class SingletonOrderMap<K, V> extends AOrderMap<K, V> implements ImOrderValueMap<K, V> {
     
@@ -55,5 +59,15 @@ public class SingletonOrderMap<K, V> extends AOrderMap<K, V> implements ImOrderV
     @Override
     public String toString() {
         return revMap.toString();
+    }
+
+    public static void serialize(Object o, StoredArraySerializer serializer, ByteArrayOutputStream outStream) {
+        SingletonOrderMap<?, ?> map = (SingletonOrderMap<?, ?>)o;
+        serializer.serialize(map.revMap, outStream);
+    }
+
+    public static Object deserialize(ByteArrayInputStream inStream, StoredArraySerializer serializer) {
+        SingletonRevMap<?, ?> map = (SingletonRevMap<?, ?>) serializer.deserialize(inStream);
+        return new SingletonOrderMap<>(map);
     }
 }

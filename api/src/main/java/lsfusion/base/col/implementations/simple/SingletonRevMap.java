@@ -5,12 +5,16 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.implementations.ArMap;
 import lsfusion.base.col.implementations.abs.ARevMap;
+import lsfusion.base.col.implementations.stored.StoredArraySerializer;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.mutable.AddValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImRevValueMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 
 public class SingletonRevMap<K, V> extends ARevMap<K, V> implements ImValueMap<K, V>, ImRevValueMap<K, V> {
     
@@ -124,4 +128,16 @@ public class SingletonRevMap<K, V> extends ARevMap<K, V> implements ImValueMap<K
     public ImMap<K, V> addExcl(ImMap<? extends K, ? extends V> map) {
         return merge(map, MapFact.exclusive());
     }
+
+    public static void serialize(Object o, StoredArraySerializer serializer, ByteArrayOutputStream outStream) {
+        SingletonRevMap<?, ?> map = (SingletonRevMap<?, ?>)o;
+        serializer.serialize(map.key, outStream);
+        serializer.serialize(map.value, outStream);
+    } 
+
+    public static Object deserialize(ByteArrayInputStream inStream, StoredArraySerializer serializer) {
+        Object key = serializer.deserialize(inStream);
+        Object value = serializer.deserialize(inStream);
+        return new SingletonRevMap<>(key, value);
+    } 
 }
