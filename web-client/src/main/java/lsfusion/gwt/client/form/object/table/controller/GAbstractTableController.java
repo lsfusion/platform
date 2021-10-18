@@ -23,6 +23,7 @@ import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.GObject;
 import lsfusion.gwt.client.form.object.table.GToolbar;
+import lsfusion.gwt.client.form.object.table.grid.view.GCustom;
 import lsfusion.gwt.client.form.object.table.tree.view.GTreeTable;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.object.table.view.GToolbarView;
@@ -256,7 +257,9 @@ public abstract class GAbstractTableController extends GPropertyController imple
                         autoSize += view.getOffsetHeight() - gridTable.getViewportHeight(); // margin'ы и border'ы учитываем
                     }
                 }
-            } else
+            } else if (widget instanceof GCustom)
+                autoSize = ((GCustom) widget).getElementMinHeight();
+            else
                 autoSize = GTreeTable.DEFAULT_MAX_PREFERRED_HEIGHT;
             setChildFlexBasis(view, autoSize);
         }

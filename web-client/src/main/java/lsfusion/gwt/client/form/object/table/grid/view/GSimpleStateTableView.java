@@ -392,6 +392,11 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         return object;
     }
 
+    private int elementMinHeight = 0;
+    public int getElementMinHeight() {
+        return elementMinHeight;
+    }
+
     protected native JavaScriptObject getController()/*-{
         var thisObj = this;
         return {
@@ -461,6 +466,9 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             },
             getDiff: function (newList) {
                 return thisObj.@GSimpleStateTableView::getDiff(*)(newList);
+            },
+            setMinHeight: function (height) {
+                thisObj.@GSimpleStateTableView::elementMinHeight = height;
             }
         };
     }-*/;

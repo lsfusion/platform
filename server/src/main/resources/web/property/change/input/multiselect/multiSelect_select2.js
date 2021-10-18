@@ -24,7 +24,7 @@ function select2() {
                 placeholder: ' ',
                 closeOnSelect: false,
                 allowClear: true,
-                width: 'auto'
+                width: '100%'
             });
 
             select2Instance.on('select2:select', function (e) {
@@ -38,36 +38,38 @@ function select2() {
             });
         },
         update: (element, controller, list) => {
-            if (controller.booleanFilterSet) { //remove blinking
-                let select2Instance = controller.select2Instance;
-
-                let diff = controller.getDiff(list);
-                let optionsParent = select2Instance.context;
-                let select2Options = Array.from(optionsParent.children);
-
-                for (let option of diff.add) {
-                    if (select2Options.filter(o => o.value === mapOption(option).value).length === 0)
-                        select2Instance.append(mapOption(option));
-                }
-
-                for (let option of diff.update) {
-                    removeOption(option);
-                    select2Instance.append(mapOption(option));
-                }
-
-                for (let option of diff.remove) {
-                    removeOption(option);
-                }
-
-                function removeOption(option) {
-                    select2Options.forEach(o => {
-                        if (o.value === mapOption(option).value)
-                            optionsParent.removeChild(o);
-                    });
-                }
-            } else {
+            if (!controller.booleanFilterSet) {
                 controller.setBooleanViewFilter('selected', 1000);
                 controller.booleanFilterSet = true;
+                return
+            }
+            controller.setMinHeight(element.lastElementChild.offsetHeight);
+
+            let select2Instance = controller.select2Instance;
+
+            let diff = controller.getDiff(list);
+            let optionsParent = select2Instance.context;
+            let select2Options = Array.from(optionsParent.children);
+
+            for (let option of diff.add) {
+                if (select2Options.filter(o => o.value === mapOption(option).value).length === 0)
+                    select2Instance.append(mapOption(option));
+            }
+
+            for (let option of diff.update) {
+                removeOption(option);
+                select2Instance.append(mapOption(option));
+            }
+
+            for (let option of diff.remove) {
+                removeOption(option);
+            }
+
+            function removeOption(option) {
+                select2Options.forEach(o => {
+                    if (o.value === mapOption(option).value)
+                        optionsParent.removeChild(o);
+                });
             }
 
             function mapOption(option) {

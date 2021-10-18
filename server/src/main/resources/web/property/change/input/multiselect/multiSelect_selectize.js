@@ -4,6 +4,7 @@ function selectize() {
             controller.selectizeInstance = $(element).selectize({
                 preload: 'focus',
                 loadThrottle: 0,
+                dropdownParent: 'body',
                 load: function (query, callback) {
                     controller.getValues('name', query, (data) => {
                         let options = [];
@@ -12,7 +13,7 @@ function selectize() {
                                 value: dataElement.key.toString(),
                                 text: dataElement.rawString,
                                 originalObject: dataElement.key,
-                                async: true
+                                allowChange: true
                             });
                         }
                         callback(options);
@@ -20,39 +21,44 @@ function selectize() {
                 },
                 onItemAdd: function (value) {
                     let option = this.options[value];
-                    if (option.async) // change property only if option from .getValues() method
+                    if (option.allowChange) // change property only if option from .getValues() method
                         controller.changeProperty('selected', option.originalObject, true);
                 },
                 onItemRemove: function (value) {
                     let option = this.options[value];
-                    if (option != null) // if option == null so option has been removed by .removeOption() method
+                    if (option != null) {// if option == null so option has been removed by .removeOption() method
                         controller.changeProperty('selected', option.originalObject, null);
+                        option.allowChange = true;
+                    }
                 },
                 plugins: ['remove_button']
             });
         },
         update: (element, controller, list) => {
-            if (controller.booleanFilterSet) { //remove blinking
-                let selectizeInstance = controller.selectizeInstance[0].selectize;
-                let diff = controller.getDiff(list);
-
-                for (let option of diff.add) {
-                    let selectizeOption = mapOption(option);
-                    selectizeInstance.addOption(selectizeOption);
-                    selectizeInstance.addItem(selectizeOption.value);
-                }
-
-                for (let option of diff.update) {
-                    let selectizeOption = mapOption(option);
-                    selectizeInstance.updateOption(selectizeOption.value, selectizeOption);
-                }
-
-                for (let option of diff.remove) {
-                    selectizeInstance.removeItem(mapOption(option).value);
-                }
-            } else {
+            if (!controller.booleanFilterSet) {
                 controller.setBooleanViewFilter('selected', 1000);
                 controller.booleanFilterSet = true;
+                return
+            }
+
+            controller.setMinHeight(controller.selectizeInstance[0].nextElementSibling.offsetHeight);
+
+            let selectizeInstance = controller.selectizeInstance[0].selectize;
+            let diff = controller.getDiff(list);
+
+            for (let option of diff.add) {
+                let selectizeOption = mapOption(option);
+                selectizeInstance.addOption(selectizeOption);
+                selectizeInstance.addItem(selectizeOption.value);
+            }
+
+            for (let option of diff.update) {
+                let selectizeOption = mapOption(option);
+                selectizeInstance.updateOption(selectizeOption.value, selectizeOption);
+            }
+
+            for (let option of diff.remove) {
+                selectizeInstance.removeItem(mapOption(option).value);
             }
 
             function mapOption(option) {
