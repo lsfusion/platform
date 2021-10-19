@@ -229,10 +229,16 @@ getClientCredentials(STRING str) {
 
 onUserRegister ABSTRACT LIST (User);
 
+checkPasswordStrength ABSTRACT LIST (STRING);
+passwordStrengthError = DATA LOCAL STRING ();
+
 registerUser(JSONFILE user) {
     IMPORT FROM user FIELDS STRING[100] login, STRING[100] password, STRING[100] firstName, STRING[100] lastName, STRING[400] email DO {
+        checkPasswordStrength(password);
         IF customUserNormalized(login) THEN {
             EXPORT FROM error = '{registration.not.successful.login.exist}';
+        } ELSE IF passwordStrengthError() THEN {
+            EXPORT FROM error = passwordStrengthError();
         } ELSE {
             NEW cu = CustomUser { 
                 login(cu) <- login;
@@ -285,6 +291,12 @@ changePassword(JSONFILE input) {
     IMPORT FROM input FIELDS STRING token, STRING newPassword DO {
         LOCAL NESTED success = BOOLEAN();
         FOR CustomUser cu = userByPassResetToken(token) AND cu IS CustomUser DO {
+            checkPasswordStrength(newPassword);
+            IF passwordStrengthError() THEN {
+                EXPORT FROM error = passwordStrengthError(), passwordStrengthError = TRUE;
+                RETURN;
+            }
+        
             setSHA256Password(cu, newPassword);
             passwordResetToken(cu) <- NULL;
             expiryPasswordResetTokenDate(cu) <- NULL;
