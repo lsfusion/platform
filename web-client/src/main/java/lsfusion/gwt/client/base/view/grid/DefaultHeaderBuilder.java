@@ -20,6 +20,8 @@ import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.dom.client.TableSectionElement;
 
+import java.util.List;
+
 import static lsfusion.gwt.client.view.StyleDefaults.customDataGridStyle;
 
 /**
@@ -157,6 +159,19 @@ public class DefaultHeaderBuilder<T> extends DataGridHeaderBuilder<T> {
             TableCellElement th = tr.getCells().getItem(curColumn).cast();
 
             updateHeader(th, header);
+        }
+    }
+
+    @Override
+    protected void updateStickyHeaderImpl(TableRowElement tr, List<Integer> stickyColumns) {
+        int left = 0;
+        for (int curColumn = 0; curColumn < getTable().getColumnCount(); curColumn++) {
+            if(stickyColumns.contains(curColumn)) {
+                TableCellElement th = tr.getCells().getItem(curColumn).cast();
+                th.getStyle().setProperty("position", "sticky");
+                th.getStyle().setProperty("left", left + "px");
+                left += th.getClientWidth();
+            }
         }
     }
 }

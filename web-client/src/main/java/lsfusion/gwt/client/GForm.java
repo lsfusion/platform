@@ -40,6 +40,8 @@ public class GForm implements Serializable, GWidthStringProcessor {
     public List<List<GPropertyDraw>> pivotRows = new ArrayList<>();
     public List<GPropertyDraw> pivotMeasures = new ArrayList<>();
 
+    public List<GPropertyDraw> stickies = new ArrayList<>();
+
     private transient HashMap<Integer, GPropertyDraw> idProps;
     private transient HashMap<Integer, GObject> idObjects;
 

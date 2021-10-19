@@ -654,6 +654,8 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         private String customEditorFunction;
         private PivotOptions pivotOptions;
 
+        private Boolean sticky;
+
         // для всех 
         private ImList<DefaultProcessor> processors = ListFact.EMPTY();
         
@@ -665,6 +667,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
             entity.askConfirm = BaseUtils.nvl(askConfirm, false);
             entity.askConfirmMessage = askConfirmMessage;
             entity.eventID = eventID;
+            entity.sticky = sticky;
 
             for(DefaultProcessor processor : processors)
                 processor.proceedDefaultDraw(entity, form);
@@ -759,6 +762,8 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
                 setCustomEditorFunction(options.customEditorFunction);
             if(pivotOptions == null)
                 setPivotOptions(options.pivotOptions);
+            if(sticky == null)
+                setSticky(options.sticky);
             
             processors = options.processors.addList(processors);
         }
@@ -874,6 +879,10 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
 
         public void setPivotOptions(PivotOptions pivotOptions) {
             this.pivotOptions = pivotOptions;
+        }
+
+        public void setSticky(Boolean sticky) {
+            this.sticky = sticky;
         }
     }
 

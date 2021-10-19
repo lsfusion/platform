@@ -47,7 +47,7 @@
     for now will use 2nd option
     */
     border-bottom: 1px solid var(--grid-separator-border-color);
-    border-left: 1px solid var(--grid-separator-border-color);
+    border-right: 1px solid var(--grid-separator-border-color);
 
     padding: 0 2px;
     font-weight: normal;
@@ -118,7 +118,7 @@
 .dataGridFooterCell {
     border-top: 1px solid var(--grid-separator-border-color);
     border-bottom: 1px solid var(--grid-separator-border-color);
-    border-left: 1px solid var(--grid-separator-border-color);
+    border-right: 1px solid var(--grid-separator-border-color);
 
     padding: 0 2px;
     font-weight: normal;
@@ -136,14 +136,12 @@
 .dataGridCell {
     /* the same as dataGridCell, dataGridHeaderCell, table.pvtTable thead tr th/td */
     border-bottom: 1px solid var(--grid-separator-border-color);
-    border-left: 1px solid var(--grid-separator-border-color);
+    border-right: 1px solid var(--grid-separator-border-color);
 
     padding: 0;
 
     overflow: hidden;
 }
-
-.dataGridCellInnerDiv {}
 
 .dataGridFirstCell {
     /*border-left : none;*/
@@ -153,25 +151,4 @@
     /*border-right : none;*/
     /* the same as dataGridLastCell, dataGridLastHeaderCell, table.pvtTable thead tr th:last-of-type */
     border-right: 1px solid var(--grid-separator-border-color);
-}
-
-.dataGridKeyboardSelectedRow {}
-
-.dataGridKeyboardSelectedRowCell {}
-
-.dataGridFocusedCell {
-    border-bottom: 1px solid var(--focus-color);
-    border-left: 1px solid var(--focus-color);
-}
-
-.dataGridFocusedCellLastInRow {
-    border-right: 1px solid var(--focus-color);
-}
-
-.dataGridRightOfFocusedCell {
-    border-left: 1px solid var(--focus-color);
-}
-
-.dataGridTopOfFocusedCell {
-    border-bottom: 1px solid var(--focus-color);
 }

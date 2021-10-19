@@ -1094,6 +1094,10 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
         if (columnsChanged || selectedRowChanged || selectedColumnChanged || focusedChanged)
             updateFocusedCellDOM(); // updating focus cell border
 
+        if (columnsChanged || headersChanged || dataChanged || widthsChanged) {
+            updateStickyDOM();
+        }
+
         if(focusedChanged) // updating focus grid border
             changeBorder(isFocused ? "var(--focus-color)" : "var(--component-border-color)");
     }
@@ -1307,6 +1311,22 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
         }
     }
 
+    private void updateStickyDOM() {
+        List<Integer> stickyColumns = new ArrayList<>();
+        for(int i = 0; i < columns.size(); i++) {
+            if(columns.get(i).isSticky()) {
+                stickyColumns.add(i);
+            }
+        }
+
+        if (!noHeaders)
+            headerBuilder.updateSticky(stickyColumns);
+        if (!noFooters)
+            footerBuilder.updateSticky(stickyColumns);
+
+        tableBuilder.updateSticky(tableData.getSection(), stickyColumns);
+    }
+
     private void updateSelectedRowBackgroundDOM() {
         NodeList<TableRowElement> rows = tableData.tableElement.getRows();
         int rowCount = rows.getLength();
@@ -1393,22 +1413,34 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
                 // but there is a problem (with scroller, in that case we'll have to track hasVerticalScroller, hasHorizontalScroller) + table can be not full of rows (and we also have to track it)
                 // so we'll just draw that borders always
 
+                // TOP BORDER
+                setFocusedCellTopBorder(thisCell, focused);
+
                 // BOTTOM BORDER
                 setFocusedCellBottomBorder(thisCell, focused);
 
                 // RIGHT BORDER
-                if (column < columnCount - 1) {
+                /*if (column < columnCount - 1) {
                     TableCellElement rightCell = cells.getItem(column + 1);
                     setFocusedCellLeftBorder(rightCell, focused);
                 }
-                setFocusedCellRightBorder(thisCell, focused && column == columnCount - 1);
+                setFocusedCellRightBorder(thisCell, focused && column == columnCount - 1);*/
+                setFocusedCellRightBorder(thisCell, focused);
             }
         }
 
         // TOP BORDER (BOTTOM of upper row)
-        if(column < columnCount) {
-            TableCellElement upperCell = (row > 0 ? rows.getItem(row - 1) : headerRows.getItem(0)).getCells().getItem(column);
-            setFocusedCellBottomBorder(upperCell, focused);
+//        if(column < columnCount) {
+//            TableCellElement upperCell = (row > 0 ? rows.getItem(row - 1) : headerRows.getItem(0)).getCells().getItem(column);
+//            setFocusedCellBottomBorder(upperCell, focused);
+//        }
+    }
+
+    private void setFocusedCellTopBorder(TableCellElement td, boolean focused) {
+        if (focused) {
+            td.getStyle().setProperty("borderTop", "1px solid " + getFocusedCellBorderColor());
+        } else {
+            td.getStyle().clearProperty("borderTop");
         }
     }
 

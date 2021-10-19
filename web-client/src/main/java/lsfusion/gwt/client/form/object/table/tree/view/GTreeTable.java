@@ -330,6 +330,11 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         }
 
         @Override
+        public boolean isSticky() {
+            return false;
+        }
+
+        @Override
         public GPropertyDraw getColumnProperty() {
             return null;
         }
@@ -394,6 +399,11 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         @Override
         public boolean isFocusable() {
             return GTreeTable.this.isFocusable(columnProperty);
+        }
+
+        @Override
+        public boolean isSticky() {
+            return form.getForm().stickies.contains(columnProperty);
         }
 
         public GridColumn(GPropertyDraw columnProperty) {
