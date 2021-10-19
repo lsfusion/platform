@@ -746,7 +746,7 @@ passwordContainsUpper '{authentication.password.must.contain.upcase.letters}' = 
 
 weakPassword (STRING[30] p) = TEXT(
     CONCAT ';\n',
-        '{authentication.password.minimum.length} - ' + passwordMinLength() + '{authentication.password.symbols}' IF pwLength(p) < passwordMinLength(),
+        '{authentication.password.minimum.length} - ' + passwordMinLength() + ' ' + '{authentication.password.symbols}' IF pwLength(p) < passwordMinLength(),
         '{authentication.password.must.contain.digits}' IF passwordContainsDigits() AND NOT pwNumeric(p) > 0,
         '{authentication.password.must.contain.special.symbols}' IF passwordContainsSymbols() AND NOT pwNumsymbols(p) > 0,
         '{authentication.password.must.contain.upcase.letters}' IF passwordContainsUpper() AND NOT pwUpper(p) > 0
@@ -839,6 +839,10 @@ DESIGN changePasswordUser {
     }
     REMOVE TOOLBARLEFT;
     REMOVE PROPERTY(formRefresh());
+}
+
+checkPasswordStrength(STRING password) + {
+    IF weakPassword(password) THEN passwordStrengthError() <- '{authentication.password.does.not.match.requirements}' + ' \n' + weakPassword(password); 
 }
 
 changePassword (CustomUser u)  { 
