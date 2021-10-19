@@ -8,7 +8,7 @@ CLASS Computer '{authentication.computer}';
 TABLE computer (Computer);
 
 hostname '{authentication.host.name.computer}' = DATA ISTRING[100] (Computer) CHARWIDTH 10 IN id;
-computer = GROUP LAST Computer computer BY hostname(computer);
+computer = GROUP LAST Computer computer ORDER computer BY hostname(computer);
 
 FORM computer '{authentication.computer}'
     OBJECTS c = Computer PANEL
@@ -68,7 +68,11 @@ name '{authentication.name.user}' (User user) = IF user IS SystemUser
 name '{authentication.name.user}' (CustomUser user) = name[User](user AS CustomUser) CHARWIDTH 10;
 
 // login
-login '{authentication.login}' = DATA BPSTRING[100] (CustomUser) CHARWIDTH 15;
+login '{authentication.login}' = DATA ISTRING[100] (CustomUser) CHARWIDTH 15;
+customUserLower (login) = GROUP AGGR CustomUser customUser WHERE customUser IS CustomUser BY ISTRING[100](lower(login(customUser)));
+customUserNormalized (ISTRING[100] login) = customUserLower(ISTRING[100](lower(login)));
+
+//backward compatibility
 customUser (login) = GROUP AGGR CustomUser customUser WHERE customUser IS CustomUser BY login(customUser);
 upcaseLogin (CustomUser customUser) = upper(login(customUser));
 customUserUpcase (login) = GROUP MAX CustomUser customUser BY upcaseLogin(customUser);
@@ -225,10 +229,16 @@ getClientCredentials(STRING str) {
 
 onUserRegister ABSTRACT LIST (User);
 
+checkPasswordStrength ABSTRACT LIST (STRING);
+passwordStrengthError = DATA LOCAL STRING ();
+
 registerUser(JSONFILE user) {
     IMPORT FROM user FIELDS STRING[100] login, STRING[100] password, STRING[100] firstName, STRING[100] lastName, STRING[400] email DO {
-        IF customUser(login) THEN {
+        checkPasswordStrength(password);
+        IF customUserNormalized(login) THEN {
             EXPORT FROM error = '{registration.not.successful.login.exist}';
+        } ELSE IF passwordStrengthError() THEN {
+            EXPORT FROM error = passwordStrengthError();
         } ELSE {
             NEW cu = CustomUser { 
                 login(cu) <- login;
@@ -281,6 +291,12 @@ changePassword(JSONFILE input) {
     IMPORT FROM input FIELDS STRING token, STRING newPassword DO {
         LOCAL NESTED success = BOOLEAN();
         FOR CustomUser cu = userByPassResetToken(token) AND cu IS CustomUser DO {
+            checkPasswordStrength(newPassword);
+            IF passwordStrengthError() THEN {
+                EXPORT FROM error = passwordStrengthError(), passwordStrengthError = TRUE;
+                RETURN;
+            }
+        
             setSHA256Password(cu, newPassword);
             passwordResetToken(cu) <- NULL;
             expiryPasswordResetTokenDate(cu) <- NULL;
@@ -310,11 +326,11 @@ clearPassResetToken () + {
 
 // lock
 isLocked '{authentication.is.locked.user}' = DATA BOOLEAN (CustomUser);
-isLockedLogin (login) = isLocked(customUser(login));
+isLockedLogin (login) = isLocked(customUserNormalized(lower(login)));
 
 // Current User
 currentUser = NATIVE User ();
-currentUserName '{authentication.current.user.name}' () = name[Contact](currentUser());
+currentUserName '{authentication.current.user.name}' () = name(currentUser());
 
 // User management
 logOut (restart, reconnect)  INTERNAL  'lsfusion.server.physics.admin.authentication.action.LogOutAction' (BOOLEAN, BOOLEAN);
@@ -361,6 +377,7 @@ dateFormat '{authentication.date.format.user}' (CustomUser user) = OVERRIDE (cli
 timeFormat '{authentication.time.format.user}' (CustomUser user) = OVERRIDE (clientTimeFormat(user) IF useClientDateTimeFormat(user)), userTimeFormat(user), defaultUserTimeFormat(), serverTimeFormat();
 
 lsfParams(STRING s) += country(currentUser()) IF s = 'googleMapAutocompleteCountry';
+lsfParams(STRING s) += language(currentUser()) IF s = 'googleGeocodingLanguage';
 
 // "duplicate" of loadLocalePreferences, but web-client needs this data just right after authentication
 getCurrentUserLocale() {
@@ -406,7 +423,7 @@ syncUsers ABSTRACT LIST (ISTRING[100], JSONFILE) @@noauth;
 syncUsers (ISTRING[100] computer, JSONFILE users) + { 
     LOCAL syncSavedUser = BPSTRING[100](INTEGER);
     IMPORT FROM users TO syncSavedUser=value;
-    EXPORT FROM value=STRING s WHERE s = syncSavedUser(INTEGER i) AND customUser(s) AND NOT isLockedLogin(s);
+    EXPORT FROM value=STRING s WHERE s = syncSavedUser(INTEGER i) AND customUserNormalized(s) AND NOT isLockedLogin(s);
 }
 
 FORM customUser '{authentication.custom.user}'
@@ -622,6 +639,7 @@ DESIGN reloginLoginUser {
     BOX(data) {
         caption = '';
         GROUP(, data) {
+            columns = 1;
             type = CONTAINERV;
             PROPERTY(valueLogin){
                 caption = '{authentication.login}';
@@ -643,7 +661,7 @@ relogin '{authentication.relogin}'  INTERNAL  'lsfusion.server.physics.admin.aut
 reloginLoginUser()  { 
     DIALOG reloginLoginUser OBJECTS login INPUT, password INPUT DO {
         LOCAL user = CustomUser();
-        user() <- customUser(login);
+        user() <- customUserNormalized(login);
         IF user() THEN {
             IF isLocked(user()) THEN {
                 MESSAGE '{authentication.relogin.user.locked}';
