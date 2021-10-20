@@ -10,11 +10,9 @@ import java.io.IOException;
 public class ToolbarView extends ComponentView {
     public boolean visible = true;
 
-    public boolean showGroupChange = true;
     public boolean showCountRows = true;
     public boolean showCalculateSum = true;
     public boolean showGroupReport = true;
-    public boolean showPrint = true;
     public boolean showXls = true;
     public boolean showSettings = true;
 
@@ -32,11 +30,9 @@ public class ToolbarView extends ComponentView {
 
         outStream.writeBoolean(visible);
 
-        outStream.writeBoolean(showGroupChange);
         outStream.writeBoolean(showCountRows);
         outStream.writeBoolean(showCalculateSum);
         outStream.writeBoolean(showGroupReport);
-        outStream.writeBoolean(showPrint);
         outStream.writeBoolean(showXls);
         outStream.writeBoolean(showSettings);
     }
@@ -47,11 +43,9 @@ public class ToolbarView extends ComponentView {
 
         visible = inStream.readBoolean();
 
-        showGroupChange = inStream.readBoolean();
         showCountRows = inStream.readBoolean();
         showCalculateSum = inStream.readBoolean();
         showGroupReport = inStream.readBoolean();
-        showPrint = inStream.readBoolean();
         showXls = inStream.readBoolean();
         showSettings = inStream.readBoolean();
     }
