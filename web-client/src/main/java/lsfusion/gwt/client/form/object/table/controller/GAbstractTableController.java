@@ -181,9 +181,9 @@ public abstract class GAbstractTableController extends GPropertyController imple
         }
     }
 
-    public void removeFilters() {
+    public void resetFilters() {
         if (filter != null) {
-            filter.removeAllConditions();
+            filter.resetAllConditions();
         }
     }
 

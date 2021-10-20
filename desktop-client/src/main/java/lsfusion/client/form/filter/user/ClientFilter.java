@@ -13,6 +13,7 @@ import java.io.IOException;
 
 public class ClientFilter extends ClientComponent {
     public ClientPropertyDraw property;
+    public boolean fixed;
 
     public ClientFilter() {
     }
@@ -20,7 +21,7 @@ public class ClientFilter extends ClientComponent {
     public ClientFilter(ClientPropertyDraw property) {
         this.property = property;
         size = new Dimension(-1, -1);
-        alignment = FlexAlignment.CENTER;
+        alignment = FlexAlignment.START;
     }
 
     @Override

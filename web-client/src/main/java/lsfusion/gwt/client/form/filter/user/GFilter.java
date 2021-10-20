@@ -6,12 +6,13 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 
 public class GFilter extends GComponent {
     public GPropertyDraw property;
-    
+    public boolean fixed;
+
     public GFilter() {
     }
 
     public GFilter(GPropertyDraw property){
         this.property = property;
-        alignment = GFlexAlignment.CENTER;
+        alignment = GFlexAlignment.START;
     }
 }

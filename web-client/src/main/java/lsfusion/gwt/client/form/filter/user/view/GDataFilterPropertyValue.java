@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.form.filter.user.view;
 
-import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.form.controller.GFormController;
@@ -110,5 +109,13 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
         form.previewBlurEvent(handler.event);
 
         super.onBlur(handler);
+    }
+
+    public void setApplied(boolean applied) {
+        if (applied) {
+            getElement().addClassName("userFilerValueCellApplied");
+        } else {
+            getElement().removeClassName("userFilerValueCellApplied");
+        }
     }
 }

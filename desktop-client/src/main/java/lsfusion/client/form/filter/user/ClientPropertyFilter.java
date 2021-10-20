@@ -49,4 +49,8 @@ public class ClientPropertyFilter {
     public boolean nullValue() {
         return value.value == null;
     }
+
+    public boolean isFixed() {
+        return filter.fixed;
+    }
 }

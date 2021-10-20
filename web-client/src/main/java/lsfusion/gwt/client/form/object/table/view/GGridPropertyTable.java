@@ -110,7 +110,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
             addFilterBinding(new GKeyInputEvent(REPLACE_USER_FILTER_KEY_STROKE),
                     event -> getGroupController().replaceFilter(event));
             // REMOVE FILTERS
-            GFormController.BindingExec removeFilters = event -> getGroupController().removeFilters();
+            GFormController.BindingExec removeFilters = event -> getGroupController().resetFilters();
             addFilterBinding(new GKeyInputEvent(REMOVE_USER_FILTERS_KEY_STROKE),
                     removeFilters);
             addFilterBinding(nativeEvent -> {

@@ -51,7 +51,7 @@ public class GFilterConditionView extends FlexPanel {
     private Widget junctionSeparator;
     private GToolbarButton junctionView;
 
-    public boolean allowNull = false;
+    public boolean allowNull;
 
     private boolean isLast = false;
     private boolean toolsVisible;
@@ -62,6 +62,8 @@ public class GFilterConditionView extends FlexPanel {
     public GFilterConditionView(GPropertyFilter iCondition, GTableController logicsSupplier, final UIHandler handler, boolean toolsVisible, boolean readSelectedValue) {
         this.condition = iCondition;
         this.toolsVisible = toolsVisible;
+
+        allowNull = !condition.isFixed();
 
         List<Pair<Column, String>> selectedColumns = logicsSupplier.getSelectedColumns();
         for (Pair<Column, String> column : selectedColumns) {
@@ -99,7 +101,7 @@ public class GFilterConditionView extends FlexPanel {
         compareLabel.addStyleName("userFilterLabel");
         addCentered(compareLabel);
 
-        compareView = new GFilterCompareSelector(condition) {
+        compareView = new GFilterCompareSelector(condition, allowNull) {
             @Override
             public void negationChanged(boolean value) {
                 condition.negation = value;
@@ -134,7 +136,7 @@ public class GFilterConditionView extends FlexPanel {
             @Override
             public void editingCancelled() {
                 super.editingCancelled();
-                if (!isConfirmed) {
+                if (!isConfirmed && !isFixed()) {
                     handler.removeCondition(condition);
                 }
             }
@@ -143,7 +145,7 @@ public class GFilterConditionView extends FlexPanel {
         valueView.changeProperty(condition.property, condition.columnKey, readSelectedValue); // it's important to do it after adding to the container because setStatic -> setBaseSize is called inside (and adding to container also calls it and override with default value)
         handler.addEnterBinding(valueView.cell);
 
-        deleteButton = new GToolbarButton(DELETE_ICON_PATH, messages.formQueriesFilterRemoveCondition()) {
+        deleteButton = new GToolbarButton(DELETE_ICON_PATH, messages.formFilterRemoveCondition()) {
             @Override
             public ClickHandler getClickHandler() {
                 return event -> handler.removeCondition(condition);
@@ -172,6 +174,10 @@ public class GFilterConditionView extends FlexPanel {
         addCentered(junctionView);
     }
     
+    public boolean isFixed() {
+        return condition.isFixed();
+    }
+
     private void updateCompareLabelText() {
         String negationString = condition.negation ? "!" : "";
         compareLabel.setText(negationString + condition.compare);
@@ -233,5 +239,14 @@ public class GFilterConditionView extends FlexPanel {
     public void startEditing(Event keyEvent) {
         // scheduleDeferred to fix focus issues with quick filter (adding condition by char key) 
         Scheduler.get().scheduleDeferred(() -> valueView.startEditing(keyEvent));
+    }
+
+    public void clearValueView() {
+        valueView.cell.updateValue(null);
+        setApplied(allowNull);
+    }
+
+    public void setApplied(boolean applied) {
+        valueView.setApplied(applied);
     }
 }

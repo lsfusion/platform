@@ -37,6 +37,7 @@ class DataFilterValueViewTable extends JTable implements TableTransferHandler.Ta
     private final TableController logicsSupplier;
 
     public static final ClientInputList FILTER = new ClientInputList(new String[0], new ClientAsyncExec[0], false);
+    private boolean applied;
 
     public DataFilterValueViewTable(DataFilterValueView valueFilterView, ClientPropertyDraw property, TableController ilogicsSupplier) {
         super(new Model());
@@ -230,6 +231,7 @@ class DataFilterValueViewTable extends JTable implements TableTransferHandler.Ta
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             PropertyRenderer renderer = getProperty().getRendererComponent();
             renderer.updateRenderer(value, isSelected, hasFocus, false, DataFilterValueViewTable.this.hasFocus());
+            renderer.getComponent().setBackground(applied ? SwingDefaults.getSelectionColor() : SwingDefaults.getTableCellBackground());
             return renderer.getComponent();
         }
     }
@@ -296,6 +298,11 @@ class DataFilterValueViewTable extends JTable implements TableTransferHandler.Ta
         super.updateUI();
 
         setBorder(SwingDefaults.getTextFieldBorder());
+    }
+
+    public void setApplied(boolean applied) {
+        this.applied = applied;
+        repaint();
     }
 
     private static final class Model extends AbstractTableModel {

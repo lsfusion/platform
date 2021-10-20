@@ -66,7 +66,7 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
         updateToolbarButton();
 
         if (hasOwnContainer()) {
-            addConditionButton = new GToolbarButton(ADD_ICON_PATH, messages.formQueriesFilterAddCondition()) {
+            addConditionButton = new GToolbarButton(ADD_ICON_PATH, messages.formFilterAddCondition()) {
                 @Override
                 public ClickHandler getClickHandler() {
                     return event -> addCondition();
@@ -76,11 +76,11 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
             addConditionButton.setVisible(false);
         }
 
-        resetConditionsButton = new GToolbarButton(RESET_ICON_PATH, messages.formQueriesFilterResetConditions()) {
+        resetConditionsButton = new GToolbarButton(RESET_ICON_PATH, messages.formFilterResetConditions()) {
             @Override
             public ClickHandler getClickHandler() {
                 return event -> {
-                    removeAllConditions();
+                    resetAllConditions();
                     toggleToolsVisible();
                     updateToolbarButton();
                 };
@@ -134,7 +134,7 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
         resetConditionsButton.setVisible(toolsVisible);
     }
     private void updateToolbarButton() {
-        toolbarButton.setTitle(toolsVisible ? messages.hideUserFilterTools() : messages.showUserFilterTools());
+        toolbarButton.setTitle(toolsVisible ? messages.formFilterHideTools() : messages.formFilterShowTools());
         toolbarButton.showBackground(toolsVisible);
     }
     
@@ -191,7 +191,7 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
 
     public void addCondition(GPropertyFilter condition, Event keyEvent, boolean replace, boolean readSelectedValue) {
         if (replace) {
-            removeAllConditions(false);
+            resetAllConditions(false);
         }
         if (condition != null) {
             GFilterConditionView conditionView = new GFilterConditionView(condition, logicsSupplier, this, toolsVisible, readSelectedValue);
@@ -236,15 +236,19 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
         applyFilters(true);
     }
 
-    public void removeAllConditions() {
-        removeAllConditions(true);
+    public void resetAllConditions() {
+        resetAllConditions(true);
     }
-    
-    public void removeAllConditions(boolean focusFirstComponent) {
-        for (GPropertyFilter filter : conditionViews.keySet()) {
-            removeConditionView(filter);
+
+    public void resetAllConditions(boolean focusFirstComponent) {
+        for (GPropertyFilter filter : new LinkedHashMap<>(conditionViews).keySet()) {
+            if (filter.isFixed()) {
+                conditionViews.get(filter).clearValueView();
+            } else {
+                removeConditionView(filter);
+                conditionViews.remove(filter);
+            }
         }
-        conditionViews.clear();
         applyFilters(new ArrayList<>(), focusFirstComponent);
     }
 
@@ -259,10 +263,14 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
     public void applyFilters(boolean focusFirstComponent) {
         ArrayList<GPropertyFilter> result = new ArrayList<>();
         for (Map.Entry<GPropertyFilter, GFilterConditionView> entry : conditionViews.entrySet()) {
-            if (entry.getValue().allowNull || !entry.getKey().nullValue()) {
+            GFilterConditionView conditionView = entry.getValue();
+            if (!entry.getKey().nullValue() || conditionView.allowNull) {
                 result.add(entry.getKey());
+                conditionView.setApplied(true);
+            } else {
+                conditionView.setApplied(false);
             }
-            entry.getValue().isConfirmed = true;
+            conditionView.isConfirmed = true;
         }
         applyFilters(result, focusFirstComponent);
     }
@@ -271,6 +279,7 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
         if (initialFilters != null) {
             for (GFilter filter : initialFilters) {
                 if (filter.container != null) { // removed in design
+                    filter.fixed = true;
                     addCondition(filter, logicsSupplier.getSelectedColumnKey(), false);
                 }
             }

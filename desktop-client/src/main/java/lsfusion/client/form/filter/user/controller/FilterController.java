@@ -62,7 +62,7 @@ public abstract class FilterController implements FilterConditionView.UIHandler 
 
         resetConditionsButton = new ToolbarGridButton(RESET_ICON_PATH, getString("form.queries.filter.reset.conditions"));
         resetConditionsButton.addActionListener(e -> {
-            removeAllConditions();
+            resetAllConditions();
             toggleToolsVisible();
         });
         resetConditionsButton.setVisible(false);
@@ -125,7 +125,7 @@ public abstract class FilterController implements FilterConditionView.UIHandler 
 
         comp.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStrokes.getRemoveFiltersKeyStroke(), "removeAll");
         comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(getFilterKeyStroke(InputEvent.SHIFT_DOWN_MASK), "removeAll");
-        comp.getActionMap().put("removeAll", createRemoveAllAction());
+        comp.getActionMap().put("removeAll", createResetAllAction());
     }
 
     public void addActionsToPanelInputMap(final JComponent comp) {
@@ -151,10 +151,10 @@ public abstract class FilterController implements FilterConditionView.UIHandler 
         }
 
         comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(getFilterKeyStroke(InputEvent.SHIFT_DOWN_MASK), "removeAll");
-        comp.getActionMap().put("removeAll", createRemoveAllAction());
+        comp.getActionMap().put("removeAll", createResetAllAction());
     }
 
-    private AbstractAction createRemoveAllAction() {
+    private AbstractAction createResetAllAction() {
         return new AbstractAction() {
             @Override
             public boolean isEnabled() {
@@ -163,7 +163,7 @@ public abstract class FilterController implements FilterConditionView.UIHandler 
 
             public void actionPerformed(ActionEvent ae) {
                 if (!logicsSupplier.getFormController().isEditing()) {
-                    RmiQueue.runAction(() -> removeAllConditions());
+                    RmiQueue.runAction(() -> resetAllConditions());
                 }
             }
         };
@@ -246,7 +246,7 @@ public abstract class FilterController implements FilterConditionView.UIHandler 
     public void addCondition(ClientFilter filter, ClientGroupObjectValue columnKey, EventObject keyEvent, boolean replace, boolean readSelectedValue) {
         if (replace) {
             // считаем, что в таком случае просто нажали сначала все удалить, а затем - добавить
-            removeAllConditions(false);
+            resetAllConditions(false);
         }
 
         ClientPropertyFilter condition = getNewCondition(filter, columnKey);
@@ -258,20 +258,20 @@ public abstract class FilterController implements FilterConditionView.UIHandler 
     public void addCondition(ClientPropertyFilter condition, TableController logicsSupplier, EventObject keyEvent, boolean readSelectedValue) {
         logicsSupplier.getFormController().commitOrCancelCurrentEditing();
 
-        FilterConditionView condView = new FilterConditionView(condition, logicsSupplier, this, toolsVisible, readSelectedValue);
-        conditionViews.put(condition, condView);
-        
-        addConditionView(condition, condView);
+        FilterConditionView conditionView = new FilterConditionView(condition, logicsSupplier, this, toolsVisible, readSelectedValue);
+        conditionViews.put(condition, conditionView);
+
+        addConditionView(condition, conditionView);
 
         updateConditionsLastState();
 
         logicsSupplier.getFormController().getLayout().autoShowHideContainers();
 
         if (keyEvent != null) {
-            condView.startEditing(keyEvent);
+            conditionView.startEditing(keyEvent);
         }
     }
-    
+
     private void addConditionView(ClientPropertyFilter condition, FilterConditionView conditionView) {
         if (condition.filter.container == null) { // added by user
             getFiltersContainer().add(condition.filter);
@@ -295,18 +295,20 @@ public abstract class FilterController implements FilterConditionView.UIHandler 
         applyFilters(true);
     }
 
-    public void removeAllConditions() {
-        removeAllConditions(true);
+    public void resetAllConditions() {
+        resetAllConditions(true);
     }
 
-    public void removeAllConditions(boolean focusFirstComponent) {
-        applyFilters(Collections.emptyList(), focusFirstComponent);
-
-        for (ClientPropertyFilter filter : conditionViews.keySet()) {
-            removeConditionView(filter);
+    public void resetAllConditions(boolean focusFirstComponent) {
+        for (ClientPropertyFilter filter : new LinkedHashMap<>(conditionViews).keySet()) {
+            if (filter.isFixed()) {
+                conditionViews.get(filter).clearValueView();
+            } else {
+                removeConditionView(filter);
+                conditionViews.remove(filter);
+            }
         }
-
-        conditionViews.clear();
+        applyFilters(focusFirstComponent);
     }
 
     public void updateConditionsLastState() {
@@ -320,10 +322,14 @@ public abstract class FilterController implements FilterConditionView.UIHandler 
     public void applyFilters(boolean focusFirstComponent) {
         ArrayList<ClientPropertyFilter> result = new ArrayList<>();
         for (Map.Entry<ClientPropertyFilter, FilterConditionView> entry : conditionViews.entrySet()) {
-            if (entry.getValue().allowNull || !entry.getKey().nullValue()) {
+            FilterConditionView conditionView = entry.getValue();
+            if (!entry.getKey().nullValue() || conditionView.allowNull) {
                 result.add(entry.getKey());
+                conditionView.setApplied(true);
+            } else {
+                conditionView.setApplied(false);
             }
-            entry.getValue().isConfirmed = true;
+            conditionView.isConfirmed = true;
         }
 
         applyFilters(result, focusFirstComponent);
@@ -335,6 +341,7 @@ public abstract class FilterController implements FilterConditionView.UIHandler 
         if (initialFilters != null) {
             for (ClientFilter filter : initialFilters) {
                 if (filter.container != null) { // removed in design
+                    filter.fixed = true;
                     addCondition(filter, logicsSupplier.getSelectedColumn(), false);
                 }
             }

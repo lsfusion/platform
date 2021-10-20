@@ -109,9 +109,11 @@ public abstract class DataFilterValueView extends PanelWidget {
         return logicsSupplier.getFormController();
     }
 
-    public abstract void applyFilters(boolean focusFirstComponent);
-
     public ClientGroupObjectValue getColumnKey() {
         return columnKey;
+    }
+
+    public void setApplied(boolean applied) {
+        valueTable.setApplied(applied);
     }
 }

@@ -5,6 +5,7 @@ import lsfusion.base.identity.IDGenerator;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.design.ContainerType;
 import lsfusion.interop.form.object.AbstractGroupObject;
+import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFSet;
@@ -12,6 +13,7 @@ import lsfusion.server.logics.form.interactive.controller.remote.serialization.S
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
+import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
 import lsfusion.server.logics.form.interactive.design.filter.FilterView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyGroupContainerView;
@@ -66,13 +68,15 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
 
         grid = new GridView(idGen.idShift(), this);
         toolbarSystem = new ToolbarView(idGen.idShift());
-        
+
         filtersContainer = new ContainerView(idGen.idShift());
-        filtersContainer.setType(ContainerType.CONTAINERH);
+        filtersContainer.setType(ContainerType.CONTAINERV);
+        filtersContainer.setLines(DefaultFormView.GROUP_CONTAINER_LINES_COUNT);
         filtersContainer.setAlignment(FlexAlignment.STRETCH);
-        
+        filtersContainer.setCaption(LocalizedString.create(ThreadLocalContext.localize("{form.view.filters.container}")));
+
         filters = NFFact.orderSet();
-        calculations = new CalculationsView(idGen.idShift()); 
+        calculations = new CalculationsView(idGen.idShift());
     }
 
     public LocalizedString getCaption() {

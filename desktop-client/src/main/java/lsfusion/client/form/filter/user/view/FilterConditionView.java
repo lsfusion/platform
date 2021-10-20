@@ -2,7 +2,8 @@ package lsfusion.client.form.filter.user.view;
 
 import lsfusion.base.Pair;
 import lsfusion.client.controller.remote.RmiQueue;
-import lsfusion.client.form.design.view.*;
+import lsfusion.client.form.design.view.Filler;
+import lsfusion.client.form.design.view.FlexPanel;
 import lsfusion.client.form.design.view.widget.LabelWidget;
 import lsfusion.client.form.design.view.widget.SeparatorWidget;
 import lsfusion.client.form.design.view.widget.Widget;
@@ -51,7 +52,7 @@ public class FilterConditionView extends FlexPanel {
     private FlexPanel junctionSeparator;
     private FlexPanel junctionViewWrapper;
 
-    public boolean allowNull = false;
+    public boolean allowNull;
 
     private boolean isLast = false;
     private boolean toolsVisible;
@@ -64,6 +65,8 @@ public class FilterConditionView extends FlexPanel {
         condition = ifilter;
         uiHandler = iuiHandler;
         this.toolsVisible = toolsVisible;
+
+        allowNull = !condition.isFixed();
 
         List<Pair<Column, String>> selectedColumns = logicsSupplier.getSelectedColumns();
         for (Pair<Column, String> column : selectedColumns) {
@@ -106,7 +109,7 @@ public class FilterConditionView extends FlexPanel {
         compareLabel.setBorder(labelBorder);
         addCentered(compareLabel);
 
-        compareView = new FilterCompareSelector(condition) {
+        compareView = new FilterCompareSelector(condition, allowNull) {
             @Override
             public void valueChanged(Compare value) {
                 condition.compare = value;
@@ -138,14 +141,9 @@ public class FilterConditionView extends FlexPanel {
             }
 
             @Override
-            public void applyFilters(boolean focusFirstComponent) {
-                uiHandler.applyFilters(focusFirstComponent);
-            }
-
-            @Override
             public void editingCancelled() {
                 super.editingCancelled();
-                if (!isConfirmed) {
+                if (!isConfirmed && !isFixed()) {
                     uiHandler.removeCondition(condition);
                 }
             }
@@ -186,6 +184,10 @@ public class FilterConditionView extends FlexPanel {
         setToolsVisible(toolsVisible);
 
         propertyView.setSelectedValue(currentColumn, currentCaption);
+    }
+
+    public boolean isFixed() {
+        return condition.isFixed();
     }
 
     private void updateCompareLabelText() {
@@ -253,5 +255,14 @@ public class FilterConditionView extends FlexPanel {
 
     public void startEditing(EventObject initFilterEvent) {
         valueView.startEditing(initFilterEvent);
+    }
+
+    public void clearValueView() {
+        valueView.valueTable.setValueAt(null, 0, 0);
+        setApplied(allowNull);
+    }
+
+    public void setApplied(boolean applied) {
+        valueView.setApplied(applied);
     }
 }

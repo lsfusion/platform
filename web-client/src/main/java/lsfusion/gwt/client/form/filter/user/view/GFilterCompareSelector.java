@@ -20,9 +20,10 @@ public abstract class GFilterCompareSelector extends GFilterOptionSelector<GComp
     private boolean allowNull;
     private CheckBox allowNullCB;
 
-    public GFilterCompareSelector(GPropertyFilter condition) {
+    public GFilterCompareSelector(GPropertyFilter condition, boolean allowNull) {
         super(condition.property.getFilterCompares());
         negation = condition.negation;
+        this.allowNull = allowNull;
 
         negationCB = new CheckBox("!");
         negationCB.addStyleName("userFilterNegationCheckBox");
@@ -35,10 +36,10 @@ public abstract class GFilterCompareSelector extends GFilterOptionSelector<GComp
         
         allowNullCB = new CheckBox(ClientMessages.Instance.get().formFilterConditionAllowNull());
         allowNullCB.addStyleName("userFilterNegationCheckBox");
-        allowNullCB.setValue(allowNull);
+        allowNullCB.setValue(this.allowNull);
         allowNullCB.addValueChangeHandler(event -> {
-            allowNull = allowNullCB.getValue();
-            allowNullChanged(allowNull);
+            this.allowNull = allowNullCB.getValue();
+            allowNullChanged(this.allowNull);
         });
 
         FlexPanel popupContainer = new FlexPanel(true);

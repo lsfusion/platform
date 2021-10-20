@@ -17,9 +17,10 @@ public abstract class FilterCompareSelector extends FilterOptionSelector<Compare
     private boolean allowNull;
     private JCheckBox allowNullCB;
     
-    public FilterCompareSelector(ClientPropertyFilter condition) {
+    public FilterCompareSelector(ClientPropertyFilter condition, boolean allowNull) {
         super(Arrays.asList(condition.property.getFilterCompares()));
         negation = condition.negation;
+        this.allowNull = allowNull;
 
         negationCB = new JCheckBox("!");
         negationCB.setSelected(negation);
@@ -37,10 +38,10 @@ public abstract class FilterCompareSelector extends FilterOptionSelector<Compare
                 return new Dimension(preferredSize.width + 2, preferredSize.height);
             }
         };
-        allowNullCB.setSelected(allowNull);
+        allowNullCB.setSelected(this.allowNull);
         allowNullCB.addActionListener(event -> {
-            allowNull = allowNullCB.isSelected();
-            allowNullChanged(allowNull);
+            this.allowNull = allowNullCB.isSelected();
+            allowNullChanged(this.allowNull);
         });
 
         addOptions();
