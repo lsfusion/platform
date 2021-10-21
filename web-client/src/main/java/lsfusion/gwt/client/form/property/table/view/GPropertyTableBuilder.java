@@ -13,7 +13,7 @@ import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import java.util.List;
 import java.util.Optional;
 
-import static lsfusion.gwt.client.view.StyleDefaults.customDataGridStyle;
+import static lsfusion.gwt.client.view.StyleDefaults.*;
 
 /**
  * Based on lsfusion.gwt.client.base.view.grid.DefaultDataGridBuilder
@@ -133,11 +133,18 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
     }
 
     @Override
-    public void updateStickyRowImpl(TableRowElement tr, List<Integer> stickyColumns) {
+    public void updateStickyRowImpl(TableRowElement tr, List<Integer> stickyColumns, boolean setBackground) {
         int left = 0;
         for (int curColumn = 0; curColumn < cellTable.getColumnCount(); curColumn++) {
             if(stickyColumns.contains(curColumn)) {
                 TableCellElement td = tr.getCells().getItem(curColumn).cast();
+                if(setBackground) {
+                    String background = td.getPropertyString(GPropertyTableBuilder.BKCOLOR);
+                    if(background == null || background.isEmpty()) {
+                        td.getStyle().setBackgroundColor(getComponentBackgroundColor());
+                    }
+                }
+                td.getStyle().setZIndex(1000 - curColumn);
                 td.getStyle().setProperty("position", "sticky");
                 td.getStyle().setProperty("left", left + "px");
                 left += td.getClientWidth();

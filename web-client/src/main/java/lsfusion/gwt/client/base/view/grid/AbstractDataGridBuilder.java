@@ -144,17 +144,17 @@ public abstract class AbstractDataGridBuilder<T> {
 
     protected abstract void updateRowImpl(int rowIndex, T rowValue, int[] columnsToRedraw, TableRowElement rowElement);
 
-    public void updateSticky(TableSectionElement tbodyElement, List<Integer> stickyColumns) {
+    public void updateSticky(TableSectionElement tbodyElement, List<Integer> stickyColumns, int selectedRow) {
         int rowCount = tbodyElement.getChildCount();
         if (rowCount > 0) {
             NodeList<TableRowElement> rows = tbodyElement.getRows();
             for (int i = 0; i < rowCount; ++i) {
-                updateStickyRowImpl(rows.getItem(i), stickyColumns);
+                updateStickyRowImpl(rows.getItem(i), stickyColumns, i != selectedRow);
             }
         }
     }
 
-    protected abstract void updateStickyRowImpl(TableRowElement rowElement, List<Integer> stickyColumns);
+    protected abstract void updateStickyRowImpl(TableRowElement rowElement, List<Integer> stickyColumns, boolean setBackground);
 
     protected final <C> void renderCell(TableCellElement td, Cell cell, Column<T, C> column) {
         td.setPropertyObject(COLUMN_ATTRIBUTE, column);

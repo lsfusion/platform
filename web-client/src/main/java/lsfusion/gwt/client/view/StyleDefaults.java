@@ -33,7 +33,8 @@ public class StyleDefaults {
     private static String tableGridColor;
 
     private static StyleElement customDataTableGridStyleElement;
-    
+
+    private static String componentBackgroundColor;
     private static int[] componentBackgroundRGB;
     
     private static int[] pivotGroupLevelDarkenStepRGB;
@@ -45,6 +46,7 @@ public class StyleDefaults {
         focusedCellBackgroundColorMixed = null;
         focusedCellBorderColor = null;
         tableGridColor = null;
+        componentBackgroundColor = null;
         componentBackgroundRGB = null;
         pivotGroupLevelDarkenStepRGB = null;
         
@@ -132,7 +134,14 @@ public class StyleDefaults {
         }
         return tableGridColor;
     }
-    
+
+    public static String getComponentBackgroundColor() {
+        if (componentBackgroundColor == null) {
+            componentBackgroundColor = getComponentBackground(colorTheme);
+        }
+        return componentBackgroundColor;
+    }
+
     public static int[] getComponentBackgroundRGB() {
         if (componentBackgroundRGB == null) {
             int cbRGB = toRGB(getComponentBackground(colorTheme));

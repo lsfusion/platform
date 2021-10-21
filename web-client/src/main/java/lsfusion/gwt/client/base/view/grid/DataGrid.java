@@ -1091,12 +1091,12 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
         if (columnsChanged || selectedRowChanged || selectedColumnChanged || dataChanged) // dataChanged because background is data (and updated during data update)
             updateSelectedRowBackgroundDOM(); // updating selection background
 
-        if (columnsChanged || selectedRowChanged || selectedColumnChanged || focusedChanged)
-            updateFocusedCellDOM(); // updating focus cell border
-
-        if (columnsChanged || headersChanged || dataChanged || widthsChanged) {
+        if (columnsChanged || headersChanged || dataChanged || widthsChanged || selectedRowChanged || selectedColumnChanged || focusedChanged) {
             updateStickyDOM();
         }
+
+        if (columnsChanged || selectedRowChanged || selectedColumnChanged || focusedChanged)
+            updateFocusedCellDOM(); // updating focus cell border
 
         if(focusedChanged) // updating focus grid border
             changeBorder(isFocused ? "var(--focus-color)" : "var(--component-border-color)");
@@ -1324,7 +1324,7 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
         if (!noFooters)
             footerBuilder.updateSticky(stickyColumns);
 
-        tableBuilder.updateSticky(tableData.getSection(), stickyColumns);
+        tableBuilder.updateSticky(tableData.getSection(), stickyColumns, getSelectedRow());
     }
 
     private void updateSelectedRowBackgroundDOM() {
@@ -1405,6 +1405,8 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
 
             TableCellElement thisCell = cells.getItem(column);
             if(column < columnCount) {
+                thisCell.getStyle().setZIndex(1000); //protect from sticky columns
+
                 // LEFT BORDER
 //                if(column > 0) // we don't want focused border on leftmost border to prevent shifting leftmost cell
                 setFocusedCellLeftBorder(thisCell, focused);
@@ -1412,9 +1414,6 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
                 // in theory we might want to prevent extra border on the bottom and on the right (on the top there is no problem because of header)
                 // but there is a problem (with scroller, in that case we'll have to track hasVerticalScroller, hasHorizontalScroller) + table can be not full of rows (and we also have to track it)
                 // so we'll just draw that borders always
-
-                // TOP BORDER
-                setFocusedCellTopBorder(thisCell, focused);
 
                 // BOTTOM BORDER
                 setFocusedCellBottomBorder(thisCell, focused);
@@ -1430,17 +1429,9 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
         }
 
         // TOP BORDER (BOTTOM of upper row)
-//        if(column < columnCount) {
-//            TableCellElement upperCell = (row > 0 ? rows.getItem(row - 1) : headerRows.getItem(0)).getCells().getItem(column);
-//            setFocusedCellBottomBorder(upperCell, focused);
-//        }
-    }
-
-    private void setFocusedCellTopBorder(TableCellElement td, boolean focused) {
-        if (focused) {
-            td.getStyle().setProperty("borderTop", "1px solid " + getFocusedCellBorderColor());
-        } else {
-            td.getStyle().clearProperty("borderTop");
+        if(column < columnCount) {
+            TableCellElement upperCell = (row > 0 ? rows.getItem(row - 1) : headerRows.getItem(0)).getCells().getItem(column);
+            setFocusedCellBottomBorder(upperCell, focused);
         }
     }
 

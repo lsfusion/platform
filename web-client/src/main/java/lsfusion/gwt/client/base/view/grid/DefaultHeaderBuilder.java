@@ -168,6 +168,8 @@ public class DefaultHeaderBuilder<T> extends DataGridHeaderBuilder<T> {
         for (int curColumn = 0; curColumn < getTable().getColumnCount(); curColumn++) {
             if(stickyColumns.contains(curColumn)) {
                 TableCellElement th = tr.getCells().getItem(curColumn).cast();
+                th.getStyle().setBackgroundColor("var(--background-color)");
+                th.getStyle().setZIndex(1000 - curColumn);
                 th.getStyle().setProperty("position", "sticky");
                 th.getStyle().setProperty("left", left + "px");
                 left += th.getClientWidth();
