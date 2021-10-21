@@ -125,8 +125,6 @@ getAuthToken() {
     exportText() <- currentAuthToken();
 } @@api;
 
-minHashLength = DATA INTEGER ();
-
 // LDAP
 useLDAP '{authentication.use.ldap}' = DATA BOOLEAN ();
 serverLDAP '{authentication.server.ldap}' = DATA STRING[100] ();
