@@ -41,8 +41,6 @@ function selectize() {
                 return
             }
 
-            controller.setMinHeight(controller.selectizeInstance[0].nextElementSibling.offsetHeight);
-
             let selectizeInstance = controller.selectizeInstance[0].selectize;
             let diff = controller.getDiff(list);
 

@@ -43,7 +43,6 @@ function select2() {
                 controller.booleanFilterSet = true;
                 return
             }
-            controller.setMinHeight(element.lastElementChild.offsetHeight);
 
             let select2Instance = controller.select2Instance;
 

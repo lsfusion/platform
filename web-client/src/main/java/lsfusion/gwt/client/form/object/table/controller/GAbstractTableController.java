@@ -257,9 +257,7 @@ public abstract class GAbstractTableController extends GPropertyController imple
                         autoSize += view.getOffsetHeight() - gridTable.getViewportHeight(); // margin'ы и border'ы учитываем
                     }
                 }
-            } else if (widget instanceof GCustom)
-                autoSize = ((GCustom) widget).getElementMinHeight();
-            else
+            } else
                 autoSize = GTreeTable.DEFAULT_MAX_PREFERRED_HEIGHT;
             setChildFlexBasis(view, autoSize);
         }
