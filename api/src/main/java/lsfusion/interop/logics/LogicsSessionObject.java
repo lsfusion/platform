@@ -35,8 +35,8 @@ public class LogicsSessionObject {
 
     public ServerSettings serverSettings; // caching
     public ServerSettings getServerSettings(SessionInfo sessionInfo, String contextPath, boolean noCache) throws RemoteException {
-        if(serverSettings == null || noCache) {
-            ExternalResponse result = remoteLogics.exec(AuthenticationToken.ANONYMOUS, sessionInfo, "Service.getServerSettings[]", new ExternalRequest(sessionInfo.query));
+        if(serverSettings == null || serverSettings.inDevMode || noCache) {
+            ExternalResponse result = remoteLogics.exec(AuthenticationToken.ANONYMOUS, sessionInfo, "Service.getServerSettings[]", sessionInfo.externalRequest);
 
             JSONObject json = new JSONObject(new String(((FileData) result.results[0]).getRawFile().getBytes(), StandardCharsets.UTF_8));
             String logicsName = trimToNull(json.optString("logicsName"));
@@ -45,6 +45,7 @@ public class LogicsSessionObject {
             RawFileData logicsIcon = getRawFileData(trimToNull(json.optString("logicsIcon")));
             String platformVersion = trimToNull(json.optString("platformVersion"));
             Integer apiVersion = json.optInt("apiVersion");
+            boolean inDevMode = json.optBoolean("inDevMode");
             int sessionConfigTimeout = json.optInt("sessionConfigTimeout");
             boolean anonymousUI = json.optBoolean("anonymousUI");
             String jnlpUrls = trimToNull(json.optString("jnlpUrls"));
@@ -57,7 +58,7 @@ public class LogicsSessionObject {
             Map<String, String> lsfParams = getLsfParamsFromJson(json.optJSONArray("lsfParams"));
 
             serverSettings = new ServerSettings(logicsName, displayName, logicsLogo, logicsIcon, platformVersion, apiVersion,
-                    sessionConfigTimeout, anonymousUI, jnlpUrls, files, disableRegistration, lsfParams);
+                    inDevMode, sessionConfigTimeout, anonymousUI, jnlpUrls, files, disableRegistration, lsfParams);
         }
         return serverSettings;
     }

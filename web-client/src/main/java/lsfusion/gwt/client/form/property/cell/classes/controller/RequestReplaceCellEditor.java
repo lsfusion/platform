@@ -42,7 +42,7 @@ public interface RequestReplaceCellEditor extends RequestCellEditor, ReplaceCell
     }
 
     @Override
-    default void clearRender(Element cellParent, RenderContext renderContext) {
+    default void clearRender(Element cellParent, RenderContext renderContext, boolean cancel) {
         GwtClientUtils.removeAllChildren(cellParent);
     }
 }

@@ -10,7 +10,8 @@ title: 'Built-in classes'
 |`LONG`               |64-bit integer                |`5l`, `23L`, `10000000000000L`|
 |`DOUBLE`             |64-bit floating point number  |`5.0d`, `2.35D`|
 |`NUMERIC[ , ]`       |Number with fixed width and precision|`5.0`, `2.35`|
-|`BOOLEAN`            |The logical data type         |`TRUE`, `NULL`|
+|`BOOLEAN`            |Logical data type         |`TRUE`, `NULL`|
+|`TBOOLEAN`           |Logical data type (3-state)    |`TTRUE`, `TFALSE`, `NULL`|
 |`DATE`               |Date                          |`13_07_1982`|
 |`DATETIME`           |Date and time                 |`13_07_1982_18:00`|
 |`TIME`               |Time                          |`18:00`|

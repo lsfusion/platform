@@ -6,6 +6,7 @@ import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.navigator.ConnectionInfo;
 import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.http.authentication.LSFAuthenticationToken;
+import lsfusion.http.controller.MainController;
 import lsfusion.http.provider.SessionInvalidatedException;
 import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.connection.ClientType;
@@ -35,14 +36,15 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean 
 
     public String servSID = GwtSharedUtils.randomString(25);
     
-    public static SessionInfo getSessionInfo(Authentication auth) {
+    public static SessionInfo getSessionInfo(Authentication auth, HttpServletRequest request) {
         Locale clientLocale = LocaleContextHolder.getLocale();
         return new SessionInfo(SystemUtils.getLocalHostName(), ((WebAuthenticationDetails) auth.getDetails()).getRemoteAddress(), clientLocale.getLanguage(), clientLocale.getCountry(),
-                BaseUtils.getDatePattern(), BaseUtils.getTimePattern());
+                BaseUtils.getDatePattern(), BaseUtils.getTimePattern(), MainController.getExternalRequest(new Object[0], request));
     }
 
     public static SessionInfo getSessionInfo(HttpServletRequest request) {
-        return new SessionInfo(request.getRemoteHost(), request.getRemoteAddr(), null, null, null, null, request.getQueryString()); // we don't need client language and country because they were already provided when authenticating (see method above)
+        return new SessionInfo(request.getRemoteHost(), request.getRemoteAddr(), null, null, null, null, // we don't need client language and country because they were already provided when authenticating (see method above)
+                MainController.getExternalRequest(new Object[0], request));
     }
 
     private static NavigatorInfo getNavigatorInfo(HttpServletRequest request, ConnectionInfo connectionInfo) {

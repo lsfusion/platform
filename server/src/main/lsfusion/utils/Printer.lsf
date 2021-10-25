@@ -23,3 +23,6 @@ printFile INTERNAL 'lsfusion.server.physics.dev.integration.external.to.equ.prin
 printFile '{printer.print.file}' (PDFFILE file, STRING printer, STRING trayName, BOOLEAN duplex) { printFile(TRUE, file, printer, trayName, duplex); }
 printFile '{printer.print.file}' (PDFFILE file) { printFile(TRUE, file, NULL, NULL, NULL); }
 printFileServer '{printer.print.file}' (PDFFILE file, STRING printer, STRING trayName, BOOLEAN duplex) { printFile(NULL, file, printer, trayName, duplex); }
+
+//'trayName' and 'duplex' params are retained for backward compatibility. In 'printer' param after printer name you can pass 'print-sides', 'print-tray', 'sheet-collate', 'copies' options semicolon-separated
+printFile '{printer.print.file}' (BOOLEAN isClient, PDFFILE file, STRING printer) { printFile(isClient, file, printer, NULL, NULL); }

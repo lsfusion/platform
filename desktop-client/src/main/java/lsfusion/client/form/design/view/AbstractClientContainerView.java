@@ -26,7 +26,7 @@ public abstract class AbstractClientContainerView implements ClientContainerView
     public AbstractClientContainerView(ClientContainer container) {
         this.container = container;
 
-        vertical = container.isVertical();
+        vertical = !container.horizontal;
     }
 
     @Override
@@ -140,11 +140,6 @@ public abstract class AbstractClientContainerView implements ClientContainerView
         return children.get(index);
     }
 
-    @Override
-    public Widget getChildView(int index) {
-        return childrenViews.get(index);
-    }
-
     public void updateLayout(boolean[] childrenVisible) {
         //do nothing by default
     }
@@ -210,7 +205,7 @@ public abstract class AbstractClientContainerView implements ClientContainerView
 
     // не предполагает явное использование (так как не содержит проверки на явный size)
     public Dimension getMaxPreferredSize(Map<ClientContainer, ClientContainerView> containerViews) {
-        boolean vertical = container.isVertical();
+        boolean vertical = !container.horizontal;
         int width = 0;
         int height = 0;
         int chCnt = children.size();

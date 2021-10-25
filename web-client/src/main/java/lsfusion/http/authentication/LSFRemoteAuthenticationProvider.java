@@ -68,8 +68,8 @@ public class LSFRemoteAuthenticationProvider extends LogicsRequestHandler implem
 
     protected static Locale getUserLocale(RemoteLogicsInterface remoteLogics, Authentication auth, AuthenticationToken authToken, HttpServletRequest request) throws RemoteException {
         try {
-            SessionInfo sessionInfo = NavigatorProviderImpl.getSessionInfo(auth);
-            ExternalResponse result = remoteLogics.exec(authToken, sessionInfo, "Authentication.getCurrentUserLocale", MainController.getExternalRequest(new Object[0], request));
+            SessionInfo sessionInfo = NavigatorProviderImpl.getSessionInfo(auth, request);
+            ExternalResponse result = remoteLogics.exec(authToken, sessionInfo, "Authentication.getCurrentUserLocale", sessionInfo.externalRequest);
             JSONObject localeObject = new JSONObject(new String(((FileData) result.results[0]).getRawFile().getBytes(), StandardCharsets.UTF_8));
             String language = localeObject.optString("language");
             String country = localeObject.optString("country");

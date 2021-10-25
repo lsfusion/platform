@@ -18,7 +18,7 @@ title: 'Опции свойства'
     CHANGEKEY key [SHOW | HIDE]
     MATERIALIZED
     TABLE tableName
-    INDEXED
+    INDEXED [LIKE | MATCH]
     NONULL [DELETE] eventClause
     AUTOSET
     CHARWIDTH width [FLEX | NOFLEX]
@@ -53,6 +53,15 @@ title: 'Опции свойства'
 - `INDEXED`
 
     Ключевое слово, указание которого создает [индекс](Indexes.md) по этому свойству. Аналогично использованию [инструкции `INDEX`](INDEX_statement.md). 
+
+    - `LIKE`
+
+        Ключевое слово, указание которого создает вместо обычного индекса GIN индекс.
+
+    - `MATCH`
+
+        Ключевое слово, указание которого создает вместо обычного индекса два: GIN индекс и GIN индекс с to_tsvector.
+
 
 - `NONULL [DELETE] eventClause`
 

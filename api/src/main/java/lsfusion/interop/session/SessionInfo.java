@@ -3,14 +3,14 @@ package lsfusion.interop.session;
 import lsfusion.interop.connection.ConnectionInfo;
 
 public class SessionInfo extends ConnectionInfo {
-    public String query;
+    public ExternalRequest externalRequest;
 
     public SessionInfo(String hostName, String hostAddress, String language, String country, String dateFormat, String timeFormat) {
-        this(hostName, hostAddress, language, country, dateFormat, timeFormat, null);
+        this(hostName, hostAddress, language, country, dateFormat, timeFormat, new ExternalRequest());
     }
 
-    public SessionInfo(String hostName, String hostAddress, String language, String country, String dateFormat, String timeFormat, String query) {
+    public SessionInfo(String hostName, String hostAddress, String language, String country, String dateFormat, String timeFormat, ExternalRequest externalRequest) {
         super(hostName, hostAddress, language, country, dateFormat, timeFormat);
-        this.query = query;
+        this.externalRequest = externalRequest;
     }
 }

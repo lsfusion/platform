@@ -1,16 +1,15 @@
 package lsfusion.gwt.client.form.view;
 
 import com.google.gwt.dom.client.Style;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.TooltipManager;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
+import lsfusion.gwt.client.base.view.ResizableComplexPanel;
 import lsfusion.gwt.client.form.controller.FormsController;
-import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.design.view.GFormLayout;
 import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
 
 import static lsfusion.gwt.client.view.StyleDefaults.VALUE_HEIGHT;
@@ -33,7 +32,7 @@ public final class FormDockable extends FormContainer<FormDockable.ContentWidget
 
     @Override
     protected ContentWidget initContentWidget() {
-        return new ContentWidget(null);
+        return new ContentWidget();
     }
 
     @Override
@@ -88,17 +87,15 @@ public final class FormDockable extends FormContainer<FormDockable.ContentWidget
         return contentWidget;
     }
 
-    public class ContentWidget extends LayoutPanel {
-        private final Widget mask;
+    public class ContentWidget extends ResizableComplexPanel {
         private FocusPanel maskWrapper;
         private Widget content;
 
-        private ContentWidget(Widget content) {
-            mask = new SimpleLayoutPanel();
-            mask.setStyleName("dockableBlockingMask");
-            maskWrapper = new FocusPanel(mask);
-            maskWrapper.setStyleName("dockableBlockingMask");
-            setContent(content);
+        // need this wrapper for paddings / margins (since content is )
+        private ContentWidget() {
+            setStyleName("formDockableContainerPanel");
+
+            initBlockedMask();
         }
 
         public Widget getContent() {
@@ -111,36 +108,36 @@ public final class FormDockable extends FormContainer<FormDockable.ContentWidget
             }
 
             content = icontent;
-            if (content != null) {
-                addFullSizeChild(content);
-            }
+            setPercentMain(content); // we want to include paddings in content
+        }
 
-            maskWrapper.addClickHandler(new ClickHandler() {
-                @Override
-                public void onClick(ClickEvent clickEvent) {
-                    if(content instanceof GFormController) {
-                        FormsController formsController = ((GFormController) content).getFormsController();
-                        if(formsController instanceof FormsController && blockingForm != null) {
-                            formsController.selectTab(blockingForm);
-                        }
-                    }
+        private void initBlockedMask() {
+            Widget mask = new SimpleLayoutPanel();
+            mask.setStyleName("dockableBlockingMask");
+            maskWrapper = new FocusPanel(mask);
+            maskWrapper.setStyleName("dockableBlockingMask");
+            maskWrapper.setVisible(false);
+            add(maskWrapper);
+            GwtClientUtils.setupFillParent(maskWrapper.getElement());
+            maskWrapper.addClickHandler(clickEvent -> {
+                if (content instanceof GFormLayout && blockingForm != null) {
+                    ((GFormLayout) content).getFormsController().selectTab(blockingForm);
                 }
-
             });
         }
 
-        private void addFullSizeChild(Widget child) {
-            add(child);
+//        private void addFullSizeChild(Widget child) {
+//            add(child);
             // since table (and other elements) has zoom 1 by default, having not integer px leads to some undesirable extra lines (for example right part of any grid gets doubled line)
-            setWidgetLeftRight(child, 1, Style.Unit.PX, 1, Style.Unit.PX);
-            setWidgetTopBottom(child, 1, Style.Unit.PX, 1, Style.Unit.PX);
-        }
+//            setWidgetLeftRight(child, 1, Style.Unit.PX, 1, Style.Unit.PX);
+//            setWidgetTopBottom(child, 1, Style.Unit.PX, 1, Style.Unit.PX);
+//        }
 
         public void setBlocked(boolean blocked) {
             if (blocked) {
-                addFullSizeChild(maskWrapper);
+                maskWrapper.setVisible(true);
             } else {
-                remove(maskWrapper);
+                maskWrapper.setVisible(false);
             }
         }
     }

@@ -241,6 +241,10 @@ input[type=checkbox]:focus {
     pointer-events: none;
 }
 
+/* needed for paddings + mask */
+.formDockableContainerPanel {
+    padding: var(--border-padding);
+}
 
 /* ------------ Panel Renderer related styles ------------ */
 .dataPanelRendererPanel {
@@ -249,9 +253,23 @@ input[type=checkbox]:focus {
     cursor: default; /* need this since text by default gets "editing" cursor, however it overrides for example resize cursor, but it's not clear what to do with it */
 }
 
-.panelRendererValue, button {
+.propertyContainerPanel {
+}
+
+.notEmptyPanelLabel {
+    margin-left: var(--border-padding);
+    margin-right: var(--border-padding);
+}
+
+.alignPanelLabel {
+    margin-top: var(--border-padding);
+    margin-bottom: var(--border-padding);
+}
+
+.panelRendererValue {
     background: var(--component-background-color);
     border: 1px solid var(--component-border-color); /* should correspond to the result in ActionOrPropertyValue.setBaseSize */
+    margin: var(--border-padding);
 }
 
 .propertyPanelRendererValue {
@@ -259,8 +277,14 @@ input[type=checkbox]:focus {
     overflow: hidden; /* to hide inner corners */
 }
 
-.actionPanelRendererValue, button {
+.actionPanelRendererValue {
     border-radius: var(--button-border-radius);
+}
+
+button {
+    border-radius: var(--button-border-radius);
+    background: var(--component-background-color);
+    border: 1px solid var(--component-border-color); /* should correspond to the result in ActionOrPropertyValue.setBaseSize */
 }
 
 .panelRendererValueFocused, button:focus {
@@ -277,79 +301,68 @@ input[type=checkbox]:focus {
 }
 
 /* ------------ Caption panel ------------ */
-.captionPanel {
-    position: relative;
-}
 
 .oppositeStretchAutoSizePanel {
 }
 
-.captionPanelWithLegend {
-    margin: 1px;
-    padding: 1px;
-    border: 1px solid var(--panel-border-color);
-    border-radius: var(--panel-border-radius);
+.leftBorder {
+    border-left: 1px solid var(--panel-border-color);
+
+    padding-left: var(--border-padding);
+}
+.topBorder {
+    border-top: 1px solid var(--panel-border-color);
+
+    padding-top: var(--border-padding);
+}
+/* margin and not padding because we want the opposite borders to respect this padding */
+.rightBorder {
+    margin-right: var(--border-padding);
+}
+.bottomBorder {
+    margin-bottom: var(--border-padding);
 }
 
+/* we can't use topborder because it is removed in autoDrawBorders */
+.captionPanelNotNullLegend {
+    border-top: 1px solid var(--panel-border-color);
+}
+
+.captionPanel {
+    position: relative;
+}
+
+.captionLegendContainerPanel {
+    position: relative;
+}
 .captionPanelLegend {
-    position: absolute;
-    top: -1.0em;
-    left: 0.25em;
     white-space: nowrap;
-    margin-top: 1px;
-    padding: 0 0.25em;
     background-color: var(--background-color);
     color: var(--caption-panel-legend-color);
 }
 
-.captionPanelLabel {
+.notNullCaptionPanelLegend {
+    padding-top: var(--border-padding);
+    padding-bottom: var(--border-padding);
+}
+
+.notEmptyCaptionPanelLegend {
+    margin-left: 4px;
+    margin-right: 4px;
+
+    padding-left: 4px;
+    padding-right: 4px;
+}
+
+.captionCenteredLine {
     position: absolute;
-    top: -12px;
-    left: 0.75em;
-    white-space: nowrap;
-    padding: 0 0.25em;
-    background-color: white;
-}
+    top : 50%;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: -1;
 
-.captionPanelBorder {
-    position: absolute;
-    top: -4px;
-    bottom: -1px;
-    left: -1px;
-    right: -1px;
-    border: 2px groove threedface;
-    border-radius: 5px;
-}
-
-
-.tableCaptionPanel {
-    padding-top: 0.8em;
-    padding-bottom: 0.15em;
-}
-
-.tableCaptionPanelContainer {
-    border: 2px groove threedface;
-    position: relative;
-    padding: 4px 1px 1px 0;
-    border-radius: 5px;
-}
-
-.tableCaptionPanelLegend {
-    white-space: nowrap;
-    left: 0.5em;
-    top: -0.9em;
-    position: absolute;
-    padding: 0 0.25em;
-    background-color: white;
-}
-
-/* ------------ Form containers ------------ */
-.flowPanelChildLeftAlign {
-    float: left;
-}
-
-.flowPanelChildRightAlign {
-    float: right;
+    border-top: 1px solid var(--panel-border-color);
 }
 
 /* ------------ Navigator windows  ------------ */
@@ -367,7 +380,7 @@ input[type=checkbox]:focus {
 .toolbarNavigatorButton {
     border: solid 1px transparent;
     background: transparent;
-    display: block;
+    border-radius: var(--button-border-radius);
 }
 
 .toolbarSelectedNavigatorButton {
@@ -396,6 +409,7 @@ input[type=checkbox]:focus {
 .dockableBlockingMask {
     background: black;
     opacity: 0.3;
+    z-index: 10000;
 }
 
 /* ------------ Filters ------------ */
@@ -416,7 +430,8 @@ input[type=checkbox]:focus {
 }
 
 .userFiltersPanel {
-    margin-top: 2px;
+    /* not sure but what for, but gives extra margin even if there are no filters*/
+    /*margin-top: 2px;*/
 }
 
 .userFilterLabel {
@@ -676,16 +691,25 @@ input[type=checkbox]:focus {
 }
 
 /* ------------ Other components  ------------ */
-.gridResizePanel{
+.gridContainerPanel{
     min-height: 70px;
     min-width: 130px;
-    margin: 2px;
+
+    margin: var(--border-padding);
+}
+
+.gridToolbarContainerPanel {
+    margin-top: var(--border-padding);
+    margin-bottom: var(--border-padding);
+}
+
+.toolbarButtonNoBorder {
 }
 
 .toolbarButton {
-    display: block;
-    border: none;
+    border: 1px solid transparent;
     background: transparent;
+    border-radius: var(--button-border-radius);
 }
 
 .toolbarButton:hover {
@@ -698,7 +722,9 @@ input[type=checkbox]:focus {
 }
 
 .toolbarItem {
-    margin: 0 4px 0 0;
+    /*margin: 0 4px 0 0;*/
+    margin-left: var(--border-padding);
+    margin-right: var(--border-padding);
 }
 
 .logPanel {

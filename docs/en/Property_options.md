@@ -18,7 +18,7 @@ The following set of options is supported (the syntax of each option is indicate
     CHANGEKEY key [SHOW | HIDE]
     MATERIALIZED
     TABLE tableName
-    INDEXED
+    INDEXED [LIKE | MATCH]
     NONULL [DELETE] eventClause
     AUTOSET
     CHARWIDTH width [FLEX | NOFLEX]
@@ -55,6 +55,14 @@ The following set of options is supported (the syntax of each option is indicate
 - `INDEXED`
 
     Keyword. If specified, an [index](Indexes.md) by this property is created. Similar to using the [`INDEX` statement](INDEX_statement.md). 
+
+    - `LIKE`
+
+        Keyword. If specified, creates GIN index instead of the usual index.
+
+    - `MATCH`
+
+        Keyword. If specified, creates GIN index and GIN index with to_tsvector instead of the usual index.
 
 - `NONULL [DELETE] eventClause`
 

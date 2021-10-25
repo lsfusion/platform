@@ -76,12 +76,12 @@ public class MainController {
         model.addAttribute("title", getTitle(serverSettings));
         model.addAttribute("logicsLogo", getLogicsLogo(serverSettings));
         model.addAttribute("logicsIcon", getLogicsIcon(serverSettings));
-        model.addAttribute("registrationPage", getDirectUrl("/registration", null, request));
-        model.addAttribute("forgotPasswordPage", getDirectUrl("/forgot-password", null, request));
+        model.addAttribute("registrationPage", getDirectUrl("/registration", null, null, request));
+        model.addAttribute("forgotPasswordPage", getDirectUrl("/forgot-password", null, null, request));
 
         try {
             clientRegistrationRepository.iterator().forEachRemaining(registration -> oauth2AuthenticationUrls.put(registration.getRegistrationId(),
-                    getDirectUrl(authorizationRequestBaseUri + registration.getRegistrationId(), null, request)));
+                    getDirectUrl(authorizationRequestBaseUri + registration.getRegistrationId(), null, null, request)));
             model.addAttribute("urls", oauth2AuthenticationUrls);
         } catch (AuthenticationException e){
             request.getSession(true).setAttribute("SPRING_SECURITY_LAST_EXCEPTION", e);
@@ -170,7 +170,7 @@ public class MainController {
             request.getSession(true).setAttribute("SPRING_SECURITY_LAST_EXCEPTION", jsonResponse.optString("success"));
         } else if (jsonResponse.has("error")) {
             request.getSession(true).setAttribute("SPRING_SECURITY_LAST_EXCEPTION", jsonResponse.optString("error"));
-            return getRedirectUrl("/change-password", Collections.singletonList("token"), request);
+            return getRedirectUrl("/change-password", jsonResponse.has("passwordStrengthError") ? null : Collections.singletonList("token"), request);
         }
         return getRedirectUrl("/login", Collections.singletonList("token"), request);
     }
@@ -192,7 +192,7 @@ public class MainController {
         model.addAttribute("title", getTitle(serverSettings));
         model.addAttribute("logicsLogo", getLogicsLogo(serverSettings));
         model.addAttribute("logicsIcon", getLogicsIcon(serverSettings));
-        model.addAttribute("loginPage", getDirectUrl("/login",null, request));
+        model.addAttribute("loginPage", getDirectUrl("/login", Collections.singletonList("token"), null, request));
     }
 
     private ServerSettings getAndCheckServerSettings(HttpServletRequest request, Result<String> rCheck, boolean noCache) {
@@ -252,7 +252,7 @@ public class MainController {
     private String getJNLPUrls(HttpServletRequest request, ServerSettings serverSettings) {
         String localizedString = ServerMessages.getString(request, "run.desktop.client");
         return serverSettings != null ? serverSettings.jnlpUrls.replaceAll("\\{run.desktop.client}", localizedString)
-                : "<a href=" + getDirectUrl("/exec", "action=Security.generateJnlp", request) + ">" + localizedString + "</a>";
+                : "<a href=" + getDirectUrl("/exec", null, "action=Security.generateJnlp", request) + ">" + localizedString + "</a>";
     }
 
     private Map<String, String> getLsfParams(ServerSettings serverSettings) {
@@ -283,14 +283,9 @@ public class MainController {
         }
     }
 
-    public static String getDirectUrl(String url, String query, HttpServletRequest request) {
-        String contextPath = request.getContextPath();
-        String queryString = request.getQueryString();
-        if (query == null) {
-            return queryString == null ? contextPath + url : contextPath + url + "?" + queryString;
-        } else {
-            return queryString == null ? contextPath + url + "?" + query : contextPath + url + "?" + queryString + "&" + query;
-        }
+    public static String getDirectUrl(String url, List<String> paramsToRemove, String query, HttpServletRequest request) {
+        return request.getContextPath() + getURLPreservingParameters(url, paramsToRemove, request) +
+                (query != null ? (request.getQueryString() == null ? "?" : "&") + query : "");
     }
 
     public static String getRedirectUrl(String url, List<String> paramsToRemove, HttpServletRequest request) {

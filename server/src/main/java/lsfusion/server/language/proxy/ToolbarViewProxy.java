@@ -11,10 +11,6 @@ public class ToolbarViewProxy extends ComponentViewProxy<ToolbarView> {
         target.visible = visible;
     }
 
-    public void setShowGroupChange(boolean showGroupChange) {
-        target.showGroupChange = showGroupChange;
-    }
-
     public void setShowCountQuantity(boolean showCountQuantity) {
         target.showCountRows = showCountQuantity;
     }
@@ -25,10 +21,6 @@ public class ToolbarViewProxy extends ComponentViewProxy<ToolbarView> {
 
     public void setShowGroup(boolean showGroup) {
         target.showGroupReport = showGroup;
-    }
-
-    public void setShowPrintGroup(boolean showPrintGroup) {
-        target.showPrint = showPrintGroup;
     }
 
     public void setShowPrintGroupXls(boolean showPrintGroupXls) {

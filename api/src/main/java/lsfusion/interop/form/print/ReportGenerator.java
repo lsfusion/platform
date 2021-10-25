@@ -231,6 +231,17 @@ public class ReportGenerator {
         return fieldName;
     }
 
+    // "fieldName.header[1]" -> "fieldName[1]"
+    public static String getBaseFieldNameWithIndex(String fullFieldName) {
+        String fieldName = removeIndexMarkerIfExists(fullFieldName);
+        String index = "";
+        if (!fieldName.equals(fullFieldName)) {
+            index = fullFieldName.substring(fieldName.length());
+        }
+        fieldName = getBaseFieldName(fullFieldName);
+        return fieldName + index;
+    }
+    
     private String findColumnFieldName(JRExpression expr, String subreportID) {
         String exprText = expr.getText();
         Matcher match = fieldPattern.matcher(exprText);
@@ -420,11 +431,40 @@ public class ReportGenerator {
         if (generationData.useShowIf) {
             Collection<JRTextField> fieldsToHide = findTextFieldsToHide(design, subreportID);
             if (!fieldsToHide.isEmpty()) {
+                int rightmostX = rightmostXCoord(design);
                 cutSegments(design, findCutSegments(fieldsToHide));
+                if (!ignorePagination) {
+                    expandDesignElements(design, rightmostX);
+                }
             }
         }
     }
 
+    private int rightmostXCoord(JasperDesign design) {
+        int result = 0;
+        for (JRElement element : getDesignElements(design)) {
+            result = Math.max(result, element.getX() + element.getWidth());
+        }
+        return result;
+    }
+    
+    private void expandDesignElements(JasperDesign design, int width) {
+        Collection<JRElement> elements = getDesignElements(design);
+        int maxX = 0;
+        for (JRElement element : elements) {
+            maxX = Math.max(maxX, element.getX() + element.getWidth());
+        }
+        
+        double ratio = width / (double) maxX;
+        
+        for (JRElement element : elements) {
+            int leftX = (int) Math.round(ratio * element.getX());
+            int rightX = (int) Math.round(ratio * (element.getX() + element.getWidth()));
+            element.setX(leftX);
+            element.setWidth(rightX - leftX);
+        }
+    }
+    
     private List<Segment> findCutSegments(Collection<JRTextField> fieldsToHide) {
         List<FieldXBorder> fieldsBorders = createSortedFieldsBordersList(fieldsToHide);
         return findCutSegments(fieldsBorders);
@@ -473,8 +513,7 @@ public class ReportGenerator {
                     String exprText = textElement.getExpression().getText();
                     if (exprText.startsWith("$F{")) {
                         String fieldName = getFieldName(exprText);
-                        // We need to check already divided fields as well
-                        if (hidingFieldsNames.contains(removeIndexMarkerIfExists(fieldName))) { 
+                        if (hidingFieldsNames.contains(fieldName)) { 
                             textFieldsToHide.add(textElement);
                         }
                     }
@@ -488,7 +527,7 @@ public class ReportGenerator {
         Set<String> hidingFieldsNames = new HashSet<>();
         for (JRField field : design.getFieldsList()) {
             if (isActiveShowIfField(field.getName(), subreportID)) {
-                String baseFieldName = getBaseFieldName(field.getName());
+                String baseFieldName = getBaseFieldNameWithIndex(field.getName());
                 hidingFieldsNames.add(baseFieldName);
             }
         }

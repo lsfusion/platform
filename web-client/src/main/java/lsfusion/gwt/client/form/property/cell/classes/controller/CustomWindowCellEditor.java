@@ -40,8 +40,8 @@ public class CustomWindowCellEditor extends WindowValueCellEditor implements Cus
     }
 
     @Override
-    public void stop(Element parent) {
-        clearRender(parent, null);
+    public void stop(Element parent, boolean cancel) {
+        clearRender(parent, null, cancel);
     }
 
     @Override

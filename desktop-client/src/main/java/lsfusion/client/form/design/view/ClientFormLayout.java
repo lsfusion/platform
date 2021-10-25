@@ -87,20 +87,10 @@ public class ClientFormLayout extends PanelWidget {
     // метод рекурсивно создает для каждого ClientContainer соответствующий ContainerView
     private void addContainers(ClientContainer container) {
         ClientContainerView containerView;
-        if (container.isLinear()) {
-            containerView = new LinearClientContainerView(container);
-        } else if (container.isSplit()) {
-            containerView = new LinearClientContainerView(container);
-        } else if (container.isTabbed()) {
+        if (container.tabbed) {
             containerView = new TabbedClientContainerView(form, container);
-        } else if (container.isColumns()) {
-            containerView = new LinearClientContainerView(container);
-        } else if (container.isScroll()) {
-            containerView = new LinearClientContainerView(container);
-        } else if (container.isFlow()) {
-            throw new IllegalStateException("Flow isn't implemented yet");
         } else {
-            throw new IllegalStateException("Illegal container type");
+            containerView = new LinearClientContainerView(container);
         }
 
         containerViews.put(container, containerView);

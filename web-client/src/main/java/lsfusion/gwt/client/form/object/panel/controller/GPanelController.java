@@ -24,7 +24,7 @@ public class GPanelController extends GPropertyController {
     }
 
     private void selectNextElement(boolean forward) {
-        getNextSelectedElement(formController.getElement(), forward).focus();
+        getNextSelectedElement(formController.getWidget().getElement(), forward).focus();
     }
 
     private native Element getNextSelectedElement(Element formController, boolean forward) /*-{

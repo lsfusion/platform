@@ -22,6 +22,7 @@ grammar LsfLogics;
     import lsfusion.server.base.version.Version;
     import lsfusion.server.data.expr.formula.SQLSyntaxType;
     import lsfusion.server.data.expr.query.PartitionType;
+    import lsfusion.server.data.table.IndexType;
     import lsfusion.server.language.ScriptParser;
     import lsfusion.server.language.ScriptingErrorLog;
     import lsfusion.server.language.ScriptingLogicsModule;
@@ -648,9 +649,10 @@ propertyClassViewType returns [ClassViewType type]
 	;
 
 propertyCustomView returns [String customRenderFunction, String customEditorFunction]
-	:	'CUSTOM' (renderFun=stringLiteral { $customRenderFunction = $renderFun.val;})?
+	:	'CUSTOM' ((renderFun=stringLiteral { $customRenderFunction = $renderFun.val;})
+	    | ((renderFun=stringLiteral { $customRenderFunction = $renderFun.val;})?
         // EDIT TEXT is a temporary fix for backward compatibility
-		(('CHANGE' | ('EDIT' PRIMITIVE_TYPE)) { $customEditorFunction = "DEFAULT"; } (editFun=stringLiteral {$customEditorFunction = $editFun.val; })?)? // "DEFAULT" is hardcoded and used in GFormController.edit
+		(('CHANGE' | ('EDIT' PRIMITIVE_TYPE)) { $customEditorFunction = "DEFAULT"; } (editFun=stringLiteral {$customEditorFunction = $editFun.val; })?))) // "DEFAULT" is hardcoded and used in GFormController.edit
 	;
 
 listViewType returns [ListViewType type, PivotOptions options, String customRenderFunction, String mapTileProvider]
@@ -1864,10 +1866,15 @@ groupCDPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns
 	
 groupPropertyBodyDefinition[List<TypedParameter> context] returns [GroupingType type, List<LPWithParams> mainProps = new ArrayList<>(), List<LPWithParams> orderProps = new ArrayList<>(), boolean ascending = true, LPWithParams whereProp = null]
 	:	
-    	gt=groupingType { $type = $gt.type; }
-        mainList=nonEmptyPropertyExpressionList[context, true] { $mainProps = $mainList.props; }
-        ('ORDER' ('DESC' { $ascending = false; } )?
-        orderList=nonEmptyPropertyExpressionList[context, true] { $orderProps = $orderList.props; })?
+    	(
+    	    gt=groupingType { $type = $gt.type; }
+            mainList=nonEmptyPropertyExpressionList[context, true] { $mainProps = $mainList.props; }
+        |
+            gt=groupingTypeOrder { $type = $gt.type; }
+            mainList=nonEmptyPropertyExpressionList[context, true] { $mainProps = $mainList.props; }
+            ('ORDER' ('DESC' { $ascending = false; } )?
+            orderList=nonEmptyPropertyExpressionList[context, true] { $orderProps = $orderList.props; })
+        )
         ('WHERE' whereExpr=propertyExpression[context, true] { $whereProp = $whereExpr.property; } )?
     ;
 
@@ -1876,10 +1883,13 @@ groupingType returns [GroupingType type]
 	:	'SUM' 	{ $type = GroupingType.SUM; }
 	|	'MAX' 	{ $type = GroupingType.MAX; }
 	|	'MIN' 	{ $type = GroupingType.MIN; }
-	|	'CONCAT' { $type = GroupingType.CONCAT; }
 	|	'AGGR' { $type = GroupingType.AGGR; }
 	|	'NAGGR' { $type = GroupingType.NAGGR; }
 	|	'EQUAL'	{ $type = GroupingType.EQUAL; }	
+	;
+
+groupingTypeOrder returns [GroupingType type]
+	:	'CONCAT' { $type = GroupingType.CONCAT; }
 	|	'LAST'	{ $type = GroupingType.LAST; }
 	;
 
@@ -2893,12 +2903,15 @@ echoSymbolsSetting [LAP property]
 	;
 
 indexSetting [LP property]
+@init {
+	IndexType indexType = IndexType.DEFAULT;
+}
 @after {
 	if (inMainParseState()) {
-		self.addScriptedIndex(property);
+		self.addScriptedIndex(property, indexType);
 	}
 }
-	:	'INDEXED'
+	:	'INDEXED' (('LIKE' { indexType = IndexType.LIKE; }) | ('MATCH' { indexType = IndexType.MATCH; }))?
 	;
 
 notNullDeleteSetting returns [DebugInfo.DebugPoint debugPoint]
@@ -3487,6 +3500,8 @@ externalActionDefinitionBody [List<TypedParameter> context, boolean dynamic] ret
         $action = self.addScriptedExternalDBFAction($type.conStr, $type.charset, params, context, $tl.propUsages);
       } else if($type.format == ExternalFormat.JAVA) {
         $action = self.addScriptedExternalJavaAction(params, context, $tl.propUsages);
+      } else if($type.format == ExternalFormat.TCP) {
+        $action = self.addScriptedExternalTCPAction($type.clientAction, $type.conStr, params, context);
       } else if($type.format == ExternalFormat.UDP) {
         $action = self.addScriptedExternalUDPAction($type.clientAction, $type.conStr, params, context);
       } else if($type.format == ExternalFormat.HTTP) {
@@ -3505,6 +3520,8 @@ externalActionDefinitionBody [List<TypedParameter> context, boolean dynamic] ret
 
 externalFormat [List<TypedParameter> context, boolean dynamic] returns [ExternalFormat format, ExternalHttpMethod method, boolean clientAction, LPWithParams conStr, LPWithParams bodyUrl, LPWithParams exec, List<String> bodyParamNames = new ArrayList<>(), List<NamedPropertyUsage> bodyParamHeadersList = new ArrayList<>(), NamedPropertyUsage headers, NamedPropertyUsage cookies, NamedPropertyUsage headersTo, NamedPropertyUsage cookiesTo, boolean eval = false, boolean action = false, String charset]
 	:	'SQL'	{ $format = ExternalFormat.DB; } conStrVal = propertyExpression[context, dynamic] { $conStr = $conStrVal.property; } 'EXEC' execVal = propertyExpression[context, dynamic] { $exec = $execVal.property; }
+    |	'TCP'	{ $format = ExternalFormat.TCP; } ('CLIENT' { $clientAction = true; })?
+                conStrVal = propertyExpression[context, dynamic] { $conStr = $conStrVal.property; }
 	|	'UDP'	{ $format = ExternalFormat.UDP; } ('CLIENT' { $clientAction = true; })?
 	            conStrVal = propertyExpression[context, dynamic] { $conStr = $conStrVal.property; }
 	|	'HTTP'	{ $format = ExternalFormat.HTTP; } ('CLIENT' { $clientAction = true; })?

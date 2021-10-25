@@ -21,6 +21,7 @@ public class ServerSettings {
     public RawFileData logicsIcon;
     public String platformVersion;
     public Integer apiVersion;
+    public boolean inDevMode;
     public int sessionConfigTimeout;
     public boolean anonymousUI;
     public String jnlpUrls;
@@ -30,14 +31,15 @@ public class ServerSettings {
     public Map<String, String> lsfParams;
 
     public ServerSettings(String logicsName, String displayName, RawFileData logicsLogo, RawFileData logicsIcon, String platformVersion, Integer apiVersion,
-                          int sessionConfigTimeout, boolean anonymousUI, String jnlpUrls, List<Pair<String, RawFileData>> jsFiles, boolean disableRegistration,
-                          Map<String, String> lsfParams) {
+                          boolean inDevMode, int sessionConfigTimeout, boolean anonymousUI, String jnlpUrls, List<Pair<String, RawFileData>> jsFiles,
+                          boolean disableRegistration, Map<String, String> lsfParams) {
         this.logicsName = logicsName;
         this.displayName = displayName;
         this.logicsLogo = logicsLogo;
         this.logicsIcon = logicsIcon;
         this.platformVersion = platformVersion;
         this.apiVersion = apiVersion;
+        this.inDevMode = inDevMode;
         this.sessionConfigTimeout = sessionConfigTimeout;
         this.anonymousUI = anonymousUI;
         this.jnlpUrls = jnlpUrls;

@@ -157,8 +157,8 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
         if(textAlign != null)
             inputElement.getStyle().setTextAlign(textAlign);
 
-        inputElement.getStyle().setHeight(100, Style.Unit.PCT);
-        inputElement.getStyle().setWidth(100, Style.Unit.PCT); // input doesn't respect justify-content, stretch, plus we want to include paddings in input (to avoid having "selection border")
+        // input doesn't respect justify-content, stretch, plus we want to include paddings in input (to avoid having "selection border")
+        GwtClientUtils.setupPercentParent(inputElement);
 
         TextBasedCellRenderer.render(property, inputElement, renderContext, isMultiLine(), false);
 
@@ -180,9 +180,12 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
         return false;
     }
 
-    public void onBeforeFinish(Element parent, boolean cancel) {
+    @Override
+    public void clearRender(Element cellParent, RenderContext renderContext, boolean cancel) {
         if(hasList)
             suggestBox.hideSuggestions();
+
+        super.clearRender(cellParent, renderContext, cancel);
     }
 
     public Object getValue(Element parent, Integer contextAction) {

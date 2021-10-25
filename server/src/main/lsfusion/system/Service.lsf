@@ -414,7 +414,11 @@ DESIGN settings {
     }
 }
 
-getServerSettings() {
+inDevMode = NATIVE BOOLEAN ();
+
+getServerSettings() ABSTRACT CASE @@noauth;
+
+getServerSettings() + WHEN TRUE THEN {
     readResources('/web/.*');
     LOCAL jsonResourceFiles = JSONFILE ();
     EXPORT FROM file = resourceFiles(STRING str), name = substrFrom(str, 6) WHERE resourceFiles(str) TO jsonResourceFiles;
@@ -423,11 +427,11 @@ getServerSettings() {
     EXPORT FROM key = STRING s, value = lsfParams(s) WHERE lsfParams(s) TO jsonLsfParams;
     
     generateJnlpUrls();
-    EXPORT FROM logicsName(), displayName(), logicsLogo(), logicsIcon(), platformVersion(), apiVersion(),
+    EXPORT FROM logicsName(), displayName(), logicsLogo(), logicsIcon(), platformVersion(), apiVersion(), inDevMode(),
                 sessionConfigTimeout=INTEGER(valueSetting('sessionConfigTimeout')), anonymousUI=(valueSetting('enableUI')='2'),
                 jnlpUrls=exportText(), resourceFiles=STRING(jsonResourceFiles()), disableRegistration=disableRole('selfRegister'),
                 lsfParams=STRING(jsonLsfParams());
-} @@noauth;
+};
 
 // logging for user
 

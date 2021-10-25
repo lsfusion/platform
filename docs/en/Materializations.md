@@ -17,5 +17,5 @@ sum = GROUP SUM sum(OrderDetail od) BY order(od) MATERIALIZED;
 date(OrderDetail od) = date(order(od)) MATERIALIZED;
 
  // such a property cannot be materialized, since it is not NULL for an infinite number of dates
-lastDate(Customer customer, DATE date) = GROUP LAST date(Order order) IF customer(order) = customer AND date(order) < date;
+lastDate(Customer customer, DATE date) = GROUP LAST date(Order order) IF customer(order) = customer AND date(order) < date ORDER order;
 ```

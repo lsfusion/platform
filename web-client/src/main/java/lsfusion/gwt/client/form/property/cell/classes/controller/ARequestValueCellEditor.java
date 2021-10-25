@@ -28,7 +28,6 @@ public abstract class ARequestValueCellEditor implements RequestValueCellEditor 
 
     // force cancel
     public void cancel(Element parent) {
-        onBeforeFinish(parent, true);
         editManager.cancelEditing();
     }
 
@@ -43,11 +42,7 @@ public abstract class ARequestValueCellEditor implements RequestValueCellEditor 
         this.deferredCommitOnBlur = deferredCommitOnBlur;
     }
 
-    public void onBeforeFinish(Element parent, boolean cancel) {
-    }
-
     private void commitFinish(Element parent, Object value, Integer contextAction, CommitReason commitReason) {
-        onBeforeFinish(parent, false);
         editManager.commitEditing(new GUserInputResult(value, contextAction), commitReason);
     }
 

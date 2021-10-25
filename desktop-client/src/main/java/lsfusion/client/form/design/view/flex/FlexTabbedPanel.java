@@ -2,9 +2,7 @@ package lsfusion.client.form.design.view.flex;
 
 import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.form.design.view.FlexPanel;
-import lsfusion.client.form.design.view.widget.LabelWidget;
 import lsfusion.client.form.design.view.widget.Widget;
-import lsfusion.interop.base.view.FlexAlignment;
 
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
@@ -15,13 +13,10 @@ public class FlexTabbedPanel extends FlexPanel {
     protected TabBar tabBar;
 
     public FlexTabbedPanel(boolean vertical) {
-        this(null, vertical);
-    }
-    private FlexTabbedPanel(Widget extraTabWidget, boolean vertical) {
         super(vertical);
 
-        FlexTabBar tabBar = new FlexTabBar(extraTabWidget, !vertical);
-        add((Widget) tabBar, FlexAlignment.STRETCH);
+        FlexTabBar tabBar = new FlexTabBar(!vertical);
+        add(tabBar);
         tabBar.setBeforeSelectionHandler(this::onBeforeTabSelected);
         tabBar.setSelectionHandler(FlexTabbedPanel.this::onTabSelected);
         this.tabBar = tabBar;
@@ -64,12 +59,8 @@ public class FlexTabbedPanel extends FlexPanel {
     }
 
     public void insertTab(Widget widget, String tabText, int beforeIndex, AddToDeck addToDeck) {
-        insertTab(widget, new LabelWidget(tabText), beforeIndex, addToDeck);
-    }
-
-    public void insertTab(Widget widget, Widget tabWidget, int beforeIndex, AddToDeck addToDeck) {
         assert getWidgetIndex(widget) == -1;
-        tabBar.insertTab(tabWidget, beforeIndex);
+        tabBar.insertTab(tabText, beforeIndex);
 
         widget.getComponent().setBorder(new LineBorder(SwingDefaults.getPanelBorderColor()));
         addToDeck.add(this, widget, getTabIndex(beforeIndex));

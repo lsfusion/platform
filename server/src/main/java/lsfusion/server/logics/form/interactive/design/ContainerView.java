@@ -31,6 +31,8 @@ public class ContainerView extends ComponentView {
     public LocalizedString caption;
 
     private ContainerType type = ContainerType.CONTAINERV;
+    private boolean horizontal;
+    private boolean tabbed;
 
     public FlexAlignment childrenAlignment = FlexAlignment.START;
 
@@ -77,16 +79,12 @@ public class ContainerView extends ComponentView {
         this.caption = caption;
     }
 
-    public boolean isTabbedPane() {
-        return getType() == ContainerType.TABBED_PANE;
-    }
-
-    public boolean isColumns() {
-        return type == COLUMNS;
+    public boolean isTabbed() {
+        return type == ContainerType.TABBED_PANE || tabbed;
     }
     
     public boolean isScroll() {
-        return getType() == ContainerType.SCROLL;
+        return type == ContainerType.SCROLL;
     }
 
     public boolean isSplitVertical() {
@@ -100,25 +98,9 @@ public class ContainerView extends ComponentView {
     public boolean isSplit() {
         return isSplitHorizontal() || isSplitVertical();
     }
-
-    public boolean isLinearVertical() {
-        return type == CONTAINERV;
-    }
-
-    public boolean isLinearHorizontal() {
-        return type == CONTAINERH;
-    }
-
-    public boolean isVertical() {
-        return isLinearVertical() || isSplitVertical() || isColumns() || isScroll() || isTabbedPane();
-    }
     
     public boolean isHorizontal() {
-        return isLinearHorizontal() || isSplitHorizontal();
-    }
-    
-    public ContainerType getType() {
-        return type;
+        return type == CONTAINERH || type == HORIZONTAL_SPLIT_PANE || horizontal;
     }
 
     public void setType(ContainerType type) {
@@ -127,6 +109,14 @@ public class ContainerView extends ComponentView {
             ServerLoggers.startLogger.info("WARNING! Now container " + this + "  will have " + lines + " lines. Debug point : " + (debugPoint != null ? debugPoint.get() : "unknown"));
         }
         this.type = type;
+    }
+
+    public void setHorizontal(boolean horizontal) {
+        this.horizontal = horizontal;
+    }
+
+    public void setTabbed(boolean tabbed) {
+        this.tabbed = tabbed;
     }
 
     public void setChildrenAlignment(FlexAlignment childrenAlignment) {
@@ -224,7 +214,8 @@ public class ContainerView extends ComponentView {
 
 //        pool.writeObject(outStream, main);
 
-        pool.writeObject(outStream, type);
+        pool.writeBoolean(outStream, isHorizontal());
+        pool.writeBoolean(outStream, isTabbed());
 
         pool.writeObject(outStream, childrenAlignment);
 
@@ -241,7 +232,8 @@ public class ContainerView extends ComponentView {
 
 //        main = pool.readBoolean(inStream); // пока не будем делать, так как надо клиента обновлять
 
-        type = pool.readObject(inStream);
+        horizontal = pool.readBoolean(inStream);
+        tabbed = pool.readBoolean(inStream);
 
         childrenAlignment = pool.readObject(inStream);
 

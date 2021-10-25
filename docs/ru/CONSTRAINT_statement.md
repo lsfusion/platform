@@ -50,7 +50,7 @@ title: 'Инструкция CONSTRAINT'
 ```lsf
 // остаток не меньше 0
 CONSTRAINT balance(Sku s, Stock st) < 0
-    MESSAGE 'Остаток не может быть отрицательным для ' + (GROUP CONCAT 'Товар : ' + name(Sku ss) + ' Склад : ' + name(Stock sst), '\n' IF SET(balance(ss, sst) < 0));
+    MESSAGE 'Остаток не может быть отрицательным для ' + (GROUP CONCAT 'Товар : ' + name(Sku ss) + ' Склад : ' + name(Stock sst), '\n' IF SET(balance(ss, sst) < 0) ORDER sst);
 
 barcode = DATA STRING[15] (Sku);
 // "эмуляция" политики безопасности

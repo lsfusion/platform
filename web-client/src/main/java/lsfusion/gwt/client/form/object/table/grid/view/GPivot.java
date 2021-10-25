@@ -1193,7 +1193,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
             SortCol sortCol = isSortColumn(isSubtotal, colKeyValues) ? findSortCol(config.getArrayMixed("sortCols"), colKeyValues) : null;
             Boolean sortDir = sortCol != null ? sortCol.getDirection() : null;
             if(lastRenderCol != null && lastRenderCol.equals(COLUMN)) { // value is a column name
-                GGridPropertyTableHeader.renderTD(jsElement, 0, sortDir, fromObject(value).toString());
+                GGridPropertyTableHeader.renderTD(jsElement, sortDir, fromObject(value).toString());
                 setTableToExcelCenterAlignment(jsElement);
             } else {
                 if (isLastCol && sortDir != null) { // last column may have a sortDir

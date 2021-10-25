@@ -50,6 +50,9 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
 
     public LP computerConnection;
     public LP remoteAddressConnection;
+    public LP webHostConnection;
+    public LP webPortConnection;
+    public LP contextPathConnection;
     public LP userConnection;
     public LP userLoginConnection;
     public LP osVersionConnection;
@@ -137,6 +140,9 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         // Подключения к серверу
         computerConnection = findProperty("computer[Connection]");
         remoteAddressConnection = findProperty("remoteAddress[Connection]");
+        webHostConnection = findProperty("webHost[Connection]");
+        webPortConnection = findProperty("webPort[Connection]");
+        contextPathConnection = findProperty("contextPath[Connection]");
         userConnection = findProperty("user[Connection]");
         userLoginConnection = findProperty("userLogin[Connection]");
         osVersionConnection = findProperty("osVersion[Connection]");

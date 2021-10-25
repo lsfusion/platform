@@ -23,7 +23,7 @@ public class ColorCellEditor extends PopupBasedCellEditor {
     }
 
     @Override
-    protected Widget createPopupComponent(Element parent) {
+    protected Widget createPopupComponent(Element parent, Object oldValue) {
         colorPicker = new ColorPicker();
 
         Button btnOk = new Button(messages.ok());

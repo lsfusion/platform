@@ -48,7 +48,7 @@ public abstract class DialogBasedCellEditor extends WindowValueCellEditor {
     }
 
     @Override
-    public void onBeforeFinish(Element parent, boolean cancel) {
+    public void stop(Element parent, boolean cancel) {
         dialog.hide();
     }
 

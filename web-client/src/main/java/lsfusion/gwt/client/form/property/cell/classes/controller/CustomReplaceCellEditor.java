@@ -47,10 +47,10 @@ public class CustomReplaceCellEditor extends RequestReplaceValueCellEditor imple
     }
 
     @Override
-    public void clearRender(Element cellParent, RenderContext renderContext) {
-        super.clearRender(cellParent, renderContext);
+    public void clearRender(Element cellParent, RenderContext renderContext, boolean cancel) {
+        super.clearRender(cellParent, renderContext, cancel);
 
-        CustomCellEditor.super.clearRender(cellParent, renderContext);
+        CustomCellEditor.super.clearRender(cellParent, renderContext, cancel);
     }
 
     @Override
@@ -125,14 +125,9 @@ public class CustomReplaceCellEditor extends RequestReplaceValueCellEditor imple
         return customEditor.getValue(element);
     }-*/;
 
-    public static native void clear(JavaScriptObject customEditor, Element element)/*-{
+    public static native void clear(JavaScriptObject customEditor, Element element, boolean cancel)/*-{
         if (customEditor.clear !== undefined)
-            customEditor.clear(element);
-    }-*/;
-
-    public static native void onBeforeFinish(JavaScriptObject customEditor, Element element, boolean cancel)/*-{
-        if (customEditor.onBeforeFinish !== undefined)
-            customEditor.onBeforeFinish(element, cancel);
+            customEditor.clear(element, cancel);
     }-*/;
 
     public static native void onBrowserEvent(JavaScriptObject customEditor, Event event, Element element)/*-{

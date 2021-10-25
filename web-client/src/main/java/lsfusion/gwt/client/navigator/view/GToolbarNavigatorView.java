@@ -63,7 +63,10 @@ public class GToolbarNavigatorView extends GNavigatorView {
         buttonStyle.setPaddingBottom(5, Style.Unit.PX);
         buttonStyle.setPaddingLeft(PADDING_H, Style.Unit.PX);
         buttonStyle.setPaddingRight(PADDING_H, Style.Unit.PX);
-        
+
+        // debug info
+        button.getElement().setAttribute("lsfusion-container", element.canonicalName);
+
         button.addClickHandler(event -> {
             TooltipManager.get().hideTooltip(null); // not sure if this is needed
 
