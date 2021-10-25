@@ -140,6 +140,8 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         };
 
         getElement().setPropertyObject("groupObject", groupObject);
+
+        GwtClientUtils.setZeroZIndex(getElement());
     }
 
     @Override
@@ -1137,8 +1139,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
         @Override
         public boolean isSticky() {
-            List<GPropertyDraw> stickies = form.getForm().stickies;
-            return stickies.contains(property);
+            return form.getForm().stickies.contains(property);
         }
 
         public void setValue(GridDataRecord record, Object value) {

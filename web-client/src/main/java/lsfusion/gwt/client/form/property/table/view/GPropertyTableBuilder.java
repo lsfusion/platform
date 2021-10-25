@@ -133,19 +133,31 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
     }
 
     @Override
-    public void updateStickyRowImpl(TableRowElement tr, List<Integer> stickyColumns, boolean setBackground) {
-        int left = 0;
-        for (int curColumn = 0; curColumn < cellTable.getColumnCount(); curColumn++) {
-            if(stickyColumns.contains(curColumn)) {
+    public void updateRowStickyImpl(TableRowElement tr, List<Integer> stickyColumns) {
+        updateSticky(tr, stickyColumns, false);
+    }
+
+    public static void updateSticky(TableRowElement tr, List<Integer> stickyColumns, boolean header) {
+        for (int curColumn = 0; curColumn < tr.getCells().getLength(); curColumn++) {
+            if (stickyColumns.contains(curColumn)) {
                 TableCellElement td = tr.getCells().getItem(curColumn).cast();
-                if(setBackground) {
-                    String background = td.getPropertyString(GPropertyTableBuilder.BKCOLOR);
-                    if(background == null || background.isEmpty()) {
-                        td.getStyle().setBackgroundColor(getComponentBackgroundColor());
-                    }
-                }
                 td.getStyle().setZIndex(1000 - curColumn);
                 td.getStyle().setProperty("position", "sticky");
+                td.getStyle().setBackgroundColor(header ? getPanelBackgroundColor() : getComponentBackgroundColor());
+            }
+        }
+    }
+
+    @Override
+    public void updateRowStickyLeftImpl(TableRowElement tr, List<Integer> stickyColumns) {
+        updateStickyLeft(tr, stickyColumns);
+    }
+
+    public static void updateStickyLeft(TableRowElement tr, List<Integer> stickyColumns) {
+        int left = 0;
+        for (int curColumn = 0; curColumn < tr.getCells().getLength(); curColumn++) {
+            if(stickyColumns.contains(curColumn)) {
+                TableCellElement td = tr.getCells().getItem(curColumn).cast();
                 td.getStyle().setProperty("left", left + "px");
                 left += td.getClientWidth();
             }

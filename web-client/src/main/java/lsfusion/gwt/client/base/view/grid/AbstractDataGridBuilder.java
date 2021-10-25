@@ -144,17 +144,29 @@ public abstract class AbstractDataGridBuilder<T> {
 
     protected abstract void updateRowImpl(int rowIndex, T rowValue, int[] columnsToRedraw, TableRowElement rowElement);
 
-    public void updateSticky(TableSectionElement tbodyElement, List<Integer> stickyColumns, int selectedRow) {
+    public void updateRowSticky(TableSectionElement tbodyElement, List<Integer> stickyColumns, int selectedRow) {
         int rowCount = tbodyElement.getChildCount();
         if (rowCount > 0) {
             NodeList<TableRowElement> rows = tbodyElement.getRows();
             for (int i = 0; i < rowCount; ++i) {
-                updateStickyRowImpl(rows.getItem(i), stickyColumns, i != selectedRow);
+                updateRowStickyImpl(rows.getItem(i), stickyColumns);
             }
         }
     }
 
-    protected abstract void updateStickyRowImpl(TableRowElement rowElement, List<Integer> stickyColumns, boolean setBackground);
+    protected abstract void updateRowStickyImpl(TableRowElement rowElement, List<Integer> stickyColumns);
+
+    public void updateRowStickyLeft(TableSectionElement tbodyElement, List<Integer> stickyColumns) {
+        int rowCount = tbodyElement.getChildCount();
+        if (rowCount > 0) {
+            NodeList<TableRowElement> rows = tbodyElement.getRows();
+            for (int i = 0; i < rowCount; ++i) {
+                updateRowStickyLeftImpl(rows.getItem(i), stickyColumns);
+            }
+        }
+    }
+
+    protected abstract void updateRowStickyLeftImpl(TableRowElement rowElement, List<Integer> stickyColumns);
 
     protected final <C> void renderCell(TableCellElement td, Cell cell, Column<T, C> column) {
         td.setPropertyObject(COLUMN_ATTRIBUTE, column);

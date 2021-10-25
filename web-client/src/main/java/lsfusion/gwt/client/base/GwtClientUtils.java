@@ -930,4 +930,9 @@ public class GwtClientUtils {
         int index = filename.lastIndexOf(".");
         return (index == -1) ? "" : filename.substring(index + 1);
     }
+
+    // need this because views like leaflet and some others uses z-indexes and therefore dialogs for example are shown below layers,
+    public static void setZeroZIndex(Element element) {
+        element.getStyle().setZIndex(0);
+    }
 }

@@ -19,6 +19,7 @@ import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.dom.client.TableSectionElement;
+import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 
 import java.util.List;
 
@@ -163,17 +164,12 @@ public class DefaultHeaderBuilder<T> extends DataGridHeaderBuilder<T> {
     }
 
     @Override
-    protected void updateStickyHeaderImpl(TableRowElement tr, List<Integer> stickyColumns) {
-        int left = 0;
-        for (int curColumn = 0; curColumn < getTable().getColumnCount(); curColumn++) {
-            if(stickyColumns.contains(curColumn)) {
-                TableCellElement th = tr.getCells().getItem(curColumn).cast();
-                th.getStyle().setBackgroundColor("var(--background-color)");
-                th.getStyle().setZIndex(1000 - curColumn);
-                th.getStyle().setProperty("position", "sticky");
-                th.getStyle().setProperty("left", left + "px");
-                left += th.getClientWidth();
-            }
-        }
+    protected void updateHeaderStickyImpl(TableRowElement tr, List<Integer> stickyColumns) {
+        GPropertyTableBuilder.updateSticky(tr, stickyColumns, true);
+    }
+
+    @Override
+    protected void updateHeaderStickyLeftImpl(TableRowElement tr, List<Integer> stickyColumns) {
+        GPropertyTableBuilder.updateStickyLeft(tr, stickyColumns);
     }
 }
