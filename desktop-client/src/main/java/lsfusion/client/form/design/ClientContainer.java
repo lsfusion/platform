@@ -25,6 +25,8 @@ public class ClientContainer extends ClientComponent {
     public boolean tabbed;
 
     public FlexAlignment childrenAlignment = FlexAlignment.START;
+    
+    public boolean alignCaptions;
 
     public int lines = 1;
 
@@ -45,6 +47,8 @@ public class ClientContainer extends ClientComponent {
         pool.writeBoolean(outStream, tabbed);
 
         pool.writeObject(outStream, childrenAlignment);
+        
+        outStream.writeBoolean(alignCaptions);
 
         outStream.writeInt(lines);
     }
@@ -61,6 +65,8 @@ public class ClientContainer extends ClientComponent {
         tabbed = pool.readBoolean(inStream);
 
         childrenAlignment = pool.readObject(inStream);
+        
+        alignCaptions = inStream.readBoolean();
 
         lines = inStream.readInt();
     }
@@ -101,6 +107,10 @@ public class ClientContainer extends ClientComponent {
     public boolean main;
 
     public boolean isAlignCaptions() {
+        if (alignCaptions) {
+            return true;
+        }
+        
         if(horizontal) // later maybe it makes sense to support align captions for horizontal containers, but with no-wrap it doesn't make much sense
             return false;
 

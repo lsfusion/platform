@@ -10,6 +10,9 @@ import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.view.FlexPanel;
+import lsfusion.gwt.client.base.view.GFlexAlignment;
+import lsfusion.gwt.client.form.design.view.flex.CaptionContainerHolder;
+import lsfusion.gwt.client.form.design.view.flex.LinearCaptionContainer;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
@@ -23,7 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class GFilterConditionView extends FlexPanel {
+public class GFilterConditionView extends FlexPanel implements CaptionContainerHolder {
     private static final ClientMessages messages = ClientMessages.Instance.get();
     public interface UIHandler {
         void addEnterBinding(Widget widget);
@@ -50,6 +53,10 @@ public class GFilterConditionView extends FlexPanel {
 
     private Widget junctionSeparator;
     private GToolbarButton junctionView;
+    
+    private FlexPanel leftPanel;
+    private FlexPanel rightPanel; 
+    private LinearCaptionContainer captionContainer;
 
     public boolean allowNull;
 
@@ -64,6 +71,9 @@ public class GFilterConditionView extends FlexPanel {
         this.toolsVisible = toolsVisible;
 
         allowNull = !condition.isFixed();
+        
+        leftPanel = new FlexPanel();
+        rightPanel = new FlexPanel();
 
         List<Pair<Column, String>> selectedColumns = logicsSupplier.getSelectedColumns();
         for (Pair<Column, String> column : selectedColumns) {
@@ -75,7 +85,7 @@ public class GFilterConditionView extends FlexPanel {
         
         propertyLabel = new Label(currentCaption);
         propertyLabel.addStyleName("userFilterLabel");
-        addCentered(propertyLabel);
+        leftPanel.addCentered(propertyLabel);
 
         propertyView = new GFilterOptionSelector<Column>(new Column[0]) {
             @Override
@@ -94,12 +104,12 @@ public class GFilterConditionView extends FlexPanel {
             propertyView.add(column.first, column.second);
         }
         propertyView.setSelectedValue(currentColumn, currentCaption);
-        addCentered(propertyView);
+        leftPanel.addCentered(propertyView);
         
         compareLabel = new Label();
         updateCompareLabelText();
         compareLabel.addStyleName("userFilterLabel");
-        addCentered(compareLabel);
+        leftPanel.addCentered(compareLabel);
 
         compareView = new GFilterCompareSelector(condition, allowNull) {
             @Override
@@ -124,7 +134,7 @@ public class GFilterConditionView extends FlexPanel {
             }
         };
         compareView.setSelectedValue(condition.compare);
-        addCentered(compareView);
+        leftPanel.addCentered(compareView);
 
         valueView = new GDataFilterValueView(condition.value, logicsSupplier) {
             @Override
@@ -141,7 +151,7 @@ public class GFilterConditionView extends FlexPanel {
                 }
             }
         };
-        addCentered(valueView);
+        rightPanel.addCentered(valueView);
         valueView.changeProperty(condition.property, condition.columnKey, readSelectedValue); // it's important to do it after adding to the container because setStatic -> setBaseSize is called inside (and adding to container also calls it and override with default value)
         handler.addEnterBinding(valueView.cell);
 
@@ -152,11 +162,11 @@ public class GFilterConditionView extends FlexPanel {
             }
         };
         deleteButton.addStyleName("userFilterButton");
-        addCentered(deleteButton);
+        rightPanel.addCentered(deleteButton);
 
         junctionSeparator = GwtClientUtils.createVerticalSeparator(StyleDefaults.COMPONENT_HEIGHT);
         junctionSeparator.addStyleName("userFilterJunctionSeparator");
-        addCentered(junctionSeparator);
+        rightPanel.addCentered(junctionSeparator);
 
         junctionView = new GToolbarButton(SEPARATOR_ICON_PATH, messages.formFilterConditionViewOr()) {
             @Override
@@ -171,7 +181,17 @@ public class GFilterConditionView extends FlexPanel {
         junctionView.addStyleName("userFilterButton");
         junctionView.getElement().getStyle().setPaddingTop(0, Style.Unit.PX);
         junctionView.showBackground(!condition.junction);
-        addCentered(junctionView);
+        rightPanel.addCentered(junctionView);
+    }
+    
+    public void initView() {
+        if (captionContainer == null) {
+            addCentered(leftPanel);
+        } else {
+            captionContainer.put(leftPanel, null, valueView.setBaseSize(), GFlexAlignment.CENTER);
+        }
+        
+        addCentered(rightPanel);
     }
     
     public boolean isFixed() {
@@ -248,5 +268,15 @@ public class GFilterConditionView extends FlexPanel {
 
     public void setApplied(boolean applied) {
         valueView.setApplied(applied);
+    }
+
+    @Override
+    public void setCaptionContainer(LinearCaptionContainer captionContainer) {
+        this.captionContainer = captionContainer;
+    }
+
+    @Override
+    public GFlexAlignment getCaptionHAlignment() {
+        return GFlexAlignment.END;
     }
 }

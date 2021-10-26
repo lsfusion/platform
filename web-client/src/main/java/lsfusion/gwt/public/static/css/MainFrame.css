@@ -435,7 +435,7 @@ button {
 }
 
 .userFilterListBox, .userFilterDataPropertyValue, .userFilterSelector, .userFilterButton {
-    margin: 0 0 0 2px;
+    margin-left: var(--border-padding);
 }
 
 .userFilterSelector {

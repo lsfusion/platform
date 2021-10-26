@@ -198,6 +198,7 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
             conditionViews.put(condition, conditionView);
 
             addConditionView(condition, conditionView);
+            conditionView.initView();
 
             updateConditionsLastState();
 

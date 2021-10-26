@@ -2,6 +2,7 @@ package lsfusion.gwt.client.form.filter.user.view;
 
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.ResizableSimplePanel;
 import lsfusion.gwt.client.classes.data.GLogicalType;
@@ -74,5 +75,9 @@ public class GDataFilterValueView extends ResizableSimplePanel {
 
     public void setApplied(boolean applied) {
         cell.setApplied(applied);
+    }
+    
+    public Pair<Integer, Integer> setBaseSize() {
+        return cell.setBaseSize(true);
     }
 }

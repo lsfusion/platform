@@ -9,7 +9,6 @@ import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.design.view.GAbstractContainerView;
-import lsfusion.gwt.client.form.object.panel.controller.GPropertyPanelController;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -98,6 +97,7 @@ public class LinearContainerView extends GAbstractContainerView {
         }
 
         public Integer baseSize;
+        public GFlexAlignment captionHAlignment;
     }
 
     @Override
@@ -109,23 +109,27 @@ public class LinearContainerView extends GAbstractContainerView {
 //            child.installMargins(captionPanel); // need the same margins as property value
 
             childrenCaptions.add(index, captionPanel);
-            ((GPropertyPanelController.Panel) view).captionContainer = (columnCaptionWidget, actualCaptionWidget, valueSizes, alignment) -> {
-                assert vertical; // because of aligncaptions first check (isVertical())
-                captionPanel.add(columnCaptionWidget, alignment);
+            if (view instanceof CaptionContainerHolder) {
+                captionPanel.captionHAlignment = ((CaptionContainerHolder) view).getCaptionHAlignment();
+                
+                ((CaptionContainerHolder) view).setCaptionContainer((columnCaptionWidget, actualCaptionWidget, valueSizes, alignment) -> {
+                    assert vertical; // because of aligncaptions first check (isVertical())
+                    captionPanel.add(columnCaptionWidget, alignment);
 
-                Integer baseSize = vertical ? valueSizes.second : valueSizes.first;
+                    Integer baseSize = vertical ? valueSizes.second : valueSizes.first;
 
-                Integer size = child.getSize(vertical);
-                if (size != null)
-                    baseSize = size;
+                    Integer size = child.getSize(vertical);
+                    if (size != null)
+                        baseSize = size;
 
-                if(actualCaptionWidget == null) {
-                    captionPanel.baseSize = baseSize; // this code line is called after captionPanel is first time added to the container, so we store it in some field for further adding, removing (actually it's needed ONLY for component "shifting", when we component is removed and later is added once again)
-                    actualCaptionWidget = captionPanel;
-                }
-                actualCaptionWidget.addStyleName("alignPanelLabel");
-                FlexPanel.setBaseSize(actualCaptionWidget, vertical, baseSize);  // oppositeAndFixed - false, since we're setting the size for the main direction
-            };
+                    if (actualCaptionWidget == null) {
+                        captionPanel.baseSize = baseSize; // this code line is called after captionPanel is first time added to the container, so we store it in some field for further adding, removing (actually it's needed ONLY for component "shifting", when we component is removed and later is added once again)
+                        actualCaptionWidget = captionPanel;
+                    }
+                    actualCaptionWidget.addStyleName("alignPanelLabel");
+                    FlexPanel.setBaseSize(actualCaptionWidget, vertical, baseSize);  // oppositeAndFixed - false, since we're setting the size for the main direction
+                });
+            }
         }
 
         if(isSingleLine())
@@ -174,7 +178,7 @@ public class LinearContainerView extends GAbstractContainerView {
 
         if(alignCaptions) {
             AlignCaptionPanel captionPanel = childrenCaptions.get(index);
-            captionLines[lineIndex].add(captionPanel, rowIndex, GFlexAlignment.START, 0, captionPanel.baseSize);
+            captionLines[lineIndex].add(captionPanel, rowIndex, captionPanel.captionHAlignment, 0, captionPanel.baseSize);
         }
     }
 

@@ -40,6 +40,10 @@ public class ContainerViewProxy extends ComponentViewProxy<ContainerView> {
     public void setChildrenAlignment(FlexAlignment falign) {
         target.setChildrenAlignment(falign);
     }
+    
+    public void setAlignCaptions(boolean alignCaptions) {
+        target.setAlignCaptions(alignCaptions);
+    }
 
     //backward compatibility
     public void setColumns(int columns) {

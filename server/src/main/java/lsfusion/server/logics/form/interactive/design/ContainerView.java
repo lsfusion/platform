@@ -35,6 +35,8 @@ public class ContainerView extends ComponentView {
     private boolean tabbed;
 
     public FlexAlignment childrenAlignment = FlexAlignment.START;
+    
+    private boolean alignCaptions;
 
     public int lines = 1;
     
@@ -102,6 +104,10 @@ public class ContainerView extends ComponentView {
     public boolean isHorizontal() {
         return type == CONTAINERH || type == HORIZONTAL_SPLIT_PANE || horizontal;
     }
+    
+    public boolean isAlignCaptions() {
+        return alignCaptions;
+    }
 
     public void setType(ContainerType type) {
         if(type != COLUMNS && this.type == COLUMNS && lines > 1) { // temp check
@@ -121,6 +127,10 @@ public class ContainerView extends ComponentView {
 
     public void setChildrenAlignment(FlexAlignment childrenAlignment) {
         this.childrenAlignment = childrenAlignment;
+    }
+    
+    public void setAlignCaptions(boolean alignCaptions) {
+        this.alignCaptions = alignCaptions;
     }
 
     public void setLines(int lines) {
@@ -218,6 +228,8 @@ public class ContainerView extends ComponentView {
         pool.writeBoolean(outStream, isTabbed());
 
         pool.writeObject(outStream, childrenAlignment);
+        
+        outStream.writeBoolean(alignCaptions);
 
         outStream.writeInt(lines);
     }
@@ -236,6 +248,8 @@ public class ContainerView extends ComponentView {
         tabbed = pool.readBoolean(inStream);
 
         childrenAlignment = pool.readObject(inStream);
+        
+        alignCaptions = inStream.readBoolean();
 
         lines = inStream.readInt();
     }

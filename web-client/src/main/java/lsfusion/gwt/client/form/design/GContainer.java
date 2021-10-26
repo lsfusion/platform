@@ -20,6 +20,8 @@ public class GContainer extends GComponent {
     public boolean horizontal;
     public boolean tabbed;
     public GFlexAlignment childrenAlignment;
+    
+    public boolean alignCaptions;
 
     public int lines;
 
@@ -118,6 +120,10 @@ public class GContainer extends GComponent {
         return children.size() == 1;
     }
     public boolean isAlignCaptions() {
+        if (alignCaptions) {
+            return true;
+        }
+        
         if(horizontal) // later maybe it makes sense to support align captions for horizontal containers, but with no-wrap it doesn't make much sense
             return false;
 
