@@ -22,7 +22,6 @@ public class RichTextCellRenderer extends StringBasedCellRenderer{
     }
 
     protected native void initQuill(Element element, String innerText)/*-{
-        var thisObj = this;
         var toolbarOptions = [
             ['bold', 'italic', 'underline', 'strike'],        // toggled buttons
             ['link', 'image'],
@@ -41,18 +40,16 @@ public class RichTextCellRenderer extends StringBasedCellRenderer{
                 toolbar: toolbarOptions
             },
             bounds: element,
-            theme: 'bubble'
+            theme: 'bubble',
+            readOnly: true
         });
 
-        quill.enable(!thisObj.@RichTextCellRenderer::property.@GPropertyDraw::isReadOnly()());
+        //prevent adding newline by shift+enter commit editing
+        //https://stackoverflow.com/questions/32495936/quill-js-how-to-prevent-newline-entry-on-enter-to-submit-the-input
+        delete quill.getModule('keyboard').bindings[13];
 
         if (innerText != null)
             quill.root.innerHTML = innerText;
-
-        element.onkeydown = function (event) {
-            if (event.keyCode === 13)
-                event.stopPropagation();
-        }
 
         element.quill = quill;
     }-*/;
