@@ -99,13 +99,37 @@ public enum Compare {
             case NOT_EQUALS :
                 return "!=";
             case LIKE :
-                return "=*";
+                return "_";
             case MATCH:
-                return "=@";
+                return "@";
             case INARRAY :
                 return "IN ARRAY";
         }
         throw new RuntimeException("Serialize Compare");
+    }
+
+    public String getFullString() {
+        switch (this) {
+            case EQUALS :
+                return "=";
+            case GREATER :
+                return ">";
+            case LESS :
+                return "<";
+            case GREATER_EQUALS :
+                return ">=";
+            case LESS_EQUALS :
+                return "<=";
+            case NOT_EQUALS :
+                return "!=";
+            case LIKE :
+                return "_ (LIKE)";
+            case MATCH:
+                return "@ (SEARCH)";
+            case INARRAY :
+                return "IN ARRAY";
+        }
+        return "";
     }
 
     public String getTooltipText() {

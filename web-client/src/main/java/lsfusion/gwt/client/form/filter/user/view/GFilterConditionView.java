@@ -21,10 +21,7 @@ import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButt
 import lsfusion.gwt.client.form.view.Column;
 import lsfusion.gwt.client.view.StyleDefaults;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class GFilterConditionView extends FlexPanel implements CaptionContainerHolder {
     private static final ClientMessages messages = ClientMessages.Instance.get();
@@ -87,7 +84,7 @@ public class GFilterConditionView extends FlexPanel implements CaptionContainerH
         propertyLabel.addStyleName("userFilterLabel");
         leftPanel.addCentered(propertyLabel);
 
-        propertyView = new GFilterOptionSelector<Column>(new Column[0]) {
+        propertyView = new GFilterOptionSelector<Column>() {
             @Override
             public void valueChanged(Column column) {
                 condition.property = column.property;
@@ -111,7 +108,12 @@ public class GFilterConditionView extends FlexPanel implements CaptionContainerH
         compareLabel.addStyleName("userFilterLabel");
         leftPanel.addCentered(compareLabel);
 
-        compareView = new GFilterCompareSelector(condition, allowNull) {
+        GCompare[] filterCompares = condition.property.getFilterCompares();
+        List<String> conditionsFullStrings = new ArrayList<>();
+        for (GCompare filterCompare : filterCompares) {
+            conditionsFullStrings.add(filterCompare.getFullString());
+        }
+        compareView = new GFilterCompareSelector(condition, Arrays.asList(filterCompares), conditionsFullStrings, allowNull) {
             @Override
             public void negationChanged(boolean value) {
                 condition.negation = value;

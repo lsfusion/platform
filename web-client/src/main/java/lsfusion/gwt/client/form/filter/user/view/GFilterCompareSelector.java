@@ -11,6 +11,8 @@ import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 
+import java.util.List;
+
 public abstract class GFilterCompareSelector extends GFilterOptionSelector<GCompare> {
     private FocusPanel focusPanel;
     
@@ -20,8 +22,8 @@ public abstract class GFilterCompareSelector extends GFilterOptionSelector<GComp
     private boolean allowNull;
     private CheckBox allowNullCB;
 
-    public GFilterCompareSelector(GPropertyFilter condition, boolean allowNull) {
-        super(condition.property.getFilterCompares());
+    public GFilterCompareSelector(GPropertyFilter condition, List<GCompare> values, List<String> popupCaptions, boolean allowNull) {
+        super(values, popupCaptions);
         negation = condition.negation;
         this.allowNull = allowNull;
 
@@ -60,13 +62,13 @@ public abstract class GFilterCompareSelector extends GFilterOptionSelector<GComp
     public void set(GCompare[] values) {
         menuBar.clearItems();
         for (GCompare value : values) {
-            addMenuItem(value, value.toString());
+            addMenuItem(value, value.toString(), value.getFullString());
         }
     }
 
     @Override
-    protected MenuItem addMenuItem(GCompare value, String caption) {
-        MenuItem menuItem = super.addMenuItem(value, caption);
+    protected MenuItem addMenuItem(GCompare value, String caption, String popupCaption) {
+        MenuItem menuItem = super.addMenuItem(value, caption, popupCaption);
         
         menuItem.setTitle(value.getTooltipText());
         

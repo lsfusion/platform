@@ -109,7 +109,12 @@ public class FilterConditionView extends FlexPanel {
         compareLabel.setBorder(labelBorder);
         addCentered(compareLabel);
 
-        compareView = new FilterCompareSelector(condition, allowNull) {
+        Compare[] filterCompares = condition.property.getFilterCompares();
+        List<String> conditionsFullStrings = new ArrayList<>();
+        for (Compare filterCompare : filterCompares) {
+            conditionsFullStrings.add(filterCompare.getFullString());
+        }
+        compareView = new FilterCompareSelector(condition, Arrays.asList(filterCompares), conditionsFullStrings, allowNull) {
             @Override
             public void valueChanged(Compare value) {
                 condition.compare = value;

@@ -7,7 +7,6 @@ import lsfusion.interop.form.property.Compare;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
-import java.util.Arrays;
 import java.util.List;
 
 public abstract class FilterCompareSelector extends FilterOptionSelector<Compare> {
@@ -17,8 +16,8 @@ public abstract class FilterCompareSelector extends FilterOptionSelector<Compare
     private boolean allowNull;
     private JCheckBox allowNullCB;
     
-    public FilterCompareSelector(ClientPropertyFilter condition, boolean allowNull) {
-        super(Arrays.asList(condition.property.getFilterCompares()));
+    public FilterCompareSelector(ClientPropertyFilter condition, List<Compare> items, List<String> popupCaptions, boolean allowNull) {
+        super(items, popupCaptions);
         negation = condition.negation;
         this.allowNull = allowNull;
 
@@ -50,7 +49,7 @@ public abstract class FilterCompareSelector extends FilterOptionSelector<Compare
     public void set(List<Compare> values) {
         menu.removeAll();
         for (Compare value : values) {
-            addMenuItem(value, value.toString());
+            addMenuItem(value, value.toString(), value.getFullString());
         }
         addOptions();
     }
@@ -63,8 +62,8 @@ public abstract class FilterCompareSelector extends FilterOptionSelector<Compare
     }
 
     @Override
-    protected JMenuItem addMenuItem(Compare item, String caption) {
-        JMenuItem menuItem = super.addMenuItem(item, caption);
+    protected JMenuItem addMenuItem(Compare item, String caption, String popupCaption) {
+        JMenuItem menuItem = super.addMenuItem(item, caption, popupCaption);
         menuItem.setToolTipText(item.getTooltipText());
         return menuItem;
     }
