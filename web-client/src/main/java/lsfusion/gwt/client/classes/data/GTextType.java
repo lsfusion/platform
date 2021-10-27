@@ -36,7 +36,7 @@ public class GTextType extends GStringType {
 
     @Override
     public CellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList) {
-        return rich ? new RichTextCellEditor(editManager, editProperty) : new TextCellEditor(editManager, editProperty, inputList);
+        return rich ? new RichTextCellEditor(editManager) : new TextCellEditor(editManager, editProperty, inputList);
     }
 
     @Override

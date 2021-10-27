@@ -2,7 +2,6 @@ package lsfusion.gwt.client.form.property.cell.classes.controller.rich;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
-import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.classes.controller.RequestEmbeddedCellEditor;
 import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
@@ -11,11 +10,9 @@ import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
 public class RichTextCellEditor implements RequestEmbeddedCellEditor {
 
     private final EditManager editManager;
-    private final GPropertyDraw property;
 
-    public RichTextCellEditor(EditManager editManager, GPropertyDraw property) {
+    public RichTextCellEditor(EditManager editManager) {
         this.editManager = editManager;
-        this.property = property;
     }
 
     @Override
@@ -24,15 +21,23 @@ public class RichTextCellEditor implements RequestEmbeddedCellEditor {
     }
 
     protected native void start(Element element)/*-{
-        var quill = element.quill;
-        quill.enable(!this.@RichTextCellEditor::property.@GPropertyDraw::isReadOnly()());
-        quill.focus();
+        this.@RichTextCellEditor::enableEditing(*)(element, true);
+        element.quill.focus();
     }-*/;
 
     protected native String getEditorValue(Element element)/*-{
         var quill = element.quill;
         return quill != null ? quill.root.innerHTML : '';
     }-*/;
+
+    protected native void enableEditing(Element element, boolean enableEditing)/*-{
+        element.quill.enable(enableEditing);
+    }-*/;
+
+    @Override
+    public void stop(Element parent, boolean cancel) {
+        enableEditing(parent, false);
+    }
 
     @Override
     public void commit(Element parent, CommitReason commitReason) {
@@ -46,6 +51,6 @@ public class RichTextCellEditor implements RequestEmbeddedCellEditor {
 
     @Override
     public boolean checkEnterEvent(Event event) {
-        return event.getShiftKey();
+        return false;
     }
 }

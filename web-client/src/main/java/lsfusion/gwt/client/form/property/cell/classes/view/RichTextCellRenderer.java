@@ -4,11 +4,9 @@ import com.google.gwt.dom.client.Element;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
 public class RichTextCellRenderer extends StringBasedCellRenderer{
-    private final GPropertyDraw property;
 
     public RichTextCellRenderer(GPropertyDraw property) {
         super(property);
-        this.property = property;
     }
 
     @Override
@@ -43,10 +41,6 @@ public class RichTextCellRenderer extends StringBasedCellRenderer{
             theme: 'bubble',
             readOnly: true
         });
-
-        //prevent adding newline by shift+enter commit editing
-        //https://stackoverflow.com/questions/32495936/quill-js-how-to-prevent-newline-entry-on-enter-to-submit-the-input
-        delete quill.getModule('keyboard').bindings[13];
 
         if (innerText != null)
             quill.root.innerHTML = innerText;
