@@ -138,8 +138,7 @@
 
                 <!-- Quill -->
                 'https://cdn.quilljs.com/1.3.6/quill.js',
-                'https://cdn.quilljs.com/1.3.6/quill.bubble.css',
-                'static/css/quillRichText.css'
+                'https://cdn.quilljs.com/1.3.6/quill.bubble.css'
             ]);
 
         </script>
