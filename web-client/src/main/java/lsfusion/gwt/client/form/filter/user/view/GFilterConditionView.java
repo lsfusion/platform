@@ -65,7 +65,7 @@ public class GFilterConditionView extends FlexPanel implements CaptionContainerH
 
     public GFilterConditionView(GPropertyFilter iCondition, GTableController logicsSupplier, final UIHandler handler, boolean toolsVisible, boolean readSelectedValue) {
         this.condition = iCondition;
-        this.toolsVisible = toolsVisible;
+        this.toolsVisible = toolsVisible || !isFixed();
 
         allowNull = !condition.isFixed();
         

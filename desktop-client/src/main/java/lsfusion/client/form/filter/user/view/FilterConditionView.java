@@ -64,7 +64,7 @@ public class FilterConditionView extends FlexPanel {
         super(false, FlexAlignment.START);
         condition = ifilter;
         uiHandler = iuiHandler;
-        this.toolsVisible = toolsVisible;
+        this.toolsVisible = toolsVisible || !isFixed();
 
         allowNull = !condition.isFixed();
 
