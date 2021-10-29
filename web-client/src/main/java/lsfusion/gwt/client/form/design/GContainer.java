@@ -26,6 +26,8 @@ public class GContainer extends GComponent {
     public int lines;
 
     public ArrayList<GComponent> children = new ArrayList<>();
+    
+    public boolean isFiltersContainer;
 
     @Override
     public String toString() {
@@ -141,6 +143,14 @@ public class GContainer extends GComponent {
             return false;
 
         return true;
+    }
+    
+    public Integer getLineSize() {
+        if (isFiltersContainer) {
+            return 0;
+        } else {
+            return null;
+        }
     }
 
     private class GCaptionReader implements GPropertyReader {

@@ -67,6 +67,7 @@ public class ClientTreeGroup extends ClientComponent implements ClientIdentitySe
         groups = pool.deserializeList(inStream);
         toolbar = pool.deserializeObject(inStream);
         filtersContainer = pool.deserializeObject(inStream);
+        filtersContainer.isFiltersContainer = true;
         pool.deserializeCollection(filters, inStream);
 
         plainTreeMode = inStream.readBoolean();

@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form.design.view.flex;
 
+import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.Dimension;
 import lsfusion.gwt.client.base.GwtClientUtils;
@@ -53,15 +54,25 @@ public class LinearContainerView extends GAbstractContainerView {
             captionLines = new FlexPanel[linesCount];
             childrenCaptions = new ArrayList<>();
             for (int i = 0; i < linesCount; i++) {
+                Integer lineSize = container.getLineSize();
+                
                 if(alignCaptions) {
                     FlexPanel captionLine = new FlexPanel(vertical, flexAlignment);
-                    panel.add(captionLine, GFlexAlignment.STRETCH); // we need the same alignment as used for the "main" line (it's important if justifyContent is used)
+                    panel.addFillFlex(captionLine, lineSize); // we need the same alignment as used for the "main" line (it's important if justifyContent is used)
                     captionLines[i] = captionLine;
+                    
+                    if (lineSize != null) { // because of non-null flex-basis column won't take content size which may then overflow over column
+                        captionLine.getElement().getStyle().setOverflow(Style.Overflow.HIDDEN);
+                    }
                 }
 
                 FlexPanel line = new FlexPanel(vertical, flexAlignment);
-                panel.addFillFlex(line, null); // we're using null flex basis to make lines behaviour similar to manually defined containers
+                panel.addFillFlex(line, lineSize); // we're using null flex basis to make lines behaviour similar to manually defined containers
                 lines[i] = line;
+
+                if (lineSize != null) { // because of non-null flex-basis column won't take content size which may then overflow over column
+                    line.getElement().getStyle().setOverflow(Style.Overflow.AUTO);
+                }
             }
         }
     }

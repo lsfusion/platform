@@ -81,6 +81,7 @@ public class GFilterConditionView extends FlexPanel implements CaptionContainerH
         String currentCaption = columns.get(currentColumn);
         
         propertyLabel = new Label(currentCaption);
+        propertyLabel.setTitle(currentCaption);
         propertyLabel.addStyleName("userFilterLabel");
         leftPanel.addCentered(propertyLabel);
 
@@ -90,7 +91,9 @@ public class GFilterConditionView extends FlexPanel implements CaptionContainerH
                 condition.property = column.property;
                 condition.columnKey = column.columnKey;
 
-                propertyLabel.setText(columns.get(column));
+                String columnCaption = columns.get(column);
+                propertyLabel.setText(columnCaption);
+                propertyLabel.setTitle(columnCaption);
 
                 propertyChanged();
 

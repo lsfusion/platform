@@ -141,6 +141,8 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
             GComponent childComponent = convertOrCast(child);
             container.children.add(childComponent);
         }
+        
+        container.isFiltersContainer = clientContainer.isFiltersContainer;
 
         return container;
     }

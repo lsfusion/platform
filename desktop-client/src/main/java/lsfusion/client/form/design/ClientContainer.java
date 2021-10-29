@@ -31,6 +31,8 @@ public class ClientContainer extends ClientComponent {
     public int lines = 1;
 
     public List<ClientComponent> children = new ArrayList<>();
+    
+    public boolean isFiltersContainer = false;
 
     public ClientContainer() {
     }
