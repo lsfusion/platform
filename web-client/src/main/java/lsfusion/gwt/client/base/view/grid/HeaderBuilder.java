@@ -37,7 +37,7 @@ public interface HeaderBuilder<T> {
     void update(boolean columnsChanged);
 
     void updateSticky(List<Integer> stickyColumns);
-    void updateStickyLeft(Map<Integer, Integer> leftStickyMap);
+    void updateStickyLeft(List<Integer> stickyColumns, List<Integer> stickyLefts);
 
     /**
      * If you want to handle browser events using a subclass of {@link Header},

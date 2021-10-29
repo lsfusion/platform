@@ -150,17 +150,15 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
     }
 
     @Override
-    public void updateRowStickyLeftImpl(TableRowElement tr, Map<Integer, Integer> leftStickyMap) {
-        updateStickyLeft(tr, leftStickyMap);
+    public void updateRowStickyLeftImpl(TableRowElement tr, List<Integer> stickyColumns, List<Integer> stickyLefts) {
+        updateStickyLeft(tr, stickyColumns, stickyLefts);
     }
 
-    public static void updateStickyLeft(TableRowElement tr, Map<Integer, Integer> leftStickyMap) {
-        for (int curColumn = 0; curColumn < tr.getCells().getLength(); curColumn++) {
-            Integer left = leftStickyMap.get(curColumn);
-            if(left != null) {
-                TableCellElement td = tr.getCells().getItem(curColumn).cast();
-                td.getStyle().setProperty("left", left + "px");
-            }
+    public static void updateStickyLeft(TableRowElement tr, List<Integer> stickyColumns, List<Integer> stickyLefts) {
+        for (int i = 0; i < stickyColumns.size(); i++) {
+            Integer stickyColumn = stickyColumns.get(i);
+            Integer left = stickyLefts.get(i);
+            tr.getCells().getItem(stickyColumn).getStyle().setProperty("left", left + "px");
         }
     }
 

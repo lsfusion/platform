@@ -93,11 +93,11 @@ public abstract class DataGridHeaderBuilder<T> implements HeaderBuilder<T> {
     protected abstract void updateHeaderStickyImpl(TableRowElement tr, List<Integer> stickyColumns);
 
     @Override
-    public void updateStickyLeft(Map<Integer, Integer> leftStickyMap) {
-        updateHeaderStickyLeftImpl(getHeaderRow(), leftStickyMap);
+    public void updateStickyLeft(List<Integer> stickyColumns, List<Integer> stickyLefts) {
+        updateHeaderStickyLeftImpl(getHeaderRow(), stickyColumns, stickyLefts);
     }
 
-    protected abstract void updateHeaderStickyLeftImpl(TableRowElement tr, Map<Integer, Integer> leftStickyMap);
+    protected abstract void updateHeaderStickyLeftImpl(TableRowElement tr, List<Integer> stickyColumns, List<Integer> stickyLefts);
 
     /**
      * Get the header or footer at the specified index.
