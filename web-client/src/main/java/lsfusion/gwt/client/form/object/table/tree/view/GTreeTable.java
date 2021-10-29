@@ -120,6 +120,8 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
                             }
                         }
                     }, this, groupObject);
+
+        GwtClientUtils.setZeroZIndex(getElement());
     }
 
     private static boolean isSelectedNodeExpandable(GTreeTableNode node) {

@@ -135,8 +135,8 @@
 
 .dataGridCell {
     /* the same as dataGridCell, dataGridHeaderCell, table.pvtTable thead tr th/td */
-    border-bottom: 1px solid var(--grid-separator-border-color);
-    border-right: 1px solid var(--grid-separator-border-color);
+    border-bottom: var(--border-width) solid var(--grid-separator-border-color);
+    border-right: var(--border-width) solid var(--grid-separator-border-color);
 
     padding: 0;
 

@@ -22,6 +22,7 @@ import com.google.gwt.dom.client.TableSectionElement;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 
 import java.util.List;
+import java.util.Map;
 
 import static lsfusion.gwt.client.view.StyleDefaults.customDataGridStyle;
 
@@ -169,7 +170,7 @@ public class DefaultHeaderBuilder<T> extends DataGridHeaderBuilder<T> {
     }
 
     @Override
-    protected void updateHeaderStickyLeftImpl(TableRowElement tr, List<Integer> stickyColumns) {
-        GPropertyTableBuilder.updateStickyLeft(tr, stickyColumns);
+    protected void updateHeaderStickyLeftImpl(TableRowElement tr, Map<Integer, Integer> leftStickyMap) {
+        GPropertyTableBuilder.updateStickyLeft(tr, leftStickyMap);
     }
 }

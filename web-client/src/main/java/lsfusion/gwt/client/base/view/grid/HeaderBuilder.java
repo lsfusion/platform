@@ -19,6 +19,7 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.TableRowElement;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Builds the DOM elements for the header section of a CellTable. It also
@@ -36,7 +37,7 @@ public interface HeaderBuilder<T> {
     void update(boolean columnsChanged);
 
     void updateSticky(List<Integer> stickyColumns);
-    void updateStickyLeft(List<Integer> stickyColumns);
+    void updateStickyLeft(Map<Integer, Integer> leftStickyMap);
 
     /**
      * If you want to handle browser events using a subclass of {@link Header},

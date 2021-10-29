@@ -11,6 +11,7 @@ import lsfusion.gwt.client.form.object.table.grid.view.GPivot;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static lsfusion.gwt.client.view.StyleDefaults.*;
@@ -149,17 +150,16 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
     }
 
     @Override
-    public void updateRowStickyLeftImpl(TableRowElement tr, List<Integer> stickyColumns) {
-        updateStickyLeft(tr, stickyColumns);
+    public void updateRowStickyLeftImpl(TableRowElement tr, Map<Integer, Integer> leftStickyMap) {
+        updateStickyLeft(tr, leftStickyMap);
     }
 
-    public static void updateStickyLeft(TableRowElement tr, List<Integer> stickyColumns) {
-        int left = 0;
+    public static void updateStickyLeft(TableRowElement tr, Map<Integer, Integer> leftStickyMap) {
         for (int curColumn = 0; curColumn < tr.getCells().getLength(); curColumn++) {
-            if(stickyColumns.contains(curColumn)) {
+            Integer left = leftStickyMap.get(curColumn);
+            if(left != null) {
                 TableCellElement td = tr.getCells().getItem(curColumn).cast();
                 td.getStyle().setProperty("left", left + "px");
-                left += td.getClientWidth();
             }
         }
     }
