@@ -59,6 +59,7 @@ languageTo = DATA Language (Dictionary);
 nameLanguageTo '{i18n.name.language.to}'(Dictionary dictionary) = name(languageTo(dictionary));
 
 translationInput '{i18n.translation.input}' = DATA LOCAL TEXT ();
+translationCode = DATA INTEGER ();
 translationResult '{i18n.translation.result}' = DATA LOCAL TEXT ();
 
 // ------------------------------------ Перевод через Google Translate -------------------------------- //
@@ -68,28 +69,27 @@ nameLanguageFromTranslation '{i18n.name.language.from}'() = name(languageFromTra
 languageToTranslation = DATA Language ();
 nameLanguageToTranslation '{i18n.name.language.to}'() = name(languageToTranslation());
 
-translate   INTERNAL  'lsfusion.server.physics.dev.i18n.action.TranslateAction' (TEXT, Language, Language);
+translateApiKey '{i18n.api.key}' = DATA STRING () CHARWIDTH 40;
+translate INTERNAL 'lsfusion.server.physics.dev.i18n.action.TranslateAction' (TEXT, Language, Language) NULL;
 
-translateTerm '{i18n.translate}'(DictionaryEntry dictionaryEntry)  { 
-
-    EXEC translate (TEXT(term(dictionaryEntry)),
-            languageFrom(dictionary(dictionaryEntry)),
-            languageTo(dictionary(dictionaryEntry)));
-    translation(dictionaryEntry) <- STRING[50](translationResult());
+translateTerm '{i18n.translate}'(DictionaryEntry e)  { 
+    translate(TEXT(term(e)), languageFrom(dictionary(e)), languageTo(dictionary(e)));
+    translation(e) <- STRING[50](translationResult());
 }
 
 translateText '{i18n.translate}'()  { 
-    EXEC translate (translationInput(), languageFromTranslation(), languageToTranslation());
+    translate(translationInput(), languageFromTranslation(), languageToTranslation());
 }
 
 // ------------------------------------ Перевод через словарь -------------------------------- //
 
-translate   INTERNAL  'lsfusion.server.physics.dev.i18n.action.TranslateDictionaryAction' (Dictionary, TEXT);
+translate INTERNAL  'lsfusion.server.physics.dev.i18n.action.TranslateDictionaryAction' (Dictionary, TEXT);
 
 WHEN LOCAL CHANGED (translationInput()) AND Dictionary dictionary IS Dictionary DO EXEC translate(dictionary, translationInput());
 
 FORM translation '{i18n.translation}'
-    PROPERTIES() translationInput, translationResult, nameLanguageFromTranslation, nameLanguageToTranslation,
+    PROPERTIES() translateApiKey, 
+                 translationInput, translationResult, nameLanguageFromTranslation, nameLanguageToTranslation,
                  translateText
 ;
 
@@ -97,6 +97,7 @@ DESIGN translation {
     NEW languages {
         caption = '{i18n.languages}';
         type = CONTAINERH;
+        MOVE PROPERTY(translateApiKey());
         MOVE PROPERTY(nameLanguageFromTranslation());
         MOVE PROPERTY(nameLanguageToTranslation());
     }

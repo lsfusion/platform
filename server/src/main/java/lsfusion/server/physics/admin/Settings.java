@@ -2779,7 +2779,7 @@ public class Settings implements Cloneable {
         this.sessionConfigTimeout = sessionConfigTimeout;
     }
 
-    private String filterMatchLanguage = "english"; //comma separated
+    private String filterMatchLanguage = "english";
 
     public String getFilterMatchLanguage() {
         return filterMatchLanguage;

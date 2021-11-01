@@ -14,24 +14,22 @@ import net.sf.jasperreports.engine.export.JRPrintServiceExporter;
 import net.sf.jasperreports.engine.export.JRPrintServiceExporterParameter;
 import net.sf.jasperreports.export.XlsReportConfiguration;
 
+import javax.print.DocFlavor;
 import javax.print.PrintService;
 import javax.print.PrintServiceLookup;
-import javax.print.attribute.HashPrintRequestAttributeSet;
-import javax.print.attribute.HashPrintServiceAttributeSet;
-import javax.print.attribute.PrintRequestAttributeSet;
-import javax.print.attribute.PrintServiceAttributeSet;
-import javax.print.attribute.standard.MediaTray;
-import javax.print.attribute.standard.PrinterName;
-import javax.print.attribute.standard.SheetCollate;
-import javax.print.attribute.standard.Sides;
+import javax.print.attribute.*;
+import javax.print.attribute.standard.*;
 import java.awt.print.PrinterAbortException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static lsfusion.base.BaseUtils.nullEmpty;
-import static lsfusion.base.BaseUtils.nvl;
 
 public class ClientReportUtils {
+
+    static DocFlavor flavor = DocFlavor.INPUT_STREAM.AUTOSENSE;
 
     public static ExecutorService executorService = Executors.newSingleThreadExecutor();
 
@@ -54,50 +52,67 @@ public class ClientReportUtils {
         public void run() {
             try {
 
-                String printerTray = null;
+                Map<String, String> printOptions = new HashMap<>();
                 if(printerName != null) {
                     String[] splitted = printerName.split(";");
                     printerName = nullEmpty(splitted[0]);
-                    printerTray = splitted.length > 1 ? nullEmpty(splitted[1]) : null;
+                    for(int i = 1; i < splitted.length; i++) {
+                        String[] entry = splitted[i].split("=");
+                        if(entry.length == 2) {
+                            printOptions.put(entry[0], entry[1]);
+                        }
+                    }
+                }
+
+                PrintService printer = PrintServiceLookup.lookupDefaultPrintService();
+                if(printerName != null) {
+                    for (PrintService service : PrintServiceLookup.lookupPrintServices(flavor, new HashPrintRequestAttributeSet())) {
+                        if(service.getName().equals(printerName)) {
+                            printer = service;
+                            break;
+                        }
+                    }
                 }
 
                 JasperPrint print = new ReportGenerator(generationData).createReport(FormPrintType.PRINT, MainController.remoteLogics);
                 print.setProperty(XlsReportConfiguration.PROPERTY_DETECT_CELL_TYPE, "true");
 
-                PrintService defaultPrintService = PrintServiceLookup.lookupDefaultPrintService();
+                PrintRequestAttributeSet attrSet = new HashPrintRequestAttributeSet();
 
-                PrintRequestAttributeSet printRequestAttributeSet = new HashPrintRequestAttributeSet();
-//                printRequestAttributeSet.add(MediaSizeName.ISO_A4);
-
-                String sidesProp = print.getProperty(ReportGenerator.SIDES_PROPERTY_NAME);
-                Sides sides = ReportGenerator.SIDES_VALUES.get(sidesProp);
+                String sidesValue = printOptions.getOrDefault(ReportGenerator.SIDES_PROPERTY_NAME, print.getProperty(ReportGenerator.SIDES_PROPERTY_NAME));
+                Sides sides = ReportGenerator.SIDES_VALUES.get(sidesValue);
                 if (sides != null) {
-                    printRequestAttributeSet.add(sides);
+                    attrSet.add(sides);
                 }
 
-                String trayProp = nvl(printerTray, print.getProperty(ReportGenerator.TRAY_PROPERTY_NAME));
-                MediaTray tray = ReportGenerator.TRAY_VALUES.get(trayProp);
+                String trayValue = printOptions.getOrDefault(ReportGenerator.TRAY_PROPERTY_NAME, print.getProperty(ReportGenerator.TRAY_PROPERTY_NAME));
+                Media tray = getTray(printer, trayValue);
                 if (tray != null) {
-                    printRequestAttributeSet.add(tray);
+                    attrSet.add(tray);
                 }
 
-                String sheetCollate = print.getProperty(ReportGenerator.SHEET_COLLATE_PROPERTY_NAME);
-                if ("true".equals(sheetCollate)) {
-                    printRequestAttributeSet.add(SheetCollate.COLLATED);
-                } else if ("false".equals(sheetCollate)) {
-                    printRequestAttributeSet.add(SheetCollate.UNCOLLATED);
+                String sheetCollateValue = printOptions.getOrDefault(ReportGenerator.SHEET_COLLATE_PROPERTY_NAME, print.getProperty(ReportGenerator.SHEET_COLLATE_PROPERTY_NAME));
+                if ("true".equals(sheetCollateValue)) {
+                    attrSet.add(SheetCollate.COLLATED);
+                } else if ("false".equals(sheetCollateValue)) {
+                    attrSet.add(SheetCollate.UNCOLLATED);
+                }
+
+                String copiesValue = printOptions.get("copies");
+                if(copiesValue != null) {
+                    Integer copies = Integer.parseInt(copiesValue);
+                    if(copies > 0) {
+                        attrSet.add(new Copies(copies));
+                    }
                 }
 
                 PrintServiceAttributeSet printServiceAttributeSet = new HashPrintServiceAttributeSet();
-                if(printerName != null)
-                    printServiceAttributeSet.add(new PrinterName(printerName, null));
+                printServiceAttributeSet.add(new PrinterName(printer.getName(), null));
 
                 JRPrintServiceExporter exporter = new JRPrintServiceExporter();
 
                 exporter.setParameter(JRExporterParameter.JASPER_PRINT, print);
-                if(printerName == null)
-                    exporter.setParameter(JRPrintServiceExporterParameter.PRINT_SERVICE, defaultPrintService);
-                exporter.setParameter(JRPrintServiceExporterParameter.PRINT_REQUEST_ATTRIBUTE_SET, printRequestAttributeSet);
+                exporter.setParameter(JRPrintServiceExporterParameter.PRINT_REQUEST_ATTRIBUTE_SET, attrSet);
                 exporter.setParameter(JRPrintServiceExporterParameter.PRINT_SERVICE_ATTRIBUTE_SET, printServiceAttributeSet);
                 exporter.setParameter(JRPrintServiceExporterParameter.DISPLAY_PAGE_DIALOG, Boolean.FALSE);
                 exporter.setParameter(JRPrintServiceExporterParameter.DISPLAY_PRINT_DIALOG, Boolean.FALSE);
@@ -110,6 +125,22 @@ public class ClientReportUtils {
                     ClientExceptionManager.handle(e, false);
                 }
             }
+        }
+
+        private static Media getTray(PrintService printer, String trayName) {
+            if(trayName != null) {
+                Media[] supportedMedia = (Media[]) printer.getSupportedAttributeValues(Media.class, DocFlavor.SERVICE_FORMATTED.PAGEABLE, null);
+                if (supportedMedia != null) {
+                    for (Media media : supportedMedia) {
+                        if (media instanceof MediaTray) {
+                            if (media.toString().equals(trayName)) {
+                                return media;
+                            }
+                        }
+                    }
+                }
+            }
+            return null;
         }
     }
 }

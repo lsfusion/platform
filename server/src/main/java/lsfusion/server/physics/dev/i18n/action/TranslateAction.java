@@ -2,6 +2,7 @@ package lsfusion.server.physics.dev.i18n.action;
 
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.DataObject;
+import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
@@ -9,16 +10,25 @@ import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicNameValuePair;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.URL;
-import java.net.URLConnection;
-import java.net.URLEncoder;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.List;
 
 public class TranslateAction extends InternalAction {
     public final ClassPropertyInterface translationInterface;
@@ -38,41 +48,61 @@ public class TranslateAction extends InternalAction {
 
         try {
 
-            DataSession session = context.getSession();
+            ObjectValue translationEntry = context.getKeyValue(translationInterface);
+            ObjectValue languageFromObject = context.getKeyValue(languageFromInterface);
+            ObjectValue languageToObject = context.getKeyValue(languageToInterface);
 
-            DataObject translationEntry = context.getDataKeyValue(translationInterface);
-            DataObject languageFromObject = context.getDataKeyValue(languageFromInterface);
-            DataObject languageToObject = context.getDataKeyValue(languageToInterface);
+            String apiKey = (String) findProperty("translateApiKey[]").read(context);
 
-            if (languageFromObject != null && languageToObject != null && translationEntry != null) {
+            if (languageToObject != null && translationEntry != null) {
 
-                String languageFrom = (String) findProperty("locale[Language]").read(session, languageFromObject);
-                String languageTo = (String) findProperty("locale[Language]").read(session, languageToObject);
+                String languageFrom = (String) findProperty("locale[Language]").read(context, languageFromObject);
+                String languageTo = (String) findProperty("locale[Language]").read(context, languageToObject);
 
-                if(languageFrom != null && languageTo != null) {
-                    String url = "http://translate.google.com/translate_a/t?client=x&text=" + URLEncoder.encode(((String) translationEntry.object).trim(), "UTF-8") + "&sl=" + languageFrom.trim() + "&tl=" + languageTo.trim();
-                    URLConnection conn = new URL(url).openConnection();
-                    conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows; U; Windows NT 6.1; en-GB;rv:1.9.2.13) Gecko/20101203 Firefox/3.6.13 (.NET CLR 3.5.30729)");
-                    InputStreamReader r = new InputStreamReader(conn.getInputStream());
-                    StringBuilder s = new StringBuilder();
-                    char[] buf = new char[2048];
-                    while (true) {
-                        int n = r.read(buf);
-                        if (n < 0)
-                            break;
-                        s.append(buf, 0, n);
-                    }
+                if(languageTo != null) {
+                    CloseableHttpClient httpclient = HttpClients.createDefault();
+                    HttpPost httppost = new HttpPost("https://translation.googleapis.com/language/translate/v2");
 
-                    String result = "";
-                    String[] splitted = s.toString().split("\"trans\":\"");
-                    for (String line : splitted) {
-                        Pattern pattern = Pattern.compile("(.*)\",\"orig\".*(\\}|\\{)");
-                        Matcher m = pattern.matcher(line);
-                        if (m.matches()) {
-                            result += m.group(1).replace("\\n", "\n");
+                    List<NameValuePair> params = new ArrayList<NameValuePair>(2);
+                    params.add(new BasicNameValuePair("q", (String) translationEntry.getValue()));
+                    if (languageFrom != null)
+                        params.add(new BasicNameValuePair("source", (String) languageFrom));
+                    params.add(new BasicNameValuePair("target", (String) languageTo));
+                    if (apiKey != null)
+                        params.add(new BasicNameValuePair("key", (String) apiKey));
+
+                    httppost.setEntity(new UrlEncodedFormEntity(params, "UTF-8"));
+
+                    HttpResponse response = httpclient.execute(httppost);
+                    findProperty("translationCode[]").change(response.getStatusLine().getStatusCode(), context);
+
+                    HttpEntity entity = response.getEntity();
+
+                    String result = null;
+                    if (entity != null) {
+                        try (InputStream instream = entity.getContent()) {
+                            BufferedReader streamReader = new BufferedReader(new InputStreamReader(instream, "UTF-8"));
+                            StringBuilder responseStrBuilder = new StringBuilder();
+
+                            String inputStr;
+                            while ((inputStr = streamReader.readLine()) != null)
+                                responseStrBuilder.append(inputStr);
+
+                            String responseString = responseStrBuilder.toString();
+                            JSONObject jsonObject = new JSONObject(responseString);
+
+                            if (jsonObject.has("data")) {
+                                JSONObject data = jsonObject.getJSONObject("data");
+
+                                JSONArray translations = data.getJSONArray("translations");
+                                result = (String) translations.getJSONObject(0).get("translatedText");
+                            } else {
+                                result = responseString;
+                            }
                         }
                     }
-                    findProperty("translationResult[]").change(result, session);
+
+                    findProperty("translationResult[]").change(result, context);
                 }
             }
 

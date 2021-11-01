@@ -886,7 +886,7 @@ button {
 }
 
 .gwt-TabBar-vert {
-    padding-left: 2px;
+    padding-left: var(--border-padding);
 }
 .gwt-TabBar-vert .gwt-TabBarFirst {
     height: 3px;  /* first tab distance from the top */
@@ -896,7 +896,7 @@ button {
     width: 0;  /* to make it invisible when all tabs are wrapped */
 }
 .gwt-TabBar-horz {
-    padding-top: 2px;
+    padding-top: var(--border-padding);
 }
 .gwt-TabBar .gwt-TabBarFirst {
     width: 3px;  /* first tab distance from the left */
@@ -960,12 +960,12 @@ button {
 }
 
 .gwt-TabPanel {
-    margin: 0 1px 1px;
+    /*margin: 0 1px 1px;*/
 }
 .gwt-TabPanelBottom {
-    padding: 1px;
-    border: 1px solid var(--panel-border-color);
-    border-radius: var(--panel-border-radius);
+    padding-top: var(--border-padding);
+    border-top: 1px solid var(--panel-border-color);
+/*    border-radius: var(--panel-border-radius);*/
 }
 
 .gwt-TextArea {
@@ -1262,13 +1262,13 @@ td.datePickerMonth {
 .gwt-SplitLayoutPanel-HDragger {
     cursor: col-resize;
     width: 4px !important; /* is overriden by width with border in SplitLayoutPanel */
-    border-left: 1px solid var(--split-border-color);
+    /*border-left: 1px solid var(--split-border-color);*/
     border-right: 1px solid var(--split-border-color);
 }
 
 .gwt-SplitLayoutPanel-VDragger {
     cursor: row-resize;
     height: 4px !important; /* is overriden by width with border in SplitLayoutPanel */
-    border-top: 1px solid var(--split-border-color);
+    /*border-top: 1px solid var(--split-border-color);*/
     border-bottom: 1px solid var(--split-border-color);
 }

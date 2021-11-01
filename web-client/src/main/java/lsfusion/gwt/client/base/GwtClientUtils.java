@@ -306,6 +306,11 @@ public class GwtClientUtils {
         childStyle.setRight(0, Style.Unit.PX);
     }
 
+    public static void setupPercentParent(Element element) {
+        element.getStyle().setWidth(100, Style.Unit.PCT);
+        element.getStyle().setHeight(100, Style.Unit.PCT);
+    }
+
     public static Dimension getOffsetSize(Widget widget) {
         return getOffsetSize(widget, 0, 0);
     }
@@ -345,22 +350,6 @@ public class GwtClientUtils {
         dim.width += extraWidth;
         dim.height += extraHeight;
         return dim;
-    }
-
-    public static void installPaddings(Element element, int paddingTop, int paddingBottom, int paddingLeft, int paddingRight) {
-        Style style = element.getStyle();
-        style.setPaddingTop(paddingTop, Style.Unit.PX);
-        style.setPaddingBottom(paddingBottom, Style.Unit.PX);
-        style.setPaddingLeft(paddingLeft, Style.Unit.PX);
-        style.setPaddingRight(paddingRight, Style.Unit.PX);
-    }
-
-    public static void installMargins(Element element, int paddingTop, int paddingBottom, int paddingLeft, int paddingRight) {
-        Style style = element.getStyle();
-        style.setMarginTop(paddingTop, Style.Unit.PX);
-        style.setMarginBottom(paddingBottom, Style.Unit.PX);
-        style.setMarginLeft(paddingLeft, Style.Unit.PX);
-        style.setMarginRight(paddingRight, Style.Unit.PX);
     }
 
     public static void showPopupInWindow(PopupDialogPanel popup, Widget widget, int mouseX, int mouseY) {
@@ -716,6 +705,17 @@ public class GwtClientUtils {
         return parseInt($wnd.getComputedStyle(element, null).width);
     }-*/;
 
+    public static native int getMarginTop(Element element) /*-{
+        return parseInt($wnd.getComputedStyle(element, null).marginTop);
+    }-*/;
+
+    public static native int getAllMargins(Element element) /*-{
+        var computedStyle = $wnd.getComputedStyle(element, null);
+        return parseInt(computedStyle.marginTop) + parseInt(computedStyle.marginBottom) +
+                parseInt(computedStyle.borderTop) + parseInt(computedStyle.borderBottom) +
+                parseInt(computedStyle.paddingTop) + parseInt(computedStyle.paddingBottom);
+    }-*/;
+
     public static native int getFullHeight(Element element) /*-{
         var computedStyle = $wnd.getComputedStyle(element, null);
         return element.offsetHeight + parseInt(computedStyle.marginTop) + parseInt(computedStyle.marginBottom);
@@ -737,17 +737,6 @@ public class GwtClientUtils {
     public static native Element log(String i) /*-{
         console.log(i);
     }-*/;
-
-    public static String getParentForm(Element element) {
-        BodyElement body = Document.get().getBody();
-        while (element != body) {
-            String attr = element.getAttribute("lsfusion-form");
-            if(attr != null && !attr.isEmpty())
-                return attr;
-            element = element.getParentElement().cast();
-        }
-        return null;
-    }
 
     public static Element getFocusedChild(Element containerElement) {
         Element focusedElement = getFocusedElement();

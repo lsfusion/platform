@@ -167,9 +167,7 @@ To access design components, you can use their names or address property compone
 |---|---|---|---|---|
 |`showCalculateSum`|Show the column sum calculation button|Extended Boolean literal|`TRUE`|`TRUE`<br/>`FALSE`|
 |`showCountQuantity`|Show the row quantity calculation button|Extended Boolean literal|`TRUE`|`TRUE`<br/>`FALSE`|
-|`showGroupChange`|Show the group adjustment button|Extended Boolean literal|`TRUE`|`TRUE`<br/>`FALSE`|
 |`showGroup`|Show the grouping report button|Extended Boolean literal|`TRUE`|`TRUE`<br/>`FALSE`|
-|`showPrintGroup`|Show the table printing button|Extended Boolean literal|`TRUE`|`TRUE`<br/>`FALSE`|
 |`showPrintGroupXls`|Show the XLS export button|Extended Boolean literal|`TRUE`|`TRUE`<br/>`FALSE`|
 |`showSettings`|Show the table setting button|Extended Boolean literal|`TRUE`|`TRUE`<br/>`FALSE`|
 

@@ -17,6 +17,7 @@ package lsfusion.gwt.client.form.property.cell.classes.controller.suggest;
 
 import com.google.gwt.aria.client.Roles;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.dom.client.Style;
 import com.google.gwt.safehtml.client.HasSafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.annotations.IsSafeHtml;
@@ -134,6 +135,7 @@ public class MenuItem extends UIObject implements HasHTML, HasEnabled, HasSafeHt
     setStyleName("gwt-MenuItem");
 
     getElement().setAttribute("id", DOM.createUniqueId());
+    getElement().getStyle().setPadding(2, Style.Unit.PX);
     // Add a11y role "menuitem"
     Roles.getMenuitemRole().set(getElement());
   }

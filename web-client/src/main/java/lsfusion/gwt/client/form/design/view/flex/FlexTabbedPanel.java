@@ -82,7 +82,7 @@ public class FlexTabbedPanel extends FlexPanel implements IndexedPanel, Requires
      */
 
     public interface AddToDeck {
-        void add(FlexPanel deck, Widget widget, int beforeIndex);
+        void add(FlexPanel deck, int beforeIndex);
     }
     public void addTab(Widget w, String tabText) {
         addTab(w, new Label(tabText, false));
@@ -90,19 +90,19 @@ public class FlexTabbedPanel extends FlexPanel implements IndexedPanel, Requires
 
     public void addTab(Widget w, Widget tabWidget) {
         w.addStyleName("gwt-TabPanelBottom");
-        insertTab(w, tabWidget, getTabCount(), FlexPanel::addFill);
+        insertTab(tabWidget, getTabCount(), (widgets, beforeIndex) -> widgets.addFill(w, beforeIndex));
     }
 
-    public void insertTab(Widget widget, String tabText, int beforeIndex, AddToDeck addToDeck) {
-        insertTab(widget, new Label(tabText, false), beforeIndex, addToDeck);
+    public void insertTab(String tabText, int beforeIndex, AddToDeck addToDeck) {
+        insertTab(new Label(tabText, false), beforeIndex, addToDeck);
     }
 
-    public void insertTab(Widget widget, Widget tabWidget, int beforeIndex, AddToDeck addToDeck) {
-        assert getWidgetIndex(widget) == -1;
+    public void insertTab(Widget tabWidget, int beforeIndex, AddToDeck addToDeck) {
         tabBar.insertTab(tabWidget, beforeIndex);
 
-        addToDeck.add(this, widget, getTabIndex(beforeIndex));
-        widget.setVisible(false);
+        int tabIndex = getTabIndex(beforeIndex);
+        addToDeck.add(this, tabIndex);
+        getWidget(tabIndex).setVisible(false);
     }
 
     public boolean removeTab(int index) {
@@ -165,6 +165,6 @@ public class FlexTabbedPanel extends FlexPanel implements IndexedPanel, Requires
     }
 
     public void fixFlexBasis(boolean vertical) {
-        impl.fixFlexBasis((LayoutData) getLayoutData(), this, vertical);
+        impl.fixFlexBasis(this, vertical);
     }
 }

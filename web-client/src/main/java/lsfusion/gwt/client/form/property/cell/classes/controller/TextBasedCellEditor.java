@@ -157,10 +157,10 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
         if(textAlign != null)
             inputElement.getStyle().setTextAlign(textAlign);
 
-        inputElement.getStyle().setHeight(100, Style.Unit.PCT);
-        inputElement.getStyle().setWidth(100, Style.Unit.PCT); // input doesn't respect justify-content, stretch, plus we want to include paddings in input (to avoid having "selection border")
+        // input doesn't respect justify-content, stretch, plus we want to include paddings in input (to avoid having "selection border")
+        GwtClientUtils.setupPercentParent(inputElement);
 
-        TextBasedCellRenderer.render(property, inputElement, renderContext, isMultiLine(), false);
+        TextBasedCellRenderer.render(property, inputElement, renderContext, isMultiLine());
 
         if(property.autoSize) { // we have to set sizes that were rendered, since input elements have really unpredicatble sizes
             cellParent = GwtClientUtils.wrapDiv(cellParent); // wrapping element since otherwise it's not clear how to restore height (sometimes element has it set)

@@ -433,13 +433,6 @@ public abstract class ClientPropertyTable extends TableWidget implements TableTr
         if (rowIndex != -1 && colIndex != -1) {
             ClientPropertyDraw cellProperty = getProperty(rowIndex, colIndex);
             
-            // todo: временно отключил тултипы для richText'а для Java старше 8. часто вылетает (особенно при вставке из Word). следует убрать проверку после перехода на Java 8:
-            // https://bugs.openjdk.java.net/browse/JDK-8034955
-            Double javaVersion = SystemUtils.getJavaSpecificationVersion();
-            if ((javaVersion == null || javaVersion < 1.8) && cellProperty.baseType instanceof ClientTextClass && ((ClientTextClass) cellProperty.baseType).rich) {
-                return null;
-            }
-            
             if (cellProperty.baseType instanceof ClientActionClass) {
                 return null;
             }

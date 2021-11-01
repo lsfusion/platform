@@ -30,7 +30,6 @@ import java.io.*;
 import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -62,7 +61,7 @@ public class BaseUtils {
     private static final int STRING_SERIALIZATION_CHUNK_SIZE = 65535/3;
 
     public static Integer getApiVersion() {
-        return 170;
+        return 172;
     }
 
     public static String getPlatformVersion() {
@@ -2540,11 +2539,11 @@ public class BaseUtils {
         return sb.toString();
     }
 
-    public static String calculateBase64Hash(String algorithm, String input, Object salt) throws RuntimeException {
-        return new String(Base64.encodeBase64(calculateHash(algorithm, input, salt)), Charset.forName("UTF-8"));
+    public static String calculateBase64Hash(String algorithm, String input, String salt) throws RuntimeException {
+        return new String(Base64.encodeBase64(calculateHash(algorithm, input, salt)), StandardCharsets.UTF_8);
     }
 
-    public static byte[] calculateHash(String algorithm, String input, Object salt) throws RuntimeException {
+    public static byte[] calculateHash(String algorithm, String input, String salt) throws RuntimeException {
         try {
             return MessageDigest.getInstance(algorithm).digest(mergePasswordAndSalt(input, salt).getBytes(StandardCharsets.UTF_8));
         } catch (NoSuchAlgorithmException e) {
@@ -2552,28 +2551,14 @@ public class BaseUtils {
         }
     }
 
-    //TODO: убрать после перехода всех на Java 8
-    public static String calculateBase64HashOld(String algorithm, String input, Object salt) throws RuntimeException {
-        return new String(Base64.encodeBase64(calculateHashOld(algorithm, input, salt).getBytes(StandardCharsets.UTF_8)), Charset.forName("UTF-8"));
-    }
-
-    //TODO: убрать после перехода всех на Java 8
-    public static String calculateHashOld(String algorithm, String input, Object salt) throws RuntimeException {
-        try {
-            return new String(MessageDigest.getInstance(algorithm).digest(mergePasswordAndSalt(input, salt).getBytes(StandardCharsets.UTF_8)), Charset.forName("UTF-8"));
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    protected static String mergePasswordAndSalt(String password, Object salt) {
+    protected static String mergePasswordAndSalt(String password, String salt) {
         if (password == null) {
             password = "";
         }
-        if ((salt == null) || "".equals(salt)) {
+        if (isEmpty(salt)) {
             return password;
         } else {
-            return password + "{" + salt.toString() + "}";
+            return password + "{" + salt + "}";
         }
     }
 

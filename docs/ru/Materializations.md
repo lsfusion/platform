@@ -17,5 +17,5 @@ sum = GROUP SUM sum(OrderDetail od) BY order(od) MATERIALIZED;
 date(OrderDetail od) = date(order(od)) MATERIALIZED;
 
  // такое свойство нельзя материализовать, так как оно не NULL для бесконечного числа дат
-lastDate(Customer customer, DATE date) = GROUP LAST date(Order order) IF customer(order) = customer AND date(order) < date;
+lastDate(Customer customer, DATE date) = GROUP LAST date(Order order) IF customer(order) = customer AND date(order) < date ORDER order;
 ```

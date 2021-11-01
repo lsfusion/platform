@@ -11,6 +11,8 @@ title: 'Оператор EXTERNAL'
 `externalCall` - внешний вызов, задается одним из следующих синтаксисов:
 
     HTTP [requestType] connectionStrExpr [BODYURL bodyStrExpr] [HEADERS headersPropertyId] [COOKIES cookiesPropertyId] [HEADERSTO headersToPropertyId] [COOKIESTO cookiesToPropertyId]
+    TCP [CLIENT] connectionStrExpr
+    UDP [CLIENT] connectionStrExpr
     SQL connectionStrExpr EXEC execStrExpr
     LSF connectionStrExpr lsfExecType execStrExpr
 
@@ -34,6 +36,18 @@ title: 'Оператор EXTERNAL'
     - `DELETE`
 
   Значением по умолчанию является `POST`.
+
+- `TCP`
+
+  Ключевое слово. Определяет, что оператор выполняет TCP-запрос.
+
+- `UDP`
+
+  Ключевое слово. Определяет, что оператор выполняет UDP-запрос.
+
+- `CLIENT`
+
+  Ключевое слово. Определяет, что запрос выполняется на клиенте. По умолчанию запрос выполняется на сервере.
 
 - `SQL`
 

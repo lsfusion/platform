@@ -494,6 +494,25 @@ public class TreeGroupTable extends ClientFormTreeTable implements AsyncChangeCe
             public Color getTextSelectionColor() {
                 return SwingDefaults.getTableCellForeground();
             }
+
+            //override behaviour of default getTreeCellRendererComponent with setText()
+            //c/p from JXTreeTable.ClippedTreeCellRenderer
+            @Override
+            public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
+                return super.getTreeCellRendererComponent(tree, getHierarchicalTableValue(value), sel, expanded, leaf,
+                        row, hasFocus);
+            }
+
+            private Object getHierarchicalTableValue(Object node) {
+                Object val;
+                int treeColumn = getTreeTableModel().getHierarchicalColumn();
+                Object o = null;
+                if (treeColumn >= 0) {
+                    o = getTreeTableModel().getValueAt(node, treeColumn);
+                }
+                val = o;
+                return val;
+            }
         });
     }
 

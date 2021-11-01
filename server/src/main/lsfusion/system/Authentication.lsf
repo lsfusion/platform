@@ -1,6 +1,6 @@
 MODULE Authentication;
 
-REQUIRE System, Time;
+REQUIRE Time, Utils;
 
 // ------------------------- Computers ---------------------- //
 
@@ -8,7 +8,7 @@ CLASS Computer '{authentication.computer}';
 TABLE computer (Computer);
 
 hostname '{authentication.host.name.computer}' = DATA ISTRING[100] (Computer) CHARWIDTH 10 IN id;
-computer = GROUP LAST Computer computer BY hostname(computer);
+computer = GROUP LAST Computer computer ORDER computer BY hostname(computer);
 
 FORM computer '{authentication.computer}'
     OBJECTS c = Computer PANEL
@@ -125,8 +125,6 @@ getAuthToken() {
     exportText() <- currentAuthToken();
 } @@api;
 
-minHashLength = DATA INTEGER ();
-
 // LDAP
 useLDAP '{authentication.use.ldap}' = DATA BOOLEAN ();
 serverLDAP '{authentication.server.ldap}' = DATA STRING[100] ();
@@ -229,10 +227,16 @@ getClientCredentials(STRING str) {
 
 onUserRegister ABSTRACT LIST (User);
 
+checkPasswordStrength ABSTRACT LIST (STRING);
+passwordStrengthError = DATA LOCAL STRING ();
+
 registerUser(JSONFILE user) {
     IMPORT FROM user FIELDS STRING[100] login, STRING[100] password, STRING[100] firstName, STRING[100] lastName, STRING[400] email DO {
+        checkPasswordStrength(password);
         IF customUserNormalized(login) THEN {
             EXPORT FROM error = '{registration.not.successful.login.exist}';
+        } ELSE IF passwordStrengthError() THEN {
+            EXPORT FROM error = passwordStrengthError();
         } ELSE {
             NEW cu = CustomUser { 
                 login(cu) <- login;
@@ -285,6 +289,12 @@ changePassword(JSONFILE input) {
     IMPORT FROM input FIELDS STRING token, STRING newPassword DO {
         LOCAL NESTED success = BOOLEAN();
         FOR CustomUser cu = userByPassResetToken(token) AND cu IS CustomUser DO {
+            checkPasswordStrength(newPassword);
+            IF passwordStrengthError() THEN {
+                EXPORT FROM error = passwordStrengthError(), passwordStrengthError = TRUE;
+                RETURN;
+            }
+        
             setSHA256Password(cu, newPassword);
             passwordResetToken(cu) <- NULL;
             expiryPasswordResetTokenDate(cu) <- NULL;
@@ -709,14 +719,75 @@ reloginPassword(CustomUser customUser)  {
 
 // ---------------- Change password ------------------- //
 
+// Strength
+pwLength (STRING[30] p) = length(p);
+pwNumeric (STRING[30] p) = length(regexpReplace (p, '\\D', '', 'g'));
+pwNumsymbols (STRING[30] p) = length(regexpReplace(p, '[A-Z,a-z,а-я,А-Я,0-9]', '', 'g'));
+pwUpper (STRING[30] p) = length(regexpReplace(p, '[^A-Z,А-Я]', '', 'g'));
+
+passwordStrength (STRING[30] p) = min(max(min(pwLength(p), 5) * 10 (-) 20 (+) min(pwNumeric(p), 3) * 10 (+) min(pwNumsymbols(p), 3) * 15 (+) min(pwUpper(p), 3) * 10, 0), 100);
+
+passwordColor (STRING[30] p) = CASE
+    WHEN passwordStrength(p) < 70 THEN #FFC0C0
+    WHEN passwordStrength(p) < 80 THEN #FFFFC0
+    WHEN passwordStrength(p) < 90 THEN #F0FFF0
+    ELSE #C0FFC0 IF p IS STRING
+;
+
+// Policy
+GROUP policyStrengthPassword '{authentication.password.requirements}';
+ 
+passwordMinLength '{authentication.password.minimum.length}' () = DATA INTEGER () IN policyStrengthPassword;
+passwordContainsDigits '{authentication.password.must.contain.digits}' = DATA BOOLEAN () IN policyStrengthPassword;
+passwordContainsSymbols '{authentication.password.must.contain.special.symbols}' = DATA BOOLEAN () IN policyStrengthPassword;
+passwordContainsUpper '{authentication.password.must.contain.upcase.letters}' = DATA BOOLEAN () IN policyStrengthPassword;
+
+weakPassword (STRING[30] p) = TEXT(
+    CONCAT ';\n',
+        '{authentication.password.minimum.length} - ' + passwordMinLength() + ' ' + '{authentication.password.symbols}' IF pwLength(p) < passwordMinLength(),
+        '{authentication.password.must.contain.digits}' IF passwordContainsDigits() AND NOT pwNumeric(p) > 0,
+        '{authentication.password.must.contain.special.symbols}' IF passwordContainsSymbols() AND NOT pwNumsymbols(p) > 0,
+        '{authentication.password.must.contain.upcase.letters}' IF passwordContainsUpper() AND NOT pwUpper(p) > 0
+); 
+
+passwordRequirements '{authentication.password.requirements}' () = weakPassword('' AS STRING[30]);
+
+check (BOOLEAN b) = IF b THEN '✔' ELSE ' ';
+check '' (STRING[30] pass) = check(NOT weakPassword(pass)) CHARWIDTH 2;
+check '' (STRING[30] new1, STRING[30] new2) = check(new1 = new2 AND NOT weakPassword(new1)) CHARWIDTH 2;
+
+changePasswordOnNextLogin '{authentication.password.change.next.login}' = DATA BOOLEAN (CustomUser);
+
+EXTEND FORM customUsers
+    PROPERTIES() PANEL passwordMinLength, passwordContainsDigits, passwordContainsSymbols, passwordContainsUpper
+    
+    OBJECTS up = CustomUser
+    PROPERTIES(up) READONLY name, login, email
+    PROPERTIES(up)          changePasswordOnNextLogin
+;
+
+DESIGN customUsers {
+    pane {
+        NEW policyStrengthPassword {
+            caption = '{authentication.passwords}';
+            MOVE GROUP(policyStrengthPassword);
+            MOVE BOX(up) {
+                PROPERTY(changePasswordOnNextLogin(up)) { charWidth = 30; }
+            }
+        }
+    }
+}
+
 FORM changePasswordUser '{authentication.change.password}'
     OBJECTS u=CustomUser PANEL
     PROPERTIES(u) READONLY login
+    FILTERS u = currentUser()
 
     OBJECTS passwords = (old = BPSTRING[30], new1 = BPSTRING[30], new2 = BPSTRING[30]) PANEL
     PROPERTIES valueOld = VALUE(old), valueNew1 = VALUE(new1), valueNew2 = VALUE(new2)
 
-    FILTERS u = currentUser()
+    PROPERTIES () READONLY passwordRequirements SHOWIF passwordRequirements()
+    PROPERTIES checkNew1 = check(new1) READONLY FOREGROUND passwordColor(new1), checkNew2 = check(new1, new2) READONLY FOREGROUND #C0FFC0
 ;
 
 DESIGN changePasswordUser {
@@ -730,15 +801,37 @@ DESIGN changePasswordUser {
                 echoSymbols = TRUE;
                 fontSize = 36;
             }
-            MOVE PROPERTY(valueNew1){
-                caption = '{authentication.change.password.new}';
-                echoSymbols = TRUE;
-                fontSize = 36;
+            MOVE PROPERTY(passwordRequirements()) FIRST {
+                fill = 1;
+                fontSize = 14;
             }
-            MOVE PROPERTY(valueNew2){
-                caption = '{authentication.change.password.repeat}';
-                echoSymbols = TRUE;
-                fontSize = 36;
+            NEW newPass1 {
+                type = CONTAINERH;
+                fill = 1;
+                MOVE PROPERTY(valueNew1){
+                    caption = '{authentication.change.password.new}';
+                    echoSymbols = TRUE;
+                    fontSize = 36;
+                }
+                MOVE PROPERTY (checkNew1) {
+                    fontSize = 36;
+                    charWidth = 2;
+                    focusable = FALSE;
+                }
+            }
+            NEW newPass2 {
+                type = CONTAINERH;
+                fill = 1;
+                MOVE PROPERTY(valueNew2){
+                    caption = '{authentication.change.password.repeat}';
+                    echoSymbols = TRUE;
+                    fontSize = 36;
+                }
+                MOVE PROPERTY (checkNew2) {
+                    fontSize = 36;
+                    charWidth = 2;
+                    focusable = FALSE;
+                }
             }
         }
     }
@@ -746,21 +839,37 @@ DESIGN changePasswordUser {
     REMOVE PROPERTY(formRefresh());
 }
 
-changePassword(CustomUser customUser)  { 
-    DIALOG changePasswordUser OBJECTS old INPUT, new1 INPUT,new2 INPUT DO {
-        calculateBase64Hash('SHA-256', old);
-        IF calculatedHash() != sha256Password(customUser) THEN {
-            MESSAGE '{authentication.change.password.incorrect.old}';
-            BREAK;
-        }
+checkPasswordStrength(STRING password) + {
+    IF weakPassword(password) THEN passwordStrengthError() <- '{authentication.password.does.not.match.requirements}' + ' \n' + weakPassword(password); 
+}
 
+changePassword (CustomUser u)  { 
+    DIALOG changePasswordUser OBJECTS old INPUT, new1 INPUT, new2 INPUT DO {
+        beforeCanceled() <- NULL;    
+        calculateBase64Hash('SHA-256', old);
+        IF calculatedHash() != sha256Password(u) THEN {
+            MESSAGE '{authentication.change.password.incorrect.old}';
+            RETURN;    
+        }
+        IF old = new1 THEN {
+            MESSAGE '{authentication.password.must.be.different}';
+            RETURN;    
+        }
+        IF weakPassword(new1) THEN {
+            MESSAGE '{authentication.password.must.meet.complexity.requirements}:\n' + weakPassword(new1);
+            RETURN;    
+        }
         IF new1 != new2 THEN {
             MESSAGE '{authentication.change.password.do.not.match}';
-            BREAK;
+            RETURN;    
         }
-        calculateBase64Hash('SHA-256', new1);
-        sha256Password(customUser) <- calculatedHash();
-        APPLY;
+
+        APPLY {
+            calculateBase64Hash('SHA-256', new1);
+            sha256Password(u) <- calculatedHash();
+            
+            changePasswordOnNextLogin(u) <- NULL;
+        }
         IF NOT canceled() THEN
             MESSAGE '{authentication.change.password.complete}';
     }

@@ -1,7 +1,6 @@
 package lsfusion.gwt.client.form.object.panel.controller;
 
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
@@ -46,10 +45,11 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
         renderers = new NativeHashMap<>();
 
         renderersPanel = new Panel(property.panelColumnVertical); // needed for groups-to-columns
+        renderersPanel.setStyleName("propertyContainerPanel");
     }
 
     public interface CaptionContainer {
-        void put(Widget captionWidget, Pair<Integer, Integer> valueSizes, GFlexAlignment alignment);
+        void put(Widget columnCaptionWidget, Widget actualCaptionWidget, Pair<Integer, Integer> valueSizes, GFlexAlignment alignment);
     }
 
     public static class Panel extends FlexPanel {
@@ -74,10 +74,6 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
                 if (showIfs == null || showIfs.get(columnKey) != null) {
                     PanelRenderer renderer = renderers.remove(columnKey);
                     if (renderer == null && (!property.hide || property.hasKeyBinding())) {
-                        if (renderersPanel.getWidgetCount() > 0) {
-                            renderersPanel.add(GwtClientUtils.createHorizontalStrut(4));
-                        }
-                        
                         PanelRenderer newRenderer = property.createPanelRenderer(form, this, columnKey, renderersPanel.captionContainer);
                         newRenderer.setReadOnly(property.isReadOnly());
                         Widget component = newRenderer.getComponent();

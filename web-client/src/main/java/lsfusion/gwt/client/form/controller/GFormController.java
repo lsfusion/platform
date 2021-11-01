@@ -105,7 +105,7 @@ import static lsfusion.gwt.client.base.view.ColorUtils.getDisplayColor;
 import static lsfusion.gwt.client.form.property.cell.GEditBindingMap.CHANGE;
 import static lsfusion.gwt.client.form.property.cell.GEditBindingMap.isChangeEvent;
 
-public class GFormController extends ResizableSimplePanel implements EditManager {
+public class GFormController implements EditManager {
     private FormDispatchAsync dispatcher;
 
     private final GFormActionDispatcher actionDispatcher;
@@ -155,11 +155,8 @@ public class GFormController extends ResizableSimplePanel implements EditManager
         dispatcher = new FormDispatchAsync(this);
 
         formLayout = new GFormLayout(this, form.mainContainer);
-        setFillWidget(formLayout);
-
-        if (form.sID != null) {
-            getElement().setAttribute("lsfusion-form", form.sID);
-        }
+        if (form.sID != null)
+            formLayout.getElement().setAttribute("lsfusion-form", form.sID);
 
         updateFormCaption();
 
@@ -179,25 +176,10 @@ public class GFormController extends ResizableSimplePanel implements EditManager
 
         initializeAutoRefresh();
 
-        DataGrid.initSinkMouseEvents(this);
-
         initLinkEditModeTimer();
     }
 
-    @Override
-    public void onBrowserEvent(Event event) {
-        Element target = DataGrid.getTargetAndCheck(getElement(), event);
-        if(target == null)
-            return;
-        if(!previewEvent(target, event))
-            return;
-
-        super.onBrowserEvent(event);
-
-        checkGlobalMouseEvent(event);
-    }
-
-    private void checkGlobalMouseEvent(Event event) {
+    public void checkGlobalMouseEvent(Event event) {
         checkFormEvent(event, (handler, preview) -> checkMouseEvent(handler, preview, null, false));
     }
 
@@ -552,12 +534,16 @@ public class GFormController extends ResizableSimplePanel implements EditManager
         }
     }
 
+    public Widget getWidget() {
+        return formLayout;
+    }
+
     private void scheduleRefresh() {
         Scheduler.get().scheduleFixedPeriod(new Scheduler.RepeatingCommand() {
             @Override
             public boolean execute() {
                 if (!formHidden) {
-                    if (isShowing(GFormController.this)) {
+                    if (isShowing(getWidget())) {
                         asyncDispatch(new GetRemoteChanges(true, false), new ServerResponseCallback() {
                             @Override
                             public void onSuccess(ServerResponseResult response, Runnable onDispatchFinished) {
@@ -625,7 +611,7 @@ public class GFormController extends ResizableSimplePanel implements EditManager
 
         activateElements(fc);
 
-        onResize();
+        formLayout.onResize();
     }
 
     public void applyKeyChanges(GFormChanges fc) {
@@ -1175,7 +1161,7 @@ public class GFormController extends ResizableSimplePanel implements EditManager
 
     public void setTabVisible(GContainer tabbedPane, GComponent visibleComponent) {
         asyncResponseDispatch(new SetTabVisible(tabbedPane.ID, visibleComponent.ID));
-        onResize();
+        formLayout.onResize();
     }
 
     public void closePressed() {
@@ -1452,11 +1438,8 @@ public class GFormController extends ResizableSimplePanel implements EditManager
         return isDialog;
     }
 
-    @Override
-    public void onResize() {
-        if (!formHidden && formVisible) {
-            super.onResize();
-        }
+    public boolean isVisible() {
+        return !formHidden && formVisible;
     }
 
     public GForm getForm() {

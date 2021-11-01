@@ -235,8 +235,8 @@ public class ReportGenerator {
     public static String getBaseFieldNameWithIndex(String fullFieldName) {
         String fieldName = removeIndexMarkerIfExists(fullFieldName);
         String index = "";
-            index = fullFieldName.substring(fieldName.length());
         if (!fieldName.equals(fullFieldName)) {
+            index = fullFieldName.substring(fieldName.length());
         }
         fieldName = getBaseFieldName(fullFieldName);
         return fieldName + index;
@@ -431,11 +431,40 @@ public class ReportGenerator {
         if (generationData.useShowIf) {
             Collection<JRTextField> fieldsToHide = findTextFieldsToHide(design, subreportID);
             if (!fieldsToHide.isEmpty()) {
+                int rightmostX = rightmostXCoord(design);
                 cutSegments(design, findCutSegments(fieldsToHide));
+                if (!ignorePagination) {
+                    expandDesignElements(design, rightmostX);
+                }
             }
         }
     }
 
+    private int rightmostXCoord(JasperDesign design) {
+        int result = 0;
+        for (JRElement element : getDesignElements(design)) {
+            result = Math.max(result, element.getX() + element.getWidth());
+        }
+        return result;
+    }
+    
+    private void expandDesignElements(JasperDesign design, int width) {
+        Collection<JRElement> elements = getDesignElements(design);
+        int maxX = 0;
+        for (JRElement element : elements) {
+            maxX = Math.max(maxX, element.getX() + element.getWidth());
+        }
+        
+        double ratio = width / (double) maxX;
+        
+        for (JRElement element : elements) {
+            int leftX = (int) Math.round(ratio * element.getX());
+            int rightX = (int) Math.round(ratio * (element.getX() + element.getWidth()));
+            element.setX(leftX);
+            element.setWidth(rightX - leftX);
+        }
+    }
+    
     private List<Segment> findCutSegments(Collection<JRTextField> fieldsToHide) {
         List<FieldXBorder> fieldsBorders = createSortedFieldsBordersList(fieldsToHide);
         return findCutSegments(fieldsBorders);
