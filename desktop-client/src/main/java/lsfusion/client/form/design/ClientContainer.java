@@ -132,6 +132,14 @@ public class ClientContainer extends ClientComponent {
         return true;
     }
 
+    public Integer getLineSize() {
+        if (isFiltersContainer) {
+            return 0;
+        } else {
+            return null;
+        }
+    }
+
     public ClientContainer findContainerBySID(String sID) {
         if (sID.equals(this.sID)) return this;
         for (ClientComponent comp : children) {

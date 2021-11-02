@@ -261,7 +261,8 @@ public abstract class FilterController implements FilterConditionView.UIHandler 
         FilterConditionView conditionView = new FilterConditionView(condition, logicsSupplier, this, toolsVisible, readSelectedValue);
         conditionViews.put(condition, conditionView);
 
-        addConditionView(condition, conditionView);
+        addConditionView(condition, conditionView); 
+        conditionView.initView();
 
         updateConditionsLastState();
 

@@ -7,10 +7,10 @@ import lsfusion.client.base.SwingUtils;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.design.view.ClientFormLayout;
 import lsfusion.client.form.design.view.FlexPanel;
+import lsfusion.client.form.design.view.flex.LinearCaptionContainer;
 import lsfusion.client.form.design.view.widget.LabelWidget;
 import lsfusion.client.form.design.view.widget.Widget;
 import lsfusion.client.form.object.ClientGroupObjectValue;
-import lsfusion.client.form.object.panel.controller.PropertyPanelController;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.cell.controller.dispatch.EditPropertyDispatcher;
 import lsfusion.client.form.property.cell.controller.dispatch.SimpleChangePropertyDispatcher;
@@ -23,7 +23,6 @@ import lsfusion.interop.form.event.ValueEventListener;
 import javax.swing.*;
 import java.awt.*;
 
-import static java.lang.Math.max;
 import static lsfusion.base.BaseUtils.nullEquals;
 import static lsfusion.client.base.view.SwingDefaults.getDataPanelLabelMargin;
 
@@ -49,7 +48,7 @@ public class DataPanelView extends FlexPanel implements PanelView {
 
     private Boolean labelMarginRight = null;
 
-    public DataPanelView(final ClientFormController iform, final ClientPropertyDraw property, ClientGroupObjectValue icolumnKey, PropertyPanelController.CaptionContainer captionContainer) {
+    public DataPanelView(final ClientFormController iform, final ClientPropertyDraw property, ClientGroupObjectValue icolumnKey, LinearCaptionContainer captionContainer) {
         super(property.panelCaptionVertical, FlexAlignment.CENTER);
 
         form = iform;

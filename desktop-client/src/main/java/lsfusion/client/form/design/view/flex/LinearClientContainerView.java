@@ -8,7 +8,6 @@ import lsfusion.client.form.design.view.CaptionPanel;
 import lsfusion.client.form.design.view.ClientContainerView;
 import lsfusion.client.form.design.view.FlexPanel;
 import lsfusion.client.form.design.view.widget.Widget;
-import lsfusion.client.form.object.panel.controller.PropertyPanelController;
 import lsfusion.interop.base.view.FlexAlignment;
 
 import java.awt.*;
@@ -51,12 +50,12 @@ public class LinearClientContainerView extends AbstractClientContainerView {
             for (int i = 0; i < linesCount; i++) {
                 if(alignCaptions) {
                     FlexPanel captionLine = new FlexPanel(vertical, justifyContent);
-                    panel.add((Widget)captionLine, FlexAlignment.STRETCH); // however it seems that FlexAlignment.STRETCH is also possible
+                    panel.addFillFlex(captionLine, container.getLineSize()); // however it seems that FlexAlignment.STRETCH is also possible
                     captionLines[i] = captionLine;
                 }
 
                 FlexPanel line = new FlexPanel(vertical, justifyContent);
-                panel.addFillFlex(line, null); // we're using null flex basis to make lines behaviour similar to manually defined containers
+                panel.addFillFlex(line, container.getLineSize()); // we're using null flex basis to make lines behaviour similar to manually defined containers
                 lines[i] = line;
             }
         }
@@ -78,6 +77,7 @@ public class LinearClientContainerView extends AbstractClientContainerView {
         }
 
         public Integer baseSize;
+        public FlexAlignment captionHAlignment;
     }
 
     public void updateCaption(ClientContainer clientContainer) {
@@ -104,20 +104,24 @@ public class LinearClientContainerView extends AbstractClientContainerView {
             child.installMargins(captionPanel); // need the same margins as property value
 
             childrenCaptions.add(index, captionPanel);
-            ((PropertyPanelController.Panel) view).captionContainer = (widget, valueSizes, alignment) -> {
-                assert vertical; // because of aligncaptions first check (isVertical())
-                captionPanel.add(widget, alignment);
+            if (view instanceof CaptionContainerHolder) {
+                captionPanel.captionHAlignment = ((CaptionContainerHolder) view).getCaptionHAlignment();
 
-                Integer baseSize = vertical ? valueSizes.second : valueSizes.first;
+                ((CaptionContainerHolder) view).setCaptionContainer((widget, valueSizes, alignment) -> {
+                    assert vertical; // because of aligncaptions first check (isVertical())
+                    captionPanel.add(widget, alignment);
 
-                Integer size = child.getSize(vertical);
-                if (size != null)
-                    baseSize = size;
+                    Integer baseSize = vertical ? valueSizes.second : valueSizes.first;
 
-                captionPanel.baseSize = baseSize; // it's called after it is first time added to the container, so we store it in some field for further adding, removing (actually it's needed for component "shifting", when we need to add/remove latter components)
-                // oppositeAndFixed - null, since we're settings size for main direction
-                FlexPanel.setBaseSize(captionPanel, vertical, baseSize);
-            };
+                    Integer size = child.getSize(vertical);
+                    if (size != null)
+                        baseSize = size;
+
+                    captionPanel.baseSize = baseSize; // it's called after it is first time added to the container, so we store it in some field for further adding, removing (actually it's needed for component "shifting", when we need to add/remove latter components)
+                    // oppositeAndFixed - null, since we're settings size for main direction
+                    FlexPanel.setBaseSize(captionPanel, vertical, baseSize);
+                });
+            }
         }
 
         if(isSingleLine())
@@ -167,7 +171,7 @@ public class LinearClientContainerView extends AbstractClientContainerView {
 
         if(alignCaptions) {
             AlignCaptionPanel captionPanel = childrenCaptions.get(index);
-            captionLines[lineIndex].add(captionPanel, rowIndex, FlexAlignment.START, 0, captionPanel.baseSize);
+            captionLines[lineIndex].add(captionPanel, rowIndex, captionPanel.captionHAlignment, 0, captionPanel.baseSize);
         }
     }
 

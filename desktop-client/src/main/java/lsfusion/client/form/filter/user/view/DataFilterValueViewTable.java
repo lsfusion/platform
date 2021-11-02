@@ -4,6 +4,7 @@ import lsfusion.client.base.SwingUtils;
 import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.classes.data.ClientTextClass;
 import lsfusion.client.form.controller.ClientFormController;
+import lsfusion.client.form.design.view.widget.TableWidget;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.object.table.controller.TableController;
 import lsfusion.client.form.property.ClientPropertyDraw;
@@ -30,7 +31,7 @@ import java.text.ParseException;
 import java.util.EventObject;
 import java.util.List;
 
-class DataFilterValueViewTable extends JTable implements TableTransferHandler.TableInterface, AsyncChangeInterface {
+class DataFilterValueViewTable extends TableWidget implements TableTransferHandler.TableInterface, AsyncChangeInterface {
     private DataFilterValueView valueFilterView;
     private final Model model;
     private EventObject editEvent;
