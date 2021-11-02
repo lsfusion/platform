@@ -195,7 +195,7 @@ public class GFormController implements EditManager {
     }
 
     public void checkMouseEvent(EventHandler handler, boolean preview, Element cellParent, boolean panel, boolean stopPreventingDblclickEvent) {
-        if(GMouseStroke.isDblDownEvent(handler.event) && !stopPreventingDblclickEvent)
+        if(GMouseStroke.isDblDownEvent(handler.event) && !stopPreventingDblclickEvent && !isEditing())
             handler.event.preventDefault(); //need to prevent selection by double mousedown event
         else if(GMouseStroke.isChangeEvent(handler.event) || GMouseStroke.isDoubleChangeEvent(handler.event))
             processBinding(handler, preview, cellParent, panel);
