@@ -59,7 +59,7 @@ public class GDataFilterValueView extends ResizableSimplePanel {
     }
 
     public void startEditing(Event keyEvent) {
-        if (GwtClientUtils.isShowing(cell)) { // suggest box may appear in (0,0) if filter is already gone (as it's called in scheduleDeferred)
+        if (GwtClientUtils.isShowing(cell) && !logicsSupplier.getForm().isEditing()) { // suggest box may appear in (0,0) if filter is already gone (as it's called in scheduleDeferred)
             if (!(cell.getProperty().baseType instanceof GLogicalType)) {
                 if (isAddUserFilterKeyEvent(keyEvent) || isReplaceUserFilterKeyEvent(keyEvent)) {
                     cell.startEditing(keyEvent);
