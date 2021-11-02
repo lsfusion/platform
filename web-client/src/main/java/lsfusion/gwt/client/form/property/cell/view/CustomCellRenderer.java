@@ -87,4 +87,9 @@ public class CustomCellRenderer extends CellRenderer<Object> {
     protected native final <T> T toObject(JavaScriptObject object) /*-{
         return object;
     }-*/;
+
+    @Override
+    public boolean isCustomRenderer() {
+        return true;
+    }
 }

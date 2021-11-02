@@ -31,4 +31,6 @@ public abstract class Column<T, C> {
   public abstract void renderAndUpdateDom(Cell cell, Element cellElement);
 
   public abstract void updateDom(Cell cell, Element cellElement);
+
+  public abstract boolean isCustomRenderer();
 }

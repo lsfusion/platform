@@ -178,13 +178,7 @@ public class GFormController implements EditManager {
     }
 
     public void checkGlobalMouseEvent(Event event) {
-        if (stopProcessingEvent(event))
-            return;
-        checkFormEvent(event, (handler, preview) -> checkMouseEvent(handler, preview, null, false));
-    }
-
-    private boolean stopProcessingEvent(Event event) {
-        return cellEditor != null && cellEditor.stopProcessingEvent(event);
+        checkFormEvent(event, (handler, preview) -> checkMouseEvent(handler, preview, null, false, true));
     }
 
     private interface CheckEvent {
@@ -200,8 +194,8 @@ public class GFormController implements EditManager {
         preview.accept(handler, false);
     }
 
-    public void checkMouseEvent(EventHandler handler, boolean preview, Element cellParent, boolean panel) {
-        if(GMouseStroke.isDblDownEvent(handler.event))
+    public void checkMouseEvent(EventHandler handler, boolean preview, Element cellParent, boolean panel, boolean stopPreventingDblclickEvent) {
+        if(GMouseStroke.isDblDownEvent(handler.event) && !stopPreventingDblclickEvent)
             handler.event.preventDefault(); //need to prevent selection by double mousedown event
         else if(GMouseStroke.isChangeEvent(handler.event) || GMouseStroke.isDoubleChangeEvent(handler.event))
             processBinding(handler, preview, cellParent, panel);
@@ -218,11 +212,11 @@ public class GFormController implements EditManager {
                 checkFormEvent((Event) nativeEvent, (handler, preview) -> form.checkKeyEvent(handler, preview, null, false));
         }
     }
-    public void checkMouseKeyEvent(EventHandler handler, boolean preview, Element cellParent, boolean panel) {
+    public void checkMouseKeyEvent(EventHandler handler, boolean preview, Element cellParent, boolean panel, boolean customRenderer) {
         if(MainFrame.isModalPopup())
             return;
 
-        checkMouseEvent(handler, preview, cellParent, panel);
+        checkMouseEvent(handler, preview, cellParent, panel, customRenderer);
         if(handler.consumed)
             return;
 
@@ -2087,7 +2081,7 @@ public class GFormController implements EditManager {
 
     public void onPropertyBrowserEvent(EventHandler handler, Element cellParent, Element focusElement, Consumer<EventHandler> onOuterEditBefore,
                                        Consumer<EventHandler> onEdit, Consumer<EventHandler> onOuterEditAfter, Consumer<EventHandler> onCut,
-                                       Consumer<EventHandler> onPaste, boolean panel) {
+                                       Consumer<EventHandler> onPaste, boolean panel, boolean customRenderer) {
         RequestCellEditor requestCellEditor = getRequestCellEditor();
         boolean isPropertyEditing = requestCellEditor != null && getEditElement() == cellParent;
         if(isPropertyEditing)
@@ -2106,10 +2100,7 @@ public class GFormController implements EditManager {
             return;
         }*/
 
-        if (stopProcessingEvent(handler.event))
-            return;
-
-        checkMouseKeyEvent(handler, true, cellParent, panel);
+        checkMouseKeyEvent(handler, true, cellParent, panel, customRenderer);
 
         if(handler.consumed)
             return;
@@ -2141,7 +2132,7 @@ public class GFormController implements EditManager {
 //        if(GMouseStroke.isDownEvent(handler.event)) // we want to cancel focusing (to avoid blinking if change event IS CLICK) + native selection odd behaviour (when some events are consumed, and some - not)
 //            handler.consume(false, true); // but we want to propagate event upper (to GFormController to proceed bindings)
 
-        checkMouseKeyEvent(handler, false, cellParent, panel);
+        checkMouseKeyEvent(handler, false, cellParent, panel, customRenderer);
     }
     
     public void resetWindowsLayout() {

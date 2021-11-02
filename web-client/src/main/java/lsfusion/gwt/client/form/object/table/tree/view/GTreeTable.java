@@ -385,6 +385,11 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
                 updateIndentElement(img, treeValue, i);
             }
         }
+
+        @Override
+        public boolean isCustomRenderer() {
+            return false;
+        }
     }
 
     private class GridColumn extends GridPropertyColumn implements TreeGridColumn {
@@ -435,6 +440,11 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         @Override
         public GPropertyDraw getColumnProperty() {
             return columnProperty;
+        }
+
+        @Override
+        public boolean isCustomRenderer() {
+            return columnProperty.getCellRenderer().isCustomRenderer();
         }
     }
 

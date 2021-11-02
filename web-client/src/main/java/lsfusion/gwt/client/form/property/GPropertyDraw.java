@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.form.property;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.ClientMessages;
