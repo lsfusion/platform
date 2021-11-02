@@ -12,6 +12,7 @@ import lsfusion.server.language.ScriptParsingException;
 import lsfusion.server.language.proxy.ViewProxyUtil;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.interactive.design.object.GridView;
+import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.dev.debug.DebugInfo;
@@ -35,8 +36,10 @@ public class ContainerView extends ComponentView {
     private boolean tabbed;
 
     public FlexAlignment childrenAlignment = FlexAlignment.START;
-    
-    private boolean alignCaptions;
+
+    private Boolean grid;
+    private Boolean wrap;
+    private Boolean alignCaptions;
 
     public int lines = 1;
     
@@ -104,8 +107,23 @@ public class ContainerView extends ComponentView {
     public boolean isHorizontal() {
         return type == CONTAINERH || type == HORIZONTAL_SPLIT_PANE || horizontal;
     }
-    
-    public boolean isAlignCaptions() {
+
+    public boolean isGrid() {
+        if(grid != null)
+            return grid;
+
+        return false;
+    }
+
+    public Boolean isWrap() {
+        if(wrap != null)
+            return wrap;
+
+        return false;
+    }
+
+    // we use Boolean since in desktop and in web there is a different default behaviour
+    public Boolean isAlignCaptions() {
         return alignCaptions;
     }
 
@@ -128,7 +146,15 @@ public class ContainerView extends ComponentView {
     public void setChildrenAlignment(FlexAlignment childrenAlignment) {
         this.childrenAlignment = childrenAlignment;
     }
-    
+
+    public void setGrid(Boolean grid) {
+        this.grid = grid;
+    }
+
+    public void setWrap(Boolean wrap) {
+        this.wrap = wrap;
+    }
+
     public void setAlignCaptions(boolean alignCaptions) {
         this.alignCaptions = alignCaptions;
     }
@@ -229,7 +255,9 @@ public class ContainerView extends ComponentView {
 
         pool.writeObject(outStream, childrenAlignment);
         
-        outStream.writeBoolean(alignCaptions);
+        outStream.writeBoolean(isGrid());
+        outStream.writeBoolean(isWrap());
+        pool.writeObject(outStream, alignCaptions);
 
         outStream.writeInt(lines);
     }
@@ -249,6 +277,8 @@ public class ContainerView extends ComponentView {
 
         childrenAlignment = pool.readObject(inStream);
         
+        grid = inStream.readBoolean();
+        wrap = inStream.readBoolean();
         alignCaptions = inStream.readBoolean();
 
         lines = inStream.readInt();

@@ -21,6 +21,7 @@ public class LinearContainerView extends GAbstractContainerView {
 
     protected final int linesCount;
     protected final boolean alignCaptions;
+    protected final boolean grid;
 
     protected FlexPanel[] lines;
     protected FlexPanel[] captionLines;
@@ -39,9 +40,10 @@ public class LinearContainerView extends GAbstractContainerView {
         // later containers with explicit sizes can be included
         // plus also in simple containers we can wrap consecutive property views into some flexpanel, but it requires a lot more complex logics
         alignCaptions = container.isAlignCaptions();
+        grid = container.isGrid();
 
         if(isSimple())
-            panel = new FlexPanel(vertical, flexAlignment);
+            panel = new FlexPanel(vertical, flexAlignment, grid ? linesCount : null);
         else {
             panel = new FlexPanel(!vertical);
             // we don't want this panel to be resized, because we don't set overflow, and during resize container can get fixed size (and then if inner container resized it's content overflows outer border)
@@ -82,7 +84,7 @@ public class LinearContainerView extends GAbstractContainerView {
     }
 
     private boolean isSingleLine() {
-        return linesCount == 1;
+        return linesCount == 1 || grid;
     }
 
     @Override
@@ -182,7 +184,7 @@ public class LinearContainerView extends GAbstractContainerView {
     }
 
     private void addChildrenView(int index, int offset) {
-        int rowIndex = (index + offset) / linesCount;
+        int rowIndex =  (index + offset) / (isSimple() ? 1 : linesCount);
         int lineIndex = (index + offset) % linesCount;
 
         addChildrenWidget(isSimple() ? panel : lines[lineIndex], index, rowIndex);
@@ -205,7 +207,7 @@ public class LinearContainerView extends GAbstractContainerView {
     }
 
     private void removeChildrenView(int index, int offset) {
-        int rowIndex = (index + offset) / linesCount;
+        int rowIndex = (index + offset) / (isSimple() ? 1 : linesCount);
         int lineIndex = (index + offset) % linesCount;
 
         (isSimple() ? panel : lines[lineIndex]).remove(rowIndex);

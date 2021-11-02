@@ -45,6 +45,14 @@ public class ContainerViewProxy extends ComponentViewProxy<ContainerView> {
         target.setAlignCaptions(alignCaptions);
     }
 
+    public void setGrid(boolean grid) {
+        target.setGrid(grid);
+    }
+
+    public void setWrap(boolean wrap) {
+        target.setWrap(wrap);
+    }
+
     //backward compatibility
     public void setColumns(int columns) {
         target.lines = columns;
