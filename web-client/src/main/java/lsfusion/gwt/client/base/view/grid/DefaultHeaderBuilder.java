@@ -24,7 +24,7 @@ import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 import java.util.List;
 import java.util.Map;
 
-import static lsfusion.gwt.client.view.StyleDefaults.customDataGridStyle;
+import static lsfusion.gwt.client.view.StyleDefaults.*;
 
 /**
  * Default implementation of {@link HeaderBuilder} that renders columns.
@@ -140,6 +140,7 @@ public class DefaultHeaderBuilder<T> extends DataGridHeaderBuilder<T> {
 
             if(header != null) {
                 renderHeader(th, header);
+                GPropertyTableBuilder.updateSticky(table, th, curColumn, true);
             }
 
             tr.appendChild(th);
@@ -162,11 +163,6 @@ public class DefaultHeaderBuilder<T> extends DataGridHeaderBuilder<T> {
 
             updateHeader(th, header);
         }
-    }
-
-    @Override
-    protected void updateHeaderStickyImpl(TableRowElement tr, List<Integer> stickyColumns) {
-        GPropertyTableBuilder.updateSticky(tr, stickyColumns, true);
     }
 
     @Override

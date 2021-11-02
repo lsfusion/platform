@@ -19,7 +19,6 @@ import com.google.gwt.dom.client.*;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
 
 import java.util.List;
-import java.util.Map;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.removeAllChildren;
 
@@ -144,18 +143,6 @@ public abstract class AbstractDataGridBuilder<T> {
     }
 
     protected abstract void updateRowImpl(int rowIndex, T rowValue, int[] columnsToRedraw, TableRowElement rowElement);
-
-    public void updateRowSticky(TableSectionElement tbodyElement, List<Integer> stickyColumns, int selectedRow) {
-        int rowCount = tbodyElement.getChildCount();
-        if (rowCount > 0) {
-            NodeList<TableRowElement> rows = tbodyElement.getRows();
-            for (int i = 0; i < rowCount; ++i) {
-                updateRowStickyImpl(rows.getItem(i), stickyColumns);
-            }
-        }
-    }
-
-    protected abstract void updateRowStickyImpl(TableRowElement rowElement, List<Integer> stickyColumns);
 
     public void updateRowStickyLeft(TableSectionElement tbodyElement, List<Integer> stickyColumns, List<Integer> stickyLefts) {
         int rowCount = tbodyElement.getChildCount();

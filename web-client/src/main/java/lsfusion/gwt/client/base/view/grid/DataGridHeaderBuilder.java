@@ -86,13 +86,6 @@ public abstract class DataGridHeaderBuilder<T> implements HeaderBuilder<T> {
     protected abstract void updateHeaderImpl(TableRowElement tr);
 
     @Override
-    public void updateSticky(List<Integer> stickyColumns) {
-        updateHeaderStickyImpl(getHeaderRow(), stickyColumns);
-    }
-
-    protected abstract void updateHeaderStickyImpl(TableRowElement tr, List<Integer> stickyColumns);
-
-    @Override
     public void updateStickyLeft(List<Integer> stickyColumns, List<Integer> stickyLefts) {
         updateHeaderStickyLeftImpl(getHeaderRow(), stickyColumns, stickyLefts);
     }

@@ -11,7 +11,6 @@ import lsfusion.gwt.client.form.object.table.grid.view.GPivot;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import static lsfusion.gwt.client.view.StyleDefaults.*;
@@ -131,21 +130,15 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
             // assert that it is action and rendered with ActionCellRenderer
             // also since we know that its grid and not simple text (since there is dynamic image) and its td, we can unwrap td without having CellRenderer (however, it should be consistent with CellRenderer renderDynamic/Static)
             GFormController.setDynamicImage(CellRenderer.unwrapTD(td), image.orElse(null));
+
+        updateSticky(cellTable, td, columnIndex, false);
+
     }
 
-    @Override
-    public void updateRowStickyImpl(TableRowElement tr, List<Integer> stickyColumns) {
-        updateSticky(tr, stickyColumns, false);
-    }
-
-    public static void updateSticky(TableRowElement tr, List<Integer> stickyColumns, boolean header) {
-        for (int curColumn = 0; curColumn < tr.getCells().getLength(); curColumn++) {
-            if (stickyColumns.contains(curColumn)) {
-                TableCellElement td = tr.getCells().getItem(curColumn).cast();
-                td.getStyle().setZIndex(1000 - curColumn);
-                td.getStyle().setProperty("position", "sticky");
-                td.getStyle().setBackgroundColor(header ? getPanelBackgroundColor() : getComponentBackgroundColor());
-            }
+    public static void updateSticky(DataGrid table, TableCellElement td, int columnIndex, boolean header) {
+        if(table.isColumnSticky(columnIndex)) {
+            td.addClassName("dataGridSticky");
+            td.getStyle().setBackgroundColor(header ? getPanelBackgroundColor() : getComponentBackgroundColor());
         }
     }
 

@@ -152,3 +152,12 @@
     /* the same as dataGridLastCell, dataGridLastHeaderCell, table.pvtTable thead tr th:last-of-type */
     border-right: 1px solid var(--grid-separator-border-color);
 }
+
+.dataGridRelative {
+    position: relative;
+}
+
+.dataGridSticky {
+    position: sticky;
+    z-index: 1000;
+}

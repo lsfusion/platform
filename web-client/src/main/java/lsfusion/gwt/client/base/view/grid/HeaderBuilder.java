@@ -36,7 +36,6 @@ public interface HeaderBuilder<T> {
 
     void update(boolean columnsChanged);
 
-    void updateSticky(List<Integer> stickyColumns);
     void updateStickyLeft(List<Integer> stickyColumns, List<Integer> stickyLefts);
 
     /**

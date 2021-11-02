@@ -105,13 +105,13 @@ public class GGridPropertyTableHeader extends Header<String> {
         renderedCaption = caption;
 
         if (notNull) {
-            th.getStyle().setPosition(Style.Position.RELATIVE);
+            th.addClassName("dataGridRelative");
             DivElement notNullSign = Document.get().createDivElement();
             notNullSign.addClassName("rightBottomCornerTriangle");
             notNullSign.addClassName("notNullCornerTriangle");
             th.appendChild(notNullSign);
         } else if (hasChangeAction) {
-            th.getStyle().setPosition(Style.Position.RELATIVE);
+            th.addClassName("dataGridRelative");
             DivElement changeActionSign = Document.get().createDivElement();
             changeActionSign.addClassName("rightBottomCornerTriangle");
             changeActionSign.addClassName("changeActionCornerTriangle");
