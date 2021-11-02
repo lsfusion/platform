@@ -2,6 +2,7 @@ package lsfusion.gwt.client.form.property.cell.classes.controller.rich;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
+import lsfusion.gwt.client.form.event.GMouseStroke;
 import lsfusion.gwt.client.form.property.cell.classes.controller.RequestEmbeddedCellEditor;
 import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
@@ -52,5 +53,10 @@ public class RichTextCellEditor implements RequestEmbeddedCellEditor {
     @Override
     public boolean checkEnterEvent(Event event) {
         return false;
+    }
+
+    @Override
+    public boolean stopProcessingEvent(Event event) {
+        return GMouseStroke.isDblDownEvent(event);
     }
 }

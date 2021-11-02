@@ -25,7 +25,6 @@ import lsfusion.gwt.client.base.result.NumberResult;
 import lsfusion.gwt.client.base.result.VoidResult;
 import lsfusion.gwt.client.base.view.DialogBoxHelper;
 import lsfusion.gwt.client.base.view.EventHandler;
-import lsfusion.gwt.client.base.view.ResizableSimplePanel;
 import lsfusion.gwt.client.base.view.WindowHiddenHandler;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.classes.GObjectClass;
@@ -179,7 +178,13 @@ public class GFormController implements EditManager {
     }
 
     public void checkGlobalMouseEvent(Event event) {
+        if (stopProcessingEvent(event))
+            return;
         checkFormEvent(event, (handler, preview) -> checkMouseEvent(handler, preview, null, false));
+    }
+
+    private boolean stopProcessingEvent(Event event) {
+        return cellEditor != null && cellEditor.stopProcessingEvent(event);
     }
 
     private interface CheckEvent {
@@ -2100,6 +2105,9 @@ public class GFormController implements EditManager {
         /*if(!previewLoadingManagerSinkEvents(handler.event)) {
             return;
         }*/
+
+        if (stopProcessingEvent(handler.event))
+            return;
 
         checkMouseKeyEvent(handler, true, cellParent, panel);
 
