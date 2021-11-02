@@ -1441,7 +1441,7 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
         int columnCount = getColumnCount();
         // CLEAR PREVIOUS STATE
         if (renderedSelectedRow >= 0 && renderedSelectedRow <= rows.getLength() && renderedSelectedCol >= 0 && renderedSelectedCol < columnCount &&
-                (renderedSelectedRow != newLocalSelectedRow || renderedSelectedCol != newLocalSelectedCol) && renderedSelectedCol - 1 != selectedColumn /*check not moving left*/) {
+                (renderedSelectedRow != newLocalSelectedRow || renderedSelectedCol != newLocalSelectedCol)) {
             LeftNeighbourRightBorder leftNeighbourRightBorderOld = calcLeftNeighbourRightBorder(renderedSelectedRow, renderedSelectedCol, false);
             if(leftNeighbourRightBorderOld != null)
                 leftNeighbourRightBorders.add(leftNeighbourRightBorderOld);
@@ -1482,7 +1482,7 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
 
     private void setLeftNeighbourRightBorder(LeftNeighbourRightBorder leftNeighbourRightBorder) {
         if (leftNeighbourRightBorder != null) {
-            setFocusedCellRightBorder(leftNeighbourRightBorder.cell, leftNeighbourRightBorder.value);
+            setLeftNeighbourRightBorder(leftNeighbourRightBorder.cell, leftNeighbourRightBorder.value);
         }
     }
 
@@ -1530,7 +1530,7 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
             if(column < columnCount) {
                 // LEFT BORDER (RIGHT of left column)
                 if(column > 0) {
-                    setFocusedCellRightBorder(cells.getItem(column - 1), focused);
+                    setLeftNeighbourRightBorder(cells.getItem(column - 1), focused);
                 }
 
                 // in theory we might want to prevent extra border on the bottom and on the right (on the top there is no problem because of header)
@@ -1562,9 +1562,17 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
 
     private void setFocusedCellRightBorder(TableCellElement td, boolean focused) {
         if (focused) {
-            td.getStyle().setProperty("borderRight", "var(--border-width) solid " + getFocusedCellBorderColor());
+            td.addClassName("focusedCellRightBorder");
         } else {
-            td.getStyle().clearProperty("borderRight");
+            td.removeClassName("focusedCellRightBorder");
+        }
+    }
+
+    private void setLeftNeighbourRightBorder(TableCellElement td, boolean focused) {
+        if (focused) {
+            td.addClassName("leftNeighbourRightBorder");
+        } else {
+            td.removeClassName("leftNeighbourRightBorder");
         }
     }
 

@@ -161,3 +161,15 @@
     position: sticky;
     z-index: 1000;
 }
+
+:root {
+    --focused-cell-border-color: #000000; /*override in StyleDefaults*/
+}
+
+.focusedCellRightBorder {
+    border-right: var(--border-width) solid var(--focused-cell-border-color);
+}
+
+.leftNeighbourRightBorder {
+    border-right: var(--border-width) solid var(--focused-cell-border-color);
+}
