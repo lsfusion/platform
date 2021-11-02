@@ -157,13 +157,21 @@
     position: relative;
 }
 
-.dataGridSticky {
-    position: sticky;
-    z-index: 1000;
+:root {
+    /*override in StyleDefaults init*/
+    --focused-cell-border-color: #000000;
 }
 
-:root {
-    --focused-cell-border-color: #000000; /*override in StyleDefaults*/
+.dataGridStickyCell {
+    position: sticky;
+    z-index: 1000;
+    background-color: var(--component-background-color);
+}
+
+.dataGridStickyHeader {
+    position: sticky;
+    z-index: 1000;
+    background-color: var(--background-color);
 }
 
 .focusedCellRightBorder {

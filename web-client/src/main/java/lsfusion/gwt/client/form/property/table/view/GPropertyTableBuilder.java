@@ -135,10 +135,10 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
 
     }
 
+    //class dataGridStickyCell is also used in DataGrid
     public static void updateSticky(DataGrid table, TableCellElement td, int columnIndex, boolean header) {
         if(table.isColumnSticky(columnIndex)) {
-            td.addClassName("dataGridSticky");
-            td.getStyle().setBackgroundColor(header ? getPanelBackgroundColor() : getComponentBackgroundColor());
+            td.addClassName(header ? "dataGridStickyHeader" : "dataGridStickyCell");
         }
     }
 
