@@ -11,7 +11,7 @@ import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 public class GHTMLTextType extends GTextType {
 
     public GHTMLTextType() {
-        super("html", true);
+        super("html");
     }
 
     @Override

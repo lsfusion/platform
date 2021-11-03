@@ -11,7 +11,7 @@ import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 public class GRichTextType extends GTextType {
 
     public GRichTextType() {
-        super("rich", true);
+        super("rich");
     }
 
     @Override

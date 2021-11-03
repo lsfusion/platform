@@ -11,7 +11,7 @@ public class HTMLTextCellRenderer extends StringBasedCellRenderer {
 
     @Override
     protected void setInnerContent(Element element, String innerText) {
-        element.setInnerHTML("<div>"+ innerText +"</div>");
+        element.setInnerHTML(innerText);
     }
 
     @Override

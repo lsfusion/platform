@@ -15,11 +15,11 @@ public class GTextType extends GStringType {
     private final String type;
 
     public GTextType() {
-        this(null, false);
+        this(null);
     }
 
-    public GTextType(String type, boolean blankPadded) {
-        super(GExtInt.UNLIMITED, false, blankPadded);
+    public GTextType(String type) {
+        super(GExtInt.UNLIMITED, false, false);
         this.type = type;
     }
 
