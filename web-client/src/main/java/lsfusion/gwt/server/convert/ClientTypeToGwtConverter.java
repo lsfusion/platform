@@ -257,7 +257,17 @@ public class ClientTypeToGwtConverter extends ObjectConverter {
 
     @Converter(from = ClientTextClass.class)
     public GTextType convertTextClass(ClientTextClass clientTextClass) {
-        return new GTextType(clientTextClass.rich);
+        return new GTextType();
+    }
+
+    @Converter(from = ClientRichTextClass.class)
+    public GRichTextType convertTextClass(ClientRichTextClass clientTextClass) {
+        return new GRichTextType();
+    }
+
+    @Converter(from = ClientHTMLTextClass.class)
+    public GHTMLTextType convertTextClass(ClientHTMLTextClass clientTextClass) {
+        return new GHTMLTextType();
     }
 
     @Converter(from = ClientDateClass.class)

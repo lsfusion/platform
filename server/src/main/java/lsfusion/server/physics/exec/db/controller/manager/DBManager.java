@@ -2524,7 +2524,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     private class NewDBStructure extends DBStructure<Field> {
         
         public NewDBStructure(MigrationVersion migrationVersion) {
-            version = 32; // need this for migration
+            version = 33; // need this for migration
             this.migrationVersion = migrationVersion;
 
             tables.putAll(getIndicesMap());
@@ -2575,6 +2575,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
 
+    public static int oldDBStructureVersion = 0;
+
     private class OldDBStructure extends DBStructure<String> {
 
         public OldDBStructure(DataInputStream inputDB) throws IOException {
@@ -2583,6 +2585,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 version = -2;
             } else {
                 version = inputDB.read() - 'v';
+                oldDBStructureVersion = version;
                 migrationVersion = new MigrationVersion(inputDB.readUTF());
 
                 int modulesCount = inputDB.readInt();

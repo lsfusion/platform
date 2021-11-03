@@ -138,7 +138,16 @@
 
                 <!-- Quill -->
                 'https://cdn.quilljs.com/1.3.6/quill.js',
-                'https://cdn.quilljs.com/1.3.6/quill.bubble.css'
+                'https://cdn.quilljs.com/1.3.6/quill.bubble.css',
+
+                <!-- Ace code editor -->
+                'https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.13/ace.js',
+                'https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.13/worker-html.js',
+                'https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.13/mode-html.min.js',
+                'https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.13/ext-language_tools.min.js',
+                'https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.13/theme-chrome.min.js',
+                'https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.13/theme-ambiance.min.js',
+                'static/css/aceEditor.css'
             ]);
 
         </script>

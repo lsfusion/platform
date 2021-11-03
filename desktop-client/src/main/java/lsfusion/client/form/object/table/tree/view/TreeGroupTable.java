@@ -9,6 +9,7 @@ import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.classes.ClientType;
+import lsfusion.client.classes.data.ClientRichTextClass;
 import lsfusion.client.classes.data.ClientTextClass;
 import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.form.controller.ClientFormController;
@@ -675,7 +676,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements AsyncChangeCe
     @Override
     public boolean richTextSelected() {
         ClientPropertyDraw property = getSelectedProperty();
-        return property != null && property.baseType instanceof ClientTextClass && ((ClientTextClass) property.baseType).rich;
+        return property != null && property.baseType instanceof ClientRichTextClass;
     }
 
     public void pasteTable(List<List<String>> table) {

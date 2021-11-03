@@ -85,15 +85,28 @@ public class TypeSerializer {
         if (type == DataType.ZDATETIMEINTERVAL) return IntervalClass.getInstance("ZDATETIME");
         if (type == DataType.COLOR) return ColorClass.instance;
 
-        if (type == DataType.STRING || type == DataType.TEXT) {
+        if (type == DataType.STRING) {
             boolean blankPadded = inStream.readBoolean();
             boolean caseInsensitive = inStream.readBoolean();
             inStream.readBoolean(); // backward compatibility see StringClass.serialize
             ExtInt length = ExtInt.deserialize(inStream);
-            if( type == DataType.TEXT)
-                return inStream.readBoolean() ? TextClass.richInstance : TextClass.instance;
             return StringClass.get(blankPadded, caseInsensitive, length);
         }
+
+        if(type == DataType.TEXT) {
+            if (DBManager.oldDBStructureVersion < 33) {
+                inStream.readBoolean();
+                inStream.readBoolean();
+                inStream.readBoolean();
+                ExtInt.deserialize(inStream);
+
+                inStream.readBoolean();
+            }
+
+            return TextClass.instance;
+        }
+        if(type == DataType.HTMLTEXT) return HTMLTextClass.instance;
+        if(type == DataType.RICHTEXT) return RichTextClass.instance;
 
         if (type == DataType.IMAGE) return ImageClass.get(inStream.readBoolean(), inStream.readBoolean());
         if (type == DataType.WORD) return WordClass.get(inStream.readBoolean(), inStream.readBoolean());
