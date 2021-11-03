@@ -41,7 +41,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
 
         this.controller = getController();
         this.formController = form;
-        getDrawElement().getStyle().setProperty("zIndex", "0"); // need this because views like leaflet and some others uses z-indexes and therefore dialogs for example are shown below layers
+        GwtClientUtils.setZeroZIndex(getDrawElement());
 
         getElement().setTabIndex(0);
         initSinkEvents(this);

@@ -77,7 +77,7 @@ public class GFormLayout extends ResizableSimplePanel {
 
     @Override
     public void onResize() {
-        if (!form.isVisible()) {
+        if (form.isVisible()) {
             super.onResize();
         }
     }

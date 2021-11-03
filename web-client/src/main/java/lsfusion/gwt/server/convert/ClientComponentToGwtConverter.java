@@ -617,6 +617,10 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
             form.pivotMeasures.add(convertOrCast(property));
         }
 
+        for(ClientPropertyDraw property : clientForm.stickies) {
+            form.stickies.add(convertOrCast(property));
+        }
+
         return form;
     }
 

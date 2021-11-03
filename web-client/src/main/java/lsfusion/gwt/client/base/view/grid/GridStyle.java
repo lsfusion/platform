@@ -56,8 +56,6 @@ public interface GridStyle {
      * Applied to cell.
      */
     String dataGridCell();
-    
-    String dataGridCellInnerDiv();
 
     /**
      * Applied to the first column.
@@ -68,25 +66,4 @@ public interface GridStyle {
      * Applied to the last column.
      */
     String dataGridLastCell();
-
-    /**
-     * Applied to the keyboard selected row.
-     */
-    String dataGridKeyboardSelectedRow();
-
-    /**
-     * Applied to the cells in the keyboard selected row.
-     */
-    String dataGridKeyboardSelectedRowCell();
-
-    /**
-     * Applied to the focused cell and rounding cells.
-     */
-    String dataGridFocusedCell();
-
-    String dataGridFocusedCellLastInRow();
-
-    String dataGridRightOfFocusedCell();
-
-    String dataGridTopOfFocusedCell();
 }
