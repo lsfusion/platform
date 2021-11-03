@@ -140,7 +140,6 @@ public class DefaultHeaderBuilder<T> extends DataGridHeaderBuilder<T> {
 
             if(header != null) {
                 renderHeader(th, header);
-                GPropertyTableBuilder.updateSticky(table, th, curColumn, true);
             }
 
             tr.appendChild(th);

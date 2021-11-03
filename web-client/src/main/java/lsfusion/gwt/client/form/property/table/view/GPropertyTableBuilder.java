@@ -130,16 +130,6 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
             // assert that it is action and rendered with ActionCellRenderer
             // also since we know that its grid and not simple text (since there is dynamic image) and its td, we can unwrap td without having CellRenderer (however, it should be consistent with CellRenderer renderDynamic/Static)
             GFormController.setDynamicImage(CellRenderer.unwrapTD(td), image.orElse(null));
-
-        updateSticky(cellTable, td, columnIndex, false);
-
-    }
-
-    //class dataGridStickyCell is also used in DataGrid
-    public static void updateSticky(DataGrid table, TableCellElement td, int columnIndex, boolean header) {
-        if(table.isColumnSticky(columnIndex)) {
-            td.addClassName(header ? "dataGridStickyHeader" : "dataGridStickyCell");
-        }
     }
 
     @Override

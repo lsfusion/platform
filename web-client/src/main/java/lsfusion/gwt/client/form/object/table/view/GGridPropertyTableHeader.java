@@ -35,10 +35,13 @@ public class GGridPropertyTableHeader extends Header<String> {
 
     private int headerHeight;
 
-    public GGridPropertyTableHeader(GGridPropertyTable table, String caption, String toolTip) {
+    private boolean sticky;
+
+    public GGridPropertyTableHeader(GGridPropertyTable table, String caption, String toolTip, boolean sticky) {
         this.caption = caption;
         this.table = table;
         this.toolTip = toolTip;
+        this.sticky = sticky;
 
         toolTipHelper = new TooltipManager.TooltipHelper() {
             @Override
@@ -103,6 +106,10 @@ public class GGridPropertyTableHeader extends Header<String> {
         renderedCaptionElement = renderTD(th, headerHeight, sortDir, caption, false);
         renderedSortDir = sortDir;
         renderedCaption = caption;
+
+        if(sticky) {
+            th.addClassName("dataGridStickyHeader");
+        }
 
         if (notNull) {
             th.addClassName("dataGridRelative");

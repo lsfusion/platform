@@ -1422,7 +1422,7 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
         if (renderedSelectedRow >= 0 && renderedSelectedRow <= rows.getLength() && renderedSelectedCol >= 0 && renderedSelectedCol < columnCount &&
                 (renderedSelectedRow != newLocalSelectedRow || renderedSelectedCol != newLocalSelectedCol)) {
             setFocusedCellStyles(renderedSelectedRow, renderedSelectedCol, rows, headerRows, false);
-            if(renderedLeftStickyCol >= 0) {
+            if(renderedLeftStickyCol >= 0 && renderedLeftStickyCol < columnCount) {
                 setLeftNeighbourRightBorder(new LeftNeighbourRightBorder(renderedSelectedRow, renderedLeftStickyCol, false));
                 renderedLeftStickyCol = -1;
             }
@@ -1472,20 +1472,14 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
                 }
             }
         }
-        if (leftNeighbourRightBorder != null && leftNeighbourRightBorder.value) {
-            renderedLeftStickyCol = leftNeighbourRightBorder.column;
-        }
         return leftNeighbourRightBorder;
     }
 
     private void setLeftNeighbourRightBorder(LeftNeighbourRightBorder leftNeighbourRightBorder) {
         if (leftNeighbourRightBorder != null) {
-            TableRowElement row = tableData.tableElement.getRows().getItem(leftNeighbourRightBorder.row);
-            if (row != null) {
-                TableCellElement cell = row.getCells().getItem(leftNeighbourRightBorder.column);
-                if (cell != null) {
-                    setLeftNeighbourRightBorder(cell, leftNeighbourRightBorder.value);
-                }
+            setLeftNeighbourRightBorder(tableData.tableElement.getRows().getItem(leftNeighbourRightBorder.row).getCells().getItem(leftNeighbourRightBorder.column), leftNeighbourRightBorder.value);
+            if (leftNeighbourRightBorder.value) {
+                renderedLeftStickyCol = leftNeighbourRightBorder.column;
             }
         }
     }
@@ -1510,10 +1504,6 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
         }
 
         return left;
-    }
-
-    public boolean isColumnSticky(int i) {
-        return columns.get(i).isSticky();
     }
 
     private boolean isStickyCell(TableCellElement cell) {
@@ -1558,9 +1548,9 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
 
     private void setFocusedCellBottomBorder(TableCellElement td, boolean focused) {
         if (focused) {
-            td.getStyle().setProperty("borderBottom", "var(--border-width) solid " + getFocusedCellBorderColor());
+            td.addClassName("focusedCellBottomBorder");
         } else {
-            td.getStyle().clearProperty("borderBottom");
+            td.removeClassName("focusedCellBottomBorder");
         }
     }
 

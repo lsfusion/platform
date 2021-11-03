@@ -178,6 +178,10 @@
     border-right: var(--border-width) solid var(--focused-cell-border-color);
 }
 
+.focusedCellBottomBorder {
+    border-bottom: var(--border-width) solid var(--focused-cell-border-color);
+}
+
 .leftNeighbourRightBorder {
     border-right: var(--border-width) solid var(--focused-cell-border-color);
 }
