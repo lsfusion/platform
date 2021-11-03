@@ -101,5 +101,9 @@ public abstract class GFilterOptionSelector<T> extends TextBox {
         return menuItem;
     }
 
+    public void hidePopup() {
+        popup.hide();
+    }
+
     public abstract void valueChanged(T value);
 }

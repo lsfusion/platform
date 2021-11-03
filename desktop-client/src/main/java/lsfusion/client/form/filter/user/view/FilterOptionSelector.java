@@ -96,5 +96,9 @@ public abstract class FilterOptionSelector<T> extends TextFieldWidget {
                 createEmptyBorder(0, SwingDefaults.getTableCellMargins().left, 0, 0)));
     }
 
+    public void hidePopup() {
+        menu.setVisible(false);
+    }
+
     public abstract void valueChanged(T value);
 }

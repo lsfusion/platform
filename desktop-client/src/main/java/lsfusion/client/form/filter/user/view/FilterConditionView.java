@@ -159,7 +159,7 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
             public void editingCancelled() {
                 super.editingCancelled();
                 if (!isConfirmed && !isFixed()) {
-                    uiHandler.removeCondition(condition);
+                    FilterConditionView.this.remove();
                 }
             }
         };
@@ -168,7 +168,7 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
 
         deleteButtonWrapper = new FlexPanel(false, FlexAlignment.START);
         ToolbarGridButton deleteButton = new ToolbarGridButton(DELETE_ICON_PATH, getString("form.queries.filter.remove.condition"), new Dimension(getComponentHeight(), getComponentHeight()));
-        deleteButton.addActionListener(e -> RmiQueue.runAction(() -> uiHandler.removeCondition(condition)));
+        deleteButton.addActionListener(e -> RmiQueue.runAction(FilterConditionView.this::remove));
         deleteButtonWrapper.add((Widget)deleteButton);
         deleteButtonWrapper.add(Filler.createHorizontalStrut(2));
         rightPanel.addCentered(deleteButtonWrapper);
@@ -281,6 +281,12 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
     public void clearValueView() {
         valueView.valueTable.setValueAt(null, 0, 0);
         setApplied(allowNull);
+    }
+    
+    private void remove() {
+        propertyView.hidePopup();
+        compareView.hidePopup();
+        uiHandler.removeCondition(condition);
     }
 
     public void setApplied(boolean applied) {

@@ -58,13 +58,15 @@ public class GFilterConditionView extends FlexPanel implements CaptionContainerH
     public boolean allowNull;
 
     private boolean isLast = false;
+    private final UIHandler uiHandler;
     private boolean toolsVisible;
 
     // may not be applied without "Allow NULL", but we want to keep condition visible
     public boolean isConfirmed;
 
-    public GFilterConditionView(GPropertyFilter iCondition, GTableController logicsSupplier, final UIHandler handler, boolean toolsVisible, boolean readSelectedValue) {
+    public GFilterConditionView(GPropertyFilter iCondition, GTableController logicsSupplier, final UIHandler uiHandler, boolean toolsVisible, boolean readSelectedValue) {
         this.condition = iCondition;
+        this.uiHandler = uiHandler;
         this.toolsVisible = toolsVisible || !isFixed();
 
         allowNull = !condition.isFixed();
@@ -121,13 +123,13 @@ public class GFilterConditionView extends FlexPanel implements CaptionContainerH
             public void negationChanged(boolean value) {
                 condition.negation = value;
                 updateCompareLabelText();
-                handler.applyFilters(false);
+                uiHandler.applyFilters(false);
             }
 
             @Override
             public void allowNullChanged(boolean value) {
                 allowNull = value;
-                handler.applyFilters(false);
+                uiHandler.applyFilters(false);
             }
 
             @Override
@@ -135,7 +137,7 @@ public class GFilterConditionView extends FlexPanel implements CaptionContainerH
                 super.valueChanged(value);
                 condition.compare = value;
                 updateCompareLabelText();
-                handler.applyFilters(false);
+                uiHandler.applyFilters(false);
             }
         };
         compareView.setSelectedValue(condition.compare);
@@ -145,25 +147,25 @@ public class GFilterConditionView extends FlexPanel implements CaptionContainerH
             @Override
             public void valueChanged(Object value) {
                 super.valueChanged(value);
-                handler.applyFilters(cell.enterPressed);
+                uiHandler.applyFilters(cell.enterPressed);
             }
 
             @Override
             public void editingCancelled() {
                 super.editingCancelled();
                 if (!isConfirmed && !isFixed()) {
-                    handler.removeCondition(condition);
+                    GFilterConditionView.this.remove();
                 }
             }
         };
         rightPanel.addCentered(valueView);
         valueView.changeProperty(condition.property, condition.columnKey, readSelectedValue); // it's important to do it after adding to the container because setStatic -> setBaseSize is called inside (and adding to container also calls it and override with default value)
-        handler.addEnterBinding(valueView.cell);
+        uiHandler.addEnterBinding(valueView.cell);
 
         deleteButton = new GToolbarButton(DELETE_ICON_PATH, messages.formFilterRemoveCondition()) {
             @Override
             public ClickHandler getClickHandler() {
-                return event -> handler.removeCondition(condition);
+                return event -> GFilterConditionView.this.remove();
             }
         };
         deleteButton.addStyleName("userFilterButton");
@@ -179,7 +181,7 @@ public class GFilterConditionView extends FlexPanel implements CaptionContainerH
                 return event -> {
                     condition.junction = !condition.junction;
                     showBackground(!condition.junction);
-                    handler.applyFilters(false);
+                    uiHandler.applyFilters(false);
                 };
             }
         };
@@ -269,6 +271,12 @@ public class GFilterConditionView extends FlexPanel implements CaptionContainerH
     public void clearValueView() {
         valueView.cell.updateValue(null);
         setApplied(allowNull);
+    }
+    
+    private void remove() {
+        propertyView.hidePopup();
+        compareView.hidePopup();
+        uiHandler.removeCondition(condition);
     }
 
     public void setApplied(boolean applied) {
