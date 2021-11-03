@@ -630,8 +630,8 @@ public class ScriptingFormEntity {
             form.addPivotMeasure(property, version);
 
         Boolean sticky = nvl(options.getSticky(), property.sticky);
-        if(sticky != null && sticky)
-            form.addSticky(property, version);
+        if(sticky != null)
+            form.addSticky(Pair.create(property, sticky), version);
     }
 
     private void movePropertyDraw(PropertyDrawEntity<?> property, FormPropertyOptions options, Version version) throws ScriptingErrorLog.SemanticErrorException {

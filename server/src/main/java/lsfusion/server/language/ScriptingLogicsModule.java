@@ -1475,8 +1475,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         property.getActionOrProperty().drawOptions.setEventID(id);
     }
 
-    public void setSticky(LP property) {
-        property.getActionOrProperty().drawOptions.setSticky(true);
+    public void setSticky(LP property, boolean sticky) {
+        property.getActionOrProperty().drawOptions.setSticky(sticky);
     }
 
     public List<ResolveClassSet> getParamClasses(NamedPropertyUsage usage) throws ScriptingErrorLog.SemanticErrorException {
