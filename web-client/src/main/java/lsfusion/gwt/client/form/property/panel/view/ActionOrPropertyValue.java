@@ -140,7 +140,8 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
                 this::onEditEvent,
                 handler -> {}, // no outer context
                 //ctrl-c ctrl-v from excel adds \n in the end, trim() removes it
-                handler -> CopyPasteUtils.putIntoClipboard(getRenderElement()), handler -> CopyPasteUtils.getFromClipboard(handler, line -> pasteValue(line.trim())), true);
+                handler -> CopyPasteUtils.putIntoClipboard(getRenderElement()), handler -> CopyPasteUtils.getFromClipboard(handler, line -> pasteValue(line.trim())),
+                true, property.getCellRenderer().isCustomRenderer());
     }
 
     boolean isFocused;

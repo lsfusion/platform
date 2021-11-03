@@ -139,6 +139,7 @@
                 <!-- Quill -->
                 'https://cdn.quilljs.com/1.3.6/quill.js',
                 'https://cdn.quilljs.com/1.3.6/quill.bubble.css',
+                'static/css/quillRichText.css',
 
                 <!-- Ace code editor -->
                 'https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.13/ace.js',

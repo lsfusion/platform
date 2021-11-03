@@ -10,9 +10,10 @@ import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.table.grid.view.GPivot;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 
+import java.util.List;
 import java.util.Optional;
 
-import static lsfusion.gwt.client.view.StyleDefaults.customDataGridStyle;
+import static lsfusion.gwt.client.view.StyleDefaults.*;
 
 /**
  * Based on lsfusion.gwt.client.base.view.grid.DefaultDataGridBuilder
@@ -129,6 +130,19 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
             // assert that it is action and rendered with ActionCellRenderer
             // also since we know that its grid and not simple text (since there is dynamic image) and its td, we can unwrap td without having CellRenderer (however, it should be consistent with CellRenderer renderDynamic/Static)
             GFormController.setDynamicImage(CellRenderer.unwrapTD(td), image.orElse(null));
+    }
+
+    @Override
+    public void updateRowStickyLeftImpl(TableRowElement tr, List<Integer> stickyColumns, List<Integer> stickyLefts) {
+        updateStickyLeft(tr, stickyColumns, stickyLefts);
+    }
+
+    public static void updateStickyLeft(TableRowElement tr, List<Integer> stickyColumns, List<Integer> stickyLefts) {
+        for (int i = 0; i < stickyColumns.size(); i++) {
+            Integer stickyColumn = stickyColumns.get(i);
+            Integer left = stickyLefts.get(i);
+            tr.getCells().getItem(stickyColumn).getStyle().setProperty("left", left + "px");
+        }
     }
 
     public static void renderTD(Element td, int height) {

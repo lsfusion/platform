@@ -21,10 +21,7 @@ import com.google.gwt.dom.client.*;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.ui.AbstractNativeScrollbar;
-import com.google.gwt.user.client.ui.FlexTable;
-import com.google.gwt.user.client.ui.Focusable;
-import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
@@ -91,6 +88,7 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
     private boolean selectedRowChanged;
     private boolean selectedColumnChanged;
     private boolean focusedChanged;
+    private boolean onResizeChanged;
 
     protected GPropertyTableBuilder<T> tableBuilder;
 
@@ -114,6 +112,7 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
     //focused cell indices local to table (aka real indices in rendered portion of the data)
     int renderedSelectedRow = -1;
     int renderedSelectedCol = -1;
+    int renderedLeftStickyCol = -1;
     Object renderedSelectedKey = null; // needed for saving scroll position when keys are update
 
     protected abstract Object getSelectedKey();
@@ -139,7 +138,6 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
     // the second solution is easier to implement
     // the same problem is in gpivot (.subtotalouterdiv .scrolldiv / .headerdiv), and there it is solved the same way (however since there is no focus cell there in history there should be a solution with styles, conditional css)
     public static void removeOuterGridBorders(Widget parent) {
-        parent.getElement().getStyle().setMarginLeft(-1, Unit.PX);
         setOuterRightGridBorder(parent.getElement(), true);
     }
     public static void setOuterRightGridBorder(Element element, boolean setMargin) {
@@ -211,6 +209,7 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
                     if (tableFooterScroller != null) {
                         tableFooterScroller.setHorizontalScrollPosition(scrollLeft);
                     }
+                    setLeftNeighbourRightBorder(calcLeftNeighbourRightBorder(getSelectedRow(), getSelectedColumn(), true));
                 });
             } else {
                 removeOuterGridBorders(headerPanel);
@@ -707,6 +706,12 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
         scheduleUpdateDOM();
     }
 
+    public void onResizeChanged() {
+        onResizeChanged = true;
+        if(!isResolvingState) // hack, because in preUpdateScroll there is browser event flush, which causes scheduleDeferred flush => HeaderPanel.forceLayout => onResize and IllegalStateException, everything is really twisted here, so will just suppress ensurePendingState
+            scheduleUpdateDOM();
+    }
+
     /**
      * Get the {@link Header} from the footer section that was added with a
      * {@link Column}.
@@ -1107,6 +1112,7 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
         selectedRowChanged = false;
         selectedColumnChanged = false;
         focusedChanged = false;
+        onResizeChanged = false;
 
         renderedSelectedKey = getSelectedKey();
         renderedSelectedRow = getSelectedRow();
@@ -1186,6 +1192,8 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
 
     private void preAfterUpdateDOMScrollHorizontal(SetPendingScrollState pendingState) {
 
+        NodeList<TableRowElement> rows = tableData.tableElement.getRows();
+
         int viewportWidth = getViewportWidth();
         boolean hasVerticalScroll = viewportWidth != tableDataScroller.getOffsetWidth();
         if(hasVerticalScroll != this.hasVerticalScroll)
@@ -1197,11 +1205,11 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
         int scrollLeft = currentScrollLeft;
         int colToShow;
         if (selectedColumnChanged && (colToShow = getSelectedColumn()) >=0 && getRowCount() > 0) {
-            TableRowElement tr = tableData.tableElement.getRows().getItem(0);
-            TableCellElement td = tr.getCells().getItem(colToShow);
+            NodeList<TableCellElement> cells = rows.getItem(0).getCells();
+            TableCellElement td = cells.getItem(colToShow);
 
-            int columnLeft = td.getOffsetLeft();
-            int columnRight = columnLeft + td.getOffsetWidth();
+            int columnLeft = td.getOffsetLeft() - getPrevStickyCellsOffsetWidth(cells, colToShow);
+            int columnRight = td.getOffsetLeft() + td.getOffsetWidth();
             if (columnRight >= scrollLeft + viewportWidth) // not completely visible from right
                 scrollLeft = columnRight - viewportWidth;
             if (columnLeft < scrollLeft) // not completely visible from left
@@ -1210,6 +1218,25 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
 
         if(currentScrollLeft != scrollLeft)
             pendingState.left = scrollLeft;
+
+        //calculate left neighbour right border for focused cell
+        if (columnsChanged || selectedRowChanged || selectedColumnChanged || focusedChanged) {
+            pendingState.leftNeighbourRightBorder = calcLeftNeighbourRightBorderFocusedCellDOM();
+        }
+
+        //calculate left for sticky properties
+        if (columnsChanged || headersChanged || dataChanged || widthsChanged || onResizeChanged) {
+            pendingState.leftStickies = new ArrayList<>();
+            int left = 0;
+            TableRowElement tr = rows.getItem(0);
+            if(tr != null) {
+                List<Integer> stickyColumns = getStickyColumns();
+                for (int i = 0; i < stickyColumns.size(); i++) {
+                    pendingState.leftStickies.add(left);
+                    left += tr.getCells().getItem(stickyColumns.get(i)).getOffsetWidth();
+                }
+            }
+        }
 
 //        updateScrollHorizontal(pendingState);
     }
@@ -1285,6 +1312,16 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
         if (pendingState.left != null) {
             tableDataScroller.setHorizontalScrollPosition(pendingState.left);
         }
+
+        //set left neighbour right border for focused cell
+        if(pendingState.leftNeighbourRightBorder != null) {
+            setLeftNeighbourRightBorder(pendingState.leftNeighbourRightBorder);
+        }
+
+        //set left sticky
+        if(pendingState.leftStickies != null) {
+            updateStickyLeftDOM(pendingState.leftStickies);
+        }
     }
 
     private void updateDataDOM(boolean columnsChanged, ArrayList<Column> dataColumnsChanged) {
@@ -1305,6 +1342,26 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
                 tableDataScroller.setWidget(tableData);
             }
         }
+    }
+
+    private void updateStickyLeftDOM(List<Integer> stickyLefts) {
+        List<Integer> stickyColumns = getStickyColumns();
+        if (!noHeaders)
+            headerBuilder.updateStickyLeft(stickyColumns, stickyLefts);
+        if (!noFooters)
+            footerBuilder.updateStickyLeft(stickyColumns, stickyLefts);
+
+        tableBuilder.updateRowStickyLeft(tableData.getSection(), stickyColumns, stickyLefts);
+    }
+
+    private List<Integer> getStickyColumns() {
+        List<Integer> stickyColumns = new ArrayList<>();
+        for(int i = 0; i < columns.size(); i++) {
+            if(columns.get(i).isSticky()) {
+                stickyColumns.add(i);
+            }
+        }
+        return stickyColumns;
     }
 
     private void updateSelectedRowBackgroundDOM() {
@@ -1342,7 +1399,7 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
                     setColor = mixColors(background, setColor);
             } else {
                 assert column != focusedColumn;
-                setColor = background != null ? getDisplayColor(background) : null;
+                setColor = background != null ? getDisplayColor(background) : getDefaultComponentBackground();
             }
             onSelectedChanged(td, row, column, selected);
 
@@ -1365,12 +1422,92 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
         if (renderedSelectedRow >= 0 && renderedSelectedRow <= rows.getLength() && renderedSelectedCol >= 0 && renderedSelectedCol < columnCount &&
                 (renderedSelectedRow != newLocalSelectedRow || renderedSelectedCol != newLocalSelectedCol)) {
             setFocusedCellStyles(renderedSelectedRow, renderedSelectedCol, rows, headerRows, false);
+            if(renderedLeftStickyCol >= 0 && renderedLeftStickyCol < columnCount) {
+                setLeftNeighbourRightBorder(new LeftNeighbourRightBorder(renderedSelectedRow, renderedLeftStickyCol, false));
+                renderedLeftStickyCol = -1;
+            }
         }
 
         // SET NEW STATE
         if (newLocalSelectedRow >= 0 && newLocalSelectedRow < rows.getLength() && newLocalSelectedCol >= 0 && newLocalSelectedCol < columnCount) {
             setFocusedCellStyles(newLocalSelectedRow, newLocalSelectedCol, rows, headerRows, isFocused);
         }
+    }
+
+    private LeftNeighbourRightBorder calcLeftNeighbourRightBorderFocusedCellDOM() {
+        NodeList<TableRowElement> rows = tableData.tableElement.getRows();
+
+        int newLocalSelectedRow = getSelectedRow();
+        int newLocalSelectedCol = getSelectedColumn();
+
+        int columnCount = getColumnCount();
+
+        // SET NEW STATE
+        if (newLocalSelectedRow >= 0 && newLocalSelectedRow < rows.getLength() && newLocalSelectedCol >= 0 && newLocalSelectedCol < columnCount) {
+            return calcLeftNeighbourRightBorder(selectedRow, selectedColumn, isFocused);
+        }
+
+        return null;
+    }
+
+    private LeftNeighbourRightBorder calcLeftNeighbourRightBorder(int row, int column, boolean set) {
+        //border for previous sticky cell
+        //focused is sticky: draw border if prev cell is invisible
+        //focused is not sticky and prev cell is sticky: draw border if focused is visible
+        //focused is not sticky and prev cell is not sticky: draw border if prev sticky is at the border of focused
+        LeftNeighbourRightBorder leftNeighbourRightBorder = null;
+        if (column > 0) {
+            NodeList<TableCellElement> cells = tableData.tableElement.getRows().getItem(row).getCells();
+            TableCellElement focusedCell = cells.getItem(column);
+            TableCellElement prevCell = cells.getItem(column - 1);
+            Integer prevStickyCellNum = getPrevStickyCell(cells, column);
+            if (prevStickyCellNum != null) {
+                TableCellElement prevStickyCell = cells.getItem(prevStickyCellNum);
+                if (isStickyCell(focusedCell)) {
+                    leftNeighbourRightBorder = new LeftNeighbourRightBorder(row, prevStickyCellNum, set && prevCell.getAbsoluteRight() <= prevStickyCell.getAbsoluteRight());
+                } else if (prevCell.equals(prevStickyCell)) {
+                    leftNeighbourRightBorder = new LeftNeighbourRightBorder(row, prevStickyCellNum, set && focusedCell.getAbsoluteLeft() + 1 >= prevStickyCell.getAbsoluteRight());
+                } else if (!isStickyCell(prevCell)) {
+                    leftNeighbourRightBorder = new LeftNeighbourRightBorder(row, prevStickyCellNum, set && focusedCell.getAbsoluteLeft() == prevStickyCell.getAbsoluteRight());
+                }
+            }
+        }
+        return leftNeighbourRightBorder;
+    }
+
+    private void setLeftNeighbourRightBorder(LeftNeighbourRightBorder leftNeighbourRightBorder) {
+        if (leftNeighbourRightBorder != null) {
+            setLeftNeighbourRightBorder(tableData.tableElement.getRows().getItem(leftNeighbourRightBorder.row).getCells().getItem(leftNeighbourRightBorder.column), leftNeighbourRightBorder.value);
+            if (leftNeighbourRightBorder.value) {
+                renderedLeftStickyCol = leftNeighbourRightBorder.column;
+            }
+        }
+    }
+
+    private Integer getPrevStickyCell(NodeList<TableCellElement> cells, int column) {
+        for (int i = column - 1; i >= 0; i--) {
+            TableCellElement prevCell = cells.getItem(i);
+            if (isStickyCell(prevCell)) {
+                return i;
+            }
+        }
+        return null;
+    }
+
+    private int getPrevStickyCellsOffsetWidth(NodeList<TableCellElement> cells, int column) {
+        int left = 0;
+        for (int i = column - 1; i >= 0; i--) {
+            TableCellElement prevCell = cells.getItem(i);
+            if (isStickyCell(prevCell)) {
+                left += prevCell.getOffsetWidth();
+            }
+        }
+
+        return left;
+    }
+
+    private boolean isStickyCell(TableCellElement cell) {
+        return cell.hasClassName("dataGridStickyCell");
     }
 
     private void setFocusedCellStyles(int row, int column, NodeList<TableRowElement> rows, NodeList<TableRowElement> headerRows, boolean focused) {
@@ -1385,9 +1522,10 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
 
             TableCellElement thisCell = cells.getItem(column);
             if(column < columnCount) {
-                // LEFT BORDER
-//                if(column > 0) // we don't want focused border on leftmost border to prevent shifting leftmost cell
-                setFocusedCellLeftBorder(thisCell, focused);
+                // LEFT BORDER (RIGHT of left column)
+                if(column > 0) {
+                    setLeftNeighbourRightBorder(cells.getItem(column - 1), focused);
+                }
 
                 // in theory we might want to prevent extra border on the bottom and on the right (on the top there is no problem because of header)
                 // but there is a problem (with scroller, in that case we'll have to track hasVerticalScroller, hasHorizontalScroller) + table can be not full of rows (and we also have to track it)
@@ -1397,11 +1535,7 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
                 setFocusedCellBottomBorder(thisCell, focused);
 
                 // RIGHT BORDER
-                if (column < columnCount - 1) {
-                    TableCellElement rightCell = cells.getItem(column + 1);
-                    setFocusedCellLeftBorder(rightCell, focused);
-                }
-                setFocusedCellRightBorder(thisCell, focused && column == columnCount - 1);
+                setFocusedCellRightBorder(thisCell, focused);
             }
         }
 
@@ -1414,25 +1548,25 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
 
     private void setFocusedCellBottomBorder(TableCellElement td, boolean focused) {
         if (focused) {
-            td.getStyle().setProperty("borderBottom", "1px solid " + getFocusedCellBorderColor());
+            td.addClassName("focusedCellBottomBorder");
         } else {
-            td.getStyle().clearProperty("borderBottom");
+            td.removeClassName("focusedCellBottomBorder");
         }
     }
 
     private void setFocusedCellRightBorder(TableCellElement td, boolean focused) {
         if (focused) {
-            td.getStyle().setProperty("borderRight", "1px solid " + getFocusedCellBorderColor());
+            td.addClassName("focusedCellRightBorder");
         } else {
-            td.getStyle().clearProperty("borderRight");
+            td.removeClassName("focusedCellRightBorder");
         }
     }
-    
-    private void setFocusedCellLeftBorder(TableCellElement td, boolean focused) {
+
+    private void setLeftNeighbourRightBorder(TableCellElement td, boolean focused) {
         if (focused) {
-            td.getStyle().setProperty("borderLeft", "1px solid " + getFocusedCellBorderColor());
+            td.addClassName("leftNeighbourRightBorder");
         } else {
-            td.getStyle().clearProperty("borderLeft");
+            td.removeClassName("leftNeighbourRightBorder");
         }
     }
 
@@ -1484,6 +1618,21 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
         private Integer top;
         private Integer left;
         private Boolean hasVertical;
+
+        private LeftNeighbourRightBorder leftNeighbourRightBorder;
+        private List<Integer> leftStickies;
+    }
+
+    private static class LeftNeighbourRightBorder {
+        int row;
+        int column;
+        boolean value;
+
+        public LeftNeighbourRightBorder(int row, int column, boolean value) {
+            this.row = row;
+            this.column = column;
+            this.value = value;
+        }
     }
 
     // all this pending is needed for two reasons :
@@ -1649,8 +1798,7 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
 
     @Override
     public void onResize() {
-        if(!isResolvingState) // hack, because in preUpdateScroll there is browser event flush, which causes scheduleDeferred flush => HeaderPanel.forceLayout => onResize and IllegalStateException, everything is really twisted here, so will just suppress ensurePendingState
-            scheduleUpdateDOM();
+        onResizeChanged();
         super.onResize();
     }
 

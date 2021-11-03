@@ -57,11 +57,6 @@ public class GridTableStyle implements GridStyle {
     }
 
     @Override
-    public String dataGridCellInnerDiv() {
-        return "dataGridCellInnerDiv";
-    }
-
-    @Override
     public String dataGridFirstCell() {
         return "dataGridFirstCell";
     }
@@ -69,35 +64,5 @@ public class GridTableStyle implements GridStyle {
     @Override
     public String dataGridLastCell() {
         return "dataGridLastCell";
-    }
-
-    @Override
-    public String dataGridKeyboardSelectedRow() {
-        return "dataGridKeyboardSelectedRow";
-    }
-
-    @Override
-    public String dataGridKeyboardSelectedRowCell() {
-        return "dataGridKeyboardSelectedRowCell";
-    }
-
-    @Override
-    public String dataGridFocusedCell() {
-        return "dataGridFocusedCell";
-    }
-
-    @Override
-    public String dataGridFocusedCellLastInRow() {
-        return "dataGridFocusedCellLastInRow";
-    }
-
-    @Override
-    public String dataGridRightOfFocusedCell() {
-        return "dataGridRightOfFocusedCell";
-    }
-
-    @Override
-    public String dataGridTopOfFocusedCell() {
-        return "dataGridTopOfFocusedCell";
     }
 }

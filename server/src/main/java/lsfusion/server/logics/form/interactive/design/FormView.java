@@ -162,6 +162,11 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         return pivotMeasures.getOrderSet();
     }
 
+    protected NFOrderSet<PropertyDrawView> stickies = NFFact.orderSet();
+    public ImOrderSet<PropertyDrawView> getStickies() {
+        return stickies.getOrderSet();
+    }
+
     public ComponentView findById(int id) {
         return mainContainer.findById(id);
     }
@@ -212,6 +217,10 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
             addPivotMeasure(pivotMeasure, version);
         }
 
+        for (PropertyDrawEntity sticky : entity.getNFStickiesListIt(version)) {
+            addSticky(sticky, version);
+        }
+
         initButtons(version);
     }
 
@@ -239,6 +248,10 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
 
     public void addPivotMeasure(PropertyDrawEntity measure, Version version) {
         pivotMeasures.add(get(measure), version);
+    }
+
+    public void addSticky(PropertyDrawEntity sticky, Version version) {
+        stickies.add(get(sticky), version);
     }
 
     private ImList<PropertyDrawView> getPropertyDrawViewList(ImList<PropertyDrawEntity> propertyDrawEntityList) {
@@ -696,6 +709,8 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         serializePivot(pool, outStream, getPivotRows());
         pool.serializeCollection(outStream, getPivotMeasures());
 
+        pool.serializeCollection(outStream, getStickies());
+
         pool.writeString(outStream, canonicalName);
         pool.writeString(outStream, creationPath);
         pool.writeInt(outStream, overridePageWidth);
@@ -759,6 +774,8 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         pivotColumns.finalizeChanges();
         pivotRows.finalizeChanges();
         pivotMeasures.finalizeChanges();
+
+        stickies.finalizeChanges();
 
         for(ComponentView removedComponent : removedComponents)
             if(removedComponent.getContainer() == null)

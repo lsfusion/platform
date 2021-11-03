@@ -47,7 +47,7 @@
     for now will use 2nd option
     */
     border-bottom: 1px solid var(--grid-separator-border-color);
-    border-left: 1px solid var(--grid-separator-border-color);
+    border-right: 1px solid var(--grid-separator-border-color);
 
     padding: 0 2px;
     font-weight: normal;
@@ -118,7 +118,7 @@
 .dataGridFooterCell {
     border-top: 1px solid var(--grid-separator-border-color);
     border-bottom: 1px solid var(--grid-separator-border-color);
-    border-left: 1px solid var(--grid-separator-border-color);
+    border-right: 1px solid var(--grid-separator-border-color);
 
     padding: 0 2px;
     font-weight: normal;
@@ -135,15 +135,13 @@
 
 .dataGridCell {
     /* the same as dataGridCell, dataGridHeaderCell, table.pvtTable thead tr th/td */
-    border-bottom: 1px solid var(--grid-separator-border-color);
-    border-left: 1px solid var(--grid-separator-border-color);
+    border-bottom: var(--border-width) solid var(--grid-separator-border-color);
+    border-right: var(--border-width) solid var(--grid-separator-border-color);
 
     padding: 0;
 
     overflow: hidden;
 }
-
-.dataGridCellInnerDiv {}
 
 .dataGridFirstCell {
     /*border-left : none;*/
@@ -155,23 +153,35 @@
     border-right: 1px solid var(--grid-separator-border-color);
 }
 
-.dataGridKeyboardSelectedRow {}
-
-.dataGridKeyboardSelectedRowCell {}
-
-.dataGridFocusedCell {
-    border-bottom: 1px solid var(--focus-color);
-    border-left: 1px solid var(--focus-color);
+.dataGridRelative {
+    position: relative;
 }
 
-.dataGridFocusedCellLastInRow {
-    border-right: 1px solid var(--focus-color);
+:root {
+    /*override in StyleDefaults init*/
+    --focused-cell-border-color: #000000;
 }
 
-.dataGridRightOfFocusedCell {
-    border-left: 1px solid var(--focus-color);
+.dataGridStickyCell {
+    position: sticky;
+    z-index: 1000;
+    background-color: var(--component-background-color);
 }
 
-.dataGridTopOfFocusedCell {
-    border-bottom: 1px solid var(--focus-color);
+.dataGridStickyHeader {
+    position: sticky;
+    z-index: 1000;
+    background-color: var(--background-color);
+}
+
+.focusedCellRightBorder {
+    border-right: var(--border-width) solid var(--focused-cell-border-color);
+}
+
+.focusedCellBottomBorder {
+    border-bottom: var(--border-width) solid var(--focused-cell-border-color);
+}
+
+.leftNeighbourRightBorder {
+    border-right: var(--border-width) solid var(--focused-cell-border-color);
 }

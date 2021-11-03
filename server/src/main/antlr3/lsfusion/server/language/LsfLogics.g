@@ -834,6 +834,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|   'COLUMN' { $options.setPivotColumn(true); }
 		|   'ROW' { $options.setPivotRow(true); }
 		|   'MEASURE' { $options.setPivotMeasure(true); }
+		|   'STICKY' { $options.setSticky(true); }
 		)*
 	;
 
@@ -2659,6 +2660,7 @@ semiPropertyOption[LP property, String propertyName, LocalizedString caption, Pr
 	|	setNotNullSetting [ps]
 	|	aggrSetting [property]
 	|	eventIdSetting [property]
+	|	stickySetting [property]
     ;
 
 semiActionOption[LA action, String actionName, LocalizedString caption, ActionSettings ps, List<TypedParameter> context]
@@ -2965,6 +2967,16 @@ eventIdSetting [LAP property]
 }
 	:	'EVENTID' id=stringLiteral
 	;
+
+stickySetting [LP property]
+@after {
+	if (inMainParseState()) {
+		self.setSticky(property);
+	}
+}
+    :
+        'STICKY'
+    ;
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////// ACTION PROPERTIES ///////////////////////////
