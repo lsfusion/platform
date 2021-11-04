@@ -69,6 +69,7 @@ public class FlexTabBar extends JTabbedPane implements FlexComponent, TabBar {
         }
 
         selectedTab = index;
+        setSelectedIndex(index);
 
         selectionHandler.accept(index);
 
