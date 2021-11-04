@@ -1,5 +1,5 @@
 ---
-title: 'How-to: Custom Components (Objects)'
+title: 'How-to: Custom Components (objects)'
 ---
 
 By default, each object on a form with GRID view is displayed on the form as a flat table with columns.
