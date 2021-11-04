@@ -51,7 +51,6 @@ import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
 
-import static lsfusion.base.BaseUtils.nvl;
 import static lsfusion.interop.action.ServerResponse.CHANGE;
 import static lsfusion.interop.action.ServerResponse.EDIT_OBJECT;
 import static lsfusion.server.logics.form.struct.property.PropertyDrawExtraType.*;
@@ -176,7 +175,7 @@ public class PropertyDrawView extends ComponentView {
     }
 
     public boolean isSticky(FormEntity formEntity) {
-        return nvl(nvl(entity.sticky, sticky), isProperty() && entity.getPropertyObjectEntity().isValueUnique(entity.getToDraw(formEntity)));
+        return entity.sticky != null ? entity.sticky : sticky != null ? sticky : isProperty() && entity.getPropertyObjectEntity().isValueUnique(entity.getToDraw(formEntity));
     }
 
     //Для Jasper'а экранируем кавычки

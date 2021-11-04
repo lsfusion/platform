@@ -146,6 +146,7 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
                 cell.getStyle().setProperty("left", left + "px");
                 cell.removeClassName("dataGridStickyOverflow");
             } else {
+                cell.getStyle().clearProperty("left");
                 cell.addClassName("dataGridStickyOverflow");
             }
         }

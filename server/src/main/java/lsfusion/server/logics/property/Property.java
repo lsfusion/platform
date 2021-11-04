@@ -2290,11 +2290,9 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         String name = getName();
         if(name != null && predefinedValueUniqueNames.contains(name))
             return true;
-        else {
-            Stat interfaceStat = getInterfaceStat(fixedExprs);
-            return isValueUnique(interfaceStat, getValueStat(fixedExprs)) &&
-                    (optimistic || (isDefaultWYSInput(getValueClass(ClassType.typePolicy)) && new Stat(Settings.get().getMinInterfaceStatForValueUnique()).less(interfaceStat)));
-        }
+        Stat interfaceStat = getInterfaceStat(fixedExprs);
+        return isValueUnique(interfaceStat, getValueStat(fixedExprs)) &&
+                (optimistic || (isDefaultWYSInput(getValueClass(ClassType.typePolicy)) && new Stat(Settings.get().getMinInterfaceStatForValueUnique()).less(interfaceStat)));
     }
 
     public boolean isValueFull(ImRevMap<T, StaticParamNullableExpr> fixedExprs) {
