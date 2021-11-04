@@ -2,7 +2,6 @@ package lsfusion.gwt.client.form.event;
 
 import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.NativeEvent;
-import com.google.gwt.event.dom.client.*;
 import com.google.gwt.user.client.Event;
 
 import static com.google.gwt.dom.client.BrowserEvents.DBLCLICK;

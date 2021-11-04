@@ -1,12 +1,10 @@
 package lsfusion.gwt.client.form.design.view;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.Dimension;
-import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.focus.DefaultFocusReceiver;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.ResizableSimplePanel;
@@ -21,8 +19,6 @@ import lsfusion.gwt.client.form.object.table.grid.GGrid;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-
-import static lsfusion.gwt.client.base.GwtClientUtils.getElement;
 
 public class GFormLayout extends ResizableSimplePanel {
 
@@ -81,7 +77,7 @@ public class GFormLayout extends ResizableSimplePanel {
 
     @Override
     public void onResize() {
-        if (!form.isVisible()) {
+        if (form.isVisible()) {
             super.onResize();
         }
     }

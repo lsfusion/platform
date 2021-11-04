@@ -1,0 +1,5 @@
+.ql-editor {
+    width: 100%;
+    padding: unset;
+    color: var(--text-color);
+}

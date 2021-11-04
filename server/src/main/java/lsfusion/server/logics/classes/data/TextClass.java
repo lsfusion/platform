@@ -1,6 +1,5 @@
 package lsfusion.server.logics.classes.data;
 
-import lsfusion.base.BaseUtils;
 import lsfusion.interop.classes.DataType;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
@@ -10,15 +9,21 @@ import java.io.IOException;
 
 public class TextClass extends StringClass {
 
-    public final static StringClass instance = new TextClass(false);
-    public final static StringClass richInstance = new TextClass(true);
+    public final static StringClass instance = new TextClass(null);
 
-    public final boolean rich;
+    public TextClass(String type) {
+        super(LocalizedString.create("{classes.text}" + (type != null ? (" " + type) : "")), false, ExtInt.UNLIMITED, false);
+    }
 
-    public TextClass(boolean rich) {
-        super(LocalizedString.create("{classes.text}" + (rich ? " (rich)" : "")), false, ExtInt.UNLIMITED, false);
-
-        this.rich = rich;
+    public static StringClass getInstance(String type) {
+        switch (type) {
+            case "HTMLTEXT":
+                return HTMLTextClass.instance;
+            case "RICHTEXT":
+                return RichTextClass.instance;
+            default:
+                return instance;
+        }
     }
 
     @Override
@@ -28,19 +33,16 @@ public class TextClass extends StringClass {
 
     @Override
     public void serialize(DataOutputStream outStream) throws IOException {
-        super.serialize(outStream);
-        outStream.writeBoolean(rich);
+        outStream.writeByte(getTypeID());
     }
 
     @Override
     public DataClass getCompatible(DataClass compClass, boolean or) {
-        if(compClass instanceof StringClass)
-            return BaseUtils.cmp(rich, compClass instanceof TextClass && ((TextClass) compClass).rich, or) ? richInstance : instance;
-        return super.getCompatible(compClass, or);
+            return compClass instanceof StringClass ? this : super.getCompatible(compClass, or);
     }
 
     @Override
     public String getSID() {
-        return rich ? "RICHTEXT" : "TEXT";
+        return "TEXT";
     }
 }

@@ -53,7 +53,6 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
     public LP currentComputer;
     public LP hostnameCurrentComputer;
 
-    public LP minHashLength;
     public LP useLDAP;
     public LP serverLDAP;
     public LP portLDAP;
@@ -162,7 +161,6 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
 
         secret = findProperty("secret[]");
 
-        minHashLength = findProperty("minHashLength[]");
         useLDAP = findProperty("useLDAP[]");
         serverLDAP = findProperty("serverLDAP[]");
         portLDAP = findProperty("portLDAP[]");
@@ -216,26 +214,15 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
         
         syncUsers = findAction("syncUsers[ISTRING[100], JSONFILE]");
     }
-    
+
+    //todo: replace usages to checkPassword without stack param after upgrading erp to version 5
     public boolean checkPassword(DataSession session, DataObject userObject, String password, ExecutionStack stack) throws SQLException, SQLHandledException {
-        boolean authenticated = true;
+        return checkPassword(session, userObject, password);
+    }
+
+    public boolean checkPassword(DataSession session, DataObject userObject, String password) throws SQLException, SQLHandledException {
         String hashPassword = (String) sha256PasswordCustomUser.read(session, userObject);
         String newHashInput = BaseUtils.calculateBase64Hash("SHA-256", nullTrim(password), UserInfo.salt);
-        if (hashPassword == null || !hashPassword.trim().equals(newHashInput)) {
-            //TODO: убрать, когда будем считать, что хэши у всех паролей уже перебиты
-            Integer minHashLengthValue = (Integer) minHashLength.read(session);
-            String oldHashInput = BaseUtils.calculateBase64HashOld("SHA-256", nullTrim(password), UserInfo.salt);
-            if (minHashLengthValue == null)
-                minHashLengthValue = oldHashInput.length();
-            //если совпали первые n символов, считаем пароль правильным и сохраняем новый хэш в базу
-            if (hashPassword != null &&
-                    hashPassword.trim().substring(0, Math.min(hashPassword.trim().length(), minHashLengthValue)).equals(oldHashInput.substring(0, Math.min(oldHashInput.length(), minHashLengthValue)))) {
-                sha256PasswordCustomUser.change(newHashInput, session, userObject);
-                session.applyException(BL, stack);
-            } else {
-                authenticated = false;
-            }
-        }
-        return authenticated;
+        return hashPassword != null && hashPassword.trim().equals(newHashInput);
     }
 }

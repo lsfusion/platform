@@ -22,6 +22,7 @@ grammar LsfLogics;
     import lsfusion.server.base.version.Version;
     import lsfusion.server.data.expr.formula.SQLSyntaxType;
     import lsfusion.server.data.expr.query.PartitionType;
+    import lsfusion.server.data.table.IndexType;
     import lsfusion.server.language.ScriptParser;
     import lsfusion.server.language.ScriptingErrorLog;
     import lsfusion.server.language.ScriptingLogicsModule;
@@ -834,6 +835,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|   'COLUMN' { $options.setPivotColumn(true); }
 		|   'ROW' { $options.setPivotRow(true); }
 		|   'MEASURE' { $options.setPivotMeasure(true); }
+		|   'STICKY' { $options.setSticky(true); }
 		)*
 	;
 
@@ -2659,6 +2661,7 @@ semiPropertyOption[LP property, String propertyName, LocalizedString caption, Pr
 	|	setNotNullSetting [ps]
 	|	aggrSetting [property]
 	|	eventIdSetting [property]
+	|	stickySetting [property]
     ;
 
 semiActionOption[LA action, String actionName, LocalizedString caption, ActionSettings ps, List<TypedParameter> context]
@@ -2903,12 +2906,15 @@ echoSymbolsSetting [LAP property]
 	;
 
 indexSetting [LP property]
+@init {
+	IndexType indexType = IndexType.DEFAULT;
+}
 @after {
 	if (inMainParseState()) {
-		self.addScriptedIndex(property);
+		self.addScriptedIndex(property, indexType);
 	}
 }
-	:	'INDEXED'
+	:	'INDEXED' (('LIKE' { indexType = IndexType.LIKE; }) | ('MATCH' { indexType = IndexType.MATCH; }))?
 	;
 
 notNullDeleteSetting returns [DebugInfo.DebugPoint debugPoint]
@@ -2962,6 +2968,16 @@ eventIdSetting [LAP property]
 }
 	:	'EVENTID' id=stringLiteral
 	;
+
+stickySetting [LP property]
+@after {
+	if (inMainParseState()) {
+		self.setSticky(property);
+	}
+}
+    :
+        'STICKY'
+    ;
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////// ACTION PROPERTIES ///////////////////////////
@@ -5436,7 +5452,7 @@ fragment STRING_META_FRAGMENT : (STRING_LITERAL_ID_FRAGMENT ('###' | '##'))* STR
 fragment INTERVAL_TYPE : 'DATE' | 'DATETIME' | 'TIME' | 'ZDATETIME';
 
 PRIMITIVE_TYPE  :	'INTEGER' | 'DOUBLE' | 'LONG' | 'BOOLEAN' | 'TBOOLEAN' | 'DATE' | 'DATETIME' | 'ZDATETIME' | 'YEAR'
-                |   'TEXT' | 'RICHTEXT' | 'TIME' | 'WORDFILE' | 'IMAGEFILE' | 'PDFFILE' | 'DBFFILE' | 'RAWFILE'
+                |   'TEXT' | 'RICHTEXT' | 'HTMLTEXT' | 'TIME' | 'WORDFILE' | 'IMAGEFILE' | 'PDFFILE' | 'DBFFILE' | 'RAWFILE'
 				| 	'FILE' | 'EXCELFILE' | 'TEXTFILE' | 'CSVFILE' | 'HTMLFILE' | 'JSONFILE' | 'XMLFILE' | 'TABLEFILE'
 				|   'WORDLINK' | 'IMAGELINK' | 'PDFLINK' | 'DBFLINK'
 				|   'RAWLINK' | 'LINK' | 'EXCELLINK' | 'TEXTLINK' | 'CSVLINK' | 'HTMLLINK' | 'JSONLINK' | 'XMLLINK' | 'TABLELINK'

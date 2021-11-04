@@ -7,6 +7,7 @@ import lsfusion.base.ReflectionUtils;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.base.view.SwingDefaults;
+import lsfusion.client.classes.data.ClientRichTextClass;
 import lsfusion.client.classes.data.ClientTextClass;
 import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.form.ClientForm;
@@ -495,27 +496,23 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
         List<ClientPropertyDraw> result = new ArrayList<>();
 
         for (ClientPropertyDraw property : propertiesList) {
-            boolean add = !property.hide;
-            if (add && hasUserPreferences()) {
+            if (hasUserPreferences()) {
                 Boolean userHide = getUserHide(property);
                 if (userHide == null || !userHide) {
                     if (getUserOrder(property) == null) {
                         setUserHide(property, true);
                         setUserOrder(property, Short.MAX_VALUE + propertiesList.indexOf(property));
-                        add = false;
+                    } else {
+                        result.add(property);
                     }
-                } else {
-                    add = false;
                 }
-            }
-
-            if (add) {
+            } else if (!property.hide) {
                 result.add(property);
             }
         }
 
         if (hasUserPreferences()) {
-            Collections.sort(result, getCurrentPreferences().getUserOrderComparator());
+            result.sort(getCurrentPreferences().getUserOrderComparator());
         }
         return result;
     }
@@ -850,7 +847,7 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
     @Override
     public boolean richTextSelected() {
         ClientPropertyDraw property = getCurrentProperty();
-        return property != null && property.baseType instanceof ClientTextClass && ((ClientTextClass) property.baseType).rich;
+        return property != null && property.baseType instanceof ClientRichTextClass;
     }
 
     private int getMaxColumnsCount(List<List<String>> table) {

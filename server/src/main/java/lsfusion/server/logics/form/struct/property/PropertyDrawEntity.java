@@ -92,6 +92,8 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public String customEditorFunction;
     public String eventID;
 
+    public Boolean sticky;
+
     private String formPath;
 
     private Pair<Integer, Integer> scriptIndex;

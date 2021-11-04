@@ -141,6 +141,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
                     }
                 });
         }
+        GwtClientUtils.setZeroZIndex(getElement());
     }
 
     public final ResizeHelper resizeHelper = new ResizeHelper() {
@@ -528,7 +529,8 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
                 handler -> selectionHandler.onCellBefore(handler, cell, rowChanged -> isChangeOnSingleClick(cell, (Boolean) rowChanged)),
                 handler -> column.onEditEvent(handler, cell, parent),
                 handler -> selectionHandler.onCellAfter(handler, cell),
-                handler -> CopyPasteUtils.putIntoClipboard(parent), handler -> CopyPasteUtils.getFromClipboard(handler, line -> pasteData(cell, parent, GwtClientUtils.getClipboardTable(line))), false);
+                handler -> CopyPasteUtils.putIntoClipboard(parent), handler -> CopyPasteUtils.getFromClipboard(handler, line -> pasteData(cell, parent, GwtClientUtils.getClipboardTable(line))),
+                false, cell.getColumn().isCustomRenderer());
     }
 
     @Override
@@ -556,6 +558,11 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
             renderDom(cell, cellElement);
 
             updateDom(cell, cellElement);
+
+            if(isSticky()) {
+                //class dataGridStickyCell is also used in DataGrid isStickyCell()
+                cellElement.addClassName("dataGridStickyCell");
+            }
         }
 
         public void renderDom(Cell cell, Element cellElement) {

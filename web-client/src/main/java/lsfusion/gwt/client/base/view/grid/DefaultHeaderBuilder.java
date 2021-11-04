@@ -19,8 +19,12 @@ import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.dom.client.TableSectionElement;
+import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 
-import static lsfusion.gwt.client.view.StyleDefaults.customDataGridStyle;
+import java.util.List;
+import java.util.Map;
+
+import static lsfusion.gwt.client.view.StyleDefaults.*;
 
 /**
  * Default implementation of {@link HeaderBuilder} that renders columns.
@@ -158,5 +162,10 @@ public class DefaultHeaderBuilder<T> extends DataGridHeaderBuilder<T> {
 
             updateHeader(th, header);
         }
+    }
+
+    @Override
+    protected void updateHeaderStickyLeftImpl(TableRowElement tr, List<Integer> stickyColumns, List<Integer> stickyLefts) {
+        GPropertyTableBuilder.updateStickyLeft(tr, stickyColumns, stickyLefts);
     }
 }

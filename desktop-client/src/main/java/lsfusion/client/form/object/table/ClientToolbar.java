@@ -12,11 +12,9 @@ public class ClientToolbar extends ClientComponent {
 
     public boolean visible = true;
 
-    public boolean showGroupChange = true; //todo: убрать, когда все перейдут на версию 4 и уйдут все showGroupChange
     public boolean showCountRows = true;
     public boolean showCalculateSum = true;
     public boolean showGroupReport = true;
-    public boolean showPrint = true; //todo: убрать, когда все перейдут на версию 4 и уйдут все showPrintGroup
     public boolean showXls = true;
     public boolean showSettings = true;
 
@@ -29,11 +27,9 @@ public class ClientToolbar extends ClientComponent {
 
         outStream.writeBoolean(visible);
 
-        outStream.writeBoolean(showGroupChange);
         outStream.writeBoolean(showCountRows);
         outStream.writeBoolean(showCalculateSum);
         outStream.writeBoolean(showGroupReport);
-        outStream.writeBoolean(showPrint);
         outStream.writeBoolean(showXls);
         outStream.writeBoolean(showSettings);
     }
@@ -44,11 +40,9 @@ public class ClientToolbar extends ClientComponent {
 
         visible = inStream.readBoolean();
 
-        showGroupChange = inStream.readBoolean();
         showCountRows = inStream.readBoolean();
         showCalculateSum = inStream.readBoolean();
         showGroupReport = inStream.readBoolean();
-        showPrint = inStream.readBoolean();
         showXls = inStream.readBoolean();
         showSettings = inStream.readBoolean();
     }
@@ -60,15 +54,6 @@ public class ClientToolbar extends ClientComponent {
     public void setVisible(boolean visible) {
         this.visible = visible;
         updateDependency(this, "visible");
-    }
-
-    public boolean getShowPrint() {
-        return showPrint;
-    }
-
-    public void setShowPrint(boolean showPrint) {
-        this.showPrint = showPrint;
-        updateDependency(this, "showPrint");
     }
 
     public boolean getShowXls() {
@@ -96,15 +81,6 @@ public class ClientToolbar extends ClientComponent {
     public void setShowCountRows(boolean showCountRows) {
         this.showCountRows = showCountRows;
         updateDependency(this, "showCountRows");
-    }
-
-    public boolean getShowGroupChange() {
-        return showGroupChange;
-    }
-
-    public void setShowGroupChange(boolean showGroupChange) {
-        this.showGroupChange = showGroupChange;
-        updateDependency(this, "showGroupChange");
     }
 
     public boolean getShowCalculateSum() {

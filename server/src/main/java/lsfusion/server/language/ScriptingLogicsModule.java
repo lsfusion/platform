@@ -27,6 +27,7 @@ import lsfusion.server.data.expr.formula.CustomFormulaSyntax;
 import lsfusion.server.data.expr.formula.SQLSyntaxType;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.query.PartitionType;
+import lsfusion.server.data.table.IndexType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.language.action.ActionSettings;
 import lsfusion.server.language.action.LA;
@@ -249,9 +250,9 @@ public class ScriptingLogicsModule extends LogicsModule {
             dbManager.addIndex(info.keyNames, info.params);
         }
         tempIndicies.clear();
-        
-        for (LP property : indexedProperties) {
-            dbManager.addIndex(property);
+
+        for (int i = 0; i < indexedProperties.size(); i++) {
+            dbManager.addIndex(indexedProperties.get(i), indexTypes.get(i));
         }
         indexedProperties.clear();
     }
@@ -1472,6 +1473,10 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public void setEventId(LAP property, String id) {
         property.getActionOrProperty().drawOptions.setEventID(id);
+    }
+
+    public void setSticky(LP property) {
+        property.getActionOrProperty().drawOptions.setSticky(true);
     }
 
     public List<ResolveClassSet> getParamClasses(NamedPropertyUsage usage) throws ScriptingErrorLog.SemanticErrorException {
@@ -4456,17 +4461,21 @@ public class ScriptingLogicsModule extends LogicsModule {
             this.isCustomObjectClassTable = isCustomObjectClassTable;  
         }
     }  
-    
+
     private List<LP> indexedProperties = new ArrayList<>();
+    private List<IndexType> indexTypes = new ArrayList<>();
     private List<TemporaryIndexInfo> tempIndicies = new ArrayList<>();
             
-    public void addScriptedIndex(LP lp) {
+    public void addScriptedIndex(LP lp, IndexType indexType) {
         indexedProperties.add(lp);
+        indexTypes.add(indexType);
 
         ImSet<StoredDataProperty> fullAggrProps;
         if(lp.property instanceof AggregateGroupProperty && (fullAggrProps = ((AggregateGroupProperty) lp.property).getFullAggrProps()) != null) {
-            for(StoredDataProperty fullAggrProp : fullAggrProps)
+            for(StoredDataProperty fullAggrProp : fullAggrProps) {
                 indexedProperties.add(new LP<>(fullAggrProp));
+                indexTypes.add(indexType);
+            }
         }
     }
 

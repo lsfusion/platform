@@ -13,7 +13,6 @@ import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.action.Action;
-import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.data.file.*;
@@ -32,6 +31,8 @@ public class AnyValuePropertyHolder {
     private final LP stringProperty;
     private final LP bpStringProperty;
     private final LP textProperty;
+    private final LP richTextProperty;
+    private final LP htmlTextProperty;
     private final LP intProperty;
     private final LP longProperty;
     private final LP doubleProperty;
@@ -75,8 +76,9 @@ public class AnyValuePropertyHolder {
     private final LP xmlLinkProperty;
     private final LP tableLinkProperty;
 
-    public AnyValuePropertyHolder(LP<?> objectProperty, LP<?> stringProperty, LP<?> bpStringProperty, LP<?> textProperty, LP<?> intProperty, LP<?> longProperty, LP<?> doubleProperty, LP<?> numericProperty, LP<?> yearProperty,
-                                  LP<?> dateTimeProperty, LP<?> zDateTimeProperty, LP<?> intervalDateProperty, LP<?> intervalDateTimeProperty, LP<?> intervalTimeProperty, LP<?> intervalZDateTimeProperty,
+    public AnyValuePropertyHolder(LP<?> objectProperty, LP<?> stringProperty, LP<?> bpStringProperty, LP<?> textProperty, LP<?> richTextProperty, LP<?> htmlTextProperty,
+                                  LP<?> intProperty, LP<?> longProperty, LP<?> doubleProperty, LP<?> numericProperty, LP<?> yearProperty, LP<?> dateTimeProperty,
+                                  LP<?> zDateTimeProperty, LP<?> intervalDateProperty, LP<?> intervalDateTimeProperty, LP<?> intervalTimeProperty, LP<?> intervalZDateTimeProperty,
                                   LP<?> logicalProperty, LP<?> tLogicalProperty, LP<?> dateProperty, LP<?> timeProperty, LP<?> colorProperty, LP<?> wordFileProperty, LP<?> imageFileProperty,
                                   LP<?> pdfFileProperty, LP<?> dbfFileProperty, LP<?> rawFileProperty, LP<?> customFileProperty, LP<?> excelFileProperty,
                                   LP<?> textFileProperty, LP<?> csvFileProperty, LP<?> htmlFileProperty, LP<?> jsonFileProperty, LP<?> xmlFileProperty, LP<?> tableFileProperty,
@@ -87,6 +89,8 @@ public class AnyValuePropertyHolder {
                 && stringProperty.property.getType().getCompatible(StringClass.get(1))!=null
                 && bpStringProperty.property.getType().getCompatible(StringClass.get(1))!=null
                 && textProperty.property.getType().getCompatible(StringClass.get(1))!=null
+                && richTextProperty.property.getType().getCompatible(RichTextClass.instance)!=null
+                && htmlTextProperty.property.getType().getCompatible(HTMLTextClass.instance)!=null
                 && intProperty.property.getType() == IntegerClass.instance
                 && longProperty.property.getType() == LongClass.instance
                 && doubleProperty.property.getType() == DoubleClass.instance
@@ -135,6 +139,8 @@ public class AnyValuePropertyHolder {
         this.stringProperty = stringProperty;
         this.bpStringProperty = bpStringProperty;
         this.textProperty = textProperty;
+        this.richTextProperty = richTextProperty;
+        this.htmlTextProperty = htmlTextProperty;
         this.intProperty = intProperty;
         this.longProperty = longProperty;
         this.doubleProperty = doubleProperty;
@@ -180,12 +186,15 @@ public class AnyValuePropertyHolder {
     }
 
     public LP<?> getLP(Type valueType) {
-        if (valueType instanceof ObjectType) {
+        if (valueType instanceof ObjectType)
             return objectProperty;
-        } else if (valueType instanceof StringClass) {
-            if (((StringClass) valueType).length.isUnlimited()) {
-                return textProperty;
-            }
+        else if (valueType instanceof RichTextClass)
+            return richTextProperty;
+        else if (valueType instanceof HTMLTextClass)
+            return htmlTextProperty;
+        else if (valueType instanceof TextClass)
+            return textProperty;
+        else if (valueType instanceof StringClass) {
             return ((StringClass) valueType).blankPadded ? bpStringProperty : stringProperty;
         } else if (valueType instanceof IntegerClass) {
             if (valueType instanceof YearClass) {
@@ -286,7 +295,7 @@ public class AnyValuePropertyHolder {
                 customFileProperty, rawFileProperty, wordFileProperty, imageFileProperty, pdfFileProperty, dbfFileProperty, excelFileProperty,
                 textFileProperty, csvFileProperty, htmlFileProperty, jsonFileProperty, xmlFileProperty, tableFileProperty,
                 // strings
-                textProperty, stringProperty, bpStringProperty,
+                textProperty, richTextProperty, htmlTextProperty, stringProperty, bpStringProperty,
                 // numbers
                 numericProperty, longProperty, intProperty, doubleProperty,
                 // date / times

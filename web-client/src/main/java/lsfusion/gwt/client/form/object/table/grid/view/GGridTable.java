@@ -16,7 +16,6 @@ import lsfusion.gwt.client.base.view.DialogBoxHelper;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
-import lsfusion.gwt.client.controller.remote.action.RequestErrorHandlingCallback;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
@@ -33,7 +32,6 @@ import lsfusion.gwt.client.form.object.table.view.GridDataRecord;
 import lsfusion.gwt.client.form.order.user.GGridSortableHeaderManager;
 import lsfusion.gwt.client.form.order.user.GOrder;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 
 import java.util.*;
 
@@ -361,7 +359,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         }
 
         if (hasUserPreferences()) {
-            Collections.sort(result, getCurrentPreferences().getUserOrderComparator());
+            result.sort(getCurrentPreferences().getUserOrderComparator());
         }
         return result;
     }
@@ -488,7 +486,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
     private GridColumn insertGridColumn(int index, GPropertyDraw property, GGroupObjectValue columnKey) {
         GridColumn column = new GridColumn(property, columnKey);
-        GGridPropertyTableHeader header = new GGridPropertyTableHeader(this, null, null);
+        GGridPropertyTableHeader header = new GGridPropertyTableHeader(this, null, null, column.isSticky());
         GGridPropertyTableFooter footer = groupObject.hasFooters ? new GGridPropertyTableFooter(this, property, null, null) : null;
 
         insertColumn(index, column, header, footer);
@@ -1133,8 +1131,18 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         }
 
         @Override
+        public boolean isCustomRenderer() {
+            return property.getCellRenderer().isCustomRenderer();
+        }
+
+        @Override
         public boolean isFocusable() {
             return GGridTable.this.isFocusable(property);
+        }
+
+        @Override
+        public boolean isSticky() {
+            return form.getForm().stickies.contains(property);
         }
 
         public void setValue(GridDataRecord record, Object value) {

@@ -459,3 +459,10 @@ NAVIGATOR {
         NEW SystemEvents.pings;
     }
 }
+
+// change password on login
+onClientStarted() + {
+    WHILE changePasswordOnNextLogin(currentUser()) DO {
+        changePassword();
+    } 
+}

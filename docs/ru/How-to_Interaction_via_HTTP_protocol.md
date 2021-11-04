@@ -388,3 +388,65 @@ Url, на который следует слать HTTP запрос, будет
     ]
 }
 ```
+
+## Пример 8
+
+### Условие
+
+Аналогично [**Примеру 3**](#пример-3).
+
+Для каждого заказа существует список приложенных к нему файлов.
+```lsf
+CLASS Attachment 'Приложение';
+order = DATA Order (Attachment) NONULL DELETE;
+name 'Имя' = DATA STRING (Attachment);
+file = DATA FILE (Attachment);
+```
+Нужно реализовать HTTP GET запрос, который будет возвращать для переданного внутреннего идентификатора заказа его параметры и список файлов.
+Кроме того, нужно отдельным запросом реализовать получение содержимого конкретного файла.  
+
+### Решение
+```lsf
+FORM orderAttachments
+    OBJECTS o = Order
+    PROPERTIES(o) number, date
+
+    OBJECTS attachments = Attachment
+    PROPERTIES id = VALUE(attachments), name(attachments)
+;
+
+getOrderAttachments (LONG orderId) {
+    FOR LONG(Order o AS Order) = orderId DO {
+        EXPORT orderAttachments OBJECTS o = o JSON;
+    }
+}
+```
+Для формирования HTTP запроса нужно использовать следующий url : http://localhost:7651/exec?action=getOrderAttachments&p=32178.
+В нем параметр _p_ содержит внутренний идентификатор заказа.
+
+В ответ будет возвращен, например, следующий JSON :
+```json
+{
+    "date": "20.10.2021",
+    "number": "12",
+    "attachments": [
+        {
+            "name": "File 1",
+            "id": 32180
+        },
+        {
+            "name": "File 2",
+            "id": 32183
+        }
+    ]
+}
+```
+В атрибутах _id_ будут содержаться внутренние идентификаторы файлов. Затем содержимое этих файлов может быть прочитано запросом по следующему url :
+http://localhost:7651/exec?action=getOrderAttachment&p=32180. Действие _getOrderAttachment_ объявляется следующим образом :
+```lsf
+getOrderAttachment (LONG id) {
+    FOR LONG(Attachment a AS Attachment) = id DO
+        exportFile() <- file(a); 
+}
+```
+Запрос вернет файл с _Content-Type_ соответствующим расширению свойства _file_. 

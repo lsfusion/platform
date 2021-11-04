@@ -38,32 +38,23 @@ public abstract class TextBasedCellRenderer<T> extends CellRenderer<T> {
     }
 
     public void renderStaticContent(Element element, RenderContext renderContext) {
-        render(property, element, renderContext, isMultiLine(), isWordWrap());
+        render(property, element, renderContext, isMultiLine());
     }
 
-    public static void render(GPropertyDraw property, Element element, RenderContext renderContext, boolean multiLine, boolean wordWrap) {
+    public static void render(GPropertyDraw property, Element element, RenderContext renderContext, boolean multiLine) {
         Style style = element.getStyle();
         setPadding(style, multiLine);
         style.setWhiteSpace(multiLine ? Style.WhiteSpace.PRE_WRAP : Style.WhiteSpace.PRE);
         setBasedTextFonts(property, element, renderContext);
-        if(wordWrap)
-            style.setProperty("wordBreak", "break-word"); // wordWrap (overflow-wrap) doesn't work as expected
     }
 
     @Override
     public void clearRenderContent(Element element, RenderContext renderContext) {
         element.getStyle().clearPadding();
         clearBasedTextFonts(property, element.getStyle(), renderContext);
-
-        if(isWordWrap())
-            element.getStyle().clearProperty("wordBreak");
     }
 
     protected boolean isMultiLine() {
-        return false;
-    }
-
-    protected boolean isWordWrap() {
         return false;
     }
 

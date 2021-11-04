@@ -1,7 +1,9 @@
 package lsfusion.gwt.client.view;
 
 import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.StyleElement;
+import com.google.gwt.user.client.ui.RootPanel;
 import lsfusion.gwt.client.form.property.cell.classes.ColorDTO;
 
 import static lsfusion.gwt.client.base.view.ColorUtils.*;
@@ -33,10 +35,18 @@ public class StyleDefaults {
     private static String tableGridColor;
 
     private static StyleElement customDataTableGridStyleElement;
-    
+
     private static int[] componentBackgroundRGB;
     
     private static int[] pivotGroupLevelDarkenStepRGB;
+
+    public static void init() {
+        setCustomProperties(RootPanel.get().getElement(), getFocusedCellBorderColor());
+    }
+
+    private static native void setCustomProperties(Element root, String focusedCellBorderColor) /*-{
+        root.style.setProperty("--focused-cell-border-color", focusedCellBorderColor);
+    }-*/;
 
     public static void reset() {
         selectedRowBackgroundColor = null;
@@ -132,7 +142,7 @@ public class StyleDefaults {
         }
         return tableGridColor;
     }
-    
+
     public static int[] getComponentBackgroundRGB() {
         if (componentBackgroundRGB == null) {
             int cbRGB = toRGB(getComponentBackground(colorTheme));
@@ -160,6 +170,7 @@ public class StyleDefaults {
     
     
     public static void appendClientSettingsCSS() {
+        init();
         String tableGridColor = StyleDefaults.getTableGridColor();
         if (tableGridColor != null) {
             if (customDataTableGridStyleElement == null) {

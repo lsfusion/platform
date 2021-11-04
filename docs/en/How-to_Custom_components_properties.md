@@ -1,5 +1,5 @@
 ---
-title: 'How-to: Custom components'
+title: 'How-to: Custom components (properties)'
 ---
 
 For each [property](Properties.md) type, by default, a predefined visual component is used to display and edit the data. 

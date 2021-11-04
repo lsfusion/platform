@@ -272,7 +272,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
                         systemLogger.error("LDAP authentication failed", e);
                     }
                 }
-                if (!authenticated && (userObject == null || !authenticationLM.checkPassword(session, userObject, ((PasswordAuthentication) authentication).getPassword(), stack)))
+                if (!authenticated && (userObject == null || !authenticationLM.checkPassword(session, userObject, ((PasswordAuthentication) authentication).getPassword())))
                     throw new LoginException();
             } else {
                 String webClientAuthSecret = ((OAuth2Authentication) authentication).getAuthSecret();
