@@ -141,7 +141,13 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
         for (int i = 0; i < stickyColumns.size(); i++) {
             Integer stickyColumn = stickyColumns.get(i);
             Integer left = stickyLefts.get(i);
-            tr.getCells().getItem(stickyColumn).getStyle().setProperty("left", left + "px");
+            TableCellElement cell = tr.getCells().getItem(stickyColumn);
+            if (left != null) {
+                cell.getStyle().setProperty("left", left + "px");
+                cell.removeClassName("dataGridStickyOverflow");
+            } else {
+                cell.addClassName("dataGridStickyOverflow");
+            }
         }
     }
 

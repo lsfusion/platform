@@ -76,6 +76,6 @@ public class PropertyObjectEntity<P extends PropertyInterface> extends ActionOrP
 
     public boolean isValueUnique(GroupObjectEntity grid) {
         // remapping all objects except ones in the grid
-        return property.isValueUnique(mapping.filterFnValuesRev(value -> !grid.getObjects().contains(value)).mapRevValues(ObjectEntity::getParamExpr));
+        return property.isValueUnique(mapping.filterFnValuesRev(value -> !grid.getObjects().contains(value)).mapRevValues(ObjectEntity::getParamExpr), false);
     }
 }

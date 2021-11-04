@@ -156,6 +156,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     
     public boolean notNull;
 
+    public boolean sticky;
+
     public ClientPropertyDraw() {
     }
 
@@ -622,6 +624,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         }
         
         notNull = inStream.readBoolean();
+
+        sticky = inStream.readBoolean();
     }
 
     public boolean hasColumnGroupObjects() {

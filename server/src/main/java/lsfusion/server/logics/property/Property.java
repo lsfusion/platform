@@ -2285,10 +2285,16 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
     // it's heuristics anyway, so why not to try to guess uniqueness by name
     private static ImSet<String> predefinedValueUniqueNames = SetFact.toSet("name", "id", "number");
-    public boolean isValueUnique(ImRevMap<T, StaticParamNullableExpr> fixedExprs) {
+    public boolean isValueUnique(ImRevMap<T, StaticParamNullableExpr> fixedExprs, boolean optimistic) {
         assert isValueFull(fixedExprs);
         String name = getName();
-        return ((name != null && predefinedValueUniqueNames.contains(name)) || isValueUnique(getInterfaceStat(fixedExprs), getValueStat(fixedExprs))); // getClassProperty().property.getInterfaceStat()
+        if(name != null && predefinedValueUniqueNames.contains(name))
+            return true;
+        else {
+            Stat interfaceStat = getInterfaceStat(fixedExprs);
+            return isValueUnique(interfaceStat, getValueStat(fixedExprs)) &&
+                    (optimistic || (isDefaultWYSInput(getValueClass(ClassType.typePolicy)) && new Stat(Settings.get().getMinInterfaceStatForValueUnique()).less(interfaceStat)));
+        }
     }
 
     public boolean isValueFull(ImRevMap<T, StaticParamNullableExpr> fixedExprs) {

@@ -51,6 +51,7 @@ import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
 
+import static lsfusion.base.BaseUtils.nvl;
 import static lsfusion.interop.action.ServerResponse.CHANGE;
 import static lsfusion.interop.action.ServerResponse.EDIT_OBJECT;
 import static lsfusion.server.logics.form.struct.property.PropertyDrawExtraType.*;
@@ -99,6 +100,8 @@ public class PropertyDrawView extends ComponentView {
     public String toolTip;
 
     public boolean notNull;
+
+    public Boolean sticky;
 
     @SuppressWarnings({"UnusedDeclaration"})
     public PropertyDrawView() {
@@ -170,6 +173,10 @@ public class PropertyDrawView extends ComponentView {
 
     public boolean isNotNull() {
         return notNull || entity.isNotNull();
+    }
+
+    public boolean isSticky(FormEntity formEntity) {
+        return nvl(nvl(entity.sticky, sticky), isProperty() && entity.getPropertyObjectEntity().isValueUnique(entity.getToDraw(formEntity)));
     }
 
     //Для Jasper'а экранируем кавычки
@@ -407,6 +414,7 @@ public class PropertyDrawView extends ComponentView {
         }
 
         outStream.writeBoolean(isNotNull());
+        outStream.writeBoolean(isSticky(pool.context.view.entity));
     }
 
     private OrderedMap<String, LocalizedString> filterContextMenuItems(OrderedMap<String, LocalizedString> contextMenuBindings, ServerContext context) {

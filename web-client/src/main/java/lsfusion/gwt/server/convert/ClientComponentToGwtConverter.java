@@ -351,6 +351,8 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         
         propertyDraw.notNull = clientPropertyDraw.notNull;
 
+        propertyDraw.sticky = clientPropertyDraw.sticky;
+
 //        propertyDraw.getValueWidth(null, form); // parentFont - null потому как на этом этапе интересуют только в панели свойства (а parentFont для грида, там своя ветка)
 
         return propertyDraw;
@@ -615,10 +617,6 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         form.pivotRows.addAll(convertPivotPropertiesList(clientForm.pivotRows));
         for(ClientPropertyDraw property : clientForm.pivotMeasures) {
             form.pivotMeasures.add(convertOrCast(property));
-        }
-
-        for(ClientPropertyDraw property : clientForm.stickies) {
-            form.stickies.add(convertOrCast(property));
         }
 
         return form;

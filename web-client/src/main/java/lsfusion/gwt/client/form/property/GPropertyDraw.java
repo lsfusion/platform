@@ -197,6 +197,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     
     public boolean notNull;
 
+    public boolean sticky;
+
     // eventually gets to PropertyDrawEntity.getEventAction (which is symmetrical to this)
     public String getEventSID(Event editEvent) {
         String actionSID = null;

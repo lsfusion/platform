@@ -2798,4 +2798,14 @@ public class Settings implements Cloneable {
     public void setTrueSerializable(boolean trueSerializable) {
         this.trueSerializable = trueSerializable;
     }
+
+    public int minInterfaceStatForValueUnique = 100;
+
+    public int getMinInterfaceStatForValueUnique() {
+        return minInterfaceStatForValueUnique;
+    }
+
+    public void setMinInterfaceStatForValueUnique(int minInterfaceStatForValueUnique) {
+        this.minInterfaceStatForValueUnique = minInterfaceStatForValueUnique;
+    }
 }

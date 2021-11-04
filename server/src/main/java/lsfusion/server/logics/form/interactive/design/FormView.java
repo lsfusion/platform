@@ -166,11 +166,6 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         return pivotMeasures.getOrderSet();
     }
 
-    protected NFOrderMap<PropertyDrawEntity,Boolean> stickies = NFFact.orderMap();
-    public ImOrderMap<PropertyDrawEntity, Boolean> getStickies() {
-        return stickies.getListMap();
-    }
-
     public ComponentView findById(int id) {
         return mainContainer.findById(id);
     }
@@ -221,10 +216,6 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
             addPivotMeasure(pivotMeasure, version);
         }
 
-        for (Pair<PropertyDrawEntity, Boolean> sticky : entity.getNFStickiesListIt(version)) {
-            addSticky(sticky.first, sticky.second, version);
-        }
-
         initButtons(version);
     }
 
@@ -252,10 +243,6 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
 
     public void addPivotMeasure(PropertyDrawEntity measure, Version version) {
         pivotMeasures.add(get(measure), version);
-    }
-
-    public void addSticky(PropertyDrawEntity sticky, Boolean value, Version version) {
-        stickies.add(sticky, value, version);
     }
 
     private ImList<PropertyDrawView> getPropertyDrawViewList(ImList<PropertyDrawEntity> propertyDrawEntityList) {
@@ -713,14 +700,6 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         serializePivot(pool, outStream, getPivotRows());
         pool.serializeCollection(outStream, getPivotMeasures());
 
-        MOrderSet<PropertyDrawView> stickies = SetFact.mOrderSet();
-        ImOrderMap<PropertyDrawEntity, Boolean> stickiesMap = getStickies();
-        for(PropertyDrawEntity property : mproperties.keySet()) {
-            if(nvl(stickiesMap.get(property), property.isProperty() && property.getPropertyObjectEntity().isValueUnique(property.getToDraw(entity))))
-                stickies.add(get(property));
-        }
-        pool.serializeCollection(outStream, stickies.immutableOrder());
-
         pool.writeString(outStream, canonicalName);
         pool.writeString(outStream, creationPath);
         pool.writeInt(outStream, overridePageWidth);
@@ -784,8 +763,6 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         pivotColumns.finalizeChanges();
         pivotRows.finalizeChanges();
         pivotMeasures.finalizeChanges();
-
-        stickies.finalizeChanges();
 
         for(ComponentView removedComponent : removedComponents)
             if(removedComponent.getContainer() == null)

@@ -408,7 +408,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
         @Override
         public boolean isSticky() {
-            return form.getForm().stickies.contains(columnProperty);
+            return columnProperty.sticky;
         }
 
         public GridColumn(GPropertyDraw columnProperty) {

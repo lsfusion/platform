@@ -1226,14 +1226,17 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
 
         //calculate left for sticky properties
         if (columnsChanged || headersChanged || dataChanged || widthsChanged || onResizeChanged) {
-            pendingState.leftStickies = new ArrayList<>();
+            pendingState.stickyLefts = new ArrayList<>();
             int left = 0;
             TableRowElement tr = rows.getItem(0);
             if(tr != null) {
                 List<Integer> stickyColumns = getStickyColumns();
                 for (int i = 0; i < stickyColumns.size(); i++) {
-                    pendingState.leftStickies.add(left);
-                    left += tr.getCells().getItem(stickyColumns.get(i)).getOffsetWidth();
+                    Element cell = tr.getCells().getItem(stickyColumns.get(i));
+                    int cellLeft = cell.getOffsetWidth();
+                    //protect from too much sticky columns
+                    pendingState.stickyLefts.add(left + cellLeft <= viewportWidth ? left : null);
+                    left += cellLeft;
                 }
             }
         }
@@ -1319,8 +1322,8 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
         }
 
         //set left sticky
-        if(pendingState.leftStickies != null) {
-            updateStickyLeftDOM(pendingState.leftStickies);
+        if(pendingState.stickyLefts != null) {
+            updateStickyLeftDOM(pendingState.stickyLefts);
         }
     }
 
@@ -1620,7 +1623,7 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
         private Boolean hasVertical;
 
         private LeftNeighbourRightBorder leftNeighbourRightBorder;
-        private List<Integer> leftStickies;
+        private List<Integer> stickyLefts;
     }
 
     private static class LeftNeighbourRightBorder {
