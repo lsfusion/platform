@@ -48,8 +48,10 @@ public class DataType {
     public final static byte DATEINTERVAL = 45;
     public final static byte DATETIMEINTERVAL = 46;
     public final static byte TIMEINTERVAL = 47;
-    public final static byte ZDATETIMEINTERVAL = 51;
     public final static byte DBF = 48;
     public final static byte DBFLINK = 49;
     public final static byte TLOGICAL = 50;
+    public final static byte ZDATETIMEINTERVAL = 51;
+    public final static byte HTMLTEXT = 52;
+    public final static byte RICHTEXT = 53;
 }

@@ -1,6 +1,7 @@
 package lsfusion.client.form.filter.user.view;
 
 import lsfusion.client.base.SwingUtils;
+import lsfusion.client.classes.data.ClientRichTextClass;
 import lsfusion.client.classes.data.ClientTextClass;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.object.ClientGroupObjectValue;
@@ -61,7 +62,7 @@ class DataFilterValueViewTable extends JTable implements TableTransferHandler.Ta
     @Override
     public boolean richTextSelected() {
         ClientPropertyDraw property = getProperty();
-        return property.baseType instanceof ClientTextClass && ((ClientTextClass) property.baseType).rich;
+        return property.baseType instanceof ClientRichTextClass;
     }
 
     @Override

@@ -64,15 +64,17 @@ public class ClientTypeSerializer {
         if (type == DataType.TLOGICAL) return ClientLogicalClass.threeStateInstance;
         if (type == DataType.DATE) return ClientDateClass.instance;
 
-        if (type == DataType.STRING || type == DataType.TEXT) {
+        if (type == DataType.STRING) {
             boolean blankPadded = inStream.readBoolean();
             boolean caseInsensitive = inStream.readBoolean();
             inStream.readBoolean(); // backward compatibility see StringClass.serialize
             ExtInt length = ExtInt.deserialize(inStream);
-            if( type == DataType.TEXT)
-                return new ClientTextClass(inStream.readBoolean());
             return new ClientStringClass(blankPadded, caseInsensitive, length);
         }
+
+        if (type == DataType.TEXT) return new ClientTextClass();
+        if (type == DataType.HTMLTEXT) return new ClientHTMLTextClass();
+        if (type == DataType.RICHTEXT) return new ClientRichTextClass();
 
         if (type == DataType.YEAR) return ClientIntegerClass.instance;
         if (type == DataType.DATETIME) return ClientDateTimeClass.instance;
