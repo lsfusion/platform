@@ -7,6 +7,7 @@ import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.async.GAsyncExec;
 import lsfusion.gwt.client.form.property.async.GInputList;
+import lsfusion.gwt.client.form.property.cell.classes.controller.suggest.GCompletionType;
 import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
 import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
 import lsfusion.gwt.client.form.property.panel.view.ActionOrPropertyValue;
@@ -62,7 +63,7 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
         throw new UnsupportedOperationException();
     }
 
-    public static final GInputList FILTER = new GInputList(new String[0], new GAsyncExec[0], false);
+    public static final GInputList FILTER = new GInputList(new String[0], new GAsyncExec[0], GCompletionType.NON_STRICT);
 
     @Override
     protected void onEditEvent(EventHandler handler) {

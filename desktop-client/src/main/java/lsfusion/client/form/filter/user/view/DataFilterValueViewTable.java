@@ -12,6 +12,7 @@ import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.async.ClientAsyncExec;
 import lsfusion.client.form.property.async.ClientInputList;
 import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
+import lsfusion.client.form.property.cell.classes.controller.suggest.CompletionType;
 import lsfusion.client.form.property.cell.controller.PropertyTableCellEditor;
 import lsfusion.client.form.property.cell.view.PropertyRenderer;
 import lsfusion.client.form.property.table.view.AsyncChangeInterface;
@@ -38,7 +39,7 @@ class DataFilterValueViewTable extends TableWidget implements TableTransferHandl
     private EventObject editEvent;
     private final TableController logicsSupplier;
 
-    public static final ClientInputList FILTER = new ClientInputList(new String[0], new ClientAsyncExec[0], false);
+    public static final ClientInputList FILTER = new ClientInputList(new String[0], new ClientAsyncExec[0], CompletionType.NON_STRICT);
     private boolean applied;
 
     public DataFilterValueViewTable(DataFilterValueView valueFilterView, ClientPropertyDraw property, TableController ilogicsSupplier) {

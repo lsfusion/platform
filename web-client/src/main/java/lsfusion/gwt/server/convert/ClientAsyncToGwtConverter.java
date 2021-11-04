@@ -4,7 +4,9 @@ import lsfusion.client.form.property.async.ClientAsyncAddRemove;
 import lsfusion.client.form.property.async.ClientAsyncChange;
 import lsfusion.client.form.property.async.ClientAsyncOpenForm;
 import lsfusion.client.form.property.async.ClientInputList;
+import lsfusion.client.form.property.cell.classes.controller.suggest.CompletionType;
 import lsfusion.gwt.client.form.property.async.*;
+import lsfusion.gwt.client.form.property.cell.classes.controller.suggest.GCompletionType;
 
 public class ClientAsyncToGwtConverter extends ObjectConverter {
     private static final class InstanceHolder {
@@ -26,7 +28,7 @@ public class ClientAsyncToGwtConverter extends ObjectConverter {
         GAsyncExec[] actionAsyncs = new GAsyncExec[inputList.actionEvents.length];
         for(int i=0;i<inputList.actionEvents.length;i++)
             actionAsyncs[i] = convertOrCast(inputList.actionEvents[i]);
-        return new GInputList(inputList.actions, actionAsyncs, inputList.strict);
+        return new GInputList(inputList.actions, actionAsyncs, convertOrCast(inputList.completionType));
     }
 
     @Cached
@@ -46,4 +48,18 @@ public class ClientAsyncToGwtConverter extends ObjectConverter {
     public GAsyncOpenForm convertOpenForm(ClientAsyncOpenForm asyncOpenForm) {
         return new GAsyncOpenForm(asyncOpenForm.canonicalName, asyncOpenForm.caption, asyncOpenForm.forbidDuplicate, asyncOpenForm.modal, asyncOpenForm.window);
     }
+    
+    @Cached
+    @Converter(from = CompletionType.class)
+    public GCompletionType convertCompletionType(CompletionType completionType) {
+        switch (completionType) {
+            case STRICT:
+                return GCompletionType.STRICT;
+            case NON_STRICT:
+                return GCompletionType.NON_STRICT;
+            case SEMI_STRICT:
+                return GCompletionType.SEMI_STRICT;
+        }
+        return null;
+    } 
 }
