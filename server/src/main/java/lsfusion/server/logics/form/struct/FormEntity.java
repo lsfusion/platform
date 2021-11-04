@@ -213,8 +213,6 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     private NFOrderSet<ImList<PropertyDrawEntity>> pivotRows = NFFact.orderSet();
     private NFOrderSet<PropertyDrawEntity> pivotMeasures = NFFact.orderSet();
 
-    private NFOrderSet<PropertyDrawEntity> stickies = NFFact.orderSet();
-
     public Iterable<ImList<PropertyDrawEntity>> getNFPivotColumnsListIt(Version version) {
         return pivotColumns.getNFListIt(version);
     }
@@ -237,11 +235,6 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
     public ImList<PropertyDrawEntity> getPivotMeasuresList() {
         return pivotMeasures.getList();
-    }
-
-
-    public Iterable<PropertyDrawEntity> getNFStickiesListIt(Version version) {
-        return stickies.getNFListIt(version);
     }
 
     @IdentityLazy
@@ -1468,10 +1461,6 @@ public class FormEntity implements FormSelector<ObjectEntity> {
             pivotMeasures.add(measure, version);
             addPivotMeasureView(measure, version);
         }
-    }
-
-    public void addSticky(PropertyDrawEntity sticky, Version version) {
-        stickies.add(sticky, version);
     }
 
     private void addPivotColumnView(ImList<PropertyDrawEntity> column, Version version) {

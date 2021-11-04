@@ -1142,7 +1142,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
         @Override
         public boolean isSticky() {
-            return form.getForm().stickies.contains(property);
+            return property.sticky;
         }
 
         public void setValue(GridDataRecord record, Object value) {

@@ -834,7 +834,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|   'COLUMN' { $options.setPivotColumn(true); }
 		|   'ROW' { $options.setPivotRow(true); }
 		|   'MEASURE' { $options.setPivotMeasure(true); }
-		|   'STICKY' { $options.setSticky(true); }
+		|   st = stickyOption { $options.setSticky($st.sticky); }
 		)*
 	;
 
@@ -2969,14 +2969,21 @@ eventIdSetting [LAP property]
 	;
 
 stickySetting [LP property]
+@init {
+	boolean sticky = false;
+}
 @after {
 	if (inMainParseState()) {
-		self.setSticky(property);
+		self.setSticky(property, sticky);
 	}
 }
     :
-        'STICKY'
+        st = stickyOption { sticky = $st.sticky; }
     ;
+
+stickyOption returns[boolean sticky = false]
+	:	'STICKY' { sticky = true; } | 'NOSTICKY' { sticky = false; }
+	;
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////// ACTION PROPERTIES ///////////////////////////

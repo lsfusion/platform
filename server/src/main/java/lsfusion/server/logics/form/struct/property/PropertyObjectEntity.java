@@ -5,6 +5,7 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ThrowingFunction;
 import lsfusion.server.data.expr.Expr;
+import lsfusion.server.data.expr.value.StaticParamNullableExpr;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.ObjectValue;
@@ -71,5 +72,11 @@ public class PropertyObjectEntity<P extends PropertyInterface> extends ActionOrP
     public InputListEntity<?, P> getFilterInputList(GroupObjectEntity grid) {
         // remapping all objects except ones in the grid
         return property.getFilterInputList(mapping.filterFnValuesRev(value -> !grid.getObjects().contains(value)).mapRevValues(ObjectEntity::getParamExpr));
+    }
+
+    public boolean isValueUnique(GroupObjectEntity grid) {
+        // remapping all objects except ones in the grid
+        ImRevMap<P, StaticParamNullableExpr> fixedExprs = mapping.filterFnValuesRev(value -> !grid.getObjects().contains(value)).mapRevValues(ObjectEntity::getParamExpr);
+        return property.isValueFull(fixedExprs) && property.isValueUnique(fixedExprs, false);
     }
 }

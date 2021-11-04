@@ -48,8 +48,6 @@ public class ClientForm extends ContextIdentityObject implements ClientCustomSer
     public List<List<ClientPropertyDraw>> pivotRows = new ArrayList<>();
     public List<ClientPropertyDraw> pivotMeasures = new ArrayList<>();
 
-    public List<ClientPropertyDraw> stickies = new ArrayList<>();
-
     public ClientForm() {
     }
 
@@ -205,8 +203,6 @@ public class ClientForm extends ContextIdentityObject implements ClientCustomSer
         pivotColumns = deserializePivot(pool, inStream);
         pivotRows = deserializePivot(pool, inStream);
         pivotMeasures = pool.deserializeList(inStream);
-
-        stickies = pool.deserializeList(inStream);
 
         canonicalName = pool.readString(inStream);
         creationPath = pool.readString(inStream);

@@ -1,12 +1,15 @@
 package lsfusion.server.logics.form.interactive.design;
 
+import lsfusion.base.Pair;
 import lsfusion.base.col.MapFact;
+import lsfusion.base.col.SetFact;
 import lsfusion.base.col.heavy.concurrent.weak.ConcurrentIdentityWeakHashSet;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MOrderExclMap;
+import lsfusion.base.col.interfaces.mutable.MOrderSet;
 import lsfusion.base.identity.DefaultIDGenerator;
 import lsfusion.base.identity.IDGenerator;
 import lsfusion.base.identity.IdentityObject;
@@ -47,6 +50,7 @@ import java.util.List;
 import java.util.*;
 
 import static java.util.Collections.synchronizedMap;
+import static lsfusion.base.BaseUtils.nvl;
 import static lsfusion.server.logics.LogicsModule.InsertType.AFTER;
 import static lsfusion.server.logics.form.interactive.design.object.GroupObjectContainerSet.*;
 
@@ -162,11 +166,6 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         return pivotMeasures.getOrderSet();
     }
 
-    protected NFOrderSet<PropertyDrawView> stickies = NFFact.orderSet();
-    public ImOrderSet<PropertyDrawView> getStickies() {
-        return stickies.getOrderSet();
-    }
-
     public ComponentView findById(int id) {
         return mainContainer.findById(id);
     }
@@ -217,10 +216,6 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
             addPivotMeasure(pivotMeasure, version);
         }
 
-        for (PropertyDrawEntity sticky : entity.getNFStickiesListIt(version)) {
-            addSticky(sticky, version);
-        }
-
         initButtons(version);
     }
 
@@ -248,10 +243,6 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
 
     public void addPivotMeasure(PropertyDrawEntity measure, Version version) {
         pivotMeasures.add(get(measure), version);
-    }
-
-    public void addSticky(PropertyDrawEntity sticky, Version version) {
-        stickies.add(get(sticky), version);
     }
 
     private ImList<PropertyDrawView> getPropertyDrawViewList(ImList<PropertyDrawEntity> propertyDrawEntityList) {
@@ -709,8 +700,6 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         serializePivot(pool, outStream, getPivotRows());
         pool.serializeCollection(outStream, getPivotMeasures());
 
-        pool.serializeCollection(outStream, getStickies());
-
         pool.writeString(outStream, canonicalName);
         pool.writeString(outStream, creationPath);
         pool.writeInt(outStream, overridePageWidth);
@@ -774,8 +763,6 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         pivotColumns.finalizeChanges();
         pivotRows.finalizeChanges();
         pivotMeasures.finalizeChanges();
-
-        stickies.finalizeChanges();
 
         for(ComponentView removedComponent : removedComponents)
             if(removedComponent.getContainer() == null)

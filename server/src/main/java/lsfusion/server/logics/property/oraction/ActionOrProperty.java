@@ -667,7 +667,6 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
             entity.askConfirm = BaseUtils.nvl(askConfirm, false);
             entity.askConfirmMessage = askConfirmMessage;
             entity.eventID = eventID;
-            entity.sticky = sticky;
 
             for(DefaultProcessor processor : processors)
                 processor.proceedDefaultDraw(entity, form);
@@ -709,6 +708,9 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
             
             if(propertyView.defaultCompare == null)
                 propertyView.defaultCompare = defaultCompare;
+
+            if(propertyView.sticky == null)
+                propertyView.sticky = sticky;
 
             for(DefaultProcessor processor : processors)
                 processor.proceedDefaultDesign(propertyView);

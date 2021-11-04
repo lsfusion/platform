@@ -100,6 +100,8 @@ public class PropertyDrawView extends ComponentView {
 
     public boolean notNull;
 
+    public Boolean sticky;
+
     @SuppressWarnings({"UnusedDeclaration"})
     public PropertyDrawView() {
 
@@ -170,6 +172,10 @@ public class PropertyDrawView extends ComponentView {
 
     public boolean isNotNull() {
         return notNull || entity.isNotNull();
+    }
+
+    public boolean isSticky(FormEntity formEntity) {
+        return entity.sticky != null ? entity.sticky : sticky != null ? sticky : isProperty() && entity.getPropertyObjectEntity().isValueUnique(entity.getToDraw(formEntity));
     }
 
     //Для Jasper'а экранируем кавычки
@@ -407,6 +413,7 @@ public class PropertyDrawView extends ComponentView {
         }
 
         outStream.writeBoolean(isNotNull());
+        outStream.writeBoolean(isSticky(pool.context.view.entity));
     }
 
     private OrderedMap<String, LocalizedString> filterContextMenuItems(OrderedMap<String, LocalizedString> contextMenuBindings, ServerContext context) {
