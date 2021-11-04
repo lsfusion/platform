@@ -15,6 +15,7 @@ import lsfusion.server.logics.action.session.LocalNestedType;
 import lsfusion.server.logics.classes.data.LogicalClass;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerIdentitySerializable;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
+import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.PropertyFact;
@@ -52,28 +53,32 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         if(height != -2 && width != -2) // optimization
             return size;
 
-        ContainerView container = getLayoutParamContainer();
-        if(container != null) {
-            FlexAlignment alignment = getAlignment(entity);
-            if(alignment == FlexAlignment.STRETCH) { // for stretch size = 0 is more predictable (it gives scroll only for that block, not the whole container)
-                // container with a single element is usually created for a scroll, and in that case it makes sense to have it auto sized
-                // for tabpane always has tab bar visible, so there are at least two elements and default size 0 gives more predictable behaviour
-                if(height == -2 && container.isHorizontal() && (container.getChildrenList().size() > 1 || container.isTabbed()))
-                    height = 0;
-                if(width == -2 && !container.isHorizontal() && (container.getChildrenList().size() > 1 || container.isTabbed()))
+        // we don't want scrolls for property draws
+        // the main reason why this is important is that grid layout (which is used by default for aligning property captions) calculate it's auto size differently (if component has overflow:auto, its size is calculated as some constant, and flex gives actual size)
+        // it seems that using min-content solves that problem
+//        if(!(this instanceof PropertyDrawView)) {
+            ContainerView container = getLayoutParamContainer();
+            if (container != null) {
+                FlexAlignment alignment = getAlignment(entity);
+                if (alignment == FlexAlignment.STRETCH) { // for stretch size = 0 is more predictable (it gives scroll only for that block, not the whole container)
+                    // container with a single element is usually created for a scroll, and in that case it makes sense to have it auto sized
+                    // for tabpane always has tab bar visible, so there are at least two elements and default size 0 gives more predictable behaviour
+                    if (height == -2 && container.isHorizontal() && (container.getChildrenList().size() > 1 || container.isTabbed()))
+                        height = 0;
+                    if (width == -2 && !container.isHorizontal() && (container.getChildrenList().size() > 1 || container.isTabbed()))
+                        width = 0;
+                }
+                if (width == -2 && container.isSplitHorizontal())
                     width = 0;
+                if (height == -2 && container.isSplitVertical())
+                    height = 0;
             }
-            if(width == -2 && container.isSplitHorizontal())
-                width = 0;
-            if(height == -2 && container.isSplitVertical())
-                height = 0;
-        }
+//        }
         if(height == -2)
             height = -1;
         if(width == -2)
             width = -1;
         size = new Dimension(width, height);
-
         return size;
     }
     

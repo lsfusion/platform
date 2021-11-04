@@ -276,7 +276,7 @@ public abstract class GAbstractContainerView {
             updateLayoutListener.updateLayout(requestIndex);
     }
 
-    public static void add(FlexPanel panel, Widget widget, GComponent component, int beforeIndex) {
+    public static Widget add(FlexPanel panel, Widget widget, GComponent component, int beforeIndex) {
         boolean vertical = panel.isVertical();
         GFlexAlignment alignment = component.getAlignment();
         panel.add(widget, beforeIndex, alignment, component.getFlex(), component.getSize(vertical));
@@ -286,10 +286,11 @@ public abstract class GAbstractContainerView {
         if(isStretch && crossSize != null && crossSize.equals(0)) // for opposite direction and stretch zero does not make any sense (it is zero by default)
             crossSize = null;
         FlexPanel.setBaseSize(widget, !vertical, crossSize, !isStretch);
+        return widget;
     }
 
-    protected void addChildrenWidget(FlexPanel flexPanel, int i, int beforeIndex) {
-        add(flexPanel, childrenViews.get(i), children.get(i), beforeIndex);
+    protected Widget addChildrenWidget(FlexPanel flexPanel, int i, int beforeIndex) {
+        return add(flexPanel, childrenViews.get(i), children.get(i), beforeIndex);
     }
 
     protected abstract void addImpl(int index, GComponent child, Widget view);

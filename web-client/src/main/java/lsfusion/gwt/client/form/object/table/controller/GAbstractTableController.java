@@ -255,7 +255,7 @@ public abstract class GAbstractTableController extends GPropertyController imple
                 }
             } else
                 autoSize = GTreeTable.DEFAULT_MAX_PREFERRED_HEIGHT;
-            setChildFlexBasis(view, autoSize);
+            setChildFlexBasis(view, autoSize, false);
         }
     }
 }

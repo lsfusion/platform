@@ -84,4 +84,8 @@ public class GComponent implements Serializable {
     public int getMargins(boolean vertical) {
         return vertical ? getVerticalMargin() : getHorizontalMargin();
     }
+
+    public boolean isAlignCaption() {
+        return false;
+    }
 }

@@ -76,8 +76,4 @@ public class GDataFilterValueView extends ResizableSimplePanel {
     public void setApplied(boolean applied) {
         cell.setApplied(applied);
     }
-    
-    public Pair<Integer, Integer> setBaseSize() {
-        return cell.setBaseSize(true);
-    }
 }

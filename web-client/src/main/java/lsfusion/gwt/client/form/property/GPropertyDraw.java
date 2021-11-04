@@ -521,4 +521,9 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public String toString() {
         return sID + " " + caption;
     }
+
+    @Override
+    public boolean isAlignCaption() {
+        return !hasColumnGroupObjects() && !isAction() && !panelCaptionVertical;
+    }
 }

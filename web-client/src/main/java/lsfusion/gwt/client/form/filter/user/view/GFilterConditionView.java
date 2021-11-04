@@ -193,7 +193,7 @@ public class GFilterConditionView extends FlexPanel implements CaptionContainerH
         if (captionContainer == null) {
             addCentered(leftPanel);
         } else {
-            captionContainer.put(leftPanel, null, valueView.setBaseSize(), GFlexAlignment.CENTER);
+            captionContainer.put(leftPanel, GFlexAlignment.CENTER);
         }
         
         addCentered(rightPanel);

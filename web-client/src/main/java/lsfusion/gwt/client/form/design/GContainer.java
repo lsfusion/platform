@@ -125,7 +125,7 @@ public class GContainer extends GComponent {
     }
 
     public boolean isGrid() {
-        return lines > 1;
+        return grid;
     }
     public boolean isAlignCaptions() {
         if (alignCaptions != null) {
@@ -135,20 +135,18 @@ public class GContainer extends GComponent {
         if(horizontal) // later maybe it makes sense to support align captions for horizontal containers, but with no-wrap it doesn't make much sense
             return false;
 
-        int notActions = 0;
+        boolean otherAligned = false;
         // only simple property draws
         for(GComponent child : children) {
-            if(!(child instanceof GPropertyDraw) || ((GPropertyDraw) child).hasColumnGroupObjects() || (child.autoSize && ((GPropertyDraw) child).isAutoDynamicHeight()) || child.flex > 0 || ((GPropertyDraw) child).panelCaptionVertical)
-                return false;
-
-            if(!((GPropertyDraw)child).isAction())
-                notActions++;
+            if(child.isAlignCaption()) {
+                if(otherAligned)
+                    return true;
+                else
+                    otherAligned = true;
+            }
         }
 
-        if(notActions <= 1)
-            return false;
-
-        return true;
+        return false;
     }
     
     public Integer getLineSize() {

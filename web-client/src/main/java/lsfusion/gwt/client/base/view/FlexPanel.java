@@ -12,7 +12,9 @@ import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.resize.ResizeHandler;
 import lsfusion.gwt.client.base.resize.ResizeHelper;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
+import lsfusion.gwt.client.form.design.view.flex.CaptionContainerHolder;
 import lsfusion.gwt.client.form.design.view.flex.FlexTabbedPanel;
+import lsfusion.gwt.client.form.design.view.flex.LinearCaptionContainer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,13 +48,13 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
         assert !flexAlignment.equals(GFlexAlignment.STRETCH);
     }
 
-    private Integer gridLines;
+    private FlexLayoutData[] gridLines;
     
     public FlexPanel(boolean vertical, GFlexAlignment flexAlignment) {
         this(vertical, flexAlignment, null);
     }
 
-    public FlexPanel(boolean vertical, GFlexAlignment flexAlignment, Integer gridLines) {
+    public FlexPanel(boolean vertical, GFlexAlignment flexAlignment, FlexLayoutData[] gridLines) {
         this.vertical = vertical;
 
         this.gridLines = gridLines;
@@ -61,7 +63,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
 
         parentElement = Document.get().createDivElement();
 
-        impl.setupParentDiv(parentElement, vertical, gridLines, isGrid() ? getLineFlexLayoutData() : null, flexAlignment);
+        impl.setupParentDiv(parentElement, vertical, isGrid() ? gridLines : null, flexAlignment);
 
         setElement(parentElement);
 
@@ -135,7 +137,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
         // Physical attach.
         Element childElement = widget.getElement();
 
-        WidgetLayoutData layoutData = impl.insertChild(parentElement, childElement, beforeIndex, alignment, flex, flexBasis, vertical);
+        WidgetLayoutData layoutData = impl.insertChild(parentElement, childElement, beforeIndex, alignment, flex, flexBasis, vertical, isGrid());
         widget.setLayoutData(layoutData);
 
         // Adopt.
@@ -177,8 +179,12 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
             element.getStyle().clearProperty(propName);
     }
 
-    public void setChildFlexBasis(Widget w, int flexBasis) {
-        impl.setFlexBasis(((WidgetLayoutData) w.getLayoutData()).flex, w.getElement(), flexBasis, vertical);
+    public void setChildFlexBasis(Widget w, int flexBasis, boolean grid) {
+        impl.setFlexBasis(((WidgetLayoutData) w.getLayoutData()).flex, w.getElement(), flexBasis, vertical, grid);
+    }
+
+    public static void setSpan(Widget w, int span, boolean vertical) {
+        impl.setGridSpan(((WidgetLayoutData) w.getLayoutData()), w.getElement(), span, vertical);
     }
 
     @Override
@@ -315,7 +321,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
         }
 
         public void setAutoSizeFlex() {
-            impl.setAutoSizeFlex(widget.getElement(), getFlexLayoutData(), vertical);
+            impl.setAutoSizeFlex(widget.getElement(), getFlexLayoutData(), vertical, isGrid());
         }
 
         public int getSize() {
@@ -328,7 +334,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
         }
 
         public void setFlex(double newFlex, Integer newPref) {
-            impl.setFlex(getFlexLayoutData(), widget.getElement(), newFlex, newPref, vertical);
+            impl.setFlex(getFlexLayoutData(), widget.getElement(), newFlex, newPref, vertical, isGrid());
         }
 
         // auto stretch / draw borders methods (+ getFlexLayoutData)
@@ -353,15 +359,13 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
             if(widgets.size() == 1)
                 return FlexPanel.autoStretchAndDrawBorders(widgets.get(0));
             else {
-                FlexLayoutData flexLayoutData = getLineFlexLayoutData();
-
                 List<FlexStretchLine> virtualLines = new ArrayList<>();
-                for(Widget widget : widgets)
+                for (int i = 0, widgetsSize = widgets.size(); i < widgetsSize; i++) {
+                    Widget widget = widgets.get(i);
+                    FlexLayoutData flexLayoutData = gridLines[i];
                     virtualLines.add(new FlexStretchLine() {
                         @Override
                         public FlexLayoutData getFlexLayoutData() {
-                            // in theory should be more complicated, but in fact this interface is used only for isFlex
-                            assert flexLayoutData.isFlex();
                             return flexLayoutData;
                         }
 
@@ -389,7 +393,8 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
                             FlexPanel.drawBorder(widget, set, start, vertical);
                         }
                     });
-                return FlexPanel.autoStretchAndDrawBorders(!vertical, GFlexAlignment.START, virtualLines, false);
+                }
+                return FlexPanel.autoStretchAndDrawBorders(true, !vertical, GFlexAlignment.START, virtualLines, false);
             }
         }
     }
@@ -426,28 +431,25 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
         return gridLines != null;
     }
 
-    private final static FlexLayoutData simpleLine = new FlexLayoutData(1, null);
-    // have to set it when setting columns
-    private FlexLayoutData getLineFlexLayoutData() {
-        return simpleLine;
-    }
-
     // filter visible (!)
     private List<FlexLine> getLines() {
-        int lines = gridLines != null ? gridLines : 1;
+        int lines = gridLines != null ? gridLines.length : 1;
 
         List<FlexLine> result = new ArrayList<>();
         List<Widget> currentLine = new ArrayList<>();
+        int currentLineSpan = 0;
         for(Widget widget : getChildren())
             if(widget.isVisible()) {
                 int widgetSpan = ((WidgetLayoutData)widget.getLayoutData()).span;
-                if(currentLine.size() + widgetSpan > lines) { // we need a new line
+                if(currentLineSpan + widgetSpan > lines) { // we need a new line
                     result.add(new FlexLine(currentLine));
                     currentLine = new ArrayList<>();
+                    currentLineSpan = 0;
                 }
                 currentLine.add(widget);
+                currentLineSpan += widgetSpan;
             }
-        if(!currentLine.isEmpty())
+        if(currentLineSpan > 0)
             result.add(new FlexLine(currentLine));
 
         return result;
@@ -602,22 +604,22 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
         onResize();
     }
 
-    private static void setStretchFlex(boolean vertical, FlexLayoutData layoutData, FlexStretchLine w, boolean set) {
+    private static void setStretchFlex(boolean grid, boolean vertical, FlexLayoutData layoutData, FlexStretchLine w, boolean set) {
         if(!layoutData.isFlex()) {
             double newFlex = set ? 1 : layoutData.baseFlex;
             if(layoutData.flex != newFlex) { // for optimization purposes + there might be problems with setBaseSize, since some data components use it explicitly without setting LayoutData
                 layoutData.flex = newFlex;
-                impl.updateFlex(layoutData, w.getStretchElement(), vertical);
+                impl.updateFlex(layoutData, w.getStretchElement(), vertical, grid);
             }
         }
     }
 
-    private static void setStretchAlignment(boolean vertical, AlignmentLayoutData layoutData, FlexStretchLine line, boolean set) {
+    private static void setStretchAlignment(boolean grid, boolean vertical, AlignmentLayoutData layoutData, FlexStretchLine line, boolean set) {
         if(!layoutData.baseAlignment.equals(GFlexAlignment.STRETCH)) {
             GFlexAlignment newAlignment = set ? GFlexAlignment.STRETCH : layoutData.baseAlignment;
             if(!newAlignment.equals(layoutData.alignment)) {
                 layoutData.alignment = newAlignment;
-                impl.updateAlignment(layoutData, line.getStretchElement());
+                impl.updateAlignment(layoutData, line.getStretchElement(), vertical, grid);
             }
         }
     }
@@ -664,20 +666,21 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
             FlexPanel flexPanel = (FlexPanel) widget;
             List<FlexLine> lines = flexPanel.getLines();
             boolean vertical = flexPanel.vertical;
+            boolean grid = flexPanel.isGrid();
 
-            if(flexPanel.isGrid()) {
+            if(grid) {
                 impl.setGridLines(flexPanel.getElement(), lines.size(), vertical);
                 for (int i = 0, linesSize = lines.size(); i < linesSize; i++)
                     lines.get(i).setGridLines(i);
             }
 
-            return autoStretchAndDrawBorders(vertical, flexPanel.flexAlignment, lines, flexPanel instanceof CaptionPanel || flexPanel instanceof FlexTabbedPanel);
+            return autoStretchAndDrawBorders(grid, vertical, flexPanel.flexAlignment, lines, flexPanel instanceof CaptionPanel || flexPanel instanceof FlexTabbedPanel);
         } else
             return new DrawBorders(false, false, false, false, false, null, null);
     }
 
-    private static DrawBorders autoStretchAndDrawBorders(boolean vertical, GFlexAlignment flexAlignment, List<? extends FlexStretchLine> lines, boolean forceBorders) {
-        boolean top = false, bottom = false, left = false, right = false;
+    private static DrawBorders autoStretchAndDrawBorders(boolean grid, boolean vertical, GFlexAlignment flexAlignment, List<? extends FlexStretchLine> lines, boolean forceBorders) {
+        boolean top = true, bottom = false, left = false, right = false;
 
         boolean hasBorders = false;
 
@@ -706,7 +709,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
                 // OPPOSITE direction
                 GFlexAlignment oppositeChildAlignment = vertical ? childBorders.horzAlignment : childBorders.vertAlignment;
                 // opposite direction we can proceed immediately (and before changing childAlignment see below)
-                setStretchAlignment(vertical, alignmentLayoutData, childLine, hasBorders && oppositeChildAlignment != null && oppositeChildAlignment.equals(childAlignment));
+                setStretchAlignment(grid, vertical, alignmentLayoutData, childLine, hasBorders && oppositeChildAlignment != null && oppositeChildAlignment.equals(childAlignment));
                 // if component is already stretched we're using the inner alignment
                 if(childAlignment.equals(GFlexAlignment.STRETCH))
                     childAlignment = oppositeChildAlignment;
@@ -729,7 +732,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
                 }
                 if(childMainFlex)
                     flexCount++;
-                setStretchFlex(vertical, flexLayoutData, childLine, false);
+                setStretchFlex(grid, vertical, flexLayoutData, childLine, false);
 
                 childLine.drawBorder(false, false, vertical);
                 boolean drawBorder = false;
@@ -746,7 +749,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
 
                     prevBorder = childBorders.bottom;
                 } else {
-                    top |= childBorders.top;
+                    top &= childBorders.top;
                     bottom |= childBorders.bottom;
 
                     if (prevBorder != null)
@@ -778,7 +781,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
             if(flexCount == 0) {
                 if (singleElement || !flexAlignment.equals(GFlexAlignment.CENTER)) { // we cannot stretch center element when there are several elements (it will break the centering)
                     if (flexChildAlignment != null && flexChildAlignment.equals(flexAlignment) && hasBorders)
-                        setStretchFlex(vertical, flexLineLayoutData, flexLine, true);
+                        setStretchFlex(grid, vertical, flexLineLayoutData, flexLine, true);
 
                     mainAlignment = flexAlignment;
                 }
