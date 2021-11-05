@@ -17,6 +17,7 @@ public class CaptionPanel extends FlexPanel {
 
         FlexPanel legendWrapper = new FlexPanel(true);
         legendWrapper.setStyleName("captionLegendContainerPanel");
+        GwtClientUtils.setZeroZIndex(legendWrapper.getElement()); // since in captionCenteredLine we're using -1 z-index (we can't set captionPanelLegend z-index 1 since it will be above dialogs blocking masks)
 
         legend = new Label();
         legend.setStyleName("captionPanelLegend");
