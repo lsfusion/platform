@@ -129,6 +129,7 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
             public void valueChanged(Compare value) {
                 condition.compare = value;
                 updateCompareLabelText();
+                valueView.changeCompare(value);
                 uiHandler.applyFilters(false);
             }
 
@@ -148,7 +149,7 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
         compareView.setSelectedValue(condition.compare);
         leftPanel.addCentered(compareView);
 
-        valueView = new DataFilterValueView(condition.value, condition.property, condition.columnKey, logicsSupplier, readSelectedValue) {
+        valueView = new DataFilterValueView(condition, logicsSupplier, readSelectedValue) {
             @Override
             public void valueChanged(Object newValue) {
                 super.valueChanged(newValue);

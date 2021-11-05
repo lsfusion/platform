@@ -20,6 +20,7 @@ import lsfusion.client.form.property.table.view.AsyncInputComponent;
 import lsfusion.client.form.property.table.view.TableTransferHandler;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.event.KeyStrokes;
+import lsfusion.interop.form.property.Compare;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -39,16 +40,19 @@ class DataFilterValueViewTable extends TableWidget implements TableTransferHandl
     private EventObject editEvent;
     private final TableController logicsSupplier;
 
-    public static final ClientInputList FILTER = new ClientInputList(new String[0], new ClientAsyncExec[0], CompletionType.NON_STRICT);
+    private ClientInputList inputList;
+
     private boolean applied;
 
-    public DataFilterValueViewTable(DataFilterValueView valueFilterView, ClientPropertyDraw property, TableController ilogicsSupplier) {
+    public DataFilterValueViewTable(DataFilterValueView valueFilterView, ClientPropertyDraw property, Compare compare, TableController ilogicsSupplier) {
         super(new Model());
 
         logicsSupplier = ilogicsSupplier;
 
         model = (Model) getModel();
         model.setProperty(property);
+        
+        changeInputList(compare);
 
         SwingUtils.setupClientTable(this);
         SwingUtils.setupSingleCellTable(this);
@@ -201,7 +205,7 @@ class DataFilterValueViewTable extends TableWidget implements TableTransferHandl
 
     @Override
     public ClientInputList getCurrentInputList() {
-        return FILTER;
+        return inputList;
     }
 
     @Override
@@ -306,6 +310,12 @@ class DataFilterValueViewTable extends TableWidget implements TableTransferHandl
     public void setApplied(boolean applied) {
         this.applied = applied;
         repaint();
+    }
+
+    public void changeInputList(Compare compare) {
+        inputList = new ClientInputList(new String[0],
+                new ClientAsyncExec[0],
+                compare == Compare.EQUALS || compare == Compare.NOT_EQUALS ? CompletionType.SEMI_STRICT : CompletionType.NON_STRICT);
     }
 
     private static final class Model extends AbstractTableModel {

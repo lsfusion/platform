@@ -137,6 +137,7 @@ public class GFilterConditionView extends FlexPanel implements CaptionContainerH
                 super.valueChanged(value);
                 condition.compare = value;
                 updateCompareLabelText();
+                valueView.changeCompare(value);
                 uiHandler.applyFilters(false);
             }
         };
@@ -159,7 +160,7 @@ public class GFilterConditionView extends FlexPanel implements CaptionContainerH
             }
         };
         rightPanel.addCentered(valueView);
-        valueView.changeProperty(condition.property, condition.columnKey, readSelectedValue); // it's important to do it after adding to the container because setStatic -> setBaseSize is called inside (and adding to container also calls it and override with default value)
+        valueView.changeProperty(condition, readSelectedValue); // it's important to do it after adding to the container because setStatic -> setBaseSize is called inside (and adding to container also calls it and override with default value)
         uiHandler.addEnterBinding(valueView.cell);
 
         deleteButton = new GToolbarButton(DELETE_ICON_PATH, messages.formFilterRemoveCondition()) {
@@ -243,7 +244,7 @@ public class GFilterConditionView extends FlexPanel implements CaptionContainerH
     }
     
     private void propertyChanged() {
-        valueView.changeProperty(condition.property, condition.columnKey);
+        valueView.changeProperty(condition);
         
         GCompare oldCompare = condition.compare;
         GCompare[] filterCompares = condition.property.getFilterCompares();
