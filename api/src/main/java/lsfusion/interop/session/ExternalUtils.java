@@ -302,7 +302,7 @@ public class ExternalUtils {
             try (OutputStream os = socket.getOutputStream(); InputStream is = socket.getInputStream()) {
                 os.write(fileBytes);
                 try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-                    byte[] buffer = new byte[1024];
+                    byte[] buffer = new byte[1024*1024*10]; //10MB
                     out.write(buffer, 0, is.read(buffer));
                     return out.toByteArray();
                 }
