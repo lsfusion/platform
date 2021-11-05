@@ -352,6 +352,8 @@ button {
 
     padding-left: 4px;
     padding-right: 4px;
+
+    z-index: 1;
 }
 
 .captionCenteredLine {
@@ -360,7 +362,6 @@ button {
     bottom: 0;
     left: 0;
     right: 0;
-    z-index: -1;
 
     border-top: 1px solid var(--panel-border-color);
 }
