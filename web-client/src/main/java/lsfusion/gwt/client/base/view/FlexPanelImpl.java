@@ -96,6 +96,8 @@ public class FlexPanelImpl {
                 gridColumnStrings[i] = getLineSizeString(gridColumn.flex, gridColumn.flexBasis);
             }
 
+            parent.getStyle().setProperty("gridAutoFlow", vertical ? "row" : "column");
+
             updateGridLines(parent.getStyle(), gridColumnStrings, !vertical);
         } else {
             parent.getStyle().setProperty(getDirectionAttrName(), getDirectionValue(vertical));

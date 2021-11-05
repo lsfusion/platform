@@ -219,7 +219,8 @@ public class LinearContainerView extends GAbstractContainerView {
         int containerIndex = containerPosition.second;
 
         if(alignCaptions)
-            container.remove(containerIndex);
+            if(childrenCaptions.get(index) != null)
+                container.remove(containerIndex);
 
         container.remove(containerIndex);
     }

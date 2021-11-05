@@ -15,4 +15,8 @@ public class GFilter extends GComponent {
         this.property = property;
         alignment = GFlexAlignment.START;
     }
+
+    public boolean isAlignCaption() {
+        return true;
+    }
 }

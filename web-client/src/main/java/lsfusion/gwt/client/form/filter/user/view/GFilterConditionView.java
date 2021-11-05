@@ -282,6 +282,6 @@ public class GFilterConditionView extends FlexPanel implements CaptionContainerH
 
     @Override
     public GFlexAlignment getCaptionHAlignment() {
-        return GFlexAlignment.END;
+        return GFlexAlignment.START;
     }
 }

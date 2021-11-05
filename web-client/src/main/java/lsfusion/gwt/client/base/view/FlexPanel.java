@@ -63,7 +63,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
 
         parentElement = Document.get().createDivElement();
 
-        impl.setupParentDiv(parentElement, vertical, isGrid() ? gridLines : null, flexAlignment);
+        impl.setupParentDiv(parentElement, vertical, gridLines, flexAlignment);
 
         setElement(parentElement);
 
@@ -676,7 +676,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
 
             return autoStretchAndDrawBorders(grid, vertical, flexPanel.flexAlignment, lines, flexPanel instanceof CaptionPanel || flexPanel instanceof FlexTabbedPanel);
         } else
-            return new DrawBorders(false, false, false, false, false, null, null);
+            return new DrawBorders(widget instanceof ResizableSimplePanel && ((ResizableSimplePanel) widget).getWidget() instanceof DataGrid, false, false, false, false, null, null);
     }
 
     private static DrawBorders autoStretchAndDrawBorders(boolean grid, boolean vertical, GFlexAlignment flexAlignment, List<? extends FlexStretchLine> lines, boolean forceBorders) {
