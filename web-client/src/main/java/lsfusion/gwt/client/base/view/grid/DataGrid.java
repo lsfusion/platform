@@ -1226,10 +1226,10 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
 
         //calculate left for sticky properties
         if (columnsChanged || headersChanged || dataChanged || widthsChanged || onResizeChanged) {
-            pendingState.stickyLefts = new ArrayList<>();
             int left = 0;
             TableRowElement tr = rows.getItem(0);
             if(tr != null) {
+                pendingState.stickyLefts = new ArrayList<>();
                 List<Integer> stickyColumns = getStickyColumns();
                 for (int i = 0; i < stickyColumns.size(); i++) {
                     Element cell = tr.getCells().getItem(stickyColumns.get(i));
