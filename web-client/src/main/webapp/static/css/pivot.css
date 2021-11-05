@@ -90,7 +90,7 @@ table.pvtTable tbody tr td,
 table.pvtTable tbody tr th,
 table.pvtTable thead tr th {
     /* the same as dataGridCell, dataGridHeaderCell, table.pvtTable thead tr th/td */
-    border-left: 1px solid var(--grid-separator-border-color);
+    border-right: 1px solid var(--grid-separator-border-color);
     border-bottom: 1px solid var(--grid-separator-border-color);
 
     overflow: hidden;
@@ -124,6 +124,18 @@ table.pvtTable .pvtColLabel .wrapperDiv {
 
 table.pvtTable .pvtTotalLabel {
     text-align: right
+}
+
+table.pvtTable .pvtStickyCell {
+    position: sticky;
+    z-index: 1000;
+    background-color: var(--component-background-color);
+}
+
+table.pvtTable .pvtStickyHeader {
+    position: sticky;
+    z-index: 1000;
+    background-color: var(--background-color);
 }
 
 table.pvtTable tbody tr td {
