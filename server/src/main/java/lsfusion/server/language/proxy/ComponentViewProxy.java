@@ -17,6 +17,10 @@ public class ComponentViewProxy<T extends ComponentView> extends ViewProxy<T> {
         target.autoSize = autoSize;
     }
 
+    public void setSpan(int span) {
+        target.span = span;
+    }
+
     public void setDefaultComponent(boolean defaultComponent) {
         target.defaultComponent = defaultComponent;
     }

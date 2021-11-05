@@ -27,6 +27,8 @@ public abstract class ClientComponent extends ContextIdentityObject implements I
     
     public boolean autoSize;
 
+    public int span = 1;
+
     public double flex;
     public FlexAlignment alignment;
 
@@ -69,6 +71,8 @@ public abstract class ClientComponent extends ContextIdentityObject implements I
         
         outStream.writeBoolean(autoSize);
 
+        outStream.writeInt(span);
+
         outStream.writeDouble(flex);
         pool.writeObject(outStream, alignment);
         outStream.writeInt(marginTop);
@@ -89,6 +93,8 @@ public abstract class ClientComponent extends ContextIdentityObject implements I
         size = pool.readObject(inStream);
         
         autoSize = inStream.readBoolean();
+
+        span = inStream.readInt();
 
         flex = inStream.readDouble();
         alignment = pool.readObject(inStream);

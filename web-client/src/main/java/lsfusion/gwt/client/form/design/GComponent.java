@@ -18,6 +18,8 @@ public class GComponent implements Serializable {
     
     public boolean autoSize;
 
+    public int span = 1;
+
     protected double flex = 0;
     protected GFlexAlignment alignment;
 
@@ -87,5 +89,9 @@ public class GComponent implements Serializable {
 
     public boolean isAlignCaption() {
         return false;
+    }
+
+    public int getSpan() {
+        return span;
     }
 }

@@ -81,6 +81,8 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
 
         component.autoSize = clientComponent.autoSize;
 
+        component.span = clientComponent.span;
+
         component.setFlex(clientComponent.flex);
         component.setAlignment(convertFlexAlignment(clientComponent.alignment));
         component.marginTop = clientComponent.marginTop;

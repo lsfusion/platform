@@ -204,13 +204,22 @@ public class LinearContainerView extends GAbstractContainerView {
 
         Widget widget = addChildrenWidget(container, index, containerIndex);
 
+        int span = 1;
+        if(grid)
+            span = children.get(index).getSpan();
+
         if(alignCaptions) {
+            span = span * 2;
+
             AlignCaptionPanel captionPanel = childrenCaptions.get(index);
-            if(captionPanel != null)
+            if(captionPanel != null) {
                 container.add(captionPanel, containerIndex, GFlexAlignment.STRETCH, 0, null);
-            else
-                FlexPanel.setSpan(widget, 2, !vertical);
+                span--;
+            }
         }
+
+        if(span > 1)
+            FlexPanel.setSpan(widget, span, !vertical);
     }
 
     private void removeChildrenView(int index, int offset) {
