@@ -56,7 +56,7 @@ It will return an object consisting of two functions: _render_ and _update_.
 The function _render_ takes as input the controller and the element inside which the new elements necessary to display the data are to be created:
 ```js
 render: (element, controller) => {
-    var cards = document.createElement("div")
+    let cards = document.createElement("div")
     cards.classList.add("item-cards");
 
     element.cards = cards;
@@ -74,23 +74,23 @@ update: (element, controller, list) => {
     }
 
     for (let item of list) {
-        var card = document.createElement("div")
+        let card = document.createElement("div")
         card.classList.add("item-card");
 
         if (controller.isCurrent(item))
             card.classList.add("item-card-current");
 
-        var cardImage = document.createElement("img")
+        let cardImage = document.createElement("img")
         cardImage.classList.add("item-card-image");
         cardImage.src = item.image;
         card.appendChild(cardImage);
 
-        var cardPrice = document.createElement("div")
+        let cardPrice = document.createElement("div")
         cardPrice.classList.add("item-card-price");
         cardPrice.innerHTML = item.price;
         card.appendChild(cardPrice);
 
-        var cardName = document.createElement("div")
+        let cardName = document.createElement("div")
         cardName.classList.add("item-card-name");
         cardName.innerHTML = item.name;
         card.appendChild(cardName);
