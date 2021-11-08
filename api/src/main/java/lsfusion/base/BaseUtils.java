@@ -2330,8 +2330,10 @@ public class BaseUtils {
     }
 
     public static String getFileExtension(String filename) {
-        int index = filename.lastIndexOf(".");
-        return (index == -1) ? "" : filename.substring(index + 1);
+        int endIndex = filename.indexOf("?");
+        String result = filename.substring(0, endIndex == -1 ? filename.length() : endIndex);
+        int beginIndex = result.lastIndexOf(".");
+        return beginIndex == -1 ? "" : result.substring(beginIndex + 1);
     }
 
     public static Object filesToBytes(boolean multiple, boolean storeName, boolean custom, File... files) {
