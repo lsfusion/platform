@@ -159,7 +159,32 @@
 
 :root {
     /*override in StyleDefaults init*/
+    --table-grid-color: #000000;
     --focused-cell-border-color: #000000;
+}
+
+.custom-dataGridHeaderCell {
+    border-bottom: 1px solid var(--table-grid-color);
+    border-right: 1px solid var(--table-grid-color);
+}
+
+.custom-dataGridFirstHeaderCell {
+    border-left: 1px solid var(--table-grid-color);
+}
+
+.custom-dataGridFooterCell {
+    border-top: 1px solid var(--table-grid-color);
+    border-bottom: 1px solid var(--table-grid-color);
+    border-right: 1px solid var(--table-grid-color);
+}
+
+.custom-dataGridCell {
+    border-bottom: 1px solid var(--table-grid-color);
+    border-right: 1px solid var(--table-grid-color);
+}
+
+.custom-dataGridFirstCell {
+    border-left: 1px solid var(--table-grid-color);
 }
 
 .dataGridStickyCell {

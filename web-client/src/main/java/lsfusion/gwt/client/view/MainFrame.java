@@ -211,7 +211,7 @@ public class MainFrame implements EntryPoint {
                 pivotOnlySelectedColumn = result.pivotOnlySelectedColumn;
                 changeColorTheme(result.colorTheme);
                 colorPreferences = result.colorPreferences;
-                StyleDefaults.appendClientSettingsCSS();
+                StyleDefaults.init();
                 dateFormat = result.dateFormat;
                 timeFormat = result.timeFormat;
             }

@@ -20,9 +20,9 @@ import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.dom.client.TableSectionElement;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
+import lsfusion.gwt.client.view.StyleDefaults;
 
 import java.util.List;
-import java.util.Map;
 
 import static lsfusion.gwt.client.view.StyleDefaults.*;
 
@@ -51,17 +51,17 @@ public class DefaultHeaderBuilder<T> extends DataGridHeaderBuilder<T> {
 
         @Override
         public String getCellStyle() {
-            return grid.style.dataGridHeaderCell() + " " + customDataGridStyle.dataGridHeaderCell();
+            return grid.style.dataGridHeaderCell() + " " + StyleDefaults.customDataGridHeaderCell;
         }
 
         @Override
         public String getFirstCellStyle() {
-            return grid.style.dataGridFirstHeaderCell();
+            return grid.style.dataGridFirstHeaderCell() + " " + StyleDefaults.customDataGridFirstHeaderCell;
         }
 
         @Override
         public String getLastCellStyle() {
-            return grid.style.dataGridLastHeaderCell() + " " + customDataGridStyle.dataGridLastHeaderCell();
+            return grid.style.dataGridLastHeaderCell();
         }
     }
 
@@ -84,7 +84,7 @@ public class DefaultHeaderBuilder<T> extends DataGridHeaderBuilder<T> {
 
         @Override
         public String getCellStyle() {
-            return grid.style.dataGridFooterCell() + " " + customDataGridStyle.dataGridFooterCell();
+            return grid.style.dataGridFooterCell() + " " + StyleDefaults.customDataGridFooterCell;
         }
 
         @Override
