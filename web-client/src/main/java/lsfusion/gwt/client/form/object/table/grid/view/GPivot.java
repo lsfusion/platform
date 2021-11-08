@@ -592,6 +592,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
             // is rerendered (so there are new tableDataScroller and header), so we need force Update (and do it after pivot method)
             checkPadding(true);
             restoreScrollLeft();
+            setSticky();
         });
     }
 
@@ -1789,6 +1790,41 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
                 scrollLeft = null;
             } else
                 scrollLeftCounter--;
+        }
+    }
+
+    private void setSticky() {
+        Element tableHeader = getHeaderTableScroller();
+        if (tableHeader != null) {
+            NodeList<Element> trs = getElements(tableHeader, "tr");
+            for (int i = 0; i < trs.getLength(); i++) {
+                setStickyRow(trs.getItem(i), ".pvtEmptyHeader, .pvtAxisLabel", true);
+            }
+        }
+
+        Element tableBody = getBodyTableScroller();
+        if (tableBody != null) {
+            NodeList<Element> rows = getElements(tableBody, "tr");
+            int rowsCount = rows.getLength();
+            for (int i = 0; i < rowsCount; i++) {
+                setStickyRow(rows.getItem(i), ".pvtRowLabel", false);
+                if (i == rowsCount - 1) {
+                    setStickyRow(rows.getItem(rows.getLength() - 1), ".pvtTotalLabel", true);
+                }
+            }
+        }
+    }
+
+    private void setStickyRow(Element row, String classes, boolean header) {
+        NodeList<Element> cells = getElements(row, classes);
+        int left = 0;
+        for (int i = 0; i < cells.getLength(); i++) {
+            Element cell = cells.getItem(i);
+            if(i == 0)
+                left = cell.getOffsetLeft();
+            cell.addClassName(header ? "pvtStickyHeader" : "pvtStickyCell");
+            cell.getStyle().setProperty("left", left + "px");
+            left += cell.getOffsetWidth();
         }
     }
 
