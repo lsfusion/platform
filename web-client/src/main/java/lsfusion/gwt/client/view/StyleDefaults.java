@@ -119,7 +119,7 @@ public class StyleDefaults {
     }
     
     public static String getFocusedCellBorderColor() {
-        if (focusedCellBorderColor == null) {
+        if (focusedCellBorderColor == null && MainFrame.colorPreferences != null) { // might be called before colorPreferences initialization (color theme change)
             ColorDTO preferredColor = MainFrame.colorPreferences.getFocusedCellBorderColor();
             if (preferredColor != null) {
                 focusedCellBorderColor = getDisplayColor(preferredColor.toString());

@@ -1402,7 +1402,7 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
                     setColor = mixColors(background, setColor);
             } else {
                 assert column != focusedColumn;
-                setColor = background != null ? getDisplayColor(background) : getDefaultComponentBackground();
+                setColor = background != null ? getDisplayColor(background) : "var(--component-background-color)";
             }
             onSelectedChanged(td, row, column, selected);
 
