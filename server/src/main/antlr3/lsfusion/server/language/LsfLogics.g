@@ -4826,7 +4826,15 @@ groupObjectTreeComponentSelector returns [String sid]
 	String result = null;
 }
     :
-        ( cst=componentSingleSelectorType { result = $cst.text; } | gost=groupObjectTreeComponentSelectorType { result = $gost.text; } )
+        ( cst=componentSingleSelectorType { result = $cst.text; } 
+        |   gost=groupObjectTreeComponentSelectorType 
+            { 
+                result = $gost.text;
+                // backward compatibility. USERFILTER component is removed in v5.0 
+                if ("USERFILTER".equals(result)) { 
+                    result = "FILTERS";
+                }
+            })
         '(' gots = groupObjectTreeSelector ')'
         {
             $sid = result + "(" + $gots.sid + ")";
