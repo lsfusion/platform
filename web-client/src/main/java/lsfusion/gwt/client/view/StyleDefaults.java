@@ -133,9 +133,7 @@ public class StyleDefaults {
     public static String getTableGridColor() {
         if (tableGridColor == null && MainFrame.colorPreferences != null) { // might be called before colorPreferences initialization (color theme change)
             ColorDTO preferredColor = MainFrame.colorPreferences.getTableGridColor();
-            if (preferredColor != null) {
-                tableGridColor = getDisplayColor(preferredColor.toString());
-            }
+            tableGridColor = preferredColor != null ? getDisplayColor(preferredColor.toString()) : "var(--grid-separator-border-color)";
         }
         return tableGridColor;
     }
