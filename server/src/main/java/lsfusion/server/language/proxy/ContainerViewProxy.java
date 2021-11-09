@@ -62,6 +62,10 @@ public class ContainerViewProxy extends ComponentViewProxy<ContainerView> {
         target.lines = lines;
     }
 
+    public void setLineSize(int lineSize) {
+        target.lineSize = lineSize;
+    }
+
     public void setShowIf(PropertyObjectEntity<?> showIf) {
         target.setShowIf(showIf);
     }

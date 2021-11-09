@@ -65,9 +65,10 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
                 if (alignment == FlexAlignment.STRETCH) { // for stretch size = 0 is more predictable (it gives scroll only for that block, not the whole container)
                     // container with a single element is usually created for a scroll, and in that case it makes sense to have it auto sized
                     // for tabpane always has tab bar visible, so there are at least two elements and default size 0 gives more predictable behaviour
-                    if (height == -2 && container.isHorizontal() && (container.getChildrenList().size() > 1 || container.isTabbed()))
+                    // actually there can be only one container because of modularity / SHOWIFs
+                    if (height == -2 && container.isHorizontal() && !container.isScroll()) // && (container.getChildrenList().size() > 1 || container.isTabbed()))
                         height = 0;
-                    if (width == -2 && !container.isHorizontal() && (container.getChildrenList().size() > 1 || container.isTabbed()))
+                    if (width == -2 && !container.isHorizontal() && !container.isScroll()) // && (container.getChildrenList().size() > 1 || container.isTabbed()))
                         width = 0;
                 }
                 if (width == -2 && container.isSplitHorizontal())

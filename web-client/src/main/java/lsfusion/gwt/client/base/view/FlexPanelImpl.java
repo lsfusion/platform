@@ -84,22 +84,19 @@ public class FlexPanelImpl {
         return "flex";
     }
 
-    public void setupParentDiv(DivElement parent, boolean vertical, FlexPanel.FlexLayoutData[] gridColumns, GFlexAlignment justify) {
-        boolean grid = gridColumns != null;
+    public void setupParentDiv(DivElement parent, boolean vertical, FlexPanel.GridLines gridLines, GFlexAlignment justify, boolean wrap) {
+        boolean grid = gridLines != null;
 
         parent.getStyle().setProperty("display", getDisplayValue(grid));
         parent.getStyle().setProperty(getJustifyContentAttrName(grid, vertical), getAlignmentValue(justify, grid));
         if(grid) {
-            String[] gridColumnStrings = new String[gridColumns.length];
-            for(int i = 0; i < gridColumns.length; i++) {
-                FlexPanel.FlexLayoutData gridColumn = gridColumns[i];
-                gridColumnStrings[i] = getLineSizeString(gridColumn.flex, gridColumn.flexBasis);
-            }
-
             parent.getStyle().setProperty("gridAutoFlow", vertical ? "row" : "column");
 
-            updateGridLines(parent.getStyle(), gridColumnStrings, !vertical);
+            parent.getStyle().setProperty(getGridLinesAttrName(!vertical), gridLines.getString());
         } else {
+            if(wrap)
+                parent.getStyle().setProperty("flexWrap", "wrap");
+
             parent.getStyle().setProperty(getDirectionAttrName(), getDirectionValue(vertical));
         }
     }
@@ -174,7 +171,7 @@ public class FlexPanelImpl {
     }
 
     //    private static String DROPCOLUMNSTRING = "-1px";
-    private static String getLineSizeString(double flex, Integer flexBasis) {
+    public static String getLineSizeString(double flex, Integer flexBasis) {
         // it seems that  min-content is equivalent to auto in flex (and auto in grid layout for example often does not respect margins somewhy)
         String flexBasisString = flexBasis == null ? "min-content" : flexBasis + "px";
         if(flex > 0)

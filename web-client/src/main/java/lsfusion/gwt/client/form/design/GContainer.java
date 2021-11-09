@@ -26,10 +26,9 @@ public class GContainer extends GComponent {
     public Boolean alignCaptions;
 
     public int lines;
+    public Integer lineSize;
 
     public ArrayList<GComponent> children = new ArrayList<>();
-    
-    public boolean isFiltersContainer;
 
     @Override
     public String toString() {
@@ -124,16 +123,34 @@ public class GContainer extends GComponent {
         return children.size() == 1;
     }
 
+    public boolean isVertical() {
+        // in wrapped grid it makes sense to "reverse" the direction (it is more obvious)
+        return horizontal == (grid && isWrap());
+    }
+
+    public boolean isWrap() {
+        // we cannot wrap grid with aligned captions (since there is no way to stick caption and value together)
+        if(grid && isAlignCaptions())
+            return false;
+
+        // grid auto-fit (used for wrap) doesn't support min-content / auto / ...
+        if(grid && lineSize == null)
+            return false;
+
+        return wrap;
+    }
+
     public boolean isGrid() {
         return grid;
     }
     public boolean isAlignCaptions() {
+        // align caption has a higher priority than wrap
+        if(horizontal) // later maybe it makes sense to support align captions for horizontal containers, but with no-wrap it doesn't make much sense
+            return false;
+
         if (alignCaptions != null) {
             return alignCaptions;
         }
-        
-        if(horizontal) // later maybe it makes sense to support align captions for horizontal containers, but with no-wrap it doesn't make much sense
-            return false;
 
         boolean otherAligned = false;
         // only simple property draws
@@ -150,11 +167,7 @@ public class GContainer extends GComponent {
     }
     
     public Integer getLineSize() {
-        if (isFiltersContainer) {
-            return 0;
-        } else {
-            return null;
-        }
+        return lineSize;
     }
 
     private class GCaptionReader implements GPropertyReader {

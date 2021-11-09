@@ -42,7 +42,8 @@ public class ContainerView extends ComponentView {
     private Boolean alignCaptions;
 
     public int lines = 1;
-    
+    public Integer lineSize = null;
+
     public PropertyObjectEntity<?> showIf;
 
     // temp hack ???
@@ -119,7 +120,7 @@ public class ContainerView extends ComponentView {
         if(wrap != null)
             return wrap;
 
-        return false;
+        return lines > 1 || isHorizontal();
     }
 
     // we use Boolean since in desktop and in web there is a different default behaviour
@@ -161,6 +162,10 @@ public class ContainerView extends ComponentView {
 
     public void setLines(int lines) {
         this.lines = lines;
+    }
+
+    public void setLineSize(Integer lineSize) {
+        this.lineSize = lineSize;
     }
 
     public PropertyObjectEntity<?> getShowIf() {
@@ -260,6 +265,7 @@ public class ContainerView extends ComponentView {
         pool.writeObject(outStream, alignCaptions);
 
         outStream.writeInt(lines);
+        pool.writeInt(outStream, lineSize);
     }
 
     @Override
@@ -282,6 +288,7 @@ public class ContainerView extends ComponentView {
         alignCaptions = inStream.readBoolean();
 
         lines = inStream.readInt();
+        lineSize = pool.readInt(inStream);
     }
 
     @Override

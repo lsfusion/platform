@@ -31,11 +31,10 @@ public class ClientContainer extends ClientComponent {
     public Boolean alignCaptions;
 
     public int lines = 1;
+    public Integer lineSize = null;
 
     public List<ClientComponent> children = new ArrayList<>();
     
-    public boolean isFiltersContainer = false;
-
     public ClientContainer() {
     }
 
@@ -57,6 +56,7 @@ public class ClientContainer extends ClientComponent {
         outStream.writeBoolean(alignCaptions);
 
         outStream.writeInt(lines);
+        pool.writeInt(outStream, lineSize);
     }
 
     @Override
@@ -77,6 +77,7 @@ public class ClientContainer extends ClientComponent {
         alignCaptions = pool.readObject(inStream);
 
         lines = inStream.readInt();
+        lineSize = pool.readInt(inStream);
     }
 
     @Override
@@ -139,11 +140,7 @@ public class ClientContainer extends ClientComponent {
     }
 
     public Integer getLineSize() {
-        if (isFiltersContainer) {
-            return 0;
-        } else {
-            return null;
-        }
+        return lineSize;
     }
 
     public ClientContainer findContainerBySID(String sID) {

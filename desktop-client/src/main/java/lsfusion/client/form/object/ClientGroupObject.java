@@ -146,7 +146,6 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
         grid = pool.deserializeObject(inStream);
         toolbar = pool.deserializeObject(inStream);
         filtersContainer = pool.deserializeObject(inStream);
-        filtersContainer.isFiltersContainer = true;
         pool.deserializeCollection(filters, inStream);
         calculations = pool.deserializeObject(inStream);
 

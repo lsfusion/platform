@@ -32,18 +32,25 @@ public class LinearContainerView extends GAbstractContainerView {
     private final static FlexPanel.FlexLayoutData captionLine = new FlexPanel.FlexLayoutData(0, null);
     private final static FlexPanel.FlexLayoutData simpleLine = new FlexPanel.FlexLayoutData(1, null);
 
-    public static FlexPanel.FlexLayoutData[] getLineFlexLayouts(boolean alignCaptions, int linesCount) {
+    public static FlexPanel.GridLines getLineGridLayouts(boolean alignCaptions, Integer lineSize, int linesCount, boolean wrap) {
+        FlexPanel.FlexLayoutData valueLine = lineSize != null ? new FlexPanel.FlexLayoutData(1, lineSize) : LinearContainerView.simpleLine;
+
+        if(wrap) {
+            assert !alignCaptions;
+            return new FlexPanel.GridWrapLines(valueLine);
+        }
+
         int alignDiv = alignCaptions ? 2 : 1;
         int alignOff = alignCaptions ? 1 : 0;
 
         FlexPanel.FlexLayoutData[] result = new FlexPanel.FlexLayoutData[linesCount * alignDiv];
         for(int i = 0; i < linesCount; i++)
-            result[alignDiv * i + alignOff] = simpleLine;
+            result[alignDiv * i + alignOff] = valueLine;
 
         if(alignCaptions)
             for(int i = 0; i < linesCount; i++)
                 result[alignDiv * i] = captionLine;
-        return result;
+        return new FlexPanel.GridFixedLines(result);
     }
 
     public LinearContainerView(GContainer container) {
@@ -59,25 +66,28 @@ public class LinearContainerView extends GAbstractContainerView {
         // plus also in simple containers we can wrap consecutive property views into some flexpanel, but it requires a lot more complex logics
         alignCaptions = container.isAlignCaptions();
         grid = container.isGrid();
+        boolean wrap = container.isWrap();
 
         if(alignCaptions)
             childrenCaptions = new ArrayList<>();
 
-        if(isSingleLine())
-            panel = new FlexPanel(vertical, flexAlignment, grid || alignCaptions ? getLineFlexLayouts(alignCaptions, linesCount) : null);
-        else {
-            panel = new FlexPanel(!vertical);
+        Integer lineSize = container.getLineSize();
+
+        if(isSingleLine()) {
+            panel = new FlexPanel(vertical, flexAlignment, grid || alignCaptions ? getLineGridLayouts(alignCaptions, lineSize, linesCount, wrap) : null, wrap);
+        } else {
+            panel = new FlexPanel(!vertical, GFlexAlignment.START, null, vertical && wrap);
+
             // we don't want this panel to be resized, because we don't set overflow, and during resize container can get fixed size (and then if inner container resized it's content overflows outer border)
             // however resizing inner component also causes troubles, because when you increase components base size, parent components base size also is changed which leads to immediate relayouting, and if the explicit base size is larger than auto base size, there is a leap
             // plus in that case line resizing is not that ergonomic, because it can be shrinked if you resize a component different from the component you used to extend the line
             // so it seems that having childrenResizable true is the lesser evil
 //            panel.childrenResizable = false;
 
-            Integer lineSize = container.getLineSize();
-
             lines = new FlexPanel[linesCount];
             for (int i = 0; i < linesCount; i++) {
-                FlexPanel line = new FlexPanel(vertical, flexAlignment, alignCaptions ? getLineFlexLayouts(true, 1) : null);
+                FlexPanel line = new FlexPanel(vertical, flexAlignment, alignCaptions ? getLineGridLayouts(true, null, 1, false) : null, !vertical && wrap);
+
                 panel.addFillFlex(line, lineSize); // we're using null flex basis to make lines behaviour similar to manually defined containers
                 lines[i] = line;
 
