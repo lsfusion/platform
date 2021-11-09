@@ -67,7 +67,7 @@ public class GFilterConditionView extends FlexPanel implements CaptionContainerH
     public GFilterConditionView(GPropertyFilter iCondition, GTableController logicsSupplier, final UIHandler uiHandler, boolean toolsVisible, boolean readSelectedValue) {
         this.condition = iCondition;
         this.uiHandler = uiHandler;
-        this.toolsVisible = toolsVisible || !isFixed();
+        this.toolsVisible = toolsVisible;
 
         allowNull = !condition.isFixed();
         
@@ -111,6 +111,7 @@ public class GFilterConditionView extends FlexPanel implements CaptionContainerH
         compareLabel = new Label();
         updateCompareLabelText();
         compareLabel.addStyleName("userFilterLabel");
+        compareLabel.setVisible(isFixed() && !toolsVisible);
         leftPanel.addCentered(compareLabel);
 
         GCompare[] filterCompares = condition.property.getFilterCompares();
@@ -142,6 +143,7 @@ public class GFilterConditionView extends FlexPanel implements CaptionContainerH
             }
         };
         compareView.setSelectedValue(condition.compare);
+        compareView.setVisible(!isFixed() || toolsVisible);
         leftPanel.addCentered(compareView);
 
         valueView = new GDataFilterValueView(condition.value, logicsSupplier) {
@@ -170,6 +172,7 @@ public class GFilterConditionView extends FlexPanel implements CaptionContainerH
             }
         };
         deleteButton.addStyleName("userFilterButton");
+        deleteButton.setVisible(!isFixed() || toolsVisible);
         rightPanel.addCentered(deleteButton);
 
         junctionSeparator = GwtClientUtils.createVerticalSeparator(StyleDefaults.COMPONENT_HEIGHT);
@@ -227,13 +230,16 @@ public class GFilterConditionView extends FlexPanel implements CaptionContainerH
 
     public void setToolsVisible(boolean visible) {
         toolsVisible = visible;
-        deleteButton.setVisible(visible);
 
         propertyLabel.setVisible(!toolsVisible);
         propertyView.setVisible(toolsVisible);
 
-        compareLabel.setVisible(!toolsVisible);
-        compareView.setVisible(toolsVisible);
+        if (isFixed()) {
+            compareLabel.setVisible(!toolsVisible);
+            compareView.setVisible(toolsVisible);
+
+            deleteButton.setVisible(visible);
+        }
 
         updateJunctionVisibility();
     }

@@ -71,7 +71,7 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
         super(false, FlexAlignment.START);
         condition = ifilter;
         uiHandler = iuiHandler;
-        this.toolsVisible = toolsVisible || !isFixed();
+        this.toolsVisible = toolsVisible;
 
         allowNull = !condition.isFixed();
 
@@ -117,6 +117,7 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
         compareLabel = new LabelWidget();
         updateCompareLabelText();
         compareLabel.setBorder(labelBorder);
+        compareLabel.setVisible(isFixed() && !toolsVisible);
         leftPanel.addCentered(compareLabel);
 
         Compare[] filterCompares = condition.property.getFilterCompares();
@@ -147,6 +148,7 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
             }
         };
         compareView.setSelectedValue(condition.compare);
+        compareView.setVisible(!isFixed() || toolsVisible);
         leftPanel.addCentered(compareView);
 
         valueView = new DataFilterValueView(condition, logicsSupplier, readSelectedValue) {
@@ -172,6 +174,7 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
         deleteButton.addActionListener(e -> RmiQueue.runAction(FilterConditionView.this::remove));
         deleteButtonWrapper.add((Widget)deleteButton);
         deleteButtonWrapper.add(Filler.createHorizontalStrut(2));
+        deleteButtonWrapper.setVisible(!isFixed() || toolsVisible);
         rightPanel.addCentered(deleteButtonWrapper);
 
         junctionSeparator = new FlexPanel(false, FlexAlignment.START);
@@ -197,7 +200,7 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
         junctionViewWrapper.add(Filler.createHorizontalStrut(2));
         rightPanel.addCentered(junctionViewWrapper);
 
-        setToolsVisible(this.toolsVisible);
+        setToolsVisible(toolsVisible);
 
         propertyView.setSelectedValue(currentColumn, currentCaption);
     }
@@ -240,13 +243,16 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
     
     public void setToolsVisible(boolean visible) {
         this.toolsVisible = visible;
-        deleteButtonWrapper.setVisible(visible);
 
         propertyLabel.setVisible(!toolsVisible);
         propertyView.setVisible(toolsVisible);
 
-        compareLabel.setVisible(!toolsVisible);
-        compareView.setVisible(toolsVisible);
+        if (isFixed()) {
+            compareLabel.setVisible(!toolsVisible);
+            compareView.setVisible(toolsVisible);
+            
+            deleteButtonWrapper.setVisible(visible);
+        }
 
         updateJunctionVisibility();
     }
