@@ -7,6 +7,8 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
+import lsfusion.gwt.client.base.GwtSharedUtils;
+import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.design.view.GAbstractContainerView;
@@ -143,25 +145,31 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
     }
 
     public GPropertyFilter getNewCondition(GFilter filter, GGroupObjectValue columnKey) {
-        GPropertyDraw filterProperty = filter != null ? filter.property : null;
-        GGroupObjectValue filterColumnKey = columnKey;
-
-        if (filterProperty == null) {
-            filterProperty = logicsSupplier.getSelectedFilterProperty();
-            if (filterProperty != null) {
-                filterColumnKey = logicsSupplier.getSelectedColumnKey();
-            }
-        }
-        if (filterProperty == null)
+        Pair<GPropertyDraw, GGroupObjectValue> column = getActualColumn(filter != null ? filter.property: null, columnKey);
+        
+        if (column.first == null)
             return null;
 
         if (filter == null) {
-            filter = new GFilter(filterProperty);
+            filter = new GFilter(column.first);
         } else if (filter.property == null) {
-            filter.property = filterProperty;
+            filter.property = column.first;
         }
 
-        return new GPropertyFilter(filter, logicsSupplier.getSelectedGroupObject(), filterColumnKey, null, filterProperty.getDefaultCompare());
+        return new GPropertyFilter(filter, logicsSupplier.getSelectedGroupObject(), column.second, null, column.first.getDefaultCompare());
+    }
+
+    private Pair<GPropertyDraw, GGroupObjectValue> getActualColumn(GPropertyDraw property, GGroupObjectValue columnKey) {
+        GPropertyDraw actualProperty = property;
+        GGroupObjectValue actualColumnKey = columnKey;
+
+        if (actualProperty == null) {
+            actualProperty = logicsSupplier.getSelectedFilterProperty();
+            if (actualProperty != null) {
+                actualColumnKey = logicsSupplier.getSelectedColumnKey();
+            }
+        }
+        return new Pair<>(actualProperty, actualColumnKey);
     }
 
     public void addCondition() {
@@ -289,7 +297,23 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
     }
 
     public void quickEditFilter(Event keyEvent, GPropertyDraw propertyDraw, GGroupObjectValue columnKey) {
-        addCondition(propertyDraw, columnKey, keyEvent, true, true);
+        Pair<GPropertyDraw, GGroupObjectValue> column = getActualColumn(propertyDraw, columnKey);
+
+        GFilterConditionView columnCondition = null;
+        if (!conditionViews.isEmpty()) {
+            for (GPropertyFilter filter : conditionViews.keySet()) {
+                if (filter.property.equals(column.first) && GwtSharedUtils.nullEquals(filter.columnKey, column.second)) {
+                    columnCondition = conditionViews.get(filter);
+                    break;
+                }
+            }
+        }
+
+        if (columnCondition == null) {
+            addCondition(propertyDraw, columnKey, keyEvent, false, true);
+        } else {
+            columnCondition.startEditing(keyEvent);
+        }
     }
 
     public boolean hasOwnContainer() {

@@ -1,5 +1,7 @@
 package lsfusion.client.form.filter.user.controller;
 
+import lsfusion.base.BaseUtils;
+import lsfusion.base.Pair;
 import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.form.design.ClientContainer;
 import lsfusion.client.form.design.view.ClientContainerView;
@@ -194,27 +196,32 @@ public abstract class FilterController implements FilterConditionView.UIHandler 
     }
 
     public ClientPropertyFilter getNewCondition(ClientFilter filter, ClientGroupObjectValue columnKey) {
-        ClientPropertyDraw filterProperty = filter != null ? filter.property: null;
-        ClientGroupObjectValue filterColumnKey = columnKey;
+        Pair<ClientPropertyDraw, ClientGroupObjectValue> column = getActualColumn(filter != null ? filter.property: null, columnKey);
 
-        if (filterProperty == null) {
-            filterProperty = logicsSupplier.getSelectedFilterProperty();
-            if (filterProperty != null) {
-                filterColumnKey = logicsSupplier.getSelectedColumn();
-            }
-        }
-
-        if (filterProperty == null) {
+        if (column.first == null) {
             return null;
         }
 
         if (filter == null) {
-            filter = new ClientFilter(filterProperty);
+            filter = new ClientFilter(column.first);
         } else if (filter.property == null) {
-            filter.property = filterProperty;
+            filter.property = column.first;
         }
 
-        return new ClientPropertyFilter(filter, logicsSupplier.getSelectedGroupObject(), filterColumnKey, null);
+        return new ClientPropertyFilter(filter, logicsSupplier.getSelectedGroupObject(), column.second, null);
+    }
+    
+    private Pair<ClientPropertyDraw, ClientGroupObjectValue> getActualColumn(ClientPropertyDraw property, ClientGroupObjectValue columnKey) {
+        ClientPropertyDraw actualProperty = property;
+        ClientGroupObjectValue actualColumnKey = columnKey;
+
+        if (actualProperty == null) {
+            actualProperty = logicsSupplier.getSelectedFilterProperty();
+            if (actualProperty != null) {
+                actualColumnKey = logicsSupplier.getSelectedColumn();
+            }
+        }
+        return Pair.create(actualProperty, actualColumnKey);
     }
 
     public void addCondition() {
@@ -352,7 +359,23 @@ public abstract class FilterController implements FilterConditionView.UIHandler 
     }
 
     public void quickEditFilter(KeyEvent initFilterKeyEvent, ClientPropertyDraw propertyDraw, ClientGroupObjectValue columnKey) {
-        addCondition(propertyDraw, columnKey, initFilterKeyEvent, true, true);
+        Pair<ClientPropertyDraw, ClientGroupObjectValue> column = getActualColumn(propertyDraw, columnKey);
+        
+        FilterConditionView columnCondition = null;
+        if (!conditionViews.isEmpty()) {
+            for (ClientPropertyFilter filter : conditionViews.keySet()) {
+                if (filter.property.equals(column.first) && BaseUtils.nullEquals(filter.columnKey, column.second)) {
+                    columnCondition = conditionViews.get(filter);
+                    break;
+                }
+            }
+        }
+        
+        if (columnCondition == null) {
+            addCondition(propertyDraw, columnKey, initFilterKeyEvent, false, true);
+        } else {
+            columnCondition.startEditing(initFilterKeyEvent);
+        }
     }
     
     public boolean hasOwnContainer() {
