@@ -8,6 +8,9 @@ public interface StoredArraySerializer {
     
     int getId(Object o);
     
+    void setContext(Object context);
+    Object getContext();    
+    
     static void serializeSerializable(Object o, ByteArrayOutputStream outStream) throws IOException {
         assert o instanceof Serializable;
         try (ObjectOutputStream objStream = new ObjectOutputStream(outStream)) {
@@ -21,4 +24,7 @@ public interface StoredArraySerializer {
         }
     }
     
+    static StoredArraySerializer getInstance() {
+        return StoredArraySerializerRegistry.getInstance();
+    } 
 }

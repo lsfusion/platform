@@ -1,6 +1,11 @@
 package lsfusion.base.col.implementations.stored;
 
+import lsfusion.base.col.implementations.*;
+import lsfusion.base.col.implementations.order.*;
+import lsfusion.base.col.implementations.simple.*;
+
 import java.io.*;
+import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiFunction;
@@ -84,4 +89,58 @@ public class StoredArraySerializerRegistry implements StoredArraySerializer {
     private Integer getId(Class<?> cls) {
         return idMap.get(cls);    
     }
+
+    private final ThreadLocal<WeakReference<Object>> context = new ThreadLocal<>();
+    
+    @Override
+    public void setContext(Object context) {
+        this.context.set(new WeakReference<>(context));
+    }
+    
+    @Override
+    public Object getContext() {
+        if (context.get() == null) {
+            return null;
+        }
+        return context.get().get();
+    }
+    
+    static StoredArraySerializerRegistry getInstance() {
+        if (instance == null) {
+            synchronized (StoredArraySerializerRegistry.class) {
+                if (instance == null) {
+                    instance = new StoredArraySerializerRegistry();
+
+                    instance.register(EmptySet.class, (o, s, outS) -> {}, (inS, s) -> EmptySet.INSTANCE());
+                    instance.register(EmptyOrderSet.class, (o, s, outS) -> {}, (inS, s) -> EmptyOrderSet.INSTANCE());
+                    instance.register(EmptyOrderMap.class, (o, s, outS) -> {}, (inS, s) -> EmptyOrderMap.INSTANCE());
+                    instance.register(EmptyRevMap.class, (o, s, outS) -> {}, (inS, s) -> EmptyRevMap.INSTANCE());
+
+                    instance.register(SingletonRevMap.class, SingletonRevMap::serialize, SingletonRevMap::deserialize);
+                    instance.register(SingletonOrderMap.class, SingletonOrderMap::serialize, SingletonOrderMap::deserialize);
+                    instance.register(SingletonSet.class, SingletonSet::serialize, SingletonSet::deserialize);
+                    instance.register(SingletonOrderSet.class, SingletonOrderSet::serialize, SingletonOrderSet::deserialize);
+
+                    instance.register(ArCol.class, ArCol::serialize, ArCol::deserialize);
+                    instance.register(ArList.class, ArList::serialize, ArList::deserialize);
+                    instance.register(ArSet.class, ArSet::serialize, ArSet::deserialize);
+                    instance.register(HSet.class, HSet::serialize, HSet::deserialize);
+
+                    instance.register(ArIndexedSet.class, ArIndexedSet::serialize, ArIndexedSet::deserialize);
+                    instance.register(ArOrderSet.class, ArOrderSet::serialize, ArOrderSet::deserialize);
+                    instance.register(HOrderSet.class, HOrderSet::serialize, HOrderSet::deserialize);
+
+                    instance.register(ArMap.class, ArMap::serialize, ArMap::deserialize);
+                    instance.register(HMap.class, HMap::serialize, HMap::deserialize);
+                    instance.register(ArIndexedMap.class, ArIndexedMap::serialize, ArIndexedMap::deserialize);
+
+                    instance.register(ArOrderMap.class, ArOrderMap::serialize, ArOrderMap::deserialize);
+                    instance.register(HOrderMap.class, HOrderMap::serialize, HOrderMap::deserialize);
+                }
+            }
+        }
+        return instance;
+    }
+
+    private static StoredArraySerializerRegistry instance = null;
 }

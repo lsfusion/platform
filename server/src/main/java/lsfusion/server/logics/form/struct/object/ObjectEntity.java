@@ -1,6 +1,7 @@
 package lsfusion.server.logics.form.struct.object;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.col.implementations.stored.StoredArraySerializer;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.identity.IdentityObject;
@@ -24,9 +25,11 @@ import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectI
 import lsfusion.server.logics.form.open.ObjectSelector;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.property.PropertyObjectInterfaceEntity;
-import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 
 import static lsfusion.server.physics.dev.i18n.LocalizedString.create;
 
@@ -141,5 +144,15 @@ public class ObjectEntity extends IdentityObject implements PropertyObjectInterf
     @IdentityInstanceLazy
     public StaticParamNullableExpr getParamExpr() {
         return new StaticParamNullableExpr(baseClass);
+    }
+
+    public static void serialize(Object o, StoredArraySerializer serializer, ByteArrayOutputStream outStream) {
+        ObjectEntity obj = (ObjectEntity) o;
+        serializer.serialize(obj.ID, outStream);
+    }
+
+    public static Object deserialize(ByteArrayInputStream inStream, StoredArraySerializer serializer) {
+        int id = (int) serializer.deserialize(inStream);
+        return ((FormEntity)serializer.getContext()).getObject(id);
     }
 }
