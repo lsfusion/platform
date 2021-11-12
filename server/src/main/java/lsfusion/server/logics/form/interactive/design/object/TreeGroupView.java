@@ -112,6 +112,7 @@ public class TreeGroupView extends ComponentView implements ServerIdentitySerial
     public FilterView addFilter(PropertyDrawView property, Version version) {
         FilterView filterView = new FilterView(idGenerator.idShift(), property);
         filters.add(filterView, version);
+        filtersContainer.add(filterView, version);
         return filterView;
     }
 
