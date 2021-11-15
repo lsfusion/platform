@@ -360,7 +360,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         }
 
         if (hasUserPreferences()) {
-            Collections.sort(result, getCurrentPreferences().getUserOrderComparator());
+            result.sort(getCurrentPreferences().getUserOrderComparator());
         }
         return result;
     }

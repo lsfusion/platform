@@ -118,6 +118,9 @@ columnsCount '{utils.excel.columns.count}' (EXCELFILE file)  { columnsCount(file
 pagesCountPdf '{utils.pdf.pages.count}' = DATA LOCAL INTEGER ();
 pagesCountPdf '{utils.pdf.pages.count}'  INTERNAL  'lsfusion.server.logics.classes.data.utils.pdf.PagesCountPdfAction' (PDFFILE);
 
+mergedExcel '{utils.excel.merged}' = DATA LOCAL EXCELFILE ();
+mergeExcel '{utils.excel.merge}'  INTERNAL  'lsfusion.server.logics.classes.data.utils.excel.MergeExcelAction' (EXCELFILE, EXCELFILE);
+
 // ---------------------------------- Генерация паролей  ---------------------------------- //
 generatedPassword 'Сгенерированный пароль' = DATA LOCAL TEXT();
 //length, use at least one digit requirement, use both registers requirement
