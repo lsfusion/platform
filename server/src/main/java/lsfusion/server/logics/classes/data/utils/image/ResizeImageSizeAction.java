@@ -13,7 +13,7 @@ import net.coobird.thumbnailator.Thumbnails;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.File;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Iterator;
@@ -35,31 +35,25 @@ public class ResizeImageSizeAction extends InternalAction {
     @Override
     public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         try {
-
             RawFileData inputFile = (RawFileData) context.getKeyValue(fileInterface).getValue();
             Integer width = (Integer) context.getKeyValue(widthInterface).getValue();
             Integer height = (Integer) context.getKeyValue(heightInterface).getValue();
-            if(inputFile != null) {
-                if(width != null || height != null) {
+            if (inputFile != null) {
+                if (width != null || height != null) {
 
                     BufferedImage image = ImageIO.read(inputFile.getInputStream());
-                    if(image != null) {
+                    if (image != null) {
                         int imageWidth = image.getWidth();
                         int imageHeight = image.getHeight();
-    
+
                         double scaleWidth = width != null ? ((double) width / imageWidth) : (double) height / imageHeight;
                         double scaleHeight = height != null ? (double) height / imageHeight : ((double) width / imageWidth);
-    
-                        File outputFile = null;
-                        try {
-                            outputFile = File.createTempFile("resized", ".jpg");
-                            if(scaleWidth != 0 && scaleHeight != 0) {
-                                Thumbnails.of(inputFile.getInputStream()).scale(scaleWidth, scaleHeight).toFile(outputFile);
-                                findProperty("resizedImage[]").change(new RawFileData(outputFile), context);
+
+                        if (scaleWidth != 0 && scaleHeight != 0) {
+                            try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+                                Thumbnails.of(inputFile.getInputStream()).scale(scaleWidth, scaleHeight).toOutputStream(os);
+                                findProperty("resizedImage[]").change(new RawFileData(os), context);
                             }
-                        } finally {
-                            if (outputFile != null && !outputFile.delete())
-                                outputFile.deleteOnExit();
                         }
                     } else {
                         throw new RuntimeException("Failed to read image");
