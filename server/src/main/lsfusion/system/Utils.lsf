@@ -110,6 +110,9 @@ pingClient '{utils.ping.client}' (TEXT host)  {ping(host, TRUE); }
 protectedExcel '{utils.protected.excel}' = DATA LOCAL EXCELFILE ();
 protectExcel '{utils.protect.excel}'  INTERNAL  'lsfusion.server.logics.classes.data.utils.excel.ProtectExcelAction' (EXCELFILE, STRING[100]);
 
+mergedExcel '{utils.excel.merged}' = DATA LOCAL EXCELFILE ();
+mergeExcel '{utils.excel.merge}'  INTERNAL  'lsfusion.server.logics.classes.data.utils.excel.MergeExcelAction' (EXCELFILE, EXCELFILE);
+
 // ---------------------------------- Генерация паролей  ---------------------------------- //
 generatedPassword 'Сгенерированный пароль' = DATA LOCAL TEXT();
 //length, use at least one digit requirement, use both registers requirement
