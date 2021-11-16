@@ -7,7 +7,6 @@ import lsfusion.interop.form.property.Compare;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
-import java.util.Arrays;
 import java.util.List;
 
 public abstract class FilterCompareSelector extends FilterOptionSelector<Compare> {
@@ -17,9 +16,10 @@ public abstract class FilterCompareSelector extends FilterOptionSelector<Compare
     private boolean allowNull;
     private JCheckBox allowNullCB;
     
-    public FilterCompareSelector(ClientPropertyFilter condition) {
-        super(Arrays.asList(condition.property.getFilterCompares()));
+    public FilterCompareSelector(ClientPropertyFilter condition, List<Compare> items, List<String> popupCaptions, boolean allowNull) {
+        super(items, popupCaptions);
         negation = condition.negation;
+        this.allowNull = allowNull;
 
         negationCB = new JCheckBox("!");
         negationCB.setSelected(negation);
@@ -37,10 +37,10 @@ public abstract class FilterCompareSelector extends FilterOptionSelector<Compare
                 return new Dimension(preferredSize.width + 2, preferredSize.height);
             }
         };
-        allowNullCB.setSelected(allowNull);
+        allowNullCB.setSelected(this.allowNull);
         allowNullCB.addActionListener(event -> {
-            allowNull = allowNullCB.isSelected();
-            allowNullChanged(allowNull);
+            this.allowNull = allowNullCB.isSelected();
+            allowNullChanged(this.allowNull);
         });
 
         addOptions();
@@ -49,7 +49,7 @@ public abstract class FilterCompareSelector extends FilterOptionSelector<Compare
     public void set(List<Compare> values) {
         menu.removeAll();
         for (Compare value : values) {
-            addMenuItem(value, value.toString());
+            addMenuItem(value, value.toString(), value.getFullString());
         }
         addOptions();
     }
@@ -62,8 +62,8 @@ public abstract class FilterCompareSelector extends FilterOptionSelector<Compare
     }
 
     @Override
-    protected JMenuItem addMenuItem(Compare item, String caption) {
-        JMenuItem menuItem = super.addMenuItem(item, caption);
+    protected JMenuItem addMenuItem(Compare item, String caption, String popupCaption) {
+        JMenuItem menuItem = super.addMenuItem(item, caption, popupCaption);
         menuItem.setToolTipText(item.getTooltipText());
         return menuItem;
     }

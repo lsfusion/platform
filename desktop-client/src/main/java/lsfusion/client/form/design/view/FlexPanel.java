@@ -11,8 +11,9 @@ import lsfusion.interop.base.view.FlexLayout;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.*;
 import java.util.stream.Collectors;
 
 public class FlexPanel extends PanelWidget {
@@ -26,6 +27,10 @@ public class FlexPanel extends PanelWidget {
     }
     public void checkResizeEvent(MouseEvent e, Component cursorElement) {
         ResizeHandler.checkResizeEvent(resizeHelper, cursorElement, e);
+    }
+
+    public FlexPanel() {
+        this(false);
     }
 
     public FlexPanel(boolean vertical) {
@@ -56,6 +61,10 @@ public class FlexPanel extends PanelWidget {
 
     public void add(Widget widget, int beforeIndex, FlexAlignment alignment) {
         add(widget, beforeIndex, alignment, 0, null); // maybe here it also makes sense to set basis to 0 as in addFill, but for now it's used mostly in vertical container for simple components
+    }
+
+    public void addCentered(Widget child) {
+        add(child, FlexAlignment.CENTER);
     }
 
     public void addFillFlex(Widget widget, Integer flexBasis) {

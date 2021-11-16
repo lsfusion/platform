@@ -2,9 +2,9 @@ package lsfusion.gwt.client.form.object.table.view;
 
 import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.Dimension;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Pair;
@@ -110,13 +110,13 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
             addFilterBinding(new GKeyInputEvent(REPLACE_USER_FILTER_KEY_STROKE),
                     event -> getGroupController().replaceFilter(event));
             // REMOVE FILTERS
-            GFormController.BindingExec removeFilters = event -> getGroupController().removeFilters();
+            GFormController.BindingExec removeFilters = event -> getGroupController().resetFilters();
             addFilterBinding(new GKeyInputEvent(REMOVE_USER_FILTERS_KEY_STROKE),
                     removeFilters);
             addFilterBinding(nativeEvent -> {
                         if (GKeyStroke.isEscapeKeyEvent(nativeEvent) && GKeyStroke.isPlainKeyEvent(nativeEvent)) {
                             GAbstractTableController goController = getGroupController();
-                            return goController.userFilters != null && goController.userFilters.hasConditions();
+                            return goController.filter != null && goController.filter.hasConditions();
                         }
                         return false;
                     }, removeFilters);
@@ -145,14 +145,15 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     }
 
     public final ResizeHelper resizeHelper = new ResizeHelper() {
+
         @Override
-        public Element getChildElement(int index) {
-            return getHeaderElement(index);
+        public int getChildAbsolutePosition(int index, boolean left) {
+            Element element = getHeaderElement(index);
+            return left ? element.getAbsoluteLeft() : element.getAbsoluteRight();
         }
 
         @Override
-        public Widget getChildWidget(int index) {
-            return null;
+        public void propagateChildResizeEvent(int index, NativeEvent event, Element cursorElement) {
         }
 
         @Override
@@ -162,11 +163,6 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
 
         @Override
         public boolean isChildResizable(int index) {
-            return true;
-        }
-
-        @Override
-        public boolean isChildVisible(int index) {
             return true;
         }
 

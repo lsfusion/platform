@@ -18,8 +18,12 @@ public class GComponent implements Serializable {
     
     public boolean autoSize;
 
+    public int span = 1;
+
     protected double flex = 0;
     protected GFlexAlignment alignment;
+    public boolean shrink;
+    public boolean alignShrink;
 
     public int marginTop;
     public int marginBottom;
@@ -65,6 +69,14 @@ public class GComponent implements Serializable {
         return alignment;
     }
 
+    public boolean isShrink() {
+        return shrink;
+    }
+
+    public boolean isAlignShrink() {
+        return alignShrink;
+    }
+
     public void setAlignment(GFlexAlignment alignment) {
         this.alignment = alignment;
     }
@@ -83,5 +95,13 @@ public class GComponent implements Serializable {
 
     public int getMargins(boolean vertical) {
         return vertical ? getVerticalMargin() : getHorizontalMargin();
+    }
+
+    public boolean isAlignCaption() {
+        return false;
+    }
+
+    public int getSpan() {
+        return span;
     }
 }

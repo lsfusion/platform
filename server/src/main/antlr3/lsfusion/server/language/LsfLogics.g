@@ -59,6 +59,7 @@ grammar LsfLogics;
     import lsfusion.server.logics.form.interactive.action.expand.ExpandCollapseType;
     import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
     import lsfusion.server.logics.form.interactive.design.ComponentView;
+    import lsfusion.server.logics.form.interactive.design.filter.FilterView;
     import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
     import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
     import lsfusion.server.logics.form.open.MappedForm;
@@ -4791,6 +4792,7 @@ formComponentSelector[ScriptingFormView formView] returns [ComponentView compone
 			}
 		}
 	|	'PROPERTY' '(' prop=propertySelector[formView] ')' { $component = $prop.propertyView; }
+	|   'FILTER' '(' filter=filterSelector[formView] ')' { $component = $filter.filterView; }
 	|   exc=formContainersComponentSelector
 	    {
 			if (inMainParseState()) {
@@ -4831,7 +4833,15 @@ groupObjectTreeComponentSelector returns [String sid]
 	String result = null;
 }
     :
-        ( cst=componentSingleSelectorType { result = $cst.text; } | gost=groupObjectTreeComponentSelectorType { result = $gost.text; } )
+        ( cst=componentSingleSelectorType { result = $cst.text; } 
+        |   gost=groupObjectTreeComponentSelectorType 
+            { 
+                result = $gost.text;
+                // backward compatibility. USERFILTER component is removed in v5.0 
+                if ("USERFILTER".equals(result)) { 
+                    result = "FILTERS";
+                }
+            })
         '(' gots = groupObjectTreeSelector ')'
         {
             $sid = result + "(" + $gots.sid + ")";
@@ -4840,7 +4850,7 @@ groupObjectTreeComponentSelector returns [String sid]
 
 groupObjectTreeComponentSelectorType
     :
-    	'TOOLBARSYSTEM' | 'FILTERGROUPS' | 'USERFILTER' | 'GRIDBOX' | 'CLASSCHOOSER' | 'GRID'
+    	'TOOLBARSYSTEM' | 'FILTERGROUPS' | 'USERFILTER' | 'GRIDBOX' | 'CLASSCHOOSER' | 'GRID' | 'FILTERS'
     ;
 
 propertySelector[ScriptingFormView formView] returns [PropertyDrawView propertyView = null]
@@ -4854,6 +4864,21 @@ propertySelector[ScriptingFormView formView] returns [PropertyDrawView propertyV
 		{
 			if (inMainParseState()) {
 				$propertyView = formView.getPropertyView($mappedProp.name, $mappedProp.mapping, self.getVersion());
+			}
+		}
+	;
+	
+filterSelector[ScriptingFormView formView] returns [FilterView filterView = null]
+	:	pname=ID
+		{
+			if (inMainParseState()) {
+				$filterView = formView.getFilterView($pname.text, self.getVersion());
+			}
+		}
+	|	mappedProp=mappedPropertyDraw	
+		{
+			if (inMainParseState()) {
+				$filterView = formView.getFilterView($mappedProp.name, $mappedProp.mapping, self.getVersion());
 			}
 		}
 	;

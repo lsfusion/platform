@@ -42,7 +42,7 @@ public class TabbedContainerView extends GAbstractContainerView {
 //      this wrapping is necessary because:
 //          we want border around the container
 //          autoShowHideContainers (automatical showing / hiding containers) uses setVisible, as well as TabbedDeckPanel (switching widgets), so they conflict with each other (however in current implementation only for base components)
-        FlexPanel proxyPanel = new FlexPanel(vertical);
+        FlexPanel proxyPanel = new FlexPanel(!vertical);
         proxyPanel.setStyleName("gwt-TabPanelBottom");
         return proxyPanel;
     }

@@ -72,22 +72,6 @@
         <when-type-is class="lsfusion.gwt.client.base.view.FlexPanelImpl"/>
     </replace-with>
 
-    <!-- IE-10 FlexPanelImpl implementation. -->
-    <replace-with class="lsfusion.gwt.client.base.view.FlexPanelImplIE">
-        <when-type-is class="lsfusion.gwt.client.base.view.FlexPanelImpl"/>
-        <any>
-            <when-property-is name="user.agent" value="ie10"/>
-        </any>
-    </replace-with>
-
-    <!-- Webkit FlexPanelImpl implementation. -->
-    <replace-with class="lsfusion.gwt.client.base.view.FlexPanelImplWebkit">
-        <when-type-is class="lsfusion.gwt.client.base.view.FlexPanelImpl"/>
-        <any>
-            <when-property-is name="user.agent" value="opera"/>
-        </any>
-    </replace-with>
-
     <!-- - - - - - - - - - - CELL VIEW - - - - - - - - - - - - - - - - -->
 
     <inherits name="com.google.gwt.aria.Aria"/>

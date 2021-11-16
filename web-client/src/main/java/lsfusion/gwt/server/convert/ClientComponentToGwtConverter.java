@@ -42,7 +42,6 @@ import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.navigator.window.GModalityType;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.ModalityType;
-import lsfusion.interop.form.design.ContainerType;
 import lsfusion.interop.form.design.FontInfo;
 import lsfusion.interop.form.event.BindingMode;
 import lsfusion.interop.form.event.KeyInputEvent;
@@ -82,8 +81,12 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
 
         component.autoSize = clientComponent.autoSize;
 
+        component.span = clientComponent.span;
+
         component.setFlex(clientComponent.flex);
         component.setAlignment(convertFlexAlignment(clientComponent.alignment));
+        component.shrink = clientComponent.shrink;
+        component.alignShrink = clientComponent.alignShrink;
         component.marginTop = clientComponent.marginTop;
         component.marginBottom = clientComponent.marginBottom;
         component.marginLeft = clientComponent.marginLeft;
@@ -135,13 +138,18 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         container.horizontal = clientContainer.horizontal;
         container.tabbed = clientContainer.tabbed;
         container.childrenAlignment = convertFlexAlignment(clientContainer.childrenAlignment);
+        container.grid = clientContainer.grid;
+        container.wrap = clientContainer.wrap;
+        container.alignCaptions = clientContainer.alignCaptions;
         container.lines = clientContainer.lines;
+        container.lineSize = clientContainer.lineSize;
+        container.lineShrink = clientContainer.lineShrink;
 
         for (ClientComponent child : clientContainer.children) {
             GComponent childComponent = convertOrCast(child);
             container.children.add(childComponent);
         }
-
+        
         return container;
     }
 
@@ -188,10 +196,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
     @Converter(from = ClientFilter.class)
     public GFilter convertFilter(ClientFilter clientFilter) {
         GFilter filter = initGwtComponent(clientFilter, new GFilter());
-        filter.visible = clientFilter.visible;
-        for (ClientPropertyDraw property : clientFilter.properties) {
-            filter.properties.add(convertOrCast(property));
-        }        
+        filter.property = convertOrCast(clientFilter.property);
         return filter;
     }
     
@@ -497,9 +502,13 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
     @Converter(from = ClientTreeGroup.class)
     public GTreeGroup convertTreeGroup(ClientTreeGroup clientTreeGroup) {
         GTreeGroup treeGroup = initGwtComponent(clientTreeGroup, new GTreeGroup());
+        
+        treeGroup.filtersContainer = convertOrCast(clientTreeGroup.filtersContainer);
+        for (ClientFilter filter : clientTreeGroup.filters) {
+            treeGroup.filters.add(convertOrCast(filter));
+        }
 
         treeGroup.toolbar = convertOrCast(clientTreeGroup.toolbar);
-        treeGroup.filter = convertOrCast(clientTreeGroup.filter);
         
         treeGroup.expandOnClick = clientTreeGroup.expandOnClick;
 
@@ -527,9 +536,14 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
             GObject object = convertOrCast(clientObject);
             groupObject.objects.add(object);
         }
+        
+        groupObject.filtersContainer = convertOrCast(clientGroupObject.filtersContainer);
+        for (ClientFilter filter : clientGroupObject.filters) {
+            groupObject.filters.add(convertOrCast(filter));
+        }
+        
         groupObject.grid = convertOrCast(clientGroupObject.grid);
         groupObject.toolbar = convertOrCast(clientGroupObject.toolbar);
-        groupObject.userFilter = convertOrCast(clientGroupObject.userFilter);
 
         groupObject.viewType = GClassViewType.valueOf(clientGroupObject.viewType.name());
         groupObject.listViewType = GListViewType.valueOf(clientGroupObject.listViewType.name());

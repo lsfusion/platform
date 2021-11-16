@@ -27,8 +27,12 @@ public abstract class ClientComponent extends ContextIdentityObject implements I
     
     public boolean autoSize;
 
+    public int span = 1;
+
     public double flex;
     public FlexAlignment alignment;
+    public boolean shrink;
+    public boolean alignShrink;
 
     public int marginTop;
     public int marginBottom;
@@ -41,17 +45,11 @@ public abstract class ClientComponent extends ContextIdentityObject implements I
     }
 
     public Integer getSize(boolean vertical) {
-//        if (child.alignment == FlexAlignment.STRETCH) {
-//            if (child.container.isVertical()) {
-//                if (child.size.width == 0)
-//                    child.size = new Dimension(-1, child.size.height);
-//            } else {
-//                if (child.size.height == 0)
-//                    child.size = new Dimension(child.size.width, -1);
-//            }
-//        }
-
-        int size = vertical ? this.size.height : this.size.width;
+        int size;
+        size = vertical ? this.size.height : this.size.width;
+        // we don't support shrink in desktop, so we'll just set it to 0
+        if(!container.horizontal == vertical ? shrink : alignShrink)
+            size = 0;
         if (size != -1)
             return size;
         return null;
@@ -69,8 +67,12 @@ public abstract class ClientComponent extends ContextIdentityObject implements I
         
         outStream.writeBoolean(autoSize);
 
+        outStream.writeInt(span);
+
         outStream.writeDouble(flex);
         pool.writeObject(outStream, alignment);
+        outStream.writeBoolean(shrink);
+        outStream.writeBoolean(alignShrink);
         outStream.writeInt(marginTop);
         outStream.writeInt(marginBottom);
         outStream.writeInt(marginLeft);
@@ -90,8 +92,12 @@ public abstract class ClientComponent extends ContextIdentityObject implements I
         
         autoSize = inStream.readBoolean();
 
+        span = inStream.readInt();
+
         flex = inStream.readDouble();
         alignment = pool.readObject(inStream);
+        shrink = inStream.readBoolean();
+        alignShrink = inStream.readBoolean();
         marginTop = inStream.readInt();
         marginBottom = inStream.readInt();
         marginLeft = inStream.readInt();
@@ -109,6 +115,12 @@ public abstract class ClientComponent extends ContextIdentityObject implements I
     public void setFlex(double flex) {
         this.flex = flex;
         updateDependency(this, "flex");
+    }
+
+    @Override
+    public void setShrink(boolean shrink) {
+        this.shrink = shrink;
+        updateDependency(this, "shrink");
     }
 
     public boolean isStretch() {

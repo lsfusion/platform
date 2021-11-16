@@ -4,45 +4,36 @@ import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.form.controller.remote.serialization.ClientSerializationPool;
 import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.property.ClientPropertyDraw;
+import lsfusion.interop.base.view.FlexAlignment;
 
+import java.awt.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.List;
 
 public class ClientFilter extends ClientComponent {
-    public boolean visible = true;
-    
-    public List<ClientPropertyDraw> properties;
+    public ClientPropertyDraw property;
+    public boolean fixed;
 
     public ClientFilter() {
+    }
+    
+    public ClientFilter(ClientPropertyDraw property) {
+        this.property = property;
+        size = new Dimension(-1, -1);
+        alignment = FlexAlignment.START;
     }
 
     @Override
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream) throws IOException {
         super.customSerialize(pool, outStream);
-
-        outStream.writeBoolean(visible);
-        
-        pool.serializeCollection(outStream, properties);
+        pool.serializeObject(outStream, property);
     }
 
     @Override
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
         super.customDeserialize(pool, inStream);
-
-        visible = inStream.readBoolean();
-        
-        properties = pool.deserializeList(inStream);
-    }
-
-    public boolean getVisible() {
-        return visible;
-    }
-
-    public void setVisible(boolean visible) {
-        this.visible = visible;
-        updateDependency(this, "visible");
+        property = pool.deserializeObject(inStream);
     }
 
     @Override

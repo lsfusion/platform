@@ -1,15 +1,16 @@
 package lsfusion.gwt.client.form.design.view.flex;
 
+import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.Dimension;
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.view.CaptionPanel;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.design.view.GAbstractContainerView;
-import lsfusion.gwt.client.form.object.panel.controller.GPropertyPanelController;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,11 +22,35 @@ public class LinearContainerView extends GAbstractContainerView {
 
     protected final int linesCount;
     protected final boolean alignCaptions;
+    protected final boolean grid;
 
     protected FlexPanel[] lines;
     protected FlexPanel[] captionLines;
     protected List<AlignCaptionPanel> childrenCaptions;
     protected List<Integer> childrenCaptionBaseSizes;
+
+    private final static FlexPanel.FlexLayoutData captionLine = new FlexPanel.FlexLayoutData(0, null, false);
+
+    public static FlexPanel.GridLines getLineGridLayouts(boolean alignCaptions, Integer lineSize, int linesCount, boolean wrap, boolean lineShrink) {
+        FlexPanel.FlexLayoutData valueLine = new FlexPanel.FlexLayoutData(1, lineSize, lineShrink);
+
+        if(wrap) {
+            assert !alignCaptions;
+            return new FlexPanel.GridWrapLines(valueLine);
+        }
+
+        int alignDiv = alignCaptions ? 2 : 1;
+        int alignOff = alignCaptions ? 1 : 0;
+
+        FlexPanel.FlexLayoutData[] result = new FlexPanel.FlexLayoutData[linesCount * alignDiv];
+        for(int i = 0; i < linesCount; i++)
+            result[alignDiv * i + alignOff] = valueLine;
+
+        if(alignCaptions)
+            for(int i = 0; i < linesCount; i++)
+                result[alignDiv * i] = captionLine;
+        return new FlexPanel.GridFixedLines(result);
+    }
 
     public LinearContainerView(GContainer container) {
         super(container);
@@ -39,11 +64,20 @@ public class LinearContainerView extends GAbstractContainerView {
         // later containers with explicit sizes can be included
         // plus also in simple containers we can wrap consecutive property views into some flexpanel, but it requires a lot more complex logics
         alignCaptions = container.isAlignCaptions();
+        grid = container.isGrid();
+        boolean wrap = container.isWrap();
 
-        if(isSimple())
-            panel = new FlexPanel(vertical, flexAlignment);
-        else {
-            panel = new FlexPanel(!vertical);
+        if(alignCaptions)
+            childrenCaptions = new ArrayList<>();
+
+        Integer lineSize = container.getLineSize();
+        boolean lineShrink = container.isLineShrink();
+
+        if(isSingleLine()) {
+            panel = new FlexPanel(vertical, flexAlignment, grid || alignCaptions ? getLineGridLayouts(alignCaptions, lineSize, linesCount, wrap, lineShrink) : null, wrap);
+        } else {
+            panel = new FlexPanel(!vertical, GFlexAlignment.START, null, vertical && wrap);
+
             // we don't want this panel to be resized, because we don't set overflow, and during resize container can get fixed size (and then if inner container resized it's content overflows outer border)
             // however resizing inner component also causes troubles, because when you increase components base size, parent components base size also is changed which leads to immediate relayouting, and if the explicit base size is larger than auto base size, there is a leap
             // plus in that case line resizing is not that ergonomic, because it can be shrinked if you resize a component different from the component you used to extend the line
@@ -51,28 +85,20 @@ public class LinearContainerView extends GAbstractContainerView {
 //            panel.childrenResizable = false;
 
             lines = new FlexPanel[linesCount];
-            captionLines = new FlexPanel[linesCount];
-            childrenCaptions = new ArrayList<>();
             for (int i = 0; i < linesCount; i++) {
-                if(alignCaptions) {
-                    FlexPanel captionLine = new FlexPanel(vertical, flexAlignment);
-                    panel.add(captionLine, GFlexAlignment.STRETCH); // we need the same alignment as used for the "main" line (it's important if justifyContent is used)
-                    captionLines[i] = captionLine;
-                }
+                FlexPanel line = new FlexPanel(vertical, flexAlignment, alignCaptions ? getLineGridLayouts(true, null, 1, false, lineShrink) : null, !vertical && wrap); // in theory true can be used instead of lineShrink
 
-                FlexPanel line = new FlexPanel(vertical, flexAlignment);
-                panel.addFillFlex(line, null); // we're using null flex basis to make lines behaviour similar to manually defined containers
+                panel.add(line, panel.getWidgetCount(), GFlexAlignment.STRETCH, 1, lineShrink, lineSize);
                 lines[i] = line;
+
+                if (lineSize != null) // because of non-null flex-basis column won't take content size which may then overflow over column
+                    line.getElement().getStyle().setOverflow(Style.Overflow.AUTO);
             }
         }
     }
 
-    public boolean isSimple() {
-        return isSingleLine() && !alignCaptions;
-    }
-
     private boolean isSingleLine() {
-        return linesCount == 1;
+        return linesCount == 1 || grid;
     }
 
     @Override
@@ -93,39 +119,29 @@ public class LinearContainerView extends GAbstractContainerView {
     }
 
     private static class AlignCaptionPanel extends FlexPanel {
-        public AlignCaptionPanel(boolean vertical) {
-            super(vertical);
+        public AlignCaptionPanel(boolean vertical, GFlexAlignment flexAlignment) {
+            super(vertical, flexAlignment);
         }
-
-        public Integer baseSize;
     }
 
     @Override
     protected void addImpl(int index, GComponent child, Widget view) {
         if(alignCaptions) { // when adding GPropertyPanelController.Panel is empty, so we have to do everything wit callback
-            AlignCaptionPanel captionPanel = new AlignCaptionPanel(!vertical);
-            captionPanel.addStyleName("dataPanelRendererPanel"); // just like in PanelRenderer for no-wrap
+            AlignCaptionPanel captionPanel;
+            if(child.isAlignCaption()) { // from alignCaptions
+                // need a wrapper since all elements in grid have justify-items STRETCH by default (and we want CENTERED alignment)
+                // plus captionContainer is filled later (after it has to be added to DOM)
+                captionPanel = new AlignCaptionPanel(!vertical, ((CaptionContainerHolder) view).getCaptionHAlignment());
+                captionPanel.addStyleName("dataPanelRendererPanel"); // just like in PanelRenderer for no-wrap
 
-//            child.installMargins(captionPanel); // need the same margins as property value
+                ((CaptionContainerHolder) view).setCaptionContainer((columnCaptionWidget, alignment) -> {
+                    assert vertical; // because of alignCaptions first check (isVertical())
+                    captionPanel.add(columnCaptionWidget, alignment);
+                });
+            } else
+                captionPanel = null;
 
             childrenCaptions.add(index, captionPanel);
-            ((GPropertyPanelController.Panel) view).captionContainer = (columnCaptionWidget, actualCaptionWidget, valueSizes, alignment) -> {
-                assert vertical; // because of aligncaptions first check (isVertical())
-                captionPanel.add(columnCaptionWidget, alignment);
-
-                Integer baseSize = vertical ? valueSizes.second : valueSizes.first;
-
-                Integer size = child.getSize(vertical);
-                if (size != null)
-                    baseSize = size;
-
-                if(actualCaptionWidget == null) {
-                    captionPanel.baseSize = baseSize; // this code line is called after captionPanel is first time added to the container, so we store it in some field for further adding, removing (actually it's needed ONLY for component "shifting", when we component is removed and later is added once again)
-                    actualCaptionWidget = captionPanel;
-                }
-                actualCaptionWidget.addStyleName("alignPanelLabel");
-                FlexPanel.setBaseSize(actualCaptionWidget, vertical, baseSize);  // oppositeAndFixed - false, since we're setting the size for the main direction
-            };
         }
 
         if(isSingleLine())
@@ -166,16 +182,66 @@ public class LinearContainerView extends GAbstractContainerView {
             removeChildrenView(index, offset);
     }
 
-    private void addChildrenView(int index, int offset) {
-        int rowIndex = (index + offset) / linesCount;
-        int lineIndex = (index + offset) % linesCount;
+    private int getCaptionOffset(FlexPanel panel, int index) {
+        int offset = 0;
+        int w = 0;
+        for(int i = 0; i < index; )
+            if(panel.getWidget(w++) instanceof AlignCaptionPanel)
+                offset++;
+            else
+                i++;
+        return offset;
+    }
 
-        addChildrenWidget(isSimple() ? panel : lines[lineIndex], index, rowIndex);
+    private Pair<FlexPanel, Integer> getContainerPosition(int index) {
+        int containerIndex;
+        FlexPanel container;
+        if(isSingleLine()) {
+            container = panel;
+            containerIndex = index;
+        } else {
+            int lineIndex = index % linesCount;
+            container = lines[lineIndex];
+            containerIndex = index / linesCount;
+        }
+        return new Pair<>(container, containerIndex + (alignCaptions ? getCaptionOffset(container, containerIndex) : 0));
+    }
+
+    private void addChildrenView(int index, int offset) {
+        Pair<FlexPanel, Integer> containerPosition = getContainerPosition(index + offset);
+        FlexPanel container = containerPosition.first;
+        int containerIndex = containerPosition.second;
+
+        Widget widget = addChildrenWidget(container, index, containerIndex);
+
+        int span = 1;
+        if(grid)
+            span = children.get(index).getSpan();
 
         if(alignCaptions) {
+            span = span * 2;
+
             AlignCaptionPanel captionPanel = childrenCaptions.get(index);
-            captionLines[lineIndex].add(captionPanel, rowIndex, GFlexAlignment.START, 0, captionPanel.baseSize);
+            if(captionPanel != null) {
+                container.add(captionPanel, containerIndex, GFlexAlignment.STRETCH);
+                span--;
+            }
         }
+
+        if(span > 1)
+            FlexPanel.setSpan(widget, span, !vertical);
+    }
+
+    private void removeChildrenView(int index, int offset) {
+        Pair<FlexPanel, Integer> containerPosition = getContainerPosition(index + offset);
+        FlexPanel container = containerPosition.first;
+        int containerIndex = containerPosition.second;
+
+        if(alignCaptions)
+            if(childrenCaptions.get(index) != null)
+                container.remove(containerIndex);
+
+        container.remove(containerIndex);
     }
 
     @Override
@@ -187,16 +253,6 @@ public class LinearContainerView extends GAbstractContainerView {
         }
 
         super.updateLayout(requestIndex, childrenVisible);
-    }
-
-    private void removeChildrenView(int index, int offset) {
-        int rowIndex = (index + offset) / linesCount;
-        int lineIndex = (index + offset) % linesCount;
-
-        (isSimple() ? panel : lines[lineIndex]).remove(rowIndex);
-
-        if(alignCaptions)
-            captionLines[lineIndex].remove(rowIndex);
     }
 
     @Override
@@ -217,8 +273,11 @@ public class LinearContainerView extends GAbstractContainerView {
                     int index = j * linesCount + i;
                     if(index < size) {
                         if(alignCaptions) {
-                            Dimension captionPref = GwtClientUtils.calculateMaxPreferredSize(childrenCaptions.get(index));
-                            captionMain = Math.max(captionMain, vertical ? captionPref.width : captionPref.height);
+                            AlignCaptionPanel captionPanel = childrenCaptions.get(index);
+                            if(captionPanel != null) {
+                                Dimension captionPref = GwtClientUtils.calculateMaxPreferredSize(captionPanel);
+                                captionMain = Math.max(captionMain, vertical ? captionPref.width : captionPref.height);
+                            }
                         }
 
                         Dimension childPref = getChildMaxPreferredSize(containerViews, index);

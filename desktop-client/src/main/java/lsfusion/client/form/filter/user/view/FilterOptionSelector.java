@@ -18,23 +18,17 @@ public abstract class FilterOptionSelector<T> extends TextFieldWidget {
     protected T currentValue;
 
     public FilterOptionSelector() {
-        this(Collections.emptyList());
+        this(Collections.emptyList(), Collections.emptyList());
     }
     
-    public FilterOptionSelector(List<T> items) {
+    public FilterOptionSelector(List<T> items, List<String> popupCaptions) {
         setEditable(false);
         setFocusable(false);
         
         menu.setMaximumVisibleRows(12);
 
-        setBorder(createCompoundBorder(
-                createCompoundBorder(
-                        createEmptyBorder(0, 0, 0, 2),
-                        createLineBorder(SwingDefaults.getComponentBorderColor())),
-                createEmptyBorder(0, SwingDefaults.getTableCellMargins().left, 0, 0)));
-
         for (T item : items) {
-            addMenuItem(item, item.toString());
+            addMenuItem(item, item.toString(), popupCaptions.get(items.indexOf(item)));
         }
         
         addMouseListener(new MouseAdapter() {
@@ -46,11 +40,15 @@ public abstract class FilterOptionSelector<T> extends TextFieldWidget {
     }
 
     public void add(T value, String caption) {
-        addMenuItem(value, caption);
+        add(value, caption, caption);
     }
 
-    protected JMenuItem addMenuItem(T item, String caption) {
-        JMenuItem menuItem = new JMenuItem(caption);
+    public void add(T value, String caption, String popupCaption) {
+        addMenuItem(value, caption, popupCaption);
+    }
+
+    protected JMenuItem addMenuItem(T item, String caption, String popupCaption) {
+        JMenuItem menuItem = new JMenuItem(popupCaption);
         menuItem.addActionListener(e -> {
             setSelectedValue(item, caption);
             valueChanged(item);
@@ -85,6 +83,21 @@ public abstract class FilterOptionSelector<T> extends TextFieldWidget {
 
     public void showMenu() {
         menu.show(this, 0, getHeight());
+    }
+
+    @Override
+    public void updateUI() {
+        super.updateUI();
+        
+        setBorder(createCompoundBorder(
+                createCompoundBorder(
+                        createEmptyBorder(0, 0, 0, 2),
+                        createLineBorder(SwingDefaults.getComponentBorderColor())),
+                createEmptyBorder(0, SwingDefaults.getTableCellMargins().left, 0, 0)));
+    }
+
+    public void hidePopup() {
+        menu.setVisible(false);
     }
 
     public abstract void valueChanged(T value);

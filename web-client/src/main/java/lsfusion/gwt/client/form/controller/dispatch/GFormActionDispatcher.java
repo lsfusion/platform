@@ -5,6 +5,7 @@ import lsfusion.gwt.client.action.*;
 import lsfusion.gwt.client.base.Result;
 import lsfusion.gwt.client.base.log.GLog;
 import lsfusion.gwt.client.base.view.DialogBoxHelper;
+import lsfusion.gwt.client.base.view.WindowHiddenHandler;
 import lsfusion.gwt.client.classes.GObjectClass;
 import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
 import lsfusion.gwt.client.controller.remote.action.RequestAsyncCallback;
@@ -48,11 +49,18 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
         if (action.modalityType.isModal()) {
             pauseDispatching();
         }
-        form.openForm(getDispatchingIndex(), action.form, action.modalityType, action.forbidDuplicate, editEvent, () -> {
+        WindowHiddenHandler onClose = () -> {
             if (action.modalityType.isModal()) {
                 continueDispatching();
             }
-        });
+        };
+        try {
+            form.openForm(getDispatchingIndex(), action.form, action.modalityType, action.forbidDuplicate, editEvent, onClose);
+        } catch (Throwable t) {
+            onClose.onHidden();
+            throw t;
+        }
+
     }
 
     @Override

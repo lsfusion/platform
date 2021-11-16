@@ -22,6 +22,7 @@ import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.design.GFontMetrics;
 import lsfusion.gwt.client.form.filter.user.GCompare;
+import lsfusion.gwt.client.form.filter.user.GFilter;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
@@ -1929,7 +1930,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
                 filters.addAll(getFilters(config.getArrayString("cols"), colKeyValues));
 
                 config.getArrayString("rows").push(caption);
-                grid.userFilters.applyFilters(filters, false);
+                grid.filter.applyFilters(filters, false);
 //                updateView(true, null);
             });
             menuBar.addItem(menuItem);
@@ -1944,7 +1945,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         for (int i = 0; i < elements.length(); i++) {
             Column column = columnMap.get(elements.get(i));
             if (column != null)
-                filters.add(new GPropertyFilter(grid.groupObject, column.property, column.columnKey, getObjectValue(values, i), GCompare.EQUALS));
+                filters.add(new GPropertyFilter(new GFilter(column.property), grid.groupObject, column.columnKey, getObjectValue(values, i), GCompare.EQUALS));
         }
         return filters;
     }

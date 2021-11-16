@@ -165,6 +165,6 @@ public class FlexTabbedPanel extends FlexPanel implements IndexedPanel, Requires
     }
 
     public void fixFlexBasis(boolean vertical) {
-        impl.fixFlexBasis(this, vertical);
+        impl.fixFlexBasis(this, vertical, false);
     }
 }

@@ -1,12 +1,12 @@
 package lsfusion.gwt.client.form.object.table.tree.controller;
 
-import com.google.gwt.user.client.ui.Panel;
 import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.GFormChanges;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
+import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.filter.user.GFilter;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
@@ -47,7 +47,7 @@ public class GTreeGroupController extends GAbstractTableController {
     }
 
     protected void configureToolbar() {
-        addUserFilterComponent();
+        initFilters();
 
         addToolbarSeparator();
 
@@ -58,9 +58,10 @@ public class GTreeGroupController extends GAbstractTableController {
     }
 
     @Override
-    public GFilter getFilterComponent() {
-        return treeGroup.filter;
+    public List<GFilter> getFilters() {
+        return treeGroup.filters;
     }
+
     public GFont getFont() {
         return treeGroup.font;
     }
@@ -109,9 +110,9 @@ public class GTreeGroupController extends GAbstractTableController {
         for (GGroupObject groupObject : treeGroup.groups)
             formController.setFiltersVisible(groupObject, isTreeVisible);
 
-        if (userFilters != null) {
-            userFilters.update();
-            userFilters.setVisible(isTreeVisible);
+        if (filter != null) {
+            filter.update();
+            filter.setVisible(isTreeVisible);
         }
 
         if(expandTreeButton != null) {
@@ -207,8 +208,8 @@ public class GTreeGroupController extends GAbstractTableController {
     }
 
     @Override
-    public GPropertyDraw getSelectedProperty() {
-        return tree.getCurrentProperty();
+    public GPropertyDraw getSelectedFilterProperty() {
+        return tree.getSelectedFilterProperty();
     }
 
     @Override
@@ -224,6 +225,11 @@ public class GTreeGroupController extends GAbstractTableController {
     @Override
     public List<Pair<Column, String>> getSelectedColumns() {
         return tree.getSelectedColumns(getSelectedGroupObject());
+    }
+
+    @Override
+    public GContainer getFiltersContainer() {
+        return treeGroup.filtersContainer;
     }
 
     public boolean focusFirstWidget() {

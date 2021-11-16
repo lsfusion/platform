@@ -6,10 +6,9 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.Pair;
-import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.design.view.flex.LinearCaptionContainer;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
-import lsfusion.gwt.client.form.object.panel.controller.GPropertyPanelController;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.classes.view.ActionCellRenderer;
 
@@ -19,27 +18,17 @@ public class ActionPanelRenderer extends PanelRenderer {
 
 //    private final GFormController form;
 
-    private Label label;
-    public ActionPanelRenderer(final GFormController form, ActionOrPropertyValueController controller, final GPropertyDraw property, GGroupObjectValue columnKey, GPropertyPanelController.CaptionContainer captionContainer) {
+    public ActionPanelRenderer(final GFormController form, ActionOrPropertyValueController controller, final GPropertyDraw property, GGroupObjectValue columnKey, LinearCaptionContainer captionContainer) {
         super(form, controller, property, columnKey, captionContainer);
 
-        // we don't need to wrap value in any container (which is important for LinearContainerView since it can override set baseSizes)
-        // because any panel renderer is wrapped in renderersPanel (see getComponent usage)
-        // however addFill there will override value sizes set in setDynamic, but it doesn't matter now
-        Pair<Integer, Integer> valueSizes = value.setDynamic(false);
-        assert !property.isAutoDynamicHeight();
-        if(captionContainer != null) {
-            // creating virtual value component with the same size as value and return it as a value
-            label = new Label();
-            captionContainer.put(value, label, valueSizes, property.getPanelCaptionAlignment());
-        }
+        value.setDynamic(false);
 
         finalizeInit();
     }
 
     @Override
     public Widget getComponent() {
-        return label != null ? label : value;
+        return value;
     }
 
     @Override

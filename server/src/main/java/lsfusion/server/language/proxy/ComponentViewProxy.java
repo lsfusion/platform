@@ -17,6 +17,10 @@ public class ComponentViewProxy<T extends ComponentView> extends ViewProxy<T> {
         target.autoSize = autoSize;
     }
 
+    public void setSpan(int span) {
+        target.span = span;
+    }
+
     public void setDefaultComponent(boolean defaultComponent) {
         target.defaultComponent = defaultComponent;
     }
@@ -40,6 +44,14 @@ public class ComponentViewProxy<T extends ComponentView> extends ViewProxy<T> {
 
     public void setFlex(double flex) {
         target.setFlex(flex);
+    }
+
+    public void setShrink(boolean shrink) {
+        target.setShrink(shrink);
+    }
+
+    public void setAlignShrink(boolean alignShrink) {
+        target.setShrink(alignShrink);
     }
 
     public void setAlign(FlexAlignment alignment) {

@@ -14,9 +14,9 @@ import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.controller.remote.serialization.ClientIdentitySerializable;
 import lsfusion.client.form.controller.remote.serialization.ClientSerializationPool;
 import lsfusion.client.form.design.ClientComponent;
+import lsfusion.client.form.design.view.flex.LinearCaptionContainer;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientGroupObjectValue;
-import lsfusion.client.form.object.panel.controller.PropertyPanelController;
 import lsfusion.client.form.object.table.controller.TableController;
 import lsfusion.client.form.property.async.ClientAsyncChange;
 import lsfusion.client.form.property.async.ClientAsyncEventExec;
@@ -218,7 +218,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return renderer;
     }
 
-    public PanelView getPanelView(ClientFormController form, ClientGroupObjectValue columnKey, PropertyPanelController.CaptionContainer captionContainer) {
+    public PanelView getPanelView(ClientFormController form, ClientGroupObjectValue columnKey, LinearCaptionContainer captionContainer) {
         return baseType.getPanelView(this, columnKey, form, captionContainer);
     }
 

@@ -10,6 +10,7 @@ import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.FormView;
+import lsfusion.server.logics.form.interactive.design.filter.FilterView;
 import lsfusion.server.logics.form.interactive.design.object.GridView;
 import lsfusion.server.logics.form.interactive.design.object.GroupObjectView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
@@ -152,6 +153,16 @@ public class ScriptingFormView {
     public PropertyDrawView getPropertyView(String name, List<String> mapping, Version version) throws ScriptingErrorLog.SemanticErrorException {
         PropertyDrawEntity drawEntity = ScriptingFormEntity.getPropertyDraw(LM, view.entity, PropertyDrawEntity.createSID(name, mapping), version);
         return view.get(drawEntity);
+    }
+
+    public FilterView getFilterView(String name, Version version) throws ScriptingErrorLog.SemanticErrorException {
+        PropertyDrawEntity drawEntity = ScriptingFormEntity.getPropertyDraw(LM, view.entity, name, version);
+        return view.getFilter(drawEntity);
+    }
+
+    public FilterView getFilterView(String name, List<String> mapping, Version version) throws ScriptingErrorLog.SemanticErrorException {
+        PropertyDrawEntity drawEntity = ScriptingFormEntity.getPropertyDraw(LM, view.entity, PropertyDrawEntity.createSID(name, mapping), version);
+        return view.getFilter(drawEntity);
     }
 
     public PropertyObjectEntity addPropertyObject(ScriptingLogicsModule.AbstractFormPropertyUsage property) throws ScriptingErrorLog.SemanticErrorException {

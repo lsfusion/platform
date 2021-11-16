@@ -1,8 +1,6 @@
 package lsfusion.client.form.design.view;
 
 import lsfusion.client.form.design.view.widget.Widget;
-import lsfusion.client.form.filter.user.view.FilterView;
-import lsfusion.client.form.object.table.view.ToolbarView;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;

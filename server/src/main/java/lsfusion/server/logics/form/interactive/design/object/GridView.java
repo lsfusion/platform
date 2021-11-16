@@ -46,12 +46,12 @@ public class GridView extends ComponentView {
     }
 
     @Override
-    public double getBaseDefaultFlex(FormEntity formEntity) {
+    public double getDefaultFlex(FormEntity formEntity) {
         return 1;
     }
 
     @Override
-    public FlexAlignment getBaseDefaultAlignment(FormEntity formEntity) {
+    public FlexAlignment getDefaultAlignment(FormEntity formEntity) {
         return FlexAlignment.STRETCH;
     }
 

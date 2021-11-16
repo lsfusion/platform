@@ -6,6 +6,8 @@ import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.form.ClientFormChanges;
 import lsfusion.client.form.controller.ClientFormController;
+import lsfusion.client.form.design.ClientContainer;
+import lsfusion.client.form.design.view.ClientContainerView;
 import lsfusion.client.form.design.view.ClientFormLayout;
 import lsfusion.client.form.filter.user.ClientPropertyFilter;
 import lsfusion.client.form.filter.user.controller.FilterController;
@@ -52,7 +54,8 @@ public class TreeGroupController extends AbstractTableController {
         lastGroupObject = BaseUtils.last(treeGroup.groups);
 
         if (!treeGroup.plainTreeMode) {
-            filter = new FilterController(this, treeGroup.filter) {
+            ClientContainerView filtersContainer = formLayout.getContainerView(treeGroup.filtersContainer);
+            filter = new FilterController(this, treeGroup.filters, filtersContainer) {
                 public void applyFilters(List<ClientPropertyFilter> conditions, boolean focusFirstComponent) {
                     RmiQueue.runAction(new Runnable() {
                         @Override
@@ -70,11 +73,9 @@ public class TreeGroupController extends AbstractTableController {
                 }
             };
 
-            filter.addView(formLayout);
+            initFilterButtons();
 
-            addToToolbar(filter.getToolbarButton());
-
-            filter.getView().addActionsToInputMap(tree);
+            filter.addActionsToInputMap(tree);
 
             addToolbarSeparator();
             
@@ -150,10 +151,8 @@ public class TreeGroupController extends AbstractTableController {
             toolbarView.setVisible(isTreeVisible);
         }
 
-        if (filter != null) {
-            filter.update();
-            filter.setVisible(isTreeVisible);
-        }
+        filter.update();
+        filter.setVisible(isTreeVisible);
         
         for (ClientGroupObject groupObject : treeGroup.groups) {
             formController.setFiltersVisible(groupObject, isTreeVisible);
@@ -302,9 +301,10 @@ public class TreeGroupController extends AbstractTableController {
     }
 
     @Override
-    public ClientPropertyDraw getSelectedProperty() {
-        return tree.getSelectedProperty();
+    public ClientPropertyDraw getSelectedFilterProperty() {
+        return tree.getSelectedFilterProperty();
     }
+
     @Override
     public ClientGroupObjectValue getSelectedColumn() {
         return ClientGroupObjectValue.EMPTY; // пока не поддерживаются группы в колонки
@@ -318,6 +318,11 @@ public class TreeGroupController extends AbstractTableController {
     @Override
     public List<Pair<Column, String>> getSelectedColumns() {
         return tree.getFilterColumns(getSelectedGroupObject());
+    }
+
+    @Override
+    public ClientContainer getFiltersContainer() {
+        return treeGroup.getFiltersContainer();
     }
 
     @Override

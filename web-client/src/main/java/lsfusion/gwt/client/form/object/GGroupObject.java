@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.form.object;
 
 import lsfusion.gwt.client.base.jsni.HasNativeSID;
+import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.filter.user.GFilter;
 import lsfusion.gwt.client.form.object.table.GToolbar;
 import lsfusion.gwt.client.form.object.table.grid.GGrid;
@@ -20,9 +21,11 @@ import java.util.Map;
 public class GGroupObject implements Serializable, HasNativeSID {
     public List<GObject> objects = new ArrayList<>();
 
+    public GContainer filtersContainer;
+    public List<GFilter> filters = new ArrayList<>();
+    
     public GGrid grid;
     public GToolbar toolbar;
-    public GFilter userFilter;
 
     public int ID;
     public String nativeSID;

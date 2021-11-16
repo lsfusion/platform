@@ -57,7 +57,7 @@ public class FlatRolloverButton extends ButtonWidget {
     
     public void updateBackground() {
         setBackground(showBackground ? SwingDefaults.getSelectionColor() : null);
-        setBorder(showBackground ? SwingDefaults.getButtonBorder() : null);
+        setBorder(showBackground ? SwingDefaults.getButtonBorder() : SwingDefaults.getDefaultButtonBorder());
     }
 
     @Override

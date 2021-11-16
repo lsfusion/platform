@@ -5,6 +5,8 @@ import lsfusion.base.file.RawFileData;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.design.view.ClientFormLayout;
 import lsfusion.client.form.design.view.FlexPanel;
+import lsfusion.client.form.design.view.flex.CaptionContainerHolder;
+import lsfusion.client.form.design.view.flex.LinearCaptionContainer;
 import lsfusion.client.form.design.view.widget.Widget;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.property.ClientPropertyDraw;
@@ -123,13 +125,23 @@ public class PropertyPanelController {
         void put(Widget widget, Pair<Integer, Integer> valueSizes, FlexAlignment alignment);
     }
 
-    public static class Panel extends FlexPanel {
+    public static class Panel extends FlexPanel implements CaptionContainerHolder {
 
         public Panel(boolean vertical) {
             super(vertical);
         }
 
-        public CaptionContainer captionContainer;
+        public LinearCaptionContainer captionContainer;
+
+        @Override
+        public void setCaptionContainer(LinearCaptionContainer captionContainer) {
+            this.captionContainer = captionContainer; 
+        }
+
+        @Override
+        public FlexAlignment getCaptionHAlignment() {
+            return FlexAlignment.START;
+        }
     }
 
     public void update(Color rowBackground, Color rowForeground) {

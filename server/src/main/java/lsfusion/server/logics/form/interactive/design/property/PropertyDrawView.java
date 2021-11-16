@@ -138,19 +138,19 @@ public class PropertyDrawView extends ComponentView {
     }
 
     @Override
-    public double getBaseDefaultFlex(FormEntity formEntity) {
+    public double getDefaultFlex(FormEntity formEntity) {
         ContainerView container = getLayoutParamContainer();
         if(((container != null && container.isHorizontal()) || entity.isList(formEntity)) && isHorizontalValueFlex()) // если верхний контейнер горизонтальный или grid и свойство - flex, возвращаем -2
             return -2; // выставляем flex - равный ширине
-        return super.getBaseDefaultFlex(formEntity);
+        return super.getDefaultFlex(formEntity);
     }
 
     @Override
-    public FlexAlignment getBaseDefaultAlignment(FormEntity formEntity) {
+    public FlexAlignment getDefaultAlignment(FormEntity formEntity) {
         ContainerView container = getLayoutParamContainer();
         if (container != null && !container.isHorizontal() && isHorizontalValueFlex())
             return FlexAlignment.STRETCH;
-        return super.getBaseDefaultAlignment(formEntity);
+        return super.getDefaultAlignment(formEntity);
     }
 
     public Map<String, AsyncEventExec> getAsyncEventExec(ServerContext context) {

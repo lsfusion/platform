@@ -91,10 +91,7 @@ public class GFormLayout extends ResizableSimplePanel {
         add(container, viewWidget, null);
 
         // debug info
-        if (container.sID != null) {
-            viewWidget.getElement().setAttribute("lsfusion-container", container.sID);
-            viewWidget.getElement().setAttribute("lsfusion-container-type", container.getContainerType());
-        }
+        viewWidget.getElement().setAttribute("lsfusion-container-type", container.getContainerType());
 
         for (GComponent child : container.children) {
             if(child instanceof GGrid)
@@ -116,6 +113,10 @@ public class GFormLayout extends ResizableSimplePanel {
     }
 
     public void add(GComponent key, Widget view, DefaultFocusReceiver focusReceiver) {
+        // debug info
+        if (key.sID != null)
+            view.getElement().setAttribute("lsfusion-container", key.sID);
+
         GAbstractContainerView containerView;
         if(key.container != null && (containerView = containerViews.get(key.container)) != null) { // container can be null when component should be layouted manually, containerView can be null when it is removed 
             containerView.add(key, view);

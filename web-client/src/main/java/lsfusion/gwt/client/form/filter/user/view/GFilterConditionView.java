@@ -10,6 +10,9 @@ import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.view.FlexPanel;
+import lsfusion.gwt.client.base.view.GFlexAlignment;
+import lsfusion.gwt.client.form.design.view.flex.CaptionContainerHolder;
+import lsfusion.gwt.client.form.design.view.flex.LinearCaptionContainer;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
@@ -18,12 +21,9 @@ import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButt
 import lsfusion.gwt.client.form.view.Column;
 import lsfusion.gwt.client.view.StyleDefaults;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-public class GFilterConditionView extends FlexPanel {
+public class GFilterConditionView extends FlexPanel implements CaptionContainerHolder {
     private static final ClientMessages messages = ClientMessages.Instance.get();
     public interface UIHandler {
         void addEnterBinding(Widget widget);
@@ -50,18 +50,29 @@ public class GFilterConditionView extends FlexPanel {
 
     private Widget junctionSeparator;
     private GToolbarButton junctionView;
+    
+    private FlexPanel leftPanel;
+    private FlexPanel rightPanel; 
+    private LinearCaptionContainer captionContainer;
 
-    public boolean allowNull = false;
+    public boolean allowNull;
 
     private boolean isLast = false;
+    private final UIHandler uiHandler;
     private boolean toolsVisible;
 
     // may not be applied without "Allow NULL", but we want to keep condition visible
     public boolean isConfirmed;
 
-    public GFilterConditionView(GPropertyFilter iCondition, GTableController logicsSupplier, final UIHandler handler, boolean toolsVisible, boolean readSelectedValue) {
+    public GFilterConditionView(GPropertyFilter iCondition, GTableController logicsSupplier, final UIHandler uiHandler, boolean toolsVisible, boolean readSelectedValue) {
         this.condition = iCondition;
+        this.uiHandler = uiHandler;
         this.toolsVisible = toolsVisible;
+
+        allowNull = !condition.isFixed();
+        
+        leftPanel = new FlexPanel();
+        rightPanel = new FlexPanel();
 
         List<Pair<Column, String>> selectedColumns = logicsSupplier.getSelectedColumns();
         for (Pair<Column, String> column : selectedColumns) {
@@ -72,16 +83,19 @@ public class GFilterConditionView extends FlexPanel {
         String currentCaption = columns.get(currentColumn);
         
         propertyLabel = new Label(currentCaption);
+        propertyLabel.setTitle(currentCaption);
         propertyLabel.addStyleName("userFilterLabel");
-        addCentered(propertyLabel);
+        leftPanel.addCentered(propertyLabel);
 
-        propertyView = new GFilterOptionSelector<Column>(new Column[0]) {
+        propertyView = new GFilterOptionSelector<Column>() {
             @Override
             public void valueChanged(Column column) {
                 condition.property = column.property;
                 condition.columnKey = column.columnKey;
 
-                propertyLabel.setText(columns.get(column));
+                String columnCaption = columns.get(column);
+                propertyLabel.setText(columnCaption);
+                propertyLabel.setTitle(columnCaption);
 
                 propertyChanged();
 
@@ -92,25 +106,31 @@ public class GFilterConditionView extends FlexPanel {
             propertyView.add(column.first, column.second);
         }
         propertyView.setSelectedValue(currentColumn, currentCaption);
-        addCentered(propertyView);
+        leftPanel.addCentered(propertyView);
         
         compareLabel = new Label();
         updateCompareLabelText();
         compareLabel.addStyleName("userFilterLabel");
-        addCentered(compareLabel);
+        compareLabel.setVisible(isFixed() && !toolsVisible);
+        leftPanel.addCentered(compareLabel);
 
-        compareView = new GFilterCompareSelector(condition) {
+        GCompare[] filterCompares = condition.property.getFilterCompares();
+        List<String> conditionsFullStrings = new ArrayList<>();
+        for (GCompare filterCompare : filterCompares) {
+            conditionsFullStrings.add(filterCompare.getFullString());
+        }
+        compareView = new GFilterCompareSelector(condition, Arrays.asList(filterCompares), conditionsFullStrings, allowNull) {
             @Override
             public void negationChanged(boolean value) {
                 condition.negation = value;
                 updateCompareLabelText();
-                handler.applyFilters(false);
+                uiHandler.applyFilters(false);
             }
 
             @Override
             public void allowNullChanged(boolean value) {
                 allowNull = value;
-                handler.applyFilters(false);
+                uiHandler.applyFilters(false);
             }
 
             @Override
@@ -118,43 +138,46 @@ public class GFilterConditionView extends FlexPanel {
                 super.valueChanged(value);
                 condition.compare = value;
                 updateCompareLabelText();
-                handler.applyFilters(false);
+                valueView.changeCompare(value);
+                uiHandler.applyFilters(false);
             }
         };
         compareView.setSelectedValue(condition.compare);
-        addCentered(compareView);
+        compareView.setVisible(!isFixed() || toolsVisible);
+        leftPanel.addCentered(compareView);
 
         valueView = new GDataFilterValueView(condition.value, logicsSupplier) {
             @Override
             public void valueChanged(Object value) {
                 super.valueChanged(value);
-                handler.applyFilters(cell.enterPressed);
+                uiHandler.applyFilters(cell.enterPressed);
             }
 
             @Override
             public void editingCancelled() {
                 super.editingCancelled();
-                if (!isConfirmed) {
-                    handler.removeCondition(condition);
+                if (!isConfirmed && !isFixed()) {
+                    GFilterConditionView.this.remove();
                 }
             }
         };
-        addCentered(valueView);
-        valueView.changeProperty(condition.property, condition.columnKey, readSelectedValue); // it's important to do it after adding to the container because setStatic -> setBaseSize is called inside (and adding to container also calls it and override with default value)
-        handler.addEnterBinding(valueView.cell);
+        rightPanel.addCentered(valueView);
+        valueView.changeProperty(condition, readSelectedValue); // it's important to do it after adding to the container because setStatic -> setBaseSize is called inside (and adding to container also calls it and override with default value)
+        uiHandler.addEnterBinding(valueView.cell);
 
-        deleteButton = new GToolbarButton(DELETE_ICON_PATH, messages.formQueriesFilterRemoveCondition()) {
+        deleteButton = new GToolbarButton(DELETE_ICON_PATH, messages.formFilterRemoveCondition()) {
             @Override
             public ClickHandler getClickHandler() {
-                return event -> handler.removeCondition(condition);
+                return event -> GFilterConditionView.this.remove();
             }
         };
         deleteButton.addStyleName("userFilterButton");
-        addCentered(deleteButton);
+        deleteButton.setVisible(!isFixed() || toolsVisible);
+        rightPanel.addCentered(deleteButton);
 
         junctionSeparator = GwtClientUtils.createVerticalSeparator(StyleDefaults.COMPONENT_HEIGHT);
         junctionSeparator.addStyleName("userFilterJunctionSeparator");
-        addCentered(junctionSeparator);
+        rightPanel.addCentered(junctionSeparator);
 
         junctionView = new GToolbarButton(SEPARATOR_ICON_PATH, messages.formFilterConditionViewOr()) {
             @Override
@@ -162,16 +185,30 @@ public class GFilterConditionView extends FlexPanel {
                 return event -> {
                     condition.junction = !condition.junction;
                     showBackground(!condition.junction);
-                    handler.applyFilters(false);
+                    uiHandler.applyFilters(false);
                 };
             }
         };
         junctionView.addStyleName("userFilterButton");
         junctionView.getElement().getStyle().setPaddingTop(0, Style.Unit.PX);
         junctionView.showBackground(!condition.junction);
-        addCentered(junctionView);
+        rightPanel.addCentered(junctionView);
     }
     
+    public void initView() {
+        if (captionContainer == null) {
+            addCentered(leftPanel);
+        } else {
+            captionContainer.put(leftPanel, GFlexAlignment.CENTER);
+        }
+        
+        addCentered(rightPanel);
+    }
+    
+    public boolean isFixed() {
+        return condition.isFixed();
+    }
+
     private void updateCompareLabelText() {
         String negationString = condition.negation ? "!" : "";
         compareLabel.setText(negationString + condition.compare);
@@ -193,13 +230,16 @@ public class GFilterConditionView extends FlexPanel {
 
     public void setToolsVisible(boolean visible) {
         toolsVisible = visible;
-        deleteButton.setVisible(visible);
 
         propertyLabel.setVisible(!toolsVisible);
         propertyView.setVisible(toolsVisible);
 
-        compareLabel.setVisible(!toolsVisible);
-        compareView.setVisible(toolsVisible);
+        if (isFixed()) {
+            compareLabel.setVisible(!toolsVisible);
+            compareView.setVisible(toolsVisible);
+
+            deleteButton.setVisible(visible);
+        }
 
         updateJunctionVisibility();
     }
@@ -210,7 +250,7 @@ public class GFilterConditionView extends FlexPanel {
     }
     
     private void propertyChanged() {
-        valueView.changeProperty(condition.property, condition.columnKey);
+        valueView.changeProperty(condition);
         
         GCompare oldCompare = condition.compare;
         GCompare[] filterCompares = condition.property.getFilterCompares();
@@ -233,5 +273,30 @@ public class GFilterConditionView extends FlexPanel {
     public void startEditing(Event keyEvent) {
         // scheduleDeferred to fix focus issues with quick filter (adding condition by char key) 
         Scheduler.get().scheduleDeferred(() -> valueView.startEditing(keyEvent));
+    }
+
+    public void clearValueView() {
+        valueView.cell.updateValue(null);
+        setApplied(allowNull);
+    }
+    
+    private void remove() {
+        propertyView.hidePopup();
+        compareView.hidePopup();
+        uiHandler.removeCondition(condition);
+    }
+
+    public void setApplied(boolean applied) {
+        valueView.setApplied(applied);
+    }
+
+    @Override
+    public void setCaptionContainer(LinearCaptionContainer captionContainer) {
+        this.captionContainer = captionContainer;
+    }
+
+    @Override
+    public GFlexAlignment getCaptionHAlignment() {
+        return GFlexAlignment.START;
     }
 }

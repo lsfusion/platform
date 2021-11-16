@@ -2,14 +2,17 @@ package lsfusion.client.form.filter.user.view;
 
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.classes.data.ClientRichTextClass;
+import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.classes.data.ClientTextClass;
 import lsfusion.client.form.controller.ClientFormController;
+import lsfusion.client.form.design.view.widget.TableWidget;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.object.table.controller.TableController;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.async.ClientAsyncExec;
 import lsfusion.client.form.property.async.ClientInputList;
 import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
+import lsfusion.client.form.property.cell.classes.controller.suggest.CompletionType;
 import lsfusion.client.form.property.cell.controller.PropertyTableCellEditor;
 import lsfusion.client.form.property.cell.view.PropertyRenderer;
 import lsfusion.client.form.property.table.view.AsyncChangeInterface;
@@ -17,6 +20,7 @@ import lsfusion.client.form.property.table.view.AsyncInputComponent;
 import lsfusion.client.form.property.table.view.TableTransferHandler;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.event.KeyStrokes;
+import lsfusion.interop.form.property.Compare;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -30,21 +34,25 @@ import java.text.ParseException;
 import java.util.EventObject;
 import java.util.List;
 
-class DataFilterValueViewTable extends JTable implements TableTransferHandler.TableInterface, AsyncChangeInterface {
+class DataFilterValueViewTable extends TableWidget implements TableTransferHandler.TableInterface, AsyncChangeInterface {
     private DataFilterValueView valueFilterView;
     private final Model model;
     private EventObject editEvent;
     private final TableController logicsSupplier;
 
-    public static final ClientInputList FILTER = new ClientInputList(new String[0], new ClientAsyncExec[0], false);
+    private ClientInputList inputList;
 
-    public DataFilterValueViewTable(DataFilterValueView valueFilterView, ClientPropertyDraw property, TableController ilogicsSupplier) {
+    private boolean applied;
+
+    public DataFilterValueViewTable(DataFilterValueView valueFilterView, ClientPropertyDraw property, Compare compare, TableController ilogicsSupplier) {
         super(new Model());
 
         logicsSupplier = ilogicsSupplier;
 
         model = (Model) getModel();
         model.setProperty(property);
+        
+        changeInputList(compare);
 
         SwingUtils.setupClientTable(this);
         SwingUtils.setupSingleCellTable(this);
@@ -197,7 +205,7 @@ class DataFilterValueViewTable extends JTable implements TableTransferHandler.Ta
 
     @Override
     public ClientInputList getCurrentInputList() {
-        return FILTER;
+        return inputList;
     }
 
     @Override
@@ -230,6 +238,7 @@ class DataFilterValueViewTable extends JTable implements TableTransferHandler.Ta
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             PropertyRenderer renderer = getProperty().getRendererComponent();
             renderer.updateRenderer(value, isSelected, hasFocus, false, DataFilterValueViewTable.this.hasFocus());
+            renderer.getComponent().setBackground(applied ? SwingDefaults.getSelectionColor() : SwingDefaults.getTableCellBackground());
             return renderer.getComponent();
         }
     }
@@ -289,6 +298,24 @@ class DataFilterValueViewTable extends JTable implements TableTransferHandler.Ta
     public boolean editorEnterPressed() {
         TableCellEditor editor = getCellEditor();
         return editor != null && ((Editor) editor).enterPressed;
+    }
+
+    @Override
+    public void updateUI() {
+        super.updateUI();
+
+        setBorder(SwingDefaults.getTextFieldBorder());
+    }
+
+    public void setApplied(boolean applied) {
+        this.applied = applied;
+        repaint();
+    }
+
+    public void changeInputList(Compare compare) {
+        inputList = new ClientInputList(new String[0],
+                new ClientAsyncExec[0],
+                compare == Compare.EQUALS || compare == Compare.NOT_EQUALS ? CompletionType.SEMI_STRICT : CompletionType.NON_STRICT);
     }
 
     private static final class Model extends AbstractTableModel {
