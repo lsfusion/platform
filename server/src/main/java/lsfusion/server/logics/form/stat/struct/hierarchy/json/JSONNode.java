@@ -78,7 +78,7 @@ public class JSONNode implements Node<JSONNode> {
         try {
             MList<Pair<Object, JSONNode>> mResult = ListFact.mList();
             Object child = element.opt(key);
-            if(child != null) {
+            if(child != null && child != JSONObject.NULL) {
                 if (isIndex) {
                     JSONArray array = (JSONArray) child;
                     for (int i = 0, size = array.length(); i < size; i++)
