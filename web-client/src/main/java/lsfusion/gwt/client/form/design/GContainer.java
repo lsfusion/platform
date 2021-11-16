@@ -27,6 +27,7 @@ public class GContainer extends GComponent {
 
     public int lines;
     public Integer lineSize;
+    public boolean lineShrink;
 
     public ArrayList<GComponent> children = new ArrayList<>();
 
@@ -168,6 +169,10 @@ public class GContainer extends GComponent {
     
     public Integer getLineSize() {
         return lineSize;
+    }
+
+    public boolean isLineShrink() {
+        return lineShrink;
     }
 
     private class GCaptionReader implements GPropertyReader {

@@ -80,10 +80,6 @@ public class FlexPanelImpl {
         throw new IllegalStateException("Unknown alignment");
     }
 
-    protected String getFlexAttrName() {
-        return "flex";
-    }
-
     public void setupParentDiv(DivElement parent, boolean vertical, FlexPanel.GridLines gridLines, GFlexAlignment justify, boolean wrap) {
         boolean grid = gridLines != null;
 
@@ -105,8 +101,8 @@ public class FlexPanelImpl {
         parent.getStyle().setProperty("display", visible ? getDisplayValue(grid) : "none");
     }
 
-    public FlexPanel.WidgetLayoutData insertChild(Element parent, Element child, int beforeIndex, GFlexAlignment alignment, double flex, Integer flexBasis, boolean vertical, boolean grid) {
-        FlexPanel.WidgetLayoutData layoutData = new FlexPanel.WidgetLayoutData(new FlexPanel.FlexLayoutData(flex, flexBasis), new FlexPanel.AlignmentLayoutData(alignment));
+    public FlexPanel.WidgetLayoutData insertChild(Element parent, Element child, int beforeIndex, GFlexAlignment alignment, double flex, boolean shrink, Integer flexBasis, boolean vertical, boolean grid) {
+        FlexPanel.WidgetLayoutData layoutData = new FlexPanel.WidgetLayoutData(new FlexPanel.FlexLayoutData(flex, flexBasis, shrink), new FlexPanel.AlignmentLayoutData(alignment));
 
         updateFlex(layoutData.flex, child, vertical, grid);
         updateAlignment(layoutData.aligment, child, vertical, grid);
@@ -116,12 +112,15 @@ public class FlexPanelImpl {
         return layoutData;
     }
 
+    public String getFlexString(double flex) {
+        return flex + "";
+    }
     public String getFlexBasisString(Integer flexBasis) {
         return flexBasis == null ? "auto" : flexBasis + "px";
     }
 
     public void setAutoSizeFlex(Element child, FlexPanel.FlexLayoutData layoutData, boolean vertical, boolean grid) {
-        setFlex(child, 0, null, layoutData.gridLine, vertical, grid);
+        setFlex(child, 0, null, layoutData.gridLine, vertical, grid, layoutData.shrink);
     }
 
     public void setGridLines(Element parent, int count, boolean vertical) {
@@ -171,24 +170,27 @@ public class FlexPanelImpl {
     }
 
     //    private static String DROPCOLUMNSTRING = "-1px";
-    public static String getLineSizeString(double flex, Integer flexBasis) {
+    public static String getLineSizeString(double flex, Integer flexBasis, boolean shrink) {
         // it seems that  min-content is equivalent to auto in flex (and auto in grid layout for example often does not respect margins somewhy)
-        String flexBasisString = flexBasis == null ? "min-content" : flexBasis + "px";
+        String flexBasisString = flexBasis == null ? (shrink ? "0px" : "min-content") : flexBasis + "px";
         if(flex > 0)
             return "minmax(" + flexBasisString + "," + flex + "fr)";
 
         return flexBasisString;
     }
 
-    public void setFlex(Element child, double flex, Integer flexBasis, Integer gridLine, boolean vertical, boolean grid) {
-        // it's important to set min-width, min-height, because flex-basis is automatically set to min-height if it's smaller (test case in LinearContainerView)
-        FlexPanel.setBaseSize(child, vertical, flexBasis, false); // last parameter is false because we're setting main size
-
+    public void setFlex(Element child, double flex, Integer flexBasis, Integer gridLine, boolean vertical, boolean grid, boolean shrink) {
         if(grid) {
             if(gridLine != null)
-                updateGridLineSize(child, gridLine, vertical, getLineSizeString(flex, flexBasis));
+                updateGridLineSize(child, gridLine, vertical, getLineSizeString(flex, flexBasis, shrink));
         } else
-            child.getStyle().setProperty(getFlexAttrName(), getFlexValue(flex, getFlexBasisString(flexBasis)));
+            child.getStyle().setProperty("flex", getFlexString(flex) + " " + getFlexString(shrink ? 1 : 0) + " " + getFlexBasisString(flexBasis));
+
+        if(shrink) // otherwise min-width won't let the container to shrink
+            flexBasis = 0;
+
+        // it's important to set min-width, min-height, because flex-basis is automatically set to min-height if it's smaller (test case in LinearContainerView)
+        FlexPanel.setBaseSize(child, vertical, flexBasis, false); // last parameter is false because we're setting main size
     }
 
     public void setSpan(Element child, int span, boolean vertical) {
@@ -213,7 +215,7 @@ public class FlexPanelImpl {
     }
 
     public void updateFlex(FlexPanel.FlexLayoutData layoutData, Element child, boolean vertical, boolean grid) {
-        setFlex(child, layoutData.flex, layoutData.flexBasis, layoutData.gridLine, vertical, grid);
+        setFlex(child, layoutData.flex, layoutData.flexBasis, layoutData.gridLine, vertical, grid, layoutData.shrink);
     }
 
     public void updateAlignment(FlexPanel.AlignmentLayoutData layoutData, Element child, boolean vertical, boolean grid) {

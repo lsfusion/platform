@@ -75,23 +75,24 @@ public class TreeGroupView extends ComponentView implements ServerIdentitySerial
         toolbarSystem = new ToolbarView(idGenerator.idShift());
 
         filtersContainer = new ContainerView(idGenerator.idShift());
-        filtersContainer.setType(ContainerType.CONTAINERV);
-        filtersContainer.setLines(DefaultFormView.GROUP_CONTAINER_LINES_COUNT);
+        filtersContainer.setType(ContainerType.CONTAINERH);
+//        filtersContainer.setType(ContainerType.CONTAINERV);
+//        filtersContainer.setLines(DefaultFormView.GROUP_CONTAINER_LINES_COUNT);
         filtersContainer.setAlignment(FlexAlignment.STRETCH);
-        filtersContainer.setAlignCaptions(true);
-        filtersContainer.setLineSize(0);
+//        filtersContainer.setAlignCaptions(true);
+//        filtersContainer.setLineSize(0);
         filtersContainer.setCaption(LocalizedString.create(ThreadLocalContext.localize("{form.view.filters.container}")));
 
         filters = NFFact.orderSet();
     }
 
     @Override
-    public double getBaseDefaultFlex(FormEntity formEntity) {
+    public double getDefaultFlex(FormEntity formEntity) {
         return 1;
     }
 
     @Override
-    public FlexAlignment getBaseDefaultAlignment(FormEntity formEntity) {
+    public FlexAlignment getDefaultAlignment(FormEntity formEntity) {
         return FlexAlignment.STRETCH;
     }
 

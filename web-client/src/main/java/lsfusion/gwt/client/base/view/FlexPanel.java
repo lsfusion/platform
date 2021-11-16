@@ -107,30 +107,26 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
     }
 
     public void add(Widget widget, int beforeIndex, GFlexAlignment alignment) {
-        add(widget, beforeIndex, alignment, 0, null); // maybe here it also makes sense to set basis to 0 as in addFill, but for now it's used mostly in vertical container for simple components
+        add(widget, beforeIndex, alignment, 0, false, null); // maybe here it also makes sense to set basis to 0 as in addFill, but for now it's used mostly in vertical container for simple components
     }
 
     public void addFill(Widget widget) {
         addFill(widget, getWidgetCount());
     }
 
-    // we want to have the same behaviour as STRETCH : as flex-basis is 0, but auto size is relevant
-    // in theory this can be substituted with if parent layout is autosized ? null : 0, but sometimes we don't know parent layout
-    public static void setFillShrink(Widget widget) {
-        widget.getElement().getStyle().setProperty("flexShrink", "1");
-    }
     public void addFillFlex(Widget widget, Integer flexBasis) {
         addFill(widget, getWidgetCount(), flexBasis);
     }
 
-    public void addFill(Widget widget, GFlexAlignment alignment) {
-        add(widget, getWidgetCount(), alignment, 1, null);
-    }
-    public void addFill(Widget widget, int beforeIndex, Integer flexBasis) {
-        add(widget, beforeIndex, GFlexAlignment.STRETCH, 1, flexBasis);
+    public void addShrinkFlex(Widget widget, Integer flexBasis) {
+        add(widget, getWidgetCount(), GFlexAlignment.STRETCH, 0, true, flexBasis);
     }
 
-    public void add(Widget widget, int beforeIndex, GFlexAlignment alignment, double flex, Integer flexBasis) {
+    public void addFill(Widget widget, int beforeIndex, Integer flexBasis) {
+        add(widget, beforeIndex, GFlexAlignment.STRETCH, 1, false, flexBasis);
+    }
+
+    public void add(Widget widget, int beforeIndex, GFlexAlignment alignment, double flex, boolean shrink, Integer flexBasis) {
         // Detach new child.
         widget.removeFromParent();
 
@@ -140,7 +136,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
         // Physical attach.
         Element childElement = widget.getElement();
 
-        WidgetLayoutData layoutData = impl.insertChild(parentElement, childElement, beforeIndex, alignment, flex, flexBasis, vertical, isGrid());
+        WidgetLayoutData layoutData = impl.insertChild(parentElement, childElement, beforeIndex, alignment, flex, shrink, flexBasis, vertical, isGrid());
         widget.setLayoutData(layoutData);
 
         // Adopt.
@@ -236,7 +232,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
 
         @Override
         public String getString() {
-            return "repeat(auto-fit," + FlexPanelImpl.getLineSizeString(lineSize.flex, lineSize.flexBasis) + ")";
+            return "repeat(auto-fit," + FlexPanelImpl.getLineSizeString(lineSize.flex, lineSize.flexBasis, lineSize.shrink) + ")";
         }
 
         @Override
@@ -272,7 +268,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
             String[] gridColumnStrings = new String[lines.length];
             for(int i = 0; i < lines.length; i++) {
                 FlexPanel.FlexLayoutData gridColumn = lines[i];
-                gridColumnStrings[i] = FlexPanelImpl.getLineSizeString(gridColumn.flex, gridColumn.flexBasis);
+                gridColumnStrings[i] = FlexPanelImpl.getLineSizeString(gridColumn.flex, gridColumn.flexBasis, gridColumn.shrink);
             }
             return GwtSharedUtils.toString(" ", gridColumnStrings.length, gridColumnStrings);
         }
@@ -289,6 +285,8 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
 
         public Integer gridLine; // only for "main" widgets in column should be set
 
+        public boolean shrink;
+
         public boolean isFlex() {
             return baseFlex > 0;
         }
@@ -302,12 +300,14 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
             baseFlexBasis = flexBasis;
         }
 
-        public FlexLayoutData(double flex, Integer flexBasis) {
+        public FlexLayoutData(double flex, Integer flexBasis, boolean shrink) {
             this.flex = flex;
             this.baseFlex = flex;
 
             this.flexBasis = flexBasis;
             baseFlexBasis = flexBasis;
+
+            this.shrink = shrink;
         }
     }
 

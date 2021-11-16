@@ -85,6 +85,8 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
 
         component.setFlex(clientComponent.flex);
         component.setAlignment(convertFlexAlignment(clientComponent.alignment));
+        component.shrink = clientComponent.shrink;
+        component.alignShrink = clientComponent.alignShrink;
         component.marginTop = clientComponent.marginTop;
         component.marginBottom = clientComponent.marginBottom;
         component.marginLeft = clientComponent.marginLeft;
@@ -141,6 +143,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         container.alignCaptions = clientContainer.alignCaptions;
         container.lines = clientContainer.lines;
         container.lineSize = clientContainer.lineSize;
+        container.lineShrink = clientContainer.lineShrink;
 
         for (ClientComponent child : clientContainer.children) {
             GComponent childComponent = convertOrCast(child);

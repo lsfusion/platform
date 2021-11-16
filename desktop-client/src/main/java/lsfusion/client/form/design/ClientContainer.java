@@ -32,6 +32,7 @@ public class ClientContainer extends ClientComponent {
 
     public int lines = 1;
     public Integer lineSize = null;
+    public boolean lineShrink = false;
 
     public List<ClientComponent> children = new ArrayList<>();
     
@@ -57,6 +58,7 @@ public class ClientContainer extends ClientComponent {
 
         outStream.writeInt(lines);
         pool.writeInt(outStream, lineSize);
+        outStream.writeBoolean(lineShrink);
     }
 
     @Override
@@ -78,6 +80,7 @@ public class ClientContainer extends ClientComponent {
 
         lines = inStream.readInt();
         lineSize = pool.readInt(inStream);
+        lineShrink = inStream.readBoolean();
     }
 
     @Override

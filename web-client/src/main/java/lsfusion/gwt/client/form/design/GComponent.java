@@ -22,6 +22,8 @@ public class GComponent implements Serializable {
 
     protected double flex = 0;
     protected GFlexAlignment alignment;
+    public boolean shrink;
+    public boolean alignShrink;
 
     public int marginTop;
     public int marginBottom;
@@ -65,6 +67,14 @@ public class GComponent implements Serializable {
 
     public GFlexAlignment getAlignment() {
         return alignment;
+    }
+
+    public boolean isShrink() {
+        return shrink;
+    }
+
+    public boolean isAlignShrink() {
+        return alignShrink;
     }
 
     public void setAlignment(GFlexAlignment alignment) {

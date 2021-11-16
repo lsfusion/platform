@@ -70,11 +70,12 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
         toolbarSystem = new ToolbarView(idGen.idShift());
 
         filtersContainer = new ContainerView(idGen.idShift());
-        filtersContainer.setType(ContainerType.CONTAINERV);
-        filtersContainer.setLines(DefaultFormView.GROUP_CONTAINER_LINES_COUNT);
+        filtersContainer.setType(ContainerType.CONTAINERH);
+//        filtersContainer.setType(ContainerType.CONTAINERV);
+//        filtersContainer.setLines(DefaultFormView.GROUP_CONTAINER_LINES_COUNT);
         filtersContainer.setAlignment(FlexAlignment.STRETCH);
-        filtersContainer.setAlignCaptions(true);
-        filtersContainer.setLineSize(0);
+//        filtersContainer.setAlignCaptions(true);
+//        filtersContainer.setLineSize(0);
         filtersContainer.setCaption(LocalizedString.create(ThreadLocalContext.localize("{form.view.filters.container}")));
 
         filters = NFFact.orderSet();

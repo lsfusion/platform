@@ -302,7 +302,10 @@ button {
 
 /* ------------ Caption panel ------------ */
 
-.oppositeStretchAutoSizePanel {
+.oppositeStretchNoShrinkPanel {
+}
+
+.oppositeNoStretchShrinkPanel {
 }
 
 .leftBorder {
