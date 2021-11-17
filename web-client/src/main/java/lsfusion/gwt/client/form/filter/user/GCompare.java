@@ -1,5 +1,7 @@
 package lsfusion.gwt.client.form.filter.user;
 
+import lsfusion.gwt.client.ClientMessages;
+
 public enum GCompare {
     EQUALS, GREATER, LESS, GREATER_EQUALS, LESS_EQUALS, NOT_EQUALS, LIKE, MATCH, INARRAY;
 
@@ -94,13 +96,13 @@ public enum GCompare {
             case LESS_EQUALS :
                 return "<=";
             case NOT_EQUALS :
-                return "!=";
+                return "!= (" + ClientMessages.Instance.get().formFilterCompareNotEquals() + ")";
             case LIKE :
-                return "_ (LIKE)";
+                return "_ (" + ClientMessages.Instance.get().formFilterCompareLike() + ")";
             case MATCH:
-                return "@ (SEARCH)";
+                return "@ (" + ClientMessages.Instance.get().formFilterCompareSearch() + ")";
             case INARRAY :
-                return "IN ARRAY";
+                return ClientMessages.Instance.get().formFilterCompareInArray();
         }
         return "";
     }
@@ -108,23 +110,23 @@ public enum GCompare {
     public String getTooltipText() {
         switch (this) {
             case EQUALS :
-                return "=";
+                return ClientMessages.Instance.get().formFilterCompareEquals();
             case GREATER :
-                return ">";
+                return ClientMessages.Instance.get().formFilterCompareGreater();
             case LESS :
-                return "<";
+                return ClientMessages.Instance.get().formFilterCompareLess();
             case GREATER_EQUALS :
-                return ">=";
+                return ClientMessages.Instance.get().formFilterCompareGreaterEquals();
             case LESS_EQUALS :
-                return "<=";
+                return ClientMessages.Instance.get().formFilterCompareLessEquals();
             case NOT_EQUALS :
-                return "!=";
+                return ClientMessages.Instance.get().formFilterCompareNotEquals();
             case LIKE :
-                return "LIKE";
+                return ClientMessages.Instance.get().formFilterCompareLike();
             case MATCH:
-                return "SEARCH";
+                return ClientMessages.Instance.get().formFilterCompareSearch();
             case INARRAY :
-                return "IN ARRAY";
+                return ClientMessages.Instance.get().formFilterCompareInArray();
         }
         return "";
     }

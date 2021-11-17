@@ -1,6 +1,5 @@
 package lsfusion.client.form.filter.user.view;
 
-import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.form.filter.user.ClientPropertyFilter;
 import lsfusion.interop.form.property.Compare;
 
@@ -9,7 +8,11 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.util.List;
 
+import static lsfusion.client.ClientResourceBundle.getString;
+
 public abstract class FilterCompareSelector extends FilterOptionSelector<Compare> {
+    public final String NOT_STRING = getString("form.queries.filter.condition.not");
+    
     private boolean negation;
     private JCheckBox negationCB;
 
@@ -21,7 +24,8 @@ public abstract class FilterCompareSelector extends FilterOptionSelector<Compare
         negation = condition.negation;
         this.allowNull = allowNull;
 
-        negationCB = new JCheckBox("!");
+        negationCB = new JCheckBox("! (" + NOT_STRING + ")");
+        negationCB.setToolTipText(NOT_STRING);
         negationCB.setSelected(negation);
         negationCB.addActionListener(event -> {
             negation = negationCB.isSelected();
@@ -29,7 +33,7 @@ public abstract class FilterCompareSelector extends FilterOptionSelector<Compare
             updateText();
         });
         
-        allowNullCB = new JCheckBox(ClientResourceBundle.getString("form.queries.filter.condition.allow.null")) {
+        allowNullCB = new JCheckBox(getString("form.queries.filter.condition.allow.null")) {
             @Override
             public Dimension getPreferredSize() {
                 Dimension preferredSize = super.getPreferredSize();
@@ -84,7 +88,7 @@ public abstract class FilterCompareSelector extends FilterOptionSelector<Compare
 
     @Override
     public String getToolTipText(MouseEvent event) {
-        return (negation ? "!" : "") + currentValue.getTooltipText();
+        return (negation ? NOT_STRING + " " : "") + currentValue.getTooltipText();
     }
 
     public abstract void negationChanged(boolean value);

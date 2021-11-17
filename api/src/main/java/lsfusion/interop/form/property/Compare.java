@@ -4,6 +4,8 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
+import static lsfusion.base.ApiResourceBundle.getString;
+
 public enum Compare {
     EQUALS, GREATER, LESS, GREATER_EQUALS, LESS_EQUALS, NOT_EQUALS, LIKE, MATCH, INARRAY;
 
@@ -121,13 +123,13 @@ public enum Compare {
             case LESS_EQUALS :
                 return "<=";
             case NOT_EQUALS :
-                return "!=";
+                return "!= (" + getString("filter.compare.not.equals") + ")";
             case LIKE :
-                return "_ (LIKE)";
+                return "_ (" + getString("filter.compare.like") + ")";
             case MATCH:
-                return "@ (SEARCH)";
+                return "@ (" + getString("filter.compare.search") + ")";
             case INARRAY :
-                return "IN ARRAY";
+                return getString("filter.compare.in.array");
         }
         return "";
     }
@@ -135,23 +137,23 @@ public enum Compare {
     public String getTooltipText() {
         switch (this) {
             case EQUALS :
-                return "=";
+                return getString("filter.compare.equals");
             case GREATER :
-                return ">";
+                return getString("filter.compare.greater");
             case LESS :
-                return "<";
+                return getString("filter.compare.less");
             case GREATER_EQUALS :
-                return ">=";
+                return getString("filter.compare.greater.equals");
             case LESS_EQUALS :
-                return "<=";
+                return getString("filter.compare.less.equals");
             case NOT_EQUALS :
-                return "!=";
+                return getString("filter.compare.not.equals");
             case LIKE :
-                return "LIKE";
+                return getString("filter.compare.like");
             case MATCH:
-                return "SEARCH";
+                return getString("filter.compare.search");
             case INARRAY :
-                return "IN ARRAY";
+                return getString("filter.compare.in.array");
         }
         return "";
     }

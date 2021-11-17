@@ -210,9 +210,8 @@ public class GFilterConditionView extends FlexPanel implements CaptionContainerH
     }
 
     private void updateCompareLabelText() {
-        String negationString = condition.negation ? "!" : "";
-        compareLabel.setText(negationString + condition.compare);
-        compareLabel.setTitle(negationString + condition.compare.getTooltipText());
+        compareLabel.setText((condition.negation ? "!" : "") + condition.compare);
+        compareLabel.setTitle((condition.negation ? messages.formFilterCompareNot() + " " : "") + condition.compare.getTooltipText());
     }
 
     @Override

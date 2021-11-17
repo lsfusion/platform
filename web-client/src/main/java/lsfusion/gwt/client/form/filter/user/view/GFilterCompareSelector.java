@@ -14,6 +14,8 @@ import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import java.util.List;
 
 public abstract class GFilterCompareSelector extends GFilterOptionSelector<GCompare> {
+    public final String NOT_STRING = ClientMessages.Instance.get().formFilterCompareNot();
+    
     private FocusPanel focusPanel;
     
     private boolean negation;
@@ -27,7 +29,8 @@ public abstract class GFilterCompareSelector extends GFilterOptionSelector<GComp
         negation = condition.negation;
         this.allowNull = allowNull;
 
-        negationCB = new CheckBox("!");
+        negationCB = new CheckBox("! (" + NOT_STRING + ")");
+        negationCB.setTitle(NOT_STRING);
         negationCB.addStyleName("userFilterNegationCheckBox");
         negationCB.setValue(negation);
         negationCB.addValueChangeHandler(event -> {
@@ -87,7 +90,7 @@ public abstract class GFilterCompareSelector extends GFilterOptionSelector<GComp
 
     private void updateText() {
         setText(currentValue.toString());
-        setTitle((negation ? "!" : "") + currentValue.getTooltipText());
+        setTitle((negation ? NOT_STRING + " " : "") + currentValue.getTooltipText());
     }
 
     public abstract void negationChanged(boolean value);
