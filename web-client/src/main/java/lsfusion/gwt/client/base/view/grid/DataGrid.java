@@ -209,7 +209,7 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
                     if (tableFooterScroller != null) {
                         tableFooterScroller.setHorizontalScrollPosition(scrollLeft);
                     }
-                    setLeftNeighbourRightBorder(calcLeftNeighbourRightBorder(getSelectedRow(), getSelectedColumn(), true));
+                    setLeftNeighbourRightBorder(calcLeftNeighbourRightBorder(true));
                 });
             } else {
                 removeOuterGridBorders(headerPanel);
@@ -1221,7 +1221,7 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
 
         //calculate left neighbour right border for focused cell
         if (columnsChanged || selectedRowChanged || selectedColumnChanged || focusedChanged) {
-            pendingState.leftNeighbourRightBorder = calcLeftNeighbourRightBorderFocusedCellDOM();
+            pendingState.leftNeighbourRightBorder = calcLeftNeighbourRightBorder(isFocused);
         }
 
         //calculate left for sticky properties
@@ -1437,29 +1437,18 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
         }
     }
 
-    private LeftNeighbourRightBorder calcLeftNeighbourRightBorderFocusedCellDOM() {
-        NodeList<TableRowElement> rows = tableData.tableElement.getRows();
-
-        int newLocalSelectedRow = getSelectedRow();
-        int newLocalSelectedCol = getSelectedColumn();
-
-        int columnCount = getColumnCount();
-
-        // SET NEW STATE
-        if (newLocalSelectedRow >= 0 && newLocalSelectedRow < rows.getLength() && newLocalSelectedCol >= 0 && newLocalSelectedCol < columnCount) {
-            return calcLeftNeighbourRightBorder(selectedRow, selectedColumn, isFocused);
-        }
-
-        return null;
-    }
-
-    private LeftNeighbourRightBorder calcLeftNeighbourRightBorder(int row, int column, boolean set) {
+    private LeftNeighbourRightBorder calcLeftNeighbourRightBorder(boolean set) {
         //border for previous sticky cell
         //focused is sticky: draw border if prev cell is invisible
         //focused is not sticky and prev cell is sticky: draw border if focused is visible
         //focused is not sticky and prev cell is not sticky: draw border if prev sticky is at the border of focused
         LeftNeighbourRightBorder leftNeighbourRightBorder = null;
-        if (column > 0) {
+        NodeList<TableRowElement> rows = tableData.tableElement.getRows();
+
+        int row = getSelectedRow();
+        int column = getSelectedColumn();
+
+        if (row >= 0 && row < rows.getLength() && column >= 0 && column < getColumnCount()) {
             NodeList<TableCellElement> cells = tableData.tableElement.getRows().getItem(row).getCells();
             TableCellElement focusedCell = cells.getItem(column);
             TableCellElement prevCell = cells.getItem(column - 1);
