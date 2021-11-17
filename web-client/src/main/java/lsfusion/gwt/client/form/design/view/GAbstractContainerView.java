@@ -127,7 +127,7 @@ public abstract class GAbstractContainerView {
         GFlexAlignment alignment = child.getAlignment();
         boolean isStretch = alignment == GFlexAlignment.STRETCH;
 
-        boolean incorrectOppositeShrink = isStretch != oppositeShrink;
+        boolean incorrectOppositeShrink = isStretch != oppositeShrink && !(oppositeSize != null && oppositeSize == 0); // if size is 0 we don't care about the shrink
 
         FlexPanel wrapPanel = wrapBorderImpl(child);
 
