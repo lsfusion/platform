@@ -2731,10 +2731,6 @@ setNotNullSetting [PropertySettings ps]
 							ps.notNullEvent = $s.event;
 						 }
     ;
-annotationSetting [PropertySettings ps]
-	:
-	    '@@' ann = ID { ps.annotation = $ann.text; }
-	;
 
 notNullSetting returns [DebugInfo.DebugPoint debugPoint, BooleanDebug toResolve = null, Event event]
 @init {
@@ -3643,17 +3639,6 @@ emailActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
             )
 		)*
 		(sync = syncTypeLiteral{ syncType = $sync.val; })?
-	;
-	
-emailActionFormObjects[List<TypedParameter> context, boolean dynamic] returns [OrderedMap<String, LPWithParams> mapObjects]
-@init {
-	$mapObjects = new OrderedMap<>();
-}
-
-	:	(	'OBJECTS'
-			obj=ID EQ objValueExpr=propertyExpression[context, dynamic] { $mapObjects.put($obj.text, $objValueExpr.property); }
-			(',' obj=ID EQ objValueExpr=propertyExpression[context, dynamic] { $mapObjects.put($obj.text, $objValueExpr.property); })*
-		)?
 	;
 
 confirmActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams action]
@@ -4894,7 +4879,6 @@ componentPropertyValue returns [Object value] //commented literals are in design
 	:   //c=colorLiteral { $value = $c.val; }
     //|   s=localizedStringLiteralNoID { $value = $s.val; }
 	//|   i=intLiteral { $value = $i.val; }
-	//|   l=longLiteral { $value = $l.val; }
 	//|   d=doubleLiteral { $value = $d.val; }
 	|   dim=dimensionLiteral { $value = $dim.val; }
 	|   b=booleanLiteral { $value = $b.val; }
@@ -5098,14 +5082,6 @@ nonEmptyTypedParameterList returns [List<TypedParameter> params]
 		(',' param=typedParameter { params.add($param.param); })*
 	;
 
-
-compoundIdList returns [List<String> ids] 
-@init {
-	ids = new ArrayList<>();	
-} 
-	:	(neIdList=nonEmptyCompoundIdList { ids = $neIdList.ids; })?
-	;
-
 nonEmptyIdList returns [List<String> ids]
 @init {
 	ids = new ArrayList<>(); 
@@ -5136,13 +5112,6 @@ singleParameterList[List<TypedParameter> context, boolean dynamic] returns [List
 }
 	:	(first=singleParameter[context, dynamic] { props.add($first.property); }
 		(',' next=singleParameter[context, dynamic] { props.add($next.property); })*)?
-	;
-
-actionPDBList[List<TypedParameter> context, boolean dynamic] returns [List<LAWithParams> actions] 
-@init {
-	$actions = new ArrayList<>();
-}
-	:	(neList=nonEmptyActionPDBList[context, dynamic] { $actions = $neList.actions; })?
 	;
 
 nonEmptyActionPDBList[List<TypedParameter> context, boolean dynamic] returns [List<LAWithParams> actions]
@@ -5213,11 +5182,6 @@ signatureClass returns [String sid]
 unknownClass 
 	:	'?'
 	;
-
-typeId returns [String sid]
-	:	pid=PRIMITIVE_TYPE { $sid = $pid.text; }
-	|	obj='OBJECT' { $sid = $obj.text; }
-	;
 	
 compoundID returns [String sid]
 	:	firstPart=ID { $sid = $firstPart.text; } ('.' secondPart=ID { $sid = $sid + '.' + $secondPart.text; })?
@@ -5271,10 +5235,6 @@ formPropertyID returns [PropertyDrawEntity propertyDraw]
         }
     ;
 
-multiCompoundID returns [String sid]
-	:	id=ID { $sid = $id.text; } ('.' cid=ID { $sid = $sid + '.' + $cid.text; } )*
-	;
-
 exclusiveOverrideOption returns [boolean isExclusive]
 	:	'OVERRIDE' { $isExclusive = false; }
 	|	'EXCLUSIVE'{ $isExclusive = true; } 
@@ -5318,14 +5278,6 @@ intLiteral returns [int val]
 	:	(MINUS {isMinus=true;})?
 		ui=uintLiteral  { $val = isMinus ? -$ui.val : $ui.val; }
 	;
-
-longLiteral returns [long val]
-@init {
-	boolean isMinus = false;
-} 
-	:	(MINUS {isMinus = true;})?
-		ul=ulongLiteral { $val = isMinus ? -$ul.val : $ul.val; } 
-	;	
 
 doubleLiteral returns [double val]
 @init {
@@ -5403,15 +5355,6 @@ emailRecipientTypeLiteral returns [Message.RecipientType val]
 	:	'TO'	{ $val = Message.RecipientType.TO; }
 	|	'CC'	{ $val = Message.RecipientType.CC; }
 	|	'BCC'	{ $val = Message.RecipientType.BCC; }
-	;
-	
-emailAttachFormat returns [AttachmentFormat val]
-	:	'PDF'	{ $val = AttachmentFormat.PDF; }
-	|	'DOCX'	{ $val = AttachmentFormat.DOCX; }
-	|	'HTML'	{ $val = AttachmentFormat.HTML; }
-	|	'RTF'	{ $val = AttachmentFormat.RTF; }
-	|	'XLSX'	{ $val = AttachmentFormat.XLSX; }
-	|	'DBF'	{ $val = AttachmentFormat.DBF; }
 	;
 
 udoubleLiteral returns [double val]
