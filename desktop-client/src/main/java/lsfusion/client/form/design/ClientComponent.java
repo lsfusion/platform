@@ -47,9 +47,6 @@ public abstract class ClientComponent extends ContextIdentityObject implements I
     public Integer getSize(boolean vertical) {
         int size;
         size = vertical ? this.size.height : this.size.width;
-        // we don't support shrink in desktop, so we'll just set it to 0
-        if(!(container != null && container.horizontal) == vertical && shrink && flex > 0)
-            size = 0;
         if (size != -1)
             return size;
         return null;
@@ -125,6 +122,15 @@ public abstract class ClientComponent extends ContextIdentityObject implements I
     public void setShrink(boolean shrink) {
         this.shrink = shrink;
         updateDependency(this, "shrink");
+    }
+
+    public boolean isAlignShrink() {
+        return alignShrink;
+    }
+
+    @Override
+    public void setAlignShrink(boolean alignShrink) {
+        this.alignShrink = alignShrink;
     }
 
     public boolean isStretch() {

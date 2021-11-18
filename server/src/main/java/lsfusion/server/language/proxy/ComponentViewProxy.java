@@ -51,7 +51,7 @@ public class ComponentViewProxy<T extends ComponentView> extends ViewProxy<T> {
     }
 
     public void setAlignShrink(boolean alignShrink) {
-        target.setShrink(alignShrink);
+        target.setAlignShrink(alignShrink);
     }
 
     public void setAlign(FlexAlignment alignment) {

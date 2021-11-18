@@ -169,7 +169,7 @@ public class FlexLayout implements LayoutManager2, Serializable {
             }
         }
 
-        int fillSpace = Math.max(0, vertical ? parentHeight - totalSize : parentWidth - totalSize);
+        int fillSpace = vertical ? parentHeight - totalSize : parentWidth - totalSize;
 
         //All alignment
         if (totalFlex == 0 && alignment != FlexAlignment.START && fillSpace > 0) {
@@ -195,17 +195,19 @@ public class FlexLayout implements LayoutManager2, Serializable {
                 FlexAlignment align = childConstraints.getAlignment();
                 double flex = childConstraints.getFlex();
                 boolean shrink = childConstraints.isShrink();
+                boolean alignShrink = childConstraints.isAlignShrink();
 
                 int width;
                 int height;
 
+                int fillMainDirection = (int) ((fillSpace > 0 ? flex : shrink ? 1 : 0) * fillSpace / totalFlex);
                 if (vertical) {
-                    width = limitedSize(align == FlexAlignment.STRETCH, prefWidth, parentWidth, shrink);
-                    height = flex == 0 ? prefHeight : prefHeight + (int) (flex * fillSpace / totalFlex);
+                    width = limitedSize(align == FlexAlignment.STRETCH, prefWidth, parentWidth, alignShrink, fillSpace > 0); //opposite direction
+                    height = prefHeight + fillMainDirection; //main direction
                     xOffset = getAlignmentOffset(align, in.left, parentWidth, width);
                 } else {
-                    width = flex == 0 ? prefWidth : prefWidth + (int) (flex * fillSpace / totalFlex);
-                    height = limitedSize(align == FlexAlignment.STRETCH, prefHeight, parentHeight, shrink);
+                    width = prefWidth + fillMainDirection; // main direction
+                    height = limitedSize(align == FlexAlignment.STRETCH, prefHeight, parentHeight, alignShrink, fillSpace > 0); //opposite direction
                     yOffset = getAlignmentOffset(align, in.top, parentHeight, height);
                 }
 
@@ -226,9 +228,9 @@ public class FlexLayout implements LayoutManager2, Serializable {
         }
     }
 
-    private int limitedSize(boolean stretch, int pref, int parent, boolean shrink) {
+    private int limitedSize(boolean stretch, int pref, int parent, boolean alignShrink, boolean max) {
         if (stretch) {
-            return shrink ? parent : BaseUtils.max(pref, parent);
+            return alignShrink ? parent : (max ? BaseUtils.max(pref, parent) : BaseUtils.min(pref, parent));
         }
 
         return pref;

@@ -171,7 +171,7 @@ public class LinearClientContainerView extends AbstractClientContainerView {
 
         if(alignCaptions) {
             AlignCaptionPanel captionPanel = childrenCaptions.get(index);
-            captionLines[lineIndex].add(captionPanel, rowIndex, captionPanel.captionHAlignment, 0, false, captionPanel.baseSize);
+            captionLines[lineIndex].add(captionPanel, rowIndex, captionPanel.captionHAlignment, 0, false, false, captionPanel.baseSize);
         }
     }
 
