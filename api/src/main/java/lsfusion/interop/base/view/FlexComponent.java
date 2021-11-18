@@ -6,4 +6,5 @@ public interface FlexComponent {
 
     Dimension getFlexPreferredSize(Boolean vertical);
     FlexConstraints getFlexConstraints();
+    boolean isShrink();
 }

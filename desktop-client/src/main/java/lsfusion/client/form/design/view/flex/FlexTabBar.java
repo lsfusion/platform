@@ -108,4 +108,9 @@ public class FlexTabBar extends JTabbedPane implements FlexComponent, TabBar {
     public FlexConstraints getFlexConstraints() {
         return new FlexConstraints(FlexAlignment.STRETCH, 0);
     }
+
+    @Override
+    public boolean isShrink() {
+        return false;
+    }
 }

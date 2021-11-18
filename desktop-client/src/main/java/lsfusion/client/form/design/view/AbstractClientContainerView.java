@@ -6,6 +6,7 @@ import lsfusion.client.form.design.ClientContainer;
 import lsfusion.client.form.design.view.flex.LinearClientContainerView;
 import lsfusion.client.form.design.view.widget.ScrollPaneWidget;
 import lsfusion.client.form.design.view.widget.Widget;
+import lsfusion.interop.base.view.FlexAlignment;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -51,7 +52,7 @@ public abstract class AbstractClientContainerView implements ClientContainerView
         boolean isOppositeAutoSized = child.getSize(!vertical) == null;
 
         // somewhy it doesn't work properly for tabbed client container, but it's not that important for now
-        if((!(isOppositeAutoSized && isAutoSized) || fixFlexBasis)) // child is tab, since basis is fixed, strictly speaking this all check is an optimization
+        if((!(isOppositeAutoSized && isAutoSized) || (child.alignShrink && child.getAlignment() == FlexAlignment.STRETCH) || fixFlexBasis)) // child is tab, since basis is fixed, strictly speaking this all check is an optimization
             view = wrapOverflowAuto(view, vertical ? !isOppositeAutoSized : !isAutoSized, vertical ? !isAutoSized : !isOppositeAutoSized);
 
         FlexPanel wrapPanel = wrapBorderImpl(child);
@@ -241,7 +242,7 @@ public abstract class AbstractClientContainerView implements ClientContainerView
 
     public static void add(FlexPanel panel, Widget widget, ClientComponent component, int beforeIndex) {
         boolean vertical = panel.isVertical();
-        panel.add(widget, beforeIndex, component.getAlignment(), component.getFlex(), component.getSize(vertical));
+        panel.add(widget, beforeIndex, component.getAlignment(), component.getFlex(), component.isShrink(), component.getSize(vertical));
 
         Integer crossSize = component.getSize(!vertical);
 //        boolean isStretch = component.isStretch();

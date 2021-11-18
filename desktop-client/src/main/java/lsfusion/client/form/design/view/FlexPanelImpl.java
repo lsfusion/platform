@@ -85,8 +85,8 @@ public class FlexPanelImpl {
         parent.getStyle().setProperty("display", visible ? getDisplayFlexValue() : "none");
     }*/
 
-    public LayoutData insertChild(FlexLayout layout, Widget child, int beforeIndex, FlexAlignment alignment, double flex, Integer flexBasis, boolean vertical) {
-        LayoutData layoutData = new LayoutData(alignment, flex, flexBasis);
+    public LayoutData insertChild(FlexLayout layout, Widget child, int beforeIndex, FlexAlignment alignment, double flex, boolean shrink, Integer flexBasis, boolean vertical) {
+        LayoutData layoutData = new LayoutData(alignment, flex, flexBasis, shrink);
         child.setLayoutData(layoutData);
 
         setFlex(layout, child, layoutData, vertical);

@@ -188,6 +188,7 @@ public class FlexLayout implements LayoutManager2, Serializable {
             if (child.isVisible()) {
                 Dimension prefSize = ((FlexComponent)child).getFlexPreferredSize(null);
                 FlexConstraints childConstraints = ((FlexComponent)child).getFlexConstraints();
+                boolean shrink = ((FlexComponent)child).isShrink();
 
                 int prefWidth = prefSize.width;
                 int prefHeight = prefSize.height;
@@ -199,12 +200,12 @@ public class FlexLayout implements LayoutManager2, Serializable {
                 int height;
 
                 if (vertical) {
-                    width = limitedSize(align == FlexAlignment.STRETCH, prefWidth, parentWidth);
+                    width = limitedSize(align == FlexAlignment.STRETCH, prefWidth, parentWidth, shrink);
                     height = flex == 0 ? prefHeight : prefHeight + (int) (flex * fillSpace / totalFlex);
                     xOffset = getAlignmentOffset(align, in.left, parentWidth, width);
                 } else {
                     width = flex == 0 ? prefWidth : prefWidth + (int) (flex * fillSpace / totalFlex);
-                    height = limitedSize(align == FlexAlignment.STRETCH, prefHeight, parentHeight);
+                    height = limitedSize(align == FlexAlignment.STRETCH, prefHeight, parentHeight, shrink);
                     yOffset = getAlignmentOffset(align, in.top, parentHeight, height);
                 }
 
@@ -225,9 +226,9 @@ public class FlexLayout implements LayoutManager2, Serializable {
         }
     }
 
-    private int limitedSize(boolean stretch, int pref, int parent) {
+    private int limitedSize(boolean stretch, int pref, int parent, boolean shrink) {
         if (stretch) {
-            return BaseUtils.max(pref, parent);
+            return shrink ? parent : BaseUtils.max(pref, parent);
         }
 
         return pref;

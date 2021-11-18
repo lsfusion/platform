@@ -60,7 +60,7 @@ public class FlexPanel extends PanelWidget {
     }
 
     public void add(Widget widget, int beforeIndex, FlexAlignment alignment) {
-        add(widget, beforeIndex, alignment, 0, null); // maybe here it also makes sense to set basis to 0 as in addFill, but for now it's used mostly in vertical container for simple components
+        add(widget, beforeIndex, alignment, 0, false, null); // maybe here it also makes sense to set basis to 0 as in addFill, but for now it's used mostly in vertical container for simple components
     }
 
     public void addCentered(Widget child) {
@@ -80,7 +80,7 @@ public class FlexPanel extends PanelWidget {
     }
 
     public void addFill(Widget widget, int beforeIndex, Integer flexBasis) {
-        add(widget, beforeIndex, FlexAlignment.STRETCH, 1, flexBasis);
+        add(widget, beforeIndex, FlexAlignment.STRETCH, 1, false, flexBasis);
     }
 
     public void add(Widget widget, FlexAlignment alignment, double flex) {
@@ -88,18 +88,15 @@ public class FlexPanel extends PanelWidget {
     }
 
     public void add(Widget widget, FlexAlignment alignment, double flex, Integer flexBasis) {
-        add(widget, getChildrenCount(), alignment, flex, flexBasis);
+        add(widget, getChildrenCount(), alignment, flex, false, flexBasis);
     }
 
     //main add method
-    public void add(Widget widget, int beforeIndex, FlexAlignment alignment, double flex, Integer flexBasis) {
+    public void add(Widget widget, int beforeIndex, FlexAlignment alignment, double flex, boolean shrink, Integer flexBasis) {
         add(widget.getComponent(), null, beforeIndex);
 
-        LayoutData layoutData = impl.insertChild(getFlexLayout(), widget, beforeIndex, alignment, flex, flexBasis, vertical);
+        LayoutData layoutData = impl.insertChild(getFlexLayout(), widget, beforeIndex, alignment, flex, shrink, flexBasis, vertical);
         widget.setLayoutData(layoutData);
-
-        if(alignment == FlexAlignment.STRETCH) // in web STRETCH alignment assumes that flex size is 0 by default
-            FlexPanel.setBaseSize(widget, !isVertical(), 0);
     }
 
     private FlexLayout getFlexLayout() {
