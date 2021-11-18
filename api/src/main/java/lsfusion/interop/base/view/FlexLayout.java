@@ -188,13 +188,13 @@ public class FlexLayout implements LayoutManager2, Serializable {
             if (child.isVisible()) {
                 Dimension prefSize = ((FlexComponent)child).getFlexPreferredSize(null);
                 FlexConstraints childConstraints = ((FlexComponent)child).getFlexConstraints();
-                boolean shrink = ((FlexComponent)child).isShrink();
 
                 int prefWidth = prefSize.width;
                 int prefHeight = prefSize.height;
 
-                double flex = childConstraints.getFlex();
                 FlexAlignment align = childConstraints.getAlignment();
+                double flex = childConstraints.getFlex();
+                boolean shrink = childConstraints.isShrink();
 
                 int width;
                 int height;

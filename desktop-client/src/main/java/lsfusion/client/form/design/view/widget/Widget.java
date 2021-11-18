@@ -52,12 +52,7 @@ public interface Widget extends FlexComponent {
     @Override
     default FlexConstraints getFlexConstraints() {
         LayoutData layoutData = getLayoutData();
-        return new FlexConstraints(layoutData.alignment, layoutData.flex);
-    }
-
-    @Override
-    default boolean isShrink() {
-        return getLayoutData().shrink;
+        return new FlexConstraints(layoutData.alignment, layoutData.flex, layoutData.shrink);
     }
 
     default Dimension getMaxPreferredSize() {
