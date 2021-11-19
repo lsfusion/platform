@@ -193,6 +193,9 @@ urlDecode (TEXT text) { urlDecode(text, 'UTF-8'); };
 generatedUUID = DATA LOCAL TEXT();
 generateUUID  INTERNAL 'lsfusion.server.logics.classes.data.utils.string.GenerateUUIDAction' ();
 
+escapeJSONValue (TEXT t) = replace(replace(replace(replace(replace(t, '\\', '\\\\'), '"', '\\"'), '\n', ''), '\r', ''), '\t', '');
+escapeXMLValue(TEXT t) = replace(replace(replace(replace(replace(t, '&', '&amp;'), '<', '&lt;'), '>', '&gt;'), '"', '&quot;'), '\'', '&apos;');
+
 // --------------------------------------------- Работа с числами --------------------------------- //
 
 floor = FORMULA 'floor($1)';
