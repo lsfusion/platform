@@ -202,12 +202,12 @@ public class FlexLayout implements LayoutManager2, Serializable {
 
                 int fillMainDirection = (int) ((fillSpace > 0 ? flex : shrink ? 1 : 0) * fillSpace / totalFlex);
                 if (vertical) {
-                    width = limitedSize(align == FlexAlignment.STRETCH, prefWidth, parentWidth, alignShrink, fillSpace > 0); //opposite direction
+                    width = limitedSize(align == FlexAlignment.STRETCH, prefWidth, parentWidth, alignShrink); //opposite direction
                     height = prefHeight + fillMainDirection; //main direction
                     xOffset = getAlignmentOffset(align, in.left, parentWidth, width);
                 } else {
                     width = prefWidth + fillMainDirection; // main direction
-                    height = limitedSize(align == FlexAlignment.STRETCH, prefHeight, parentHeight, alignShrink, fillSpace > 0); //opposite direction
+                    height = limitedSize(align == FlexAlignment.STRETCH, prefHeight, parentHeight, alignShrink); //opposite direction
                     yOffset = getAlignmentOffset(align, in.top, parentHeight, height);
                 }
 
@@ -228,12 +228,12 @@ public class FlexLayout implements LayoutManager2, Serializable {
         }
     }
 
-    private int limitedSize(boolean stretch, int pref, int parent, boolean alignShrink, boolean max) {
+    private int limitedSize(boolean stretch, int pref, int parent, boolean alignShrink) {
         if (stretch) {
-            return alignShrink ? parent : (max ? BaseUtils.max(pref, parent) : BaseUtils.min(pref, parent));
+            return alignShrink ? parent : BaseUtils.max(pref, parent);
+        } else {
+            return alignShrink ? BaseUtils.min(pref, parent) : pref;
         }
-
-        return pref;
     }
 
     private int getAlignmentOffset(FlexAlignment alignment, int zeroOffset, int totalSize, int componentSize) {
