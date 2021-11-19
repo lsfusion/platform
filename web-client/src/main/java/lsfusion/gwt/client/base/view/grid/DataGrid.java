@@ -1456,11 +1456,11 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
             if (prevStickyCellNum != null) {
                 TableCellElement prevStickyCell = cells.getItem(prevStickyCellNum);
                 if (isStickyCell(focusedCell)) {
-                    leftNeighbourRightBorder = new LeftNeighbourRightBorder(row, prevStickyCellNum, set && prevCell.getAbsoluteRight() <= prevStickyCell.getAbsoluteRight());
+                    leftNeighbourRightBorder = new LeftNeighbourRightBorder(row, prevStickyCellNum, set && getAbsoluteRight(prevCell) <= getAbsoluteRight(prevStickyCell));
                 } else if (prevCell.equals(prevStickyCell)) {
-                    leftNeighbourRightBorder = new LeftNeighbourRightBorder(row, prevStickyCellNum, set && focusedCell.getAbsoluteLeft() + 1 >= prevStickyCell.getAbsoluteRight());
+                    leftNeighbourRightBorder = new LeftNeighbourRightBorder(row, prevStickyCellNum, set && getAbsoluteLeft(focusedCell) + 1 >= getAbsoluteRight(prevStickyCell));
                 } else if (!isStickyCell(prevCell)) {
-                    leftNeighbourRightBorder = new LeftNeighbourRightBorder(row, prevStickyCellNum, set && focusedCell.getAbsoluteLeft() == prevStickyCell.getAbsoluteRight());
+                    leftNeighbourRightBorder = new LeftNeighbourRightBorder(row, prevStickyCellNum, set && (getAbsoluteLeft(focusedCell) == getAbsoluteRight(prevStickyCell)));
                 }
             }
         }
@@ -1497,6 +1497,31 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
 
         return left;
     }
+
+    //use native getAbsoluteLeft, because GWT methods are casting to int incorrect
+    private native double getAbsoluteLeft(Element elem) /*-{
+        var left = 0;
+        var curr = elem;
+        // This intentionally excludes body which has a null offsetParent.
+        while (curr.offsetParent) {
+            left -= curr.scrollLeft;
+            curr = curr.parentNode;
+        }
+        while (elem) {
+            left += elem.offsetLeft;
+            elem = elem.offsetParent;
+        }
+        return left;
+    }-*/;
+
+    public final double getAbsoluteRight(Element elem) {
+        return getAbsoluteLeft(elem) + getOffsetWidth(elem);
+    }
+
+    private native double getOffsetWidth(Element elem) /*-{
+        return elem.offsetWidth || 0;
+    }-*/;
+
 
     private boolean isStickyCell(TableCellElement cell) {
         return cell.hasClassName("dataGridStickyCell");
