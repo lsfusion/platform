@@ -51,12 +51,12 @@ public class DefaultHeaderBuilder<T> extends DataGridHeaderBuilder<T> {
 
         @Override
         public String getCellStyle() {
-            return grid.style.dataGridHeaderCell() + " " + StyleDefaults.customDataGridHeaderCell;
+            return grid.style.dataGridHeaderCell();
         }
 
         @Override
         public String getFirstCellStyle() {
-            return grid.style.dataGridFirstHeaderCell() + " " + StyleDefaults.customDataGridFirstHeaderCell;
+            return grid.style.dataGridFirstHeaderCell();
         }
 
         @Override
@@ -84,7 +84,7 @@ public class DefaultHeaderBuilder<T> extends DataGridHeaderBuilder<T> {
 
         @Override
         public String getCellStyle() {
-            return grid.style.dataGridFooterCell() + " " + StyleDefaults.customDataGridFooterCell;
+            return grid.style.dataGridFooterCell();
         }
 
         @Override

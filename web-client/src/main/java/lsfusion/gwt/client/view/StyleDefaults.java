@@ -41,7 +41,9 @@ public class StyleDefaults {
     }
 
     private static native void setCustomProperties(Element root, String tableGridColor, String focusedCellBorderColor) /*-{
-        root.style.setProperty("--table-grid-color", tableGridColor);
+        if(tableGridColor != null) {
+            root.style.setProperty("--grid-separator-border-color", tableGridColor);
+        }
         root.style.setProperty("--focused-cell-border-color", focusedCellBorderColor);
     }-*/;
 
@@ -133,7 +135,7 @@ public class StyleDefaults {
     public static String getTableGridColor() {
         if (tableGridColor == null && MainFrame.colorPreferences != null) { // might be called before colorPreferences initialization (color theme change)
             ColorDTO preferredColor = MainFrame.colorPreferences.getTableGridColor();
-            tableGridColor = preferredColor != null ? getDisplayColor(preferredColor.toString()) : "var(--grid-separator-border-color)";
+            tableGridColor = preferredColor != null ? getDisplayColor(preferredColor.toString()) : null;
         }
         return tableGridColor;
     }
@@ -162,12 +164,6 @@ public class StyleDefaults {
         }
         return pivotGroupLevelDarkenStepRGB;
     }
-
-    public static String customDataGridHeaderCell = "custom-dataGridHeaderCell";
-    public static String customDataGridFirstHeaderCell = "custom-dataGridFirstHeaderCell";
-    public static String customDataGridFooterCell = "custom-dataGridFooterCell";
-    public static String customDataGridCell = "custom-dataGridCell";
-    public static String customDataGridFirstCell = "custom-dataGridFirstCell";
 
     // the following are copy-pasted colors from <color_theme>.css. need to be updated synchronously.
     // maybe getComputedStyle(document.documentElement).getPropertyValue() should be used instead where possible

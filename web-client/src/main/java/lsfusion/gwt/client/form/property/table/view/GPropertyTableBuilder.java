@@ -9,12 +9,9 @@ import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.table.grid.view.GPivot;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
-import lsfusion.gwt.client.view.StyleDefaults;
 
 import java.util.List;
 import java.util.Optional;
-
-import static lsfusion.gwt.client.view.StyleDefaults.*;
 
 /**
  * Based on lsfusion.gwt.client.base.view.grid.DefaultDataGridBuilder
@@ -33,8 +30,8 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
         // Cache styles for faster access.
         GridStyle style = table.getStyle();
         rowStyle = style.dataGridRow();
-        cellStyle = style.dataGridCell() + " " + StyleDefaults.customDataGridCell;
-        firstColumnStyle = " " + style.dataGridFirstCell() + " " + StyleDefaults.customDataGridFirstCell;
+        cellStyle = style.dataGridCell();
+        firstColumnStyle = " " + style.dataGridFirstCell();
         lastColumnStyle = " " + style.dataGridLastCell();
     }
 
