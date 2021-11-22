@@ -6,6 +6,8 @@ import lsfusion.interop.base.view.FlexConstraints;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.function.Consumer;
 
 public class FlexTabBar extends JTabbedPane implements FlexComponent, TabBar {
@@ -15,8 +17,10 @@ public class FlexTabBar extends JTabbedPane implements FlexComponent, TabBar {
     public FlexTabBar(boolean vertical) {
         super(vertical ? LEFT : TOP, SCROLL_TAB_LAYOUT);
 
-        addChangeListener(e -> {
-            if(selectedTab != null) {
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                super.mousePressed(e);
                 selectTab(getSelectedIndex());
             }
         });
