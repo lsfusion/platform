@@ -51,6 +51,10 @@ public class FlexTabBar extends JTabbedPane implements FlexComponent, TabBar {
     public void removeTab(int index) {
         checkTabIndex(index);
 
+        if (index == selectedTab) {
+            selectedTab = null;
+        }
+
         removeTabAt(index);
     }
 
