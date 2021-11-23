@@ -41,7 +41,7 @@ public class GTreeGroupController extends GAbstractTableController {
 
         tree = new GTreeTable(iFormController, iForm, this, treeGroup, treeGroup.autoSize);
 
-        initGridView(treeGroup.autoSize, null, null);
+        initGridView(treeGroup.autoSize);
 
         changeGridView(tree);
     }

@@ -38,17 +38,6 @@ public class CaptionPanel extends FlexPanel {
         addFillFlex(content, null);
     }
 
-    @Override
-    public Dimension getMaxPreferredSize() {
-        return adjustMaxPreferredSize(GwtClientUtils.calculateMaxPreferredSize(getWidget(1))); // assuming that there are only 2 widgets, and the second is the main widget
-    }
-
-    public Dimension adjustMaxPreferredSize(Dimension dimension) {
-        return GwtClientUtils.enlargeDimension(dimension,
-                2,
-                GwtClientUtils.getAllMargins(getElement()));
-    }
-
     private boolean notNullCaption;
     private boolean notEmptyCaption;
     public void setCaption(String caption) {

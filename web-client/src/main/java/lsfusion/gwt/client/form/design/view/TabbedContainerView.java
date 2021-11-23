@@ -120,18 +120,6 @@ public class TabbedContainerView extends GAbstractContainerView {
         super.updateLayout(requestIndex, childrenVisible);
     }
 
-    @Override
-    public Dimension getMaxPreferredSize(Map<GContainer, GAbstractContainerView> containerViews) {
-        int selected = panel.getSelectedTab();
-        Dimension dimension;
-        if (selected != -1) {
-            dimension = getChildMaxPreferredSize(containerViews, selected);
-            dimension.height += panel.getTabBarHeight() + 5; //little extra for borders, etc.
-            return dimension;
-        }
-        return new Dimension(0, 0);
-    }
-
     private void ensureTabSelection() {
         if (panel.getSelectedTab() == -1 && panel.getTabCount() != 0) {
             panel.selectTab(0);

@@ -103,7 +103,7 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         return getDefaultFlex(formEntity);
     }
 
-    public double getDefaultFlex(FormEntity formEntity) {
+    protected double getDefaultFlex(FormEntity formEntity) {
         return 0;
     }
 
@@ -119,7 +119,7 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         return getDefaultAlignment(formEntity);
     }
 
-    public FlexAlignment getDefaultAlignment(FormEntity formEntity) {
+    protected FlexAlignment getDefaultAlignment(FormEntity formEntity) {
         return FlexAlignment.START;
     }
 
@@ -134,7 +134,7 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         return isDefaultShrink(formEntity);
     }
 
-    public boolean isDefaultShrink(FormEntity formEntity) {
+    protected boolean isDefaultShrink(FormEntity formEntity) {
         return false;
     }
 
@@ -150,7 +150,7 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         return isDefaultAlignShrink(formEntity);
     }
 
-    public boolean isDefaultAlignShrink(FormEntity formEntity) {
+    protected boolean isDefaultAlignShrink(FormEntity formEntity) {
         return false;
     }
 

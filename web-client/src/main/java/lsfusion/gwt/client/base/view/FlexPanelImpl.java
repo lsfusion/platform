@@ -123,6 +123,14 @@ public class FlexPanelImpl {
         setFlex(child, 0, null, layoutData.gridLine, vertical, grid, layoutData.shrink);
     }
 
+    public void setPreferredSize(boolean set, Element child, FlexPanel.FlexLayoutData layoutData, boolean vertical, boolean grid) {
+//        setFlex(child, layoutData.flex, set ? null : layoutData.flexBasis, layoutData.gridLine, vertical, grid, set ? false : layoutData.shrink);
+        setFlexParams(child, layoutData.flex, set ? null : layoutData.flexBasis, layoutData.gridLine, vertical, grid, layoutData.shrink);
+
+        if(layoutData.shrink) // if we have shrink we want to drop it and have actual min-size
+            FlexPanel.setBaseSize(child, vertical, set ? layoutData.flexBasis : (Integer)0, false); // last parameter is false because we're setting main size
+    }
+
     public void setGridLines(Element parent, int count, boolean vertical) {
         Style style = parent.getStyle();
 
@@ -180,17 +188,21 @@ public class FlexPanelImpl {
     }
 
     public void setFlex(Element child, double flex, Integer flexBasis, Integer gridLine, boolean vertical, boolean grid, boolean shrink) {
-        if(grid) {
-            if(gridLine != null)
-                updateGridLineSize(child, gridLine, vertical, getLineSizeString(flex, flexBasis, shrink));
-        } else
-            child.getStyle().setProperty("flex", getFlexString(flex) + " " + getFlexString(shrink ? 1 : 0) + " " + getFlexBasisString(flexBasis));
+        setFlexParams(child, flex, flexBasis, gridLine, vertical, grid, shrink);
 
         if(shrink) // otherwise min-width won't let the container to shrink
             flexBasis = 0;
 
         // it's important to set min-width, min-height, because flex-basis is automatically set to min-height if it's smaller (test case in LinearContainerView)
         FlexPanel.setBaseSize(child, vertical, flexBasis, false); // last parameter is false because we're setting main size
+    }
+
+    private void setFlexParams(Element child, double flex, Integer flexBasis, Integer gridLine, boolean vertical, boolean grid, boolean shrink) {
+        if(grid) {
+            if(gridLine != null)
+                updateGridLineSize(child, gridLine, vertical, getLineSizeString(flex, flexBasis, shrink));
+        } else
+            child.getStyle().setProperty("flex", getFlexString(flex) + " " + getFlexString(shrink ? 1 : 0) + " " + getFlexBasisString(flexBasis));
     }
 
     public void setSpan(Element child, int span, boolean vertical) {

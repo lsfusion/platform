@@ -14,9 +14,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static java.lang.Math.max;
-import static lsfusion.gwt.client.base.GwtClientUtils.calculateMaxPreferredSize;
-import static lsfusion.gwt.client.base.GwtClientUtils.enlargeDimension;
 import static lsfusion.gwt.client.base.GwtSharedUtils.relativePosition;
 
 public abstract class GAbstractContainerView {
@@ -54,9 +51,6 @@ public abstract class GAbstractContainerView {
         childrenViews.add(index, wrapAndOverflowView(child, view, fixFlexBasis));
 
         addImpl(index, child, view);
-
-        if(child.autoSize && view instanceof GAbstractTableController.GridPanel)
-            addUpdateLayoutListener(requestIndex -> ((GAbstractTableController.GridPanel)view).autoSize());
     }
 
     private Widget wrapAndOverflowView(GComponent child, Widget view, boolean fixFlexBasis) {
@@ -134,7 +128,7 @@ public abstract class GAbstractContainerView {
         if(wrapPanel != null) {
             if(vertical == wrapPanel.isVertical() || !incorrectOppositeShrink) {
                 // 1 1 auto
-                wrapPanel.add(view, wrapPanel.getWidgetCount(), GFlexAlignment.STRETCH, 1, true, null);
+                wrapPanel.addFillShrink(view);
                 view = wrapPanel;
                 wrapPanel = null;
             }
@@ -190,47 +184,6 @@ public abstract class GAbstractContainerView {
         int index = children.indexOf(child);
         return index != -1 ? childrenViews.get(index) : null;
     }
-
-    protected Dimension getChildMaxPreferredSize(Map<GContainer, GAbstractContainerView> containerViews, int childIndex) {
-        GComponent child = children.get(childIndex);
-        Widget childView = childrenViews.get(childIndex);
-        Dimension dimensions = child instanceof GContainer
-                               ? getMaxPreferredSize((GContainer) child, containerViews, true)
-                               : getMaxPreferredSize(child, childView);
-        Dimension result = enlargeDimension(dimensions, child.getHorizontalMargin(), child.getVerticalMargin());
-        GFormLayout.setDebugDimensionsAttributes(childView, result);
-        return result;
-    }
-
-    public static Dimension getMaxPreferredSize(GContainer child, Map<GContainer, GAbstractContainerView> containerViews, boolean max) {
-        return overrideSize(child, containerViews.get(child).getMaxPreferredSize(containerViews), max);
-    }
-    private static Dimension getMaxPreferredSize(GComponent child, Widget childView) {
-        return overrideSize(child, calculateMaxPreferredSize(childView), true);        
-    }
-
-    // with max (default) overriding there is a problem, that auto sizes can be not proportional to explicit sizes, so in fact one of the components can get smaller size (and thus scrolling)
-    private static Dimension overrideSize(GComponent child, Dimension dimension, boolean max) {
-        int childHeight = child.height;
-        int childWidth = child.width;
-        if(childHeight == -1 && childWidth == -1) // оптимизация
-            return dimension;
-
-        int preferredWidth = childWidth;
-        if(preferredWidth == -1)
-            preferredWidth = dimension.width;
-        else if(max)
-            preferredWidth = Math.max(preferredWidth, dimension.width);
-
-        int preferredHeight = childHeight;
-        if(preferredHeight == -1)
-            preferredHeight = dimension.height;
-        else if(max)
-            preferredHeight = Math.max(preferredHeight, dimension.height);
-        return new Dimension(preferredWidth, preferredHeight);
-    }
-
-    protected abstract Dimension getMaxPreferredSize(Map<GContainer, GAbstractContainerView> containerViews);
 
     public interface UpdateLayoutListener {
         void updateLayout(long requestIndex);

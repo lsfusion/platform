@@ -8,12 +8,11 @@ import lsfusion.gwt.client.GFormChanges;
 import lsfusion.gwt.client.base.focus.DefaultFocusReceiver;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.view.FlexPanel;
-import lsfusion.gwt.client.base.view.ResizableComplexPanel;
+import lsfusion.gwt.client.base.view.HasMaxPreferredSize;
 import lsfusion.gwt.client.base.view.ResizableSimplePanel;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
-import lsfusion.gwt.client.form.design.view.GAbstractContainerView;
 import lsfusion.gwt.client.form.event.GBindingEnv;
 import lsfusion.gwt.client.form.event.GInputEvent;
 import lsfusion.gwt.client.form.filter.user.GFilter;
@@ -24,8 +23,6 @@ import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.GObject;
 import lsfusion.gwt.client.form.object.table.GToolbar;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
-import lsfusion.gwt.client.form.object.table.tree.view.GTreeTable;
-import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.object.table.view.GToolbarView;
 import lsfusion.gwt.client.form.property.GFooterReader;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -38,50 +35,67 @@ public abstract class GAbstractTableController extends GPropertyController imple
     public GFilterController filter;
 
     protected Widget gridView;
-    protected ResizableSimplePanel gridContainerView;
-    public Widget recordView;
+    protected GridContainerPanel gridContainerView;
 
-    public void initGridView(boolean autoSize, GContainer record, GAbstractContainerView.UpdateLayoutListener listener) {
-        ResizableSimplePanel gridContainerView = new ResizableSimplePanel();
-        gridContainerView.setStyleName("gridContainerPanel");
-        if(autoSize) { // убираем default'ый minHeight
-            gridContainerView.getElement().getStyle().setProperty("minHeight", "0px");
-            gridContainerView.getElement().getStyle().setProperty("minWidth", "0px");
-        }
-        this.gridContainerView = gridContainerView;
+    public void initGridView(boolean autoSize) {
 
-        Widget gridView = gridContainerView;
+        // we need to wrap into simple panel to make layout independent from property value (make flex-basis 0 for upper components)
+        this.gridContainerView = new GridContainerPanel(autoSize);
 
-        // proceeding recordView
-        if(record != null) {
-            GAbstractContainerView recordView = getFormLayout().getContainerView(record);
-            recordView.addUpdateLayoutListener(listener);
-            this.recordView = recordView.getView();
-
-            // we need to add recordview somewhere, to attach it (events, listeners, etc.)
-            ResizableComplexPanel virtualGridView = new ResizableComplexPanel();
-            virtualGridView.setFillMain(gridView);
-
-            // need to wrap recordView to setVisible false recordView's parent and not recordView itself (since it will be moved and shown by table view implementation)
-            ResizableSimplePanel virtualRecordView = new ResizableSimplePanel();
-            virtualRecordView.add(this.recordView);
-            virtualRecordView.setVisible(false);
-            virtualGridView.add(virtualRecordView);
-
-            gridView = virtualGridView;
-        }
-
-        this.gridView = new GridPanel(gridView, gridContainerView);
+        this.gridView = wrapGridSizePanel(gridContainerView);
 
         getFormLayout().addBaseComponent(getGridComponent(), this.gridView, getDefaultFocusReceiver());
 
         configureToolbar();
     }
 
+    // need to wrap gridContainerView to set base sizes, that are calculated based on current font (just like in PropertyPanelRenderer)
+    private Widget wrapGridSizePanel(Widget widget) {
+        FlexPanel gridPanel = new FlexPanel(true);
+        gridPanel.setStyleName("gridSizePanel");
+        gridPanel.addFillShrink(widget);
+        FlexPanel.setBaseSize(gridContainerView, true, getGridHeight());
+        FlexPanel.setBaseSize(gridContainerView, false, getGridWidth());
+        return gridPanel;
+    }
+
+    protected int getGridWidth() {
+        return 130;
+    }
+
+    protected int getGridHeight() {
+        return 70;
+    }
+
     protected abstract void configureToolbar();
 
     public void changeGridView(Widget widget) {
-        gridContainerView.setFillWidget(widget);
+        gridContainerView.changeWidget(widget);
+    }
+
+    public static class GridContainerPanel extends ResizableSimplePanel implements HasMaxPreferredSize {
+        private final boolean autoSize;
+
+        public GridContainerPanel(boolean autoSize) {
+            this.autoSize = autoSize;
+            setStyleName("gridContainerPanel");
+        }
+
+        public void changeWidget(Widget widget) {
+            if(autoSize)
+                setPercentWidget(widget);
+            else
+                setFillWidget(widget);
+        }
+
+        public void setPreferredSize(boolean set) {
+            if(!autoSize)
+                changePercentFillWidget(set);
+
+            Widget widget = getWidget();
+            if(widget instanceof HasMaxPreferredSize) // needed to setPreferredSize for grid
+                ((HasMaxPreferredSize) widget).setPreferredSize(set);
+        }
     }
 
     public GAbstractTableController(GFormController formController, GToolbar toolbar, boolean isList) {
@@ -223,39 +237,4 @@ public abstract class GAbstractTableController extends GPropertyController imple
 
     public abstract void updateKeys(GGroupObject group, ArrayList<GGroupObjectValue> keys, GFormChanges fc);
     public abstract void updateCurrentKey(GGroupObjectValue currentKey);
-
-    // needed for auto grid sizing
-    public static class GridPanel extends FlexPanel {
-        private final Widget view;
-        private final ResizableSimplePanel gridContainerView;
-
-        public GridPanel(Widget view, ResizableSimplePanel gridContainerView) {
-            super(true);
-
-            this.view = view;
-            addFill(view);
-
-            this.gridContainerView = gridContainerView;
-        }
-
-        public void autoSize() {
-            Widget widget = gridContainerView.getWidget();
-            int autoSize;
-            if(widget instanceof GGridPropertyTable) {
-                GGridPropertyTable gridTable = (GGridPropertyTable)widget;
-                if (gridTable instanceof GTreeTable) {
-                    autoSize = gridTable.getMaxPreferredSize().height;
-                } else {
-                    autoSize = gridTable.getAutoSize();
-                    if (autoSize <= 0) // еще не было layout'а, ставим эвристичный размер
-                        autoSize = gridTable.getMaxPreferredSize().height;
-                    else {
-                        autoSize += view.getOffsetHeight() - gridTable.getViewportHeight(); // margin'ы и border'ы учитываем
-                    }
-                }
-            } else
-                autoSize = GTreeTable.DEFAULT_MAX_PREFERRED_HEIGHT;
-            setChildFlexBasis(view, autoSize, false);
-        }
-    }
 }

@@ -18,8 +18,6 @@ import lsfusion.gwt.client.form.design.view.flex.FlexTabbedPanel;
 import java.util.ArrayList;
 import java.util.List;
 
-import static lsfusion.gwt.client.base.GwtClientUtils.calculateStackMaxPreferredSize;
-
 public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesResize, HasMaxPreferredSize {
 
     protected static FlexPanelImpl impl = FlexPanelImpl.get();
@@ -126,6 +124,10 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
         add(widget, beforeIndex, GFlexAlignment.STRETCH, 1, false, flexBasis);
     }
 
+    public void addFillShrink(Widget widget) {
+        add(widget, getWidgetCount(), GFlexAlignment.STRETCH, 1, true, null);
+    }
+
     public void add(Widget widget, int beforeIndex, GFlexAlignment alignment, double flex, boolean shrink, Integer flexBasis) {
         // Detach new child.
         widget.removeFromParent();
@@ -177,6 +179,13 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
         else
             element.getStyle().clearProperty(propName);
     }
+    public static void setSize(Element element, boolean vertical, Integer size) {
+        String propName = vertical ? "height" : "width";
+        if(size != null)
+            element.getStyle().setProperty(propName, size + "px");
+        else
+            element.getStyle().clearProperty(propName);
+    }
 
     public void setChildFlexBasis(Widget w, int flexBasis, boolean grid) {
         impl.setFlexBasis(((WidgetLayoutData) w.getLayoutData()).flex, w.getElement(), flexBasis, vertical, grid);
@@ -207,11 +216,6 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
 
     public void checkResizeEvent(NativeEvent event, Element cursorElement) {
         ResizeHandler.checkResizeEvent(resizeHelper, cursorElement, null, event);
-    }
-
-    @Override
-    public Dimension getMaxPreferredSize() {
-        return calculateStackMaxPreferredSize(this.iterator(), isVertical());
     }
 
     public interface GridLines {
@@ -921,5 +925,20 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
             top = left = right = bottom = hasBorders = true;
 
         return new DrawBorders(top, bottom, left, right, hasBorders, horzAlignment, vertAlignment);
+    }
+
+    @Override
+    public void setPreferredSize(boolean set) {
+        for(Widget widget : getChildren()) {
+            if(widget.isVisible()) {
+                // flex-basis : setting to auto / restoring
+                FlexLayoutData flex = ((WidgetLayoutData) widget.getLayoutData()).flex;
+                if (!flex.isAutoSized() || flex.shrink)
+                    impl.setPreferredSize(set, widget.getElement(), flex, vertical, isGrid());
+
+                if (widget instanceof HasMaxPreferredSize)
+                    ((HasMaxPreferredSize) widget).setPreferredSize(set);
+            }
+        }
     }
 }

@@ -36,7 +36,7 @@ import java.util.function.Consumer;
 import static java.lang.Math.max;
 import static lsfusion.gwt.client.form.event.GKeyStroke.*;
 
-public abstract class GGridPropertyTable<T extends GridDataRecord> extends GPropertyTable<T> implements HasMaxPreferredSize {
+public abstract class GGridPropertyTable<T extends GridDataRecord> extends GPropertyTable<T> {
     public static int DEFAULT_PREFERRED_WIDTH = 130; // должно соответствовать значению в gridResizePanel в MainFrame.css
     public static int DEFAULT_PREFERRED_HEIGHT = 70; // должно соответствовать значению в gridResizePanel в MainFrame.css
     public static int DEFAULT_MAX_PREFERRED_HEIGHT = 140;
@@ -205,14 +205,6 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         return getTableBodyElement().getOffsetHeight();
     }
     
-    @Override
-    public Dimension getMaxPreferredSize() {
-        return new Dimension(
-                max(isAutoSize() ? 0 : DEFAULT_PREFERRED_WIDTH, preferredWidth + nativeScrollbarWidth + 17),
-                max(isAutoSize() ? 0 : DEFAULT_MAX_PREFERRED_HEIGHT, getRowCount() * tableBuilder.getCellHeight() + 1 + 30 + nativeScrollbarHeight)
-        );
-    }
-
     protected abstract GGroupObjectValue getSelectedKey();
 
     // there is a contract if there are keys there should be current object

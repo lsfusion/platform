@@ -256,49 +256,6 @@ public class LinearContainerView extends GAbstractContainerView {
     }
 
     @Override
-    public Dimension getMaxPreferredSize(Map<GContainer, GAbstractContainerView> containerViews) {
-        int size = children.size();
-
-        int main = 0;
-        int opposite = 0;
-
-        if (size > 0) {
-            int rows = (size - 1) / linesCount + 1;
-            for (int i = 0; i < linesCount; i++) {
-                int lineCross = 0;
-                int lineMain = 0;
-                int captionMain = 0;
-
-                for (int j = 0; j < rows; j++) {
-                    int index = j * linesCount + i;
-                    if(index < size) {
-                        if(alignCaptions) {
-                            AlignCaptionPanel captionPanel = childrenCaptions.get(index);
-                            if(captionPanel != null) {
-                                Dimension captionPref = GwtClientUtils.calculateMaxPreferredSize(captionPanel);
-                                captionMain = Math.max(captionMain, vertical ? captionPref.width : captionPref.height);
-                            }
-                        }
-
-                        Dimension childPref = getChildMaxPreferredSize(containerViews, index);
-
-                        GComponent child = children.get(index);
-                        if(child instanceof GContainer && ((GContainer) child).caption != null) // adding border
-                            childPref = getCaptionPanel((GContainer) child).adjustMaxPreferredSize(childPref);
-
-                        lineMain = Math.max(lineMain, vertical ? childPref.width : childPref.height);
-                        lineCross += vertical ? childPref.height : childPref.width; // captions cross is equal to lineCross
-                    }
-                }
-                opposite = Math.max(opposite, lineCross);
-                main += lineMain + captionMain;
-            }
-        }
-
-        return new Dimension(vertical ? main : opposite, vertical ? opposite : main);
-    }
-
-    @Override
     public Widget getView() {
         return panel;
     }

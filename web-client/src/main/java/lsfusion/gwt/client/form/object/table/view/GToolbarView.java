@@ -26,9 +26,4 @@ public class GToolbarView extends ResizableHorizontalPanel {
             addComponent(GwtClientUtils.createVerticalSeparator(StyleDefaults.COMPONENT_HEIGHT));
         }
     }
-
-    @Override
-    public Dimension getMaxPreferredSize() {
-        return getOffsetSize(this);
-    }
 }

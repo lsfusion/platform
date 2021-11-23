@@ -471,11 +471,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
         GFont font = this.font != null ? this.font : parentFont;
 
-        String widthString = null;
-        if(widthString == null && charWidth != 0)
-            widthString = GwtSharedUtils.replicate('0', charWidth);
-        if(widthString != null)
-            return baseType.getFullWidthString(widthString, font);
+        if(charWidth != 0)
+            return GType.getFullWidthString(GwtSharedUtils.replicate('0', charWidth), font);
 
         return baseType.getDefaultWidth(font, this);
     }

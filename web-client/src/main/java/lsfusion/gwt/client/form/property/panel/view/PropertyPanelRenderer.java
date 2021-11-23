@@ -32,7 +32,7 @@ public class PropertyPanelRenderer extends PanelRenderer {
         GFlexAlignment panelCaptionAlignment = property.getPanelCaptionAlignment(); // vertical alignment
         boolean alignCaption = property.isAlignCaption() && captionContainer != null;
 
-        panel = new Panel(vertical);
+        panel = new FlexPanel(vertical);
         panel.addStyleName("dataPanelRendererPanel");
 
         label = new Label();
@@ -95,34 +95,6 @@ public class PropertyPanelRenderer extends PanelRenderer {
             else
                 label.removeStyleName("notEmptyPanelLabel");
             this.notEmptyText = notEmptyText;
-        }
-    }
-
-    private class Panel extends FlexPanel {
-        public Panel(boolean vertical) {
-            super(vertical);
-        }
-
-        @Override
-        public Dimension getMaxPreferredSize() {
-            Dimension pref = getOffsetSize(label);
-            if (!vertical) {
-                pref.width += 4; //extra for right label margin
-            }
-
-            //+extra for borders and margins
-            int width = property.getValueWidthWithPadding(null) + 4;
-            int height = property.getValueHeightWithPadding(null) + 4;
-
-            if (isVertical()) {
-                pref.width = Math.max(pref.width, width);
-                pref.height += height;
-            } else {
-                pref.width += width;
-                pref.height = Math.max(pref.height, height);
-            }
-
-            return pref;
         }
     }
 }

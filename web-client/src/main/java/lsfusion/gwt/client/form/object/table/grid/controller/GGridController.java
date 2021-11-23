@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.form.object.table.grid.controller;
 
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.GFormChanges;
 import lsfusion.gwt.client.base.GwtClientUtils;
@@ -11,6 +12,8 @@ import lsfusion.gwt.client.form.GUpdateMode;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
+import lsfusion.gwt.client.form.design.view.GAbstractContainerView;
+import lsfusion.gwt.client.form.design.view.GFormLayout;
 import lsfusion.gwt.client.form.filter.user.GFilter;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.object.GGroupObject;
@@ -36,6 +39,8 @@ public class GGridController extends GAbstractTableController {
     public GGroupObject groupObject;
 
     private GTableView table;
+
+    public Widget recordView;
 
     private static boolean isList(GGroupObject groupObject) {
         return groupObject.viewType.isList();
@@ -71,7 +76,20 @@ public class GGridController extends GAbstractTableController {
         this.groupObject = groupObject;
 
         if (isList()) {
-            initGridView(groupObject.grid.autoSize, groupObject.grid.record, requestIndex -> table.updateRecordLayout(requestIndex));
+            initGridView(groupObject.grid.autoSize);
+
+            // proceeding recordView
+            GContainer record = groupObject.grid.record;
+            if(record != null) {
+                GFormLayout formLayout = getFormLayout();
+                GAbstractContainerView recordView = formLayout.getContainerView(record);
+                recordView.addUpdateLayoutListener(requestIndex -> table.updateRecordLayout(requestIndex));
+                this.recordView = recordView.getView();
+
+                // we need to add recordview somewhere, to attach it (events, listeners, etc.)
+                // need to wrap recordView to setVisible false recordView's parent and not recordView itself (since it will be moved and shown by table view implementation)
+                formLayout.recordViews.add(this.recordView);
+            }
 
             this.userPreferences = userPreferences;
 

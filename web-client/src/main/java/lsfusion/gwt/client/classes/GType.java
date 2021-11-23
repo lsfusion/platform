@@ -35,7 +35,7 @@ public abstract class GType implements Serializable {
         return GCompare.EQUALS;
     }
 
-    public int getFullWidthString(String widthString, GFont font) {
+    public static int getFullWidthString(String widthString, GFont font) {
         GFontWidthString fontWidthString = new GFontWidthString(font == null ? GFont.DEFAULT_FONT : font, widthString);
         return GFontMetrics.getStringWidth(fontWidthString); //  + StyleDefaults.CELL_HORIZONTAL_PADDING * 2; min-width doesnt' include padding, so we don't need to add it
     }

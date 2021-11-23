@@ -1,16 +1,14 @@
 package lsfusion.server.logics.form.interactive.design.object;
 
 import lsfusion.interop.base.view.FlexAlignment;
-import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.NFLazy;
-import lsfusion.server.base.version.Version;
-import lsfusion.server.base.version.interfaces.NFProperty;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.struct.FormEntity;
 
+import java.awt.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;

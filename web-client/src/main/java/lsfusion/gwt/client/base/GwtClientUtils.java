@@ -305,9 +305,38 @@ public class GwtClientUtils {
         childStyle.setRight(0, Style.Unit.PX);
     }
 
+    public static void clearFillParent(Element child) {
+        Element parentElement = child.getParentElement();
+        String parentPosition = parentElement.getStyle().getPosition();
+        if (parentPosition != null && parentPosition.equals(Style.Position.RELATIVE.getCssName()))
+            parentElement.getStyle().clearPosition();
+
+        Style childStyle = child.getStyle();
+        childStyle.clearPosition();
+        childStyle.clearTop();
+        childStyle.clearLeft();
+        childStyle.clearBottom();
+        childStyle.clearRight();
+    }
+
     public static void setupPercentParent(Element element) {
         element.getStyle().setWidth(100, Style.Unit.PCT);
         element.getStyle().setHeight(100, Style.Unit.PCT);
+    }
+
+    public static void clearPercentParent(Element element) {
+        element.getStyle().clearWidth();
+        element.getStyle().clearHeight();
+    }
+
+    public static void changePercentFillWidget(Widget widget, boolean percent) {
+        if(percent) {
+            GwtClientUtils.clearFillParent(widget.getElement());
+            GwtClientUtils.setupPercentParent(widget.getElement());
+        } else {
+            GwtClientUtils.clearPercentParent(widget.getElement());
+            GwtClientUtils.setupFillParent(widget.getElement());
+        }
     }
 
     public static Dimension getOffsetSize(Widget widget) {
@@ -316,39 +345,6 @@ public class GwtClientUtils {
 
     public static Dimension getOffsetSize(Widget widget, int widthExtra, int heightExtra) {
         return new Dimension(widget.getOffsetWidth() + widthExtra, widget.getOffsetHeight() + heightExtra);
-    }
-
-    public static Dimension calculateMaxPreferredSize(Widget widget) { // тут как и в AbstractClientContainerView.getMaxPreferredSize возможно нужна проверка на isVisible
-        if (widget instanceof HasMaxPreferredSize) {
-            return ((HasMaxPreferredSize) widget).getMaxPreferredSize();
-        } else {
-            return new Dimension(widget.getOffsetWidth(), widget.getOffsetHeight());
-        }
-    }
-
-    public static Dimension calculateStackMaxPreferredSize(Iterator<Widget> widgets, boolean vertical) {
-        int width = 0;
-        int height = 0;
-        while (widgets.hasNext()) {
-            Widget childView = widgets.next();
-            if (childView.isVisible()) {
-                Dimension childSize = calculateMaxPreferredSize(childView);
-                if (vertical) {
-                    width = max(width, childSize.width);
-                    height += childSize.height;
-                } else {
-                    width += childSize.width;
-                    height = max(height, childSize.height);
-                }
-            }
-        }
-        return new Dimension(width, height);
-    }
-
-    public static Dimension enlargeDimension(Dimension dim, int extraWidth, int extraHeight) {
-        dim.width += extraWidth;
-        dim.height += extraHeight;
-        return dim;
     }
 
     public static void showPopupInWindow(PopupDialogPanel popup, Widget widget, int mouseX, int mouseY) {

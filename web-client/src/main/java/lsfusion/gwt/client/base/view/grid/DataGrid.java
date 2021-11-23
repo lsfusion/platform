@@ -41,7 +41,7 @@ import static lsfusion.gwt.client.base.view.ColorUtils.mixColors;
 import static lsfusion.gwt.client.view.StyleDefaults.*;
 
 // we need resizesimplepanel for "scroller" padding in headers (we don't know if there gonna be vertival scroller)
-public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusable, ColorThemeChangeListener {
+public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorThemeChangeListener, HasMaxPreferredSize {
 
     public static final String DATA_GRID_CLASS = "dataGridTableWrapperWidget";
 
@@ -145,78 +145,67 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
     }
 
     public DataGrid(GridStyle style, boolean noHeaders, boolean noFooters, boolean noScrollers) {
+        super(true);
+
         this.noHeaders = noHeaders;
         this.noFooters = noFooters;
         this.noScrollers = noScrollers;
 
         this.style = style;
 
-        tableData = new TableWidget();
+        // INITIALIZING HEADERS
+        if(!noHeaders) {
+            Widget tableHeaderContainer;
+            tableHeader = new HeaderWidget();
+            if(!noScrollers) {
+                tableHeaderScroller = new TableScrollPanel(tableHeader, Style.Overflow.HIDDEN);
+                tableHeaderContainer = tableHeaderScroller;
+            } else
+                tableHeaderContainer = TableScrollPanel.noScroll(tableHeader);
 
+            add(tableHeaderContainer, GFlexAlignment.STRETCH);
+
+            headerBuilder = new DefaultHeaderBuilder<>(this, false);
+        }
+
+        // INITIALIZING MAIN DATA
         Widget tableDataContainer;
+        tableData = new TableWidget();
         if(!noScrollers) {
             tableDataScroller = new TableScrollPanel(tableData, Style.Overflow.AUTO);
             tableDataContainer = tableDataScroller;
-        } else {
-            tableDataContainer = tableData;
-        }
 
-        if(noHeaders && noFooters) {
-            setFillWidget(tableDataContainer);
-        } else {
-            FlexPanel headerPanel = new FlexPanel(true); // will use flex for headers / footers
-
-            if(!noHeaders) {
-                Widget tableHeaderContainer;
-                tableHeader = new HeaderWidget();
-                if(!noScrollers) {
-                    tableHeaderScroller = new TableScrollPanel(tableHeader, Style.Overflow.HIDDEN);
-                    tableHeaderContainer = tableHeaderScroller;
-                } else
-                    tableHeaderContainer = tableHeader;
-
-                headerPanel.add(tableHeaderContainer, GFlexAlignment.STRETCH);
-
-                headerBuilder = new DefaultHeaderBuilder<>(this, false);
-            } else
-                tableHeaderScroller = null;
-
-            headerPanel.addFillFlex(tableDataContainer, !noScrollers ? 0 : null); // for scrollers we need 0 basis (since that is the point of scroller)
-
-            if (!noFooters) { // the same as for headers
-                Widget tableFooterContainer;
-                tableFooter = new FooterWidget();
-                if(!noScrollers) {
-                    tableFooterScroller = new TableScrollPanel(tableFooter, Style.Overflow.HIDDEN);
-                    tableFooterContainer = tableFooterScroller;
-                } else
-                    tableFooterContainer = tableFooter;
-
-                headerPanel.add(tableFooterContainer, GFlexAlignment.STRETCH);
-
-                footerBuilder = new DefaultHeaderBuilder<>(this, true);
-            } else
-                tableFooterScroller = null;
-
-            if(!noScrollers) {
-                // Synchronize the scroll positions of the three tables.
-                // it's not possible to avoid this by splitting to separate horizontal and vertical scroller, since we don't want vertical scroller to be scrolled by horizontal scroller
-                tableDataScroller.addScrollHandler(event -> {
-                    int scrollLeft = tableDataScroller.getHorizontalScrollPosition();
-                    if (tableHeaderScroller != null) {
-                        tableHeaderScroller.setHorizontalScrollPosition(scrollLeft);
-                    }
-                    if (tableFooterScroller != null) {
-                        tableFooterScroller.setHorizontalScrollPosition(scrollLeft);
-                    }
-                    setLeftNeighbourRightBorder(calcLeftNeighbourRightBorder(true));
-                });
-            } else {
-                removeOuterGridBorders(headerPanel);
-            }
+            // Synchronize the scroll positions of the three tables.
+            // it's not possible to avoid this by splitting to separate horizontal and vertical scroller, since we don't want vertical scroller to be scrolled by horizontal scroller
+            tableDataScroller.addScrollHandler(event -> {
+                int scrollLeft = tableDataScroller.getHorizontalScrollPosition();
+                if (tableHeaderScroller != null) {
+                    tableHeaderScroller.setHorizontalScrollPosition(scrollLeft);
+                }
+                if (tableFooterScroller != null) {
+                    tableFooterScroller.setHorizontalScrollPosition(scrollLeft);
+                }
+                setLeftNeighbourRightBorder(calcLeftNeighbourRightBorder(true));
+            });
             tableDataScroller.addScrollHandler(event -> checkSelectedRowVisible());
+        } else
+            tableDataContainer = TableScrollPanel.noScroll(tableData);
 
-            setFillWidget(headerPanel);
+        addFillFlex(tableDataContainer, !noScrollers ? 0 : null); // for scrollers we need 0 basis (since that is the point of scroller)
+
+        // INITIALIZING FOOTERS
+        if (!noFooters) { // the same as for headers
+            Widget tableFooterContainer;
+            tableFooter = new FooterWidget();
+            if(!noScrollers) {
+                tableFooterScroller = new TableScrollPanel(tableFooter, Style.Overflow.HIDDEN);
+                tableFooterContainer = tableFooterScroller;
+            } else
+                tableFooterContainer = TableScrollPanel.noScroll(tableFooter);
+
+            add(tableFooterContainer, GFlexAlignment.STRETCH);
+
+            footerBuilder = new DefaultHeaderBuilder<>(this, true);
         }
 
         emptyTableWidgetContainer = new FlexTable();
@@ -225,7 +214,7 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
         getTableDataFocusElement().setTabIndex(0);
         initSinkEvents(this);
 
-        addStyleName(style.dataGridWidget());
+        addStyleName("dataGridWidget");
 
         MainFrame.addColorThemeChangeListener(this);
     }
@@ -841,7 +830,49 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
         minWidthUnit = unit;
 
         setBlockMinWidth(value, tableData);
-        updateHeaderFooterTableMinimumWidth();
+        if(!noHeaders)
+            updateHeaderTableMinimumWidth(tableHeader);
+        if(!noFooters)
+            updateHeaderTableMinimumWidth(tableFooter);
+    }
+
+    @Override
+    public void setPreferredSize(boolean set) {
+        if(minWidthUnit != null) {
+            // we have only minWidth, but during auto sizing this grid will get 100000 pixels width, which is not what we expect
+            // so we're setting max width
+            setMaxBlockWidth(set, tableData);
+            if(!noHeaders)
+                setMaxBlockWidth(set, tableHeader);
+            if(!noFooters)
+                setMaxBlockWidth(set, tableFooter);
+        }
+
+        // super call will set tableDataScroller flex basis to auto (which is also important)
+        super.setPreferredSize(set);
+    }
+
+    private void setMaxBlockWidth(boolean set, Widget tableData) {
+        if(set)
+            setMaxWidth(tableData, minWidthValue, minWidthUnit);
+        else
+            clearMaxWidth(tableData);
+    }
+
+    public static void setMaxWidth(Widget widget, double width, Unit widthUnit) {
+        widget.getElement().getStyle().setProperty("maxWidth", width, widthUnit);
+    }
+
+    public static void setMaxHeight(Widget widget, double height, Unit widthUnit) {
+        widget.getElement().getStyle().setProperty("maxHeight", height, widthUnit);
+    }
+
+    public static void clearMaxWidth(Widget widget) {
+        widget.getElement().getStyle().clearProperty("maxWidth");
+    }
+
+    public static void clearMaxHeight(Widget widget) {
+        widget.getElement().getStyle().clearProperty("maxHeight");
     }
 
     public void setBlockMinWidth(double value, Widget tableData) {
@@ -887,12 +918,6 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
             updateHeaderTablePadding(tableFooter, tableFooterScroller);
         if(!noScrollers)
             updateTableRightOuterBorder();
-    }
-    private void updateHeaderFooterTableMinimumWidth() {
-        if(!noHeaders)
-            updateHeaderTableMinimumWidth(tableHeader);
-        if(!noFooters)
-            updateHeaderTableMinimumWidth(tableFooter);
     }
 
     /**
@@ -1660,8 +1685,13 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
     private static class UpdateDOMCommand implements Scheduler.ScheduledCommand {
         private final ArrayList<DataGrid> grids = new ArrayList<>();
 
+        public boolean executed;
+
         @Override
         public void execute() {
+            if(executed)
+                return;
+
             for (DataGrid grid : grids)
                 grid.startResolving();
 
@@ -1695,6 +1725,7 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
             for (DataGrid grid : grids)
                 grid.finishResolving();
 
+            executed = true;
             updateDOMCommandStatic = null;
         }
 
@@ -1705,6 +1736,11 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
                 Scheduler.get().scheduleFinally(updateDOMCommandStatic);
             } else
                 updateDOMCommandStatic.add(grid);
+        }
+
+        public static void flush() {
+            if (updateDOMCommandStatic != null)
+                updateDOMCommandStatic.execute();
         }
 
         private void add(DataGrid grid) {
@@ -1718,6 +1754,10 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
             throw new IllegalStateException("It's not allowed to change current state, when resolving pending state");
 
         UpdateDOMCommand.schedule(this);
+    }
+
+    public static void flushUpdateDOM() {
+        UpdateDOMCommand.flush();
     }
 
     private abstract static class TableWrapperWidget extends Widget {

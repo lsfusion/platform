@@ -5,8 +5,11 @@ import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.Dimension;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.focus.DefaultFocusReceiver;
 import lsfusion.gwt.client.base.view.FlexPanel;
+import lsfusion.gwt.client.base.view.HasMaxPreferredSize;
+import lsfusion.gwt.client.base.view.ResizableComplexPanel;
 import lsfusion.gwt.client.base.view.ResizableSimplePanel;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.form.controller.FormsController;
@@ -20,7 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-public class GFormLayout extends ResizableSimplePanel {
+public class GFormLayout extends ResizableComplexPanel {
 
     private GFormController form;
 
@@ -32,6 +35,8 @@ public class GFormLayout extends ResizableSimplePanel {
     private ArrayList<GComponent> defaultComponents = new ArrayList<>();
     private ArrayList<DefaultFocusReceiver> defaultFocusReceivers = new ArrayList<>();
 
+    public final ResizableComplexPanel recordViews;
+
     public GFormLayout(GFormController iform, GContainer mainContainer) {
         this.form = iform;
 
@@ -40,8 +45,12 @@ public class GFormLayout extends ResizableSimplePanel {
         addContainers(mainContainer);
 
         Widget view = getMainView();
-        setFillWidget(view);
+        setFillMain(view);
         view.getElement().getStyle().setOverflow(Style.Overflow.AUTO);
+
+        recordViews = new ResizableComplexPanel();
+        recordViews.setVisible(false);
+        add(recordViews);
 
         DataGrid.initSinkMouseEvents(this);
     }
@@ -50,7 +59,7 @@ public class GFormLayout extends ResizableSimplePanel {
         return form.getFormsController();
     }
 
-    private Widget getMainView() {
+    public Widget getMainView() {
         return getContainerView(mainContainer).getView();
     }
 
@@ -204,14 +213,38 @@ public class GFormLayout extends ResizableSimplePanel {
         return hasVisible;
     }
 
-    @Override
-    public Dimension getMaxPreferredSize() {
-        Dimension result = GAbstractContainerView.getMaxPreferredSize(mainContainer, containerViews, false); // в BOX container'е берем явный size (предполагая что он используется не как базовый размер с flex > 0, а конечный)
-        setDebugDimensionsAttributes(getMainView(), result);
-        return result;
+    public Dimension getPreferredSize(int maxWidth, int maxHeight, int extraHorzOffset, int extraVertOffset) {
+        Integer width = mainContainer.getSize(false);
+        Integer height = mainContainer.getSize(true);
+
+        setPreferredSize(true, width, height, maxWidth - extraHorzOffset, maxHeight - extraVertOffset);
+        try {
+            DataGrid.flushUpdateDOM(); // there can be some pending grid changes, and we need actual sizes
+
+            int offsetWidth = getOffsetWidth();
+            int offsetHeight = getOffsetHeight();
+            return new Dimension(offsetWidth + (width != null ? 0 : extraHorzOffset), offsetHeight + (height != null ? 0 : extraVertOffset));
+        } finally {
+            setPreferredSize(false, null, null, 0, 0);
+        }
     }
 
-    public static void setDebugDimensionsAttributes(Widget w, Dimension result) {
-        w.getElement().setAttribute("lsfusion-size", "(" + result.width + ", " + result.height + ")");
+    public void setPreferredSize(boolean set, Integer width, Integer height, int maxWidth, int maxHeight) {
+        GwtClientUtils.changePercentFillWidget(main, set);
+
+        Element element = main.getElement();
+        FlexPanel.setSize(element, true, height);
+        FlexPanel.setSize(element, false, width);
+
+        if(set) {
+            DataGrid.setMaxWidth(this, maxWidth, Style.Unit.PX);
+            DataGrid.setMaxHeight(this, maxHeight, Style.Unit.PX);
+        } else {
+            DataGrid.clearMaxWidth(this);
+            DataGrid.clearMaxHeight(this);
+        }
+
+        if(main instanceof HasMaxPreferredSize)
+            ((HasMaxPreferredSize) main).setPreferredSize(set);
     }
 }
