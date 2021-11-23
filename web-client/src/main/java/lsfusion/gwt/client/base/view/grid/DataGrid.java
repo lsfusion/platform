@@ -1235,7 +1235,7 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
                     Element cell = tr.getCells().getItem(stickyColumns.get(i));
                     int cellLeft = cell.getOffsetWidth();
                     //protect from too much sticky columns
-                    pendingState.stickyLefts.add(left + cellLeft <= viewportWidth ? left : null);
+                    pendingState.stickyLefts.add(left + cellLeft <= viewportWidth * 0.67 ? left : null);
                     left += cellLeft;
                 }
             }
