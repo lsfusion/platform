@@ -2215,7 +2215,11 @@ public class ScriptingLogicsModule extends LogicsModule {
                 }),
                 where != null ? splitParams(where, contextSize, usedInterfaces, value -> 0, (property, mapValues, mapExternal) ->
                         new InputFilterEntity<>(property, mapValues)) : null,
-                splitActionParamsList(actionImages, actions, contextSize, usedInterfaces, value -> 0));
+                ListFact.fromJavaList(actionImages).mapListValues((i, actionImage) -> {
+                    LAWithParams action = actions.get(i);
+                    return(splitAPParams(action, contextSize, usedInterfaces, value -> 0, (property, mapValues, mapExternal) ->
+                            new InputContextAction(actionImage, action.getLP().action, mapValues)));
+                }));
     }
 
     public LAWithParams addScriptedInputAProp(ValueClass requestValueClass, LPWithParams oldValue, NamedPropertyUsage targetProp, LAWithParams doAction, LAWithParams elseAction,
@@ -3397,16 +3401,6 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
     private interface ThreeFunction<A, B, C, R> {
         R apply(A param1, B param2, C param3);        
-    }
-    private <E> ImList<InputContextAction<?, PropertyInterface>> splitActionParamsList(List<String> actionImages, List<LAWithParams> actions, int contextSize, ImRevMap<Integer, PropertyInterface> usedInterfaces, IntFunction<E> external) {
-        MList<InputContextAction<?, PropertyInterface>> contextActions = ListFact.mList();
-        for(int a = 0; a < actionImages.size(); a++) {
-            String actionImage = actionImages.get(a);
-            LAWithParams action = actions.get(a);
-            contextActions.add(splitAPParams(action, contextSize, usedInterfaces, external, (property, mapValues, mapExternal) ->
-                    new InputContextAction(actionImage, action.getLP().action, mapValues)));
-        }
-        return contextActions.immutableList();
     }
     private <T extends PropertyInterface, E, R> R splitParams(LPWithParams lpWithParams, int contextSize, ImRevMap<Integer, PropertyInterface> usedInterfaces, IntFunction<E> external, ThreeFunction<Property<T>, ImRevMap<T, PropertyInterface>, ImRevMap<T, E>, R> result) {
         return splitAPParams(lpWithParams, contextSize, usedInterfaces, external, result);
