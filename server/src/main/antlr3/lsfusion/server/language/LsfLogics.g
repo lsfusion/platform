@@ -3089,12 +3089,6 @@ leafContextActionDB[List<TypedParameter> context, boolean dynamic] returns [LAWi
 	    ) ';'
 ;
 
-leafContextActionDBNoSemi[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
-	:	(   extDB=leafExtendContextActionDB[context, dynamic]	{ $action = $extDB.action; }
-	    |	keepDB=leafKeepContextActionDB[context, dynamic]	{ $action = $keepDB.action; }
-	    )
-;
-
 leafExtendContextActionDB[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
 @init {
     boolean isKeepContext = false; // hack for execActionDefinitionBody
@@ -3850,10 +3844,10 @@ inputActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams ac
         dDB=doInputBody[context, newContext]
 	;
 
-contextActions[List<TypedParameter> context] returns [List<String> actionImages = new ArrayList<>(), List<LAWithParams> actions = new ArrayList<>()]
+contextActions[List<TypedParameter> context, boolean dynamic] returns [List<String> actionImages = new ArrayList<>(), List<LAWithParams> actions = new ArrayList<>()]
 	:
-	'ACTIONS' image=stringLiteral actDB=leafContextActionDBNoSemi[context, true] { $actionImages.add($image.val); $actions.add($actDB.action); }
-	(',' nextImage=stringLiteral nextActDB=leafContextActionDBNoSemi[context, true] { $actionImages.add($nextImage.val); $actions.add($nextActDB.action); })*
+	'ACTIONS' image=stringLiteral actDB=listActionDefinitionBody[context, true] { $actionImages.add($image.val); $actions.add($actDB.action); }
+	(',' nextImage=stringLiteral nextActDB=listActionDefinitionBody[context, true] { $actionImages.add($nextImage.val); $actions.add($nextActDB.action); })*
 	;
 
 mappedInput[List<TypedParameter> context] returns [ValueClass valueClass, LPWithParams initValue = null]
