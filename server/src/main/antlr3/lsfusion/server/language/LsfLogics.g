@@ -3089,6 +3089,12 @@ leafContextActionDB[List<TypedParameter> context, boolean dynamic] returns [LAWi
 	    ) ';'
 ;
 
+leafContextActionDBNoSemi[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
+	:	(   extDB=leafExtendContextActionDB[context, dynamic]	{ $action = $extDB.action; }
+	    |	keepDB=leafKeepContextActionDB[context, dynamic]	{ $action = $keepDB.action; }
+	    )
+;
+
 leafExtendContextActionDB[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
 @init {
     boolean isKeepContext = false; // hack for execActionDefinitionBody
@@ -3807,10 +3813,14 @@ inputActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams ac
     LPWithParams changeProp = null;
     LPWithParams listProp = null;
     LPWithParams whereProp = null;
+
+    List<String> actionImages = new ArrayList<>();
+    List<LAWithParams> actions = new ArrayList<>();
 }
 @after {
 	if (inMainParseState()) {
-		$action = self.addScriptedInputAProp($in.valueClass, $in.initValue, outProp, $dDB.action, $dDB.elseAction, context, newContext, assign, constraintFilter, changeProp, listProp, whereProp, assignDebugPoint, $fs.result);
+		$action = self.addScriptedInputAProp($in.valueClass, $in.initValue, outProp, $dDB.action, $dDB.elseAction, context, newContext,
+		 assign, constraintFilter, changeProp, listProp, whereProp, actionImages, actions, assignDebugPoint, $fs.result);
 	}
 }
 	:	'INPUT'
@@ -3834,11 +3844,18 @@ inputActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams ac
         }
 	    ('LIST' listExpr=propertyExpression[newListContext, listDynamic] { listProp = $listExpr.property; })?
         ('WHERE' whereExpr=propertyExpression[newListContext, listDynamic] { whereProp = $whereExpr.property; })?
+        (acts = contextActions[newContext] { actionImages = $acts.actionImages; actions = $acts.actions; })?
         fs=formSessionScopeClause?
 //		('TO' pUsage=propertyUsage { outProp = $pUsage.propUsage; } )?
         dDB=doInputBody[context, newContext]
 	;
-	
+
+contextActions[List<TypedParameter> context] returns [List<String> actionImages = new ArrayList<>(), List<LAWithParams> actions = new ArrayList<>()]
+	:
+	'ACTIONS' image=stringLiteral actDB=leafContextActionDBNoSemi[context, true] { $actionImages.add($image.val); $actions.add($actDB.action); }
+	(',' nextImage=stringLiteral nextActDB=leafContextActionDBNoSemi[context, true] { $actionImages.add($nextImage.val); $actions.add($nextActDB.action); })*
+	;
+
 mappedInput[List<TypedParameter> context] returns [ValueClass valueClass, LPWithParams initValue = null]
 @init {
     String varName = "object"; // for INPUT =f() CHANGE and INPUT LONG;
