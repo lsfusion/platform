@@ -125,6 +125,13 @@ public class RemoteFormProxy extends RemoteRequestObjectProxy<RemoteFormInterfac
         return result;
     }
 
+    public ServerResponse setContainerCollapsed(long requestIndex, long lastReceivedRequestIndex, int containerID, boolean collapsed) throws RemoteException {
+        logRemoteMethodStartVoidCall("setContainerCollapsed");
+        ServerResponse result = target.setContainerCollapsed(requestIndex, lastReceivedRequestIndex, containerID, collapsed);
+        logRemoteMethodEndVoidCall("setContainerCollapsed");
+        return result;
+    }
+
     public ServerResponse changeGroupObject(long requestIndex, long lastReceivedRequestIndex, int groupID, byte[] value) throws RemoteException {
         logRemoteMethodStartCall("changeGroupObject");
         ServerResponse result = target.changeGroupObject(requestIndex, lastReceivedRequestIndex, groupID, value);

@@ -31,6 +31,7 @@ public class ContainerView extends ComponentView {
     public NFOrderSet<ComponentView> children = NFFact.orderSet();
 
     public LocalizedString caption;
+    public boolean collapsible = true;
 
     private ContainerType type = ContainerType.CONTAINERV;
     private boolean horizontal;
@@ -318,6 +319,7 @@ public class ContainerView extends ComponentView {
 
         pool.writeString(outStream, ThreadLocalContext.localize(caption));
 
+        outStream.writeBoolean(collapsible);
 //        pool.writeObject(outStream, main);
 
         pool.writeBoolean(outStream, isHorizontal());
@@ -341,6 +343,8 @@ public class ContainerView extends ComponentView {
         children = NFFact.finalOrderSet(pool.deserializeList(inStream));
 
         caption = LocalizedString.create(pool.readString(inStream));
+        
+        collapsible = inStream.readBoolean();
 
 //        main = pool.readBoolean(inStream); // пока не будем делать, так как надо клиента обновлять
 

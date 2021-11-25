@@ -5,8 +5,10 @@ import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.ui.*;
-import lsfusion.gwt.client.base.Dimension;
+import com.google.gwt.user.client.ui.ComplexPanel;
+import com.google.gwt.user.client.ui.ProvidesResize;
+import com.google.gwt.user.client.ui.RequiresResize;
+import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.Pair;
@@ -189,6 +191,10 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
 
     public void setChildFlexBasis(Widget w, int flexBasis, boolean grid) {
         impl.setFlexBasis(((WidgetLayoutData) w.getLayoutData()).flex, w.getElement(), flexBasis, vertical, grid);
+    }
+    
+    public void setChildFlex(Widget w, double flex, boolean grid) {
+        impl.setFlex(((WidgetLayoutData) w.getLayoutData()).flex, w.getElement(), flex, ((WidgetLayoutData) w.getLayoutData()).flex.flexBasis, vertical, grid);
     }
 
     public static void setSpan(Widget w, int span, boolean vertical) {

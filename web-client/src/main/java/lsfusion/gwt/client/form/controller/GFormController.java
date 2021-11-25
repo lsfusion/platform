@@ -1,7 +1,10 @@
 package lsfusion.gwt.client.form.controller;
 
 import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.dom.client.*;
+import com.google.gwt.dom.client.BrowserEvents;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.EventTarget;
+import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.*;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
@@ -1159,6 +1162,12 @@ public class GFormController implements EditManager {
 
     public void setTabVisible(GContainer tabbedPane, GComponent visibleComponent) {
         asyncResponseDispatch(new SetTabVisible(tabbedPane.ID, visibleComponent.ID));
+        formLayout.onResize();
+    }
+    
+    public void setContainerCollapsed(GContainer container, boolean collapsed) {
+        asyncResponseDispatch(new SetContainerCollapsed(container.ID, collapsed));
+        formLayout.setContainerCollapsed(container, collapsed);
         formLayout.onResize();
     }
 

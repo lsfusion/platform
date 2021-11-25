@@ -2,7 +2,6 @@ package lsfusion.server.logics.form.interactive.controller.remote;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
-import lsfusion.base.ExceptionUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.Result;
 import lsfusion.base.col.ListFact;
@@ -42,6 +41,7 @@ import lsfusion.server.logics.action.controller.stack.EExecutionStackCallable;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.data.ParseException;
+import lsfusion.server.logics.form.interactive.action.async.*;
 import lsfusion.server.logics.form.interactive.changed.FormChanges;
 import lsfusion.server.logics.form.interactive.controller.context.RemoteFormContext;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerContext;
@@ -64,7 +64,6 @@ import lsfusion.server.logics.form.stat.struct.export.StaticExportData;
 import lsfusion.server.logics.form.stat.struct.export.plain.csv.ExportCSVAction;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
-import lsfusion.server.logics.form.interactive.action.async.*;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import org.apache.commons.lang3.ArrayUtils;
@@ -647,6 +646,18 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
             }
             
             form.setTabVisible((ContainerView) richDesign.findById(tabPaneID), richDesign.findById(childId));
+        });
+    }
+
+    @Override
+    public ServerResponse setContainerCollapsed(long requestIndex, long lastReceivedRequestIndex, int containerID, boolean collapsed) throws RemoteException {
+        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
+
+            if (logger.isTraceEnabled()) {
+                logger.trace("setContainerCollapsed Action");
+            }
+
+            form.setContainerCollapsed((ContainerView) richDesign.findById(containerID), collapsed);
         });
     }
 

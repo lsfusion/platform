@@ -20,6 +20,7 @@ import java.util.Map;
 public class ClientContainer extends ClientComponent {
 
     public String caption;
+    public boolean collapsible;
 
     public boolean horizontal;
     public boolean tabbed;
@@ -46,6 +47,8 @@ public class ClientContainer extends ClientComponent {
         pool.serializeCollection(outStream, children);
 
         pool.writeString(outStream, caption);
+        
+        outStream.writeBoolean(collapsible);
 
         pool.writeBoolean(outStream, horizontal);
         pool.writeBoolean(outStream, tabbed);
@@ -68,6 +71,8 @@ public class ClientContainer extends ClientComponent {
         children = pool.deserializeList(inStream);
 
         caption = pool.readString(inStream);
+        
+        collapsible = inStream.readBoolean();
 
         horizontal = pool.readBoolean(inStream);
         tabbed = pool.readBoolean(inStream);

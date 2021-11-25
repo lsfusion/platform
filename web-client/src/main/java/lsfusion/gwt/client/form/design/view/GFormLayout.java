@@ -10,18 +10,15 @@ import lsfusion.gwt.client.base.focus.DefaultFocusReceiver;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.HasMaxPreferredSize;
 import lsfusion.gwt.client.base.view.ResizableComplexPanel;
-import lsfusion.gwt.client.base.view.ResizableSimplePanel;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
-import lsfusion.gwt.client.form.design.view.flex.*;
+import lsfusion.gwt.client.form.design.view.flex.LinearContainerView;
 import lsfusion.gwt.client.form.object.table.grid.GGrid;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class GFormLayout extends ResizableComplexPanel {
 
@@ -36,6 +33,8 @@ public class GFormLayout extends ResizableComplexPanel {
     private ArrayList<DefaultFocusReceiver> defaultFocusReceivers = new ArrayList<>();
 
     public final ResizableComplexPanel recordViews;
+
+    protected Set<GContainer> collapsedContainers = new HashSet<>();
 
     public GFormLayout(GFormController iform, GContainer mainContainer) {
         this.form = iform;
@@ -67,7 +66,7 @@ public class GFormLayout extends ResizableComplexPanel {
         if (container.tabbed) {
             return new TabbedContainerView(form, container);
         } else {
-            return new LinearContainerView(container);
+            return new LinearContainerView(form, container);
         }
     }
 
@@ -211,6 +210,29 @@ public class GFormLayout extends ResizableComplexPanel {
         }
         containerView.updateLayout(requestIndex, childrenVisible);
         return hasVisible;
+    }
+
+    public void setContainerCollapsed(GContainer container, boolean collapsed) {
+        if (collapsed) {
+            collapsedContainers.add(container);
+        } else {
+            collapsedContainers.remove(container);
+        }
+    }
+    
+    public boolean isCollapsed(GContainer container) {
+        return collapsedContainers.contains(container);
+    }
+
+    public boolean isInCollapsed(GComponent component) {
+        GContainer container = component.container;
+        while (container != null) {
+            if (isCollapsed(container)) {
+                return true;
+            }
+            container = container.container;
+        }
+        return false;
     }
 
     public Dimension getPreferredSize(int maxWidth, int maxHeight, int extraHorzOffset, int extraVertOffset) {

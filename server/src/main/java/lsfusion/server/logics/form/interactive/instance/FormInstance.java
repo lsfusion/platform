@@ -81,6 +81,10 @@ import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.form.interactive.FormCloseType;
 import lsfusion.server.logics.form.interactive.ManageSessionType;
 import lsfusion.server.logics.form.interactive.UpdateType;
+import lsfusion.server.logics.form.interactive.action.async.AsyncChange;
+import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
+import lsfusion.server.logics.form.interactive.action.async.PushAsyncChange;
+import lsfusion.server.logics.form.interactive.action.async.PushAsyncResult;
 import lsfusion.server.logics.form.interactive.action.input.InputContext;
 import lsfusion.server.logics.form.interactive.action.input.InputValueList;
 import lsfusion.server.logics.form.interactive.changed.*;
@@ -109,10 +113,6 @@ import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.object.TreeGroupEntity;
 import lsfusion.server.logics.form.struct.order.OrderEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
-import lsfusion.server.logics.form.interactive.action.async.AsyncChange;
-import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
-import lsfusion.server.logics.form.interactive.action.async.PushAsyncChange;
-import lsfusion.server.logics.form.interactive.action.async.PushAsyncResult;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.data.SessionDataProperty;
@@ -136,7 +136,8 @@ import java.util.function.Supplier;
 
 import static lsfusion.base.BaseUtils.deserializeObject;
 import static lsfusion.base.BaseUtils.systemLogger;
-import static lsfusion.interop.action.ServerResponse.*;
+import static lsfusion.interop.action.ServerResponse.CHANGE;
+import static lsfusion.interop.action.ServerResponse.INPUT;
 import static lsfusion.interop.form.order.user.Order.*;
 import static lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance.*;
 
@@ -1735,23 +1736,53 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         assert !isNoTabHidden(component);
         ContainerView parent = component.getTabbedContainer();
 
-        ComponentView visible = visibleTabs.get(parent);
-        ImList<ComponentView> siblings = parent.getChildrenList();
-        if (visible == null && siblings.size() > 0) // аналогичные проверки на клиентах, чтобы при init'е не вызывать
-            visible = siblings.get(0);
-        if (!component.equals(visible))
+        if (parent.isTabbed()) {
+            ComponentView visible = visibleTabs.get(parent);
+            ImList<ComponentView> siblings = parent.getChildrenList();
+            if (visible == null && siblings.size() > 0) // аналогичные проверки на клиентах, чтобы при init'е не вызывать
+                visible = siblings.get(0);
+            if (!component.equals(visible))
+                return true;
+        }
+
+        if (isInCollapsed(component)) {
             return true;
+        }
 
         ComponentView tabContainer = parent.getTabHiddenContainer();
         return tabContainer != null && isTabHidden(tabContainer);
     }
 
     protected Map<ContainerView, ComponentView> visibleTabs = new HashMap<>();
+    protected Set<ContainerView> collapsedContainers = new HashSet<>();
 
     public void setTabVisible(ContainerView view, ComponentView page) throws SQLException, SQLHandledException {
         assert view.isTabbed();
         updateActiveTabProperty(page);
         visibleTabs.put(view, page);
+    }
+    
+    public void setContainerCollapsed(ContainerView container, boolean collapsed) throws SQLException, SQLHandledException {
+        if (collapsed) {
+            collapsedContainers.add(container);
+        } else {
+            collapsedContainers.remove(container);
+        }
+    }
+    
+    private boolean isCollapsed(ContainerView container) {
+        return collapsedContainers.contains(container);
+    }
+
+    private boolean isInCollapsed(ComponentView component) {
+        ContainerView container = component.getContainer();
+        while (container != null) {
+            if (isCollapsed(container)) {
+                return true;
+            }
+            container = container.getContainer();
+        }
+        return false;
     }
 
     private void updateActiveTabProperty(ComponentView page) throws SQLException, SQLHandledException {

@@ -2,19 +2,18 @@ package lsfusion.gwt.client.form.design.view.flex;
 
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.client.base.Dimension;
-import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.view.CaptionPanel;
+import lsfusion.gwt.client.base.view.CollapsiblePanel;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
+import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.design.view.GAbstractContainerView;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class LinearContainerView extends GAbstractContainerView {
 
@@ -28,6 +27,8 @@ public class LinearContainerView extends GAbstractContainerView {
     protected FlexPanel[] captionLines;
     protected List<AlignCaptionPanel> childrenCaptions;
     protected List<Integer> childrenCaptionBaseSizes;
+    
+    private GFormController formController;
 
     private final static FlexPanel.FlexLayoutData captionLine = new FlexPanel.FlexLayoutData(0, null, false);
 
@@ -52,8 +53,9 @@ public class LinearContainerView extends GAbstractContainerView {
         return new FlexPanel.GridFixedLines(result);
     }
 
-    public LinearContainerView(GContainer container) {
+    public LinearContainerView(GFormController formController, GContainer container) {
         super(container);
+        this.formController = formController;
 
         assert !container.tabbed;
 
@@ -154,8 +156,14 @@ public class LinearContainerView extends GAbstractContainerView {
 
     protected FlexPanel wrapBorderImpl(GComponent child) {
         GContainer childContainer;
-        if(child instanceof GContainer && (childContainer = (GContainer) child).caption != null)
-            return new CaptionPanel(childContainer.caption);
+        if (child instanceof GContainer) {
+            childContainer = (GContainer) child;
+            if (childContainer.collapsible) {
+                return new CollapsiblePanel(formController, childContainer);
+            } else if (childContainer.caption != null) {
+                return new CaptionPanel(childContainer.caption);
+            }
+        }
         return null;
     }
 
@@ -248,8 +256,15 @@ public class LinearContainerView extends GAbstractContainerView {
     public void updateLayout(long requestIndex, boolean[] childrenVisible) {
         for (int i = 0, size = children.size(); i < size; i++) {
             GComponent child = children.get(i);
-            if(child instanceof GContainer) // optimization
-                childrenViews.get(i).setVisible(childrenVisible[i]);
+            if (child instanceof GContainer) {// optimization
+                boolean visible = childrenVisible[i];
+                Widget widget = childrenViews.get(i);
+                widget.setVisible(visible);
+                
+                if (visible) {
+                    panel.setChildFlex(widget, formController.formLayout.isCollapsed((GContainer) child) ? 0 : child.getFlex(), false);
+                }
+            }
         }
 
         super.updateLayout(requestIndex, childrenVisible);

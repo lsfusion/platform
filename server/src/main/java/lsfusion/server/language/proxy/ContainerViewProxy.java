@@ -25,6 +25,10 @@ public class ContainerViewProxy extends ComponentViewProxy<ContainerView> {
             target.propertyCaption = (PropertyObjectEntity<?>) caption;
         }
     }
+    
+    public void setCollapsible(boolean collapsible) {
+        target.collapsible = collapsible;
+    }
 
     public void setType(ContainerType type) {
         target.setType(type);

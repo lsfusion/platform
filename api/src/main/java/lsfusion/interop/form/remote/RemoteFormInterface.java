@@ -34,6 +34,8 @@ public interface RemoteFormInterface extends RemoteRequestInterface {
     ServerResponse gainedFocus(long requestIndex, long lastReceivedRequestIndex) throws RemoteException;
 
     ServerResponse setTabVisible(long requestIndex, long lastReceivedRequestIndex, int tabPaneID, int childId) throws RemoteException;
+    
+    ServerResponse setContainerCollapsed(long requestIndex, long lastReceivedRequestIndex, int containerID, boolean collapsed) throws RemoteException;
 
     ServerResponse closedPressed(long requestIndex, long lastReceivedRequestIndex) throws RemoteException;
 

@@ -373,6 +373,12 @@ button {
     border-top: 1px solid var(--panel-border-color);
 }
 
+.collapsePanelImage {
+    cursor: default;
+    margin-top: var(--border-padding);
+    background: var(--background-color);
+}
+
 /* ------------ Navigator windows  ------------ */
 
 .verticalToolbar {

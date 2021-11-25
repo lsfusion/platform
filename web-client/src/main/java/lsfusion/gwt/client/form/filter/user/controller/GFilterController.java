@@ -321,7 +321,7 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
     }
 
     public void setVisible(boolean visible) {
-        if (filtersContainerWidget != null) {
+        if (filtersContainerWidget != null && !logicsSupplier.getForm().formLayout.isCollapsed(getFiltersContainer())) {
             filtersContainerWidget.setVisible(visible);
         }
     }
