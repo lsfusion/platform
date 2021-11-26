@@ -2,11 +2,12 @@ package lsfusion.gwt.client.form.object.panel.controller;
 
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtSharedUtils;
-import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.design.view.flex.CaptionContainerHolder;
+import lsfusion.gwt.client.form.design.view.flex.LinearCaptionContainer;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.panel.view.ActionOrPropertyValueController;
@@ -48,17 +49,23 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
         renderersPanel.setStyleName("propertyContainerPanel");
     }
 
-    public interface CaptionContainer {
-        void put(Widget columnCaptionWidget, Widget actualCaptionWidget, Pair<Integer, Integer> valueSizes, GFlexAlignment alignment);
-    }
-
-    public static class Panel extends FlexPanel {
+    public static class Panel extends FlexPanel implements CaptionContainerHolder {
 
         public Panel(boolean vertical) {
             super(vertical);
         }
 
-        public CaptionContainer captionContainer;
+        public LinearCaptionContainer captionContainer;
+
+        @Override
+        public void setCaptionContainer(LinearCaptionContainer captionContainer) {
+            this.captionContainer = captionContainer;
+        }
+
+        @Override
+        public GFlexAlignment getCaptionHAlignment() {
+            return GFlexAlignment.START;
+        }
     }
 
     public Widget getView() {

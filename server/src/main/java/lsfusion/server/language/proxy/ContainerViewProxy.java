@@ -2,6 +2,7 @@ package lsfusion.server.language.proxy;
 
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.design.ContainerType;
+import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
@@ -40,6 +41,18 @@ public class ContainerViewProxy extends ComponentViewProxy<ContainerView> {
     public void setChildrenAlignment(FlexAlignment falign) {
         target.setChildrenAlignment(falign);
     }
+    
+    public void setAlignCaptions(boolean alignCaptions) {
+        target.setAlignCaptions(alignCaptions);
+    }
+
+    public void setGrid(boolean grid) {
+        target.setGrid(grid);
+    }
+
+    public void setWrap(boolean wrap) {
+        target.setWrap(wrap);
+    }
 
     //backward compatibility
     public void setColumns(int columns) {
@@ -50,7 +63,20 @@ public class ContainerViewProxy extends ComponentViewProxy<ContainerView> {
         target.lines = lines;
     }
 
+    public void setLineSize(int lineSize) {
+        target.lineSize = lineSize;
+    }
+
     public void setShowIf(PropertyObjectEntity<?> showIf) {
         target.setShowIf(showIf);
+    }
+    
+    
+    // should not be here. added for USERFILTER component backward compatibility
+    // as USERFILTER component became FILTERS container in v5.0  
+    public void setVisible(boolean visible) {
+        if (target.getSID().startsWith("FILTERS") && !visible) {
+            target.removeFromParent(Version.current());
+        }
     }
 }

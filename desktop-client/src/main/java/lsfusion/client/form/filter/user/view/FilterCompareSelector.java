@@ -1,27 +1,31 @@
 package lsfusion.client.form.filter.user.view;
 
-import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.form.filter.user.ClientPropertyFilter;
 import lsfusion.interop.form.property.Compare;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
-import java.util.Arrays;
 import java.util.List;
 
+import static lsfusion.client.ClientResourceBundle.getString;
+
 public abstract class FilterCompareSelector extends FilterOptionSelector<Compare> {
+    public final String NOT_STRING = getString("form.queries.filter.condition.not");
+    
     private boolean negation;
     private JCheckBox negationCB;
 
     private boolean allowNull;
     private JCheckBox allowNullCB;
     
-    public FilterCompareSelector(ClientPropertyFilter condition) {
-        super(Arrays.asList(condition.property.getFilterCompares()));
+    public FilterCompareSelector(ClientPropertyFilter condition, List<Compare> items, List<String> popupCaptions, boolean allowNull) {
+        super(items, popupCaptions);
         negation = condition.negation;
+        this.allowNull = allowNull;
 
-        negationCB = new JCheckBox("!");
+        negationCB = new JCheckBox("! (" + NOT_STRING + ")");
+        negationCB.setToolTipText(NOT_STRING);
         negationCB.setSelected(negation);
         negationCB.addActionListener(event -> {
             negation = negationCB.isSelected();
@@ -29,7 +33,7 @@ public abstract class FilterCompareSelector extends FilterOptionSelector<Compare
             updateText();
         });
         
-        allowNullCB = new JCheckBox(ClientResourceBundle.getString("form.queries.filter.condition.allow.null")) {
+        allowNullCB = new JCheckBox(getString("form.queries.filter.condition.allow.null")) {
             @Override
             public Dimension getPreferredSize() {
                 Dimension preferredSize = super.getPreferredSize();
@@ -37,10 +41,10 @@ public abstract class FilterCompareSelector extends FilterOptionSelector<Compare
                 return new Dimension(preferredSize.width + 2, preferredSize.height);
             }
         };
-        allowNullCB.setSelected(allowNull);
+        allowNullCB.setSelected(this.allowNull);
         allowNullCB.addActionListener(event -> {
-            allowNull = allowNullCB.isSelected();
-            allowNullChanged(allowNull);
+            this.allowNull = allowNullCB.isSelected();
+            allowNullChanged(this.allowNull);
         });
 
         addOptions();
@@ -49,7 +53,7 @@ public abstract class FilterCompareSelector extends FilterOptionSelector<Compare
     public void set(List<Compare> values) {
         menu.removeAll();
         for (Compare value : values) {
-            addMenuItem(value, value.toString());
+            addMenuItem(value, value.toString(), value.getFullString());
         }
         addOptions();
     }
@@ -62,8 +66,8 @@ public abstract class FilterCompareSelector extends FilterOptionSelector<Compare
     }
 
     @Override
-    protected JMenuItem addMenuItem(Compare item, String caption) {
-        JMenuItem menuItem = super.addMenuItem(item, caption);
+    protected JMenuItem addMenuItem(Compare item, String caption, String popupCaption) {
+        JMenuItem menuItem = super.addMenuItem(item, caption, popupCaption);
         menuItem.setToolTipText(item.getTooltipText());
         return menuItem;
     }
@@ -84,7 +88,7 @@ public abstract class FilterCompareSelector extends FilterOptionSelector<Compare
 
     @Override
     public String getToolTipText(MouseEvent event) {
-        return (negation ? "!" : "") + currentValue.getTooltipText();
+        return (negation ? NOT_STRING + " " : "") + currentValue.getTooltipText();
     }
 
     public abstract void negationChanged(boolean value);

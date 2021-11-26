@@ -18,6 +18,7 @@ import lsfusion.gwt.client.classes.data.GIntegralType;
 import lsfusion.gwt.client.classes.data.GLogicalType;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.filter.user.GCompare;
+import lsfusion.gwt.client.form.filter.user.GFilter;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
@@ -29,7 +30,8 @@ import lsfusion.gwt.client.view.StyleDefaults;
 import lsfusion.interop.action.ServerResponse;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -43,7 +45,8 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         super(form, grid);
 
         this.controller = getController();
-        getDrawElement().getStyle().setProperty("zIndex", "0"); // need this because views like leaflet and some others uses z-indexes and therefore dialogs for example are shown below layers
+        this.formController = form;
+        GwtClientUtils.setZeroZIndex(getDrawElement());
 
         getElement().setTabIndex(0);
         initSinkEvents(this);
@@ -66,7 +69,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
                 handler -> {}, // no edit
                 handler -> {}, // no outer context
                 handler -> {}, handler -> {}, // no copy / paste for now
-                false
+                false, true
         );
     }
 
@@ -302,8 +305,8 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         Object rightBorder = isDateTimeFilter ? new GDateTimeDTO(endYear, endMonth, endDay, 0, 0, 0) : new GDateDTO(endYear, endMonth, endDay);
 
         Column column = columnMap.get(property);
-        setViewFilters(pageSize, new GPropertyFilter(grid.groupObject, column.property, column.columnKey, leftBorder, GCompare.GREATER_EQUALS),
-                new GPropertyFilter(grid.groupObject, column.property, column.columnKey, rightBorder, GCompare.LESS_EQUALS));
+        setViewFilters(pageSize, new GPropertyFilter(new GFilter(column.property), grid.groupObject, column.columnKey, leftBorder, GCompare.GREATER_EQUALS),
+                new GPropertyFilter(new GFilter(column.property), grid.groupObject, column.columnKey, rightBorder, GCompare.LESS_EQUALS));
     }
 
     protected void setBooleanViewFilter(String property, int pageSize) {

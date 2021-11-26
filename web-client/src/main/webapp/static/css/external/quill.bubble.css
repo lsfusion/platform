@@ -30,12 +30,12 @@
   padding: 0;
 }
 .ql-editor {
-  width: 100%;
   box-sizing: border-box;
   line-height: 1.42;
   height: 100%;
   outline: none;
   overflow-y: auto;
+  padding: 12px 15px;
   tab-size: 4;
   -moz-tab-size: 4;
   text-align: left;

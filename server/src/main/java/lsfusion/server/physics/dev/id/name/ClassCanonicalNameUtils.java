@@ -194,7 +194,8 @@ public final class ClassCanonicalNameUtils {
         put("TABLELINK", TableLinkClass.get(false));
         put("COLOR", ColorClass.instance);
         put("TEXT", TextClass.instance);
-        put("RICHTEXT", TextClass.richInstance);
+        put("RICHTEXT", RichTextClass.instance);
+        put("HTMLTEXT", HTMLTextClass.instance);
         put("BPSTRING", StringClass.get(ExtInt.UNLIMITED));
         put("BPISTRING", StringClass.get(true, ExtInt.UNLIMITED));
         put("STRING", StringClass.getv(ExtInt.UNLIMITED));

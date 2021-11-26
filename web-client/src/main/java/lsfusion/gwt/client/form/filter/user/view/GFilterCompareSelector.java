@@ -11,7 +11,11 @@ import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 
+import java.util.List;
+
 public abstract class GFilterCompareSelector extends GFilterOptionSelector<GCompare> {
+    public final String NOT_STRING = ClientMessages.Instance.get().formFilterCompareNot();
+    
     private FocusPanel focusPanel;
     
     private boolean negation;
@@ -20,11 +24,13 @@ public abstract class GFilterCompareSelector extends GFilterOptionSelector<GComp
     private boolean allowNull;
     private CheckBox allowNullCB;
 
-    public GFilterCompareSelector(GPropertyFilter condition) {
-        super(condition.property.getFilterCompares());
+    public GFilterCompareSelector(GPropertyFilter condition, List<GCompare> values, List<String> popupCaptions, boolean allowNull) {
+        super(values, popupCaptions);
         negation = condition.negation;
+        this.allowNull = allowNull;
 
-        negationCB = new CheckBox("!");
+        negationCB = new CheckBox("! (" + NOT_STRING + ")");
+        negationCB.setTitle(NOT_STRING);
         negationCB.addStyleName("userFilterNegationCheckBox");
         negationCB.setValue(negation);
         negationCB.addValueChangeHandler(event -> {
@@ -35,10 +41,10 @@ public abstract class GFilterCompareSelector extends GFilterOptionSelector<GComp
         
         allowNullCB = new CheckBox(ClientMessages.Instance.get().formFilterConditionAllowNull());
         allowNullCB.addStyleName("userFilterNegationCheckBox");
-        allowNullCB.setValue(allowNull);
+        allowNullCB.setValue(this.allowNull);
         allowNullCB.addValueChangeHandler(event -> {
-            allowNull = allowNullCB.getValue();
-            allowNullChanged(allowNull);
+            this.allowNull = allowNullCB.getValue();
+            allowNullChanged(this.allowNull);
         });
 
         FlexPanel popupContainer = new FlexPanel(true);
@@ -59,13 +65,13 @@ public abstract class GFilterCompareSelector extends GFilterOptionSelector<GComp
     public void set(GCompare[] values) {
         menuBar.clearItems();
         for (GCompare value : values) {
-            addMenuItem(value, value.toString());
+            addMenuItem(value, value.toString(), value.getFullString());
         }
     }
 
     @Override
-    protected MenuItem addMenuItem(GCompare value, String caption) {
-        MenuItem menuItem = super.addMenuItem(value, caption);
+    protected MenuItem addMenuItem(GCompare value, String caption, String popupCaption) {
+        MenuItem menuItem = super.addMenuItem(value, caption, popupCaption);
         
         menuItem.setTitle(value.getTooltipText());
         
@@ -84,7 +90,7 @@ public abstract class GFilterCompareSelector extends GFilterOptionSelector<GComp
 
     private void updateText() {
         setText(currentValue.toString());
-        setTitle((negation ? "!" : "") + currentValue.getTooltipText());
+        setTitle((negation ? NOT_STRING + " " : "") + currentValue.getTooltipText());
     }
 
     public abstract void negationChanged(boolean value);

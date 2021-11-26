@@ -174,4 +174,8 @@ public abstract class CellRenderer<T> {
     public boolean isAutoDynamicHeight() {
         return true;
     }
+
+    public boolean isCustomRenderer() {
+        return false;
+    }
 }

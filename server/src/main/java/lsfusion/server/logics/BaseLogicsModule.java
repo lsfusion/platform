@@ -771,6 +771,8 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
                 getLCPByUniqueName(namePrefix + "String"),
                 getLCPByUniqueName(namePrefix + "BpString"),
                 getLCPByUniqueName(namePrefix + "Text"),
+                getLCPByUniqueName(namePrefix + "RichText"),
+                getLCPByUniqueName(namePrefix + "HTMLText"),
                 getLCPByUniqueName(namePrefix + "Integer"),
                 getLCPByUniqueName(namePrefix + "Long"),
                 getLCPByUniqueName(namePrefix + "Double"),

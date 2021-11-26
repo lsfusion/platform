@@ -28,16 +28,14 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
     protected final GFormController form;
     protected final GGroupObject groupObject;
 
-    public GPropertyTable(GFormController iform, GGroupObject iGroupObject, GridStyle style, boolean noHeaders, boolean noFooters, boolean noScrollers) {
-        super(style, noHeaders, noFooters, noScrollers);
+    public GPropertyTable(GFormController iform, GGroupObject groupObject, GridStyle style, boolean noHeaders, boolean noFooters, boolean noScrollers) {
+        super(style, noHeaders, noFooters, groupObject.grid.autoSize);
 
         this.form = iform;
-        this.groupObject = iGroupObject;
+        this.groupObject = groupObject;
 
         //  Have the enter key work the same as the tab key
-        if(groupObject != null) {
-            form.addEnterBindings(GBindingMode.ONLY, ((GGridPropertyTable) GPropertyTable.this)::selectNextCellInColumn, groupObject);
-        }
+        form.addEnterBindings(GBindingMode.ONLY, ((GGridPropertyTable) GPropertyTable.this)::selectNextCellInColumn, this.groupObject);
     }
 
     public abstract boolean isReadOnly(Cell cell);

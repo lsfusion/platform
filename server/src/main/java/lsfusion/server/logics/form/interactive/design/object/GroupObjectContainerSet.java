@@ -11,7 +11,7 @@ import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
 // сейчас полный клон TreeGroupContainerSet, потом надо рефакторить
 public class GroupObjectContainerSet {
     public static final String BOX_CONTAINER = "BOX";
-        public static final String USERFILTER_COMPONENT = "USERFILTER";
+        public static final String FILTERS_CONTAINER = "FILTERS";
         public static final String GRIDBOX_CONTAINER = "GRIDBOX";
             public static final String CLASSCHOOSER_COMPONENT = "CLASSCHOOSER";
             public static final String GRID_COMPONENT = "GRID";
@@ -32,7 +32,7 @@ public class GroupObjectContainerSet {
     private ContainerView toolbarBoxContainer;
     private ContainerView toolbarLeftContainer;
     private ContainerView toolbarRightContainer;
-    private ContainerView filtersContainer;
+    private ContainerView filterGroupsContainer;
     private ContainerView toolbarContainer;
 
     public ContainerView getBoxContainer() {
@@ -63,8 +63,8 @@ public class GroupObjectContainerSet {
         return toolbarRightContainer;
     }
 
-    public ContainerView getFiltersContainer() {
-        return filtersContainer;
+    public ContainerView getFilterGroupsContainer() {
+        return filterGroupsContainer;
     }
 
     public ContainerView getToolbarContainer() {
@@ -95,8 +95,8 @@ public class GroupObjectContainerSet {
         set.toolbarContainer = factory.createContainer(); // контейнер тулбара
         set.toolbarContainer.setSID(DefaultFormView.getToolbarContainerSID(sid));
 
-        set.filtersContainer = factory.createContainer(); // контейнер фильтров
-        set.filtersContainer.setSID(DefaultFormView.getFilterGroupsContainerSID(sid));
+        set.filterGroupsContainer = factory.createContainer(); // контейнер фильтров
+        set.filterGroupsContainer.setSID(DefaultFormView.getFilterGroupsContainerSID(sid));
 
         set.toolbarRightContainer = factory.createContainer();
         set.toolbarRightContainer.setSID(DefaultFormView.getToolbarRightContainerSID(sid));
@@ -108,7 +108,7 @@ public class GroupObjectContainerSet {
         set.boxContainer.setChildrenAlignment(FlexAlignment.START);
         set.boxContainer.setAlignment(FlexAlignment.STRETCH);
         set.boxContainer.setFlex(1);
-        set.boxContainer.add(group.getUserFilter(), version);
+        set.boxContainer.add(group.filtersContainer, version);
         set.boxContainer.add(set.gridBoxContainer, version);
         set.boxContainer.add(set.toolbarBoxContainer, version);
         set.boxContainer.add(set.panelContainer, version);
@@ -134,12 +134,12 @@ public class GroupObjectContainerSet {
         set.toolbarRightContainer.setChildrenAlignment(FlexAlignment.END);
         set.toolbarRightContainer.setFlex(1);
         set.toolbarRightContainer.add(group.getCalculations(), version);
-        set.toolbarRightContainer.add(set.filtersContainer, version);
+        set.toolbarRightContainer.add(set.filterGroupsContainer, version);
         set.toolbarRightContainer.add(set.toolbarContainer, version);
 
-        set.filtersContainer.setType(ContainerType.CONTAINERH);
-        set.filtersContainer.setAlignment(FlexAlignment.CENTER);
-        set.filtersContainer.setChildrenAlignment(FlexAlignment.END);
+        set.filterGroupsContainer.setType(ContainerType.CONTAINERH);
+        set.filterGroupsContainer.setAlignment(FlexAlignment.CENTER);
+        set.filterGroupsContainer.setChildrenAlignment(FlexAlignment.END);
 
         set.toolbarContainer.setType(ContainerType.CONTAINERH);
         set.toolbarContainer.setAlignment(FlexAlignment.CENTER);
@@ -154,7 +154,6 @@ public class GroupObjectContainerSet {
 
         group.getToolbarSystem().setMargin(2);
         group.getToolbarSystem().setAlignment(FlexAlignment.CENTER);
-        group.getUserFilter().setAlignment(FlexAlignment.STRETCH);
         group.getCalculations().setFlex(1);
         group.getCalculations().setAlignment(FlexAlignment.CENTER);
 

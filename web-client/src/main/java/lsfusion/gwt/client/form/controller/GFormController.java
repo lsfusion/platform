@@ -25,7 +25,6 @@ import lsfusion.gwt.client.base.result.NumberResult;
 import lsfusion.gwt.client.base.result.VoidResult;
 import lsfusion.gwt.client.base.view.DialogBoxHelper;
 import lsfusion.gwt.client.base.view.EventHandler;
-import lsfusion.gwt.client.base.view.ResizableSimplePanel;
 import lsfusion.gwt.client.base.view.WindowHiddenHandler;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.classes.GObjectClass;
@@ -44,6 +43,7 @@ import lsfusion.gwt.client.form.controller.dispatch.FormDispatchAsync;
 import lsfusion.gwt.client.form.controller.dispatch.GFormActionDispatcher;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
+import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.design.view.GFormLayout;
 import lsfusion.gwt.client.form.design.view.TabbedContainerView;
 import lsfusion.gwt.client.form.event.*;
@@ -160,6 +160,8 @@ public class GFormController implements EditManager {
 
         updateFormCaption();
 
+        initializeParams(); // has to be done before initializeControllers (since adding component uses getSize)
+
         initializeControllers();
 
         initializeRegularFilters();
@@ -180,7 +182,7 @@ public class GFormController implements EditManager {
     }
 
     public void checkGlobalMouseEvent(Event event) {
-        checkFormEvent(event, (handler, preview) -> checkMouseEvent(handler, preview, null, false));
+        checkFormEvent(event, (handler, preview) -> checkMouseEvent(handler, preview, null, false, true));
     }
 
     private interface CheckEvent {
@@ -196,8 +198,8 @@ public class GFormController implements EditManager {
         preview.accept(handler, false);
     }
 
-    public void checkMouseEvent(EventHandler handler, boolean preview, Element cellParent, boolean panel) {
-        if(GMouseStroke.isDblDownEvent(handler.event))
+    public void checkMouseEvent(EventHandler handler, boolean preview, Element cellParent, boolean panel, boolean stopPreventingDblclickEvent) {
+        if(GMouseStroke.isDblDownEvent(handler.event) && !stopPreventingDblclickEvent && !isEditing())
             handler.event.preventDefault(); //need to prevent selection by double mousedown event
         else if(GMouseStroke.isChangeEvent(handler.event) || GMouseStroke.isDoubleChangeEvent(handler.event))
             processBinding(handler, preview, cellParent, panel);
@@ -214,11 +216,11 @@ public class GFormController implements EditManager {
                 checkFormEvent((Event) nativeEvent, (handler, preview) -> form.checkKeyEvent(handler, preview, null, false));
         }
     }
-    public void checkMouseKeyEvent(EventHandler handler, boolean preview, Element cellParent, boolean panel) {
+    public void checkMouseKeyEvent(EventHandler handler, boolean preview, Element cellParent, boolean panel, boolean customRenderer) {
         if(MainFrame.isModalPopup())
             return;
 
-        checkMouseEvent(handler, preview, cellParent, panel);
+        checkMouseEvent(handler, preview, cellParent, panel, customRenderer);
         if(handler.consumed)
             return;
 
@@ -434,11 +436,21 @@ public class GFormController implements EditManager {
         }
 
         panelController = new GPanelController(this);
+    }
 
+    private void initializeParams() {
         hasColumnGroupObjects = false;
-        for (GPropertyDraw property : form.propertyDraws) {
+        for (GPropertyDraw property : getPropertyDraws()) {
             if (property.hasColumnGroupObjects()) {
                 hasColumnGroupObjects = true;
+            }
+
+            GGroupObject groupObject = property.groupObject;
+            if(groupObject != null) {
+                GFont font = groupObject.grid.font;
+                groupObject.columnSumWidth += property.getValueWidthWithPadding(font);
+                groupObject.columnCount++;
+                groupObject.rowMaxHeight = Math.max(groupObject.rowMaxHeight, property.getValueHeightWithPadding(font));
             }
         }
     }
@@ -1426,8 +1438,8 @@ public class GFormController implements EditManager {
         DialogBoxHelper.showMessageBox(isError, caption, message, callback);
     }
 
-    public Dimension getMaxPreferredSize() {
-        return formLayout.getMaxPreferredSize();
+    public Dimension getPreferredSize(int maxWidth, int maxHeight, int extraHorzOffset, int extraVertOffset) {
+        return formLayout.getPreferredSize(maxWidth, maxHeight, extraHorzOffset, extraVertOffset);
     }
 
     public boolean isWindow() {
@@ -2072,7 +2084,7 @@ public class GFormController implements EditManager {
 
     public void onPropertyBrowserEvent(EventHandler handler, Element cellParent, Element focusElement, Consumer<EventHandler> onOuterEditBefore,
                                        Consumer<EventHandler> onEdit, Consumer<EventHandler> onOuterEditAfter, Consumer<EventHandler> onCut,
-                                       Consumer<EventHandler> onPaste, boolean panel) {
+                                       Consumer<EventHandler> onPaste, boolean panel, boolean customRenderer) {
         RequestCellEditor requestCellEditor = getRequestCellEditor();
         boolean isPropertyEditing = requestCellEditor != null && getEditElement() == cellParent;
         if(isPropertyEditing)
@@ -2091,7 +2103,7 @@ public class GFormController implements EditManager {
             return;
         }*/
 
-        checkMouseKeyEvent(handler, true, cellParent, panel);
+        checkMouseKeyEvent(handler, true, cellParent, panel, customRenderer);
 
         if(handler.consumed)
             return;
@@ -2123,7 +2135,7 @@ public class GFormController implements EditManager {
 //        if(GMouseStroke.isDownEvent(handler.event)) // we want to cancel focusing (to avoid blinking if change event IS CLICK) + native selection odd behaviour (when some events are consumed, and some - not)
 //            handler.consume(false, true); // but we want to propagate event upper (to GFormController to proceed bindings)
 
-        checkMouseKeyEvent(handler, false, cellParent, panel);
+        checkMouseKeyEvent(handler, false, cellParent, panel, customRenderer);
     }
     
     public void resetWindowsLayout() {

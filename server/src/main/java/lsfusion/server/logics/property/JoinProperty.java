@@ -422,7 +422,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
         ImRevMap<T, StaticParamNullableExpr> mapFixedExprs = mapInterfaces.join(fixedExprs);
         // using top most property or bottom most property / property itself
         if(implement.property.isValueFull(mapFixedExprs) && (
-                implement.property.isValueUnique(mapFixedExprs) ||
+                implement.property.isValueUnique(mapFixedExprs, true) ||
                 !isValueFull(fixedExprs) ||
                 isValueUnique(getValueStat(fixedExprs), implement.property.getValueStat(mapFixedExprs))))
             return new InputListEntity<>(implement.property, mapInterfaces);

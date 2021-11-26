@@ -11,11 +11,11 @@ import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.design.view.AbstractClientContainerView;
 import lsfusion.client.form.design.view.FlexPanel;
+import lsfusion.client.form.design.view.flex.LinearCaptionContainer;
 import lsfusion.client.form.design.view.widget.ButtonWidget;
 import lsfusion.client.form.design.view.widget.LabelWidget;
 import lsfusion.client.form.design.view.widget.Widget;
 import lsfusion.client.form.object.ClientGroupObjectValue;
-import lsfusion.client.form.object.panel.controller.PropertyPanelController;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.async.ClientInputList;
 import lsfusion.client.form.property.cell.classes.controller.DialogBasedPropertyEditor;
@@ -48,7 +48,7 @@ public class ActionPanelView extends ButtonWidget implements PanelView, EditProp
 
     private LabelWidget label;
 
-    public ActionPanelView(final ClientPropertyDraw iproperty, final ClientGroupObjectValue icolumnKey, final ClientFormController iform, PropertyPanelController.CaptionContainer captionContainer) {
+    public ActionPanelView(final ClientPropertyDraw iproperty, final ClientGroupObjectValue icolumnKey, final ClientFormController iform, LinearCaptionContainer captionContainer) {
         super((String)null, ClientImages.getImage(iproperty.design.getImageHolder()));
 
         this.property = iproperty;

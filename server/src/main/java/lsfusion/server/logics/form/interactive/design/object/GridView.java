@@ -1,16 +1,14 @@
 package lsfusion.server.logics.form.interactive.design.object;
 
 import lsfusion.interop.base.view.FlexAlignment;
-import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.NFLazy;
-import lsfusion.server.base.version.Version;
-import lsfusion.server.base.version.interfaces.NFProperty;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.struct.FormEntity;
 
+import java.awt.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -20,6 +18,9 @@ public class GridView extends ComponentView {
     public boolean tabVertical = false;
     private boolean quickSearch = false;
     public int headerHeight = -1;
+
+    public Integer lineWidth;
+    public Integer lineHeight;
 
     public GroupObjectView groupObject;
 
@@ -46,12 +47,12 @@ public class GridView extends ComponentView {
     }
 
     @Override
-    public double getBaseDefaultFlex(FormEntity formEntity) {
+    public double getDefaultFlex(FormEntity formEntity) {
         return 1;
     }
 
     @Override
-    public FlexAlignment getBaseDefaultAlignment(FormEntity formEntity) {
+    public FlexAlignment getDefaultAlignment(FormEntity formEntity) {
         return FlexAlignment.STRETCH;
     }
 
@@ -70,6 +71,9 @@ public class GridView extends ComponentView {
         outStream.writeBoolean(quickSearch);
         outStream.writeInt(headerHeight);
 
+        outStream.writeInt(getLineWidth());
+        outStream.writeInt(getLineHeight());
+
         pool.serializeObject(outStream, getRecord());
 
         pool.serializeObject(outStream, groupObject);
@@ -83,6 +87,9 @@ public class GridView extends ComponentView {
         quickSearch = inStream.readBoolean();
         headerHeight = inStream.readInt();
 
+        lineWidth = inStream.readInt();
+        lineHeight = inStream.readInt();
+
         record = pool.deserializeObject(inStream);
 
         groupObject = pool.deserializeObject(inStream);
@@ -94,5 +101,27 @@ public class GridView extends ComponentView {
 
         if(record != null)
             record.finalizeAroundInit();
+    }
+
+    public int getLineWidth() {
+        if(lineWidth != null)
+            return lineWidth;
+
+        return -1;
+    }
+
+    public void setLineWidth(Integer lineWidth) {
+        this.lineWidth = lineWidth;
+    }
+
+    public int getLineHeight() {
+        if(lineHeight != null)
+            return lineHeight;
+
+        return -1;
+    }
+
+    public void setLineHeight(Integer lineHeight) {
+        this.lineHeight = lineHeight;
     }
 }

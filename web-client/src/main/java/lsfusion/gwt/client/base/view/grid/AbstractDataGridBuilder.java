@@ -144,6 +144,18 @@ public abstract class AbstractDataGridBuilder<T> {
 
     protected abstract void updateRowImpl(int rowIndex, T rowValue, int[] columnsToRedraw, TableRowElement rowElement);
 
+    public void updateRowStickyLeft(TableSectionElement tbodyElement, List<Integer> stickyColumns, List<Integer> stickyLefts) {
+        int rowCount = tbodyElement.getChildCount();
+        if (rowCount > 0) {
+            NodeList<TableRowElement> rows = tbodyElement.getRows();
+            for (int i = 0; i < rowCount; ++i) {
+                updateRowStickyLeftImpl(rows.getItem(i), stickyColumns, stickyLefts);
+            }
+        }
+    }
+
+    protected abstract void updateRowStickyLeftImpl(TableRowElement rowElement, List<Integer> stickyColumns, List<Integer> stickyLefts);
+
     protected final <C> void renderCell(TableCellElement td, Cell cell, Column<T, C> column) {
         td.setPropertyObject(COLUMN_ATTRIBUTE, column);
         column.renderAndUpdateDom(cell, td);

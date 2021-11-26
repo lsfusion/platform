@@ -1,11 +1,14 @@
 package lsfusion.gwt.client.form.object;
 
 import lsfusion.gwt.client.base.jsni.HasNativeSID;
+import lsfusion.gwt.client.base.view.grid.DataGrid;
+import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.filter.user.GFilter;
 import lsfusion.gwt.client.form.object.table.GToolbar;
 import lsfusion.gwt.client.form.object.table.grid.GGrid;
 import lsfusion.gwt.client.form.object.table.grid.view.GListViewType;
 import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
+import lsfusion.gwt.client.form.object.table.view.GGridPropertyTableHeader;
 import lsfusion.gwt.client.form.property.GClassViewType;
 import lsfusion.gwt.client.form.property.GPivotOptions;
 import lsfusion.gwt.client.form.property.GRowBackgroundReader;
@@ -17,12 +20,17 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import static java.lang.Math.pow;
+import static java.lang.Math.round;
+
 public class GGroupObject implements Serializable, HasNativeSID {
     public List<GObject> objects = new ArrayList<>();
 
+    public GContainer filtersContainer;
+    public List<GFilter> filters = new ArrayList<>();
+    
     public GGrid grid;
     public GToolbar toolbar;
-    public GFilter userFilter;
 
     public int ID;
     public String nativeSID;
@@ -49,6 +57,28 @@ public class GGroupObject implements Serializable, HasNativeSID {
 
     public GRowBackgroundReader rowBackgroundReader;
     public GRowForegroundReader rowForegroundReader;
+
+    // transient
+    public int columnSumWidth;
+    public int columnCount;
+    public int rowMaxHeight;
+
+    public int getWidth(int lines) {
+        int columnCount = this.columnCount;
+        if(lines == -1)
+            lines = Math.min(columnCount <= 3 ? columnCount : (int) round(3 + pow(columnCount - 6, 0.7)), 6);
+
+        return columnCount > 0 ? lines * columnSumWidth / columnCount : 0;
+    }
+
+    public int getHeight(int lines) {
+        if(lines == -1)
+            lines = 5;
+
+        return (lines * (rowMaxHeight + DataGrid.BORDER_VERT_SIZE)) +
+                + 3 * DataGrid.BORDER_VERT_SIZE // borders around grid + header border
+                ;
+    }
 
     public String getCaption() {
         if (objects.isEmpty()) {

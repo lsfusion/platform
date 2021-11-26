@@ -18,4 +18,12 @@ public class GridViewProxy extends ComponentViewProxy<GridView> {
     public void setHeaderHeight(int headerHeight) {
         target.headerHeight = headerHeight;
     }
+
+    public void setLineWidth(int lineWidth) {
+        target.lineWidth = lineWidth;
+    }
+
+    public void setLineHeight(int lineHeight) {
+        target.lineHeight = lineHeight;
+    }
 }

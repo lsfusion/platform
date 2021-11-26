@@ -6,9 +6,7 @@ import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.Dimension;
 
-import static lsfusion.gwt.client.base.GwtClientUtils.calculateStackMaxPreferredSize;
-
-public class ResizableHorizontalPanel extends HorizontalPanel implements RequiresResize, ProvidesResize, HasMaxPreferredSize {
+public class ResizableHorizontalPanel extends HorizontalPanel implements RequiresResize, ProvidesResize {
     @Override
     public void onResize() {
         if (!visible) {
@@ -28,10 +26,5 @@ public class ResizableHorizontalPanel extends HorizontalPanel implements Require
             this.visible = visible;
             super.setVisible(visible);
         }
-    }
-
-    @Override
-    public Dimension getMaxPreferredSize() {
-        return calculateStackMaxPreferredSize(this.iterator(), false);
     }
 }

@@ -25,7 +25,7 @@ public class ModalForm extends FormContainer<ResizableModalWindow> {
         ResizableModalWindow window = new ResizableModalWindow() {
             @Override
             protected void onShow() {
-                initMaxPreferredSize(); // we need after attach to have correct sizes
+                initPreferredSize(); // we need to do it after attach to have correct sizes
 
                 super.onShow();
             }

@@ -4,6 +4,7 @@ import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.form.controller.remote.serialization.ClientIdentitySerializable;
 import lsfusion.client.form.controller.remote.serialization.ClientSerializationPool;
 import lsfusion.client.form.design.ClientComponent;
+import lsfusion.client.form.design.ClientContainer;
 import lsfusion.client.form.filter.user.ClientFilter;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.table.ClientToolbar;
@@ -19,14 +20,19 @@ public class ClientTreeGroup extends ClientComponent implements ClientIdentitySe
 
     public List<ClientGroupObject> groups = new ArrayList<>();
 
+    public ClientContainer filtersContainer;
+    public List<ClientFilter> filters = new ArrayList<>();
+    
     public ClientToolbar toolbar;
-    public ClientFilter filter;
 
     public boolean plainTreeMode;
     
     public boolean expandOnClick;
 
     public int headerHeight;
+
+    public int lineHeight;
+    public int lineWidth;
 
     public ClientTreeGroup() {
     }
@@ -37,8 +43,12 @@ public class ClientTreeGroup extends ClientComponent implements ClientIdentitySe
     }
 
     @Override
-    public ClientComponent getUserFilter() {
-        return filter;
+    public ClientContainer getFiltersContainer() {
+        return filtersContainer;
+    }
+    
+    public List<ClientFilter> getFilters() {
+        return filters;
     }
 
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream) throws IOException {
@@ -46,11 +56,15 @@ public class ClientTreeGroup extends ClientComponent implements ClientIdentitySe
 
         pool.serializeCollection(outStream, groups);
         pool.serializeObject(outStream, toolbar);
-        pool.serializeObject(outStream, filter);
+        pool.serializeObject(outStream,filtersContainer);
+        pool.serializeCollection(outStream, filters);
         
         outStream.writeBoolean(expandOnClick);
 
         outStream.writeInt(headerHeight);
+
+        outStream.writeInt(lineWidth);
+        outStream.writeInt(lineHeight);
     }
 
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
@@ -58,13 +72,17 @@ public class ClientTreeGroup extends ClientComponent implements ClientIdentitySe
 
         groups = pool.deserializeList(inStream);
         toolbar = pool.deserializeObject(inStream);
-        filter = pool.deserializeObject(inStream);
+        filtersContainer = pool.deserializeObject(inStream);
+        pool.deserializeCollection(filters, inStream);
 
         plainTreeMode = inStream.readBoolean();
         
         expandOnClick = inStream.readBoolean();
 
         headerHeight = inStream.readInt();
+
+        lineWidth = inStream.readInt();
+        lineHeight = inStream.readInt();
 
         List<ClientGroupObject> upGroups = new ArrayList<>();
         for (ClientGroupObject group : groups) {

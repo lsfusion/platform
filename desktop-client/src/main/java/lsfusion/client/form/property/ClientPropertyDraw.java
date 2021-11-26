@@ -14,9 +14,9 @@ import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.controller.remote.serialization.ClientIdentitySerializable;
 import lsfusion.client.form.controller.remote.serialization.ClientSerializationPool;
 import lsfusion.client.form.design.ClientComponent;
+import lsfusion.client.form.design.view.flex.LinearCaptionContainer;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientGroupObjectValue;
-import lsfusion.client.form.object.panel.controller.PropertyPanelController;
 import lsfusion.client.form.object.table.controller.TableController;
 import lsfusion.client.form.property.async.ClientAsyncChange;
 import lsfusion.client.form.property.async.ClientAsyncEventExec;
@@ -116,9 +116,11 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     public FlexAlignment valueAlignment;
 
-    public int charHeight;
     public int charWidth;
-    public Dimension valueSize;
+    public int charHeight;
+
+    public int valueWidth;
+    public int valueHeight;
 
     public transient EditBindingMap editBindingMap;
     private transient PropertyRenderer renderer;
@@ -155,6 +157,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public String formPath;
     
     public boolean notNull;
+
+    public boolean sticky;
 
     public ClientPropertyDraw() {
     }
@@ -216,7 +220,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return renderer;
     }
 
-    public PanelView getPanelView(ClientFormController form, ClientGroupObjectValue columnKey, PropertyPanelController.CaptionContainer captionContainer) {
+    public PanelView getPanelView(ClientFormController form, ClientGroupObjectValue columnKey, LinearCaptionContainer captionContainer) {
         return baseType.getPanelView(this, columnKey, form, captionContainer);
     }
 
@@ -229,23 +233,18 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     }
 
     public int getValueWidth() {
-        if (valueSize != null) {
-            return valueSize.width;
-        }
-        return -1;
+        return valueWidth;
     }
 
     public int getValueWidth(JComponent comp) {
-        if (valueSize != null && valueSize.width > -1) {
-            return valueSize.width;
+        if (valueWidth > -1) {
+            return valueWidth;
         }
         FontMetrics fontMetrics = comp.getFontMetrics(design.getFont(comp));
 
         String widthString = null;
         if(charWidth != 0)
-            widthString = BaseUtils.replicate('0', charWidth);
-        if(widthString != null)
-            return baseType.getFullWidthString(widthString, fontMetrics, this);
+            return baseType.getFullWidthString(BaseUtils.replicate('0', charWidth), fontMetrics, this);
 
         return baseType.getDefaultWidth(fontMetrics, this);
     }
@@ -255,8 +254,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     }
 
     public int getValueHeight(JComponent comp, Integer userFontSize) {
-        if (valueSize != null && valueSize.height > -1) {
-            return valueSize.height;
+        if (valueHeight > -1) {
+            return valueHeight;
         }
         
         Insets insets = SwingDefaults.getTableCellMargins(); // suppose buttons have the same padding. to have equal height
@@ -449,7 +448,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         outStream.writeInt(charHeight);
         outStream.writeInt(charWidth);
         
-        pool.writeObject(outStream, valueSize);
+        outStream.writeInt(valueWidth);
+        outStream.writeInt(valueHeight);
 
         pool.writeObject(outStream, changeKey);
         pool.writeInt(outStream, changeKeyPriority);
@@ -487,7 +487,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         charHeight = inStream.readInt();
         charWidth = inStream.readInt();
 
-        valueSize = pool.readObject(inStream);
+        valueWidth = inStream.readInt();
+        valueHeight = inStream.readInt();
 
         changeKey = pool.readObject(inStream);
         changeKeyPriority = pool.readInt(inStream);
@@ -622,6 +623,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         }
         
         notNull = inStream.readBoolean();
+
+        sticky = inStream.readBoolean();
     }
 
     public boolean hasColumnGroupObjects() {

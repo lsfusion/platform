@@ -11,6 +11,7 @@ import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.async.ClientInputList;
 import lsfusion.client.form.property.cell.classes.controller.suggest.BasicComboBoxUI;
+import lsfusion.client.form.property.cell.classes.controller.suggest.CompletionType;
 import lsfusion.client.form.property.cell.controller.PropertyTableCellEditor;
 import lsfusion.client.form.property.panel.view.CaptureKeyEventsDispatcher;
 import lsfusion.client.form.property.table.view.AsyncChangeInterface;
@@ -46,7 +47,7 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
 
     private String actionSID;
     private boolean hasList;
-    private boolean strict;
+    private CompletionType completionType;
     private String[] actions;
 
     private EventObject editEvent;
@@ -70,7 +71,7 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
 
         ClientInputList inputList = asyncChange != null ? asyncChange.getCurrentInputList() : null;
         this.hasList = inputList != null && !disableSuggest();
-        this.strict = inputList != null && inputList.strict;
+        this.completionType = inputList != null ? inputList.completionType : CompletionType.NON_STRICT;
         this.actions = inputList != null ? inputList.actions : null;
 
         if (hasList) {
@@ -136,7 +137,7 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
                     @Override
                     public void done(Pair<List<ClientAsync>, Boolean> result) {
                         if (isThisCellEditor()) { // && suggestBox.comboBox.isPopupVisible() it can become visible after callback is completed
-                            suggestBox.updateItems(result.first, strict && !query.isEmpty());
+                            suggestBox.updateItems(result.first, completionType.isAnyStrict() && !query.isEmpty());
 
                             suggestBox.updateLoading(result.second);
 
@@ -388,7 +389,7 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
                 if (comboBox.isPopupVisible()) {
                     setSelectedIndex(comboBox.getSelectedIndex() + offset);
                 }
-                if (!strict)
+                if (!completionType.isAnyStrict())
                     updateSelectedEditorText();
             }
         }
@@ -499,7 +500,7 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
                     if (e.getKeyCode() == KeyEvent.VK_ENTER) {
                         //set selected value from dropdown
                         updateSelectedEditorText();
-                        if (!strict || isValidValue(getComboBoxEditorText())) {
+                        if (!completionType.isStrict() || isValidValue(getComboBoxEditorText())) {
                             tableEditor.preCommit(true);
                             tableEditor.stopCellEditing();
                             tableEditor.postCommit();

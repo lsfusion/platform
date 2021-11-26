@@ -26,10 +26,16 @@ public class ClientContainer extends ClientComponent {
 
     public FlexAlignment childrenAlignment = FlexAlignment.START;
 
+    public boolean grid;
+    public boolean wrap;
+    public Boolean alignCaptions;
+
     public int lines = 1;
+    public Integer lineSize = null;
+    public boolean lineShrink = false;
 
     public List<ClientComponent> children = new ArrayList<>();
-
+    
     public ClientContainer() {
     }
 
@@ -45,8 +51,14 @@ public class ClientContainer extends ClientComponent {
         pool.writeBoolean(outStream, tabbed);
 
         pool.writeObject(outStream, childrenAlignment);
+        
+        outStream.writeBoolean(grid);
+        outStream.writeBoolean(wrap);
+        outStream.writeBoolean(alignCaptions);
 
         outStream.writeInt(lines);
+        pool.writeInt(outStream, lineSize);
+        outStream.writeBoolean(lineShrink);
     }
 
     @Override
@@ -61,8 +73,14 @@ public class ClientContainer extends ClientComponent {
         tabbed = pool.readBoolean(inStream);
 
         childrenAlignment = pool.readObject(inStream);
+        
+        grid = inStream.readBoolean();
+        wrap = inStream.readBoolean();
+        alignCaptions = pool.readObject(inStream);
 
         lines = inStream.readInt();
+        lineSize = pool.readInt(inStream);
+        lineShrink = inStream.readBoolean();
     }
 
     @Override
@@ -82,14 +100,10 @@ public class ClientContainer extends ClientComponent {
     }
 
     public void add(ClientComponent component) {
-        add(children.size(), component);
-    }
-
-    public void add(int index, ClientComponent component) {
         if (component.container != null) {
             component.container.removeFromChildren(component);
         }
-        children.add(index, component);
+        children.add(component);
         component.container = this;
     }
 
@@ -105,6 +119,10 @@ public class ClientContainer extends ClientComponent {
     public boolean main;
 
     public boolean isAlignCaptions() {
+        if (alignCaptions != null) {
+            return alignCaptions;
+        }
+        
         if(horizontal) // later maybe it makes sense to support align captions for horizontal containers, but with no-wrap it doesn't make much sense
             return false;
 
@@ -122,6 +140,10 @@ public class ClientContainer extends ClientComponent {
             return false;
 
         return true;
+    }
+
+    public Integer getLineSize() {
+        return lineSize;
     }
 
     public ClientContainer findContainerBySID(String sID) {

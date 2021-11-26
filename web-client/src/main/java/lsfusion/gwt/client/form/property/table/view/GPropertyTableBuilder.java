@@ -10,9 +10,8 @@ import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.table.grid.view.GPivot;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 
+import java.util.List;
 import java.util.Optional;
-
-import static lsfusion.gwt.client.view.StyleDefaults.customDataGridStyle;
 
 /**
  * Based on lsfusion.gwt.client.base.view.grid.DefaultDataGridBuilder
@@ -31,9 +30,9 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
         // Cache styles for faster access.
         GridStyle style = table.getStyle();
         rowStyle = style.dataGridRow();
-        cellStyle = style.dataGridCell() + " " + customDataGridStyle.dataGridCell();
+        cellStyle = style.dataGridCell();
         firstColumnStyle = " " + style.dataGridFirstCell();
-        lastColumnStyle = " " + style.dataGridLastCell() + " " + customDataGridStyle.dataGridLastCell();
+        lastColumnStyle = " " + style.dataGridLastCell();
     }
 
     public boolean setCellHeight(int cellHeight) {
@@ -129,6 +128,26 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
             // assert that it is action and rendered with ActionCellRenderer
             // also since we know that its grid and not simple text (since there is dynamic image) and its td, we can unwrap td without having CellRenderer (however, it should be consistent with CellRenderer renderDynamic/Static)
             GFormController.setDynamicImage(CellRenderer.unwrapTD(td), image.orElse(null));
+    }
+
+    @Override
+    public void updateRowStickyLeftImpl(TableRowElement tr, List<Integer> stickyColumns, List<Integer> stickyLefts) {
+        updateStickyLeft(tr, stickyColumns, stickyLefts);
+    }
+
+    public static void updateStickyLeft(TableRowElement tr, List<Integer> stickyColumns, List<Integer> stickyLefts) {
+        for (int i = 0; i < stickyColumns.size(); i++) {
+            Integer stickyColumn = stickyColumns.get(i);
+            Integer left = stickyLefts.get(i);
+            TableCellElement cell = tr.getCells().getItem(stickyColumn);
+            if (left != null) {
+                cell.getStyle().setProperty("left", left + "px");
+                cell.removeClassName("dataGridStickyOverflow");
+            } else {
+                cell.getStyle().clearProperty("left");
+                cell.addClassName("dataGridStickyOverflow");
+            }
+        }
     }
 
     public static void renderTD(Element td, int height) {

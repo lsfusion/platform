@@ -47,4 +47,9 @@ public class RichTextCellRenderer extends StringBasedCellRenderer{
 
         element.quill = quill;
     }-*/;
+
+    @Override
+    public boolean isCustomRenderer() {
+        return true;
+    }
 }

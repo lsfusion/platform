@@ -9,10 +9,8 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.Dimension;
 import lsfusion.gwt.client.base.GwtClientUtils;
 
-import static lsfusion.gwt.client.base.GwtClientUtils.calculateMaxPreferredSize;
-
-public class ResizableComplexPanel extends ComplexPanel implements RequiresResize, ProvidesResize, HasMaxPreferredSize, ResizableMainPanel {
-    private Widget main;
+public class ResizableComplexPanel extends ComplexPanel implements RequiresResize, ProvidesResize, ResizableMainPanel {
+    protected Widget main;
 
     public ResizableComplexPanel() {
         setElement(Document.get().createDivElement());
@@ -46,11 +44,6 @@ public class ResizableComplexPanel extends ComplexPanel implements RequiresResiz
 
     public void insert(Widget w, int beforeIndex) {
         super.insert(w, getElement(), beforeIndex, true);
-    }
-
-    @Override
-    public Dimension getMaxPreferredSize() {
-        return calculateMaxPreferredSize(main);
     }
 
     private void setMain(Widget main) {

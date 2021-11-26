@@ -22,6 +22,7 @@ import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.design.GFontMetrics;
 import lsfusion.gwt.client.form.filter.user.GCompare;
+import lsfusion.gwt.client.form.filter.user.GFilter;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
@@ -592,6 +593,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
             // is rerendered (so there are new tableDataScroller and header), so we need force Update (and do it after pivot method)
             checkPadding(true);
             restoreScrollLeft();
+            setSticky();
         });
     }
 
@@ -1792,6 +1794,41 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         }
     }
 
+    private void setSticky() {
+        Element tableHeader = getHeaderTableScroller();
+        if (tableHeader != null) {
+            NodeList<Element> trs = getElements(tableHeader, "tr");
+            for (int i = 0; i < trs.getLength(); i++) {
+                setStickyRow(trs.getItem(i), ".pvtEmptyHeader, .pvtAxisLabel", true);
+            }
+        }
+
+        Element tableBody = getBodyTableScroller();
+        if (tableBody != null) {
+            NodeList<Element> rows = getElements(tableBody, "tr");
+            int rowsCount = rows.getLength();
+            for (int i = 0; i < rowsCount; i++) {
+                setStickyRow(rows.getItem(i), ".pvtRowLabel", false);
+                if (i == rowsCount - 1) {
+                    setStickyRow(rows.getItem(rows.getLength() - 1), ".pvtTotalLabel", true);
+                }
+            }
+        }
+    }
+
+    private void setStickyRow(Element row, String classes, boolean header) {
+        NodeList<Element> cells = getElements(row, classes);
+        int left = 0;
+        for (int i = 0; i < cells.getLength(); i++) {
+            Element cell = cells.getItem(i);
+            if(i == 0)
+                left = cell.getOffsetLeft();
+            cell.addClassName(header ? "pvtStickyHeader" : "pvtStickyCell");
+            cell.getStyle().setProperty("left", left + "px");
+            left += cell.getOffsetWidth();
+        }
+    }
+
     public native void resizePlotlyChart() /*-{
         var plotlyElement = this.@GPivot::getPlotlyChartElement()();
         if (plotlyElement) {
@@ -1893,7 +1930,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
                 filters.addAll(getFilters(config.getArrayString("cols"), colKeyValues));
 
                 config.getArrayString("rows").push(caption);
-                grid.userFilters.applyFilters(filters, false);
+                grid.filter.applyFilters(filters, false);
 //                updateView(true, null);
             });
             menuBar.addItem(menuItem);
@@ -1908,7 +1945,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         for (int i = 0; i < elements.length(); i++) {
             Column column = columnMap.get(elements.get(i));
             if (column != null)
-                filters.add(new GPropertyFilter(grid.groupObject, column.property, column.columnKey, getObjectValue(values, i), GCompare.EQUALS));
+                filters.add(new GPropertyFilter(new GFilter(column.property), grid.groupObject, column.columnKey, getObjectValue(values, i), GCompare.EQUALS));
         }
         return filters;
     }

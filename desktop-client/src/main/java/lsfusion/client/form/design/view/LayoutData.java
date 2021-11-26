@@ -13,12 +13,15 @@ public final class LayoutData {
     public double baseFlex;
     public Integer baseFlexBasis; // if null, than we have to get it similar to fixFlexBases by setting flexes to 0
 
+    public boolean shrink;
+    public boolean alignShrink;
+
     public void setFlexBasis(Integer flexBasis) {
         this.flexBasis = flexBasis;
         baseFlexBasis = flexBasis;
     }
 
-    public LayoutData(/*Element child, */FlexAlignment alignment, double flex, Integer flexBasis) {
+    public LayoutData(/*Element child, */FlexAlignment alignment, double flex, Integer flexBasis, boolean shrink, boolean alignShrink) {
         //this.child = child;
         this.alignment = alignment;
         this.flex = flex;
@@ -26,5 +29,8 @@ public final class LayoutData {
 
         this.baseFlex = flex;
         this.baseFlexBasis = flexBasis;
+
+        this.shrink = shrink;
+        this.alignShrink = alignShrink;
     }
 }

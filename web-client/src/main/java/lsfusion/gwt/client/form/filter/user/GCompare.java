@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.form.filter.user;
 
-
 import lsfusion.gwt.client.ClientMessages;
 
 public enum GCompare {
@@ -61,7 +60,6 @@ public enum GCompare {
 
     @Override
     public String toString() {
-        ClientMessages messages = ClientMessages.Instance.get();
         switch (this) {
             case EQUALS :
                 return "=";
@@ -76,16 +74,16 @@ public enum GCompare {
             case NOT_EQUALS :
                 return "!=";
             case LIKE :
-                return "=*";
+                return "_";
             case MATCH:
-                return "=@";
+                return "@";
             case INARRAY :
                 return "IN ARRAY";
         }
         throw new RuntimeException("Serialize Compare");
     }
-    
-    public String getTooltipText() {
+
+    public String getFullString() {
         switch (this) {
             case EQUALS :
                 return "=";
@@ -98,13 +96,37 @@ public enum GCompare {
             case LESS_EQUALS :
                 return "<=";
             case NOT_EQUALS :
-                return "!=";
+                return "!= (" + ClientMessages.Instance.get().formFilterCompareNotEquals() + ")";
             case LIKE :
-                return "LIKE";
+                return "_ (" + ClientMessages.Instance.get().formFilterCompareLike() + ")";
             case MATCH:
-                return "SEARCH";
+                return "@ (" + ClientMessages.Instance.get().formFilterCompareSearch() + ")";
             case INARRAY :
-                return "IN ARRAY";
+                return ClientMessages.Instance.get().formFilterCompareInArray();
+        }
+        return "";
+    }
+    
+    public String getTooltipText() {
+        switch (this) {
+            case EQUALS :
+                return ClientMessages.Instance.get().formFilterCompareEquals();
+            case GREATER :
+                return ClientMessages.Instance.get().formFilterCompareGreater();
+            case LESS :
+                return ClientMessages.Instance.get().formFilterCompareLess();
+            case GREATER_EQUALS :
+                return ClientMessages.Instance.get().formFilterCompareGreaterEquals();
+            case LESS_EQUALS :
+                return ClientMessages.Instance.get().formFilterCompareLessEquals();
+            case NOT_EQUALS :
+                return ClientMessages.Instance.get().formFilterCompareNotEquals();
+            case LIKE :
+                return ClientMessages.Instance.get().formFilterCompareLike();
+            case MATCH:
+                return ClientMessages.Instance.get().formFilterCompareSearch();
+            case INARRAY :
+                return ClientMessages.Instance.get().formFilterCompareInArray();
         }
         return "";
     }

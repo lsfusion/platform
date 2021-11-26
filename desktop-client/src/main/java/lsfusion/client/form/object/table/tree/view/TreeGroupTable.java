@@ -9,6 +9,7 @@ import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.classes.ClientType;
+import lsfusion.client.classes.data.ClientRichTextClass;
 import lsfusion.client.classes.data.ClientTextClass;
 import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.form.controller.ClientFormController;
@@ -26,11 +27,11 @@ import lsfusion.client.form.property.cell.EditBindingMap;
 import lsfusion.client.form.property.cell.controller.ClientAbstractCellEditor;
 import lsfusion.client.form.property.cell.controller.dispatch.EditPropertyDispatcher;
 import lsfusion.client.form.property.cell.view.ClientAbstractCellRenderer;
+import lsfusion.client.form.property.table.view.AsyncChangeCellTableInterface;
 import lsfusion.client.form.property.table.view.CellTableContextMenuHandler;
 import lsfusion.client.form.property.table.view.InternalEditEvent;
-import lsfusion.client.tooltip.LSFTooltipManager;
-import lsfusion.client.form.property.table.view.*;
 import lsfusion.client.form.view.Column;
+import lsfusion.client.tooltip.LSFTooltipManager;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.event.BindingMode;
 import lsfusion.interop.form.event.KeyInputEvent;
@@ -675,7 +676,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements AsyncChangeCe
     @Override
     public boolean richTextSelected() {
         ClientPropertyDraw property = getSelectedProperty();
-        return property != null && property.baseType instanceof ClientTextClass && ((ClientTextClass) property.baseType).rich;
+        return property != null && property.baseType instanceof ClientRichTextClass;
     }
 
     public void pasteTable(List<List<String>> table) {
@@ -762,6 +763,25 @@ public class TreeGroupTable extends ClientFormTreeTable implements AsyncChangeCe
     public ClientPropertyDraw getSelectedProperty() {
         int column = getSelectedColumn();
         int row = getSelectedRow();
+
+        if (column >= 0 && column < getColumnCount() && row >= 0 && row <= getRowCount())
+            return getProperty(row, column);
+
+        return null;
+    }
+
+    public ClientPropertyDraw getSelectedFilterProperty() {
+        int column = getSelectedColumn();
+        int row = getSelectedRow();
+        
+        // neighbour column for filter 
+        if (isHierarchical(column)) {
+            if (column < getColumnCount() - 1) {
+                column++;
+            } else if (column > 0) {
+                column --;
+            }
+        }
 
         if (column >= 0 && column < getColumnCount() && row >= 0 && row <= getRowCount())
             return getProperty(row, column);

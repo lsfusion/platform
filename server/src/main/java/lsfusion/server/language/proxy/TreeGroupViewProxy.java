@@ -14,4 +14,12 @@ public class TreeGroupViewProxy extends ComponentViewProxy<TreeGroupView> {
     public void setHeaderHeight(int headerHeight) {
         target.headerHeight = headerHeight;
     }
+
+    public void setLineHeight(int lines) {
+        target.lineHeight = lines;
+    }
+
+    public void setLineWidth(int lines) {
+        target.lineWidth = lines;
+    }
 }

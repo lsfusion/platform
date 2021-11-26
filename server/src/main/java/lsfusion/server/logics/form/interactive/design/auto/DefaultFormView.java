@@ -55,6 +55,9 @@ public class DefaultFormView extends FormView {
     public ContainerView getBoxContainer(PropertyGroupContainerView groupObject) { return boxContainers.get(groupObject); }
     public ContainerView getBoxContainer(GroupObjectEntity groupObject) { return getBoxContainer(get(groupObject)); }
 
+    protected transient final Map<PropertyGroupContainerView, ContainerView> filtersContainers = synchronizedMap(new HashMap<>());
+    public ContainerView getFiltersContainer(PropertyDrawEntity propertyDraw, Version version) { return filtersContainers.get(getPropertyContainer(propertyDraw, version)); }
+    
     protected transient final Map<PropertyGroupContainerView, ContainerView> gridContainers = synchronizedMap(new HashMap<>());
 
     protected transient final Map<PropertyGroupContainerView, ContainerView> panelContainers = synchronizedMap(new HashMap<>());
@@ -71,8 +74,8 @@ public class DefaultFormView extends FormView {
     protected transient final Map<PropertyGroupContainerView, ContainerView> toolbarLeftContainers = synchronizedMap(new HashMap<>());
     protected transient final Map<PropertyGroupContainerView, ContainerView> toolbarRightContainers = synchronizedMap(new HashMap<>());
 
-    protected final Map<PropertyGroupContainerView,ContainerView> filtersContainers = synchronizedMap(new HashMap<>());
-    public ContainerView getFilterContainer(GroupObjectEntity groupObject) { return filtersContainers.get(getPropertyGroupContainer(groupObject)); }
+    protected final Map<PropertyGroupContainerView,ContainerView> filterGroupsContainers = synchronizedMap(new HashMap<>());
+    public ContainerView getFilterGroupsContainer(GroupObjectEntity groupObject) { return filterGroupsContainers.get(getPropertyGroupContainer(groupObject)); }
 
     protected transient final Table<Optional<PropertyGroupContainerView>, Group, ContainerView> groupPropertyContainers = HashBasedTable.create();
 
@@ -260,13 +263,14 @@ public class DefaultFormView extends FormView {
             addPropertyGroupContainerView(groupSet.getBoxContainer(), neighbourGroupObject, insertType, version);
 
             registerComponent(boxContainers, groupSet.getBoxContainer(), groupObject, version);
+            registerComponent(filtersContainers, groupObject.getFiltersContainer(), groupObject, version);
             registerComponent(gridContainers, groupSet.getGridBoxContainer(), groupObject, version);
             registerComponent(panelContainers, groupSet.getPanelContainer(), groupObject, version);
             registerComponent(groupContainers, groupSet.getGroupContainer(), groupObject, version);
             registerComponent(toolbarBoxContainers, groupSet.getToolbarBoxContainer(), groupObject, version);
             registerComponent(toolbarLeftContainers, groupSet.getToolbarLeftContainer(), groupObject, version);
             registerComponent(toolbarRightContainers, groupSet.getToolbarRightContainer(), groupObject, version);
-            registerComponent(filtersContainers, groupSet.getFiltersContainer(), groupObject, version);
+            registerComponent(filterGroupsContainers, groupSet.getFilterGroupsContainer(), groupObject, version);
             registerComponent(toolbarContainers, groupSet.getToolbarContainer(), groupObject, version);
 
             addClassChoosers(groupSet.getGridBoxContainer(), groupObject, version);
@@ -321,13 +325,14 @@ public class DefaultFormView extends FormView {
         addPropertyGroupContainerView(treeSet.getBoxContainer(), neighbour, insertType, version);
 
         registerComponent(boxContainers, treeSet.getBoxContainer(), treeGroup, version);
+        registerComponent(filtersContainers, treeGroup.getFiltersContainer(), treeGroup, version);
         registerComponent(gridContainers, treeSet.getGridContainer(), treeGroup, version);
         registerComponent(panelContainers, treeSet.getPanelContainer(), treeGroup, version);
         registerComponent(groupContainers, treeSet.getGroupContainer(), treeGroup, version);
         registerComponent(toolbarBoxContainers, treeSet.getToolbarBoxContainer(), treeGroup, version);
         registerComponent(toolbarLeftContainers, treeSet.getToolbarLeftContainer(), treeGroup, version);
         registerComponent(toolbarRightContainers, treeSet.getToolbarRightContainer(), treeGroup, version);
-        registerComponent(filtersContainers, treeSet.getFiltersContainer(), treeGroup, version);
+        registerComponent(filterGroupsContainers, treeSet.getFilterGroupsContainer(), treeGroup, version);
         registerComponent(toolbarContainers, treeSet.getToolbarContainer(), treeGroup, version);
 
 //        for (GroupObjectEntity group : treeGroup.entity.getGroups()) {
@@ -389,22 +394,22 @@ public class DefaultFormView extends FormView {
     }
 
     private void addRegularFilterGroupView(RegularFilterGroupView filterGroup, Version version) {
-        ContainerView filterContainer = getFilterContainer(filterGroup, version);
+        ContainerView filterContainer = getFilterGroupsContainer(filterGroup, version);
         if (filterContainer != null) {
             filterContainer.add(filterGroup, version);
         }
     }
 
-    private ContainerView getFilterContainer(RegularFilterGroupView filterGroup, Version version) {
+    private ContainerView getFilterGroupsContainer(RegularFilterGroupView filterGroup, Version version) {
         GroupObjectEntity groupObject = filterGroup.entity.getNFToDraw(entity, version);
-        return getFilterContainer(groupObject);
+        return getFilterGroupsContainer(groupObject);
     }
 
     @Override
     public RegularFilterView addRegularFilter(RegularFilterGroupEntity filterGroup, RegularFilterEntity filter, Version version) {
         RegularFilterGroupView filterGroupView = get(filterGroup);
         boolean moveGroupToNewContainer = false;
-        if (filterGroupView.getNFContainer(version) == getFilterContainer(filterGroupView, version)) {
+        if (filterGroupView.getNFContainer(version) == getFilterGroupsContainer(filterGroupView, version)) {
             //если группа осталась в дефолтном контейнере, то перемещаем её в новое дефолтное место
             moveGroupToNewContainer = true;
         }

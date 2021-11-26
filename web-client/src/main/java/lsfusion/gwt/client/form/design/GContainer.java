@@ -21,7 +21,13 @@ public class GContainer extends GComponent {
     public boolean tabbed;
     public GFlexAlignment childrenAlignment;
 
+    public boolean grid;
+    public boolean wrap;
+    public Boolean alignCaptions;
+
     public int lines;
+    public Integer lineSize;
+    public boolean lineShrink;
 
     public ArrayList<GComponent> children = new ArrayList<>();
 
@@ -33,6 +39,19 @@ public class GContainer extends GComponent {
                 "caption='" + caption + "', " +
                 "alignment=" + getAlignment() +
                 '}';
+    }
+
+    public void removeFromChildren(GComponent component) {
+        component.container = null;
+        children.remove(component);
+    }
+
+    public void add(GComponent component) {
+        if (component.container != null) {
+            component.container.removeFromChildren(component);
+        }
+        children.add(component);
+        component.container = this;
     }
 
     public GFlexAlignment getFlexAlignment() {
@@ -104,24 +123,56 @@ public class GContainer extends GComponent {
     public boolean isSingleElement() {
         return children.size() == 1;
     }
+
+    public boolean isVertical() {
+        // in wrapped grid it makes sense to "reverse" the direction (it is more obvious)
+        return horizontal == (grid && isWrap());
+    }
+
+    public boolean isWrap() {
+        // we cannot wrap grid with aligned captions (since there is no way to stick caption and value together)
+        if(grid && isAlignCaptions())
+            return false;
+
+        // grid auto-fit (used for wrap) doesn't support min-content / auto / ...
+        if(grid && lineSize == null)
+            return false;
+
+        return wrap;
+    }
+
+    public boolean isGrid() {
+        return grid;
+    }
     public boolean isAlignCaptions() {
+        // align caption has a higher priority than wrap
         if(horizontal) // later maybe it makes sense to support align captions for horizontal containers, but with no-wrap it doesn't make much sense
             return false;
 
-        int notActions = 0;
-        // only simple property draws
-        for(GComponent child : children) {
-            if(!(child instanceof GPropertyDraw) || ((GPropertyDraw) child).hasColumnGroupObjects() || (child.autoSize && ((GPropertyDraw) child).isAutoDynamicHeight()) || child.flex > 0 || ((GPropertyDraw) child).panelCaptionVertical)
-                return false;
-
-            if(!((GPropertyDraw)child).isAction())
-                notActions++;
+        if (alignCaptions != null) {
+            return alignCaptions;
         }
 
-        if(notActions <= 1)
-            return false;
+        boolean otherAligned = false;
+        // only simple property draws
+        for(GComponent child : children) {
+            if(child.isAlignCaption()) {
+                if(otherAligned)
+                    return true;
+                else
+                    otherAligned = true;
+            }
+        }
 
-        return true;
+        return false;
+    }
+    
+    public Integer getLineSize() {
+        return lineSize;
+    }
+
+    public boolean isLineShrink() {
+        return lineShrink;
     }
 
     private class GCaptionReader implements GPropertyReader {

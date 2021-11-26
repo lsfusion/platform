@@ -110,6 +110,9 @@ pingClient '{utils.ping.client}' (TEXT host)  {ping(host, TRUE); }
 protectedExcel '{utils.excel.protected}' = DATA LOCAL EXCELFILE ();
 protectExcel '{utils.excel.protect}'  INTERNAL  'lsfusion.server.logics.classes.data.utils.excel.ProtectExcelAction' (EXCELFILE, STRING[100]);
 
+mergedExcel '{utils.excel.merged}' = DATA LOCAL EXCELFILE ();
+mergeExcel '{utils.excel.merge}'  INTERNAL  'lsfusion.server.logics.classes.data.utils.excel.MergeExcelAction' (EXCELFILE, EXCELFILE);
+
 columnsCount '{utils.excel.columns.count}' = DATA LOCAL INTEGER ();
 columnsCount '{utils.excel.columns.count}' (EXCELFILE file, INTEGER sheet)  INTERNAL  'lsfusion.server.logics.classes.data.utils.excel.ColumnsCountExcelAction';
 columnsCount '{utils.excel.columns.count}' (EXCELFILE file)  { columnsCount(file, NULL); }
@@ -189,6 +192,9 @@ urlDecode (TEXT text) { urlDecode(text, 'UTF-8'); };
 
 generatedUUID = DATA LOCAL TEXT();
 generateUUID  INTERNAL 'lsfusion.server.logics.classes.data.utils.string.GenerateUUIDAction' ();
+
+escapeJSONValue (TEXT t) = replace(replace(replace(replace(replace(t, '\\', '\\\\'), '"', '\\"'), '\n', ''), '\r', ''), '\t', '');
+escapeXMLValue(TEXT t) = replace(replace(replace(replace(replace(t, '&', '&amp;'), '<', '&lt;'), '>', '&gt;'), '"', '&quot;'), '\'', '&apos;');
 
 // --------------------------------------------- Работа с числами --------------------------------- //
 

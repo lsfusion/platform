@@ -39,44 +39,40 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
 
     public ComponentDesign design = new ComponentDesign();
 
-    public Dimension size = new Dimension(-2, -2);
-    
+    public Integer width;
+    public Integer height;
+
     public boolean autoSize = false;
+
+    public int span = 1;
 
     protected Double flex = null;
     private FlexAlignment alignment = null;
+    protected Boolean shrink = null;
+    protected Boolean alignShrink = null;
 
-    public Dimension getSize(FormEntity entity) {
-        int height = size.height;
-        int width = size.width;
-        if(height != -2 && width != -2) // optimization
-            return size;
+    public int getWidth(FormEntity entity) {
+        if(width != null)
+            return width;
 
-        ContainerView container = getLayoutParamContainer();
-        if(container != null) {
-            FlexAlignment alignment = getAlignment(entity);
-            if(alignment == FlexAlignment.STRETCH) { // for stretch size = 0 is more predictable (it gives scroll only for that block, not the whole container)
-                // container with a single element is usually created for a scroll, and in that case it makes sense to have it auto sized
-                // for tabpane always has tab bar visible, so there are at least two elements and default size 0 gives more predictable behaviour
-                if(height == -2 && container.isHorizontal() && (container.getChildrenList().size() > 1 || container.isTabbed()))
-                    height = 0;
-                if(width == -2 && !container.isHorizontal() && (container.getChildrenList().size() > 1 || container.isTabbed()))
-                    width = 0;
-            }
-            if(width == -2 && container.isSplitHorizontal())
-                width = 0;
-            if(height == -2 && container.isSplitVertical())
-                height = 0;
-        }
-        if(height == -2)
-            height = -1;
-        if(width == -2)
-            width = -1;
-        size = new Dimension(width, height);
-
-        return size;
+        return getDefaultWidth(entity);
     }
-    
+
+    public int getHeight(FormEntity entity) {
+        if(height != null)
+            return height;
+
+        return getDefaultHeight(entity);
+    }
+
+    protected int getDefaultWidth(FormEntity entity) {
+        return -1;
+    }
+
+    protected int getDefaultHeight(FormEntity entity) {
+        return -1;
+    }
+
     public double getFlex(FormEntity formEntity) {
         ContainerView container = getLayoutParamContainer();
         if (container != null) {
@@ -87,38 +83,62 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         if (flex != null)
             return flex;
 
-        return getDefaultFlex(formEntity);
-    }
-
-    public double getDefaultFlex(FormEntity formEntity) {
-        ContainerView container = getLayoutParamContainer();
         if (container != null) {
             if (container.isTabbed())
                 return 1;
         }
-        return getBaseDefaultFlex(formEntity);
+        return getDefaultFlex(formEntity);
     }
-    public double getBaseDefaultFlex(FormEntity formEntity) {
+
+    protected double getDefaultFlex(FormEntity formEntity) {
         return 0;
     }
 
     public FlexAlignment getAlignment(FormEntity formEntity) {
         if (alignment != null)
             return alignment;
-        
-        return getDefaultAlignment(formEntity);
-    }
 
-    public FlexAlignment getDefaultAlignment(FormEntity formEntity) {
         ContainerView container = getLayoutParamContainer();
         if (container != null) {
             if ((container.isScroll() || container.isSplit() || container.isTabbed()))
                 return FlexAlignment.STRETCH;
         }
-        return getBaseDefaultAlignment(formEntity);
+        return getDefaultAlignment(formEntity);
     }
-    public FlexAlignment getBaseDefaultAlignment(FormEntity formEntity) {
+
+    protected FlexAlignment getDefaultAlignment(FormEntity formEntity) {
         return FlexAlignment.START;
+    }
+
+    public boolean isShrink(FormEntity formEntity) {
+        if(shrink != null)
+            return shrink;
+
+        ContainerView container = getLayoutParamContainer();
+        if(container != null && container.isSplit())
+            return true;
+
+        return isDefaultShrink(formEntity);
+    }
+
+    protected boolean isDefaultShrink(FormEntity formEntity) {
+        return false;
+    }
+
+    public boolean isAlignShrink(FormEntity formEntity) {
+        if(alignShrink != null)
+            return alignShrink;
+
+        ContainerView container = getLayoutParamContainer();
+        FlexAlignment alignment = getAlignment(formEntity);
+        if(alignment == FlexAlignment.STRETCH && (container == null || !container.isScroll()))
+            return true;
+
+        return isDefaultAlignShrink(formEntity);
+    }
+
+    protected boolean isDefaultAlignShrink(FormEntity formEntity) {
+        return false;
     }
 
     public int marginTop;
@@ -153,20 +173,29 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         this.flex = flex;
     }
 
+    public void setShrink(boolean shrink) {
+        this.shrink = shrink;
+    }
+
+    public void setAlignShrink(boolean alignShrink) {
+        this.alignShrink = alignShrink;
+    }
+
     public void setAlignment(FlexAlignment alignment) {
         this.alignment = alignment;
     }
 
     public void setSize(Dimension size) {
-        this.size = size;
+        this.width = size.width;
+        this.height = size.height;
     }
 
     public void setHeight(int prefHeight) {
-        this.size.height = prefHeight;
+        this.height = prefHeight;
     }
 
     public void setWidth(int prefWidth) {
-        this.size.width = prefWidth;
+        this.width = prefWidth;
     }
 
     public void setMarginTop(int marginTop) {
@@ -284,12 +313,17 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         pool.writeObject(outStream, design);
         pool.serializeObject(outStream, getContainer());
 
-        pool.writeObject(outStream, getSize(pool.context.entity));
-        
+        outStream.writeInt(getWidth(pool.context.entity));
+        outStream.writeInt(getHeight(pool.context.entity));
+
         outStream.writeBoolean(autoSize);
+
+        outStream.writeInt(span);
 
         outStream.writeDouble(getFlex(pool.context.entity));
         pool.writeObject(outStream, getAlignment(pool.context.entity));
+        outStream.writeBoolean(isShrink(pool.context.entity));
+        outStream.writeBoolean(isAlignShrink(pool.context.entity));
 
         outStream.writeInt(marginTop);
         outStream.writeInt(marginBottom);
@@ -306,12 +340,17 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
 
         container = NFFact.finalProperty(pool.deserializeObject(inStream));
 
-        size = pool.readObject(inStream);
-        
+        width = pool.readInt(inStream);
+        height = pool.readInt(inStream);
+
         autoSize = inStream.readBoolean();
+
+        span = inStream.readInt();
 
         flex = inStream.readDouble();
         alignment = pool.readObject(inStream);
+        shrink = inStream.readBoolean();
+        alignShrink = inStream.readBoolean();
         marginTop = inStream.readInt();
         marginBottom = inStream.readInt();
         marginLeft = inStream.readInt();

@@ -65,10 +65,10 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         tree = new GTreeTableTree(iform);
 
         Column<GTreeGridRecord, Object> column = new ExpandTreeColumn();
-        GGridPropertyTableHeader header = new GGridPropertyTableHeader(this, messages.formTree(), null);
+        GGridPropertyTableHeader header = new GGridPropertyTableHeader(this, messages.formTree(), null, false);
         addColumn(column, header, null);
 
-        hierarchicalWidth = treeGroup.calculateSize();
+        hierarchicalWidth = treeGroup.getExpandWidth();
 
         treeSelectionHandler = new TreeTableSelectionHandler(this);
         setSelectionHandler(treeSelectionHandler);
@@ -166,7 +166,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
             if (index > -1) {
                 GridColumn gridColumn = new GridColumn(property);
                 String propertyCaption = property.getCaptionOrEmpty();
-                GGridPropertyTableHeader header = new GGridPropertyTableHeader(this, propertyCaption, property.getTooltipText(propertyCaption));
+                GGridPropertyTableHeader header = new GGridPropertyTableHeader(this, propertyCaption, property.getTooltipText(propertyCaption), gridColumn.isSticky());
                 GGridPropertyTableFooter footer = groupObject.hasFooters ? new GGridPropertyTableFooter(this, property, null, null) : null;
 
                 insertColumn(index, gridColumn, header, footer);
@@ -330,6 +330,11 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         }
 
         @Override
+        public boolean isSticky() {
+            return false;
+        }
+
+        @Override
         public GPropertyDraw getColumnProperty() {
             return null;
         }
@@ -385,6 +390,11 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
                 updateIndentElement(img, treeValue, i);
             }
         }
+
+        @Override
+        public boolean isCustomRenderer() {
+            return false;
+        }
     }
 
     private class GridColumn extends GridPropertyColumn implements TreeGridColumn {
@@ -394,6 +404,11 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         @Override
         public boolean isFocusable() {
             return GTreeTable.this.isFocusable(columnProperty);
+        }
+
+        @Override
+        public boolean isSticky() {
+            return columnProperty.sticky;
         }
 
         public GridColumn(GPropertyDraw columnProperty) {
@@ -435,6 +450,11 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         @Override
         public GPropertyDraw getColumnProperty() {
             return columnProperty;
+        }
+
+        @Override
+        public boolean isCustomRenderer() {
+            return columnProperty.getCellRenderer().isCustomRenderer();
         }
     }
 
@@ -776,10 +796,10 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         return treeGroupController;
     }
 
-    public GPropertyDraw getCurrentProperty() {
+    public GPropertyDraw getSelectedFilterProperty() {
         GPropertyDraw property = getSelectedProperty();
         if (property == null && getColumnCount() > 1) {
-            property = getColumnPropertyDraw(1);
+            property = getProperty(getSelectedCell(1));
         }
         return property;
     }

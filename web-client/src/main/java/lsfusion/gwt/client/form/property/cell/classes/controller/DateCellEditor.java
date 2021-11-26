@@ -16,6 +16,7 @@ import lsfusion.gwt.client.classes.data.GDateType;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.classes.GDateDTO;
+import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.view.StyleDefaults;
 
@@ -45,7 +46,7 @@ public class DateCellEditor extends PopupBasedCellEditor {
             @Override
             public void onKeyPress(KeyPressEvent event) {
                 if (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_ENTER) {
-                    onCommitEvent(event, parent);
+                    onCommitEvent(event, parent, CommitReason.ENTERPRESSED);
                 }
             }
         });
@@ -59,7 +60,7 @@ public class DateCellEditor extends PopupBasedCellEditor {
             if (eventTarget != null) {
                 String className = Element.as(eventTarget).getClassName();
                 if (className.contains("datePickerDay") && !className.contains("datePickerDayIsFiller")) {
-                    DateCellEditor.this.onCommitEvent(event, parent);
+                    DateCellEditor.this.onCommitEvent(event, parent, CommitReason.OTHER);
                 }
             }
         }, DoubleClickEvent.getType());
@@ -117,9 +118,9 @@ public class DateCellEditor extends PopupBasedCellEditor {
         commitValue(parent, GDateDTO.fromDate(event.getValue()));
     }
 
-    protected void onCommitEvent(DomEvent event, Element parent) {
+    protected void onCommitEvent(DomEvent event, Element parent, CommitReason commitReason) {
         GwtClientUtils.stopPropagation(event);
-        validateAndCommit(parent, false);
+        validateAndCommit(parent, false, commitReason);
     }
 
     @Override

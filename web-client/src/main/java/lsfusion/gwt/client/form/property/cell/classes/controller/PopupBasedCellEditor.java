@@ -32,6 +32,8 @@ public abstract class PopupBasedCellEditor extends WindowValueCellEditor {
                     if (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_ESCAPE) {
                         GwtClientUtils.stopPropagation(event.getNativeEvent());
                         cancel(parent);
+                    } else if (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_ENTER) {
+                        enterPressed(parent);
                     }
                 }
             }
@@ -52,6 +54,8 @@ public abstract class PopupBasedCellEditor extends WindowValueCellEditor {
     public void stop(Element parent, boolean cancel) {
         popup.hide();
     }
+    
+    protected void enterPressed(Element parent) {}
 
     protected abstract Widget createPopupComponent(Element parent, Object oldValue);
 }

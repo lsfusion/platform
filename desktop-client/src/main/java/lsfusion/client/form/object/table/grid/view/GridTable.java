@@ -7,6 +7,7 @@ import lsfusion.base.ReflectionUtils;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.base.view.SwingDefaults;
+import lsfusion.client.classes.data.ClientRichTextClass;
 import lsfusion.client.classes.data.ClientTextClass;
 import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.form.ClientForm;
@@ -846,7 +847,7 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
     @Override
     public boolean richTextSelected() {
         ClientPropertyDraw property = getCurrentProperty();
-        return property != null && property.baseType instanceof ClientTextClass && ((ClientTextClass) property.baseType).rich;
+        return property != null && property.baseType instanceof ClientRichTextClass;
     }
 
     private int getMaxColumnsCount(List<List<String>> table) {

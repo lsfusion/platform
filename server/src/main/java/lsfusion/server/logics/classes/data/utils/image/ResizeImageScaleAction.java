@@ -11,7 +11,7 @@ import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 import net.coobird.thumbnailator.Thumbnails;
 
-import java.io.File;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Iterator;
@@ -31,22 +31,15 @@ public class ResizeImageScaleAction extends InternalAction {
     @Override
     public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         try {
-
             RawFileData inputFile = (RawFileData) context.getKeyValue(fileInterface).getValue();
             Double scale = (Double) context.getKeyValue(scaleInterface).getValue();
 
-            File outputFile = null;
-            try {
-                outputFile = File.createTempFile("resized", ".jpg");
-                if(scale != 0) {
-                    Thumbnails.of(inputFile.getInputStream()).scale((double) 1 / scale).toFile(outputFile);
-                    findProperty("resizedImage[]").change(new RawFileData(outputFile), context);
+            if (scale != 0) {
+                try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+                    Thumbnails.of(inputFile.getInputStream()).scale((double) 1 / scale).toOutputStream(os);
+                    findProperty("resizedImage[]").change(new RawFileData(os), context);
                 }
-            } finally {
-                if (outputFile != null && !outputFile.delete())
-                    outputFile.deleteOnExit();
             }
-
         } catch (IOException | ScriptingErrorLog.SemanticErrorException e) {
             throw Throwables.propagate(e);
         }
