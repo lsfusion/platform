@@ -1,3 +1,7 @@
+// expected properties:
+// selected : selection property (automatically sets filter on server)
+// name : selection name
+
 function select2() {
     return {
         render: (element, controller) => {
