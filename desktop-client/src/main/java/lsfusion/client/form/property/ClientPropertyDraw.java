@@ -116,9 +116,11 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     public FlexAlignment valueAlignment;
 
-    public int charHeight;
     public int charWidth;
-    public Dimension valueSize;
+    public int charHeight;
+
+    public int valueWidth;
+    public int valueHeight;
 
     public transient EditBindingMap editBindingMap;
     private transient PropertyRenderer renderer;
@@ -231,23 +233,18 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     }
 
     public int getValueWidth() {
-        if (valueSize != null) {
-            return valueSize.width;
-        }
-        return -1;
+        return valueWidth;
     }
 
     public int getValueWidth(JComponent comp) {
-        if (valueSize != null && valueSize.width > -1) {
-            return valueSize.width;
+        if (valueWidth > -1) {
+            return valueWidth;
         }
         FontMetrics fontMetrics = comp.getFontMetrics(design.getFont(comp));
 
         String widthString = null;
         if(charWidth != 0)
-            widthString = BaseUtils.replicate('0', charWidth);
-        if(widthString != null)
-            return baseType.getFullWidthString(widthString, fontMetrics, this);
+            return baseType.getFullWidthString(BaseUtils.replicate('0', charWidth), fontMetrics, this);
 
         return baseType.getDefaultWidth(fontMetrics, this);
     }
@@ -257,8 +254,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     }
 
     public int getValueHeight(JComponent comp, Integer userFontSize) {
-        if (valueSize != null && valueSize.height > -1) {
-            return valueSize.height;
+        if (valueHeight > -1) {
+            return valueHeight;
         }
         
         Insets insets = SwingDefaults.getTableCellMargins(); // suppose buttons have the same padding. to have equal height
@@ -451,7 +448,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         outStream.writeInt(charHeight);
         outStream.writeInt(charWidth);
         
-        pool.writeObject(outStream, valueSize);
+        outStream.writeInt(valueWidth);
+        outStream.writeInt(valueHeight);
 
         pool.writeObject(outStream, changeKey);
         pool.writeInt(outStream, changeKeyPriority);
@@ -489,7 +487,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         charHeight = inStream.readInt();
         charWidth = inStream.readInt();
 
-        valueSize = pool.readObject(inStream);
+        valueWidth = inStream.readInt();
+        valueHeight = inStream.readInt();
 
         changeKey = pool.readObject(inStream);
         changeKeyPriority = pool.readInt(inStream);

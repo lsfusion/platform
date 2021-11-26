@@ -45,6 +45,8 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
 
     public static final String DATA_GRID_CLASS = "dataGridTableWrapperWidget";
 
+    public final static int BORDER_VERT_SIZE = 1;
+
     private static GridStyle DEFAULT_STYLE;
 
     protected static GridStyle getDefaultStyle() {
@@ -191,7 +193,10 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
         } else
             tableDataContainer = TableScrollPanel.noScroll(tableData);
 
-        addFillFlex(tableDataContainer, !noScrollers ? 0 : null); // for scrollers we need 0 basis (since that is the point of scroller)
+        // for scrollers we need 0 basis (since that is the point of scroller)
+        addFillFlex(tableDataContainer, !noScrollers ? 0 : null);
+        // however it seems that addFillShrink would also do
+//        addFillShrink(tableDataContainer);
 
         // INITIALIZING FOOTERS
         if (!noFooters) { // the same as for headers

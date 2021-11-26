@@ -68,9 +68,13 @@ public class PropertyDrawView extends ComponentView {
     public boolean noSort;
     public Compare defaultCompare;
 
-    private int charHeight;
-    public Dimension valueSize;
     private int charWidth;
+    private int charHeight;
+
+    public Dimension valueSize;
+    public Integer valueWidth;
+    public Integer valueHeight;
+
     private Boolean valueFlex;
 
     public KeyInputEvent changeKey;
@@ -128,6 +132,20 @@ public class PropertyDrawView extends ComponentView {
 
     public boolean isProperty() {
         return entity.isProperty();
+    }
+
+    public int getValueWidth() {
+        if(valueWidth != null)
+            return valueWidth;
+
+        return -1;
+    }
+
+    public int getValueHeight() {
+        if(valueHeight != null)
+            return valueHeight;
+
+        return -1;
     }
 
     // we force optimistic async event scheme for external calls (since this calls assume that async push should exist)
@@ -267,7 +285,9 @@ public class PropertyDrawView extends ComponentView {
 
         outStream.writeInt(getCharHeight());
         outStream.writeInt(getCharWidth());
-        pool.writeObject(outStream, getValueSize());
+
+        outStream.writeInt(getValueWidth());
+        outStream.writeInt(getValueHeight());
 
         pool.writeObject(outStream, changeKey);
         pool.writeInt(outStream, changeKeyPriority);
@@ -508,8 +528,17 @@ public class PropertyDrawView extends ComponentView {
         return valueSize;
     }
 
-    public void setValueSize(Dimension minimumValueSize) {
-        this.valueSize = minimumValueSize;
+    public void setValueSize(Dimension valueSize) {
+        this.valueWidth = valueSize.width;
+        this.valueHeight = valueSize.height;
+    }
+
+    public void setValueWidth(Integer valueWidth) {
+        this.valueWidth = valueWidth;
+    }
+
+    public void setValueHeight(Integer valueHeight) {
+        this.valueHeight = valueHeight;
     }
 
     public Boolean getValueFlex() {

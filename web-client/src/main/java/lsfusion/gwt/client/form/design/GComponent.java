@@ -40,6 +40,15 @@ public class GComponent implements Serializable {
         int size = vertical ? height : width;
         if (size != -1)
             return size;
+
+        return vertical ? getDefaultHeight() : getDefaultWidth();
+    }
+
+    protected Integer getDefaultWidth() {
+        return null;
+    }
+
+    protected Integer getDefaultHeight() {
         return null;
     }
 

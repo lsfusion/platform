@@ -68,7 +68,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         GGridPropertyTableHeader header = new GGridPropertyTableHeader(this, messages.formTree(), null, false);
         addColumn(column, header, null);
 
-        hierarchicalWidth = treeGroup.calculateSize();
+        hierarchicalWidth = treeGroup.getExpandWidth();
 
         treeSelectionHandler = new TreeTableSelectionHandler(this);
         setSelectionHandler(treeSelectionHandler);

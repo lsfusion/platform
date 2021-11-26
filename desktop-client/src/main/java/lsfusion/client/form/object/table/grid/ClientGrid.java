@@ -16,6 +16,9 @@ public class ClientGrid extends ClientComponent {
     public boolean quickSearch;
     public int headerHeight;
 
+    public int lineWidth;
+    public int lineHeight;
+
     public ClientGroupObject groupObject;
 
     public ClientContainer record;
@@ -31,6 +34,9 @@ public class ClientGrid extends ClientComponent {
         outStream.writeBoolean(quickSearch);
         outStream.writeInt(headerHeight);
 
+        outStream.writeInt(lineWidth);
+        outStream.writeInt(lineHeight);
+
         pool.serializeObject(outStream, record);
 
         pool.serializeObject(outStream, groupObject);
@@ -43,6 +49,9 @@ public class ClientGrid extends ClientComponent {
         tabVertical = inStream.readBoolean();
         quickSearch = inStream.readBoolean();
         headerHeight = inStream.readInt();
+
+        lineWidth = inStream.readInt();
+        lineHeight = inStream.readInt();
 
         record = pool.deserializeObject(inStream);
 

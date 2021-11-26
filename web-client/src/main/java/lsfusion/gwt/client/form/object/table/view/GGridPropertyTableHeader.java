@@ -126,7 +126,7 @@ public class GGridPropertyTableHeader extends Header<String> {
         }
     }
 
-    private final static int DEFAULT_HEADER_HEIGHT = 34;
+    public final static int DEFAULT_HEADER_HEIGHT = 34;
 
     public static Element renderTD(Element th, Boolean sortDir, String caption) {
         return renderTD(th, DEFAULT_HEADER_HEIGHT, sortDir, caption, true);

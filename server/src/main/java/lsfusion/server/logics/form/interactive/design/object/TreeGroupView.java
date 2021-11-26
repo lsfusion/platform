@@ -50,6 +50,9 @@ public class TreeGroupView extends ComponentView implements ServerIdentitySerial
 
     public int headerHeight = -1;
 
+    public Integer lineWidth;
+    public Integer lineHeight;
+
     IDGenerator idGenerator;
 
     @Override
@@ -129,6 +132,9 @@ public class TreeGroupView extends ComponentView implements ServerIdentitySerial
         outStream.writeBoolean(expandOnClick);
 
         outStream.writeInt(headerHeight);
+
+        outStream.writeInt(getLineWidth());
+        outStream.writeInt(getLineHeight());
     }
 
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
@@ -142,8 +148,25 @@ public class TreeGroupView extends ComponentView implements ServerIdentitySerial
         expandOnClick = inStream.readBoolean();
 
         headerHeight = inStream.readInt();
-        
+
+        lineWidth = inStream.readInt();
+        lineHeight = inStream.readInt();
+
         entity = pool.context.entity.getTreeGroup(ID);
+    }
+
+    public int getLineWidth() {
+        if(lineWidth != null)
+            return lineWidth;
+
+        return -1;
+    }
+
+    public int getLineHeight() {
+        if(lineHeight != null)
+            return lineHeight;
+
+        return -1;
     }
 
     @Override

@@ -43,6 +43,7 @@ import lsfusion.gwt.client.form.controller.dispatch.FormDispatchAsync;
 import lsfusion.gwt.client.form.controller.dispatch.GFormActionDispatcher;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
+import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.design.view.GFormLayout;
 import lsfusion.gwt.client.form.design.view.TabbedContainerView;
 import lsfusion.gwt.client.form.event.*;
@@ -157,6 +158,8 @@ public class GFormController implements EditManager {
             formLayout.getElement().setAttribute("lsfusion-form", form.sID);
 
         updateFormCaption();
+
+        initializeParams(); // has to be done before initializeControllers (since adding component uses getSize)
 
         initializeControllers();
 
@@ -432,11 +435,21 @@ public class GFormController implements EditManager {
         }
 
         panelController = new GPanelController(this);
+    }
 
+    private void initializeParams() {
         hasColumnGroupObjects = false;
-        for (GPropertyDraw property : form.propertyDraws) {
+        for (GPropertyDraw property : getPropertyDraws()) {
             if (property.hasColumnGroupObjects()) {
                 hasColumnGroupObjects = true;
+            }
+
+            GGroupObject groupObject = property.groupObject;
+            if(groupObject != null) {
+                GFont font = groupObject.grid.font;
+                groupObject.columnSumWidth += property.getValueWidthWithPadding(font);
+                groupObject.columnCount++;
+                groupObject.rowMaxHeight = Math.max(groupObject.rowMaxHeight, property.getValueHeightWithPadding(font));
             }
         }
     }

@@ -19,6 +19,9 @@ public class GridView extends ComponentView {
     private boolean quickSearch = false;
     public int headerHeight = -1;
 
+    public Integer lineWidth;
+    public Integer lineHeight;
+
     public GroupObjectView groupObject;
 
     protected ContainerView record; // lazy creation, since its usage is pretty rear
@@ -68,6 +71,9 @@ public class GridView extends ComponentView {
         outStream.writeBoolean(quickSearch);
         outStream.writeInt(headerHeight);
 
+        outStream.writeInt(getLineWidth());
+        outStream.writeInt(getLineHeight());
+
         pool.serializeObject(outStream, getRecord());
 
         pool.serializeObject(outStream, groupObject);
@@ -81,6 +87,9 @@ public class GridView extends ComponentView {
         quickSearch = inStream.readBoolean();
         headerHeight = inStream.readInt();
 
+        lineWidth = inStream.readInt();
+        lineHeight = inStream.readInt();
+
         record = pool.deserializeObject(inStream);
 
         groupObject = pool.deserializeObject(inStream);
@@ -92,5 +101,27 @@ public class GridView extends ComponentView {
 
         if(record != null)
             record.finalizeAroundInit();
+    }
+
+    public int getLineWidth() {
+        if(lineWidth != null)
+            return lineWidth;
+
+        return -1;
+    }
+
+    public void setLineWidth(Integer lineWidth) {
+        this.lineWidth = lineWidth;
+    }
+
+    public int getLineHeight() {
+        if(lineHeight != null)
+            return lineHeight;
+
+        return -1;
+    }
+
+    public void setLineHeight(Integer lineHeight) {
+        this.lineHeight = lineHeight;
     }
 }

@@ -76,8 +76,8 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         component.container = convertOrCast(clientComponent.container);
         component.defaultComponent = clientComponent.defaultComponent;
 
-        component.width = clientComponent.size.width;
-        component.height = clientComponent.size.height;
+        component.width = clientComponent.width;
+        component.height = clientComponent.height;
 
         component.autoSize = clientComponent.autoSize;
 
@@ -220,6 +220,9 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         grid.quickSearch = clientGrid.quickSearch;
         grid.headerHeight = clientGrid.headerHeight;
 
+        grid.lineWidth = clientGrid.lineWidth;
+        grid.lineHeight = clientGrid.lineHeight;
+
         grid.record = convertOrCast(clientGrid.record);
 
         return grid;
@@ -337,10 +340,8 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.charWidth = clientPropertyDraw.charWidth;
         propertyDraw.charHeight = clientPropertyDraw.charHeight;
 
-        if (clientPropertyDraw.valueSize != null) {
-            propertyDraw.valueWidth = clientPropertyDraw.valueSize.width;
-            propertyDraw.valueHeight = clientPropertyDraw.valueSize.height;
-        }
+        propertyDraw.valueWidth = clientPropertyDraw.valueWidth;
+        propertyDraw.valueHeight = clientPropertyDraw.valueHeight;
 
         propertyDraw.panelCaptionVertical = clientPropertyDraw.panelCaptionVertical;
         propertyDraw.panelCaptionLast = clientPropertyDraw.panelCaptionLast;
@@ -513,6 +514,9 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         treeGroup.expandOnClick = clientTreeGroup.expandOnClick;
 
         treeGroup.headerHeight = clientTreeGroup.headerHeight;
+
+        treeGroup.lineWidth = clientTreeGroup.lineWidth;
+        treeGroup.lineHeight = clientTreeGroup.lineHeight;
 
         for (ClientGroupObject clientGroup : clientTreeGroup.groups) {
             GGroupObject group = convertOrCast(clientGroup);
