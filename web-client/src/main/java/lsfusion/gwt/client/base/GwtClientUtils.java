@@ -323,11 +323,14 @@ public class GwtClientUtils {
     public static void setupPercentParent(Element element) {
         element.getStyle().setWidth(100, Style.Unit.PCT);
         element.getStyle().setHeight(100, Style.Unit.PCT);
+//        inputElement.addClassName("boxSized");
+        element.getStyle().setProperty("boxSizing", "border-box");
     }
 
     public static void clearPercentParent(Element element) {
         element.getStyle().clearWidth();
         element.getStyle().clearHeight();
+        element.getStyle().clearProperty("boxSizing");
     }
 
     public static void changePercentFillWidget(Widget widget, boolean percent) {

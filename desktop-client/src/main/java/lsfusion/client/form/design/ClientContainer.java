@@ -129,7 +129,7 @@ public class ClientContainer extends ClientComponent {
         int notActions = 0;
         // only simple property draws
         for(ClientComponent child : children) {
-            if(!(child instanceof ClientPropertyDraw) || ((ClientPropertyDraw) child).hasColumnGroupObjects() || (child.autoSize && ((ClientPropertyDraw) child).isAutoDynamicHeight()) || child.flex > 0 || ((ClientPropertyDraw) child).panelCaptionVertical)
+            if(!(child instanceof ClientPropertyDraw) || ((ClientPropertyDraw) child).hasColumnGroupObjects() || (((ClientPropertyDraw)child).autoSize && ((ClientPropertyDraw) child).isAutoDynamicHeight()) || child.flex > 0 || ((ClientPropertyDraw) child).panelCaptionVertical)
                 return false;
 
             if(!((ClientPropertyDraw)child).isAction())

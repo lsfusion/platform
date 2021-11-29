@@ -16,6 +16,8 @@ public class GTreeGroup extends GComponent {
     public GContainer filtersContainer;
     public List<GFilter> filters = new ArrayList<>();
 
+    public boolean autoSize;
+
     public GToolbar toolbar;
     
     public boolean expandOnClick;

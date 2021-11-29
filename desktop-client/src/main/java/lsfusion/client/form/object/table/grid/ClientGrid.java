@@ -19,6 +19,8 @@ public class ClientGrid extends ClientComponent {
     public int lineWidth;
     public int lineHeight;
 
+    public boolean autoSize;
+
     public ClientGroupObject groupObject;
 
     public ClientContainer record;
@@ -29,6 +31,8 @@ public class ClientGrid extends ClientComponent {
     @Override
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream) throws IOException {
         super.customSerialize(pool, outStream);
+
+        outStream.writeBoolean(autoSize);
 
         outStream.writeBoolean(tabVertical);
         outStream.writeBoolean(quickSearch);
@@ -45,6 +49,8 @@ public class ClientGrid extends ClientComponent {
     @Override
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
         super.customDeserialize(pool, inStream);
+
+        autoSize = inStream.readBoolean();
 
         tabVertical = inStream.readBoolean();
         quickSearch = inStream.readBoolean();

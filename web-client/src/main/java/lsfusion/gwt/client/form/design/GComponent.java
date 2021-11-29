@@ -16,8 +16,6 @@ public class GComponent implements Serializable {
     public int width = -1;
     public int height = -1;
     
-    public boolean autoSize;
-
     public int span = 1;
 
     protected double flex = 0;

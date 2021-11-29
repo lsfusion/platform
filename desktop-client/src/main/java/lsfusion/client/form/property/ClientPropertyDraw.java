@@ -62,6 +62,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public ImageReader imageReader = new ImageReader();
     public boolean hasDynamicImage;
 
+    public boolean autoSize;
+
     // for pivoting
     public String formula;
     public ClientPropertyDraw[] formulaOperands;
@@ -437,6 +439,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream) throws IOException {
         super.customSerialize(pool, outStream);
 
+        outStream.writeBoolean(autoSize);
+
         pool.writeString(outStream, caption);
         pool.writeString(outStream, regexp);
         pool.writeString(outStream, regexpMessage);
@@ -476,6 +480,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
         super.customDeserialize(pool, inStream);
+
+        autoSize = inStream.readBoolean();
 
         caption = pool.readString(inStream);
         regexp = pool.readString(inStream);

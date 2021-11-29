@@ -42,8 +42,6 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
     public Integer width;
     public Integer height;
 
-    public boolean autoSize = false;
-
     public int span = 1;
 
     protected Double flex = null;
@@ -316,8 +314,6 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         outStream.writeInt(getWidth(pool.context.entity));
         outStream.writeInt(getHeight(pool.context.entity));
 
-        outStream.writeBoolean(autoSize);
-
         outStream.writeInt(span);
 
         outStream.writeDouble(getFlex(pool.context.entity));
@@ -342,8 +338,6 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
 
         width = pool.readInt(inStream);
         height = pool.readInt(inStream);
-
-        autoSize = inStream.readBoolean();
 
         span = inStream.readInt();
 

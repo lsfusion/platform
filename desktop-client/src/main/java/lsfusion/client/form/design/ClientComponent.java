@@ -26,8 +26,6 @@ public abstract class ClientComponent extends ContextIdentityObject implements I
     public int width;
     public int height;
 
-    public boolean autoSize;
-
     public int span = 1;
 
     public double flex;
@@ -64,8 +62,6 @@ public abstract class ClientComponent extends ContextIdentityObject implements I
         outStream.writeInt(width);
         outStream.writeInt(height);
 
-        outStream.writeBoolean(autoSize);
-
         outStream.writeInt(span);
 
         outStream.writeDouble(flex);
@@ -90,8 +86,6 @@ public abstract class ClientComponent extends ContextIdentityObject implements I
         width = inStream.readInt();
         height = inStream.readInt();
         
-        autoSize = inStream.readBoolean();
-
         span = inStream.readInt();
 
         flex = inStream.readDouble();

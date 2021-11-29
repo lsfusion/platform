@@ -25,6 +25,8 @@ public class ClientTreeGroup extends ClientComponent implements ClientIdentitySe
     
     public ClientToolbar toolbar;
 
+    public boolean autoSize;
+
     public boolean plainTreeMode;
     
     public boolean expandOnClick;
@@ -54,6 +56,8 @@ public class ClientTreeGroup extends ClientComponent implements ClientIdentitySe
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream) throws IOException {
         super.customSerialize(pool, outStream);
 
+        outStream.writeBoolean(autoSize);
+
         pool.serializeCollection(outStream, groups);
         pool.serializeObject(outStream, toolbar);
         pool.serializeObject(outStream,filtersContainer);
@@ -69,6 +73,8 @@ public class ClientTreeGroup extends ClientComponent implements ClientIdentitySe
 
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
         super.customDeserialize(pool, inStream);
+
+        autoSize = inStream.readBoolean();
 
         groups = pool.deserializeList(inStream);
         toolbar = pool.deserializeObject(inStream);

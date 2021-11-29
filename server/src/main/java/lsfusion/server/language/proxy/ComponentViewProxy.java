@@ -13,10 +13,6 @@ public class ComponentViewProxy<T extends ComponentView> extends ViewProxy<T> {
         super(target);
     }
 
-    public void setAutoSize(boolean autoSize) {
-        target.autoSize = autoSize;
-    }
-
     public void setSpan(int span) {
         target.span = span;
     }

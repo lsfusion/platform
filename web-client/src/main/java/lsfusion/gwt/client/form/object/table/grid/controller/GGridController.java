@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.form.object.table.grid.controller;
 
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.GFormChanges;
 import lsfusion.gwt.client.base.GwtClientUtils;

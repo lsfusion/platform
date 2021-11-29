@@ -31,6 +31,7 @@ import lsfusion.interop.action.ServerResponse;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -45,7 +46,6 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         super(form, grid);
 
         this.controller = getController();
-        this.formController = form;
         GwtClientUtils.setZeroZIndex(getDrawElement());
 
         getElement().setTabIndex(0);
@@ -311,7 +311,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
 
     protected void setBooleanViewFilter(String property, int pageSize) {
         Column column = columnMap.get(property);
-        setViewFilters(pageSize, new GPropertyFilter(grid.groupObject, column.property, column.columnKey, true, GCompare.EQUALS));
+        setViewFilters(pageSize, new GPropertyFilter(new GFilter(column.property), grid.groupObject, column.columnKey, true, GCompare.EQUALS));
     }
 
     private void setViewFilters(int pageSize, GPropertyFilter... filters) {

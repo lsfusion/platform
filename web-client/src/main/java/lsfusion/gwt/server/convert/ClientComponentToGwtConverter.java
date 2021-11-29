@@ -79,8 +79,6 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         component.width = clientComponent.width;
         component.height = clientComponent.height;
 
-        component.autoSize = clientComponent.autoSize;
-
         component.span = clientComponent.span;
 
         component.setFlex(clientComponent.flex);
@@ -220,6 +218,8 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         grid.quickSearch = clientGrid.quickSearch;
         grid.headerHeight = clientGrid.headerHeight;
 
+        grid.autoSize = clientGrid.autoSize;
+
         grid.lineWidth = clientGrid.lineWidth;
         grid.lineHeight = clientGrid.lineHeight;
 
@@ -241,7 +241,9 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.canonicalName = clientPropertyDraw.getCanonicalName();
         propertyDraw.propertyFormName = clientPropertyDraw.getPropertyFormName();
         propertyDraw.integrationSID = clientPropertyDraw.getIntegrationSID();
-        
+
+        propertyDraw.autoSize = clientPropertyDraw.autoSize;
+
         propertyDraw.customRenderFunction = clientPropertyDraw.customRenderFunction;
         propertyDraw.customChangeFunction = clientPropertyDraw.customChangeFunction;
 
@@ -508,6 +510,8 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         for (ClientFilter filter : clientTreeGroup.filters) {
             treeGroup.filters.add(convertOrCast(filter));
         }
+
+        treeGroup.autoSize = clientTreeGroup.autoSize;
 
         treeGroup.toolbar = convertOrCast(clientTreeGroup.toolbar);
         
