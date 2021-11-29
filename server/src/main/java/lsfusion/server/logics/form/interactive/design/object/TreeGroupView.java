@@ -122,6 +122,8 @@ public class TreeGroupView extends ComponentView implements ServerIdentitySerial
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream) throws IOException {
         super.customSerialize(pool, outStream);
 
+        outStream.writeBoolean(isAutoSize(pool.context.entity));
+
         pool.serializeCollection(outStream, groups);
         pool.serializeObject(outStream, toolbarSystem);
         pool.serializeObject(outStream, filtersContainer);
@@ -139,7 +141,9 @@ public class TreeGroupView extends ComponentView implements ServerIdentitySerial
 
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
         super.customDeserialize(pool, inStream);
-        
+
+        autoSize = inStream.readBoolean();
+
         groups = pool.deserializeList(inStream);
         toolbarSystem = pool.deserializeObject(inStream);
         filtersContainer = pool.deserializeObject(inStream);
@@ -177,5 +181,14 @@ public class TreeGroupView extends ComponentView implements ServerIdentitySerial
         for (FilterView filter : getFiltersIt()) {
             filter.finalizeAroundInit();
         }
+    }
+
+    public Boolean autoSize;
+
+    public boolean isAutoSize(FormEntity entity) {
+        if(autoSize != null)
+            return autoSize;
+
+        return false;
     }
 }

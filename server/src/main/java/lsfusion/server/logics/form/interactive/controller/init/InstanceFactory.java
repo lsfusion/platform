@@ -95,8 +95,8 @@ public class InstanceFactory {
         return treeInstance;
     }
 
-    private <P extends PropertyInterface> ImMap<P, ObjectInstance> getInstanceMap(ActionOrPropertyObjectEntity<P, ?> entity) {
-        return entity.mapping.mapValues(value -> value.getInstance(InstanceFactory.this));
+    public <P extends PropertyInterface> ImRevMap<P, ObjectInstance> getInstanceMap(ActionOrPropertyObjectEntity<P, ?> entity) {
+        return entity.mapping.mapRevValues((ObjectEntity value) -> value.getInstance(InstanceFactory.this));
     }
 
     public <P extends PropertyInterface> PropertyObjectInstance<P> getInstance(PropertyObjectEntity<P> entity) {

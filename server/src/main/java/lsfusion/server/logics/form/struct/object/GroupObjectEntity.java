@@ -261,6 +261,10 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         return viewType.isPanel();
     }
 
+    public boolean isCustom() {
+        return !isPanel() && listViewType == ListViewType.CUSTOM;
+    }
+
     public Pair<Integer, Integer> getScriptIndex() {
         return scriptIndex;
     }

@@ -269,6 +269,8 @@ public class PropertyDrawView extends ComponentView {
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream) throws IOException {
         super.customSerialize(pool, outStream);
 
+        outStream.writeBoolean(isAutoSize(pool.context.entity));
+
         pool.writeString(outStream, ThreadLocalContext.localize(getCaption()));
         pool.writeString(outStream, regexp);
         pool.writeString(outStream, regexpMessage);
@@ -467,6 +469,8 @@ public class PropertyDrawView extends ComponentView {
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
         super.customDeserialize(pool, inStream);
 
+        autoSize = inStream.readBoolean();
+
         caption = LocalizedString.create(pool.readString(inStream));
         regexp = pool.readString(inStream);
         regexpMessage = pool.readString(inStream);
@@ -590,5 +594,34 @@ public class PropertyDrawView extends ComponentView {
             return FlexAlignment.START;
         }
         return valueAlignment;
+    }
+
+    public Boolean autoSize;
+
+    public boolean isAutoSize(FormEntity entity) {
+        if(autoSize != null)
+            return autoSize;
+
+        return isCustom();
+    }
+
+    protected boolean isCustom() {
+        return entity.customRenderFunction != null;
+    }
+
+    @Override
+    protected int getDefaultWidth(FormEntity entity) {
+        if(isCustom() && isAutoSize(entity))
+            return 0;
+
+        return super.getDefaultWidth(entity);
+    }
+
+    @Override
+    protected int getDefaultHeight(FormEntity entity) {
+        if(isCustom() && isAutoSize(entity))
+            return 0;
+
+        return super.getDefaultHeight(entity);
     }
 }

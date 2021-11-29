@@ -1038,8 +1038,8 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
     public Element getTableDataFocusElement() {
         if(!noScrollers)
             return tableDataScroller.getElement();
-        else
-            return tableData.tableElement;
+
+        return tableData.tableElement;
     }
 
     /**
@@ -1206,6 +1206,7 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
     }
 
     private void beforeUpdateDOMScroll(SetPendingScrollState pendingState) {
+        assert !noScrollers;
         beforeUpdateDOMScrollVertical(pendingState);
     }
 
@@ -1216,6 +1217,7 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
 
     //force browser-flush
     private void preAfterUpdateDOMScroll(SetPendingScrollState pendingState) {
+        assert !noScrollers;
         preAfterUpdateDOMScrollHorizontal(pendingState);
         preAfterUpdateDOMScrollVertical(pendingState);
     }
@@ -1318,10 +1320,16 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
     }
 
     protected int getViewportWidth() {
-        return tableDataScroller.getClientWidth();
+        if(!noScrollers)
+            return tableDataScroller.getClientWidth();
+
+        return tableData.tableElement.getClientWidth();
     }
     public int getViewportHeight() {
-        return tableDataScroller.getClientHeight();
+        if(!noScrollers)
+            return tableDataScroller.getClientHeight();
+
+        return tableData.tableElement.getClientHeight();
     }
 
     boolean hasVerticalScroll = false;

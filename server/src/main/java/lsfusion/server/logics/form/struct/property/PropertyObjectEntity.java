@@ -74,6 +74,11 @@ public class PropertyObjectEntity<P extends PropertyInterface> extends ActionOrP
         return property.getFilterInputList(mapping.filterFnValuesRev(value -> !grid.getObjects().contains(value)).mapRevValues(ObjectEntity::getParamExpr));
     }
 
+    public InputListEntity<P, P> getValuesInputList(GroupObjectEntity grid) {
+        // remapping all objects except ones in the grid
+        return new InputListEntity<>(property, mapping.filterFnValuesRev(value -> !grid.getObjects().contains(value)).keys().toRevMap());
+    }
+
     public boolean isValueUnique(GroupObjectEntity grid) {
         // remapping all objects except ones in the grid
         ImRevMap<P, StaticParamNullableExpr> fixedExprs = mapping.filterFnValuesRev(value -> !grid.getObjects().contains(value)).mapRevValues(ObjectEntity::getParamExpr);

@@ -182,7 +182,7 @@ public class FormChanges {
         }
     }
 
-    private static void serializeGroupObjectValue(DataOutputStream outStream, ImMap<ObjectInstance,? extends ObjectValue> values) throws IOException {
+    public static void serializeGroupObjectValue(DataOutputStream outStream, ImMap<ObjectInstance,? extends ObjectValue> values) throws IOException {
         outStream.writeInt(values.size());
         for (int i=0,size=values.size();i<size;i++) {
             outStream.writeInt(values.getKey(i).getID());

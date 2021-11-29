@@ -6,7 +6,11 @@ public class TreeGroupViewProxy extends ComponentViewProxy<TreeGroupView> {
     public TreeGroupViewProxy(TreeGroupView target) {
         super(target);
     }
-    
+
+    public void setAutoSize(boolean autoSize) {
+        target.autoSize = autoSize;
+    }
+
     public void setExpandOnClick(boolean expandOnClick) {
         target.expandOnClick = expandOnClick;
     }

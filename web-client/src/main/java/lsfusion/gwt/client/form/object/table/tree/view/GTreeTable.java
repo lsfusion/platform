@@ -605,7 +605,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
             checkUpdateCurrentRow();
 
-            checkSelectedRowVisible();
+//            checkSelectedRowVisible();
 
             rows = tree.updateRows(getColumnCount());
             updatePropertyReaders();

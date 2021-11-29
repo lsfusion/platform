@@ -200,8 +200,11 @@ public class GGridController extends GAbstractTableController {
     private void changeTableView(GTableView table) {
         assert isList();
 
+        if (this.table != null)
+            this.table.onClear();
+
         changeGridView(table.getThisWidget());
-        
+        table.onRender();
         this.table = table;
         updateSettingsButton();
     }
@@ -502,8 +505,8 @@ public class GGridController extends GAbstractTableController {
     public List<Pair<Column, String>> getSelectedColumns() {
         return table.getSelectedColumns();
     }
-    
-    
+
+
 
     @Override
     public void updateProperty(GPropertyDraw property, ArrayList<GGroupObjectValue> columnKeys, boolean updateKeys, NativeHashMap<GGroupObjectValue, Object> values) {

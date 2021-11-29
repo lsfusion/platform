@@ -151,8 +151,6 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
 
     protected Element setupInputElement(Element cellParent, RenderContext renderContext, Pair<Integer, Integer> renderedSize){
         Element inputElement = createInputElement();
-        // without setting boxSized class textarea and input behaviour is pretty odd when text is very large or inside td (position of textarea / input is really unpredictable)
-        inputElement.addClassName("boxSized");
 
         Style.TextAlign textAlign = property.getTextAlignStyle();
         if(textAlign != null)

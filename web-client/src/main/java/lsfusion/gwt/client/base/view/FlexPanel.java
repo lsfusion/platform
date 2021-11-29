@@ -914,7 +914,8 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
                     }
                 } else // single already stretched element we're using the inner alignment
                     mainAlignment = flexChildAlignment;
-            }
+            } else
+                mainAlignment = InnerAlignment.DIFF;
         } else // invisible, however it seems that it's needed only for columns container (which can have no children but still be visible)
             top = false;
 

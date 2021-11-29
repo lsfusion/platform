@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.base;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.event.dom.client.DomEvent;
@@ -322,11 +323,14 @@ public class GwtClientUtils {
     public static void setupPercentParent(Element element) {
         element.getStyle().setWidth(100, Style.Unit.PCT);
         element.getStyle().setHeight(100, Style.Unit.PCT);
+//        inputElement.addClassName("boxSized");
+        element.getStyle().setProperty("boxSizing", "border-box");
     }
 
     public static void clearPercentParent(Element element) {
         element.getStyle().clearWidth();
         element.getStyle().clearHeight();
+        element.getStyle().clearProperty("boxSizing");
     }
 
     public static void changePercentFillWidget(Widget widget, boolean percent) {
@@ -931,4 +935,43 @@ public class GwtClientUtils {
     public static void setZeroZIndex(Element element) {
         element.getStyle().setZIndex(0);
     }
+
+    public static native JavaScriptObject getGlobalField(String field)/*-{
+        return $wnd[field];
+    }-*/;
+    public static native JavaScriptObject getField(JavaScriptObject object, String field)/*-{
+        return object[field];
+    }-*/;
+    public static native JavaScriptObject call(JavaScriptObject object)/*-{
+        return object();
+    }-*/;
+    public static native JavaScriptObject call(JavaScriptObject object, Object param)/*-{
+        return object(param);
+    }-*/;
+    public static native JavaScriptObject newObject()/*-{
+        return {};
+    }-*/;
+    public static native void setField(JavaScriptObject object, String field, JavaScriptObject value)/*-{
+        return object[field] = value;
+    }-*/;
+
+    public static native boolean isJSObjectPropertiesEquals(JavaScriptObject object1, JavaScriptObject object2)/*-{
+        var keys = Object.keys(object1);
+        for (var i = 0; i < keys.length; i++) {
+            if (!keys[i].startsWith('#') && object1[keys[i]] !== object2[keys[i]])
+                return false;
+        }
+        return true;
+    }-*/;
+
+    public static native boolean isFunctionContainsArguments(JavaScriptObject fn)/*-{
+        var str = fn.toString().replace(/\/\*[\s\S]*?\*\//g, '')
+            .replace(/\/\/(.)*\\/g, '')
+            .replace(/{[\s\S]*}/, '')
+            .replace(/=>/g, '')
+            .trim();
+
+        return str.substring(str.indexOf("(") + 1, str.length - 1).length > 0;
+    }-*/;
+
 }

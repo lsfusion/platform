@@ -96,6 +96,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.*;
 import static lsfusion.gwt.client.base.GwtSharedUtils.putToDoubleNativeMap;
@@ -1208,24 +1209,12 @@ public class GFormController implements EditManager {
 
     private void applyCurrentFilters() {
         ArrayList<GPropertyFilterDTO> filters = new ArrayList<>();
-
-        currentFilters.foreachValue(groupFilters -> {
-            for (GPropertyFilter filter : groupFilters) {
-                filters.add(filter.getFilterDTO());
-            }
-        });
-
+        currentFilters.foreachValue(groupFilters -> groupFilters.stream().map(GPropertyFilter::getFilterDTO).collect(Collectors.toCollection(() -> filters)));
         asyncResponseDispatch(new SetUserFilters(filters));
     }
 
     public void setViewFilters(ArrayList<GPropertyFilter> conditions, int pageSize) {
-        ArrayList<GPropertyFilterDTO> filters = new ArrayList<>();
-
-        for (GPropertyFilter filter : conditions) {
-            filters.add(filter.getFilterDTO());
-        }
-
-        asyncResponseDispatch(new SetViewFilters(filters, pageSize));
+        asyncResponseDispatch(new SetViewFilters(conditions.stream().map(GPropertyFilter::getFilterDTO).collect(Collectors.toCollection(ArrayList::new)), pageSize));
     }
 
     public void quickFilter(Event event, int initialFilterPropertyID) {
@@ -1868,46 +1857,47 @@ public class GFormController implements EditManager {
     }
 
     public void getAsyncValues(String value, AsyncCallback<Pair<ArrayList<GAsync>, Boolean>> callback) {
-        if(editContext != null) { // just in case
-            GPropertyDraw property = editContext.getProperty();
-            int editIndex = editAsyncIndex++;
-            AsyncCallback<Pair<ArrayList<GAsync>, Boolean>> fCallback = checkLast(editIndex, callback);
+        if(editContext != null) // just in case
+            getAsyncValues(value, editContext.getProperty(), editContext.getColumnKey(), editAsyncValuesSID, callback);
+    }
 
-            GGroupObjectValue currentKey = getFullCurrentKey(property, editContext.getColumnKey());
-            final String actionSID = editAsyncValuesSID;
+    public void getAsyncValues(String value, GPropertyDraw property, GGroupObjectValue columnKey, String actionSID, AsyncCallback<Pair<ArrayList<GAsync>, Boolean>> callback) {
+        int editIndex = editAsyncIndex++;
+        AsyncCallback<Pair<ArrayList<GAsync>, Boolean>> fCallback = checkLast(editIndex, callback);
 
-            if (!editAsyncUsePessimistic)
-                dispatcher.executePriority(new GetPriorityAsyncValues(property.ID, currentKey, actionSID, value, editIndex), new PriorityAsyncCallback<ListResult>() {
-                    @Override
-                    public void onFailure(Throwable caught) {
-                        fCallback.onFailure(caught);
-                    }
+        GGroupObjectValue currentKey = getFullCurrentKey(property, columnKey);
 
-                    @Override
-                    public void onSuccess(ListResult result) {
-                        if (result.value == null) { // optimistic request failed, running pessimistic one, with request indices, etc.
-                            editAsyncUsePessimistic = true;
-                            getPessimisticValues(property.ID, currentKey, actionSID, value, editIndex, fCallback);
-                        } else {
-                            boolean moreResults = false;
-                            ArrayList<GAsync> values = result.value;
-                            if(values.size() > 0) {
-                                GAsync lastResult = values.get(values.size() - 1);
-                                if(lastResult.equals(GAsync.RECHECK)) {
-                                    values = removeLast(values);
+        if (!editAsyncUsePessimistic)
+            dispatcher.executePriority(new GetPriorityAsyncValues(property.ID, currentKey, actionSID, value, editIndex), new PriorityAsyncCallback<ListResult>() {
+                @Override
+                public void onFailure(Throwable caught) {
+                    fCallback.onFailure(caught);
+                }
 
-                                    moreResults = true;
-                                    getPessimisticValues(property.ID, currentKey, actionSID, value, editIndex, fCallback);
-                                } else if(values.size() == 1 && lastResult.equals(GAsync.CANCELED)) // ignoring CANCELED results
-                                    return;
-                            }
-                            fCallback.onSuccess(new Pair<>(values, moreResults));
+                @Override
+                public void onSuccess(ListResult result) {
+                    if (result.value == null) { // optimistic request failed, running pessimistic one, with request indices, etc.
+                        editAsyncUsePessimistic = true;
+                        getPessimisticValues(property.ID, currentKey, actionSID, value, editIndex, fCallback);
+                    } else {
+                        boolean moreResults = false;
+                        ArrayList<GAsync> values = result.value;
+                        if(values.size() > 0) {
+                            GAsync lastResult = values.get(values.size() - 1);
+                            if(lastResult.equals(GAsync.RECHECK)) {
+                                values = removeLast(values);
+
+                                moreResults = true;
+                                getPessimisticValues(property.ID, currentKey, actionSID, value, editIndex, fCallback);
+                            } else if(values.size() == 1 && lastResult.equals(GAsync.CANCELED)) // ignoring CANCELED results
+                                return;
                         }
+                        fCallback.onSuccess(new Pair<>(values, moreResults));
                     }
-                });
-            else
-                getPessimisticValues(property.ID, currentKey, actionSID, value, editIndex, fCallback);
-        }
+                }
+            });
+        else
+            getPessimisticValues(property.ID, currentKey, actionSID, value, editIndex, fCallback);
     }
 
     public void editProperty(GType type, Event event, boolean hasOldValue, Object oldValue, GInputList inputList, BiConsumer<GUserInputResult, Long> afterCommit, Runnable cancel, EditContext editContext, String actionSID, Long dispatchingIndex) {

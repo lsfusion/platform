@@ -10,6 +10,8 @@ public class GGrid extends GComponent {
     public boolean quickSearch;
     public int headerHeight;
 
+    public boolean autoSize;
+
     public GContainer record;
 
     public int lineWidth;
