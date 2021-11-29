@@ -1,7 +1,10 @@
 package lsfusion.gwt.client.form.controller;
 
 import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.dom.client.*;
+import com.google.gwt.dom.client.BrowserEvents;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.EventTarget;
+import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.*;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
@@ -998,7 +1001,7 @@ public class GFormController implements EditManager {
                 GAsyncExec actionAsync = asyncChange.inputList.actionAsyncs[contextAction];
                 if (actionAsync != null) actionAsync.exec(getAsyncFormController(requestIndex), formsController);
             }
-        }, () -> {}, editContext, actionSID, null);
+        }, cancelReason -> {}, editContext, actionSID, null);
     }
 
     public void asyncOpenForm(GAsyncOpenForm asyncOpenForm, EditContext editContext, Event editEvent, String actionSID) {
@@ -1804,7 +1807,7 @@ public class GFormController implements EditManager {
 
     private BiConsumer<GUserInputResult, CommitReason> editBeforeCommit;
     private BiConsumer<GUserInputResult, CommitReason> editAfterCommit;
-    private Runnable editCancel;
+    private Consumer<CancelReason> editCancel;
 
     private Element focusedElement;
     private Object forceSetFocus;
@@ -1900,7 +1903,7 @@ public class GFormController implements EditManager {
             getPessimisticValues(property.ID, currentKey, actionSID, value, editIndex, fCallback);
     }
 
-    public void editProperty(GType type, Event event, boolean hasOldValue, Object oldValue, GInputList inputList, BiConsumer<GUserInputResult, Long> afterCommit, Runnable cancel, EditContext editContext, String actionSID, Long dispatchingIndex) {
+    public void editProperty(GType type, Event event, boolean hasOldValue, Object oldValue, GInputList inputList, BiConsumer<GUserInputResult, Long> afterCommit, Consumer<CancelReason> cancel, EditContext editContext, String actionSID, Long dispatchingIndex) {
         lsfusion.gwt.client.base.Result<Long> requestIndex = new lsfusion.gwt.client.base.Result<>();
         edit(type, event, hasOldValue, oldValue, inputList, // actually it's assumed that actionAsyncs is used only here, in all subsequent calls it should not be referenced
                 (inputResult, commitReason) -> {
@@ -1921,7 +1924,7 @@ public class GFormController implements EditManager {
     }
 
     public void edit(GType type, Event event, boolean hasOldValue, Object oldValue, GInputList inputList, BiConsumer<GUserInputResult, CommitReason> beforeCommit, BiConsumer<GUserInputResult, CommitReason> afterCommit,
-                     Runnable cancel, EditContext editContext, String editAsyncValuesSID) {
+                     Consumer<CancelReason> cancel, EditContext editContext, String editAsyncValuesSID) {
         assert this.editContext == null;
         GPropertyDraw property = editContext.getProperty();
 
@@ -1965,7 +1968,7 @@ public class GFormController implements EditManager {
             this.cellEditor = cellEditor; // not sure if it should before or after startEditing, but definitely after removeAllChildren, since it leads to blur for example
             cellEditor.start(event, element, oldValue);
         } else
-            cancel.run();
+            cancel.accept(CancelReason.OTHER);
     }
 
     // only request cell editor can be long-living
@@ -1986,10 +1989,10 @@ public class GFormController implements EditManager {
     }
 
     @Override
-    public void cancelEditing() {
+    public void cancelEditing(CancelReason cancelReason) {
         finishEditing(false, true);
 
-        editCancel.run();
+        editCancel.accept(cancelReason);
         editCancel = null;
     }
 

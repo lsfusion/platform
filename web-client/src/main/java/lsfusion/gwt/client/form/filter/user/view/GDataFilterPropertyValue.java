@@ -8,6 +8,7 @@ import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.property.async.GAsyncExec;
 import lsfusion.gwt.client.form.property.async.GInputList;
 import lsfusion.gwt.client.form.property.cell.classes.controller.suggest.GCompletionType;
+import lsfusion.gwt.client.form.property.cell.controller.CancelReason;
 import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
 import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
 import lsfusion.gwt.client.form.property.panel.view.ActionOrPropertyValue;
@@ -19,13 +20,13 @@ import java.util.function.Consumer;
 public class GDataFilterPropertyValue extends ActionOrPropertyValue {
 
     private final Consumer<Object> afterCommit;
-    private final Runnable onCancel;
+    private final Consumer<CancelReason> onCancel;
     
     private GInputList inputList;
     
     public boolean enterPressed;
 
-    public GDataFilterPropertyValue(GPropertyFilter condition, GFormController form, Consumer<Object> afterCommit, Runnable onCancel) {
+    public GDataFilterPropertyValue(GPropertyFilter condition, GFormController form, Consumer<Object> afterCommit, Consumer<CancelReason> onCancel) {
         super(condition.property, condition.columnKey, form, false, (columnKeyValue, value) -> {});
         this.afterCommit = afterCommit;
         this.onCancel = onCancel;

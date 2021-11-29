@@ -3,6 +3,7 @@ package lsfusion.gwt.client.form.property.cell.classes.controller;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Element;
 import lsfusion.gwt.client.controller.SmartScheduler;
+import lsfusion.gwt.client.form.property.cell.controller.CancelReason;
 import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
@@ -28,7 +29,11 @@ public abstract class ARequestValueCellEditor implements RequestValueCellEditor 
 
     // force cancel
     public void cancel(Element parent) {
-        editManager.cancelEditing();
+        cancel(parent, CancelReason.FORCED);
+    }
+
+    public void cancel(Element parent, CancelReason cancelReason) {
+        editManager.cancelEditing(cancelReason);
     }
 
     private boolean deferredCommitOnBlur = false;
