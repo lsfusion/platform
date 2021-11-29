@@ -1,0 +1,101 @@
+.chat-message {
+    margin: 6px;
+    border: 1px solid;
+    border-radius: 10px;
+    padding: 6px;
+
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-header {
+    display: flex;
+    align-content: stretch;
+    justify-content: space-around;
+}
+
+.chat-author {
+    font-weight: bold
+}
+
+.chat-reply-action {
+    cursor: pointer;
+    margin-left: 4px;
+}
+
+.chat-reply {
+    display: flex;
+}
+
+.chat-reply-content {
+    border-left: 2px solid;
+    padding-left: 4px;
+    margin: 4px;
+    border-color: blue;
+    cursor: pointer;
+    flex: 1;
+}
+
+.chat-reply-author {
+    color: grey
+}
+
+.chat-reply-text {
+    white-space: nowrap;
+    max-height: 100px;
+    overflow: clip;
+}
+.chat-reply-text>p {
+    margin-block-start: 0px;
+    margin-block-end: 0px;
+}
+
+.chat-reply-remove {
+    justify-content: flex-end;
+    align-items: center;
+    display: flex;
+    cursor: pointer;
+    margin-right: 10px;
+}
+
+.chat-attachments {
+    display: flex;
+    margin: 4px;
+}
+
+a.chat-message-attachment {
+    margin-left: 4px;
+    margin-left: 2px;
+    align-self: center;
+    cursor: pointer;
+}
+
+.chat-message-attachment-delete {
+    float: right;
+    display: inline-block;
+    background: #ccc;
+    cursor: pointer;
+    padding: 2px 5px;
+}
+
+.chat-message-own {
+    background-color: lightblue;
+    margin-left: 100px;
+}
+
+.chat-time {
+    color: grey
+}
+
+div[lsfusion-container="chat"] .dataGridCell {
+    border-bottom: none !important;
+}
+
+.chat-message-input {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    align-self: stretch;
+    max-height: 300px;
+    min-height: 90px;
+}
