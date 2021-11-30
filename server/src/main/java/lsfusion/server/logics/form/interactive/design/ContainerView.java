@@ -31,7 +31,7 @@ public class ContainerView extends ComponentView {
     public NFOrderSet<ComponentView> children = NFFact.orderSet();
 
     public LocalizedString caption;
-    public boolean collapsible = true;
+    public Boolean collapsible;
 
     private ContainerType type = ContainerType.CONTAINERV;
     private boolean horizontal;
@@ -86,6 +86,14 @@ public class ContainerView extends ComponentView {
 
     public void setCaption(LocalizedString caption) {
         this.caption = caption;
+    }
+    
+    public void setCollapsible(boolean collapsible) {
+        this.collapsible = collapsible;
+    }
+    
+    public boolean isCollapsible() {
+        return collapsible != null ? collapsible : caption != null;
     }
 
     public boolean isTabbed() {
@@ -319,7 +327,7 @@ public class ContainerView extends ComponentView {
 
         pool.writeString(outStream, ThreadLocalContext.localize(caption));
 
-        outStream.writeBoolean(collapsible);
+        outStream.writeBoolean(isCollapsible());
 //        pool.writeObject(outStream, main);
 
         pool.writeBoolean(outStream, isHorizontal());

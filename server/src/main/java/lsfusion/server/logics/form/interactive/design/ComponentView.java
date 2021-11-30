@@ -252,7 +252,7 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
     }
     public ContainerView getTabbedContainer() { // when it is known that component is a tab of a tabbed pane
         ContainerView container = getContainer();
-        assert container.isTabbed() || container.collapsible;
+        assert container.isTabbed() || container.isCollapsible();
         return container;
     }
     public ContainerView getLayoutParamContainer() { // for using in default layouting parameters
@@ -282,7 +282,7 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
                 return parent;
             if (parentContainer.isTabbed())
                 return this;
-            if (parentContainer.collapsible)
+            if (parentContainer.isCollapsible())
                 return this;
         }
         return parent.getLocalHideableContainer();
@@ -298,7 +298,7 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
                 return null;
             if (((ContainerView)parent).isTabbed())
                 return this;
-            if (((ContainerView)parent).collapsible)
+            if (((ContainerView)parent).isCollapsible())
                 return this;
         }
         return parent.getTabHiddenContainer();

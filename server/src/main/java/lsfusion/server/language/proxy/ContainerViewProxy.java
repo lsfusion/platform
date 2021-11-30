@@ -27,7 +27,7 @@ public class ContainerViewProxy extends ComponentViewProxy<ContainerView> {
     }
     
     public void setCollapsible(boolean collapsible) {
-        target.collapsible = collapsible;
+        target.setCollapsible(collapsible);
     }
 
     public void setType(ContainerType type) {
