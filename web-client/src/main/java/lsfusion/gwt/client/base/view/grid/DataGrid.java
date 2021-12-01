@@ -1463,7 +1463,7 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
         if (renderedSelectedRow >= 0 && renderedSelectedRow <= rows.getLength() && renderedSelectedCol >= 0 && renderedSelectedCol < columnCount &&
                 (renderedSelectedRow != newLocalSelectedRow || renderedSelectedCol != newLocalSelectedCol)) {
             setFocusedCellStyles(renderedSelectedRow, renderedSelectedCol, rows, headerRows, false);
-            if(renderedLeftStickyCol >= 0 && renderedLeftStickyCol < columnCount) {
+            if(renderedSelectedRow < rows.getLength() && renderedLeftStickyCol >= 0 && renderedLeftStickyCol < columnCount) {
                 setLeftNeighbourRightBorder(new LeftNeighbourRightBorder(renderedSelectedRow, renderedLeftStickyCol, false));
                 renderedLeftStickyCol = -1;
             }
