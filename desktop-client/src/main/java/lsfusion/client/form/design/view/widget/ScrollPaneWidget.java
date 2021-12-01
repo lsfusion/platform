@@ -11,6 +11,8 @@ import java.util.function.Supplier;
 
 public class ScrollPaneWidget extends JScrollPane implements Widget {
 
+    public static boolean calcMaxPrefSize;
+
     public ScrollPaneWidget(Component view) {
         super(view);
 
@@ -30,7 +32,7 @@ public class ScrollPaneWidget extends JScrollPane implements Widget {
         if(wrapFlexPanel != null) {
 //            assert oppositeStretchFixedFlexPanel == getViewport().getView();
             assert wrapFlexPanel.wrapScrollPane == this;
-            return preferredLayoutSize(this, wrapFlexPanel::getDefaultPreferredSize); // we call getDefaultPreferredSize to use getPreferredSize instead of getFlexPreferredSize in FlexPanel
+            return preferredLayoutSize(this, calcMaxPrefSize ? wrapFlexPanel::getMaxPreferredSize : wrapFlexPanel::getDefaultPreferredSize); // we call getDefaultPreferredSize to use getPreferredSize instead of getFlexPreferredSize in FlexPanel
         }
         return super.getPreferredSize();
     }

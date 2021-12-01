@@ -7,6 +7,7 @@ import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.design.ClientContainer;
 import lsfusion.client.form.design.view.flex.LinearClientContainerView;
 import lsfusion.client.form.design.view.widget.PanelWidget;
+import lsfusion.client.form.design.view.widget.ScrollPaneWidget;
 import lsfusion.client.form.design.view.widget.Widget;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.view.MainFrame;
@@ -19,8 +20,14 @@ import java.util.Map;
 
 public class ClientFormLayout extends PanelWidget {
 
-    public Dimension getMaxPreferredSize() {
-        return AbstractClientContainerView.getMaxPreferredSize(mainContainer,containerViews, false); // в BOX container'е берем явный size (предполагая что он используется не как базовый размер с flex > 0, а конечный)
+    public Dimension getMaxPreferredSize(int extraHorzOffset, int extraVertOffset) {
+        try {
+            ScrollPaneWidget.calcMaxPrefSize = true;
+            Dimension maxPrefSize = AbstractClientContainerView.getMaxPreferredSize(mainContainer,containerViews, false); // в BOX container'е берем явный size (предполагая что он используется не как базовый размер с flex > 0, а конечный)
+            return new Dimension(maxPrefSize.width + extraHorzOffset, maxPrefSize.height + extraVertOffset);
+        } finally {
+            ScrollPaneWidget.calcMaxPrefSize = false;
+        }
     }
 
     private final ClientFormController form;

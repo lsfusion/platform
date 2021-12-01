@@ -148,6 +148,9 @@ public class ClientModalForm extends JDialog {
         }
     }
 
+    public static int nativeScrollbarWidth = UIManager.getInt("ScrollBar.width");
+    public static int nativeScrollbarHeight = UIManager.getInt("ScrollBar.height"); //there is no property "ScrollBar.height"
+
     public Dimension calculateMaxPreferredSize(boolean undecorated) {
         //сначала нужно провалидейтать все компоненты, чтобы отработала логика autohide
 //        form.getLayout().preValidateMainContainer();
@@ -156,7 +159,13 @@ public class ClientModalForm extends JDialog {
         if(async) {
             return new Dimension(800, 600);
         } else {
-            Dimension preferredSize = form.getLayout().getMaxPreferredSize();
+
+            // there are 2 problems : rounding (we need to round up), however it coukd be fixed differently
+            // since we are changing for example grid basises (by changing fill to percent), we can get extra scrollbars in grids (which is not what we want), so we just add some extraOffset
+            int extraHorzOffset = nativeScrollbarWidth * 2;
+            int extraVertOffset = nativeScrollbarHeight * 2;
+
+            Dimension preferredSize = form.getLayout().getMaxPreferredSize(extraHorzOffset, extraVertOffset);
 
             // так как у нас есть только size самого contentPane, а нам нужен у JDialog
             // сколько будет занимать все "рюшечки" вокруг contentPane мы посчитать не можем, поскольку
