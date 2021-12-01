@@ -134,16 +134,22 @@ public class PropertyDrawView extends ComponentView {
         return entity.isProperty();
     }
 
-    public int getValueWidth() {
+    public int getValueWidth(FormEntity entity) {
         if(valueWidth != null)
             return valueWidth;
+
+        if(isCustom() && isAutoSize(entity))
+            return 0;
 
         return -1;
     }
 
-    public int getValueHeight() {
+    public int getValueHeight(FormEntity entity) {
         if(valueHeight != null)
             return valueHeight;
+
+        if(isCustom() && isAutoSize(entity))
+            return 0;
 
         return -1;
     }
@@ -288,8 +294,8 @@ public class PropertyDrawView extends ComponentView {
         outStream.writeInt(getCharHeight());
         outStream.writeInt(getCharWidth());
 
-        outStream.writeInt(getValueWidth());
-        outStream.writeInt(getValueHeight());
+        outStream.writeInt(getValueWidth(pool.context.entity));
+        outStream.writeInt(getValueHeight(pool.context.entity));
 
         pool.writeObject(outStream, changeKey);
         pool.writeInt(outStream, changeKeyPriority);
@@ -607,21 +613,5 @@ public class PropertyDrawView extends ComponentView {
 
     protected boolean isCustom() {
         return entity.customRenderFunction != null;
-    }
-
-    @Override
-    protected int getDefaultWidth(FormEntity entity) {
-        if(isCustom() && isAutoSize(entity))
-            return 0;
-
-        return super.getDefaultWidth(entity);
-    }
-
-    @Override
-    protected int getDefaultHeight(FormEntity entity) {
-        if(isCustom() && isAutoSize(entity))
-            return 0;
-
-        return super.getDefaultHeight(entity);
     }
 }
