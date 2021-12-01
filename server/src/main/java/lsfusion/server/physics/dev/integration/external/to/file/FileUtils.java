@@ -260,6 +260,8 @@ public class FileUtils {
 
     private static boolean mkdirSFTP(String path) throws JSchException, SftpException {
         FTPPath ftpPath = FTPPath.parseSFTPPath(path);
+        ftpPath.remoteFile = ftpPath.remoteFile.replace("\\", "/");
+        ftpPath.remoteFile = (!ftpPath.remoteFile.startsWith("/") ? "/" : "") + ftpPath.remoteFile;
 
         Session session = null;
         Channel channel = null;
@@ -277,7 +279,7 @@ public class FileUtils {
             channelSftp = (ChannelSftp) channel;
             if (ftpPath.charset != null)
                 channelSftp.setFilenameEncoding(ftpPath.charset);
-            channelSftp.mkdir(ftpPath.remoteFile.replace("\\", "/"));
+            channelSftp.mkdir(ftpPath.remoteFile);
             return true;
         } finally {
             if (channelSftp != null)
