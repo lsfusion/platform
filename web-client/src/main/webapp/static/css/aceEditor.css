@@ -6,3 +6,7 @@
     background: var(--background-color);
     color: var(--text-color);
 }
+
+.ace_gutter {
+    z-index: unset;
+}
