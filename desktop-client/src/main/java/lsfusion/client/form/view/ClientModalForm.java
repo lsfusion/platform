@@ -98,7 +98,7 @@ public class ClientModalForm extends JDialog {
 
         setSize(clipToScreen(showFullScreen
                              ? new Dimension(10000, 10000)
-                             : calculateMaxPreferredSize(isUndecorated())));
+                             : calculatePreferredSize(isUndecorated())));
 
         if (onScreen != null) {
             requestLocation(this, onScreen);
@@ -151,7 +151,7 @@ public class ClientModalForm extends JDialog {
     public static int nativeScrollbarWidth = UIManager.getInt("ScrollBar.width");
     public static int nativeScrollbarHeight = UIManager.getInt("ScrollBar.height"); //there is no property "ScrollBar.height"
 
-    public Dimension calculateMaxPreferredSize(boolean undecorated) {
+    public Dimension calculatePreferredSize(boolean undecorated) {
         //сначала нужно провалидейтать все компоненты, чтобы отработала логика autohide
 //        form.getLayout().preValidateMainContainer();
 

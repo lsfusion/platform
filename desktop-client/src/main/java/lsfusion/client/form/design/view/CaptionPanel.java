@@ -36,14 +36,6 @@ public class CaptionPanel extends FlexPanel {
 //            super.validateTree();
 //        }
 
-    public Dimension getMaxPreferredSize() {
-        return adjustMaxPreferredSize(AbstractClientContainerView.calculateMaxPreferredSize((Widget)getComponent(1)));
-    }
-
-    public Dimension adjustMaxPreferredSize(Dimension dimension) {
-        return new Dimension(dimension.width + 5, dimension.height + /*legend.getOffsetHeight() + */5);
-    }
-
     public void setCaption(String caption) {
 //            titledBorder.setTitle(caption);
 //            repaint()

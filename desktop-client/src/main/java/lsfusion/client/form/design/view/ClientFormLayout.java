@@ -10,6 +10,7 @@ import lsfusion.client.form.design.view.widget.PanelWidget;
 import lsfusion.client.form.design.view.widget.ScrollPaneWidget;
 import lsfusion.client.form.design.view.widget.Widget;
 import lsfusion.client.form.object.ClientGroupObject;
+import lsfusion.client.form.object.table.grid.view.GridView;
 import lsfusion.client.view.MainFrame;
 
 import javax.swing.*;
@@ -21,12 +22,15 @@ import java.util.Map;
 public class ClientFormLayout extends PanelWidget {
 
     public Dimension getMaxPreferredSize(int extraHorzOffset, int extraVertOffset) {
+        Integer width = mainContainer.getSize(false);
+        Integer height = mainContainer.getSize(true);
+
         try {
-            ScrollPaneWidget.calcMaxPrefSize = true;
-            Dimension maxPrefSize = AbstractClientContainerView.getMaxPreferredSize(mainContainer,containerViews, false); // в BOX container'е берем явный size (предполагая что он используется не как базовый размер с flex > 0, а конечный)
-            return new Dimension(maxPrefSize.width + extraHorzOffset, maxPrefSize.height + extraVertOffset);
+            GridView.calcMaxPrefSize = true;
+            Dimension maxPrefSize = containerViews.get(mainContainer).getView().getPreferredSize();
+            return new Dimension(maxPrefSize.width + (width != null ? 0 : extraHorzOffset), maxPrefSize.height + (height != null ? 0 : extraVertOffset));
         } finally {
-            ScrollPaneWidget.calcMaxPrefSize = false;
+            GridView.calcMaxPrefSize = false;
         }
     }
 
