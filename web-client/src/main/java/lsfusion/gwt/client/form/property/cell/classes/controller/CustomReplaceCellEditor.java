@@ -3,6 +3,7 @@ package lsfusion.gwt.client.form.property.cell.classes.controller;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -78,9 +79,9 @@ public class CustomReplaceCellEditor extends RequestReplaceValueCellEditor imple
         return new CustomReplaceCellEditor(editManager, property, "", customEditor);
     }
 
-    public static native JavaScriptObject getCustomFunction(String customEditorFunction)/*-{
-        return $wnd[customEditorFunction]();
-    }-*/;
+    public static JavaScriptObject getCustomFunction(String customEditorFunction) {
+        return GwtClientUtils.call(GwtClientUtils.getGlobalField(customEditorFunction));
+    }
 
     // COMMON METHODS
 

@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.base;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.event.dom.client.DomEvent;
@@ -305,9 +306,41 @@ public class GwtClientUtils {
         childStyle.setRight(0, Style.Unit.PX);
     }
 
+    public static void clearFillParent(Element child) {
+        Element parentElement = child.getParentElement();
+        String parentPosition = parentElement.getStyle().getPosition();
+        if (parentPosition != null && parentPosition.equals(Style.Position.RELATIVE.getCssName()))
+            parentElement.getStyle().clearPosition();
+
+        Style childStyle = child.getStyle();
+        childStyle.clearPosition();
+        childStyle.clearTop();
+        childStyle.clearLeft();
+        childStyle.clearBottom();
+        childStyle.clearRight();
+    }
+
     public static void setupPercentParent(Element element) {
         element.getStyle().setWidth(100, Style.Unit.PCT);
         element.getStyle().setHeight(100, Style.Unit.PCT);
+//        inputElement.addClassName("boxSized");
+        element.getStyle().setProperty("boxSizing", "border-box");
+    }
+
+    public static void clearPercentParent(Element element) {
+        element.getStyle().clearWidth();
+        element.getStyle().clearHeight();
+        element.getStyle().clearProperty("boxSizing");
+    }
+
+    public static void changePercentFillWidget(Widget widget, boolean percent) {
+        if(percent) {
+            GwtClientUtils.clearFillParent(widget.getElement());
+            GwtClientUtils.setupPercentParent(widget.getElement());
+        } else {
+            GwtClientUtils.clearPercentParent(widget.getElement());
+            GwtClientUtils.setupFillParent(widget.getElement());
+        }
     }
 
     public static Dimension getOffsetSize(Widget widget) {
@@ -316,39 +349,6 @@ public class GwtClientUtils {
 
     public static Dimension getOffsetSize(Widget widget, int widthExtra, int heightExtra) {
         return new Dimension(widget.getOffsetWidth() + widthExtra, widget.getOffsetHeight() + heightExtra);
-    }
-
-    public static Dimension calculateMaxPreferredSize(Widget widget) { // тут как и в AbstractClientContainerView.getMaxPreferredSize возможно нужна проверка на isVisible
-        if (widget instanceof HasMaxPreferredSize) {
-            return ((HasMaxPreferredSize) widget).getMaxPreferredSize();
-        } else {
-            return new Dimension(widget.getOffsetWidth(), widget.getOffsetHeight());
-        }
-    }
-
-    public static Dimension calculateStackMaxPreferredSize(Iterator<Widget> widgets, boolean vertical) {
-        int width = 0;
-        int height = 0;
-        while (widgets.hasNext()) {
-            Widget childView = widgets.next();
-            if (childView.isVisible()) {
-                Dimension childSize = calculateMaxPreferredSize(childView);
-                if (vertical) {
-                    width = max(width, childSize.width);
-                    height += childSize.height;
-                } else {
-                    width += childSize.width;
-                    height = max(height, childSize.height);
-                }
-            }
-        }
-        return new Dimension(width, height);
-    }
-
-    public static Dimension enlargeDimension(Dimension dim, int extraWidth, int extraHeight) {
-        dim.width += extraWidth;
-        dim.height += extraHeight;
-        return dim;
     }
 
     public static void showPopupInWindow(PopupDialogPanel popup, Widget widget, int mouseX, int mouseY) {
@@ -930,4 +930,48 @@ public class GwtClientUtils {
         int index = filename.lastIndexOf(".");
         return (index == -1) ? "" : filename.substring(index + 1);
     }
+
+    // need this because views like leaflet and some others uses z-indexes and therefore dialogs for example are shown below layers,
+    public static void setZeroZIndex(Element element) {
+        element.getStyle().setZIndex(0);
+    }
+
+    public static native JavaScriptObject getGlobalField(String field)/*-{
+        return $wnd[field];
+    }-*/;
+    public static native JavaScriptObject getField(JavaScriptObject object, String field)/*-{
+        return object[field];
+    }-*/;
+    public static native JavaScriptObject call(JavaScriptObject object)/*-{
+        return object();
+    }-*/;
+    public static native JavaScriptObject call(JavaScriptObject object, Object param)/*-{
+        return object(param);
+    }-*/;
+    public static native JavaScriptObject newObject()/*-{
+        return {};
+    }-*/;
+    public static native void setField(JavaScriptObject object, String field, JavaScriptObject value)/*-{
+        return object[field] = value;
+    }-*/;
+
+    public static native boolean isJSObjectPropertiesEquals(JavaScriptObject object1, JavaScriptObject object2)/*-{
+        var keys = Object.keys(object1);
+        for (var i = 0; i < keys.length; i++) {
+            if (!keys[i].startsWith('#') && object1[keys[i]] !== object2[keys[i]])
+                return false;
+        }
+        return true;
+    }-*/;
+
+    public static native boolean isFunctionContainsArguments(JavaScriptObject fn)/*-{
+        var str = fn.toString().replace(/\/\*[\s\S]*?\*\//g, '')
+            .replace(/\/\/(.)*\\/g, '')
+            .replace(/{[\s\S]*}/, '')
+            .replace(/=>/g, '')
+            .trim();
+
+        return str.substring(str.indexOf("(") + 1, str.length - 1).length > 0;
+    }-*/;
+
 }

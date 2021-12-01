@@ -5,10 +5,11 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.ResizableSimplePanel;
 import lsfusion.gwt.client.classes.data.GLogicalType;
+import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.filter.user.GDataFilterValue;
-import lsfusion.gwt.client.form.object.GGroupObjectValue;
+import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.object.table.controller.GTableController;
-import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.cell.controller.CancelReason;
 
 import java.io.Serializable;
 
@@ -28,18 +29,18 @@ public class GDataFilterValueView extends ResizableSimplePanel {
         addStyleName("userFilterDataPropertyValue");
     }
 
-    public void changeProperty(GPropertyDraw property, GGroupObjectValue columnKey) {
+    public void changeProperty(GPropertyFilter condition) {
         filterValue.value = null;
-        changeProperty(property, columnKey, true);
+        changeProperty(condition, true);
     }
 
-    public void changeProperty(GPropertyDraw property, GGroupObjectValue columnKey, boolean readSelectedValue) {
-        cell = new GDataFilterPropertyValue(property, columnKey, logicsSupplier.getForm(), this::valueChanged, this::editingCancelled);
+    public void changeProperty(GPropertyFilter condition, boolean readSelectedValue) {
+        cell = new GDataFilterPropertyValue(condition, logicsSupplier.getForm(), this::valueChanged, this::editingCancelled);
         
         cell.setStatic(this, true);
 
         if (readSelectedValue) {
-            cell.updateValue(logicsSupplier.getSelectedValue(property, columnKey));
+            cell.updateValue(logicsSupplier.getSelectedValue(condition.property, condition.columnKey));
         } else {
             cell.updateValue(filterValue.value);
         }
@@ -49,7 +50,11 @@ public class GDataFilterValueView extends ResizableSimplePanel {
         filterValue.value = (Serializable) value;
     }
     
-    public void editingCancelled() {
+    public void changeCompare(GCompare compare) {
+        cell.changeInputList(compare);
+    }
+    
+    public void editingCancelled(CancelReason cancelReason) {
         cell.updateValue(filterValue.value);
     }
 
@@ -58,7 +63,7 @@ public class GDataFilterValueView extends ResizableSimplePanel {
     }
 
     public void startEditing(Event keyEvent) {
-        if (GwtClientUtils.isShowing(cell)) { // suggest box may appear in (0,0) if filter is already gone (as it's called in scheduleDeferred)
+        if (GwtClientUtils.isShowing(cell) && !logicsSupplier.getForm().isEditing()) { // suggest box may appear in (0,0) if filter is already gone (as it's called in scheduleDeferred)
             if (!(cell.getProperty().baseType instanceof GLogicalType)) {
                 if (isAddUserFilterKeyEvent(keyEvent) || isReplaceUserFilterKeyEvent(keyEvent)) {
                     cell.startEditing(keyEvent);
@@ -70,5 +75,9 @@ public class GDataFilterValueView extends ResizableSimplePanel {
                 filterValue.value = (Serializable) cell.getValue();
             }
         }
+    }
+
+    public void setApplied(boolean applied) {
+        cell.setApplied(applied);
     }
 }

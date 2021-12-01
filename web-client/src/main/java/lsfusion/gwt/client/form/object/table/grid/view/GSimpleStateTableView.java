@@ -4,8 +4,11 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.base.GAsync;
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.view.ColorUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
@@ -15,6 +18,7 @@ import lsfusion.gwt.client.classes.data.GIntegralType;
 import lsfusion.gwt.client.classes.data.GLogicalType;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.filter.user.GCompare;
+import lsfusion.gwt.client.form.filter.user.GFilter;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
@@ -23,10 +27,14 @@ import lsfusion.gwt.client.form.property.cell.classes.GDateDTO;
 import lsfusion.gwt.client.form.property.cell.classes.GDateTimeDTO;
 import lsfusion.gwt.client.form.view.Column;
 import lsfusion.gwt.client.view.StyleDefaults;
+import lsfusion.interop.action.ServerResponse;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import static lsfusion.gwt.client.base.view.grid.DataGrid.initSinkEvents;
 
@@ -34,14 +42,11 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
 
     protected final JavaScriptObject controller;
 
-    private final GFormController formController;
-
     public GSimpleStateTableView(GFormController form, GGridController grid) {
         super(form, grid);
 
         this.controller = getController();
-        this.formController = form;
-        getDrawElement().getStyle().setProperty("zIndex", "0"); // need this because views like leaflet and some others uses z-indexes and therefore dialogs for example are shown below layers
+        GwtClientUtils.setZeroZIndex(getDrawElement());
 
         getElement().setTabIndex(0);
         initSinkEvents(this);
@@ -64,7 +69,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
                 handler -> {}, // no edit
                 handler -> {}, // no outer context
                 handler -> {}, handler -> {}, // no copy / paste for now
-                false
+                false, true
         );
     }
 
@@ -80,10 +85,10 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         if(popupObject != null && !isCurrentKey(popupKey)) // if another current key set hiding popup
             hidePopup();
 
-        render(getDrawElement(), list);
+        onUpdate(getDrawElement(), list);
     }
 
-    protected abstract void render(Element element, JsArray<JavaScriptObject> list);
+    protected abstract void onUpdate(Element element, JsArray<JavaScriptObject> list);
 
     @Override
     protected Element getRendererAreaElement() {
@@ -160,7 +165,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             columns.push(fromString(keysFieldName));
         return columns;
     }
-    
+
     protected final static String keysFieldName = "#__key";
 
     protected void changeSimpleGroupObject(JavaScriptObject object, boolean rendered, P elementClicked) {
@@ -240,7 +245,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             Column column = columnMap.get(properties[i]);
             gProperties[i] = column.property;
             columnKeys[i] = column.columnKey;
-            rowKeys[i] = getKey(objects[i]);
+            rowKeys[i] = getChangeKey(objects[i]);
         }
 
         changeProperties(gProperties, rowKeys, columnKeys, newValues);
@@ -259,16 +264,14 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         return isCurrentKey(getKey(object));
     }
 
+    // change key can be outside view window, and can be obtained from getAsyncValues for example
+    protected GGroupObjectValue getChangeKey(JavaScriptObject object) {
+        if(hasKey(object, keysFieldName))
+            object = getValue(object, keysFieldName);
+        return toObject(object);
+    }
     protected GGroupObjectValue getKey(JavaScriptObject object) {
         return toObject(getValue(object, keysFieldName));
-    }
-    protected NativeHashMap<GGroupObjectValue, JavaScriptObject> buildKeyMap(JsArray<JavaScriptObject> objects) {
-        NativeHashMap<GGroupObjectValue, JavaScriptObject> map = new NativeHashMap<>();
-        for(int i=0,size=objects.length();i<size;i++) {
-            JavaScriptObject object = objects.get(i);
-            map.put(toObject(getValue(object, keysFieldName)), object);
-        }
-        return map;        
     }
 
     protected void changeDateTimeProperty(String property, JavaScriptObject object, int year, int month, int day, int hour, int minute, int second) {
@@ -297,15 +300,22 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         changeProperties(properties, objects, gDateDTOs);
     }
 
-    protected void setViewFilter(int startYear, int startMonth, int startDay, int endYear, int endMonth, int endDay, String property, boolean isDateTimeFilter, int pageSize) {
-        ArrayList<GPropertyFilter> filters = new ArrayList<>();
+    protected void setDateIntervalViewFilter(String property, int pageSize, int startYear, int startMonth, int startDay, int endYear, int endMonth, int endDay, boolean isDateTimeFilter) {
         Object leftBorder = isDateTimeFilter ? new GDateTimeDTO(startYear, startMonth, startDay, 0, 0, 0) : new GDateDTO(startYear, startMonth, startDay) ;
         Object rightBorder = isDateTimeFilter ? new GDateTimeDTO(endYear, endMonth, endDay, 0, 0, 0) : new GDateDTO(endYear, endMonth, endDay);
 
         Column column = columnMap.get(property);
-        filters.add(new GPropertyFilter(grid.groupObject, column.property, column.columnKey, leftBorder, GCompare.GREATER_EQUALS));
-        filters.add(new GPropertyFilter(grid.groupObject, column.property, column.columnKey, rightBorder, GCompare.LESS_EQUALS));
-        formController.setViewFilters(filters, pageSize);
+        setViewFilters(pageSize, new GPropertyFilter(new GFilter(column.property), grid.groupObject, column.columnKey, leftBorder, GCompare.GREATER_EQUALS),
+                new GPropertyFilter(new GFilter(column.property), grid.groupObject, column.columnKey, rightBorder, GCompare.LESS_EQUALS));
+    }
+
+    protected void setBooleanViewFilter(String property, int pageSize) {
+        Column column = columnMap.get(property);
+        setViewFilters(pageSize, new GPropertyFilter(new GFilter(column.property), grid.groupObject, column.columnKey, true, GCompare.EQUALS));
+    }
+
+    private void setViewFilters(int pageSize, GPropertyFilter... filters) {
+        form.setViewFilters(Arrays.stream(filters).collect(Collectors.toCollection(ArrayList::new)), pageSize);
         setPageSize(pageSize);
     }
 
@@ -324,6 +334,65 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             }
         } else
             return ColorUtils.getDisplayColor(color);
+    }
+
+    protected void getAsyncValues(String property, String value, JavaScriptObject successCallBack, JavaScriptObject failureCallBack) {
+        Column column = columnMap.get(property);
+        form.getAsyncValues(value, column.property, column.columnKey, ServerResponse.VALUES, new AsyncCallback<Pair<ArrayList<GAsync>, Boolean>>() {
+            @Override
+            public void onFailure(Throwable caught) {
+                if(failureCallBack != null)
+                    GwtClientUtils.call(failureCallBack);
+            }
+
+            @Override
+            public void onSuccess(Pair<ArrayList<GAsync>, Boolean> result) {
+                JavaScriptObject[] results = new JavaScriptObject[result.first.size()];
+                for (int i = 0; i < result.first.size(); i++) {
+                    JavaScriptObject object = GwtClientUtils.newObject();
+                    GAsync suggestion = result.first.get(i);
+                    GwtClientUtils.setField(object, "displayString", fromString(suggestion.displayString));
+                    GwtClientUtils.setField(object, "rawString", fromString(suggestion.rawString));
+                    GwtClientUtils.setField(object, "key", fromObject(suggestion.key));
+                    results[i] = object;
+                }
+                JavaScriptObject data = GwtClientUtils.newObject();
+                GwtClientUtils.setField(data, "data", fromObject(results));
+                GwtClientUtils.setField(data, "more", fromBoolean(result.second));
+                GwtClientUtils.call(successCallBack, data);
+         }});
+    }
+
+    NativeHashMap<GGroupObjectValue, JavaScriptObject> oldOptionsList = new NativeHashMap<>();
+    private JavaScriptObject getDiff(JsArray<JavaScriptObject> list) {
+        NativeHashMap<GGroupObjectValue, JavaScriptObject> mappedList = new NativeHashMap<>();
+        for (int i = 0; i < list.length(); i++) {
+            JavaScriptObject object = list.get(i);
+            mappedList.put(getKey(object), list.get(i));
+        }
+
+        List<JavaScriptObject> optionsToAdd = new ArrayList<>();
+        List<JavaScriptObject> optionsToUpdate = new ArrayList<>();
+        List<JavaScriptObject> optionsToRemove = new ArrayList<>();
+
+        mappedList.foreachEntry((key, value) -> {
+            JavaScriptObject oldValue = oldOptionsList.remove(key);
+            if (oldValue != null) {
+                if (!GwtClientUtils.isJSObjectPropertiesEquals(value, oldValue))
+                    optionsToUpdate.add(value);
+            } else {
+                optionsToAdd.add(value);
+            }
+        });
+
+        oldOptionsList.foreachValue(optionsToRemove::add);
+        oldOptionsList = mappedList;
+
+        JavaScriptObject object = GwtClientUtils.newObject();
+        GwtClientUtils.setField(object, "add", fromObject(optionsToAdd.toArray()));
+        GwtClientUtils.setField(object, "update", fromObject(optionsToUpdate.toArray()));
+        GwtClientUtils.setField(object, "remove", fromObject(optionsToRemove.toArray()));
+        return object;
     }
 
     protected native JavaScriptObject getController()/*-{
@@ -357,8 +426,11 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
                 var jsObject = thisObj.@GSimpleStateTableView::fromObject(*)(thisObj.@GSimpleStateTableView::getKey(*)(object));
                 return thisObj.@GSimpleStateTableView::changeSimpleGroupObject(*)(jsObject, rendered, elementClicked);
             },
-            setViewFilter: function (startYear, startMonth, startDay, endYear, endMonth, endDay,property, isDateTimeFilter, pageSize) {
-                thisObj.@GSimpleStateTableView::setViewFilter(*)(startYear, startMonth, startDay, endYear, endMonth, endDay, property, isDateTimeFilter, pageSize);
+            setDateIntervalViewFilter: function (property, pageSize, startYear, startMonth, startDay, endYear, endMonth, endDay, isDateTimeFilter) {
+                thisObj.@GSimpleStateTableView::setDateIntervalViewFilter(*)(property, pageSize, startYear, startMonth, startDay, endYear, endMonth, endDay, isDateTimeFilter);
+            },
+            setBooleanViewFilter: function (property, pageSize) {
+                thisObj.@GSimpleStateTableView::setBooleanViewFilter(*)(property, pageSize);
             },
             getCurrentDay: function (propertyName) {
                 return thisObj.@GSimpleStateTableView::getPropertyValue(*)(propertyName);
@@ -383,6 +455,15 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
                 if (color)
                     return color.toString();
                 return null;
+            },
+            getValues: function (property, value, successCallback, failureCallback) {
+                return thisObj.@GSimpleStateTableView::getAsyncValues(*)(property, value, successCallback, failureCallback);
+            },
+            getKey: function (object) {
+                return thisObj.@GSimpleStateTableView::getKey(*)(object);
+            },
+            getDiff: function (newList) {
+                return thisObj.@GSimpleStateTableView::getDiff(*)(newList);
             }
         };
     }-*/;

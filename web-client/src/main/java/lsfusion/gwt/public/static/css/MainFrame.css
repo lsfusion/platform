@@ -302,12 +302,16 @@ button {
 
 /* ------------ Caption panel ------------ */
 
-.oppositeStretchAutoSizePanel {
+.oppositeStretchNoShrinkPanel {
+}
+
+.oppositeNoStretchShrinkPanel {
 }
 
 .leftBorder {
-    border-left: 1px solid var(--panel-border-color);
+    border-left: var(--border-width) solid var(--panel-border-color);
 
+    margin-left: calc(0px - var(--border-width) - var(--border-padding));
     padding-left: var(--border-padding);
 }
 .topBorder {
@@ -316,8 +320,12 @@ button {
     padding-top: var(--border-padding);
 }
 /* margin and not padding because we want the opposite borders to respect this padding */
-.rightBorder {
-    margin-right: var(--border-padding);
+/* also to have correct size / scroll when right component is wrapped */
+.rightBorderNoWrap {
+    margin-right: calc(var(--border-padding) + var(--border-padding));
+}
+.flexHorzBorderWrap {
+    column-gap : calc(var(--border-padding) + var(--border-padding));
 }
 .bottomBorder {
     margin-bottom: var(--border-padding);
@@ -429,18 +437,13 @@ button {
     margin: auto 2px;
 }
 
-.userFiltersPanel {
-    /* not sure but what for, but gives extra margin even if there are no filters*/
-    /*margin-top: 2px;*/
-}
-
 .userFilterLabel {
     cursor: default;
     margin: 0 3px 0 5px;
 }
 
 .userFilterListBox, .userFilterDataPropertyValue, .userFilterSelector, .userFilterButton {
-    margin: 0 0 0 2px;
+    margin-left: var(--border-padding);
 }
 
 .userFilterSelector {
@@ -455,6 +458,10 @@ button {
 
 .userFilterJunctionSeparator {
     margin: 0 7px 0 12px;
+}
+
+.userFilerValueCellApplied {
+    background-color: var(--selection-color);
 }
 
 .gwt-ProgressBar-shell {
@@ -691,10 +698,10 @@ button {
 }
 
 /* ------------ Other components  ------------ */
-.gridContainerPanel{
-    min-height: 70px;
-    min-width: 130px;
+.gridSizePanel{
+}
 
+.gridContainerPanel{
     margin: var(--border-padding);
 }
 

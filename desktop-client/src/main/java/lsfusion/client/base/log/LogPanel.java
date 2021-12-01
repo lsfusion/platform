@@ -1,6 +1,7 @@
 package lsfusion.client.base.log;
 
 import lsfusion.client.base.SwingUtils;
+import lsfusion.client.base.view.SwingDefaults;
 
 import javax.swing.*;
 import java.awt.*;
@@ -62,6 +63,7 @@ class LogPanel extends JPanel {
 
             JTextField fontGetter = new JTextField();
             setFont(fontGetter.getFont());
+            setBackground(SwingDefaults.getPanelBackground());
         }
     }
 }

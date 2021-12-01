@@ -32,9 +32,6 @@ key '{word.key.template.entry}' = DATA STRING[100](TemplateEntry);
 description '{word.description.template.entry}' = DATA STRING[100](TemplateEntry);
 value '{word.value.template.entry}' = DATA LOCAL TEXT (TemplateEntry) CHARWIDTH 100;
 
-//Deprecated
-isTable '{word.is.table.template.entry}' = DATA BOOLEAN(TemplateEntry);
-
 CLASS Type '{word.type}' {
    plain '{word.type.plain}',
    table '{word.type.table}',
@@ -53,14 +50,6 @@ FORM dialogTypes '{word.type}'
 type '{word.type.template.entry}' = DATA Type(TemplateEntry);
 nameType '{word.name.type.template.entry}' (TemplateEntry t) = name(type(t));
 idType '{word.id.type.template.entry}' (TemplateEntry t) = staticName(type(t));
-
-isTableMigrated = DATA BOOLEAN();
-onStarted() + {
-    IF NOT isTableMigrated() THEN {
-        type(TemplateEntry t) <- Type.table WHERE isTable(t);
-        isTableMigrated() <- TRUE;
-    }
-}
 
 isTableTemplateEntry '{word.is.table.template.entry}' (TemplateEntry t) = type(t) == Type.table;
 isListTemplateEntry '{word.is.list.template.entry}' (TemplateEntry t) = type(t) == Type.list;

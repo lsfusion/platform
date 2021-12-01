@@ -6,8 +6,8 @@ import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.client.base.view.FlexPanel;
 
+import java.util.List;
 import java.util.function.Supplier;
 
 import static com.google.gwt.dom.client.BrowserEvents.*;
@@ -54,11 +54,8 @@ public class ResizeHandler implements Event.NativePreviewHandler {
                 // this container can be not resizable, but the inner one can be resizable, however it will not get a mouse move event if the cursor is to the right
                 // so we push this event down to that container
                 // in theory we should check that event is trigger to the right of this child widget, but since this child widget can have paddings / margins, we'll just do some extra work
-                if(resizedChild != null && resizedChild.outsideBorder) {
-                    Widget childWidget = helper.getChildWidget(resizedChild.index);
-                    if (childWidget instanceof FlexPanel)
-                        ((FlexPanel)childWidget).checkResizeEvent(event, cursorElement);
-                }
+                if(resizedChild != null)
+                    helper.propagateChildResizeEvent(resizedChild.index + (resizedChild.outsideBorder ? 1 : 0), event, cursorElement);
             }
         }
     }
@@ -66,18 +63,20 @@ public class ResizeHandler implements Event.NativePreviewHandler {
     public static int getAbsolutePosition(boolean vertical, Element element, boolean left) {
         return vertical ? (left ? element.getAbsoluteTop() : element.getAbsoluteBottom()) : (left ? element.getAbsoluteLeft() : element.getAbsoluteRight());
     }
-    public static int getAbsolutePosition(ResizeHelper helper, Element element, boolean left) {
-        return getAbsolutePosition(helper.isVertical(), element, left);
-    }
-    public static int getEventPosition(boolean vertical, NativeEvent event) {
-        return vertical ? event.getClientY() : event.getClientX();
+
+    public static int getEventPosition(boolean vertical, boolean main, NativeEvent event) {
+        return vertical == main ? event.getClientY() : event.getClientX();
     }
     public static int getEventPosition(ResizeHelper helper, NativeEvent event) {
-        return getEventPosition(helper.isVertical(), event);
+        return getEventPosition(helper.isVertical(), true, event);
     }
 
     private static int getAbsolutePosition(ResizeHelper helper, int index, boolean left) {
-        return getAbsolutePosition(helper, helper.getChildElement(index), left);
+        return helper.getChildAbsolutePosition(index, left);
+    }
+
+    public static int getAbsolutePosition(Element element, boolean vertical, boolean left) {
+        return vertical ? (left ? element.getAbsoluteTop() : element.getAbsoluteBottom()) : (left ? element.getAbsoluteLeft() : element.getAbsoluteRight());
     }
 
     private static class ResizedChild {
@@ -110,18 +109,26 @@ public class ResizeHandler implements Event.NativePreviewHandler {
             }
         } else {
             for(int i=0,size=helper.getChildCount();i<size;i++) {
-                if(helper.isChildVisible(i)) {
-                    int right = getAbsolutePosition(helper, i, false);
-                    boolean mainBorder = Math.abs(mouse - right) < ANCHOR_WIDTH;
-                    if (mainBorder || right > mouse) {
-                        int oppositeRight = getAbsolutePosition(!helper.isVertical(), helper.getChildElement(i), false);
-                        int oppositeMouse = getEventPosition(!helper.isVertical(), event);
-                        return new ResizedChild(i, mainBorder, (oppositeRight >= oppositeMouse && oppositeMouse - oppositeRight < ANCHOR_WIDTH) || right >= mouse);
-                    }
+                int right = getAbsolutePosition(helper, i, false);
+                boolean mainBorder = Math.abs(mouse - right) < ANCHOR_WIDTH;
+                if (mainBorder || right >= mouse) {
+                    return new ResizedChild(i, mainBorder, right < mouse && i < size - 1);
                 }
             }
         }
         return null;
+    }
+
+    public static int getResizedChild(boolean vertical, List<Widget> widgets, NativeEvent event) {
+        int mouse = getEventPosition(vertical, true, event);
+        for(int i=0,size=widgets.size();i<size;i++) {
+            Widget widget = widgets.get(i);
+            int right = getAbsolutePosition(widget.getElement(), vertical, false);
+            if (mouse - right < ANCHOR_WIDTH) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     private int getAbsoluteRight() {

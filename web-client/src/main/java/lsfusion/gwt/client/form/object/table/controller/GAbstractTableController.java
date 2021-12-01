@@ -8,23 +8,22 @@ import lsfusion.gwt.client.GFormChanges;
 import lsfusion.gwt.client.base.focus.DefaultFocusReceiver;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.view.FlexPanel;
-import lsfusion.gwt.client.base.view.ResizableComplexPanel;
+import lsfusion.gwt.client.base.view.HasMaxPreferredSize;
 import lsfusion.gwt.client.base.view.ResizableSimplePanel;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
-import lsfusion.gwt.client.form.design.view.GAbstractContainerView;
 import lsfusion.gwt.client.form.event.GBindingEnv;
 import lsfusion.gwt.client.form.event.GInputEvent;
 import lsfusion.gwt.client.form.filter.user.GFilter;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
-import lsfusion.gwt.client.form.filter.user.controller.GUserFilters;
+import lsfusion.gwt.client.form.filter.user.controller.GFilterController;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.GObject;
 import lsfusion.gwt.client.form.object.table.GToolbar;
-import lsfusion.gwt.client.form.object.table.tree.view.GTreeTable;
-import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
+import lsfusion.gwt.client.form.object.table.grid.view.GCustom;
+import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
 import lsfusion.gwt.client.form.object.table.view.GToolbarView;
 import lsfusion.gwt.client.form.property.GFooterReader;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -34,43 +33,15 @@ import java.util.List;
 
 public abstract class GAbstractTableController extends GPropertyController implements GTableController {
     protected final GToolbarView toolbarView;
-    public GUserFilters userFilters;
+    public GFilterController filter;
 
-    protected Widget gridView;
-    protected ResizableSimplePanel gridContainerView;
-    public Widget recordView;
+    protected GridContainerPanel gridView;
 
-    public void initGridView(boolean autoSize, GContainer record, GAbstractContainerView.UpdateLayoutListener listener) {
-        ResizableSimplePanel gridContainerView = new ResizableSimplePanel();
-        gridContainerView.setStyleName("gridContainerPanel");
-        if(autoSize) { // убираем default'ый minHeight
-            gridContainerView.getElement().getStyle().setProperty("minHeight", "0px");
-            gridContainerView.getElement().getStyle().setProperty("minWidth", "0px");
-        }
-        this.gridContainerView = gridContainerView;
+    public void initGridView(boolean autoSize) {
 
-        Widget gridView = gridContainerView;
-
-        // proceeding recordView
-        if(record != null) {
-            GAbstractContainerView recordView = getFormLayout().getContainerView(record);
-            recordView.addUpdateLayoutListener(listener);
-            this.recordView = recordView.getView();
-
-            // we need to add recordview somewhere, to attach it (events, listeners, etc.)
-            ResizableComplexPanel virtualGridView = new ResizableComplexPanel();
-            virtualGridView.setFillMain(gridView);
-
-            // need to wrap recordView to setVisible false recordView's parent and not recordView itself (since it will be moved and shown by table view implementation)
-            ResizableSimplePanel virtualRecordView = new ResizableSimplePanel();
-            virtualRecordView.add(this.recordView);
-            virtualRecordView.setVisible(false);
-            virtualGridView.add(virtualRecordView);
-
-            gridView = virtualGridView;
-        }
-
-        this.gridView = new GridPanel(gridView, gridContainerView);
+        // we need to wrap into simple panel to make layout independent from property value (make flex-basis 0 for upper components)
+        // plus we need this panel to change views
+        this.gridView = new GridContainerPanel(autoSize);
 
         getFormLayout().addBaseComponent(getGridComponent(), this.gridView, getDefaultFocusReceiver());
 
@@ -80,7 +51,32 @@ public abstract class GAbstractTableController extends GPropertyController imple
     protected abstract void configureToolbar();
 
     public void changeGridView(Widget widget) {
-        gridContainerView.setFillWidget(widget);
+        gridView.changeWidget(widget);
+    }
+
+    public static class GridContainerPanel extends ResizableSimplePanel implements HasMaxPreferredSize {
+        private final boolean autoSize;
+
+        public GridContainerPanel(boolean autoSize) {
+            this.autoSize = autoSize;
+            setStyleName("gridContainerPanel");
+        }
+
+        public void changeWidget(Widget widget) {
+            if(autoSize)
+                setPercentWidget(widget);
+            else
+                setFillWidget(widget);
+        }
+
+        public void setPreferredSize(boolean set) {
+            if(!autoSize)
+                changePercentFillWidget(set);
+
+            Widget widget = getWidget();
+            if(widget instanceof HasMaxPreferredSize) // needed to setPreferredSize for grid
+                ((HasMaxPreferredSize) widget).setPreferredSize(set);
+        }
     }
 
     public GAbstractTableController(GFormController formController, GToolbar toolbar, boolean isList) {
@@ -122,10 +118,10 @@ public abstract class GAbstractTableController extends GPropertyController imple
         }
     }
 
-    public abstract GFilter getFilterComponent();
+    public abstract List<GFilter> getFilters();
 
-    public void addUserFilterComponent() {
-        userFilters = new GUserFilters(this, getFilterComponent()) {
+    public void initFilters() {
+        filter = new GFilterController(this, getFilters(), getFormLayout().getContainerView(getFiltersContainer())) {
             @Override
             public void applyFilters(ArrayList<GPropertyFilter> conditions, boolean focusFirstComponent) {
                 changeFilter(conditions);
@@ -135,19 +131,17 @@ public abstract class GAbstractTableController extends GPropertyController imple
             }
 
             @Override
-            public void checkCommitEditing() {
-                formController.checkCommitEditing();
-            }
-
-            @Override
             public void addBinding(GInputEvent event, GBindingEnv env, GFormController.BindingExec pressed, Widget component) {
                 formController.addBinding(event, env, pressed, component, getSelectedGroupObject());
             }
         };
-        getFormLayout().addBaseComponent(getFilterComponent(), userFilters.getView(), null);
 
-
-        addToToolbar(userFilters.getToolbarButton());
+        addToToolbar(filter.getToolbarButton());
+        GToolbarButton addFilterConditionButton = filter.getAddFilterConditionButton();
+        if (addFilterConditionButton != null) {
+            addToToolbar(addFilterConditionButton);
+        }
+        addToToolbar(filter.getResetFiltersButton());
     }
 
     @Override
@@ -165,26 +159,26 @@ public abstract class GAbstractTableController extends GPropertyController imple
     }
 
     public void quickEditFilter(Event editEvent, GPropertyDraw propertyDraw, GGroupObjectValue columnKey) {
-        if (userFilters != null) {
-            userFilters.quickEditFilter(editEvent, propertyDraw, columnKey);
+        if (filter != null && filter.hasOwnContainer()) {
+            filter.quickEditFilter(editEvent, propertyDraw, columnKey);
         }
     }
 
     public void replaceFilter(Event event) {
-        if (userFilters != null) {
-            userFilters.addConditionPressed(true, event);
+        if (filter != null && filter.hasOwnContainer()) {
+            filter.addCondition(event, true);
         }
     }
 
     public void addFilter(Event event) {
-        if (userFilters != null) {
-            userFilters.addConditionPressed(false, event);
+        if (filter != null && filter.hasOwnContainer()) {
+            filter.addCondition(event, false);
         }
     }
 
-    public void removeFilters() {
-        if (userFilters != null) {
-            userFilters.allRemovedPressed();
+    public void resetFilters() {
+        if (filter != null) {
+            filter.resetAllConditions();
         }
     }
 
@@ -224,39 +218,4 @@ public abstract class GAbstractTableController extends GPropertyController imple
 
     public abstract void updateKeys(GGroupObject group, ArrayList<GGroupObjectValue> keys, GFormChanges fc);
     public abstract void updateCurrentKey(GGroupObjectValue currentKey);
-
-    // needed for auto grid sizing
-    public static class GridPanel extends FlexPanel {
-        private final Widget view;
-        private final ResizableSimplePanel gridContainerView;
-
-        public GridPanel(Widget view, ResizableSimplePanel gridContainerView) {
-            super(true);
-
-            this.view = view;
-            addFill(view);
-
-            this.gridContainerView = gridContainerView;
-        }
-
-        public void autoSize() {
-            Widget widget = gridContainerView.getWidget();
-            int autoSize;
-            if(widget instanceof GGridPropertyTable) {
-                GGridPropertyTable gridTable = (GGridPropertyTable)widget;
-                if (gridTable instanceof GTreeTable) {
-                    autoSize = gridTable.getMaxPreferredSize().height;
-                } else {
-                    autoSize = gridTable.getAutoSize();
-                    if (autoSize <= 0) // еще не было layout'а, ставим эвристичный размер
-                        autoSize = gridTable.getMaxPreferredSize().height;
-                    else {
-                        autoSize += view.getOffsetHeight() - gridTable.getViewportHeight(); // margin'ы и border'ы учитываем
-                    }
-                }
-            } else
-                autoSize = GTreeTable.DEFAULT_MAX_PREFERRED_HEIGHT;
-            setChildFlexBasis(view, autoSize);
-        }
-    }
 }

@@ -138,7 +138,7 @@ toAddress '{email.to.address.email}' = DATA STRING[100] (Email);
 dateTimeSent '{email.date.time.sent.email}' = DATA DATETIME (Email);
 dateSent '{email.date.sent.email}' = DATE(dateTimeSent(Email e));
 dateTimeReceived '{email.date.time.received.email}' = DATA DATETIME (Email);
-message '{email.message.email}' = DATA RICHTEXT (Email);
+message '{email.message.email}' = DATA HTMLTEXT (Email);
 emlFile '{email.eml.file.email}' = DATA FILE (Email);
 openEMLFile '{email.open.eml.file.email}' (Email email)  { open(emlFile(email)); }
 

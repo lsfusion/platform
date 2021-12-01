@@ -6,6 +6,7 @@ import lsfusion.client.form.design.ClientContainer;
 import lsfusion.client.form.design.view.flex.LinearClientContainerView;
 import lsfusion.client.form.design.view.widget.ScrollPaneWidget;
 import lsfusion.client.form.design.view.widget.Widget;
+import lsfusion.interop.base.view.FlexAlignment;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -51,7 +52,7 @@ public abstract class AbstractClientContainerView implements ClientContainerView
         boolean isOppositeAutoSized = child.getSize(!vertical) == null;
 
         // somewhy it doesn't work properly for tabbed client container, but it's not that important for now
-        if((!(isOppositeAutoSized && isAutoSized) || fixFlexBasis)) // child is tab, since basis is fixed, strictly speaking this all check is an optimization
+        if((!(isOppositeAutoSized && isAutoSized) || child.shrink || child.alignShrink || fixFlexBasis)) // child is tab, since basis is fixed, strictly speaking this all check is an optimization
             view = wrapOverflowAuto(view, vertical ? !isOppositeAutoSized : !isAutoSized, vertical ? !isAutoSized : !isOppositeAutoSized);
 
         FlexPanel wrapPanel = wrapBorderImpl(child);
@@ -185,18 +186,14 @@ public abstract class AbstractClientContainerView implements ClientContainerView
     }
 
     private static Dimension overrideSize(ClientComponent child, Dimension dimension, boolean max) {
-        Dimension childSize = child.size;
-        if(childSize == null)
-            return dimension;
-        
-        int width = childSize.width;
-        if(width == -1)
+        Integer width = child.getSize(false);
+        if(width == null)
             width = dimension.width;
         else if(max)        
             width = BaseUtils.max(width, dimension.width);
         
-        int preferredHeight = childSize.height;
-        if(preferredHeight == -1)
+        Integer preferredHeight = child.getSize(true);
+        if(preferredHeight == null)
             preferredHeight = dimension.height;
         else if(max)
             preferredHeight = BaseUtils.max(preferredHeight, dimension.height);
@@ -245,7 +242,7 @@ public abstract class AbstractClientContainerView implements ClientContainerView
 
     public static void add(FlexPanel panel, Widget widget, ClientComponent component, int beforeIndex) {
         boolean vertical = panel.isVertical();
-        panel.add(widget, beforeIndex, component.getAlignment(), component.getFlex(), component.getSize(vertical));
+        panel.add(widget, beforeIndex, component.getAlignment(), component.getFlex(), component.isShrink(), component.isAlignShrink(), component.getSize(vertical));
 
         Integer crossSize = component.getSize(!vertical);
 //        boolean isStretch = component.isStretch();

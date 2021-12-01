@@ -9,7 +9,7 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.setupFillParent;
 
-public class ResizableSimplePanel extends SimplePanel implements RequiresResize, ProvidesResize, HasMaxPreferredSize, ResizableMainPanel {
+public class ResizableSimplePanel extends SimplePanel implements RequiresResize, ProvidesResize, ResizableMainPanel {
     public ResizableSimplePanel() {
     }
 
@@ -36,15 +36,21 @@ public class ResizableSimplePanel extends SimplePanel implements RequiresResize,
             super.setVisible(visible);
         }
     }
-    
-    public void setFillWidget(Widget widget) { // adding element 100% fill this panel
+
+    // content-independent widget
+    public void setFillWidget(Widget widget) {
         setWidget(widget);
         setupFillParent(widget.getElement());        
     }
 
-    @Override
-    public Dimension getMaxPreferredSize() {
-        return GwtClientUtils.calculateMaxPreferredSize(getWidget());
+    // content-dependent widget
+    public void setPercentWidget(Widget widget) {
+        setWidget(widget);
+        GwtClientUtils.setupPercentParent(widget.getElement());
+    }
+
+    public void changePercentFillWidget(boolean percent) {
+        GwtClientUtils.changePercentFillWidget(getWidget(), percent);
     }
 
     @Override
@@ -54,8 +60,7 @@ public class ResizableSimplePanel extends SimplePanel implements RequiresResize,
 
     @Override
     public void setPercentMain(Widget main) {
-        setWidget(main);
-        GwtClientUtils.setupPercentParent(main.getElement());
+        setPercentWidget(main);
     }
 
     @Override

@@ -14,6 +14,7 @@ import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
 import lsfusion.server.logics.form.interactive.action.input.InputValueList;
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
+import lsfusion.server.logics.form.interactive.property.AsyncMode;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
@@ -94,9 +95,5 @@ public abstract class ActionOrPropertyObjectInstance<P extends PropertyInterface
     @Override
     public String toString() {
         return property.toString();
-    }
-
-    public PropertyDrawInstance.AsyncValueList getValueList(InputListEntity<?, P> listProperty, boolean strict) {
-        return new PropertyDrawInstance.AsyncValueList(listProperty.map(getInterfaceObjectValues()), listProperty.newSession, strict);
     }
 }

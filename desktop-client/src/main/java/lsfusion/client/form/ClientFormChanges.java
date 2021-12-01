@@ -9,6 +9,7 @@ import lsfusion.client.form.property.ClientPropertyReader;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.PropertyReadType;
 
+import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.*;
@@ -36,7 +37,8 @@ public class ClientFormChanges {
     public final List<ClientComponent> activateTabs;
     public final List<ClientPropertyDraw> activateProps;
 
-    public ClientFormChanges(DataInputStream inStream, ClientForm clientForm) throws IOException {
+    public ClientFormChanges(byte[] formChanges, ClientForm clientForm) throws IOException {
+        DataInputStream inStream = new DataInputStream(new ByteArrayInputStream(formChanges));
 
         objects = new HashMap<>();
         int count = inStream.readInt();

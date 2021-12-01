@@ -81,4 +81,8 @@ public interface GTableView {
     int getPageSize();
 
     default void updateRecordLayout(long requestIndex) {}
+
+    default void onRender(){}
+    default void onClear(){}
+
 }

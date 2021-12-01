@@ -17,6 +17,7 @@ public class CaptionPanel extends FlexPanel {
 
         FlexPanel legendWrapper = new FlexPanel(true);
         legendWrapper.setStyleName("captionLegendContainerPanel");
+        GwtClientUtils.setZeroZIndex(legendWrapper.getElement()); // since in captionCenteredLine we're using -1 z-index (we can't set captionPanelLegend z-index 1 since it will be above dialogs blocking masks)
 
         legend = new Label();
         legend.setStyleName("captionPanelLegend");
@@ -35,17 +36,6 @@ public class CaptionPanel extends FlexPanel {
         this(caption);
 
         addFillFlex(content, null);
-    }
-
-    @Override
-    public Dimension getMaxPreferredSize() {
-        return adjustMaxPreferredSize(GwtClientUtils.calculateMaxPreferredSize(getWidget(1))); // assuming that there are only 2 widgets, and the second is the main widget
-    }
-
-    public Dimension adjustMaxPreferredSize(Dimension dimension) {
-        return GwtClientUtils.enlargeDimension(dimension,
-                2,
-                GwtClientUtils.getAllMargins(getElement()));
     }
 
     private boolean notNullCaption;

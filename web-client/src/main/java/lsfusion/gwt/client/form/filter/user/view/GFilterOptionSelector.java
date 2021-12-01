@@ -15,12 +15,19 @@ import lsfusion.gwt.client.form.design.GFontWidthString;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.view.StyleDefaults;
 
+import java.util.Collections;
+import java.util.List;
+
 public abstract class GFilterOptionSelector<T> extends TextBox {
     protected PopupDialogPanel popup = new PopupDialogPanel();
     protected MenuBar menuBar = new MenuBar(true);
     protected T currentValue;
+    
+    public GFilterOptionSelector() {
+        this(Collections.emptyList(), Collections.emptyList());
+    }
 
-    public GFilterOptionSelector(T[] values) {
+    public GFilterOptionSelector(List<T> values, List<String> popupCaptions) {
         addStyleName("userFilterSelector");
         setReadOnly(true);
 
@@ -39,7 +46,7 @@ public abstract class GFilterOptionSelector<T> extends TextBox {
         addKeyPressHandler(event -> showMenu());
 
         for (T value : values) {
-            addMenuItem(value, value.toString());
+            addMenuItem(value, value.toString(), popupCaptions.get(values.indexOf(value)));
         }
     }
 
@@ -75,11 +82,15 @@ public abstract class GFilterOptionSelector<T> extends TextBox {
     }
 
     public void add(T value, String caption) {
-        addMenuItem(value, caption);
+        addMenuItem(value, caption, caption);
+    }
+    
+    public void add(T value, String caption, String popupCaption) {
+        addMenuItem(value, caption, popupCaption);
     }
 
-    protected MenuItem addMenuItem(T value, String caption) {
-        MenuItem menuItem = new MenuItem(caption, () -> {
+    protected MenuItem addMenuItem(T value, String caption, String popupCaption) {
+        MenuItem menuItem = new MenuItem(popupCaption, () -> {
             popup.hide();
             setSelectedValue(value, caption);
             valueChanged(value);
@@ -88,6 +99,10 @@ public abstract class GFilterOptionSelector<T> extends TextBox {
         menuBar.addItem(menuItem);
         
         return menuItem;
+    }
+
+    public void hidePopup() {
+        popup.hide();
     }
 
     public abstract void valueChanged(T value);

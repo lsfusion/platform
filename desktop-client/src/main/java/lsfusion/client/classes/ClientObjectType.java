@@ -4,8 +4,8 @@ import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.classes.data.ClientLongClass;
 import lsfusion.client.form.controller.ClientFormController;
+import lsfusion.client.form.design.view.flex.LinearCaptionContainer;
 import lsfusion.client.form.object.ClientGroupObjectValue;
-import lsfusion.client.form.object.panel.controller.PropertyPanelController;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.cell.EditBindingMap;
 import lsfusion.client.form.property.cell.classes.controller.IntegerPropertyEditor;
@@ -53,7 +53,7 @@ public class ClientObjectType implements ClientType, ClientTypeClass {
         return new IntegralPropertyRenderer(property);
     }
 
-    public PanelView getPanelView(ClientPropertyDraw key, ClientGroupObjectValue columnKey, ClientFormController form, PropertyPanelController.CaptionContainer captionContainer) {
+    public PanelView getPanelView(ClientPropertyDraw key, ClientGroupObjectValue columnKey, ClientFormController form, LinearCaptionContainer captionContainer) {
         return new DataPanelView(form, key, columnKey, captionContainer);
     }
 

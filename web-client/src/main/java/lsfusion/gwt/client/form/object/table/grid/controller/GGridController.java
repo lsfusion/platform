@@ -7,14 +7,13 @@ import lsfusion.gwt.client.GFormChanges;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
-import lsfusion.gwt.client.base.view.ResizableComplexPanel;
-import lsfusion.gwt.client.base.view.ResizableSimplePanel;
 import lsfusion.gwt.client.classes.data.GIntegralType;
 import lsfusion.gwt.client.form.GUpdateMode;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.design.view.GAbstractContainerView;
+import lsfusion.gwt.client.form.design.view.GFormLayout;
 import lsfusion.gwt.client.form.filter.user.GFilter;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.object.GGroupObject;
@@ -34,14 +33,14 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-import static lsfusion.gwt.client.base.GwtClientUtils.setupFillParent;
-
 public class GGridController extends GAbstractTableController {
     private final ClientMessages messages = ClientMessages.Instance.get();
 
     public GGroupObject groupObject;
 
     private GTableView table;
+
+    public Widget recordView;
 
     private static boolean isList(GGroupObject groupObject) {
         return groupObject.viewType.isList();
@@ -51,8 +50,13 @@ public class GGridController extends GAbstractTableController {
     }
     
     @Override
-    public GFilter getFilterComponent() {
-        return groupObject.userFilter;
+    public List<GFilter> getFilters() {
+        return groupObject.filters;
+    }
+
+    @Override
+    public GContainer getFiltersContainer() {
+        return groupObject.filtersContainer;
     }
 
     public GPivotOptions getPivotOptions() {
@@ -72,7 +76,20 @@ public class GGridController extends GAbstractTableController {
         this.groupObject = groupObject;
 
         if (isList()) {
-            initGridView(groupObject.grid.autoSize, groupObject.grid.record, requestIndex -> table.updateRecordLayout(requestIndex));
+            initGridView(groupObject.grid.autoSize);
+
+            // proceeding recordView
+            GContainer record = groupObject.grid.record;
+            if(record != null) {
+                GFormLayout formLayout = getFormLayout();
+                GAbstractContainerView recordView = formLayout.getContainerView(record);
+                recordView.addUpdateLayoutListener(requestIndex -> table.updateRecordLayout(requestIndex));
+                this.recordView = recordView.getView();
+
+                // we need to add recordview somewhere, to attach it (events, listeners, etc.)
+                // need to wrap recordView to setVisible false recordView's parent and not recordView itself (since it will be moved and shown by table view implementation)
+                formLayout.recordViews.add(this.recordView);
+            }
 
             this.userPreferences = userPreferences;
 
@@ -183,8 +200,11 @@ public class GGridController extends GAbstractTableController {
     private void changeTableView(GTableView table) {
         assert isList();
 
+        if (this.table != null)
+            this.table.onClear();
+
         changeGridView(table.getThisWidget());
-        
+        table.onRender();
         this.table = table;
         updateSettingsButton();
     }
@@ -265,7 +285,9 @@ public class GGridController extends GAbstractTableController {
         if(showFilter() || groupObject.toolbar.showGridSettings) {
 
             if (showFilter()) {
-                addUserFilterComponent();
+                initFilters();
+
+                addToolbarSeparator();
             }
 
             if (groupObject.toolbar.showGridSettings) {
@@ -460,10 +482,15 @@ public class GGridController extends GAbstractTableController {
         return properties;
     }
 
-    @Override
     public GPropertyDraw getSelectedProperty() {
         return table != null ? table.getCurrentProperty() : null;
     }
+
+    @Override
+    public GPropertyDraw getSelectedFilterProperty() {
+        return getSelectedProperty();
+    }
+
     @Override
     public GGroupObjectValue getSelectedColumnKey() {
         return table.getCurrentColumnKey();
@@ -478,6 +505,8 @@ public class GGridController extends GAbstractTableController {
     public List<Pair<Column, String>> getSelectedColumns() {
         return table.getSelectedColumns();
     }
+
+
 
     @Override
     public void updateProperty(GPropertyDraw property, ArrayList<GGroupObjectValue> columnKeys, boolean updateKeys, NativeHashMap<GGroupObjectValue, Object> values) {
@@ -503,9 +532,9 @@ public class GGridController extends GAbstractTableController {
 
             formController.setFiltersVisible(groupObject, isVisible);
             
-            if (userFilters != null) {
-                userFilters.update();
-                userFilters.setVisible(isVisible);
+            if (filter != null) {
+                filter.update();
+                filter.setVisible(isVisible);
             }
         }
     }
@@ -587,7 +616,7 @@ public class GGridController extends GAbstractTableController {
 
     @Override
     protected boolean showFilter() {
-        return isList() && groupObject.userFilter.visible;
+        return isList();
     }
 
     @Override

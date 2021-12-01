@@ -13,7 +13,7 @@ import net.coobird.thumbnailator.Thumbnails;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.File;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Iterator;
@@ -33,34 +33,24 @@ public class ResizeImageMaxSizeAction extends InternalAction {
     @Override
     public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         try {
-
             RawFileData inputFile = (RawFileData) context.getKeyValue(fileInterface).getValue();
             Integer maxSize = (Integer) context.getKeyValue(maxSizeInterface).getValue();
 
             BufferedImage image = ImageIO.read(inputFile.getInputStream());
-            if(image != null) {
+            if (image != null) {
                 int imageWidth = image.getWidth();
                 int imageHeight = image.getHeight();
-    
+
                 double scale = (double) maxSize / Math.max(imageWidth, imageHeight);
-    
-                File outputFile = null;
-                try {
-                    outputFile = File.createTempFile("resized", ".jpg");
-                    if(scale != 0) {
-                        Thumbnails.of(inputFile.getInputStream()).scale(scale, scale).toFile(outputFile);
-                        findProperty("resizedImage[]").change(new RawFileData(outputFile), context);
+                if (scale != 0) {
+                    try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+                        Thumbnails.of(inputFile.getInputStream()).scale(scale, scale).toOutputStream(os);
+                        findProperty("resizedImage[]").change(new RawFileData(os), context);
                     }
-                } finally {
-                    if (outputFile != null && !outputFile.delete())
-                        outputFile.deleteOnExit();
                 }
             } else {
                 throw new RuntimeException("Failed to read image");
             }
-
-
-
         } catch (IOException | ScriptingErrorLog.SemanticErrorException e) {
             throw Throwables.propagate(e);
         }

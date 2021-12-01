@@ -28,14 +28,8 @@ import javax.mail.BodyPart;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.util.ByteArrayDataSource;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.Socket;
+import java.io.*;
+import java.net.*;
 import java.nio.charset.Charset;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -299,14 +293,19 @@ public class ExternalUtils {
             if (timeout != null) {
                 socket.setSoTimeout(timeout);
             }
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
             try (OutputStream os = socket.getOutputStream(); InputStream is = socket.getInputStream()) {
                 os.write(fileBytes);
-                try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-                    byte[] buffer = new byte[1024];
-                    out.write(buffer, 0, is.read(buffer));
-                    return out.toByteArray();
+
+                //reading finishes when the sender closes the stream or by SO timeout
+                int b;
+                while((b = is.read()) != -1) {
+                    baos.write((byte) b);
                 }
+            } catch (SocketTimeoutException e) {
+                //timeout exception, finish reading
             }
+            return baos.toByteArray();
         }
     }
 

@@ -2,14 +2,11 @@ package lsfusion.server.data.expr.formula;
 
 import lsfusion.base.col.ListFact;
 import lsfusion.interop.form.property.ExtInt;
-import lsfusion.server.data.expr.formula.conversion.StringTypeConversion;
-import lsfusion.server.data.query.exec.MStaticExecuteEnvironment;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.data.TextClass;
-import lsfusion.server.physics.admin.Settings;
 
 public class StringOverrideFormulaImpl extends AbstractFormulaImpl implements FormulaUnionImpl {
     public final static StringOverrideFormulaImpl instance = new StringOverrideFormulaImpl();
@@ -48,7 +45,7 @@ public class StringOverrideFormulaImpl extends AbstractFormulaImpl implements Fo
         boolean caseInsensitive = false;
         boolean blankPadded = true;
         boolean isText = false;
-        boolean rich = false;
+        String sid = null;
         for (int i = 0, size = source.getExprCount(); i < size; i++) {
             Type exprType = source.getType(i);
 
@@ -59,13 +56,13 @@ public class StringOverrideFormulaImpl extends AbstractFormulaImpl implements Fo
                 blankPadded = blankPadded && stringType.blankPadded;
                 if(exprType instanceof TextClass) {
                     isText = true;
-                    rich = rich || ((TextClass) stringType).rich;
+                    sid = exprType.getSID();
                 }
             }
         }
 
         if(isText)
-            return rich ? TextClass.richInstance : TextClass.instance;
+            return TextClass.getInstance(sid);
         return StringClass.get(blankPadded, caseInsensitive, length);
     }
 

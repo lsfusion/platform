@@ -1,12 +1,15 @@
 package lsfusion.server.logics.form.interactive.design;
 
+import lsfusion.base.Pair;
 import lsfusion.base.col.MapFact;
+import lsfusion.base.col.SetFact;
 import lsfusion.base.col.heavy.concurrent.weak.ConcurrentIdentityWeakHashSet;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MOrderExclMap;
+import lsfusion.base.col.interfaces.mutable.MOrderSet;
 import lsfusion.base.identity.DefaultIDGenerator;
 import lsfusion.base.identity.IDGenerator;
 import lsfusion.base.identity.IdentityObject;
@@ -22,6 +25,7 @@ import lsfusion.server.base.version.interfaces.NFSet;
 import lsfusion.server.logics.LogicsModule.InsertType;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerCustomSerializable;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
+import lsfusion.server.logics.form.interactive.design.filter.FilterView;
 import lsfusion.server.logics.form.interactive.design.filter.RegularFilterGroupView;
 import lsfusion.server.logics.form.interactive.design.filter.RegularFilterView;
 import lsfusion.server.logics.form.interactive.design.object.GroupObjectView;
@@ -47,6 +51,7 @@ import java.util.List;
 import java.util.*;
 
 import static java.util.Collections.synchronizedMap;
+import static lsfusion.base.BaseUtils.nvl;
 import static lsfusion.server.logics.LogicsModule.InsertType.AFTER;
 import static lsfusion.server.logics.form.interactive.design.object.GroupObjectContainerSet.*;
 
@@ -143,9 +148,12 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
 
     protected transient Map<PropertyDrawEntity, PropertyDrawView> mproperties = synchronizedMap(new HashMap<>());
     public PropertyDrawView get(PropertyDrawEntity property) { return mproperties.get(property); }
+    
+    protected transient Map<PropertyDrawEntity, FilterView> mfilters = synchronizedMap(new HashMap<>());
+    public FilterView getFilter(PropertyDrawEntity property) { return mfilters.get(property); }
 
-    protected transient Map<RegularFilterGroupEntity, RegularFilterGroupView> mfilters = synchronizedMap(new HashMap<>());
-    public RegularFilterGroupView get(RegularFilterGroupEntity filterGroup) { return mfilters.get(filterGroup); }
+    protected transient Map<RegularFilterGroupEntity, RegularFilterGroupView> mfilterGroups = synchronizedMap(new HashMap<>());
+    public RegularFilterGroupView get(RegularFilterGroupEntity filterGroup) { return mfilterGroups.get(filterGroup); }
 
     protected NFOrderSet<ImList<PropertyDrawView>> pivotColumns = NFFact.orderSet();
     public ImOrderSet<ImList<PropertyDrawView>> getPivotColumns() {
@@ -197,7 +205,7 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         }
 
         for (PropertyDrawEntity propertyDrawEntity : entity.getUserFiltersIt(version)) {
-            addUserFilterProperty(propertyDrawEntity, version);
+            addFilter(propertyDrawEntity, version);
         }
 
         for (ImList<PropertyDrawEntity> pivotColumn : entity.getNFPivotColumnsListIt(version)) {
@@ -215,13 +223,17 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         initButtons(version);
     }
 
-    public void addUserFilterProperty(PropertyDrawEntity userFilterProperty, Version version) {
-        GroupObjectEntity groupObjectEntity = userFilterProperty.getToDraw(entity);
-        PropertyDrawView propertyDrawView = get(userFilterProperty);
-        if (groupObjectEntity.isInTree()) {
-            get(groupObjectEntity.treeGroup).addUserFilter(propertyDrawView, version);
-        } else {
-            get(groupObjectEntity).addUserFilter(propertyDrawView, version);
+    public void addFilter(PropertyDrawEntity filterProperty, Version version) {
+        if (!mfilters.containsKey(filterProperty)) {
+            GroupObjectEntity groupObjectEntity = filterProperty.getToDraw(entity);
+            PropertyDrawView propertyDrawView = get(filterProperty);
+            FilterView filterView;
+            if (groupObjectEntity.isInTree()) {
+                filterView = get(groupObjectEntity.treeGroup).addFilter(propertyDrawView, version);
+            } else {
+                filterView = get(groupObjectEntity).addFilter(propertyDrawView, version);
+            }
+            mfilters.put(filterProperty, filterView);
         }
     }
 
@@ -288,7 +300,7 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         if(!isInTree) { // правильнее вообще не создавать компоненты, но для этого потребуется более сложный рефакторинг, поэтому пока просто сделаем так чтобы к ним нельзя было обратиться
             setComponentSID(groupObjectView.getGrid(), getGridSID(groupObjectView), version);
             setComponentSID(groupObjectView.getToolbarSystem(), getToolbarSystemSID(groupObjectView), version);
-            setComponentSID(groupObjectView.getUserFilter(), getUserFilterSID(groupObjectView), version);
+            setComponentSID(groupObjectView.getFiltersContainer(), getFiltersContainerSID(groupObjectView), version);
             setComponentSID(groupObjectView.getCalculations(), getCalculationsSID(groupObjectView), version);
         }
 
@@ -332,7 +344,7 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         mtreeGroups.put(treeGroupView.entity, treeGroupView);
         setComponentSID(treeGroupView, getGridSID(treeGroupView), version);
         setComponentSID(treeGroupView.getToolbarSystem(), getToolbarSystemSID(treeGroupView), version);
-        setComponentSID(treeGroupView.getUserFilter(), getUserFilterSID(treeGroupView), version);
+        setComponentSID(treeGroupView.getFiltersContainer(), getFiltersContainerSID(treeGroupView), version);
     }
 
     private TreeGroupView addTreeGroupBase(TreeGroupEntity treeGroup, GroupObjectEntity neighbourGroupObject, InsertType insertType, Version version) {
@@ -343,7 +355,7 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
     }
 
     private void addRegularFilterGroupView(RegularFilterGroupView filterGroupView, Version version) {
-        mfilters.put(filterGroupView.entity, filterGroupView);
+        mfilterGroups.put(filterGroupView.entity, filterGroupView);
         setComponentSID(filterGroupView, getFilterGroupSID(filterGroupView.entity), version);
     }
 
@@ -665,8 +677,8 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         return TOOLBAR_SYSTEM_COMPONENT + "(" + entity.getPropertyGroupContainerSID() + ")";
     }
 
-    private static String getUserFilterSID(PropertyGroupContainerView entity) {
-        return USERFILTER_COMPONENT + "(" + entity.getPropertyGroupContainerSID() + ")";
+    private static String getFiltersContainerSID(PropertyGroupContainerView entity) {
+        return FILTERS_CONTAINER + "(" + entity.getPropertyGroupContainerSID() + ")";
     }
     
     private static String getCalculationsSID(PropertyGroupContainerView entity) {

@@ -4,10 +4,12 @@ import lsfusion.client.classes.data.ClientLogicalClass;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.design.view.widget.PanelWidget;
 import lsfusion.client.form.filter.user.ClientDataFilterValue;
+import lsfusion.client.form.filter.user.ClientPropertyFilter;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.object.table.controller.TableController;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.panel.view.CaptureKeyEventsDispatcher;
+import lsfusion.interop.form.property.Compare;
 
 import javax.swing.*;
 import javax.swing.table.TableCellEditor;
@@ -23,20 +25,20 @@ public abstract class DataFilterValueView extends PanelWidget {
 
     private ClientGroupObjectValue columnKey;
 
-    public DataFilterValueView(ClientDataFilterValue filterValue, ClientPropertyDraw property, ClientGroupObjectValue columnKey, TableController ilogicsSupplier, boolean readSelectedValue) {
+    public DataFilterValueView(ClientPropertyFilter condition, TableController ilogicsSupplier, boolean readSelectedValue) {
         setLayout(new BorderLayout());
 
-        this.filterValue = filterValue;
+        this.filterValue = condition.value;
         logicsSupplier = ilogicsSupplier;
 
-        this.columnKey = columnKey;
+        this.columnKey = condition.columnKey;
 
         // непосредственно объект для изменения значения свойств
-        valueTable = new DataFilterValueViewTable(this, property, ilogicsSupplier);
+        valueTable = new DataFilterValueViewTable(this, condition.property, condition.compare, ilogicsSupplier);
 
         add(valueTable, BorderLayout.CENTER);
         
-        changeProperty(property, columnKey, readSelectedValue);
+        changeProperty(condition.property, columnKey, readSelectedValue);
     }
 
     public boolean requestFocusInWindow() {
@@ -75,6 +77,10 @@ public abstract class DataFilterValueView extends PanelWidget {
         filterValue.setValue(newValue);
         setValue(newValue);
     }
+    
+    public void changeCompare(Compare compare) {
+        valueTable.changeInputList(compare);
+    }
 
     private void setValue(Object value) {
         if(value instanceof String && ((String)value).isEmpty())
@@ -109,9 +115,11 @@ public abstract class DataFilterValueView extends PanelWidget {
         return logicsSupplier.getFormController();
     }
 
-    public abstract void applyFilters(boolean focusFirstComponent);
-
     public ClientGroupObjectValue getColumnKey() {
         return columnKey;
+    }
+
+    public void setApplied(boolean applied) {
+        valueTable.setApplied(applied);
     }
 }

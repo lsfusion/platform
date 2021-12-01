@@ -2,6 +2,8 @@ MODULE Chat;
 
 REQUIRE Authentication, Integration, Time, SystemEvents, Service, Utils;
 
+// ---- Chats
+
 CLASS Chat '{chat.chat}';
 TABLE chat(Chat);
 TABLE chatCustomUser(Chat, CustomUser);
@@ -11,220 +13,24 @@ EXTEND CLASS UserRole : Chat;
 @defineExternalizable(chat, STRING[100]);
 
 in '{chat.in.chat}' = DATA BOOLEAN (Chat, CustomUser);
-overIn '{chat.in.chat}' (Chat c, CustomUser u) = IF c IS UserRole THEN has(u,c) ELSE in(c,u);  
-in (Chat c) = overIn(c, currentUser()); 
-isDialog(Chat chat) = (GROUP SUM 1 IF in(chat, CustomUser user)) == 2;
+overIn '{chat.in.chat}' (Chat c, CustomUser u) = IF c IS UserRole THEN has(u,c) ELSE in(c,u);
+in (Chat c) = overIn(c, currentUser());
+ 
+isDialog(Chat chat) = (GROUP SUM 1 IF in(chat, CustomUser user)) == 2 MATERIALIZED;
 chatIn(CustomUser user1, CustomUser user2) = GROUP MAX Chat chat IF in(chat, user1) AND in(chat, user2) AND isDialog(chat);
+
 readonly '{chat.readonly}' = DATA BOOLEAN (Chat, CustomUser);
 readonly '{chat.readonly}' (Chat c) = readonly(c, currentUser());
 
 dataName '{chat.name}' = DATA ISTRING[100] (Chat);
+
 nameOrLogin '{chat.name.or.login.user}' (CustomUser user) = OVERRIDE name(user), login(user);
-name '{chat.name}' (Chat chat) = (OVERRIDE dataName(chat), IF chat IS UserRole THEN '{chat.name.role}: ' + Security.name(chat) ELSE (GROUP CONCAT nameOrLogin(CustomUser user), ', ' IF in(chat, user) AND (NOT isDialog(chat) OR NOT user == currentUser()) ORDER user)) CHARWIDTH 15;
+name '{chat.name}' (Chat chat) = 
+    (OVERRIDE dataName(chat), 
+              IF chat IS UserRole THEN 
+                    '{chat.name.role}: ' + Security.name(chat) 
+              ELSE (GROUP CONCAT nameOrLogin(CustomUser user) IF in(chat, user) AND (NOT isDialog(chat) OR NOT user == currentUser()), ', ' ORDER user)) CHARWIDTH 15;
 
-CLASS MessageStatus {
-    sent '{chat.message.status.sent}',
-    delivered '{chat.message.status.delivered}',
-    seen '{chat.message.status.seen}'
-}
-
-CLASS Message '{chat.message}';
-TABLE message(Message);
-TABLE messageCustomUser(Message, CustomUser);
-
-pushNotification '{chat.push.notification}'  ABSTRACT LIST ( CustomUser, BOOLEAN, BOOLEAN);
-seekLastMessageInFullChat  ABSTRACT LIST ( );
-markSeenOnChange  ABSTRACT LIST ( Chat);
-editMessage '{chat.edit.message}' (Chat c, Message m)  ABSTRACT LIST ( Chat, Message);
-
-author '{chat.author.message}' = DATA CustomUser (Message);
-nameAuthor '{chat.author.message}' (Message m) = nameOrLogin(author(m)) CHARWIDTH 30 NOFLEX;
-own(Message m) = author(m) == currentUser();
-text '{chat.text.message}' = DATA TEXT (Message) CHARWIDTH 50;
-dateTime '{chat.date.time.message}' = DATA DATETIME (Message) CHARWIDTH 30 NOFLEX;
-lastEditDateTime '{chat.last.edit.date.time.message}' = DATA DATETIME (Message) CHARWIDTH 30 NOFLEX;
-system '{chat.system.message}' = DATA BOOLEAN (Message);
-status '{chat.status.message}' = DATA MessageStatus (Message, CustomUser);
-captionStatus '{chat.status.message}' (Message message, CustomUser user) = staticCaption(status(message, user));
-captionStatus '{chat.status.message}' (Message message) = captionStatus(message, currentUser());
-chat = DATA Chat (Message);
-nameChat '{chat.chat}' (Message message) = name(chat(message)) CHARWIDTH 30;
-nameShortChat '{chat.chat}' (Message message) = IF isDialog(chat(message)) THEN nameChat(message) ELSE (nameChat(message) + ' [' + nameAuthor(message) + ']') CHARWIDTH 15;
-
-attachment '{chat.attachment}' = DATA FILE (Message);
-hasAttachment '{chat.has.attachment}' (Message m) = TRUE IF attachment(m);
-loadAttachment '{chat.load.attachment}' (Message m)  { INPUT =attachment(m) CHANGE; }
-openAttachment '{chat.open.attachment}' (Message m)  { 
-    IF attachment(m) THEN {
-        open(attachment(m));
-    } ELSE {
-        MESSAGE '{chat.open.attachment.message.no.attachment}';
-    }
-} IMAGE 'open.png';
-
-editedText (Message m) = '{chat.edited.text}: ' + TEXT(lastEditDateTime(m));
-showText '{chat.show.text}' (Message m) = (IF text(m) THEN text(m) ELSE '') + (IF lastEditDateTime(m) THEN '\n\n' + editedText(m) ELSE '');
-
-readonly (Message m) = readonly(chat(m));
-editable (Message m) = NOT readonly(m);
-
-seenCount(m) = GROUP SUM 1 IF status(m, CustomUser user) == MessageStatus.seen;
-deliveredCount(m) = GROUP SUM 1 IF status(m, CustomUser user) == MessageStatus.delivered;
-status '{chat.status.message}' (Message m) = IF own(m) THEN BPISTRING[10](staticCaption(IF seenCount(m) > 1 THEN MessageStatus.seen ELSE IF deliveredCount(m) > 0 THEN MessageStatus.delivered ELSE MessageStatus.sent)) ELSE '' CHARWIDTH 10 NOFLEX;
- 
-countMessages '{chat.count.messages}' (Chat chat) = GROUP SUM 1 IF text(Message message) AND chat(message) == chat;
-isEmpty(Chat c) = NOT countMessages(c); 
-lastMessageDateTime '{chat.last.message.date.time}' (Chat c) = GROUP LAST dateTime(Message m) ORDER dateTime(m), m BY chat(m);
-lastMessageDateTime '{chat.last.message.date.time}' (CustomUser u) = lastMessageDateTime(chatIn(u, currentUser()));
-
-unreadMessages '{chat.unread.messages}' (chat, CustomUser user) = GROUP SUM 1 IF (status(Message message, user) == MessageStatus.sent OR status(message, user) == MessageStatus.delivered) AND (author(message) != user) BY chat(message);
-unreadMessages'{chat.unread.messages}' (Chat chat) = unreadMessages(chat, currentUser()) CHARWIDTH 10 NOFLEX;
-unreadMessages '{chat.unread.messages}' (CustomUser user) = unreadMessages(chatIn(user, currentUser()), currentUser()) CHARWIDTH 10 NOFLEX;
-sumUnreadMessages '{chat.sum.unread.messages}' (CustomUser user) = GROUP SUM unreadMessages(Chat chat, user) IF overIn(chat, user);
-
-chatNotFound = DATA LOCAL BOOLEAN ();
-defaultNewMessage '{chat.new.message}' = DATA LOCAL NESTED TEXT ();
-chatNewMessage '{chat.new.message}' = DATA LOCAL NESTED TEXT (Chat);
-newMessage '{chat.new.message}' = DATA LOCAL TEXT (Chat);
-editingMessage '{chat.editing.message}' = DATA LOCAL Message(Chat);
-noEditingMessage (Chat chat) = NOT editingMessage(chat);
-notificate '{chat.notificate}' = DATA LOCAL NESTED BOOLEAN (Chat);
-defaultNotificate = DATA LOCAL NESTED BOOLEAN ();
-
-attachment '{chat.attachment}' = DATA LOCAL NESTED FILE (Chat);
-loadAttachment '{chat.load.attachment}' (Chat c)  { INPUT =attachment(c) CHANGE; }
-deleteAttachment '{chat.delete.attachment}' (Chat c)  { attachment(c) <- NULL; } IMAGE 'delete.png';
-showLoadAttachment (Chat c) = NOT attachment(c);
-showDeleteAttachment (Chat c) = attachment(c);
-
-onStarted() + { 
-
-    NEWSESSION {
-        FOR NOT chat('system') NEW c = Chat DO {
-            id(c) <- 'system';
-            dataName(c) <- '{chat.name.all}'; 
-        }
-
-        in(Chat c, User u) <- TRUE WHERE login(u) AND lastActivity(u) AND c = chat('system');
-        
-        DELETE Message m WHERE system(m) AND NOT dateTime(m) >= subtractDay(currentDateTime(), 30); 
-        status(Message m, CustomUser u) <- MessageStatus.seen IF overIn(chat(m), u) AND login(u) WHERE system(m);
-        APPLY;
-    }
- 
-}
-
-setSeenMessageUser(Message m, CustomUser user, BOOLEAN system)  { 
-    status(m, user) <- IF system THEN MessageStatus.sent ELSE MessageStatus.seen;
-}
-
-markSeenOnChangeMessages (Chat chat, CustomUser user)  { 
-    LOCAL needApply = BOOLEAN();
-    FOR in(chat) AND chat(Message m) == chat AND (status(m, user) == MessageStatus.sent OR status(m, user) == MessageStatus.delivered) DO {
-        status(m, user) <- MessageStatus.seen;
-        needApply() <- TRUE;
-    }
-    IF needApply() THEN {
-        apply();
-    }
-};
-
-editMessageText (Message m, Chat c)  { 
-    lastEditDateTime(m) <- currentDateTime();
-    text(m) <- newMessage(c);
-    attachment(m) <- attachment(c);
-}
-
-stopEditing(Chat c)  { 
-    IF editingMessage(c) THEN {
-    editingMessage(c) <- NULL;
-    chatNewMessage(c) <- NULL;
-    newMessage(c) <- NULL;
-    attachment(c) <- NULL;
-    }
-}
-
-sendMessage '{chat.send.message.chat}' (Chat chat, TEXT message, BOOLEAN system)  { 
-    NEW m = Message {
-        chat(m) <- chat;
-        dateTime(m) <- currentDateTime();
-        author(m) <- currentUser();
-        system(m) <- system;
-        text(m) <- message;
-        attachment(m) <- attachment(chat);
-        attachment(chat) <- NULL;
-        IF chatNotFound() THEN
-            defaultNewMessage() <- NULL;
-        ELSE
-            chatNewMessage(chat) <- NULL; 
-        
-        setSeenMessageUser(m, currentUser(), system);
-        FOR overIn(chat, CustomUser user) AND user != currentUser() DO {
-            status(m, user) <- MessageStatus.sent;
-        }            
-    }
-    apply();
-    
-    NEWSESSION NEWTHREAD {
-        FOR overIn(chat, CustomUser user) AND (user != currentUser() OR system) DO {
-            pushNotification(user, system, notificate(chat));
-        }          
-    }
-    
-    IF NOT system THEN
-        markSeenOnChangeMessages(chat, currentUser());
-    seekLastMessageInFullChat();
-}
-
-sendMessage '{chat.send.message}'  ABSTRACT LIST ( Chat, CustomUser) CHANGEKEY 'ctrl ENTER;priority=100';
-saveMessage '{chat.save.message}'  ABSTRACT LIST ( Chat) CHANGEKEY 'ctrl ENTER;priority=100';
-
-sendRestartMessage '{chat.send.restart.message}' = DATA BOOLEAN ();
-sendRestartServerMessage '{chat.send.restart.server.message}' ()  { sendMessage(chat('system'), '{chat.send.restart.server.message.message}', TRUE); }
-restartServer() + {  IF sendRestartMessage() THEN sendRestartServerMessage(); }
-
-sendCancelRestartServerMessage '{chat.send.cancel.restart.server.message}' ()  { sendMessage(chat('system'), '{chat.send.cancel.restart.server.message.message}', TRUE); }
-cancelRestartServer() + {  IF sendRestartMessage() THEN sendCancelRestartServerMessage(); }
-
-EXTEND FORM maintenance PROPERTIES() sendRestartMessage;
-
-DESIGN maintenance {
-    administration {
-        MOVE PROPERTY(sendRestartMessage()) BEFORE PROPERTY(restartServer());
-    }
-}                               
-
-seekChat  ABSTRACT( CustomUser);
-  
-saveNewMessage(Chat c)  { 
-    INPUT t=TEXT DO {
-        IF t THEN {
-            newMessage(c) <- t;
-            IF chatNotFound() THEN
-                defaultNewMessage() <- newMessage(c);
-            ELSE 
-                chatNewMessage(c) <- newMessage(c);
-        }
-    }    
-}  
-
-saveNotificate(Chat c)  { 
-    INPUT t=BOOLEAN DO {
-        notificate(c) <- t;
-        IF chatNotFound() THEN {
-            defaultNotificate() <- notificate(c);
-        }
-    }  
-}  
-  
-includeUserInChat (CustomUser u, Chat c)  { 
-    in(c, u) <- TRUE;
-}    
-  
-includeCurrentUserInChat (Chat c)  { 
-    includeUserInChat(currentUser(), c);
-}
- 
 FORM addChat '{chat.form.add.chat}'
     OBJECTS c = Chat PANEL
     PROPERTIES (c) name
@@ -235,7 +41,7 @@ FORM addChat '{chat.form.add.chat}'
     
     FILTERGROUP in FILTER '{chat.form.add.chat.filter.in}' in(c,u)          
 
-    EVENTS ON CHANGE c includeCurrentUserInChat(c)
+    EVENTS ON CHANGE c { in(c, currentUser()) <- TRUE; }
 
     EDIT Chat OBJECT c
 ;  
@@ -258,58 +64,293 @@ editChatAction '{chat.edit.chat.action}' (Chat c)  {
         SHOW editChat ;
 }
 
-//----------------------------FULL CHAT----------------------------//
+createDialogChat (CustomUser user1, CustomUser user2) {
+    IF NOT chatIn(user1, user2) THEN {
+        NEW chat = Chat {
+            in(chat, user1) <- TRUE;
+            in(chat, user2) <- TRUE;
+        }
+    }
+}
 
-recentVisible  = ABSTRACT BOOLEAN ();
-readonlyFullChat(Chat chat) = readonly(chat) AND recentVisible();
-prevUser() = DATA LOCAL NESTED CustomUser();
+// ---- Messages
 
-backgroundUnread '{chat.background.unread}' (Chat chat) = RGB(255, 0, 0) IF unreadMessages(chat);
-backgroundUnread '{chat.background.unread}' (CustomUser user) = RGB(255, 0, 0) IF unreadMessages(user);
+CLASS Message '{chat.message}';
+TABLE message(Message);
 
-online (CustomUser user) = subtractSeconds(lastActivity(user), currentDateTime()) < 300;
-away (CustomUser user) = subtractSeconds(lastActivity(user), currentDateTime()) < 3600;
+author '{chat.author.message}' = DATA CustomUser (Message);
+nameAuthor '{chat.author.message}' (Message m) = nameOrLogin(author(m)) CHARWIDTH 30 NOFLEX;
+own(Message m) = author(m) = currentUser();
 
-backgroundUser (CustomUser user) = IF online(user) THEN RGB(0, 255, 0) ELSE IF away(user) THEN RGB(255, 255, 0);
+chat = DATA Chat (Message) INDEXED;
+nameChat '{chat.chat}' (Message message) = name(chat(message)) CHARWIDTH 30;
+nameShortChat '{chat.chat}' (Message message) = IF isDialog(chat(message)) THEN nameChat(message) ELSE (nameChat(message) + ' [' + nameAuthor(message) + ']') CHARWIDTH 15;
 
-backgroundMessage (Message m) = IF NOT own(m) THEN NULL ELSE IF seenCount(m) < 2 THEN RGB(247, 247, 247) ELSE RGB(240, 244, 248);
+text '{chat.text.message}' = DATA RICHTEXT (Message) CHARWIDTH 50;
+dateTime '{chat.date.time.message}' = DATA DATETIME (Message) CHARWIDTH 30 NOFLEX;
+
+lastEditDateTime '{chat.last.edit.date.time.message}' = DATA DATETIME (Message) CHARWIDTH 30 NOFLEX;
+editedText (Message m) = '{chat.edited.text}: ' + TEXT(lastEditDateTime(m));
+showText '{chat.show.text}' (Message m) = 
+    (IF text(m) THEN text(m) ELSE '') + (IF lastEditDateTime(m) THEN '<br><br>' + editedText(m) ELSE '');
+
+system '{chat.system.message}' = DATA BOOLEAN (Message);
+
+replyTo = DATA Message (Message);
+nameAuthorReplyTo (Message m) = nameAuthor(replyTo(m)); 
+textReplyTo (Message m) = text(replyTo(m)); 
+
+attachmentName '{chat.attachment}' = DATA ISTRING (Message); 
+
+attachment '{chat.attachment}' = DATA FILE (Message);
+hasAttachment '{chat.has.attachment}' (Message m) = TRUE IF attachment(m);
+loadAttachment '{chat.load.attachment}' (Message m)  { INPUT =attachment(m) CHANGE; }
+openAttachment '{chat.open.attachment}' (Message m)  { 
+    IF attachment(m) THEN {
+        open(attachment(m));
+    } ELSE {
+        MESSAGE '{chat.open.attachment.message.no.attachment}';
+    }
+} IMAGE 'open.png';
+
+readonly (Message m) = readonly(chat(m));
+editable (Message m) = NOT readonly(m);
+
+// ----- message statuses 
+CLASS MessageStatus {
+    sent '{chat.message.status.sent}',
+    delivered '{chat.message.status.delivered}',
+    seen '{chat.message.status.seen}'
+}
+TABLE messageCustomUser(Message, CustomUser);
+
+status '{chat.status.message}' = DATA MessageStatus (Message, CustomUser);
+captionStatus '{chat.status.message}' (Message message, CustomUser user) = staticCaption(status(message, user));
+
+seenCount(m) = GROUP SUM 1 IF status(m, CustomUser user) == MessageStatus.seen;
+deliveredCount(m) = GROUP SUM 1 IF status(m, CustomUser user) == MessageStatus.delivered;
+
+status '{chat.status.message}' (Message m) = 
+    IF own(m) THEN 
+        BPISTRING[10](staticCaption(IF seenCount(m) > 1 THEN MessageStatus.seen 
+                                                        ELSE IF deliveredCount(m) > 0 THEN 
+                                                                MessageStatus.delivered 
+                                                                ELSE MessageStatus.sent)) 
+    ELSE '' 
+        CHARWIDTH 10 NOFLEX;
+ 
+countMessages '{chat.count.messages}' (Chat chat) = GROUP SUM 1 BY chat(Message message);
+ 
+unreadMessages '{chat.unread.messages}' (Chat chat, CustomUser user) = 
+    GROUP SUM 1 IF (status(Message message, user) == MessageStatus.sent OR status(message, user) == MessageStatus.delivered) AND 
+                   author(message) != user 
+          BY chat(message);
+unreadMessages'{chat.unread.messages}' (Chat chat) = unreadMessages(chat, currentUser()) CHARWIDTH 10 NOFLEX;
+unreadMessages '{chat.unread.messages}' (CustomUser user) = unreadMessages(chatIn(user, currentUser()), currentUser()) CHARWIDTH 10 NOFLEX;
+countUnreadMessages '{chat.sum.unread.messages}' (CustomUser user) = 
+    GROUP SUM unreadMessages(Chat chat, user) IF overIn(chat, user);
+
+lastMessageDateTime '{chat.last.message.date.time}' (Chat c) = GROUP LAST dateTime(Message m) ORDER dateTime(m), m BY chat(m);
+lastMessageDateTime '{chat.last.message.date.time}' (CustomUser u) = lastMessageDateTime(chatIn(u, currentUser()));
+
+// clear after restart
+onStarted() + { 
+    NEWSESSION {
+        FOR NOT chat('system') NEW c = Chat DO {
+            id(c) <- 'system';
+            dataName(c) <- '{chat.name.all}'; 
+        }
+
+        in(Chat c, User u) <- TRUE WHERE login(u) AND lastActivity(u) AND c = chat('system');
+        
+        DELETE Message m WHERE system(m) AND NOT dateTime(m) >= subtractDay(currentDateTime(), 30); 
+        status(Message m, CustomUser u) <- MessageStatus.seen IF overIn(chat(m), u) AND login(u) WHERE system(m);
+        APPLY;
+    }
+}
+
+// ----- mark seen
+seekLastMessage ABSTRACT LIST ();
+
+markSeenOnChangeMessages (Chat chat, CustomUser user)  { 
+    LOCAL needApply = BOOLEAN();
+    FOR in(chat) AND chat(Message m) == chat AND (status(m, user) == MessageStatus.sent OR status(m, user) == MessageStatus.delivered) DO {
+        status(m, user) <- MessageStatus.seen;
+        needApply() <- TRUE;
+    }
+    IF needApply() THEN {
+        APPLY;
+    }
+}
 
 markSeenMessages (CustomUser user)  { 
     FOR in(chat(Message m)) AND status(m, user) == MessageStatus.delivered DO {
         status(m, user) <- MessageStatus.seen;
     }
-};
+}
 
-markSeenOnChange(Chat c) + { 
+markSeenOnChange (Chat c) { 
     markSeenOnChangeMessages(c, currentUser());
-    seekLastMessageInFullChat();
-};
+    seekLastMessage();
+}
 
 markSeenOnChange(Message m)  { 
     markSeenOnChangeMessages(chat(m), currentUser());
-};
+}
+
+seekChat ABSTRACT (Chat);
+
+prevUser() = DATA LOCAL NESTED CustomUser();
+seekChat (CustomUser user) { 
+    LOCAL chat = Chat();
+    chat() <- chatIn(user, currentUser());
+    IF NOT chat() THEN {
+        markSeenOnChange(chatIn(prevUser(), currentUser()));
+    } ELSE {
+        seekChat(chat());
+        seekLastMessage();
+        markSeenOnChange(chat());
+    }
+    prevUser() <- user;
+}
+
+// ----- new message
+
+message '{chat.new.message}' = DATA LOCAL RICHTEXT ();
+notificate '{chat.notificate}' = DATA LOCAL BOOLEAN ();
+
+replyTo = DATA LOCAL Message ();
+nameAuthorReplyTo () = nameAuthor(replyTo());
+textReplyTo () = text(replyTo());
+
+attachmentName '{chat.attachment}' = DATA LOCAL ISTRING (); 
+
+attachment '{chat.attachment}' = DATA LOCAL FILE ();
+loadAttachment '{chat.load.attachment}' ()  { INPUT =attachment() CHANGE; }
+deleteAttachment '{chat.delete.attachment}' ()  { attachment() <- NULL; } IMAGE 'delete.png';
+
+pushNotification '{chat.push.notification}' ABSTRACT LIST (CustomUser, BOOLEAN, BOOLEAN);
+sendMessage '{chat.send.message.chat}' (Chat chat, TEXT message, BOOLEAN system, BOOLEAN notificate)  { 
+    NEW m = Message {
+        chat(m) <- chat;
+        dateTime(m) <- currentDateTime();
+        author(m) <- currentUser();
+        system(m) <- system;
+        text(m) <- message;
+        replyTo(m) <- replyTo();
+        attachmentName(m) <- attachmentName();
+        attachment(m) <- attachment();
+        
+        status(m, currentUser()) <- IF system THEN MessageStatus.sent ELSE MessageStatus.seen;
+        FOR overIn(chat, CustomUser user) AND user != currentUser() DO {
+            status(m, user) <- MessageStatus.sent;
+        }            
+    }
+    APPLY;
+    
+    NEWSESSION NEWTHREAD {
+        FOR overIn(chat, CustomUser user) AND (user != currentUser() OR system) DO {
+            pushNotification(user, system, notificate);
+        }          
+    }
+}
+
+sendMessage '{chat.send.message.user}' (CustomUser user1, CustomUser user2, STRING message, BOOLEAN notificate)  {
+    createDialogChat(user1, user2);
+    sendMessage(chatIn(user1, user2), message, NULL, notificate());
+}
+
+sendMessage '{chat.send.message.user}' (CustomUser user, STRING message, BOOLEAN notificate)  {
+    sendMessage(user, currentUser(), message, notificate);
+}
+
+sendMessage '{chat.send.message.chat}' (Chat chat)  { 
+    IF message() OR attachment() THEN {
+        sendMessage(chat, message(), NULL, notificate());
+        markSeenOnChangeMessages(chat, currentUser());
+        seekLastMessage();
+    }
+}
+
+sendMessage '{chat.send.message.user}' (CustomUser user)  { 
+    createDialogChat(user, currentUser()) ;
+    seekChat(chatIn(user, currentUser()));
+    sendMessage(chatIn(user, currentUser()));
+}
+
+recentVisible = ABSTRACT BOOLEAN ();
+sendMessage '{chat.send.message}' (Chat chat, CustomUser user) { 
+    IF recentVisible() THEN sendMessage(chat); ELSE sendMessage(user);
+} CHANGEKEY 'ctrl ENTER;priority=100';
+
+// ----- editing
+
+editingMessage '{chat.editing.message}' = DATA LOCAL Message ();
+
+activateMessage ABSTRACT LIST ();
+editMessage '{chat.edit.message}' (Chat c, Message m) { 
+    IF own(m) THEN {
+        IF subtractSeconds(dateTime(m), currentDateTime()) < 3600 THEN {
+            editingMessage() <- m;
+            message() <- text(m);
+            attachmentName() <- attachmentName(m);
+            attachment() <- attachment(m);
+            activateMessage();
+        } ELSE MESSAGE '{chat.edit.message.message1}';
+    } ELSE MESSAGE '{chat.edit.message.message2}';
+}
+
+saveEditing '{chat.save.message}' () { 
+    FOR Message m = editingMessage() DO {
+        lastEditDateTime(m) <- currentDateTime();
+        text(m) <- message();
+        attachmentName(m) <- attachmentName();
+        attachment(m) <- attachment();
+        APPLY;
+    }
+} CHANGEKEY 'ctrl ENTER;priority=100';
+
+stopEditing () { 
+    IF editingMessage() THEN {
+        editingMessage() <- NULL;
+        message() <- NULL;
+        attachmentName() <- NULL;
+        attachment() <- NULL;
+    }
+}
 
 deleteMessage '{chat.delete.message}' (Message m)  { 
     IF own(m) THEN {
         IF subtractSeconds(dateTime(m), currentDateTime()) < 3600 THEN {
             DELETE m;
-            apply();
+            APPLY;
         } ELSE MESSAGE '{chat.delete.message.message1}';
     } ELSE MESSAGE '{chat.delete.message.message2}';
 }
 
+// ------ Full chat form
+online (CustomUser user) = subtractSeconds(lastActivity(user), currentDateTime()) < 300;
+away (CustomUser user) = subtractSeconds(lastActivity(user), currentDateTime()) < 3600;
+backgroundUser (CustomUser user) = IF online(user) THEN RGB(0, 255, 0) ELSE IF away(user) THEN RGB(255, 255, 0);
+
+backgroundMessage (Message m) = IF NOT own(m) THEN NULL ELSE IF seenCount(m) < 2 THEN RGB(247, 247, 247) ELSE RGB(240, 244, 248);
+
+backgroundUnread '{chat.background.unread}' (Chat chat) = RGB(255, 0, 0) IF unreadMessages(chat);
+backgroundUnread '{chat.background.unread}' (CustomUser user) = RGB(255, 0, 0) IF unreadMessages(user);
+
 FORM fullChat '{chat.chat}'
     OBJECTS c = Chat
-    PROPERTIES(c) READONLY name ON CONTEXTMENU editChatAction(c), lastMessageDateTime, unreadMessages BACKGROUND backgroundUnread(c)
-    PROPERTIES(c) NEWSESSION NEW, DELETE SHOWIF isEmpty(c)
-    PROPERTIES(c) READONLYIF readonlyFullChat(c) PANEL newMessage ON CHANGE saveNewMessage(c), notificate ON CHANGE saveNotificate(c), 
-                  loadAttachment SHOWIF showLoadAttachment(c), deleteAttachment SHOWIF showDeleteAttachment(c)
-    
+    PROPERTIES(c) READONLY   name ON CONTEXTMENU editChatAction(c), lastMessageDateTime, unreadMessages BACKGROUND backgroundUnread(c)
+    PROPERTIES(c) NEWSESSION NEW, DELETE SHOWIF NOT countMessages(c)
+    FILTERS in(c)
+
     EVENTS ON INIT markSeenOnChange(c)
-    EVENTS ON CHANGE c markSeenOnChange(c), ON CHANGE c stopEditing(c)
+    EVENTS ON CHANGE c markSeenOnChange(c), 
+           ON CHANGE c stopEditing()
     EVENTS ON CLOSE markSeenOnChange(c)
     ORDERS lastMessageDateTime(c) DESC
-    
+
+//  user    
     OBJECTS u = CustomUser
     PROPERTIES(u) READONLY BACKGROUND backgroundUser(u) login, name, lastMessageDateTime , unreadMessages BACKGROUND backgroundUnread(u) 
     
@@ -319,30 +360,42 @@ FORM fullChat '{chat.chat}'
     FILTERGROUP in FILTER '{chat.form.full.chat.filter.in}' away(u)  
     FILTERS u != currentUser(), login(u), lastActivity(u)
     ORDERS lastMessageDateTime(u) DESC
-    
-    PROPERTIES(c, u)  sendMessage SHOWIF noEditingMessage(c)
-    PROPERTIES(c)  saveMessage SHOWIF editingMessage(c)
-    
+
+//  message    
     OBJECTS m = Message LAST
-    PROPERTIES(m) READONLY BACKGROUND backgroundMessage(m) nameAuthor, showText ON CONTEXTMENU editMessage(c, m) ON CONTEXTMENU deleteMessage(m) 
-                  ON CONTEXTMENU openAttachment(m), hasAttachment, status, dateTime, openAttachment SHOWIF attachment(m) TOOLBAR CHANGEABLE
+    PROPERTIES(m) READONLY BACKGROUND backgroundMessage(m) SHOWIF NOT isWeb() 
+                                nameAuthor, 
+                                showText ON CONTEXTMENU editMessage(c, m) ON CONTEXTMENU deleteMessage(m), 
+                                hasAttachment, status, dateTime
+    PROPERTIES(m) SHOWIF hasAttachment(m) AND NOT isWeb() TOOLBAR
+                                attachmentName READONLY, openAttachment
     
-    EVENTS ON CHANGE m markSeenOnChange(m), ON CHANGE m stopEditing(c)
+    EVENTS ON CHANGE m markSeenOnChange(m), 
+           ON CHANGE m stopEditing()
         
-    FILTERS in(c), chat(m) == c AND (NOT chatNotFound() OR recentVisible()), status(m, currentUser())
+    FILTERS chat(m) = c AND (recentVisible() OR chatIn(u, currentUser()) = c), status(m, currentUser())
+
+//  send
+    PROPERTIES() PANEL READONLYIF readonly(c) AND recentVisible() 
+                                                 message, notificate,
+                                                 loadAttachment SHOWIF NOT attachment(), 
+                                                 attachmentName SHOWIF TRUE IF attachment(),
+                                                 deleteAttachment SHOWIF TRUE IF attachment() 
+    
+    PROPERTIES(c, u) sendMessage SHOWIF NOT editingMessage()
+    PROPERTIES()     saveEditing SHOWIF     editingMessage()
     
     LIST Chat OBJECT c
 ;
 
 DESIGN fullChat {
-    BOX {
-        NEW topMain {
-            type = SPLITH;
+    OBJECTS {
+        NEW pane {
+            type = CONTAINERH;
             fill = 1;
             NEW left {
                 fill = 0.3;
                 type = TABBED;
-       
                 NEW contacts {
                     caption = '{chat.contacts}';
                     MOVE BOX(u) { caption = '{chat.contacts}'; }
@@ -351,107 +404,80 @@ DESIGN fullChat {
                     caption = '{chat.chats}';
                     MOVE BOX(c) { caption = '{chat.chats}'; } 
                 }                         
-                
             }
-            NEW right {
-                type = SPLITV;
+            NEW chat {
                 fill = 0.7;
                 MOVE BOX(m) { 
-                    fill = 0.8; 
+                    fill = 0.8;
                     PROPERTY(showText(m)) {
                         valueWidth = 300;
                     }                       
                 }
-                            
-                NEW bottom {   
-                    fill = 0.2; 
-                    type = CONTAINERV;
-                    MOVE PROPERTY(newMessage(c)) {
-                        fill = 1; 
-                        panelCaptionVertical = TRUE;
-                    }   
-                                                  
-                    NEW bottomSend {
-                        align = STRETCH ;
-                        type = CONTAINERH;
-                        MOVE PROPERTY(sendMessage(c, u)) {                           
-                            font = 'bold 24';
-                        }
-                        MOVE PROPERTY(saveMessage(c)) {                           
-                            font = 'bold 24';
-                        }
-                        NEW loadAttachment {
-                            fill = 1;
-                            MOVE PROPERTY(loadAttachment(c)) {
+                
+                NEW chatMessage {
+                    fill = 0.2;
+                    type = CONTAINERH;
+                    alignment = STRETCH;
+                    NEW inputMessage {
+                        showIf = NOT isWeb();
+                        fill = 1;
+                        MOVE PROPERTY(message()) {
+                            fill = 1; 
+                            panelCaptionVertical = TRUE;
+                        }   
+                        NEW inputAttachments {
+                            align = STRETCH;
+                            type = CONTAINERH;
+                            MOVE PROPERTY(loadAttachment()) {
+                                fill = 1;
                                 fontSize = 24;
                             }
-                        }
-                        NEW deleteAttachment {
-                            fill = 1;
-                            MOVE PROPERTY(deleteAttachment(c)) {
+                            MOVE PROPERTY(attachmentName()) {
+                                fill = 1;
                                 fontSize = 24;
                             }
-                        }
-                        NEW notificate {
-                            fill = 1;
-                            MOVE PROPERTY(notificate(c)) {
-                                font = 'bold 24';
-                                alignment = END;
+                            MOVE PROPERTY(deleteAttachment()) {
+                                fill = 1;
+                                fontSize = 24;
                             }
                         }
                     }
-                }
+                    NEW sendMessage {
+                        alignment = STRETCH;
+                        MOVE PROPERTY(sendMessage(c, u)) {
+                            fill = 1;                           
+                            font = 'bold 24';
+                        }
+                        MOVE PROPERTY(saveEditing()) {                           
+                            fill = 1;                           
+                            font = 'bold 24';
+                        }
+                        MOVE PROPERTY(notificate()) {
+                            font = 'bold 24';
+                            alignment = START;
+                        }
+                    }
+                }                            
             }            
         }
-        MOVE TOOLBARBOX;
     }           
 }
 
 EXTEND FORM fullChat
-    EVENTS ON INIT {ACTIVATE TAB fullChat.recent;} 
+    EVENTS ON INIT { ACTIVATE TAB fullChat.recent; } 
 ;
 
-editMessage (Chat c, Message m) + { 
-    IF own(m) THEN {
-        IF subtractSeconds(dateTime(m), currentDateTime()) < 3600 THEN {
-            newMessage(c) <- text(m);
-            editingMessage(c) <- m;
-            attachment(c) <- attachment(m);
-            ACTIVATE PROPERTY fullChat.newMessage(c);
-        } ELSE MESSAGE '{chat.edit.message.message1}';
-    } ELSE MESSAGE '{chat.edit.message.message2}';
+recentVisible() += ACTIVE TAB fullChat.recent;
+seekChat (Chat chat) + { SEEK fullChat.c = chat; }
+
+activateMessage() + { ACTIVATE PROPERTY fullChat.message(); }
+seekLastMessage() + { SEEK LAST fullChat.m; }
+
+NAVIGATOR {
+    NEW fullChat IMAGE 'chat.png' BEFORE Authentication.account;
 }
 
-sendMessage '{chat.send.message.chat}' (Chat chat)  { 
-    IF newMessage(chat) OR attachment(chat) THEN
-        sendMessage(chat, newMessage(chat), NULL);
-}
-
-sendMessage '{chat.send.message.user}' (CustomUser user)  { 
-    LOCAL chat = Chat();
-    chat() <- chatIn(user, currentUser());
-    IF NOT chat() THEN {
-        NEW chat = Chat {
-            in(chat, user) <- TRUE;
-            in(chat, currentUser) <- TRUE WHERE currentUser == currentUser();
-            newMessage(chat) <- defaultNewMessage();
-            notificate(chat) <- defaultNotificate();
-            sendMessage(chat);
-            SEEK fullChat.c = chat;
-        } 
-    } ELSE sendMessage(chat());
-}
-
-saveMessage(Chat c) + { 
-    IF editingMessage(c) THEN {
-        editMessageText(editingMessage(c), c);
-        chatNewMessage(c) <- NULL;
-        attachment(c) <- NULL;
-        apply();
-    }
-} 
-
-//----------------------------SHORT CHAT----------------------------//
+//---------------------------- SHORT CHAT ----------------------------//
 
 deliveredNotificationAction(CustomUser user) + { 
     FOR in(chat(Message m)) AND status(m, user) == MessageStatus.sent DO {
@@ -459,75 +485,63 @@ deliveredNotificationAction(CustomUser user) + {
     }
 }
 
-closeChat '{chat.close.chat}'  { 
-    formClose();
-}
-
-reply '{chat.reply}' = DATA LOCAL TEXT (Message);
-notificate '{chat.notificate}' = DATA LOCAL BOOLEAN (Message); 
-replyChat '{chat.reply.chat}' (Chat c, Message m)  { 
-    IF(reply(m)) THEN {
+replyChat '{chat.reply.chat}' (Message m)  { 
+    IF (message()) THEN {
         markSeenMessages(currentUser());
-        newMessage(c) <- reply(m);
-        notificate(c) <- notificate(m);
         sendMessage(chat(m));
         formClose();
     }
-};
-
-replyChat '{chat.reply.chat}' (Message m)  { 
-    replyChat(chat(m), m);
 } CHANGEKEY 'ctrl ENTER';
 
-openChat '{chat.open.chat}' (Chat c, Message m)  { 
+openChat '{chat.open.chat}' (Message m)  { 
     markSeenMessages(currentUser());
-    newMessage(c) <-reply(m);
-    APPLY NESTED (newMessage[Chat], reply[Message]);
-    SHOW fullChat OBJECTS c=chat(m) NOWAIT;
+    APPLY;
+    SHOW fullChat OBJECTS c = chat(m) NOWAIT;
     formClose();
 };
 
-openChat '{chat.open.chat}' (Message m)  { 
-    openChat(chat(m), m);
-};
-
 FORM shortChat '{chat.new.message}'
-OBJECTS m = Message LAST
-PROPERTIES(m) READONLY nameShortChat, showText, dateTime
-PROPERTIES(m) PANEL reply READONLYIF readonly(m), replyChat SHOWIF editable(m), notificate SHOWIF editable(m), openChat
-PROPERTIES() closeChat
-FILTERS in(chat(m)), status(m, currentUser()), status(m, currentUser()) != MessageStatus.seen
-EVENTS ON CLOSE markSeenOnChange(m)
+    OBJECTS m = Message LAST
+    PROPERTIES(m) READONLY SHOWIF NOT isWeb() nameShortChat, showText, dateTime
+    PROPERTIES()  PANEL SHOWIF NOT isWeb() message READONLYIF readonly(m)
+    PROPERTIES()  PANEL notificate SHOWIF editable(m)
+    PROPERTIES(m) PANEL replyChat SHOWIF editable(m), openChat
+    
+    FILTERS in(chat(m)), status(m, currentUser()) != MessageStatus.seen
+    EVENTS ON CLOSE markSeenOnChange(m)
 ;
 
 DESIGN shortChat {
-    BOX {
-        BOX(m) {
-            fill = 0.7;
-        }
-        MOVE PROPERTY(reply(m)) {
-            panelCaptionVertical = TRUE;   
-            fill = 0.3;
-        }
-        NEW buttons {
-            align = STRETCH;
-            type = CONTAINERH;
-            MOVE PROPERTY(replyChat(m));
-            MOVE PROPERTY(openChat(m));
-            MOVE PROPERTY(closeChat());
-            NEW notificate {
-                fill = 1;
-                MOVE PROPERTY(notificate(m)) { alignment = END; };
+    OBJECTS {
+        NEW chat {
+            fill = 1;
+            MOVE BOX(m) {
+                fill = 0.7;
+            }
+            MOVE PROPERTY(message()) {
+                panelCaptionVertical = TRUE;   
+                fill = 0.3;
+            }
+            NEW buttons {
+                align = STRETCH;
+                type = CONTAINERH;
+                MOVE PROPERTY(replyChat(m));
+                MOVE PROPERTY(openChat(m));
+                MOVE PROPERTY(formClose()) { caption = '{chat.close.chat}'; }
+                NEW notificate {
+                    fill = 1;
+                    MOVE PROPERTY(notificate()) { alignment = END; };
+                }
             }
         }
-        REMOVE TOOLBARBOX;
     }      
+    REMOVE TOOLBARBOX;
 }  
 
 showOnStart()  { 
-    IF sumUnreadMessages(currentUser()) > 0 THEN {
+    IF countUnreadMessages(currentUser()) > 0 THEN {
         deliveredNotificationAction(currentUser());
-        apply();
+        APPLY;
         SHOW shortChat NOMANAGESESSION;
     }
 }
@@ -535,10 +549,10 @@ showOnStart()  {
 onDesktopClientStarted() + {  showOnStart(); }
 onWebClientStarted() + {  showOnStart(); }
 
-pushAction(BOOLEAN system, BOOLEAN notificate)  { 
+pushAction (BOOLEAN system, BOOLEAN notificate)  { 
     ACTIVE FORM fullChat;
     IF isActiveForm() AND NOT system THEN {
-        seekLastMessageInFullChat();
+        seekLastMessage();
         formRefresh();
     }
     ELSE {
@@ -557,64 +571,146 @@ pushAction(BOOLEAN system, BOOLEAN notificate)  {
     }
 }
 
-seekLastMessageInFullChat() + { 
-    SEEK LAST fullChat.m;
-}
-
 pushNotification (CustomUser user, BOOLEAN system, BOOLEAN notificate) + { 
     FOR user(Connection conn) == user AND connectionStatus(conn) == ConnectionStatus.connectedConnection AND conn != currentConnection() DO {
-        NEWSESSION { NEWTHREAD pushAction(system AS BOOLEAN, notificate AS BOOLEAN); CONNECTION conn; }
-    }
-}
-
-recentVisible() += ACTIVE TAB fullChat.recent;
-sendMessage(Chat chat, CustomUser user) + { 
-    IF recentVisible() THEN sendMessage(chat); ELSE sendMessage(user);
-}
-
-seekChat(CustomUser user) + { 
-    LOCAL chat = Chat();
-    chat() <- chatIn(user, currentUser());
-    IF NOT chat() THEN {
-        chatNotFound() <- TRUE;
-        //prevUser тут - предыдущий выбранный user на форме
-        markSeenOnChange(chatIn(prevUser(), currentUser()));
-    } ELSE {
-        chatNotFound() <- NULL;
-        SEEK fullChat.c = chat();
-        SEEK LAST fullChat.m;
-        markSeenOnChange(chat());
-    }
-    prevUser() <- user;
-}
-
-NAVIGATOR {
-    NEW fullChat IMAGE 'chat.png' BEFORE Authentication.account;
-}
-sendMessage '{chat.send.message.user}' (CustomUser userFrom, CustomUser userTo, STRING message, BOOLEAN notificate)  { 
-    LOCAL chat = Chat();
-    chat() <- chatIn(userFrom, userTo);
-    IF NOT chat() THEN {
-        NEW newChat = Chat {
-            in(newChat, userFrom) <- TRUE;
-            in(newChat, userTo) <- TRUE;
-            chat() <- newChat;
+        NEWSESSION { 
+            NEWTHREAD pushAction(system AS BOOLEAN, notificate AS BOOLEAN); 
+                      CONNECTION conn; 
         }
     }
-    
-    NEW m = Message {
-            chat(m) <- chat();
-            dateTime(m) <- currentDateTime();
-            author(m) <- userFrom;
-            text(m) <- message;
-            status(m, userFrom) <- MessageStatus.seen;
-            status(m, userTo) <- MessageStatus.sent;            
-        }
-    apply();
+}
+
+// web
+
+// list
+json (Message m) = [FORMULA STRING 'json_build_object(\'author\',$1,\'time\',$2,\'text\',$3,\'own\',$4,\'replyAuthor\',$5,\'replyText\',$6,\'replyMessage\',$7,\'id\',$8,\'attachment\',$9)']
+                             ((OVERRIDE nameAuthor(m), ''), dateTime(m), text(m), IF own(m) THEN 1 ELSE 0, (OVERRIDE nameAuthorReplyTo(m), ''), (OVERRIDE textReplyTo(m), ''), (OVERRIDE LONG(replyTo(m)), 0), m, (OVERRIDE attachmentName(m), ''));
+
+changeMessage (Message m) {
+    INPUT s = STRING DO {
+        stringToFile(s);
         
-    NEWSESSION NEWTHREAD {
-        FOR user(Connection conn) == userTo AND connectionStatus(conn) == ConnectionStatus.connectedConnection DO {
-            NEWSESSION { NEWTHREAD pushAction(NULL, notificate); CONNECTION conn; }
-        }          
+        LOCAL action = STRING();
+        LOCAL id = LONG();
+        IMPORT JSON FROM resultFile() TO() action, id;
+        
+        IF action() = 'goToReply' THEN {
+            seek(replyTo(m));
+        }
+
+        IF action() = 'reply' THEN {
+            replyTo() <- m;
+        }
+
+        IF action() = 'open' THEN {
+            FOR LONG(Message ms AS Message) = id() DO {
+                open(attachment(ms), attachmentName(ms));
+            }
+        }
     }
 }
+
+EXTEND FORM fullChat
+    PROPERTIES(m) '' = json CUSTOM 'chatMessageRender' SHOWIF isWeb() 
+                  ON CHANGE changeMessage(m) 
+                  ON CONTEXTMENU editMessage(c, m) 
+                  ON CONTEXTMENU deleteMessage(m)
+;
+EXTEND FORM shortChat
+    PROPERTIES(m) '' = json CUSTOM 'chatMessageRender' SHOWIF isWeb() ON CHANGE changeMessage(m) 
+;
+
+// send
+jsonInputMessage () = [FORMULA STRING 'json_build_object(\'replyAuthor\',$1,\'replyText\',$2,\'text\',$3,\'attachment\',$4)']
+                                ((OVERRIDE nameAuthorReplyTo(), ''), (OVERRIDE textReplyTo(), ''), (OVERRIDE message(), ''), (OVERRIDE attachmentName(), ''));
+
+changeInputMessage () {
+    INPUT s = TEXT DO {
+        stringToFile(s);
+        
+        LOCAL action = STRING();
+        LOCAL value = TEXT();
+        LOCAL name = STRING();
+        LOCAL data = STRING();
+        IMPORT JSON FROM resultFile() TO() action, value, name, data;
+
+        IF action() = 'replyRemove' THEN {
+            replyTo() <- NULL;
+        }
+
+        IF action() = 'change' THEN {
+            message() <- value();
+        }
+
+        IF action() = 'upload' THEN {
+            LOCAL extension = STRING ();
+            extension() <- getWord(name(), '.', wordCount(name(), '.')) IF wordCount(name(), '.') > 1;
+            attachmentName() <- left(name(), length(name()) - OVERRIDE (length(extension()) + 1), 0);
+            attachment() <- setExtension(decode(data(), 'base64'), (OVERRIDE extension(), 'dat'));
+        }
+
+        IF action() = 'open' THEN {
+            open(attachment(), attachmentName());
+        }
+
+        IF action() = 'remove' THEN {
+            attachment() <- NULL;
+            attachmentName() <- NULL;
+        }
+    }
+}
+
+EXTEND FORM fullChat
+    PROPERTIES jsonInputMessage() CUSTOM 'chatMessageInputRender' SHOWIF isWeb() 
+               ON CHANGE changeInputMessage()
+;
+
+DESIGN fullChat {
+    chatMessage {
+        MOVE PROPERTY(jsonInputMessage()) FIRST {
+            alignment = STRETCH; 
+            autoSize = TRUE; 
+            width = 0; 
+            caption = ''; 
+            fill = 1; 
+        }
+    }
+}
+
+EXTEND FORM shortChat
+    PROPERTIES jsonInputMessage() CUSTOM 'chatMessageInputRender' SHOWIF isWeb() 
+               ON CHANGE changeInputMessage()
+;
+
+DESIGN shortChat {
+    chat {
+        NEW chatMessage BEFORE buttons {
+            fill = 0.3;
+            type = CONTAINERH;
+            alignment = STRETCH; 
+            MOVE PROPERTY(jsonInputMessage()) {
+                alignment = STRETCH; 
+                autoSize = TRUE; 
+                width = 0; 
+                caption = ''; 
+                fill = 1; 
+            }
+        }
+    }
+}
+
+// ----- restart server
+sendRestartMessage '{chat.send.restart.message}' = DATA BOOLEAN ();
+sendRestartServerMessage '{chat.send.restart.server.message}' ()  { sendMessage(chat('system'), '{chat.send.restart.server.message.message}', TRUE, NULL); }
+restartServer() + {  IF sendRestartMessage() THEN sendRestartServerMessage(); }
+
+sendCancelRestartServerMessage '{chat.send.cancel.restart.server.message}' ()  { sendMessage(chat('system'), '{chat.send.cancel.restart.server.message.message}', TRUE, NULL); }
+cancelRestartServer() + {  IF sendRestartMessage() THEN sendCancelRestartServerMessage(); }
+
+EXTEND FORM maintenance PROPERTIES() sendRestartMessage;
+
+DESIGN maintenance {
+    administration {
+        MOVE PROPERTY(sendRestartMessage()) BEFORE PROPERTY(restartServer());
+    }
+}                               

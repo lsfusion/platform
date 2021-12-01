@@ -134,8 +134,21 @@
                 <!-- dateRangePicker -->
                 'https://cdn.jsdelivr.net/momentjs/latest/moment.min.js',
                 'https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js',
-                'https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css'
+                'https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css',
 
+                <!-- Quill -->
+                'https://cdn.quilljs.com/1.3.6/quill.js',
+                'https://cdn.quilljs.com/1.3.6/quill.bubble.css',
+                'static/css/quillRichText.css',
+
+                <!-- Ace code editor -->
+                'https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.13/ace.js',
+                'https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.13/worker-html.js',
+                'https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.13/mode-html.min.js',
+                'https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.13/ext-language_tools.min.js',
+                'https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.13/theme-chrome.min.js',
+                'https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.13/theme-ambiance.min.js',
+                'static/css/aceEditor.css'
             ]);
 
         </script>

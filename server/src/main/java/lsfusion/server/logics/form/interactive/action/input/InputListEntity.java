@@ -54,7 +54,11 @@ public class InputListEntity<P extends PropertyInterface, V extends PropertyInte
     }
 
     public P singleInterface() {
-        return property.interfaces.removeIncl(mapValues.keys()).single();
+        return getInterfaces().single();
+    }
+
+    public ImSet<P> getInterfaces() {
+        return property.interfaces.removeIncl(mapValues.keys());
     }
 
     public InputListEntity<P, V> newSession() {
@@ -80,7 +84,7 @@ public class InputListEntity<P extends PropertyInterface, V extends PropertyInte
     }
 
     public InputValueList<P> map(ImMap<V, ? extends ObjectValue> map) {
-        return new InputValueList<P>(property, BaseUtils.immutableCast(mapValues.join(map)));
+        return new InputValueList<>(property, BaseUtils.immutableCast(mapValues.join(map)));
     }
 
     public <X extends PropertyInterface, J extends PropertyInterface> InputListEntity<?, V> and(InputFilterEntity<X, V> filterProperty) {
@@ -134,7 +138,7 @@ public class InputListEntity<P extends PropertyInterface, V extends PropertyInte
     
     public boolean isValueUnique(ImRevMap<V, StaticParamNullableExpr> listParamExprs) {
         ImRevMap<P, StaticParamNullableExpr> mapExprs = mapValues.join(listParamExprs);
-        return property.isValueFull(mapExprs) && property.isValueUnique(mapExprs);
+        return property.isValueFull(mapExprs) && property.isValueUnique(mapExprs, true);
     }
 
     @Override

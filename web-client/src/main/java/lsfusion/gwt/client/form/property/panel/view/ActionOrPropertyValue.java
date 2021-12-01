@@ -74,27 +74,27 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
 
     // when we don't want property value (it's content) to influence on layouting, and in particular flex - basis
     // so we use absolute positioning for that (and not width 100%, or writing to div itself)
-    public Pair<Integer, Integer> setStatic(ResizableMainPanel panel, boolean isProperty) { // assert that panel is resizable, panel and not resizable simple panel, since we want to append corners also to that panel (and it is not needed for it to be simple)
+    public void setStatic(ResizableMainPanel panel, boolean isProperty) { // assert that panel is resizable, panel and not resizable simple panel, since we want to append corners also to that panel (and it is not needed for it to be simple)
         panel.setFillMain(this);
         borderWidget = panel.getPanelWidget();
 
-        return setBaseSize(isProperty);
+        setBaseSize(isProperty);
     }
     // auto sized property with value
-    public Pair<Integer, Integer> setDynamic(ResizableMainPanel panel, boolean isProperty) {
+    public void setDynamic(ResizableMainPanel panel, boolean isProperty) {
         panel.setPercentMain(this);
         borderWidget = panel.getPanelWidget();
 
-        return setBaseSize(isProperty);
+        setBaseSize(isProperty);
     }
     // auto sized action with caption
-    public Pair<Integer, Integer> setDynamic(boolean isProperty) {
+    public void setDynamic(boolean isProperty) {
         borderWidget = this;
 
-        return setBaseSize(isProperty);
+        setBaseSize(isProperty);
     }
 
-    public Pair<Integer, Integer> setBaseSize(boolean isProperty) {
+    public void setBaseSize(boolean isProperty) {
         // we have to set border for border element and not element itself, since absolute positioning include border INSIDE div, and default behaviour is OUTSIDE
         borderWidget.addStyleName("panelRendererValue");
         if(isProperty)
@@ -109,7 +109,7 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
         // about the last parameter oppositeAndFixed, here it's tricky since we don't know where this borderWidget will be added, however it seems that all current stacks assume that they are added with STRETCH alignment
         FlexPanel.setBaseSize(borderWidget, false, valueWidth);
         FlexPanel.setBaseSize(borderWidget, true, valueHeight);
-        return new Pair<>(valueWidth + 2, valueHeight + 2); // should correspond to border (now border : 1px which equals to 2px) in panelRendererValue style
+//        return new Pair<>(valueWidth + 2, valueHeight + 2); // should correspond to border (now border : 1px which equals to 2px) in panelRendererValue style
     }
 
     @Override
@@ -140,7 +140,8 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
                 this::onEditEvent,
                 handler -> {}, // no outer context
                 //ctrl-c ctrl-v from excel adds \n in the end, trim() removes it
-                handler -> CopyPasteUtils.putIntoClipboard(getRenderElement()), handler -> CopyPasteUtils.getFromClipboard(handler, line -> pasteValue(line.trim())), true);
+                handler -> CopyPasteUtils.putIntoClipboard(getRenderElement()), handler -> CopyPasteUtils.getFromClipboard(handler, line -> pasteValue(line.trim())),
+                true, property.getCellRenderer().isCustomRenderer());
     }
 
     boolean isFocused;

@@ -2,9 +2,9 @@ package lsfusion.gwt.client.form.object.table.view;
 
 import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.Dimension;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Pair;
@@ -36,7 +36,7 @@ import java.util.function.Consumer;
 import static java.lang.Math.max;
 import static lsfusion.gwt.client.form.event.GKeyStroke.*;
 
-public abstract class GGridPropertyTable<T extends GridDataRecord> extends GPropertyTable<T> implements HasMaxPreferredSize {
+public abstract class GGridPropertyTable<T extends GridDataRecord> extends GPropertyTable<T> {
     public static int DEFAULT_PREFERRED_WIDTH = 130; // должно соответствовать значению в gridResizePanel в MainFrame.css
     public static int DEFAULT_PREFERRED_HEIGHT = 70; // должно соответствовать значению в gridResizePanel в MainFrame.css
     public static int DEFAULT_MAX_PREFERRED_HEIGHT = 140;
@@ -110,13 +110,13 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
             addFilterBinding(new GKeyInputEvent(REPLACE_USER_FILTER_KEY_STROKE),
                     event -> getGroupController().replaceFilter(event));
             // REMOVE FILTERS
-            GFormController.BindingExec removeFilters = event -> getGroupController().removeFilters();
+            GFormController.BindingExec removeFilters = event -> getGroupController().resetFilters();
             addFilterBinding(new GKeyInputEvent(REMOVE_USER_FILTERS_KEY_STROKE),
                     removeFilters);
             addFilterBinding(nativeEvent -> {
                         if (GKeyStroke.isEscapeKeyEvent(nativeEvent) && GKeyStroke.isPlainKeyEvent(nativeEvent)) {
                             GAbstractTableController goController = getGroupController();
-                            return goController.userFilters != null && goController.userFilters.hasConditions();
+                            return goController.filter != null && goController.filter.hasConditions();
                         }
                         return false;
                     }, removeFilters);
@@ -141,17 +141,19 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
                     }
                 });
         }
+        GwtClientUtils.setZeroZIndex(getElement());
     }
 
     public final ResizeHelper resizeHelper = new ResizeHelper() {
+
         @Override
-        public Element getChildElement(int index) {
-            return getHeaderElement(index);
+        public int getChildAbsolutePosition(int index, boolean left) {
+            Element element = getHeaderElement(index);
+            return left ? element.getAbsoluteLeft() : element.getAbsoluteRight();
         }
 
         @Override
-        public Widget getChildWidget(int index) {
-            return null;
+        public void propagateChildResizeEvent(int index, NativeEvent event, Element cursorElement) {
         }
 
         @Override
@@ -161,11 +163,6 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
 
         @Override
         public boolean isChildResizable(int index) {
-            return true;
-        }
-
-        @Override
-        public boolean isChildVisible(int index) {
             return true;
         }
 
@@ -208,14 +205,6 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         return getTableBodyElement().getOffsetHeight();
     }
     
-    @Override
-    public Dimension getMaxPreferredSize() {
-        return new Dimension(
-                max(isAutoSize() ? 0 : DEFAULT_PREFERRED_WIDTH, preferredWidth + nativeScrollbarWidth + 17),
-                max(isAutoSize() ? 0 : DEFAULT_MAX_PREFERRED_HEIGHT, getRowCount() * tableBuilder.getCellHeight() + 1 + 30 + nativeScrollbarHeight)
-        );
-    }
-
     protected abstract GGroupObjectValue getSelectedKey();
 
     // there is a contract if there are keys there should be current object
@@ -532,7 +521,8 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
                 handler -> selectionHandler.onCellBefore(handler, cell, rowChanged -> isChangeOnSingleClick(cell, (Boolean) rowChanged)),
                 handler -> column.onEditEvent(handler, cell, parent),
                 handler -> selectionHandler.onCellAfter(handler, cell),
-                handler -> CopyPasteUtils.putIntoClipboard(parent), handler -> CopyPasteUtils.getFromClipboard(handler, line -> pasteData(cell, parent, GwtClientUtils.getClipboardTable(line))), false);
+                handler -> CopyPasteUtils.putIntoClipboard(parent), handler -> CopyPasteUtils.getFromClipboard(handler, line -> pasteData(cell, parent, GwtClientUtils.getClipboardTable(line))),
+                false, cell.getColumn().isCustomRenderer());
     }
 
     @Override
@@ -560,6 +550,11 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
             renderDom(cell, cellElement);
 
             updateDom(cell, cellElement);
+
+            if(isSticky()) {
+                //class dataGridStickyCell is also used in DataGrid isStickyCell()
+                cellElement.addClassName("dataGridStickyCell");
+            }
         }
 
         public void renderDom(Cell cell, Element cellElement) {

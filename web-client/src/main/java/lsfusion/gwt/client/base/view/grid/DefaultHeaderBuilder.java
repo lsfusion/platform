@@ -19,8 +19,12 @@ import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.dom.client.TableSectionElement;
+import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
+import lsfusion.gwt.client.view.StyleDefaults;
 
-import static lsfusion.gwt.client.view.StyleDefaults.customDataGridStyle;
+import java.util.List;
+
+import static lsfusion.gwt.client.view.StyleDefaults.*;
 
 /**
  * Default implementation of {@link HeaderBuilder} that renders columns.
@@ -47,7 +51,7 @@ public class DefaultHeaderBuilder<T> extends DataGridHeaderBuilder<T> {
 
         @Override
         public String getCellStyle() {
-            return grid.style.dataGridHeaderCell() + " " + customDataGridStyle.dataGridHeaderCell();
+            return grid.style.dataGridHeaderCell();
         }
 
         @Override
@@ -57,7 +61,7 @@ public class DefaultHeaderBuilder<T> extends DataGridHeaderBuilder<T> {
 
         @Override
         public String getLastCellStyle() {
-            return grid.style.dataGridLastHeaderCell() + " " + customDataGridStyle.dataGridLastHeaderCell();
+            return grid.style.dataGridLastHeaderCell();
         }
     }
 
@@ -80,7 +84,7 @@ public class DefaultHeaderBuilder<T> extends DataGridHeaderBuilder<T> {
 
         @Override
         public String getCellStyle() {
-            return grid.style.dataGridFooterCell() + " " + customDataGridStyle.dataGridFooterCell();
+            return grid.style.dataGridFooterCell();
         }
 
         @Override
@@ -158,5 +162,10 @@ public class DefaultHeaderBuilder<T> extends DataGridHeaderBuilder<T> {
 
             updateHeader(th, header);
         }
+    }
+
+    @Override
+    protected void updateHeaderStickyLeftImpl(TableRowElement tr, List<Integer> stickyColumns, List<Integer> stickyLefts) {
+        GPropertyTableBuilder.updateStickyLeft(tr, stickyColumns, stickyLefts);
     }
 }

@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.form.property;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.ClientMessages;
@@ -21,12 +20,12 @@ import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.design.GFontMetrics;
+import lsfusion.gwt.client.form.design.view.flex.LinearCaptionContainer;
 import lsfusion.gwt.client.form.event.GInputBindingEvent;
 import lsfusion.gwt.client.form.event.GKeyInputEvent;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
-import lsfusion.gwt.client.form.object.panel.controller.GPropertyPanelController;
 import lsfusion.gwt.client.form.property.async.GAsyncChange;
 import lsfusion.gwt.client.form.property.async.GAsyncEventExec;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
@@ -182,6 +181,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public int valueWidth = -1;
     public int valueHeight = -1;
 
+    public boolean autoSize;
+
     public boolean panelCaptionVertical;
     public Boolean panelCaptionLast;
     public GFlexAlignment panelCaptionAlignment;
@@ -197,6 +198,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     private transient CellRenderer cellRenderer;
     
     public boolean notNull;
+
+    public boolean sticky;
 
     // eventually gets to PropertyDrawEntity.getEventAction (which is symmetrical to this)
     public String getEventSID(Event editEvent) {
@@ -220,7 +223,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
     public GPropertyDraw(){}
 
-    public PanelRenderer createPanelRenderer(GFormController form, ActionOrPropertyValueController controller, GGroupObjectValue columnKey, GPropertyPanelController.CaptionContainer captionContainer) {
+    public PanelRenderer createPanelRenderer(GFormController form, ActionOrPropertyValueController controller, GGroupObjectValue columnKey, LinearCaptionContainer captionContainer) {
         return baseType.createPanelRenderer(form, controller, this, columnKey, captionContainer);
     }
 
@@ -405,7 +408,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     }
 
     public boolean isPanelCaptionLast() {
-        return panelCaptionLast != null ? panelCaptionLast : (baseType instanceof GLogicalType && !panelCaptionVertical && !container.horizontal);
+        return panelCaptionLast != null ? panelCaptionLast : (baseType instanceof GLogicalType && !panelCaptionVertical && container.isVertical());
     }
 
     public GFlexAlignment getPanelCaptionAlignment() {
@@ -470,11 +473,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
         GFont font = this.font != null ? this.font : parentFont;
 
-        String widthString = null;
-        if(widthString == null && charWidth != 0)
-            widthString = GwtSharedUtils.replicate('0', charWidth);
-        if(widthString != null)
-            return baseType.getFullWidthString(widthString, font);
+        if(charWidth != 0)
+            return GType.getFullWidthString(GwtSharedUtils.replicate('0', charWidth), font);
 
         return baseType.getDefaultWidth(font, this);
     }
@@ -521,5 +521,10 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     @Override
     public String toString() {
         return sID + " " + caption;
+    }
+
+    @Override
+    public boolean isAlignCaption() {
+        return !hasColumnGroupObjects() && !isAction() && !panelCaptionVertical;
     }
 }

@@ -39,10 +39,21 @@ public class GwtSharedUtils {
     }
 
     public static <K> String toString(String separator, K... array) {
+        return toString(separator, array.length, array);
+    }
+    public static <K> String toString(String separator, int size, K[] array) {
         String result = "";
-        for (K element : array)
-            result = (result.length() == 0 ? "" : result + separator) + element;
+        for (int i = 0; i < size; i++) {
+            result = (result.length() == 0 ? "" : result + separator) + array[i];
+        }
         return result;
+    }
+
+    public static String[] toArray(String element, int size) {
+        String[] array = new String[size];
+        for (int i = 0; i < size; i++)
+            array[i] = element;
+        return array;
     }
 
     public static String replicate(char character, int length) {

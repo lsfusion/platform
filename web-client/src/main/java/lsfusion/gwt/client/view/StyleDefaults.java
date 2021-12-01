@@ -1,7 +1,7 @@
 package lsfusion.gwt.client.view;
 
-import com.google.gwt.dom.client.Document;
-import com.google.gwt.dom.client.StyleElement;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.user.client.ui.RootPanel;
 import lsfusion.gwt.client.form.property.cell.classes.ColorDTO;
 
 import static lsfusion.gwt.client.base.view.ColorUtils.*;
@@ -32,11 +32,20 @@ public class StyleDefaults {
     private static String focusedCellBorderColor;
     private static String tableGridColor;
 
-    private static StyleElement customDataTableGridStyleElement;
-    
     private static int[] componentBackgroundRGB;
     
     private static int[] pivotGroupLevelDarkenStepRGB;
+
+    public static void init() {
+        setCustomProperties(RootPanel.get().getElement(), getTableGridColor(), getFocusedCellBorderColor());
+    }
+
+    private static native void setCustomProperties(Element root, String tableGridColor, String focusedCellBorderColor) /*-{
+        if(tableGridColor != null) {
+            root.style.setProperty("--grid-separator-border-color", tableGridColor);
+        }
+        root.style.setProperty("--focused-cell-border-color", focusedCellBorderColor);
+    }-*/;
 
     public static void reset() {
         selectedRowBackgroundColor = null;
@@ -47,8 +56,8 @@ public class StyleDefaults {
         tableGridColor = null;
         componentBackgroundRGB = null;
         pivotGroupLevelDarkenStepRGB = null;
-        
-        appendClientSettingsCSS();
+
+        init();
     }
 
     private static String getSelectedColor(boolean canBeMixed) {
@@ -112,7 +121,7 @@ public class StyleDefaults {
     }
     
     public static String getFocusedCellBorderColor() {
-        if (focusedCellBorderColor == null) {
+        if (focusedCellBorderColor == null && MainFrame.colorPreferences != null) { // might be called before colorPreferences initialization (color theme change)
             ColorDTO preferredColor = MainFrame.colorPreferences.getFocusedCellBorderColor();
             if (preferredColor != null) {
                 focusedCellBorderColor = getDisplayColor(preferredColor.toString());
@@ -126,13 +135,11 @@ public class StyleDefaults {
     public static String getTableGridColor() {
         if (tableGridColor == null && MainFrame.colorPreferences != null) { // might be called before colorPreferences initialization (color theme change)
             ColorDTO preferredColor = MainFrame.colorPreferences.getTableGridColor();
-            if (preferredColor != null) {
-                tableGridColor = getDisplayColor(preferredColor.toString());
-            }
+            tableGridColor = preferredColor != null ? getDisplayColor(preferredColor.toString()) : null;
         }
         return tableGridColor;
     }
-    
+
     public static int[] getComponentBackgroundRGB() {
         if (componentBackgroundRGB == null) {
             int cbRGB = toRGB(getComponentBackground(colorTheme));
@@ -157,71 +164,6 @@ public class StyleDefaults {
         }
         return pivotGroupLevelDarkenStepRGB;
     }
-    
-    
-    public static void appendClientSettingsCSS() {
-        String tableGridColor = StyleDefaults.getTableGridColor();
-        if (tableGridColor != null) {
-            if (customDataTableGridStyleElement == null) {
-                customDataTableGridStyleElement = Document.get().createStyleElement();
-                customDataTableGridStyleElement.setType("text/css");
-                Document.get().getElementsByTagName("head").getItem(0).appendChild(customDataTableGridStyleElement);
-            }
-
-            String tableGridBorder = "1px solid " + tableGridColor;
-            customDataTableGridStyleElement.setInnerHTML(
-                    "." + customDataGridStyle.dataGridHeaderCell() + " { " +
-                    "border-bottom: " + tableGridBorder + ";\n" +
-                    "border-left: " + tableGridBorder + "; }\n" +
-                    "." + customDataGridStyle.dataGridLastHeaderCell() + " { " +
-                    "border-right: " + tableGridBorder + "; }\n" +
-                    "." + customDataGridStyle.dataGridFooterCell() + " { " +
-                    "border-top: " + tableGridBorder + ";\n" +
-                    "border-bottom: " + tableGridBorder + ";\n" +
-                    "border-left: " + tableGridBorder + "; }\n" +
-                    "." + customDataGridStyle.dataGridCell() + " { " +
-                    "border-bottom: " + tableGridBorder + ";\n" +
-                    "border-left: " + tableGridBorder + "; }\n" +
-                    "." + customDataGridStyle.dataGridLastCell() + " { " +
-                    "border-right: " + tableGridBorder + "; }");
-        }
-    }
-
-    public static CustomGridStyle customDataGridStyle = new CustomGridStyle() {
-        @Override
-        public String dataGridHeaderCell() {
-            return "custom-dataGridHeaderCell";
-        }
-
-        @Override
-        public String dataGridLastHeaderCell() {
-            return "custom-dataGridLastHeaderCell";
-        }
-
-        @Override
-        public String dataGridFooterCell() {
-            return "custom-dataGridFooterCell";
-        }
-
-        @Override
-        public String dataGridCell() {
-            return "custom-dataGridCell";
-        }
-
-        @Override
-        public String dataGridLastCell() {
-            return "custom-dataGridLastCell";
-        }
-    };
-
-    public interface CustomGridStyle {
-        String dataGridHeaderCell();
-        String dataGridLastHeaderCell();
-        String dataGridFooterCell();
-        String dataGridCell();
-        String dataGridLastCell();
-    }
-    
 
     // the following are copy-pasted colors from <color_theme>.css. need to be updated synchronously.
     // maybe getComputedStyle(document.documentElement).getPropertyValue() should be used instead where possible

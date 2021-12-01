@@ -25,6 +25,11 @@ public class TableScrollPanel extends SimplePanel {
         DataGrid.removeOuterGridBorders(this);
     }
 
+    public static Widget noScroll(Widget widget) {
+        DataGrid.removeOuterGridBorders(widget);
+        return widget;
+    }
+
 //    private final com.google.gwt.dom.client.Element scrollableElement;
 
     protected com.google.gwt.dom.client.Element getScrollableElement() {

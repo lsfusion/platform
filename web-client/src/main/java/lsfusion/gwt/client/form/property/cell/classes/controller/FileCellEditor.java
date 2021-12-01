@@ -113,7 +113,7 @@ public class FileCellEditor extends ARequestValueCellEditor implements KeepCellE
         parent.onfocus = function () {
             setTimeout(function () {//onfocus event fires before onchange event, so we need a timeout
                 if (needToCancel) {
-                    instance.@FileCellEditor::cancel(*)(parent);
+                    instance.@FileCellEditor::cancel(Lcom/google/gwt/dom/client/Element;)(parent);
                     needToCancel = false;
                 }
                 parent.onfocus = null;

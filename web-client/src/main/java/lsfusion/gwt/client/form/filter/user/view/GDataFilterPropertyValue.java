@@ -1,13 +1,14 @@
 package lsfusion.gwt.client.form.filter.user.view;
 
-import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.form.controller.GFormController;
-import lsfusion.gwt.client.form.object.GGroupObjectValue;
-import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.filter.user.GCompare;
+import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.property.async.GAsyncExec;
 import lsfusion.gwt.client.form.property.async.GInputList;
+import lsfusion.gwt.client.form.property.cell.classes.controller.suggest.GCompletionType;
+import lsfusion.gwt.client.form.property.cell.controller.CancelReason;
 import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
 import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
 import lsfusion.gwt.client.form.property.panel.view.ActionOrPropertyValue;
@@ -19,15 +20,18 @@ import java.util.function.Consumer;
 public class GDataFilterPropertyValue extends ActionOrPropertyValue {
 
     private final Consumer<Object> afterCommit;
-    private final Runnable onCancel;
+    private final Consumer<CancelReason> onCancel;
+    
+    private GInputList inputList;
     
     public boolean enterPressed;
 
-    public GDataFilterPropertyValue(GPropertyDraw property, GGroupObjectValue columnKey, GFormController form, Consumer<Object> afterCommit, Runnable onCancel) {
-        super(property, columnKey, form, false, (columnKeyValue, value) -> {});
-
+    public GDataFilterPropertyValue(GPropertyFilter condition, GFormController form, Consumer<Object> afterCommit, Consumer<CancelReason> onCancel) {
+        super(condition.property, condition.columnKey, form, false, (columnKeyValue, value) -> {});
         this.afterCommit = afterCommit;
         this.onCancel = onCancel;
+        
+        changeInputList(condition.compare);
 
         finalizeInit();
     }
@@ -63,8 +67,6 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
         throw new UnsupportedOperationException();
     }
 
-    public static final GInputList FILTER = new GInputList(new String[0], new GAsyncExec[0], false);
-
     @Override
     protected void onEditEvent(EventHandler handler) {
         if(property.isFilterChange(handler.event)) {
@@ -78,7 +80,7 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
                 event,
                 false,
                 null,
-                FILTER,
+                inputList,
                 (result, commitReason) -> setValue(result.getValue()),
                 (result, commitReason) -> acceptCommit(result, commitReason.equals(CommitReason.ENTERPRESSED)),
                 onCancel,
@@ -110,5 +112,19 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
         form.previewBlurEvent(handler.event);
 
         super.onBlur(handler);
+    }
+
+    public void setApplied(boolean applied) {
+        if (applied) {
+            getElement().addClassName("userFilerValueCellApplied");
+        } else {
+            getElement().removeClassName("userFilerValueCellApplied");
+        }
+    }
+
+    public void changeInputList(GCompare compare) {
+        inputList = new GInputList(new String[0],
+                new GAsyncExec[0],
+                compare == GCompare.EQUALS || compare == GCompare.NOT_EQUALS ? GCompletionType.SEMI_STRICT : GCompletionType.NON_STRICT);
     }
 }

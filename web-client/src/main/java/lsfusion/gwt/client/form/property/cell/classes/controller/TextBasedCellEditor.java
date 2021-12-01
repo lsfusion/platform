@@ -21,6 +21,7 @@ import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.event.GMouseStroke;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.async.GInputList;
+import lsfusion.gwt.client.form.property.cell.classes.controller.suggest.GCompletionType;
 import lsfusion.gwt.client.form.property.cell.classes.controller.suggest.SuggestBox;
 import lsfusion.gwt.client.form.property.cell.classes.controller.suggest.TextBox;
 import lsfusion.gwt.client.form.property.cell.classes.view.TextBasedCellRenderer;
@@ -44,7 +45,7 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
     protected final GPropertyDraw property;
 
     boolean hasList;
-    boolean strict;
+    GCompletionType completionType;
     String[] actions;
     CustomSuggestBox suggestBox = null;
 
@@ -56,7 +57,7 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
         super(editManager);
         this.property = property;
         this.hasList = inputList != null && !disableSuggest();
-        this.strict = inputList != null && inputList.strict;
+        this.completionType = inputList != null ? inputList.completionType : GCompletionType.NON_STRICT;
         this.actions = inputList != null ? inputList.actions : null;
     }
 
@@ -150,8 +151,6 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
 
     protected Element setupInputElement(Element cellParent, RenderContext renderContext, Pair<Integer, Integer> renderedSize){
         Element inputElement = createInputElement();
-        // without setting boxSized class textarea and input behaviour is pretty odd when text is very large or inside td (position of textarea / input is really unpredictable)
-        inputElement.addClassName("boxSized");
 
         Style.TextAlign textAlign = property.getTextAlignStyle();
         if(textAlign != null)
@@ -160,7 +159,7 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
         // input doesn't respect justify-content, stretch, plus we want to include paddings in input (to avoid having "selection border")
         GwtClientUtils.setupPercentParent(inputElement);
 
-        TextBasedCellRenderer.render(property, inputElement, renderContext, isMultiLine(), false);
+        TextBasedCellRenderer.render(property, inputElement, renderContext, isMultiLine());
 
         if(property.autoSize) { // we have to set sizes that were rendered, since input elements have really unpredicatble sizes
             cellParent = GwtClientUtils.wrapDiv(cellParent); // wrapping element since otherwise it's not clear how to restore height (sometimes element has it set)
@@ -190,7 +189,7 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
 
     public Object getValue(Element parent, Integer contextAction) {
         String stringValue = contextAction != null ? suggestBox.getValue() : getCurrentText(parent);
-        if(hasList && strict && contextAction == null && !suggestBox.isValidValue(stringValue))
+        if(hasList && completionType.isStrict() && contextAction == null && !suggestBox.isValidValue(stringValue))
             return RequestValueCellEditor.invalid;
         try {
             return tryParseInputText(stringValue, true); //if button pressed, input element is button
@@ -288,7 +287,7 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
                         @Override
                         public void onSuccess(Pair<ArrayList<GAsync>, Boolean> result) {
                             if (isThisCellEditor()) { //  && suggestBox.isSuggestionListShowing() in desktop this check leads to "losing" result, since suggest box can be not shown yet (!), however maybe in web-client it's needed for some reason (but there can be the risk of losing result)
-                                suggestBox.setAutoSelectEnabled(strict && !emptyQuery);
+                                suggestBox.setAutoSelectEnabled(completionType.isAnyStrict() && !emptyQuery);
                                 List<String> rawSuggestions = new ArrayList<>();
                                 List<Suggestion> suggestionList = new ArrayList<>();
                                 for (GAsync suggestion : result.first) {
@@ -403,7 +402,7 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
         private List<String> latestSuggestions = new ArrayList<>();
 
         public CustomSuggestBox(SuggestOracle oracle, ValueBoxBase<String> valueBox, DefaultSuggestionDisplayString display) {
-            super(oracle, valueBox, display, strict);
+            super(oracle, valueBox, display, completionType.isAnyStrict());
             this.display = display;
             onAttach();
             getElement().removeClassName("gwt-SuggestBox");
@@ -515,7 +514,7 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
         @Override
         protected void moveSelectionDown() {
             super.moveSelectionDown();
-            if(!strict) {
+            if(!completionType.isAnyStrict()) {
                 suggestBox.setValue(getReplacementString());
             }
         }
@@ -523,7 +522,7 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
         @Override
         protected void moveSelectionUp() {
             super.moveSelectionUp();
-            if(!strict) {
+            if(!completionType.isAnyStrict()) {
                 suggestBox.setValue(getReplacementString());
             }
         }

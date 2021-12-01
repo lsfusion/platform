@@ -22,7 +22,6 @@ import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.interop.ProgressBar;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.form.property.ExtInt;
-import lsfusion.interop.form.property.cell.Async;
 import lsfusion.server.base.caches.IdentityStrongLazy;
 import lsfusion.server.base.controller.lifecycle.LifecycleEvent;
 import lsfusion.server.base.controller.manager.LogicsManager;
@@ -76,6 +75,9 @@ import lsfusion.server.logics.classes.user.ObjectValueClassSet;
 import lsfusion.server.logics.controller.manager.RestartManager;
 import lsfusion.server.logics.form.interactive.action.input.InputValueList;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
+import lsfusion.server.logics.form.interactive.property.Async;
+import lsfusion.server.logics.form.interactive.property.AsyncMode;
+import lsfusion.server.logics.form.interactive.property.PropertyAsync;
 import lsfusion.server.logics.navigator.controller.env.*;
 import lsfusion.server.logics.property.AggregateProperty;
 import lsfusion.server.logics.property.Property;
@@ -956,18 +958,20 @@ public class DBManager extends LogicsManager implements InitializingBean {
     private static class Param {
         public final ImMap<?, ObjectValue> mapValues;
         public final String value;
+        public final boolean objects;
 
-        public Param(ImMap<?, ObjectValue> mapValues, String value) {
+        public Param(ImMap<?, ObjectValue> mapValues, String value, boolean objects) {
             this.mapValues = mapValues;
             this.value = value;
+            this.objects = objects;
         }
 
         public boolean equals(Object o) {
-            return this == o || o instanceof Param && mapValues.equals(((Param) o).mapValues) && value.equals(((Param) o).value);
+            return this == o || o instanceof Param && mapValues.equals(((Param) o).mapValues) && value.equals(((Param) o).value) && objects == ((Param) o).objects;
         }
 
         public int hashCode() {
-            return mapValues.hashCode() * 31 + value.hashCode();
+            return 31 * (mapValues.hashCode() * 31 + value.hashCode()) + (objects ? 1 : 0);
         }
     }
     private static class ParamRef {
@@ -981,12 +985,12 @@ public class DBManager extends LogicsManager implements InitializingBean {
             param = null;
         }
     }
-    private static class ValueRef {
+    private static class ValueRef<P extends PropertyInterface> {
         // it's the only strong value to keep it from garbage collected
         public final ParamRef ref;
-        public final Async[] values;
+        public final PropertyAsync<P>[] values;
 
-        public ValueRef(ParamRef ref, Async[] values) {
+        public ValueRef(ParamRef ref, PropertyAsync<P>[] values) {
             this.ref = ref;
             this.values = values;
         }
@@ -1001,9 +1005,9 @@ public class DBManager extends LogicsManager implements InitializingBean {
     private final LRUWWEVSMap<Property<?>, Param, ValueRef> asyncValuesValueCache1 = new LRUWWEVSMap<>(LRUUtil.G1);
     private final LRUWWEVSMap<Property<?>, Param, ValueRef> asyncValuesValueCache2 = new LRUWWEVSMap<>(LRUUtil.G2);
 
-    public <P extends PropertyInterface> Async[] getAsyncValues(InputValueList<P> list, String value, boolean strict) throws SQLException, SQLHandledException {
+    public <P extends PropertyInterface> PropertyAsync<P>[] getAsyncValues(InputValueList<P> list, String value, AsyncMode mode) throws SQLException, SQLHandledException {
         if(Settings.get().isIsClustered()) // we don't want to use caches since they can be inconsistent
-            return readAsyncValues(list, value, strict);
+            return readAsyncValues(list, value, mode);
 
         LRUWVSMap<Property<?>, ConcurrentIdentityWeakHashSet<ParamRef>> asyncValuesPropCache;
         LRUWWEVSMap<Property<?>, Param, ValueRef> asyncValuesValueCache;
@@ -1016,9 +1020,9 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
 
         // strict param is transient (it is used only for optimization purposes, so we won't use it in cache)
-        Param param = new Param(list.mapValues, value);
+        Param param = new Param(list.mapValues, value, mode == AsyncMode.OBJECTS);
 
-        ValueRef valueRef = asyncValuesValueCache.get(list.property, param);
+        ValueRef<P> valueRef = asyncValuesValueCache.get(list.property, param);
         if(valueRef != null && valueRef.ref.param != null)
             return valueRef.values;
 
@@ -1031,16 +1035,16 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
         paramRefs.add(ref);
 
-        Async[] values = readAsyncValues(list, value, strict);
-        asyncValuesValueCache.put(list.property, param, new ValueRef(ref, values));
+        PropertyAsync<P>[] values = readAsyncValues(list, value, mode);
+        asyncValuesValueCache.put(list.property, param, new ValueRef<>(ref, values));
 
         return values;
     }
 
-    private <P extends PropertyInterface> Async[] readAsyncValues(InputValueList<P> list, String value, boolean strict) throws SQLException, SQLHandledException {
-        Async[] values;
+    private <P extends PropertyInterface> PropertyAsync<P>[] readAsyncValues(InputValueList<P> list, String value, AsyncMode asyncMode) throws SQLException, SQLHandledException {
+        PropertyAsync<P>[] values;
         try(DataSession session = createSession()) {
-            values = FormInstance.getAsyncValues(list, session, Property.defaultModifier, value, strict);
+            values = FormInstance.getAsyncValues(list, session, Property.defaultModifier, value, asyncMode);
         }
         return values;
     }
@@ -2524,7 +2528,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     private class NewDBStructure extends DBStructure<Field> {
         
         public NewDBStructure(MigrationVersion migrationVersion) {
-            version = 32; // need this for migration
+            version = 33; // need this for migration
             this.migrationVersion = migrationVersion;
 
             tables.putAll(getIndicesMap());
@@ -2575,6 +2579,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
 
+    public static int oldDBStructureVersion = 0;
+
     private class OldDBStructure extends DBStructure<String> {
 
         public OldDBStructure(DataInputStream inputDB) throws IOException {
@@ -2583,6 +2589,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 version = -2;
             } else {
                 version = inputDB.read() - 'v';
+                oldDBStructureVersion = version;
                 migrationVersion = new MigrationVersion(inputDB.readUTF());
 
                 int modulesCount = inputDB.readInt();

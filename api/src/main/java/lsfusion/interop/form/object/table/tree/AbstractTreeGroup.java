@@ -8,5 +8,5 @@ public interface AbstractTreeGroup<T extends AbstractComponent> extends Abstract
     String getSID();
 
     T getToolbarSystem();
-    T getUserFilter();
+    T getFiltersContainer();
 }

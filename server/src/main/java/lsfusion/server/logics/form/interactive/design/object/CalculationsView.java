@@ -13,7 +13,7 @@ public class CalculationsView extends ComponentView {
     }
 
     @Override
-    public Dimension getSize(FormEntity entity) {
-        return new Dimension(0, -1);
+    protected int getDefaultWidth(FormEntity entity) {
+        return 0;
     }
 }

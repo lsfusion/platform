@@ -10,6 +10,7 @@ import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.view.ResizableVerticalPanel;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.classes.ColorDTO;
+import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import net.auroris.ColorPicker.client.ColorPicker;
 
@@ -27,7 +28,7 @@ public class ColorCellEditor extends PopupBasedCellEditor {
         colorPicker = new ColorPicker();
 
         Button btnOk = new Button(messages.ok());
-        btnOk.addClickHandler(event -> validateAndCommit(parent, false));
+        btnOk.addClickHandler(event -> validateAndCommit(parent, false, CommitReason.OTHER));
 
         Button btnCancel = new Button(messages.cancel());
         btnCancel.addClickHandler(event -> cancel(parent));
@@ -46,6 +47,12 @@ public class ColorCellEditor extends PopupBasedCellEditor {
         mainPane.setCellHorizontalAlignment(bottomPane, HasAlignment.ALIGN_RIGHT);
 
         return mainPane;
+    }
+
+    @Override
+    public void enterPressed(Element parent) {
+        super.enterPressed(parent);
+        validateAndCommit(parent, false, CommitReason.ENTERPRESSED);
     }
 
     @Override

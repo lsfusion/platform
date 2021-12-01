@@ -1,8 +1,8 @@
 package lsfusion.client.classes;
 
 import lsfusion.client.form.controller.ClientFormController;
+import lsfusion.client.form.design.view.flex.LinearCaptionContainer;
 import lsfusion.client.form.object.ClientGroupObjectValue;
-import lsfusion.client.form.object.panel.controller.PropertyPanelController;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.cell.EditBindingMap;
 import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
@@ -18,7 +18,7 @@ public interface ClientType {
 
     PropertyRenderer getRendererComponent(ClientPropertyDraw property);
 
-    PanelView getPanelView(ClientPropertyDraw key, ClientGroupObjectValue columnKey, ClientFormController form, PropertyPanelController.CaptionContainer captionContainer);
+    PanelView getPanelView(ClientPropertyDraw key, ClientGroupObjectValue columnKey, ClientFormController form, LinearCaptionContainer captionContainer);
 
     PropertyEditor getChangeEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, AsyncChangeInterface asyncChange, Object value);
 

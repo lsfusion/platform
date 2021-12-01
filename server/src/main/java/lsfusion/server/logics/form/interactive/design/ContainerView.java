@@ -12,11 +12,13 @@ import lsfusion.server.language.ScriptParsingException;
 import lsfusion.server.language.proxy.ViewProxyUtil;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.interactive.design.object.GridView;
+import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
+import java.awt.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -36,8 +38,14 @@ public class ContainerView extends ComponentView {
 
     public FlexAlignment childrenAlignment = FlexAlignment.START;
 
+    private Boolean grid;
+    private Boolean wrap;
+    private Boolean alignCaptions;
+
     public int lines = 1;
-    
+    public Integer lineSize = null;
+    public Boolean lineShrink = null;
+
     public PropertyObjectEntity<?> showIf;
 
     // temp hack ???
@@ -103,6 +111,83 @@ public class ContainerView extends ComponentView {
         return type == CONTAINERH || type == HORIZONTAL_SPLIT_PANE || horizontal;
     }
 
+    public boolean isGrid() {
+        if(grid != null)
+            return grid;
+
+        return false;
+    }
+
+    public Boolean isWrap() {
+        if(wrap != null)
+            return wrap;
+
+        return lines > 1 || isHorizontal();
+    }
+
+    @Override
+    public boolean isDefaultShrink(FormEntity formEntity) {
+        ContainerView container = getLayoutParamContainer();
+        boolean horizontal = container != null && container.isHorizontal();
+
+        if(isShrinkedAutoSizedWrap(formEntity, horizontal))
+            return true;
+
+        return super.isDefaultShrink(formEntity);
+    }
+
+    public boolean isDefaultAlignShrink(FormEntity formEntity) {
+        ContainerView container = getLayoutParamContainer();
+        boolean horizontal = container != null && container.isHorizontal();
+        if(isShrinkedAutoSizedWrap(formEntity, !horizontal))
+            return true;
+
+        return super.isDefaultAlignShrink(formEntity);
+    }
+
+    public boolean isLineShrink(FormEntity formEntity) {
+        if(lineShrink != null)
+            return lineShrink;
+
+        // if we're shrinking this container, it makes sense to shrink lines too (because they are sort of virtual containers)
+        ContainerView container = getLayoutParamContainer();
+        boolean horizontal = container != null && container.isHorizontal();
+        boolean linesHorizontal = !isHorizontal(); // lines direction
+        boolean sameDirection = horizontal == linesHorizontal;
+        return sameDirection ? isShrink(formEntity) : isAlignShrink(formEntity);
+    }
+
+    // if we have cascade shrinking (with auto size) and some wrap at some point, consider that we want shrink
+    // otherwise shrinking will lead to more scrolls in lower containers
+    // however we can use simple shrink check
+    protected boolean isShrinkedAutoSizedWrap(FormEntity formEntity, boolean horizontal) {
+        boolean thisHorizontal = isHorizontal();
+
+        if ((horizontal ? getWidth(formEntity) : getHeight(formEntity)) != -1) // if we have fixed size than there is no wrap problem
+            return false;
+
+        // now there are several heuristics at the web client changing the default behaviour, and disabling wrap
+        // most of them are grid related, so we just disable shrink in grid for now
+        if (isWrap() && !isGrid()) {
+            boolean wrapHorizontal = (thisHorizontal == (lines == 1));
+            return wrapHorizontal == horizontal; // if there is wrap and it's in required direction that's what we are looking for
+            // important if it's wrong direction wrap, we should not use children since it will break this heuristics (it doesn't make sense when wrap "goes" to the upper containers)
+        }
+
+        boolean sameDirection = horizontal == thisHorizontal;
+        for (ComponentView child : getChildrenList())
+            if ((sameDirection ? child.isShrink(formEntity) : child.isAlignShrink(formEntity)) &&
+                    (child instanceof ContainerView && ((ContainerView)child).isShrinkedAutoSizedWrap(formEntity, horizontal)))
+                return true;
+
+        return false;
+    }
+
+    // we use Boolean since in desktop and in web there is a different default behaviour
+    public Boolean isAlignCaptions() {
+        return alignCaptions;
+    }
+
     public void setType(ContainerType type) {
         if(type != COLUMNS && this.type == COLUMNS && lines > 1) { // temp check
             Supplier<DebugInfo.DebugPoint> debugPoint = ViewProxyUtil.setDebugPoint.get();
@@ -123,8 +208,28 @@ public class ContainerView extends ComponentView {
         this.childrenAlignment = childrenAlignment;
     }
 
+    public void setGrid(Boolean grid) {
+        this.grid = grid;
+    }
+
+    public void setWrap(Boolean wrap) {
+        this.wrap = wrap;
+    }
+
+    public void setAlignCaptions(boolean alignCaptions) {
+        this.alignCaptions = alignCaptions;
+    }
+
     public void setLines(int lines) {
         this.lines = lines;
+    }
+
+    public void setLineSize(Integer lineSize) {
+        this.lineSize = lineSize;
+    }
+
+    public void setLineShrink(boolean lineShrink) {
+        this.lineShrink = lineShrink;
     }
 
     public PropertyObjectEntity<?> getShowIf() {
@@ -218,8 +323,14 @@ public class ContainerView extends ComponentView {
         pool.writeBoolean(outStream, isTabbed());
 
         pool.writeObject(outStream, childrenAlignment);
+        
+        outStream.writeBoolean(isGrid());
+        outStream.writeBoolean(isWrap());
+        pool.writeObject(outStream, alignCaptions);
 
         outStream.writeInt(lines);
+        pool.writeInt(outStream, lineSize);
+        outStream.writeBoolean(isLineShrink(pool.context.entity));
     }
 
     @Override
@@ -236,8 +347,14 @@ public class ContainerView extends ComponentView {
         tabbed = pool.readBoolean(inStream);
 
         childrenAlignment = pool.readObject(inStream);
+        
+        grid = inStream.readBoolean();
+        wrap = inStream.readBoolean();
+        alignCaptions = inStream.readBoolean();
 
         lines = inStream.readInt();
+        lineSize = pool.readInt(inStream);
+        lineShrink = inStream.readBoolean();
     }
 
     @Override

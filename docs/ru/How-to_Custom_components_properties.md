@@ -1,5 +1,5 @@
 ---
-title: 'How-to: Пользовательские компоненты'
+title: 'How-to: Пользовательские компоненты (свойства)'
 ---
 
 Для каждого типа [свойства](Properties.md) по умолчанию используется свой предопределенный визуальный компонент для отображения и 
@@ -74,22 +74,22 @@ render: function (element) {
     element.style.removeProperty("max-height");
     element.parentElement.style.removeProperty("height");
 
-    var message = document.createElement("div")
+    let message = document.createElement("div")
     message.classList.add("chat-message");
 
-    var header = document.createElement("div");
+    let header = document.createElement("div");
     header.classList.add("chat-header");
 
-    var author = document.createElement("div");
+    let author = document.createElement("div");
     author.classList.add("chat-author");
 
     element.author = author;
     header.appendChild(author);
 
-    var replyAction = document.createElement("a");
+    let replyAction = document.createElement("a");
     replyAction.classList.add("chat-reply-action");
 
-    var replyCaption = document.createTextNode("Reply");
+    let replyCaption = document.createTextNode("Reply");
     replyAction.appendChild(replyCaption);
 
     element.replyAction = replyAction;
@@ -97,16 +97,16 @@ render: function (element) {
 
     message.appendChild(header);
 
-    var replyContent = document.createElement("div");
+    let replyContent = document.createElement("div");
     replyContent.classList.add("chat-reply-content");
 
-    var replyAuthor = document.createElement("div");
+    let replyAuthor = document.createElement("div");
     replyAuthor.classList.add("chat-reply-author");
 
     element.replyAuthor = replyAuthor;
     replyContent.appendChild(replyAuthor);
 
-    var replyText = document.createElement("div");
+    let replyText = document.createElement("div");
     replyText.classList.add("chat-reply-text");
 
     element.replyText = replyText;
@@ -115,13 +115,13 @@ render: function (element) {
     element.replyContent = replyContent;
     message.appendChild(replyContent);
 
-    var text = document.createElement("div");
+    let text = document.createElement("div");
     text.classList.add("chat-text");
 
     element.text = text;
     message.appendChild(text);
 
-    var time = document.createElement("div");
+    let time = document.createElement("div");
     time.classList.add("chat-time");
 
     element.time = time;
@@ -211,11 +211,11 @@ render: function (element) {
 }
 ```
 
-Для обновления отображаемых значений платформа будет каждый раз вызывать функцию _update_, в которую будет передан тот же element, 
+Для обновления отображаемых значений платформа будет каждый раз вызывать функцию _update_, в которую будет передан тот же _element_, 
 что и в функции _render_, а также само значение:
 ```js
 update: function (element, controller, value) {
-    var obj = JSON.parse(value);
+    let obj = JSON.parse(value);
     element.author.innerHTML = obj.author;
 
     element.replyAuthor.innerHTML = obj.replyAuthor;
@@ -367,22 +367,22 @@ jsonInputMessage () = [FORMULA STRING 'json_build_object(\'replyAuthor\',$1,\'re
 function chatMessageInputRender() {
     return {
         render: function (element) {
-        var input = document.createElement("div");
+        let input = document.createElement("div");
         input.classList.add("chat-message-input");
 
-        var reply = document.createElement("div");
+        let reply = document.createElement("div");
         reply.classList.add("chat-reply");
 
-        var replyContent = document.createElement("div");
+        let replyContent = document.createElement("div");
         replyContent.classList.add("chat-reply-content");
 
-        var replyAuthor = document.createElement("div");
+        let replyAuthor = document.createElement("div");
         replyAuthor.classList.add("chat-reply-author");
 
         element.replyAuthor = replyAuthor;
         replyContent.appendChild(replyAuthor);
 
-        var replyText = document.createElement("div");
+        let replyText = document.createElement("div");
         replyText.classList.add("chat-reply-text");
 
         element.replyText = replyText;
@@ -391,7 +391,7 @@ function chatMessageInputRender() {
         element.replyContent = replyContent;
         reply.appendChild(replyContent);
 
-        var replyRemove = document.createElement("div");
+        let replyRemove = document.createElement("div");
         replyRemove.classList.add("chat-reply-remove");
 
         element.replyRemove = replyRemove;
@@ -399,7 +399,7 @@ function chatMessageInputRender() {
 
         input.appendChild(reply);
 
-        var text = document.createElement("div");
+        let text = document.createElement("div");
         text.classList.add("chat-message-input-area");
         text.contentEditable = "true";
 
@@ -410,7 +410,7 @@ function chatMessageInputRender() {
     },
     update: function (element, controller, value) {
         if (value !== null) {
-            var obj = JSON.parse(value);
+            let obj = JSON.parse(value);
 
             element.replyAuthor.innerHTML = obj.replyAuthor;
             element.replyText.innerHTML = obj.replyText;

@@ -12,5 +12,5 @@ public interface EditManager {
 
     void commitEditing(GUserInputResult result, CommitReason commitReason);  // assert if blurred then editor rerender dom
 
-    void cancelEditing();
+    void cancelEditing(CancelReason cancelReason);
 }

@@ -4,6 +4,8 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
+import static lsfusion.base.ApiResourceBundle.getString;
+
 public enum Compare {
     EQUALS, GREATER, LESS, GREATER_EQUALS, LESS_EQUALS, NOT_EQUALS, LIKE, MATCH, INARRAY;
 
@@ -99,16 +101,16 @@ public enum Compare {
             case NOT_EQUALS :
                 return "!=";
             case LIKE :
-                return "=*";
+                return "_";
             case MATCH:
-                return "=@";
+                return "@";
             case INARRAY :
                 return "IN ARRAY";
         }
         throw new RuntimeException("Serialize Compare");
     }
 
-    public String getTooltipText() {
+    public String getFullString() {
         switch (this) {
             case EQUALS :
                 return "=";
@@ -121,13 +123,37 @@ public enum Compare {
             case LESS_EQUALS :
                 return "<=";
             case NOT_EQUALS :
-                return "!=";
+                return "!= (" + getString("filter.compare.not.equals") + ")";
             case LIKE :
-                return "LIKE";
+                return "_ (" + getString("filter.compare.like") + ")";
             case MATCH:
-                return "SEARCH";
+                return "@ (" + getString("filter.compare.search") + ")";
             case INARRAY :
-                return "IN ARRAY";
+                return getString("filter.compare.in.array");
+        }
+        return "";
+    }
+
+    public String getTooltipText() {
+        switch (this) {
+            case EQUALS :
+                return getString("filter.compare.equals");
+            case GREATER :
+                return getString("filter.compare.greater");
+            case LESS :
+                return getString("filter.compare.less");
+            case GREATER_EQUALS :
+                return getString("filter.compare.greater.equals");
+            case LESS_EQUALS :
+                return getString("filter.compare.less.equals");
+            case NOT_EQUALS :
+                return getString("filter.compare.not.equals");
+            case LIKE :
+                return getString("filter.compare.like");
+            case MATCH:
+                return getString("filter.compare.search");
+            case INARRAY :
+                return getString("filter.compare.in.array");
         }
         return "";
     }

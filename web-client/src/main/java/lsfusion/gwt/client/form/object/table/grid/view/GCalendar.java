@@ -37,7 +37,7 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
     }
 
     @Override
-    protected void render(Element element, JsArray<JavaScriptObject> list) {
+    protected void onUpdate(Element element, JsArray<JavaScriptObject> list) {
         if (calendar == null) {
             //fullcalendar bug - https://github.com/fullcalendar/fullcalendar/issues/5863
             //to prevent this when calendar-element height less then ~350px
@@ -87,8 +87,8 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
             datesSet: function () {
                 var filterLeftBorder = parseCalendarDateElement(calendar.view.activeStart);
                 var filterRightBorder = parseCalendarDateElement(calendar.view.activeEnd);
-                controller.setViewFilter(filterLeftBorder.year, filterLeftBorder.month, filterLeftBorder.day, filterRightBorder.year,
-                    filterRightBorder.month, filterRightBorder.day, calendarDateType, calendarDateType.toLowerCase().includes('time'), 1000);
+                controller.setDateIntervalViewFilter(calendarDateType, 1000, filterLeftBorder.year, filterLeftBorder.month, filterLeftBorder.day, filterRightBorder.year,
+                    filterRightBorder.month, filterRightBorder.day, calendarDateType.toLowerCase().includes('time'));
             },
             eventClick: function (info) {
                 changeCurrentEvent(info.event, info.el);
