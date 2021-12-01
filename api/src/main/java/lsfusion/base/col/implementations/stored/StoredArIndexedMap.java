@@ -20,9 +20,9 @@ public class StoredArIndexedMap<K, V> extends AMRevMap<K, V> {
     public StoredArray<K> keys;
     public StoredArray<V> values;
 
-    public StoredArIndexedMap(StoredArraySerializer serializer, K[] keys, V[] values) {
-        this.keys = new StoredArray<>(keys, serializer);
-        this.values = new StoredArray<>(values, serializer);
+    public StoredArIndexedMap(StoredArraySerializer serializer, int size, K[] keys, V[] values) {
+        this.keys = new StoredArray<>(keys, size, serializer, null);
+        this.values = new StoredArray<>(values, size, serializer, null);
         assert keys.length == values.length;
     }
 
@@ -85,7 +85,7 @@ public class StoredArIndexedMap<K, V> extends AMRevMap<K, V> {
         return this;
     }
 
-    protected MExclMap<K, V> copy() {
+    public MExclMap<K, V> copy() {
         return new StoredArIndexedMap<>(this, true);
     }
 
@@ -372,8 +372,12 @@ public class StoredArIndexedMap<K, V> extends AMRevMap<K, V> {
                 StoredArIndexedMap<K, V> arMap = (StoredArIndexedMap<K, V>) map;
                 result = merge(arMap.keys, arMap.values, add);
             } else if (map instanceof ArIndexedMap) {
-                ArIndexedMap<?, ?> arMap = (ArIndexedMap<?, ?>) map;
-                result = merge(arMap.size, (K[])arMap.keys, (V[])arMap.values, add);
+                ArIndexedMap<K, V> arMap = (ArIndexedMap<K, V>) map;
+                if (arMap.isStored()) {
+                    result = merge(arMap.size(), (K[]) arMap.getKeys(), (V[]) arMap.getValues(), add);
+                } else {
+                    result = merge(arMap.getStoredKeys(), arMap.getStoredValues(), add);
+                }
             } else {
                 int mapSize = map.size();
                 K[] mapKeys = (K[])new Object[mapSize];
@@ -495,7 +499,7 @@ public class StoredArIndexedMap<K, V> extends AMRevMap<K, V> {
     }
     
     @Override
-    protected boolean twins(ImMap<K, V> map) { // assert что size'ы совпадает
+    public boolean twins(ImMap<K, V> map) { // assert что size'ы совпадает
         if (map instanceof StoredArIndexedMap) {
             StoredArIndexedMap<?, ?> smap = (StoredArIndexedMap<?, ?>) map;
             return twins((StoredArray<K>) smap.keys, (StoredArray<V>) smap.values);

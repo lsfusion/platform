@@ -16,7 +16,11 @@ public class StoredArIndexedSet<K> extends AMSet<K> {
     }
 
     public StoredArIndexedSet(StoredArraySerializer serializer, K[] array) {
-        this.array = new StoredArray<>(array, serializer);
+        this(serializer, array, array.length);
+    }
+    
+    public StoredArIndexedSet(StoredArraySerializer serializer, K[] array, int size) {
+        this.array = new StoredArray<>(array, size, serializer, null);
     }
     
     public StoredArIndexedSet(StoredArraySerializer serializer, int size) {

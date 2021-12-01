@@ -14,7 +14,7 @@ public class StoredArIndexedMapTest {
         SerializableClass[] keysArray = initSortedArray();
         SerializableClass[] valuesArray = StoredArrayTest.initArray();
         StoredArIndexedMap<SerializableClass, SerializableClass> map =
-                new StoredArIndexedMap<>(StoredArrayTest.serializer, keysArray, valuesArray);
+                new StoredArIndexedMap<>(StoredArrayTest.serializer, keysArray.length, keysArray, valuesArray);
         checkEquality(map, keysArray, valuesArray);
     }
 
@@ -53,7 +53,7 @@ public class StoredArIndexedMapTest {
             values[i] = strings[i];
         }
         StoredArIndexedMap<SerializableClass, String> map =
-                new StoredArIndexedMap<>(StoredArrayTest.serializer, keys, values);
+                new StoredArIndexedMap<>(StoredArrayTest.serializer, n, keys, values);
         for (int i = 0; i < n; ++i) {
             map.mapValue(i, values[n - i - 1]);
         }
@@ -68,7 +68,7 @@ public class StoredArIndexedMapTest {
         SerializableClass[] keys = initSortedArray();
         SerializableClass[] values = StoredArrayTest.initArray();
         StoredArIndexedMap<SerializableClass, SerializableClass> map =
-                new StoredArIndexedMap<>(StoredArrayTest.serializer, keys, values);
+                new StoredArIndexedMap<>(StoredArrayTest.serializer, keys.length, keys, values);
         for (int i = 0; i < keys.length; ++i) {
             assertEquals(values[i], map.getObject(keys[i]));
         }

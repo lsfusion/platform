@@ -60,6 +60,17 @@ public class StoredArrayTest {
     }
 
     @Test
+    public void createWithArrayAndSize() {
+        SerializableClass[] array = initArray();
+        final int size = 4;
+        StoredArray<SerializableClass> stored = new StoredArray<>(array, size, serializer, null);
+        assertEquals(size, stored.size());
+        for (int i = 0; i < size; ++i) {
+            assertEquals(array[i], stored.get(i));
+        }
+    } 
+    
+    @Test
     public void createWithArrayAndGetReversed() {
         SerializableClass[] array = initArray();
         StoredArray<SerializableClass> stored = new StoredArray<>(array, serializer);

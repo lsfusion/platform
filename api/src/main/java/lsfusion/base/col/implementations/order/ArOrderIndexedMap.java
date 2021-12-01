@@ -100,36 +100,33 @@ public class ArOrderIndexedMap<K, V> extends AMOrderMap<K, V> {
     }
 
     public ImOrderMap<K, V> immutableOrder() {
-        if(arMap.size==0)
+        if(arMap.size()==0)
             return MapFact.EMPTYORDER();
-        if(arMap.size==1)
+        if(arMap.size()==1)
             return MapFact.singletonOrder(singleKey(), singleValue());
 
-        if(arMap.size < SetFact.useArrayMax) {
-            Object[] keys = new Object[arMap.size];
-            Object[] values = new Object[arMap.size];
-            for(int i=0;i<arMap.size;i++) {
+        if(arMap.size() < SetFact.useArrayMax) {
+            Object[] keys = new Object[arMap.size()];
+            Object[] values = new Object[arMap.size()];
+            for(int i=0;i<arMap.size();i++) {
                 keys[i] = getKey(i);
                 values[i] = getValue(i);
             }
-            return new ArOrderMap<>(new ArMap<>(arMap.size, keys, values));
+            return new ArOrderMap<>(new ArMap<>(arMap.size(), keys, values));
         }
-
-        if(arMap.keys.length > arMap.size * SetFact.factorNotResize) {
-            Object[] newKeys = new Object[arMap.size];
-            System.arraycopy(arMap.keys, 0, newKeys, 0, arMap.size);
-            arMap.keys = newKeys;
-            Object[] newValues = new Object[arMap.size];
-            System.arraycopy(arMap.values, 0, newValues, 0, arMap.size);
-            arMap.values = newValues;
-        }
+        
+        arMap.shrink();
 
         return this;
     }
 
     @Override
     public ImOrderSet<K> keyOrderSet() {
-        return new ArOrderIndexedSet<>(new ArIndexedSet<>(arMap.size, arMap.keys), order);
+        if (arMap.isStored()) {
+            return new ArOrderIndexedSet<>(new ArIndexedSet<>(arMap.getStoredKeys()), order);
+        } else {
+            return new ArOrderIndexedSet<>(new ArIndexedSet<>(arMap.size(), arMap.getKeys()), order);
+        }
     }
 
     public static void serialize(Object o, StoredArraySerializer serializer, ByteArrayOutputStream outStream) {

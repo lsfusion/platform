@@ -3,6 +3,8 @@ package lsfusion.base.col.implementations;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.implementations.abs.AMSet;
 import lsfusion.base.col.implementations.order.ArOrderIndexedSet;
+import lsfusion.base.col.implementations.stored.StoredArIndexedSet;
+import lsfusion.base.col.implementations.stored.StoredArray;
 import lsfusion.base.col.implementations.stored.StoredArraySerializer;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
@@ -15,8 +17,8 @@ import java.io.ByteArrayOutputStream;
 
 public class ArIndexedSet<K> extends AMSet<K> {
 
-    public int size;
-    public Object[] array;
+    private int size;
+    private Object[] array;
 
     public ArIndexedSet() {
         this.array = new Object[4];
@@ -32,40 +34,87 @@ public class ArIndexedSet<K> extends AMSet<K> {
     }
 
     public ArIndexedSet(ArIndexedSet<K> set) {
-        size = set.size;
-        array = set.array.clone();
+        if (needSwitchToStored(set)) {
+            switchToStored(set.size, set.array);
+        } else {
+            size = set.size;
+            array = set.array.clone();
+        }
     }
 
+    public ArIndexedSet(StoredArray<K> keys) {
+        StoredArIndexedSet<K> storedSet = new StoredArIndexedSet<>(keys);
+        this.array = new Object[]{storedSet};
+        this.size = STORED_FLAG;
+    }
+    
     public int size() {
-        return size;
+        if (!isStored()) {
+            return size;
+        } else {
+            return stored().size();
+        }
     }
-
+    
+    public Object[] getArray() {
+        if (!isStored()) {
+            return array;
+        } else {
+            throw new UnsupportedOperationException();
+        }
+    }
+    
     public K get(int i) {
-        return (K) array[i];
+        if (!isStored()) {
+            return (K) array[i];
+        } else {
+            return stored().get(i);
+        }
     }
 
     public <M> ImValueMap<K, M> mapItValues() {
-        return new ArIndexedMap<>(this);
+        if (!isStored()) {
+            return new ArIndexedMap<>(this);
+        } else {
+            return stored().mapItValues();
+        }
     }
 
     public <M> ImRevValueMap<K, M> mapItRevValues() {
-        return new ArIndexedMap<>(this);
+        if (!isStored()) {
+            return new ArIndexedMap<>(this);
+        } else {
+            return stored().mapItRevValues();
+        }
     }
 
     @Override
     public boolean contains(K element) {
-        return ArIndexedMap.findIndex(element, size, array) >= 0;
+        if (!isStored()) {
+            return ArIndexedMap.findIndex(element, size, array) >= 0;
+        } else {
+            return stored().contains(element);
+        }
     }
 
     @Override
     public K getIdentIncl(K element) {
-        return get(ArIndexedMap.findIndex(element, size, array));
+        if (!isStored()) {
+            return get(ArIndexedMap.findIndex(element, size, array));
+        } else {
+            return stored().getIdentIncl(element);
+        }
     }
 
     @Override
     public void keep(K element) {
-        assert size==0 || array[size-1].hashCode() <= element.hashCode();
-        array[size++] = element;
+        if (!isStored()) {
+            assert size == 0 || array[size - 1].hashCode() <= element.hashCode();
+            array[size++] = element;
+            switchToStoredIfNeeded(size-1, size);
+        } else {
+            stored().keep(element);
+        }
     }
 
     public boolean add(K element) {
@@ -73,29 +122,46 @@ public class ArIndexedSet<K> extends AMSet<K> {
     }
 
     public ImSet<K> immutable() {
-        if(size==0)
-            return SetFact.EMPTY();
-        if(size==1)
-            return SetFact.singleton(single());
+        if (!isStored()) {
+            if (size == 0)
+                return SetFact.EMPTY();
+            if (size == 1)
+                return SetFact.singleton(single());
+            
+            if (needSwitchToStored(this)) {
+                switchToStored(size, array);
+                return stored().immutable();
+            }
+            
+            if (array.length > size * SetFact.factorNotResize) {
+                Object[] newArray = new Object[size];
+                System.arraycopy(array, 0, newArray, 0, size);
+                array = newArray;
+            }
 
-        if(array.length > size * SetFact.factorNotResize) {
-            Object[] newArray = new Object[size];
-            System.arraycopy(array, 0, newArray, 0, size);
-            array = newArray;
+            if (size < SetFact.useArrayMax)
+                return new ArSet<>(size, array);
+
+            return this;
+        } else {
+            return stored().immutable();
         }
-
-        if(size < SetFact.useArrayMax)
-            return new ArSet<>(size, array);
-
-        return this;
     }
 
     public ImSet<K> immutableCopy() {
-        return new ArIndexedSet<>(this);
+        if (!isStored()) {
+            return new ArIndexedSet<>(this);
+        } else {
+            return stored().immutableCopy();
+        }
     }
 
     public ArIndexedMap<K, K> toMap() {
-        return new ArIndexedMap<>(size, array, array);
+        if (!isStored()) {
+            return new ArIndexedMap<>(size, array, array);
+        } else {
+            throw new UnsupportedOperationException(); 
+        }
     }
 
     public ImRevMap<K, K> toRevMap() {
@@ -103,9 +169,21 @@ public class ArIndexedSet<K> extends AMSet<K> {
     }
 
     public ImOrderSet<K> toOrderSet() {
-        return new ArOrderIndexedSet<>(this, ArSet.genOrder(size));
+        if (!isStored()) {
+            return new ArOrderIndexedSet<>(this, ArSet.genOrder(size));
+        } else {
+            return stored().toOrderSet();
+        }
     }
 
+    public void shrink() {
+        if (!isStored() && array.length > size * SetFact.factorNotResize) {
+            Object[] newArray = new Object[size];
+            System.arraycopy(array, 0, newArray, 0, size);
+            array = newArray;
+        }
+    }
+    
     public static void serialize(Object o, StoredArraySerializer serializer, ByteArrayOutputStream outStream) {
         ArIndexedSet<?> set = (ArIndexedSet<?>) o;
         serializer.serialize(set.size, outStream);
@@ -117,4 +195,37 @@ public class ArIndexedSet<K> extends AMSet<K> {
         Object[] array = ArCol.deserializeArray(inStream, serializer);
         return new ArIndexedSet<>(size, array);
     }
+    
+    private static final int STORED_FLAG = -42;
+    
+    public boolean isStored() {
+        return size == STORED_FLAG;
+    }
+    
+    private StoredArIndexedSet<K> stored() {
+        return (StoredArIndexedSet<K>) array[0];
+    }
+
+    private void switchToStoredIfNeeded(int oldSize, int newSize) {
+        if (needSwitchToStored(oldSize, newSize)) {
+            switchToStored(size, array);
+        }
+    }
+    
+    private boolean needSwitchToStored(int oldSize, int newSize) {
+        // todo [dale]: temp
+        return oldSize <= LIMIT && newSize > LIMIT;    
+    }  
+    
+    private boolean needSwitchToStored(ArIndexedSet<K> set) {
+        return set.size() > LIMIT; 
+    }
+    
+    private void switchToStored(int size, Object[] array) {
+        StoredArIndexedSet<K> storedSet = new StoredArIndexedSet<>(StoredArraySerializer.getInstance(), (K[]) array, size);
+        this.array = new Object[]{storedSet};
+        this.size = STORED_FLAG;
+    }
+    
+    private static final int LIMIT = 5000; 
 }

@@ -84,23 +84,19 @@ public class ArOrderIndexedSet<K> extends AMOrderSet<K> {
     }
 
     public ImOrderSet<K> immutableOrder() {
-        if(arSet.size==0)
+        if(arSet.size()==0)
             return SetFact.EMPTYORDER();
-        if(arSet.size==1)
+        if(arSet.size()==1)
             return SetFact.singletonOrder(single());
 
-        if(arSet.size < SetFact.useArrayMax) {
-            Object[] orderArray = new Object[arSet.size];
-            for(int i=0;i<arSet.size;i++)
+        if(arSet.size() < SetFact.useArrayMax) {
+            Object[] orderArray = new Object[arSet.size()];
+            for(int i=0;i<arSet.size();i++)
                 orderArray[i] = get(i);
-            return new ArOrderSet<>(new ArSet<>(arSet.size, orderArray));
+            return new ArOrderSet<>(new ArSet<>(arSet.size(), orderArray));
         }
-
-        if(arSet.array.length > arSet.size * SetFact.factorNotResize) {
-            Object[] newArray = new Object[arSet.size];
-            System.arraycopy(arSet.array, 0, newArray, 0, arSet.size);
-            arSet.array = newArray;
-        }
+        
+        arSet.shrink();
 
         return this;
     }
