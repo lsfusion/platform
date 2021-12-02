@@ -159,11 +159,16 @@ public class ClientModalForm extends JDialog {
         if(async) {
             return new Dimension(800, 600);
         } else {
+            int horzClientOffset = 20;
+            int vertClientOffset = 100;
 
             // there are 2 problems : rounding (we need to round up), however it coukd be fixed differently
             // since we are changing for example grid basises (by changing fill to percent), we can get extra scrollbars in grids (which is not what we want), so we just add some extraOffset
             int extraHorzOffset = nativeScrollbarWidth * 2;
             int extraVertOffset = nativeScrollbarHeight * 2;
+
+            int wndWidth = getParent().getWidth();
+            int wndHeight = getParent().getHeight();
 
             Dimension preferredSize = form.getLayout().getMaxPreferredSize(extraHorzOffset, extraVertOffset);
 
@@ -174,7 +179,7 @@ public class ClientModalForm extends JDialog {
                 preferredSize.height += 40;
             }
 
-            return preferredSize;
+            return new Dimension(Math.min(preferredSize.width, wndWidth - horzClientOffset), Math.min(preferredSize.height, wndHeight - vertClientOffset));
         }
     }
 

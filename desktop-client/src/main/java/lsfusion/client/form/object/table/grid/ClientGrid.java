@@ -29,6 +29,11 @@ public class ClientGrid extends ClientComponent {
     }
 
     @Override
+    protected Integer getDefaultHeight() {
+        return groupObject.getHeight(lineHeight);
+    }
+
+    @Override
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream) throws IOException {
         super.customSerialize(pool, outStream);
 

@@ -7,7 +7,6 @@ import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.design.ClientContainer;
 import lsfusion.client.form.design.view.flex.LinearClientContainerView;
 import lsfusion.client.form.design.view.widget.PanelWidget;
-import lsfusion.client.form.design.view.widget.ScrollPaneWidget;
 import lsfusion.client.form.design.view.widget.Widget;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.table.grid.view.GridView;
@@ -28,7 +27,7 @@ public class ClientFormLayout extends PanelWidget {
         try {
             GridView.calcMaxPrefSize = true;
             Dimension maxPrefSize = containerViews.get(mainContainer).getView().getPreferredSize();
-            return new Dimension(maxPrefSize.width + (width != null ? 0 : extraHorzOffset), maxPrefSize.height + (height != null ? 0 : extraVertOffset));
+            return new Dimension(width != null ? width : maxPrefSize.width + extraHorzOffset, height != null ? height : maxPrefSize.height + extraVertOffset);
         } finally {
             GridView.calcMaxPrefSize = false;
         }

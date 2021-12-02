@@ -44,10 +44,17 @@ public abstract class ClientComponent extends ContextIdentityObject implements I
     }
 
     public Integer getSize(boolean vertical) {
-        int size;
-        size = vertical ? height : width;
+        int size = vertical ? height : width;
         if (size != -1)
             return size;
+        return vertical ? getDefaultHeight() : getDefaultWidth();
+    }
+
+    protected Integer getDefaultWidth() {
+        return null;
+    }
+
+    protected Integer getDefaultHeight() {
         return null;
     }
 

@@ -6,6 +6,7 @@ import lsfusion.base.identity.DefaultIDGenerator;
 import lsfusion.base.identity.IDGenerator;
 import lsfusion.base.identity.IdentityObject;
 import lsfusion.client.ClientResourceBundle;
+import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.form.controller.remote.serialization.ClientIdentitySerializable;
 import lsfusion.client.form.controller.remote.serialization.ClientSerializationPool;
 import lsfusion.client.form.design.ClientComponent;
@@ -62,6 +63,17 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
 
     public RowBackgroundReader rowBackgroundReader = new RowBackgroundReader();
     public RowForegroundReader rowForegroundReader = new RowForegroundReader();
+
+    public final static int BORDER_VERT_SIZE = 1;
+
+    public int getHeight(int lines) {
+        if(lines == -1)
+            lines = 5;
+
+        return (lines * (SwingDefaults.getValueHeight() + BORDER_VERT_SIZE)) +
+                3 * BORDER_VERT_SIZE // borders around grid + header border
+                ;
+    }
 
     public boolean mayHaveChildren() {
         return isRecursive || (parent != null && parent.groups.indexOf(this) != parent.groups.size() - 1);
