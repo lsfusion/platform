@@ -583,8 +583,8 @@ pushNotification (CustomUser user, BOOLEAN system, BOOLEAN notificate) + {
 // web
 
 // list
-json (Message m) = [FORMULA STRING 'json_build_object(\'author\',$1,\'time\',$2,\'text\',$3,\'own\',$4,\'replyAuthor\',$5,\'replyText\',$6,\'replyMessage\',$7,\'id\',$8,\'attachment\',$9)']
-                             ((OVERRIDE nameAuthor(m), ''), dateTime(m), text(m), IF own(m) THEN 1 ELSE 0, (OVERRIDE nameAuthorReplyTo(m), ''), (OVERRIDE textReplyTo(m), ''), (OVERRIDE LONG(replyTo(m)), 0), m, (OVERRIDE attachmentName(m), ''));
+json (Message m) = [FORMULA STRING 'json_build_object(\'author\',$1,\'time\',$2,\'text\',$3,\'own\',$4,\'replyAuthor\',$5,\'replyText\',$6,\'replyMessage\',$7,\'id\',$8,\'attachment\',$9,\'status\',$10)']
+                             ((OVERRIDE nameAuthor(m), ''), dateTime(m), text(m), IF own(m) THEN 1 ELSE 0, (OVERRIDE nameAuthorReplyTo(m), ''), (OVERRIDE textReplyTo(m), ''), (OVERRIDE LONG(replyTo(m)), 0), m, (OVERRIDE attachmentName(m), ''), (OVERRIDE status(m), ''));
 
 changeMessage (Message m) {
     INPUT s = STRING DO {

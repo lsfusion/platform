@@ -59,11 +59,22 @@ function chatMessageRender() {
             element.attachments = attachments;
             message.appendChild(attachments);
 
+            var footer = document.createElement("div");
+            footer.classList.add("chat-footer");
+
             var time = document.createElement("div");
             time.classList.add("chat-time");
 
             element.time = time;
-            message.appendChild(time);
+            footer.appendChild(time);
+
+            var status = document.createElement("div");
+            status.classList.add("chat-status");
+
+            element.status = status;
+            footer.appendChild(status);
+
+            message.appendChild(footer);
 
             element.message = message;
             element.appendChild(message);
@@ -83,8 +94,9 @@ function chatMessageRender() {
                 controller.changeValue(JSON.stringify({ action : 'goToReply' }));
             }
 
-            element.time.innerHTML = obj.time;
             element.text.innerHTML = obj.text;
+            element.time.innerHTML = obj.time;
+            element.status.innerHTML = obj.status;
 
             while (element.attachments.lastElementChild) {
                 element.attachments.removeChild(element.attachments.lastElementChild);
