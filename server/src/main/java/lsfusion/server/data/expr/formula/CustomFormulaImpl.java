@@ -29,7 +29,14 @@ public class CustomFormulaImpl extends AbstractFormulaImpl implements FormulaJoi
         this.formula = formula;
         this.mapParams = mapParams;
         this.valueClass = valueClass;
-        this.paramsPattern = Pattern.compile(mapParams.keys().toString("|"));
+        
+        String patternString = mapParams.keys().toString("|");
+        if (!patternString.isEmpty()) {
+            // word boundaries added to be able to match prm10+
+            patternString = "\\b(" + patternString + ")\\b"; 
+        }
+        this.paramsPattern = Pattern.compile(patternString);
+        
         this.hasNotNull = hasNotNull;
     }
 
