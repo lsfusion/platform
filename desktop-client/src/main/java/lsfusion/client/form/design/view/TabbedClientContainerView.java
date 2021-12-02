@@ -115,18 +115,6 @@ public class TabbedClientContainerView extends AbstractClientContainerView {
         super.updateLayout(childrenVisible);
     }
 
-    @Override
-    public Dimension getMaxPreferredSize(Map<ClientContainer, ClientContainerView> containerViews) {
-        int selected = panel.getSelectedTab();
-        Dimension dimension;
-        if (selected != -1) {
-            dimension = getChildMaxPreferredSize(containerViews, selected);
-            dimension.height += SwingDefaults.getComponentHeight()  + 5; //little extra for borders, etc., getComponentHeight() - tab height
-            return dimension;
-        }
-        return new Dimension(0, 0);
-    }
-
     private void ensureTabSelection() {
         if (panel.getSelectedTab() == -1 && panel.getTabCount() != 0) {
             panel.selectTab(0);

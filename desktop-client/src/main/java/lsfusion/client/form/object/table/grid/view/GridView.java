@@ -13,6 +13,8 @@ import java.awt.*;
 public class GridView extends FlexPanel {
     final ScrollPaneWidget pane;
 
+    public static boolean calcMaxPrefSize;
+
     private final ClientGrid grid;
     private final GridTable gridTable;
     private final GridController gridController;
@@ -49,8 +51,8 @@ public class GridView extends FlexPanel {
 
             @Override
             public Dimension getPreferredSize() {
-                Dimension preferredSize = super.getPreferredSize();
                 Dimension viewSize = gridTable.getPreferredSize();
+                Dimension preferredSize = calcMaxPrefSize ? viewSize: super.getPreferredSize();
                 Dimension extentSize = viewport.getPreferredSize();
 
                 // компенсируем добавление к preferredSize размеров скроллбаров, чтобы избежать прыжков размеров таблицы на форме
