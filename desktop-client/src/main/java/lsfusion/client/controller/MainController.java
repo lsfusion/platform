@@ -330,6 +330,7 @@ public class MainController {
         UIManager.put("TextComponent.selectAllOnFocusPolicy", "never");
         UIManager.put("Button.default.borderWidth", SwingDefaults.getButtonBorderWidth()); // differs in light and dark themes. make equal to have equal height.
         UIManager.put("TabbedPane.tabHeight", SwingDefaults.getComponentHeight());
+        UIManager.put("TabbedPane.tabsPopupPolicy", "never");
         UIManager.put("ToggleButton.margin", SwingDefaults.getToggleButtonMargin());
         UIManager.put("SplitPaneDivider.style", "plain");
 
