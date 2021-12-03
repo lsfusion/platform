@@ -463,21 +463,13 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
 
             HorizontalPanel bottomPanel = new HorizontalPanel();
             bottomPanel.setWidth("100%");
-            bottomPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
+            bottomPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LEFT);
             bottomPanel.getElement().addClassName("suggestPopupBottomPanel");
             // block mouse down events to prevent focus issues
             bottomPanel.addDomHandler(GwtClientUtils::stopPropagation, MouseDownEvent.getType());
             panel.add(bottomPanel);
 
             HorizontalPanel buttonsPanel = new HorizontalPanel();
-
-            buttonsPanel.add(refreshButton = new SuggestPopupButton() {
-                @Override
-                protected void onClickStart() {
-                    refreshButtonPressed = true;
-                    suggestBox.showSuggestionList();
-                }
-            });
 
             for(int i = 0; i < actions.length; i++) {
                 int index = i;
@@ -488,6 +480,15 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
                     }
                 })));
             }
+
+            buttonsPanel.add(refreshButton = new SuggestPopupButton() {
+                @Override
+                protected void onClickStart() {
+                    refreshButtonPressed = true;
+                    suggestBox.showSuggestionList();
+                }
+            });
+
             bottomPanel.add(buttonsPanel);
 
             return panel;
