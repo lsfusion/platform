@@ -90,7 +90,7 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         }
 
         public ImSet<FilterInstance> getFilters() {
-            return groupObject.fixedFilters;
+            return groupObject.getFixedFilters(true, true); // we can't combine filters (see check below)
         }
 
         public ImMap<ObjectInstance, ? extends Expr> process(FilterInstance filt, ImMap<ObjectInstance, ? extends Expr> mapKeys) {
@@ -105,7 +105,7 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         }
 
         public ImSet<FilterInstance> getFilters() {
-            return groupObject.fixedFilters;
+            return groupObject.getFixedFilters(true, true); // we can't combine filters (see check below)
         }
 
         public ImMap<ObjectInstance, ? extends Expr> process(FilterInstance filt, ImMap<ObjectInstance, ? extends Expr> mapKeys) {

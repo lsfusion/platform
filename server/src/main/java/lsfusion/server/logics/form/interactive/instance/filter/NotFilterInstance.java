@@ -13,6 +13,7 @@ import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.property.Property;
+import lsfusion.server.logics.property.PropertyFact;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -57,5 +58,10 @@ public class NotFilterInstance extends FilterInstance {
 
     protected void fillObjects(MSet<ObjectInstance> objects) {
         filter.fillObjects(objects);
+    }
+
+    @Override
+    public NotNullFilterInstance notNullCached() {
+        return getFilterInstance(PropertyFact.createNotCached(getPropertyImplement(filter.notNullCached())));
     }
 }

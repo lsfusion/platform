@@ -2808,4 +2808,24 @@ public class Settings implements Cloneable {
     public void setMinInterfaceStatForValueUnique(int minInterfaceStatForValueUnique) {
         this.minInterfaceStatForValueUnique = minInterfaceStatForValueUnique;
     }
+
+    private boolean disableCombineFilters = false;
+
+    public boolean isDisableCombineFilters() {
+        return disableCombineFilters;
+    }
+
+    public void setDisableCombineFilters(boolean disableCombineFilters) {
+        this.disableCombineFilters = disableCombineFilters;
+    }
+
+    private boolean useGroupFiltersInAsyncFilterCompletion = false;
+
+    public boolean isUseGroupFiltersInAsyncFilterCompletion() {
+        return useGroupFiltersInAsyncFilterCompletion;
+    }
+
+    public void setUseGroupFiltersInAsyncFilterCompletion(boolean useGroupFiltersInAsyncFilterCompletion) {
+        this.useGroupFiltersInAsyncFilterCompletion = useGroupFiltersInAsyncFilterCompletion;
+    }
 }

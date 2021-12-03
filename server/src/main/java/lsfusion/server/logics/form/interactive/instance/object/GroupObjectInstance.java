@@ -76,7 +76,6 @@ import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
-import lsfusion.server.logics.property.classes.IsClassProperty;
 import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.implement.PropertyRevImplement;
 import lsfusion.server.physics.admin.Settings;
@@ -223,21 +222,68 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     }
 
     // caches
-    public ImSet<FilterInstance> setFilters = null;
-    public ImSet<FilterInstance> getSetFilters() {
-        if(setFilters==null) {
-            FilterInstance userComboFilter = combineUserFilters(userFilters);
-            ImSet<FilterInstance> userComboSet = userComboFilter != null ? SetFact.singleton(userComboFilter) : userFilters.immutableOrder().getSet();
-            setFilters = fixedFilters.merge(userComboSet).merge(SetFact.fromJavaSet(regularFilters)).merge(SetFact.fromJavaSet(viewFilters));
+    public ImSet<FilterInstance> filters = null;
+    public ImSet<FilterInstance> combinedAllFixedFilters;
+
+    public ImSet<FilterInstance> getFixedFilters(boolean withClassFilter, boolean noCombine) {
+        ImSet<FilterInstance> result = this.fixedFilters;
+        if(withClassFilter) {
+            result = result.merge(classFilter);
+            if(!noCombine && !Settings.get().isDisableCombineFilters()) {
+                if(combinedAllFixedFilters == null)
+                    combinedAllFixedFilters = SetFact.singleton(FilterInstance.combineCached(result, true));
+                return combinedAllFixedFilters;
+            }
         }
-        return setFilters;
+        return result;
     }
 
-    private FilterInstance combineUserFilters(MOrderSet<FilterInstance> filterSet) {
+    public ImSet<FilterInstance> getDynamicFilters(DynamicFilters dynamicFilters) {
+        ImSet<FilterInstance> result = SetFact.fromJavaSet(regularFilters);
+        if(dynamicFilters != DynamicFilters.NOUSER)
+            result = result.merge(combineUserFilters(userFilters));
+        if(dynamicFilters != DynamicFilters.NOVIEW)
+            result = result.merge(SetFact.fromJavaSet(viewFilters));
+        return result;
+    }
+
+    public enum DynamicFilters {
+        ALL, NOUSER, NOVIEW
+    }
+
+    public ImSet<FilterInstance> getFilters() {
+        return getFilters( false);
+    }
+    public ImSet<FilterInstance> getFilters(boolean noCombine) {
+        return getFilters(DynamicFilters.ALL, noCombine);
+    }
+    public ImSet<FilterInstance> getFilters(DynamicFilters dynamicFilters, boolean noCombine) {
+        if(dynamicFilters == DynamicFilters.ALL) {
+            if (filters == null)
+                filters = calculateFilters(dynamicFilters, noCombine);
+            return filters;
+        }
+
+        return calculateFilters(dynamicFilters, noCombine);
+    }
+
+    private ImSet<FilterInstance> calculateFilters(DynamicFilters dynamicFilters, boolean noCombine) {
+        ImSet<FilterInstance> result = getFixedFilters(true, noCombine).merge(getDynamicFilters(dynamicFilters));
+        if(!noCombine && !Settings.get().isDisableCombineFilters())
+            result = SetFact.singleton(FilterInstance.combineCached(result, true));
+        return result;
+    }
+
+    private void dynamicFiltersUpdated() {
+        filters = null;
+        updated |= UPDATED_FILTER;
+    }
+
+    private ImSet<FilterInstance> combineUserFilters(Set<FilterInstance> userFilters) {
         FilterInstance comboFilter = null;
         List<List<FilterInstance>> organizedFilters = new ArrayList<>();
         List<FilterInstance> orFilters = new ArrayList<>();
-        for (FilterInstance filter : filterSet.immutableOrder()) {
+        for (FilterInstance filter : userFilters) {
             orFilters.add(filter);
             if (filter.junction) {
                 organizedFilters.add(orFilters);
@@ -267,53 +313,50 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
             }
             comboFilter = new AndFilterInstance(comboFilter, filter);
         }
-        return comboFilter;
+
+        if(comboFilter != null)
+            return SetFact.singleton(comboFilter);
+
+        return SetFact.fromJavaSet(userFilters);
     }
 
     // вообще все фильтры
     public ImSet<FilterInstance> fixedFilters = SetFact.EMPTY();
+    public FilterInstance classFilter;
 
-    private MOrderSet<FilterInstance> userFilters = SetFact.mOrderSet();
+    private Set<FilterInstance> userFilters = new HashSet<>();
     public void clearUserFilters() {
-        userFilters = SetFact.mOrderSet();
+        userFilters.clear();
 
-        setFilters = null;
-        updated |= UPDATED_FILTER;
+        dynamicFiltersUpdated();
     }
     public void addUserFilter(FilterInstance addFilter) {
         userFilters.add(addFilter);
 
-        setFilters = null;
-        updated |= UPDATED_FILTER;
+        dynamicFiltersUpdated();
     }
 
     private final Set<FilterInstance> regularFilters = new HashSet<>();
     public void addRegularFilter(FilterInstance filter) {
         regularFilters.add(filter);
 
-        setFilters = null;
-        updated |= UPDATED_FILTER;
+        dynamicFiltersUpdated();
     }
 
     public void removeRegularFilter(FilterInstance filter) {
         regularFilters.remove(filter);
 
-        setFilters = null;
-        updated |= UPDATED_FILTER;
+        dynamicFiltersUpdated();
     }
 
     private final Set<FilterInstance> viewFilters = new HashSet<>();
-    public void setViewFilters(List<FilterInstance> filters, int pageSize) {
-        viewFilters.clear();
-        viewFilters.addAll(filters);
-        setPageSize(pageSize);
-
-        setFilters = null;
-        updated |= UPDATED_FILTER;
+    public void setViewFilters(Set<FilterInstance> filters) {
+        if(!BaseUtils.hashEquals(viewFilters, filters)) {
+            viewFilters.clear();
+            viewFilters.addAll(filters);
+            dynamicFiltersUpdated();
+        }
     }
-
-    // с активным интерфейсом
-    public ImSet<FilterInstance> filters;
 
     public ImOrderMap<OrderInstance, Boolean> fixedOrders = MapFact.EMPTYORDER();
 
@@ -447,25 +490,8 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         ImSet<FilterInstance> getFilters();
     }
 
-    public Where getFilterWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, ReallyChanged reallyChanged, FilterProcessor filterProcessor, MSet<Property> mUsedProps) throws SQLException, SQLHandledException {
-        Where where = Where.TRUE();
-        for(FilterInstance filt : (filterProcessor != null ? filterProcessor.getFilters() : filters)) {
-            if(filterProcessor != null) {
-                ImMap<ObjectInstance, ? extends Expr> overridedKeys = filterProcessor.process(filt, mapKeys);
-                if(overridedKeys == null)
-                    continue;
-                mapKeys = overridedKeys;
-            }
-            where = where.and(filt.getWhere(mapKeys, modifier, reallyChanged, mUsedProps));
-        }
-        return where;
-    }
-
     public static ImMap<ObjectInstance, ValueClass> getGridClasses(ImSet<ObjectInstance> objects) {
         return objects.filterFn(element -> !element.noClasses).mapValues(ObjectInstance::getGridClass);
-    }
-    public Where getClassWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, MSet<Property> mUsedProps) throws SQLException, SQLHandledException {
-        return IsClassProperty.getWhere(getGridClasses(objects), mapKeys, modifier, mUsedProps);
     }
 
     public Where getWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
@@ -478,7 +504,17 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         return getWhere(mapKeys, modifier, reallyChanged, processor, null);
     }
     public Where getWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, ReallyChanged reallyChanged, FilterProcessor processor, MSet<Property> mUsedProps) throws SQLException, SQLHandledException {
-        return getFilterWhere(mapKeys, modifier, reallyChanged, processor, mUsedProps).and(getClassWhere(mapKeys, modifier, mUsedProps));
+        Where where = Where.TRUE();
+        for(FilterInstance filt : (processor != null ? processor.getFilters() : getFilters())) {
+            if(processor != null) {
+                ImMap<ObjectInstance, ? extends Expr> overridedKeys = processor.process(filt, mapKeys);
+                if(overridedKeys == null)
+                    continue;
+                mapKeys = overridedKeys;
+            }
+            where = where.and(filt.getWhere(mapKeys, modifier, reallyChanged, mUsedProps));
+        }
+        return where;
     }
 
     public Where getWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier) throws SQLException, SQLHandledException {
@@ -574,7 +610,17 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
         final ImRevMap<ObjectInstance, KeyExpr> mapKeys = getMapKeys();
 
-        final ImSet<KeyExpr> usedContext = immutableCast(getFilterWhere(mapKeys, Property.defaultModifier, null, null, null).getOuterKeys());
+        final ImSet<KeyExpr> usedContext = immutableCast(getWhere(mapKeys, Property.defaultModifier, null, new FilterProcessor() {
+            @Override
+            public ImMap<ObjectInstance, ? extends Expr> process(FilterInstance filt, ImMap<ObjectInstance, ? extends Expr> mapKeys) {
+                return mapKeys;
+            }
+
+            @Override
+            public ImSet<FilterInstance> getFilters() {
+                return getFixedFilters(false, false);
+            }
+        }).getOuterKeys());
 
         return immutableCast(objects.filterFn(object -> { // если DataObject и нету ключей
             return object instanceof DataObjectInstance && !usedContext.contains(mapKeys.get(object));
@@ -927,10 +973,9 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
         boolean updateFilters = refresh || toRefresh() || (updated & UPDATED_FILTER) != 0;
         ImSet<GroupObjectInstance> sThis = SetFact.singleton(this);
-        applyFilters();
 
         if (!updateFilters) // изменились "верхние" объекты для фильтров
-            for (FilterInstance filt : filters)
+            for (FilterInstance filt : getFilters())
                 if (filt.objectUpdated(sThis)) {
                     updateFilters = true;
                     updateObjects = true;
@@ -938,17 +983,18 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
                 }
 
         if (!updateFilters) // изменились данные по фильтрам
-            for (FilterInstance filt : filters)
+            for (FilterInstance filt : getFilters())
                 if (filt.dataUpdated(changedProps.result, reallyChanged, modifier, hidden, sThis)) {
                     updateFilters = true;
                     break;
                 }
-        if (!updateFilters) // классы удалились\добавились
-            for (ObjectInstance object : objects)
-                if (object.classChanged(changedProps.result)) {  // || object.classUpdated() сомнительный or
-                    updateFilters = true;
-                    break;
-                }
+        // we don't need this anymore since filters now include class property
+//        if (!updateFilters) // классы удалились\добавились
+//            for (ObjectInstance object : objects)
+//                if (object.classChanged(changedProps.result)) {  // || object.classUpdated() сомнительный or
+//                    updateFilters = true;
+//                    break;
+//                }
 
         if(updateFilters)
             updateFilterProperty(true, modifier, environmentIncrement, changedProps, reallyChanged);
@@ -1087,10 +1133,6 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
             return readKeys(result, updateFilters, updatePageSize, currentObject, seeks, direction, sql, env, modifier, execEnv, baseClass, reallyChanged);
 
         return null; // ничего не изменилось
-    }
-
-    public void applyFilters() {
-        filters = getSetFilters();
     }
 
     public Pair<SeekObjects, Integer> updateScroll() {
@@ -1240,9 +1282,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
     public ListViewType listViewType;
     public void changeListViewType(ExecutionEnvironment execEnv, ConcreteCustomClass listViewType, ListViewType value) throws SQLException, SQLHandledException {
-        //to remove view filters when switch between views
-        setFilters = null;
-        viewFilters.clear();
+        setViewFilters(Collections.emptySet());
 
         this.listViewType = value;
         execEnv.change(entity.getListViewType(listViewType).property, new PropertyChange<>(listViewType.getDataObject(value.getObjectName())));

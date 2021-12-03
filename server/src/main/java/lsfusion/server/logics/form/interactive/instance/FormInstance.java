@@ -88,6 +88,7 @@ import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.instance.design.ContainerViewInstance;
 import lsfusion.server.logics.form.interactive.instance.filter.FilterInstance;
+import lsfusion.server.logics.form.interactive.instance.filter.NotNullFilterInstance;
 import lsfusion.server.logics.form.interactive.instance.filter.RegularFilterGroupInstance;
 import lsfusion.server.logics.form.interactive.instance.filter.RegularFilterInstance;
 import lsfusion.server.logics.form.interactive.instance.object.*;
@@ -117,6 +118,7 @@ import lsfusion.server.logics.form.interactive.action.async.PushAsyncChange;
 import lsfusion.server.logics.form.interactive.action.async.PushAsyncResult;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
+import lsfusion.server.logics.property.classes.IsClassProperty;
 import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.implement.PropertyRevImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -316,7 +318,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         ImMap<GroupObjectInstance, ImSet<FilterInstance>> fixedFilters = allFixedFilters.mapSetValues(value -> value.getInstance(instanceFactory)).group(key -> key.getApplyObject());
         for (int i = 0, size = fixedFilters.size(); i < size; i++)
             fixedFilters.getKey(i).fixedFilters = fixedFilters.getValue(i);
-
+        for (GroupObjectInstance groupObject : groupObjects)
+            groupObject.classFilter = new NotNullFilterInstance<>(FilterInstance.getPropertyObjectInstance(IsClassProperty.getProperty(getGridClasses(groupObject.objects))));
 
         for (RegularFilterGroupEntity filterGroupEntity : entity.getRegularFilterGroupsList()) {
             regularFilterGroups.add(instanceFactory.getInstance(filterGroupEntity));
@@ -374,8 +377,6 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 wasOrder.add(toDraw);
             }
         }
-
-        applyFilters(); // we need to apply filters, because on init may be some actions using filters (EXPAND UP) + readKeys in tree uses down group to calculate expand / collapse column
 
         this.session.registerForm(this);
         
@@ -918,18 +919,10 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     // пометка что изменились данные
     public boolean dataChanged = true;
 
-    // временно
-    private boolean checkFilters(final GroupObjectInstance groupTo) {
-        ImSet<FilterInstance> setFilters = groupTo.getSetFilters();
-        return setFilters.equals(groupTo.filters);
-    }
-
     public <P extends PropertyInterface> DataObject addFormObject(CustomObjectInstance object, ConcreteCustomClass cls, DataObject pushed, ExecutionStack stack) throws SQLException, SQLHandledException {
         DataObject dataObject = session.addObjectAutoSet(cls, pushed, BL, getClassListener());
 
-        // резолвим все фильтры
-        assert checkFilters(object.groupTo);
-        for (FilterInstance filter : object.groupTo.filters)
+        for (FilterInstance filter : object.groupTo.getFilters(true))
             filter.resolveAdd(this, object, dataObject, stack);
 
         expandCurrentGroupObject(object);
@@ -1920,11 +1913,6 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         return updated.dataUpdated(changedProps, this, getModifier(), hidden, groupObjects);
     }
 
-    private void applyFilters() {
-        for (GroupObjectInstance group : getGroups())
-            group.applyFilters();
-    }
-
     private void applyOrders() {
         for (GroupObjectInstance group : getGroups())
             group.orders = group.getSetOrders();
@@ -2379,7 +2367,6 @@ updateAsyncPropertyChanges();
 
         checkNavigatorDeactivated();
 
-        applyFilters();
         applyOrders();
 
         // пока сделаем тупо получаем один большой запрос

@@ -1,24 +1,33 @@
 package lsfusion.server.logics.form.interactive.instance.property;
 
+import lsfusion.base.BaseUtils;
+import lsfusion.base.Result;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
+import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ThrowingFunction;
+import lsfusion.base.lambda.set.NotFunctionSet;
+import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.key.KeyExpr;
+import lsfusion.server.data.expr.value.StaticParamNullableExpr;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
+import lsfusion.server.logics.form.interactive.action.input.InputValueList;
 import lsfusion.server.logics.form.interactive.changed.ChangedData;
 import lsfusion.server.logics.form.interactive.changed.ReallyChanged;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.order.OrderInstance;
+import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -26,6 +35,7 @@ import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.exec.hint.AutoHintsAspect;
 
 import java.sql.SQLException;
+import java.util.function.Function;
 
 public class PropertyObjectInstance<P extends PropertyInterface> extends ActionOrPropertyObjectInstance<P, Property<P>> implements OrderInstance {
 
@@ -130,5 +140,26 @@ public class PropertyObjectInstance<P extends PropertyInterface> extends ActionO
 
     public Type getType() {
         return property.getType();
+    }
+
+    // using getParamExpr for objects and getInterfaceParamExprs for all the rest
+    private static <P extends PropertyInterface> ImMap<P, StaticParamNullableExpr> getParamExprs(Property<P> property, ImMap<P, PropertyObjectInterfaceInstance> outerMapping) {
+        Result<ImMap<P, PropertyObjectInterfaceInstance>> rNotObjectsOuterMapping = new Result<>();
+        ImMap<P, ObjectInstance> objectsOuterMapping = BaseUtils.immutableCast(outerMapping.splitKeys((p, po) -> po instanceof ObjectInstance, rNotObjectsOuterMapping));
+        return objectsOuterMapping.mapValues(o -> o.entity.getParamExpr()).addExcl(property.getInterfaceParamExprs(rNotObjectsOuterMapping.result.keys()));
+    }
+
+    public InputValueList<?> getInputValueList(GroupObjectInstance toDraw, Result<ImRevMap<P, ObjectInstance>> innerMapping, Function<PropertyObjectInterfaceInstance, ObjectValue> valuesGetter) {
+        // splitting to grid and not grid objects
+        SFunctionSet<PropertyObjectInterfaceInstance> gridObjects = value -> (value instanceof ObjectInstance && toDraw.objects.contains((ObjectInstance) value));
+        ImMap<P, PropertyObjectInterfaceInstance> outerMapping = mapping.filterFnValues(new NotFunctionSet<>(gridObjects));
+
+        InputListEntity<?, P> filterInputList = property.getFilterInputList(getParamExprs(property, outerMapping), innerMapping != null);
+        if(filterInputList == null)
+            return null;
+
+        if(innerMapping != null)
+            innerMapping.set(BaseUtils.immutableCast(mapping.filterFnValues(gridObjects).toRevExclMap()));
+        return filterInputList.map(outerMapping.mapValues(valuesGetter));
     }
 }
