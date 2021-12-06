@@ -288,30 +288,36 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
                         public void onSuccess(Pair<ArrayList<GAsync>, Boolean> result) {
                             if (isThisCellEditor()) { //  && suggestBox.isSuggestionListShowing() in desktop this check leads to "losing" result, since suggest box can be not shown yet (!), however maybe in web-client it's needed for some reason (but there can be the risk of losing result)
                                 suggestBox.setAutoSelectEnabled(completionType.isAnyStrict() && !emptyQuery);
-                                List<String> rawSuggestions = new ArrayList<>();
-                                List<Suggestion> suggestionList = new ArrayList<>();
-                                for (GAsync suggestion : result.first) {
-                                    rawSuggestions.add(suggestion.rawString);
-                                    suggestionList.add(new Suggestion() {
-                                        @Override
-                                        public String getDisplayString() {
-                                            return suggestion.displayString; // .replace("<b>", "<strong>").replace("</b>", "</strong>");
-                                        }
 
-                                        @Override
-                                        public String getReplacementString() {
-                                            return suggestion.rawString;
-                                        }
-                                    });
+                                boolean succeededEmpty = false;
+                                if(result.first != null) {
+                                    List<String> rawSuggestions = new ArrayList<>();
+                                    List<Suggestion> suggestionList = new ArrayList<>();
+                                    for (GAsync suggestion : result.first) {
+                                        rawSuggestions.add(suggestion.rawString);
+                                        suggestionList.add(new Suggestion() {
+                                            @Override
+                                            public String getDisplayString() {
+                                                return suggestion.displayString; // .replace("<b>", "<strong>").replace("</b>", "</strong>");
+                                            }
+
+                                            @Override
+                                            public String getReplacementString() {
+                                                return suggestion.rawString;
+                                            }
+                                        });
+                                    }
+                                    suggestBox.setLatestSuggestions(rawSuggestions);
+                                    callback.onSuggestionsReady(request, new Response(suggestionList));
+                                    setMinWidth(suggestBox, true);
+
+                                    succeededEmpty = suggestionList.isEmpty();
                                 }
-                                suggestBox.setLatestSuggestions(rawSuggestions);
-                                callback.onSuggestionsReady(request, new Response(suggestionList));
-                                setMinWidth(suggestBox, true);
 
-                                suggestBox.updateDecoration(suggestionList.isEmpty(), false, result.second);
+                                suggestBox.updateDecoration(succeededEmpty, false, result.second);
 
                                 if(!result.second) {
-                                    if (suggestionList.isEmpty())
+                                    if (succeededEmpty)
                                         prevSucceededEmptyQuery = query;
                                     else
                                         prevSucceededEmptyQuery = null;

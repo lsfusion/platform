@@ -766,6 +766,8 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                     asyncLastThread = null;
             }
 
+            if(result == null)
+                return null;
             return serializeAsyncs(result);
         } catch (Throwable t) { // interrupted for example
 //            if(ExceptionUtils.getRootCause(t) instanceof InterruptedException)

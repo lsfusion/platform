@@ -76,17 +76,17 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         boolean newSession;
         AsyncMode asyncMode;
 
-        boolean filter = actionSID.equals(ServerResponse.FILTER);
-        if(filter || actionSID.equals(ServerResponse.VALUES)) {
-            boolean useFilters = !filter || Settings.get().isUseGroupFiltersInAsyncFilterCompletion();
-            boolean needObjects = !filter;
+        boolean values = actionSID.equals(ServerResponse.VALUES);
+        if(values || actionSID.equals(ServerResponse.OBJECTS)) {
+            boolean useFilters = !values || Settings.get().isUseGroupFiltersInAsyncFilterCompletion();
+            boolean needObjects = !values;
 
             Result<ImRevMap<X, ObjectInstance>> rMapObjects = needObjects ? new Result<>() : null;
 
             list = getInputValueList(valuesGetter, rMapObjects, useFilters);
             if(list == null)
                 return null;
-            newSession = BaseUtils.nvl(this.entity.defaultChangeEventScope, filter ? PropertyDrawEntity.DEFAULT_FILTER_EVENTSCOPE : PropertyDrawEntity.DEFAULT_VALUES_EVENTSCOPE) == FormSessionScope.NEWSESSION;
+            newSession = BaseUtils.nvl(this.entity.defaultChangeEventScope, values ? PropertyDrawEntity.DEFAULT_VALUES_EVENTSCOPE : PropertyDrawEntity.DEFAULT_OBJECTS_EVENTSCOPE) == FormSessionScope.NEWSESSION;
             mapObjects = needObjects ? rMapObjects.result : null;
             asyncMode = needObjects ? AsyncMode.OBJECTS : AsyncMode.VALUES;
         } else {

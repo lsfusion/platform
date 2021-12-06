@@ -3,7 +3,6 @@ package lsfusion.client.form.filter.user.view;
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.classes.data.ClientRichTextClass;
 import lsfusion.client.base.view.SwingDefaults;
-import lsfusion.client.classes.data.ClientTextClass;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.design.view.widget.TableWidget;
 import lsfusion.client.form.object.ClientGroupObjectValue;
@@ -210,7 +209,7 @@ class DataFilterValueViewTable extends TableWidget implements TableTransferHandl
 
     @Override
     public String getCurrentActionSID() {
-        return ServerResponse.FILTER;
+        return ServerResponse.VALUES;
     }
 
     @Override

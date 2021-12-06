@@ -338,7 +338,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
 
     protected void getAsyncValues(String property, String value, JavaScriptObject successCallBack, JavaScriptObject failureCallBack) {
         Column column = columnMap.get(property);
-        form.getAsyncValues(value, column.property, column.columnKey, ServerResponse.VALUES, new AsyncCallback<Pair<ArrayList<GAsync>, Boolean>>() {
+        form.getAsyncValues(value, column.property, column.columnKey, ServerResponse.OBJECTS, new AsyncCallback<Pair<ArrayList<GAsync>, Boolean>>() {
             @Override
             public void onFailure(Throwable caught) {
                 if(failureCallBack != null)
@@ -347,6 +347,12 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
 
             @Override
             public void onSuccess(Pair<ArrayList<GAsync>, Boolean> result) {
+                if(result.first == null && !result.second) {
+                    if(failureCallBack != null)
+                        GwtClientUtils.call(failureCallBack);
+                    return;
+                }
+
                 JavaScriptObject[] results = new JavaScriptObject[result.first.size()];
                 for (int i = 0; i < result.first.size(); i++) {
                     JavaScriptObject object = GwtClientUtils.newObject();

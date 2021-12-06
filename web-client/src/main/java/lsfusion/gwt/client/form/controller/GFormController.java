@@ -1893,7 +1893,7 @@ public class GFormController implements EditManager {
                                 moreResults = true;
                                 getPessimisticValues(property.ID, currentKey, actionSID, value, editIndex, fCallback);
                             } else if(values.size() == 1 && lastResult.equals(GAsync.CANCELED)) // ignoring CANCELED results
-                                return;
+                                values = null;
                         }
                         fCallback.onSuccess(new Pair<>(values, moreResults));
                     }
