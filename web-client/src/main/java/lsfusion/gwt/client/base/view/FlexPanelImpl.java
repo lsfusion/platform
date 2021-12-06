@@ -84,7 +84,7 @@ public class FlexPanelImpl {
         boolean grid = gridLines != null;
 
         parent.getStyle().setProperty("display", getDisplayValue(grid));
-        parent.getStyle().setProperty(getJustifyContentAttrName(grid, vertical), getAlignmentValue(justify, grid));
+        setFlexAlignment(parent, vertical, grid, justify);
         if(grid) {
             parent.getStyle().setProperty("gridAutoFlow", vertical ? "row" : "column");
 
@@ -95,6 +95,10 @@ public class FlexPanelImpl {
 
             parent.getStyle().setProperty(getDirectionAttrName(), getDirectionValue(vertical));
         }
+    }
+
+    public void setFlexAlignment(DivElement parent, boolean vertical, boolean grid, GFlexAlignment justify) {
+        parent.getStyle().setProperty(getJustifyContentAttrName(grid, vertical), getAlignmentValue(justify, grid));
     }
 
     public void setVisible(DivElement parent, boolean visible, boolean grid) {

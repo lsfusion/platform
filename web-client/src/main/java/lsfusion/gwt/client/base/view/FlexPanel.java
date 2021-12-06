@@ -43,8 +43,12 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
     }
 
     public void setFlexAlignment(GFlexAlignment flexAlignment) {
-        this.flexAlignment = flexAlignment;
-        assert !flexAlignment.equals(GFlexAlignment.STRETCH);
+        if(!this.flexAlignment.equals(flexAlignment)) {
+            this.flexAlignment = flexAlignment;
+            assert !flexAlignment.equals(GFlexAlignment.STRETCH);
+
+            impl.setFlexAlignment(parentElement, vertical, isGrid(), flexAlignment);
+        }
     }
 
     private GridLines gridLines;
