@@ -449,7 +449,7 @@ public class GFormController implements EditManager {
             }
 
             GGroupObject groupObject = property.groupObject;
-            if(groupObject != null) {
+            if(groupObject != null && property.isList && !property.hide && groupObject.columnCount < 10) {
                 GFont font = groupObject.grid.font;
                 groupObject.columnSumWidth += property.getValueWidthWithPadding(font);
                 groupObject.columnCount++;
