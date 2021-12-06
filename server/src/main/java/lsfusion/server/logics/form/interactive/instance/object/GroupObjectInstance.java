@@ -258,7 +258,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         return getFilters(DynamicFilters.ALL, noCombine);
     }
     public ImSet<FilterInstance> getFilters(DynamicFilters dynamicFilters, boolean noCombine) {
-        if(dynamicFilters == DynamicFilters.ALL) {
+        if(dynamicFilters == DynamicFilters.ALL && !noCombine) {
             if (filters == null)
                 filters = calculateFilters(dynamicFilters, noCombine);
             return filters;
