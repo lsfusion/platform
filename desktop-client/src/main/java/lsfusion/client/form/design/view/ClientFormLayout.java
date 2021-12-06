@@ -24,12 +24,23 @@ public class ClientFormLayout extends PanelWidget {
         Integer width = mainContainer.getSize(false);
         Integer height = mainContainer.getSize(true);
 
+        Widget main = containerViews.get(mainContainer).getView();
         try {
             GridView.calcMaxPrefSize = true;
-            Dimension maxPrefSize = containerViews.get(mainContainer).getView().getPreferredSize();
+            Dimension maxPrefSize = main.getPreferredSize();
             return new Dimension(width != null ? width : maxPrefSize.width + extraHorzOffset, height != null ? height : maxPrefSize.height + extraVertOffset);
         } finally {
             GridView.calcMaxPrefSize = false;
+            invalidate((Component) main);
+        }
+    }
+
+    private void invalidate(Component component) {
+        for (Component child : ((Container) component).getComponents()) {
+            child.invalidate();
+            if (child instanceof Container) {
+                invalidate(child);
+            }
         }
     }
 

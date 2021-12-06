@@ -19,11 +19,6 @@ public class GridView extends FlexPanel {
     private final GridTable gridTable;
     private final GridController gridController;
 
-    @Override
-    public Dimension getMaxPreferredSize() { // ради этого вся ветка maxPreferredSize и делалась
-        return gridTable.getMaxPreferredSize(getPreferredSize());
-    }
-
     public GridView(GridController iGridController, ClientFormController form, GridUserPreferences[] iuserPreferences, boolean tabVertical, boolean verticalScroll) {
         super(false);
         gridController = iGridController;
