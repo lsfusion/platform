@@ -470,6 +470,9 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             },
             getDiff: function (newList) {
                 return thisObj.@GSimpleStateTableView::getDiff(*)(newList);
+            },
+            getColorThemeName: function () {
+                return @lsfusion.gwt.client.view.MainFrame::colorTheme.@java.lang.Enum::name()();
             }
         };
     }-*/;
