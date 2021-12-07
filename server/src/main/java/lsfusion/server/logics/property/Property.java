@@ -59,6 +59,7 @@ import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
+import lsfusion.server.logics.action.implement.ActionImplement;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.session.change.*;
@@ -1675,25 +1676,6 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return new PropertyClassImplement<>(this, classes, mapping);
     }
 
-    private LP logValueProperty;
-    private LP logWhereProperty;
-
-    public LP getLogValueProperty() {
-        return logValueProperty;
-    }
-
-    public void setLogValueProperty(LP logValueProperty) {
-        this.logValueProperty = logValueProperty;
-    }
-
-    public LP getLogWhereProperty() {
-        return logWhereProperty;
-    }
-
-    public void setLogWhereProperty(LP logWhereProperty) {
-        this.logWhereProperty = logWhereProperty;
-    }
-
     public boolean autoset;
 
     public static ValueClass op(ValueClass v1, ValueClass v2, boolean or) {
@@ -2155,7 +2137,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
     private boolean loggable;
 
-    public LA logFormAction;
+    public ActionMapImplement<?, T> logFormAction;
 
     public void setLoggable(boolean loggable) {
         this.loggable = loggable;
@@ -2165,11 +2147,11 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return loggable;
     }
 
-    public void setLogFormAction(LA logFormAction) {
+    public void setLogFormAction(ActionMapImplement<?, T> logFormAction) {
         this.logFormAction = logFormAction;
     }
 
-    public LA getLogFormAction() {
+    public ActionMapImplement<?, T> getLogFormAction() {
         return logFormAction;
     }
     
