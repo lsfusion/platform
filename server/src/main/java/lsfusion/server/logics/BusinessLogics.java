@@ -46,6 +46,8 @@ import lsfusion.server.language.property.oraction.LAP;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
+import lsfusion.server.logics.action.implement.ActionImplement;
+import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.ApplyFilter;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.session.change.Correlation;
@@ -587,13 +589,13 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     public static boolean useReparse = false;
     public static final ThreadLocal<ImMap<String, String>> reparse = new ThreadLocal<>();
 
-    public <P extends PropertyInterface> void finishLogInit(Property property) {
+    public <P extends PropertyInterface> void finishLogInit(Property<P> property) {
         if (property.isLoggable()) {
-            Action<P> logAction = (Action<P>) property.getLogFormAction().action;
+            ActionMapImplement<?, P> logAction = property.getLogFormAction();
 
             //добавляем в контекстное меню пункт для показа формы
-            property.setContextMenuAction(property.getSID(), logAction.caption);
-            property.setEventAction(property.getSID(), logAction.getImplement(property.getReflectionOrderInterfaces()));
+            property.setContextMenuAction(property.getSID(), logAction.action.caption);
+            property.setEventAction(property.getSID(), logAction);
         }
     }
 

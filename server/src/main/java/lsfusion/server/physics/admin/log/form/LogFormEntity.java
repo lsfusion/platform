@@ -33,23 +33,11 @@ import static lsfusion.server.logics.property.oraction.ActionOrPropertyUtils.rea
 
 public class LogFormEntity extends AutoFormEntity {
     public ImOrderSet<ObjectEntity> params;
-    SystemEventsLogicsModule systemEventsLM;
-    ImOrderSet<ObjectEntity> entities;
-    ObjectEntity objSession;
-    LP<?> logValueProperty;
-    LP<?> logWhereProperty;
-    LP<?> property;
-    public boolean lazyInit;
 
     public LogFormEntity(LocalizedString caption, LP<?> property, LP<?> logValueProperty, LP<?> logWhereProperty, SystemEventsLogicsModule systemEventsLM) {
         super(caption, systemEventsLM.getVersion());
 
-        this.systemEventsLM = systemEventsLM;
-        this.logValueProperty = logValueProperty;
-        this.logWhereProperty = logWhereProperty;
-        this.property = property;
-
-        Version version = getVersion();
+        Version version = systemEventsLM.getVersion();
 
         ValueClass[] classes = getValueClassesList(property);
         MOrderExclSet<ObjectEntity> mParams = SetFact.mOrderExclSet(classes.length);
@@ -73,23 +61,11 @@ public class LogFormEntity extends AutoFormEntity {
         params = mParams.immutableOrder();
 
         GroupObjectEntity logGroup = new GroupObjectEntity(genID(), "logGroup");
-        objSession = new ObjectEntity(genID(), "session", systemEventsLM.session, LocalizedString.create("{form.entity.session}"));
-        entities = params.addOrderExcl(objSession);
+        ObjectEntity objSession = new ObjectEntity(genID(), "session", systemEventsLM.session, LocalizedString.create("{form.entity.session}"));
+        ImOrderSet<ObjectEntity> entities = params.addOrderExcl(objSession);
         logGroup.add(objSession);
 
         addGroupObject(logGroup, version);
-
-        initProperties();
-        
-        // finalizeInit внутри initMainLogic
-    }
-
-    private Version getVersion() {
-        return systemEventsLM.getVersion();
-    }
-
-    public void initProperties() {
-        Version version = getVersion();
 
         for (ObjectEntity obj : entities) {
             addPropertyDraw(obj, version, systemEventsLM.baseLM.getRecognizeGroup());
@@ -126,15 +102,16 @@ public class LogFormEntity extends AutoFormEntity {
         setNFEditType(PropertyEditType.READONLY, version);
 
         finalizeInit(version);
+
+        // finalizeInit внутри initMainLogic
     }
 
-    private static ValueClass[] getValueClassesList(LP<?> property) {
-        ImMap<PropertyInterface, ValueClass> interfaces = (ImMap<PropertyInterface, ValueClass>) property.property.getInterfaceClasses(ClassType.logPolicy);
+    private static <P extends PropertyInterface> ValueClass[] getValueClassesList(LP<P> property) {
+        ImMap<P, ValueClass> interfaces = property.property.getInterfaceClasses(ClassType.logPolicy);
         ValueClass[] classes = new ValueClass[interfaces.size()];
         int index = 0;
-        for (PropertyInterface pi : property.property.interfaces) {
+        for (P pi : property.listInterfaces)
             classes[index++] = interfaces.get(pi);
-        }
         return classes;
     }
 }
