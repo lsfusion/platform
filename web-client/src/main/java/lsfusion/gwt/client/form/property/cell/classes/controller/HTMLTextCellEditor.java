@@ -63,7 +63,7 @@ public class HTMLTextCellEditor implements RequestEmbeddedCellEditor {
             showPrintMargin: false
         });
         element.aceEditor = aceEditor;
-        aceEditor.setValue(oldValue);
+        aceEditor.setValue(oldValue != null ? oldValue : '');
         aceEditor.focus();
     }-*/;
 }

@@ -114,6 +114,9 @@ public class CustomReplaceCellEditor extends RequestReplaceValueCellEditor imple
             },
             cancel: function () {
                 thisObj.@RequestCellEditor::cancel(*)(cellParent);
+            },
+            getColorThemeName: function () {
+                return @lsfusion.gwt.client.view.MainFrame::colorTheme.@java.lang.Enum::name()();
             }
         }
     }-*/;
