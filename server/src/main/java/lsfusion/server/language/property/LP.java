@@ -17,6 +17,7 @@ import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.data.where.Where;
+import lsfusion.server.language.action.LA;
 import lsfusion.server.language.property.oraction.LAP;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
@@ -223,18 +224,19 @@ public class LP<T extends PropertyInterface> extends LAP<T, Property<T>> {
     }
 
     private void setupLoggable(LogicsModule ownerModule, SystemEventsLogicsModule systemEventsLM, DBNamingPolicy namingPolicy) {
-        if (property.getLogValueProperty() == null) {
-            LP logValueProperty = ownerModule.addLProp(systemEventsLM, this, namingPolicy);
-            LP logDropProperty = ownerModule.addLDropProp(systemEventsLM, this, namingPolicy);
-            
-            property.setLogValueProperty(logValueProperty);
-            property.setLogWhereProperty(ownerModule.addLWhereProp(logValueProperty, logDropProperty));
-        }
         if (property.getLogFormAction() == null) {
-            LogFormEntity logFormEntity = new LogFormEntity(LocalizedString.create("{logics.property.log.form}"),
-                                                            this, property.getLogValueProperty(), property.getLogWhereProperty(), systemEventsLM);
+            // assert that all LP/LA has the "same" listInterfaces
+            LP<?> logValueProperty = ownerModule.addLProp(systemEventsLM, this, namingPolicy);
+            LP<?> logDropProperty = ownerModule.addLDropProp(systemEventsLM, this, namingPolicy);
+            LP<?> logWhereProperty = ownerModule.addLWhereProp(logValueProperty, logDropProperty);
+            
+            LogFormEntity logFormEntity = new LogFormEntity(LocalizedString.create("{logics.property.log.form}"), this, logValueProperty, logWhereProperty, systemEventsLM);
             systemEventsLM.addAutoFormEntity(logFormEntity);
-            property.setLogFormAction(ownerModule.addMFAProp(LocalizedString.create("{logics.property.log.action}"), logFormEntity, logFormEntity.params, true));
+            LA<?> logFormAction = ownerModule.addMFAProp(LocalizedString.create("{logics.property.log.action}"), logFormEntity, logFormEntity.params, true);
+
+//            property.setLogValueProperty(logValueProperty.getImplement(listInterfaces));
+//            property.setLogWhereProperty(logWhereProperty.getImplement(listInterfaces));
+            property.setLogFormAction(logFormAction.getImplement(listInterfaces));
         }
     }
 
