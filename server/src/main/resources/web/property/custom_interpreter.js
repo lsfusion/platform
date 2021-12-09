@@ -5,7 +5,7 @@ function interpreter() {
             //"lsfWorkerType" option is either put first when the editor is created, or put after it is created, but you have to update the mode. lsfWorkerType: script, action, form
             var aceEditor = ace.edit(div, {
                 enableLiveAutocompletion: true,
-                showPrintMargin: false,
+                showPrintMargin: false
             });
 
             div.style.width = "100%";
@@ -19,9 +19,8 @@ function interpreter() {
                     e.stopPropagation();
 
                 // ctrl + c fix
-                if (e.keyCode === 67 && e.ctrlKey) {
-                    document.execCommand("copy");
-                }
+                if (e.ctrlKey && e.keyCode === 67)
+                    navigator.clipboard.writeText(aceEditor.getSelectedText());
             });
 
             // ctrl + v fix
@@ -47,8 +46,9 @@ function interpreter() {
 
                 if (parsedValue != null) {
                     //updating "lsfWorkerType" option will only work after a mode change
-                    if (parsedValue.type !== 'java') {
-                        aceEditor.session.setOption('lsfWorkerType', parsedValue.type);
+                    let type = parsedValue.type.toLowerCase();
+                    if (!type.includes('java')) {
+                        aceEditor.session.setOption('lsfWorkerType', type);
 
                         aceEditor.session.setMode({
                             path: 'ace/mode/lsf'

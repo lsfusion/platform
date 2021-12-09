@@ -150,8 +150,7 @@
                 'static/js/ace/src/worker-lsf.js',
                 'static/js/ace/src/ext-language_tools.js',
                 'static/js/ace/src/theme-chrome.js',
-                'static/js/ace/src/theme-ambiance.js',
-                'static/css/aceEditor.css'
+                'static/js/ace/src/theme-ambiance.js'
             ]);
 
         </script>

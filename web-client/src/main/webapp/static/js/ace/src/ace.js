@@ -17255,7 +17255,6 @@ top: 0;\
 bottom: 0;\
 left: 0;\
 cursor: default;\
-z-index: 4;\
 -ms-user-select: none;\
 -moz-user-select: none;\
 -webkit-user-select: none;\
@@ -17517,12 +17516,13 @@ url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAAJCAYAAADU6McMAAAAGXRF
 url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAA3CAYAAADNNiA5AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAACBJREFUeNpi+P//fz4TAwPDZxDxD5X4i5fLMEwJgAADAEPVDbjNw87ZAAAAAElFTkSuQmCC\");\
 }\
 .ace_tooltip {\
+background: var(--background-color);\
+color: var(--text-color);\
 background-color: #FFF;\
 background-image: linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.1));\
 border: 1px solid gray;\
 border-radius: 1px;\
 box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);\
-color: black;\
 max-width: 100%;\
 padding: 3px 4px;\
 position: fixed;\

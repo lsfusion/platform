@@ -164,13 +164,12 @@ define("ace/mode/lsf",["require","exports","module","ace/lib/oop","ace/mode/text
                     regex: "\\/\\/.*$"
                 },
                 {
+                    token : "string",
+                    regex : "['](?:(?:\\\\.)|(?:[^'\\\\]))*?[']"
+                },
+                {
                     token: keywordMapper,
                     regex: "[a-zA-Z_$][a-zA-Z0-9_$]*\\b"
-                }
-            ],
-            "comment": [
-                {
-                    defaultToken: "comment"
                 }
             ]
         };
@@ -183,6 +182,7 @@ define("ace/mode/lsf",["require","exports","module","ace/lib/oop","ace/mode/text
     oop.inherits(Mode, TextMode);
 
     (function () {
+        this.lineCommentStart = "//"; // this is need to "ctrl + /" hotkey worked correctly
         this.$id = "ace/mode/lsf";
 
         var WorkerClient = require("../worker/worker_client").WorkerClient;

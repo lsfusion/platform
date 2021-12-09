@@ -12,8 +12,8 @@ width: 1px;\
 background: #e8e8e8;\
 }\
 .ace-chrome {\
-background-color: #FFFFFF;\
-color: black;\
+background: var(--component-background-color);\
+color: var(--text-color);\
 }\
 .ace-chrome .ace_cursor {\
 color: black;\
@@ -52,16 +52,16 @@ font-style:italic;\
 color:#FD971F;\
 }\
 .ace-chrome .ace_keyword.ace_operator {\
-color: rgb(104, 118, 135);\
+color: #000080;\
 }\
 .ace-chrome .ace_comment {\
-color: #236e24;\
+color: #808080;\
 }\
 .ace-chrome .ace_comment.ace_doc {\
-color: #236e24;\
+color: #808080;\
 }\
 .ace-chrome .ace_comment.ace_doc.ace_tag {\
-color: #236e24;\
+color: #808080;\
 }\
 .ace-chrome .ace_constant.ace_numeric {\
 color: rgb(0, 0, 205);\
@@ -107,13 +107,13 @@ border: 1px solid rgb(200, 200, 250);\
 .ace-chrome .ace_storage,\
 .ace-chrome .ace_keyword,\
 .ace-chrome .ace_meta.ace_tag {\
-color: rgb(147, 15, 128);\
+color: #000080;\
 }\
 .ace-chrome .ace_string.ace_regex {\
-color: rgb(255, 0, 0)\
+color: #008000;\
 }\
 .ace-chrome .ace_string {\
-color: #1A1AA6;\
+color: #008000;\
 }\
 .ace-chrome .ace_entity.ace_other.ace_attribute-name {\
 color: #994409;\

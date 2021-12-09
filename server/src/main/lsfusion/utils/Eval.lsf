@@ -102,14 +102,14 @@ FORM scriptsLog '{eval.script.form.scripts.log}'
 ;
 
 CLASS ScriptType {
-    script,
-    action,
-    form,
-    java
+    Script,
+    Action,
+    Form,
+    Java
 }
 
 dataScriptType = DATA ScriptType();
-calculateScriptType = OVERRIDE dataScriptType(), ScriptType.script;
+calculateScriptType = OVERRIDE dataScriptType(), ScriptType.Script;
 selectedExecutionScriptType (ScriptType st) = st == calculateScriptType();
 executionScriptType (ScriptType st) = staticCaption(st);
 
@@ -117,33 +117,33 @@ evalString = DATA LOCAL STRING();
 executeScript '{eval.execution}' (Script s) {
     preRunScript(s);
     NEWSESSION TRY { 
-        IF executionScriptType(calculateScriptType()) == 'script' OR executionScriptType(calculateScriptType()) == 'action' THEN evalString() <- text(s); 
-        IF executionScriptType(calculateScriptType()) == 'form' THEN evalString() <- CONCAT ' ', 'FORM form', text(s), '\n;\nrun() \{ SHOW form NOWAIT; \}'; 
-        IF executionScriptType(calculateScriptType()) == 'java' THEN evalString() <- CONCAT ' ', 'run()  INTERNAL  <\{ ', text(s), ' \}>;'; 
+        IF executionScriptType(calculateScriptType()) == 'Script' OR executionScriptType(calculateScriptType()) == 'Action' THEN evalString() <- text(s); 
+        IF executionScriptType(calculateScriptType()) == 'Form' THEN evalString() <- CONCAT ' ', 'FORM form', text(s), '\n;\nrun() \{ SHOW form NOWAIT; \}'; 
+        IF executionScriptType(calculateScriptType()) == 'Java' THEN evalString() <- CONCAT ' ', 'run()  INTERNAL  <\{ ', text(s), ' \}>;'; 
          
-        IF executionScriptType(calculateScriptType()) == 'action' THEN EVAL ACTION evalString(); ELSE EVAL evalString(); 
+        IF executionScriptType(calculateScriptType()) == 'Action' THEN EVAL ACTION evalString(); ELSE EVAL evalString(); 
     } CATCH {
         SHOW exception OBJECTS message = messageCaughtException(), javaStack = javaStackTraceCaughtException(), lsfStack = lsfStackTraceCaughtException() WAIT;
     }
 } IMAGE 'play.png';
 
 scriptExecution '{eval.script.script.execution}' (Script s, ScriptType st)  {
-    dataScriptType() <- ScriptType.script;
+    dataScriptType() <- ScriptType.Script;
     executeScript(s);    
 }
 
 actionBodyExecution '{eval.script.action.body.execution}' (Script s, ScriptType st)  {
-    dataScriptType() <- ScriptType.action; 
+    dataScriptType() <- ScriptType.Action; 
     executeScript(s);    
 }
 
 formExecution '{eval.script.form.execution}' (Script s, ScriptType st)  {
-    dataScriptType() <- ScriptType.form;   
+    dataScriptType() <- ScriptType.Form;   
     executeScript(s);    
 }
 
 javaActionBodyExecution '{eval.script.java.action.body.execution}' (Script s, ScriptType st)  {
-    dataScriptType() <- ScriptType.java; 
+    dataScriptType() <- ScriptType.Java; 
     executeScript(s);    
 }
 
@@ -151,11 +151,10 @@ json(Script s) = [FORMULA STRING 'json_build_object(\'text\',$1,\'type\',$2)']
             ((OVERRIDE text(s), ''), (OVERRIDE STRING(executionScriptType(calculateScriptType())), ''));
 
 changeScript(Script sc) {
-    INPUT s = STRING DO {
+    INPUT s = TEXT DO {
         stringToFile(s);
         LOCAL text = STRING();
-        LOCAL type = STRING();
-        IMPORT JSON FROM resultFile() TO() text, type;
+        IMPORT JSON FROM resultFile() TO() text;
         text(sc) <- text(); 
     }
 }
