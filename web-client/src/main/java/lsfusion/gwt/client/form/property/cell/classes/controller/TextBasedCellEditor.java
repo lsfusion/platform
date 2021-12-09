@@ -149,7 +149,7 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
         }
     }
 
-    protected Element setupInputElement(Element cellParent, RenderContext renderContext, Pair<Integer, Integer> renderedSize){
+    protected Element setupInputElement(RenderContext renderContext){
         Element inputElement = createInputElement();
 
         Style.TextAlign textAlign = property.getTextAlignStyle();
@@ -161,18 +161,22 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
 
         TextBasedCellRenderer.render(property, inputElement, renderContext, isMultiLine());
 
-        if(property.autoSize) { // we have to set sizes that were rendered, since input elements have really unpredicatble sizes
-            cellParent = GwtClientUtils.wrapDiv(cellParent); // wrapping element since otherwise it's not clear how to restore height (sometimes element has it set)
-            cellParent.getStyle().setHeight(renderedSize.second, Style.Unit.PX);
-            cellParent.getStyle().setWidth(renderedSize.first, Style.Unit.PX);
-        }
-
         return inputElement;
     }
 
     @Override
     public void render(Element cellParent, RenderContext renderContext, Pair<Integer, Integer> renderedSize, Object oldValue) {
-        cellParent.appendChild(setupInputElement(cellParent, renderContext, renderedSize));
+        if(property.autoSize) { // we have to set sizes that were rendered, since input elements have really unpredicatble sizes
+            // wrapping element since otherwise it's not clear how to restore height (sometimes element has it set)
+            Element div = Document.get().createDivElement();
+            div.getStyle().setHeight(renderedSize.second, Style.Unit.PX);
+            div.getStyle().setWidth(renderedSize.first, Style.Unit.PX);
+            cellParent.appendChild(div);
+
+            cellParent = div;
+        }
+
+        cellParent.appendChild(setupInputElement(renderContext));
     }
 
     protected boolean isMultiLine() {

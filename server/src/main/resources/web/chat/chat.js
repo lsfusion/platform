@@ -1,9 +1,6 @@
 function chatMessageRender() {
     return {
         render: function (element) {
-            element.style.removeProperty("max-height");
-            element.parentElement.style.removeProperty("height");
-
             var message = document.createElement("div")
             message.classList.add("chat-message");
             message.classList.add("ql-bubble");

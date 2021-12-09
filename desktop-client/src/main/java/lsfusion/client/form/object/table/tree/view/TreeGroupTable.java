@@ -28,6 +28,7 @@ import lsfusion.client.form.property.cell.controller.ClientAbstractCellEditor;
 import lsfusion.client.form.property.cell.controller.dispatch.EditPropertyDispatcher;
 import lsfusion.client.form.property.cell.view.ClientAbstractCellRenderer;
 import lsfusion.client.form.property.table.view.AsyncChangeCellTableInterface;
+import lsfusion.client.form.property.table.view.AsyncInputComponent;
 import lsfusion.client.form.property.table.view.CellTableContextMenuHandler;
 import lsfusion.client.form.property.table.view.InternalEditEvent;
 import lsfusion.client.form.view.Column;
@@ -927,6 +928,10 @@ public class TreeGroupTable extends ClientFormTreeTable implements AsyncChangeCe
 
         if (editEvent instanceof KeyEvent) {
             prepareTextEditor();
+        }
+
+        if (editorComp instanceof AsyncInputComponent) {
+            ((AsyncInputComponent) editorComp).initEditor();
         }
 
         editorComp.requestFocusInWindow();

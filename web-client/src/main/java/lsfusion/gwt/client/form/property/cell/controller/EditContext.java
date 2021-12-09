@@ -16,7 +16,8 @@ public interface EditContext {
 
     GGroupObjectValue getRowKey();
 
-    Element getRenderElement();
+    Element getEditElement();
+    Element getEditEventElement();
 
     Object getValue();
     void setValue(Object value);

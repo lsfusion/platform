@@ -3,6 +3,7 @@ package lsfusion.client.form.view;
 import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.form.ClientForm;
 import lsfusion.client.form.controller.ClientFormController;
+import lsfusion.client.view.MainFrame;
 import lsfusion.interop.form.event.KeyStrokes;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 
@@ -167,8 +168,8 @@ public class ClientModalForm extends JDialog {
             int extraHorzOffset = nativeScrollbarWidth * 2;
             int extraVertOffset = nativeScrollbarHeight * 2;
 
-            int wndWidth = getParent().getWidth();
-            int wndHeight = getParent().getHeight();
+            int wndWidth = MainFrame.instance.getWidth();
+            int wndHeight = MainFrame.instance.getHeight();
 
             Dimension preferredSize = form.getLayout().getMaxPreferredSize(extraHorzOffset, extraVertOffset);
 
