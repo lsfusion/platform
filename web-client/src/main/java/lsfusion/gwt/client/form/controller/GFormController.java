@@ -1800,7 +1800,11 @@ public class GFormController implements EditManager {
     private CellEditor cellEditor;
 
     public Element getEditElement() {
-        return editContext.getRenderElement();
+        return editContext.getEditElement();
+    }
+
+    public Element getEditEventElement() {
+        return editContext.getEditEventElement();
     }
 
     private EditContext editContext;
@@ -1958,7 +1962,7 @@ public class GFormController implements EditManager {
                 CellRenderer cellRenderer = property.getCellRenderer();
                 Pair<Integer, Integer> renderedSize = null;
                 if(property.autoSize) // we need to do it before clearRender to have actual sizes + we need to remove paddings since we're setting width for wrapped component
-                    renderedSize = new Pair<>(element.getClientWidth() - cellRenderer.getWidthPadding() * 2, element.getClientHeight() - cellRenderer.getHeightPadding() * 2);
+                    renderedSize = new Pair<>(element.getClientWidth(), element.getClientHeight());
 
                 cellRenderer.clearRender(element, renderContext); // dropping previous render
 
@@ -2043,7 +2047,7 @@ public class GFormController implements EditManager {
     public void update(EditContext editContext, Object value) {
         editContext.setValue(value);
 
-        update(editContext.getProperty(), editContext.getRenderElement(), value, editContext.getUpdateContext());
+        update(editContext.getProperty(), editContext.getEditElement(), value, editContext.getUpdateContext());
     }
     public void update(GPropertyDraw property, Element element, Object value, UpdateContext updateContext) {
         if(isEdited(element))
@@ -2053,7 +2057,7 @@ public class GFormController implements EditManager {
     }
 
     public boolean isEdited(Element element) {
-        return editContext != null && editContext.getRenderElement() == element;
+        return editContext != null && editContext.getEditElement() == element;
     }
 
     public static void setBackgroundColor(Element element, String color) {
@@ -2089,7 +2093,7 @@ public class GFormController implements EditManager {
                                        Consumer<EventHandler> onEdit, Consumer<EventHandler> onOuterEditAfter, Consumer<EventHandler> onCut,
                                        Consumer<EventHandler> onPaste, boolean panel, boolean customRenderer) {
         RequestCellEditor requestCellEditor = getRequestCellEditor();
-        boolean isPropertyEditing = requestCellEditor != null && getEditElement() == cellParent;
+        boolean isPropertyEditing = requestCellEditor != null && getEditEventElement() == cellParent;
         if(isPropertyEditing)
             requestCellEditor.onBrowserEvent(getEditElement(), handler);
 

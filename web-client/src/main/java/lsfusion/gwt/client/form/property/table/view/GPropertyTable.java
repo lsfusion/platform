@@ -96,6 +96,8 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
     }
 
     public ExecuteEditContext getEditContext(Cell editCell, Element editCellParent) {
+        final GPropertyDraw property = GPropertyTable.this.getProperty(editCell);
+        Element editElement = GPropertyTableBuilder.getRenderSizedElement(editCellParent, property, GPropertyTable.this);
         return new ExecuteEditContext() {
             @Override
             public RenderContext getRenderContext() {
@@ -109,11 +111,16 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
 
             @Override
             public GPropertyDraw getProperty() {
-                return GPropertyTable.this.getProperty(editCell);
+                return property;
             }
 
             @Override
-            public Element getRenderElement() {
+            public Element getEditElement() {
+                return editElement;
+            }
+
+            @Override
+            public Element getEditEventElement() {
                 return editCellParent;
             }
 
@@ -178,22 +185,12 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
     }
 
     @Override
-    public Integer getStaticHeight() {
-        return tableBuilder.getCellHeight();
-    }
-
-    @Override
     public boolean isAlwaysSelected() {
         return false;
     }
 
     @Override
     public boolean globalCaptionIsDrawn() {
-        return true;
-    }
-
-    @Override
-    public boolean isStaticHeight() {
         return true;
     }
 
@@ -208,10 +205,6 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
     }
 
     public abstract GFont getFont();
-
-    protected void setCellHeight(int cellHeight) {
-        tableBuilder.setCellHeight(cellHeight);
-    }
 
     @Override
     public boolean changeSelectedColumn(int column) {

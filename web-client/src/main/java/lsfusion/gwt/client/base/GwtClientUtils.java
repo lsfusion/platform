@@ -12,7 +12,6 @@ import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.ClientMessages;
-import lsfusion.gwt.client.base.view.HasMaxPreferredSize;
 import lsfusion.gwt.client.base.view.PopupDialogPanel;
 import lsfusion.gwt.client.view.MainFrame;
 
@@ -307,10 +306,7 @@ public class GwtClientUtils {
     }
 
     public static void clearFillParent(Element child) {
-        Element parentElement = child.getParentElement();
-        String parentPosition = parentElement.getStyle().getPosition();
-        if (parentPosition != null && parentPosition.equals(Style.Position.RELATIVE.getCssName()))
-            parentElement.getStyle().clearPosition();
+        clearFillParentElement(child);
 
         Style childStyle = child.getStyle();
         childStyle.clearPosition();
@@ -318,6 +314,13 @@ public class GwtClientUtils {
         childStyle.clearLeft();
         childStyle.clearBottom();
         childStyle.clearRight();
+    }
+
+    public static void clearFillParentElement(Element child) {
+        Element parentElement = child.getParentElement();
+        String parentPosition = parentElement.getStyle().getPosition();
+        if (parentPosition != null && parentPosition.equals(Style.Position.RELATIVE.getCssName()))
+            parentElement.getStyle().clearPosition();
     }
 
     public static void setupPercentParent(Element element) {
@@ -757,7 +760,7 @@ public class GwtClientUtils {
         return null;
     }
 
-    public static Element wrapCenteredImg(Element th, boolean multiLine, int setHeight, Consumer<ImageElement> imgProcessor) {
+    public static Element wrapCenteredImg(Element th, Integer height, Consumer<ImageElement> imgProcessor) {
         th = wrapDiv(th); // we need to wrap in div, since we don't want to modify th itself (it's not recreated every time for grid) + setting display flex for th breaks layouting + for th it's unclear how to make it clip text that doesn't fit height (even max-height)
 
         // since it's a header we want to align it to the center (vertically and horizontally)
@@ -766,7 +769,9 @@ public class GwtClientUtils {
 //        setAlignedFlexCenter(th, multiLine ? "stretch" : "center", multiLine ? "left" : "center"); // in theory should correspond default alignments in TextBasedCellRenderer
 
         // we don't want that container to be larger than the upper one
-        setMaxHeight(th, setHeight, 0);
+        // it seems it is needed because in wrapDiv we use auto sizing
+        if(height != null)
+            th.getStyle().setProperty("maxHeight", height + "px");
 
         if(imgProcessor != null)
             th = wrapImg(th, imgProcessor);
@@ -776,25 +781,10 @@ public class GwtClientUtils {
         return th;
     }
 
-    public static void setMaxHeight(Element th, int setHeight, int paddings) {
-        th.getStyle().setProperty("maxHeight", (setHeight - 2 * paddings) + "px");
-    }
-    public static void clearMaxHeight(Element th) {
-        th.getStyle().clearProperty("maxHeight");
-    }
-
-    // optimization to avoid one more div
-    // !!! ASSERT THAT CONTAINER SHOULD BE MODIFIABLE
-    public static void setAlignedFlexCenter(Element th, String vertAlignment, String horzAlignment) {
-        th.addClassName("wrap-center");
-
-        if(!vertAlignment.equals("center"))
-            th.getStyle().setProperty("alignItems", vertAlignment);
-        if(!horzAlignment.equals("center"))
-            th.getStyle().setProperty("justifyContent", horzAlignment);
-    }
     public static void clearAlignedFlexCenter(Element th) {
         th.removeClassName("wrap-center");
+        th.getStyle().clearProperty("alignItems");
+        th.getStyle().clearProperty("justifyContent");
     }
     // optimization
     public static boolean isAlignedFlexModifiableDiv(Element th) {
@@ -838,7 +828,7 @@ public class GwtClientUtils {
     }
 
     public static Element wrapAlignedFlexImg(Element th, Consumer<ImageElement> imgProcessor) {
-        assert isAlignedFlexModifiableDiv(th);
+        assert isAlignedFlexModifiableDiv(th) || isTDorTH(th); // has vertical and text align
 
         Element wrappedTh = Document.get().createDivElement();
 

@@ -21,12 +21,12 @@ public abstract class TextBasedCellRenderer<T> extends CellRenderer<T> {
     }
 
     @Override
-    protected boolean isSimpleText(RenderContext renderContext) {
+    public boolean isSimpleText(RenderContext renderContext) {
         return !isMultiLine();
     }
 
     @Override
-    protected boolean isSimpleText(UpdateContext updateContext) {
+    public boolean isSimpleText(UpdateContext updateContext) {
         return !isMultiLine();
     }
 
@@ -63,13 +63,9 @@ public abstract class TextBasedCellRenderer<T> extends CellRenderer<T> {
         return CELL_HORIZONTAL_PADDING;
     }
     public int getHeightPadding() {
-        return getHeightPadding(isMultiLine());
-    }
-
-    public static int getHeightPadding(boolean multiLine) {
-        if(multiLine)
+        if(isMultiLine())
             return TEXT_MULTILINE_PADDING;
-        return 0;
+        return super.getHeightPadding();
     }
     public static void setPadding(Style style, boolean multiLine) {
         if(multiLine) {
