@@ -3465,7 +3465,7 @@ formActionProps[String objectName, ValueClass objectClass, List<TypedParameter> 
             varID=ID?
             { if(newContext!=null && inMainParseState()) { outParamNum = self.getParamIndex(self.new TypedParameter(objectClass, $varID.text != null ? $varID.text : objectName), newContext, true, insideRecursion); } }
             ('NULL' { outNull = true; })? 
-//            ('TO' pUsage=propertyUsage { outProp = $pUsage.propUsage; } )?
+//          ('TO' pUsage=propertyUsage { outProp = $pUsage.propUsage; } )?
             (('CONSTRAINTFILTER' { constraintFilter = true; } ) (EQ consExpr=propertyExpression[context, dynamic] { changeProp = $consExpr.property; } )?)?
             ('LIST' listExpr=propertyExpression[newContext, dynamic] { listProp = $listExpr.property; } )?
         )?
