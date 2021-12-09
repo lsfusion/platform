@@ -102,53 +102,54 @@ FORM scriptsLog '{eval.script.form.scripts.log}'
 ;
 
 CLASS ScriptType {
-    Script,
-    Action,
-    Form,
-    Java
+    script '{eval.script.script}',
+    action '{eval.script.action}',
+    form '{eval.script.form}',
+    java '{eval.script.java}'
 }
 
 dataScriptType = DATA ScriptType();
-calculateScriptType = OVERRIDE dataScriptType(), ScriptType.Script;
+calculateScriptType = OVERRIDE dataScriptType(), ScriptType.script;
 selectedExecutionScriptType (ScriptType st) = st == calculateScriptType();
-executionScriptType (ScriptType st) = staticCaption(st);
+executionScriptTypeCaption (ScriptType st) = staticCaption(st);
+executionScriptTypeName (ScriptType st) = getWord(staticName(st),'.',2);
 
 evalString = DATA LOCAL STRING();
 executeScript '{eval.execution}' (Script s) {
     preRunScript(s);
     NEWSESSION TRY { 
-        IF executionScriptType(calculateScriptType()) == 'Script' OR executionScriptType(calculateScriptType()) == 'Action' THEN evalString() <- text(s); 
-        IF executionScriptType(calculateScriptType()) == 'Form' THEN evalString() <- CONCAT ' ', 'FORM form', text(s), '\n;\nrun() \{ SHOW form NOWAIT; \}'; 
-        IF executionScriptType(calculateScriptType()) == 'Java' THEN evalString() <- CONCAT ' ', 'run()  INTERNAL  <\{ ', text(s), ' \}>;'; 
+        IF executionScriptTypeName(calculateScriptType()) == 'script' OR executionScriptTypeName(calculateScriptType()) == 'action' THEN evalString() <- text(s); 
+        IF executionScriptTypeName(calculateScriptType()) == 'form' THEN evalString() <- CONCAT ' ', 'FORM form', text(s), '\n;\nrun() \{ SHOW form NOWAIT; \}'; 
+        IF executionScriptTypeName(calculateScriptType()) == 'java' THEN evalString() <- CONCAT ' ', 'run()  INTERNAL  <\{ ', text(s), ' \}>;'; 
          
-        IF executionScriptType(calculateScriptType()) == 'Action' THEN EVAL ACTION evalString(); ELSE EVAL evalString(); 
+        IF executionScriptTypeName(calculateScriptType()) == 'action' THEN EVAL ACTION evalString(); ELSE EVAL evalString(); 
     } CATCH {
         SHOW exception OBJECTS message = messageCaughtException(), javaStack = javaStackTraceCaughtException(), lsfStack = lsfStackTraceCaughtException() WAIT;
     }
 } IMAGE 'play.png';
 
 scriptExecution '{eval.script.script.execution}' (Script s, ScriptType st)  {
-    dataScriptType() <- ScriptType.Script;
+    dataScriptType() <- ScriptType.script;
     executeScript(s);    
 }
 
 actionBodyExecution '{eval.script.action.body.execution}' (Script s, ScriptType st)  {
-    dataScriptType() <- ScriptType.Action; 
+    dataScriptType() <- ScriptType.action; 
     executeScript(s);    
 }
 
 formExecution '{eval.script.form.execution}' (Script s, ScriptType st)  {
-    dataScriptType() <- ScriptType.Form;   
+    dataScriptType() <- ScriptType.form;   
     executeScript(s);    
 }
 
 javaActionBodyExecution '{eval.script.java.action.body.execution}' (Script s, ScriptType st)  {
-    dataScriptType() <- ScriptType.Java; 
+    dataScriptType() <- ScriptType.java; 
     executeScript(s);    
 }
 
 json(Script s) = [FORMULA STRING 'json_build_object(\'text\',$1,\'type\',$2)'] 
-            ((OVERRIDE text(s), ''), (OVERRIDE STRING(executionScriptType(calculateScriptType())), ''));
+            ((OVERRIDE text(s), ''), (OVERRIDE STRING(executionScriptTypeName(calculateScriptType())), ''));
 
 changeScript(Script sc) {
     INPUT s = TEXT DO {
@@ -161,7 +162,7 @@ changeScript(Script sc) {
 
 FORM interpreter '{eval.script.form.interpreter}'
     OBJECTS st = ScriptType CUSTOM 'option'
-    PROPERTIES(st) SHOWIF isWeb() name=executionScriptType, selected=selectedExecutionScriptType
+    PROPERTIES(st) SHOWIF isWeb() name=executionScriptTypeCaption, selected=selectedExecutionScriptType
     
     OBJECTS s = Script PANEL
     PROPERTIES name(s), json(s) CUSTOM 'interpreter' SHOWIF isWeb() ON CHANGE changeScript(s), text(s) SHOWIF NOT isWeb()

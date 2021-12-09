@@ -46,9 +46,8 @@ function interpreter() {
 
                 if (parsedValue != null) {
                     //updating "lsfWorkerType" option will only work after a mode change
-                    let type = parsedValue.type.toLowerCase();
-                    if (!type.includes('java')) {
-                        aceEditor.session.setOption('lsfWorkerType', type);
+                    if (parsedValue.type !== 'java') {
+                        aceEditor.session.setOption('lsfWorkerType', parsedValue.type);
 
                         aceEditor.session.setMode({
                             path: 'ace/mode/lsf'
