@@ -142,13 +142,15 @@
                 'static/css/quillRichText.css',
 
                 <!-- Ace code editor -->
-                'https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.13/ace.js',
-                'https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.13/worker-html.js',
-                'https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.13/mode-html.min.js',
-                'https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.13/ext-language_tools.min.js',
-                'https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.13/theme-chrome.min.js',
-                'https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.13/theme-ambiance.min.js',
-                'static/css/aceEditor.css'
+                'static/js/ace/src/ace.js',
+                'static/js/ace/src/mode-html.js',
+                'static/js/ace/src/mode-lsf.js',
+                'static/js/ace/src/mode-java.js',
+                'static/js/ace/src/worker-html.js',
+                'static/js/ace/src/worker-lsf.js',
+                'static/js/ace/src/ext-language_tools.js',
+                'static/js/ace/src/theme-chrome.js',
+                'static/js/ace/src/theme-ambiance.js'
             ]);
 
         </script>

@@ -16,6 +16,10 @@ public final class LayoutData {
     public boolean shrink;
     public boolean alignShrink;
 
+    public boolean isAutoSized() {
+        return baseFlexBasis == null;
+    }
+
     public void setFlexBasis(Integer flexBasis) {
         this.flexBasis = flexBasis;
         baseFlexBasis = flexBasis;

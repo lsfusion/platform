@@ -55,10 +55,6 @@ public interface Widget extends FlexComponent {
         return new FlexConstraints(layoutData.alignment, layoutData.flex, layoutData.shrink, layoutData.alignShrink);
     }
 
-    default Dimension getMaxPreferredSize() {
-        return getPreferredSize();
-    }
-
     static String toString(Widget w, String defaultToString) {
         Object debugContainer = w.getDebugContainer();
         return (debugContainer != null ? debugContainer + " " : "") + "size (" + w.getFlexWidth() + "," + w.getFlexHeight() + ") " + defaultToString;

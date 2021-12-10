@@ -95,15 +95,15 @@ public class InstanceFactory {
         return treeInstance;
     }
 
-    private <P extends PropertyInterface> ImMap<P, ObjectInstance> getInstanceMap(ActionOrPropertyObjectEntity<P, ?> entity) {
-        return entity.mapping.mapValues(value -> value.getInstance(InstanceFactory.this));
+    public <P extends PropertyInterface> ImRevMap<P, ObjectInstance> getInstanceMap(ImRevMap<P, ObjectEntity> mapping) {
+        return mapping.mapRevValues((ObjectEntity value) -> value.getInstance(InstanceFactory.this));
     }
 
     public <P extends PropertyInterface> PropertyObjectInstance<P> getInstance(PropertyObjectEntity<P> entity) {
 
         PropertyObjectInstance<P> propertyInstance = (PropertyObjectInstance<P>) actionOrPropertyObjectInstances.get(entity);
         if (propertyInstance == null) {
-            propertyInstance = new PropertyObjectInstance<>(entity.property, getInstanceMap(entity));
+            propertyInstance = new PropertyObjectInstance<>(entity.property, getInstanceMap(entity.mapping));
             actionOrPropertyObjectInstances.exclAdd(entity, propertyInstance);
         }
         return propertyInstance;
@@ -129,7 +129,7 @@ public class InstanceFactory {
 
         ActionObjectInstance<P> actionInstance = (ActionObjectInstance<P>) actionOrPropertyObjectInstances.get(entity);
         if (actionInstance == null) {
-            actionInstance = new ActionObjectInstance<>(entity.property, getInstanceMap(entity));
+            actionInstance = new ActionObjectInstance<>(entity.property, getInstanceMap(entity.mapping));
             actionOrPropertyObjectInstances.exclAdd(entity, actionInstance);
         }
         return actionInstance;

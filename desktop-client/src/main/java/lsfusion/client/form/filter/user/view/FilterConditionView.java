@@ -66,6 +66,8 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
     
     // may not be applied without "Allow NULL", but we want to keep condition visible
     public boolean isConfirmed;
+
+    private boolean innerValueChange = false;
     
     public FilterConditionView(ClientPropertyFilter ifilter, TableController logicsSupplier, UIHandler iuiHandler, boolean toolsVisible, boolean readSelectedValue) {
         super(false, FlexAlignment.START);
@@ -155,7 +157,9 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
             @Override
             public void valueChanged(Object newValue) {
                 super.valueChanged(newValue);
-                uiHandler.applyFilters(valueTable.editorEnterPressed());
+                if (!innerValueChange) { // to avoid multiple apply calls
+                    uiHandler.applyFilters(valueTable.editorEnterPressed());
+                }
             }
 
             @Override
@@ -285,7 +289,9 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
     }
 
     public void clearValueView() {
+        innerValueChange = true;
         valueView.valueTable.setValueAt(null, 0, 0);
+        innerValueChange = false;
         setApplied(allowNull);
     }
     

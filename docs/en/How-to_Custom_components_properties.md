@@ -70,9 +70,6 @@ Inside the chat.js file, create _chatMessageRender_ function. It will return an 
 The _render_ function takes as input an element within which the new elements necessary to display the data should be created:
 ```js
 render: function (element) { 
-    element.style.removeProperty("max-height");
-    element.parentElement.style.removeProperty("height");
-
     let message = document.createElement("div")
     message.classList.add("chat-message");
 

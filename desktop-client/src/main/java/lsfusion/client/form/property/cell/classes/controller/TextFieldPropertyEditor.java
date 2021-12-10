@@ -17,7 +17,7 @@ import lsfusion.client.form.property.panel.view.CaptureKeyEventsDispatcher;
 import lsfusion.client.form.property.table.view.AsyncChangeInterface;
 import lsfusion.client.form.property.table.view.AsyncInputComponent;
 import lsfusion.interop.form.event.KeyStrokes;
-import lsfusion.interop.form.property.cell.Async;
+import lsfusion.client.form.property.cell.ClientAsync;
 import org.jdesktop.swingx.autocomplete.AutoCompleteComboBoxEditor;
 import org.jdesktop.swingx.autocomplete.ObjectToStringConverter;
 
@@ -133,9 +133,9 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
         delayTimer = execTimer;
 
         asyncChange.getForm().getAsyncValues(property, asyncChange.getColumnKey(0, 0), query, actionSID,
-                new AsyncCallback<Pair<List<Async>, Boolean>>() {
+                new AsyncCallback<Pair<List<ClientAsync>, Boolean>>() {
                     @Override
-                    public void done(Pair<List<Async>, Boolean> result) {
+                    public void done(Pair<List<ClientAsync>, Boolean> result) {
                         if (isThisCellEditor()) { // && suggestBox.comboBox.isPopupVisible() it can become visible after callback is completed
                             suggestBox.updateItems(result.first, completionType.isAnyStrict() && !query.isEmpty());
 
@@ -180,9 +180,9 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
         // this assertion is incorrect in desktop client (unlike in web-client)
 //        assert isThisCellEditor();
         if (isThisCellEditor() && suggestBox.isLoading)
-            asyncChange.getForm().getAsyncValues(property, asyncChange.getColumnKey(0, 0), null, actionSID, new AsyncCallback<Pair<List<Async>, Boolean>>() {
+            asyncChange.getForm().getAsyncValues(property, asyncChange.getColumnKey(0, 0), null, actionSID, new AsyncCallback<Pair<List<ClientAsync>, Boolean>>() {
                 @Override
-                public void done(Pair<List<Async>, Boolean> result) {
+                public void done(Pair<List<ClientAsync>, Boolean> result) {
                     // assert that CANCELED
                 }
                 @Override
@@ -308,9 +308,6 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
                             JPanel buttonsPanel = new JPanel();
                             setBackgroundColor(buttonsPanel);
 
-                            refreshButton = new SuggestPopupButton(ClientImages.get("refresh.png"), e -> requestSuggestions());
-                            buttonsPanel.add(refreshButton);
-
                             for (int i = 0; i < actions.length; i++) {
                                 int index = i;
                                 SuggestPopupButton button = new SuggestPopupButton(ClientImages.get(actions[index] + ".png"), e -> {
@@ -321,9 +318,12 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
                                 buttonsPanel.add(button);
                             }
 
+                            refreshButton = new SuggestPopupButton(ClientImages.get("refresh.png"), e -> requestSuggestions());
+                            buttonsPanel.add(refreshButton);
+
                             buttonsTopPanel = new JPanel(new BorderLayout());
                             setBackgroundColor(buttonsTopPanel);
-                            buttonsTopPanel.add(buttonsPanel, BorderLayout.EAST);
+                            buttonsTopPanel.add(buttonsPanel, BorderLayout.WEST);
 
                             add(buttonsTopPanel);
                             setBackground(SwingDefaults.getTableCellBackground());
@@ -406,12 +406,12 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
         }
 
         private void updateSelectedEditorText() {
-            Async selectedItem = (Async) comboBox.getSelectedItem();
+            ClientAsync selectedItem = (ClientAsync) comboBox.getSelectedItem();
             if(selectedItem != null)
                 setComboBoxEditorText(selectedItem.rawString);
         }
 
-        public void updateItems(List<Async> result, boolean selectFirst) {
+        public void updateItems(List<ClientAsync> result, boolean selectFirst) {
             items.clear();
             comboBox.getModel().setSelectedItem(null);
             items.addAll(GlazedLists.eventList(result));
@@ -446,7 +446,7 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
                 public String getPreferredStringForItem(Object item) { // need this, because otherwise combobox editor text will be set to toString (ie formatted text)
                     if(item == null)
                         return null;
-                    return ((Async)item).rawString;
+                    return ((ClientAsync)item).rawString;
                 }
             }));
 

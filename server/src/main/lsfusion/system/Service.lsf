@@ -7,7 +7,7 @@ NAMESPACE Service;
 serviceDBAction '{service.db.action}'  INTERNAL  'lsfusion.server.physics.admin.service.action.ServiceDBAction' ();
 checkAggregationsAction '{service.check.aggregations.action}'  INTERNAL  'lsfusion.server.physics.admin.service.action.CheckAggregationsAction' ();
 checkClassesAction '{service.check.classes.action}'   INTERNAL  'lsfusion.server.physics.admin.service.action.CheckClassesAction' ();
-checkIndicesAction '{service.check.indices.action}'  INTERNAL  'lsfusion.server.physics.admin.service.action.CheckIndicesAction' ();
+checkIndicesAction '{service.check.indexes.action}'  INTERNAL  'lsfusion.server.physics.admin.service.action.CheckIndicesAction' ();
 recalculateClassesAction '{service.recalculate.classes.action}'  INTERNAL  'lsfusion.server.physics.admin.service.action.RecalculateClassesAction' ();
 recalculateAction '{service.recalculate.action}'  INTERNAL  'lsfusion.server.physics.admin.service.action.RecalculateAction' ();
 recalculateFollowsAction '{service.recalculate.follow.action}'  INTERNAL  'lsfusion.server.physics.admin.service.action.RecalculateFollowsAction' ();

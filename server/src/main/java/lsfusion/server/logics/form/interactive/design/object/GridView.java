@@ -8,7 +8,6 @@ import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.struct.FormEntity;
 
-import java.awt.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -18,6 +17,9 @@ public class GridView extends ComponentView {
     public boolean tabVertical = false;
     private boolean quickSearch = false;
     public int headerHeight = -1;
+
+    public Integer lineWidth;
+    public Integer lineHeight;
 
     public GroupObjectView groupObject;
 
@@ -64,9 +66,14 @@ public class GridView extends ComponentView {
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream) throws IOException {
         super.customSerialize(pool, outStream);
 
+        outStream.writeBoolean(isAutoSize(pool.context.entity));
+
         outStream.writeBoolean(tabVertical);
         outStream.writeBoolean(quickSearch);
         outStream.writeInt(headerHeight);
+
+        outStream.writeInt(getLineWidth());
+        outStream.writeInt(getLineHeight());
 
         pool.serializeObject(outStream, getRecord());
 
@@ -77,9 +84,14 @@ public class GridView extends ComponentView {
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
         super.customDeserialize(pool, inStream);
 
+        autoSize = inStream.readBoolean();
+
         tabVertical = inStream.readBoolean();
         quickSearch = inStream.readBoolean();
         headerHeight = inStream.readInt();
+
+        lineWidth = inStream.readInt();
+        lineHeight = inStream.readInt();
 
         record = pool.deserializeObject(inStream);
 
@@ -92,5 +104,56 @@ public class GridView extends ComponentView {
 
         if(record != null)
             record.finalizeAroundInit();
+    }
+
+    public int getLineWidth() {
+        if(lineWidth != null)
+            return lineWidth;
+
+        return -1;
+    }
+
+    public void setLineWidth(Integer lineWidth) {
+        this.lineWidth = lineWidth;
+    }
+
+    public int getLineHeight() {
+        if(lineHeight != null)
+            return lineHeight;
+
+        return -1;
+    }
+
+    public void setLineHeight(Integer lineHeight) {
+        this.lineHeight = lineHeight;
+    }
+
+    public Boolean autoSize;
+
+    public boolean isAutoSize(FormEntity entity) {
+        if(autoSize != null)
+            return autoSize;
+
+        return isCustom();
+    }
+
+    protected boolean isCustom() {
+        return groupObject.entity.isCustom();
+    }
+
+    @Override
+    protected int getDefaultWidth(FormEntity entity) {
+        if(lineWidth == null && isCustom() && isAutoSize(entity))
+            return 0;
+
+        return super.getDefaultWidth(entity);
+    }
+
+    @Override
+    protected int getDefaultHeight(FormEntity entity) {
+        if(lineHeight == null && isCustom() && isAutoSize(entity))
+            return 0;
+
+        return super.getDefaultHeight(entity);
     }
 }

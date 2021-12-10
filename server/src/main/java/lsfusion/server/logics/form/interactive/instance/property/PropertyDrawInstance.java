@@ -1,13 +1,10 @@
 package lsfusion.server.logics.form.interactive.instance.property;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.Pair;
+import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
-import lsfusion.base.col.interfaces.immutable.ImList;
-import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.PropertyReadType;
@@ -16,7 +13,6 @@ import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.sql.lambda.SQLCallable;
 import lsfusion.server.data.type.Type;
-import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapChange;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
@@ -24,19 +20,21 @@ import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
 import lsfusion.server.logics.form.interactive.action.input.InputValueList;
 import lsfusion.server.logics.form.interactive.instance.CellInstance;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
+import lsfusion.server.logics.form.interactive.instance.filter.FilterInstance;
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.order.OrderInstance;
+import lsfusion.server.logics.form.interactive.property.AsyncMode;
 import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawExtraType;
-import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
-import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyObjectEntity;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.property.value.NullValueProperty;
+import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 
 import java.sql.SQLException;
+import java.util.function.Function;
 
 // представление св-ва
 public class PropertyDrawInstance<P extends PropertyInterface> extends CellInstance<PropertyDrawEntity<P>> implements AggrReaderInstance {
@@ -48,43 +46,79 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         return null;
     }
 
-    public static class AsyncValueList {
-        public final InputValueList<?> list;
+    public static class AsyncValueList<P extends PropertyInterface> {
+        public final InputValueList<P> list;
+        public final ImRevMap<P, ObjectInstance> mapObjects;
         public final boolean newSession;
-        public final boolean strict;
+        public final AsyncMode asyncMode;
 
-        public AsyncValueList(InputValueList<?> list, boolean newSession, boolean strict) {
+        public AsyncValueList(InputValueList<P> list, ImRevMap<P, ObjectInstance> mapObjects, boolean newSession, AsyncMode asyncMode) {
             this.list = list;
+            this.mapObjects = mapObjects;
             this.newSession = newSession;
-            this.strict = strict;
+            this.asyncMode = asyncMode;
         }
     }
 
-    public <P extends PropertyInterface> AsyncValueList getAsyncValueList(String actionSID, FormInstance formInstance, ImMap<ObjectInstance, ? extends ObjectValue> keys) {
-        ActionOrPropertyObjectEntity<P, ?> mapEntity;
-        InputListEntity<?, P> list;
-        boolean strict;
-        if(actionSID.equals(ServerResponse.FILTER)) {
-            PropertyObjectEntity<P> drawProperty = (PropertyObjectEntity<P>) entity.getDrawProperty();
-            list = drawProperty.getFilterInputList(entity.getToDraw(formInstance.entity));
+    public <P extends PropertyInterface, X extends PropertyInterface> AsyncValueList<?> getAsyncValueList(String actionSID, FormInstance formInstance, ImMap<ObjectInstance, ? extends ObjectValue> keys) {
+
+        Function<PropertyObjectInterfaceInstance, ObjectValue> valuesGetter = (PropertyObjectInterfaceInstance po) -> {
+            if(po instanceof ObjectInstance) {
+                ObjectValue keyValue = keys.get((ObjectInstance) po);
+                if (keyValue != null)
+                    return keyValue;
+            }
+            return po.getObjectValue();
+        };
+
+        InputValueList<X> list;
+        ImRevMap<X, ObjectInstance> mapObjects;
+        boolean newSession;
+        AsyncMode asyncMode;
+
+        boolean values = actionSID.equals(ServerResponse.VALUES);
+        if(values || actionSID.equals(ServerResponse.OBJECTS)) {
+            boolean useFilters = !values || Settings.get().isUseGroupFiltersInAsyncFilterCompletion();
+            boolean needObjects = !values;
+
+            Result<ImRevMap<X, ObjectInstance>> rMapObjects = needObjects ? new Result<>() : null;
+
+            list = getInputValueList(valuesGetter, rMapObjects, useFilters);
             if(list == null)
                 return null;
-            if(BaseUtils.nvl(entity.defaultChangeEventScope, PropertyDrawEntity.DEFAULT_FILTER_EVENTSCOPE) == FormSessionScope.NEWSESSION)
-                list = list.newSession();
-            mapEntity = drawProperty;
-            strict = false;
+            newSession = BaseUtils.nvl(this.entity.defaultChangeEventScope, values ? PropertyDrawEntity.DEFAULT_VALUES_EVENTSCOPE : PropertyDrawEntity.DEFAULT_OBJECTS_EVENTSCOPE) == FormSessionScope.NEWSESSION;
+            mapObjects = needObjects ? rMapObjects.result : null;
+            asyncMode = needObjects ? AsyncMode.OBJECTS : AsyncMode.VALUES;
         } else {
-            ActionObjectEntity<P> eventAction = (ActionObjectEntity<P>) entity.getEventAction(actionSID, formInstance.entity);
-            AsyncMapChange<P> asyncExec = (AsyncMapChange<P>) eventAction.property.getAsyncEventExec(entity.optimisticAsync);
-            list = asyncExec.list;
-            strict = asyncExec.inputList.strict;
-            mapEntity = eventAction;
+            ActionObjectEntity<P> eventAction = (ActionObjectEntity<P>) this.entity.getEventAction(actionSID, formInstance.entity);
+            AsyncMapChange<P> asyncExec = (AsyncMapChange<P>) eventAction.property.getAsyncEventExec(this.entity.optimisticAsync);
+            InputListEntity<X, P> listEntity = (InputListEntity<X, P>) asyncExec.list;
+            list = listEntity.map(formInstance.instanceFactory.getInstanceMap(eventAction.mapping).mapValues(BaseUtils.<Function<ObjectInstance, ObjectValue>>immutableCast(valuesGetter)));
+            mapObjects = null;
+            newSession = listEntity.newSession;
+            asyncMode = asyncExec.inputList.strict ? AsyncMode.OBJECTVALUES : AsyncMode.VALUES;
         }
-        return formInstance.instanceFactory.getInstance(mapEntity).getRemappedPropertyObject(keys).getValueList(list, strict);
+
+        return new AsyncValueList<>(list, mapObjects, newSession, asyncMode);
+    }
+
+    private <X extends PropertyInterface> InputValueList<X> getInputValueList(Function<PropertyObjectInterfaceInstance, ObjectValue> valuesGetter, Result<ImRevMap<X, ObjectInstance>> rMapObjects, boolean useFilters) {
+        // actually that all X can be different
+        PropertyObjectInstance<X> valueProperty = (PropertyObjectInstance<X>) this.drawProperty;
+
+        InputValueList<X> list;
+        if(useFilters)
+            valueProperty = FilterInstance.ifCached(valueProperty, toDraw.getFilters(GroupObjectInstance.DynamicFilters.NOVIEW, false));
+
+        list = (InputValueList<X>) valueProperty.getInputValueList(toDraw, rMapObjects, valuesGetter); // when
+        if(list == null && !useFilters) // trying to use filters
+            return getInputValueList(valuesGetter, rMapObjects, true);
+
+        return list;
     }
 
     private ActionOrPropertyObjectInstance<?, ?> propertyObject;
-    
+
     public ActionOrPropertyObjectInstance<?, ?> getValueProperty() {
         return propertyObject;
     }
@@ -96,7 +130,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     public OrderInstance getOrder() {
         return (PropertyObjectInstance) getValueProperty();
     }
-    
+
     public boolean isProperty() {
         return getValueProperty() instanceof PropertyObjectInstance;
     }
@@ -205,7 +239,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     public PropertyDrawEntity getEntity() {
         return entity;
     }
-    
+
     public String getIntegrationSID() {
         return entity.getIntegrationSID();
     }
@@ -239,12 +273,12 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     public class ExtraReaderInstance implements PropertyReaderInstance {
         private final PropertyDrawExtraType type;
         private final PropertyObjectInstance property;
-        
+
         public ExtraReaderInstance(PropertyDrawExtraType type, PropertyObjectInstance property) {
             this.type = type;
             this.property = property;
         }
-        
+
         @Override
         public PropertyObjectInstance getPropertyObjectInstance() {
             return property;
@@ -264,7 +298,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         public Object getProfiledObject() {
             return entity.getPropertyExtra(type);
         }
-        
+
         public String toString() {
             return ThreadLocalContext.localize(type.getText()) + "(" + PropertyDrawInstance.this.toString() + ")";
         }

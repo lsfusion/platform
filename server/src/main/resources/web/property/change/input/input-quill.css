@@ -1,0 +1,9 @@
+.ql-editor {
+    padding: 4px;
+    white-space: nowrap;
+}
+
+.quill-input-editor {
+    width: 100%;
+    background: var(--component-background-color);
+}

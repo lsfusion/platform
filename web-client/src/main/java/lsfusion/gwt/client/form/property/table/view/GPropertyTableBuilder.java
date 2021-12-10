@@ -1,6 +1,8 @@
 package lsfusion.gwt.client.form.property.table.view;
 
 import com.google.gwt.dom.client.*;
+import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder;
 import lsfusion.gwt.client.base.view.grid.Column;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
@@ -8,7 +10,10 @@ import lsfusion.gwt.client.base.view.grid.GridStyle;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.table.grid.view.GPivot;
+import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
+import lsfusion.gwt.client.form.property.cell.view.RenderContext;
+import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 
 import java.util.List;
 import java.util.Optional;
@@ -22,8 +27,6 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
     private final String firstColumnStyle;
     private final String lastColumnStyle;
 
-    private int cellHeight = 16;
-
     public GPropertyTableBuilder(DataGrid table) {
         super(table);
 
@@ -35,14 +38,72 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
         lastColumnStyle = " " + style.dataGridLastCell();
     }
 
-    public boolean setCellHeight(int cellHeight) {
-        boolean cellHeightChanged = this.cellHeight != cellHeight;
-        this.cellHeight = cellHeight;
-        return cellHeightChanged;
+    public static Element renderSized(Element element, GPropertyDraw property, RenderContext renderContext) {
+        boolean isTDorTH = GwtClientUtils.isTDorTH(element);
+
+        FlexPanel.setBaseSize(element, true, property.getValueHeightWithPadding(renderContext.getFont()), isTDorTH); // the thing is that td ignores min-height (however height in td works just like min-height)
+
+        if(!(isTDorTH && property.getCellRenderer().isSimpleText(renderContext))) {
+            element = wrapSized(element);
+            if(property.autoSize)
+                GwtClientUtils.setupPercentParent(element);
+            else
+                GwtClientUtils.setupFillParent(element);
+        }
+        return element;
     }
 
-    public int getCellHeight() {
-        return cellHeight;
+    public static Element getRenderSizedElement(Element element, GPropertyDraw property, UpdateContext updateContext) {
+
+        if(!(GwtClientUtils.isTDorTH(element) && property.getCellRenderer().isSimpleText(updateContext))) // there is another unwrapping in GPropertyTableBuilder, so it also should be kept consistent
+            element = unwrapSized(element);
+
+        return element;
+    }
+
+    public static boolean clearRenderSized(Element element, GPropertyDraw property, RenderContext renderContext) {
+        boolean isTDorTH = GwtClientUtils.isTDorTH(element);
+
+        FlexPanel.setBaseSize(element, true, null, isTDorTH); // the thing is that td ignores min-height (however height in td works just like min-height)
+
+        if(!(isTDorTH && property.getCellRenderer().isSimpleText(renderContext))) {
+            GwtClientUtils.removeAllChildren(element);
+
+            if(!property.autoSize)
+                GwtClientUtils.clearFillParentElement(element);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    private static Element wrapSized(Element element) {
+//        assert GwtClientUtils.isTDorTH(element);
+        Element wrappedTh = Document.get().createDivElement();
+        element.appendChild(wrappedTh);
+        return wrappedTh;
+    }
+
+    public static Element unwrapSized(Element element) {
+//        assert GwtClientUtils.isTDorTH(element);
+        return element.getFirstChildElement();
+    }
+
+    // pivot / footer
+    public static void renderAndUpdate(GPropertyDraw property, Element element, Object value, RenderContext renderContext, UpdateContext updateContext) {
+        // // can be div in renderColAttrCell : if + is added or sort
+//        assert GwtClientUtils.isTDorTH(element);
+        render(property, element, renderContext);
+        update(property, element, value, updateContext);
+    }
+
+    public static void render(GPropertyDraw property, Element element, RenderContext renderContext) {
+        property.getCellRenderer().renderStatic(renderSized(element, property, renderContext), renderContext);
+    }
+
+    public static void update(GPropertyDraw property, Element element, Object value, UpdateContext updateContext) {
+        property.getCellRenderer().renderDynamic(getRenderSizedElement(element, property, updateContext), value, updateContext);
     }
 
     @Override
@@ -68,7 +129,7 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
             TableCellElement td = tr.insertCell(columnIndex);
             td.setClassName(tdClasses.toString());
 
-            renderTD(td, cellHeight, false);
+            renderTD(td, false);
 
             renderCell(td, new Cell(rowIndex, columnIndex, column, rowValue), column);
 
@@ -127,7 +188,7 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
         if(image != null)
             // assert that it is action and rendered with ActionCellRenderer
             // also since we know that its grid and not simple text (since there is dynamic image) and its td, we can unwrap td without having CellRenderer (however, it should be consistent with CellRenderer renderDynamic/Static)
-            GFormController.setDynamicImage(CellRenderer.unwrapTD(td), image.orElse(null));
+            GFormController.setDynamicImage(unwrapSized(td), image.orElse(null));
     }
 
     @Override
@@ -150,20 +211,23 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
         }
     }
 
-    public static void renderTD(Element td, int height) {
-        renderTD(td, height, true);
+    public static void renderTD(Element td) {
+        renderTD(td, true);
     }
 
-    public static void renderTD(Element td, int height, boolean tableToExcel) {
-        setRowHeight(td, height, tableToExcel);
+    public static void renderTD(Element td, boolean tableToExcel) {
+//        setRowHeight(td, height, tableToExcel);
     }
 
     // setting line height to height it's the easiest way to align text to the center vertically, however it works only for single lines (which is ok for row data)
-    public static void setLineHeight(Element td, int height) {
-        td.getStyle().setLineHeight(height, Style.Unit.PX);
-    }
-    public static void clearLineHeight(Element td) {
-        td.getStyle().clearLineHeight();
+//    public static void setLineHeight(Element td, int height) {
+//        td.getStyle().setLineHeight(height, Style.Unit.PX);
+//    }
+//    public static void clearLineHeight(Element td) {
+//        td.getStyle().clearLineHeight();
+//    }
+    public static void setVerticalMiddleAlign(Element element) {
+        element.getStyle().setVerticalAlign(Style.VerticalAlign.MIDDLE);
     }
 
     public static void setRowHeight(Element td, int height, boolean tableToExcel) {

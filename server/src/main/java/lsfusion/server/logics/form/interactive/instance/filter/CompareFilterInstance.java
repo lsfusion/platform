@@ -26,6 +26,8 @@ import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawIns
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.property.Property;
+import lsfusion.server.logics.property.PropertyFact;
+import lsfusion.server.logics.property.implement.PropertyImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 import java.io.DataInputStream;
@@ -121,5 +123,14 @@ public class CompareFilterInstance<P extends PropertyInterface> extends Property
     protected void fillObjects(MSet<ObjectInstance> objects) {
         super.fillObjects(objects);
         objects.addAll(value.getObjectInstances().toSet());
+    }
+
+    @Override
+    public NotNullFilterInstance notNullCached() {
+        PropertyImplement<?, PropertyObjectInterfaceInstance> implement = PropertyFact.createCompareCached(getPropertyImplement(property), compare,
+                value instanceof PropertyObjectInstance ? getPropertyImplement((PropertyObjectInstance) value) : PropertyFact.createValueCached((PropertyObjectInterfaceInstance) value));
+        if(negate)
+            implement = PropertyFact.createNotCached(implement);
+        return getFilterInstance(implement);
     }
 }

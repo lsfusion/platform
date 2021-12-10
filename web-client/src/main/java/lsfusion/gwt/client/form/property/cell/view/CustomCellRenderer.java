@@ -76,6 +76,9 @@ public class CustomCellRenderer extends CellRenderer<Object> {
             },
             toDateTimeDTO: function (year, month, day, hour, minute, second) {
                 return @lsfusion.gwt.client.form.property.cell.classes.GDateTimeDTO::new(IIIIII)(year, month, day, hour, minute, second);
+            },
+            getColorThemeName: function () {
+                return @lsfusion.gwt.client.view.MainFrame::colorTheme.@java.lang.Enum::name()();
             }
         }
     }-*/;

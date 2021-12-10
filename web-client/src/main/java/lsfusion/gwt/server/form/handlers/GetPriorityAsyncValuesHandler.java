@@ -1,8 +1,8 @@
 package lsfusion.gwt.server.form.handlers;
 
+import lsfusion.client.form.property.cell.ClientAsync;
 import lsfusion.gwt.client.base.exception.AppServerNotAvailableDispatchException;
 import lsfusion.gwt.client.base.result.ListResult;
-import lsfusion.gwt.client.controller.remote.action.form.GetAsyncValues;
 import lsfusion.gwt.client.controller.remote.action.form.GetPriorityAsyncValues;
 import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.server.convert.GwtToClientConverter;
@@ -30,6 +30,6 @@ public class GetPriorityAsyncValuesHandler extends FormActionHandler<GetPriority
     @Override
     public ListResult executeEx(GetPriorityAsyncValues action, ExecutionContext context) throws RemoteException, AppServerNotAvailableDispatchException {
         FormSessionObject form = getFormSessionObject(action.formSessionID);
-        return GetAsyncValuesHandler.convertAsyncValues(form.remoteForm.getAsyncValues(-1, 0, action.propertyID, (byte[]) gwtConverter.convertOrCast(action.columnKey), action.actionSID, action.value, action.index));
+        return GetAsyncValuesHandler.getAndConvertAsyncValues(form, -1, 0, action.propertyID, (byte[]) gwtConverter.convertOrCast(action.columnKey), action.actionSID, action.value, action.index);
     }
 }

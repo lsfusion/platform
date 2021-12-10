@@ -23,9 +23,8 @@ public abstract class ClientComponent extends ContextIdentityObject implements I
 
     public ClientContainer container;
     
-    public Dimension size;
-    
-    public boolean autoSize;
+    public int width;
+    public int height;
 
     public int span = 1;
 
@@ -45,10 +44,17 @@ public abstract class ClientComponent extends ContextIdentityObject implements I
     }
 
     public Integer getSize(boolean vertical) {
-        int size;
-        size = vertical ? this.size.height : this.size.width;
+        int size = vertical ? height : width;
         if (size != -1)
             return size;
+        return vertical ? getDefaultHeight() : getDefaultWidth();
+    }
+
+    protected Integer getDefaultWidth() {
+        return null;
+    }
+
+    protected Integer getDefaultHeight() {
         return null;
     }
 
@@ -60,9 +66,8 @@ public abstract class ClientComponent extends ContextIdentityObject implements I
         pool.writeObject(outStream, design);
         pool.serializeObject(outStream, container);
 
-        pool.writeObject(outStream, size);
-        
-        outStream.writeBoolean(autoSize);
+        outStream.writeInt(width);
+        outStream.writeInt(height);
 
         outStream.writeInt(span);
 
@@ -85,10 +90,9 @@ public abstract class ClientComponent extends ContextIdentityObject implements I
 
         container = pool.deserializeObject(inStream);
 
-        size = pool.readObject(inStream);
+        width = inStream.readInt();
+        height = inStream.readInt();
         
-        autoSize = inStream.readBoolean();
-
         span = inStream.readInt();
 
         flex = inStream.readDouble();

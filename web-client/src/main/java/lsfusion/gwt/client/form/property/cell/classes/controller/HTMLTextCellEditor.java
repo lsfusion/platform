@@ -2,6 +2,7 @@ package lsfusion.gwt.client.form.property.cell.classes.controller;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
+import lsfusion.gwt.client.form.property.cell.controller.CancelReason;
 import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
@@ -28,7 +29,7 @@ public class HTMLTextCellEditor implements RequestEmbeddedCellEditor {
 
     @Override
     public void cancel(Element parent) {
-        editManager.cancelEditing();
+        editManager.cancelEditing(CancelReason.OTHER);
     }
 
     @Override
@@ -62,7 +63,7 @@ public class HTMLTextCellEditor implements RequestEmbeddedCellEditor {
             showPrintMargin: false
         });
         element.aceEditor = aceEditor;
-        aceEditor.setValue(oldValue);
+        aceEditor.setValue(oldValue != null ? oldValue : '');
         aceEditor.focus();
     }-*/;
 }

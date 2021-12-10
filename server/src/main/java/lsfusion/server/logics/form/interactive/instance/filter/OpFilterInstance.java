@@ -1,6 +1,7 @@
 package lsfusion.server.logics.form.interactive.instance.filter;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.data.sql.exception.SQLHandledException;
@@ -74,5 +75,10 @@ public abstract class OpFilterInstance extends FilterInstance {
     protected void fillObjects(MSet<ObjectInstance> objects) {
         op1.fillObjects(objects);
         op2.fillObjects(objects);
+    }
+
+    @Override
+    public NotNullFilterInstance notNullCached() {
+        return combineCached(SetFact.toSet(op1, op2), this instanceof AndFilterInstance);
     }
 }

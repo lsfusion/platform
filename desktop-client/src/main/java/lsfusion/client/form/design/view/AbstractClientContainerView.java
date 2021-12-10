@@ -3,17 +3,11 @@ package lsfusion.client.form.design.view;
 import lsfusion.base.BaseUtils;
 import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.design.ClientContainer;
-import lsfusion.client.form.design.view.flex.LinearClientContainerView;
 import lsfusion.client.form.design.view.widget.ScrollPaneWidget;
 import lsfusion.client.form.design.view.widget.Widget;
-import lsfusion.interop.base.view.FlexAlignment;
 
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-
-import static java.lang.Math.max;
 
 public abstract class AbstractClientContainerView implements ClientContainerView {
 
@@ -122,10 +116,6 @@ public abstract class AbstractClientContainerView implements ClientContainerView
         childrenViews.remove(index);
     }
 
-    protected boolean isTopContainerView() {
-        return container.container == null;
-    }
-
     @Override
     public boolean hasChild(ClientComponent child) {
         return children.contains(child);
@@ -156,88 +146,6 @@ public abstract class AbstractClientContainerView implements ClientContainerView
     public Widget getChildView(ClientComponent child) {
         int index = children.indexOf(child);
         return index != -1 ? childrenViews.get(index) : null;
-    }
-
-    // MAX PREFERRED SIZE
-    // можно было бы попробовать общую схему LayoutManager'ов использовать, но проблема в том что каждый ContainerView может создавать внутренние компоненты с не определенными LayoutManager'ами, а как через них протянуть признак что нужен max, а не обычный size непонятно
-    // поэтому пока используем логику из Web-Client'а (где LayoutManager'ом вообще CSS является)
-
-    public static Dimension calculateMaxPreferredSize(Widget component) {
-        return component.getMaxPreferredSize();
-    }
-
-    protected Dimension getChildMaxPreferredSize(Map<ClientContainer, ClientContainerView> containerViews, int index) {
-        return getChildMaxPreferredSize(containerViews, getChild(index));
-    }
-
-    protected Dimension getChildMaxPreferredSize(Map<ClientContainer, ClientContainerView> containerViews, ClientComponent child) {
-        Dimension dimensions = child instanceof ClientContainer
-                ? getMaxPreferredSize((ClientContainer) child, containerViews, true)
-                : getMaxPreferredSize(child, getChildView(child));
-        Dimension result = enlargeDimension(dimensions, child.getHorizontalMargin(), child.getVerticalMargin());
-        return result;
-    }
-    
-    public static Dimension getMaxPreferredSize(ClientContainer child, Map<ClientContainer, ClientContainerView> containerViews, boolean max) {
-        return overrideSize(child, containerViews.get(child).getMaxPreferredSize(containerViews), max);
-    }
-    private static Dimension getMaxPreferredSize(ClientComponent child, Widget childView) { // тут как и в GwtClientUtils.calculateMaxPreferredSize возможно нужна проверка на isVisible
-        return overrideSize(child, calculateMaxPreferredSize(childView), true);
-    }
-
-    private static Dimension overrideSize(ClientComponent child, Dimension dimension, boolean max) {
-        Integer width = child.getSize(false);
-        if(width == null)
-            width = dimension.width;
-        else if(max)        
-            width = BaseUtils.max(width, dimension.width);
-        
-        Integer preferredHeight = child.getSize(true);
-        if(preferredHeight == null)
-            preferredHeight = dimension.height;
-        else if(max)
-            preferredHeight = BaseUtils.max(preferredHeight, dimension.height);
-        return new Dimension(width, preferredHeight);
-    }
-
-    // не предполагает явное использование (так как не содержит проверки на явный size)
-    public Dimension getMaxPreferredSize(Map<ClientContainer, ClientContainerView> containerViews) {
-        boolean vertical = !container.horizontal;
-        int width = 0;
-        int height = 0;
-        int chCnt = children.size();
-        for (int i = 0; i < chCnt; ++i) {
-            if (childrenViews.get(i).isVisible()) {
-                Dimension childSize = getChildMaxPreferredSize(containerViews, i);
-                if (vertical) {
-                    width = max(width, childSize.width);
-                    height += childSize.height;
-                } else {
-                    width += childSize.width;
-                    height = max(height, childSize.height);
-                }
-            }
-        }
-
-        return addCaptionDimensions(new Dimension(width, height));
-    }
-
-    private boolean hasCaption() { // не top, не tabbed и есть caption
-        return !container.isTab() && !container.main && container.caption != null;
-    }
-
-    public static Dimension enlargeDimension(Dimension dim, int extraWidth, int extraHeight) {
-        dim.width += extraWidth;
-        dim.height += extraHeight;
-        return dim;
-    }
-
-    protected Dimension addCaptionDimensions(Dimension dimension) {
-        if (hasCaption()) {
-            dimension.width += 10;
-            dimension.height += 20;
-        }
-        return dimension;
     }
 
     public static void add(FlexPanel panel, Widget widget, ClientComponent component, int beforeIndex) {

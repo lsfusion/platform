@@ -22,6 +22,7 @@ import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.GObject;
 import lsfusion.gwt.client.form.object.table.GToolbar;
+import lsfusion.gwt.client.form.object.table.grid.view.GCustom;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
 import lsfusion.gwt.client.form.object.table.view.GToolbarView;
 import lsfusion.gwt.client.form.property.GFooterReader;
@@ -34,43 +35,23 @@ public abstract class GAbstractTableController extends GPropertyController imple
     protected final GToolbarView toolbarView;
     public GFilterController filter;
 
-    protected Widget gridView;
-    protected GridContainerPanel gridContainerView;
+    protected GridContainerPanel gridView;
 
     public void initGridView(boolean autoSize) {
 
         // we need to wrap into simple panel to make layout independent from property value (make flex-basis 0 for upper components)
-        this.gridContainerView = new GridContainerPanel(autoSize);
-
-        this.gridView = wrapGridSizePanel(gridContainerView);
+        // plus we need this panel to change views
+        this.gridView = new GridContainerPanel(autoSize);
 
         getFormLayout().addBaseComponent(getGridComponent(), this.gridView, getDefaultFocusReceiver());
 
         configureToolbar();
     }
 
-    // need to wrap gridContainerView to set base sizes, that are calculated based on current font (just like in PropertyPanelRenderer)
-    private Widget wrapGridSizePanel(Widget widget) {
-        FlexPanel gridPanel = new FlexPanel(true);
-        gridPanel.setStyleName("gridSizePanel");
-        gridPanel.addFillShrink(widget);
-        FlexPanel.setBaseSize(gridContainerView, true, getGridHeight());
-        FlexPanel.setBaseSize(gridContainerView, false, getGridWidth());
-        return gridPanel;
-    }
-
-    protected int getGridWidth() {
-        return 130;
-    }
-
-    protected int getGridHeight() {
-        return 70;
-    }
-
     protected abstract void configureToolbar();
 
     public void changeGridView(Widget widget) {
-        gridContainerView.changeWidget(widget);
+        gridView.changeWidget(widget);
     }
 
     public static class GridContainerPanel extends ResizableSimplePanel implements HasMaxPreferredSize {

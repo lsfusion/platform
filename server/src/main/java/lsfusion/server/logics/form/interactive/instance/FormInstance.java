@@ -27,7 +27,6 @@ import lsfusion.interop.form.object.table.grid.user.toolbar.FormGrouping;
 import lsfusion.interop.form.order.Scroll;
 import lsfusion.interop.form.print.FormPrintType;
 import lsfusion.interop.form.property.Compare;
-import lsfusion.interop.form.property.cell.Async;
 import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.base.controller.stack.ParamMessage;
 import lsfusion.server.base.controller.stack.StackMessage;
@@ -93,6 +92,7 @@ import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.instance.design.ContainerViewInstance;
 import lsfusion.server.logics.form.interactive.instance.filter.FilterInstance;
+import lsfusion.server.logics.form.interactive.instance.filter.NotNullFilterInstance;
 import lsfusion.server.logics.form.interactive.instance.filter.RegularFilterGroupInstance;
 import lsfusion.server.logics.form.interactive.instance.filter.RegularFilterInstance;
 import lsfusion.server.logics.form.interactive.instance.object.*;
@@ -100,7 +100,10 @@ import lsfusion.server.logics.form.interactive.instance.order.OrderInstance;
 import lsfusion.server.logics.form.interactive.instance.property.*;
 import lsfusion.server.logics.form.interactive.listener.CustomClassListener;
 import lsfusion.server.logics.form.interactive.listener.FocusListener;
+import lsfusion.server.logics.form.interactive.property.Async;
+import lsfusion.server.logics.form.interactive.property.AsyncMode;
 import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
+import lsfusion.server.logics.form.interactive.property.PropertyAsync;
 import lsfusion.server.logics.form.stat.print.FormReportManager;
 import lsfusion.server.logics.form.stat.print.StaticFormReportManager;
 import lsfusion.server.logics.form.struct.FormEntity;
@@ -115,6 +118,7 @@ import lsfusion.server.logics.form.struct.order.OrderEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
+import lsfusion.server.logics.property.classes.IsClassProperty;
 import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.implement.PropertyRevImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -315,7 +319,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         ImMap<GroupObjectInstance, ImSet<FilterInstance>> fixedFilters = allFixedFilters.mapSetValues(value -> value.getInstance(instanceFactory)).group(key -> key.getApplyObject());
         for (int i = 0, size = fixedFilters.size(); i < size; i++)
             fixedFilters.getKey(i).fixedFilters = fixedFilters.getValue(i);
-
+        for (GroupObjectInstance groupObject : groupObjects)
+            groupObject.classFilter = new NotNullFilterInstance<>(FilterInstance.getPropertyObjectInstance(IsClassProperty.getProperty(getGridClasses(groupObject.objects))));
 
         for (RegularFilterGroupEntity filterGroupEntity : entity.getRegularFilterGroupsList()) {
             regularFilterGroups.add(instanceFactory.getInstance(filterGroupEntity));
@@ -373,8 +378,6 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 wasOrder.add(toDraw);
             }
         }
-
-        applyFilters(); // we need to apply filters, because on init may be some actions using filters (EXPAND UP) + readKeys in tree uses down group to calculate expand / collapse column
 
         this.session.registerForm(this);
         
@@ -917,18 +920,10 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     // пометка что изменились данные
     public boolean dataChanged = true;
 
-    // временно
-    private boolean checkFilters(final GroupObjectInstance groupTo) {
-        ImSet<FilterInstance> setFilters = groupTo.getSetFilters();
-        return setFilters.equals(groupTo.filters);
-    }
-
     public <P extends PropertyInterface> DataObject addFormObject(CustomObjectInstance object, ConcreteCustomClass cls, DataObject pushed, ExecutionStack stack) throws SQLException, SQLHandledException {
         DataObject dataObject = session.addObjectAutoSet(cls, pushed, BL, getClassListener());
 
-        // резолвим все фильтры
-        assert checkFilters(object.groupTo);
-        for (FilterInstance filter : object.groupTo.filters)
+        for (FilterInstance filter : object.groupTo.getFilters(true))
             filter.resolveAdd(this, object, dataObject, stack);
 
         expandCurrentGroupObject(object);
@@ -1110,14 +1105,14 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         return null;
     }
 
-    public static <P extends PropertyInterface> Async[] getAsyncValues(InputValueList<P> list, DataSession session, Modifier modifier, String value, boolean strict) throws SQLException, SQLHandledException {
+    public static <P extends PropertyInterface> PropertyAsync<P>[] getAsyncValues(InputValueList<P> list, DataSession session, Modifier modifier, String value, AsyncMode asyncMode) throws SQLException, SQLHandledException {
         Settings settings = Settings.get();
         int neededCount = settings.getAsyncValuesNeededCount();
         double extraReadCoeff = settings.getAsyncValuesExtraReadCoeff();
         double statDegree = settings.getStatDegree();
         int maxLimitRead = settings.getAsyncValuesMaxReadCount();
 
-        double estDistinctRate = (strict ? 1 : list.getDistinctStat().getCount()) * extraReadCoeff;
+        double estDistinctRate = (asyncMode == AsyncMode.VALUES ? list.getDistinctStat().getCount() : 1) * extraReadCoeff;
 
         Pair<ImRevMap<P, KeyExpr>, Expr> listExprKeys = getListExpr(list, modifier);
 //        t(o) = list AND list match request
@@ -1127,8 +1122,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         while(estNeededRead <= maxLimitRead) {
             // t(o) = LIMIT estX BY t(o)
             int ceilEstNeedRead = new Stat((long)estNeededRead, true).getCount(); // we use "degreed" value instead of actual value, to have more granular caches
-            Pair<Async[], Integer> result = getAsyncValues(session, SubQueryExpr.create(listExpr, false, ceilEstNeedRead), neededCount, value);
-            Async[] resultValues = result.first;
+            Pair<PropertyAsync<P>[], Integer> result = getAsyncValues(session, SubQueryExpr.create(listExpr, false, ceilEstNeedRead), listExprKeys.first, asyncMode, neededCount, value);
+            PropertyAsync<P>[] resultValues = result.first;
             int count = result.second;
 
             if(resultValues.length >= neededCount || // found it
@@ -1139,31 +1134,52 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             estNeededRead = (int) (estNeededRead * BaseUtils.max((double)neededCount * extraReadCoeff / (double)resultValues.length, statDegree));
         }
 
-        return getAsyncValues(session, listExpr, neededCount, value).first;
+        return getAsyncValues(session, listExpr, listExprKeys.first, asyncMode, neededCount, value).first;
     }
 
-    private static Pair<Async[], Integer> getAsyncValues(DataSession session, Expr listExpr, int neededCount, String value) throws SQLException, SQLHandledException {
+    private static <P extends PropertyInterface, Q> Pair<PropertyAsync<P>[], Integer> getAsyncValues(DataSession session, Expr listBaseExpr, ImRevMap<P, KeyExpr> baseKeys, AsyncMode asyncMode, int neededCount, String value) throws SQLException, SQLHandledException {
         // z = GROUP SUM 1 BY t(o)
-        KeyExpr listKeyExpr = new KeyExpr("list");
-        Expr groupListExpr = GroupExpr.create(MapFact.singleton(0, listExpr), ValueExpr.COUNT, GroupType.SUM, MapFact.singleton(0, listKeyExpr));
+        Expr countExpr;
+        Expr listExpr;
+        Where listWhere;
+        ImRevMap<Q, KeyExpr> groupListKeys;
+        boolean readObjects = asyncMode == AsyncMode.OBJECTS;
+        if(readObjects) {
+            groupListKeys = (ImRevMap<Q, KeyExpr>) baseKeys;
+            countExpr = ValueExpr.COUNT;
+            listWhere = listBaseExpr.getWhere();
+            listExpr = listBaseExpr;
+        } else {
+            KeyExpr listKeyExpr = new KeyExpr("list");
+            Q key = (Q) "key";
+            groupListKeys = MapFact.singletonRev(key, listKeyExpr);
+            countExpr = GroupExpr.create(MapFact.singleton(key, listBaseExpr), ValueExpr.COUNT, GroupType.SUM, groupListKeys);
+            listWhere = countExpr.getWhere();
+            listExpr = listKeyExpr;
+        }
 
         // SELECT t, higlh(t) WHERE z(t) ORDER BY rank(t) LIMIR act
-        ImRevMap<String, KeyExpr> key = MapFact.singletonRev("key", listKeyExpr);
-
         String language = Settings.get().getFilterMatchLanguage();
         SQLSyntax syntax = session.sql.syntax;
         String match = "'" + value + "'";
-        ImOrderMap<ImMap<String, Object>, ImMap<String, Object>> result = new Query<>(key, MapFact.toMap(
-                "highlight", value.isEmpty() ? listKeyExpr : FormulaExpr.createCustomFormula(MatchWhere.getHighlight(syntax, "prm1", match, language), StringClass.text, listKeyExpr),
-                "rank", value.isEmpty() ? ValueExpr.COUNT : FormulaExpr.createCustomFormula(MatchWhere.getRank(syntax, "prm1", match, language), DoubleClass.instance, listKeyExpr),
-                "count", groupListExpr), groupListExpr.getWhere()).execute(session, MapFact.toOrderMap("rank", true, "count", true), neededCount);
 
-        Async[] resultValues = new Async[result.size()];
+        MExclMap<String, Expr> mProps = MapFact.mExclMapMax(4);
+        mProps.exclAdd("highlight", value.isEmpty() ? listExpr : FormulaExpr.createCustomFormula(MatchWhere.getHighlight(syntax, "prm1", match, language), StringClass.text, listExpr));
+        mProps.exclAdd("rank", value.isEmpty() ? ValueExpr.COUNT : FormulaExpr.createCustomFormula(MatchWhere.getRank(syntax, "prm1", match, language), DoubleClass.instance, listExpr));
+        mProps.exclAdd("count", countExpr);
+        if(readObjects)
+            mProps.exclAdd("raw", listExpr);
+
+        ImOrderMap<ImMap<Q, DataObject>, ImMap<String, ObjectValue>> result = new Query<>(groupListKeys, mProps.immutable(), listWhere).executeClasses(session, MapFact.toOrderMap("rank", true, "count", true), neededCount);
+
+        PropertyAsync<P>[] resultValues = new PropertyAsync[result.size()];
         int count = 0;
         for(int i = 0, size = result.size(); i < size; i++) {
-            ImMap<String, Object> values = result.getValue(i);
-            count += (Integer)values.get("count");
-            resultValues[i] = new Async((String)values.get("highlight"), (String)result.getKey(i).singleValue());
+            ImMap<String, ObjectValue> values = result.getValue(i);
+            count += (Integer)values.get("count").getValue();
+            resultValues[i] = new PropertyAsync<P>((String)values.get("highlight").getValue(),
+                    readObjects ? (String)values.get("raw").getValue() : (String)result.getKey(i).singleValue().getValue(),
+                    readObjects ? (ImMap<P, DataObject>)result.getKey(i) : null);
         }
 
         return new Pair<>(resultValues, count);
@@ -1187,31 +1203,42 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         return new Pair<>(innerKeys, list.property.getExpr(innerExprs, modifier));
     }
 
-    public <P extends PropertyInterface> Async[] getAsyncValues(PropertyDrawInstance<?> propertyDraw, ImMap<ObjectInstance, ? extends ObjectValue> keys, String actionSID, String value, Boolean optimistic, Supplier<Boolean> optimisticRun) throws SQLException, SQLHandledException {
-        InputValueList<?> listProperty;
-        boolean strict;
+    private static <P extends PropertyInterface> Async[] convertPropertyAsyncs(ImRevMap<P, ObjectInstance> mapObjects, PropertyAsync<P>[] propAsyncs) {
+        Async[] result = new Async[propAsyncs.length];
+        for(int i=0;i<propAsyncs.length;i++) {
+            PropertyAsync<P> propAsync = propAsyncs[i];
+            result[i] = new Async(propAsync.displayString, propAsync.rawString, propAsync.key != null ? mapObjects.crossJoin(propAsync.key) : null);
+        }
+        return result;
+    }
+    public <P extends PropertyInterface, X extends PropertyInterface> Async[] getAsyncValues(PropertyDrawInstance<P> propertyDraw, ImMap<ObjectInstance, ? extends ObjectValue> keys, String actionSID, String value, Boolean optimistic, Supplier<Boolean> optimisticRun) throws SQLException, SQLHandledException {
+        InputValueList<X> listProperty;
+        ImRevMap<X, ObjectInstance> mapObjects;
+        AsyncMode asyncMode;
         boolean needRecheck = false;
         if (actionSID.equals(INPUT)) {
             assert optimistic;
-            InputContext<?> inputContext = ThreadLocalContext.lockInputContext();
+            InputContext<X> inputContext = ThreadLocalContext.lockInputContext();
             try {
                 if (inputContext == null) // recheck
                     return new Async[] {Async.CANCELED};
 
                 listProperty = inputContext.list;
-                strict = inputContext.strict;
+                mapObjects = null;
+                asyncMode = inputContext.strict ? AsyncMode.OBJECTVALUES : AsyncMode.VALUES;
                 if (!inputContext.newSession && listProperty.property.hasChanges(inputContext.modifier))
-                    return getAsyncValues(inputContext.list, inputContext.session, inputContext.modifier, value, strict);
+                    return convertPropertyAsyncs(mapObjects, getAsyncValues(inputContext.list, inputContext.session, inputContext.modifier, value, asyncMode));
             } finally {
                 ThreadLocalContext.unlockInputContext();
             }
         } else {
-            PropertyDrawInstance.AsyncValueList valueList = propertyDraw.getAsyncValueList(actionSID, this, keys);
+            PropertyDrawInstance.AsyncValueList<X> valueList = (PropertyDrawInstance.AsyncValueList<X>) propertyDraw.getAsyncValueList(actionSID, this, keys);
             if(valueList == null)
                 return new Async[] {Async.CANCELED};
 
             listProperty = valueList.list;
-            strict = valueList.strict;
+            mapObjects = valueList.mapObjects;
+            asyncMode = valueList.asyncMode;
             if(!valueList.newSession) { // ! new session
                 if (optimistic) {
                     Boolean hasOptimisticChanges = hasOptimisticAsyncChanges(listProperty.property);
@@ -1221,7 +1248,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                         return null; // switching to pessimistic mode
                 } else {
                     if (updateAsyncPropertyChanges(listProperty.property)) // recheck changes since we're in a thread-safe mode
-                        return getAsyncValues(listProperty, getSession(), getModifier(), value, strict);
+                        return convertPropertyAsyncs(mapObjects, getAsyncValues(listProperty, getSession(), getModifier(), value, asyncMode));
                 }
             }
         }
@@ -1231,7 +1258,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         if(!optimisticRun.get())
             return new Async[] {Async.CANCELED};
 
-        Async[] result = logicsInstance.getDbManager().getAsyncValues(listProperty, value, strict);
+        Async[] result = convertPropertyAsyncs(mapObjects, logicsInstance.getDbManager().getAsyncValues(listProperty, value, asyncMode));
         if(needRecheck) // not sure yet, resending RECHECK
             result = BaseUtils.addElement(result, Async.RECHECK, Async[]::new);
         return result;
@@ -1917,11 +1944,6 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         return updated.dataUpdated(changedProps, this, getModifier(), hidden, groupObjects);
     }
 
-    private void applyFilters() {
-        for (GroupObjectInstance group : getGroups())
-            group.applyFilters();
-    }
-
     private void applyOrders() {
         for (GroupObjectInstance group : getGroups())
             group.orders = group.getSetOrders();
@@ -2376,7 +2398,6 @@ updateAsyncPropertyChanges();
 
         checkNavigatorDeactivated();
 
-        applyFilters();
         applyOrders();
 
         // пока сделаем тупо получаем один большой запрос

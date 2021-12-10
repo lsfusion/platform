@@ -3,9 +3,9 @@ package lsfusion.gwt.client.form.object.table.view;
 import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
+import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
-import lsfusion.gwt.client.base.Dimension;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
@@ -13,7 +13,6 @@ import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.base.resize.ResizeHelper;
 import lsfusion.gwt.client.base.view.CopyPasteUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
-import lsfusion.gwt.client.base.view.HasMaxPreferredSize;
 import lsfusion.gwt.client.base.view.grid.Column;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
@@ -28,6 +27,7 @@ import lsfusion.gwt.client.form.order.user.GGridSortableHeaderManager;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTable;
+import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -546,7 +546,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         }
 
         @Override
-        public void renderAndUpdateDom(Cell cell, Element cellElement) {
+        public void renderAndUpdateDom(Cell cell, TableCellElement cellElement) {
             renderDom(cell, cellElement);
 
             updateDom(cell, cellElement);
@@ -557,19 +557,19 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
             }
         }
 
-        public void renderDom(Cell cell, Element cellElement) {
+        public void renderDom(Cell cell, TableCellElement cellElement) {
             GPropertyDraw property = getProperty(cell);
             if(property != null) // in tree there can be no property in groups other than last
-                form.render(property, cellElement, GGridPropertyTable.this);
+                form.render(property, GPropertyTableBuilder.renderSized(cellElement, property, GGridPropertyTable.this), GGridPropertyTable.this);
         }
 
         @Override
-        public void updateDom(Cell cell, Element cellElement) {
+        public void updateDom(Cell cell, TableCellElement cellElement) {
             GPropertyDraw property = getProperty(cell);
             if (property != null) // in tree there can be no property in groups other than last
             {
                 Object oldValue = getValue(property, (T) cell.getRow());
-                form.update(property, cellElement, oldValue, new UpdateContext() {
+                form.update(property, GPropertyTableBuilder.getRenderSizedElement(cellElement, property, GGridPropertyTable.this), oldValue, new UpdateContext() {
                     @Override
                     public Consumer<Object> getCustomRendererValueChangeConsumer() {
                         return value -> form.changeProperty(getEditContext(cell, cellElement), value);
@@ -578,11 +578,6 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
                     @Override
                     public boolean isPropertyReadOnly() {
                         return GGridPropertyTable.this.isReadOnly(cell);
-                    }
-
-                    @Override
-                    public boolean isStaticHeight() {
-                        return GGridPropertyTable.this.isStaticHeight();
                     }
 
                     @Override

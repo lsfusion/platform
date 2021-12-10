@@ -46,6 +46,7 @@ import lsfusion.gwt.client.form.controller.dispatch.FormDispatchAsync;
 import lsfusion.gwt.client.form.controller.dispatch.GFormActionDispatcher;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
+import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.design.view.GFormLayout;
 import lsfusion.gwt.client.form.design.view.TabbedContainerView;
 import lsfusion.gwt.client.form.event.*;
@@ -98,6 +99,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.*;
 import static lsfusion.gwt.client.base.GwtSharedUtils.putToDoubleNativeMap;
@@ -160,6 +162,8 @@ public class GFormController implements EditManager {
             formLayout.getElement().setAttribute("lsfusion-form", form.sID);
 
         updateFormCaption();
+
+        initializeParams(); // has to be done before initializeControllers (since adding component uses getSize)
 
         initializeControllers();
 
@@ -435,11 +439,21 @@ public class GFormController implements EditManager {
         }
 
         panelController = new GPanelController(this);
+    }
 
+    private void initializeParams() {
         hasColumnGroupObjects = false;
-        for (GPropertyDraw property : form.propertyDraws) {
+        for (GPropertyDraw property : getPropertyDraws()) {
             if (property.hasColumnGroupObjects()) {
                 hasColumnGroupObjects = true;
+            }
+
+            GGroupObject groupObject = property.groupObject;
+            if(groupObject != null && property.isList && !property.hide && groupObject.columnCount < 10) {
+                GFont font = groupObject.grid.font;
+                groupObject.columnSumWidth += property.getValueWidthWithPadding(font);
+                groupObject.columnCount++;
+                groupObject.rowMaxHeight = Math.max(groupObject.rowMaxHeight, property.getValueHeightWithPadding(font));
             }
         }
     }
@@ -987,7 +1001,7 @@ public class GFormController implements EditManager {
                 GAsyncExec actionAsync = asyncChange.inputList.actionAsyncs[contextAction];
                 if (actionAsync != null) actionAsync.exec(getAsyncFormController(requestIndex), formsController);
             }
-        }, () -> {}, editContext, actionSID, null);
+        }, cancelReason -> {}, editContext, actionSID, null);
     }
 
     public void asyncOpenForm(GAsyncOpenForm asyncOpenForm, EditContext editContext, Event editEvent, String actionSID) {
@@ -1204,24 +1218,12 @@ public class GFormController implements EditManager {
 
     private void applyCurrentFilters() {
         ArrayList<GPropertyFilterDTO> filters = new ArrayList<>();
-
-        currentFilters.foreachValue(groupFilters -> {
-            for (GPropertyFilter filter : groupFilters) {
-                filters.add(filter.getFilterDTO());
-            }
-        });
-
+        currentFilters.foreachValue(groupFilters -> groupFilters.stream().map(GPropertyFilter::getFilterDTO).collect(Collectors.toCollection(() -> filters)));
         asyncResponseDispatch(new SetUserFilters(filters));
     }
 
     public void setViewFilters(ArrayList<GPropertyFilter> conditions, int pageSize) {
-        ArrayList<GPropertyFilterDTO> filters = new ArrayList<>();
-
-        for (GPropertyFilter filter : conditions) {
-            filters.add(filter.getFilterDTO());
-        }
-
-        asyncResponseDispatch(new SetViewFilters(filters, pageSize));
+        asyncResponseDispatch(new SetViewFilters(conditions.stream().map(GPropertyFilter::getFilterDTO).collect(Collectors.toCollection(ArrayList::new)), pageSize));
     }
 
     public void quickFilter(Event event, int initialFilterPropertyID) {
@@ -1804,14 +1806,18 @@ public class GFormController implements EditManager {
     private CellEditor cellEditor;
 
     public Element getEditElement() {
-        return editContext.getRenderElement();
+        return editContext.getEditElement();
+    }
+
+    public Element getEditEventElement() {
+        return editContext.getEditEventElement();
     }
 
     private EditContext editContext;
 
     private BiConsumer<GUserInputResult, CommitReason> editBeforeCommit;
     private BiConsumer<GUserInputResult, CommitReason> editAfterCommit;
-    private Runnable editCancel;
+    private Consumer<CancelReason> editCancel;
 
     private Element focusedElement;
     private Object forceSetFocus;
@@ -1864,49 +1870,50 @@ public class GFormController implements EditManager {
     }
 
     public void getAsyncValues(String value, AsyncCallback<Pair<ArrayList<GAsync>, Boolean>> callback) {
-        if(editContext != null) { // just in case
-            GPropertyDraw property = editContext.getProperty();
-            int editIndex = editAsyncIndex++;
-            AsyncCallback<Pair<ArrayList<GAsync>, Boolean>> fCallback = checkLast(editIndex, callback);
-
-            GGroupObjectValue currentKey = getFullCurrentKey(property, editContext.getColumnKey());
-            final String actionSID = editAsyncValuesSID;
-
-            if (!editAsyncUsePessimistic)
-                dispatcher.executePriority(new GetPriorityAsyncValues(property.ID, currentKey, actionSID, value, editIndex), new PriorityAsyncCallback<ListResult>() {
-                    @Override
-                    public void onFailure(Throwable caught) {
-                        fCallback.onFailure(caught);
-                    }
-
-                    @Override
-                    public void onSuccess(ListResult result) {
-                        if (result.value == null) { // optimistic request failed, running pessimistic one, with request indices, etc.
-                            editAsyncUsePessimistic = true;
-                            getPessimisticValues(property.ID, currentKey, actionSID, value, editIndex, fCallback);
-                        } else {
-                            boolean moreResults = false;
-                            ArrayList<GAsync> values = result.value;
-                            if(values.size() > 0) {
-                                GAsync lastResult = values.get(values.size() - 1);
-                                if(lastResult.equals(GAsync.RECHECK)) {
-                                    values = removeLast(values);
-
-                                    moreResults = true;
-                                    getPessimisticValues(property.ID, currentKey, actionSID, value, editIndex, fCallback);
-                                } else if(values.size() == 1 && lastResult.equals(GAsync.CANCELED)) // ignoring CANCELED results
-                                    return;
-                            }
-                            fCallback.onSuccess(new Pair<>(values, moreResults));
-                        }
-                    }
-                });
-            else
-                getPessimisticValues(property.ID, currentKey, actionSID, value, editIndex, fCallback);
-        }
+        if(editContext != null) // just in case
+            getAsyncValues(value, editContext.getProperty(), editContext.getColumnKey(), editAsyncValuesSID, callback);
     }
 
-    public void editProperty(GType type, Event event, boolean hasOldValue, Object oldValue, GInputList inputList, BiConsumer<GUserInputResult, Long> afterCommit, Runnable cancel, EditContext editContext, String actionSID, Long dispatchingIndex) {
+    public void getAsyncValues(String value, GPropertyDraw property, GGroupObjectValue columnKey, String actionSID, AsyncCallback<Pair<ArrayList<GAsync>, Boolean>> callback) {
+        int editIndex = editAsyncIndex++;
+        AsyncCallback<Pair<ArrayList<GAsync>, Boolean>> fCallback = checkLast(editIndex, callback);
+
+        GGroupObjectValue currentKey = getFullCurrentKey(property, columnKey);
+
+        if (!editAsyncUsePessimistic)
+            dispatcher.executePriority(new GetPriorityAsyncValues(property.ID, currentKey, actionSID, value, editIndex), new PriorityAsyncCallback<ListResult>() {
+                @Override
+                public void onFailure(Throwable caught) {
+                    fCallback.onFailure(caught);
+                }
+
+                @Override
+                public void onSuccess(ListResult result) {
+                    if (result.value == null) { // optimistic request failed, running pessimistic one, with request indices, etc.
+                        editAsyncUsePessimistic = true;
+                        getPessimisticValues(property.ID, currentKey, actionSID, value, editIndex, fCallback);
+                    } else {
+                        boolean moreResults = false;
+                        ArrayList<GAsync> values = result.value;
+                        if(values.size() > 0) {
+                            GAsync lastResult = values.get(values.size() - 1);
+                            if(lastResult.equals(GAsync.RECHECK)) {
+                                values = removeLast(values);
+
+                                moreResults = true;
+                                getPessimisticValues(property.ID, currentKey, actionSID, value, editIndex, fCallback);
+                            } else if(values.size() == 1 && lastResult.equals(GAsync.CANCELED)) // ignoring CANCELED results
+                                values = null;
+                        }
+                        fCallback.onSuccess(new Pair<>(values, moreResults));
+                    }
+                }
+            });
+        else
+            getPessimisticValues(property.ID, currentKey, actionSID, value, editIndex, fCallback);
+    }
+
+    public void editProperty(GType type, Event event, boolean hasOldValue, Object oldValue, GInputList inputList, BiConsumer<GUserInputResult, Long> afterCommit, Consumer<CancelReason> cancel, EditContext editContext, String actionSID, Long dispatchingIndex) {
         lsfusion.gwt.client.base.Result<Long> requestIndex = new lsfusion.gwt.client.base.Result<>();
         edit(type, event, hasOldValue, oldValue, inputList, // actually it's assumed that actionAsyncs is used only here, in all subsequent calls it should not be referenced
                 (inputResult, commitReason) -> {
@@ -1927,7 +1934,7 @@ public class GFormController implements EditManager {
     }
 
     public void edit(GType type, Event event, boolean hasOldValue, Object oldValue, GInputList inputList, BiConsumer<GUserInputResult, CommitReason> beforeCommit, BiConsumer<GUserInputResult, CommitReason> afterCommit,
-                     Runnable cancel, EditContext editContext, String editAsyncValuesSID) {
+                     Consumer<CancelReason> cancel, EditContext editContext, String editAsyncValuesSID) {
         assert this.editContext == null;
         GPropertyDraw property = editContext.getProperty();
 
@@ -1961,7 +1968,7 @@ public class GFormController implements EditManager {
                 CellRenderer cellRenderer = property.getCellRenderer();
                 Pair<Integer, Integer> renderedSize = null;
                 if(property.autoSize) // we need to do it before clearRender to have actual sizes + we need to remove paddings since we're setting width for wrapped component
-                    renderedSize = new Pair<>(element.getClientWidth() - cellRenderer.getWidthPadding() * 2, element.getClientHeight() - cellRenderer.getHeightPadding() * 2);
+                    renderedSize = new Pair<>(element.getClientWidth(), element.getClientHeight());
 
                 cellRenderer.clearRender(element, renderContext); // dropping previous render
 
@@ -1971,7 +1978,7 @@ public class GFormController implements EditManager {
             this.cellEditor = cellEditor; // not sure if it should before or after startEditing, but definitely after removeAllChildren, since it leads to blur for example
             cellEditor.start(event, element, oldValue);
         } else
-            cancel.run();
+            cancel.accept(CancelReason.OTHER);
     }
 
     // only request cell editor can be long-living
@@ -1992,10 +1999,10 @@ public class GFormController implements EditManager {
     }
 
     @Override
-    public void cancelEditing() {
+    public void cancelEditing(CancelReason cancelReason) {
         finishEditing(false, true);
 
-        editCancel.run();
+        editCancel.accept(cancelReason);
         editCancel = null;
     }
 
@@ -2046,7 +2053,7 @@ public class GFormController implements EditManager {
     public void update(EditContext editContext, Object value) {
         editContext.setValue(value);
 
-        update(editContext.getProperty(), editContext.getRenderElement(), value, editContext.getUpdateContext());
+        update(editContext.getProperty(), editContext.getEditElement(), value, editContext.getUpdateContext());
     }
     public void update(GPropertyDraw property, Element element, Object value, UpdateContext updateContext) {
         if(isEdited(element))
@@ -2056,7 +2063,7 @@ public class GFormController implements EditManager {
     }
 
     public boolean isEdited(Element element) {
-        return editContext != null && editContext.getRenderElement() == element;
+        return editContext != null && editContext.getEditElement() == element;
     }
 
     public static void setBackgroundColor(Element element, String color) {
@@ -2092,7 +2099,7 @@ public class GFormController implements EditManager {
                                        Consumer<EventHandler> onEdit, Consumer<EventHandler> onOuterEditAfter, Consumer<EventHandler> onCut,
                                        Consumer<EventHandler> onPaste, boolean panel, boolean customRenderer) {
         RequestCellEditor requestCellEditor = getRequestCellEditor();
-        boolean isPropertyEditing = requestCellEditor != null && getEditElement() == cellParent;
+        boolean isPropertyEditing = requestCellEditor != null && getEditEventElement() == cellParent;
         if(isPropertyEditing)
             requestCellEditor.onBrowserEvent(getEditElement(), handler);
 

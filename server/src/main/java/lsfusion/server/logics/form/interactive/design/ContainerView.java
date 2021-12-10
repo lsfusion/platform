@@ -172,8 +172,7 @@ public class ContainerView extends ComponentView {
     protected boolean isShrinkedAutoSizedWrap(FormEntity formEntity, boolean horizontal) {
         boolean thisHorizontal = isHorizontal();
 
-        Dimension size = getSize(formEntity);
-        if ((horizontal ? size.width : size.height) != -1) // if we have fixed size than there is no wrap problem
+        if ((horizontal ? getWidth(formEntity) : getHeight(formEntity)) != -1) // if we have fixed size than there is no wrap problem
             return false;
 
         // now there are several heuristics at the web client changing the default behaviour, and disabling wrap

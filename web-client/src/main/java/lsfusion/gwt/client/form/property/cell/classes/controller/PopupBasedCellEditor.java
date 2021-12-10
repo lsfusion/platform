@@ -9,6 +9,7 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.PopupDialogPanel;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.cell.controller.CancelReason;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.controller.WindowValueCellEditor;
 
@@ -31,7 +32,7 @@ public abstract class PopupBasedCellEditor extends WindowValueCellEditor {
                 if (Event.ONKEYUP == event.getTypeInt()) {
                     if (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_ESCAPE) {
                         GwtClientUtils.stopPropagation(event.getNativeEvent());
-                        cancel(parent);
+                        cancel(parent, CancelReason.ESCAPE_PRESSED);
                     } else if (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_ENTER) {
                         enterPressed(parent);
                     }

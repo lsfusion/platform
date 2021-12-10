@@ -16,8 +16,6 @@ public class GComponent implements Serializable {
     public int width = -1;
     public int height = -1;
     
-    public boolean autoSize;
-
     public int span = 1;
 
     protected double flex = 0;
@@ -40,6 +38,15 @@ public class GComponent implements Serializable {
         int size = vertical ? height : width;
         if (size != -1)
             return size;
+
+        return vertical ? getDefaultHeight() : getDefaultWidth();
+    }
+
+    protected Integer getDefaultWidth() {
+        return null;
+    }
+
+    protected Integer getDefaultHeight() {
         return null;
     }
 

@@ -18,7 +18,12 @@ import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.object.CustomObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
+import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInstance;
+import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.property.Property;
+import lsfusion.server.logics.property.PropertyFact;
+import lsfusion.server.logics.property.implement.PropertyImplement;
+import lsfusion.server.logics.property.implement.PropertyRevImplement;
 import lsfusion.server.logics.property.implement.PropertyValueImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
@@ -72,4 +77,38 @@ public abstract class FilterInstance implements Updated {
     public void resolveAdd(ExecutionEnvironment env, CustomObjectInstance object, DataObject addObject, ExecutionStack stack) throws SQLException, SQLHandledException {
     }
 
+    public abstract NotNullFilterInstance notNullCached();
+
+    // mappers in both directions
+    protected static <X extends PropertyInterface> PropertyImplement<X, PropertyObjectInterfaceInstance> getPropertyImplement(PropertyObjectInstance<X> propertyObject) {
+        return new PropertyImplement<>(propertyObject.property, propertyObject.mapping);
+    }
+    protected static <X extends PropertyInterface> PropertyImplement<X, PropertyObjectInterfaceInstance> getPropertyImplement(NotNullFilterInstance<X> notNullFilter) {
+        return getPropertyImplement(notNullFilter.property);
+    }
+    protected static <X extends PropertyInterface> PropertyObjectInstance<X> getPropertyObjectInstance(PropertyImplement<X, PropertyObjectInterfaceInstance> propertyImplement) {
+        return new PropertyObjectInstance<>(propertyImplement.property, propertyImplement.mapping);
+    }
+    public static <X extends PropertyInterface> PropertyObjectInstance<X> getPropertyObjectInstance(PropertyRevImplement<X, ObjectInstance> propertyImplement) {
+        return new PropertyObjectInstance<>(propertyImplement.property, propertyImplement.mapping);
+    }
+    protected static <X extends PropertyInterface> NotNullFilterInstance<X> getFilterInstance(PropertyImplement<X, PropertyObjectInterfaceInstance> propertyImplement) {
+        return new NotNullFilterInstance<>(getPropertyObjectInstance(propertyImplement));
+    }
+
+    public static <X extends PropertyInterface> NotNullFilterInstance combineCached(ImSet<FilterInstance> filters, boolean and) {
+        if(filters.size() == 1)
+            return filters.single().notNullCached();
+
+        ImSet<PropertyImplement<?, PropertyObjectInterfaceInstance>> operands = filters.mapSetValues(filterInstance -> getPropertyImplement(filterInstance.notNullCached()));
+
+        PropertyImplement<?, PropertyObjectInterfaceInstance> resultProperty = and ? PropertyFact.createAndCached(operands) : PropertyFact.createOrCached(operands);
+        return getFilterInstance(resultProperty);
+    }
+
+    public static <P extends PropertyInterface, X extends PropertyInterface> PropertyObjectInstance ifCached(PropertyObjectInstance<P> propertyObject, ImSet<FilterInstance> filters) {
+        NotNullFilterInstance<X> notNullFilterInstance = combineCached(filters, true);
+
+        return getPropertyObjectInstance(PropertyFact.createIfCached(getPropertyImplement(propertyObject), getPropertyImplement(notNullFilterInstance)));
+    }
 }

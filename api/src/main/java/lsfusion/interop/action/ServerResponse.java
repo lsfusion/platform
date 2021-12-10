@@ -22,7 +22,8 @@ public class ServerResponse implements Serializable {
     }
 
     public static final String INPUT = "input";
-    public static final String FILTER = "filter";
+    public static final String VALUES = "values";
+    public static final String OBJECTS = "objects";
 
     public final ClientAction[] actions;
     public final boolean resumeInvocation;

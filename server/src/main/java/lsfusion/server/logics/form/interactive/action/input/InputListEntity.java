@@ -54,7 +54,11 @@ public class InputListEntity<P extends PropertyInterface, V extends PropertyInte
     }
 
     public P singleInterface() {
-        return property.interfaces.removeIncl(mapValues.keys()).single();
+        return getInterfaces().single();
+    }
+
+    public ImSet<P> getInterfaces() {
+        return property.interfaces.removeIncl(mapValues.keys());
     }
 
     public InputListEntity<P, V> newSession() {
@@ -80,7 +84,7 @@ public class InputListEntity<P extends PropertyInterface, V extends PropertyInte
     }
 
     public InputValueList<P> map(ImMap<V, ? extends ObjectValue> map) {
-        return new InputValueList<P>(property, BaseUtils.immutableCast(mapValues.join(map)));
+        return new InputValueList<>(property, BaseUtils.immutableCast(mapValues.join(map)));
     }
 
     public <X extends PropertyInterface, J extends PropertyInterface> InputListEntity<?, V> and(InputFilterEntity<X, V> filterProperty) {

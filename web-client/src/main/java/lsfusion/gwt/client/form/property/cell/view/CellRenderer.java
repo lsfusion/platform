@@ -20,15 +20,10 @@ public abstract class CellRenderer<T> {
     protected final String NOT_DEFINED_VALUE = messages.formRendererNotDefined();
     protected final String REQUIRED_VALUE = messages.formRendererRequired();
 
-    public void render(Element element, Object value, RenderContext renderContext, UpdateContext updateContext) {
-        renderStatic(element, renderContext);
-        renderDynamic(element, value, updateContext);
-    }
-
-    protected boolean isSimpleText(RenderContext renderContext) {
+    public boolean isSimpleText(RenderContext renderContext) {
         return false;
     }
-    protected boolean isSimpleText(UpdateContext updateContext) {
+    public boolean isSimpleText(UpdateContext updateContext) {
         return false;
     }
 
@@ -59,18 +54,14 @@ public abstract class CellRenderer<T> {
 
         String vertAlignment = getDefaultVertAlignment();
 
-        if(renderContext.isAlwaysSelected())
+        if (renderContext.isAlwaysSelected())
             renderEditSelected(element, property);
 
-        Integer staticHeight = renderContext.getStaticHeight();
-        // is simple text renderer (SINGLE LINE (!)) && has static height (otherwise when div is expanded line-height will not work)
-        // maybe later it makes sense to add optimization for ActionOrPropertyValue to look at the upper container if it's has static height
-        if(staticHeight != null && isSimpleText(renderContext)) // optimization
-            renderSimpleStatic(element, textAlign, vertAlignment, staticHeight);
-        else {
-            String horzAlignment = getFlexAlign(textAlign);
-            element = renderFlexStatic(element, horzAlignment, vertAlignment, staticHeight);
-        }
+        if(GwtClientUtils.isTDorTH(element)) {
+            assert isSimpleText(renderContext);
+            renderSimpleStatic(element, textAlign, vertAlignment);
+        } else
+            renderFlexStatic(element, getFlexAlign(textAlign), vertAlignment);
 
         renderStaticContent(element, renderContext);
     }
@@ -84,77 +75,53 @@ public abstract class CellRenderer<T> {
             element.removeClassName("selectedCellHasEdit");
     }
 
-    private Element renderFlexStatic(Element element, String horzAlignment, String vertAlignment, Integer staticHeight) {
-        int paddings = 0;
-        if(GwtClientUtils.isTDorTH(element)) { // we need to wrap into div, at list because we cannot set display:flex to div
-            element = wrapTD(element);
-            if(staticHeight != null) // we need to remove paddings when setting maximum height (maybe in future margins might be used, and that will not be needed)
-                paddings = getHeightPadding() * 2;
-        }
-        GwtClientUtils.setAlignedFlexCenter(element, vertAlignment, horzAlignment);
+    private static void renderFlexStatic(Element element, String horzAlignment, String vertAlignment) {
+        element.addClassName("wrap-center");
 
-        if(staticHeight != null) // setting maxHeight for div ??? if inner context is too big, for example multi-line text (strictly speaking for now it seems that it is used only for multi-line text)
-            GwtClientUtils.setMaxHeight(element, staticHeight, paddings);
-        return element;
+        if(!vertAlignment.equals("center"))
+            element.getStyle().setProperty("alignItems", vertAlignment);
+        if(!horzAlignment.equals("center"))
+            element.getStyle().setProperty("justifyContent", horzAlignment);
     }
 
-    private static Element wrapTD(Element element) {
-        assert GwtClientUtils.isTDorTH(element);
-        return GwtClientUtils.wrapDiv(element);
-    }
-    public static Element unwrapTD(Element element) {
-        assert GwtClientUtils.isTDorTH(element);
-        return element.getFirstChildElement();
-    }
-
-    private static void renderSimpleStatic(Element element, Style.TextAlign horzAlignment, String vertAlignment, Integer staticHeight) {
-        GPropertyTableBuilder.setLineHeight(element, staticHeight);
-
+    private static void renderSimpleStatic(Element element, Style.TextAlign horzAlignment, String vertAlignment) {
+//        if(staticHeight != null)
+//            GPropertyTableBuilder.setLineHeight(element, staticHeight);
         assert vertAlignment.equals("center");
+        // actually vertical-align works only for text content or td content
+        // however for td line height should not be set (!) and for div should be set, god knows why
+        // it seems that vertical-align is middle by default, however just in case
+        element.getStyle().setVerticalAlign(Style.VerticalAlign.MIDDLE);
         element.getStyle().setTextAlign(horzAlignment);
     }
 
-    // of course without optimization of using the same render element this drops won't be needed, but it is important optimization
     public void clearRender(Element element, RenderContext renderContext) {
         GwtClientUtils.removeAllChildren(element);
 
         if(renderContext.isAlwaysSelected())
             clearEditSelected(element, property);
 
-        Integer staticHeight = renderContext.getStaticHeight();
-        // is simple text renderer (SINGLE LINE (!)) && has static height (otherwise when div is expanded line-height will not work)
-        boolean sameElement = true;
-        if(staticHeight != null && isSimpleText(renderContext)) // optimization
+        if(GwtClientUtils.isTDorTH(element)) { // optimization
+            assert isSimpleText(renderContext);
             clearRenderSimpleStatic(element);
-        else
-            sameElement = clearRenderFlexStatic(element, staticHeight);
+        } else
+            clearRenderFlexStatic(element);
 
-        if(sameElement)
-            clearRenderContent(element, renderContext);
+        clearRenderContent(element, renderContext);
     }
-    private void clearRenderSimpleStatic(Element element) {
-        GPropertyTableBuilder.clearLineHeight(element);
-
+    private static void clearRenderSimpleStatic(Element element) {
+//        if(staticHeight != null)
+//            GPropertyTableBuilder.clearLineHeight(element);
+        element.getStyle().clearProperty("verticalAlign");
         element.getStyle().clearTextAlign();
     }
-    private boolean clearRenderFlexStatic(Element element, Integer staticHeight) {
-        if(!GwtClientUtils.isTDorTH(element)) {
-            GwtClientUtils.clearAlignedFlexCenter(element);
-            element.getStyle().clearProperty("alignItems");
-            element.getStyle().clearProperty("justifyContent");
-
-            if(staticHeight != null)
-                GwtClientUtils.clearMaxHeight(element);
-
-            return true;
-        }
-        return false;
+    private static void clearRenderFlexStatic(Element element) {
+        element.removeClassName("wrap-center");
+        element.getStyle().clearProperty("alignItems");
+        element.getStyle().clearProperty("justifyContent");
     }
 
     public void renderDynamic(Element element, Object value, UpdateContext updateContext) {
-        if(!(updateContext.isStaticHeight() && isSimpleText(updateContext)) && GwtClientUtils.isTDorTH(element)) // there is another unwrapping in GPropertyTableBuilder, so it also should be kept consistent
-            element = unwrapTD(element);
-
         renderDynamicContent(element, value, updateContext);
     }
 

@@ -2,7 +2,6 @@ package lsfusion.gwt.client.form.filter.user.view;
 
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.ResizableSimplePanel;
 import lsfusion.gwt.client.classes.data.GLogicalType;
@@ -10,6 +9,7 @@ import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.filter.user.GDataFilterValue;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.object.table.controller.GTableController;
+import lsfusion.gwt.client.form.property.cell.controller.CancelReason;
 
 import java.io.Serializable;
 
@@ -54,7 +54,7 @@ public class GDataFilterValueView extends ResizableSimplePanel {
         cell.changeInputList(compare);
     }
     
-    public void editingCancelled() {
+    public void editingCancelled(CancelReason cancelReason) {
         cell.updateValue(filterValue.value);
     }
 

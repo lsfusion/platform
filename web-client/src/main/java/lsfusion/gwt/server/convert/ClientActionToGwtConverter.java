@@ -7,7 +7,6 @@ import lsfusion.client.classes.ClientTypeSerializer;
 import lsfusion.client.form.ClientFormChanges;
 import lsfusion.client.form.controller.remote.proxy.RemoteFormProxy;
 import lsfusion.client.form.property.async.ClientAsyncSerializer;
-import lsfusion.client.form.property.async.ClientInputList;
 import lsfusion.gwt.client.GFormChangesDTO;
 import lsfusion.gwt.client.action.*;
 import lsfusion.gwt.client.base.GAsync;
@@ -23,7 +22,7 @@ import lsfusion.http.provider.form.FormSessionObject;
 import lsfusion.interop.ProgressBar;
 import lsfusion.interop.action.*;
 import lsfusion.interop.form.ModalityType;
-import lsfusion.interop.form.property.cell.Async;
+import lsfusion.client.form.property.cell.ClientAsync;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 import lsfusion.interop.session.ExternalHttpMethod;
 import lsfusion.interop.session.HttpClientAction;
@@ -117,7 +116,7 @@ public class ClientActionToGwtConverter extends ObjectConverter {
 
     @Converter(from = ProcessFormChangesClientAction.class)
     public GProcessFormChangesAction convertAction(ProcessFormChangesClientAction action, FormSessionObject form) throws IOException {
-        ClientFormChanges changes = new ClientFormChanges(new DataInputStream(new ByteArrayInputStream(action.formChanges)), form.clientForm);
+        ClientFormChanges changes = new ClientFormChanges(action.formChanges, form.clientForm);
 
         GFormChangesDTO changesDTO = valuesConverter.convertOrCast(changes, (int)action.requestIndex, form);
 
@@ -197,13 +196,13 @@ public class ClientActionToGwtConverter extends ObjectConverter {
         return new GProgressBar(progressBar.message, progressBar.progress, progressBar.total, progressBar.getParams());
     }
 
-    @Converter(from = Async.class)
-    public GAsync convertAsync(Async async) {
-        if(async.equals(Async.CANCELED))
+    @Converter(from = ClientAsync.class)
+    public GAsync convertAsync(ClientAsync async) {
+        if(async.equals(ClientAsync.CANCELED))
             return GAsync.CANCELED;
-        if(async.equals(Async.RECHECK))
+        if(async.equals(ClientAsync.RECHECK))
             return GAsync.RECHECK;
-        return new GAsync(async.displayString, async.rawString);
+        return new GAsync(async.displayString, async.rawString, valuesConverter.convertOrCast(async.key));
     }
 
     @Converter(from = LoadLinkClientAction.class)

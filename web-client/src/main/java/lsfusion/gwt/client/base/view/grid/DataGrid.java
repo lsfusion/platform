@@ -45,6 +45,8 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
 
     public static final String DATA_GRID_CLASS = "dataGridTableWrapperWidget";
 
+    public final static int BORDER_VERT_SIZE = 1;
+
     private static GridStyle DEFAULT_STYLE;
 
     protected static GridStyle getDefaultStyle() {
@@ -191,7 +193,10 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
         } else
             tableDataContainer = TableScrollPanel.noScroll(tableData);
 
-        addFillFlex(tableDataContainer, !noScrollers ? 0 : null); // for scrollers we need 0 basis (since that is the point of scroller)
+        // for scrollers we need 0 basis (since that is the point of scroller)
+        addFillFlex(tableDataContainer, !noScrollers ? 0 : null);
+        // however it seems that addFillShrink would also do
+//        addFillShrink(tableDataContainer);
 
         // INITIALIZING FOOTERS
         if (!noFooters) { // the same as for headers
@@ -1033,8 +1038,8 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
     public Element getTableDataFocusElement() {
         if(!noScrollers)
             return tableDataScroller.getElement();
-        else
-            return tableData.tableElement;
+
+        return tableData.tableElement;
     }
 
     /**
@@ -1201,6 +1206,7 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
     }
 
     private void beforeUpdateDOMScroll(SetPendingScrollState pendingState) {
+        assert !noScrollers;
         beforeUpdateDOMScrollVertical(pendingState);
     }
 
@@ -1211,6 +1217,7 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
 
     //force browser-flush
     private void preAfterUpdateDOMScroll(SetPendingScrollState pendingState) {
+        assert !noScrollers;
         preAfterUpdateDOMScrollHorizontal(pendingState);
         preAfterUpdateDOMScrollVertical(pendingState);
     }
@@ -1313,10 +1320,16 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
     }
 
     protected int getViewportWidth() {
-        return tableDataScroller.getClientWidth();
+        if(!noScrollers)
+            return tableDataScroller.getClientWidth();
+
+        return tableData.tableElement.getClientWidth();
     }
     public int getViewportHeight() {
-        return tableDataScroller.getClientHeight();
+        if(!noScrollers)
+            return tableDataScroller.getClientHeight();
+
+        return tableData.tableElement.getClientHeight();
     }
 
     boolean hasVerticalScroll = false;
@@ -1450,7 +1463,7 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
         if (renderedSelectedRow >= 0 && renderedSelectedRow <= rows.getLength() && renderedSelectedCol >= 0 && renderedSelectedCol < columnCount &&
                 (renderedSelectedRow != newLocalSelectedRow || renderedSelectedCol != newLocalSelectedCol)) {
             setFocusedCellStyles(renderedSelectedRow, renderedSelectedCol, rows, headerRows, false);
-            if(renderedLeftStickyCol >= 0 && renderedLeftStickyCol < columnCount) {
+            if(renderedSelectedRow < rows.getLength() && renderedLeftStickyCol >= 0 && renderedLeftStickyCol < columnCount) {
                 setLeftNeighbourRightBorder(new LeftNeighbourRightBorder(renderedSelectedRow, renderedLeftStickyCol, false));
                 renderedLeftStickyCol = -1;
             }

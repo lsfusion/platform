@@ -417,16 +417,18 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
 
 
     @Override
-    public InputListEntity<?, Interface> getFilterInputList(ImRevMap<Interface, StaticParamNullableExpr> fixedExprs) {
-        ImRevMap<T, Interface> mapInterfaces = BaseUtils.immutableCast(implement.mapping.filterFnValues(element -> element instanceof Interface && fixedExprs.containsKey((Interface)element)).toRevMap());
-        ImRevMap<T, StaticParamNullableExpr> mapFixedExprs = mapInterfaces.join(fixedExprs);
-        // using top most property or bottom most property / property itself
-        if(implement.property.isValueFull(mapFixedExprs) && (
-                implement.property.isValueUnique(mapFixedExprs, true) ||
-                !isValueFull(fixedExprs) ||
-                isValueUnique(getValueStat(fixedExprs), implement.property.getValueStat(mapFixedExprs))))
-            return new InputListEntity<>(implement.property, mapInterfaces);
-        
-        return super.getFilterInputList(fixedExprs);
+    public InputListEntity<?, Interface> getFilterInputList(ImMap<Interface, StaticParamNullableExpr> fixedExprs, boolean noJoin) {
+        if(!noJoin) {
+            ImRevMap<T, Interface> mapInterfaces = BaseUtils.immutableCast(implement.mapping.filterFnValues(element -> element instanceof Interface && fixedExprs.containsKey((Interface) element)).toRevMap());
+            ImMap<T, StaticParamNullableExpr> mapFixedExprs = mapInterfaces.join(fixedExprs);
+            // using top most property or bottom most property / property itself
+            if (implement.property.isValueFull(mapFixedExprs) && (
+                    implement.property.isValueUnique(mapFixedExprs, true) ||
+                            !isValueFull(fixedExprs) ||
+                            isValueUnique(getValueStat(fixedExprs), implement.property.getValueStat(mapFixedExprs))))
+                return new InputListEntity<>(implement.property, mapInterfaces);
+        }
+
+        return super.getFilterInputList(fixedExprs, noJoin);
     }
 }

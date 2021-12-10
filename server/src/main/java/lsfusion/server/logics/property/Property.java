@@ -1675,25 +1675,6 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return new PropertyClassImplement<>(this, classes, mapping);
     }
 
-    private LP logValueProperty;
-    private LP logWhereProperty;
-
-    public LP getLogValueProperty() {
-        return logValueProperty;
-    }
-
-    public void setLogValueProperty(LP logValueProperty) {
-        this.logValueProperty = logValueProperty;
-    }
-
-    public LP getLogWhereProperty() {
-        return logWhereProperty;
-    }
-
-    public void setLogWhereProperty(LP logWhereProperty) {
-        this.logWhereProperty = logWhereProperty;
-    }
-
     public boolean autoset;
 
     public static ValueClass op(ValueClass v1, ValueClass v2, boolean or) {
@@ -2155,7 +2136,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
     private boolean loggable;
 
-    public LA logFormAction;
+    public ActionMapImplement<?, T> logFormAction;
 
     public void setLoggable(boolean loggable) {
         this.loggable = loggable;
@@ -2165,11 +2146,11 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return loggable;
     }
 
-    public void setLogFormAction(LA logFormAction) {
+    public void setLogFormAction(ActionMapImplement<?, T> logFormAction) {
         this.logFormAction = logFormAction;
     }
 
-    public LA getLogFormAction() {
+    public ActionMapImplement<?, T> getLogFormAction() {
         return logFormAction;
     }
     
@@ -2232,14 +2213,14 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return getInterfaceStat(MapFact.EMPTYREV(), alotHeur);
     }
     
-    private Stat getInterfaceStat(ImRevMap<T, StaticParamNullableExpr> fixedExprs) {
+    private Stat getInterfaceStat(ImMap<T, StaticParamNullableExpr> fixedExprs) {
         return getInterfaceStat(fixedExprs, false);
     }
 
     @IdentityStartLazy
     @StackMessage("{message.core.property.get.interface.class.stats}")
     @ThisMessage
-    private Stat getInterfaceStat(ImRevMap<T, StaticParamNullableExpr> fixedExprs, boolean alotHeur) {
+    private Stat getInterfaceStat(ImMap<T, StaticParamNullableExpr> fixedExprs, boolean alotHeur) {
         ImRevMap<T, KeyExpr> innerKeys = KeyExpr.getMapKeys(interfaces.removeIncl(fixedExprs.keys()));
         ImMap<T, Expr> innerExprs = MapFact.addExcl(innerKeys, fixedExprs); // we need some virtual values
 
@@ -2257,7 +2238,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     @IdentityStartLazy
     @StackMessage("{message.core.property.get.interface.class.stats}")
     @ThisMessage
-    public Stat getValueStat(ImRevMap<T, ? extends Expr> fixedExprs) {
+    public Stat getValueStat(ImMap<T, ? extends Expr> fixedExprs) {
         ImRevMap<T, KeyExpr> innerKeys = KeyExpr.getMapKeys(interfaces.removeIncl(fixedExprs.keys()));
         ImMap<T, Expr> innerExprs = MapFact.addExcl(innerKeys, fixedExprs); // we need some virtual values
 
@@ -2275,17 +2256,20 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return interfaces.mapRevValues((i, value) -> new NullableKeyExpr(i));
     }
 
-    @IdentityLazy
     public Stat getDistinctStat(ImSet<T> interfaces) {
-        // maybe later it makes sense to fill params without classes with some "default" classes
-        ImMap<T, ValueClass> interfaceClasses = getInterfaceClasses(ClassType.forPolicy).filter(interfaces);
-        ImRevMap<T, StaticParamNullableExpr> paramExprs = interfaceClasses.mapRevValues(StaticParamNullableExpr::new);
+        ImRevMap<T, StaticParamNullableExpr> paramExprs = getInterfaceParamExprs(interfaces);
         return getInterfaceStat(paramExprs).div(getValueStat(paramExprs));
+    }
+
+    @IdentityLazy
+    public ImRevMap<T, StaticParamNullableExpr> getInterfaceParamExprs(ImSet<T> interfaces) {
+        // maybe later it makes sense to fill params without classes with some "default" classes
+        return getInterfaceClasses(ClassType.forPolicy).filter(interfaces).mapRevValues(StaticParamNullableExpr::new);
     }
 
     // it's heuristics anyway, so why not to try to guess uniqueness by name
     private static ImSet<String> predefinedValueUniqueNames = SetFact.toSet("name", "id", "number");
-    public boolean isValueUnique(ImRevMap<T, StaticParamNullableExpr> fixedExprs, boolean optimistic) {
+    public boolean isValueUnique(ImMap<T, StaticParamNullableExpr> fixedExprs, boolean optimistic) {
         assert isValueFull(fixedExprs);
         String name = getName();
         if(name != null && predefinedValueUniqueNames.contains(name))
@@ -2295,11 +2279,11 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
                 (optimistic || (isDefaultWYSInput(getValueClass(ClassType.typePolicy)) && new Stat(Settings.get().getMinInterfaceStatForValueUnique()).less(interfaceStat)));
     }
 
-    public boolean isValueFull(ImRevMap<T, StaticParamNullableExpr> fixedExprs) {
+    public boolean isValueFull(ImMap<T, StaticParamNullableExpr> fixedExprs) {
         return isFull(interfaces.removeIncl(fixedExprs.keys()), AlgType.statAlotType);
     }
 
-    public InputListEntity<?, T> getFilterInputList(ImRevMap<T, StaticParamNullableExpr> fixedExprs) {
+    public InputListEntity<?, T> getFilterInputList(ImMap<T, StaticParamNullableExpr> fixedExprs, boolean noJoin) {
         if(isValueFull(fixedExprs))
             return new InputListEntity<>(this, fixedExprs.keys().toRevMap());
         return null;

@@ -28,16 +28,14 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
     protected final GFormController form;
     protected final GGroupObject groupObject;
 
-    public GPropertyTable(GFormController iform, GGroupObject iGroupObject, GridStyle style, boolean noHeaders, boolean noFooters, boolean noScrollers) {
-        super(style, noHeaders, noFooters, noScrollers);
+    public GPropertyTable(GFormController iform, GGroupObject groupObject, GridStyle style, boolean noHeaders, boolean noFooters, boolean noScrollers) {
+        super(style, noHeaders, noFooters, groupObject.grid.autoSize);
 
         this.form = iform;
-        this.groupObject = iGroupObject;
+        this.groupObject = groupObject;
 
         //  Have the enter key work the same as the tab key
-        if(groupObject != null) {
-            form.addEnterBindings(GBindingMode.ONLY, ((GGridPropertyTable) GPropertyTable.this)::selectNextCellInColumn, groupObject);
-        }
+        form.addEnterBindings(GBindingMode.ONLY, ((GGridPropertyTable) GPropertyTable.this)::selectNextCellInColumn, this.groupObject);
     }
 
     public abstract boolean isReadOnly(Cell cell);
@@ -98,6 +96,8 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
     }
 
     public ExecuteEditContext getEditContext(Cell editCell, Element editCellParent) {
+        final GPropertyDraw property = GPropertyTable.this.getProperty(editCell);
+        Element editElement = GPropertyTableBuilder.getRenderSizedElement(editCellParent, property, GPropertyTable.this);
         return new ExecuteEditContext() {
             @Override
             public RenderContext getRenderContext() {
@@ -111,11 +111,16 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
 
             @Override
             public GPropertyDraw getProperty() {
-                return GPropertyTable.this.getProperty(editCell);
+                return property;
             }
 
             @Override
-            public Element getRenderElement() {
+            public Element getEditElement() {
+                return editElement;
+            }
+
+            @Override
+            public Element getEditEventElement() {
                 return editCellParent;
             }
 
@@ -180,22 +185,12 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
     }
 
     @Override
-    public Integer getStaticHeight() {
-        return tableBuilder.getCellHeight();
-    }
-
-    @Override
     public boolean isAlwaysSelected() {
         return false;
     }
 
     @Override
     public boolean globalCaptionIsDrawn() {
-        return true;
-    }
-
-    @Override
-    public boolean isStaticHeight() {
         return true;
     }
 
@@ -210,10 +205,6 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
     }
 
     public abstract GFont getFont();
-
-    protected void setCellHeight(int cellHeight) {
-        tableBuilder.setCellHeight(cellHeight);
-    }
 
     @Override
     public boolean changeSelectedColumn(int column) {

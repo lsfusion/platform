@@ -18,6 +18,7 @@ import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.object.table.controller.GTableController;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
+import lsfusion.gwt.client.form.property.cell.controller.CancelReason;
 import lsfusion.gwt.client.form.view.Column;
 import lsfusion.gwt.client.view.StyleDefaults;
 
@@ -154,9 +155,9 @@ public class GFilterConditionView extends FlexPanel implements CaptionContainerH
             }
 
             @Override
-            public void editingCancelled() {
-                super.editingCancelled();
-                if (!isConfirmed && !isFixed()) {
+            public void editingCancelled(CancelReason cancelReason) {
+                super.editingCancelled(cancelReason);
+                if (!isConfirmed && !isFixed() && cancelReason == CancelReason.ESCAPE_PRESSED) {
                     GFilterConditionView.this.remove();
                 }
             }

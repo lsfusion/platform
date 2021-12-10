@@ -20,7 +20,8 @@ public class ClientFilter extends ClientComponent {
     
     public ClientFilter(ClientPropertyDraw property) {
         this.property = property;
-        size = new Dimension(-1, -1);
+        width = -1;
+        height = -1;
         alignment = FlexAlignment.START;
     }
 

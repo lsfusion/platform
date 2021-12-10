@@ -149,10 +149,8 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
         }
     }
 
-    protected Element setupInputElement(Element cellParent, RenderContext renderContext, Pair<Integer, Integer> renderedSize){
+    protected Element setupInputElement(RenderContext renderContext){
         Element inputElement = createInputElement();
-        // without setting boxSized class textarea and input behaviour is pretty odd when text is very large or inside td (position of textarea / input is really unpredictable)
-        inputElement.addClassName("boxSized");
 
         Style.TextAlign textAlign = property.getTextAlignStyle();
         if(textAlign != null)
@@ -163,18 +161,22 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
 
         TextBasedCellRenderer.render(property, inputElement, renderContext, isMultiLine());
 
-        if(property.autoSize) { // we have to set sizes that were rendered, since input elements have really unpredicatble sizes
-            cellParent = GwtClientUtils.wrapDiv(cellParent); // wrapping element since otherwise it's not clear how to restore height (sometimes element has it set)
-            cellParent.getStyle().setHeight(renderedSize.second, Style.Unit.PX);
-            cellParent.getStyle().setWidth(renderedSize.first, Style.Unit.PX);
-        }
-
         return inputElement;
     }
 
     @Override
     public void render(Element cellParent, RenderContext renderContext, Pair<Integer, Integer> renderedSize, Object oldValue) {
-        cellParent.appendChild(setupInputElement(cellParent, renderContext, renderedSize));
+        if(property.autoSize) { // we have to set sizes that were rendered, since input elements have really unpredicatble sizes
+            // wrapping element since otherwise it's not clear how to restore height (sometimes element has it set)
+            Element div = Document.get().createDivElement();
+            div.getStyle().setHeight(renderedSize.second, Style.Unit.PX);
+            div.getStyle().setWidth(renderedSize.first, Style.Unit.PX);
+            cellParent.appendChild(div);
+
+            cellParent = div;
+        }
+
+        cellParent.appendChild(setupInputElement(renderContext));
     }
 
     protected boolean isMultiLine() {
@@ -290,30 +292,36 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
                         public void onSuccess(Pair<ArrayList<GAsync>, Boolean> result) {
                             if (isThisCellEditor()) { //  && suggestBox.isSuggestionListShowing() in desktop this check leads to "losing" result, since suggest box can be not shown yet (!), however maybe in web-client it's needed for some reason (but there can be the risk of losing result)
                                 suggestBox.setAutoSelectEnabled(completionType.isAnyStrict() && !emptyQuery);
-                                List<String> rawSuggestions = new ArrayList<>();
-                                List<Suggestion> suggestionList = new ArrayList<>();
-                                for (GAsync suggestion : result.first) {
-                                    rawSuggestions.add(suggestion.rawString);
-                                    suggestionList.add(new Suggestion() {
-                                        @Override
-                                        public String getDisplayString() {
-                                            return suggestion.displayString; // .replace("<b>", "<strong>").replace("</b>", "</strong>");
-                                        }
 
-                                        @Override
-                                        public String getReplacementString() {
-                                            return suggestion.rawString;
-                                        }
-                                    });
+                                boolean succeededEmpty = false;
+                                if(result.first != null) {
+                                    List<String> rawSuggestions = new ArrayList<>();
+                                    List<Suggestion> suggestionList = new ArrayList<>();
+                                    for (GAsync suggestion : result.first) {
+                                        rawSuggestions.add(suggestion.rawString);
+                                        suggestionList.add(new Suggestion() {
+                                            @Override
+                                            public String getDisplayString() {
+                                                return suggestion.displayString; // .replace("<b>", "<strong>").replace("</b>", "</strong>");
+                                            }
+
+                                            @Override
+                                            public String getReplacementString() {
+                                                return suggestion.rawString;
+                                            }
+                                        });
+                                    }
+                                    suggestBox.setLatestSuggestions(rawSuggestions);
+                                    callback.onSuggestionsReady(request, new Response(suggestionList));
+                                    setMinWidth(suggestBox, true);
+
+                                    succeededEmpty = suggestionList.isEmpty();
                                 }
-                                suggestBox.setLatestSuggestions(rawSuggestions);
-                                callback.onSuggestionsReady(request, new Response(suggestionList));
-                                setMinWidth(suggestBox, true);
 
-                                suggestBox.updateDecoration(suggestionList.isEmpty(), false, result.second);
+                                suggestBox.updateDecoration(succeededEmpty, false, result.second);
 
                                 if(!result.second) {
-                                    if (suggestionList.isEmpty())
+                                    if (succeededEmpty)
                                         prevSucceededEmptyQuery = query;
                                     else
                                         prevSucceededEmptyQuery = null;
@@ -465,21 +473,13 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
 
             HorizontalPanel bottomPanel = new HorizontalPanel();
             bottomPanel.setWidth("100%");
-            bottomPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
+            bottomPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LEFT);
             bottomPanel.getElement().addClassName("suggestPopupBottomPanel");
             // block mouse down events to prevent focus issues
             bottomPanel.addDomHandler(GwtClientUtils::stopPropagation, MouseDownEvent.getType());
             panel.add(bottomPanel);
 
             HorizontalPanel buttonsPanel = new HorizontalPanel();
-
-            buttonsPanel.add(refreshButton = new SuggestPopupButton() {
-                @Override
-                protected void onClickStart() {
-                    refreshButtonPressed = true;
-                    suggestBox.showSuggestionList();
-                }
-            });
 
             for(int i = 0; i < actions.length; i++) {
                 int index = i;
@@ -490,6 +490,15 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
                     }
                 })));
             }
+
+            buttonsPanel.add(refreshButton = new SuggestPopupButton() {
+                @Override
+                protected void onClickStart() {
+                    refreshButtonPressed = true;
+                    suggestBox.showSuggestionList();
+                }
+            });
+
             bottomPanel.add(buttonsPanel);
 
             return panel;

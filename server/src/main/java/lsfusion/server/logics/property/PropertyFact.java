@@ -7,13 +7,17 @@ import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
-import lsfusion.base.col.interfaces.mutable.MList;
-import lsfusion.base.col.interfaces.mutable.MSet;
+import lsfusion.base.col.interfaces.mutable.*;
+import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
+import lsfusion.base.col.interfaces.mutable.add.MAddMap;
+import lsfusion.base.col.interfaces.mutable.mapvalue.ImRevValueMap;
+import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.data.expr.formula.CustomFormulaSyntax;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.query.PartitionType;
+import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.change.AddObjectAction;
 import lsfusion.server.logics.action.change.ChangeClassAction;
@@ -61,7 +65,7 @@ import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.dev.integration.internal.to.StringFormulaProperty;
 
-import java.util.List;
+import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.IntFunction;
@@ -231,8 +235,11 @@ public class PropertyFact {
         return createAnd(LocalizedString.NONAME, interfaces, object, ands);
     }
     public static <T extends PropertyInterface> PropertyMapImplement<?,T> createAnd(ImCol<? extends PropertyInterfaceImplement<T>> ands) {
+        return createAnd(getUsedInterfaces(ands), ands);
+    }
+    public static <T extends PropertyInterface> PropertyMapImplement<?,T> createAnd(ImSet<T> interfaces, ImCol<? extends PropertyInterfaceImplement<T>> ands) {
         ImList<? extends PropertyInterfaceImplement<T>> andsList = ands.toList();
-        return createAnd(getUsedInterfaces(ands), andsList.get(0), andsList.subList(1, andsList.size()).getCol());
+        return createAnd(interfaces, andsList.get(0), andsList.subList(1, andsList.size()).getCol());
     }
     private static <T extends PropertyInterface> PropertyMapImplement<?,T> createAnd(LocalizedString caption, ImSet<T> interfaces, PropertyInterfaceImplement<T> object, final ImCol<? extends PropertyInterfaceImplement<T>> ands) {
         if(ands.size()==0 && object instanceof PropertyMapImplement)
@@ -988,5 +995,315 @@ public class PropertyFact {
             resultValue = resultValue == null ? ((Property<T>)viewProperty).getImplement() : createJoin(new PropertyImplement<>(viewProperty, MapFact.singleton(viewProperty.interfaces.single(), resultValue)));
         }
         return resultValue;
+    }
+
+    private static class CacheResult<T> {
+        public final ImList<ImList<ImMap<?, T>>> properties;
+        public final PropertyImplement<?, T> result;
+
+        public CacheResult(ImList<ImList<ImMap<?, T>>> properties, PropertyImplement<?, T> result) {
+            this.properties = properties;
+            this.result = result;
+        }
+
+        public <K> PropertyImplement<?, K> map(ImList<ImList<ImMap<?, K>>> mapProperties) {
+
+            Map<T, K> mapResult = new HashMap<>();
+            if(map(properties, mapProperties, 0, 0, null, mapResult))
+                return result.mapImplement(MapFact.fromJavaMap(mapResult));
+
+            return null;
+        }
+
+        // assert that in the same list ? are the same
+        private static <T, K, X> boolean map(ImList<ImList<ImMap<?, T>>> setProps, ImList<ImList<ImMap<?, K>>> mapSetProps, int index, int listIndex, boolean[] listMapped, Map<T, K> mappedKeys) {
+            ImList<ImMap<?, T>> listSetProps = setProps.get(index);
+            ImList<ImMap<?, K>> listMapSetProps = mapSetProps.get(index);
+            int size = listSetProps.size();
+            assert size == listMapSetProps.size();
+
+            ImMap<X, T> map = (ImMap<X, T>) listSetProps.get(listIndex);
+            if(listIndex == 0)
+                listMapped = new boolean[size];
+
+            for(int i=0;i<size;i++)
+                if(!listMapped[i]) {
+                    ImMap<X, K> mapMap = (ImMap<X, K>) listMapSetProps.get(i);
+                    Set<T> addedKeys = new HashSet<>();
+
+                    boolean incorrectMapping = false;
+                    for(int j=0,sizeJ=map.size();j<sizeJ;j++) {
+                        X propInt = map.getKey(j);
+                        T mapInt = map.getValue(j);
+                        K mapMapInt = mapMap.get(propInt);
+
+                        K prevMap = mappedKeys.get(mapInt);
+                        if(prevMap == null) {
+                            mappedKeys.put(mapInt, mapMapInt);
+                            addedKeys.add(mapInt);
+                        } else {
+                            if(!BaseUtils.hashEquals(mapMapInt, prevMap)) { // wrong mapping
+                                incorrectMapping = true;
+                                break;
+                            }
+                        }
+
+                    }
+
+                    if(!incorrectMapping) {
+                        listMapped[i] = true;
+
+                        boolean last = listIndex == size - 1;
+                        if(last && index == setProps.size() - 1)
+                            return true;
+                        if(map(setProps, mapSetProps, last ? index + 1 : index, last ? 0 : listIndex + 1, last ? null : listMapped, mappedKeys))
+                            return true;
+
+                        listMapped[i] = false;
+                    }
+                    BaseUtils.removeKeys(mappedKeys, addedKeys);
+                }
+
+            return false;
+        }
+    }
+
+    public static abstract class CachedFactory {
+
+        // in theory we can improve caching key, by adding some mapping params
+        private final Map<ImList<ImMap<Property, Integer>>, List<CacheResult>> caches = new HashMap<>();
+
+        protected <T, X> PropertyImplement<?, T> create(ImList<ImSet<PropertyImplement<?, T>>> propertyImplements) {
+
+            // ordering and splitting to 2 lists
+            int size = propertyImplements.size();
+            MList<ImMap<Property, Integer>> mProperties = ListFact.mList(size);
+            MList<ImList<ImMap<?, T>>> mMappings = ListFact.mList();
+            for(int i=0;i<size;i++) {
+                ImMap<Property, ImSet<PropertyImplement<?, T>>> group = propertyImplements.get(i).group(key -> key.property);
+
+                // calculating property counts
+                mProperties.add(group.mapValues(ImCol::size));
+
+                // sorting all properties and adding mappings to the global mappings list
+                mMappings.addAll(group.sort(BusinessLogics.propComparator()).valuesList().mapListValues(pimps -> pimps.toList().mapListValues(pi -> pi.mapping)));
+            }
+            ImList<ImMap<Property, Integer>> properties = mProperties.immutableList();
+            ImList<ImList<ImMap<?, T>>> mappings = mMappings.immutableList();
+
+            List<CacheResult> cacheResults;
+            synchronized (caches) {
+                cacheResults = caches.computeIfAbsent(properties, k -> new ArrayList<>());
+            }
+            synchronized (cacheResults) {
+                PropertyImplement<?, T> result;
+                for (CacheResult<X> cacheResult : cacheResults) {
+                    result = cacheResult.map(mappings);
+                    if (result != null)
+                        return result;
+                }
+
+                result = createNotCached(propertyImplements);
+                cacheResults.add(new CacheResult<>(mappings, result));
+                return result;
+            }
+        }
+
+        protected abstract <T, X extends PropertyInterface> PropertyImplement<?, T> createNotCached(ImList<ImSet<PropertyImplement<?, T>>> propertyImplements);
+    }
+
+    // converter to MapImplement
+    private static class ConverterToMapImplement<X extends PropertyInterface, T> {
+
+        private final MExclMap<X, T> mapping = MapFact.mExclMap();
+        private final MAddExclMap<T, List<X>> revMapping = MapFact.mAddExclMap();
+
+        public <P extends PropertyInterface> PropertyMapImplement<P, X> convert(PropertyImplement<P, T> implement) {
+
+            ImRevValueMap<P, X> mMap = implement.mapping.mapItRevValues();
+            MAddMap<T, Integer> mCount = MapFact.mAddOverrideMap();
+            for(int i=0,size=implement.mapping.size();i<size;i++) {
+                T mapInterface = implement.mapping.getValue(i);
+
+                Integer currentCount;
+                List<X> list = revMapping.get(mapInterface);
+                if(list == null) {
+                    list = new ArrayList<>();
+                    revMapping.exclAdd(mapInterface, list);
+                    currentCount = 0;
+                } else {
+                    currentCount = mCount.get(mapInterface);
+                    if(currentCount == null)
+                        currentCount = 0;
+                }
+                mCount.add(mapInterface, currentCount + 1);
+
+                X interf;
+                if(currentCount >= list.size()) {
+                    interf = (X) new PropertyInterface();
+                    list.add(interf);
+                    mapping.exclAdd(interf, mapInterface);
+                } else
+                    interf = list.get(currentCount);
+
+                mMap.mapValue(i, interf);
+            }
+            return new PropertyMapImplement<>(implement.property, mMap.immutableValueRev());
+        }
+
+        public ImSet<PropertyMapImplement<?, X>> convert(ImSet<PropertyImplement<?, T>> propImplements) {
+            MExclSet<PropertyMapImplement<?, X>> mResult = SetFact.mExclSet(propImplements.size()); // side effects
+            for(PropertyImplement<?, T> propImplement : propImplements)
+                mResult.exclAdd(convert(propImplement));
+            return mResult.immutable();
+        }
+
+        public ImMap<X, T> getMapping() {
+            return mapping.immutable();
+        }
+    }
+
+    public static class AndCachedFactory extends CachedFactory {
+
+        public <T> PropertyImplement<?, T> create(ImSet<PropertyImplement<?, T>> propertyImplements) {
+            return create(ListFact.singleton(propertyImplements));
+        }
+
+        @Override
+        protected <T, X extends PropertyInterface> PropertyImplement<?, T> createNotCached(ImList<ImSet<PropertyImplement<?, T>>> propertyImplements) {
+            ImSet<PropertyImplement<?, T>> ops = propertyImplements.single();
+
+            ConverterToMapImplement<X, T> converter = new ConverterToMapImplement<>();
+
+            ImSet<PropertyMapImplement<?, X>> ands = converter.convert(ops);
+            ImMap<X, T> mapping = converter.getMapping();
+
+            return createAnd(mapping.keys(), ands).mapImplement(mapping);
+        }
+    }
+
+    public static class OrCachedFactory extends CachedFactory {
+
+        public <T> PropertyImplement<?, T> create(ImSet<PropertyImplement<?, T>> propertyImplements) {
+            return create(ListFact.singleton(propertyImplements));
+        }
+
+        @Override
+        protected <T, X extends PropertyInterface> PropertyImplement<?, T> createNotCached(ImList<ImSet<PropertyImplement<?, T>>> propertyImplements) {
+            ImSet<PropertyImplement<?, T>> ops = propertyImplements.single();
+
+            ConverterToMapImplement<X, T> converter = new ConverterToMapImplement<>();
+
+            ImSet<PropertyMapImplement<?, X>> ors = converter.convert(ops).mapSetValues(value -> {
+                if (!value.property.getType().equals(LogicalClass.instance)) // converting to logical if needed
+                    return PropertyFact.createNotNull(value);
+                return value;
+            });
+            ImMap<X, T> mapping = converter.getMapping();
+
+            return createUnion(mapping.keys(), ors.toList()).mapImplement(mapping);
+        }
+    }
+
+    public static class CompareCachedFactory extends CachedFactory {
+
+        private final Compare compare;
+
+        public CompareCachedFactory(Compare compare) {
+            this.compare = compare;
+        }
+
+        public <T> PropertyImplement<?, T> create(PropertyImplement<?, T> propertyA, PropertyImplement<?, T> propertyB) {
+            return create(ListFact.toList(SetFact.singleton(propertyA), SetFact.singleton(propertyB)));
+        }
+
+        @Override
+        protected <T, X extends PropertyInterface> PropertyImplement<?, T> createNotCached(ImList<ImSet<PropertyImplement<?, T>>> propertyImplements) {
+
+            ConverterToMapImplement<X, T> converter = new ConverterToMapImplement<>();
+            PropertyMapImplement<?, X> propertyA = converter.convert(propertyImplements.get(0).single());
+            PropertyMapImplement<?, X> propertyB = converter.convert(propertyImplements.get(1).single());
+            ImMap<X, T> mapping = converter.getMapping();
+
+            return createCompare(mapping.keys(), propertyA, propertyB, compare).mapImplement(mapping);
+        }
+    }
+
+    public static class NotCachedFactory extends CachedFactory {
+
+        public <T> PropertyImplement<?, T> create(PropertyImplement<?, T> property) {
+            return create(ListFact.singleton(SetFact.singleton(property)));
+        }
+
+        @Override
+        protected <T, X extends PropertyInterface> PropertyImplement<?, T> createNotCached(ImList<ImSet<PropertyImplement<?, T>>> propertyImplements) {
+
+            ConverterToMapImplement<X, T> converter = new ConverterToMapImplement<>();
+            PropertyMapImplement<?, X> property = converter.convert(propertyImplements.single().single());
+            ImMap<X, T> mapping = converter.getMapping();
+
+            return createNot(mapping.keys(), property).mapImplement(mapping);
+        }
+    }
+
+    public static class IfCachedFactory extends CachedFactory {
+
+        public IfCachedFactory() {
+        }
+
+        public <T> PropertyImplement<?, T> create(PropertyImplement<?, T> propertyA, PropertyImplement<?, T> propertyB) {
+            return create(ListFact.toList(SetFact.singleton(propertyA), SetFact.singleton(propertyB)));
+        }
+
+        @Override
+        protected <T, X extends PropertyInterface> PropertyImplement<?, T> createNotCached(ImList<ImSet<PropertyImplement<?, T>>> propertyImplements) {
+
+            ConverterToMapImplement<X, T> converter = new ConverterToMapImplement<>();
+            PropertyMapImplement<?, X> propertyA = converter.convert(propertyImplements.get(0).single());
+            PropertyMapImplement<?, X> propertyB = converter.convert(propertyImplements.get(1).single());
+            ImMap<X, T> mapping = converter.getMapping();
+
+            return PropertyFact.createAnd(mapping.keys(), propertyA, propertyB).mapImplement(mapping);
+        }
+    }
+
+    private static final OrCachedFactory orCachedFactory = new OrCachedFactory();
+    public static <T> PropertyImplement<?, T> createOrCached(ImSet<PropertyImplement<?, T>> propertyImplements) {
+        return orCachedFactory.create(propertyImplements);
+    }
+
+    private static final AndCachedFactory andCachedFactory = new AndCachedFactory();
+    public static <T> PropertyImplement<?, T> createAndCached(ImSet<PropertyImplement<?, T>> propertyImplements) {
+        return andCachedFactory.create(propertyImplements);
+    }
+
+    private static final Map<Compare, CompareCachedFactory> compareCachedFactories;
+    static {
+        compareCachedFactories = new HashMap<>();
+        for(Compare compare : Compare.values())
+            compareCachedFactories.put(compare, new CompareCachedFactory(compare));
+    }
+    public static <T> PropertyImplement<?, T> createCompareCached(PropertyImplement<?, T> propertyA, Compare compare, PropertyImplement<?, T> propertyB) {
+        return compareCachedFactories.get(compare).create(propertyA, propertyB);
+    }
+
+    private static final NotCachedFactory notCachedFactory = new NotCachedFactory();
+    public static <T> PropertyImplement<?, T> createNotCached(PropertyImplement<?, T> property) {
+        return notCachedFactory.create(property);
+    }
+
+    private static final IfCachedFactory ifCachedFactory = new IfCachedFactory();
+    public static <T> PropertyImplement<?, T> createIfCached(PropertyImplement<?, T> property, PropertyImplement<?, T> and) {
+        return ifCachedFactory.create(property, and);
+    }
+
+    private static final Object valueLock = new Object();
+    private static Property valueProperty;
+    public static <T> PropertyImplement<?, T> createValueCached(T mapping) {
+        synchronized (valueLock) {
+            if(valueProperty == null)
+                valueProperty = new AndFormulaProperty(0);
+            return valueProperty.getSingleImplement(mapping);
+        }
     }
 }

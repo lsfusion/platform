@@ -3,6 +3,7 @@ package lsfusion.gwt.client.form.object.table.view;
 import com.google.gwt.dom.client.TableCellElement;
 import lsfusion.gwt.client.base.view.grid.Header;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 
 import static lsfusion.gwt.client.base.GwtSharedUtils.nullEquals;
 
@@ -26,14 +27,14 @@ public class GGridPropertyTableFooter extends Header<String> {
 
     @Override
     public void renderAndUpdateDom(TableCellElement th) {
-        property.getCellRenderer().render(th, value, table, table);
+        GPropertyTableBuilder.renderAndUpdate(property, th, value, table, table);
         prevValue = value;
     }
 
     @Override
     public void updateDom(TableCellElement th) {
         if (!nullEquals(this.value, prevValue)) {
-            property.getCellRenderer().renderDynamic(th, value, table);
+            GPropertyTableBuilder.update(property, th, value, table);
             prevValue = value;
         }
     }
