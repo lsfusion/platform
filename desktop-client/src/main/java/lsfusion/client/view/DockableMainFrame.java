@@ -33,7 +33,6 @@ import lsfusion.client.controller.remote.RmiRequest;
 import lsfusion.client.form.controller.FormsController;
 import lsfusion.client.form.print.view.EditReportInvoker;
 import lsfusion.client.form.print.view.ReportDialog;
-import lsfusion.client.form.property.cell.classes.controller.EditorEventQueue;
 import lsfusion.client.form.view.ClientFormDockable;
 import lsfusion.client.navigator.ClientNavigator;
 import lsfusion.client.navigator.ClientNavigatorAction;
@@ -197,8 +196,6 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
         navigatorController.update();
 
         bindUIHandlers();
-
-        Toolkit.getDefaultToolkit().getSystemEventQueue().push(new EditorEventQueue());
     }
 
     private void executeNavigatorAction(ClientNavigatorAction action, boolean suppressForbidDuplicate) {
