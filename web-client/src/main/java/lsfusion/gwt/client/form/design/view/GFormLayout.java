@@ -218,6 +218,7 @@ public class GFormLayout extends ResizableComplexPanel {
         } else {
             collapsedContainers.remove(container);
         }
+        getContainerView(container.container).setChildCollapsed(container, collapsed);
     }
     
     public boolean isCollapsed(GContainer container) {
