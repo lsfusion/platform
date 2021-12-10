@@ -260,14 +260,43 @@ public class LinearContainerView extends GAbstractContainerView {
                 boolean visible = childrenVisible[i];
                 Widget widget = childrenViews.get(i);
                 widget.setVisible(visible);
-                
-                if (visible) {
-                    panel.setChildFlex(widget, formController.formLayout.isCollapsed((GContainer) child) ? 0 : child.getFlex(), false);
-                }
             }
         }
 
         super.updateLayout(requestIndex, childrenVisible);
+    }
+
+    @Override
+    public void setChildCollapsed(GComponent child, boolean collapsed) {
+        super.setChildCollapsed(child, collapsed);
+        panel.setChildFlex(childrenViews.get(children.indexOf(child)), collapsed ? 0 : child.getFlex(), false);
+
+        boolean vertical = panel.isVertical();
+        GComponent iChild = child;
+        GContainer iParent = container;
+        boolean hasAnotherFlexChild = false;
+        while (iParent != null && !hasAnotherFlexChild) {
+            if (vertical != iParent.isVertical()) {
+                break;
+            }
+            
+            for (GComponent component : iParent.children) {
+                // child was the only non-collapsed child with flex
+                if (component != iChild && component.getFlex() > 0 && !(component instanceof GContainer && formController.formLayout.isCollapsed((GContainer) component))) {
+                    hasAnotherFlexChild = true;
+                    break;
+                }
+            }
+
+            iChild = iParent;
+            iParent = iParent.container;
+            if (!hasAnotherFlexChild && iParent != null) {
+                GAbstractContainerView containerView = formController.formLayout.getContainerView(iParent);
+                if (containerView instanceof LinearContainerView) {
+                    ((LinearContainerView) containerView).panel.setChildFlex(containerView.getChildView(iChild), collapsed ? 0 : iChild.getFlex(), false);
+                }
+            }
+        }
     }
 
     @Override
