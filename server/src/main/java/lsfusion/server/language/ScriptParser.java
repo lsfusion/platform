@@ -65,7 +65,8 @@ public class ScriptParser {
         currentState = null;
     }
 
-    public void runMetaCode(ScriptingLogicsModule LM, String code, int metaLineNumber, String metaModuleName, String callString, int lineNumber, boolean enabledMeta) throws RecognitionException {
+    public void runMetaCode(ScriptingLogicsModule LM, String code, int metaLineNumber, String metaModuleName, String callString, 
+                            int lineNumberBefore, int lineNumberAfter, boolean enabledMeta) throws RecognitionException {
         assert !insideMetaDecl;
 
         LsfLogicsLexer lexer = new LsfLogicsLexer(new ANTLRStringStream(code));
@@ -78,9 +79,9 @@ public class ScriptParser {
         parser.parseState = currentState;
 
         //lineNumber is 1-based
-        currentExpansionLine += lineNumber - 1;
+        currentExpansionLine += lineNumberAfter - 1;
         
-        ParserInfo lastParser = new ParserInfo(parser, metaLineNumber, metaModuleName, callString, lineNumber);
+        ParserInfo lastParser = new ParserInfo(parser, metaLineNumber, metaModuleName, callString, lineNumberBefore);
 
         boolean isTopParser = parsers.size() == 1; // for meta decl parsing it doesn't matter
         boolean needOffset = parser.inMainParseState(); // in theory we might also need offset in class step
@@ -109,7 +110,7 @@ public class ScriptParser {
             insideNonEnabledMeta = false;
         }
 
-        currentExpansionLine -= lineNumber - 1;
+        currentExpansionLine -= lineNumberAfter - 1;
     }
     
     private int linesCount(String code) {

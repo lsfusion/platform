@@ -3839,12 +3839,13 @@ public class ScriptingLogicsModule extends LogicsModule {
         addMetaCodeFragment(fragment);
     }
 
-    public void runMetaCode(String name, List<String> params, int lineNumber, boolean enabledMeta) throws RecognitionException {
+    public void runMetaCode(String name, List<String> params, int lineNumberBefore, int lineNumberAfter, boolean enabledMeta) throws RecognitionException {
         MetaCodeFragment metaCode = findMetaCodeFragment(name, params.size());
         checks.checkMetaCodeParamCount(metaCode, params.size());
 
         String code = metaCode.getCode(params, BL.getIdFromReversedI18NDictionaryMethod(), BL::appendEntryToBundle);
-        parser.runMetaCode(this, code, metaCode.getLineNumber(), metaCode.getModuleName(), MetaCodeFragment.metaCodeCallString(name, metaCode, params), lineNumber, enabledMeta);
+        parser.runMetaCode(this, code, metaCode.getLineNumber(), metaCode.getModuleName(), 
+                MetaCodeFragment.metaCodeCallString(name, metaCode, params), lineNumberBefore, lineNumberAfter, enabledMeta);
     }
 
     private Pair<LP, LPNotExpr> addStaticClassConst(String name) throws ScriptingErrorLog.SemanticErrorException {
