@@ -8,31 +8,22 @@ import javax.swing.text.JTextComponent;
 import java.awt.event.KeyEvent;
 
 public class EditorContextMenu extends JPopupMenu {
-    public EditorContextMenu(JTextComponent tc) {
-        JMenuItem cutItem = new JMenuItem(new DefaultEditorKit.CutAction());
+    public EditorContextMenu(JComponent tc) {
+        ActionMap actionMap = tc.getActionMap();
+
+        JMenuItem cutItem = new JMenuItem(actionMap.get("cut-to-clipboard"));
         cutItem.setText(ClientResourceBundle.getString("form.editor.cut"));
         cutItem.setMnemonic(KeyEvent.VK_X);
+        add(cutItem);
 
-        JMenuItem copyItem = new JMenuItem(new DefaultEditorKit.CopyAction());
+        JMenuItem copyItem = new JMenuItem(actionMap.get("copy-to-clipboard"));
         copyItem.setText(ClientResourceBundle.getString("form.editor.copy"));
         copyItem.setMnemonic(KeyEvent.VK_C);
+        add(copyItem);
 
-        JMenuItem pasteItem = new JMenuItem(new DefaultEditorKit.PasteAction());
+        JMenuItem pasteItem = new JMenuItem(actionMap.get("paste-from-clipboard"));
         pasteItem.setText(ClientResourceBundle.getString("form.editor.paste"));
         pasteItem.setMnemonic(KeyEvent.VK_V);
-        
-        if (!tc.isEditable()) {
-            cutItem.setEnabled(false);
-            pasteItem.setEnabled(false);
-        }
-        
-        if (tc.getSelectedText() == null) {
-            cutItem.setEnabled(false);
-            copyItem.setEnabled(false);
-        }
-
-        add(cutItem);
-        add(copyItem);
         add(pasteItem);
     }
 }

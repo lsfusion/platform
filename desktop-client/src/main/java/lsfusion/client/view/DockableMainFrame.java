@@ -202,8 +202,6 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
         navigatorController.update();
 
         bindUIHandlers();
-
-        Toolkit.getDefaultToolkit().getSystemEventQueue().push(new EditorEventQueue());
     }
 
     private long executeNavigatorAction(ClientNavigatorAction action, boolean suppressForbidDuplicate, boolean sync) {
