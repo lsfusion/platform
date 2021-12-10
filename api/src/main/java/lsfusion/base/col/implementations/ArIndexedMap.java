@@ -149,9 +149,7 @@ public class ArIndexedMap<K, V> extends AMRevMap<K, V> {
 
             if (size < SetFact.useArrayMax)
                 return new ArMap<>(size, keys, values);
-            //        if(needToConvertToStored()) {
-            //            return new StoredArIndexedMap<>(serializer, (K[])keys, (V[])values);
-            //        }
+            
             return this;
         } else {
             return stored().immutable();
@@ -432,6 +430,7 @@ public class ArIndexedMap<K, V> extends AMRevMap<K, V> {
             assert size == 0 || keys[size - 1].hashCode() <= key.hashCode();
             keys[size] = key;
             values[size++] = value;
+            switchToStoredIfNeeded(size-1, size);
         } else {
             stored().keep(key, value);
         }

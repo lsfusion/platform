@@ -81,8 +81,8 @@ public class SetsSerializationTest {
     public void createAndSerializeArSet() {
         StoredArray<ArSet<SerializableClass>> stored = new StoredArray<>(StoredArrayTest.serializer);
         SerializableClass[] array = StoredArrayTest.initArray();
-        ArSet<SerializableClass> first = new ArSet<>();
-        ArSet<SerializableClass> second = new ArSet<>();
+        ArSet<SerializableClass> first = new ArSet<>(array.length / 2);
+        ArSet<SerializableClass> second = new ArSet<>(array.length - array.length / 2);
         fillMSets(array, first, second, stored);
         checkDeserializedEquality(array, stored);
     }
@@ -116,8 +116,8 @@ public class SetsSerializationTest {
     public void createAndSerializeArOrderSet() {
         StoredArray<ArOrderSet<SerializableClass>> stored = new StoredArray<>(StoredArrayTest.serializer);
         SerializableClass[] array = StoredArrayTest.initArray();
-        ArOrderSet<SerializableClass> first = new ArOrderSet<>();
-        ArOrderSet<SerializableClass> second = new ArOrderSet<>();
+        ArOrderSet<SerializableClass> first = new ArOrderSet<>(array.length / 2);
+        ArOrderSet<SerializableClass> second = new ArOrderSet<>(array.length - array.length / 2);
         fillMOrderSets(array, first, second, stored);
         checkDeserializedEqualityOrdered(array, stored);
     }

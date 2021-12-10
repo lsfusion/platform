@@ -291,10 +291,22 @@ public class StoredArrayTest {
             result.add(new DerivedSerializableClass("Tricky circle", 20, true, "add"));
             result.add(new SerializableClass("Triangle", 100000, true));
             result.add(new DerivedSerializableClass("Tricky triangle", -454, false, "add"));
+            result.add(new SerializableClass("Rectangle", 1, true));
+            result.add(new SerializableClass("Rectangle", 1, false));
+            result.add(new DerivedSerializableClass("Tricky rectangle", 1, true, "add"));
         }
         return result.toArray(new SerializableClass[0]);
     }
 
+    static SerializableClass[] initArray(int size) {
+        SerializableClass[] arr = initArray();  
+        List<SerializableClass> result = new ArrayList<>();
+        for (int i = 0; i < size; ++i) {
+            result.add(arr[i % arr.length]);
+        }
+        return result.toArray(new SerializableClass[0]);
+    }
+    
     static SerializableClass[] initArrayWithNulls() {
         return new SerializableClass[]{
                 null,
