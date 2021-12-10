@@ -374,7 +374,8 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         NativeHashMap<GGroupObjectValue, JavaScriptObject> mappedList = new NativeHashMap<>();
         for (int i = 0; i < list.length(); i++) {
             JavaScriptObject object = list.get(i);
-            mappedList.put(getKey(object), list.get(i));
+            GwtClientUtils.setField(object, "index", fromNumber(i));
+            mappedList.put(getKey(object), object);
         }
 
         List<JavaScriptObject> optionsToAdd = new ArrayList<>();

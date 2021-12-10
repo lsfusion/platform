@@ -1,5 +1,6 @@
 /*!!!!!!!!!!!!!!!!!!! SELECTIZE !!!!!!!!!!!!!!!!!!!*/
 .selectize-input {
+    z-index: unset;
     border: 1px solid var(--component-border-color);
     background: var(--component-background-color);
     position: unset;

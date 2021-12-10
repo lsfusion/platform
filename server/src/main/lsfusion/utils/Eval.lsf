@@ -109,7 +109,7 @@ CLASS ScriptType {
 }
 
 dataScriptType = DATA ScriptType();
-calculateScriptType = OVERRIDE dataScriptType(), ScriptType.script;
+calculateScriptType = OVERRIDE dataScriptType(), ScriptType.action;
 selectedExecutionScriptType (ScriptType st) = st == calculateScriptType();
 executionScriptTypeCaption (ScriptType st) = staticCaption(st);
 executionScriptTypeName (ScriptType st) = getWord(staticName(st),'.',2);
@@ -148,7 +148,7 @@ javaActionBodyExecution '{eval.script.java.action.body.execution}' (Script s, Sc
     executeScript(s);    
 }
 
-json(Script s) = [FORMULA STRING 'json_build_object(\'text\',$1,\'type\',$2)'] 
+json '{eval.script.text.script}' (Script s) = [FORMULA STRING 'json_build_object(\'text\',$1,\'type\',$2)'] 
             ((OVERRIDE text(s), ''), (OVERRIDE STRING(executionScriptTypeName(calculateScriptType())), ''));
 
 changeScript(Script sc) {
@@ -163,6 +163,7 @@ changeScript(Script sc) {
 FORM interpreter '{eval.script.form.interpreter}'
     OBJECTS st = ScriptType CUSTOM 'option'
     PROPERTIES(st) SHOWIF isWeb() name=executionScriptTypeCaption, selected=selectedExecutionScriptType
+    ORDERS name
     
     OBJECTS s = Script PANEL
     PROPERTIES name(s), json(s) CUSTOM 'interpreter' SHOWIF isWeb() ON CHANGE changeScript(s), text(s) SHOWIF NOT isWeb()

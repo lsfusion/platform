@@ -13,10 +13,9 @@ function option() {
         update: function (element, controller, list) {
             let options = element.options;
             let currentOptions = Array.from(options.children);
+            let diff = controller.getDiff(list, true);
 
-            let diff = controller.getDiff(list);
-
-            diff.add.forEach(rawOption => {
+            diff.add.sort((first, second) => first.index < second.index ? -1 : 1).forEach(rawOption => {
                 let option = document.createElement('div');
                 option.innerText = rawOption.name;
                 option.key = rawOption;

@@ -2,7 +2,32 @@
 // selected : selection property (automatically sets filter on server)
 // name : selection name
 
-function select2() {
+function select2_set() {
+    return {
+        render: (element, controller) => _select2().render(element, controller),
+        update: (element, controller, list) => _select2().update(element, controller, list,
+            (diff, select2Instance, mapOption, removeOption) => {
+                if (diff.add.length > 0) {
+                    removeOption();
+                    Array.from(list).forEach(option => select2Instance.append(mapOption(option)));
+                }
+            })
+    }
+}
+
+function select2_list() {
+    return {
+        render: (element, controller) => _select2().render(element, controller),
+        update: (element, controller, list) => _select2().update(element, controller, list,
+            (diff, select2Instance, mapOption) => diff.add.forEach(option => { //removeOption в конец
+                if (Array.from(select2Instance.context.children).filter(o => o.value === mapOption(option).value).length === 0)
+                    select2Instance.append(mapOption(option));
+            })
+        )
+    }
+}
+
+function _select2() {
     return {
         render: (element, controller) => {
             let selectElement = document.createElement('select');
@@ -41,7 +66,7 @@ function select2() {
                 controller.changeProperty('selected', data.key == null ? data.element.key : data.key, null);
             });
         },
-        update: (element, controller, list) => {
+        update: (element, controller, list, addFunction) => {
             if (!controller.booleanFilterSet) {
                 controller.setBooleanViewFilter('selected', 1000);
                 controller.booleanFilterSet = true;
@@ -49,28 +74,21 @@ function select2() {
             }
 
             let select2Instance = controller.select2Instance;
-
             let diff = controller.getDiff(list);
-            let optionsParent = select2Instance.context;
-            let select2Options = Array.from(optionsParent.children);
 
-            for (let option of diff.add) {
-                if (select2Options.filter(o => o.value === mapOption(option).value).length === 0)
-                    select2Instance.append(mapOption(option));
-            }
+            addFunction(diff, select2Instance, mapOption, removeOption);
 
-            for (let option of diff.update) {
+            diff.update.forEach(option => {
                 removeOption(option);
                 select2Instance.append(mapOption(option));
-            }
+            });
 
-            for (let option of diff.remove) {
-                removeOption(option);
-            }
+            diff.remove.forEach(option => removeOption(option));
 
             function removeOption(option) {
-                select2Options.forEach(o => {
-                    if (o.value === mapOption(option).value)
+                let optionsParent = select2Instance.context;
+                Array.from(optionsParent.children).forEach(o => {
+                    if (option == null || o.value === mapOption(option).value)
                         optionsParent.removeChild(o);
                 });
             }
