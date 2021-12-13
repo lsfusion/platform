@@ -470,7 +470,6 @@ EXTEND FORM fullChat
 recentVisible() += ACTIVE TAB fullChat.recent;
 seekChat (Chat chat) + { SEEK fullChat.c = chat; }
 
-activateMessage() + { ACTIVATE PROPERTY fullChat.message(); }
 seekLastMessage() + { SEEK LAST fullChat.m; }
 
 NAVIGATOR {
@@ -675,6 +674,13 @@ DESIGN fullChat {
             fill = 1; 
         }
     }
+}
+
+activateMessage() + { 
+    IF isWeb() THEN
+        ACTIVATE PROPERTY fullChat.jsonInputMessage();
+    ELSE
+        ACTIVATE PROPERTY fullChat.message(); 
 }
 
 EXTEND FORM shortChat
