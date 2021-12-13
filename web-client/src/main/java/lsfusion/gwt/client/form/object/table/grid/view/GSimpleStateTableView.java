@@ -371,26 +371,24 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
 
     NativeHashMap<GGroupObjectValue, JavaScriptObject> oldOptionsList = new NativeHashMap<>();
     private JavaScriptObject getDiff(JsArray<JavaScriptObject> list) {
+        List<JavaScriptObject> optionsToAdd = new ArrayList<>();
+        List<JavaScriptObject> optionsToUpdate = new ArrayList<>();
+        List<JavaScriptObject> optionsToRemove = new ArrayList<>();
+
         NativeHashMap<GGroupObjectValue, JavaScriptObject> mappedList = new NativeHashMap<>();
         for (int i = 0; i < list.length(); i++) {
             JavaScriptObject object = list.get(i);
             GwtClientUtils.setField(object, "index", fromNumber(i));
             mappedList.put(getKey(object), object);
-        }
 
-        List<JavaScriptObject> optionsToAdd = new ArrayList<>();
-        List<JavaScriptObject> optionsToUpdate = new ArrayList<>();
-        List<JavaScriptObject> optionsToRemove = new ArrayList<>();
-
-        mappedList.foreachEntry((key, value) -> {
-            JavaScriptObject oldValue = oldOptionsList.remove(key);
+            JavaScriptObject oldValue = oldOptionsList.remove(getKey(object));
             if (oldValue != null) {
-                if (!GwtClientUtils.isJSObjectPropertiesEquals(value, oldValue))
-                    optionsToUpdate.add(value);
+                if (!GwtClientUtils.isJSObjectPropertiesEquals(object, oldValue))
+                    optionsToUpdate.add(object);
             } else {
-                optionsToAdd.add(value);
+                optionsToAdd.add(object);
             }
-        });
+        }
 
         oldOptionsList.foreachValue(optionsToRemove::add);
         oldOptionsList = mappedList;

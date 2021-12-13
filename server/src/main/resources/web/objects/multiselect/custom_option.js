@@ -12,10 +12,8 @@ function option() {
         },
         update: function (element, controller, list) {
             let options = element.options;
-            let currentOptions = Array.from(options.children);
-            let diff = controller.getDiff(list, true);
-
-            diff.add.sort((first, second) => first.index < second.index ? -1 : 1).forEach(rawOption => {
+            Array.from(options.children).forEach(o => options.removeChild(o));
+            list.forEach(rawOption => {
                 let option = document.createElement('div');
                 option.innerText = rawOption.name;
                 option.key = rawOption;
@@ -43,23 +41,6 @@ function option() {
                 });
 
                 options.appendChild(option);
-            });
-
-            diff.update.forEach(rawOption => {
-                currentOptions.forEach(o => {
-                    if (controller.getKey(o.key).toString() === controller.getKey(rawOption).toString()) {
-                        o.innerText = rawOption.name;
-                        o.selected = rawOption.selected;
-                        o.style.backgroundColor = rawOption.selected ? 'var(--selection-color)' : 'unset';
-                    }
-                });
-            });
-
-            diff.remove.forEach(rawOption => {
-                currentOptions.forEach(o => {
-                    if (controller.getKey(o.key).toString() === controller.getKey(rawOption).toString())
-                        options.removeChild(o);
-                })
             });
 
             //set Current
