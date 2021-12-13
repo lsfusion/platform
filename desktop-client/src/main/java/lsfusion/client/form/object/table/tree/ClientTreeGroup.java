@@ -8,6 +8,7 @@ import lsfusion.client.form.design.ClientContainer;
 import lsfusion.client.form.filter.user.ClientFilter;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.table.ClientToolbar;
+import lsfusion.client.form.object.table.grid.ClientGrid;
 import lsfusion.interop.form.object.table.tree.AbstractTreeGroup;
 
 import java.io.DataInputStream;
@@ -114,7 +115,7 @@ public class ClientTreeGroup extends ClientComponent implements ClientIdentitySe
         return result + "[sid:" + getSID() + "]";
     }
 
-    public int calculateSize() {
+    public int getExpandWidth() {
         int size = 0;
         for (ClientGroupObject groupObject : groups) {
             size += groupObject.isRecursive ? 20 * 4 : 20;
@@ -122,7 +123,21 @@ public class ClientTreeGroup extends ClientComponent implements ClientIdentitySe
         return size;
     }
 
+    private ClientGroupObject getLastGroup() {
+        return groups.get(groups.size() - 1);
+    }
+
     public int getHeaderHeight() {
         return headerHeight;
+    }
+
+    @Override
+    protected Integer getDefaultWidth() {
+        return getExpandWidth() + getLastGroup().getWidth(lineWidth);
+    }
+
+    @Override
+    protected Integer getDefaultHeight() {
+        return getLastGroup().getHeight(lineHeight) + (headerHeight >= 0 ? headerHeight : ClientGrid.DEFAULT_HEADER_HEIGHT);
     }
 }

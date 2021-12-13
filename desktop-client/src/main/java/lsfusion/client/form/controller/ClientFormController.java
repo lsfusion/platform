@@ -87,6 +87,7 @@ import java.util.concurrent.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import static lsfusion.base.BaseUtils.getComponents;
 import static lsfusion.base.BaseUtils.serializeObject;
 import static lsfusion.client.ClientResourceBundle.getString;
 
@@ -167,6 +168,8 @@ public class ClientFormController implements AsyncListener {
     private final OrderedMap<Long, ModifyObject> pendingModifyObjectRequests = new OrderedMap<>();
     private final Map<ClientGroupObject, Long> pendingChangeCurrentObjectsRequests = Maps.newHashMap();
     private final Table<ClientPropertyDraw, ClientGroupObjectValue, PropertyChange> pendingChangePropertyRequests = HashBasedTable.create();
+
+    private boolean hasColumnGroupObjects;
 
     private Timer asyncTimer;
     private PanelView asyncView;
@@ -296,6 +299,9 @@ public class ClientFormController implements AsyncListener {
     // ----------------------------------- Инициализация ---------------------------------- //
     // ------------------------------------------------------------------------------------ //
     private void initializeForm(byte[] firstChanges) throws Exception {
+
+        initializeParams(); // has to be done before initializeControllers (since adding component uses getSize)
+
         initializeControllers();
 
         initializeDefaultOrders(); // now it doesn't matter, because NavigatorForm will be removed, and first changes will always be not null, but still
@@ -317,7 +323,23 @@ public class ClientFormController implements AsyncListener {
     public List<ClientPropertyDraw> getPropertyDraws() {
         return form.getPropertyDraws();
     }
-    
+
+    private void initializeParams() {
+        hasColumnGroupObjects = false;
+        for (ClientPropertyDraw property : getPropertyDraws()) {
+            if (property.hasColumnGroupObjects()) {
+                hasColumnGroupObjects = true;
+            }
+
+            ClientGroupObject groupObject = property.groupObject;
+            if(groupObject != null && property.isList && !property.hide && groupObject.columnCount < 10) {
+                groupObject.columnSumWidth += property.getValueWidthWithPadding(formLayout);
+                groupObject.columnCount++;
+                groupObject.rowMaxHeight = Math.max(groupObject.rowMaxHeight, property.getValueHeightWithPadding(formLayout));
+            }
+        }
+    }
+
     private void initializeControllers() throws IOException {
         FormUserPreferences preferences = remoteForm.getUserPreferences();
         
@@ -687,7 +709,8 @@ public class ClientFormController implements AsyncListener {
 
         ClientFormChanges formChanges = new ClientFormChanges(bFormChanges, form);
 
-        currentGridObjects.putAll(formChanges.gridObjects);
+        if(hasColumnGroupObjects) // optimization
+            currentGridObjects.putAll(formChanges.gridObjects);
 
         modifyFormChangesWithModifyObjectAsyncs(requestIndex, formChanges);
 

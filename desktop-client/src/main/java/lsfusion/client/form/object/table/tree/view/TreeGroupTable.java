@@ -10,7 +10,6 @@ import lsfusion.client.base.SwingUtils;
 import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.classes.ClientType;
 import lsfusion.client.classes.data.ClientRichTextClass;
-import lsfusion.client.classes.data.ClientTextClass;
 import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.object.ClientGroupObject;
@@ -480,7 +479,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements AsyncChangeCe
         TableColumnExt tableColumn = getColumnExt(0);
 
         hierarchicalColumn = tableColumn;
-        hierarchicalWidth = treeGroup.calculateSize();
+        hierarchicalWidth = treeGroup.getExpandWidth();
 //        setColumnSizes(tableColumn, pref, pref, pref);
 
         getColumnModel().getSelectionModel().setSelectionInterval(0, 0);
