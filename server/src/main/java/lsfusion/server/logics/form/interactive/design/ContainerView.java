@@ -14,6 +14,7 @@ import lsfusion.server.logics.form.interactive.controller.remote.serialization.S
 import lsfusion.server.logics.form.interactive.design.object.GridView;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
+import lsfusion.server.logics.property.value.NullValueProperty;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
@@ -93,7 +94,14 @@ public class ContainerView extends ComponentView {
     }
     
     public boolean isCollapsible() {
-        return collapsible != null ? collapsible : caption != null;
+        if(collapsible != null)
+            return collapsible;
+
+        return isDefaultCollapsible();
+    }
+
+    protected boolean isDefaultCollapsible() {
+        return caption != null && (propertyCaption == null || !(propertyCaption.property instanceof NullValueProperty)); // isEmpty can be better, but we just want to emulate NULL to be like NULL caption
     }
 
     public boolean isTabbed() {

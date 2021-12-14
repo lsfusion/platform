@@ -1,7 +1,6 @@
 package lsfusion.gwt.client.form.design.view;
 
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.client.base.Dimension;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
@@ -9,7 +8,6 @@ import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.design.view.flex.FlexTabbedPanel;
 
 import java.util.ArrayList;
-import java.util.Map;
 
 import static lsfusion.gwt.client.base.GwtSharedUtils.relativePosition;
 
@@ -41,7 +39,7 @@ public class TabbedContainerView extends GAbstractContainerView {
     protected FlexPanel wrapBorderImpl(GComponent child) {
 //      this wrapping is necessary because:
 //          we want border around the container
-//          autoShowHideContainers (automatical showing / hiding containers) uses setVisible, as well as TabbedDeckPanel (switching widgets), so they conflict with each other (however in current implementation only for base components)
+//          updateContainersVisibility (automatical showing / hiding containers) uses setVisible, as well as TabbedDeckPanel (switching widgets), so they conflict with each other (however in current implementation only for base components)
         FlexPanel proxyPanel = new FlexPanel(!vertical);
         proxyPanel.setStyleName("gwt-TabPanelBottom");
         return proxyPanel;
@@ -73,7 +71,7 @@ public class TabbedContainerView extends GAbstractContainerView {
             GComponent selectedChild = visibleChildren.get(selectedIndex);
             if (currentChild != selectedChild) {
                 currentChild = selectedChild;
-                formController.setTabVisible(container, selectedChild);
+                formController.setTabActive(container, selectedChild);
             }
         }
     }

@@ -1657,7 +1657,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     private ImList<ComponentView> userActivateTabs = ListFact.EMPTY();
     // программный activate tab
     public void activateTab(ComponentView view) throws SQLException, SQLHandledException {
-        setTabVisible(view.getTabbedContainer(), view);
+        setTabVisible(view.getContainer(), view);
         
         userActivateTabs = userActivateTabs.addList(view);
     }
@@ -1683,33 +1683,33 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         return entity.getDrawComponent(property.entity);
     }
 
-    private boolean isTabHidden(PropertyDrawInstance<?> property) {
+    private boolean isUserHidden(PropertyDrawInstance<?> property) {
         ComponentView drawComponent = getDrawComponent(property);
-        assert !isNoTabHidden(drawComponent); // так как если бы был null не попалы бы в newIsShown в readShowIfs
-        ComponentView drawTabContainer = drawComponent.getTabHiddenContainer();
-        return drawTabContainer != null && isTabHidden(drawTabContainer); // первая проверка - cheat / оптимизация
+        assert !isNoUserHidden(drawComponent); // так как если бы был null не попалы бы в newIsShown в readShowIfs
+        return isUserHidden(drawComponent);
     }
 
     private boolean isHidden(ContainerView container) { // is Tab or showIfHidden or designHidden
-        if(container.main) // form container
+        if(container.isMain()) // form container
             return false;
 
-        if(isDesignHidden(container))
+        if(isStaticHidden(container))
             return true;
 
-        ComponentView localHideableContainer = container.getLocalHideableContainer();
-        if(localHideableContainer == container) // if this is a tab - use it's parent, since we want it's caption to be updated too (however maybe later we'll have to distinguish caption from other attributes)
-            localHideableContainer = container.getHiddenContainer().getLocalHideableContainer();
+        // if this is a tab / collapsible container - use it's parent, since we want it's caption to be updated too (however maybe later we'll have to distinguish caption from other attributes)
+        ComponentView dynamicHidableContainer = container.getDynamicHidableContainer();
+        if(dynamicHidableContainer == container && container.isUserHidable())
+            dynamicHidableContainer = container.getHiddenContainer().getDynamicHidableContainer();
 
-        return localHideableContainer != null && isLocalHidden(localHideableContainer);
+        return dynamicHidableContainer != null && isDynamicHidden(dynamicHidableContainer);
     }
 
     private boolean isHidden(GroupObjectInstance group) { // is Tab or showIfHidden or designHidden
-        FormEntity.ComponentUpSet containers = entity.getDrawLocalHideableContainers(group.entity);
+        FormEntity.ComponentUpSet containers = entity.getDrawDynamicHideableContainers(group.entity);
         if (containers == null) // cheat / оптимизация, иначе пришлось бы в isHidden и еще в нескольких местах явную проверку на null
             return false;
         for (ComponentView component : containers.it())
-            if (!isLocalHidden(component))
+            if (!isDynamicHidden(component))
                 return false;
         // для случая, когда группа PANEL, в группе только свойства, зависящие от ключей, и находятся не в первом табе.
         // наличие ключа влияет на видимость этих свойств, которая в свою очередь влияет на видимость таба.
@@ -1720,64 +1720,57 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         return true;
     }
 
-    private boolean isNoTabHidden(ComponentView component) { // design or showf
-        return isDesignHidden(component) || isShowIfHidden(component);
+    private boolean isNoUserHidden(ComponentView component) { // design or showf
+        return isStaticHidden(component) || isShowIfHidden(component);
     }
 
-    private boolean isLocalHidden(ComponentView component) { // showif or tab
-        assert !isDesignHidden(component);
-        assert (component instanceof ContainerView && ((ContainerView)component).showIf != null) || component.getTabbedContainer() != null;
-        if (isShowIfHidden(component)) 
-            return true;
-
-        ComponentView tabContainer = component.getTabHiddenContainer();
-        return tabContainer != null && isTabHidden(tabContainer);
+    private boolean isDynamicHidden(ComponentView component) { // showif or tab
+        assert !isStaticHidden(component);
+        assert component.isDynamicHidable();
+        return isShowIfHidden(component) || isUserHidden(component);
     }
 
-    private boolean isDesignHidden(ComponentView component) { // global
+    private boolean isStaticHidden(ComponentView component) { // static
         return entity.isDesignHidden(component);
     }
 
-    private boolean isShowIfHidden(ComponentView component) { // local
-        assert !isDesignHidden(component);
+    private boolean isShowIfHidden(ComponentView component) { // dynamic
+        assert !isStaticHidden(component);
 
-        if(isContainerHidden.isEmpty()) // optimization
+        ContainerView showIfHidableContainer = component.getShowIfHidableContainer();
+        if(showIfHidableContainer == null)
             return false;
+        assert !isStaticHidden(showIfHidableContainer);
+        assert showIfHidableContainer.isShowIfHidable();
 
-        ComponentView parent = component.getHiddenContainer();
+        if(isContainerHidden.contains(showIfHidableContainer))
+            return true;
 
-        while (parent != null) {
-            boolean hidden = parent instanceof ContainerView && (((ContainerView) parent).showIf != null && isContainerHidden.contains(parent));
-
-            if (hidden) {
-                return true;
-            }
-
-            parent = parent.getHiddenContainer();
-        }
-
-        return false;
+        return isShowIfHidden(showIfHidableContainer.getHiddenContainer());
     }
 
-    private boolean isTabHidden(ComponentView component) { // sublocal
-        assert !isNoTabHidden(component);
-        ContainerView parent = component.getTabbedContainer();
+    private boolean isUserHidden(ComponentView component) {
+        ComponentView userHidableContainer = component.getUserHidableContainer();
+        if(userHidableContainer == null)
+            return false;
+        assert !isNoUserHidden(userHidableContainer);
+        assert userHidableContainer.isUserHidable();
 
-        if (parent.isTabbed()) {
-            ComponentView visible = visibleTabs.get(parent);
-            ImList<ComponentView> siblings = parent.getChildrenList();
+        ComponentView container = userHidableContainer.getHiddenContainer();
+        if(container instanceof ContainerView && ((ContainerView) container).isTabbed()) {
+            ComponentView visible = visibleTabs.get((ContainerView)container);
+            ImList<ComponentView> siblings = ((ContainerView) container).getChildrenList();
             if (visible == null && siblings.size() > 0) // аналогичные проверки на клиентах, чтобы при init'е не вызывать
                 visible = siblings.get(0);
-            if (!component.equals(visible))
+            if (!userHidableContainer.equals(visible))
+                return true;
+        } else {
+            assert ((ContainerView) userHidableContainer).isCollapsible();
+            if(collapsedContainers.contains((ContainerView) userHidableContainer))
                 return true;
         }
 
-        if (isInCollapsed(component)) {
-            return true;
-        }
-
-        ComponentView tabContainer = parent.getTabHiddenContainer();
-        return tabContainer != null && isTabHidden(tabContainer);
+        return isUserHidden(userHidableContainer.getHiddenContainer());
     }
 
     protected Map<ContainerView, ComponentView> visibleTabs = new HashMap<>();
@@ -1795,21 +1788,6 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         } else {
             collapsedContainers.remove(container);
         }
-    }
-    
-    private boolean isCollapsed(ContainerView container) {
-        return collapsedContainers.contains(container);
-    }
-
-    private boolean isInCollapsed(ComponentView component) {
-        ContainerView container = component.getContainer();
-        while (container != null) {
-            if (isCollapsed(container)) {
-                return true;
-            }
-            container = container.getContainer();
-        }
-        return false;
     }
 
     private void updateActiveTabProperty(ComponentView page) throws SQLException, SQLHandledException {
@@ -2157,8 +2135,9 @@ updateAsyncPropertyChanges();
             if (newStaticShown) {
                 newShown.add(drawProperty);
 
-                ComponentView tabContainer = drawComponent.getTabHiddenContainer(); // у tab container'а по сравнению с containerShowIfs есть разница, так как они оптимизированы на изменение видимости без перезапроса данных
-                boolean hidden = tabContainer != null && isTabHidden(tabContainer);
+                boolean hidden = isUserHidden(drawProperty);
+                ComponentView userHidableContainer = drawComponent.getUserHidableContainer(); // у tab container'а по сравнению с containerShowIfs есть разница, так как они оптимизированы на изменение видимости без перезапроса данных
+
                 boolean isDefinitelyShown = drawProperty.propertyShowIf == null;
                 if (!isDefinitelyShown) {
                     ImSet<GroupObjectInstance> propRowColumnGrids = drawProperty.getColumnGroupObjectsInGrid();
@@ -2172,7 +2151,7 @@ updateAsyncPropertyChanges();
                     if (read) {
                         mShowIfs.exclAdd(showIfReader, propRowColumnGrids);
                         if(hidden)
-                            hiddenNotSureShown.exclAdd(showIfReader, tabContainer);
+                            hiddenNotSureShown.exclAdd(showIfReader, userHidableContainer);
                     } else {
                         // nor static / nor dynamic visibility changed, reading from cache
                         boolean oldShown = isShown.contains(drawProperty);
@@ -2182,7 +2161,7 @@ updateAsyncPropertyChanges();
                     }
                 }
                 if(hidden && isDefinitelyShown) // помечаем component'ы которые точно показываются
-                    hiddenButDefinitelyShownSet.add(tabContainer);
+                    hiddenButDefinitelyShownSet.add(userHidableContainer);
             }
         }
         ImMap<PropertyDrawInstance.ShowIfReaderInstance, ImSet<GroupObjectInstance>> showIfs = mShowIfs.immutable();
@@ -2241,7 +2220,7 @@ updateAsyncPropertyChanges();
             return false;
         }
 
-        if (isNoTabHidden(drawComponent)) { // hidden, но без учета tab, для него отдельная оптимизация, чтобы не переобновляться при переключении "туда-назад",  связан с assertion'ом в FormInstance.isHidden
+        if (isNoUserHidden(drawComponent)) { // hidden, но без учета tab, для него отдельная оптимизация, чтобы не переобновляться при переключении "туда-назад",  связан с assertion'ом в FormInstance.isHidden
             return false;
         }
 
@@ -2307,7 +2286,7 @@ updateAsyncPropertyChanges();
                 GroupObjectInstance toDraw = drawProperty.toDraw;
                 boolean update = toDraw == null || !drawProperty.isList() || toDraw.toUpdate();
                 boolean updateCaption = update || (drawProperty.isList() && toDraw.listViewType.isPivot() && toDraw.toRefresh()); // we want to update captions when switching to pivot to avoid some unnecessary effects (blinking when default property captions are shown, especially when there are group-to-columns) since pivot really relies on caption
-                boolean hidden = isTabHidden(drawProperty);
+                boolean hidden = isUserHidden(drawProperty);
 
                 ImSet<GroupObjectInstance> propRowGrids = drawProperty.getGroupObjectsInGrid();
                 ImSet<GroupObjectInstance> propRowColumnGrids = drawProperty.getColumnGroupObjectsInGrid();

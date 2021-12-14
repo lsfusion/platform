@@ -11,7 +11,7 @@ public class CollapsiblePanel extends CaptionPanel implements ColorThemeChangeLi
 
     protected GImage collapseImage;
     
-    private boolean collapsed = false;
+    public boolean collapsed = false;
 
     private GFormController formController;
     private GContainer container;
@@ -37,10 +37,8 @@ public class CollapsiblePanel extends CaptionPanel implements ColorThemeChangeLi
             getChildren().get(i).setVisible(!collapsed);
         }
 
-        if (formController != null) {
-            assert container != null;
+        if (formController != null)
             formController.setContainerCollapsed(container, collapsed);
-        }
     }
 
     @Override

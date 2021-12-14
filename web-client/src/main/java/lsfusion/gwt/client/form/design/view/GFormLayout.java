@@ -34,8 +34,6 @@ public class GFormLayout extends ResizableComplexPanel {
 
     public final ResizableComplexPanel recordViews;
 
-    protected Set<GContainer> collapsedContainers = new HashSet<>();
-
     public GFormLayout(GFormController iform, GContainer mainContainer) {
         this.form = iform;
 
@@ -177,13 +175,17 @@ public class GFormLayout extends ResizableComplexPanel {
         return containerViews.get(container);
     }
 
-    public void hideEmptyContainerViews(int requestIndex) {
-        autoShowHideContainers(mainContainer, requestIndex);
+    public void update(int requestIndex) {
+        updateContainersVisibility(mainContainer, requestIndex);
 
-        FlexPanel.autoStretchAndDrawBorders(getMainView());
+        updatePanels();
     }
 
-    private boolean autoShowHideContainers(GContainer container, long requestIndex) {
+    public void updatePanels() {
+        FlexPanel.updatePanels(getMainView());
+    }
+
+    private boolean updateContainersVisibility(GContainer container, long requestIndex) {
         GAbstractContainerView containerView = getContainerView(container);
         boolean hasVisible = false;
         int size = containerView.getChildrenCount();
@@ -193,7 +195,7 @@ public class GFormLayout extends ResizableComplexPanel {
 
             boolean childVisible;
             if (child instanceof GContainer)
-                childVisible = autoShowHideContainers((GContainer) child, requestIndex);
+                childVisible = updateContainersVisibility((GContainer) child, requestIndex);
             else {
                 Widget childView = baseComponentViews.get(child); // we have to use baseComponentView (and not a wrapper in getChildView), since it has relevant visible state
                 childVisible = childView != null && childView.isVisible();
@@ -201,7 +203,7 @@ public class GFormLayout extends ResizableComplexPanel {
                 if (child instanceof GGrid) {
                     GContainer record = ((GGrid) child).record;
                     if(record != null)
-                        autoShowHideContainers(record, requestIndex);
+                        updateContainersVisibility(record, requestIndex);
                 }
             }
 
@@ -210,30 +212,6 @@ public class GFormLayout extends ResizableComplexPanel {
         }
         containerView.updateLayout(requestIndex, childrenVisible);
         return hasVisible;
-    }
-
-    public void setContainerCollapsed(GContainer container, boolean collapsed) {
-        if (collapsed) {
-            collapsedContainers.add(container);
-        } else {
-            collapsedContainers.remove(container);
-        }
-        getContainerView(container.container).setChildCollapsed(container, collapsed);
-    }
-    
-    public boolean isCollapsed(GContainer container) {
-        return collapsedContainers.contains(container);
-    }
-
-    public boolean isInCollapsed(GComponent component) {
-        GContainer container = component.container;
-        while (container != null) {
-            if (isCollapsed(container)) {
-                return true;
-            }
-            container = container.container;
-        }
-        return false;
     }
 
     public Dimension getPreferredSize(int maxWidth, int maxHeight, int extraHorzOffset, int extraVertOffset) {

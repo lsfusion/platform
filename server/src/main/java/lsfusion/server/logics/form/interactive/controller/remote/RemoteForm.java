@@ -655,7 +655,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         });
     }
 
-    public ServerResponse setTabVisible(long requestIndex, long lastReceivedRequestIndex, final int tabPaneID, final int childId) throws RemoteException {
+    public ServerResponse setTabActive(long requestIndex, long lastReceivedRequestIndex, final int tabPaneID, final int childId) throws RemoteException {
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
 
             if (logger.isTraceEnabled()) {

@@ -117,9 +117,9 @@ public class RemoteFormProxy extends RemoteRequestObjectProxy<RemoteFormInterfac
         return result;
     }
 
-    public ServerResponse setTabVisible(long requestIndex, long lastReceivedRequestIndex, int tabPaneID, int childId) throws RemoteException {
+    public ServerResponse setTabActive(long requestIndex, long lastReceivedRequestIndex, int tabPaneID, int childId) throws RemoteException {
         logRemoteMethodStartVoidCall("setTabVisible");
-        ServerResponse result = target.setTabVisible(requestIndex, lastReceivedRequestIndex, tabPaneID, childId);
+        ServerResponse result = target.setTabActive(requestIndex, lastReceivedRequestIndex, tabPaneID, childId);
         logRemoteMethodEndVoidCall("setTabVisible");
         return result;
     }

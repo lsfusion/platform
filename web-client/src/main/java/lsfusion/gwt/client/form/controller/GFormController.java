@@ -622,7 +622,7 @@ public class GFormController implements EditManager {
 
         update(fc, changesDTO.requestIndex);
 
-        formLayout.hideEmptyContainerViews(changesDTO.requestIndex);
+        formLayout.update(changesDTO.requestIndex);
 
         activateElements(fc);
 
@@ -1174,14 +1174,16 @@ public class GFormController implements EditManager {
         syncResponseDispatch(new CollapseGroupObject(group.ID, value));
     }
 
-    public void setTabVisible(GContainer tabbedPane, GComponent visibleComponent) {
-        asyncResponseDispatch(new SetTabVisible(tabbedPane.ID, visibleComponent.ID));
+    public void setTabActive(GContainer tabbedPane, GComponent visibleComponent) {
+        asyncResponseDispatch(new SetTabActive(tabbedPane.ID, visibleComponent.ID));
         formLayout.onResize();
     }
     
     public void setContainerCollapsed(GContainer container, boolean collapsed) {
         asyncResponseDispatch(new SetContainerCollapsed(container.ID, collapsed));
-        formLayout.setContainerCollapsed(container, collapsed);
+
+        formLayout.updatePanels(); // we want to avoid blinking between setting visibility and getting response (and having updatePanels there)
+
         formLayout.onResize();
     }
 

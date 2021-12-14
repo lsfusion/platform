@@ -194,9 +194,6 @@ public abstract class GAbstractContainerView {
         for(UpdateLayoutListener updateLayoutListener : updateLayoutListeners)
             updateLayoutListener.updateLayout(requestIndex);
     }
-    
-    public void setChildCollapsed(GComponent child, boolean collapsed) {
-    }
 
     public static Widget add(FlexPanel panel, Widget widget, GComponent component, int beforeIndex) {
         boolean vertical = panel.isVertical();
