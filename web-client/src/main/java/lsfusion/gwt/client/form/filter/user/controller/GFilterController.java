@@ -41,7 +41,7 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
     private GToolbarButton addConditionButton;
     private GToolbarButton resetConditionsButton;
 
-    private Widget filtersContainerWidget;
+    private boolean hasFiltersContainer;
 
     private Map<GPropertyFilter, GFilterConditionView> conditionViews = new LinkedHashMap<>();
 
@@ -49,12 +49,10 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
     
     private boolean toolsVisible = false;
 
-    public GFilterController(GTableController logicsSupplier, List<GFilter> filters, GAbstractContainerView filtersContainer) {
+    public GFilterController(GTableController logicsSupplier, List<GFilter> filters, boolean hasFiltersContainer) {
         this.logicsSupplier = logicsSupplier;
         this.initialFilters = filters;
-        if (filtersContainer != null) {
-            filtersContainerWidget = filtersContainer.getView();
-        }
+        this.hasFiltersContainer = hasFiltersContainer;
 
         toolbarButton = new GToolbarButton(FILTER_ICON_PATH) {
             @Override
@@ -67,7 +65,7 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
         };
         updateToolbarButton();
 
-        if (hasOwnContainer()) {
+        if (hasFiltersContainer()) {
             addConditionButton = new GToolbarButton(ADD_ICON_PATH, messages.formFilterAddCondition()) {
                 @Override
                 public ClickHandler getClickHandler() {
@@ -126,7 +124,7 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
             for (GFilterConditionView view : conditionViews.values()) {
                 view.setToolsVisible(toolsVisible);
             }
-        } else if (toolsVisible && hasOwnContainer()) {
+        } else if (toolsVisible && hasFiltersContainer()) {
             addCondition();
         }
 
@@ -210,7 +208,7 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
 
             updateConditionsLastState();
 
-            logicsSupplier.getForm().getFormLayout().hideEmptyContainerViews(-1);
+            logicsSupplier.getForm().getFormLayout().update(-1);
 
             conditionView.focusOnValue();
 
@@ -316,14 +314,13 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
         }
     }
 
-    public boolean hasOwnContainer() {
-        return filtersContainerWidget != null;
+    public boolean hasFiltersContainer() {
+        return hasFiltersContainer;
     }
 
     public void setVisible(boolean visible) {
-        if (filtersContainerWidget != null) {
-            filtersContainerWidget.setVisible(visible);
-        }
+        for(GFilterConditionView conditionView : conditionViews.values())
+            conditionView.setVisible(visible);
     }
     
     public boolean hasConditions() {

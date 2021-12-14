@@ -1,13 +1,13 @@
 package lsfusion.gwt.client.controller.remote.action.form;
 
-public class SetTabVisible extends FormRequestCountingAction<ServerResponseResult> {
+public class SetTabActive extends FormRequestCountingAction<ServerResponseResult> {
     public int tabbedPaneID;
     public int tabIndex;
 
-    public SetTabVisible() {
+    public SetTabActive() {
     }
 
-    public SetTabVisible(int tabbedPaneID, int tabIndex) {
+    public SetTabActive(int tabbedPaneID, int tabIndex) {
         this.tabbedPaneID = tabbedPaneID;
         this.tabIndex = tabIndex;
     }

@@ -10,18 +10,15 @@ import lsfusion.gwt.client.base.focus.DefaultFocusReceiver;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.HasMaxPreferredSize;
 import lsfusion.gwt.client.base.view.ResizableComplexPanel;
-import lsfusion.gwt.client.base.view.ResizableSimplePanel;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
-import lsfusion.gwt.client.form.design.view.flex.*;
+import lsfusion.gwt.client.form.design.view.flex.LinearContainerView;
 import lsfusion.gwt.client.form.object.table.grid.GGrid;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class GFormLayout extends ResizableComplexPanel {
 
@@ -67,7 +64,7 @@ public class GFormLayout extends ResizableComplexPanel {
         if (container.tabbed) {
             return new TabbedContainerView(form, container);
         } else {
-            return new LinearContainerView(container);
+            return new LinearContainerView(form, container);
         }
     }
 
@@ -178,13 +175,17 @@ public class GFormLayout extends ResizableComplexPanel {
         return containerViews.get(container);
     }
 
-    public void hideEmptyContainerViews(int requestIndex) {
-        autoShowHideContainers(mainContainer, requestIndex);
+    public void update(int requestIndex) {
+        updateContainersVisibility(mainContainer, requestIndex);
 
-        FlexPanel.autoStretchAndDrawBorders(getMainView());
+        updatePanels();
     }
 
-    private boolean autoShowHideContainers(GContainer container, long requestIndex) {
+    public void updatePanels() {
+        FlexPanel.updatePanels(getMainView());
+    }
+
+    private boolean updateContainersVisibility(GContainer container, long requestIndex) {
         GAbstractContainerView containerView = getContainerView(container);
         boolean hasVisible = false;
         int size = containerView.getChildrenCount();
@@ -194,7 +195,7 @@ public class GFormLayout extends ResizableComplexPanel {
 
             boolean childVisible;
             if (child instanceof GContainer)
-                childVisible = autoShowHideContainers((GContainer) child, requestIndex);
+                childVisible = updateContainersVisibility((GContainer) child, requestIndex);
             else {
                 Widget childView = baseComponentViews.get(child); // we have to use baseComponentView (and not a wrapper in getChildView), since it has relevant visible state
                 childVisible = childView != null && childView.isVisible();
@@ -202,7 +203,7 @@ public class GFormLayout extends ResizableComplexPanel {
                 if (child instanceof GGrid) {
                     GContainer record = ((GGrid) child).record;
                     if(record != null)
-                        autoShowHideContainers(record, requestIndex);
+                        updateContainersVisibility(record, requestIndex);
                 }
             }
 

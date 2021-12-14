@@ -133,6 +133,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         GContainer container = initGwtComponent(clientContainer,  new GContainer());
 
         container.caption = clientContainer.caption;
+        container.collapsible = clientContainer.collapsible;
         container.horizontal = clientContainer.horizontal;
         container.tabbed = clientContainer.tabbed;
         container.childrenAlignment = convertFlexAlignment(clientContainer.childrenAlignment);

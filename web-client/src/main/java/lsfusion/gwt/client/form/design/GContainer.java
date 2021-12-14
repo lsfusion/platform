@@ -14,6 +14,7 @@ import java.util.List;
 
 public class GContainer extends GComponent {
     public String caption;
+    public boolean collapsible;
 
     public boolean main;
 

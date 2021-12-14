@@ -236,54 +236,75 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
     public ComponentView getHiddenContainer() { // when used for hidden optimization
         return getContainer();
     }
-    public ContainerView getTabbedContainer() { // when it is known that component is a tab of a tabbed pane
-        ContainerView container = getContainer();
-        assert container.isTabbed();
-        return container;
-    }
     public ContainerView getLayoutParamContainer() { // for using in default layouting parameters
         return getContainer();
     }
-
 
     @IdentityLazy
     public boolean isDesignHidden() {
         ComponentView parent = getHiddenContainer();
         if(parent == null)
             return true;
-        if(parent instanceof ContainerView && ((ContainerView)parent).main)
+        if(parent.isMain())
             return false;
         return parent.isDesignHidden();
 
     }
     @IdentityLazy
-    public ComponentView getLocalHideableContainer() { // show if or tabbed
-        ComponentView parent = getHiddenContainer();
-        assert parent != null; // эквивалентно !isDesignHidden();
-        if(parent instanceof ContainerView) {
-            ContainerView parentContainer = (ContainerView)parent;
-            if (parentContainer.main) 
-                return null;
-            if (parentContainer.showIf != null) 
-                return parent;
-            if (parentContainer.isTabbed())
-                return this;
-        }
-        return parent.getLocalHideableContainer();
+    public ComponentView getDynamicHidableContainer() { // show if or user hideable
+        if(isMain())
+            return null;
+
+        if(isDynamicHidable())
+            return this;
+
+        return getHiddenContainer().getDynamicHidableContainer();
     }
 
     @IdentityLazy
-    public ComponentView getTabHiddenContainer() {
+    public ComponentView getUserHidableContainer() {
+        if (isMain())
+            return null;
+
+        if(isUserHidable())
+            return this;
+
+        return getHiddenContainer().getUserHidableContainer();
+    }
+
+    @IdentityLazy
+    public ContainerView getShowIfHidableContainer() {
+        if (isMain())
+            return null;
+
+        if(isShowIfHidable())
+            return (ContainerView) this;
+
+        return getHiddenContainer().getShowIfHidableContainer();
+    }
+
+    public boolean isMain() {
+        return this instanceof ContainerView && ((ContainerView) this).main;
+    }
+
+    public boolean isDynamicHidable() {
+        return isShowIfHidable() || isUserHidable();
+    }
+
+    public boolean isShowIfHidable() {
+        return this instanceof ContainerView && ((ContainerView) this).showIf != null;
+    }
+
+    public boolean isUserHidable() {
         ComponentView parent = getHiddenContainer();
-        // assert !isNotTabHidden - то есть design + showif не hidden
-        assert parent != null; // частный случай (!isDesignHidden) верхнего assertion'а
-        if(parent instanceof ContainerView) {
-            if (((ContainerView)parent).main)
-                return null;
-            if (((ContainerView)parent).isTabbed())
-                return this;
-        }
-        return parent.getTabHiddenContainer();
+        assert parent != null;
+        if (parent instanceof ContainerView && ((ContainerView) parent).isTabbed())
+            return true;
+
+        if (this instanceof ContainerView && ((ContainerView) this).isCollapsible())
+            return true;
+
+        return false;
     }
 
     public boolean isAncestorOf(ComponentView container) {

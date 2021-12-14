@@ -14,6 +14,7 @@ import lsfusion.server.logics.form.interactive.controller.remote.serialization.S
 import lsfusion.server.logics.form.interactive.design.object.GridView;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
+import lsfusion.server.logics.property.value.NullValueProperty;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
@@ -31,6 +32,7 @@ public class ContainerView extends ComponentView {
     public NFOrderSet<ComponentView> children = NFFact.orderSet();
 
     public LocalizedString caption;
+    public Boolean collapsible;
 
     private ContainerType type = ContainerType.CONTAINERV;
     private boolean horizontal;
@@ -85,6 +87,21 @@ public class ContainerView extends ComponentView {
 
     public void setCaption(LocalizedString caption) {
         this.caption = caption;
+    }
+    
+    public void setCollapsible(boolean collapsible) {
+        this.collapsible = collapsible;
+    }
+    
+    public boolean isCollapsible() {
+        if(collapsible != null)
+            return collapsible;
+
+        return isDefaultCollapsible();
+    }
+
+    protected boolean isDefaultCollapsible() {
+        return caption != null && (propertyCaption == null || !(propertyCaption.property instanceof NullValueProperty)); // isEmpty can be better, but we just want to emulate NULL to be like NULL caption
     }
 
     public boolean isTabbed() {
@@ -317,6 +334,7 @@ public class ContainerView extends ComponentView {
 
         pool.writeString(outStream, ThreadLocalContext.localize(caption));
 
+        outStream.writeBoolean(isCollapsible());
 //        pool.writeObject(outStream, main);
 
         pool.writeBoolean(outStream, isHorizontal());
@@ -340,6 +358,8 @@ public class ContainerView extends ComponentView {
         children = NFFact.finalOrderSet(pool.deserializeList(inStream));
 
         caption = LocalizedString.create(pool.readString(inStream));
+        
+        collapsible = inStream.readBoolean();
 
 //        main = pool.readBoolean(inStream); // пока не будем делать, так как надо клиента обновлять
 
