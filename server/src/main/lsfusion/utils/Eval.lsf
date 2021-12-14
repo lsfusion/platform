@@ -241,7 +241,6 @@ DESIGN interpreter {
                     alignment = START;
                 };
                 NEW executeButton {
-                    caption = NULL;
                     MOVE PROPERTY(executeScript(s)) {
                         caption = '';
                         height = 45;

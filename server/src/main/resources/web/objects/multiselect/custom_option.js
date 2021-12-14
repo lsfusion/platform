@@ -12,12 +12,31 @@ function option() {
         },
         update: function (element, controller, list) {
             let options = element.options;
-            Array.from(options.children).forEach(o => options.removeChild(o));
-            list.forEach(rawOption => {
+            let diff = controller.getDiff(list, true);
+
+            diff.update.forEach(rawOption => Array.from(options.children).forEach(o => {
+                if (controller.getKey(o.key).toString() === controller.getKey(rawOption).toString()) {
+                    o.innerText = rawOption.name;
+                    o.selected = rawOption.selected;
+                    o.index = rawOption.index;
+                    o.style.backgroundColor = rawOption.selected ? 'var(--selection-color)' : 'unset';
+                }
+            }));
+
+            diff.remove.forEach(rawOption => {
+                let key = controller.getKey(rawOption).toString();
+                Array.from(options.children).forEach(o => {
+                    if (controller.getKey(o.key).toString() === key)
+                        options.removeChild(o);
+                });
+            });
+
+            diff.add.forEach(rawOption => {
                 let option = document.createElement('div');
                 option.innerText = rawOption.name;
                 option.key = rawOption;
                 option.selected = rawOption.selected;
+                option.index = rawOption.index;
 
                 option.style.backgroundColor = rawOption.selected ? 'var(--selection-color)' : 'unset';
                 option.style.display = 'inline-block';
@@ -40,7 +59,11 @@ function option() {
                     controller.changeSimpleGroupObject(this.key, false, null);
                 });
 
-                options.appendChild(option);
+                let currentOptions = Array.from(options.children);
+                if (option.index === (currentOptions.length))
+                    options.appendChild(option);
+                else
+                    options.insertBefore(option, currentOptions[option.index]);
             });
 
             //set Current

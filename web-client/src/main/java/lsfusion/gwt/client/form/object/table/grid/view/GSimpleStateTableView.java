@@ -370,7 +370,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
     }
 
     NativeHashMap<GGroupObjectValue, JavaScriptObject> oldOptionsList = new NativeHashMap<>();
-    private JavaScriptObject getDiff(JsArray<JavaScriptObject> list) {
+    private JavaScriptObject getDiff(JsArray<JavaScriptObject> list, boolean supportReordering) {
         List<JavaScriptObject> optionsToAdd = new ArrayList<>();
         List<JavaScriptObject> optionsToUpdate = new ArrayList<>();
         List<JavaScriptObject> optionsToRemove = new ArrayList<>();
@@ -383,8 +383,14 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
 
             JavaScriptObject oldValue = oldOptionsList.remove(getKey(object));
             if (oldValue != null) {
-                if (!GwtClientUtils.isJSObjectPropertiesEquals(object, oldValue))
-                    optionsToUpdate.add(object);
+                if (!GwtClientUtils.isJSObjectPropertiesEquals(object, oldValue)) {
+                    if (supportReordering && GwtClientUtils.getField(oldValue, "index") != fromNumber(i)) {
+                        optionsToRemove.add(object);
+                        optionsToAdd.add(object);
+                    } else {
+                        optionsToUpdate.add(object);
+                    }
+                }
             } else {
                 optionsToAdd.add(object);
             }
@@ -467,8 +473,8 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             getKey: function (object) {
                 return thisObj.@GSimpleStateTableView::getKey(*)(object);
             },
-            getDiff: function (newList) {
-                return thisObj.@GSimpleStateTableView::getDiff(*)(newList);
+            getDiff: function (newList, supportReordering) {
+                return thisObj.@GSimpleStateTableView::getDiff(*)(newList, supportReordering);
             },
             getColorThemeName: function () {
                 return @lsfusion.gwt.client.view.MainFrame::colorTheme.@java.lang.Enum::name()();
