@@ -61,10 +61,12 @@ public class RemoteClassLoader extends RMIClassLoaderSpi {
         }
     }
 
-    private final ExternalClassLoader remoteLoader;
+    private static ExternalClassLoader remoteLoader;
+    public static void setRemoteLogics(RemoteLogicsInterface remoteLogics) {
+        remoteLoader = new ExternalClassLoader(remoteLogics);
+    }
 
-    public RemoteClassLoader(RemoteLogicsInterface remoteLogicsInterface) {
-        this.remoteLoader = new ExternalClassLoader(remoteLogicsInterface);
+    public RemoteClassLoader() {
     }
 
     @Override

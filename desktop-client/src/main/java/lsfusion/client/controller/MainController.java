@@ -84,6 +84,8 @@ public class MainController {
 
     public static void start(final String[] args) {
 
+        System.setProperty("java.rmi.server.RMIClassLoaderSpi", "lsfusion.base.classloader.RemoteClassLoader");
+
         registerSingleInstanceListener();
 
         computerName = SystemUtils.getLocalHostName();
@@ -288,14 +290,15 @@ public class MainController {
         // requires RemoteClassLoader to run with native JWS ClassLoader
 
         try {
-            Field field = RMIClassLoader.class.getDeclaredField("provider");
-            field.setAccessible(true);
-
-            Field modifiersField = Field.class.getDeclaredField("modifiers");
-            modifiersField.setAccessible(true);
-            modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
-
-            field.set(null, new RemoteClassLoader(remoteLogics));
+            RemoteClassLoader.setRemoteLogics(remoteLogics);
+//            Field field = RMIClassLoader.class.getDeclaredField("provider");
+//            field.setAccessible(true);
+//
+//            Field modifiersField = Field.class.getDeclaredField("modifiers");
+//            modifiersField.setAccessible(true);
+//            modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
+//
+//            field.set(null, new RemoteClassLoader(remoteLogics));
 
             // reset the SecurityManager that installs JavaWS,
             // since it doesn't let the RemoteClassLoader class do anything,
