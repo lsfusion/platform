@@ -22,11 +22,6 @@ function select2_set() {
         let diff = controller.getDiff(list);
         let optionsParent = select2Instance.context;
 
-        diff.update.forEach(option => {
-            removeOption(option);
-            select2Instance.append(mapOption(option, controller));
-        });
-
         diff.remove.forEach(option => removeOption(option));
 
         diff.add.forEach(option => {
@@ -34,6 +29,11 @@ function select2_set() {
             // This checks if the option is already marked
             if (findOption(optionsParent, controller, option) == null)
                 select2Instance.append(mapOption(option, controller));
+        });
+
+        diff.update.forEach(option => {
+            removeOption(option);
+            select2Instance.append(mapOption(option, controller));
         });
 
         function removeOption(option) {

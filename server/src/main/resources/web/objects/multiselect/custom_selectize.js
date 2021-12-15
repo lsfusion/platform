@@ -11,14 +11,14 @@ function selectize_set() {
         let selectizeInstance = controller.selectizeInstance[0].selectize;
         let diff = controller.getDiff(list);
 
+        diff.remove.forEach(option => selectizeInstance.removeItem(controller.getKey(option).toString()));
+
+        addOptions(selectizeInstance, diff.add, controller);
+
         diff.update.forEach(option => {
             let selectizeOption = mapOption(option, controller);
             selectizeInstance.updateOption(selectizeOption.value, selectizeOption);
         });
-
-        diff.remove.forEach(option => selectizeInstance.removeItem(controller.getKey(option).toString()));
-
-        addOptions(selectizeInstance, diff.add, controller);
     });
 }
 

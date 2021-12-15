@@ -162,8 +162,8 @@ changeScript(Script sc) {
 
 FORM interpreter '{eval.script.form.interpreter}'
     OBJECTS st = ScriptType CUSTOM 'option'
-    PROPERTIES(st) SHOWIF isWeb() name=executionScriptTypeCaption, selected=selectedExecutionScriptType
-    ORDERS name
+    PROPERTIES(st) SHOWIF isWeb() name=executionScriptTypeCaption, selected=selectedExecutionScriptType, executionScriptTypeName
+    ORDERS executionScriptTypeName(st)
     
     OBJECTS s = Script PANEL
     PROPERTIES name(s), json(s) CUSTOM 'interpreter' SHOWIF isWeb() ON CHANGE changeScript(s), text(s) SHOWIF NOT isWeb()

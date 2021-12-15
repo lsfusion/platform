@@ -14,13 +14,6 @@ function option() {
             let options = element.options;
             let diff = controller.getDiff(list, true);
 
-            diff.update.forEach(rawOption => {
-                let child = options.children[rawOption.index];
-                child.innerText = rawOption.name;
-                child.selected = rawOption.selected;
-                child.style.backgroundColor = rawOption.selected ? 'var(--selection-color)' : 'unset';
-            });
-
             diff.remove.forEach(rawOption => options.removeChild(options.children[rawOption.index]));
 
             diff.add.forEach(rawOption => {
@@ -55,6 +48,13 @@ function option() {
                     options.appendChild(option);
                 else
                     options.insertBefore(option, currentOptions[rawOption.index]);
+            });
+
+            diff.update.forEach(rawOption => {
+                let child = options.children[rawOption.index];
+                child.innerText = rawOption.name;
+                child.selected = rawOption.selected;
+                child.style.backgroundColor = rawOption.selected ? 'var(--selection-color)' : 'unset';
             });
 
             //set Current
