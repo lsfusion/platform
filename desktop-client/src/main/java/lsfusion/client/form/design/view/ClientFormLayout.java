@@ -160,13 +160,21 @@ public class ClientFormLayout extends PanelWidget {
     private Map<ClientComponent, Widget> baseComponentViews = new HashMap<>();
 
     public void addBaseComponent(ClientComponent component, Widget view) {
+        addBaseComponent(component, view, view.getComponent());
+    }
+
+    public void addBaseComponent(ClientComponent component, Widget view, Object focusReceiver) {
         assert !(component instanceof ClientContainer);
         baseComponentViews.put(component, view);
-        add(component, view);
+        add(component, view, focusReceiver);
     }
 
     // добавляем визуальный компонент
     public boolean add(ClientComponent key, Widget view) {
+        return add(key, view, view.getComponent());
+    }
+
+    public boolean add(ClientComponent key, Widget view, Object focusReceiver) {
         if (key.container != null) { // container can be null when component should be layouted manually
             ClientContainerView containerView = containerViews.get(key.container);
             if (containerView != null && !containerView.hasChild(key)) {
@@ -176,7 +184,7 @@ public class ClientFormLayout extends PanelWidget {
                 containerView.add(key, view);
 
                 if (key.defaultComponent) {
-                    policy.addDefault(view.getComponent());
+                    policy.addDefault(focusReceiver);
                 }
                 return true;
             }

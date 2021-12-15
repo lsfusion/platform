@@ -200,7 +200,7 @@ public class ActionPanelView extends ButtonWidget implements PanelView, EditProp
     }
 
     public JComponent getFocusComponent() {
-        return getWidget().getComponent();
+        return this;
     }
 
     public void setValue(Object value) {
