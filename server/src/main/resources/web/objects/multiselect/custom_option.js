@@ -14,13 +14,12 @@ function option() {
             let options = element.options;
             let diff = controller.getDiff(list, true);
 
-            diff.update.forEach(rawOption => Array.from(options.children).forEach(o => {
-                if (controller.getKey(o.key).toString() === controller.getKey(rawOption).toString()) {
-                    o.innerText = rawOption.name;
-                    o.selected = rawOption.selected;
-                    o.style.backgroundColor = rawOption.selected ? 'var(--selection-color)' : 'unset';
-                }
-            }));
+            diff.update.forEach(rawOption => {
+                let child = options.children[rawOption.index];
+                child.innerText = rawOption.name;
+                child.selected = rawOption.selected;
+                child.style.backgroundColor = rawOption.selected ? 'var(--selection-color)' : 'unset';
+            });
 
             diff.remove.forEach(rawOption => options.removeChild(options.children[rawOption.index]));
 
@@ -51,7 +50,7 @@ function option() {
                     controller.changeSimpleGroupObject(this.key, false, null);
                 });
 
-                let currentOptions = Array.from(options.children);
+                let currentOptions = options.children;
                 if (rawOption.index === (currentOptions.length))
                     options.appendChild(option);
                 else

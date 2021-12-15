@@ -385,7 +385,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             if (oldValue != null) {
                 if (!GwtClientUtils.isJSObjectPropertiesEquals(object, oldValue)) {
                     if (supportReordering && Integer.parseInt(GwtClientUtils.getField(oldValue, "index").toString()) != i) {
-                        optionsToRemove.add(object);
+                        optionsToRemove.add(oldValue);
                         optionsToAdd.add(object);
                     } else {
                         optionsToUpdate.add(object);

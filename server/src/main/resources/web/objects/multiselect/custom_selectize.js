@@ -49,6 +49,11 @@ function _selectize(updateFunction) {
         }));
     }
 
+    function removeOptions(selectizeInstance) {
+        silentExecute(selectizeInstance, 'item_remove',
+            () => Object.keys(selectizeInstance.options).forEach(key => selectizeInstance.removeOption(key)));
+    }
+
     return {
         render: (element, controller) => controller.selectizeInstance = $(element).selectize({
             preload: 'focus',
@@ -83,9 +88,7 @@ function _selectize(updateFunction) {
                 controller.booleanFilterSet = true;
                 return;
             }
-            updateFunction(element, controller, list, mapOption, addOptions,
-                (selectizeInstance) => silentExecute(selectizeInstance, 'item_remove',
-                    () => Object.keys(selectizeInstance.options).forEach(key => selectizeInstance.removeOption(key))));
+            updateFunction(element, controller, list, mapOption, addOptions, removeOptions);
         }
     }
 }
