@@ -1,22 +1,13 @@
 function selectize() {
-    return _selectize((element, controller, list, mapOption, setBooleanFilter, addOptions) => {
-        if (setBooleanFilter(controller)) return;
-
+    return _selectize((element, controller, list, mapOption, addOptions, removeOptions) => {
         let selectizeInstance = controller.selectizeInstance[0].selectize;
-        selectizeInstance.clear();
-
-        addOptions(selectizeInstance, () => list.forEach(selectedOption => {
-            let selectizeOption = mapOption(selectedOption, controller);
-            selectizeInstance.addOption(selectizeOption);
-            selectizeInstance.addItem(selectizeOption.value);
-        }));
+        removeOptions(selectizeInstance);
+        addOptions(selectizeInstance, list, controller);
     });
 }
 
 function selectize_set() {
-    return _selectize((element, controller, list, mapOption, setBooleanFilter, addOptions) => {
-        if (setBooleanFilter(controller)) return;
-
+    return _selectize((element, controller, list, mapOption, addOptions) => {
         let selectizeInstance = controller.selectizeInstance[0].selectize;
         let diff = controller.getDiff(list);
 
@@ -25,16 +16,11 @@ function selectize_set() {
             selectizeInstance.updateOption(selectizeOption.value, selectizeOption);
         });
 
-        addOptions(selectizeInstance, () => diff.add.forEach(option => {
-            let selectizeOption = mapOption(option, controller);
-            selectizeInstance.addOption(selectizeOption);
-            selectizeInstance.addItem(selectizeOption.value);
-        }));
-
         diff.remove.forEach(option => selectizeInstance.removeItem(controller.getKey(option).toString()));
+
+        addOptions(selectizeInstance, diff.add, controller);
     });
 }
-
 
 function _selectize(updateFunction) {
     function mapOption(option, controller) {
@@ -45,19 +31,22 @@ function _selectize(updateFunction) {
         }
     }
 
-    function setBooleanFilter(controller) {
-        if (!controller.booleanFilterSet) {
-            controller.setBooleanViewFilter('selected', 1000);
-            controller.booleanFilterSet = true;
-            return true;
-        }
+    //wrapper to avoid calling selectize events
+    function silentExecute(selectizeInstance, eventName, func) {
+        let e = selectizeInstance._events[eventName];
+        delete selectizeInstance._events[eventName];
+
+        func();
+
+        selectizeInstance._events[eventName] = e;
     }
 
-    function addOptions(selectizeInstance, addFunction) { //wrapper to avoid calling onItemAdd
-        let e = selectizeInstance._events['item_add'];
-        delete selectizeInstance._events['item_add'];
-        addFunction();
-        selectizeInstance._events['item_add'] = e;
+    function addOptions(selectizeInstance, optionsList, controller) {
+        silentExecute(selectizeInstance, 'item_add', () => optionsList.forEach(option => {
+            let selectizeOption = mapOption(option, controller);
+            selectizeInstance.addOption(selectizeOption);
+            selectizeInstance.addItem(selectizeOption.value);
+        }));
     }
 
     return {
@@ -88,6 +77,15 @@ function _selectize(updateFunction) {
             },
             plugins: ['remove_button']
         }),
-        update: (element, controller, list) => updateFunction(element, controller, list, mapOption, setBooleanFilter, addOptions)
+        update: (element, controller, list) => {
+            if (!controller.booleanFilterSet) {
+                controller.setBooleanViewFilter('selected', 1000);
+                controller.booleanFilterSet = true;
+                return;
+            }
+            updateFunction(element, controller, list, mapOption, addOptions,
+                (selectizeInstance) => silentExecute(selectizeInstance, 'item_remove',
+                    () => Object.keys(selectizeInstance.options).forEach(key => selectizeInstance.removeOption(key))));
+        }
     }
 }

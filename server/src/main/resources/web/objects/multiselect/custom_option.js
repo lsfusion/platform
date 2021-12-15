@@ -18,25 +18,17 @@ function option() {
                 if (controller.getKey(o.key).toString() === controller.getKey(rawOption).toString()) {
                     o.innerText = rawOption.name;
                     o.selected = rawOption.selected;
-                    o.index = rawOption.index;
                     o.style.backgroundColor = rawOption.selected ? 'var(--selection-color)' : 'unset';
                 }
             }));
 
-            diff.remove.forEach(rawOption => {
-                let key = controller.getKey(rawOption).toString();
-                Array.from(options.children).forEach(o => {
-                    if (controller.getKey(o.key).toString() === key)
-                        options.removeChild(o);
-                });
-            });
+            diff.remove.forEach(rawOption => options.removeChild(options.children[rawOption.index]));
 
             diff.add.forEach(rawOption => {
                 let option = document.createElement('div');
                 option.innerText = rawOption.name;
                 option.key = rawOption;
                 option.selected = rawOption.selected;
-                option.index = rawOption.index;
 
                 option.style.backgroundColor = rawOption.selected ? 'var(--selection-color)' : 'unset';
                 option.style.display = 'inline-block';
@@ -60,10 +52,10 @@ function option() {
                 });
 
                 let currentOptions = Array.from(options.children);
-                if (option.index === (currentOptions.length))
+                if (rawOption.index === (currentOptions.length))
                     options.appendChild(option);
                 else
-                    options.insertBefore(option, currentOptions[option.index]);
+                    options.insertBefore(option, currentOptions[rawOption.index]);
             });
 
             //set Current

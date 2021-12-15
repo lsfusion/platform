@@ -384,7 +384,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             JavaScriptObject oldValue = oldOptionsList.remove(getKey(object));
             if (oldValue != null) {
                 if (!GwtClientUtils.isJSObjectPropertiesEquals(object, oldValue)) {
-                    if (supportReordering && GwtClientUtils.getField(oldValue, "index") != fromNumber(i)) {
+                    if (supportReordering && Integer.parseInt(GwtClientUtils.getField(oldValue, "index").toString()) != i) {
                         optionsToRemove.add(object);
                         optionsToAdd.add(object);
                     } else {
@@ -402,7 +402,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         JavaScriptObject object = GwtClientUtils.newObject();
         GwtClientUtils.setField(object, "add", fromObject(optionsToAdd.toArray()));
         GwtClientUtils.setField(object, "update", fromObject(optionsToUpdate.toArray()));
-        GwtClientUtils.setField(object, "remove", fromObject(optionsToRemove.toArray()));
+        GwtClientUtils.setField(object, "remove", GwtClientUtils.sortArray(fromObject(optionsToRemove.toArray()), "index", true));
         return object;
     }
 

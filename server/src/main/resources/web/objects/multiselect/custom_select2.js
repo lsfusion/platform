@@ -3,9 +3,7 @@
 // name : selection name
 
 function select2() {
-    return _select2((element, controller, list, mapOption, setBooleanFilter) => {
-        if (setBooleanFilter(controller)) return;
-
+    return _select2((element, controller, list, mapOption) => {
         let select2Instance = controller.select2Instance;
         let optionsParent = select2Instance.context;
         Array.from(optionsParent.children).forEach(o => optionsParent.removeChild(o));
@@ -15,32 +13,31 @@ function select2() {
 }
 
 function select2_set() {
-    return _select2((element, controller, list, mapOption, setBooleanFilter) => {
-        if (setBooleanFilter(controller)) return;
+    function findOption(optionsParent, controller, rawOption) {
+        return Array.from(optionsParent.children).filter(o => o.value === controller.getKey(rawOption).toString())[0];
+    }
 
+    return _select2((element, controller, list, mapOption) => {
         let select2Instance = controller.select2Instance;
         let diff = controller.getDiff(list);
-        let select2Options = Array.from(select2Instance.context.children);
+        let optionsParent = select2Instance.context;
 
         diff.update.forEach(option => {
             removeOption(option);
             select2Instance.append(mapOption(option, controller));
         });
 
+        diff.remove.forEach(option => removeOption(option));
+
         diff.add.forEach(option => {
-            let value = controller.getKey(option).toString();
             // When user select option from the list select2 marks it and then changes from the server come in and the option is marked a second time.
             // This checks if the option is already marked
-            if (select2Options.filter(o => o.value === value).length === 0)
+            if (findOption(optionsParent, controller, option) == null)
                 select2Instance.append(mapOption(option, controller));
         });
 
-        diff.remove.forEach(option => removeOption(option));
-
         function removeOption(option) {
-            let optionsParent = select2Instance.context;
-            let key = controller.getKey(option).toString();
-            Array.from(optionsParent.children).filter(o => o.value === key).forEach(child => optionsParent.removeChild(child));
+            optionsParent.removeChild(findOption(optionsParent, controller, option));
         }
     });
 }
@@ -50,14 +47,6 @@ function _select2(updateFunction) {
         let mappedOption = new Option(option.name, controller.getKey(option).toString(), false, true);
         mappedOption.key = option;
         return mappedOption;
-    }
-
-    function setBooleanFilter(controller) {
-        if (!controller.booleanFilterSet) {
-            controller.setBooleanViewFilter('selected', 1000);
-            controller.booleanFilterSet = true;
-            return true;
-        }
     }
 
     return {
@@ -98,6 +87,13 @@ function _select2(updateFunction) {
                 controller.changeProperty('selected', data.key == null ? data.element.key : data.key, null);
             });
         },
-        update: (element, controller, list) => updateFunction(element, controller, list, mapOption, setBooleanFilter)
+        update: (element, controller, list) => {
+            if (!controller.booleanFilterSet) {
+                controller.setBooleanViewFilter('selected', 1000);
+                controller.booleanFilterSet = true;
+                return;
+            }
+            updateFunction(element, controller, list, mapOption);
+        }
     }
 }
