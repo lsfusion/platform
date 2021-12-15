@@ -221,11 +221,11 @@ To access design components, you can use their names or address property compone
     The type of an object group / tree container.
 
     - All types of containers of the `noGroupObjectTreeContainerType` form (identical semantics)
-    - `GRIDBOX` - a table container
+    - `GRIDBOX` - a table container<br/>**deprecated since version 5, use `GRID`**
     - `GRID` - a table component
     - `TOOLBARSYSTEM` - a system toolbar (number of records, group adjustment, etc.).
     - `FILTERGROUPS` - contains filter group components
-    - `USERFILTER` - a component that displays custom filters
+    - `USERFILTER` - a component that displays custom filters<br/>**deprecated since version 5, use `FILTERS`**
 
 ## Examples
 
