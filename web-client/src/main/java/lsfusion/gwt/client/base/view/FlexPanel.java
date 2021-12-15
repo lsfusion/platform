@@ -464,7 +464,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
                 FlexPanel.drawBorder(widget, set, start, vertical);
         }
 
-        public PanelParams autoStretchAndDrawBorders() {
+        public PanelParams updatePanels() {
             if(widgets.size() == 1)
                 return FlexPanel.updatePanels(widgets.get(0));
             else {
@@ -492,7 +492,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
                         }
 
                         @Override
-                        public PanelParams autoStretchAndDrawBorders() {
+                        public PanelParams updatePanels() {
                             // actually we have virtual stretched flexPanel here:
                             // with single widget element, the as flexPanel direction and:
                             //      alignment = widget.alignment
@@ -503,7 +503,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
                             GFlexAlignment alignment = alignmentLayoutData.baseAlignment;
                             if(!alignment.equals(GFlexAlignment.STRETCH)) {
                                 InnerAlignment innerAlignment = new InnerFlexAlignment(alignment);
-                                result = new PanelParams(result.top, result.bottom, result.left, result.right, result.hasBorders, vertical ? innerAlignment : result.horzAlignment, vertical ? result.vertAlignment : innerAlignment, result.vertCollapsed);
+                                result = new PanelParams(result.top, result.bottom, result.left, result.right, result.hasBorders, vertical ? innerAlignment : result.horzAlignment, vertical ? result.vertAlignment : innerAlignment, result.vertCollapsed, result.empty);
                             }
                             return result;
                         }
@@ -804,7 +804,10 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
         // collapsing
         public final boolean vertCollapsed;
 
-        public PanelParams(boolean top, boolean bottom, boolean left, boolean right, boolean hasBorders, InnerAlignment horzAlignment, InnerAlignment vertAlignment, boolean vertCollapsed) {
+        // empty
+        public final boolean empty;
+
+        public PanelParams(boolean top, boolean bottom, boolean left, boolean right, boolean hasBorders, InnerAlignment horzAlignment, InnerAlignment vertAlignment, boolean vertCollapsed, boolean empty) {
             this.top = top;
             this.bottom = bottom;
             this.left = left;
@@ -816,6 +819,8 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
             this.vertAlignment = vertAlignment;
 
             this.vertCollapsed = vertCollapsed;
+
+            this.empty = empty;
         }
     }
 
@@ -825,7 +830,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
 
         Element getStretchElement();
 
-        PanelParams autoStretchAndDrawBorders();
+        PanelParams updatePanels();
 
         void drawBorder(boolean set, boolean start, boolean vertical);
     }
@@ -848,19 +853,17 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
             boolean collapsed = flexPanel instanceof CollapsiblePanel && ((CollapsiblePanel) flexPanel).collapsed;
             return updatePanels(grid, vertical, flexPanel.flexAlignment, lines, flexPanel instanceof CaptionPanel || flexPanel instanceof FlexTabbedPanel, !collapsed, collapsed, wrap ? flexPanel : null);
         } else
-            return new PanelParams(widget instanceof ResizableSimplePanel && ((ResizableSimplePanel) widget).getWidget() instanceof DataGrid, false, false, false, false, InnerAlignment.DIFF, InnerAlignment.DIFF, false);
+            return new PanelParams(widget instanceof ResizableSimplePanel && ((ResizableSimplePanel) widget).getWidget() instanceof DataGrid, false, false, false, false, InnerAlignment.DIFF, InnerAlignment.DIFF, false, false);
     }
 
     private static PanelParams updatePanels(boolean grid, boolean vertical, GFlexAlignment flexAlignment, List<? extends FlexStretchLine> lines, boolean forceTopBorders, boolean forceRestBorders, boolean forceVertCollapsed, FlexPanel wrapPanel) {
         boolean top = true, bottom = false, left = false, right = false;
 
+        // STRETCH
         boolean hasBorders = false;
 
         InnerAlignment oppositeAlignment = InnerAlignment.ANY;
-        boolean oppositeCollapsed = true;
-
-        Boolean prevBorder = null;
-        FlexStretchLine prevLine = null;
+        boolean oppositeCollapsed = true; // COLLAPSE
 
         FlexStretchLine flexLine = null;
         FlexLayoutData flexLineLayoutData = null;
@@ -868,29 +871,38 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
 
         InnerAlignment flexChildAlignment = null;
         int flexCount = 0;
-        boolean flexCollapsed = false;
+        boolean flexCollapsed = false; // COLLAPSE
 
+        boolean firstElement = true;
         boolean singleElement = true;
 
+        // BORDERS
+        // wrapped
         boolean drawWrapHorzBorder = false;
         Boolean prevWrapHorzBorder = null;
+        // not wrapped
+        Boolean prevBorder = null;
+        FlexStretchLine prevLine = null;
 
         for (FlexStretchLine childLine : lines) {
-            PanelParams childBorders = childLine.autoStretchAndDrawBorders();
+            PanelParams childParams = childLine.updatePanels();
 
+            // STRETCH
             FlexLayoutData flexLayoutData = childLine.getFlexLayoutData();
             AlignmentLayoutData alignmentLayoutData = childLine.getAlignmentLayoutData();
 
             GFlexAlignment childAlignment = alignmentLayoutData.baseAlignment;
 
-            hasBorders |= childBorders.hasBorders;
+            hasBorders |= childParams.hasBorders;
 
             // OPPOSITE direction
-            boolean childOppositeCollapsed = vertical ? false : childBorders.vertCollapsed;
+
+            // COLLAPSE
+            boolean childOppositeCollapsed = vertical ? false : childParams.vertCollapsed;
             oppositeCollapsed = oppositeCollapsed && childOppositeCollapsed;
             // there is no need to change alignment, because in fact only flex change to 0 changes layouting
 
-            InnerAlignment oppositeChildAlignment = vertical ? childBorders.horzAlignment : childBorders.vertAlignment;
+            InnerAlignment oppositeChildAlignment = vertical ? childParams.horzAlignment : childParams.vertAlignment;
 
             InnerAlignment innerChildAlignment;
             // if component is already stretched we're using the inner alignment
@@ -901,73 +913,76 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
                 // opposite direction we can proceed immediately
                 setStretchAlignment(grid, vertical, alignmentLayoutData, childLine, hasBorders && isStretch(oppositeChildAlignment, innerChildAlignment));
             }
-
-            if (prevBorder == null) // first visible
-                oppositeAlignment = innerChildAlignment;
-            else {
-                singleElement = false;
-
-                oppositeAlignment = oppositeAlignment.merge(innerChildAlignment);;
-            }
+            oppositeAlignment = oppositeAlignment.merge(innerChildAlignment);
 
             // MAIN direction
-            boolean childMainCollapsed = vertical ? childBorders.vertCollapsed : false;
+
+            // COLLAPSE
+            boolean childMainCollapsed = vertical ? childParams.vertCollapsed : false;
             if(childMainCollapsed)
                 flexCollapsed = true;
 
-            setFlexModifier(grid, vertical, flexLayoutData, childLine, childMainCollapsed ? FlexModifier.COLLAPSE : null); // dropping stretch / setting collapse
+            setFlexModifier(grid, vertical, flexLayoutData, childLine, childMainCollapsed ? FlexModifier.COLLAPSE : null); // dropping STRETCH / setting COLLAPSE
 
             boolean childMainFlex = flexLayoutData.isFlex();
-            if (prevBorder == null || flexAlignment.equals(GFlexAlignment.START)) {
+            if (firstElement || flexAlignment.equals(GFlexAlignment.START)) {
                 flexLine = childLine;
                 flexLineLayoutData = flexLayoutData;
                 flexIs = childMainFlex;
-                flexChildAlignment = vertical ? childBorders.vertAlignment : childBorders.horzAlignment;
+                flexChildAlignment = vertical ? childParams.vertAlignment : childParams.horzAlignment;
             }
             if (childMainFlex)
                 flexCount++;
 
-            if(wrapPanel != null) {
-                if(prevWrapHorzBorder != null)
-                    drawWrapHorzBorder |= prevWrapHorzBorder || childBorders.left;
-                prevWrapHorzBorder = childBorders.right;
+            // BORDERS
+            if(childParams.empty) // just ignoring empty containers to avoid borders around them
+                continue;
 
-                left |= childBorders.left;
-                right |= childBorders.right;
-                top &= childBorders.top;
-                bottom |= childBorders.bottom;
-            } else {
-                // drawing borders
+            if(wrapPanel != null) { // wrapped
+                if(prevWrapHorzBorder != null)
+                    drawWrapHorzBorder |= prevWrapHorzBorder || childParams.left;
+                prevWrapHorzBorder = childParams.right;
+
+                left |= childParams.left;
+                right |= childParams.right;
+                top &= childParams.top;
+                bottom |= childParams.bottom;
+            } else { // not wrapped
                 boolean drawBorder = false;
                 if (vertical) {
-                    left |= childBorders.left;
-                    right |= childBorders.right;
+                    left |= childParams.left;
+                    right |= childParams.right;
 
                     if (prevBorder != null)
-                        drawBorder = prevBorder && !childBorders.top;
+                        drawBorder = prevBorder && !childParams.top;
                     else
-                        top = childBorders.top;
+                        top = childParams.top;
                 } else {
-                    top &= childBorders.top;
-                    bottom |= childBorders.bottom;
+                    top &= childParams.top;
+                    bottom |= childParams.bottom;
 
                     if (prevBorder != null)
-                        drawBorder = prevBorder || childBorders.left;
+                        drawBorder = prevBorder || childParams.left;
                     else
-                        left = childBorders.left;
+                        left = childParams.left;
                 }
 
                 childLine.drawBorder(false, false, vertical);
                 childLine.drawBorder(drawBorder, true, vertical);
                 if (drawBorder)
                     prevLine.drawBorder(true, false, vertical);
+
                 prevLine = childLine;
+
+                if(vertical)
+                    prevBorder = childParams.bottom;
+                else
+                    prevBorder = childParams.right;
             }
 
-            if(vertical)
-                prevBorder = childBorders.bottom;
-            else
-                prevBorder = childBorders.right;
+            if (firstElement)
+                singleElement = false;
+            firstElement = false;
         }
 
         if(wrapPanel != null) { // in grid wrap should be implemented as auto-fit (however it's possible only without align-captions)
@@ -987,12 +1002,15 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
             }
         }
 
+        boolean empty = false;
+
         InnerAlignment mainAlignment = InnerAlignment.ANY;
         boolean mainCollapsed = false;
 
         if(prevBorder != null) {
             if (flexCount == 0 || flexCount == 1 && flexIs) { // if we have no stretched or only one stretched element (that we would stretch anyway)
                 if (flexCount == 0) {
+                    // COLLAPSE
                     if(flexCollapsed) // no flex elements left, but there are collapsed elements, we're collapsing this container
                         mainCollapsed = true;
 
@@ -1007,8 +1025,10 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
                     mainAlignment = flexChildAlignment;
             } else
                 mainAlignment = InnerAlignment.DIFF;
-        } else // invisible, however it seems that it's needed only for columns container (which can have no children but still be visible)
+        } else { // empty, however it seems that it's needed only for columns container (which can have no children but still be visible)
             top = false;
+            empty = true;
+        }
 
         InnerAlignment horzAlignment = vertical ? oppositeAlignment : mainAlignment;
         InnerAlignment vertAlignment = vertical ? mainAlignment : oppositeAlignment;
@@ -1024,7 +1044,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
         if (forceVertCollapsed)
             vertCollapsed = true;
 
-        return new PanelParams(top, bottom, left, right, hasBorders, horzAlignment, vertAlignment, vertCollapsed);
+        return new PanelParams(top, bottom, left, right, hasBorders, horzAlignment, vertAlignment, vertCollapsed, empty);
     }
 
     @Override
