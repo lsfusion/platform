@@ -945,6 +945,12 @@ public class GwtClientUtils {
         return object[field] = value;
     }-*/;
 
+    public static native JavaScriptObject sortArray(JavaScriptObject array, String sortField, boolean reverseOrder)/*-{
+        return array.sort(function (a, b) {
+            return reverseOrder ? b[sortField] - a[sortField] : a[sortField] - b[sortField];
+        });
+    }-*/;
+
     public static native boolean isJSObjectPropertiesEquals(JavaScriptObject object1, JavaScriptObject object2)/*-{
         var keys = Object.keys(object1);
         for (var i = 0; i < keys.length; i++) {
