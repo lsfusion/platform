@@ -9,14 +9,13 @@ import lsfusion.client.form.controller.CloseAllAction;
 import lsfusion.client.form.controller.FormsController;
 import lsfusion.client.navigator.ClientNavigator;
 import lsfusion.client.navigator.controller.AsyncFormController;
-import lsfusion.client.view.DockableMainFrame;
 import lsfusion.client.view.MainFrame;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.List;
 import java.awt.event.KeyEvent;
+import java.util.List;
 
 public class ClientFormDockable extends ClientDockable {
 
@@ -82,6 +81,7 @@ public class ClientFormDockable extends ClientDockable {
         };
 
         setContent(this.form.getLayout());
+        onContendAdded();
         async = false;
     }
 
