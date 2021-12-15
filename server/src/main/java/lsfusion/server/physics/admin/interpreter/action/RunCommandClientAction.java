@@ -2,35 +2,20 @@ package lsfusion.server.physics.admin.interpreter.action;
 
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.action.ClientActionDispatcher;
-
-import java.io.BufferedInputStream;
-import java.io.IOException;
-
+import lsfusion.server.physics.dev.integration.external.to.file.FileUtils;
 
 public class RunCommandClientAction implements ClientAction {
+    private String command;
+    private String directory;
 
-    String text;
-
-    public RunCommandClientAction(String text) {
-        this.text = text;
+    public RunCommandClientAction(String command, String directory) {
+        this.command = command;
+        this.directory = directory;
     }
 
     public Object dispatch(ClientActionDispatcher dispatcher) {
-        return text != null ? exec(text) : null;
-    }
-
-    private String exec(String command) {
         try {
-            Process p = Runtime.getRuntime().exec(command);
-            BufferedInputStream err = new BufferedInputStream(p.getErrorStream());
-            StringBuilder errS = new StringBuilder();
-            byte[] b = new byte[1024];
-            while (err.read(b) != -1) {
-                errS.append(new String(b, "cp866").trim()).append("\n");
-            }
-            err.close();
-            String result = errS.toString();
-            return result.isEmpty() ? null : result;
+            return FileUtils.runCmd(command, directory);
         } catch (Exception e) {
             e.printStackTrace();
             return e.getMessage();

@@ -97,9 +97,9 @@ resourceFiles = DATA LOCAL RAWFILE (STRING);
 readResources  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.ReadResourcesAction' (STRING);
 
 // ---------------------------------- Выполнение cmd  ---------------------------------- //
-cmd '{utils.cmd}'  INTERNAL  'lsfusion.server.physics.admin.interpreter.action.RunCommandAction' (TEXT, BOOLEAN);
-cmd '{utils.cmd}' (TEXT command)  {cmd(command, NULL); }
-cmdClient '{utils.cmd.client}' (TEXT command)  {cmd(command, TRUE); }
+cmd '{utils.cmd}' (TEXT command, TEXT directory, BOOLEAN isClient)  INTERNAL  'lsfusion.server.physics.admin.interpreter.action.RunCommandAction';
+cmd '{utils.cmd}' (TEXT command)  {cmd(command, NULL, NULL); }
+cmdClient '{utils.cmd.client}' (TEXT command)  {cmd(command, NULL, TRUE); }
 
 pingError '{utils.ping.error}' = DATA LOCAL BOOLEAN ();
 ping '{utils.ping}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.net.PingAction' (TEXT, BOOLEAN);
