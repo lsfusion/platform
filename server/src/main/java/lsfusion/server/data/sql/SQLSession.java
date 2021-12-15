@@ -3133,7 +3133,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                         SQLTemporaryPool.FieldStruct struct = privateConnection.temporary.getStruct(table);
                         uploadTableToConnection(table, struct, newConnection, OperationOwner.unknown);
                     }
-                } catch (SQLException | SQLHandledException t) { // если проблема в SQL, пишем в лог / игнорируем
+                } catch (Throwable t) { // если проблема в SQL, пишем в лог / игнорируем
                     logger.error("RESTART CONNECTION ERROR : " + description.result, t);
                     return false;
                 }
