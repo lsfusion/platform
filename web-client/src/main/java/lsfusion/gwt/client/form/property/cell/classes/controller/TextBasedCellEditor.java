@@ -168,6 +168,7 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
     public void render(Element cellParent, RenderContext renderContext, Pair<Integer, Integer> renderedSize, Object oldValue) {
         if(property.autoSize) { // we have to set sizes that were rendered, since input elements have really unpredicatble sizes
             // wrapping element since otherwise it's not clear how to restore height (sometimes element has it set)
+            // actually it seems that we can avoid wrapping asserting that upper element is div set with setPercentMain, but for now it's not that important
             Element div = Document.get().createDivElement();
             div.getStyle().setHeight(renderedSize.second, Style.Unit.PX);
             div.getStyle().setWidth(renderedSize.first, Style.Unit.PX);

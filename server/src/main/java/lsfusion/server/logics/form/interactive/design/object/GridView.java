@@ -144,16 +144,16 @@ public class GridView extends ComponentView {
     @Override
     protected int getDefaultWidth(FormEntity entity) {
         if(lineWidth == null && isCustom() && isAutoSize(entity))
-            return 0;
+            return -1;
 
-        return super.getDefaultWidth(entity);
+        return -2;
     }
 
     @Override
     protected int getDefaultHeight(FormEntity entity) {
         if(lineHeight == null && isCustom() && isAutoSize(entity))
-            return 0;
+            return -1;
 
-        return super.getDefaultHeight(entity);
+        return -2;
     }
 }

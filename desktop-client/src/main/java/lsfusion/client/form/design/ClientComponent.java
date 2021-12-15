@@ -45,17 +45,19 @@ public abstract class ClientComponent extends ContextIdentityObject implements I
 
     public Integer getSize(boolean vertical) {
         int size = vertical ? height : width;
-        if (size != -1)
-            return size;
-        return vertical ? getDefaultHeight() : getDefaultWidth();
+        if(size == -2)
+            return vertical ? getDefaultHeight() : getDefaultWidth();
+        if (size == -1)
+            return null;
+        return size;
     }
 
     protected Integer getDefaultWidth() {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     protected Integer getDefaultHeight() {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     public boolean isTab() {

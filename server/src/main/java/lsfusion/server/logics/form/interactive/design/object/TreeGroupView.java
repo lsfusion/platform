@@ -191,4 +191,14 @@ public class TreeGroupView extends ComponentView implements ServerIdentitySerial
 
         return false;
     }
+
+    @Override
+    protected int getDefaultWidth(FormEntity entity) {
+        return -2;
+    }
+
+    @Override
+    protected int getDefaultHeight(FormEntity entity) {
+        return -2;
+    }
 }
