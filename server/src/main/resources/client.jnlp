@@ -15,7 +15,8 @@
     </security>
     <resources>
         <property name="jnlp.packEnabled" value="true"/>
-        <j2se version="1.6+" initial-heap-size="${jnlp.initHeapSize}" max-heap-size="${jnlp.maxHeapSize}" java-vm-args="-XX:MinHeapFreeRatio=${jnlp.minHeapFreeRatio} -XX:MaxHeapFreeRatio=${jnlp.maxHeapFreeRatio} ${jnlp.vmargs}"/>
+        <j2se version="9+" initial-heap-size="${jnlp.initHeapSize}" max-heap-size="${jnlp.maxHeapSize}" java-vm-args="-XX:MinHeapFreeRatio=${jnlp.minHeapFreeRatio} -XX:MaxHeapFreeRatio=${jnlp.maxHeapFreeRatio} --add-opens=java.desktop/sun.swing=ALL-UNNAMED --add-opens=java.desktop/sun.font=ALL-UNNAMED --add-opens=java.desktop/javax.swing=ALL-UNNAMED --add-opens=java.desktop/javax.swing.plaf.basic=ALL-UNNAMED --add-exports=java.desktop/sun.swing=ALL-UNNAMED --add-exports=java.desktop/sun.awt=ALL-UNNAMED ${jnlp.vmargs}"/>
+        <j2se version="1.8" initial-heap-size="${jnlp.initHeapSize}" max-heap-size="${jnlp.maxHeapSize}" java-vm-args="-XX:MinHeapFreeRatio=${jnlp.minHeapFreeRatio} -XX:MaxHeapFreeRatio=${jnlp.maxHeapFreeRatio} ${jnlp.vmargs}"/>
         <property name="jnlp.lsfusion.client.hostname" value="${jnlp.host}"/>
         <property name="jnlp.lsfusion.client.hostport" value="${jnlp.port}"/>
         <property name="jnlp.lsfusion.client.exportname" value="${jnlp.exportName}"/>

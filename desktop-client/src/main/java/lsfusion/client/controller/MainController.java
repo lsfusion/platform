@@ -48,10 +48,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.rmi.RemoteException;
-import java.rmi.server.RMIClassLoader;
 import java.util.List;
 import java.util.*;
 
@@ -83,6 +80,8 @@ public class MainController {
     // lifecycle
 
     public static void start(final String[] args) {
+
+        Thread.currentThread().setContextClassLoader(new RemoteClassLoader(Thread.currentThread().getContextClassLoader()));
 
         registerSingleInstanceListener();
 
@@ -282,31 +281,12 @@ public class MainController {
     }
 
     public static void initRmiClassLoader(RemoteLogicsInterface remoteLogics) {
-        // since RMIClassLoader uses Spi Class.forname to load,
-        // and this does not work correctly, since JWS uses its own user-class loader,
-        // and the jar-files are not added to java.class.path
-        // requires RemoteClassLoader to run with native JWS ClassLoader
+        RemoteClassLoader.setRemoteLogics(remoteLogics);
 
-        try {
-            Field field = RMIClassLoader.class.getDeclaredField("provider");
-            field.setAccessible(true);
-
-            Field modifiersField = Field.class.getDeclaredField("modifiers");
-            modifiersField.setAccessible(true);
-            modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
-
-            field.set(null, new RemoteClassLoader(remoteLogics));
-
-            // reset the SecurityManager that installs JavaWS,
-            // since it doesn't let the RemoteClassLoader class do anything,
-            // since it is loaded from a temporary directory
-            System.setSecurityManager(null);
-        } catch (Exception ex) {
-            logger.error("Error during startup: ", ex);
-            ex.printStackTrace();
-            removeSingleInstanceListener();
-            System.exit(1);
-        }
+        // reset the SecurityManager that installs JavaWS,
+        // since it doesn't let the RemoteClassLoader class do anything,
+        // since it is loaded from a temporary directory
+        System.setSecurityManager(null);
     }
     
     private static void initSwing() throws ClassNotFoundException, InstantiationException, IllegalAccessException, UnsupportedLookAndFeelException {
