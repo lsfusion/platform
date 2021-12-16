@@ -242,6 +242,7 @@ DESIGN interpreter {
                 };
                 NEW executeButton {
                     MOVE PROPERTY(executeScript(s)) {
+                        focusable = FALSE;
                         caption = '';
                         height = 45;
                     }
