@@ -170,8 +170,8 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
     protected Connection ensureConnection;
 
     protected void executeEnsure(String command) {
-        try (Statement statement = ensureConnection.createStatement()) {
-            statement.execute(command);
+        try {
+            executeEnsureWithException(command);
         } catch (SQLException e) {
             ServerLoggers.sqlSuppLog(e);
         }
@@ -180,11 +180,17 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
     protected void executeEnsure(List<String> functions) {
         functions.forEach(command -> {
             try {
-                executeEnsure(IOUtils.readStreamToString(ResourceUtils.getResourceAsStream(command)));
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+                executeEnsureWithException(IOUtils.readStreamToString(ResourceUtils.getResourceAsStream(command)));
+            } catch (IOException | SQLException e) {
+                throw new RuntimeException(command, e);
             }
         });
+    }
+
+    protected void executeEnsureWithException(String command) throws SQLException {
+        try (Statement statement = ensureConnection.createStatement()) {
+            statement.execute(command);
+        }
     }
 
     protected MAddExclMap<ConcatenateType, Boolean> ensuredConcTypes = MapFact.mAddExclMap();
