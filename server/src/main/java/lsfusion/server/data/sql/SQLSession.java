@@ -878,11 +878,13 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     }
 
     private void createLikeIndex(NamedTable table, String nameIndex, String columns) throws SQLException {
-        createIndex(table, nameIndex + "_like", " USING GIN (" + columns + " gin_trgm_ops)");
+        if(DataAdapter.hasTrgmExtension())
+            createIndex(table, nameIndex + "_like", " USING GIN (" + columns + " gin_trgm_ops)");
     }
 
     private void createMatchIndex(NamedTable table, String nameIndex, String columns, IndexOptions indexOptions) throws SQLException {
-        createIndex(table, nameIndex + "_match", " USING GIN (to_tsvector(" + (indexOptions.language != null ? ("'" + indexOptions.language + "', ") : "") + columns + "))");
+        if(DataAdapter.hasTrgmExtension())
+            createIndex(table, nameIndex + "_match", " USING GIN (to_tsvector(" + (indexOptions.language != null ? ("'" + indexOptions.language + "', ") : "") + columns + "))");
     }
 
     private void createDefaultIndex(NamedTable table, String nameIndex, String columns) throws SQLException {
