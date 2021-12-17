@@ -36,6 +36,7 @@ import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
+import lsfusion.server.logics.property.value.NullValueProperty;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.exec.db.table.MapKeysTable;
@@ -194,6 +195,19 @@ public class PropertyDrawView extends ComponentView {
                 : entity.getCaption();
     }
 
+    // we return to the client null, if we're sure that caption is always empty (so we don't need to draw label)
+    public String getDrawCaption() {
+        LocalizedString caption = getCaption();
+        if(hasNoCaption(caption.isEmpty() ? null : caption, entity.getPropertyExtra(CAPTION)))
+            return null;
+
+        return ThreadLocalContext.localize(caption);
+    }
+
+    public static boolean hasNoCaption(LocalizedString caption, PropertyObjectEntity<?> propertyCaption) {
+        return (caption == null && propertyCaption == null) || (propertyCaption != null && propertyCaption.property.isExplicitNull()); // isEmpty can be better, but we just want to emulate NULL to be like NULL caption
+    }
+
     public boolean isNotNull() {
         return notNull || entity.isNotNull();
     }
@@ -277,7 +291,7 @@ public class PropertyDrawView extends ComponentView {
 
         outStream.writeBoolean(isAutoSize(pool.context.entity));
 
-        pool.writeString(outStream, ThreadLocalContext.localize(getCaption()));
+        pool.writeString(outStream, getDrawCaption());
         pool.writeString(outStream, regexp);
         pool.writeString(outStream, regexpMessage);
         pool.writeLong(outStream, maxValue);

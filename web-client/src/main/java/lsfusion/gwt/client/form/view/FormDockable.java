@@ -108,7 +108,7 @@ public final class FormDockable extends FormContainer<FormDockable.ContentWidget
             }
 
             content = icontent;
-            setPercentMain(content); // we want to include paddings in content
+            setSizedMain(content, true); // we want to include paddings in content
         }
 
         private void initBlockedMask() {

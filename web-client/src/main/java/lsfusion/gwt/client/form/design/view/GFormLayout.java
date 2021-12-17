@@ -42,7 +42,7 @@ public class GFormLayout extends ResizableComplexPanel {
         addContainers(mainContainer);
 
         Widget view = getMainView();
-        setFillMain(view);
+        setSizedMain(view, false);
         view.getElement().getStyle().setOverflow(Style.Overflow.AUTO);
 
         recordViews = new ResizableComplexPanel();

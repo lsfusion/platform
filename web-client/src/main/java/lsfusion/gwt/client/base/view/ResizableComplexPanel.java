@@ -9,6 +9,8 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.Dimension;
 import lsfusion.gwt.client.base.GwtClientUtils;
 
+import static lsfusion.gwt.client.base.GwtClientUtils.setupSizedParent;
+
 public class ResizableComplexPanel extends ComplexPanel implements RequiresResize, ProvidesResize, ResizableMainPanel {
     protected Widget main;
 
@@ -52,15 +54,9 @@ public class ResizableComplexPanel extends ComplexPanel implements RequiresResiz
     }
 
     @Override
-    public void setFillMain(Widget main) {
+    public void setSizedMain(Widget main, boolean autoSize) {
         setMain(main);
-        GwtClientUtils.setupFillParent(main.getElement());
-    }
-
-    @Override
-    public void setPercentMain(Widget main) {
-        setMain(main);
-        GwtClientUtils.setupPercentParent(main.getElement());
+        setupSizedParent(main.getElement(), autoSize);
     }
 
     @Override

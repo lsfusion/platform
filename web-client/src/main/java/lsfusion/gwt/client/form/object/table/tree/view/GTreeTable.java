@@ -30,7 +30,6 @@ import lsfusion.gwt.client.form.object.table.view.GGridPropertyTableHeader;
 import lsfusion.gwt.client.form.order.user.GGridSortableHeaderManager;
 import lsfusion.gwt.client.form.order.user.GOrder;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 
 import java.util.*;
@@ -167,7 +166,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
             if (index > -1) {
                 GridColumn gridColumn = new GridColumn(property);
-                String propertyCaption = property.getCaptionOrEmpty();
+                String propertyCaption = getPropertyCaption(property);
                 GGridPropertyTableHeader header = new GGridPropertyTableHeader(this, propertyCaption, property.getTooltipText(propertyCaption), gridColumn.isSticky());
                 GGridPropertyTableFooter footer = groupObject.hasFooters ? new GGridPropertyTableFooter(this, property, null, null) : null;
 

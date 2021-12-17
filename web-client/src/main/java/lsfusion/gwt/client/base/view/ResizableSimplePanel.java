@@ -8,6 +8,7 @@ import lsfusion.gwt.client.base.Dimension;
 import lsfusion.gwt.client.base.GwtClientUtils;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.setupFillParent;
+import static lsfusion.gwt.client.base.GwtClientUtils.setupSizedParent;
 
 public class ResizableSimplePanel extends SimplePanel implements RequiresResize, ProvidesResize, ResizableMainPanel {
     public ResizableSimplePanel() {
@@ -37,6 +38,11 @@ public class ResizableSimplePanel extends SimplePanel implements RequiresResize,
         }
     }
 
+    public void setSizedWidget(Widget widget, boolean autoSize) {
+        setWidget(widget);
+        setupSizedParent(widget.getElement(), autoSize);
+    }
+
     // content-independent widget
     public void setFillWidget(Widget widget) {
         setWidget(widget);
@@ -54,13 +60,8 @@ public class ResizableSimplePanel extends SimplePanel implements RequiresResize,
     }
 
     @Override
-    public void setFillMain(Widget main) {
-        setFillWidget(main);
-    }
-
-    @Override
-    public void setPercentMain(Widget main) {
-        setPercentWidget(main);
+    public void setSizedMain(Widget main, boolean autoSize) {
+        setSizedWidget(main, autoSize);
     }
 
     @Override
