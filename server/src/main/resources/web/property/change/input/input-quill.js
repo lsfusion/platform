@@ -36,7 +36,7 @@ function inputQuill(json) {
             }
 
             inputEditor.onkeydown = function(event) {
-                if (event.keyCode === 13)
+                if (event.keyCode === 13 && !event.ctrlKey && !event.shiftKey && !event.altKey)
                     event.stopPropagation();
             }
 
