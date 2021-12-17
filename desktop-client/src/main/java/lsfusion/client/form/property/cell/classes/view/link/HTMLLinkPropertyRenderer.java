@@ -17,7 +17,18 @@ public class HTMLLinkPropertyRenderer extends PropertyRenderer {
     @Override
     public BrowserPane getComponent() {
         if (browserPane == null) {
-            browserPane = new BrowserPane();
+            browserPane = new BrowserPane() {
+                /**
+                 * Overridden for performance reasons. Copied from DefaultTableCellRenderer
+                 */
+                public void invalidate() {}
+                public void validate() {}
+                public void revalidate() {}
+
+                public void repaint(long tm, int x, int y, int width, int height) {}
+                public void repaint(Rectangle r) { }
+                public void repaint() { }
+            };
         }
         return browserPane;
     }

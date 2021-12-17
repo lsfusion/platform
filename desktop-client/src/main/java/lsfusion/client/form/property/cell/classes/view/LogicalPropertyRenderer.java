@@ -4,6 +4,7 @@ import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.cell.view.PropertyRenderer;
 
 import javax.swing.*;
+import java.awt.*;
 
 public class LogicalPropertyRenderer extends PropertyRenderer {
     private JCheckBox checkBox;
@@ -24,7 +25,18 @@ public class LogicalPropertyRenderer extends PropertyRenderer {
 
     public JCheckBox getComponent() {
         if (checkBox == null) {
-            checkBox = new JCheckBox();
+            checkBox = new JCheckBox() {
+                /**
+                 * Overridden for performance reasons. Copied from DefaultTableCellRenderer
+                 */
+                public void invalidate() {}
+                public void validate() {}
+                public void revalidate() {}
+
+                public void repaint(long tm, int x, int y, int width, int height) {}
+                public void repaint(Rectangle r) { }
+                public void repaint() { }
+            };
         }
         return checkBox;
     }

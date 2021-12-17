@@ -23,7 +23,18 @@ public class ActionPropertyRenderer extends PropertyRenderer {
 
     public JButton getComponent() {
         if (button == null) {
-            button = property != null ? new JButton(ClientImages.getImage(property.design.getImageHolder())) : new JButton();
+            button = new JButton(property != null ? ClientImages.getImage(property.design.getImageHolder()) : null) {
+                /**
+                 * Overridden for performance reasons. Copied from DefaultTableCellRenderer
+                 */
+                public void invalidate() {}
+                public void validate() {}
+                public void revalidate() {}
+
+                public void repaint(long tm, int x, int y, int width, int height) {}
+                public void repaint(Rectangle r) { }
+                public void repaint() { }
+            };
         }
         return button;
     }
