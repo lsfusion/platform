@@ -274,8 +274,8 @@ sendMessage '{chat.send.message.chat}' (Chat chat)  {
 
 sendMessage '{chat.send.message.user}' (CustomUser user)  { 
     createDialogChat(user, currentUser()) ;
-    seekChat(chatIn(user, currentUser()));
     sendMessage(chatIn(user, currentUser()));
+    seekChat(chatIn(user, currentUser()));
 }
 
 recentVisible = ABSTRACT BOOLEAN ();
