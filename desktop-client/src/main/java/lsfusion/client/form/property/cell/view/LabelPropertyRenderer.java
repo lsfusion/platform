@@ -31,11 +31,6 @@ public abstract class LabelPropertyRenderer extends PropertyRenderer {
                     super.paintComponent(g);
                     paintLabelComponent(g);
                 }
-
-                @Override
-                public void setText(String text) {
-                    super.setText("<html><body><nobr>" + text + "</nobr></body></html>");
-                }
             };
         }
         return label;
