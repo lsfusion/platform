@@ -90,7 +90,7 @@
                                 <SCM-Version>${lsfusion.revision}</SCM-Version>
                                 <Implementation-Version>${project.version}</Implementation-Version>
                                 <Permissions>all-permissions</Permissions>
-                                <Add-Opens>java.desktop/sun.swing java.desktop/sun.font java.desktop/javax.swing java.desktop/javax.swing.plaf.basic</Add-Opens>
+                                <Add-Opens>java.desktop/sun.swing java.desktop/sun.font java.desktop/javax.swing java.desktop/javax.swing.text java.desktop/javax.swing.plaf.basic</Add-Opens>
                                 <Add-Exports>java.desktop/sun.swing java.desktop/sun.awt</Add-Exports>
                             </manifestEntries>
                         </transformer>
