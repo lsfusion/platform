@@ -52,7 +52,7 @@ public abstract class ClientDataClass extends ClientClass implements ClientType 
     protected String getDefaultWidthString(ClientPropertyDraw propertyDraw) {
         int defaultCharWidth = getDefaultCharWidth();
         if(defaultCharWidth != 0)
-            return BaseUtils.replicate('0', defaultCharWidth);
+            return BaseUtils.replicate('0', defaultCharWidth) + SwingDefaults.getCharWidthSparePixels();
         throw new UnsupportedOperationException();
     }
 

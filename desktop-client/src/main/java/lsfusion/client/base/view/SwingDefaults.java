@@ -468,4 +468,9 @@ public class SwingDefaults {
     public static int splitDividerWidth() {
         return 6;
     }
+
+    // increase valueWidth on this fixed value in order to make cell wide enough to display at least some wide characters (as 'W')
+    public static int getCharWidthSparePixels() {
+        return 4;
+    }
 }
