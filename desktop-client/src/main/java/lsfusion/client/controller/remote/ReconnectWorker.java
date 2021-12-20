@@ -1,11 +1,10 @@
 package lsfusion.client.controller.remote;
 
 import lsfusion.client.StartupProperties;
+import lsfusion.client.controller.MainController;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.List;
@@ -120,11 +119,9 @@ public final class ReconnectWorker<T> extends SwingWorker<T, Integer> {
         }
 
         private void initUIHandlers() {
-            btnCancel.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    cancel(true);
-                }
+            btnCancel.addActionListener(e -> {
+                cancel(true);
+                MainController.shutdown();
             });
 
             addWindowListener(new WindowAdapter() {
