@@ -123,7 +123,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
     }
 
     public void addShrinkFlex(Widget widget, Integer flexBasis) {
-        add(widget, GFlexAlignment.STRETCH, 0, true, flexBasis);
+        add(widget, getWidgetCount(), GFlexAlignment.STRETCH, 0, true, flexBasis);
     }
 
     public void addFill(Widget widget, int beforeIndex, Integer flexBasis) {
@@ -131,11 +131,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
     }
 
     public void addFillShrink(Widget widget) {
-        add(widget, GFlexAlignment.STRETCH, 1, true, null);
-    }
-
-    public void add(Widget widget, GFlexAlignment alignment, double flex, boolean shrink, Integer flexBasis) {
-        add(widget, getWidgetCount(), alignment, flex, shrink, flexBasis);
+        add(widget, getWidgetCount(), GFlexAlignment.STRETCH, 1, true, null);
     }
 
     public void add(Widget widget, int beforeIndex, GFlexAlignment alignment, double flex, boolean shrink, Integer flexBasis) {
@@ -170,14 +166,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
     // for horizontal direction we set 0 - basis since it doesn't influence on other autos
     // for now all that is important only for autoSize props, but in theory can be important in other cases
     public void addFill(Widget widget, int beforeIndex) {
-        addFill(widget, beforeIndex, null);
-    }
-
-    public void setOppositeSize(Widget widget, Integer size, GFlexAlignment alignment) {
-        boolean isStretch = alignment == GFlexAlignment.STRETCH;
-        if(isStretch && size != null && size.equals(0)) // for opposite direction and stretch zero does not make any sense (it is zero by default)
-            size = null;
-        setBaseSize(widget, !vertical, size, !isStretch);
+        addFill(widget, beforeIndex, vertical ? null : 0);
     }
 
     // we're setting min-width/height and not width/height for two reasons:

@@ -323,13 +323,6 @@ public class GwtClientUtils {
             parentElement.getStyle().clearPosition();
     }
 
-    public static void setupSizedParent(Element element, boolean autoSize) {
-        if(autoSize)
-            setupPercentParent(element);
-        else
-            setupFillParent(element);
-    }
-
     public static void setupPercentParent(Element element) {
         element.getStyle().setWidth(100, Style.Unit.PCT);
         element.getStyle().setHeight(100, Style.Unit.PCT);

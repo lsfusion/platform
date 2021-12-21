@@ -26,10 +26,9 @@ public abstract class GCalculateSumButton extends GToolbarButton {
         popup.addStyleName("popup");
 
         ResizableHorizontalPanel panel = new ResizableHorizontalPanel();
-        String caption = property.getNotEmptyCaption();
         Label text = new Label(result == null
-                ? messages.formQueriesUnableToCalculateSum() + " [" + caption + "]"
-                : messages.formQueriesSumResult() + " [" + caption + "]: ");
+                ? messages.formQueriesUnableToCalculateSum() + " [" + property.caption + "]"
+                : messages.formQueriesSumResult() + " [" + property.caption + "]: ");
         panel.add(text);
         panel.add(GwtClientUtils.createHorizontalStrut(2));
 

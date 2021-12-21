@@ -1234,7 +1234,7 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
         if (propCaptions != null)
             caption = property.getDynamicCaption(propCaptions.get(columnKey));
         else
-            caption = property.getPropertyCaption();
+            caption = property.getCaptionOrEmpty();
         return caption;
     }
 

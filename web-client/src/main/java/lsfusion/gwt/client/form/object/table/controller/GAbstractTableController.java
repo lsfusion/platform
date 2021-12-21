@@ -61,7 +61,10 @@ public abstract class GAbstractTableController extends GPropertyController imple
         }
 
         public void changeWidget(Widget widget) {
-            setSizedWidget(widget, autoSize);
+            if(autoSize)
+                setPercentWidget(widget);
+            else
+                setFillWidget(widget);
         }
 
         public void setPreferredSize(boolean set) {

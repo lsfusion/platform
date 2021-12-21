@@ -90,7 +90,7 @@ public class LinearContainerView extends GAbstractContainerView {
             for (int i = 0; i < linesCount; i++) {
                 FlexPanel line = new FlexPanel(vertical, flexAlignment, alignCaptions ? getLineGridLayouts(true, null, 1, false, lineShrink) : null, !vertical && wrap); // in theory true can be used instead of lineShrink
 
-                panel.add(line, GFlexAlignment.STRETCH, 1, lineShrink, lineSize);
+                panel.add(line, panel.getWidgetCount(), GFlexAlignment.STRETCH, 1, lineShrink, lineSize);
                 lines[i] = line;
 
                 if (lineSize != null) // because of non-null flex-basis column won't take content size which may then overflow over column
@@ -138,7 +138,7 @@ public class LinearContainerView extends GAbstractContainerView {
 
                 ((CaptionContainerHolder) view).setCaptionContainer((columnCaptionWidget, alignment) -> {
                     assert vertical; // because of alignCaptions first check (isVertical())
-                    columnCaptionWidget.add(captionPanel, alignment);
+                    captionPanel.add(columnCaptionWidget, alignment);
                 });
             } else
                 captionPanel = null;

@@ -65,7 +65,7 @@ public class DataPanelView extends FlexPanel implements PanelView {
 
         label = new LabelWidget();
         
-        setLabelText(property.getChangeCaption());
+        setLabelText(property.getEditCaption());
 
         property.design.designHeader(label);
         if (property.focusable != null) {
@@ -257,7 +257,7 @@ public class DataPanelView extends FlexPanel implements PanelView {
     }
 
     public void setCaption(String caption) {
-        setLabelText(property.getChangeCaption(caption));
+        setLabelText(property.getEditCaption(caption));
     }
     
     public void setLabelText(String text) {

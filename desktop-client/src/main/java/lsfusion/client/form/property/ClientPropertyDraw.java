@@ -356,6 +356,24 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         }
     }
 
+    public String getEditCaption(String caption) {
+        if (caption == null) {
+            caption = this.caption;
+        }
+
+        return showChangeKey && changeKey != null
+               ? caption + " (" + getChangeKeyCaption() + ")"
+               : caption;
+    }
+    
+    private String getChangeKeyCaption() {
+        return SwingUtils.getKeyStrokeCaption(changeKey.keyStroke);
+    }
+
+    public String getEditCaption() {
+        return getEditCaption(caption);
+    }
+
     public String getNamespace() {
         return namespace;
     }
@@ -650,30 +668,12 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return getPropertyCaption();
     }
 
-    public String getChangeCaption(String caption) {
-        if (caption == null) {
-            caption = getCaptionOrEmpty();
-        }
-
-        return showChangeKey && changeKey != null
-                ? caption + " (" + getChangeKeyCaption() + ")"
-                : caption;
-    }
-
-    private String getChangeKeyCaption() {
-        return SwingUtils.getKeyStrokeCaption(changeKey.keyStroke);
-    }
-
-    public String getChangeCaption() {
-        return getChangeCaption(caption);
-    }
-
     public String getPropertyCaption() {
-        return getCaptionOrEmpty();
+        return caption;
     }
 
     public String getHTMLCaption() {
-        return escapeHTML(getCaptionOrEmpty());
+        return caption == null ? null : escapeHTML(caption);
     }
 
     public String getDynamicCaption(Object captionValue) {
@@ -690,6 +690,10 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
             return caption + " (" + getID() + ")";
 
         return getString("logics.undefined.property");
+    }
+
+    public String getFilterCaption(ClientGroupObject group) {
+        return caption + " (" + (groupObject != null ? groupObject.getCaption() : "") + ")";
     }
 
     public static final String TOOL_TIP_FORMAT =

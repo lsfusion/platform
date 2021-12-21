@@ -57,7 +57,7 @@ public class GroupTreeTableModel extends DefaultTreeTableModel {
             return ClientResourceBundle.getString("form.tree");
         }
 
-        return getColumnProperty(column).getChangeCaption();
+        return getColumnProperty(column).getEditCaption();
     }
 
     @Override

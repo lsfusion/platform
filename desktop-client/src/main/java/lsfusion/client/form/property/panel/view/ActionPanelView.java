@@ -223,7 +223,7 @@ public class ActionPanelView extends ButtonWidget implements PanelView, EditProp
     }
 
     public void setCaption(String caption) {
-        caption = property.getChangeCaption(caption);
+        caption = property.getEditCaption(caption);
         setText(caption);
     }
 

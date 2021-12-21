@@ -79,36 +79,37 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
 
     private Widget borderWidget;
 
-    // assert that panel is resizable, panel and not resizable simple panel, since we want to append corners also to that panel (and it is not needed for it to be simple)
-    public SizedWidget setSized(boolean autoSize, boolean isProperty, ResizableMainPanel panel) {
-        if(panel != null) {
-            panel.setSizedMain(this, autoSize);
-            borderWidget = panel.getPanelWidget(); // panel
-        } else {
-            assert autoSize;
-            borderWidget = this;
-        }
+    // when we don't want property value (it's content) to influence on layouting, and in particular flex - basis
+    // so we use absolute positioning for that (and not width 100%, or writing to div itself)
+    public void setStatic(ResizableMainPanel panel, boolean isProperty) { // assert that panel is resizable, panel and not resizable simple panel, since we want to append corners also to that panel (and it is not needed for it to be simple)
+        panel.setFillMain(this);
+        borderWidget = panel.getPanelWidget(); // panel
 
         setBorderStyles(isProperty);
+        setBaseSizes();
+    }
+    // auto sized property with value
+    public void setDynamic(ResizableMainPanel panel, boolean isProperty) {
+        panel.setPercentMain(this);
+        borderWidget = panel.getPanelWidget(); // panel
 
-        Integer width;
-        Integer height;
-        if(!autoSize) { // if we wrapped into we
-            assert panel != null;
-            width = property.getValueWidthWithPadding(null);
-            height = property.getValueHeightWithPadding(null);
-        } else {
-            width = property.getValueWidth(null);
-            height = property.getValueHeight(null);
+        setBorderStyles(isProperty);
+        setBaseSizes();
+    }
+    // auto sized action with caption
+    public void setDynamic(boolean isProperty) {
+        borderWidget = this;
 
-            if(panel != null) { // optimization
-                FlexPanel.setBaseSize(this, false, width);
-                FlexPanel.setBaseSize(this, true, height);
-                return new SizedWidget(borderWidget);
-            }
-        }
+        setBorderStyles(isProperty);
+        setBaseSizes();
+    }
 
-        return new SizedWidget(borderWidget, width, height);
+    public void setBaseSizes() {
+        // if widget is wrapped into absolute positioned simple panel, we need to include paddings (since borderWidget doesn't include them)
+        boolean hasBorder = borderWidget != this;
+        // about the last parameter oppositeAndFixed, here it's tricky since we don't know where this borderWidget will be added, however it seems that all current stacks assume that they are added with STRETCH alignment
+        FlexPanel.setBaseSize(borderWidget, false, hasBorder ? property.getValueWidthWithPadding(null) : property.getValueWidth(null));
+        FlexPanel.setBaseSize(borderWidget, true, hasBorder ? property.getValueHeightWithPadding(null) : property.getValueHeight(null));
     }
 
     private void setBorderStyles(boolean isProperty) {

@@ -2040,10 +2040,6 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return !isEmpty(AlgType.checkType);
     }
 
-    public boolean isExplicitNull() {
-        return this instanceof NullValueProperty; // isEmpty can be better, but we just want to emulate NULL to be like NULL caption
-    }
-
     @IdentityLazy
     public boolean allowHintIncrement() {
         assert isFull(AlgType.hintType);
