@@ -1,12 +1,16 @@
 function interpreter() {
     return {
         render: function (element) {
+            let div = document.createElement('div');
             //"lsfWorkerType" option is either put first when the editor is created, or put after it is created, but you have to update the mode. lsfWorkerType: script, action, form
-            var aceEditor = ace.edit(element, {
+            var aceEditor = ace.edit(div, {
                 enableLiveAutocompletion: true,
                 showPrintMargin: false
             });
 
+            div.style.width = "100%";
+            div.style.height = "100%";
+            element.appendChild(div);
             element.aceEditor = aceEditor;
 
             aceEditor.container.addEventListener('keydown', function (e) {
