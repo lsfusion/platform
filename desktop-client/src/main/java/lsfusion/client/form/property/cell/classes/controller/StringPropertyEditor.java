@@ -39,8 +39,6 @@ public class StringPropertyEditor extends TextFieldPropertyEditor {
         if (value != null) {
             setText(value.toString());
         }
-
-        setComponentPopupMenu(new EditorContextMenu(this));
     }
 
     public Object getCellEditorValue() {

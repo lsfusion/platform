@@ -48,6 +48,8 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
                 tableEditor.cancelCellEditing();
             }
         });
+
+        setComponentPopupMenu(new EditorContextMenu(this));
     }
 
     public void setTableEditor(PropertyTableCellEditor tableEditor) {
