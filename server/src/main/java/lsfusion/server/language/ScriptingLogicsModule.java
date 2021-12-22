@@ -49,7 +49,6 @@ import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.ExplicitAction;
-import lsfusion.server.logics.action.InitJSAction;
 import lsfusion.server.logics.action.flow.BreakAction;
 import lsfusion.server.logics.action.flow.ListCaseAction;
 import lsfusion.server.logics.action.flow.ReturnAction;
@@ -1779,10 +1778,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public LA addScriptedInternalInitJSAction(List<String> paramClasses) throws ScriptingErrorLog.SemanticErrorException {
-        if (paramClasses.size() != 1 || !paramClasses.get(0).equals("STRING"))
-            errLog.emitInternalInitJSParamNotStringError(parser);
-        return addAProp(null, new InitJSAction());
+    public LAWithParams addScriptedInternalInitJSAction(LPWithParams prop) throws ScriptingErrorLog.SemanticErrorException {
+        return new LAWithParams(addInitJSProp(getParamsPlainList(singletonList(prop)).toArray()), prop.usedParams);
     }
 
     public LA addScriptedInternalAction(String javaClassName, List<String> paramClasses, List<ResolveClassSet> signature, boolean allowNullValue) throws ScriptingErrorLog.SemanticErrorException {

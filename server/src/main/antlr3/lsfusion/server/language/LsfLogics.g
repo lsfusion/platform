@@ -3113,6 +3113,7 @@ leafKeepContextActionDB[List<TypedParameter> context, boolean dynamic] returns [
 	|	exportFormADB=exportFormActionDefinitionBody[context, dynamic] { $action = $exportFormADB.action; }
 	|	exportADB=exportActionDefinitionBody[context, dynamic] { $action = $exportADB.action; }
 	|	msgADB=messageActionDefinitionBody[context, dynamic] { $action = $msgADB.action; }
+	|	initJSADB=initJSActionDefinitionBody[context, dynamic] { $action = $initJSADB.action; }
 	|	asyncADB=asyncUpdateActionDefinitionBody[context, dynamic] { $action = $asyncADB.action; }
 	|	seekADB=seekObjectActionDefinitionBody[context, dynamic] { $action = $seekADB.action; }
 	|	expandADB=expandGroupObjectActionDefinitionBody[context, dynamic] { $action = $expandADB.action; }
@@ -3482,7 +3483,6 @@ idEqualPEList[List<TypedParameter> context, boolean dynamic] returns [List<Strin
 internalActionDefinitionBody[List<TypedParameter> context] returns [LA action, List<ResolveClassSet> signature]
 @init {
 	boolean allowNullValue = false;
-	boolean initJS = false;
 	List<String> classes = null;
 }
 @after {
@@ -3490,9 +3490,7 @@ internalActionDefinitionBody[List<TypedParameter> context] returns [LA action, L
 
 	    List<ResolveClassSet> contextParams = self.getClassesFromTypedParams(context);
 
-        if(initJS == true)
-          $action = self.addScriptedInternalInitJSAction(classes);
-	    else if($code.val == null)
+	    if($code.val == null)
 	        $action = self.addScriptedInternalAction($classN.val, classes, contextParams, allowNullValue);
 	    else
 		    $action = self.addScriptedInternalAction($code.val, allowNullValue);
@@ -3505,10 +3503,16 @@ internalActionDefinitionBody[List<TypedParameter> context] returns [LA action, L
 		|   code = codeLiteral
         )
 	    ('NULL' { allowNullValue = true; })?
-	|   'INITJS'
-	    (
-	        '(' cls=classIdList ')' { classes = $cls.ids; initJS = true; }
-	    )
+	;
+
+initJSActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
+@after {
+	if (inMainParseState()) {
+		$action = self.addScriptedInternalInitJSAction($pe.property);
+	}
+}
+	:	'INITJS'
+	    pe=propertyExpression[context, dynamic]
 	;
 
 externalActionDefinitionBody [List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]

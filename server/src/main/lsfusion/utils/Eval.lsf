@@ -161,7 +161,7 @@ changeScript(Script sc) {
 }
 
 onWebClientStarted() + {
-    initExternalResources('custom_option.js, custom_interpreter.js');
+    INITJS 'custom_option.js, custom_interpreter.js';
 } 
 
 FORM interpreter '{eval.script.form.interpreter}'

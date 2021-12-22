@@ -11,7 +11,7 @@ TABLE chatCustomUser(Chat, CustomUser);
 EXTEND CLASS UserRole : Chat;
 
 onWebClientStarted() + {
-    initExternalResources('input-quill.js, input-quill.css, chat.js, chat.css');
+    INITJS 'input-quill.js, input-quill.css, chat.js, chat.css';
 }
 
 @defineExternalizable(chat, STRING[100]);
