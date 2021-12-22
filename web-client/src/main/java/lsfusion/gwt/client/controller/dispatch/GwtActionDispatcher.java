@@ -334,6 +334,46 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     }
 
     @Override
+    public void execute(GInitJSClientAction action) {
+        action.externalResources.forEach(r -> initJS("/static" + r));
+    }
+
+    protected native void initJS(String resourcePath)/*-{
+        if (resourcePath.endsWith('js')) {
+            var documentScripts = $wnd.document.scripts, scriptAlreadyLoaded;
+            for (var i = 0; i < documentScripts.length; i++) {
+                var src = documentScripts[i].src;
+                if (src != null && src.endsWith(resourcePath)){
+                    scriptAlreadyLoaded = true;
+                    break;
+                }
+            }
+            if (!scriptAlreadyLoaded) {
+                var scr = document.createElement('script');
+                scr.src = resourcePath;
+                scr.type = 'text/javascript';
+                $wnd.document.head.appendChild(scr);
+            }
+        } else if (resourcePath.endsWith('css')) {
+            var documentStyleSheets = $wnd.document.styleSheets, styleSheetAlreadyLoaded;
+            for (var j = 0; j < documentStyleSheets.length; j++) {
+                var href = documentStyleSheets[j].href;
+                if (href != null && href.endsWith(resourcePath)){
+                    styleSheetAlreadyLoaded = true;
+                    break;
+                }
+            }
+            if (!styleSheetAlreadyLoaded) {
+                var link = document.createElement("link");
+                link.href = resourcePath;
+                link.type = "text/css";
+                link.rel = "stylesheet";
+                $wnd.document.head.appendChild(link);
+            }
+        }
+    }-*/;
+
+    @Override
     public Object execute(GHttpClientAction action) {
         pauseDispatching();
         XMLHttpRequest request = XMLHttpRequest.create();

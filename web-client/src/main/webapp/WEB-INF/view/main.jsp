@@ -161,15 +161,6 @@
             </script>
         </c:forEach>
 
-        <c:forEach items="${filesUrls}" var="fileUrl">
-            <c:if test="${fileUrl.endsWith('js')}">
-                <script type="text/javascript" src="${fileUrl}"></script>
-            </c:if>
-            <c:if test="${fileUrl.endsWith('css')}">
-                <link rel="stylesheet" type="text/css" href="${fileUrl}"/>
-            </c:if>
-        </c:forEach>
-
     </head>
     <body>
         <script language="JavaScript">

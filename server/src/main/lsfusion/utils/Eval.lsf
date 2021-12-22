@@ -160,6 +160,10 @@ changeScript(Script sc) {
     }
 }
 
+onWebClientStarted() + {
+    initExternalResources('custom_option.js, custom_interpreter.js');
+} 
+
 FORM interpreter '{eval.script.form.interpreter}'
     OBJECTS st = ScriptType CUSTOM 'option'
     PROPERTIES(st) SHOWIF isWeb() name=executionScriptTypeCaption, selected=selectedExecutionScriptType, executionScriptTypeName

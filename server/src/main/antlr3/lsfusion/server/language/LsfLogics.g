@@ -3482,6 +3482,7 @@ idEqualPEList[List<TypedParameter> context, boolean dynamic] returns [List<Strin
 internalActionDefinitionBody[List<TypedParameter> context] returns [LA action, List<ResolveClassSet> signature]
 @init {
 	boolean allowNullValue = false;
+	boolean initJS = false;
 	List<String> classes = null;
 }
 @after {
@@ -3489,7 +3490,9 @@ internalActionDefinitionBody[List<TypedParameter> context] returns [LA action, L
 
 	    List<ResolveClassSet> contextParams = self.getClassesFromTypedParams(context);
 
-	    if($code.val == null)
+        if(initJS == true)
+          $action = self.addScriptedInternalInitJSAction(classes);
+	    else if($code.val == null)
 	        $action = self.addScriptedInternalAction($classN.val, classes, contextParams, allowNullValue);
 	    else
 		    $action = self.addScriptedInternalAction($code.val, allowNullValue);
@@ -3502,6 +3505,10 @@ internalActionDefinitionBody[List<TypedParameter> context] returns [LA action, L
 		|   code = codeLiteral
         )
 	    ('NULL' { allowNullValue = true; })?
+	|   'INITJS'
+	    (
+	        '(' cls=classIdList ')' { classes = $cls.ids; initJS = true; }
+	    )
 	;
 
 externalActionDefinitionBody [List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]

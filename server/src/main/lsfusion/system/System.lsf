@@ -163,6 +163,8 @@ isServer = DATA LOCAL BOOLEAN ();
 
 lsfParams(STRING s) = ABSTRACT VALUE STRING(STRING);
 
+initExternalResources INITJS(STRING);
+
 // ----------------------------------- open files ----------------------------------- //
 
 //source path, name

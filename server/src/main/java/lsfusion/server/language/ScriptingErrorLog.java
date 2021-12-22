@@ -141,6 +141,10 @@ public class ScriptingErrorLog {
         emitNotFoundError(parser, "filter group", name);
     }
 
+    public void emitInternalInitJSParamNotStringError(ScriptParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "INITJS action must contain only one STRING parameter");
+    }
+
     public void emitIllegalAddNavigatorToSubnavigatorError(ScriptParser parser, String addedElement, String addedToElement) throws SemanticErrorException {
         emitSimpleError(parser, format("can't add navigator element '%s' to it's subelement '%s'", addedElement, addedToElement));
     }

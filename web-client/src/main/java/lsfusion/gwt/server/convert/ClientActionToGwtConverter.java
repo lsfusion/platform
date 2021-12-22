@@ -239,4 +239,9 @@ public class ClientActionToGwtConverter extends ObjectConverter {
     public GResetWindowsLayoutAction convertAction(ResetWindowsLayoutClientAction action) {
         return new GResetWindowsLayoutAction();
     }
+
+    @Converter(from = InitJSClientAction.class)
+    public GInitJSClientAction convertAction(InitJSClientAction action) {
+        return new GInitJSClientAction(action.externalResources);
+    }
 }
