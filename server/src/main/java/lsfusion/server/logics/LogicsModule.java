@@ -1612,12 +1612,12 @@ public abstract class LogicsModule {
     // ------------------- INITJS ----------------- //
 
     protected LA addInitJSProp(Object... params) {
-        return addJoinAProp(null, LocalizedString.NONAME, addInitJSProp(), params);
+        return addJoinAProp(null, LocalizedString.NONAME, addInitJSProp(Arrays.asList(params)), params);
     }
 
     @IdentityStrongLazy
-    protected LA addInitJSProp() {
-        return addAction(null, new LA(new InitJSAction()));
+    protected LA addInitJSProp(List<Object> params) {
+        return addAction(null, new LA(new InitJSAction(params)));
     }
 
     // ------------------- CONFIRM ----------------- //

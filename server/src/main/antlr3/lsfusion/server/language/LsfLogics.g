@@ -3508,11 +3508,11 @@ internalActionDefinitionBody[List<TypedParameter> context] returns [LA action, L
 initJSActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
 @after {
 	if (inMainParseState()) {
-		$action = self.addScriptedInternalInitJSAction($pe.property);
+		$action = self.addScriptedInternalInitJSAction($list.props);
 	}
 }
 	:	'INITJS'
-	    pe=propertyExpression[context, dynamic]
+	    list=nonEmptyPropertyExpressionList[context, dynamic]
 	;
 
 externalActionDefinitionBody [List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]

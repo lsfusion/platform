@@ -4,6 +4,7 @@ import lsfusion.base.ResourceUtils;
 import lsfusion.base.col.SetFact;
 import lsfusion.interop.action.InitJSClientAction;
 import lsfusion.server.data.sql.exception.SQLHandledException;
+import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.action.flow.FlowResult;
@@ -14,21 +15,24 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class InitJSAction extends SystemAction {
 
-    public InitJSAction() {
+    private List<LP> params;
+    public InitJSAction(List<Object> params) {
         super(LocalizedString.create("InitJS"), SetFact.singletonOrder(new PropertyInterface()));
+        this.params = params.stream().filter(param -> param instanceof LP).map(param -> (LP)param).collect(Collectors.toList());
     }
 
     @Override
     protected FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
         List<String> resources = new ArrayList<>();
-        for (String s : String.valueOf(context.getSingleKeyValue().getValue()).split(",")) {
-            List<String> resourcesPaths = ResourceUtils.getResources(Pattern.compile("/web/.*/" + s.trim()));
-            if (resourcesPaths.size() == 1)
-                resources.add(resourcesPaths.get(0));
+
+        for (LP param : params) {
+            resources.addAll(ResourceUtils.getResources(Pattern.compile("/web/.*/" + ((String)param.read(context)).trim())));
         }
+
         context.requestUserInteraction(new InitJSClientAction(resources));
         return FlowResult.FINISH;
     }

@@ -1778,8 +1778,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public LAWithParams addScriptedInternalInitJSAction(LPWithParams prop) throws ScriptingErrorLog.SemanticErrorException {
-        return new LAWithParams(addInitJSProp(getParamsPlainList(singletonList(prop)).toArray()), prop.usedParams);
+    public LAWithParams addScriptedInternalInitJSAction(List<LPWithParams> params) throws ScriptingErrorLog.SemanticErrorException {
+        return new LAWithParams(addInitJSProp(getParamsPlainList(params).toArray()), mergeAllParams(params));
     }
 
     public LA addScriptedInternalAction(String javaClassName, List<String> paramClasses, List<ResolveClassSet> signature, boolean allowNullValue) throws ScriptingErrorLog.SemanticErrorException {
