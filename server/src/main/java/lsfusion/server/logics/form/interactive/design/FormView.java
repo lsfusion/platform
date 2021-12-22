@@ -306,8 +306,6 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
 
         for (ObjectView object : groupObjectView) {
             mobjects.put(object.entity, object);
-            if(!isInTree)
-                setComponentSID(object.classChooser, getClassChooserSID(object.entity), version);
         }
     }
     
@@ -683,10 +681,6 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
     
     private static String getCalculationsSID(PropertyGroupContainerView entity) {
         return entity.getPropertyGroupContainerSID() + ".calculations";
-    }
-
-    private static String getClassChooserSID(ObjectEntity entity) {
-        return CLASSCHOOSER_COMPONENT + "(" + entity.getSID() + ")";
     }
 
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream) throws IOException {
