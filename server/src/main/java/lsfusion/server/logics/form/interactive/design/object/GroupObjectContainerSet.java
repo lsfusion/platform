@@ -26,6 +26,7 @@ public class GroupObjectContainerSet {
             public static final String GROUP_CONTAINER = "GROUP";
     
     private ContainerView boxContainer;
+    private ContainerView gridBoxContainer;
     private ContainerView panelContainer;
     private ContainerView groupContainer;
     private ContainerView toolbarBoxContainer;
@@ -36,6 +37,10 @@ public class GroupObjectContainerSet {
 
     public ContainerView getBoxContainer() {
         return boxContainer;
+    }
+
+    public ContainerView getGridBoxContainer() {
+        return gridBoxContainer;
     }
 
     public ContainerView getPanelContainer() {
@@ -75,6 +80,9 @@ public class GroupObjectContainerSet {
         set.boxContainer.setSID(DefaultFormView.getBoxContainerSID(sid));
         set.boxContainer.setCaption(group.getCaption());
 
+        set.gridBoxContainer = factory.createContainer(); // контейнер грида внутрь
+        set.gridBoxContainer.setSID(DefaultFormView.getGridBoxContainerSID(sid));
+
         set.panelContainer = factory.createContainer(); // контейнер панели
         set.panelContainer.setSID(DefaultFormView.getPanelContainerSID(sid));
 
@@ -101,9 +109,14 @@ public class GroupObjectContainerSet {
         set.boxContainer.setAlignment(FlexAlignment.STRETCH);
         set.boxContainer.setFlex(1);
         set.boxContainer.add(group.filtersContainer, version);
-        set.boxContainer.add(group.getGrid(), version);
+        set.boxContainer.add(set.gridBoxContainer, version);
         set.boxContainer.add(set.toolbarBoxContainer, version);
         set.boxContainer.add(set.panelContainer, version);
+
+        set.gridBoxContainer.setType(ContainerType.CONTAINERH);
+        set.gridBoxContainer.setAlignment(FlexAlignment.STRETCH);
+        set.gridBoxContainer.setFlex(1);
+        set.gridBoxContainer.add(group.getGrid(), version);
 
         set.toolbarBoxContainer.setType(ContainerType.CONTAINERH);
         set.toolbarBoxContainer.setAlignment(FlexAlignment.STRETCH);

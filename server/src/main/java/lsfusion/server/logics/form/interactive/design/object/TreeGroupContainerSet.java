@@ -12,6 +12,7 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 public class TreeGroupContainerSet {
 
     private ContainerView boxContainer;
+    private ContainerView gridContainer;
     private ContainerView panelContainer;
     private ContainerView groupContainer;
     private ContainerView toolbarBoxContainer;
@@ -22,6 +23,10 @@ public class TreeGroupContainerSet {
 
     public ContainerView getBoxContainer() {
         return boxContainer;
+    }
+
+    public ContainerView getGridContainer() {
+        return gridContainer;
     }
 
     public ContainerView getPanelContainer() {
@@ -60,6 +65,9 @@ public class TreeGroupContainerSet {
         set.boxContainer.setSID(DefaultFormView.getBoxContainerSID(sid));
         set.boxContainer.setCaption(LocalizedString.create("{form.layout.tree}"));
 
+        set.gridContainer = factory.createContainer(); // контейнер грида внутрь
+        set.gridContainer.setSID(DefaultFormView.getGridBoxContainerSID(sid));
+
         set.panelContainer = factory.createContainer(); // контейнер панели
         set.panelContainer.setSID(DefaultFormView.getPanelContainerSID(sid));
 
@@ -86,9 +94,14 @@ public class TreeGroupContainerSet {
         set.boxContainer.setAlignment(FlexAlignment.STRETCH);
         set.boxContainer.setFlex(1);
         set.boxContainer.add(treeGroup.filtersContainer, version);
-        set.boxContainer.add(treeGroup, version);
+        set.boxContainer.add(set.gridContainer, version);
         set.boxContainer.add(set.toolbarBoxContainer, version);
         set.boxContainer.add(set.panelContainer, version);
+
+        set.gridContainer.setType(ContainerType.CONTAINERH);
+        set.gridContainer.setAlignment(FlexAlignment.STRETCH);
+        set.gridContainer.setFlex(1);
+        set.gridContainer.add(treeGroup, version);
 
         set.toolbarBoxContainer.setType(ContainerType.CONTAINERH);
         set.toolbarBoxContainer.setAlignment(FlexAlignment.STRETCH);

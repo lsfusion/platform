@@ -146,7 +146,8 @@ The automatic design is generated as follows:
         -   `GROUP...`
     -   `OBJECTS`: contains all the components that are created for object groups/trees on this form. Vertical container. Extension coefficient: `1`, alignment: `STRETCH`.
         -   `BOX(<object group/tree>)`:  contains all the components of this group of objects. Vertical container. Extension coefficient: `1`, alignment: `STRETCH`.
-            -   `GRID (<group of objects / tree>)`: the base component of a Table.
+            -   `GRIDBOX(<group of objects / tree>)`:  contains table / tree. Horizontal container. Extension coefficient: `1`, alignment: `STRETCH`.
+                -   `GRID (<group of objects / tree>)`: the base component of a Table.
             -   `TOOLBARBOX(<group of objects / tree>)`: contains all the components of a toolbar (responsible for layout inside the toolbar). Horizontal container. Alignment: `STRETCH`
                 -   `TOOLBARLEFT(<group of objects / tree>)`: the left side of a toolbar. Horizontal container. Alignment: `CENTER`.  
                     -   `TOOLBARSYSTEM(<group of objects / tree>)`: the base component of the System toolbar. Alignment: `CENTER`.
