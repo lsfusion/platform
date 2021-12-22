@@ -28,8 +28,8 @@ public class HTMLTextCellEditor implements RequestEmbeddedCellEditor {
     }
 
     @Override
-    public void cancel(Element parent) {
-        editManager.cancelEditing(CancelReason.OTHER);
+    public void cancel(Element parent, CancelReason cancelReason) {
+        editManager.cancelEditing(cancelReason);
     }
 
     @Override

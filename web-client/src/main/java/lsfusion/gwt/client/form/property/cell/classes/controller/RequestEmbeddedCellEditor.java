@@ -6,6 +6,7 @@ import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.form.event.GKeyStroke;
+import lsfusion.gwt.client.form.property.cell.controller.CancelReason;
 import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
 
 import static com.google.gwt.dom.client.BrowserEvents.BLUR;
@@ -23,7 +24,7 @@ public interface RequestEmbeddedCellEditor extends RequestCellEditor {
                 commit(parent,  CommitReason.ENTERPRESSED);
             } else if (keyCode == KeyCodes.KEY_ESCAPE && GKeyStroke.isPlainKeyEvent(handler.event)) {
                 handler.consume();
-                cancel(parent);
+                cancel(parent, CancelReason.ESCAPE_PRESSED);
             }
         } else if (BLUR.equals(type)) {
             // Cancel the change. Ensure that we are blurring the input element and
