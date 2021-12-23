@@ -6,8 +6,8 @@ import lsfusion.gwt.client.view.ColorThemeChangeListener;
 import lsfusion.gwt.client.view.MainFrame;
 
 public class CollapsiblePanel extends CaptionPanel implements ColorThemeChangeListener {
-    private final String COLLAPSE_IMAGE_PATH = "tree_open.png";
-    private final String UNFOLD_IMAGE_PATH = "tree_closed.png";
+    private final String COLLAPSE_IMAGE_PATH = "collapse_container.png";
+    private final String EXPAND_IMAGE_PATH = "expand_container.png";
 
     protected GImage collapseImage;
     
@@ -31,7 +31,7 @@ public class CollapsiblePanel extends CaptionPanel implements ColorThemeChangeLi
 
     private void toggleCollapsed() {
         collapsed = !collapsed;
-        collapseImage.setImagePath(collapsed ? UNFOLD_IMAGE_PATH : COLLAPSE_IMAGE_PATH);
+        collapseImage.setImagePath(collapsed ? EXPAND_IMAGE_PATH : COLLAPSE_IMAGE_PATH);
 
         for (int i = 1; i < getChildren().size(); i++) {
             getChildren().get(i).setVisible(!collapsed);
@@ -43,6 +43,6 @@ public class CollapsiblePanel extends CaptionPanel implements ColorThemeChangeLi
 
     @Override
     public void colorThemeChanged() {
-        collapseImage.setImagePath(collapsed ? UNFOLD_IMAGE_PATH : COLLAPSE_IMAGE_PATH);
+        collapseImage.setImagePath(collapsed ? EXPAND_IMAGE_PATH : COLLAPSE_IMAGE_PATH);
     }
 }
