@@ -133,9 +133,6 @@ isWordInCSV = FORMULA NULL BOOLEAN PG 'CASE WHEN CAST($1 AS text)=ANY(string_to_
 getWord (TEXT p1, TEXT p2, INTEGER p3) = FORMULA NULL TEXT '(string_to_array($1,$2))[($3)]';
 wordCount (TEXT p1, TEXT p2) = FORMULA INTEGER 'array_length((string_to_array($1,$2)),1)';
 
-splitted = DATA LOCAL STRING (INTEGER);
-split (TEXT value, STRING delimiter) INTERNAL  'lsfusion.server.logics.classes.data.utils.string.SplitAction';
-
 istartsWith = FORMULA NULL BOOLEAN PG 'CASE WHEN (($1) ILIKE (($2)||\'%\')) THEN 1 ELSE NULL END', MS 'CASE WHEN (($1) LIKE (($2)+\'%\')) THEN 1 ELSE NULL END';
 startsWith = FORMULA NULL BOOLEAN PG 'CASE WHEN (($1) LIKE (($2)||\'%\')) THEN 1 ELSE NULL END', MS 'CASE WHEN (($1) LIKE (($2)+\'%\')) THEN 1 ELSE NULL END';
 endsWith = FORMULA NULL BOOLEAN PG 'CASE WHEN (($1) LIKE (\'%\'||($2))) THEN 1 ELSE NULL END', MS 'CASE WHEN (($1) LIKE (\'%\'+($2))) THEN 1 ELSE NULL END';
