@@ -423,7 +423,7 @@ END
 
 META defineDocumentDetailClosed (object, detailClass)
     isClosed '{documents.is.closed}' (detailClass d) = isClosed(object(d));
-    isOpened '{documents.is.opened}' (detailClass d) = isPosted(d) AND NOT isClosed(d);
+    isOpened '{documents.is.opened}' (detailClass d) = isPosted(d) AND isOpened(object(d));
 END
 
 META defineDocumentDetailClosed (object)
