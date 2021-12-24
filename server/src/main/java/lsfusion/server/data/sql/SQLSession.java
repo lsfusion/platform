@@ -870,9 +870,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         } else if (indexOptions.type.isMatch()) {
             createLikeIndex(table, nameIndex, columns);
             createMatchIndex(table, nameIndex, columns, indexOptions);
-        } else {
-            createDefaultIndex(table, nameIndex, columns);
         }
+        createDefaultIndex(table, nameIndex, columns);
         if(logger != null)
             logger.info(String.format("Adding index: %s, %sms", nameIndex, System.currentTimeMillis() - start));
     }
@@ -902,9 +901,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         } else if(indexOptions.type.isMatch()) {
             dropLikeIndex(table, indexName, ifExists);
             dropMatchIndex(table, indexName, ifExists);
-        } else {
-            dropDefaultIndex(table, indexName, ifExists);
         }
+        dropDefaultIndex(table, indexName, ifExists);
     }
 
     public void dropLikeIndex(NamedTable table, String indexName, boolean ifExists) throws SQLException {
