@@ -555,9 +555,9 @@ public class Scheduler extends MonitorServer implements InitializingBean {
 
         private Long logTask(String message, String result, String phase, ExecutionStack stack, Exception e) {
             if(e != null)
-                schedulerLogger.error("Exception in task : " + message, e);
+                schedulerLogger.error("Exception in task : " + message + " - " + result, e);
             else
-                schedulerLogger.info("Task " + message + " " + phase);
+                schedulerLogger.info("Task " + message + " - " + result + " " + phase);
             
             try (DataSession session = createSession()) {
                 DataObject taskLogObject = session.addObject(BL.schedulerLM.scheduledTaskLog);
