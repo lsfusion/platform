@@ -3266,7 +3266,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         vacuumAnalyzeSessionTable(table, connection, typePool, syntax, owner);
     }
     private static void vacuumAnalyzeSessionTable(String table, Connection connection, TypePool typePool, SQLSyntax syntax, OperationOwner owner) throws SQLException {
-        Pair<String, StaticExecuteEnvironment> ddl = getVacuumAnalyzeDDL(table, syntax);
+        Pair<String, StaticExecuteEnvironment> ddl = getVacuumAnalyzeDDL(syntax.getSessionTableName(table), syntax);
         executeDDL(ddl, connection, typePool, owner);
     }
 
@@ -3388,7 +3388,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
         insertBatchRecords(sqlTo, typePool, syntax, table, tableData.set.toIndexedMap().mapKeyValues(value -> MapFact.singleton(keyCount, value), properties::crossJoin), owner);
 
-        vacuumAnalyzeSessionTable(syntax.getSessionTableName(table), sqlTo, typePool, syntax, owner);
+        vacuumAnalyzeSessionTable(table, sqlTo, typePool, syntax, owner);
     }
 
     private void readData(String table, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, ResultHandler<KeyField, PropertyField> reader, OperationOwner owner) throws SQLException, SQLHandledException {
