@@ -1,24 +1,38 @@
 package lsfusion.gwt.client.form.object.table.grid.user.toolbar.view;
 
 import com.google.gwt.i18n.client.NumberFormat;
-import com.google.gwt.user.client.ui.FocusPanel;
-import com.google.gwt.user.client.ui.Label;
 import lsfusion.gwt.client.ClientMessages;
-import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.view.PopupDialogPanel;
+import lsfusion.gwt.client.base.TooltipManager;
 
 public abstract class GCountQuantityButton extends GToolbarButton {
     private static final ClientMessages messages = ClientMessages.Instance.get();
-    private NumberFormat format;
+    private final NumberFormat format;
 
     public GCountQuantityButton() {
         super("quantity.png", messages.formQueriesNumberOfEntries());
         format = NumberFormat.getDecimalFormat();
     }
 
-    public void showPopup(int result) {
-        PopupDialogPanel popup = new PopupDialogPanel();
-        popup.addStyleName("popup");
-        GwtClientUtils.showPopupInWindow(popup, new FocusPanel(new Label(messages.formQueriesNumberOfEntries() + ": " + format.format(result))), getAbsoluteLeft() + getOffsetWidth(), getAbsoluteTop());
+    public void showPopup(int result, int clientX, int clientY) {
+        TooltipManager.TooltipHelper tooltipHelper = new TooltipManager.TooltipHelper() {
+            @Override
+            public String getTooltip() {
+                return messages.formQueriesNumberOfEntries() + ": " + format.format(result);
+            }
+
+            @Override
+            public boolean stillShowTooltip() {
+                return isAttached() && isVisible();
+            }
+
+            @Override
+            public int getDelay() {
+                return 0;
+            }
+        };
+
+        TooltipManager tooltipManager = TooltipManager.get();
+        tooltipManager.hideTooltip(tooltipHelper);
+        tooltipManager.showTooltip(clientX, clientY, tooltipHelper);
     }
 }

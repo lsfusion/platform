@@ -1,16 +1,9 @@
 package lsfusion.gwt.client.form.object.table.grid.user.toolbar.view;
 
 import com.google.gwt.i18n.client.NumberFormat;
-import com.google.gwt.user.client.ui.FocusPanel;
-import com.google.gwt.user.client.ui.HasAlignment;
-import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.TextBox;
 import lsfusion.gwt.client.ClientMessages;
-import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.view.PopupDialogPanel;
-import lsfusion.gwt.client.base.view.ResizableHorizontalPanel;
+import lsfusion.gwt.client.base.TooltipManager;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.view.StyleDefaults;
 
 import java.math.BigDecimal;
 
@@ -21,29 +14,36 @@ public abstract class GCalculateSumButton extends GToolbarButton {
         super("sum.png", messages.formQueriesCalculateSum());
     }
 
-    public void showPopup(Number result, GPropertyDraw property) {
-        PopupDialogPanel popup = new PopupDialogPanel();
-        popup.addStyleName("popup");
+    public void showPopup(Number result, GPropertyDraw property, int clientX, int clientY) {
+        TooltipManager.TooltipHelper tooltipHelper = new TooltipManager.TooltipHelper() {
+            @Override
+            public String getTooltip() {
+                String text = result == null
+                        ? messages.formQueriesUnableToCalculateSum() + " [" + property.caption + "]"
+                        : messages.formQueriesSumResult() + " [" + property.caption + "]: ";
 
-        ResizableHorizontalPanel panel = new ResizableHorizontalPanel();
-        Label text = new Label(result == null
-                ? messages.formQueriesUnableToCalculateSum() + " [" + property.caption + "]"
-                : messages.formQueriesSumResult() + " [" + property.caption + "]: ");
-        panel.add(text);
-        panel.add(GwtClientUtils.createHorizontalStrut(2));
+                if (result != null) {
+                    NumberFormat format = NumberFormat.getDecimalFormat();
+                    if (result instanceof BigDecimal)
+                        format.overrideFractionDigits(0, ((BigDecimal) result).scale());
+                    text = text + format.format(result);
+                }
+                return text;
+            }
 
-        if (result != null) {
-            TextBox valueBox = new TextBox();
-            valueBox.addStyleName("popup-sumBox");
-            valueBox.setHeight(StyleDefaults.VALUE_HEIGHT_STRING);
-            panel.add(valueBox);
-            NumberFormat format = NumberFormat.getDecimalFormat();
-            if(result instanceof BigDecimal)
-                format.overrideFractionDigits(0, ((BigDecimal)result).scale());
-            valueBox.setValue(format.format(result));
-            panel.setCellVerticalAlignment(text, HasAlignment.ALIGN_MIDDLE);
-        }
+            @Override
+            public boolean stillShowTooltip() {
+                return isAttached() && isVisible();
+            }
 
-        GwtClientUtils.showPopupInWindow(popup, new FocusPanel(panel), getAbsoluteLeft() + getOffsetWidth(), getAbsoluteTop());
+            @Override
+            public int getDelay() {
+                return 0;
+            }
+        };
+
+        TooltipManager tooltipManager = TooltipManager.get();
+        tooltipManager.hideTooltip(tooltipHelper);
+        tooltipManager.showTooltip(clientX, clientY, tooltipHelper);
     }
 }

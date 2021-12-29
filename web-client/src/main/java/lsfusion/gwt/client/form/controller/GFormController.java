@@ -1290,20 +1290,20 @@ public class GFormController implements EditManager {
         }
     }
 
-    public void countRecords(final GGroupObject groupObject) {
+    public void countRecords(final GGroupObject groupObject, int clientX, int clientY) {
         asyncDispatch(new CountRecords(groupObject.ID), new CustomErrorHandlingCallback<NumberResult>() {
             @Override
             public void onSuccess(NumberResult result) {
-                controllers.get(groupObject).showRecordQuantity((Integer) result.value);
+                controllers.get(groupObject).showRecordQuantity((Integer) result.value, clientX, clientY);
             }
         });
     }
 
-    public void calculateSum(final GGroupObject groupObject, final GPropertyDraw propertyDraw, GGroupObjectValue columnKey) {
+    public void calculateSum(final GGroupObject groupObject, final GPropertyDraw propertyDraw, GGroupObjectValue columnKey, int clientX, int clientY) {
         asyncDispatch(new CalculateSum(propertyDraw.ID, columnKey), new CustomErrorHandlingCallback<NumberResult>() {
             @Override
             public void onSuccess(NumberResult result) {
-                controllers.get(groupObject).showSum(result.value, propertyDraw);
+                controllers.get(groupObject).showSum(result.value, propertyDraw, clientX, clientY);
             }
         });
     }

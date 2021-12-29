@@ -28,8 +28,6 @@ public class TooltipManager {
     private static final TooltipManager instance = new TooltipManager();
     private static final ClientMessages messages = ClientMessages.Instance.get();
 
-    private static final int DELAY_SHOW = 1500;
-
     private int mouseX;
     private int mouseY;
 
@@ -104,7 +102,7 @@ public class TooltipManager {
                     }
                 }
                 return false;
-            }, DELAY_SHOW);
+            }, tooltipHelper.getDelay());
         }
     }
 
@@ -196,6 +194,10 @@ public class TooltipManager {
 
         // to check if nothing changed after tooltip delay
         public abstract boolean stillShowTooltip();
+
+        public int getDelay() {
+            return 1500;
+        }
 
         public String getPath() {
             return null;
