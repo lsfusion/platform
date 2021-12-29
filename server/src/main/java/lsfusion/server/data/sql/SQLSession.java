@@ -3388,7 +3388,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
         insertBatchRecords(sqlTo, typePool, syntax, table, tableData.set.toIndexedMap().mapKeyValues(value -> MapFact.singleton(keyCount, value), properties::crossJoin), owner);
 
-        vacuumAnalyzeSessionTable(table, sqlTo, typePool, syntax, owner);
+        vacuumAnalyzeSessionTable(syntax.getSessionTableName(table), sqlTo, typePool, syntax, owner);
     }
 
     private void readData(String table, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, ResultHandler<KeyField, PropertyField> reader, OperationOwner owner) throws SQLException, SQLHandledException {
