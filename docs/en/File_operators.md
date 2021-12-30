@@ -1,6 +1,5 @@
 ---
 title: 'File operators'
-sidebar_label: Overview
 ---
 
 The platform supports the following file operators:

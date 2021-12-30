@@ -1,6 +1,5 @@
 ---
 title: 'Domain logic'
-sidebar_label: Overview
 ---
 
 [Properties](Properties.md) are the basic concept for business logic and are responsible for storing and calculating data. 

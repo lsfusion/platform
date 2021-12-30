@@ -1,6 +1,5 @@
 ---
 title: 'Property operators'
-sidebar_label: Overview
 ---
 
 *Property operator* is a syntax construct that describes an [operator](Property_operators_paradigm.md) creating a [property](Properties.md). 

@@ -1,6 +1,5 @@
 ---
 title: 'Manual installation'
-sidebar_label: Overview
 ---
 
 ### [Development](Development_manual.md)

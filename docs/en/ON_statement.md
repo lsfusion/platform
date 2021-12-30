@@ -1,6 +1,5 @@
 ---
 title: 'ON statement'
-sidebar_label: Overview
 ---
 
 The `ON` statement adds an [event](Events.md) handler.

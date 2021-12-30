@@ -1,6 +1,5 @@
 ---
 title: 'Session management'
-sidebar_label: Overview
 ---
 
 The system has the following operators for working with sessions:

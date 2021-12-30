@@ -1,6 +1,5 @@
 ---
 title: 'Classes'
-sidebar_label: Overview
 ---
 
 The base element in **lsFusion** is the object. Each object is an *instance* of some *class*, which determines the qualities of all its instances. Classes in turn can be divided into [built-in classes](Built-in_classes.md), which are responsible for primitive data types, and [user classes](User_classes.md). 

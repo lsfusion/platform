@@ -1,6 +1,5 @@
 ---
 title: '= statement'
-sidebar_label: Overview
 ---
 
 The `=` statement creates a new [property](Properties.md).
