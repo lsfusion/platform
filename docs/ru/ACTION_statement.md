@@ -1,6 +1,5 @@
 ---
 title: 'Инструкция ACTION'
-sidebar_label: Обзор
 ---
 
 Инструкция `ACTION` - создание нового [действия](Actions.md).

@@ -1,6 +1,5 @@
 ---
 title: 'Actions'
-sidebar_label: Overview
 ---
 
 An *action* is an element of the system that takes a set of objects (*parameters*) and uses them in one way or another to change the system state (that of the system in which the action is executed, as well as the state of any other external system).

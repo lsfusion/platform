@@ -1,6 +1,5 @@
 ---
 title: 'Form structure'
-sidebar_label: Overview
 ---
 
 The [form](Forms.md) structure is a complex of *objects*, [properties](Properties.md), [actions](Actions.md) and relations between them.

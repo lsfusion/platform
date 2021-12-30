@@ -1,6 +1,5 @@
 ---
 title: 'Язык'
-sidebar_label: Обзор
 ---
 
 *lsFusion* - это язык программирования, на котором описываются [модули](Modules.md) lsFusion.

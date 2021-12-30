@@ -1,6 +1,5 @@
 ---
 title: 'Physical model'
-sidebar_label: Overview
 ---
 
 The physical model consists of three parts: 

@@ -1,6 +1,5 @@
 ---
 title: 'Paradigm'
-sidebar_label: Overview
 ---
 
 The paradigm can be divided into two parts:

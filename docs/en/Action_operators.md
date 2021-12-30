@@ -1,6 +1,5 @@
 ---
 title: 'Action operators'
-sidebar_label: Overview
 ---
 
 *Action operator* is a syntax construct that describes an [operator](Action_operators_paradigm.md) creating an [action](Actions.md).
