@@ -104,6 +104,11 @@ public class MSSQLSQLSyntax extends DefaultSQLSyntax {
     }
 
     @Override
+    public String getAnalyze(String table) {
+        return "UPDATE STATISTICS " + table;
+    }
+
+    @Override
     public String getSafeCastNameFnc(Type type, boolean isInt) {
         return "dbo." + super.getSafeCastNameFnc(type, isInt);
     }

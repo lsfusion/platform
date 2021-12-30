@@ -3191,7 +3191,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         vacuumAnalyzeSessionTable(table, connection, typePool, syntax, owner);
     }
     private static void vacuumAnalyzeSessionTable(String table, Connection connection, TypePool typePool, SQLSyntax syntax, OperationOwner owner) throws SQLException {
-        Pair<String, StaticExecuteEnvironment> ddl = getVacuumAnalyzeDDL(table, syntax);
+        Pair<String, StaticExecuteEnvironment> ddl = getVacuumAnalyzeDDL(syntax.getSessionTableName(table), syntax);
         executeDDL(ddl, connection, typePool, owner);
     }
 
