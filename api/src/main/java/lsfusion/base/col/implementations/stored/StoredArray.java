@@ -1,6 +1,7 @@
 package lsfusion.base.col.implementations.stored;
 
 import java.io.*;
+import java.nio.ByteBuffer;
 
 public class StoredArray<T> {
     private final StoredArraySerializer serializer;
@@ -8,6 +9,7 @@ public class StoredArray<T> {
     private int size = 0;
     private RandomAccessFile indexFile;
     private RandomAccessFile dataFile;
+    private byte[] twoIntBuffer = new byte[8];
     
     public StoredArray(StoredArraySerializer serializer) {
         this(0, serializer);
@@ -81,8 +83,9 @@ public class StoredArray<T> {
             int newLen = outStream.size();
 
             seekToIndex(index);
-            int offset = indexFile.readInt();
-            int len = indexFile.readInt();
+            ByteBuffer buf = readOffsetLen();
+            int offset = buf.getInt();
+            int len = buf.getInt();
 
             int newOffset = (newLen <= len ? offset : (int) dataFile.length());
             setIndexData(index, newOffset, newLen);
@@ -111,8 +114,9 @@ public class StoredArray<T> {
             int nextOffset = 0, nextLen = 0;
             for (int i = index; i <= size; ++i) {
                 if (i < size) {
-                    nextOffset = indexFile.readInt();
-                    nextLen = indexFile.readInt();
+                    ByteBuffer buf = readOffsetLen();
+                    nextOffset = buf.getInt();
+                    nextLen = buf.getInt();
                 }
                 setIndexData(i, offset, len);
                 offset = nextOffset;
@@ -166,8 +170,10 @@ public class StoredArray<T> {
     
     private void setIndexData(int index, int offset, int len) throws IOException {
         seekToIndex(index);
-        indexFile.writeInt(offset);
-        indexFile.writeInt(len);
+        ByteBuffer buffer = ByteBuffer.allocate(8);
+        buffer.putInt(offset);
+        buffer.putInt(len);
+        indexFile.write(buffer.array());
     }
     
     private T readElement(int len) throws IOException {
@@ -191,14 +197,20 @@ public class StoredArray<T> {
     
     private int prepareForElementReading(int index) throws IOException {
         seekToIndex(index);
-        int offset = indexFile.readInt();
-        int len = indexFile.readInt();
+        ByteBuffer buf = readOffsetLen();
+        int offset = buf.getInt();
+        int len = buf.getInt();
         if (len > 0) {
             seekToObject(offset);
         }
         return len;
     }
 
+    private ByteBuffer readOffsetLen() throws IOException {
+        indexFile.read(twoIntBuffer);
+        return ByteBuffer.wrap(twoIntBuffer);
+    }    
+    
     public void squeeze() {
         File tmpIndexFile = fileManager.tmpIndexFile();
         File tmpDataFile = fileManager.tmpDataFile();

@@ -6,10 +6,7 @@ import org.junit.rules.ExpectedException;
 
 import java.io.*;
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -475,4 +472,23 @@ public class StoredArrayTest {
             return name;
         }
     }
+
+    @Test
+    public void performanceTest() {
+        SerializableClass[] array = generateSerializableArray();
+        StoredArray<SerializableClass> stored = new StoredArray<>(array, serializer);
+        checkEquality(array, stored);
+    }
+    
+    
+    private final int SIZE = 3000;     
+    
+    private SerializableClass[] generateSerializableArray() {
+        List<SerializableClass> list = new ArrayList<>();
+        for (int i = 0; i < SIZE; ++i) {
+            list.add(new SerializableClass("Name", i+1, true));
+        }
+        return list.toArray(new SerializableClass[0]);
+    }
+    
 }

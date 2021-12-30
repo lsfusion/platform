@@ -7,6 +7,8 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import org.junit.Test;
 
+import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -19,6 +21,7 @@ public class ArIndexedTest {
     static {
         StoredArraySerializerRegistry serializer = (StoredArraySerializerRegistry) StoredArraySerializer.getInstance();
         serializer.register(SerializableClass.class, SerializableClass::serialize, SerializableClass::deserialize);
+        StoredArraySerializer.getInstance();
     }
 
     private final int SIZE = 10000; 
@@ -114,5 +117,32 @@ public class ArIndexedTest {
             res[i] = "String" + rand.nextInt(SIZE);
         }
         return res;
+    }
+    
+    static {
+        int sz;
+        try {
+            RandomAccessFile file = new RandomAccessFile("C:/raf.test", "rws");
+            String s = "some not very long string, but not too short";
+            sz = s.length();
+            for (int i = 0; i < 10000; ++i) {
+                file.writeBytes(s);
+            }
+        } catch (IOException ignored) {
+            
+        }
+    }
+    
+    @Test 
+    public void randomAccessFileTest() throws IOException {
+        file.seek(0);
+        byte[] buffer = new byte[sz];
+        for (int i = 0; i < 10000; ++i) {
+            file.seek(i * sz);
+            file.read(buffer);
+            String t = new String(buffer);
+            assertEquals(s, t);        
+        }
+        
     }
 }
