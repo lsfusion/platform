@@ -809,8 +809,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         return result;
     }
     
-    public void addIndex(NamedTable table, ImOrderSet<KeyField> keyFields, ImOrderSet<Field> fields, IndexOptions indexOptions, Logger logger) throws SQLException {
-        addIndex(table, getOrderFields(keyFields, indexOptions, fields), indexOptions, logger);
+    public void addIndex(NamedTable table, ImOrderSet<KeyField> keyFields, ImOrderSet<Field> fields, IndexOptions indexOptions, Logger logger, boolean ifNotExists) throws SQLException {
+        addIndex(table, getOrderFields(keyFields, indexOptions, fields), indexOptions, logger, ifNotExists);
     }
 
     public boolean checkIndex(NamedTable table, ImOrderSet<KeyField> keyFields, ImOrderSet<Field> fields, IndexOptions indexOptions) throws SQLException, SQLHandledException {
@@ -852,10 +852,10 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     }
 
     public void addIndex(NamedTable table, ImOrderMap<Field, Boolean> fields, Logger logger) throws SQLException {
-        addIndex(table, fields, IndexOptions.defaultIndexOptions, logger);
+        addIndex(table, fields, IndexOptions.defaultIndexOptions, logger, false);
     }
 
-    public void addIndex(NamedTable table, ImOrderMap<Field, Boolean> fields, IndexOptions indexOptions, Logger logger) throws SQLException {
+    public void addIndex(NamedTable table, ImOrderMap<Field, Boolean> fields, IndexOptions indexOptions, Logger logger, boolean ifNotExists) throws SQLException {
         String columns = fields.toString((key, value) -> {
             assert value || !(key instanceof KeyField);
             return key.getName(syntax) + (indexOptions.type.isDefault() ? (" " + syntax.getOrderDirection(false, value)) : "");
@@ -866,32 +866,32 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         if(logger != null)
             logger.info(String.format("Adding index started: %s", nameIndex));
         if (indexOptions.type.isLike()) {
-            createLikeIndex(table, nameIndex, columns);
+            createLikeIndex(table, nameIndex, columns, ifNotExists);
         } else if (indexOptions.type.isMatch()) {
-            createLikeIndex(table, nameIndex, columns);
-            createMatchIndex(table, nameIndex, columns, indexOptions);
+            createLikeIndex(table, nameIndex, columns, ifNotExists);
+            createMatchIndex(table, nameIndex, columns, indexOptions, ifNotExists);
         }
-        createDefaultIndex(table, nameIndex, columns);
+        createDefaultIndex(table, nameIndex, columns, ifNotExists);
         if(logger != null)
             logger.info(String.format("Adding index: %s, %sms", nameIndex, System.currentTimeMillis() - start));
     }
 
-    private void createLikeIndex(NamedTable table, String nameIndex, String columns) throws SQLException {
+    private void createLikeIndex(NamedTable table, String nameIndex, String columns, boolean ifNotExists) throws SQLException {
         if(DataAdapter.hasTrgmExtension())
-            createIndex(table, nameIndex + "_like", " USING GIN (" + columns + " gin_trgm_ops)");
+            createIndex(table, nameIndex + "_like", " USING GIN (" + columns + " gin_trgm_ops)", ifNotExists);
     }
 
-    private void createMatchIndex(NamedTable table, String nameIndex, String columns, IndexOptions indexOptions) throws SQLException {
+    private void createMatchIndex(NamedTable table, String nameIndex, String columns, IndexOptions indexOptions, boolean ifNotExists) throws SQLException {
         if(DataAdapter.hasTrgmExtension())
-            createIndex(table, nameIndex + "_match", " USING GIN (to_tsvector(" + (indexOptions.language != null ? ("'" + indexOptions.language + "', ") : "") + columns + "))");
+            createIndex(table, nameIndex + "_match", " USING GIN (to_tsvector(" + (indexOptions.language != null ? ("'" + indexOptions.language + "', ") : "") + columns + "))", ifNotExists);
     }
 
-    private void createDefaultIndex(NamedTable table, String nameIndex, String columns) throws SQLException {
-        createIndex(table, nameIndex, " (" + columns + ")");
+    private void createDefaultIndex(NamedTable table, String nameIndex, String columns, boolean ifNotExists) throws SQLException {
+        createIndex(table, nameIndex, " (" + columns + ")", ifNotExists);
     }
 
-    private void createIndex(NamedTable table, String nameIndex, String columnsPostfix) throws SQLException {
-        executeDDL("CREATE INDEX " + nameIndex + " ON " + table.getName(syntax) + columnsPostfix);
+    private void createIndex(NamedTable table, String nameIndex, String columnsPostfix, boolean ifNotExists) throws SQLException {
+        executeDDL("CREATE INDEX " + (ifNotExists ? "IF NOT EXISTS " : "") + nameIndex + " ON " + table.getName(syntax) + columnsPostfix);
     }
 
     public void dropIndex(NamedTable table, ImOrderSet<KeyField> keyFields, ImOrderSet<String> fields, IndexOptions indexOptions, boolean ifExists) throws SQLException {
