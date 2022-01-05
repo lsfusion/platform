@@ -21,13 +21,15 @@ public abstract class GFileType extends GDataType {
     public boolean storeName;
     public String description;
     public List<String> validExtensions;
+    public boolean named;
 
     public GFileType() {
     }
 
-    public GFileType(boolean multiple, boolean storeName) {
+    public GFileType(boolean multiple, boolean storeName, boolean named) {
         this.multiple = multiple;
         this.storeName = storeName;
+        this.named = named;
     }
 
     @Override
@@ -42,7 +44,7 @@ public abstract class GFileType extends GDataType {
 
     @Override
     public CellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList) {
-        return new FileCellEditor(editManager, storeName, validExtensions);
+        return new FileCellEditor(editManager, storeName, validExtensions, named);
     }
 
     @Override

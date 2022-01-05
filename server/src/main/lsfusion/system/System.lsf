@@ -171,6 +171,8 @@ open '{system.open.file}' (STRING[255] source)  { open(source, NULL); }
 //source file, name
 open '{system.open.file}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.open.OpenFileAction' (FILE, ISTRING[255]);
 open '{system.open.file}' (FILE source)  { open(source, NULL); }
+//source namedFile
+open '{system.open.file}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.open.OpenFileAction' (NAMEDFILE);
 //source rawFile, name
 open '{system.open.file}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.open.OpenRawFileAction' (RAWFILE, ISTRING[255]);
 open '{system.open.file}' (RAWFILE source)  { open(source, NULL); }
@@ -237,6 +239,7 @@ exportHtmlFile = DATA LOCAL HTMLFILE ();
 exportJsonFile = DATA LOCAL JSONFILE ();
 exportXmlFile = DATA LOCAL XMLFILE ();
 exportTableFile = DATA LOCAL TABLEFILE ();
+exportNamedFile = DATA LOCAL NAMEDFILE ();
 exportWordLink = DATA LOCAL WORDLINK ();
 exportImageLink = DATA LOCAL IMAGELINK ();
 exportPdfLink = DATA LOCAL PDFLINK ();
@@ -257,8 +260,14 @@ importedString = DATA LOCAL BOOLEAN (STRING[10]);
 
 readFile = DATA LOCAL FILE ();
 
-getFileExtension(FILE file) = FORMULA TEXT 'get_extension($1)';
-getExtension = getFileExtension(FILE(file));
+namedFileName(NAMEDFILE file) = FORMULA TEXT 'get_named_file_name($1)';
+namedFileExtension(NAMEDFILE file) = FORMULA TEXT 'get_named_file_extension($1)';
+fileExtension(FILE file) = FORMULA TEXT 'get_extension($1)';
+extension = fileExtension(FILE(file));
+
+getFileExtension(FILE file) = fileExtension(file); //backward compatibility
+getExtension = getFileExtension(FILE(file)); //backward compatibility
+
 
 downloadFile '{system.download.file}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.DownloadFileAction' (STRING[100]); 
 
@@ -314,6 +323,7 @@ requestedHtmlFile = DATA LOCAL NESTED HTMLFILE ();
 requestedJsonFile = DATA LOCAL NESTED JSONFILE ();
 requestedXmlFile = DATA LOCAL NESTED XMLFILE ();
 requestedTableFile = DATA LOCAL NESTED TABLEFILE ();
+requestedNamedFile = DATA LOCAL NESTED NAMEDFILE ();
 requestedWordLink = DATA LOCAL NESTED WORDLINK ();
 requestedImageLink = DATA LOCAL NESTED IMAGELINK ();
 requestedPdfLink = DATA LOCAL NESTED PDFLINK ();

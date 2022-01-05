@@ -15,6 +15,7 @@ import lsfusion.base.col.interfaces.mutable.add.MAddMap;
 import lsfusion.base.comb.map.GlobalObject;
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.IOUtils;
+import lsfusion.base.file.NamedFileData;
 import lsfusion.base.file.RawFileData;
 import lsfusion.base.lambda.ArrayInstancer;
 import lsfusion.base.lambda.set.FullFunctionSet;
@@ -23,6 +24,7 @@ import lsfusion.base.lambda.set.MergeFunctionSet;
 import lsfusion.base.lambda.set.RemoveFunctionSet;
 import lsfusion.base.mutability.TwinImmutableObject;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
 
 import java.awt.*;
@@ -61,7 +63,7 @@ public class BaseUtils {
     private static final int STRING_SERIALIZATION_CHUNK_SIZE = 65535/3;
 
     public static Integer getApiVersion() {
-        return 176;
+        return 177;
     }
 
     public static String getPlatformVersion() {
@@ -2336,7 +2338,7 @@ public class BaseUtils {
         return beginIndex == -1 ? "" : result.substring(beginIndex + 1);
     }
 
-    public static Object filesToBytes(boolean multiple, boolean storeName, boolean custom, File... files) {
+    public static Object filesToBytes(boolean multiple, boolean storeName, boolean custom, boolean named, File... files) {
         ByteArrayOutputStream byteOutStream = new ByteArrayOutputStream();
 
         byte result[];
@@ -2349,16 +2351,19 @@ public class BaseUtils {
                     outStream.writeBytes(file.getName());
                 }
                 RawFileData rawFileData = new RawFileData(file);
-                String ext = null;
-                //int length = fileBytes.length;
 
                 byte[] fileBytes;
                 if (custom) {
-                    ext = getFileExtension(file);
-                    FileData fileData = new FileData(rawFileData, ext);
-                    if(!(multiple || storeName))
-                        return fileData;
-                    fileBytes = fileData.getBytes();
+                    String ext = getFileExtension(file);
+                    if(named) {
+                        assert !multiple && !storeName;
+                        return new NamedFileData(new FileData(rawFileData, ext), FilenameUtils.getBaseName(file.getName()));
+                    } else {
+                        FileData fileData = new FileData(rawFileData, ext);
+                        if(!(multiple || storeName))
+                            return fileData;
+                        fileBytes = fileData.getBytes();
+                    }
                 } else {
                     if(!(multiple || storeName))
                         return rawFileData;

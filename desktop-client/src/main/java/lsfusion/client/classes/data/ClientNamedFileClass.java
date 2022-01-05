@@ -4,39 +4,33 @@ import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.cell.classes.controller.FilePropertyEditor;
 import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
-import lsfusion.client.form.property.cell.classes.view.DynamicFormatFileRenderer;
-import lsfusion.client.form.property.cell.view.PropertyRenderer;
 import lsfusion.client.form.property.table.view.AsyncChangeInterface;
 import lsfusion.interop.classes.DataType;
 
-public class ClientDynamicFormatFileClass extends ClientFileClass {
+public class ClientNamedFileClass extends ClientDynamicFormatFileClass {
 
-    public final static ClientDynamicFormatFileClass instance = new ClientDynamicFormatFileClass(false, false);
+    public final static ClientDynamicFormatFileClass instance = new ClientNamedFileClass(false, false);
 
-    public ClientDynamicFormatFileClass(boolean multiple, boolean storeName) {
+    public ClientNamedFileClass(boolean multiple, boolean storeName) {
         super(multiple, storeName);
-    }
-
-    public PropertyRenderer getRendererComponent(ClientPropertyDraw property) {
-        return new DynamicFormatFileRenderer(property);
     }
 
     @Override
     public String formatString(Object obj) {
-        return "File";
+        return "NamedFile";
     }
 
     public byte getTypeId() {
-        return DataType.DYNAMICFORMATFILE;
+        return DataType.NAMEDFILE;
     }
 
     @Override
     public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property, AsyncChangeInterface asyncChange) {
-        return new FilePropertyEditor(multiple, storeName, false);
+        return new FilePropertyEditor(multiple, storeName, true);
     }
 
     @Override
     public String toString() {
-        return ClientResourceBundle.getString("logics.classes.custom.file");
+        return ClientResourceBundle.getString("logics.classes.named.file");
     }
 }
