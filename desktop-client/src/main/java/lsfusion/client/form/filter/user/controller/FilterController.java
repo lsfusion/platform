@@ -14,6 +14,7 @@ import lsfusion.client.form.object.table.controller.TableController;
 import lsfusion.client.form.object.table.grid.user.toolbar.view.ToolbarGridButton;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.panel.view.DataPanelView;
+import lsfusion.client.form.view.Column;
 import lsfusion.interop.form.event.KeyStrokes;
 
 import javax.swing.*;
@@ -31,6 +32,7 @@ public abstract class FilterController implements FilterConditionView.UIHandler 
     public static final String FILTER_ICON_PATH = "filt.png";
     
     private final TableController logicsSupplier;
+    private Map<Column, String> columns = new HashMap<>();
     
     private final ToolbarGridButton toolbarButton;
     private ToolbarGridButton addConditionButton;
@@ -56,7 +58,7 @@ public abstract class FilterController implements FilterConditionView.UIHandler 
             toggleToolsVisible();
         });
 
-        if (hasOwnContainer()) {
+        if (hasFiltersContainer()) {
             addConditionButton = new ToolbarGridButton(ADD_ICON_PATH, getString("form.queries.filter.add.condition"));
             addConditionButton.addActionListener(ae -> addCondition());
             addConditionButton.setVisible(false);
@@ -69,7 +71,7 @@ public abstract class FilterController implements FilterConditionView.UIHandler 
         });
         resetConditionsButton.setVisible(false);
 
-        if (filtersContainerComponent != null) {
+        if (hasFiltersContainer()) {
             filtersContainerComponent.setFocusable(false);
         }
 
@@ -89,7 +91,7 @@ public abstract class FilterController implements FilterConditionView.UIHandler 
     }
 
     private void initUIHandlers() {
-        if (filtersContainerComponent != null) {
+        if (hasFiltersContainer()) {
             addActionsToInputMap(filtersContainerComponent);
 
             filtersContainerComponent.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStrokes.getEnter(), "applyQuery");
@@ -105,7 +107,7 @@ public abstract class FilterController implements FilterConditionView.UIHandler 
 
     // используется для того, чтобы во внешнем компоненте по нажатии кнопок можно было создать отбор/поиск
     public void addActionsToInputMap(JComponent comp) {
-        if (hasOwnContainer()) {
+        if (hasFiltersContainer()) {
             comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(getFilterKeyStroke(InputEvent.ALT_DOWN_MASK), "newFilter");
             comp.getActionMap().put("newFilter", new AbstractAction() {
                 public void actionPerformed(ActionEvent ae) {
@@ -131,7 +133,7 @@ public abstract class FilterController implements FilterConditionView.UIHandler 
     }
 
     public void addActionsToPanelInputMap(final JComponent comp) {
-        if (hasOwnContainer()) {
+        if (hasFiltersContainer()) {
             comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(getFilterKeyStroke(InputEvent.ALT_DOWN_MASK), "newFilter");
             comp.getActionMap().put("newFilter", new AbstractAction() {
                 public void actionPerformed(ActionEvent ae) {
@@ -225,7 +227,7 @@ public abstract class FilterController implements FilterConditionView.UIHandler 
     }
 
     public void addCondition() {
-        if (hasOwnContainer()) {
+        if (hasFiltersContainer()) {
             addCondition(KeyStrokes.createAddUserFilterKeyEvent(filtersContainerComponent));
         }
     }
@@ -265,7 +267,7 @@ public abstract class FilterController implements FilterConditionView.UIHandler 
     public void addCondition(ClientPropertyFilter condition, TableController logicsSupplier, EventObject keyEvent, boolean readSelectedValue) {
         logicsSupplier.getFormController().commitOrCancelCurrentEditing();
 
-        FilterConditionView conditionView = new FilterConditionView(condition, logicsSupplier, this, toolsVisible, readSelectedValue);
+        FilterConditionView conditionView = new FilterConditionView(condition, logicsSupplier, this, () -> columns, toolsVisible, readSelectedValue);
         conditionViews.put(condition, conditionView);
 
         addConditionView(condition, conditionView); 
@@ -362,6 +364,11 @@ public abstract class FilterController implements FilterConditionView.UIHandler 
 
             initialFilters = null;
         }
+
+        columns.clear();
+        for (Pair<Column, String> column : logicsSupplier.getSelectedColumns()) {
+            columns.put(column.first, column.second);
+        }
     }
 
     public void quickEditFilter(KeyEvent initFilterKeyEvent, ClientPropertyDraw propertyDraw, ClientGroupObjectValue columnKey) {
@@ -384,13 +391,13 @@ public abstract class FilterController implements FilterConditionView.UIHandler 
         }
     }
     
-    public boolean hasOwnContainer() {
+    public boolean hasFiltersContainer() {
         return filtersContainerComponent != null;
     }
 
     public void setVisible(boolean visible) {
-        if (filtersContainerComponent != null) {
-            filtersContainerComponent.setVisible(visible);
+        for (FilterConditionView conditionView : conditionViews.values()) {
+            conditionView.setVisible(visible);
         }
     }
 }
