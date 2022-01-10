@@ -653,7 +653,7 @@ propertyCustomView returns [String customRenderFunction, String customEditorFunc
 	:	'CUSTOM' ((renderFun=stringLiteral { $customRenderFunction = $renderFun.val;})
 	    | ((renderFun=stringLiteral { $customRenderFunction = $renderFun.val;})?
         // EDIT TEXT is a temporary fix for backward compatibility
-		(('CHANGE' | ('EDIT' PRIMITIVE_TYPE)) { $customEditorFunction = "DEFAULT"; } (editFun=stringLiteral {$customEditorFunction = $editFun.val; })?))) // "DEFAULT" is hardcoded and used in GFormController.edit
+		(('CHANGE' | ('EDIT' primitiveType)) { $customEditorFunction = "DEFAULT"; } (editFun=stringLiteral {$customEditorFunction = $editFun.val; })?))) // "DEFAULT" is hardcoded and used in GFormController.edit
 	;
 
 listViewType returns [ListViewType type, PivotOptions options, String customRenderFunction, String mapTileProvider]
@@ -2151,7 +2151,7 @@ castPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [L
 		$property = self.addScriptedCastProp($ptype.text, $expr.property);
 	}
 }
-	:   ptype=PRIMITIVE_TYPE '(' expr=propertyExpression[context, dynamic] ')'
+	:   ptype=primitiveType '(' expr=propertyExpression[context, dynamic] ')'
 	;
 
 concatPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
@@ -2368,7 +2368,7 @@ importFieldDefinition[List<TypedParameter> newContext] returns [String id, Boole
     DataClass dataClass = null;
 }
     :
-        ptype=PRIMITIVE_TYPE { if(inMainParseState()) dataClass = (DataClass)self.findClass($ptype.text); }
+        ptype=primitiveType { if(inMainParseState()) dataClass = (DataClass)self.findClass($ptype.text); }
         (varID=ID EQ)?
         (   pid=ID { $id = $pid.text; $literal = false; }
         |	sLiteral=stringLiteral { $id = $sLiteral.val; $literal = true; }
@@ -3864,7 +3864,7 @@ mappedInput[List<TypedParameter> context] returns [ValueClass valueClass, LPWith
     :    
     (
         (varID=ID EQ { varName = $varID.text; } )?
-        ptype=PRIMITIVE_TYPE
+        ptype=primitiveType
     )
     |	
     ( 
@@ -4986,7 +4986,7 @@ metaCodeIdList returns [List<String> ids]
 
 metaCodeId returns [String sid]
 	:	id=compoundID 		{ $sid = $id.sid; }
-	|	ptype=PRIMITIVE_TYPE	{ $sid = $ptype.text; } 
+	|	ptype=primitiveType	{ $sid = $ptype.text; } 
 	|	lit=metaCodeLiteral 	{ $sid = $lit.text; }
 	|				{ $sid = ""; }
 	;
@@ -5185,7 +5185,7 @@ literal returns [ScriptingLogicsModule.ConstType cls, Object value]
 
 classId returns [String sid]
 	:	id=compoundID { $sid = $id.sid; }
-	|	pid=PRIMITIVE_TYPE { $sid = $pid.text; }
+	|	pid=primitiveType { $sid = $pid.text; }
 	;
 
 signatureClass returns [String sid]
@@ -5272,6 +5272,10 @@ colorLiteral returns [Color val]
 stringLiteral returns [String val]
 	:	s=STRING_LITERAL { $val = self.transformStringLiteral($s.text); }
     |   s=ID { $val = null; }
+	;
+
+primitiveType returns [String val]
+:	    p=PRIMITIVE_TYPE | JSON_TYPE { $val = $p.text; }
 	;
 
 // there are some rules where ID is not desirable (see usages), where there is an ID
@@ -5431,6 +5435,7 @@ PRIMITIVE_TYPE  :	'INTEGER' | 'DOUBLE' | 'LONG' | 'BOOLEAN' | 'TBOOLEAN' | 'DATE
 				|   ('BPSTRING' ('[' DIGITS ']')?) | ('BPISTRING' ('[' DIGITS ']')?)
 				|	('STRING' ('[' DIGITS ']')?) | ('ISTRING' ('[' DIGITS ']')?) | 'NUMERIC' ('[' DIGITS ',' DIGITS ']')? | 'COLOR'
 				|   ('INTERVAL' ('[' INTERVAL_TYPE ']'));
+JSON_TYPE       :   'JSON';
 LOGICAL_LITERAL :	'TRUE' | 'FALSE';
 T_LOGICAL_LITERAL:	'TTRUE' | 'TFALSE';
 NULL_LITERAL	:	'NULL';

@@ -84,6 +84,7 @@ public class TypeSerializer {
         if (type == DataType.DATETIMEINTERVAL) return IntervalClass.getInstance("DATETIME");
         if (type == DataType.ZDATETIMEINTERVAL) return IntervalClass.getInstance("ZDATETIME");
         if (type == DataType.COLOR) return ColorClass.instance;
+        if (type == DataType.JSON) return JSONClass.instance;
 
         if (type == DataType.STRING) {
             boolean blankPadded = inStream.readBoolean();

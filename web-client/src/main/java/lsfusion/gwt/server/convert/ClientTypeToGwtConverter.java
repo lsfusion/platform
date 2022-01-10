@@ -280,6 +280,11 @@ public class ClientTypeToGwtConverter extends ObjectConverter {
         return GColorType.instance;
     }
 
+    @Converter(from = ClientJSONClass.class)
+    public GJSONType convertJSONClass(ClientJSONClass clientJSONClass) {
+        return GJSONType.instance;
+    }
+
     @Converter(from = ClientObjectType.class)
     public GObjectType convertObjectType(ClientObjectType clientObjectType) {
         return GObjectType.instance;

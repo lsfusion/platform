@@ -203,6 +203,10 @@ public abstract class DefaultSQLSyntax implements SQLSyntax {
         return "integer";
     }
 
+    public String getJSON() {
+        return "jsonb";
+    }
+
     public int getColorSQL() {
         return Types.INTEGER;
     }

@@ -49,6 +49,7 @@ public class AnyValuePropertyHolder {
     private final LP dateProperty;
     private final LP timeProperty;
     private final LP colorProperty;
+    private final LP jsonProperty;
     private final LP wordFileProperty;
     private final LP imageFileProperty;
     private final LP pdfFileProperty;
@@ -79,9 +80,10 @@ public class AnyValuePropertyHolder {
     public AnyValuePropertyHolder(LP<?> objectProperty, LP<?> stringProperty, LP<?> bpStringProperty, LP<?> textProperty, LP<?> richTextProperty, LP<?> htmlTextProperty,
                                   LP<?> intProperty, LP<?> longProperty, LP<?> doubleProperty, LP<?> numericProperty, LP<?> yearProperty, LP<?> dateTimeProperty,
                                   LP<?> zDateTimeProperty, LP<?> intervalDateProperty, LP<?> intervalDateTimeProperty, LP<?> intervalTimeProperty, LP<?> intervalZDateTimeProperty,
-                                  LP<?> logicalProperty, LP<?> tLogicalProperty, LP<?> dateProperty, LP<?> timeProperty, LP<?> colorProperty, LP<?> wordFileProperty, LP<?> imageFileProperty,
-                                  LP<?> pdfFileProperty, LP<?> dbfFileProperty, LP<?> rawFileProperty, LP<?> customFileProperty, LP<?> excelFileProperty,
-                                  LP<?> textFileProperty, LP<?> csvFileProperty, LP<?> htmlFileProperty, LP<?> jsonFileProperty, LP<?> xmlFileProperty, LP<?> tableFileProperty,
+                                  LP<?> logicalProperty, LP<?> tLogicalProperty, LP<?> dateProperty, LP<?> timeProperty, LP<?> colorProperty, LP<?> jsonProperty,
+                                  LP<?> wordFileProperty, LP<?> imageFileProperty, LP<?> pdfFileProperty, LP<?> dbfFileProperty,
+                                  LP<?> rawFileProperty, LP<?> customFileProperty, LP<?> excelFileProperty, LP<?> textFileProperty, LP<?> csvFileProperty,
+                                  LP<?> htmlFileProperty, LP<?> jsonFileProperty, LP<?> xmlFileProperty, LP<?> tableFileProperty,
                                   LP<?> wordLinkProperty, LP<?> imageLinkProperty, LP<?> pdfLinkProperty, LP<?> dbfLinkProperty, LP<?> rawLinkProperty,
                                   LP<?> customLinkProperty, LP<?> excelLinkProperty, LP<?> textLinkProperty, LP<?> csvLinkProperty,
                                   LP<?> htmlLinkProperty, LP<?> jsonLinkProperty, LP<?> xmlLinkProperty, LP<?> tableLinkProperty) {
@@ -107,6 +109,7 @@ public class AnyValuePropertyHolder {
                 && dateProperty.property.getType() == DateClass.instance
                 && timeProperty.property.getType() == TimeClass.instance
                 && colorProperty.property.getType() == ColorClass.instance
+                && jsonProperty.property.getType() == JSONClass.instance
                 && wordFileProperty.property.getType() == WordClass.get()
                 && imageFileProperty.property.getType() == ImageClass.get()
                 && pdfFileProperty.property.getType() == PDFClass.get()
@@ -157,6 +160,7 @@ public class AnyValuePropertyHolder {
         this.dateProperty = dateProperty;
         this.timeProperty = timeProperty;
         this.colorProperty = colorProperty;
+        this.jsonProperty = jsonProperty;
         this.wordFileProperty = wordFileProperty;
         this.imageFileProperty = imageFileProperty;
         this.pdfFileProperty = pdfFileProperty;
@@ -227,6 +231,8 @@ public class AnyValuePropertyHolder {
             return timeProperty;
         } else if (valueType instanceof ColorClass) {
             return colorProperty;
+        } else if (valueType instanceof JSONClass) {
+            return jsonProperty;
         } else if (valueType instanceof WordClass) {
             return wordFileProperty;
         } else if (valueType instanceof ImageClass) {
@@ -305,7 +311,7 @@ public class AnyValuePropertyHolder {
                 customLinkProperty, rawLinkProperty, wordLinkProperty, imageLinkProperty, pdfLinkProperty, dbfLinkProperty, excelLinkProperty,
                 textLinkProperty, csvLinkProperty, htmlLinkProperty, jsonLinkProperty, xmlLinkProperty, tableLinkProperty,
                 // others
-                logicalProperty, tLogicalProperty, colorProperty, objectProperty
+                logicalProperty, tLogicalProperty, colorProperty, jsonProperty, objectProperty
         ).mapOrderSetValues(value -> (SessionDataProperty) value.property);
     }
 
