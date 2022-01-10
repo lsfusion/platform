@@ -94,7 +94,7 @@ public class ClientTypeSerializer {
         if (type == DataType.TXT) return new ClientTXTClass(inStream.readBoolean(), inStream.readBoolean());
         if (type == DataType.CSV) return new ClientCSVClass(inStream.readBoolean(), inStream.readBoolean());
         if (type == DataType.HTML) return new ClientHTMLClass(inStream.readBoolean(), inStream.readBoolean());
-        if (type == DataType.JSON) return new ClientJSONClass(inStream.readBoolean(), inStream.readBoolean());
+        if (type == DataType.JSONFILE) return new ClientJSONFileClass(inStream.readBoolean(), inStream.readBoolean());
         if (type == DataType.XML) return new ClientXMLClass(inStream.readBoolean(), inStream.readBoolean());
         if (type == DataType.TABLE) return new ClientTableClass(inStream.readBoolean(), inStream.readBoolean());
         if (type == DataType.DYNAMICFORMATFILE) return new ClientDynamicFormatFileClass(inStream.readBoolean(), inStream.readBoolean());

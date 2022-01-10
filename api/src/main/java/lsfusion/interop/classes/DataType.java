@@ -35,7 +35,7 @@ public class DataType {
     public final static byte CSVLINK = 32;
     public final static byte HTML = 33;
     public final static byte HTMLLINK = 34;
-    public final static byte JSON = 35;
+    public final static byte JSONFILE = 35;
     public final static byte JSONLINK = 36;
     public final static byte XML = 37;
     public final static byte XMLLINK = 38;

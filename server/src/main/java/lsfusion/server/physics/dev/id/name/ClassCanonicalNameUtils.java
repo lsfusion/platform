@@ -102,7 +102,7 @@ public final class ClassCanonicalNameUtils {
         put("TEXTFILE", TXTClass.get());
         put("CSVFILE", CSVClass.get());
         put("HTMLFILE", HTMLClass.get());
-        put("JSONFILE", JSONClass.get());
+        put("JSONFILE", JSONFileClass.get());
         put("XMLFILE", XMLClass.get());
         put("TABLEFILE", TableClass.get());
         put("WORDLINK", WordLinkClass.get(false));
@@ -176,7 +176,7 @@ public final class ClassCanonicalNameUtils {
         put("TEXTFILE", TXTClass.get());
         put("CSVFILE", CSVClass.get());
         put("HTMLFILE", HTMLClass.get());
-        put("JSONFILE", JSONClass.get());
+        put("JSONFILE", JSONFileClass.get());
         put("XMLFILE", XMLClass.get());
         put("TABLEFILE", TableClass.get());
         put("WORDLINK", WordLinkClass.get(false));

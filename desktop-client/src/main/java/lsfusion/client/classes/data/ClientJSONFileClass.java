@@ -6,11 +6,11 @@ import lsfusion.client.form.property.cell.classes.view.JSONPropertyRenderer;
 import lsfusion.client.form.property.cell.view.PropertyRenderer;
 import lsfusion.interop.classes.DataType;
 
-public class ClientJSONClass extends ClientStaticFormatFileClass {
+public class ClientJSONFileClass extends ClientStaticFormatFileClass {
 
-    public final static ClientJSONClass instance = new ClientJSONClass(false, false);
+    public final static ClientJSONFileClass instance = new ClientJSONFileClass(false, false);
 
-    public ClientJSONClass(boolean multiple, boolean storeName) {
+    public ClientJSONFileClass(boolean multiple, boolean storeName) {
         super(multiple, storeName);
     }
 
@@ -34,7 +34,7 @@ public class ClientJSONClass extends ClientStaticFormatFileClass {
     }
 
     public byte getTypeId() {
-        return DataType.JSON;
+        return DataType.JSONFILE;
     }
 
     @Override

@@ -8,35 +8,35 @@ import lsfusion.server.logics.form.stat.struct.FormIntegrationType;
 import java.util.ArrayList;
 import java.util.Collection;
 
-public class JSONClass extends HumanReadableFileClass {
+public class JSONFileClass extends HumanReadableFileClass {
 
     protected String getFileSID() {
         return "JSONFILE";
     }
 
-    private static Collection<JSONClass> instances = new ArrayList<>();
+    private static Collection<JSONFileClass> instances = new ArrayList<>();
 
-    public static JSONClass get() {
+    public static JSONFileClass get() {
         return get(false, false);
     }
 
-    public static JSONClass get(boolean multiple, boolean storeName) {
-        for (JSONClass instance : instances)
+    public static JSONFileClass get(boolean multiple, boolean storeName) {
+        for (JSONFileClass instance : instances)
             if (instance.multiple == multiple && instance.storeName == storeName)
                 return instance;
 
-        JSONClass instance = new JSONClass(multiple, storeName);
+        JSONFileClass instance = new JSONFileClass(multiple, storeName);
         instances.add(instance);
         DataClass.storeClass(instance);
         return instance;
     }
 
-    private JSONClass(boolean multiple, boolean storeName) {
+    private JSONFileClass(boolean multiple, boolean storeName) {
         super(multiple, storeName);
     }
 
     public byte getTypeID() {
-        return DataType.JSON;
+        return DataType.JSONFILE;
     }
 
     public String getOpenExtension(RawFileData file) {

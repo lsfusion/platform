@@ -114,7 +114,7 @@ public class TypeSerializer {
         if (type == DataType.TXT) return TXTClass.get(inStream.readBoolean(), inStream.readBoolean());
         if (type == DataType.CSV) return CSVClass.get(inStream.readBoolean(), inStream.readBoolean());
         if (type == DataType.HTML) return HTMLClass.get(inStream.readBoolean(), inStream.readBoolean());
-        if (type == DataType.JSON) return JSONClass.get(inStream.readBoolean(), inStream.readBoolean());
+        if (type == DataType.JSONFILE) return JSONFileClass.get(inStream.readBoolean(), inStream.readBoolean());
         if (type == DataType.XML) return XMLClass.get(inStream.readBoolean(), inStream.readBoolean());
         if (type == DataType.TABLE) return TableClass.get(inStream.readBoolean(), inStream.readBoolean());
         if (type == DataType.CUSTOMSTATICFORMATFILE) {

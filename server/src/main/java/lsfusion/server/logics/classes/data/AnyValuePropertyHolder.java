@@ -117,7 +117,7 @@ public class AnyValuePropertyHolder {
                 && textFileProperty.property.getType() == TXTClass.get()
                 && csvFileProperty.property.getType() == CSVClass.get()
                 && htmlFileProperty.property.getType() == HTMLClass.get()
-                && jsonFileProperty.property.getType() == JSONClass.get()
+                && jsonFileProperty.property.getType() == JSONFileClass.get()
                 && xmlFileProperty.property.getType() == XMLClass.get()
                 && tableFileProperty.property.getType() == TableClass.get()
                 && wordLinkProperty.property.getType() == WordLinkClass.get(false)
@@ -247,7 +247,7 @@ public class AnyValuePropertyHolder {
             return csvFileProperty;
         } else if (valueType instanceof HTMLClass) {
             return htmlFileProperty;
-        } else if (valueType instanceof JSONClass) {
+        } else if (valueType instanceof JSONFileClass) {
             return jsonFileProperty;
         } else if (valueType instanceof XMLClass) {
             return xmlFileProperty;
