@@ -953,6 +953,13 @@ public abstract class LogicsModule {
     }
 
     public <T extends PropertyInterface> LA<?> addInputAProp(ValueClass valueClass, LP targetProp, boolean hasOldValue, ImOrderSet<T> orderInterfaces, InputListEntity<?, T> contextList, FormSessionScope contextScope, InputFilterSelector<T> filterList, ImList<InputContextAction<?, T>> contextActions) {
+        return addInputAProp(valueClass, targetProp, hasOldValue, orderInterfaces, contextList, contextScope, filterList, contextActions, null);
+    }
+
+    public <T extends PropertyInterface> LA<?> addInputAProp(ValueClass valueClass, LP targetProp, boolean hasOldValue,
+                                                             ImOrderSet<T> orderInterfaces, InputListEntity<?, T> contextList,
+                                                             FormSessionScope contextScope, InputFilterSelector<T> filterList,
+                                                             ImList<InputContextAction<?, T>> contextActions, String customEditorFunction) {
         if(contextList != null && contextScope == FormSessionScope.NEWSESSION)
             contextList = contextList.newSession();
 
@@ -960,7 +967,7 @@ public abstract class LogicsModule {
         if(valueClass instanceof ConcreteCustomClass)
             contextActions = ListFact.add(contextList.getNewEditAction(baseLM, (ConcreteCustomClass) valueClass, targetProp, contextScope), contextActions);
         
-        return addAction(null, new LA(new InputAction(LocalizedString.create("Input"), valueClass, targetProp, hasOldValue, orderInterfaces, contextList, filterList, contextActions)));
+        return addAction(null, new LA(new InputAction(LocalizedString.create("Input"), valueClass, targetProp, hasOldValue, orderInterfaces, contextList, filterList, contextActions, customEditorFunction)));
     }
 
     public <T extends PropertyInterface> LA addDialogInputAProp(CustomClass customClass, LP targetProp, FormSessionScope scope, ImOrderSet<T> orderInterfaces, InputListEntity<?, T> list, ImRevMap<T, StaticParamNullableExpr> listMapParamExprs, Function<ObjectEntity, ImSet<ContextFilterEntity<?, T, ObjectEntity>>> filters) {

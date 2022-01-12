@@ -40,7 +40,7 @@ public class ClientAsyncToGwtConverter extends ObjectConverter {
     @Cached
     @Converter(from = ClientAsyncChange.class)
     public GAsyncChange convertAsyncChange(ClientAsyncChange clientAsyncChange) {
-        return new GAsyncChange(typeConverter.convertOrCast(clientAsyncChange.changeType), convertOrCast(clientAsyncChange.inputList));
+        return new GAsyncChange(typeConverter.convertOrCast(clientAsyncChange.changeType), convertOrCast(clientAsyncChange.inputList), clientAsyncChange.customEditorFunction);
     }
 
     @Cached

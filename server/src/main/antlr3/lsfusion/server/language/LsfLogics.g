@@ -649,11 +649,9 @@ propertyClassViewType returns [ClassViewType type]
 	|   'TOOLBAR' {$type = ClassViewType.TOOLBAR;}
 	;
 
-propertyCustomView returns [String customRenderFunction, String customEditorFunction]
+propertyCustomView returns [String customRenderFunction]
 	:	'CUSTOM' ((renderFun=stringLiteral { $customRenderFunction = $renderFun.val;})
-	    | ((renderFun=stringLiteral { $customRenderFunction = $renderFun.val;})?
-        // EDIT TEXT is a temporary fix for backward compatibility
-		(('CHANGE' | ('EDIT' PRIMITIVE_TYPE)) { $customEditorFunction = "DEFAULT"; } (editFun=stringLiteral {$customEditorFunction = $editFun.val; })?))) // "DEFAULT" is hardcoded and used in GFormController.edit
+	    | ((renderFun=stringLiteral { $customRenderFunction = $renderFun.val;})?))
 	;
 
 listViewType returns [ListViewType type, PivotOptions options, String customRenderFunction, String mapTileProvider]
@@ -814,7 +812,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|	'HEADER' propObj=formPropertyObject { $options.setHeader($propObj.property); }
 		|	'FOOTER' propObj=formPropertyObject { $options.setFooter($propObj.property); }
 		|	viewType=propertyClassViewType { $options.setViewType($viewType.type); }
-		|	customView=propertyCustomView { $options.setCustomRenderFunction($customView.customRenderFunction); $options.setCustomEditorFunction($customView.customEditorFunction); }
+		|	customView=propertyCustomView { $options.setCustomRenderFunction($customView.customRenderFunction);}
 		|	pgt=propertyGroupType { $options.setAggrFunc($pgt.type); }
 		|	pla=propertyLastAggr { $options.setLastAggr($pla.properties, $pla.desc); }
 		|	pf=propertyFormula { $options.setFormula($pf.formula, $pf.operands); }
@@ -2776,7 +2774,6 @@ customViewSetting [LAP property]
 @after {
 	if (inMainParseState()) {
 		self.setCustomRenderFunction(property, $customView.customRenderFunction);
-		self.setCustomEditorFunction(property, $customView.customEditorFunction);
 	}
 }
 	:	customView=propertyCustomView
@@ -3810,11 +3807,12 @@ inputActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams ac
 
     List<String> actionImages = new ArrayList<>();
     List<LAWithParams> actions = new ArrayList<>();
+    String customEditorFunction = null;
 }
 @after {
 	if (inMainParseState()) {
 		$action = self.addScriptedInputAProp($in.valueClass, $in.initValue, outProp, $dDB.action, $dDB.elseAction, context, newContext,
-		 assign, constraintFilter, changeProp, listProp, whereProp, actionImages, actions, assignDebugPoint, $fs.result);
+		 assign, constraintFilter, changeProp, listProp, whereProp, actionImages, actions, assignDebugPoint, $fs.result, customEditorFunction);
 	}
 }
 	:	'INPUT'
@@ -3836,6 +3834,7 @@ inputActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams ac
                 listDynamic = false;
             }
         }
+        ('CUSTOM' editFun=stringLiteral {customEditorFunction = $editFun.val;})?
 	    ('LIST' listExpr=propertyExpression[newListContext, listDynamic] { listProp = $listExpr.property; })?
         ('WHERE' whereExpr=propertyExpression[newListContext, listDynamic] { whereProp = $whereExpr.property; })?
         (acts = contextActions[newContext] { actionImages = $acts.actionImages; actions = $acts.actions; })?

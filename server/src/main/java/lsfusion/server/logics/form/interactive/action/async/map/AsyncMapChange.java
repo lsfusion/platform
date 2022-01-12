@@ -24,15 +24,18 @@ public class AsyncMapChange<T extends PropertyInterface> extends AsyncMapInputEx
 
     public final LP targetProp;
 
-    public AsyncMapChange(DataClass type, InputListEntity<?, T> list, InputList inputList, LP targetProp) {
+    public final String customEditorFunction;
+
+    public AsyncMapChange(DataClass type, InputListEntity<?, T> list, InputList inputList, LP targetProp, String customEditorFunction) {
         this.type = type;
         this.list = list;
         this.inputList = inputList;
         this.targetProp = targetProp;
+        this.customEditorFunction = customEditorFunction;
     }
 
     private <P extends PropertyInterface> AsyncMapChange<P> override(InputListEntity<?, P> list) {
-        return new AsyncMapChange<P>(type, list, inputList, targetProp);
+        return new AsyncMapChange<P>(type, list, inputList, targetProp, customEditorFunction);
     }
 
     public AsyncMapChange<T> newSession() {
@@ -56,7 +59,7 @@ public class AsyncMapChange<T extends PropertyInterface> extends AsyncMapInputEx
 
     @Override
     public AsyncEventExec map(ImRevMap<T, ObjectEntity> mapObjects, FormEntity form, GroupObjectEntity toDraw) {
-        return new AsyncChange(type, targetProp, list != null ? inputList : null);
+        return new AsyncChange(type, targetProp, list != null ? inputList : null, customEditorFunction);
     }
 
     @Override
@@ -70,7 +73,7 @@ public class AsyncMapChange<T extends PropertyInterface> extends AsyncMapInputEx
 
         DataClass compatibleType = ((DataClass<?>)type).getCompatible(dataInput.type, true);
         if(compatibleType != null && targetProp.property.equals(dataInput.targetProp.property))
-            return new AsyncMapChange<>(compatibleType, null, null, targetProp);
+            return new AsyncMapChange<>(compatibleType, null, null, targetProp, customEditorFunction);
         return null;
     }
 }
