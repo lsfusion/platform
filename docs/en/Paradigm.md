@@ -10,7 +10,7 @@ Describes the functionality of the system itself, that is, what the system can d
 
 ### [Physical model](Physical_model.md)
 
-It includes everything else - everything related to the development, performance improvement and management of a working system.
+Includes everything else - everything related to the development, performance improvement and management of a working system.
 
 ### Stack
 
