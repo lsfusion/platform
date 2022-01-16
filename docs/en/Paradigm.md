@@ -6,7 +6,7 @@ The paradigm can be divided into two parts:
 
 ### [Logical model](Logical_model.md)
 
-Describes the system's immediate functionality, i.e. what the system knows how to do, what data it takes as input, and what data it returns.
+Describes the functionality of the system itself, that is, what the system can do, what data is input and what data is output.
 
 ### [Physical model](Physical_model.md)
 
