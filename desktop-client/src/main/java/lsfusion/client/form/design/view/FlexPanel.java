@@ -183,14 +183,14 @@ public class FlexPanel extends PanelWidget {
         for (int i = widgetNumber; i >= 0; i--) {
             Widget child = children.get(i);
             LayoutData layoutData = child.getLayoutData();
-            if (layoutData != null && layoutData.baseFlex > 0 && child.isVisible())
+            if (layoutData != null && layoutData.getBaseFlex() > 0 && child.isVisible())
                 return true;
         }
         return false;
     }
 
     //ignore FilterView
-    private List<Widget> getChildren() {
+    protected List<Widget> getChildren() {
         return BaseUtils.immutableCast(Arrays.stream(getComponents()).filter(component -> component instanceof Widget).collect(Collectors.toList()));
     }
 
@@ -265,7 +265,7 @@ public class FlexPanel extends PanelWidget {
             }
             if (layoutData.baseFlexBasis != null)
                 basePrefs[i] = layoutData.baseFlexBasis;
-            baseFlexes[i] = layoutData.baseFlex;
+            baseFlexes[i] = layoutData.getBaseFlex();
             i++;
         }
 
@@ -321,11 +321,84 @@ public class FlexPanel extends PanelWidget {
         formLayout.revalidate();
     }
 
+    private static void setFlexModifier(FlexLayout layout, boolean vertical, LayoutData layoutData, Widget child, FlexModifier modifier) {
+        double prevFlex = layoutData.getFlex();
+        layoutData.flexModifier = modifier;
+        double newFlex = layoutData.getFlex();
+        if (prevFlex != newFlex) 
+            impl.setFlex(layout, child, layoutData, vertical);
+    }
+
     public Widget getWidget(int i) {
         return (Widget) getComponent(i);
     }
 
     public int getWidgetIndex(Widget child) {
         return Arrays.asList(getComponents()).indexOf(child);
+    }
+
+    public static PanelParams updatePanels(Widget widget) {
+        if (widget instanceof FlexPanel) {
+            FlexPanel flexPanel = (FlexPanel) widget;
+            boolean vertical = flexPanel.vertical;
+            boolean forceVertCollapsed = flexPanel instanceof CollapsiblePanel && ((CollapsiblePanel) flexPanel).collapsed;
+            boolean oppositeCollapsed = true;
+
+            int flexCount = 0;
+            boolean flexCollapsed = false;
+
+            for (Widget child : flexPanel.getChildren()) {
+                FlexPanel flexPanelChild = null;
+                LayoutData flexLayoutData = child.getLayoutData();
+                if (child instanceof FlexPanel) {
+                    flexPanelChild = (FlexPanel) child;
+                } else if (child instanceof ScrollPaneWidget) {
+                    Component view = ((ScrollPaneWidget) child).getViewport().getView();
+                    if (view instanceof FlexPanel) {
+                        flexPanelChild = (FlexPanel) view;
+                    }
+                }
+                
+                if (flexPanelChild != null) {
+                    PanelParams childParams = updatePanels(flexPanelChild);
+
+                    boolean childOppositeCollapsed = vertical ? false : childParams.vertCollapsed;
+                    oppositeCollapsed = oppositeCollapsed && childOppositeCollapsed;
+
+                    boolean childMainCollapsed = vertical ? childParams.vertCollapsed : false;
+                    if (childMainCollapsed)
+                        flexCollapsed = true;
+
+                    setFlexModifier(flexPanelChild.getFlexLayout(), vertical, flexLayoutData, flexPanelChild, childMainCollapsed ? FlexModifier.COLLAPSE : null);
+
+                    boolean childMainFlex = flexLayoutData.isFlex();
+                    if (childMainFlex)
+                        flexCount++;
+                } else if (((Component) child).isVisible()) {
+                    return new PanelParams(false);
+                }
+            }
+
+            // no flex elements left, but there are collapsed elements, we're collapsing this container
+            boolean mainCollapsed = flexCount == 0 && flexCollapsed;
+
+            boolean vertCollapsed = forceVertCollapsed || (vertical ? mainCollapsed : oppositeCollapsed);
+
+            return new PanelParams(vertCollapsed);
+        } else {
+            return new PanelParams(false);
+        }
+    }
+
+    public enum FlexModifier {
+        COLLAPSE
+    }
+
+    private static class PanelParams {
+        public final boolean vertCollapsed;
+
+        public PanelParams(boolean vertCollapsed) {
+            this.vertCollapsed = vertCollapsed;
+        }
     }
 }
