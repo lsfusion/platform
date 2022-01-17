@@ -30,7 +30,6 @@ import lsfusion.gwt.client.form.object.table.view.GGridPropertyTableHeader;
 import lsfusion.gwt.client.form.order.user.GGridSortableHeaderManager;
 import lsfusion.gwt.client.form.order.user.GOrder;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 
 import java.util.*;
@@ -811,9 +810,13 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     }
 
     public List<Pair<lsfusion.gwt.client.form.view.Column, String>> getSelectedColumns(GGroupObject selectedGroupObject) {
-        return tree.getProperties(selectedGroupObject).stream().map(property ->
-            getSelectedColumn(property, GGroupObjectValue.EMPTY)
-        ).collect(Collectors.toList());
+        List<GPropertyDraw> properties = tree.getProperties(selectedGroupObject);
+        if (properties != null) {
+            return properties.stream().map(property ->
+                    getSelectedColumn(property, GGroupObjectValue.EMPTY)
+            ).collect(Collectors.toList());
+        }
+        return new ArrayList<>();
     }
 
     public String getColumnSID(int column) {
