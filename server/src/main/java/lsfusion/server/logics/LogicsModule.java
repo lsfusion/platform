@@ -1399,14 +1399,13 @@ public abstract class LogicsModule {
 
     // ------------------- UNION ----------------- //
 
-    protected LP addUProp(Group group, LocalizedString caption, Union unionType, String separator, int[] coeffs, Object... params) {
-        return addUProp(group, false, caption, unionType, null, coeffs, params);
+    protected LP addUProp(Group group, LocalizedString caption, Union unionType, int[] coeffs, Object... params) {
+        return addUProp(group, false, caption, unionType, coeffs, params);
     }
 
-    protected LP addUProp(Group group, boolean persistent, LocalizedString caption, Union unionType, String separator, int[] coeffs, Object... params) {
+    protected LP addUProp(Group group, boolean persistent, LocalizedString caption, Union unionType, int[] coeffs, Object... params) {
 
         assert (unionType==Union.SUM)==(coeffs!=null);
-        assert (unionType==Union.STRING_AGG)==(separator !=null);
 
         int intNum = getIntNum(params);
         ImOrderSet<UnionProperty.Interface> listInterfaces = UnionProperty.getInterfaces(intNum);
@@ -1440,7 +1439,7 @@ public abstract class LogicsModule {
                 property = new CaseUnionProperty(caption, listInterfaces, listOperands, true, false, false);
                 break;
             case STRING_AGG:
-                property = new StringAggUnionProperty(caption, listInterfaces, listOperands, separator);
+                property = new StringAggUnionProperty(caption, listInterfaces, listOperands);
                 break;
         }
 
@@ -1565,18 +1564,14 @@ public abstract class LogicsModule {
     }
 
     public LP addLWhereProp(LP logValueProperty, LP logDropProperty) {
-        return addUProp(null, LocalizedString.NONAME, Union.OVERRIDE, null, null, add(directLI(convertToLogical(logValueProperty)), directLI(logDropProperty)));
+        return addUProp(null, LocalizedString.NONAME, Union.OVERRIDE, null, add(directLI(convertToLogical(logValueProperty)), directLI(logDropProperty)));
                 
     }
 
     // ------------------- CONCAT ----------------- //
 
-    protected LP addSFUProp(int intNum, String separator) {
-        return addSFUProp(separator, intNum);
-    }
-
-    protected LP addSFUProp(String separator, int intNum) {
-        return addUProp(null, false, LocalizedString.create("{logics.join}"), Union.STRING_AGG, separator, null, getUParams(intNum));
+    protected LP addSFUProp(int intNum) {
+        return addUProp(null, false, LocalizedString.create("{logics.join}"), Union.STRING_AGG, null, getUParams(intNum));
     }
 
     // ------------------- ACTION ----------------- //
