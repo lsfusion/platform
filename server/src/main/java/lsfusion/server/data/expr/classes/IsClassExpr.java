@@ -25,7 +25,6 @@ import lsfusion.server.data.expr.join.inner.InnerJoin;
 import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.expr.key.KeyType;
 import lsfusion.server.data.expr.query.SubQueryExpr;
-import lsfusion.server.data.expr.value.StaticValueExpr;
 import lsfusion.server.data.expr.value.ValueExpr;
 import lsfusion.server.data.expr.where.CaseExprInterface;
 import lsfusion.server.data.expr.where.classes.IsClassWhere;
@@ -112,7 +111,6 @@ public class IsClassExpr extends InnerExpr implements StaticClassExprInterface {
                 break;
             case AGGCONSISTENT:
                 mAgg = ListFact.mList();
-                mAgg.add(new StaticValueExpr(",", StringClass.get(1)));
                 break;
             default:
                 mCases = Expr.newCases(true, group.size());
@@ -146,7 +144,7 @@ public class IsClassExpr extends InnerExpr implements StaticClassExprInterface {
                 result = mLinear.getExpr();
                 break;
             case AGGCONSISTENT:
-                result = FormulaUnionExpr.create(new StringConcatenateFormulaImpl(), mAgg.immutableList());
+                result = FormulaUnionExpr.create(new StringAggConcatenateFormulaImpl(","), mAgg.immutableList());
                 break;
             default:
                 result = mCases.getFinal();

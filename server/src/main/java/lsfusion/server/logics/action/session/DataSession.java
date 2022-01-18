@@ -42,11 +42,10 @@ import lsfusion.server.data.expr.classes.IsClassExpr;
 import lsfusion.server.data.expr.classes.IsClassType;
 import lsfusion.server.data.expr.formula.FormulaUnionExpr;
 import lsfusion.server.data.expr.formula.MLinearOperandMap;
-import lsfusion.server.data.expr.formula.StringConcatenateFormulaImpl;
+import lsfusion.server.data.expr.formula.StringAggConcatenateFormulaImpl;
 import lsfusion.server.data.expr.join.classes.ObjectClassField;
 import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.expr.query.GroupExpr;
-import lsfusion.server.data.expr.value.StaticValueExpr;
 import lsfusion.server.data.expr.value.ValueExpr;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.build.Join;
@@ -1140,7 +1139,6 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
         final MLinearOperandMap mSum = new MLinearOperandMap();
         final MList<Expr> mAgg = ListFact.mList();
-        mAgg.add(new StaticValueExpr(",", StringClass.get(1)));
         final MAddCol<SingleKeyTableUsage<String>> usedTables = ListFact.mAddCol();
         for(ImSet<ObjectClassField> group : tables.getSet().group(new BaseUtils.Group<Integer, ObjectClassField>() {
             public Integer group(ObjectClassField key) {
@@ -1160,7 +1158,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
         // FormulaUnionExpr.create(new StringAggConcatenateFormulaImpl(","), mAgg.immutableList()) , "value",
         Expr sumExpr = mSum.getExpr();
-        Expr aggExpr = FormulaUnionExpr.create(new StringConcatenateFormulaImpl(), mAgg.immutableList());
+        Expr aggExpr = FormulaUnionExpr.create(new StringAggConcatenateFormulaImpl(","), mAgg.immutableList());
         run.run(new Query<>(MapFact.singletonRev("key", key), sumExpr.compare(ValueExpr.COUNT, Compare.GREATER), MapFact.EMPTY(),
                 MapFact.toMap("sum", sumExpr, "agg", aggExpr)));
 

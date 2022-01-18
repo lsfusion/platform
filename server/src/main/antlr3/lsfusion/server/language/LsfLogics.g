@@ -2157,10 +2157,10 @@ castPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [L
 concatPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
 @after {
 	if (inMainParseState()) {
-		$property = self.addScriptedConcatProp($list.props);
+		$property = self.addScriptedConcatProp($separator.val, $list.props);
 	}
 }
-	:   'CONCAT' list=nonEmptyPropertyExpressionList[context, dynamic]
+	:   'CONCAT' separator=stringLiteral ',' list=nonEmptyPropertyExpressionList[context, dynamic]
 	;
 
 sessionPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
