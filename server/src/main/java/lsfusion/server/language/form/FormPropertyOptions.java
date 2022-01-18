@@ -74,6 +74,7 @@ public class FormPropertyOptions {
     //integration options
     private Boolean attr;
     private String groupName;
+    private Boolean extNull;
 
     public void setAggrFunc(PropertyGroupType aggrFunc) {
         this.aggrFunc = aggrFunc;
@@ -396,6 +397,15 @@ public class FormPropertyOptions {
         this.groupName = groupName;
     }
 
+    public Boolean getExtNull() {
+        return extNull;
+    }
+
+    public void setExtNull(Boolean extNull) {
+        this.extNull = extNull;
+    }
+
+
     public Boolean getOrder() {
         return order;
     }
@@ -478,6 +488,7 @@ public class FormPropertyOptions {
 
         merged.setAttr(nvl(overrides.getAttr(), attr));
         merged.setGroupName(nvl(overrides.getGroupName(), groupName));
+        merged.setExtNull(nvl(overrides.getExtNull(), extNull));
 
         merged.setOrder(nvl(overrides.getOrder(), order));
         merged.setFilter(nvl(overrides.getFilter(), filter));
@@ -488,7 +499,7 @@ public class FormPropertyOptions {
 
         return merged;
     }
-    
+
     public static class Columns {
         public final String columnsName;
         public final List<GroupObjectEntity> columns;

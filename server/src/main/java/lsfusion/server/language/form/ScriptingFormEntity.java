@@ -578,6 +578,10 @@ public class ScriptingFormEntity {
         if(attr != null)
             property.attr = attr;
 
+        Boolean extNull = options.getExtNull();
+        if(extNull != null)
+            property.extNull = extNull;
+
         Boolean order = options.getOrder();
         if(order != null)
             form.addDefaultOrder(property, order, version);

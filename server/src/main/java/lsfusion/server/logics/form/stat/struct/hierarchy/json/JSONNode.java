@@ -115,7 +115,7 @@ public class JSONNode implements Node<JSONNode> {
                 escapeInnerJSON = true;
                 key = key.substring(0, key.lastIndexOf(escapeInnerJSONKey));
             }
-            node.element.put(key, parseObject(type.formatJSON(value), escapeInnerJSON));
+            node.element.put(key, value == null ? JSONObject.NULL : parseObject(type.formatJSON(value), escapeInnerJSON));
         } catch (JSONException e) {
             throw Throwables.propagate(e);
         }
