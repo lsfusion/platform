@@ -32,7 +32,7 @@ public class PropertyParseNode extends ParseNode {
     public <T extends Node<T>> boolean exportNode(T node, ImMap<ObjectEntity, Object> upValues, ExportData exportData) {
         Object value = exportData.getProperty(this.property, upValues);
         if(value != null || property.extNull) {
-            node.addValue(node, getKey(), property.attr, property.extNull, value, exportData.getType(property));
+            node.addValue(node, getKey(), property.attr, value, exportData.getType(property));
             return true;
         }
         return false;

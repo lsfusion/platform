@@ -236,8 +236,8 @@ public class XMLNode implements Node<XMLNode> {
         node.element.removeContent(childNode.element);
     }
 
-    public void addValue(XMLNode node, String key, boolean attr, boolean extNull, Object value, Type type) {
-        String stringValue = value == null && extNull ? "null" : type.formatXML(value);
+    public void addValue(XMLNode node, String key, boolean attr, Object value, Type type) {
+        String stringValue = value == null ? "" : type.formatXML(value);
         if(attr) {
             addXMLAttributeValue(node.element, key, stringValue);
         } else {

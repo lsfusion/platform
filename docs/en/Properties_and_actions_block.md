@@ -268,7 +268,9 @@ In the current platform implementation, if the name and caption are not specifie
 
 - `EXTNULL`
 
-  Keyword. Used only in the [hierarchical](Structured_view.md#hierarchy) view. Indicates that when exporting to XML / JSON, NULL value will not be skipped, will be exported as 'null'.
+  Keyword. Used only in the [hierarchical](Structured_view.md#hierarchy) view. Indicates that when exporting to XML / JSON, NULL value will not be skipped, will be exported:
+    - to JSON as 'null'.
+    - to XML as empty value.
 
 - `IN propertyGroup`
 
