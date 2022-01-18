@@ -428,6 +428,10 @@ public class ScriptingErrorLog {
         }
     }
 
+    public void emitConcatError(ScriptParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "CONCAT first param should be string literal OR all params should be JSON");
+    }
+
     public void emitDeconcatError(ScriptParser parser) throws SemanticErrorException {
         emitSimpleError(parser, "expression does not return a list");
     }

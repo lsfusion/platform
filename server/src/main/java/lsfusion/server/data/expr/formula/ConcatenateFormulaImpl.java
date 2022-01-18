@@ -39,10 +39,13 @@ public class ConcatenateFormulaImpl extends AbstractFormulaImpl implements Formu
                     StringClass stringType = (StringClass) exprType;
                     caseInsensitive = caseInsensitive || stringType.caseInsensitive;
                     blankPadded = blankPadded && stringType.blankPadded;
-                    if(exprType instanceof TextClass) {
+                    if (exprType instanceof TextClass) {
                         isText = true;
                         sid = exprType.getSID();
                     }
+                } else if (exprType instanceof JSONClass) {
+                    isText = true;
+                    sid = TextClass.instance.getSID();
                 }
 
                 if (i > 0) {
