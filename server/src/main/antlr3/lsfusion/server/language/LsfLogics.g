@@ -1477,6 +1477,11 @@ propertyExpressionOrLiteral[List<TypedParameter> context] returns [LPWithParams 
         { if(inMainParseState()) { $literal = self.checkLiteralInExpr($exprOrNotExpr.property, $exprOrNotExpr.ci); } }
 ;
 
+propertyExpressionOrString[List<TypedParameter> context] returns [LPWithParams property, String str]
+    :   exprOrNotExpr=propertyExpressionOrNot[context, false, false] { $property = $exprOrNotExpr.property;  }
+        { if(inMainParseState()) { $str = self.checkStringValueInExpr($exprOrNotExpr.property, $exprOrNotExpr.ci); } }
+;
+
 propertyExpressionOrCompoundID[List<TypedParameter> context] returns [LPWithParams property, LPCompoundID id]
     :   exprOrNotExpr=propertyExpressionOrNot[context, false, false] { $property = $exprOrNotExpr.property;  }
         { if(inMainParseState()) { $id = self.checkCompoundIDInExpr($exprOrNotExpr.property, $exprOrNotExpr.ci); } }
@@ -2157,10 +2162,14 @@ castPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [L
 concatPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
 @after {
 	if (inMainParseState()) {
-		$property = self.addScriptedConcatProp($separator.val, $list.props);
+	    if($firstProp.str != null) { //first property is separator
+		    $property = self.addScriptedConcatProp($firstProp.str, $list.props);
+		} else { //no separator, concat json
+		    $property = self.addScriptedConcatProp(null, BaseUtils.mergeList(Collections.singletonList($firstProp.property), $list.props));
+		}
 	}
 }
-	:   'CONCAT' separator=stringLiteral ',' list=nonEmptyPropertyExpressionList[context, dynamic]
+	:   'CONCAT' firstProp=propertyExpressionOrString[context] ',' list=nonEmptyPropertyExpressionList[context, dynamic]
 	;
 
 sessionPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]

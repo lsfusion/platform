@@ -2053,7 +2053,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                 }
             }
             resultParams = getParamsPlainList(properties);
-            res = new LPWithParams(addUProp(null, LocalizedString.NONAME, Union.SUM, null, coeffs, resultParams.toArray()), mergeAllParams(properties));
+            res = new LPWithParams(addUProp(null, LocalizedString.NONAME, Union.SUM, coeffs, resultParams.toArray()), mergeAllParams(properties));
         }
         return res;
     }
@@ -3021,7 +3021,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             }
         }
         List<Object> resultParams = getParamsPlainList(paramProps);
-        LP prop = addUProp(null, LocalizedString.NONAME, unionType, null, coeffs, resultParams.toArray());
+        LP prop = addUProp(null, LocalizedString.NONAME, unionType, coeffs, resultParams.toArray());
         return new LPWithParams(prop, mergeAllParams(paramProps));
     }
 
@@ -3056,7 +3056,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LPWithParams addScriptedConcatProp(String separator, List<LPWithParams> params) throws ScriptingErrorLog.SemanticErrorException {
-        return addScriptedJProp(addSFUProp(params.size(), separator), params);
+        return addScriptedJProp(addSFUProp(separator, params.size()), params);
     }
 
     public LPWithParams addScriptedDCCProp(LPWithParams ccProp, int index) throws ScriptingErrorLog.SemanticErrorException {
@@ -4966,6 +4966,12 @@ public class ScriptingLogicsModule extends LogicsModule {
         checkNotExprInExpr(lp, ci);
         return ci instanceof LPLiteral ? (LPLiteral)ci : null;
     }
+
+    public String checkStringValueInExpr(LPWithParams lp, LPNotExpr ci) throws ScriptingErrorLog.SemanticErrorException {
+        checkNotExprInExpr(lp, ci);
+        return ci instanceof LPLiteral && ((LPLiteral) ci).value instanceof LocalizedString ? ((LocalizedString) ((LPLiteral) ci).value).getSourceString() : null;
+    }
+
     public LPCompoundID checkCompoundIDInExpr(LPWithParams lp, LPNotExpr ci) throws ScriptingErrorLog.SemanticErrorException {
         checks.checkNotCIInExpr(ci);
         checks.checkNotTLAInExpr(lp,ci);

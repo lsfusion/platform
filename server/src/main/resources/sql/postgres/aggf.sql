@@ -181,6 +181,18 @@ $$
         SELECT CASE WHEN $1 IS NOT NULL THEN $1 || (CASE WHEN $2 IS NOT NULL THEN $3 || $2 ELSE '' END) ELSE $2 END
 $$ LANGUAGE 'sql' IMMUTABLE;
 
+CREATE OR REPLACE FUNCTION jsonb_recursive_merge(a jsonb, b jsonb) RETURNS jsonb AS
+$$
+    SELECT jsonb_object_agg(
+            COALESCE(ka, kb), CASE
+                WHEN va ISNULL THEN vb
+                WHEN vb ISNULL THEN va
+                WHEN jsonb_typeof(va) <> 'object' or jsonb_typeof(vb) <> 'object' THEN vb
+                ELSE jsonb_recursive_merge(va, vb) END)
+    FROM jsonb_each(a) e1(ka, va)
+             FULL JOIN jsonb_each(b) e2(kb, vb) ON ka = kb
+$$ LANGUAGE 'sql' IMMUTABLE;
+
 CREATE OR REPLACE FUNCTION first_agg ( anyelement, anyelement )
 RETURNS anyelement LANGUAGE sql IMMUTABLE AS $$
         SELECT $1;
