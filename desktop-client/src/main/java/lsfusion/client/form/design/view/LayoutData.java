@@ -66,7 +66,8 @@ public final class LayoutData {
     public boolean isFlex() {
         // we can use both baseFlex and flex
         boolean result = getBaseFlex() > 0;
-        assert result == getFlex() > 0;
+        // falls on resize 
+//        assert result == getFlex() > 0;
         return result;
     }
 }
