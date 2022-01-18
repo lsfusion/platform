@@ -266,6 +266,10 @@ In the current platform implementation, if the name and caption are not specifie
 
         String literal.
 
+- `EXTNULL`
+
+  Keyword. Used only in the [hierarchical](Structured_view.md#hierarchy) view. Indicates that when exporting to XML / JSON, NULL value will not be skipped, will be exported as 'null'.
+
 - `IN propertyGroup`
 
     Specifying a [property/action group](Groups_of_properties_and_actions.md) which the property (action) on the form belongs to. If this option is not specified, then the property group of the property itself will be used as the property (action) group on the form. 

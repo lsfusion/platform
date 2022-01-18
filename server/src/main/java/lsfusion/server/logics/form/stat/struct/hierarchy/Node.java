@@ -21,7 +21,7 @@ public interface Node<T extends Node<T>> {
     void addNode(T node, String key, T childNode); // group 
     void removeNode(T node, T childNode); // group, it can be called only for upDown formats 
     
-    void addValue(T node, String key, boolean attr, Object value, Type type); // property
+    void addValue(T node, String key, boolean attr, boolean extNull, Object value, Type type); // property
 
     boolean addMap(T node, String key, boolean isIndex, Iterable<Pair<Object, T>> map); // group object
 }

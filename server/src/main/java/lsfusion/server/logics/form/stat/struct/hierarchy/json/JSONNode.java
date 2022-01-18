@@ -107,9 +107,9 @@ public class JSONNode implements Node<JSONNode> {
         return false;
     }
 
-    public void addValue(JSONNode node, String key, boolean attr, Object value, Type type) {
+    public void addValue(JSONNode node, String key, boolean attr, boolean extNull, Object value, Type type) {
         try {
-            node.element.put(key, parseObject(type.formatJSON(value)));
+            node.element.put(key, value == null && extNull ? JSONObject.NULL : parseObject(type.formatJSON(value)));
         } catch (JSONException e) {
             throw Throwables.propagate(e);
         }
