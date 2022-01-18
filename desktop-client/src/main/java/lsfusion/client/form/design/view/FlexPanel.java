@@ -369,7 +369,7 @@ public class FlexPanel extends PanelWidget {
                     if (childMainCollapsed)
                         flexCollapsed = true;
 
-                    setFlexModifier(flexPanelChild.getFlexLayout(), vertical, flexLayoutData, flexPanelChild, childMainCollapsed ? FlexModifier.COLLAPSE : null);
+                    setFlexModifier(flexPanelChild.getFlexLayout(), vertical, flexLayoutData, child, childMainCollapsed ? FlexModifier.COLLAPSE : null);
 
                     boolean childMainFlex = flexLayoutData.isFlex();
                     if (childMainFlex)
