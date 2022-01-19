@@ -172,7 +172,7 @@ open '{system.open.file}' (STRING[255] source)  { open(source, NULL); }
 open '{system.open.file}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.open.OpenFileAction' (FILE, ISTRING[255]);
 open '{system.open.file}' (FILE source)  { open(source, NULL); }
 //source namedFile
-open '{system.open.file}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.open.OpenFileAction' (NAMEDFILE);
+open '{system.open.file}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.open.OpenNamedFileAction' (NAMEDFILE);
 //source rawFile, name
 open '{system.open.file}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.open.OpenRawFileAction' (RAWFILE, ISTRING[255]);
 open '{system.open.file}' (RAWFILE source)  { open(source, NULL); }

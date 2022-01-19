@@ -63,7 +63,7 @@ public class BaseUtils {
     private static final int STRING_SERIALIZATION_CHUNK_SIZE = 65535/3;
 
     public static Integer getApiVersion() {
-        return 177;
+        return 178;
     }
 
     public static String getPlatformVersion() {
@@ -2327,6 +2327,10 @@ public class BaseUtils {
         return requiredSymbols.allMatch(pattern::contains) ? pattern : null;
     }
 
+    public static String getFileName(File file) {
+        return FilenameUtils.getBaseName(file.getName());
+    }
+
     public static String getFileExtension(File file) {
         return getFileExtension(file.getName());
     }
@@ -2357,7 +2361,7 @@ public class BaseUtils {
                     String ext = getFileExtension(file);
                     if(named) {
                         assert !multiple && !storeName;
-                        return new NamedFileData(new FileData(rawFileData, ext), FilenameUtils.getBaseName(file.getName()));
+                        return new NamedFileData(new FileData(rawFileData, ext), getFileName(file));
                     } else {
                         FileData fileData = new FileData(rawFileData, ext);
                         if(!(multiple || storeName))

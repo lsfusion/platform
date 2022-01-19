@@ -1,5 +1,6 @@
 package lsfusion.base.file;
 
+import com.google.common.primitives.Bytes;
 import lsfusion.base.mutability.TwinImmutableObject;
 
 import java.io.Serializable;
@@ -38,14 +39,7 @@ public class NamedFileData extends TwinImmutableObject<NamedFileData> implements
     public byte[] getBytes() {
         byte[] fileBytes = fileData.getBytes();
         byte[] nameBytes = name.getBytes();
-        
-        byte[] fileNameBytes = new byte[nameBytes.length + 1];
-        fileNameBytes[0] = (byte) nameBytes.length;
-        System.arraycopy(nameBytes, 0, fileNameBytes, 1, nameBytes.length);
-        byte[] result = new byte[fileNameBytes.length + fileBytes.length];
-        System.arraycopy(fileNameBytes, 0, result, 0, fileNameBytes.length);
-        System.arraycopy(fileBytes, 0, result, fileNameBytes.length, fileBytes.length);
-        return result;
+        return Bytes.concat(new byte[] {(byte) nameBytes.length}, nameBytes, fileBytes);
     }
 
     @Override
