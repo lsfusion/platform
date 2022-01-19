@@ -11,7 +11,6 @@ import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GContainer;
-import lsfusion.gwt.client.form.design.view.GAbstractContainerView;
 import lsfusion.gwt.client.form.design.view.GFormLayout;
 import lsfusion.gwt.client.form.event.*;
 import lsfusion.gwt.client.form.filter.user.GFilter;
@@ -21,11 +20,9 @@ import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.controller.GTableController;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.view.Column;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
 
@@ -36,6 +33,7 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
     private static final String FILTER_ICON_PATH = "filt.png";
 
     private GTableController logicsSupplier;
+    private Map<Column, String> columns = new HashMap<>();
     
     private GToolbarButton toolbarButton;
     private GToolbarButton addConditionButton;
@@ -200,7 +198,7 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
             resetAllConditions(false);
         }
         if (condition != null) {
-            GFilterConditionView conditionView = new GFilterConditionView(condition, logicsSupplier, this, toolsVisible, readSelectedValue);
+            GFilterConditionView conditionView = new GFilterConditionView(condition, logicsSupplier, this, () -> columns, toolsVisible, readSelectedValue);
             conditionViews.put(condition, conditionView);
 
             addConditionView(condition, conditionView);
@@ -291,6 +289,11 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
                 }
             }
             initialFilters = null;
+        }
+
+        columns.clear();
+        for (Pair<Column, String> column : logicsSupplier.getSelectedColumns()) {
+            columns.put(column.first, column.second);
         }
     }
 

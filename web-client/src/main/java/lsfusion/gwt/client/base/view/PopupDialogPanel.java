@@ -24,8 +24,12 @@ public class PopupDialogPanel extends PopupPanel {
         super.show();
     }
 
+    public void setFocusedElement(Element focusedElement) {
+        this.focusedElement = focusedElement;
+    }
+
     public void onShow() {
-        focusedElement = GwtClientUtils.getFocusedElement();
+        setFocusedElement(GwtClientUtils.getFocusedElement());
         MainFrame.setModalPopup(true);
     }
 

@@ -133,6 +133,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     public boolean attr;
+    public boolean extNull;
 
     // for pivoting
     public String formula;

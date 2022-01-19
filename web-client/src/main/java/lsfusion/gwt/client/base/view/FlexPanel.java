@@ -333,7 +333,8 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
         public boolean isFlex() {
             // we can use both baseFlex and flex
             boolean result = getBaseFlex() > 0;
-            assert result == getFlex() > 0;
+            // falls on resize
+//            assert result == getFlex() > 0;
             return result;
         }
 

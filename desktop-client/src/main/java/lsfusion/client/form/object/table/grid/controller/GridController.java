@@ -558,7 +558,7 @@ public class GridController extends AbstractTableController {
     }
 
     public void quickEditFilter(KeyEvent initFilterKeyEvent, ClientPropertyDraw propertyDraw, ClientGroupObjectValue columnKey) {
-        if (filter.hasOwnContainer()) {
+        if (filter.hasFiltersContainer()) {
             filter.quickEditFilter(initFilterKeyEvent, propertyDraw, columnKey);
         }
     }

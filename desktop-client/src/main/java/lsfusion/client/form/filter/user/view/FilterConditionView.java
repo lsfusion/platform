@@ -26,6 +26,7 @@ import java.util.*;
 
 import static lsfusion.client.ClientResourceBundle.getString;
 import static lsfusion.client.base.view.SwingDefaults.*;
+import static lsfusion.client.form.object.ClientGroupObjectValue.EMPTY;
 
 public class FilterConditionView extends FlexPanel implements CaptionContainerHolder {
     public interface UIHandler {
@@ -40,8 +41,6 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
 
     private final ClientPropertyFilter condition;
 
-    private Map<Column, String> columns = new HashMap<>();
-    
     private LabelWidget propertyLabel;
     private FilterOptionSelector<Column> propertyView;
 
@@ -58,6 +57,8 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
     private FlexPanel leftPanel;
     private FlexPanel rightPanel;
     private LinearCaptionContainer captionContainer;
+    
+    private final ColumnsProvider columnsProvider;
 
     public boolean allowNull;
 
@@ -69,10 +70,11 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
 
     private boolean innerValueChange = false;
     
-    public FilterConditionView(ClientPropertyFilter ifilter, TableController logicsSupplier, UIHandler iuiHandler, boolean toolsVisible, boolean readSelectedValue) {
+    public FilterConditionView(ClientPropertyFilter ifilter, TableController logicsSupplier, UIHandler iuiHandler, ColumnsProvider columnsProvider, boolean toolsVisible, boolean readSelectedValue) {
         super(false, FlexAlignment.START);
         condition = ifilter;
         uiHandler = iuiHandler;
+        this.columnsProvider = columnsProvider;
         this.toolsVisible = toolsVisible;
 
         allowNull = !condition.isFixed();
@@ -80,13 +82,8 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
         leftPanel = new FlexPanel();
         rightPanel = new FlexPanel();
 
-        List<Pair<Column, String>> selectedColumns = logicsSupplier.getSelectedColumns();
-        for (Pair<Column, String> column : selectedColumns) {
-            columns.put(column.first, column.second);
-        }
-
-        Column currentColumn = new Column(condition.property, condition.columnKey);
-        String currentCaption = columns.get(currentColumn);
+        Column currentColumn = new Column(condition.property, condition.columnKey != null ? condition.columnKey : EMPTY);
+        String currentCaption = columnsProvider.getColumns().get(currentColumn);
 
         Border labelBorder = BorderFactory.createEmptyBorder(0,
                 getTableCellMargins().left + getComponentBorderWidth(),
@@ -103,7 +100,7 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
                 condition.property = value.property;
                 condition.columnKey = value.columnKey;
 
-                propertyLabel.setText(columns.get(value));
+                propertyLabel.setText(columnsProvider.getColumns().get(value));
                 
                 propertyChanged();
 
@@ -111,7 +108,7 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
             }
         };
 
-        for (Pair<Column, String> column : selectedColumns) {
+        for (Pair<Column, String> column : logicsSupplier.getSelectedColumns()) {
             propertyView.add(column.first, column.second);
         }
         leftPanel.addCentered(propertyView);
@@ -314,4 +311,17 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
     public FlexAlignment getCaptionHAlignment() {
         return FlexAlignment.END;
     }
+
+    @Override
+    public void setVisible(boolean aFlag) {
+        super.setVisible(aFlag);
+        
+        if (aFlag) {
+            propertyLabel.setText(columnsProvider.getColumns().get(new Column(condition.property, condition.columnKey != null ? condition.columnKey : EMPTY)));
+        }
+    }
+    
+    public interface ColumnsProvider {
+        Map<Column, String> getColumns();
+    } 
 }

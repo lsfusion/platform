@@ -26,6 +26,7 @@ import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.action.LA;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.LogicsInstance;
+import lsfusion.server.logics.ServerResourceBundle;
 import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
 import lsfusion.server.logics.action.controller.stack.EExecutionStackRunnable;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
@@ -119,6 +120,7 @@ public class Scheduler extends MonitorServer implements InitializingBean {
                 for (ScheduledFuture future : futures) {
                     future.cancel(true);
                 }
+                executingTasks.remove(scheduledTaskId);
             }
 
             if(BL.schedulerLM.activeScheduledTask.read(session, scheduledTaskObject) != null) {
@@ -368,6 +370,8 @@ public class Scheduler extends MonitorServer implements InitializingBean {
             daemonTasksExecutor.shutdownNow();
     }
 
+    Set<Object> executingTasks = new HashSet<>();
+
     private class UserSchedulerTask implements EExecutionStackRunnable {
         String nameScheduledTask;
         private DataObject scheduledTaskObject;
@@ -396,55 +400,62 @@ public class Scheduler extends MonitorServer implements InitializingBean {
                     schedulerLogger.info(((WrappingScheduledExecutorService) daemonTasksExecutor).getThreadPoolInfo());
                 }
                 boolean isTimeToRun = isTimeToRun(localTimeToSqlTime(timeFrom), localTimeToSqlTime(timeTo), daysOfWeek, daysOfMonth);
+                boolean alreadyExecuting = executingTasks.contains(scheduledTaskObject.getValue());
                 schedulerLogger.info(String.format("Task %s. TimeFrom %s, TimeTo %s, daysOfWeek %s, daysOfMonth %s. %s",
                         nameScheduledTask, timeFrom == null ? "-" : timeFrom, timeTo == null ? "-" : timeTo,
                         daysOfWeek.isEmpty() ? "-" : daysOfWeek, daysOfMonth.isEmpty() ? "-" : daysOfMonth,
-                        isTimeToRun ? "Started successful" : "Not started due to conditions"));
+                        isTimeToRun ? alreadyExecuting ? "Already executing" : "Started successful" : "Not started due to conditions"));
 
                 if(isTimeToRun) {
-                    ExecutorService mirrorMonitorService = null;
-                    try {
-                        for (final ScheduledTaskDetail detail : lapMap.values()) {
-                            if (detail != null) {
+                    if (alreadyExecuting) {
+                        logAlreadyExecutingTask(nameScheduledTask, stack);
+                    } else {
+                        executingTasks.add(scheduledTaskObject.getValue());
+                        ExecutorService mirrorMonitorService = null;
+                        try {
+                            for (final ScheduledTaskDetail detail : lapMap.values()) {
+                                if (detail != null) {
 
-                                if (mirrorMonitorService == null)
-                                    mirrorMonitorService = ExecutorFactory.createMonitorMirrorSyncService(Scheduler.this);
+                                    if (mirrorMonitorService == null)
+                                        mirrorMonitorService = ExecutorFactory.createMonitorMirrorSyncService(Scheduler.this);
 
-                                future = mirrorMonitorService.submit(() -> {
-                                    thread.set(Thread.currentThread());
-                                    try {
-                                        return run(detail);
-                                    } finally {
-                                        thread.set(null);
-                                    }
-                                });
-                                boolean succeeded;
-                                if (detail.timeout == null)
-                                    succeeded = future.get();
-                                else {
-                                    try {
-                                        succeeded = future.get(detail.timeout, TimeUnit.SECONDS);
-                                    } catch (TimeoutException e) {
-                                        ThreadUtils.interruptThread(dbManager, thread.result, future);
-
-                                        ExecutorService terminateService = mirrorMonitorService;
-                                        mirrorMonitorService = null;
-                                        terminateService.shutdown();
-                                        if(!terminateService.awaitTermination(Settings.get().getWaitSchedulerCanceledDelay(), TimeUnit.MILLISECONDS)) { // giving thread some time to be canceled
-                                            logExceptionTask(detail.getCaption(), e, stack);
+                                    future = mirrorMonitorService.submit(() -> {
+                                        thread.set(Thread.currentThread());
+                                        try {
+                                            return run(detail);
+                                        } finally {
+                                            thread.set(null);
                                         }
-                                        
-                                        succeeded = false;
+                                    });
+                                    boolean succeeded;
+                                    if (detail.timeout == null)
+                                        succeeded = future.get();
+                                    else {
+                                        try {
+                                            succeeded = future.get(detail.timeout, TimeUnit.SECONDS);
+                                        } catch (TimeoutException e) {
+                                            ThreadUtils.interruptThread(dbManager, thread.result, future);
+
+                                            ExecutorService terminateService = mirrorMonitorService;
+                                            mirrorMonitorService = null;
+                                            terminateService.shutdown();
+                                            if(!terminateService.awaitTermination(Settings.get().getWaitSchedulerCanceledDelay(), TimeUnit.MILLISECONDS)) { // giving thread some time to be canceled
+                                                logExceptionTask(detail.getCaption(), e, stack);
+                                            }
+
+                                            succeeded = false;
+                                        }
                                     }
+
+                                    if (!succeeded && !detail.ignoreExceptions)
+                                        break;
                                 }
-                                
-                                if (!succeeded && !detail.ignoreExceptions)
-                                    break;
                             }
+                        } finally {
+                            executingTasks.remove(scheduledTaskObject.getValue());
+                            if (mirrorMonitorService != null)
+                                mirrorMonitorService.shutdown();
                         }
-                    } finally {
-                        if(mirrorMonitorService != null)
-                            mirrorMonitorService.shutdown();
                     }
                 }
             } catch (Exception e) {
@@ -542,11 +553,15 @@ public class Scheduler extends MonitorServer implements InitializingBean {
         }
 
         private void logStartTask(String taskCaption, ExecutionStack stack) {
-            logTask(taskCaption, "Запущено", "start", stack, null);
+            logTask(taskCaption, ServerResourceBundle.getString("scheduler.started"), "start", stack, null);
+        }
+
+        private void logAlreadyExecutingTask(String taskCaption, ExecutionStack stack) {
+            logTask(taskCaption, ServerResourceBundle.getString("scheduler.already.executing"), "start", stack, null, true);
         }
 
         private Long logFinishTask(String taskCaption, ExecutionStack stack, String applyResult) {
-            return logTask(taskCaption, applyResult == null ? "Выполнено успешно" : BaseUtils.truncate(applyResult, 200), "exception", stack, null);
+            return logTask(taskCaption, applyResult == null ? ServerResourceBundle.getString("scheduler.finished.successfully") : BaseUtils.truncate(applyResult, 200), "exception", stack, null);
         }
 
         private Long logExceptionTask(String taskCaption, Exception e, ExecutionStack stack) {
@@ -554,6 +569,10 @@ public class Scheduler extends MonitorServer implements InitializingBean {
         }
 
         private Long logTask(String message, String result, String phase, ExecutionStack stack, Exception e) {
+            return logTask(message, result, phase, stack, e, false);
+        }
+
+        private Long logTask(String message, String result, String phase, ExecutionStack stack, Exception e, boolean error) {
             if(e != null)
                 schedulerLogger.error("Exception in task : " + message + " - " + result, e);
             else
@@ -565,7 +584,7 @@ public class Scheduler extends MonitorServer implements InitializingBean {
                 BL.schedulerLM.scheduledTaskScheduledTaskLog.change(scheduledTaskObject, (ExecutionEnvironment) session, taskLogObject);
                 BL.schedulerLM.propertyScheduledTaskLog.change(message, session, taskLogObject);
                 BL.schedulerLM.dateScheduledTaskLog.change(LocalDateTime.now(), session, taskLogObject);
-                if(e != null)
+                if(e != null || error)
                     BL.schedulerLM.exceptionOccurredScheduledTaskLog.change(true, session, taskLogObject);
                 BL.schedulerLM.resultScheduledTaskLog.change(result, session, taskLogObject);
 

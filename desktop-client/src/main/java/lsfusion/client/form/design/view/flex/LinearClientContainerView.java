@@ -1,19 +1,18 @@
 package lsfusion.client.form.design.view.flex;
 
 import lsfusion.client.base.view.ClientColorUtils;
+import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.design.ClientContainer;
 import lsfusion.client.form.design.view.AbstractClientContainerView;
 import lsfusion.client.form.design.view.CaptionPanel;
-import lsfusion.client.form.design.view.ClientContainerView;
+import lsfusion.client.form.design.view.CollapsiblePanel;
 import lsfusion.client.form.design.view.FlexPanel;
 import lsfusion.client.form.design.view.widget.Widget;
 import lsfusion.interop.base.view.FlexAlignment;
 
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class LinearClientContainerView extends AbstractClientContainerView {
 
@@ -25,9 +24,12 @@ public class LinearClientContainerView extends AbstractClientContainerView {
     protected FlexPanel[] lines;
     protected FlexPanel[] captionLines;
     protected List<AlignCaptionPanel> childrenCaptions;
+    
+    private ClientFormController formController;
 
-    public LinearClientContainerView(ClientContainer container) {
+    public LinearClientContainerView(ClientFormController formController, ClientContainer container) {
         super(container);
+        this.formController = formController;
 
         assert !container.tabbed;
 
@@ -134,9 +136,14 @@ public class LinearClientContainerView extends AbstractClientContainerView {
 
     @Override
     protected FlexPanel wrapBorderImpl(ClientComponent child) {
-        ClientContainer childContainer;
-        if(child instanceof ClientContainer && (childContainer = (ClientContainer) child).caption != null)
-            return new CaptionPanel(childContainer.caption, vertical);
+        if (child instanceof ClientContainer) {
+            ClientContainer childContainer = (ClientContainer) child;
+            if (childContainer.collapsible) {
+                return new CollapsiblePanel(formController, childContainer, vertical);
+            } else if (childContainer.caption != null) {
+                return new CaptionPanel(childContainer.caption, vertical);
+            }
+        }
         return null;
     }
 
