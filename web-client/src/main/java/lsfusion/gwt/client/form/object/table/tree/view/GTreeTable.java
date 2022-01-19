@@ -168,7 +168,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
                 GridColumn gridColumn = new GridColumn(property);
                 String propertyCaption = property.getCaptionOrEmpty();
                 GGridPropertyTableHeader header = new GGridPropertyTableHeader(this, propertyCaption, property.getTooltipText(propertyCaption), gridColumn.isSticky());
-                GGridPropertyTableFooter footer = groupObject.hasFooters ? new GGridPropertyTableFooter(this, property, null, null) : null;
+                GGridPropertyTableFooter footer = property.hasFooter ? new GGridPropertyTableFooter(this, property, null, null) : null;
 
                 insertColumn(index, gridColumn, header, footer);
 

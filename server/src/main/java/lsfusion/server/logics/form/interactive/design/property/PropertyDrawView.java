@@ -442,6 +442,7 @@ public class PropertyDrawView extends ComponentView {
 
         outStream.writeBoolean(isNotNull());
         outStream.writeBoolean(isSticky(pool.context.view.entity));
+        outStream.writeBoolean(entity.getPropertyExtra(PropertyDrawExtraType.FOOTER) != null);
     }
 
     private OrderedMap<String, LocalizedString> filterContextMenuItems(OrderedMap<String, LocalizedString> contextMenuBindings, ServerContext context) {
