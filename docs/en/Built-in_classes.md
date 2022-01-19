@@ -24,6 +24,7 @@ title: 'Built-in classes'
 |`RICHTEXT`           |String data type of arbitrary length with formatting||
 |`COLOR`              |Color                         |`#00ccff`, `#AA55CC`, `RGB(0, 255, 0)`|
 |`FILE`               |File of dynamic type (file content together with extension)||
+|`NAMEDFILE`          |File of dynamic type (file content together with name and extension)||
 |`RAWFILE`, `WORDFILE`, `IMAGEFILE`, `PDFFILE`, `EXCELFILE`, `CSVFILE`, `HTMLFILE`, `JSONFILE`, `XMLFILE`, `TABLEFILE`|Files of specific type (`RAWFILE`: file with no extension or with unknown extension)||
 |`LINK`               |Link to a file (URI)          ||
 |`RAWLINK`, `WORDLINK`, `IMAGELINK`, `PDFLINK`, `EXCELLINK`, `CSVLINK`, `HTMLLINK`, `JSONLINK`, `XMLLINK`, `TABLELINK`|Link to a file of a specific type (`RAWLINK`: link to a file with no extension or an unknown extension)||
@@ -110,10 +111,11 @@ It is sometimes necessary to use some value for a built-in class which will diff
 |`COLOR`                   |White        |
 |Files of a specific type  |Empty file   |
 |`FILE`                    |Empty file with empty extension|
+|`NAMEDFILE`               |Empty file with empty name and extension|
 
 ## Extensions of specific type files {#extension}
 
-When files of a specific type (`JSONFILE`, `XMLFILE`, ...) are cast into a file of dynamic type (`FILE`), whether explicitly or implicitly (e.g. with [data import](Data_import_IMPORT.md) without specifying a format or when [working with external systems](Access_to_an_external_system_EXTERNAL.md)), the extension of the result file is determined as follows:
+When files of a specific type (`JSONFILE`, `XMLFILE`, ...) are cast into a file of dynamic type (`FILE`, `NAMEDFILE`), whether explicitly or implicitly (e.g. with [data import](Data_import_IMPORT.md) without specifying a format or when [working with external systems](Access_to_an_external_system_EXTERNAL.md)), the extension of the result file is determined as follows:
 
 |Class name |Extension       |
 |-----------|----------------|
@@ -132,7 +134,7 @@ When files of a specific type (`JSONFILE`, `XMLFILE`, ...) are cast into a file 
 
 |Class name|Property name|
 |---|---|
-|`FILE`, `RAWFILE`, `WORDFILE`, `IMAGEFILE`, `PDFFILE`, `EXCELFILE`, `CSVFILE`, `HTMLFILE`, `JSONFILE`, `XMLFILE`, `TABLEFILE`|`exportFile`, `exportRawFile`, `exportWordFile`, `exportImageFile`, `exportPdfFile`, `exportExcelFile`, `exportCsvFile`, `exportHtmlFile`, `exportJsonFile`, `exportXmlFile`|
+|`FILE`, `NAMEDFILE`, `RAWFILE`, `WORDFILE`, `IMAGEFILE`, `PDFFILE`, `EXCELFILE`, `CSVFILE`, `HTMLFILE`, `JSONFILE`, `XMLFILE`, `TABLEFILE`|`exportFile`, `exportNamedFile`,`exportRawFile`, `exportWordFile`, `exportImageFile`, `exportPdfFile`, `exportExcelFile`, `exportCsvFile`, `exportHtmlFile`, `exportJsonFile`, `exportXmlFile`|
 |`TEXT`, `STRING`, `BPSTRING`|`exportText`, `exportString`, `exportBPString`|
 |`NUMERIC`, `LONG`, `INTEGER`, `DOUBLE`|`exportNumeric`, `exportLong`, `exportInteger`, `exportDouble`|
 |`DATETIME`, `DATE`, `TIME`, `YEAR`|`exportDateTime`, `exportDate`, `exportTime`, `exportYear`|

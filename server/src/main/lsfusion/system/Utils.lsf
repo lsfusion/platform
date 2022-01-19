@@ -44,7 +44,7 @@ richTextToString '{utils.rich.text.to.string}' INTERNAL 'lsfusion.server.logics.
 appendToFile '{utils.append.to.file}' INTERNAL 'lsfusion.server.physics.dev.integration.external.to.file.AppendToFileAction' (STRING[1000], TEXT, STRING[10]);
 appendToFile(STRING[1000] path, TEXT text) { appendToFile(path, text, 'UTF-8'); };
 
-setExtension = FORMULA FILE 'cast_to_custom_file(($1),$2)'; // for RAWFILE, PDFFILE...
+setExtension = FORMULA FILE 'cast_static_file_to_dynamic_file(($1),$2)'; // for RAWFILE, PDFFILE...
 changeExtension(FILE file, TEXT extension) = setExtension(RAWFILE(file), extension); // for FILE
 
 // --------------------------------- Logging --------------------------------- //

@@ -54,4 +54,5 @@ public class DataType {
     public final static byte ZDATETIMEINTERVAL = 51;
     public final static byte HTMLTEXT = 52;
     public final static byte RICHTEXT = 53;
+    public final static byte NAMEDFILE = 54;
 }

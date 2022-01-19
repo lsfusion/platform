@@ -108,6 +108,7 @@ public class ClientTypeToGwtConverter extends ObjectConverter {
             fileClass.validExtensions = validExtensions;
 
         }
+        fileClass.named = clientFileClass instanceof ClientNamedFileClass;
         return fileClass;
     }
 
@@ -171,6 +172,11 @@ public class ClientTypeToGwtConverter extends ObjectConverter {
         GCustomStaticFormatFileType customFormatFileType = initializeFileClass(customClass, new GCustomStaticFormatFileType());
         customFormatFileType.description = customClass.filterDescription;
         return customFormatFileType;
+    }
+
+    @Converter(from = ClientNamedFileClass.class)
+    public GNamedFileType convertNamedFileClass(ClientNamedFileClass customClass) {
+        return initializeFileClass(customClass, new GNamedFileType());
     }
 
     @Converter(from = ClientDynamicFormatFileClass.class)
