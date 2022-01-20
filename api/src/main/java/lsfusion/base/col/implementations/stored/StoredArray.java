@@ -2,15 +2,20 @@ package lsfusion.base.col.implementations.stored;
 
 import java.io.*;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
-import java.util.Iterator;
+import java.util.ArrayList;
 
 public class StoredArray<T> {
     private final StoredArraySerializer serializer;
     private final StoredArrayFileManager fileManager;
-    private int size = 0;
+    
+    private int storedSize = 0;
+    private final int CHUNK_SIZE = 100;
+    
     private RandomAccessFile indexFile;
     private RandomAccessFile dataFile;
+    
+    private final ArrayList<T> dataBuffer = new ArrayList<>();
+    
     private final byte[] twoIntBuffer = new byte[Integer.BYTES * 2];
     
     public StoredArray(StoredArraySerializer serializer) {
@@ -56,12 +61,13 @@ public class StoredArray<T> {
     }
     
     public StoredArray(StoredArray<? extends T> source) {
-        // todo [dale]: can be optimized
         try {
             this.serializer = source.serializer;
             this.fileManager = new StoredArrayFileManagerImpl();
-            openFiles();
-            appendElementsWithBuffering(new StoredArrayIterator<>(source), source.size());
+            createInitialState(0);
+            for (int i = 0; i < source.size(); ++i) {
+                append(source.get(i));
+            }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -76,70 +82,79 @@ public class StoredArray<T> {
     }
     
     public void set(int index, T element) {
-        assert index >= 0 && index < size;
-        try {
-            ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-            serializer.serialize(element, outStream);
-            int newLen = outStream.size();
+        assert index >= 0 && index < size();
+        if (index >= storedSize) {
+            dataBuffer.set(index - storedSize, element);
+        } else {
+            try {
+                ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+                serializer.serialize(element, outStream);
+                int newLen = outStream.size();
 
-            seekToIndex(index);
-            ByteBuffer buf = readOffsetLen();
-            int offset = buf.getInt();
-            int len = buf.getInt();
+                seekToIndex(index);
+                ByteBuffer buf = readOffsetLen();
+                int offset = buf.getInt();
+                int len = buf.getInt();
 
-            int newOffset = (newLen <= len ? offset : (int) dataFile.length());
-            setIndexData(index, newOffset, newLen);
-            seekToObject(newOffset);
-            writeElementData(outStream.toByteArray());
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
+                int newOffset = (newLen <= len ? offset : (int) dataFile.length());
+                setIndexData(index, newOffset, newLen);
+                seekToObject(newOffset);
+                writeElementData(outStream.toByteArray());
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        }        
     }
 
     // time-consuming operation
     public void insert(int index, T element) {
-        assert index >= 0 && index <= size;
+        assert index >= 0 && index <= size();
         
-        if (index == size) {
+        if (index == size()) {
             append(element);
-            return;
-        }
-        
-        try {
-            int offset = (int) dataFile.length();
-            seekToObject(offset);
-            int len = writeElement(element);
+        } else if (index >= storedSize) {
+            dataBuffer.add(index - storedSize, element);
+        } else {
+            try {
+                int offset = (int) dataFile.length();
+                seekToObject(offset);
+                int len = writeElement(element);
 
-            seekToIndex(index);
-            int nextOffset = 0, nextLen = 0;
-            for (int i = index; i <= size; ++i) {
-                if (i < size) {
-                    ByteBuffer buf = readOffsetLen();
-                    nextOffset = buf.getInt();
-                    nextLen = buf.getInt();
+                seekToIndex(index);
+                int nextOffset = 0, nextLen = 0;
+                for (int i = index; i <= storedSize; ++i) {
+                    if (i < storedSize) {
+                        ByteBuffer buf = readOffsetLen();
+                        nextOffset = buf.getInt();
+                        nextLen = buf.getInt();
+                    }
+                    setIndexData(i, offset, len);
+                    offset = nextOffset;
+                    len = nextLen;
                 }
-                setIndexData(i, offset, len);
-                offset = nextOffset;
-                len = nextLen;
+                ++storedSize;
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
             }
-            ++size;
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
         }
     }
     
     public T get(int index) {
-        assert index < size;
-        try {
-            int len = prepareForElementReading(index);
-            return readElement(len);
-        } catch (IOException e) {
-            throw new UncheckedIOException(e); 
+        assert index < size();
+        if (index < storedSize) {
+            try {
+                int len = prepareForElementReading(index);
+                return readElement(len);
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        } else {
+            return dataBuffer.get(index - storedSize);
         }
     }
     
     public int size() {
-        return size;
+        return storedSize + dataBuffer.size();
     }
     
     private void createInitialState(T[] array) throws IOException {
@@ -148,52 +163,48 @@ public class StoredArray<T> {
 
     private void createInitialState(T[] array, int size) throws IOException {
         openFiles();
-        appendElementsWithBuffering(Arrays.stream(array).iterator(), size);
+        for (int i = 0; i < size; ++i) {
+            appendElement(array[i]);
+        }
     }
     
     private void createInitialState(int size) throws IOException {
         openFiles();
-        appendElementsWithBuffering(null, size);
+        for (int i = 0; i < size; ++i) {
+            appendElement(null);
+        }
     }
 
-    private void appendElementsWithBuffering(Iterator<T> iterator, int arraySize) throws IOException {
-        final int CHUNK_SIZE = 100;
+    private void flushBuffer() throws IOException {
         ByteArrayOutputStream dataStreamBuf = new ByteArrayOutputStream();
         ByteArrayOutputStream indexStreamBuf = new ByteArrayOutputStream();
-        int curBufSize = 0;
+        
         int prevDataStreamSize = 0;
         int dataOffset = (int) dataFile.length();
         seekToObject(dataOffset);
-        seekToIndex(size);
-        for (int i = 0; i < arraySize; ++i) {
-            ++curBufSize;
-            serializer.serialize(iterator == null ? null : iterator.next(), dataStreamBuf);
+        seekToIndex(storedSize);
+        for (T element : dataBuffer) {
+            serializer.serialize(element, dataStreamBuf);
             int elementSize = dataStreamBuf.size() - prevDataStreamSize;
-            
             ByteBuffer buffer = ByteBuffer.allocate(Integer.BYTES * 2);
             buffer.putInt(dataOffset);
             buffer.putInt(elementSize);
             indexStreamBuf.write(buffer.array());
             dataOffset += elementSize;
-            
-            if (curBufSize == CHUNK_SIZE || i+1 == arraySize) {
-                dataFile.write(dataStreamBuf.toByteArray());
-                indexFile.write(indexStreamBuf.toByteArray());
-                dataStreamBuf.reset();
-                indexStreamBuf.reset();
-                curBufSize = 0;
-            }
             prevDataStreamSize = dataStreamBuf.size();
         }
-        size += arraySize;
+
+        dataFile.write(dataStreamBuf.toByteArray());
+        indexFile.write(indexStreamBuf.toByteArray());
+        storedSize += dataBuffer.size();
+        dataBuffer.clear();
     }
     
     private void appendElement(T element) throws IOException {
-        int offset = (int) dataFile.length();
-        seekToObject(offset);
-        int len = writeElement(element);
-        setIndexData(size, offset, len);
-        ++size;
+        dataBuffer.add(element);
+        if (dataBuffer.size() >= CHUNK_SIZE) {
+            flushBuffer();
+        }
     }
     
     private void setIndexData(int index, int offset, int len) throws IOException {
@@ -224,6 +235,7 @@ public class StoredArray<T> {
     }
     
     private int prepareForElementReading(int index) throws IOException {
+        assert index < storedSize;
         seekToIndex(index);
         ByteBuffer buf = readOffsetLen();
         int offset = buf.getInt();
@@ -243,12 +255,13 @@ public class StoredArray<T> {
         File tmpIndexFile = fileManager.tmpIndexFile();
         File tmpDataFile = fileManager.tmpDataFile();
         try {
+            flushBuffer(); // todo [dale]: we can remove the flushBuffer call and process stored and buffered separately
             try (
                 DataOutputStream tmpIndexStream = new DataOutputStream(new FileOutputStream(tmpIndexFile));
                 FileOutputStream tmpDataStream = new FileOutputStream(tmpDataFile)
             ) {
                 int total = 0;
-                for (int i = 0; i < size; ++i) {
+                for (int i = 0; i < size(); ++i) {
                     int len = prepareForElementReading(i);
                     byte[] buf = new byte[len];
                     dataFile.read(buf);
@@ -297,24 +310,23 @@ public class StoredArray<T> {
         dataFile.seek(offset);
     }
 
-    private static class StoredArrayIterator<T> implements Iterator<T> {
-        private final StoredArray<? extends T> array;
-        private int index;
-
-        public StoredArrayIterator(StoredArray<? extends T> array) {
-            this.array = array;
-            index = 0;
-        }
-
-        @Override
-        public boolean hasNext() {
-            return index >= array.size();
-        }
-
-        @Override
-        public T next() {
-            return array.get(index++);
-        }
-    }
-
+//    private static class StoredArrayIterator<T> implements Iterator<T> {
+//        private final StoredArray<? extends T> array;
+//        private int index;
+//
+//        public StoredArrayIterator(StoredArray<? extends T> array) {
+//            this.array = array;
+//            index = 0;
+//        }
+//
+//        @Override
+//        public boolean hasNext() {
+//            return index >= array.size();
+//        }
+//
+//        @Override
+//        public T next() {
+//            return array.get(index++);
+//        }
+//    }
 }

@@ -42,7 +42,6 @@ public class StoredArIndexedSetTest {
         StoredArIndexedSet<SerializableClass> copy = new StoredArIndexedSet<>(result);
         assertEquals(copy.size(), result.size());
         for (int i = 0; i < arr.length; ++i) {
-            assertNotSame(result.get(i), copy.get(i));
             assertEquals(result.get(i), copy.get(i));
         }
     }

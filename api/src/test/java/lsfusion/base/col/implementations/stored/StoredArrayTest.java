@@ -99,6 +99,7 @@ public class StoredArrayTest {
         array[3] = new OtherSerializableClass("triangle", 5, true);
         thrown.expect(RuntimeException.class);
         StoredArray<SerializableClass> stored = new StoredArray<>(array, serializer);
+        stored.squeeze(); // this should flush inner buffer
     }
 
     @Test
