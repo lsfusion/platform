@@ -83,7 +83,7 @@ public class TreeGroupView extends ComponentView implements ServerIdentitySerial
         filtersContainer.setAlignment(FlexAlignment.STRETCH);
 //        filtersContainer.setAlignCaptions(true);
 //        filtersContainer.setLineSize(0);
-        filtersContainer.setCaption(LocalizedString.create(ThreadLocalContext.localize("{form.view.filters.container}")));
+//        filtersContainer.setCaption(LocalizedString.create(ThreadLocalContext.localize("{form.view.filters.container}")));
 
         filters = NFFact.orderSet();
     }
