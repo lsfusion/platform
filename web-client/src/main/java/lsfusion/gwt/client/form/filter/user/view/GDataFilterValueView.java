@@ -37,7 +37,7 @@ public class GDataFilterValueView extends ResizableSimplePanel {
     public void changeProperty(GPropertyFilter condition, boolean readSelectedValue) {
         cell = new GDataFilterPropertyValue(condition, logicsSupplier.getForm(), this::valueChanged, this::editingCancelled);
         
-        cell.setStatic(this, true);
+        cell.setSized(false, true, this);
 
         if (readSelectedValue) {
             cell.updateValue(logicsSupplier.getSelectedValue(condition.property, condition.columnKey));

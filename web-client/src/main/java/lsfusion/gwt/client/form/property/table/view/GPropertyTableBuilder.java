@@ -45,10 +45,7 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
 
         if(!(isTDorTH && property.getCellRenderer().isSimpleText(renderContext))) {
             element = wrapSized(element);
-            if(property.autoSize)
-                GwtClientUtils.setupPercentParent(element);
-            else
-                GwtClientUtils.setupFillParent(element);
+            GwtClientUtils.setupSizedParent(element, property.autoSize);
         }
         return element;
     }

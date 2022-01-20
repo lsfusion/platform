@@ -18,9 +18,10 @@ public abstract class GCalculateSumButton extends GToolbarButton {
         TooltipManager.TooltipHelper tooltipHelper = new TooltipManager.TooltipHelper() {
             @Override
             public String getTooltip() {
+                String caption = property.getNotEmptyCaption();
                 String text = result == null
-                        ? messages.formQueriesUnableToCalculateSum() + " [" + property.caption + "]"
-                        : messages.formQueriesSumResult() + " [" + property.caption + "]: ";
+                        ? messages.formQueriesUnableToCalculateSum() + " [" + caption + "]"
+                        : messages.formQueriesSumResult() + " [" + caption + "]: ";
 
                 if (result != null) {
                     NumberFormat format = NumberFormat.getDecimalFormat();

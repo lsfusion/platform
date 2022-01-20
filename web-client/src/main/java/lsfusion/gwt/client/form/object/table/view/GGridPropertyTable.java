@@ -72,12 +72,15 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
 
     protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Object>> cellImages = new NativeSIDMap<>();
 
+    public static String getPropertyCaption(GPropertyDraw property) {
+        return getPropertyCaption(null, property, null);
+    }
     public static String getPropertyCaption(NativeHashMap<GGroupObjectValue, Object> propCaptions, GPropertyDraw property, GGroupObjectValue columnKey) {
         String caption;
         if (propCaptions != null)
             caption = property.getDynamicCaption(propCaptions.get(columnKey));
         else
-            caption = property.getCaptionOrEmpty();
+            caption = property.getCaption();
         return caption;
     }
 

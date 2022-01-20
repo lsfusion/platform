@@ -12,6 +12,7 @@ import lsfusion.server.language.ScriptParsingException;
 import lsfusion.server.language.proxy.ViewProxyUtil;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.interactive.design.object.GridView;
+import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.property.value.NullValueProperty;
@@ -101,7 +102,7 @@ public class ContainerView extends ComponentView {
     }
 
     protected boolean isDefaultCollapsible() {
-        return caption != null && (propertyCaption == null || !(propertyCaption.property instanceof NullValueProperty)); // isEmpty can be better, but we just want to emulate NULL to be like NULL caption
+        return !PropertyDrawView.hasNoCaption(caption, propertyCaption);
     }
 
     public boolean isTabbed() {

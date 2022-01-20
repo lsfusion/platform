@@ -273,26 +273,18 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         return type != null && baseType.getClass() == type.getClass();
     }
 
-    public String getCaptionOrEmpty() {
-        return caption == null ? "" : caption;
-    }
-
     public String getDynamicCaption(Object caption) {
         return caption == null ? "" : caption.toString().trim();
     }
 
-    public String getEditCaption(String caption) {
-        if (caption == null) {
-            caption = this.caption;
-        }
+    public String getCaption() {
+        return caption == null ? "" : caption;
+    }
 
+    public String getPanelCaption(String caption) {
         if(showChangeKey && hasKeyBinding())
             caption += " (" + getKeyBindingText() + ")";
         return caption;
-    }
-
-    public String getEditCaption() {
-        return getEditCaption(caption);
     }
 
     public String getNotEmptyCaption() {

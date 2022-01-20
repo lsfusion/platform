@@ -814,7 +814,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements AsyncChangeCe
     }
 
     public Pair<Column, String> getSelectedColumn(ClientPropertyDraw property, ClientGroupObjectValue columnKey) {
-        return new Pair<>(new Column(property, columnKey), property.getCaptionOrEmpty());
+        return new Pair<>(new Column(property, columnKey), property.getPropertyCaption());
     }
 
     @Override

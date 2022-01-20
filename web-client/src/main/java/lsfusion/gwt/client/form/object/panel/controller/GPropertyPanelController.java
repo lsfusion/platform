@@ -5,14 +5,14 @@ import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
+import lsfusion.gwt.client.base.view.SizedWidget;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.view.flex.CaptionContainerHolder;
 import lsfusion.gwt.client.form.design.view.flex.LinearCaptionContainer;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
+import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.panel.view.ActionOrPropertyValueController;
-import lsfusion.gwt.client.form.property.panel.view.ActionPanelRenderer;
-import lsfusion.gwt.client.form.property.panel.view.PanelRenderer;
+import lsfusion.gwt.client.form.property.panel.view.*;
 
 import java.util.ArrayList;
 
@@ -83,11 +83,11 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
                     if (renderer == null && (!property.hide || property.hasKeyBinding())) {
                         PanelRenderer newRenderer = property.createPanelRenderer(form, this, columnKey, renderersPanel.captionContainer);
                         newRenderer.setReadOnly(property.isReadOnly());
-                        Widget component = newRenderer.getComponent();
+                        SizedWidget component = newRenderer.getSizedWidget();
                         if(!property.hide) {
-                            renderersPanel.addFill(component);
+                            component.addFill(renderersPanel);
                         }
-                        newRenderer.bindingEventIndices = form.addPropertyBindings(property, newRenderer::onBinding, component);
+                        newRenderer.bindingEventIndices = form.addPropertyBindings(property, newRenderer::onBinding, component.widget);
 
                         renderer = newRenderer;
                     }
@@ -136,7 +136,7 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
         renderer.updateCellForegroundValue(foreground == null ? property.foreground : foreground);
 
         if (captions != null) {
-            renderer.setCaption(property.getDynamicCaption(captions.get(columnKey)));
+            renderer.setCaption(GGridPropertyTable.getPropertyCaption(captions, property, columnKey));
         }
 
         if (images != null && renderer instanceof ActionPanelRenderer) {

@@ -11,6 +11,7 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
+import lsfusion.gwt.client.base.view.SizedWidget;
 import lsfusion.gwt.client.form.design.view.flex.CaptionContainerHolder;
 import lsfusion.gwt.client.form.design.view.flex.LinearCaptionContainer;
 import lsfusion.gwt.client.form.event.GKeyStroke;
@@ -200,7 +201,7 @@ public class GFilterConditionView extends FlexPanel implements CaptionContainerH
         if (captionContainer == null) {
             addCentered(leftPanel);
         } else {
-            captionContainer.put(leftPanel, GFlexAlignment.CENTER);
+            captionContainer.put(new SizedWidget(leftPanel), GFlexAlignment.CENTER);
         }
         
         addCentered(rightPanel);
