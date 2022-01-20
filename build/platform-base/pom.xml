@@ -62,7 +62,7 @@
         <slf4j.version>1.6.1</slf4j.version>
         <janino.version>3.0.12</janino.version>
         <commons.httpclient.version>3.1</commons.httpclient.version>
-        <jdbf.version>2.1.0</jdbf.version>
+        <jdbf.version>2.2.1</jdbf.version>
         <org.jdbf.version>1.1</org.jdbf.version>
         <org.jfree.version>1.0.23</org.jfree.version>
 
@@ -379,7 +379,7 @@
                 <version>${commons.httpclient.version}</version>
             </dependency>
             <dependency>
-                <groupId>net.iryndin</groupId>
+                <groupId>com.github.spyhunter99</groupId>
                 <artifactId>jdbf</artifactId>
                 <version>${jdbf.version}</version>
             </dependency>
