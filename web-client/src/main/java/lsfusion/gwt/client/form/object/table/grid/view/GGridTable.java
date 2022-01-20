@@ -542,8 +542,11 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
     public Object getSelectedValue(GPropertyDraw property, GGroupObjectValue columnKey) {
         GridDataRecord selectedRecord = getSelectedRowValue();
-        if (selectedRecord != null)
-            return getGridColumn(getPropertyIndex(property, columnKey)).getValue(selectedRecord);
+        if (selectedRecord != null) {
+            int column = getPropertyIndex(property, columnKey);
+            if(column >= 0)
+                return getGridColumn(column).getValue(selectedRecord);
+        }
 
         return null;
     }

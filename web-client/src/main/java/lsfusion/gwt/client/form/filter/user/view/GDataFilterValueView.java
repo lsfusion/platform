@@ -2,13 +2,13 @@ package lsfusion.gwt.client.form.filter.user.view;
 
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.view.EventHandler;
-import lsfusion.gwt.client.base.view.ResizableSimplePanel;
+import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.classes.data.GLogicalType;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.filter.user.GDataFilterValue;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.object.table.controller.GTableController;
+import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.controller.CancelReason;
 
 import java.io.Serializable;
@@ -16,7 +16,7 @@ import java.io.Serializable;
 import static lsfusion.gwt.client.form.event.GKeyStroke.isAddUserFilterKeyEvent;
 import static lsfusion.gwt.client.form.event.GKeyStroke.isReplaceUserFilterKeyEvent;
 
-public class GDataFilterValueView extends ResizableSimplePanel {
+public class GDataFilterValueView extends FlexPanel {
     private final GDataFilterValue filterValue;
     private final GTableController logicsSupplier;
 
@@ -25,8 +25,6 @@ public class GDataFilterValueView extends ResizableSimplePanel {
     public GDataFilterValueView(GDataFilterValue filterValue, GTableController logicsSupplier) {
         this.filterValue = filterValue != null ? filterValue : new GDataFilterValue();
         this.logicsSupplier = logicsSupplier;
-
-        addStyleName("userFilterDataPropertyValue");
     }
 
     public void changeProperty(GPropertyFilter condition) {
@@ -34,13 +32,26 @@ public class GDataFilterValueView extends ResizableSimplePanel {
         changeProperty(condition, true);
     }
 
+    private SizedWidget sizedView; // needed only to remove previous widget when changing properties
+
     public void changeProperty(GPropertyFilter condition, boolean readSelectedValue) {
+        if(sizedView != null)
+            remove(sizedView.widget);
+
         cell = new GDataFilterPropertyValue(condition, logicsSupplier.getForm(), this::valueChanged, this::editingCancelled);
-        
-        cell.setSized(false, true, this);
+
+        GPropertyDraw property = condition.property;
+        // pretty similar to PropertyPanelRenderer (except that we don't need needCorners)
+        // there is an extra container of course (but the same problem is for PropertyPanelRenderer)
+        ResizableComplexPanel valuePanel = null;
+        if(!property.autoSize)
+            valuePanel = new ResizableComplexPanel();
+        sizedView = cell.setSized(property.autoSize, true, valuePanel);
+        sizedView.widget.addStyleName("userFilterDataPropertyValue");
+        sizedView.addFill(this);
 
         if (readSelectedValue) {
-            cell.updateValue(logicsSupplier.getSelectedValue(condition.property, condition.columnKey));
+            cell.updateValue(logicsSupplier.getSelectedValue(property, condition.columnKey));
         } else {
             cell.updateValue(filterValue.value);
         }

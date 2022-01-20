@@ -163,8 +163,9 @@ public class GFilterConditionView extends FlexPanel implements CaptionContainerH
                 }
             }
         };
+        valueView.changeProperty(condition, readSelectedValue);
+
         rightPanel.addCentered(valueView);
-        valueView.changeProperty(condition, readSelectedValue); // it's important to do it after adding to the container because setStatic -> setBaseSize is called inside (and adding to container also calls it and override with default value)
         uiHandler.addEnterBinding(valueView.cell);
 
         deleteButton = new GToolbarButton(DELETE_ICON_PATH, messages.formFilterRemoveCondition()) {
