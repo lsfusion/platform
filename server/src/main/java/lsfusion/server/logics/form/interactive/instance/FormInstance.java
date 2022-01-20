@@ -80,6 +80,10 @@ import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.form.interactive.FormCloseType;
 import lsfusion.server.logics.form.interactive.ManageSessionType;
 import lsfusion.server.logics.form.interactive.UpdateType;
+import lsfusion.server.logics.form.interactive.action.async.AsyncChange;
+import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
+import lsfusion.server.logics.form.interactive.action.async.PushAsyncChange;
+import lsfusion.server.logics.form.interactive.action.async.PushAsyncResult;
 import lsfusion.server.logics.form.interactive.action.input.InputContext;
 import lsfusion.server.logics.form.interactive.action.input.InputValueList;
 import lsfusion.server.logics.form.interactive.changed.*;
@@ -88,6 +92,7 @@ import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.instance.design.ContainerViewInstance;
 import lsfusion.server.logics.form.interactive.instance.filter.FilterInstance;
+import lsfusion.server.logics.form.interactive.instance.filter.NotNullFilterInstance;
 import lsfusion.server.logics.form.interactive.instance.filter.RegularFilterGroupInstance;
 import lsfusion.server.logics.form.interactive.instance.filter.RegularFilterInstance;
 import lsfusion.server.logics.form.interactive.instance.object.*;
@@ -111,12 +116,9 @@ import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.object.TreeGroupEntity;
 import lsfusion.server.logics.form.struct.order.OrderEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
-import lsfusion.server.logics.form.interactive.action.async.AsyncChange;
-import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
-import lsfusion.server.logics.form.interactive.action.async.PushAsyncChange;
-import lsfusion.server.logics.form.interactive.action.async.PushAsyncResult;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
+import lsfusion.server.logics.property.classes.IsClassProperty;
 import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.implement.PropertyRevImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -138,7 +140,8 @@ import java.util.function.Supplier;
 
 import static lsfusion.base.BaseUtils.deserializeObject;
 import static lsfusion.base.BaseUtils.systemLogger;
-import static lsfusion.interop.action.ServerResponse.*;
+import static lsfusion.interop.action.ServerResponse.CHANGE;
+import static lsfusion.interop.action.ServerResponse.INPUT;
 import static lsfusion.interop.form.order.user.Order.*;
 import static lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance.*;
 
@@ -316,7 +319,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         ImMap<GroupObjectInstance, ImSet<FilterInstance>> fixedFilters = allFixedFilters.mapSetValues(value -> value.getInstance(instanceFactory)).group(key -> key.getApplyObject());
         for (int i = 0, size = fixedFilters.size(); i < size; i++)
             fixedFilters.getKey(i).fixedFilters = fixedFilters.getValue(i);
-
+        for (GroupObjectInstance groupObject : groupObjects)
+            groupObject.classFilter = new NotNullFilterInstance<>(FilterInstance.getPropertyObjectInstance(IsClassProperty.getProperty(getGridClasses(groupObject.objects))));
 
         for (RegularFilterGroupEntity filterGroupEntity : entity.getRegularFilterGroupsList()) {
             regularFilterGroups.add(instanceFactory.getInstance(filterGroupEntity));
@@ -374,8 +378,6 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 wasOrder.add(toDraw);
             }
         }
-
-        applyFilters(); // we need to apply filters, because on init may be some actions using filters (EXPAND UP) + readKeys in tree uses down group to calculate expand / collapse column
 
         this.session.registerForm(this);
         
@@ -918,18 +920,10 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     // пометка что изменились данные
     public boolean dataChanged = true;
 
-    // временно
-    private boolean checkFilters(final GroupObjectInstance groupTo) {
-        ImSet<FilterInstance> setFilters = groupTo.getSetFilters();
-        return setFilters.equals(groupTo.filters);
-    }
-
     public <P extends PropertyInterface> DataObject addFormObject(CustomObjectInstance object, ConcreteCustomClass cls, DataObject pushed, ExecutionStack stack) throws SQLException, SQLHandledException {
         DataObject dataObject = session.addObjectAutoSet(cls, pushed, BL, getClassListener());
 
-        // резолвим все фильтры
-        assert checkFilters(object.groupTo);
-        for (FilterInstance filter : object.groupTo.filters)
+        for (FilterInstance filter : object.groupTo.getFilters(true))
             filter.resolveAdd(this, object, dataObject, stack);
 
         expandCurrentGroupObject(object);
@@ -1663,7 +1657,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     private ImList<ComponentView> userActivateTabs = ListFact.EMPTY();
     // программный activate tab
     public void activateTab(ComponentView view) throws SQLException, SQLHandledException {
-        setTabVisible(view.getTabbedContainer(), view);
+        setTabVisible(view.getContainer(), view);
         
         userActivateTabs = userActivateTabs.addList(view);
     }
@@ -1689,33 +1683,33 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         return entity.getDrawComponent(property.entity);
     }
 
-    private boolean isTabHidden(PropertyDrawInstance<?> property) {
+    private boolean isUserHidden(PropertyDrawInstance<?> property) {
         ComponentView drawComponent = getDrawComponent(property);
-        assert !isNoTabHidden(drawComponent); // так как если бы был null не попалы бы в newIsShown в readShowIfs
-        ComponentView drawTabContainer = drawComponent.getTabHiddenContainer();
-        return drawTabContainer != null && isTabHidden(drawTabContainer); // первая проверка - cheat / оптимизация
+        assert !isNoUserHidden(drawComponent); // так как если бы был null не попалы бы в newIsShown в readShowIfs
+        return isUserHidden(drawComponent);
     }
 
     private boolean isHidden(ContainerView container) { // is Tab or showIfHidden or designHidden
-        if(container.main) // form container
+        if(container.isMain()) // form container
             return false;
 
-        if(isDesignHidden(container))
+        if(isStaticHidden(container))
             return true;
 
-        ComponentView localHideableContainer = container.getLocalHideableContainer();
-        if(localHideableContainer == container) // if this is a tab - use it's parent, since we want it's caption to be updated too (however maybe later we'll have to distinguish caption from other attributes)
-            localHideableContainer = container.getHiddenContainer().getLocalHideableContainer();
+        // if this is a tab / collapsible container - use it's parent, since we want it's caption to be updated too (however maybe later we'll have to distinguish caption from other attributes)
+        ComponentView dynamicHidableContainer = container.getDynamicHidableContainer();
+        if(dynamicHidableContainer == container && container.isUserHidable())
+            dynamicHidableContainer = container.getHiddenContainer().getDynamicHidableContainer();
 
-        return localHideableContainer != null && isLocalHidden(localHideableContainer);
+        return dynamicHidableContainer != null && isDynamicHidden(dynamicHidableContainer);
     }
 
     private boolean isHidden(GroupObjectInstance group) { // is Tab or showIfHidden or designHidden
-        FormEntity.ComponentUpSet containers = entity.getDrawLocalHideableContainers(group.entity);
+        FormEntity.ComponentUpSet containers = entity.getDrawDynamicHideableContainers(group.entity);
         if (containers == null) // cheat / оптимизация, иначе пришлось бы в isHidden и еще в нескольких местах явную проверку на null
             return false;
         for (ComponentView component : containers.it())
-            if (!isLocalHidden(component))
+            if (!isDynamicHidden(component))
                 return false;
         // для случая, когда группа PANEL, в группе только свойства, зависящие от ключей, и находятся не в первом табе.
         // наличие ключа влияет на видимость этих свойств, которая в свою очередь влияет на видимость таба.
@@ -1726,66 +1720,74 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         return true;
     }
 
-    private boolean isNoTabHidden(ComponentView component) { // design or showf
-        return isDesignHidden(component) || isShowIfHidden(component);
+    private boolean isNoUserHidden(ComponentView component) { // design or showf
+        return isStaticHidden(component) || isShowIfHidden(component);
     }
 
-    private boolean isLocalHidden(ComponentView component) { // showif or tab
-        assert !isDesignHidden(component);
-        assert (component instanceof ContainerView && ((ContainerView)component).showIf != null) || component.getTabbedContainer() != null;
-        if (isShowIfHidden(component)) 
-            return true;
-
-        ComponentView tabContainer = component.getTabHiddenContainer();
-        return tabContainer != null && isTabHidden(tabContainer);
+    private boolean isDynamicHidden(ComponentView component) { // showif or tab
+        assert !isStaticHidden(component);
+        assert component.isDynamicHidable();
+        return isShowIfHidden(component) || isUserHidden(component);
     }
 
-    private boolean isDesignHidden(ComponentView component) { // global
+    private boolean isStaticHidden(ComponentView component) { // static
         return entity.isDesignHidden(component);
     }
 
-    private boolean isShowIfHidden(ComponentView component) { // local
-        assert !isDesignHidden(component);
+    private boolean isShowIfHidden(ComponentView component) { // dynamic
+        assert !isStaticHidden(component);
 
-        if(isContainerHidden.isEmpty()) // optimization
+        ContainerView showIfHidableContainer = component.getShowIfHidableContainer();
+        if(showIfHidableContainer == null)
             return false;
+        assert !isStaticHidden(showIfHidableContainer);
+        assert showIfHidableContainer.isShowIfHidable();
 
-        ComponentView parent = component.getHiddenContainer();
-
-        while (parent != null) {
-            boolean hidden = parent instanceof ContainerView && (((ContainerView) parent).showIf != null && isContainerHidden.contains(parent));
-
-            if (hidden) {
-                return true;
-            }
-
-            parent = parent.getHiddenContainer();
-        }
-
-        return false;
-    }
-
-    private boolean isTabHidden(ComponentView component) { // sublocal
-        assert !isNoTabHidden(component);
-        ContainerView parent = component.getTabbedContainer();
-
-        ComponentView visible = visibleTabs.get(parent);
-        ImList<ComponentView> siblings = parent.getChildrenList();
-        if (visible == null && siblings.size() > 0) // аналогичные проверки на клиентах, чтобы при init'е не вызывать
-            visible = siblings.get(0);
-        if (!component.equals(visible))
+        if(isContainerHidden.contains(showIfHidableContainer))
             return true;
 
-        ComponentView tabContainer = parent.getTabHiddenContainer();
-        return tabContainer != null && isTabHidden(tabContainer);
+        return isShowIfHidden(showIfHidableContainer.getHiddenContainer());
+    }
+
+    private boolean isUserHidden(ComponentView component) {
+        ComponentView userHidableContainer = component.getUserHidableContainer();
+        if(userHidableContainer == null)
+            return false;
+        assert !isNoUserHidden(userHidableContainer);
+        assert userHidableContainer.isUserHidable();
+
+        ComponentView container = userHidableContainer.getHiddenContainer();
+        if(container instanceof ContainerView && ((ContainerView) container).isTabbed()) {
+            ComponentView visible = visibleTabs.get((ContainerView)container);
+            ImList<ComponentView> siblings = ((ContainerView) container).getChildrenList();
+            if (visible == null && siblings.size() > 0) // аналогичные проверки на клиентах, чтобы при init'е не вызывать
+                visible = siblings.get(0);
+            if (!userHidableContainer.equals(visible))
+                return true;
+        } else {
+            assert ((ContainerView) userHidableContainer).isCollapsible();
+            if(collapsedContainers.contains((ContainerView) userHidableContainer))
+                return true;
+        }
+
+        return isUserHidden(userHidableContainer.getHiddenContainer());
     }
 
     protected Map<ContainerView, ComponentView> visibleTabs = new HashMap<>();
+    protected Set<ContainerView> collapsedContainers = new HashSet<>();
 
     public void setTabVisible(ContainerView view, ComponentView page) throws SQLException, SQLHandledException {
         assert view.isTabbed();
         updateActiveTabProperty(page);
         visibleTabs.put(view, page);
+    }
+    
+    public void setContainerCollapsed(ContainerView container, boolean collapsed) throws SQLException, SQLHandledException {
+        if (collapsed) {
+            collapsedContainers.add(container);
+        } else {
+            collapsedContainers.remove(container);
+        }
     }
 
     private void updateActiveTabProperty(ComponentView page) throws SQLException, SQLHandledException {
@@ -1918,11 +1920,6 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
     private boolean dataUpdated(Updated updated, ChangedData changedProps, boolean hidden, ImSet<GroupObjectInstance> groupObjects) throws SQLException, SQLHandledException {
         return updated.dataUpdated(changedProps, this, getModifier(), hidden, groupObjects);
-    }
-
-    private void applyFilters() {
-        for (GroupObjectInstance group : getGroups())
-            group.applyFilters();
     }
 
     private void applyOrders() {
@@ -2138,8 +2135,9 @@ updateAsyncPropertyChanges();
             if (newStaticShown) {
                 newShown.add(drawProperty);
 
-                ComponentView tabContainer = drawComponent.getTabHiddenContainer(); // у tab container'а по сравнению с containerShowIfs есть разница, так как они оптимизированы на изменение видимости без перезапроса данных
-                boolean hidden = tabContainer != null && isTabHidden(tabContainer);
+                boolean hidden = isUserHidden(drawProperty);
+                ComponentView userHidableContainer = drawComponent.getUserHidableContainer(); // у tab container'а по сравнению с containerShowIfs есть разница, так как они оптимизированы на изменение видимости без перезапроса данных
+
                 boolean isDefinitelyShown = drawProperty.propertyShowIf == null;
                 if (!isDefinitelyShown) {
                     ImSet<GroupObjectInstance> propRowColumnGrids = drawProperty.getColumnGroupObjectsInGrid();
@@ -2153,7 +2151,7 @@ updateAsyncPropertyChanges();
                     if (read) {
                         mShowIfs.exclAdd(showIfReader, propRowColumnGrids);
                         if(hidden)
-                            hiddenNotSureShown.exclAdd(showIfReader, tabContainer);
+                            hiddenNotSureShown.exclAdd(showIfReader, userHidableContainer);
                     } else {
                         // nor static / nor dynamic visibility changed, reading from cache
                         boolean oldShown = isShown.contains(drawProperty);
@@ -2163,7 +2161,7 @@ updateAsyncPropertyChanges();
                     }
                 }
                 if(hidden && isDefinitelyShown) // помечаем component'ы которые точно показываются
-                    hiddenButDefinitelyShownSet.add(tabContainer);
+                    hiddenButDefinitelyShownSet.add(userHidableContainer);
             }
         }
         ImMap<PropertyDrawInstance.ShowIfReaderInstance, ImSet<GroupObjectInstance>> showIfs = mShowIfs.immutable();
@@ -2222,7 +2220,7 @@ updateAsyncPropertyChanges();
             return false;
         }
 
-        if (isNoTabHidden(drawComponent)) { // hidden, но без учета tab, для него отдельная оптимизация, чтобы не переобновляться при переключении "туда-назад",  связан с assertion'ом в FormInstance.isHidden
+        if (isNoUserHidden(drawComponent)) { // hidden, но без учета tab, для него отдельная оптимизация, чтобы не переобновляться при переключении "туда-назад",  связан с assertion'ом в FormInstance.isHidden
             return false;
         }
 
@@ -2288,7 +2286,7 @@ updateAsyncPropertyChanges();
                 GroupObjectInstance toDraw = drawProperty.toDraw;
                 boolean update = toDraw == null || !drawProperty.isList() || toDraw.toUpdate();
                 boolean updateCaption = update || (drawProperty.isList() && toDraw.listViewType.isPivot() && toDraw.toRefresh()); // we want to update captions when switching to pivot to avoid some unnecessary effects (blinking when default property captions are shown, especially when there are group-to-columns) since pivot really relies on caption
-                boolean hidden = isTabHidden(drawProperty);
+                boolean hidden = isUserHidden(drawProperty);
 
                 ImSet<GroupObjectInstance> propRowGrids = drawProperty.getGroupObjectsInGrid();
                 ImSet<GroupObjectInstance> propRowColumnGrids = drawProperty.getColumnGroupObjectsInGrid();
@@ -2379,7 +2377,6 @@ updateAsyncPropertyChanges();
 
         checkNavigatorDeactivated();
 
-        applyFilters();
         applyOrders();
 
         // пока сделаем тупо получаем один большой запрос

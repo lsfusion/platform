@@ -164,13 +164,6 @@ public class AlignAction extends HTMLTextEditAction {
         }
     }
     
-    private static final CSS.Attribute textAlignAttr =
-            ReflectionUtils.createByPrivateConstructor(
-                    CSS.Attribute.class,
-                    new Class[] {String.class, String.class, Boolean.TYPE},
-                    new Object[] {"text-align", null, true}
-            );
-
     protected void sourceEditPerformed(ActionEvent e, JEditorPane editor) {
         String prefix = "<p align=\"" + ALIGNMENTS[align] + "\">";
         String postfix = "</p>";

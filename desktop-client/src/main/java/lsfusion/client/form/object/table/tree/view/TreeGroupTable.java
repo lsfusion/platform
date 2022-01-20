@@ -10,7 +10,6 @@ import lsfusion.client.base.SwingUtils;
 import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.classes.ClientType;
 import lsfusion.client.classes.data.ClientRichTextClass;
-import lsfusion.client.classes.data.ClientTextClass;
 import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.object.ClientGroupObject;
@@ -28,6 +27,7 @@ import lsfusion.client.form.property.cell.controller.ClientAbstractCellEditor;
 import lsfusion.client.form.property.cell.controller.dispatch.EditPropertyDispatcher;
 import lsfusion.client.form.property.cell.view.ClientAbstractCellRenderer;
 import lsfusion.client.form.property.table.view.AsyncChangeCellTableInterface;
+import lsfusion.client.form.property.table.view.AsyncInputComponent;
 import lsfusion.client.form.property.table.view.CellTableContextMenuHandler;
 import lsfusion.client.form.property.table.view.InternalEditEvent;
 import lsfusion.client.form.view.Column;
@@ -479,7 +479,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements AsyncChangeCe
         TableColumnExt tableColumn = getColumnExt(0);
 
         hierarchicalColumn = tableColumn;
-        hierarchicalWidth = treeGroup.calculateSize();
+        hierarchicalWidth = treeGroup.getExpandWidth();
 //        setColumnSizes(tableColumn, pref, pref, pref);
 
         getColumnModel().getSelectionModel().setSelectionInterval(0, 0);
@@ -804,13 +804,17 @@ public class TreeGroupTable extends ClientFormTreeTable implements AsyncChangeCe
     }
 
     public List<Pair<Column, String>> getFilterColumns(ClientGroupObject selectedGroupObject) {
-        return model.getProperties(selectedGroupObject).stream().map(property ->
-                getSelectedColumn(property, ClientGroupObjectValue.EMPTY)
-        ).collect(Collectors.toList());
+        List<ClientPropertyDraw> properties = model.getProperties(selectedGroupObject);
+        if (properties != null) {
+            return properties.stream().map(property ->
+                    getSelectedColumn(property, ClientGroupObjectValue.EMPTY)
+            ).collect(Collectors.toList());
+        }
+        return new ArrayList<>();
     }
 
     public Pair<Column, String> getSelectedColumn(ClientPropertyDraw property, ClientGroupObjectValue columnKey) {
-        return new Pair<>(new Column(property, columnKey), property.getCaptionOrEmpty());
+        return new Pair<>(new Column(property, columnKey), property.getPropertyCaption());
     }
 
     @Override
@@ -927,6 +931,10 @@ public class TreeGroupTable extends ClientFormTreeTable implements AsyncChangeCe
 
         if (editEvent instanceof KeyEvent) {
             prepareTextEditor();
+        }
+
+        if (editorComp instanceof AsyncInputComponent) {
+            ((AsyncInputComponent) editorComp).initEditor();
         }
 
         editorComp.requestFocusInWindow();

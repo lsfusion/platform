@@ -28,10 +28,6 @@ public abstract class ARequestValueCellEditor implements RequestValueCellEditor 
     }
 
     // force cancel
-    public void cancel(Element parent) {
-        cancel(parent, CancelReason.FORCED);
-    }
-
     public void cancel(Element parent, CancelReason cancelReason) {
         editManager.cancelEditing(cancelReason);
     }

@@ -1,6 +1,5 @@
 ---
 title: 'Development'
-sidebar_label: Overview
 ---
 
 The development model includes the following concepts:

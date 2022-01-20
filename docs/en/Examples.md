@@ -1,6 +1,5 @@
 ---
 title: 'Examples'
-sidebar_label: Overview
 ---
 
 Examples are intended to demonstrate the capabilities of the **lsFusion** platform.

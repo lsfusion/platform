@@ -1,16 +1,13 @@
 package lsfusion.client.form.design.view;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.design.ClientContainer;
 import lsfusion.client.form.design.view.flex.FlexTabbedPanel;
 import lsfusion.client.form.design.view.widget.Widget;
 
-import java.awt.*;
 import java.util.ArrayList;
-import java.util.Map;
 
 import static lsfusion.base.BaseUtils.relativePosition;
 
@@ -69,7 +66,7 @@ public class TabbedClientContainerView extends AbstractClientContainerView {
             ClientComponent selectedChild = visibleChildren.get(selectedIndex);
             if (currentChild != selectedChild) {
                 currentChild = selectedChild;
-                formController.setTabVisible(container, selectedChild);
+                formController.setTabActive(container, selectedChild);
             }
         }
     }
@@ -113,18 +110,6 @@ public class TabbedClientContainerView extends AbstractClientContainerView {
         ensureTabSelection();
 
         super.updateLayout(childrenVisible);
-    }
-
-    @Override
-    public Dimension getMaxPreferredSize(Map<ClientContainer, ClientContainerView> containerViews) {
-        int selected = panel.getSelectedTab();
-        Dimension dimension;
-        if (selected != -1) {
-            dimension = getChildMaxPreferredSize(containerViews, selected);
-            dimension.height += SwingDefaults.getComponentHeight()  + 5; //little extra for borders, etc., getComponentHeight() - tab height
-            return dimension;
-        }
-        return new Dimension(0, 0);
     }
 
     private void ensureTabSelection() {

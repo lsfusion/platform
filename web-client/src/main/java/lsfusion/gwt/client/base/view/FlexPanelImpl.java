@@ -84,7 +84,7 @@ public class FlexPanelImpl {
         boolean grid = gridLines != null;
 
         parent.getStyle().setProperty("display", getDisplayValue(grid));
-        parent.getStyle().setProperty(getJustifyContentAttrName(grid, vertical), getAlignmentValue(justify, grid));
+        setFlexAlignment(parent, vertical, grid, justify);
         if(grid) {
             parent.getStyle().setProperty("gridAutoFlow", vertical ? "row" : "column");
 
@@ -95,6 +95,10 @@ public class FlexPanelImpl {
 
             parent.getStyle().setProperty(getDirectionAttrName(), getDirectionValue(vertical));
         }
+    }
+
+    public void setFlexAlignment(DivElement parent, boolean vertical, boolean grid, GFlexAlignment justify) {
+        parent.getStyle().setProperty(getJustifyContentAttrName(grid, vertical), getAlignmentValue(justify, grid));
     }
 
     public void setVisible(DivElement parent, boolean visible, boolean grid) {
@@ -125,7 +129,7 @@ public class FlexPanelImpl {
 
     public void setPreferredSize(boolean set, Element child, FlexPanel.FlexLayoutData layoutData, boolean vertical, boolean grid) {
 //        setFlex(child, layoutData.flex, set ? null : layoutData.flexBasis, layoutData.gridLine, vertical, grid, set ? false : layoutData.shrink);
-        setFlexParams(child, layoutData.flex, set ? null : layoutData.flexBasis, layoutData.gridLine, vertical, grid, layoutData.shrink);
+        setFlexParams(child, layoutData.getFlex(), set ? null : layoutData.flexBasis, layoutData.gridLine, vertical, grid, layoutData.shrink);
 
         if(layoutData.shrink) // if we have shrink we want to drop it and have actual min-size
             FlexPanel.setBaseSize(child, vertical, set ? layoutData.flexBasis : (Integer)0, false); // last parameter is false because we're setting main size
@@ -227,7 +231,7 @@ public class FlexPanelImpl {
     }
 
     public void updateFlex(FlexPanel.FlexLayoutData layoutData, Element child, boolean vertical, boolean grid) {
-        setFlex(child, layoutData.flex, layoutData.flexBasis, layoutData.gridLine, vertical, grid, layoutData.shrink);
+        setFlex(child, layoutData.getFlex(), layoutData.flexBasis, layoutData.gridLine, vertical, grid, layoutData.shrink);
     }
 
     public void updateAlignment(FlexPanel.AlignmentLayoutData layoutData, Element child, boolean vertical, boolean grid) {

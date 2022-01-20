@@ -211,7 +211,7 @@ sid '{reflection.sid.table}' = DATA ISTRING[100] (Table);
 table '{reflection.table}' (sID) = GROUP AGGR Table table WHERE table IS Table BY sid (table);
 rows '{reflection.row.table}' = DATA INTEGER (Table);
 skipVacuum '{reflection.skip.vacuum.table}' = DATA BOOLEAN (Table);
-table '{reflection.table}' = DATA Table (TableKey);
+table '{reflection.table}' = DATA Table (TableKey) NONULL DELETE;
 sidTable (TableKey tableKey) = sid(table(tableKey));
 
 CLASS TableKey '{reflection.table.key}';
@@ -229,7 +229,7 @@ overQuantity '{reflection.quantity.table.key}' (TableKey tableKey) = OVERRIDE qu
 CLASS TableColumn '{reflection.table.column}';
 TABLE tableColumn (TableColumn);
 
-table '{reflection.table.table.column}' = DATA Table(TableColumn);
+table '{reflection.table.table.column}' = DATA Table(TableColumn) NONULL DELETE;
 sid '{reflection.sid.table.column}' = DATA ISTRING[100] (TableColumn);
 tableSID (sid) = GROUP MAX Table table BY sid(table);
 

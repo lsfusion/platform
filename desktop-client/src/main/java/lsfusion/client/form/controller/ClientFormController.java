@@ -13,7 +13,6 @@ import lsfusion.base.identity.IDGenerator;
 import lsfusion.base.lambda.AsyncCallback;
 import lsfusion.base.lambda.EProvider;
 import lsfusion.base.lambda.ERunnable;
-import lsfusion.client.form.property.cell.GetAsyncValuesProvider;
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.base.TableManager;
 import lsfusion.client.base.view.ClientImages;
@@ -32,7 +31,9 @@ import lsfusion.client.form.controller.dispatch.ClientFormActionDispatcher;
 import lsfusion.client.form.controller.remote.serialization.ClientSerializationPool;
 import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.design.ClientContainer;
-import lsfusion.client.form.design.view.*;
+import lsfusion.client.form.design.view.ClientFormLayout;
+import lsfusion.client.form.design.view.FlexPanel;
+import lsfusion.client.form.design.view.TabbedClientContainerView;
 import lsfusion.client.form.design.view.widget.ComboBoxWidget;
 import lsfusion.client.form.design.view.widget.Widget;
 import lsfusion.client.form.filter.ClientRegularFilter;
@@ -40,10 +41,10 @@ import lsfusion.client.form.filter.ClientRegularFilterGroup;
 import lsfusion.client.form.filter.ClientRegularFilterWrapper;
 import lsfusion.client.form.filter.user.ClientPropertyFilter;
 import lsfusion.client.form.filter.view.SingleFilterBox;
+import lsfusion.client.form.object.ClientCustomObjectValue;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.object.ClientObject;
-import lsfusion.client.form.object.ClientCustomObjectValue;
 import lsfusion.client.form.object.table.controller.TableController;
 import lsfusion.client.form.object.table.grid.controller.GridController;
 import lsfusion.client.form.object.table.grid.user.design.GridUserPreferences;
@@ -51,6 +52,8 @@ import lsfusion.client.form.object.table.tree.ClientTreeGroup;
 import lsfusion.client.form.object.table.tree.controller.TreeGroupController;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.async.*;
+import lsfusion.client.form.property.cell.ClientAsync;
+import lsfusion.client.form.property.cell.GetAsyncValuesProvider;
 import lsfusion.client.form.property.cell.controller.dispatch.EditPropertyDispatcher;
 import lsfusion.client.form.property.cell.controller.dispatch.SimpleChangePropertyDispatcher;
 import lsfusion.client.form.property.panel.view.PanelView;
@@ -61,8 +64,8 @@ import lsfusion.client.view.MainFrame;
 import lsfusion.interop.action.*;
 import lsfusion.interop.base.remote.RemoteRequestInterface;
 import lsfusion.interop.form.UpdateMode;
-import lsfusion.interop.form.event.*;
 import lsfusion.interop.form.event.InputEvent;
+import lsfusion.interop.form.event.*;
 import lsfusion.interop.form.object.table.grid.user.design.ColumnUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.GroupObjectUserPreferences;
@@ -72,7 +75,6 @@ import lsfusion.interop.form.order.user.Order;
 import lsfusion.interop.form.print.FormPrintType;
 import lsfusion.interop.form.print.ReportGenerationData;
 import lsfusion.interop.form.print.ReportGenerator;
-import lsfusion.client.form.property.cell.ClientAsync;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 
 import javax.swing.Timer;
@@ -83,7 +85,10 @@ import java.io.*;
 import java.rmi.RemoteException;
 import java.util.List;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -167,6 +172,8 @@ public class ClientFormController implements AsyncListener {
     private final OrderedMap<Long, ModifyObject> pendingModifyObjectRequests = new OrderedMap<>();
     private final Map<ClientGroupObject, Long> pendingChangeCurrentObjectsRequests = Maps.newHashMap();
     private final Table<ClientPropertyDraw, ClientGroupObjectValue, PropertyChange> pendingChangePropertyRequests = HashBasedTable.create();
+
+    private boolean hasColumnGroupObjects;
 
     private Timer asyncTimer;
     private PanelView asyncView;
@@ -296,6 +303,9 @@ public class ClientFormController implements AsyncListener {
     // ----------------------------------- Инициализация ---------------------------------- //
     // ------------------------------------------------------------------------------------ //
     private void initializeForm(byte[] firstChanges) throws Exception {
+
+        initializeParams(); // has to be done before initializeControllers (since adding component uses getSize)
+
         initializeControllers();
 
         initializeDefaultOrders(); // now it doesn't matter, because NavigatorForm will be removed, and first changes will always be not null, but still
@@ -317,7 +327,23 @@ public class ClientFormController implements AsyncListener {
     public List<ClientPropertyDraw> getPropertyDraws() {
         return form.getPropertyDraws();
     }
-    
+
+    private void initializeParams() {
+        hasColumnGroupObjects = false;
+        for (ClientPropertyDraw property : getPropertyDraws()) {
+            if (property.hasColumnGroupObjects()) {
+                hasColumnGroupObjects = true;
+            }
+
+            ClientGroupObject groupObject = property.groupObject;
+            if(groupObject != null && property.isList && !property.hide && groupObject.columnCount < 10) {
+                groupObject.columnSumWidth += property.getValueWidthWithPadding(formLayout);
+                groupObject.columnCount++;
+                groupObject.rowMaxHeight = Math.max(groupObject.rowMaxHeight, property.getValueHeightWithPadding(formLayout));
+            }
+        }
+    }
+
     private void initializeControllers() throws IOException {
         FormUserPreferences preferences = remoteForm.getUserPreferences();
         
@@ -687,7 +713,8 @@ public class ClientFormController implements AsyncListener {
 
         ClientFormChanges formChanges = new ClientFormChanges(bFormChanges, form);
 
-        currentGridObjects.putAll(formChanges.gridObjects);
+        if(hasColumnGroupObjects) // optimization
+            currentGridObjects.putAll(formChanges.gridObjects);
 
         modifyFormChangesWithModifyObjectAsyncs(requestIndex, formChanges);
 
@@ -1133,13 +1160,24 @@ public class ClientFormController implements AsyncListener {
         }
     }
 
-    public void setTabVisible(final ClientContainer container, final ClientComponent component) {
+    public void setTabActive(final ClientContainer container, final ClientComponent component) {
         rmiQueue.asyncRequest(new ProcessServerResponseRmiRequest("setTabVisible") {
             @Override
             protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                return remoteForm.setTabVisible(requestIndex, lastReceivedRequestIndex, container.getID(), component.getID());
+                return remoteForm.setTabActive(requestIndex, lastReceivedRequestIndex, container.getID(), component.getID());
             }
         });
+    }
+
+    public void setContainerCollapsed(ClientContainer container, boolean collapsed) {
+        rmiQueue.asyncRequest(new ProcessServerResponseRmiRequest("setTabVisible") {
+            @Override
+            protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
+                return remoteForm.setContainerCollapsed(requestIndex, lastReceivedRequestIndex, container.getID(), collapsed);
+            }
+        });
+
+        formLayout.updatePanels(); // we want to avoid blinking between setting visibility and getting response (and having updatePanels there)
     }
 
     public void executeNotificationAction(final Integer idNotification) throws IOException {

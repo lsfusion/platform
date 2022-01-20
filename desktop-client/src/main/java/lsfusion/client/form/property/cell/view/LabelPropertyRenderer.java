@@ -26,15 +26,21 @@ public abstract class LabelPropertyRenderer extends PropertyRenderer {
     public JLabel getComponent() {
         if (label == null) {
             label = new JLabel() {
+                /**
+                 * Overridden for performance reasons. Copied from DefaultTableCellRenderer
+                 */
+                public void invalidate() {}
+                public void validate() {}
+                public void revalidate() {}
+
+                public void repaint(long tm, int x, int y, int width, int height) {}
+                public void repaint(Rectangle r) { }
+                public void repaint() { }
+
                 @Override
                 protected void paintComponent(Graphics g) {
                     super.paintComponent(g);
                     paintLabelComponent(g);
-                }
-
-                @Override
-                public void setText(String text) {
-                    super.setText("<html><body><nobr>" + text + "</nobr></body></html>");
                 }
             };
         }

@@ -3,6 +3,7 @@ package lsfusion.client.classes.data;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.client.ClientResourceBundle;
+import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.classes.ClientTypeClass;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.property.ClientPropertyDraw;
@@ -15,6 +16,7 @@ import lsfusion.interop.classes.DataType;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.form.property.ExtInt;
 
+import java.awt.*;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.text.ParseException;
@@ -88,6 +90,11 @@ public class ClientStringClass extends ClientDataClass {
 
         int lengthValue = length.getValue();
         return lengthValue <= 12 ? Math.max(lengthValue, 1) : (int) round(12 + pow(lengthValue - 12, 0.7));
+    }
+
+    @Override
+    public int getFullWidthString(String widthString, FontMetrics fontMetrics, ClientPropertyDraw propertyDraw) {
+        return super.getFullWidthString(widthString, fontMetrics, propertyDraw) + SwingDefaults.getCharWidthSparePixels();
     }
 
     public PropertyRenderer getRendererComponent(ClientPropertyDraw property) {

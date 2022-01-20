@@ -2247,7 +2247,8 @@ public class ScriptingLogicsModule extends LogicsModule {
             if(constraintFilter)
                 cccfs = ListFact.singleton(new CCCF<>(changeProp, classForm.virtualObject, oldContext.size())); // assuming that there is only one parameter
             
-            CFEWithParams<ClassFormSelector.VirtualObject> contextEntities = getContextFilterAndListEntities(oldContext.size(), SetFact.singletonOrder(classForm.virtualObject), ListFact.singleton(whereProp), listProp, cccfs);
+            CFEWithParams<ClassFormSelector.VirtualObject> contextEntities = getContextFilterAndListEntities(oldContext.size(), SetFact.singletonOrder(classForm.virtualObject),
+                    whereProp != null ? ListFact.singleton(whereProp) : ListFact.EMPTY(), listProp, cccfs);
             usedParams = contextEntities.usedParams;            
             
             action = addDialogInputAProp(classForm, tprop, classForm.virtualObject, oldValue != null, contextEntities.orderInterfaces, listScope, contextEntities.list, contextEntities.filters);
@@ -3839,12 +3840,13 @@ public class ScriptingLogicsModule extends LogicsModule {
         addMetaCodeFragment(fragment);
     }
 
-    public void runMetaCode(String name, List<String> params, int lineNumber, boolean enabledMeta) throws RecognitionException {
+    public void runMetaCode(String name, List<String> params, int lineNumberBefore, int lineNumberAfter, boolean enabledMeta) throws RecognitionException {
         MetaCodeFragment metaCode = findMetaCodeFragment(name, params.size());
         checks.checkMetaCodeParamCount(metaCode, params.size());
 
         String code = metaCode.getCode(params, BL.getIdFromReversedI18NDictionaryMethod(), BL::appendEntryToBundle);
-        parser.runMetaCode(this, code, metaCode.getLineNumber(), metaCode.getModuleName(), MetaCodeFragment.metaCodeCallString(name, metaCode, params), lineNumber, enabledMeta);
+        parser.runMetaCode(this, code, metaCode.getLineNumber(), metaCode.getModuleName(), 
+                MetaCodeFragment.metaCodeCallString(name, metaCode, params), lineNumberBefore, lineNumberAfter, enabledMeta);
     }
 
     private Pair<LP, LPNotExpr> addStaticClassConst(String name) throws ScriptingErrorLog.SemanticErrorException {

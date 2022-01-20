@@ -1,6 +1,5 @@
 ---
 title: 'Constraints'
-sidebar_label: Overview
 ---
 
 Constraints in the platform determine which values the [data properties](Data_properties_DATA.md) can have and which cannot. In general, a constraint is defined as a property which value should always be `NULL`.

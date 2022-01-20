@@ -16,6 +16,7 @@ public class FilePropertyEditor extends DialogBasedPropertyEditor {
     protected final boolean storeName;
     protected final boolean custom;
     protected final String[] extensions;
+    protected final boolean named;
 
     protected final JFileChooser fileChooser = new JFileChooser();
     protected boolean canceled;
@@ -30,6 +31,7 @@ public class FilePropertyEditor extends DialogBasedPropertyEditor {
         this.custom = false;
         this.multiple = multiple;
         this.storeName = storeName;
+        this.named = false;
 
         if (description == null || description.isEmpty()) {
             description = ClientResourceBundle.getString("form.editor.allfiles");
@@ -58,7 +60,7 @@ public class FilePropertyEditor extends DialogBasedPropertyEditor {
     }
 
     //custom constructor
-    public FilePropertyEditor(boolean multiple, boolean storeName) {
+    public FilePropertyEditor(boolean multiple, boolean storeName, boolean named) {
         super();
 
         setLatestCurrentDirectory();
@@ -67,6 +69,7 @@ public class FilePropertyEditor extends DialogBasedPropertyEditor {
         this.storeName = storeName;
         this.custom = true;
         this.extensions = null;
+        this.named = named;
 
         fileChooser.setAcceptAllFileFilterUsed(true);
         fileChooser.setMultiSelectionEnabled(multiple);
@@ -83,7 +86,7 @@ public class FilePropertyEditor extends DialogBasedPropertyEditor {
             File[] files = multiple ? fileChooser.getSelectedFiles() : new File[]{fileChooser.getSelectedFile()};
 
             try {
-                content = BaseUtils.filesToBytes(multiple, storeName, custom, files);
+                content = BaseUtils.filesToBytes(multiple, storeName, custom, named, files);
             } catch (Exception e) {
                 canceled = true;
                 return;

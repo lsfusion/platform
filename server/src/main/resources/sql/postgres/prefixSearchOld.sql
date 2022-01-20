@@ -9,7 +9,7 @@ RETURN to_tsquery(config,
         REPLACE(
             REGEXP_REPLACE(
                 REGEXP_REPLACE(
-                    TRIM(TRAILING ' \|' FROM querytext),
+                    TRIM(TRAILING ' \|' FROM REPLACE(querytext, ',', '|')),
                 '[\s\|]*\|[\s\|]*','|', 'g'),
             '\s+', ':* & ', 'g'),
         '|', ':* | '),

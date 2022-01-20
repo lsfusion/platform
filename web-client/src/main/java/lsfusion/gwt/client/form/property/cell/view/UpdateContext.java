@@ -8,7 +8,5 @@ public interface UpdateContext {
     
     boolean isPropertyReadOnly();
 
-    boolean isStaticHeight();
-
     boolean globalCaptionIsDrawn();
 }

@@ -3,7 +3,6 @@ package lsfusion.gwt.server.form.handlers;
 import lsfusion.client.form.property.cell.ClientAsync;
 import lsfusion.gwt.client.base.exception.AppServerNotAvailableDispatchException;
 import lsfusion.gwt.client.base.result.ListResult;
-import lsfusion.gwt.client.controller.remote.action.form.GetAsyncValues;
 import lsfusion.gwt.client.controller.remote.action.form.GetPriorityAsyncValues;
 import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.server.convert.GwtToClientConverter;

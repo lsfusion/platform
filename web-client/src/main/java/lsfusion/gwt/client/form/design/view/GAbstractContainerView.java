@@ -2,17 +2,14 @@ package lsfusion.gwt.client.form.design.view;
 
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.client.base.Dimension;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.design.view.flex.FlexTabbedPanel;
-import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import static lsfusion.gwt.client.base.GwtSharedUtils.relativePosition;
 
@@ -203,13 +200,8 @@ public abstract class GAbstractContainerView {
         GFlexAlignment alignment = component.getAlignment();
         if(alignment != GFlexAlignment.STRETCH && component.isAlignShrink())
             alignment = GFlexAlignment.STRETCH; // it is wrapped (in wrapAndOverflowView) with 0 1 size and justify-content with right alignment
-        else  {
-            Integer crossSize = component.getSize(!vertical);
-            boolean isStretch = alignment == GFlexAlignment.STRETCH;
-            if(isStretch && crossSize != null && crossSize.equals(0)) // for opposite direction and stretch zero does not make any sense (it is zero by default)
-                crossSize = null;
-            FlexPanel.setBaseSize(widget, !vertical, crossSize, !isStretch);
-        }
+        else
+            panel.setOppositeSize(widget, component.getSize(!vertical), alignment);
 
         panel.add(widget, beforeIndex, alignment, component.getFlex(), component.isShrink(), component.getSize(vertical));
 

@@ -4,6 +4,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.mutability.TwinImmutableObject;
@@ -34,6 +35,10 @@ public abstract class ActionOrPropertyObjectInstance<P extends PropertyInterface
     public ActionOrPropertyObjectInstance(T property, ImMap<P,? extends PropertyObjectInterfaceInstance> mapping) {
         this.property = property;
         this.mapping = (ImMap<P, PropertyObjectInterfaceInstance>) mapping;
+
+        ImMap<P, ? extends PropertyObjectInterfaceInstance> mapObjects;
+        // used in PropertyObjectInstance.getInputValueList for example
+        assert (mapObjects = mapping.filterFnValues(element -> element instanceof ObjectInstance)).toRevMap().size() == mapObjects.size();
     }
     
     public abstract ActionOrPropertyObjectInstance<P, ?> getRemappedPropertyObject(ImMap<? extends PropertyObjectInterfaceInstance, ? extends ObjectValue> mapKeyValues);
@@ -64,10 +69,6 @@ public abstract class ActionOrPropertyObjectInstance<P extends PropertyInterface
 
     public ImMap<P, ObjectValue> getInterfaceObjectValues() {
         return mapping.mapValues(PropertyObjectInterfaceInstance::getObjectValue);
-    }
-
-    protected ImMap<P, PropertyObjectInterfaceInstance> remap(ImMap<? extends PropertyObjectInterfaceInstance, DataObject> mapKeyValues) {
-        return mapping.replaceValues(mapKeyValues);
     }
 
     protected ImMap<P, PropertyObjectInterfaceInstance> remapSkippingEqualsObjectInstances(ImMap<? extends PropertyObjectInterfaceInstance, ? extends ObjectValue> mapKeyValues) {

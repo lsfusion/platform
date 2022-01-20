@@ -6,6 +6,7 @@ import lsfusion.base.identity.DefaultIDGenerator;
 import lsfusion.base.identity.IDGenerator;
 import lsfusion.base.identity.IdentityObject;
 import lsfusion.client.ClientResourceBundle;
+import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.form.controller.remote.serialization.ClientIdentitySerializable;
 import lsfusion.client.form.controller.remote.serialization.ClientSerializationPool;
 import lsfusion.client.form.design.ClientComponent;
@@ -29,6 +30,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import static java.lang.Math.pow;
+import static java.lang.Math.round;
 
 public class ClientGroupObject extends IdentityObject implements ClientIdentitySerializable, AbstractGroupObject<ClientComponent, String> {
 
@@ -62,6 +66,30 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
 
     public RowBackgroundReader rowBackgroundReader = new RowBackgroundReader();
     public RowForegroundReader rowForegroundReader = new RowForegroundReader();
+
+    // transient
+    public int columnSumWidth;
+    public int columnCount;
+    public int rowMaxHeight;
+
+    public int getWidth(int lines) {
+        int columnCount = this.columnCount;
+        if(lines == -1)
+            lines = Math.min(columnCount <= 3 ? columnCount : (int) round(3 + pow(columnCount - 6, 0.7)), 6);
+
+        return columnCount > 0 ? lines * columnSumWidth / columnCount : 0;
+    }
+
+    public final static int BORDER_VERT_SIZE = 1;
+
+    public int getHeight(int lines) {
+        if(lines == -1)
+            lines = 5;
+
+        return (lines * (rowMaxHeight + BORDER_VERT_SIZE)) +
+                + 3 * BORDER_VERT_SIZE // borders around grid + header border
+                ;
+    }
 
     public boolean mayHaveChildren() {
         return isRecursive || (parent != null && parent.groups.indexOf(this) != parent.groups.size() - 1);

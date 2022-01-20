@@ -235,7 +235,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
             List<List<GPropertyDraw>> columnGroups = new ArrayList<>();
             List<List<GGroupObjectValue>> columnGroupsColumnKeys = new ArrayList<>();
 
-            int rowHeight = 0;
             for (GPropertyDraw property : orderedVisibleProperties) {
                 if (property.columnsName != null && property.columnGroupObjects != null) {
                     List<GPropertyDraw> columnGroup;
@@ -257,9 +256,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
                     columnGroupsColumnKeys.add(columnKeys.get(property));
                     columnGroups.add(Collections.singletonList(property));
                 }
-                rowHeight = Math.max(rowHeight, property.getValueHeightWithPadding(font));
             }
-            setCellHeight(rowHeight);
 
             int currentIndex = 0;
             NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, GridColumn>> newColumnsMap = new NativeSIDMap<>();
@@ -487,7 +484,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     private GridColumn insertGridColumn(int index, GPropertyDraw property, GGroupObjectValue columnKey) {
         GridColumn column = new GridColumn(property, columnKey);
         GGridPropertyTableHeader header = new GGridPropertyTableHeader(this, null, null, column.isSticky());
-        GGridPropertyTableFooter footer = groupObject.hasFooters ? new GGridPropertyTableFooter(this, property, null, null) : null;
+        GGridPropertyTableFooter footer = property.hasFooter ? new GGridPropertyTableFooter(this, property, null, null) : null;
 
         insertColumn(index, column, header, footer);
 
@@ -545,8 +542,11 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
     public Object getSelectedValue(GPropertyDraw property, GGroupObjectValue columnKey) {
         GridDataRecord selectedRecord = getSelectedRowValue();
-        if (selectedRecord != null)
-            return getGridColumn(getPropertyIndex(property, columnKey)).getValue(selectedRecord);
+        if (selectedRecord != null) {
+            int column = getPropertyIndex(property, columnKey);
+            if(column >= 0)
+                return getGridColumn(column).getValue(selectedRecord);
+        }
 
         return null;
     }

@@ -32,7 +32,7 @@ public class ClientDynamicFormatFileClass extends ClientFileClass {
 
     @Override
     public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property, AsyncChangeInterface asyncChange) {
-        return new FilePropertyEditor(multiple, storeName);
+        return new FilePropertyEditor(multiple, storeName, false);
     }
 
     @Override

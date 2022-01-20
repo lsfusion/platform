@@ -109,7 +109,7 @@ public class ChangedProperty<T extends PropertyInterface> extends SessionPropert
     }
 
     protected Expr calculateExpr(ImMap<T, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
-        if(calcType.isExpr() && propChanges.isEmpty()) // оптимизация для событий
+        if(calcType.isExpr() && !hasChanges(propChanges)) // оптимизация для событий
             return Expr.NULL();
         
         WhereBuilder changedIncrementWhere = new WhereBuilder();

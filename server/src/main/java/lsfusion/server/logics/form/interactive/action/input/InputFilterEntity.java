@@ -47,10 +47,9 @@ public class InputFilterEntity<P extends PropertyInterface, V extends PropertyIn
         if(il1 == null)
             return il2;
 
-        P1 p1 = il1.singleInterface();
-        P2 p2 = il2.singleInterface();
+        ImRevMap<P1, P2> matchedInnerParams = MapFact.singletonRev(il1.singleInterface(), il2.singleInterface());
 
-        ImRevMap<P1, P2> matchedParams = il1.mapValues.innerCrossValues(il2.mapValues).addRevExcl(MapFact.singletonRev(p1, p2));
+        ImRevMap<P1, P2> matchedParams = il1.mapValues.innerCrossValues(il2.mapValues).addRevExcl(matchedInnerParams);
 
         ImRevMap<P1, JoinProperty.Interface> firstJoinParams = il1.property.interfaces.mapRevValues(JoinProperty.genInterface);
         ImRevMap<P2, JoinProperty.Interface> rightSecondParams = il2.property.interfaces.removeIncl(matchedParams.valuesSet()).mapRevValues(JoinProperty.genInterface);

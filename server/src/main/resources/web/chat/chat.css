@@ -83,8 +83,19 @@ a.chat-message-attachment {
     margin-left: 100px;
 }
 
+.chat-footer {
+    display: flex;
+    align-content: stretch;
+    justify-content: space-around;
+}
+
 .chat-time {
     color: grey
+}
+
+.chat-status {
+    margin-left: 4px;
+    color: darkgray;
 }
 
 div[lsfusion-container="chat"] .dataGridCell {

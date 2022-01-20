@@ -194,6 +194,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public LP readFile;
 
     public LP getExtension;
+    public LP inputFileName;
 
     public LP<?> imported;
     public LP importedString;
@@ -802,6 +803,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
                 getLCPByUniqueName(namePrefix + "JsonFile"),
                 getLCPByUniqueName(namePrefix + "XmlFile"),
                 getLCPByUniqueName(namePrefix + "TableFile"),
+                getLCPByUniqueName(namePrefix + "NamedFile"),
                 getLCPByUniqueName(namePrefix + "WordLink"),
                 getLCPByUniqueName(namePrefix + "ImageLink"),
                 getLCPByUniqueName(namePrefix + "PdfLink"),

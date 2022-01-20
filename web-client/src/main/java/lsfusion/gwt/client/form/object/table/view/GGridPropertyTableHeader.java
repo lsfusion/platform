@@ -103,7 +103,8 @@ public class GGridPropertyTableHeader extends Header<String> {
     public void renderAndUpdateDom(TableCellElement th) {
         Boolean sortDir = table.getSortDirection(this);
 
-        renderedCaptionElement = renderTD(th, headerHeight, sortDir, caption, false);
+        int headerHeight = this.headerHeight;
+        renderedCaptionElement = renderTD(th, headerHeight >= 0 ? headerHeight : DEFAULT_HEADER_HEIGHT, sortDir, caption, false);
         renderedSortDir = sortDir;
         renderedCaption = caption;
 
@@ -128,19 +129,15 @@ public class GGridPropertyTableHeader extends Header<String> {
 
     public final static int DEFAULT_HEADER_HEIGHT = 34;
 
-    public static Element renderTD(Element th, Boolean sortDir, String caption) {
-        return renderTD(th, DEFAULT_HEADER_HEIGHT, sortDir, caption, true);
+    public static Element renderTD(Element th, boolean defaultHeaderHeight, Boolean sortDir, String caption) {
+        return renderTD(th, defaultHeaderHeight ? DEFAULT_HEADER_HEIGHT : null, sortDir, caption, true);
     }
 
-    public static Element renderTD(Element th, int height, Boolean sortDir, String caption) {
-        return renderTD(th, height, sortDir, caption, true);
-    }
+    public static Element renderTD(Element th, Integer height, Boolean sortDir, String caption, boolean tableToExcel) {
+        if(height != null)
+            GPropertyTableBuilder.setRowHeight(th, height, tableToExcel);
 
-    public static Element renderTD(Element th, int height, Boolean sortDir, String caption, boolean tableToExcel) {
-        int setHeight = height >= 0 ? height : DEFAULT_HEADER_HEIGHT;
-        GPropertyTableBuilder.setRowHeight(th, setHeight, tableToExcel);
-
-        th = GwtClientUtils.wrapCenteredImg(th, true, setHeight, getSortImgProcesspr(sortDir));
+        th = GwtClientUtils.wrapCenteredImg(th, height, getSortImgProcesspr(sortDir));
         th.addClassName("dataGridHeaderCell-caption"); // wrap normal to have multi-line headers
         renderCaption(th, caption);
 

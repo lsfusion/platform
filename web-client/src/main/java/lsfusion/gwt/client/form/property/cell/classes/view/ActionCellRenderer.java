@@ -29,12 +29,11 @@ public class ActionCellRenderer extends CellRenderer {
     public static final String ASYNCIMAGE = "lsf-async-image";
 
     @Override
-    protected boolean isSimpleText(RenderContext renderContext) {
+    public boolean isSimpleText(RenderContext renderContext) {
         return !hasImage(renderContext);
     }
-
     @Override
-    protected boolean isSimpleText(UpdateContext updateContext) {
+    public boolean isSimpleText(UpdateContext updateContext) {
         return !hasImage(updateContext);
     }
 
@@ -117,10 +116,6 @@ public class ActionCellRenderer extends CellRenderer {
     @Override
     public int getWidthPadding() {
         return BUTTON_HORIZONTAL_PADDING;
-    }
-    @Override
-    public int getHeightPadding() {
-        return 0;
     }
 
     private static void setPadding(Style style) {

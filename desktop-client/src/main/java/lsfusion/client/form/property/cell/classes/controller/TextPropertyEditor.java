@@ -77,6 +77,7 @@ public class TextPropertyEditor extends JScrollPane implements PropertyEditor, P
             }
         });
 
+        textArea.setComponentPopupMenu(new EditorContextMenu(textArea));
     }
 
     public void clearAndHide() {

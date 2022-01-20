@@ -9,7 +9,7 @@ import java.util.ListIterator;
 
 
 public class FormFocusTraversalPolicy extends LayoutFocusTraversalPolicy {
-    private ArrayList<Component> list;
+    private ArrayList<Object> list;
 
     public FormFocusTraversalPolicy() {
         list = new ArrayList<>();
@@ -21,19 +21,23 @@ public class FormFocusTraversalPolicy extends LayoutFocusTraversalPolicy {
         if (list.size() == 0) {
             return null;
         }
-        Component c = list.get(0);
-        if (c instanceof Container) {
+        Object c = list.get(0);
+        if (c instanceof FocusComponentProvider) {
+            return ((FocusComponentProvider) c).getFocusComponent();
+        } else if (c instanceof Container) {
             return super.getDefaultComponent((Container) c);
+        } else if (c instanceof Component) {
+            return (Component) c;
         } else {
-            return c;
+            return null;
         }
     }
 
-    public void addDefault(Component c) {
+    public void addDefault(Object c) {
         list.add(c);
     }
 
-    public void removeDefault(Component c) {
+    public void removeDefault(Object c) {
         list.remove(c);
     }
 

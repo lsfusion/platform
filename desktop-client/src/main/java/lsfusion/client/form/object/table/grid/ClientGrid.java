@@ -12,6 +12,8 @@ import java.io.IOException;
 
 public class ClientGrid extends ClientComponent {
 
+    public final static int DEFAULT_HEADER_HEIGHT = 34;
+
     public boolean tabVertical = false;
     public boolean quickSearch;
     public int headerHeight;
@@ -26,6 +28,16 @@ public class ClientGrid extends ClientComponent {
     public ClientContainer record;
 
     public ClientGrid() {
+    }
+
+    @Override
+    protected Integer getDefaultWidth() {
+        return groupObject.getWidth(lineWidth);
+    }
+
+    @Override
+    protected Integer getDefaultHeight() {
+        return groupObject.getHeight(lineHeight) + (headerHeight >= 0 ? headerHeight : DEFAULT_HEADER_HEIGHT);
     }
 
     @Override

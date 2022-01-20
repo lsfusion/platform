@@ -1,6 +1,5 @@
 ---
 title: 'Operations with primitives'
-sidebar_label: Overview
 ---
 
 Оperations with primitives include operators for working with properties which values belong to the [built-in](Built-in_classes.md) classes. The platform supports the following operators:

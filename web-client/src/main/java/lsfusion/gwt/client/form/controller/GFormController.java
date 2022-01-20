@@ -449,7 +449,7 @@ public class GFormController implements EditManager {
             }
 
             GGroupObject groupObject = property.groupObject;
-            if(groupObject != null) {
+            if(groupObject != null && property.isList && !property.hide && groupObject.columnCount < 10) {
                 GFont font = groupObject.grid.font;
                 groupObject.columnSumWidth += property.getValueWidthWithPadding(font);
                 groupObject.columnCount++;
@@ -622,7 +622,7 @@ public class GFormController implements EditManager {
 
         update(fc, changesDTO.requestIndex);
 
-        formLayout.hideEmptyContainerViews(changesDTO.requestIndex);
+        formLayout.update(changesDTO.requestIndex);
 
         activateElements(fc);
 
@@ -1174,8 +1174,16 @@ public class GFormController implements EditManager {
         syncResponseDispatch(new CollapseGroupObject(group.ID, value));
     }
 
-    public void setTabVisible(GContainer tabbedPane, GComponent visibleComponent) {
-        asyncResponseDispatch(new SetTabVisible(tabbedPane.ID, visibleComponent.ID));
+    public void setTabActive(GContainer tabbedPane, GComponent visibleComponent) {
+        asyncResponseDispatch(new SetTabActive(tabbedPane.ID, visibleComponent.ID));
+        formLayout.onResize();
+    }
+    
+    public void setContainerCollapsed(GContainer container, boolean collapsed) {
+        asyncResponseDispatch(new SetContainerCollapsed(container.ID, collapsed));
+
+        formLayout.updatePanels(); // we want to avoid blinking between setting visibility and getting response (and having updatePanels there)
+
         formLayout.onResize();
     }
 
@@ -1282,20 +1290,20 @@ public class GFormController implements EditManager {
         }
     }
 
-    public void countRecords(final GGroupObject groupObject) {
+    public void countRecords(final GGroupObject groupObject, int clientX, int clientY) {
         asyncDispatch(new CountRecords(groupObject.ID), new CustomErrorHandlingCallback<NumberResult>() {
             @Override
             public void onSuccess(NumberResult result) {
-                controllers.get(groupObject).showRecordQuantity((Integer) result.value);
+                controllers.get(groupObject).showRecordQuantity((Integer) result.value, clientX, clientY);
             }
         });
     }
 
-    public void calculateSum(final GGroupObject groupObject, final GPropertyDraw propertyDraw, GGroupObjectValue columnKey) {
+    public void calculateSum(final GGroupObject groupObject, final GPropertyDraw propertyDraw, GGroupObjectValue columnKey, int clientX, int clientY) {
         asyncDispatch(new CalculateSum(propertyDraw.ID, columnKey), new CustomErrorHandlingCallback<NumberResult>() {
             @Override
             public void onSuccess(NumberResult result) {
-                controllers.get(groupObject).showSum(result.value, propertyDraw);
+                controllers.get(groupObject).showSum(result.value, propertyDraw, clientX, clientY);
             }
         });
     }
@@ -1800,7 +1808,11 @@ public class GFormController implements EditManager {
     private CellEditor cellEditor;
 
     public Element getEditElement() {
-        return editContext.getRenderElement();
+        return editContext.getEditElement();
+    }
+
+    public Element getEditEventElement() {
+        return editContext.getEditEventElement();
     }
 
     private EditContext editContext;
@@ -1893,7 +1905,7 @@ public class GFormController implements EditManager {
                                 moreResults = true;
                                 getPessimisticValues(property.ID, currentKey, actionSID, value, editIndex, fCallback);
                             } else if(values.size() == 1 && lastResult.equals(GAsync.CANCELED)) // ignoring CANCELED results
-                                return;
+                                values = null;
                         }
                         fCallback.onSuccess(new Pair<>(values, moreResults));
                     }
@@ -1958,7 +1970,7 @@ public class GFormController implements EditManager {
                 CellRenderer cellRenderer = property.getCellRenderer();
                 Pair<Integer, Integer> renderedSize = null;
                 if(property.autoSize) // we need to do it before clearRender to have actual sizes + we need to remove paddings since we're setting width for wrapped component
-                    renderedSize = new Pair<>(element.getClientWidth() - cellRenderer.getWidthPadding() * 2, element.getClientHeight() - cellRenderer.getHeightPadding() * 2);
+                    renderedSize = new Pair<>(element.getClientWidth(), element.getClientHeight());
 
                 cellRenderer.clearRender(element, renderContext); // dropping previous render
 
@@ -2043,7 +2055,7 @@ public class GFormController implements EditManager {
     public void update(EditContext editContext, Object value) {
         editContext.setValue(value);
 
-        update(editContext.getProperty(), editContext.getRenderElement(), value, editContext.getUpdateContext());
+        update(editContext.getProperty(), editContext.getEditElement(), value, editContext.getUpdateContext());
     }
     public void update(GPropertyDraw property, Element element, Object value, UpdateContext updateContext) {
         if(isEdited(element))
@@ -2053,7 +2065,7 @@ public class GFormController implements EditManager {
     }
 
     public boolean isEdited(Element element) {
-        return editContext != null && editContext.getRenderElement() == element;
+        return editContext != null && editContext.getEditElement() == element;
     }
 
     public static void setBackgroundColor(Element element, String color) {
@@ -2089,7 +2101,7 @@ public class GFormController implements EditManager {
                                        Consumer<EventHandler> onEdit, Consumer<EventHandler> onOuterEditAfter, Consumer<EventHandler> onCut,
                                        Consumer<EventHandler> onPaste, boolean panel, boolean customRenderer) {
         RequestCellEditor requestCellEditor = getRequestCellEditor();
-        boolean isPropertyEditing = requestCellEditor != null && getEditElement() == cellParent;
+        boolean isPropertyEditing = requestCellEditor != null && getEditEventElement() == cellParent;
         if(isPropertyEditing)
             requestCellEditor.onBrowserEvent(getEditElement(), handler);
 

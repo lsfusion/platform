@@ -1,6 +1,5 @@
 ---
 title: 'Interactive view'
-sidebar_label: Overview
 ---
 
 A form opened in *interactive* mode is a graphical component with a certain [design](Form_design.md) in which the user can trigger various [events](Form_events.md) and thereby navigate through system objects, view and change [property](Properties.md) values, execute [actions](Actions.md), and so on. Developers can also use an [additional set of operators](Form_operators.md) with this view, making it possible to manage the open form.

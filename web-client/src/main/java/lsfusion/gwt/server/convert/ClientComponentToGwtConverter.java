@@ -133,6 +133,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         GContainer container = initGwtComponent(clientContainer,  new GContainer());
 
         container.caption = clientContainer.caption;
+        container.collapsible = clientContainer.collapsible;
         container.horizontal = clientContainer.horizontal;
         container.tabbed = clientContainer.tabbed;
         container.childrenAlignment = convertFlexAlignment(clientContainer.childrenAlignment);
@@ -360,6 +361,8 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.notNull = clientPropertyDraw.notNull;
 
         propertyDraw.sticky = clientPropertyDraw.sticky;
+
+        propertyDraw.hasFooter = clientPropertyDraw.hasFooter;
 
 //        propertyDraw.getValueWidth(null, form); // parentFont - null потому как на этом этапе интересуют только в панели свойства (а parentFont для грида, там своя ветка)
 

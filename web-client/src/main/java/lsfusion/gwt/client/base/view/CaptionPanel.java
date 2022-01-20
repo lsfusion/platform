@@ -2,26 +2,28 @@ package lsfusion.gwt.client.base.view;
 
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.client.base.Dimension;
 import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
 
 public class CaptionPanel extends FlexPanel {
-    protected final Label legend;
+
+    protected Label legend;
     protected final DivWidget centeredLineWidget;
+    
+    protected FlexPanel legendWrapper;
 
     public CaptionPanel(String caption) {
         super(true);
-
+        
         addStyleName("captionPanel");
 
-        FlexPanel legendWrapper = new FlexPanel(true);
+        legendWrapper = new FlexPanel(false);
         legendWrapper.setStyleName("captionLegendContainerPanel");
         GwtClientUtils.setZeroZIndex(legendWrapper.getElement()); // since in captionCenteredLine we're using -1 z-index (we can't set captionPanelLegend z-index 1 since it will be above dialogs blocking masks)
 
         legend = new Label();
         legend.setStyleName("captionPanelLegend");
-        legendWrapper.add(legend);
+        legendWrapper.addCentered(legend);
 
         centeredLineWidget = new DivWidget();
         centeredLineWidget.setStyleName("captionCenteredLine");
@@ -29,7 +31,6 @@ public class CaptionPanel extends FlexPanel {
 
         add(legendWrapper, GFlexAlignment.STRETCH);
 
-        assert caption != null;
         setCaption(caption);
     }
     public CaptionPanel(String caption, Widget content) {

@@ -2,19 +2,18 @@ package lsfusion.gwt.client.form.design.view.flex;
 
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.client.base.Dimension;
-import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.view.CaptionPanel;
+import lsfusion.gwt.client.base.view.CollapsiblePanel;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
+import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.design.view.GAbstractContainerView;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class LinearContainerView extends GAbstractContainerView {
 
@@ -28,6 +27,8 @@ public class LinearContainerView extends GAbstractContainerView {
     protected FlexPanel[] captionLines;
     protected List<AlignCaptionPanel> childrenCaptions;
     protected List<Integer> childrenCaptionBaseSizes;
+    
+    private GFormController formController;
 
     private final static FlexPanel.FlexLayoutData captionLine = new FlexPanel.FlexLayoutData(0, null, false);
 
@@ -52,8 +53,9 @@ public class LinearContainerView extends GAbstractContainerView {
         return new FlexPanel.GridFixedLines(result);
     }
 
-    public LinearContainerView(GContainer container) {
+    public LinearContainerView(GFormController formController, GContainer container) {
         super(container);
+        this.formController = formController;
 
         assert !container.tabbed;
 
@@ -88,7 +90,7 @@ public class LinearContainerView extends GAbstractContainerView {
             for (int i = 0; i < linesCount; i++) {
                 FlexPanel line = new FlexPanel(vertical, flexAlignment, alignCaptions ? getLineGridLayouts(true, null, 1, false, lineShrink) : null, !vertical && wrap); // in theory true can be used instead of lineShrink
 
-                panel.add(line, panel.getWidgetCount(), GFlexAlignment.STRETCH, 1, lineShrink, lineSize);
+                panel.add(line, GFlexAlignment.STRETCH, 1, lineShrink, lineSize);
                 lines[i] = line;
 
                 if (lineSize != null) // because of non-null flex-basis column won't take content size which may then overflow over column
@@ -136,7 +138,7 @@ public class LinearContainerView extends GAbstractContainerView {
 
                 ((CaptionContainerHolder) view).setCaptionContainer((columnCaptionWidget, alignment) -> {
                     assert vertical; // because of alignCaptions first check (isVertical())
-                    captionPanel.add(columnCaptionWidget, alignment);
+                    columnCaptionWidget.add(captionPanel, alignment);
                 });
             } else
                 captionPanel = null;
@@ -154,8 +156,14 @@ public class LinearContainerView extends GAbstractContainerView {
 
     protected FlexPanel wrapBorderImpl(GComponent child) {
         GContainer childContainer;
-        if(child instanceof GContainer && (childContainer = (GContainer) child).caption != null)
-            return new CaptionPanel(childContainer.caption);
+        if (child instanceof GContainer) {
+            childContainer = (GContainer) child;
+            if (childContainer.collapsible) {
+                return new CollapsiblePanel(formController, childContainer);
+            } else if (childContainer.caption != null) {
+                return new CaptionPanel(childContainer.caption);
+            }
+        }
         return null;
     }
 
@@ -248,7 +256,7 @@ public class LinearContainerView extends GAbstractContainerView {
     public void updateLayout(long requestIndex, boolean[] childrenVisible) {
         for (int i = 0, size = children.size(); i < size; i++) {
             GComponent child = children.get(i);
-            if(child instanceof GContainer) // optimization
+            if (child instanceof GContainer) // optimization
                 childrenViews.get(i).setVisible(childrenVisible[i]);
         }
 

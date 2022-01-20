@@ -35,6 +35,9 @@ public class ClientAsync implements Serializable {
     }
 
     public static ClientAsync[] deserialize(byte[] asyncs, ClientForm form) {
+        if(asyncs == null)
+            return null;
+
         DataInputStream inStream = new DataInputStream(new ByteArrayInputStream(asyncs));
         try {
             ClientAsync[] result = new ClientAsync[inStream.readInt()];

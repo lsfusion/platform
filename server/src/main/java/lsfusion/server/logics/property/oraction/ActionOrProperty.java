@@ -76,7 +76,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
     private boolean local = false;
     
     // вот отсюда идут свойства, которые отвечают за логику представлений и подставляются автоматически для PropertyDrawEntity и PropertyDrawView
-    public LocalizedString caption;
+    public LocalizedString caption; // assert not null
 
     public LocalizedString localizedToString() {
         LocalizedString result = LocalizedString.create(getSID());
@@ -145,6 +145,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
     public abstract boolean isInInterface(ImMap<T, ? extends AndClassSet> interfaceClasses, boolean isAny);
 
     public ActionOrProperty(LocalizedString caption, ImOrderSet<T> interfaces) {
+        assert caption != null;
         this.ID = BaseLogicsModule.generateStaticNewID();
         this.caption = caption;
         this.interfaces = interfaces.getSet();

@@ -338,7 +338,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
 
     protected void getAsyncValues(String property, String value, JavaScriptObject successCallBack, JavaScriptObject failureCallBack) {
         Column column = columnMap.get(property);
-        form.getAsyncValues(value, column.property, column.columnKey, ServerResponse.VALUES, new AsyncCallback<Pair<ArrayList<GAsync>, Boolean>>() {
+        form.getAsyncValues(value, column.property, column.columnKey, ServerResponse.OBJECTS, new AsyncCallback<Pair<ArrayList<GAsync>, Boolean>>() {
             @Override
             public void onFailure(Throwable caught) {
                 if(failureCallBack != null)
@@ -347,6 +347,12 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
 
             @Override
             public void onSuccess(Pair<ArrayList<GAsync>, Boolean> result) {
+                if(result.first == null && !result.second) {
+                    if(failureCallBack != null)
+                        GwtClientUtils.call(failureCallBack);
+                    return;
+                }
+
                 JavaScriptObject[] results = new JavaScriptObject[result.first.size()];
                 for (int i = 0; i < result.first.size(); i++) {
                     JavaScriptObject object = GwtClientUtils.newObject();
@@ -364,26 +370,31 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
     }
 
     NativeHashMap<GGroupObjectValue, JavaScriptObject> oldOptionsList = new NativeHashMap<>();
-    private JavaScriptObject getDiff(JsArray<JavaScriptObject> list) {
-        NativeHashMap<GGroupObjectValue, JavaScriptObject> mappedList = new NativeHashMap<>();
-        for (int i = 0; i < list.length(); i++) {
-            JavaScriptObject object = list.get(i);
-            mappedList.put(getKey(object), list.get(i));
-        }
-
+    private JavaScriptObject getDiff(JsArray<JavaScriptObject> list, boolean supportReordering) {
         List<JavaScriptObject> optionsToAdd = new ArrayList<>();
         List<JavaScriptObject> optionsToUpdate = new ArrayList<>();
         List<JavaScriptObject> optionsToRemove = new ArrayList<>();
 
-        mappedList.foreachEntry((key, value) -> {
-            JavaScriptObject oldValue = oldOptionsList.remove(key);
+        NativeHashMap<GGroupObjectValue, JavaScriptObject> mappedList = new NativeHashMap<>();
+        for (int i = 0; i < list.length(); i++) {
+            JavaScriptObject object = list.get(i);
+            GwtClientUtils.setField(object, "index", fromNumber(i));
+            mappedList.put(getKey(object), object);
+
+            JavaScriptObject oldValue = oldOptionsList.remove(getKey(object));
             if (oldValue != null) {
-                if (!GwtClientUtils.isJSObjectPropertiesEquals(value, oldValue))
-                    optionsToUpdate.add(value);
+                if (!GwtClientUtils.isJSObjectPropertiesEquals(object, oldValue)) {
+                    if (supportReordering && Integer.parseInt(GwtClientUtils.getField(oldValue, "index").toString()) != i) {
+                        optionsToRemove.add(oldValue);
+                        optionsToAdd.add(object);
+                    } else {
+                        optionsToUpdate.add(object);
+                    }
+                }
             } else {
-                optionsToAdd.add(value);
+                optionsToAdd.add(object);
             }
-        });
+        }
 
         oldOptionsList.foreachValue(optionsToRemove::add);
         oldOptionsList = mappedList;
@@ -391,7 +402,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         JavaScriptObject object = GwtClientUtils.newObject();
         GwtClientUtils.setField(object, "add", fromObject(optionsToAdd.toArray()));
         GwtClientUtils.setField(object, "update", fromObject(optionsToUpdate.toArray()));
-        GwtClientUtils.setField(object, "remove", fromObject(optionsToRemove.toArray()));
+        GwtClientUtils.setField(object, "remove", GwtClientUtils.sortArray(fromObject(optionsToRemove.toArray()), "index", true));
         return object;
     }
 
@@ -462,8 +473,11 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             getKey: function (object) {
                 return thisObj.@GSimpleStateTableView::getKey(*)(object);
             },
-            getDiff: function (newList) {
-                return thisObj.@GSimpleStateTableView::getDiff(*)(newList);
+            getDiff: function (newList, supportReordering) {
+                return thisObj.@GSimpleStateTableView::getDiff(*)(newList, supportReordering);
+            },
+            getColorThemeName: function () {
+                return @lsfusion.gwt.client.view.MainFrame::colorTheme.@java.lang.Enum::name()();
             }
         };
     }-*/;

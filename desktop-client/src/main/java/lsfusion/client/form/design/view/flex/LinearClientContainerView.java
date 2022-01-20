@@ -1,19 +1,18 @@
 package lsfusion.client.form.design.view.flex;
 
 import lsfusion.client.base.view.ClientColorUtils;
+import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.design.ClientContainer;
 import lsfusion.client.form.design.view.AbstractClientContainerView;
 import lsfusion.client.form.design.view.CaptionPanel;
-import lsfusion.client.form.design.view.ClientContainerView;
+import lsfusion.client.form.design.view.CollapsiblePanel;
 import lsfusion.client.form.design.view.FlexPanel;
 import lsfusion.client.form.design.view.widget.Widget;
 import lsfusion.interop.base.view.FlexAlignment;
 
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class LinearClientContainerView extends AbstractClientContainerView {
 
@@ -25,9 +24,12 @@ public class LinearClientContainerView extends AbstractClientContainerView {
     protected FlexPanel[] lines;
     protected FlexPanel[] captionLines;
     protected List<AlignCaptionPanel> childrenCaptions;
+    
+    private ClientFormController formController;
 
-    public LinearClientContainerView(ClientContainer container) {
+    public LinearClientContainerView(ClientFormController formController, ClientContainer container) {
         super(container);
+        this.formController = formController;
 
         assert !container.tabbed;
 
@@ -134,9 +136,14 @@ public class LinearClientContainerView extends AbstractClientContainerView {
 
     @Override
     protected FlexPanel wrapBorderImpl(ClientComponent child) {
-        ClientContainer childContainer;
-        if(child instanceof ClientContainer && (childContainer = (ClientContainer) child).caption != null)
-            return new CaptionPanel(childContainer.caption, vertical);
+        if (child instanceof ClientContainer) {
+            ClientContainer childContainer = (ClientContainer) child;
+            if (childContainer.collapsible) {
+                return new CollapsiblePanel(formController, childContainer, vertical);
+            } else if (childContainer.caption != null) {
+                return new CaptionPanel(childContainer.caption, vertical);
+            }
+        }
         return null;
     }
 
@@ -193,46 +200,6 @@ public class LinearClientContainerView extends AbstractClientContainerView {
         }
 
         super.updateLayout(childrenVisible);
-    }
-
-    @Override
-    public Dimension getMaxPreferredSize(Map<ClientContainer, ClientContainerView> containerViews) {
-        int size = children.size();
-
-        int main = 0;
-        int opposite = 0;
-
-        if (size > 0) {
-            int rows = (size - 1) / linesCount + 1;
-            for (int i = 0; i < linesCount; i++) {
-                int lineCross = 0;
-                int lineMain = 0;
-                int captionMain = 0;
-
-                for (int j = 0; j < rows; j++) {
-                    int index = j * linesCount + i;
-                    if(index < size) {
-                        if(alignCaptions) {
-                            Dimension captionPref = calculateMaxPreferredSize(childrenCaptions.get(index));
-                            captionMain = Math.max(captionMain, vertical ? captionPref.width : captionPref.height);
-                        }
-
-                        Dimension childPref = getChildMaxPreferredSize(containerViews, index);
-
-                        ClientComponent child = children.get(index);
-                        if(child instanceof ClientContainer && ((ClientContainer) child).caption != null) // adding border
-                            childPref = getCaptionPanel((ClientContainer) child).adjustMaxPreferredSize(childPref);
-
-                        lineMain = Math.max(lineMain, vertical ? childPref.width : childPref.height);
-                        lineCross += vertical ? childPref.height : childPref.width; // captions cross is equal to lineCross
-                    }
-                }
-                opposite = Math.max(opposite, lineCross);
-                main += lineMain + captionMain;
-            }
-        }
-
-        return new Dimension(vertical ? main : opposite, vertical ? opposite : main);
     }
 
     @Override

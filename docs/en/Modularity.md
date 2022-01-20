@@ -1,6 +1,5 @@
 ---
 title: 'Modularity'
-sidebar_label: Overview
 ---
 
 Modularity is a key mechanism for providing extensibility, reusability, and effective interaction among the development team.

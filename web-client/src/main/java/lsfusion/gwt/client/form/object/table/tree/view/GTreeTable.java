@@ -30,6 +30,7 @@ import lsfusion.gwt.client.form.object.table.view.GGridPropertyTableHeader;
 import lsfusion.gwt.client.form.order.user.GGridSortableHeaderManager;
 import lsfusion.gwt.client.form.order.user.GOrder;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -165,9 +166,9 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
             if (index > -1) {
                 GridColumn gridColumn = new GridColumn(property);
-                String propertyCaption = property.getCaptionOrEmpty();
+                String propertyCaption = getPropertyCaption(property);
                 GGridPropertyTableHeader header = new GGridPropertyTableHeader(this, propertyCaption, property.getTooltipText(propertyCaption), gridColumn.isSticky());
-                GGridPropertyTableFooter footer = groupObject.hasFooters ? new GGridPropertyTableFooter(this, property, null, null) : null;
+                GGridPropertyTableFooter footer = property.hasFooter ? new GGridPropertyTableFooter(this, property, null, null) : null;
 
                 insertColumn(index, gridColumn, header, footer);
 
@@ -191,7 +192,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     private final static String TREE_NODE_ATTRIBUTE = "__tree_node";
 
     public static void renderExpandDom(Element cellElement, GTreeColumnValue treeValue) {
-//        GPropertyTableBuilder.setLineHeight(jsElement, rowHeight);
+        GPropertyTableBuilder.setRowHeight(cellElement, 0, false); // somewhy it's needed for proper indent showing
         for (int i = 0; i <= treeValue.getLevel(); i++) {
             DivElement img = createIndentElement(cellElement);
             updateIndentElement(img, treeValue, i);
@@ -366,12 +367,12 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         }
 
         @Override
-        public void renderAndUpdateDom(Cell cell, Element cellElement) {
+        public void renderAndUpdateDom(Cell cell, TableCellElement cellElement) {
             GTreeTable.renderExpandDom(cellElement, getTreeValue(cell));
         }
 
         @Override
-        public void updateDom(Cell cell, Element cellElement) {
+        public void updateDom(Cell cell, TableCellElement cellElement) {
 
             GTreeColumnValue treeValue = getTreeValue(cell);
 
@@ -424,20 +425,23 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         private static final String PDRAW_ATTRIBUTE = "__gwt_pdraw"; // actually it represents nod depth
 
         @Override
-        public void renderDom(Cell cell, Element cellElement) {
+        public void renderDom(Cell cell, TableCellElement cellElement) {
             super.renderDom(cell, cellElement);
 
             cellElement.setPropertyObject(PDRAW_ATTRIBUTE, getProperty(cell));
         }
 
         @Override
-        public void updateDom(Cell cell, Element cellElement) {
+        public void updateDom(Cell cell, TableCellElement cellElement) {
             GPropertyDraw newProperty = getProperty(cell);
             GPropertyDraw oldProperty = ((GPropertyDraw)cellElement.getPropertyObject(PDRAW_ATTRIBUTE));
             // if property changed - rerender
             if(!GwtClientUtils.nullEquals(oldProperty, newProperty) && !form.isEditing()) { // we don't want to clear editing (it will be rerendered anyway, however not sure if this check is needed)
                 if(oldProperty != null) {
-                    oldProperty.getCellRenderer().clearRender(cellElement, GTreeTable.this);
+                    if(!GPropertyTableBuilder.clearRenderSized(cellElement, oldProperty, GTreeTable.this)) {
+                        assert cellElement == GPropertyTableBuilder.getRenderSizedElement(cellElement, oldProperty, GTreeTable.this);
+                        oldProperty.getCellRenderer().clearRender(cellElement, GTreeTable.this);
+                    }
                     cellElement.setPropertyObject(PDRAW_ATTRIBUTE, null);
                 }
 
@@ -621,14 +625,10 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
     public void updateColumns() {
         if(columnsUpdated) {
-            int rowHeight = 0;
             for (int i = 1, size = getColumnCount(); i < size; i++) {
                 updatePropertyHeader(i);
                 updatePropertyFooter(i);
-
-                rowHeight = Math.max(rowHeight, getColumnPropertyDraw(i).getValueHeightWithPadding(font));
             }
-            setCellHeight(rowHeight);
 
             updateLayoutWidth();
 
@@ -810,9 +810,13 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     }
 
     public List<Pair<lsfusion.gwt.client.form.view.Column, String>> getSelectedColumns(GGroupObject selectedGroupObject) {
-        return tree.getProperties(selectedGroupObject).stream().map(property ->
-            getSelectedColumn(property, GGroupObjectValue.EMPTY)
-        ).collect(Collectors.toList());
+        List<GPropertyDraw> properties = tree.getProperties(selectedGroupObject);
+        if (properties != null) {
+            return properties.stream().map(property ->
+                    getSelectedColumn(property, GGroupObjectValue.EMPTY)
+            ).collect(Collectors.toList());
+        }
+        return new ArrayList<>();
     }
 
     public String getColumnSID(int column) {

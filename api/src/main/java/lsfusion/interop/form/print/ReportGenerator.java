@@ -2,7 +2,6 @@ package lsfusion.interop.form.print;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.*;
-import lsfusion.base.classloader.RemoteClassLoader;
 import lsfusion.base.file.IOUtils;
 import lsfusion.base.file.RawFileData;
 import lsfusion.interop.logics.remote.RemoteLogicsInterface;
@@ -98,24 +97,13 @@ public class ReportGenerator {
 
         Map<String, Object> params = new HashMap<>();
 
-        // external classloader required for correct Jasper report generation on clients
-        ClassLoader originalClassloader = Thread.currentThread().getContextClassLoader();
-        JasperPrint print;
-        try {
-            if (remoteLogics != null)
-                Thread.currentThread().setContextClassLoader(new RemoteClassLoader.ExternalClassLoader(remoteLogics));
+        iterateChildReport(rootID, params, virtualizer);
 
-            iterateChildReport(rootID, params, virtualizer);
+        JasperReport report = (JasperReport) params.get(rootID + ReportConstants.reportSuffix);
+        ReportDataSource source = (ReportDataSource) params.get(rootID + ReportConstants.sourceSuffix);
+        Map<String, Object> childParams = (Map<String, Object>) params.get(rootID + ReportConstants.paramsSuffix);
 
-            JasperReport report = (JasperReport) params.get(rootID + ReportConstants.reportSuffix);
-            ReportDataSource source = (ReportDataSource) params.get(rootID + ReportConstants.sourceSuffix);
-            Map<String, Object> childParams = (Map<String, Object>) params.get(rootID + ReportConstants.paramsSuffix);
-
-            print = JasperFillManager.fillReport(report, childParams, source);
-        } finally {
-            if (remoteLogics != null)
-                Thread.currentThread().setContextClassLoader(originalClassloader);
-        }
+        JasperPrint print = JasperFillManager.fillReport(report, childParams, source);
 
         JasperDesign rootDesign = designs.get(rootID);
         print.setProperty(SIDES_PROPERTY_NAME, rootDesign.getProperty(SIDES_PROPERTY_NAME));

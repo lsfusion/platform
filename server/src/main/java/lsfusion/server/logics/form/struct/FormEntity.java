@@ -1342,13 +1342,13 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     }
 
     @IdentityLazy
-    public ComponentUpSet getDrawLocalHideableContainers(GroupObjectEntity group) {
+    public ComponentUpSet getDrawDynamicHideableContainers(GroupObjectEntity group) {
         ComponentUpSet result = new ComponentUpSet();
         for(PropertyDrawEntity<?> property : getPropertyDrawsIt())
             if(!group.getObjects().disjoint(property.getObjectInstances())) {  // для свойств "зависящих" от группы
                 ComponentView drawComponent = getDrawComponent(property);
                 if(!isDesignHidden(drawComponent)) {
-                    ComponentView localHideableContainer = drawComponent.getLocalHideableContainer();
+                    ComponentView localHideableContainer = drawComponent.getDynamicHidableContainer();
                     if (localHideableContainer == null) // cheat / optimization
                         return null;
                     result = result.addItem(localHideableContainer);
@@ -1364,7 +1364,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
             }
         }
         for(GroupObjectEntity fixedGroupObject : mFixedGroupObjects.immutable()) {
-            ComponentUpSet drawContainers = getDrawLocalHideableContainers(fixedGroupObject);
+            ComponentUpSet drawContainers = getDrawDynamicHideableContainers(fixedGroupObject);
             if(drawContainers==null)
                 return null;
                 

@@ -4,9 +4,11 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.TooltipManager;
+import lsfusion.gwt.client.base.view.SizedWidget;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.view.flex.LinearCaptionContainer;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
+import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
 import java.util.ArrayList;
@@ -24,9 +26,6 @@ public abstract class PanelRenderer {
 
     public ArrayList<Integer> bindingEventIndices;
 
-    private String caption;
-    private String tooltip;
-
     public PanelRenderer(GFormController form, ActionOrPropertyValueController controller, GPropertyDraw property, GGroupObjectValue columnKey, LinearCaptionContainer captionContainer) {
         this.form = form;
         this.property = property;
@@ -36,7 +35,7 @@ public abstract class PanelRenderer {
     }
 
     protected void finalizeInit() {
-        setCaption(property.getCaptionOrEmpty());
+        setCaption(GGridPropertyTable.getPropertyCaption(property));
 
         Widget label = getTooltipWidget();
         TooltipManager.registerWidget(label, new TooltipManager.TooltipHelper() {
@@ -61,7 +60,10 @@ public abstract class PanelRenderer {
         }
     }
 
-    public abstract Widget getComponent();
+    public abstract SizedWidget getSizedWidget();
+    public Widget getComponent() {
+        return getSizedWidget().widget;
+    }
 
     public void updateValue(Object value) {
         this.value.updateValue(value);
@@ -71,16 +73,20 @@ public abstract class PanelRenderer {
         value.setReadOnly(readOnly);
     }
 
+    private String caption;
+    private String tooltip;
     public void setCaption(String caption) {
         if (!GwtSharedUtils.nullEquals(this.caption, caption)) {
             this.caption = caption;
-            tooltip = property.getTooltipText(caption);
+            setLabelText(property.getPanelCaption(caption));
 
-            setLabelText(property.getEditCaption(caption));
+            tooltip = property.getTooltipText(caption);
         }
     }
 
-    protected abstract Widget getTooltipWidget();
+    protected Widget getTooltipWidget() {
+        return getComponent();
+    }
 
     protected abstract void setLabelText(String text);
 

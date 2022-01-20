@@ -1,6 +1,5 @@
 ---
 title: 'User/IS interaction'
-sidebar_label: Overview
 ---
 
 This category includes operators for interacting with the user and with other information systems:

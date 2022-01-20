@@ -58,11 +58,6 @@ class CustomInput {
                 let inputElement = element.lastElementChild;
                 inputElement.value = this.parseValueFunction(value);
                 this.onEventFunction(controller)(inputElement, value);
-            },
-            clear: (element) => {
-                while (element.lastElementChild) {
-                    element.removeChild(element.lastElementChild);
-                }
             }
         }
     }

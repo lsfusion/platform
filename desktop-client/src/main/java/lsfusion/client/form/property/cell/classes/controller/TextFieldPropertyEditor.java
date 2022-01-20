@@ -96,6 +96,8 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
                 }
             });
         }
+
+        setComponentPopupMenu(new EditorContextMenu(this));
     }
 
     protected boolean disableSuggest() {
@@ -308,9 +310,6 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
                             JPanel buttonsPanel = new JPanel();
                             setBackgroundColor(buttonsPanel);
 
-                            refreshButton = new SuggestPopupButton(ClientImages.get("refresh.png"), e -> requestSuggestions());
-                            buttonsPanel.add(refreshButton);
-
                             for (int i = 0; i < actions.length; i++) {
                                 int index = i;
                                 SuggestPopupButton button = new SuggestPopupButton(ClientImages.get(actions[index] + ".png"), e -> {
@@ -321,9 +320,12 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
                                 buttonsPanel.add(button);
                             }
 
+                            refreshButton = new SuggestPopupButton(ClientImages.get("refresh.png"), e -> requestSuggestions());
+                            buttonsPanel.add(refreshButton);
+
                             buttonsTopPanel = new JPanel(new BorderLayout());
                             setBackgroundColor(buttonsTopPanel);
-                            buttonsTopPanel.add(buttonsPanel, BorderLayout.EAST);
+                            buttonsTopPanel.add(buttonsPanel, BorderLayout.WEST);
 
                             add(buttonsTopPanel);
                             setBackground(SwingDefaults.getTableCellBackground());

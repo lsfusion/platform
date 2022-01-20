@@ -7,7 +7,6 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.GFormChanges;
 import lsfusion.gwt.client.base.focus.DefaultFocusReceiver;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
-import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.HasMaxPreferredSize;
 import lsfusion.gwt.client.base.view.ResizableSimplePanel;
 import lsfusion.gwt.client.form.controller.GFormController;
@@ -22,7 +21,6 @@ import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.GObject;
 import lsfusion.gwt.client.form.object.table.GToolbar;
-import lsfusion.gwt.client.form.object.table.grid.view.GCustom;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
 import lsfusion.gwt.client.form.object.table.view.GToolbarView;
 import lsfusion.gwt.client.form.property.GFooterReader;
@@ -63,10 +61,7 @@ public abstract class GAbstractTableController extends GPropertyController imple
         }
 
         public void changeWidget(Widget widget) {
-            if(autoSize)
-                setPercentWidget(widget);
-            else
-                setFillWidget(widget);
+            setSizedWidget(widget, autoSize);
         }
 
         public void setPreferredSize(boolean set) {
@@ -121,7 +116,7 @@ public abstract class GAbstractTableController extends GPropertyController imple
     public abstract List<GFilter> getFilters();
 
     public void initFilters() {
-        filter = new GFilterController(this, getFilters(), getFormLayout().getContainerView(getFiltersContainer())) {
+        filter = new GFilterController(this, getFilters(), getFormLayout().getContainerView(getFiltersContainer()) != null) {
             @Override
             public void applyFilters(ArrayList<GPropertyFilter> conditions, boolean focusFirstComponent) {
                 changeFilter(conditions);
@@ -159,19 +154,19 @@ public abstract class GAbstractTableController extends GPropertyController imple
     }
 
     public void quickEditFilter(Event editEvent, GPropertyDraw propertyDraw, GGroupObjectValue columnKey) {
-        if (filter != null && filter.hasOwnContainer()) {
+        if (filter != null && filter.hasFiltersContainer()) {
             filter.quickEditFilter(editEvent, propertyDraw, columnKey);
         }
     }
 
     public void replaceFilter(Event event) {
-        if (filter != null && filter.hasOwnContainer()) {
+        if (filter != null && filter.hasFiltersContainer()) {
             filter.addCondition(event, true);
         }
     }
 
     public void addFilter(Event event) {
-        if (filter != null && filter.hasOwnContainer()) {
+        if (filter != null && filter.hasFiltersContainer()) {
             filter.addCondition(event, false);
         }
     }

@@ -1,6 +1,5 @@
 ---
 title: 'Operators'
-sidebar_label: Overview
 ---
 
 The platform currently supports the following property creation operators: 

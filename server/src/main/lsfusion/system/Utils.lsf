@@ -44,7 +44,7 @@ richTextToString '{utils.rich.text.to.string}' INTERNAL 'lsfusion.server.logics.
 appendToFile '{utils.append.to.file}' INTERNAL 'lsfusion.server.physics.dev.integration.external.to.file.AppendToFileAction' (STRING[1000], TEXT, STRING[10]);
 appendToFile(STRING[1000] path, TEXT text) { appendToFile(path, text, 'UTF-8'); };
 
-setExtension = FORMULA FILE 'cast_to_custom_file(($1),$2)'; // for RAWFILE, PDFFILE...
+setExtension = FORMULA FILE 'cast_static_file_to_dynamic_file(($1),$2)'; // for RAWFILE, PDFFILE...
 changeExtension(FILE file, TEXT extension) = setExtension(RAWFILE(file), extension); // for FILE
 
 // --------------------------------- Logging --------------------------------- //
@@ -97,9 +97,9 @@ resourceFiles = DATA LOCAL RAWFILE (STRING);
 readResources  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.ReadResourcesAction' (STRING);
 
 // ---------------------------------- Выполнение cmd  ---------------------------------- //
-cmd '{utils.cmd}'  INTERNAL  'lsfusion.server.physics.admin.interpreter.action.RunCommandAction' (TEXT, BOOLEAN);
-cmd '{utils.cmd}' (TEXT command)  {cmd(command, NULL); }
-cmdClient '{utils.cmd.client}' (TEXT command)  {cmd(command, TRUE); }
+cmd '{utils.cmd}' (TEXT command, TEXT directory, BOOLEAN isClient)  INTERNAL  'lsfusion.server.physics.admin.interpreter.action.RunCommandAction';
+cmd '{utils.cmd}' (TEXT command)  {cmd(command, NULL, NULL); }
+cmdClient '{utils.cmd.client}' (TEXT command)  {cmd(command, NULL, TRUE); }
 
 pingError '{utils.ping.error}' = DATA LOCAL BOOLEAN ();
 ping '{utils.ping}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.net.PingAction' (TEXT, BOOLEAN);
@@ -132,9 +132,6 @@ isWordInCSV = FORMULA NULL BOOLEAN PG 'CASE WHEN CAST($1 AS text)=ANY(string_to_
 
 getWord (TEXT p1, TEXT p2, INTEGER p3) = FORMULA NULL TEXT '(string_to_array($1,$2))[($3)]';
 wordCount (TEXT p1, TEXT p2) = FORMULA INTEGER 'array_length((string_to_array($1,$2)),1)';
-
-splitted = DATA LOCAL STRING (INTEGER);
-split (TEXT value, STRING delimiter) INTERNAL  'lsfusion.server.logics.classes.data.utils.string.SplitAction';
 
 istartsWith = FORMULA NULL BOOLEAN PG 'CASE WHEN (($1) ILIKE (($2)||\'%\')) THEN 1 ELSE NULL END', MS 'CASE WHEN (($1) LIKE (($2)+\'%\')) THEN 1 ELSE NULL END';
 startsWith = FORMULA NULL BOOLEAN PG 'CASE WHEN (($1) LIKE (($2)||\'%\')) THEN 1 ELSE NULL END', MS 'CASE WHEN (($1) LIKE (($2)+\'%\')) THEN 1 ELSE NULL END';
@@ -250,6 +247,11 @@ round6 (number) = round(number, 6);
 // ---------------------------------- Работа с датами  ---------------------------------- //
 resultMilliseconds '{utils.result.milliseconds}' = DATA LOCAL LONG();
 toMilliseconds '{utils.to.milliseconds}' INTERNAL 'lsfusion.server.logics.classes.data.utils.time.ToMillisecondsAction' (DATETIME);
+
+// ---------------------------------- JSON functions  ---------------------------------- //
+
+jsonArrayLength (TEXT j) = FORMULA INTEGER 'json_array_length(($1)::json)';
+jsonArrayElement (TEXT j, INTEGER i, STRING id) = FORMULA STRING '((($1)::json)->(($2)-1))->>($3)';
 
 // -------------------------------------------- Свойства под файлы ---------------------------- //
 

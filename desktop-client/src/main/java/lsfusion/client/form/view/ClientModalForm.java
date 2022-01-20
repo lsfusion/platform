@@ -3,6 +3,7 @@ package lsfusion.client.form.view;
 import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.form.ClientForm;
 import lsfusion.client.form.controller.ClientFormController;
+import lsfusion.client.view.MainFrame;
 import lsfusion.interop.form.event.KeyStrokes;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 
@@ -98,7 +99,7 @@ public class ClientModalForm extends JDialog {
 
         setSize(clipToScreen(showFullScreen
                              ? new Dimension(10000, 10000)
-                             : calculateMaxPreferredSize(isUndecorated())));
+                             : calculatePreferredSize(isUndecorated())));
 
         if (onScreen != null) {
             requestLocation(this, onScreen);
@@ -148,7 +149,10 @@ public class ClientModalForm extends JDialog {
         }
     }
 
-    public Dimension calculateMaxPreferredSize(boolean undecorated) {
+    public static int nativeScrollbarWidth = UIManager.getInt("ScrollBar.width");
+    public static int nativeScrollbarHeight = UIManager.getInt("ScrollBar.height"); //there is no property "ScrollBar.height"
+
+    public Dimension calculatePreferredSize(boolean undecorated) {
         //сначала нужно провалидейтать все компоненты, чтобы отработала логика autohide
 //        form.getLayout().preValidateMainContainer();
 
@@ -156,7 +160,18 @@ public class ClientModalForm extends JDialog {
         if(async) {
             return new Dimension(800, 600);
         } else {
-            Dimension preferredSize = form.getLayout().getMaxPreferredSize();
+            int horzClientOffset = 20;
+            int vertClientOffset = 100;
+
+            // there are 2 problems : rounding (we need to round up), however it coukd be fixed differently
+            // since we are changing for example grid basises (by changing fill to percent), we can get extra scrollbars in grids (which is not what we want), so we just add some extraOffset
+            int extraHorzOffset = nativeScrollbarWidth * 2;
+            int extraVertOffset = nativeScrollbarHeight * 2;
+
+            int wndWidth = MainFrame.instance.getWidth();
+            int wndHeight = MainFrame.instance.getHeight();
+
+            Dimension preferredSize = form.getLayout().getMaxPreferredSize(extraHorzOffset, extraVertOffset);
 
             // так как у нас есть только size самого contentPane, а нам нужен у JDialog
             // сколько будет занимать все "рюшечки" вокруг contentPane мы посчитать не можем, поскольку
@@ -165,7 +180,7 @@ public class ClientModalForm extends JDialog {
                 preferredSize.height += 40;
             }
 
-            return preferredSize;
+            return new Dimension(Math.min(preferredSize.width, wndWidth - horzClientOffset), Math.min(preferredSize.height, wndHeight - vertClientOffset));
         }
     }
 

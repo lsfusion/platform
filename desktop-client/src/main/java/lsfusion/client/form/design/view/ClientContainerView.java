@@ -4,9 +4,6 @@ import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.design.ClientContainer;
 import lsfusion.client.form.design.view.widget.Widget;
 
-import java.awt.*;
-import java.util.Map;
-
 public interface ClientContainerView {
     void add(ClientComponent child, Widget view);
     void remove(ClientComponent child);
@@ -20,6 +17,4 @@ public interface ClientContainerView {
     void updateCaption(ClientContainer clientContainer);
 
     void updateLayout(boolean[] childrenVisible);
-
-    Dimension getMaxPreferredSize(Map<ClientContainer, ClientContainerView> containerViews);
 }

@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.base;
 
 import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.*;
@@ -45,7 +46,7 @@ public class TooltipManager {
     }
 
     public static void registerWidget(Widget widget, final TooltipHelper tooltipHelper) {
-        widget.addDomHandler(event -> get().showTooltip(event.getClientX(), event.getClientY(), tooltipHelper), MouseOverEvent.getType());
+        widget.addDomHandler(event -> get().showTooltip(event.getClientX(), event.getClientY(), tooltipHelper, false), MouseOverEvent.getType());
         widget.addDomHandler(event -> get().hideTooltip(tooltipHelper), MouseDownEvent.getType());
         widget.addDomHandler(event -> get().hideTooltip(null), MouseOutEvent.getType());
         widget.addDomHandler(event -> get().updateMousePosition(event.getClientX(), event.getClientY()), MouseMoveEvent.getType());
@@ -54,13 +55,13 @@ public class TooltipManager {
     // the same as registerWidget, but should be used when we don't have Widget
     public static void checkTooltipEvent(NativeEvent event, TooltipHelper tooltipHelper) {
         String eventType = event.getType();
-        if (MOUSEOVER.equals(eventType)) get().showTooltip(event.getClientX(), event.getClientY(), tooltipHelper);
+        if (MOUSEOVER.equals(eventType)) get().showTooltip(event.getClientX(), event.getClientY(), tooltipHelper, false);
         else if (MOUSEOUT.equals(eventType)) get().hideTooltip(tooltipHelper);
         else if (MOUSEDOWN.equals(eventType)) get().hideTooltip(null);
         else if (MOUSEMOVE.equals(eventType)) get().updateMousePosition(event.getClientX(), event.getClientY());
     }
 
-    public void showTooltip(final int offsetX, final int offsetY, final TooltipHelper tooltipHelper) {
+    public void showTooltip(final int offsetX, final int offsetY, final TooltipHelper tooltipHelper, boolean toolbarButtonTooltip) {
         final String tooltipText = tooltipHelper.getTooltip();
         mouseX = offsetX;
         mouseY = offsetY;
@@ -77,6 +78,12 @@ public class TooltipManager {
                             GwtClientUtils.setPopupPosition(tooltip, mouseX, mouseY);
                         } else {
                             tooltip = new PopupDialogPanel() {
+                                //if the previous focused element goes outside the visible area, the page will scroll to it when the tooltip is closed
+                                @Override
+                                public void setFocusedElement(Element focusedElement) {
+                                    super.setFocusedElement(null);
+                                }
+
                                 @Override
                                 protected void onAttach() {
                                     addDomHandler(ev -> tooltipFocused = true, MouseOverEvent.getType());
@@ -94,7 +101,8 @@ public class TooltipManager {
 
                             VerticalPanel panel = new VerticalPanel();
                             panel.add(new FocusPanel(tooltipHtml));
-                            addDebugLink(tooltipHelper, panel);
+                            if (!toolbarButtonTooltip)
+                                addDebugLink(tooltipHelper, panel);
 
                             GwtClientUtils.showPopupInWindow(tooltip, panel, mouseX, mouseY);
                         }
@@ -104,7 +112,7 @@ public class TooltipManager {
                     }
                 }
                 return false;
-            }, DELAY_SHOW);
+            }, toolbarButtonTooltip ? 0 : DELAY_SHOW);
         }
     }
 

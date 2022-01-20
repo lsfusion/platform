@@ -52,6 +52,7 @@ public class ContextFilterEntity<P extends PropertyInterface, V extends Property
 
     public InputFilterEntity<?, V> getInputFilterEntity(O object, ImRevMap<O, V> mapping) {
         assert mapObjects.containsValue(object);
+        assert !mapping.containsKey(object);
         // just like in InputListEntity.mapInner we will ignore the cases when there are not all objects
         ImRevMap<P, V> mappedObjects = mapObjects.innerJoin(mapping);
         if(mappedObjects.size() != mapObjects.size() - 1)

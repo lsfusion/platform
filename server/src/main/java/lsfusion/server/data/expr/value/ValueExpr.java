@@ -8,6 +8,7 @@ import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.comb.map.GlobalObject;
 import lsfusion.base.file.FileData;
+import lsfusion.base.file.NamedFileData;
 import lsfusion.base.file.RawFileData;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.base.caches.ManualLazy;
@@ -30,6 +31,7 @@ import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.LogicalClass;
 import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.data.file.DynamicFormatFileClass;
+import lsfusion.server.logics.classes.data.file.NamedFileClass;
 import lsfusion.server.logics.classes.data.file.StaticFormatFileClass;
 import lsfusion.server.logics.classes.data.integral.DoubleClass;
 import lsfusion.server.logics.classes.data.integral.IntegerClass;
@@ -45,6 +47,14 @@ public class ValueExpr extends AbstractValueExpr<ConcreteClass> implements Value
     public final Object object;
 
     public Value removeBig(MAddSet<Value> usedValues) {
+        if(objectClass instanceof NamedFileClass && ((NamedFileData)object).getLength() > 1000) {
+            int i=usedValues.size();
+            while(true) {
+                Value removeValue = new ValueExpr(new NamedFileData(new FileData(new RawFileData(new BigInteger(""+(i++)).toByteArray()), ""), ""), (NamedFileClass)objectClass);
+                if(!usedValues.contains(removeValue))
+                    return removeValue;
+            }
+        }
         if(objectClass instanceof DynamicFormatFileClass && ((FileData)object).getLength() > 1000) {
             int i=usedValues.size();
             while(true) {

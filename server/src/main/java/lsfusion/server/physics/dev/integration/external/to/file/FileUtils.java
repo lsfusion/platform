@@ -4,14 +4,12 @@ import com.google.common.base.Throwables;
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.SftpATTRS;
 import com.jcraft.jsch.SftpException;
+import lsfusion.base.BaseUtils;
 import lsfusion.base.ExceptionUtils;
 import lsfusion.base.file.*;
 import org.apache.commons.net.ftp.FTPFile;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.SQLException;
@@ -425,6 +423,18 @@ public class FileUtils {
                 if (!srcFile.exists())
                     destFile.delete();
             }
+        }
+    }
+
+    public static String runCmd(String command, String directory) throws IOException {
+        Process p = Runtime.getRuntime().exec(command, null, new File(directory));
+        try (BufferedInputStream err = new BufferedInputStream(p.getErrorStream())) {
+            StringBuilder errS = new StringBuilder();
+            byte[] b = new byte[1024];
+            while (err.read(b) != -1) {
+                errS.append(new String(b, "cp866").trim()).append("\n");
+            }
+            return BaseUtils.trimToNull(errS.toString());
         }
     }
 }

@@ -1,6 +1,5 @@
 ---
 title: 'System parameters'
-sidebar_label: Overview
 ---
 
 ### [Launch parameters](Launch_parameters.md)

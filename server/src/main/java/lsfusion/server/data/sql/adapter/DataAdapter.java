@@ -27,15 +27,12 @@ import lsfusion.server.physics.admin.log.ServerLoggers;
 import org.apache.log4j.Logger;
 import org.springframework.util.PropertyPlaceholderHelper;
 
+import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -170,21 +167,37 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
     protected Connection ensureConnection;
 
     protected void executeEnsure(String command) {
-        try (Statement statement = ensureConnection.createStatement()) {
-            statement.execute(command);
+        try {
+            executeEnsureWithException(command);
         } catch (SQLException e) {
             ServerLoggers.sqlSuppLog(e);
         }
     }
 
+    public static Set<String> disabledFunctions = new HashSet<>();
     protected void executeEnsure(List<String> functions) {
         functions.forEach(command -> {
             try {
-                executeEnsure(IOUtils.readStreamToString(ResourceUtils.getResourceAsStream(command)));
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+                executeEnsureWithException(IOUtils.readStreamToString(ResourceUtils.getResourceAsStream(command)));
+            } catch (IOException | SQLException e) {
+                String name = new File(command).getName();
+                if (name.endsWith("_opt.sql")) {
+                    disabledFunctions.add(name);
+                } else {
+                    throw new RuntimeException(command, e);
+                }
             }
         });
+    }
+
+    public static boolean hasTrgmExtension() {
+        return !disabledFunctions.contains("trgm_opt.sql");
+    }
+
+    protected void executeEnsureWithException(String command) throws SQLException {
+        try (Statement statement = ensureConnection.createStatement()) {
+            statement.execute(command);
+        }
     }
 
     protected MAddExclMap<ConcatenateType, Boolean> ensuredConcTypes = MapFact.mAddExclMap();

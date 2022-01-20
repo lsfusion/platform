@@ -1,19 +1,21 @@
 package lsfusion.client.form.design.view;
 
-import lsfusion.client.form.design.view.widget.Widget;
-
-import java.awt.*;
-
 public class CaptionPanel extends FlexPanel {
     public CaptionPanel(String caption, boolean vertical) {
         super(vertical);
 
-        titledBorder = new TitledBorder(caption);
+        titledBorder = createBorder(caption);
 //                updateCaption();
         setBorder(titledBorder);
+        addMouseListener(titledBorder);
+        addMouseMotionListener(titledBorder);
     }
 
-    private TitledBorder titledBorder;
+    protected TitledBorder titledBorder;
+    
+    protected TitledBorder createBorder(String caption) {
+        return new TitledBorder(caption);
+    }
 
 //        @Override
 //        public boolean isValidateRoot() {
@@ -35,14 +37,6 @@ public class CaptionPanel extends FlexPanel {
 //            }
 //            super.validateTree();
 //        }
-
-    public Dimension getMaxPreferredSize() {
-        return adjustMaxPreferredSize(AbstractClientContainerView.calculateMaxPreferredSize((Widget)getComponent(1)));
-    }
-
-    public Dimension adjustMaxPreferredSize(Dimension dimension) {
-        return new Dimension(dimension.width + 5, dimension.height + /*legend.getOffsetHeight() + */5);
-    }
 
     public void setCaption(String caption) {
 //            titledBorder.setTitle(caption);

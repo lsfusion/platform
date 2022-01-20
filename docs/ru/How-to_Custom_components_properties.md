@@ -71,9 +71,6 @@ json (Message m) =
 Функция _render_ принимает на вход элемент, внутри которого должны создаваться новые элементы, необходимые для отображения данных:
 ```js
 render: function (element) { 
-    element.style.removeProperty("max-height");
-    element.parentElement.style.removeProperty("height");
-
     let message = document.createElement("div")
     message.classList.add("chat-message");
 

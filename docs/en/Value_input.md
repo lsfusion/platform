@@ -1,6 +1,5 @@
 ---
 title: 'Value input'
-sidebar_label: Overview
 ---
 
 This category includes operators responsible for inputting a value:

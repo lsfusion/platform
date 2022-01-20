@@ -1,11 +1,9 @@
 package lsfusion.gwt.client.form.property.panel.view;
 
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
-import lsfusion.gwt.client.base.Pair;
+import lsfusion.gwt.client.base.view.SizedWidget;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.view.flex.LinearCaptionContainer;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
@@ -18,22 +16,19 @@ public class ActionPanelRenderer extends PanelRenderer {
 
 //    private final GFormController form;
 
+    private final SizedWidget sizedView;
+
     public ActionPanelRenderer(final GFormController form, ActionOrPropertyValueController controller, final GPropertyDraw property, GGroupObjectValue columnKey, LinearCaptionContainer captionContainer) {
         super(form, controller, property, columnKey, captionContainer);
 
-        value.setDynamic(false);
+        sizedView = value.setSized(true, false, null);
 
         finalizeInit();
     }
 
     @Override
-    public Widget getComponent() {
-        return value;
-    }
-
-    @Override
-    protected Widget getTooltipWidget() {
-        return value;
+    public SizedWidget getSizedWidget() {
+        return sizedView;
     }
 
     // hack, assert that render element is rendered with ActionCellRenderer

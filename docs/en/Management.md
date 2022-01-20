@@ -1,6 +1,5 @@
 ---
 title: 'Management'
-sidebar_label: Overview
 ---
 
 ### [System parameters](System_parameters.md)

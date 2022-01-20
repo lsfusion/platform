@@ -24,11 +24,6 @@ public class TreeView extends FlexPanel {
         addFillFlex(new ScrollPaneWidget(groupTree), null);
     }
 
-    @Override
-    public Dimension getMaxPreferredSize() { // ради этого вся ветка maxPreferredSize и делалась
-        return groupTree.getMaxPreferredSize(getPreferredSize());
-    }
-
     public TreeGroupTable getTree() {
         return groupTree;
     }

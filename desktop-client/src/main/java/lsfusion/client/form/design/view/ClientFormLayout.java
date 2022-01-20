@@ -9,6 +9,7 @@ import lsfusion.client.form.design.view.flex.LinearClientContainerView;
 import lsfusion.client.form.design.view.widget.PanelWidget;
 import lsfusion.client.form.design.view.widget.Widget;
 import lsfusion.client.form.object.ClientGroupObject;
+import lsfusion.client.form.object.table.grid.view.GridView;
 import lsfusion.client.view.MainFrame;
 
 import javax.swing.*;
@@ -19,8 +20,28 @@ import java.util.Map;
 
 public class ClientFormLayout extends PanelWidget {
 
-    public Dimension getMaxPreferredSize() {
-        return AbstractClientContainerView.getMaxPreferredSize(mainContainer,containerViews, false); // в BOX container'е берем явный size (предполагая что он используется не как базовый размер с flex > 0, а конечный)
+    public Dimension getMaxPreferredSize(int extraHorzOffset, int extraVertOffset) {
+        Integer width = mainContainer.getSize(false);
+        Integer height = mainContainer.getSize(true);
+
+        Widget main = getMainView();
+        try {
+            GridView.calcMaxPrefSize = true;
+            Dimension maxPrefSize = main.getPreferredSize();
+            return new Dimension(width != null ? width : maxPrefSize.width + extraHorzOffset, height != null ? height : maxPrefSize.height + extraVertOffset);
+        } finally {
+            GridView.calcMaxPrefSize = false;
+            invalidate((Component) main);
+        }
+    }
+
+    private void invalidate(Component component) {
+        for (Component child : ((Container) component).getComponents()) {
+            child.invalidate();
+            if (child instanceof Container) {
+                invalidate(child);
+            }
+        }
     }
 
     private final ClientFormController form;
@@ -76,6 +97,10 @@ public class ClientFormLayout extends PanelWidget {
         enableEvents(AWTEvent.MOUSE_EVENT_MASK);
     }
 
+    public Widget getMainView() {
+        return getContainerView(mainContainer).getView();
+    }
+
     public void directProcessKeyEvent(KeyEvent e) {
         processKeyEvent(e);
     }
@@ -90,7 +115,7 @@ public class ClientFormLayout extends PanelWidget {
         if (container.tabbed) {
             containerView = new TabbedClientContainerView(form, container);
         } else {
-            containerView = new LinearClientContainerView(container);
+            containerView = new LinearClientContainerView(form, container);
         }
 
         containerViews.put(container, containerView);
@@ -109,8 +134,14 @@ public class ClientFormLayout extends PanelWidget {
         }
     }
 
+    public void updatePanels() {
+        FlexPanel.updatePanels(getMainView());
+    }
+
     public void autoShowHideContainers() { // hideEmptyContainerViews
         autoShowHideContainers(mainContainer);
+
+        updatePanels();
     }
 
     private boolean autoShowHideContainers(ClientContainer container) {
@@ -139,13 +170,21 @@ public class ClientFormLayout extends PanelWidget {
     private Map<ClientComponent, Widget> baseComponentViews = new HashMap<>();
 
     public void addBaseComponent(ClientComponent component, Widget view) {
+        addBaseComponent(component, view, view.getComponent());
+    }
+
+    public void addBaseComponent(ClientComponent component, Widget view, Object focusReceiver) {
         assert !(component instanceof ClientContainer);
         baseComponentViews.put(component, view);
-        add(component, view);
+        add(component, view, focusReceiver);
     }
 
     // добавляем визуальный компонент
     public boolean add(ClientComponent key, Widget view) {
+        return add(key, view, view.getComponent());
+    }
+
+    public boolean add(ClientComponent key, Widget view, Object focusReceiver) {
         if (key.container != null) { // container can be null when component should be layouted manually
             ClientContainerView containerView = containerViews.get(key.container);
             if (containerView != null && !containerView.hasChild(key)) {
@@ -155,7 +194,7 @@ public class ClientFormLayout extends PanelWidget {
                 containerView.add(key, view);
 
                 if (key.defaultComponent) {
-                    policy.addDefault(view.getComponent());
+                    policy.addDefault(focusReceiver);
                 }
                 return true;
             }

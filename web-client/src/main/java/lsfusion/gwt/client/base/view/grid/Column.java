@@ -16,6 +16,7 @@
 package lsfusion.gwt.client.base.view.grid;
 
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.TableCellElement;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
 
@@ -30,9 +31,9 @@ public abstract class Column<T, C> {
 
   public abstract void onEditEvent(EventHandler handler, Cell editCell, Element editCellParent);
 
-  public abstract void renderAndUpdateDom(Cell cell, Element cellElement);
+  public abstract void renderAndUpdateDom(Cell cell, TableCellElement cellElement);
 
-  public abstract void updateDom(Cell cell, Element cellElement);
+  public abstract void updateDom(Cell cell, TableCellElement cellElement);
 
   public abstract boolean isCustomRenderer();
 }
