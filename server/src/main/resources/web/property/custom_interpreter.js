@@ -1,12 +1,18 @@
 function interpreter() {
     return {
         render: function (element) {
+            // we need to wrap editor to easily clear element afterwards (since ace modifies it)
+            // plus it seems that added keydown and paste handlers are overrided / ignored with gwt element handlers
+            let editorElement = document.createElement('div');
+            editorElement.style.width = "100%";
+            editorElement.style.height = "100%";
+            element.appendChild(editorElement);
+
             //"lsfWorkerType" option is either put first when the editor is created, or put after it is created, but you have to update the mode. lsfWorkerType: script, action, form
-            var aceEditor = ace.edit(element, {
+            var aceEditor = ace.edit(editorElement, {
                 enableLiveAutocompletion: true,
                 showPrintMargin: false
             });
-
             element.aceEditor = aceEditor;
 
             aceEditor.container.addEventListener('keydown', function (e) {
