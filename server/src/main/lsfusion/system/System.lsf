@@ -260,14 +260,22 @@ importedString = DATA LOCAL BOOLEAN (STRING[10]);
 
 readFile = DATA LOCAL FILE ();
 
-namedFileName(NAMEDFILE file) = FORMULA TEXT 'get_named_file_name($1)';
-namedFileExtension(NAMEDFILE file) = FORMULA TEXT 'get_named_file_extension($1)';
-fileExtension(FILE file) = FORMULA TEXT 'get_extension($1)';
-extension = fileExtension(FILE(file));
+//cast to FILE and NAMEDFILE
+file(RAWFILE rawFile, STRING extension) = FORMULA FILE 'cast_static_file_to_dynamic_file($1, $2)';
+namedFile(RAWFILE rawFile, STRING name, STRING extension) = FORMULA NAMEDFILE 'cast_static_file_to_named_file($1, $2, $3)';
+namedFile(FILE file, STRING name) = FORMULA NAMEDFILE 'cast_dynamic_file_to_named_file($1, $2)';
 
-getFileExtension(FILE file) = fileExtension(file); //backward compatibility
+//get name and extension
+extension(FILE file) = FORMULA TEXT 'get_extension($1)';
+name(NAMEDFILE file) = FORMULA TEXT 'get_named_file_name($1)';
+extension(NAMEDFILE file) = FORMULA TEXT 'get_named_file_extension($1)';
+
+getFileExtension(FILE file) = extension(file); //backward compatibility
 getExtension = getFileExtension(FILE(file)); //backward compatibility
 
+//change name and extension
+file(FILE file, STRING newExtension) = file(RAWFILE(file), newExtension);
+namedFile(NAMEDFILE file, STRING newName, STRING newExtension) = namedFile(RAWFILE(file), newName, newExtension);
 
 downloadFile '{system.download.file}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.DownloadFileAction' (STRING[100]); 
 
