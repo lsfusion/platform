@@ -143,7 +143,7 @@ isSubstring = FORMULA NULL BOOLEAN PG 'CASE WHEN position(($2) in ($1)) > 0 THEN
 
 replace (TEXT p1, TEXT p2, TEXT p3) = FORMULA TEXT 'replace($1,$2,$3)';
 
-length (TEXT p1) = FORMULA INTEGER PG 'length($1)', MS 'len($1)';
+length = FORMULA INTEGER PG 'length($1)', MS 'len($1)';
 
 strpos (TEXT string, TEXT substring) = FORMULA INTEGER PG 'strpos($1, $2)', MS 'charindex($2, $1)'; 
 regexpReplace (STRING source, STRING pattern, STRING replace, STRING flags) = FORMULA STRING PG 'REGEXP_REPLACE($1, $2, $3, $4)'; 
