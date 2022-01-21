@@ -1797,7 +1797,7 @@ contextIndependentPD[List<TypedParameter> context, boolean dynamic, boolean inne
 }
 	: 	dataDef=dataPropertyDefinition[context, innerPD] { $property = $dataDef.property; $signature = $dataDef.signature; }
 	|	abstractDef=abstractPropertyDefinition[context, innerPD] { $property = $abstractDef.property; $signature = $abstractDef.signature; }
-	|	formulaProp=formulaPropertyDefinition { $property = $formulaProp.property; $signature = $formulaProp.signature; }
+	|	formulaProp=formulaPropertyDefinition[context, innerPD] { $property = $formulaProp.property; $signature = $formulaProp.signature; }
 	|	aggrDef=aggrPropertyDefinition[context, dynamic, innerPD] { $property = $aggrDef.property; $signature = $aggrDef.signature; $usedContext = $aggrDef.usedContext; }
 	|	goProp=groupObjectPropertyDefinition { $property = $goProp.property; $signature = $goProp.signature; }
 	|	reflectionDef=reflectionPropertyDefinition { $property = $reflectionDef.property; $signature = $reflectionDef.signature;  }
@@ -2213,7 +2213,7 @@ roundPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [
 	:	'ROUND' '(' expr=propertyExpression[context, dynamic] (',' scaleExpr = propertyExpression[context, dynamic] )? ')'
 	;
 
-formulaPropertyDefinition returns [LP property, List<ResolveClassSet> signature]
+formulaPropertyDefinition[List<TypedParameter> context, boolean innerPD] returns [LP property, List<ResolveClassSet> signature]
 @init {
 	String className = null;
 	boolean hasNotNullCondition = false;
@@ -2221,7 +2221,8 @@ formulaPropertyDefinition returns [LP property, List<ResolveClassSet> signature]
 @after {
 	if (inMainParseState()) {
 		$property = self.addScriptedSFProp(className, $synt.types, $synt.strings, hasNotNullCondition);
-		$signature = Collections.<ResolveClassSet>nCopies($property.listInterfaces.size(), null);
+		List<ResolveClassSet> contextParams = self.getClassesFromTypedParams(context);
+        $signature = innerPD || contextParams.isEmpty() ? Collections.<ResolveClassSet>nCopies($property.listInterfaces.size(), null) : contextParams;
 	}
 }
 	:	'FORMULA'
