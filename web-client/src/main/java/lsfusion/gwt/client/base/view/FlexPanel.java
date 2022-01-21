@@ -253,7 +253,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
 
         @Override
         public String getString() {
-            return "repeat(auto-fit," + FlexPanelImpl.getLineSizeString(lineSize.getFlex(), lineSize.flexBasis, lineSize.shrink) + ")";
+            return "repeat(auto-fit," + FlexPanelImpl.getLineSizeString(lineSize.getFlex(), lineSize.getFlexBasis(), lineSize.shrink) + ")";
         }
 
         @Override
@@ -289,7 +289,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
             String[] gridColumnStrings = new String[lines.length];
             for(int i = 0; i < lines.length; i++) {
                 FlexPanel.FlexLayoutData gridColumn = lines[i];
-                gridColumnStrings[i] = FlexPanelImpl.getLineSizeString(gridColumn.getFlex(), gridColumn.flexBasis, gridColumn.shrink);
+                gridColumnStrings[i] = FlexPanelImpl.getLineSizeString(gridColumn.getFlex(), gridColumn.getFlexBasis(), gridColumn.shrink);
             }
             return GwtSharedUtils.toString(" ", gridColumnStrings.length, gridColumnStrings);
         }
@@ -356,6 +356,13 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
         public void setFlexBasis(Integer flexBasis) {
             this.flexBasis = flexBasis;
             baseFlexBasis = flexBasis;
+        }
+        
+        public Integer getFlexBasis() {
+            if (flexModifier == FlexModifier.COLLAPSE) {
+                return null;
+            }
+            return flexBasis;
         }
 
         public FlexLayoutData(double flex, Integer flexBasis, boolean shrink) {

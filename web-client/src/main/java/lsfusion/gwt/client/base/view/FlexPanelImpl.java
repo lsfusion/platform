@@ -129,10 +129,10 @@ public class FlexPanelImpl {
 
     public void setPreferredSize(boolean set, Element child, FlexPanel.FlexLayoutData layoutData, boolean vertical, boolean grid) {
 //        setFlex(child, layoutData.flex, set ? null : layoutData.flexBasis, layoutData.gridLine, vertical, grid, set ? false : layoutData.shrink);
-        setFlexParams(child, layoutData.getFlex(), set ? null : layoutData.flexBasis, layoutData.gridLine, vertical, grid, layoutData.shrink);
+        setFlexParams(child, layoutData.getFlex(), set ? null : layoutData.getFlexBasis(), layoutData.gridLine, vertical, grid, layoutData.shrink);
 
         if(layoutData.shrink) // if we have shrink we want to drop it and have actual min-size
-            FlexPanel.setBaseSize(child, vertical, set ? layoutData.flexBasis : (Integer)0, false); // last parameter is false because we're setting main size
+            FlexPanel.setBaseSize(child, vertical, set ? layoutData.getFlexBasis() : (Integer)0, false); // last parameter is false because we're setting main size
     }
 
     public void setGridLines(Element parent, int count, boolean vertical) {
@@ -231,7 +231,7 @@ public class FlexPanelImpl {
     }
 
     public void updateFlex(FlexPanel.FlexLayoutData layoutData, Element child, boolean vertical, boolean grid) {
-        setFlex(child, layoutData.getFlex(), layoutData.flexBasis, layoutData.gridLine, vertical, grid, layoutData.shrink);
+        setFlex(child, layoutData.getFlex(), layoutData.getFlexBasis(), layoutData.gridLine, vertical, grid, layoutData.shrink);
     }
 
     public void updateAlignment(FlexPanel.AlignmentLayoutData layoutData, Element child, boolean vertical, boolean grid) {
@@ -260,7 +260,7 @@ public class FlexPanelImpl {
 
     public void fixFlexBasis(Widget widget, boolean vertical, boolean grid) {
         FlexPanel.FlexLayoutData layoutData = ((FlexPanel.WidgetLayoutData) widget.getLayoutData()).flex;
-        if(layoutData.flexBasis != null)
+        if(layoutData.getFlexBasis() != null)
             return;
 
         Element element = widget.getElement();
