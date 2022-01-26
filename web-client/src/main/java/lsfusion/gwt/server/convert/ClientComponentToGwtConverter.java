@@ -4,7 +4,6 @@ import com.google.gwt.event.dom.client.KeyCodes;
 import lsfusion.client.classes.ClientActionClass;
 import lsfusion.client.classes.data.ClientFileClass;
 import lsfusion.client.form.ClientForm;
-import lsfusion.client.form.classes.ClientClassChooser;
 import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.design.ClientContainer;
 import lsfusion.client.form.filter.ClientRegularFilter;
