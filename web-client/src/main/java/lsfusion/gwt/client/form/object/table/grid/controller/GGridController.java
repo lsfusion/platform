@@ -67,10 +67,6 @@ public class GGridController extends GAbstractTableController {
         return groupObject.mapTileProvider;
     }
 
-    public boolean isGridAutosize() {
-        return groupObject.grid.autoSize;
-    }
-
     public GGridController(GFormController iformController, GGroupObject groupObject, GGridUserPreferences[] userPreferences) {
         super(iformController, groupObject.toolbar, isList(groupObject));
         this.groupObject = groupObject;

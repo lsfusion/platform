@@ -131,7 +131,6 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         return treeGroup.groups.size() > 0 ? treeGroup.groups.get(treeGroup.groups.size() - 1) : null;
     }
 
-    @Override
     protected boolean isAutoSize() {
         return autoSize;
     }

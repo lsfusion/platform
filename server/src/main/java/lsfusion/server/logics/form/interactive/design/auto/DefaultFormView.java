@@ -273,8 +273,6 @@ public class DefaultFormView extends FormView {
             registerComponent(filterGroupsContainers, groupSet.getFilterGroupsContainer(), groupObject, version);
             registerComponent(toolbarContainers, groupSet.getToolbarContainer(), groupObject, version);
 
-            addClassChoosers(groupSet.getGridBoxContainer(), groupObject, version);
-
             if (groupObject.entity.isPanel()) { // если groupObject идет в панель, то grid'а быть не может, и если box не выставить не 0, он не будет брать весь размер
                 groupSet.getBoxContainer().setFlex(0);
             }
@@ -293,25 +291,6 @@ public class DefaultFormView extends FormView {
                 objectsContainer.addBefore(boxContainer, neighbourBox, version);
         } else {
             objectsContainer.add(boxContainer, version);
-        }
-    }
-
-    private void addClassChoosers(ContainerView gridBox, GroupObjectView groupObject, Version version) {
-        if (groupObject.size() == 1) {
-            gridBox.addFirst(groupObject.get(0).classChooser, version);
-        } else if (groupObject.size() > 1) {
-            List<ContainerView> containers = new ArrayList<>();
-            for (int i = 0; i < groupObject.size() - 1; i++) {
-                ContainerView container = createContainer(version);
-                container.setType(ContainerType.HORIZONTAL_SPLIT_PANE);
-                container.add(groupObject.get(i).classChooser, version);
-                containers.add(container);
-            }
-            containers.get(containers.size() - 1).add(groupObject.get(groupObject.size() - 1).classChooser, version);
-            for (int i = containers.size() - 1; i > 0; i--) {
-                containers.get(i - 1).add(containers.get(i), version);
-            }
-            gridBox.addFirst(containers.get(0), version);
         }
     }
 

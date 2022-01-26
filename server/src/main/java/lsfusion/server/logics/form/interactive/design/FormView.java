@@ -304,11 +304,8 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
             setComponentSID(groupObjectView.getCalculations(), getCalculationsSID(groupObjectView), version);
         }
 
-        for (ObjectView object : groupObjectView) {
+        for (ObjectView object : groupObjectView)
             mobjects.put(object.entity, object);
-            if(!isInTree)
-                setComponentSID(object.classChooser, getClassChooserSID(object.entity), version);
-        }
     }
     
     public GroupObjectView addGroupObjectBase(GroupObjectEntity groupObject, GroupObjectEntity neighbour, InsertType insertType, Version version) {

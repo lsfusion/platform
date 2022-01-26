@@ -21,7 +21,7 @@ import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
 import lsfusion.server.logics.form.interactive.action.async.AsyncSerializer;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerContext;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
-import lsfusion.server.logics.form.interactive.design.ComponentView;
+import lsfusion.server.logics.form.interactive.design.BaseComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.stat.print.design.ReportDrawField;
 import lsfusion.server.logics.form.struct.FormEntity;
@@ -36,7 +36,6 @@ import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
-import lsfusion.server.logics.property.value.NullValueProperty;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.exec.db.table.MapKeysTable;
@@ -56,7 +55,7 @@ import static lsfusion.interop.action.ServerResponse.CHANGE;
 import static lsfusion.interop.action.ServerResponse.EDIT_OBJECT;
 import static lsfusion.server.logics.form.struct.property.PropertyDrawExtraType.*;
 
-public class PropertyDrawView extends ComponentView {
+public class PropertyDrawView extends BaseComponentView {
 
     public PropertyDrawEntity<?> entity;
 
@@ -139,8 +138,10 @@ public class PropertyDrawView extends ComponentView {
         if(valueWidth != null)
             return valueWidth;
 
-        if(isCustom() && isAutoSize(entity))
-            return 0;
+//        if(isAutoSize(entity)) {
+//            if(!isProperty())
+//                return -1;
+//        }
 
         return -1;
     }
@@ -149,8 +150,10 @@ public class PropertyDrawView extends ComponentView {
         if(valueHeight != null)
             return valueHeight;
 
-        if(isCustom() && isAutoSize(entity))
-            return 0;
+        if(isAutoSize(entity)) {
+            if(!isProperty()) // we want vertical size for action to be equal to text fields
+                return -2;
+        }
 
         return -1;
     }
@@ -165,9 +168,17 @@ public class PropertyDrawView extends ComponentView {
     @Override
     public double getDefaultFlex(FormEntity formEntity) {
         ContainerView container = getLayoutParamContainer();
-        if(((container != null && container.isHorizontal()) || entity.isList(formEntity)) && isHorizontalValueFlex()) // если верхний контейнер горизонтальный или grid и свойство - flex, возвращаем -2
-            return -2; // выставляем flex - равный ширине
+        if(((container != null && container.isHorizontal()) || entity.isList(formEntity)) && isHorizontalValueFlex())
+            return -2; // flex = width
         return super.getDefaultFlex(formEntity);
+    }
+
+    @Override
+    protected boolean isDefaultShrink(FormEntity formEntity, boolean explicit) {
+        ContainerView container = getLayoutParamContainer();
+        if(container != null && container.isHorizontal() && container.isWrap() && isHorizontalValueShrink())
+            return true;
+        return super.isDefaultShrink(formEntity, explicit);
     }
 
     @Override
@@ -176,6 +187,15 @@ public class PropertyDrawView extends ComponentView {
         if (container != null && !container.isHorizontal() && isHorizontalValueFlex())
             return FlexAlignment.STRETCH;
         return super.getDefaultAlignment(formEntity);
+    }
+
+    @Override
+    protected boolean isDefaultAlignShrink(FormEntity formEntity, boolean explicit) {
+        // actually not needed mostly since for STRETCH align shrink is set, but just in case
+        ContainerView container = getLayoutParamContainer();
+        if (container != null && !container.isHorizontal() && isHorizontalValueShrink())
+            return true;
+        return super.isDefaultAlignShrink(formEntity, explicit);
     }
 
     public Map<String, AsyncEventExec> getAsyncEventExec(ServerContext context) {
@@ -581,6 +601,13 @@ public class PropertyDrawView extends ComponentView {
         return isProperty() && (type = getType()) != null && type.isFlex();
     }
 
+    public boolean isHorizontalValueShrink() {
+//        if(valueFlex != null)
+//            return valueFlex;
+        Type type;
+        return isProperty() && (type = getType()) != null && type.isFlex();
+    }
+
     public String getAskConfirmMessage() {
         assert entity.askConfirm;
         if (entity.askConfirmMessage != null)
@@ -623,7 +650,7 @@ public class PropertyDrawView extends ComponentView {
         if(autoSize != null)
             return autoSize;
 
-        return isCustom();
+        return isCustom() || !isProperty();
     }
 
     protected boolean isCustom() {

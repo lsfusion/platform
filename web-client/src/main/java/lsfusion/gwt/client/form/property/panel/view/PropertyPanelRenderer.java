@@ -34,7 +34,7 @@ public class PropertyPanelRenderer extends PanelRenderer {
         ResizableComplexPanel valuePanel = null;
         if(!property.autoSize || needCorners)
             valuePanel = new ResizableComplexPanel();
-        SizedWidget valueWidget = value.setSized(property.autoSize, true, valuePanel);
+        SizedWidget valueWidget = value.setSized(valuePanel);
         if (needCorners)
             appendCorners(property.notNull, valuePanel); // it's a hack to add
 

@@ -109,6 +109,10 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
     }
 
     public boolean isShrink(FormEntity formEntity) {
+        return isShrink(formEntity, false);
+    }
+    // second parameter is needed to break the recursion in container default heuristics
+    public boolean isShrink(FormEntity formEntity, boolean explicit) {
         if(shrink != null)
             return shrink;
 
@@ -116,14 +120,18 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         if(container != null && container.isSplit())
             return true;
 
-        return isDefaultShrink(formEntity);
+        return isDefaultShrink(formEntity, explicit);
     }
 
-    protected boolean isDefaultShrink(FormEntity formEntity) {
+    protected boolean isDefaultShrink(FormEntity formEntity, boolean explicit) {
         return false;
     }
 
     public boolean isAlignShrink(FormEntity formEntity) {
+        return isAlignShrink(formEntity, false);
+    }
+    // second parameter is needed to break the recursion in container default heuristics
+    public boolean isAlignShrink(FormEntity formEntity, boolean explicit) {
         if(alignShrink != null)
             return alignShrink;
 
@@ -132,10 +140,10 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         if(alignment == FlexAlignment.STRETCH && (container == null || !container.isScroll()))
             return true;
 
-        return isDefaultAlignShrink(formEntity);
+        return isDefaultAlignShrink(formEntity, explicit);
     }
 
-    protected boolean isDefaultAlignShrink(FormEntity formEntity) {
+    protected boolean isDefaultAlignShrink(FormEntity formEntity, boolean explicit) {
         return false;
     }
 

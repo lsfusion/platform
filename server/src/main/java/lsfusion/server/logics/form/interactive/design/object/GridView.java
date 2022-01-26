@@ -12,14 +12,10 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public class GridView extends ComponentView {
+public class GridView extends GridPropertyView {
 
     public boolean tabVertical = false;
     private boolean quickSearch = false;
-    public int headerHeight = -1;
-
-    public Integer lineWidth;
-    public Integer lineHeight;
 
     public GroupObjectView groupObject;
 
@@ -43,16 +39,6 @@ public class GridView extends ComponentView {
     public GridView(int ID, GroupObjectView groupObject) {
         super(ID);
         this.groupObject = groupObject;
-    }
-
-    @Override
-    public double getDefaultFlex(FormEntity formEntity) {
-        return 1;
-    }
-
-    @Override
-    public FlexAlignment getDefaultAlignment(FormEntity formEntity) {
-        return FlexAlignment.STRETCH;
     }
 
     //todo: формально временное решение:
@@ -106,54 +92,7 @@ public class GridView extends ComponentView {
             record.finalizeAroundInit();
     }
 
-    public int getLineWidth() {
-        if(lineWidth != null)
-            return lineWidth;
-
-        return -1;
-    }
-
-    public void setLineWidth(Integer lineWidth) {
-        this.lineWidth = lineWidth;
-    }
-
-    public int getLineHeight() {
-        if(lineHeight != null)
-            return lineHeight;
-
-        return -1;
-    }
-
-    public void setLineHeight(Integer lineHeight) {
-        this.lineHeight = lineHeight;
-    }
-
-    public Boolean autoSize;
-
-    public boolean isAutoSize(FormEntity entity) {
-        if(autoSize != null)
-            return autoSize;
-
-        return isCustom();
-    }
-
     protected boolean isCustom() {
         return groupObject.entity.isCustom();
-    }
-
-    @Override
-    protected int getDefaultWidth(FormEntity entity) {
-        if(lineWidth == null && isCustom() && isAutoSize(entity))
-            return -1;
-
-        return -2;
-    }
-
-    @Override
-    protected int getDefaultHeight(FormEntity entity) {
-        if(lineHeight == null && isCustom() && isAutoSize(entity))
-            return -1;
-
-        return -2;
     }
 }

@@ -15,12 +15,10 @@ import lsfusion.server.logics.form.interactive.design.object.GridView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
-import lsfusion.server.logics.property.value.NullValueProperty;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
-import java.awt.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -144,23 +142,29 @@ public class ContainerView extends ComponentView {
     }
 
     @Override
-    public boolean isDefaultShrink(FormEntity formEntity) {
+    public boolean isDefaultShrink(FormEntity formEntity, boolean explicit) {
         ContainerView container = getLayoutParamContainer();
         boolean horizontal = container != null && container.isHorizontal();
 
         if(isShrinkedAutoSizedWrap(formEntity, horizontal))
             return true;
 
-        return super.isDefaultShrink(formEntity);
+        if(!explicit && container != null && container.isWrap() && isShrinkDominant(formEntity, container, horizontal, false))
+            return true;
+
+        return super.isDefaultShrink(formEntity, explicit);
     }
 
-    public boolean isDefaultAlignShrink(FormEntity formEntity) {
+    public boolean isDefaultAlignShrink(FormEntity formEntity, boolean explicit) {
         ContainerView container = getLayoutParamContainer();
         boolean horizontal = container != null && container.isHorizontal();
         if(isShrinkedAutoSizedWrap(formEntity, !horizontal))
             return true;
 
-        return super.isDefaultAlignShrink(formEntity);
+        if(!explicit && container != null && isShrinkDominant(formEntity, container, !horizontal, true))
+            return true;
+
+        return super.isDefaultAlignShrink(formEntity, explicit);
     }
 
     public boolean isLineShrink(FormEntity formEntity) {
@@ -175,15 +179,32 @@ public class ContainerView extends ComponentView {
         return sameDirection ? isShrink(formEntity) : isAlignShrink(formEntity);
     }
 
+    private boolean isShrinkDominant(FormEntity formEntity, ContainerView container, boolean horizontal, boolean align) {
+        ContainerView upperContainer = container.getLayoutParamContainer();
+        boolean upperHorizontal = upperContainer != null && upperContainer.isHorizontal();
+        if((horizontal == upperHorizontal ? container.isShrink(formEntity) : container.isAlignShrink(formEntity))) {
+            // checking siblings if there are more
+            int shrinked = 0;
+            int notShrinked = 0;
+            for(ComponentView child : container.getChildrenIt())
+                if(align ? child.isAlignShrink(formEntity, true) : child.isShrink(formEntity, true))
+                    shrinked++;
+                else
+                    notShrinked++;
+            if(shrinked > notShrinked)
+                 return true;
+        }
+        return false;
+    }
+
     // if we have cascade shrinking (with auto size) and some wrap at some point, consider that we want shrink
     // otherwise shrinking will lead to more scrolls in lower containers
     // however we can use simple shrink check
     protected boolean isShrinkedAutoSizedWrap(FormEntity formEntity, boolean horizontal) {
-        boolean thisHorizontal = isHorizontal();
-
         if ((horizontal ? getWidth(formEntity) : getHeight(formEntity)) != -1) // if we have fixed size than there is no wrap problem
             return false;
 
+        boolean thisHorizontal = isHorizontal();
         // now there are several heuristics at the web client changing the default behaviour, and disabling wrap
         // most of them are grid related, so we just disable shrink in grid for now
         if (isWrap() && !isGrid()) {
@@ -194,9 +215,11 @@ public class ContainerView extends ComponentView {
 
         boolean sameDirection = horizontal == thisHorizontal;
         for (ComponentView child : getChildrenList())
-            if ((sameDirection ? child.isShrink(formEntity) : child.isAlignShrink(formEntity)) &&
-                    (child instanceof ContainerView && ((ContainerView)child).isShrinkedAutoSizedWrap(formEntity, horizontal)))
-                return true;
+            if(child instanceof ContainerView) {
+                ContainerView containerChild = (ContainerView) child;
+                if ((sameDirection ? containerChild.isShrink(formEntity, true) : child.isAlignShrink(formEntity, true)) && containerChild.isShrinkedAutoSizedWrap(formEntity, horizontal))
+                    return true;
+            }
 
         return false;
     }

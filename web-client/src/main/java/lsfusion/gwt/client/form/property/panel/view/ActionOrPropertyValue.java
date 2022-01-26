@@ -80,7 +80,8 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
     private Widget borderWidget;
 
     // assert that panel is resizable, panel and not resizable simple panel, since we want to append corners also to that panel (and it is not needed for it to be simple)
-    public SizedWidget setSized(boolean autoSize, boolean isProperty, ResizableMainPanel panel) {
+    public SizedWidget setSized(ResizableMainPanel panel) {
+        boolean autoSize = property.autoSize;
         if(panel != null) {
             panel.setSizedMain(this, autoSize);
             borderWidget = panel.getPanelWidget(); // panel
@@ -89,21 +90,21 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
             borderWidget = this;
         }
 
-        setBorderStyles(isProperty);
+        setBorderStyles();
 
         Integer width;
         Integer height;
-        if(!autoSize) { // if we wrapped into we
+        if(!autoSize) {
             assert panel != null;
             width = property.getValueWidthWithPadding(null);
             height = property.getValueHeightWithPadding(null);
         } else {
-            width = property.getValueWidth(null);
-            height = property.getValueHeight(null);
+            width = property.getAutoSizeValueWidth(null);
+            height = property.getAutoSizeValueHeight(null);
 
-            if(panel != null) { // optimization
-                FlexPanel.setBaseSize(this, false, width);
-                FlexPanel.setBaseSize(this, true, height);
+            if(panel != null) { // sort of optimization, in this case paddings will be calculated automatically
+                FlexPanel.setBaseSize(this, false, width, false);
+                FlexPanel.setBaseSize(this, true, height, false);
                 return new SizedWidget(borderWidget);
             }
         }
@@ -111,13 +112,13 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
         return new SizedWidget(borderWidget, width, height);
     }
 
-    private void setBorderStyles(boolean isProperty) {
+    private void setBorderStyles() {
         // we have to set border for border element and not element itself, since absolute positioning include border INSIDE div, and default behaviour is OUTSIDE
         borderWidget.addStyleName("panelRendererValue");
-        if(isProperty)
-            borderWidget.addStyleName("propertyPanelRendererValue");
-        else
+        if(property.isAction())
             borderWidget.addStyleName("actionPanelRendererValue");
+        else
+            borderWidget.addStyleName("propertyPanelRendererValue");
     }
 
     @Override

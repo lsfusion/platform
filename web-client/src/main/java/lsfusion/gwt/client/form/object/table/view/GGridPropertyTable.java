@@ -200,10 +200,6 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         return new Cell(getSelectedRow(), column, getColumn(column), getSelectedRowValue());
     }
 
-    protected boolean isAutoSize() {
-        return false;
-    }
-
     public int getAutoSize() {
         return getTableBodyElement().getOffsetHeight();
     }

@@ -183,14 +183,11 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
     // we're setting min-width/height and not width/height for two reasons:
     // a) alignment STRETCH doesn't work when width is set (however for the alignment other than STRETCH min param works as max of this min size, and auto size, and this behaviour is different from flex:0 0 size what we want to get)
     // b) flexBasis auto doesn't respect flexBasis of its descendants (!!! it's not true for vertical direction, see addFill comment !!!), but respects min-width (however with that approach in future there might be some problems with flex-shrink if we we'll want to support it)
-    public static void setBaseSize(Widget widget, boolean vertical, Integer size) {
-        setBaseSize(widget, vertical, size, false);
+    public static void setBaseSize(Widget widget, boolean vertical, Integer size, boolean fixed) {
+        setBaseSize(widget.getElement(), vertical, size, fixed);
     }
-    public static void setBaseSize(Widget widget, boolean vertical, Integer size, boolean oppositeAndFixed) {
-        setBaseSize(widget.getElement(), vertical, size, oppositeAndFixed);
-    }
-    public static void setBaseSize(Element element, boolean vertical, Integer size, boolean oppositeAndFixed) {
-        String propName = vertical ? (oppositeAndFixed ? "height" : "minHeight") : (oppositeAndFixed ? "width" : "minWidth");
+    public static void setBaseSize(Element element, boolean vertical, Integer size, boolean fixedSize) {
+        String propName = vertical ? (fixedSize ? "height" : "minHeight") : (fixedSize ? "width" : "minWidth");
         if(size != null)
             element.getStyle().setProperty(propName, size + "px");
         else
@@ -566,7 +563,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
         }
     }
 
-    private boolean isGrid() {
+    public boolean isGrid() {
         return gridLines != null;
     }
 

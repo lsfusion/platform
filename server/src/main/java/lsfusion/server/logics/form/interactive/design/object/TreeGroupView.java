@@ -28,7 +28,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TreeGroupView extends ComponentView implements ServerIdentitySerializable, PropertyGroupContainerView, AbstractTreeGroup<ComponentView> {
+public class TreeGroupView extends GridPropertyView implements ServerIdentitySerializable, PropertyGroupContainerView, AbstractTreeGroup<ComponentView> {
     public static final String TREE_PREFIX = "TREE";
     
     public List<GroupObjectView> groups = new ArrayList<>();
@@ -47,11 +47,6 @@ public class TreeGroupView extends ComponentView implements ServerIdentitySerial
     public ContainerView filtersContainer;
     
     public boolean expandOnClick = true;
-
-    public int headerHeight = -1;
-
-    public Integer lineWidth;
-    public Integer lineHeight;
 
     IDGenerator idGenerator;
 
@@ -86,16 +81,6 @@ public class TreeGroupView extends ComponentView implements ServerIdentitySerial
 //        filtersContainer.setCaption(LocalizedString.create(ThreadLocalContext.localize("{form.view.filters.container}")));
 
         filters = NFFact.orderSet();
-    }
-
-    @Override
-    public double getDefaultFlex(FormEntity formEntity) {
-        return 1;
-    }
-
-    @Override
-    public FlexAlignment getDefaultAlignment(FormEntity formEntity) {
-        return FlexAlignment.STRETCH;
     }
 
     @Override
@@ -159,20 +144,6 @@ public class TreeGroupView extends ComponentView implements ServerIdentitySerial
         entity = pool.context.entity.getTreeGroup(ID);
     }
 
-    public int getLineWidth() {
-        if(lineWidth != null)
-            return lineWidth;
-
-        return -1;
-    }
-
-    public int getLineHeight() {
-        if(lineHeight != null)
-            return lineHeight;
-
-        return -1;
-    }
-
     @Override
     public void finalizeAroundInit() {
         super.finalizeAroundInit();
@@ -183,22 +154,8 @@ public class TreeGroupView extends ComponentView implements ServerIdentitySerial
         }
     }
 
-    public Boolean autoSize;
-
-    public boolean isAutoSize(FormEntity entity) {
-        if(autoSize != null)
-            return autoSize;
-
+    @Override
+    protected boolean isCustom() {
         return false;
-    }
-
-    @Override
-    protected int getDefaultWidth(FormEntity entity) {
-        return -2;
-    }
-
-    @Override
-    protected int getDefaultHeight(FormEntity entity) {
-        return -2;
     }
 }

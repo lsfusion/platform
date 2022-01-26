@@ -46,7 +46,7 @@ public class GDataFilterValueView extends FlexPanel {
         ResizableComplexPanel valuePanel = null;
         if(!property.autoSize)
             valuePanel = new ResizableComplexPanel();
-        sizedView = cell.setSized(property.autoSize, true, valuePanel);
+        sizedView = cell.setSized(valuePanel);
         sizedView.widget.addStyleName("userFilterDataPropertyValue");
         sizedView.addFill(this);
 

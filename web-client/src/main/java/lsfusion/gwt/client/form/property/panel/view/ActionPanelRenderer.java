@@ -21,7 +21,7 @@ public class ActionPanelRenderer extends PanelRenderer {
     public ActionPanelRenderer(final GFormController form, ActionOrPropertyValueController controller, final GPropertyDraw property, GGroupObjectValue columnKey, LinearCaptionContainer captionContainer) {
         super(form, controller, property, columnKey, captionContainer);
 
-        sizedView = value.setSized(true, false, null);
+        sizedView = value.setSized(null);
 
         finalizeInit();
     }

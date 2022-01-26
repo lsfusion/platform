@@ -456,12 +456,16 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public int getValueHeightWithPadding(GFont parentFont) {
         return getValueHeight(parentFont) + getCellRenderer().getHeightPadding() * 2;
     }
-    public boolean isAutoDynamicHeight() {
-        return getCellRenderer().isAutoDynamicHeight();
+    public Integer getAutoSizeValueWidth(GFont parentFont) {
+        assert autoSize;
+        if(valueWidth == -1)
+            return null;
+
+        return getValueWidth(parentFont);
     }
 
     public int getValueWidth(GFont parentFont) {
-        if (valueWidth != -1) {
+        if (valueWidth >= 0) {
             return valueWidth;
         }
 
@@ -477,8 +481,16 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         return (baseType instanceof GObjectType ? GLongType.instance : ((GFormatType)baseType)).getFormat(pattern);
     }
 
+    public Integer getAutoSizeValueHeight(GFont parentFont) {
+        assert autoSize;
+        if(valueHeight == -1)
+            return null;
+
+        return getValueHeight(parentFont);
+    }
+
     public int getValueHeight(GFont parentFont) {
-        if (valueHeight != -1) {
+        if (valueHeight >= 0) {
             return valueHeight;
         }
 

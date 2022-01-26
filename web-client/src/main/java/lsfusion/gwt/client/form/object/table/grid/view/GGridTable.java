@@ -81,11 +81,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
     private long setRequestIndex;
 
-    @Override
-    protected boolean isAutoSize() {
-        return groupObjectController.isGridAutosize();
-    }
-
     public GGridTable(GFormController iform, GGridController igroupController, GGridUserPreferences[] iuserPreferences) {
         super(iform, igroupController.groupObject, null);
 
