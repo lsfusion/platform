@@ -742,9 +742,11 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
 
     private static void setFlexModifier(boolean grid, boolean vertical, FlexLayoutData layoutData, FlexStretchLine w, FlexModifier modifier) {
         double prevFlex = layoutData.getFlex();
+        Integer prevFlexBasis = layoutData.getFlexBasis();
         layoutData.flexModifier = modifier;
         double newFlex = layoutData.getFlex();
-        if(prevFlex != newFlex) // for optimization purposes + there might be problems with setBaseSize, since some data components use it explicitly without setting LayoutData
+        Integer newFlexBasis = layoutData.getFlexBasis();
+        if(!(prevFlex == newFlex && GwtClientUtils.nullEquals(prevFlexBasis, newFlexBasis))) // for optimization purposes + there might be problems with setBaseSize, since some data components use it explicitly without setting LayoutData
             impl.updateFlex(layoutData, w.getStretchElement(), vertical, grid);
     }
 
