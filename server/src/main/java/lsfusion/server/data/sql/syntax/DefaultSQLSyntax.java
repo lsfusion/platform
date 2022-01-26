@@ -477,8 +477,8 @@ public abstract class DefaultSQLSyntax implements SQLSyntax {
 
         String fnc;
         switch (groupType) {
-            case STRING_AGG:
-                fnc = "STRING_AGG";
+            case CONCAT:
+                fnc = exprs.size() == 2 ? "STRING_AGG" : "JSONB_AGG";
                 exprs = SumFormulaImpl.castToVarStrings(exprs, readers, resultType, this, typeEnv);
                 break;
             case LAST:

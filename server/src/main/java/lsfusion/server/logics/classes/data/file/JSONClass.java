@@ -83,7 +83,7 @@ public class JSONClass extends DataClass<String> {
 
     @Override
     public String read(Object value) {
-        return value instanceof PGobject ? ((PGobject) value).getValue() : null;
+        return value instanceof PGobject ? ((PGobject) value).getValue() : value instanceof String ? (String) value : null;
     }
 
     @Override

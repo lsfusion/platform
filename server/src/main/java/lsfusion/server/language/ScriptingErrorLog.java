@@ -361,7 +361,7 @@ public class ScriptingErrorLog {
     }
 
     public void emitConcatAggrGPropError(ScriptParser parser) throws SemanticErrorException {
-        emitSimpleError(parser, "GROUP CONCAT property should have two aggregate properties exactly (second is a separator)");
+        emitSimpleError(parser, "GROUP CONCAT property should have single aggregate property (JSON type) OR two aggregate properties (second is a separator)");
     }
 
     public void emitNonIntegralSumArgumentError(ScriptParser parser) throws SemanticErrorException {
