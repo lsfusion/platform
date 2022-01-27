@@ -60,10 +60,6 @@ public class ResizeHandler implements Event.NativePreviewHandler {
         }
     }
 
-    public static int getAbsolutePosition(boolean vertical, Element element, boolean left) {
-        return vertical ? (left ? element.getAbsoluteTop() : element.getAbsoluteBottom()) : (left ? element.getAbsoluteLeft() : element.getAbsoluteRight());
-    }
-
     public static int getEventPosition(boolean vertical, boolean main, NativeEvent event) {
         return vertical == main ? event.getClientY() : event.getClientX();
     }

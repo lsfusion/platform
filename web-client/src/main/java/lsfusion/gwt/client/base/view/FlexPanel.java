@@ -229,7 +229,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
     }
 
     public void checkResizeEvent(NativeEvent event, Element cursorElement) {
-        ResizeHandler.checkResizeEvent(resizeHelper, cursorElement, null, event);
+        ResizeHandler.checkResizeEvent(getResizeHelper(event), cursorElement, null, event);
     }
 
     public interface GridLines {
@@ -568,17 +568,21 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
     }
 
     // filter visible (!)
-    private List<FlexLine> getLines() {
+    private List<FlexLine> getLines(Integer oppositePosition) {
         int lines = gridLines != null ? gridLines.getCount() : 1;
 
         List<FlexLine> result = new ArrayList<>();
         List<Widget> currentLine = new ArrayList<>();
         int currentLineSpan = 0;
         for(Widget widget : getChildren())
-            if(widget.isVisible()) {
-                int widgetSpan = ((WidgetLayoutData)widget.getLayoutData()).span;
-                if(currentLineSpan > 0 && currentLineSpan + widgetSpan > lines) { // we need a new line
+            if (widget.isVisible() &&
+                    (!wrap || oppositePosition == null ||
+                            ResizeHandler.getAbsolutePosition(widget.getElement(), !vertical, true) <= oppositePosition &&
+                            ResizeHandler.getAbsolutePosition(widget.getElement(), !vertical, false) >= oppositePosition)) {
+                int widgetSpan = ((WidgetLayoutData) widget.getLayoutData()).span;
+                if (currentLineSpan > 0 && currentLineSpan + widgetSpan > lines) { // we need a new line
                     result.add(new FlexLine(currentLine));
+
                     currentLine = new ArrayList<>();
                     currentLineSpan = 0;
                 }
@@ -591,55 +595,59 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
         return result;
     }
 
-    private ResizeHelper resizeHelper = new ResizeHelper() {
-        @Override
-        public int getChildCount() {
-            return getLines().size();
-        }
+    private ResizeHelper getResizeHelper(NativeEvent event) {
+        int oppositePosition = ResizeHandler.getEventPosition(vertical, false, event);
 
-        private FlexLine getChildLine(int index) {
-            return getLines().get(index);
-        }
+        return new ResizeHelper() {
+            @Override
+            public int getChildCount() {
+                return getLines(oppositePosition).size();
+            }
 
-        @Override
-        public void propagateChildResizeEvent(int index, NativeEvent event, Element cursorElement) {
-            getChildLine(index).propagateChildResizeEvent(event, cursorElement);
-        }
+            private FlexLine getChildLine(int index) {
+                return getLines(oppositePosition).get(index);
+            }
 
-        @Override
-        public int getChildAbsolutePosition(int index, boolean left) {
-            return getChildLine(index).getAbsolutePosition(left);
-        }
+            @Override
+            public void propagateChildResizeEvent(int index, NativeEvent event, Element cursorElement) {
+                getChildLine(index).propagateChildResizeEvent(event, cursorElement);
+            }
 
-        @Override
-        public void resizeChild(int index, int delta) {
-            resizeWidget(index, delta);
-        }
+            @Override
+            public int getChildAbsolutePosition(int index, boolean left) {
+                return getChildLine(index).getAbsolutePosition(left);
+            }
 
-        @Override
-        public boolean isChildResizable(int index) {
-            if(!isChildrenResizable(index))
-                return false;
+            @Override
+            public void resizeChild(int index, int delta) {
+                resizeWidget(index, delta, oppositePosition);
+            }
 
-            // optimization, if it is the last element, and there is a "resizable" parent, we consider this element to be not resizable (assuming that this "resizable" parent will be resized)
-            if(index == getChildCount() - 1 && getParentSameFlexPanel(vertical) != null)
-                return false;
+            @Override
+            public boolean isChildResizable(int index) {
+                if (!isChildrenResizable(index, oppositePosition))
+                    return false;
 
-            return true;
-        }
+                // optimization, if it is the last element, and there is a "resizable" parent, we consider this element to be not resizable (assuming that this "resizable" parent will be resized)
+                if (index == getChildCount() - 1 && getParentSameFlexPanel(vertical, oppositePosition) != null)
+                    return false;
 
-        @Override
-        public boolean isVertical() {
-            return vertical;
-        }
-    };
+                return true;
+            }
 
-    // the resize algorithm assumes that there should be flex column to the right, to make
-    public boolean isChildrenResizable(int widgetNumber) {
+            @Override
+            public boolean isVertical() {
+                return vertical;
+            }
+        };
+    }
+
+    // the resize algorithm assumes that there should be flex column to the left, to make
+    public boolean isChildrenResizable(int widgetNumber, int oppositePosition) {
         if(!childrenResizable)
             return false;
 
-        List<FlexLine> lines = getLines();
+        List<FlexLine> lines = getLines(oppositePosition);
         for(int i=widgetNumber;i>=0;i--) {
             if (lines.get(i).isFlex())
                 return true;
@@ -648,7 +656,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
     }
 
     // we need to guarantee somehow that resizing this parent container will lead to the same resizing of this container
-    public Pair<FlexPanel, Integer> getParentSameFlexPanel(boolean vertical) {
+    public Pair<FlexPanel, Integer> getParentSameFlexPanel(boolean vertical, int oppositePosition) {
 //        if(1==1) return null;
         Widget parent = getParent();
         if(!(parent instanceof FlexPanel)) // it's some strange layouting, ignore it
@@ -658,13 +666,13 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
         if(vertical != flexParent.vertical) {
             AlignmentLayoutData layoutData = ((WidgetLayoutData) getLayoutData()).aligment;
             if(layoutData.alignment == GFlexAlignment.STRETCH)
-                return flexParent.getParentSameFlexPanel(vertical);
+                return flexParent.getParentSameFlexPanel(vertical, oppositePosition);
         } else {
-            List<FlexLine> lines = flexParent.getLines();
+            List<FlexLine> lines = flexParent.getLines(oppositePosition);
             for (int i = 0; i < lines.size(); i++) {
                 FlexLine line = lines.get(i);
                 if (line.contains(this)) {
-                    if(flexParent.isChildrenResizable(i))
+                    if(flexParent.isChildrenResizable(i, oppositePosition))
                         return new Pair<>(flexParent, i);
                     break;
                 }
@@ -673,10 +681,8 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
         return null;
     }
 
-    public void resizeWidget(int lineNumber, double delta) {
-        Pair<FlexPanel, Integer> parentSameFlexPanel = getParentSameFlexPanel(vertical);
-
-        List<FlexLine> children = getLines();
+    public void resizeWidget(int lineNumber, double delta, int oppositePosition) {
+        List<FlexLine> children = getLines(oppositePosition);
 
         int size = children.size();
         double[] prefs = new double[size];
@@ -684,6 +690,10 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
 
         int[] basePrefs = new int[size];
         double[] baseFlexes = new double[size];
+
+        Element element = getElement();
+        if(wrap) // in theory there should be recursive drop wrap, but on the other hand we'are dropping flex / shrink and flexbasis, so there will be no wrap inside
+            impl.dropWrap(element);
 
         int i = 0;
         for(FlexLine line : children) {
@@ -718,11 +728,16 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
 
 //        int body = ;
         // important to calculate viewWidth before setting new flexes
-        int viewWidth = impl.getSize(getElement(), vertical) - margins;
+        Pair<FlexPanel, Integer> parentSameFlexPanel = getParentSameFlexPanel(vertical, oppositePosition);
+
+        int viewWidth = impl.getSize(element, vertical) - margins;
         double restDelta = GwtClientUtils.calculateNewFlexes(lineNumber, delta, viewWidth, prefs, flexes, basePrefs, baseFlexes,  parentSameFlexPanel == null);
 
         if(parentSameFlexPanel != null && !GwtClientUtils.equals(restDelta, 0.0))
-            parentSameFlexPanel.first.resizeWidget(parentSameFlexPanel.second, restDelta);
+            parentSameFlexPanel.first.resizeWidget(parentSameFlexPanel.second, restDelta, oppositePosition);
+
+        if(wrap)
+            impl.setWrap(element);
 
         i = 0;
         for(FlexLine line : children) {
@@ -857,7 +872,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
         // in a way similar to getParentSameFlexPanel (in web we assume that all intermediate panels are FlexPanel, in desktop we should do a recursion)
         if(widget instanceof FlexPanel) {
             FlexPanel flexPanel = (FlexPanel) widget;
-            List<FlexLine> lines = flexPanel.getLines();
+            List<FlexLine> lines = flexPanel.getLines(null);
             boolean vertical = flexPanel.vertical;
             boolean grid = flexPanel.isGrid();
             boolean wrap = flexPanel.wrap;
