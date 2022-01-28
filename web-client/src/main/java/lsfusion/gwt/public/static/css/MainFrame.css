@@ -452,10 +452,20 @@ button {
     margin-left: var(--border-padding);
 }
 
+/* mimicry of propertyPanelRendererValue / panelRendererValue, CELL_HORIZONTAL_PADDING (textbasedCellRenderer) */
 .userFilterSelector {
-    cursor: default;
-    padding: 2px;
-    color: var(--text-color); /* overrides .gwt-TextBox-readonly style */
+    cursor : default;
+    background: var(--component-background-color);
+    border: 1px solid var(--component-border-color);
+    margin: var(--border-padding);
+    border-radius: var(--textfield-border-radius);
+
+    padding-left: 3px;
+    padding-right: 3px;
+
+    /* aligning text vertically (the other way with line-height) */
+    display : flex;
+    align-items : center;
 }
 
 .userFilterNegationCheckBox input {

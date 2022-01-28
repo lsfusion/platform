@@ -1,13 +1,12 @@
 package lsfusion.gwt.client.form.filter.user.view;
 
+import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.KeyDownEvent;
-import com.google.gwt.user.client.ui.MenuBar;
-import com.google.gwt.user.client.ui.MenuItem;
-import com.google.gwt.user.client.ui.TextBox;
-import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
+import lsfusion.gwt.client.base.view.DivWidget;
 import lsfusion.gwt.client.base.view.PopupDialogPanel;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.design.GFontMetrics;
@@ -18,7 +17,7 @@ import lsfusion.gwt.client.view.StyleDefaults;
 import java.util.Collections;
 import java.util.List;
 
-public abstract class GFilterOptionSelector<T> extends TextBox {
+public abstract class GFilterOptionSelector<T> extends FocusWidget {
     protected PopupDialogPanel popup = new PopupDialogPanel();
     protected MenuBar menuBar = new MenuBar(true);
     protected T currentValue;
@@ -28,8 +27,11 @@ public abstract class GFilterOptionSelector<T> extends TextBox {
     }
 
     public GFilterOptionSelector(List<T> values, List<String> popupCaptions) {
+        setElement(Document.get().createDivElement());
+
         addStyleName("userFilterSelector");
-        setReadOnly(true);
+        setHeight(StyleDefaults.VALUE_HEIGHT_STRING);
+//        setReadOnly(true);
 
         Style menuBarStyle = menuBar.getElement().getStyle();
         menuBarStyle.setProperty("maxHeight", StyleDefaults.VALUE_HEIGHT * 12, Style.Unit.PX); // 12 rows
@@ -65,12 +67,8 @@ public abstract class GFilterOptionSelector<T> extends TextBox {
         setText(caption);
     }
 
-    @Override
     public void setText(String text) {
-        String notNullText = GwtSharedUtils.nullTrim(text);
-        super.setText(notNullText);
-        setTitle(notNullText);
-        setWidth(GFontMetrics.getStringWidth(new GFontWidthString(GFont.DEFAULT_FONT, notNullText)) + "px");
+        getElement().setInnerText(GwtSharedUtils.nullTrim(text));
     }
 
     protected Widget getPopupContent() {
