@@ -106,8 +106,15 @@ public class FlexPanelImpl {
     }
 
     public void setPreferredSize(boolean set, Element child, FlexPanel.FlexLayoutData layoutData, boolean vertical, boolean grid) {
-        setFlex(child, layoutData.flex, set ? null : layoutData.getFlexBasis(), layoutData.gridLine, vertical, grid, set ? false : layoutData.shrink);
-//        setFlexParams(child, layoutData.getFlex(), set ? null : layoutData.flexBasis, layoutData.gridLine, vertical, grid, layoutData.shrink);
+//        setFlex(child, layoutData.flex, set ? null : layoutData.getFlexBasis(), layoutData.gridLine, vertical, grid, set ? false : layoutData.shrink);
+        if(set) { // we're moving flexBasis to min-size
+            setFlexParams(child, layoutData.getFlex(), null, layoutData.gridLine, vertical, grid, false);
+
+            FlexPanel.setBaseSize(child, vertical, layoutData.getFlexBasis(), false);
+
+            FlexPanel.setBaseSize(child, vertical, null, true);
+        } else
+            updateFlex(layoutData, child, vertical, grid);
 //
 //        if(layoutData.shrink) // if we have shrink we want to drop it and have actual min-size
 //            FlexPanel.setBaseSize(child, vertical, layoutData.flexBasis, true); // last parameter is false because we're setting main size
