@@ -765,7 +765,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
 
     @IdentityStrongLazy // just in case
-    private <P extends PropertyInterface> ConstraintCheckChangeProperty<T, P> getMaxChangeProperty(Property<P> change) {
+    private <P extends PropertyInterface> ConstraintCheckChangeProperty<T, P> getConstraintCheckChangeProperty(Property<P> change) {
         return new ConstraintCheckChangeProperty<>(this, change);
     }
 
@@ -776,7 +776,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     public <O extends ObjectSelector> ImSet<ContextFilterEntity<?, T, O>> getCheckFilters(O object) {
         return ThreadLocalContext.getBusinessLogics().getCheckConstrainedProperties(this).filterFn(property -> depends(property, this)).
                 mapSetValues(property -> {
-                    ConstraintCheckChangeProperty<?, T> changeProperty = ((Property<?>) property).getMaxChangeProperty(this);
+                    ConstraintCheckChangeProperty<?, T> changeProperty = ((Property<?>) property).getConstraintCheckChangeProperty(this);
                     Pair<ImRevMap<ConstraintCheckChangeProperty.Interface<T>, T>, ConstraintCheckChangeProperty.Interface<T>> mapInterfaces = changeProperty.getMapInterfaces();
                     return new ContextFilterEntity<>(changeProperty, mapInterfaces.first, MapFact.singletonRev(mapInterfaces.second, object));
                 });

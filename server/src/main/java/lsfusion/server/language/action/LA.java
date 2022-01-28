@@ -70,10 +70,6 @@ public class LA<T extends PropertyInterface> extends LAP<T, Action<T>> {
         return action.execute(BaseUtils.immutableCast(context.override(MapFact.EMPTY())));
     }
 
-    public <P extends PropertyInterface> void setEventAction(LogicsModule lm, IncrementType type, Event event, LP<P> lp, Integer... mapping) {
-        lm.addEventAction(action, new PropertyMapImplement<>(lp.property.getChanged(type, event.getScope()), lp.getRevMap(listInterfaces, mapping)), MapFact.EMPTYORDER(), false, event, false, null);
-    }
-
     public ValueClass[] getInterfaceClasses() { // obsolete
         return listInterfaces.mapList(action.getInterfaceClasses(ClassType.obsolete)).toArray(new ValueClass[listInterfaces.size()]); // тут все равно obsolete
     }

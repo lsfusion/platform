@@ -2004,23 +2004,24 @@ public abstract class LogicsModule {
     }
 
     protected <P extends PropertyInterface> void addConstraint(LP<?> lp, LP<?> messageLP, ImList<PropertyMapImplement<?, P>> properties, Property.CheckType type, ImSet<Property<?>> checkProps, Event event, LogicsModule lm, DebugInfo.DebugPoint debugPoint) {
-        if(!(lp.property).noDB())
+//      will not check for constraint prev value (i.e. do not let the user set any value if constraint was already broken)
+        lp.property.checkChange = type;
+        lp.property.checkProperties = checkProps;
+
+        // not sure if it's needed, but lp is used instead of property to ensure that SET property is added to property list
+        if(!lp.property.noDB()) // wrapping in SET
             lp = addCHProp(lp, IncrementType.SET, event.getScope());
-        // assert что lp уже в списке properties
-        setConstraint(lp.property, properties, messageLP.property, type, event, checkProps, debugPoint);
-    }
 
-    public <P extends PropertyInterface> void setConstraint(Property property, ImList<PropertyMapImplement<?,P>> properties, Property messageProperty, Property.CheckType type, Event event, ImSet<Property<?>> checkProperties, DebugInfo.DebugPoint debugPoint) {
-        assert type != Property.CheckType.CHECK_SOME || checkProperties != null;
-        assert property.noDB();
+        assert type != Property.CheckType.CHECK_SOME || checkProps != null;
 
-        property.checkChange = type;
-        property.checkProperties = checkProperties;
+//      will check for constraint prev value (i.e. let the user set any value if constraint was already broken)
+//        lp.property.checkChange = type;
+//        lp.property.checkProperties = checkProps;
 
         ActionMapImplement<ClassPropertyInterface, ClassPropertyInterface> logAction;
 //            logAction = new LogPropertyActionProperty<T>(property, messageProperty).getImplement();
         //  PRINT OUT property MESSAGE NOWAIT;
-        logAction = (ActionMapImplement<ClassPropertyInterface, ClassPropertyInterface>) addPFAProp(null, LocalizedString.concat("Constraint - ",property.caption), new OutFormSelector<P>(property, messageProperty, properties), ListFact.EMPTY(), ListFact.EMPTY(), SetFact.EMPTYORDER(), SetFact.EMPTY(), FormPrintType.MESSAGE, false, 30, null, true, null, null, null).action.getImplement();
+        logAction = (ActionMapImplement<ClassPropertyInterface, ClassPropertyInterface>) addPFAProp(null, LocalizedString.concat("Constraint - ", lp.property.caption), new OutFormSelector<P>((Property) lp.property, messageLP.property, properties), ListFact.EMPTY(), ListFact.EMPTY(), SetFact.EMPTYORDER(), SetFact.EMPTY(), FormPrintType.MESSAGE, false, 30, null, true, null, null, null).action.getImplement();
         ActionMapImplement<?, ClassPropertyInterface> constraintAction =
                 PropertyFact.createListAction(
                         SetFact.EMPTY(),
@@ -2028,7 +2029,7 @@ public abstract class LogicsModule {
                                 baseLM.cancel.action.getImplement(SetFact.EMPTYORDER())
                         )
                 );
-        constraintAction.mapEventAction(this, PropertyFact.createAnyGProp(property).getImplement(), event, true, debugPoint);
+        constraintAction.mapEventAction(this, PropertyFact.createAnyGProp(lp.property).getImplement(), event, true, debugPoint);
         addProp(constraintAction.action);
     }
 
