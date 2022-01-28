@@ -530,12 +530,12 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
     }
 
     protected static <X extends PropertyInterface> AsyncMapEventExec<X> getBranchAsyncEventExec(ImList<ActionMapImplement<?, X>> actions, boolean optimistic, boolean recursive) {
-        return getFlowAsyncEventExec(actions, optimistic, recursive);
+        return getFlowAsyncEventExec(actions, optimistic, optimistic, recursive);
     }
-    protected static <X extends PropertyInterface> AsyncMapEventExec<X> getListAsyncEventExec(ImList<ActionMapImplement<?, X>> actions, boolean recursive) {
-        return getFlowAsyncEventExec(actions, true, recursive);
+    protected static <X extends PropertyInterface> AsyncMapEventExec<X> getListAsyncEventExec(ImList<ActionMapImplement<?, X>> actions, boolean optimistic, boolean recursive) {
+        return getFlowAsyncEventExec(actions, true, optimistic, recursive);
     }
-    private static <X extends PropertyInterface> AsyncMapEventExec<X> getFlowAsyncEventExec(ImList<ActionMapImplement<?, X>> actions, boolean optimistic, boolean recursive) {
+    private static <X extends PropertyInterface> AsyncMapEventExec<X> getFlowAsyncEventExec(ImList<ActionMapImplement<?, X>> actions, boolean flowOptimistic, boolean optimistic, boolean recursive) {
         AsyncMapEventExec<X> asyncExec = null;
         int nonAsync = 0;
         int nonRecursive = 0;
@@ -560,7 +560,7 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
             }
         }
 
-        if(!optimistic && nonAsync >= nonRecursive)
+        if(!flowOptimistic && nonAsync >= nonRecursive)
             return null;
 
         return asyncExec;

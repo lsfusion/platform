@@ -96,7 +96,7 @@ public class TryAction extends KeepContextAction {
     @Override
     public AsyncMapEventExec<PropertyInterface> calculateAsyncEventExec(boolean optimistic, boolean recursive) {
         //catch commented, because it's pessimistic operator
-        return getListAsyncEventExec(ListFact.toList(tryAction, /*catchAction, */finallyAction), recursive); // technically catch is a branching operator, but for now it's not that important
+        return getListAsyncEventExec(ListFact.toList(tryAction, /*catchAction, */finallyAction), optimistic, recursive); // technically catch is a branching operator, but for now it's not that important
     }
 
     @Override
