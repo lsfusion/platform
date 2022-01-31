@@ -29,9 +29,7 @@ import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.TreeGroupEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import static java.util.Collections.synchronizedMap;
@@ -162,10 +160,6 @@ public class DefaultFormView extends FormView {
         return GroupObjectContainerSet.FILTERGROUPS_CONTAINER + "(" + goName + ")";
     }
 
-    public static String getGridBoxContainerSID(String goName) {
-        return GroupObjectContainerSet.GRIDBOX_CONTAINER + "(" + goName + ")";
-    }
-
     public static String getBoxContainerSID(String goName) {
         return GroupObjectContainerSet.BOX_CONTAINER + "(" + goName + ")";
     }
@@ -264,7 +258,6 @@ public class DefaultFormView extends FormView {
 
             registerComponent(boxContainers, groupSet.getBoxContainer(), groupObject, version);
             registerComponent(filtersContainers, groupObject.getFiltersContainer(), groupObject, version);
-            registerComponent(gridContainers, groupSet.getGridBoxContainer(), groupObject, version);
             registerComponent(panelContainers, groupSet.getPanelContainer(), groupObject, version);
             registerComponent(groupContainers, groupSet.getGroupContainer(), groupObject, version);
             registerComponent(toolbarBoxContainers, groupSet.getToolbarBoxContainer(), groupObject, version);
@@ -305,7 +298,6 @@ public class DefaultFormView extends FormView {
 
         registerComponent(boxContainers, treeSet.getBoxContainer(), treeGroup, version);
         registerComponent(filtersContainers, treeGroup.getFiltersContainer(), treeGroup, version);
-        registerComponent(gridContainers, treeSet.getGridContainer(), treeGroup, version);
         registerComponent(panelContainers, treeSet.getPanelContainer(), treeGroup, version);
         registerComponent(groupContainers, treeSet.getGroupContainer(), treeGroup, version);
         registerComponent(toolbarBoxContainers, treeSet.getToolbarBoxContainer(), treeGroup, version);

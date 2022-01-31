@@ -4835,9 +4835,11 @@ groupObjectTreeComponentSelector returns [String sid]
         |   gost=groupObjectTreeComponentSelectorType 
             { 
                 result = $gost.text;
-                // backward compatibility. USERFILTER component is removed in v5.0 
+                // backward compatibility. USERFILTER and GRIDBOX components are removed in v5.0
                 if ("USERFILTER".equals(result)) { 
                     result = "FILTERS";
+                } else if ("GRIDBOX".equals(result)) {
+                   result = "GRID";
                 }
             })
         '(' gots = groupObjectTreeSelector ')'
