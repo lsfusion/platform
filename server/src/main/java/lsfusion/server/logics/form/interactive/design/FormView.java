@@ -682,10 +682,6 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         return entity.getPropertyGroupContainerSID() + ".calculations";
     }
 
-    private static String getClassChooserSID(ObjectEntity entity) {
-        return CLASSCHOOSER_COMPONENT + "(" + entity.getSID() + ")";
-    }
-
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream) throws IOException {
         pool.serializeObject(outStream, mainContainer);
         pool.serializeCollection(outStream, getTreeGroups());
