@@ -108,6 +108,9 @@ public class TreeGroupView extends GridPropertyView implements ServerIdentitySer
         super.customSerialize(pool, outStream);
 
         outStream.writeBoolean(isAutoSize(pool.context.entity));
+        outStream.writeBoolean(boxed != null);
+        if(boxed != null)
+            outStream.writeBoolean(boxed);
 
         pool.serializeCollection(outStream, groups);
         pool.serializeObject(outStream, toolbarSystem);
@@ -128,6 +131,7 @@ public class TreeGroupView extends GridPropertyView implements ServerIdentitySer
         super.customDeserialize(pool, inStream);
 
         autoSize = inStream.readBoolean();
+        boxed = inStream.readBoolean() ? inStream.readBoolean() : null;
 
         groups = pool.deserializeList(inStream);
         toolbarSystem = pool.deserializeObject(inStream);

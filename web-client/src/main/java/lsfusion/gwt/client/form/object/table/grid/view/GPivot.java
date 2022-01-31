@@ -2183,4 +2183,9 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         }
         return arrayList;
     }
+
+    @Override
+    public boolean isDefaultBoxed() {
+        return false;
+    }
 }

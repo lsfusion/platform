@@ -234,12 +234,12 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     }
 
     @Override
-    protected void onFocus() {
+    public void onFocus() {
         super.onFocus();
     }
 
     @Override
-    protected void onBlur(Event event) {
+    public void onBlur(Event event) {
         form.previewBlurEvent(event);
 
         super.onBlur(event);

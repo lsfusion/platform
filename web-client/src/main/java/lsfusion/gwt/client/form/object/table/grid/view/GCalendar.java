@@ -454,4 +454,9 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
             }
         }
     }-*/;
+
+    @Override
+    public boolean isDefaultBoxed() {
+        return false;
+    }
 }

@@ -42,6 +42,7 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
         setElement(Document.get().createDivElement());
 
         DataGrid.initSinkEvents(this);
+        DataGrid.initSinkFocusEvents(this);
 
         this.property = property;
         this.columnKey = columnKey;
@@ -115,6 +116,8 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
     private void setBorderStyles() {
         // we have to set border for border element and not element itself, since absolute positioning include border INSIDE div, and default behaviour is OUTSIDE
         borderWidget.addStyleName("panelRendererValue");
+        if(property.boxed)
+            borderWidget.addStyleName("panelRendererValueBoxed");
         if(property.isAction())
             borderWidget.addStyleName("actionPanelRendererValue");
         else
@@ -153,7 +156,7 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
                 true, property.getCellRenderer().isCustomRenderer());
     }
 
-    boolean isFocused;
+    private boolean isFocused;
     protected void onFocus(EventHandler handler) {
         if(isFocused)
             return;

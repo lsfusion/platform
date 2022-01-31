@@ -310,6 +310,7 @@ public class PropertyDrawView extends BaseComponentView {
         super.customSerialize(pool, outStream);
 
         outStream.writeBoolean(isAutoSize(pool.context.entity));
+        outStream.writeBoolean(isBoxed(pool.context.entity));
 
         pool.writeString(outStream, getDrawCaption());
         pool.writeString(outStream, regexp);
@@ -511,6 +512,7 @@ public class PropertyDrawView extends BaseComponentView {
         super.customDeserialize(pool, inStream);
 
         autoSize = inStream.readBoolean();
+        boxed = inStream.readBoolean();
 
         caption = LocalizedString.create(pool.readString(inStream));
         regexp = pool.readString(inStream);
@@ -642,6 +644,15 @@ public class PropertyDrawView extends BaseComponentView {
             return FlexAlignment.START;
         }
         return valueAlignment;
+    }
+
+    public Boolean boxed;
+
+    public boolean isBoxed(FormEntity entity) {
+        if(boxed != null)
+            return boxed;
+
+        return true;
     }
 
     public Boolean autoSize;

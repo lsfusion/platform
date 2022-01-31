@@ -267,17 +267,23 @@ input[type=checkbox]:focus {
 }
 
 .panelRendererValue {
-    background: var(--component-background-color);
-    border: 1px solid var(--component-border-color); /* should correspond to the result in ActionOrPropertyValue.setBaseSize */
     margin: var(--border-padding);
 }
 
+.panelRendererValueBoxed {
+    background: var(--component-background-color);
+    border: 1px solid var(--component-border-color); /* should correspond to the result in ActionOrPropertyValue.setBaseSize */
+}
+
 .propertyPanelRendererValue {
+}
+
+.propertyPanelRendererValue.panelRendererValueBoxed {
     border-radius: var(--textfield-border-radius);
     overflow: hidden; /* to hide inner corners */
 }
 
-.actionPanelRendererValue {
+.actionPanelRendererValue.panelRendererValueBoxed {
     border-radius: var(--button-border-radius);
 }
 
@@ -287,12 +293,12 @@ button {
     border: 1px solid var(--component-border-color); /* should correspond to the result in ActionOrPropertyValue.setBaseSize */
 }
 
-.panelRendererValueFocused, button:focus {
+.panelRendererValueFocused.panelRendererValueBoxed, button:focus {
     background-color: var(--selection-color);
     border: 1px solid var(--focus-color);
 }
 
-.panelRendererValue:hover:not(.panelRendererValueFocused), button:hover:not(focus) { /* we want focus to have higher priority than hover*/
+.panelRendererValueBoxed:hover:not(.panelRendererValueFocused), button:hover:not(focus) { /* we want focus to have higher priority than hover*/
     border: 1px solid var(--component-hover-border-color);
 }
 
@@ -635,7 +641,7 @@ button {
 
 /* ------------ Leaflet components  ------------ */
 .leaflet-container {
-    border: 1px solid var(--component-border-color);
+    /*border: 1px solid var(--component-border-color);*/
 }
 
 .leaflet-popup-content-wrapper, .leaflet-popup-tip {
@@ -719,6 +725,23 @@ button {
 
 .gridContainerPanel{
     margin: var(--border-padding);
+}
+
+.gridContainerPanelBoxed {
+    border: 1px solid var(--component-border-color);
+    border-radius: var(--table-border-radius);
+
+    background: var(--component-background-color);
+}
+
+.gridContainerPanelFocused {
+}
+.gridContainerPanelBoxed.gridContainerPanelFocused {
+    background-color: var(--selection-color);
+    border: 1px solid var(--focus-color);
+}
+.gridContainerPanelBoxed:hover:not(.gridContainerPanelFocused) { /* we want focus to have higher priority than hover*/
+    border: 1px solid var(--component-hover-border-color);
 }
 
 .gridToolbarContainerPanel {

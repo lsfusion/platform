@@ -3,9 +3,9 @@ function option() {
         render: function (element, controller) {
             let options = document.createElement('options');
             options.style.display = 'block';
-            options.style.borderRadius = 'var(--table-border-radius)';
-            options.style.border = '1px solid var(--grid-separator-border-color)';
-            options.style.padding = 'var(--border-padding) 4px';
+            // options.style.borderRadius = 'var(--table-border-radius)';
+            // options.style.border = '1px solid var(--grid-separator-border-color)';
+            // options.style.padding = 'var(--border-padding) 4px';
 
             element.appendChild(options);
             element.options = options;

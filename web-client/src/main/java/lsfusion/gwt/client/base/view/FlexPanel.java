@@ -917,6 +917,8 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
         Boolean prevBorder = null;
         FlexStretchLine prevLine = null;
 
+        boolean empty = true;
+
         for (FlexStretchLine childLine : lines) {
             PanelParams childParams = childLine.updatePanels();
 
@@ -970,6 +972,8 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
             // BORDERS
             if(childParams.empty) // just ignoring empty containers to avoid borders around them
                 continue;
+
+            empty = false;
 
             if(wrapPanel != null) { // wrapped
                 if(prevWrapHorzBorder != null)
@@ -1035,12 +1039,10 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
             }
         }
 
-        boolean empty = false;
-
         InnerAlignment mainAlignment = InnerAlignment.ANY;
         boolean mainCollapsed = false;
 
-        if(prevBorder != null) {
+        if(!empty) {
             if (flexCount == 0 || flexCount == 1 && flexIs) { // if we have no stretched or only one stretched element (that we would stretch anyway)
                 if (flexCount == 0) {
                     // COLLAPSE
@@ -1058,10 +1060,8 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
                     mainAlignment = flexChildAlignment;
             } else
                 mainAlignment = InnerAlignment.DIFF;
-        } else { // empty, however it seems that it's needed only for columns container (which can have no children but still be visible)
+        } else // empty, however it seems that it's needed only for columns container (which can have no children but still be visible)
             top = false;
-            empty = true;
-        }
 
         InnerAlignment horzAlignment = vertical ? oppositeAlignment : mainAlignment;
         InnerAlignment vertAlignment = vertical ? mainAlignment : oppositeAlignment;

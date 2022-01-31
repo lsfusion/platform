@@ -75,6 +75,8 @@ public abstract class GridPropertyView extends BaseComponentView {
         return isCustom();
     }
 
+    public Boolean boxed;
+
     protected abstract boolean isCustom();
 
     @Override

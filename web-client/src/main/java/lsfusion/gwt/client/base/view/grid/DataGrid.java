@@ -290,7 +290,7 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
     private static Set<String> getBrowserEvents() {
         if(browserEvents == null) {
             Set<String> eventTypes = new HashSet<>();
-            eventTypes.addAll(getBrowserFocusEvents());
+//            eventTypes.addAll(getBrowserFocusEvents());
             eventTypes.addAll(getBrowserMouseEvents());
             eventTypes.addAll(getBrowserKeyEvents());
             browserEvents = eventTypes;
@@ -314,6 +314,10 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
 
     public static void initSinkMouseEvents(Widget widget) {
         CellBasedWidgetImpl.get().sinkEvents(widget, getBrowserMouseEvents());
+    }
+
+    public static void initSinkFocusEvents(Widget widget) {
+        CellBasedWidgetImpl.get().sinkEvents(widget, getBrowserFocusEvents());
     }
 
     public static void initSinkDragDropEvents(Widget widget) {
@@ -434,11 +438,12 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
         if(!checkSinkEvents(event))
             return;
 
-        String eventType = event.getType();
-        if (BrowserEvents.FOCUS.equals(eventType))
-            onFocus();
-        else if (BrowserEvents.BLUR.equals(eventType))
-            onBlur(event);
+        // moved to GridContainerPanel
+//        String eventType = event.getType();
+//        if (BrowserEvents.FOCUS.equals(eventType))
+//            onFocus();
+//        else if (BrowserEvents.BLUR.equals(eventType))
+//            onBlur(event);
 
         // Find the cell where the event occurred.
         TableSectionElement tbody = getTableBodyElement();
@@ -1014,25 +1019,21 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
 
     protected abstract boolean previewEvent(Element target, Event event);
 
-    protected void onFocus() {
-        if(isFocused)
-            return;
+    public void onFocus() {
+//        if(isFocused)
+//            return;
         DataGrid.sinkPasteEvent(getTableDataFocusElement());
         isFocused = true;
         focusedChanged();
     }
 
-    protected void onBlur(Event event) {
-        if(!isFocused || isFakeBlur(event, getElement()))
-            return;
+    public void onBlur(Event event) {
+//        if(!isFocused || isFakeBlur(event, getElement()))
+//            return;
         //if !isFocused should be replaced to assert; isFocused must be true, but sometimes is not (related to LoadingManager)
         //assert isFocused;
         isFocused = false;
         focusedChanged();
-    }
-
-    public void changeBorder(String color) {
-        getElement().getStyle().setBorderColor(color);
     }
 
     public Element getTableDataFocusElement() {
@@ -1129,8 +1130,9 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
         if (columnsChanged || selectedRowChanged || selectedColumnChanged || focusedChanged)
             updateFocusedCellDOM(); // updating focus cell border
 
-        if(focusedChanged) // updating focus grid border
-            changeBorder(isFocused ? "var(--focus-color)" : "var(--component-border-color)");
+        // moved to GridContainerPanel
+//        if(focusedChanged) // updating focus grid border
+//            getElement().getStyle().setBorderColor(isFocused ? "var(--focus-color)" : "var(--component-border-color)");
     }
 
     private void finishResolving() {

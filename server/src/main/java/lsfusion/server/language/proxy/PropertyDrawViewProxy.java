@@ -27,6 +27,10 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         target.autoSize = autoSize;
     }
 
+    public void setBoxed(boolean boxed) {
+        target.boxed = boxed;
+    }
+
     public void setPanelCaptionVertical(boolean panelCaptionVertical) {
         target.panelCaptionVertical = panelCaptionVertical;
     }

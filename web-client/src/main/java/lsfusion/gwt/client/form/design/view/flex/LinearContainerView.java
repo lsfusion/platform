@@ -105,19 +105,26 @@ public class LinearContainerView extends GAbstractContainerView {
 
     @Override
     public void updateCaption(GContainer container) {
-        getCaptionPanel(container).setCaption(container.caption);
+        CaptionPanel captionPanel = getCaptionPanel(container);
+        String caption = container.caption;
+        if(captionPanel != null)
+            captionPanel.setCaption(caption);
+        else // it is possible if hasNoCaption is true, so captionPanel is not created, however dynamic caption changes may come to the client
+            assert caption == null;
     }
 
     public CaptionPanel getCaptionPanel(GContainer container) {
         FlexPanel childPanel = (FlexPanel) getChildView(container);
 
-        // if we have caption it has to be either FlexCaptionPanel, or it is wrapped into one more flexPanel (see addImpl)
-        CaptionPanel caption;
+        // if we have caption it has to be either CaptionPanel, or it is wrapped into one more flexPanel (see addImpl)
         if(childPanel instanceof CaptionPanel)
-            caption = (CaptionPanel) childPanel;
-        else
-            caption = (CaptionPanel) childPanel.getWidget(0);
-        return caption;
+            return (CaptionPanel) childPanel;
+
+        Widget childWidget = childPanel.getWidget(0);
+        if(childWidget instanceof CaptionPanel)
+            return (CaptionPanel) childWidget;
+
+        return null;
     }
 
     private static class AlignCaptionPanel extends FlexPanel {

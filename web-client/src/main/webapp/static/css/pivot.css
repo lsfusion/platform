@@ -1,12 +1,14 @@
 .pivotTable {
-    border: 1px solid var(--panel-border-color);
-    border-radius: var(--panel-border-radius);
-    -webkit-border-radius: var(--panel-border-radius);
-    -moz-border-radius: var(--panel-border-radius);
+    /*border: 1px solid var(--panel-border-color);*/
+    /*border-radius: var(--panel-border-radius);*/
+    /*-webkit-border-radius: var(--panel-border-radius);*/
+    /*-moz-border-radius: var(--panel-border-radius);*/
+
+    background: var(--background-color);
 }
 
 .pivotTable:focus {
-    border: 1px solid var(--focus-color);
+    /*border: 1px solid var(--focus-color);*/
 }
 
 .pivotTable-noSettings {

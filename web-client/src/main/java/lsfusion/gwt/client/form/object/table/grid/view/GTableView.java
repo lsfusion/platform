@@ -85,4 +85,5 @@ public interface GTableView {
     default void onRender(){}
     default void onClear(){}
 
+    default boolean isDefaultBoxed() { return true; }
 }

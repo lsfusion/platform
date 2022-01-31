@@ -149,6 +149,8 @@ public class GContainer extends GComponent {
         // align caption has a higher priority than wrap
         if(horizontal) // later maybe it makes sense to support align captions for horizontal containers, but with no-wrap it doesn't make much sense
             return false;
+        if(children.size() <= lines) // if there are fewer components than lines, there is no point in creating grids (however later it makes sense to avoid creating grids for specific lines)
+            return false;
 
         if (alignCaptions != null) {
             return alignCaptions;

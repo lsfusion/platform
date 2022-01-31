@@ -199,7 +199,7 @@ public class GGridController extends GAbstractTableController {
         if (this.table != null)
             this.table.onClear();
 
-        changeGridView(table.getThisWidget());
+        changeGridView(table.getThisWidget(), groupObject.grid.isBoxed(table));
         table.onRender();
         this.table = table;
         updateSettingsButton();

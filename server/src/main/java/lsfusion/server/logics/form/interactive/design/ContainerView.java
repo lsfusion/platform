@@ -100,6 +100,10 @@ public class ContainerView extends ComponentView {
     }
 
     protected boolean isDefaultCollapsible() {
+        return hasCaption();
+    }
+
+    private boolean hasCaption() {
         return !PropertyDrawView.hasNoCaption(caption, propertyCaption);
     }
 
@@ -356,7 +360,7 @@ public class ContainerView extends ComponentView {
 
         pool.serializeCollection(outStream, getChildrenList());
 
-        pool.writeString(outStream, ThreadLocalContext.localize(caption));
+        pool.writeString(outStream, hasCaption() ? ThreadLocalContext.localize(caption) : null); // optimization
 
         outStream.writeBoolean(isCollapsible());
 //        pool.writeObject(outStream, main);

@@ -22,6 +22,7 @@ public class ClientGrid extends ClientComponent {
     public int lineHeight;
 
     public boolean autoSize;
+    public Boolean boxed;
 
     public ClientGroupObject groupObject;
 
@@ -45,6 +46,9 @@ public class ClientGrid extends ClientComponent {
         super.customSerialize(pool, outStream);
 
         outStream.writeBoolean(autoSize);
+        outStream.writeBoolean(boxed != null);
+        if(boxed != null)
+            outStream.writeBoolean(boxed);
 
         outStream.writeBoolean(tabVertical);
         outStream.writeBoolean(quickSearch);
@@ -63,6 +67,7 @@ public class ClientGrid extends ClientComponent {
         super.customDeserialize(pool, inStream);
 
         autoSize = inStream.readBoolean();
+        boxed = inStream.readBoolean() ? inStream.readBoolean() : null;
 
         tabVertical = inStream.readBoolean();
         quickSearch = inStream.readBoolean();

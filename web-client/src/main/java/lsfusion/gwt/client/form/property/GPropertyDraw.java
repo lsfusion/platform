@@ -81,6 +81,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public String defaultPattern;
     public GClass returnClass;
 
+    public boolean boxed = true;
+
     public GType externalChangeType;
     public Map<String, GAsyncEventExec> asyncExecMap;
 

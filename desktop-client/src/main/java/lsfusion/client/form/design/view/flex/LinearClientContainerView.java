@@ -82,8 +82,13 @@ public class LinearClientContainerView extends AbstractClientContainerView {
         public FlexAlignment captionHAlignment;
     }
 
-    public void updateCaption(ClientContainer clientContainer) {
-        getCaptionPanel(clientContainer).setCaption(clientContainer.caption);
+    public void updateCaption(ClientContainer container) {
+        CaptionPanel captionPanel = getCaptionPanel(container);
+        String caption = container.caption;
+        if(captionPanel != null)
+            captionPanel.setCaption(caption);
+        else // it is possible if hasNoCaption is true, so captionPanel is not created, however dynamic caption changes may come to the client
+            assert caption == null;
     }
 
     public CaptionPanel getCaptionPanel(ClientContainer container) {

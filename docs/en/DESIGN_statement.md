@@ -140,6 +140,7 @@ To access design components, you can use their names or address property compone
 |`askConfirm`|Specifies that an attempt to change the property (execute an action) will show a confirmation request|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`askConfirmMessage`|Text of the confirmation request shown when an attempt to change the property (execute the action) is made|String literal|default message|`'Are you sure you want to modify this property?'`|
 |`autoSize`|Automatic component size option. Applies to text components only|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
+|`boxed`|Drawing a frame (box) around a component|Extended Boolean literal|`TRUE`|`TRUE`<br/>`FALSE`|
 |`valueWidth`|Width of the property value cell in pixels|Integer literal|depends on the property|`100`|
 |`charWidth`|Width of the property value cell in characters|Integer literal|depends on the property|`10`|
 |`charHeight`|Height of the property value cell in characters (rows).|Integer literal|depends on the property|`2`|
