@@ -1449,8 +1449,8 @@ public class GFormController implements EditManager {
         DialogBoxHelper.showMessageBox(isError, caption, message, callback);
     }
 
-    public Dimension getPreferredSize(int maxWidth, int maxHeight, int extraHorzOffset, int extraVertOffset) {
-        return formLayout.getPreferredSize(maxWidth, maxHeight, extraHorzOffset, extraVertOffset);
+    public Dimension getPreferredSize(int maxWidth, int maxHeight) {
+        return formLayout.getPreferredSize(maxWidth, maxHeight);
     }
 
     public boolean isWindow() {

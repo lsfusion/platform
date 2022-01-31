@@ -11,7 +11,6 @@ import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
-import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.Result;
 import lsfusion.gwt.client.base.resize.ResizeHandler;
 import lsfusion.gwt.client.base.resize.ResizeHelper;
@@ -21,7 +20,6 @@ import lsfusion.gwt.client.form.design.view.flex.FlexTabbedPanel;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesResize, HasMaxPreferredSize {
 
@@ -1113,7 +1111,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
     }
 
     @Override
-    public void setPreferredSize(boolean set) {
+    public void setPreferredSize(boolean set, Result<Integer> grids) {
         for(Widget widget : getChildren()) {
             if(widget.isVisible()) {
                 // flex-basis : setting to auto / restoring
@@ -1122,7 +1120,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
                     impl.setPreferredSize(set, widget.getElement(), flex, vertical, isGrid());
 
                 if (widget instanceof HasMaxPreferredSize)
-                    ((HasMaxPreferredSize) widget).setPreferredSize(set);
+                    ((HasMaxPreferredSize) widget).setPreferredSize(set, grids);
             }
         }
     }

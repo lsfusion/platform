@@ -11,7 +11,6 @@ import lsfusion.gwt.client.base.Dimension;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.result.NumberResult;
 import lsfusion.gwt.client.base.view.WindowHiddenHandler;
-import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.controller.remote.action.PriorityErrorHandlingCallback;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
@@ -123,14 +122,9 @@ public abstract class FormContainer<W extends Widget> {
             int horzClientOffset = 20;
             int vertClientOffset = 100;
 
-            // there are 2 problems : rounding (we need to round up), however it coukd be fixed differently
-            // since we are changing for example grid basises (by changing fill to percent), we can get extra scrollbars in grids (which is not what we want), so we just add some extraOffset
-            int extraHorzOffset = DataGrid.nativeScrollbarWidth * 2;
-            int extraVertOffset = DataGrid.nativeScrollbarHeight * 2;
-
             int wndWidth = Window.getClientWidth();
             int wndHeight = Window.getClientHeight();
-            Dimension size = form.getPreferredSize(wndWidth - horzClientOffset, wndHeight - vertClientOffset, extraHorzOffset, extraVertOffset);
+            Dimension size = form.getPreferredSize(wndWidth - horzClientOffset, wndHeight - vertClientOffset);
             form.formLayout.setWidth(size.width + "px");
             form.formLayout.setHeight(size.height + "px");
         }

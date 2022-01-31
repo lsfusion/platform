@@ -6,9 +6,9 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.GFormChanges;
+import lsfusion.gwt.client.base.Result;
 import lsfusion.gwt.client.base.focus.DefaultFocusReceiver;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
-import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.HasMaxPreferredSize;
 import lsfusion.gwt.client.base.view.ResizableSimplePanel;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
@@ -116,13 +116,13 @@ public abstract class GAbstractTableController extends GPropertyController imple
             removeStyleName("gridContainerPanelFocused");
         }
 
-        public void setPreferredSize(boolean set) {
+        public void setPreferredSize(boolean set, Result<Integer> grids) {
             if(!autoSize)
                 changePercentFillWidget(set);
 
             Widget widget = getWidget();
             if(widget instanceof HasMaxPreferredSize) // needed to setPreferredSize for grid
-                ((HasMaxPreferredSize) widget).setPreferredSize(set);
+                ((HasMaxPreferredSize) widget).setPreferredSize(set, grids);
         }
     }
 

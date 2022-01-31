@@ -23,6 +23,7 @@ import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.Result;
 import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.form.controller.GFormController;
@@ -847,7 +848,7 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
     }
 
     @Override
-    public void setPreferredSize(boolean set) {
+    public void setPreferredSize(boolean set, Result<Integer> grids) {
         if(minWidthUnit != null) {
             // we have only minWidth, but during auto sizing this grid will get 100000 pixels width, which is not what we expect
             // so we're setting max width
@@ -858,8 +859,10 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
                 setMaxBlockWidth(set, tableFooter);
         }
 
+        grids.set(grids.result + 1);
+
         // super call will set tableDataScroller flex basis to auto (which is also important)
-        super.setPreferredSize(set);
+        super.setPreferredSize(set, grids);
     }
 
     private void setMaxBlockWidth(boolean set, Widget tableData) {
