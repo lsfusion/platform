@@ -70,6 +70,10 @@
     /*to stretch last empty paxis*/
     height:100%;
     width: 100%;
+
+    /* there are plenty of elements using padding (see below) but also having height:100% width:100% leading to unnecessary scrolls */
+    /*.pvtUiCell > div:not(.pvtUnusedCellDivWrapper), .pvtUnusedCellDivWrapper > div {*/
+    overflow: hidden;
 }
 
 .pvtUi-noSettings {
