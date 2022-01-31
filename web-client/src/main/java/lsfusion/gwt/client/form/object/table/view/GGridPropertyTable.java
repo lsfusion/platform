@@ -160,8 +160,8 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         }
 
         @Override
-        public void resizeChild(int index, int delta) {
-            resizeColumn(index, delta);
+        public double resizeChild(int index, int delta) {
+            return resizeColumn(index, delta);
         }
 
         @Override
@@ -387,16 +387,18 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         setMinimumTableWidth(totalPref, com.google.gwt.dom.client.Style.Unit.PX);
     }
 
-    public void resizeColumn(int column, int delta) {
+    public double resizeColumn(int column, int delta) {
 //        int body = ;
         int viewWidth = getViewportWidth() - 1; // непонятно откуда этот один пиксель берется (судя по всему padding)
-        GwtClientUtils.calculateNewFlexesForFixedTableLayout(column, delta, viewWidth, prefs, basePrefs, flexes);
+        double restDelta = GwtClientUtils.calculateNewFlexesForFixedTableLayout(column, delta, viewWidth, prefs, basePrefs, flexes);
         for (int i = 0; i < prefs.length; i++)
             setUserWidth(i, (int) Math.round(prefs[i]));
         updateLayoutWidthColumns();
 
         widthsChanged();
         onResize();
+
+        return restDelta;
     }
 
     protected abstract void setUserWidth(GPropertyDraw property, Integer value);

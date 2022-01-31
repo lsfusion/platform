@@ -12,6 +12,7 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.Pair;
+import lsfusion.gwt.client.base.Result;
 import lsfusion.gwt.client.base.resize.ResizeHandler;
 import lsfusion.gwt.client.base.resize.ResizeHelper;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
@@ -19,6 +20,8 @@ import lsfusion.gwt.client.form.design.view.flex.FlexTabbedPanel;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesResize, HasMaxPreferredSize {
 
@@ -595,17 +598,43 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
         return result;
     }
 
+    private static class ParentSameFlexPanel {
+        public final FlexPanel panel;
+        public final List<FlexLine> lines;
+        public final int index;
+
+        public ParentSameFlexPanel(FlexPanel panel, List<FlexLine> lines, int index) {
+            this.panel = panel;
+            this.lines = lines;
+            this.index = index;
+        }
+    }
+
+
     private ResizeHelper getResizeHelper(NativeEvent event) {
         int oppositePosition = ResizeHandler.getEventPosition(vertical, false, event);
+        List<FlexLine> lines = getLines(oppositePosition);
+        // optimization, lazy calculation
+        Result<List<ParentSameFlexPanel>> parents = new Result<>();
+        Function<Boolean, List<ParentSameFlexPanel>> lazyParents = onlyFirst -> {
+            if(parents.result != null)
+                return parents.result;
+
+            List<ParentSameFlexPanel> result = new ArrayList<>();
+            fillParentSameFlexPanels(vertical, result, oppositePosition, onlyFirst);
+            if(!onlyFirst)
+                parents.set(result);
+            return result;
+        };
 
         return new ResizeHelper() {
             @Override
             public int getChildCount() {
-                return getLines(oppositePosition).size();
+                return lines.size();
             }
 
             private FlexLine getChildLine(int index) {
-                return getLines(oppositePosition).get(index);
+                return lines.get(index);
             }
 
             @Override
@@ -619,17 +648,17 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
             }
 
             @Override
-            public void resizeChild(int index, int delta) {
-                resizeWidget(index, delta, oppositePosition);
+            public double resizeChild(int index, int delta) {
+                return resizeWidget(delta, lines, index, lazyParents.apply(false));
             }
 
             @Override
             public boolean isChildResizable(int index) {
-                if (!isChildrenResizable(index, oppositePosition))
+                if (!isChildrenResizable(lines, index))
                     return false;
 
                 // optimization, if it is the last element, and there is a "resizable" parent, we consider this element to be not resizable (assuming that this "resizable" parent will be resized)
-                if (index == getChildCount() - 1 && getParentSameFlexPanel(vertical, oppositePosition) != null)
+                if (index == getChildCount() - 1 && !lazyParents.apply(true).isEmpty())
                     return false;
 
                 return true;
@@ -643,11 +672,10 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
     }
 
     // the resize algorithm assumes that there should be flex column to the left, to make
-    public boolean isChildrenResizable(int widgetNumber, int oppositePosition) {
+    public boolean isChildrenResizable(List<FlexLine> lines, int widgetNumber) {
         if(!childrenResizable)
             return false;
 
-        List<FlexLine> lines = getLines(oppositePosition);
         for(int i=widgetNumber;i>=0;i--) {
             if (lines.get(i).isFlex())
                 return true;
@@ -656,33 +684,35 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
     }
 
     // we need to guarantee somehow that resizing this parent container will lead to the same resizing of this container
-    public Pair<FlexPanel, Integer> getParentSameFlexPanel(boolean vertical, int oppositePosition) {
+    public void fillParentSameFlexPanels(boolean vertical, List<ParentSameFlexPanel> fillParents, int oppositePosition, boolean onlyFirst) {
 //        if(1==1) return null;
         Widget parent = getParent();
         if(!(parent instanceof FlexPanel)) // it's some strange layouting, ignore it
-            return null;
+            return;
 
         FlexPanel flexParent = (FlexPanel) parent;
         if(vertical != flexParent.vertical) {
             AlignmentLayoutData layoutData = ((WidgetLayoutData) getLayoutData()).aligment;
             if(layoutData.alignment == GFlexAlignment.STRETCH)
-                return flexParent.getParentSameFlexPanel(vertical, oppositePosition);
+                flexParent.fillParentSameFlexPanels(vertical, fillParents, oppositePosition, onlyFirst);
         } else {
             List<FlexLine> lines = flexParent.getLines(oppositePosition);
             for (int i = 0; i < lines.size(); i++) {
                 FlexLine line = lines.get(i);
                 if (line.contains(this)) {
-                    if(flexParent.isChildrenResizable(i, oppositePosition))
-                        return new Pair<>(flexParent, i);
+                    if(flexParent.isChildrenResizable(lines, i)) {
+                        fillParents.add(new ParentSameFlexPanel(flexParent, lines, i));
+                        if(!onlyFirst)
+                            flexParent.fillParentSameFlexPanels(vertical, fillParents, oppositePosition, onlyFirst);
+                    }
                     break;
                 }
             }
         }
-        return null;
     }
 
-    public void resizeWidget(int lineNumber, double delta, int oppositePosition) {
-        List<FlexLine> children = getLines(oppositePosition);
+    public double resizeWidget(double delta, List<FlexLine> lines, int lineNumber, List<ParentSameFlexPanel> parents) {
+        List<FlexLine> children = lines;
 
         int size = children.size();
         double[] prefs = new double[size];
@@ -728,13 +758,13 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
 
 //        int body = ;
         // important to calculate viewWidth before setting new flexes
-        Pair<FlexPanel, Integer> parentSameFlexPanel = getParentSameFlexPanel(vertical, oppositePosition);
+        ParentSameFlexPanel parentSameFlexPanel = parents.size() > 0 ? parents.get(0) : null;
 
         int viewWidth = impl.getSize(element, vertical) - margins;
         double restDelta = GwtClientUtils.calculateNewFlexes(lineNumber, delta, viewWidth, prefs, flexes, basePrefs, baseFlexes,  parentSameFlexPanel == null);
 
         if(parentSameFlexPanel != null && !GwtClientUtils.equals(restDelta, 0.0))
-            parentSameFlexPanel.first.resizeWidget(parentSameFlexPanel.second, restDelta, oppositePosition);
+            restDelta = parentSameFlexPanel.panel.resizeWidget(restDelta, parentSameFlexPanel.lines, parentSameFlexPanel.index, parents.subList(1, parents.size()));
 
         if(wrap)
             impl.setWrap(element);
@@ -753,6 +783,8 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
         }
 
         onResize();
+
+        return restDelta;
     }
 
     private static void setFlexModifier(boolean grid, boolean vertical, FlexLayoutData layoutData, FlexStretchLine w, FlexModifier modifier) {
