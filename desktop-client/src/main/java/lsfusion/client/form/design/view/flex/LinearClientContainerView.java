@@ -116,7 +116,7 @@ public class LinearClientContainerView extends AbstractClientContainerView {
 
                 ((CaptionContainerHolder) view).setCaptionContainer((widget, captionSizes, valueSizes, alignment) -> {
                     assert vertical; // because of aligncaptions first check (isVertical())
-                    captionPanel.add(widget, alignment, captionSizes.first);
+                    captionPanel.add(widget, alignment, 0.0, captionSizes.first);
 
                     Integer baseSize = vertical ? valueSizes.second : valueSizes.first;
 
