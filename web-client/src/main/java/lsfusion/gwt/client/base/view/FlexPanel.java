@@ -357,7 +357,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
         }
         
         public Integer getFlexBasis() {
-            if (flexModifier == FlexModifier.COLLAPSE) {
+            if (flexModifier == FlexModifier.COLLAPSE) { // in theory it should not just drop to auto, but also set min-height to flexBasis (however it's heuristics anyway, so for now the current behaviour will also do)
                 return null;
             }
             return flexBasis;
@@ -1082,8 +1082,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
                     if (singleElement || !flexAlignment.equals(GFlexAlignment.CENTER)) { // we cannot stretch center element when there are several elements (it will break the centering)
                         mainAlignment = new InnerFlexAlignment(flexAlignment);
 
-                        // we might want to check if the stretched element is not collapsed, however, it doesn't make much sense because this container will be "collapsed" anyway, and this flex won't matter
-                        if (isStretch(flexChildAlignment, mainAlignment) && hasBorders)
+                        if (isStretch(flexChildAlignment, mainAlignment) && hasBorders && !flexCollapsed) // !flexCollapsed is important because modifier also changes flexBasis
                             setFlexModifier(grid, vertical, flexLineLayoutData, flexLine, FlexModifier.STRETCH);
                     }
                 } else // single already stretched element we're using the inner alignment
