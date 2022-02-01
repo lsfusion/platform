@@ -83,6 +83,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import static lsfusion.interop.action.ServerResponse.CHANGE;
+import static lsfusion.server.logics.form.struct.property.PropertyDrawExtraType.CAPTION;
 
 public class FormEntity implements FormSelector<ObjectEntity> {
     private final static Logger logger = Logger.getLogger(FormEntity.class);
@@ -298,6 +299,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
             propertyDraw.setToDraw(group);
             propertyDraw.setIntegrationSID(null); // we want to exclude this property from all integrations / apis / reports (use only in interactive view)
             propertyDraw.setPropertyExtra(addPropertyObject(baseLM.addJProp(baseLM.isPivot, new LP(group.getListViewType(baseLM.listViewType).property))), PropertyDrawExtraType.SHOWIF);
+            propertyDraw.ignoreHasHeaders = true;
 
             addPropertyDrawView(propertyDraw, false, version); // because it's called after form constructor
         }
@@ -1061,7 +1063,12 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
     @IdentityLazy
     public boolean hasNoProperties(GroupObjectEntity group) {
-        return getAllGroupProperties(SetFact.EMPTY(), true).get(group) == null;
+        return getProperties(group).isEmpty();
+    }
+
+    private ImOrderSet<PropertyDrawEntity> getProperties(GroupObjectEntity group) {
+        ImOrderSet<PropertyDrawEntity> properties = getAllGroupProperties(SetFact.EMPTY(), true).get(group);
+        return properties != null ? properties : SetFact.EMPTYORDER();
     }
 
     @IdentityLazy
@@ -1157,12 +1164,20 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     }
 
     @IdentityLazy
+    public boolean hasHeaders(GroupObjectEntity entity) {
+        for (PropertyDrawEntity property : getProperties(entity)) {
+            LocalizedString caption = property.getCaption();
+            if (!property.ignoreHasHeaders && !PropertyDrawView.hasNoCaption(caption.isEmpty() ? null : caption, property.getPropertyExtra(CAPTION)))
+                return true;
+        }
+        return false;
+    }
+
+    @IdentityLazy
     public boolean hasFooters(GroupObjectEntity entity) {
-        Iterable<PropertyDrawEntity> propertyDrawsIt = getPropertyDrawsIt();
-        for (PropertyDrawEntity property : propertyDrawsIt) {
-            if (property.getPropertyExtra(PropertyDrawExtraType.FOOTER) != null && entity.equals(property.getToDraw(this))) {
-                    return true;
-            }
+        for (PropertyDrawEntity property : getProperties(entity)) {
+            if (property.getPropertyExtra(PropertyDrawExtraType.FOOTER) != null)
+                return true;
         }
         return false;
     }

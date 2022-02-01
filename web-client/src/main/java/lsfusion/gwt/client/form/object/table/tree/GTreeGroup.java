@@ -47,6 +47,6 @@ public class GTreeGroup extends GComponent {
 
     @Override
     protected Integer getDefaultHeight() {
-        return getLastGroup().getHeight(lineHeight) + (headerHeight >= 0 ? headerHeight : GGridPropertyTableHeader.DEFAULT_HEADER_HEIGHT);
+        return getLastGroup().getHeight(lineHeight, headerHeight);
     }
 }

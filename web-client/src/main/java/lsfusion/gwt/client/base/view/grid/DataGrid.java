@@ -130,7 +130,7 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
 
     private int pageIncrement = 30;
 
-    private final boolean noHeaders;
+    protected final boolean noHeaders;
     private final boolean noFooters;
     private final boolean noScrollers;
 
@@ -1601,8 +1601,9 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
 
         // TOP BORDER (BOTTOM of upper row)
         if(column < columnCount) {
-            TableCellElement upperCell = (row > 0 ? rows.getItem(row - 1) : headerRows.getItem(0)).getCells().getItem(column);
-            setFocusedCellBottomBorder(upperCell, focused);
+            TableRowElement upperRow = row > 0 ? rows.getItem(row - 1) : (headerRows != null ? headerRows.getItem(0) : null);
+            if(upperRow != null)
+                setFocusedCellBottomBorder(upperRow.getCells().getItem(column), focused);
         }
     }
 
@@ -1640,10 +1641,6 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
     public Element getHeaderElement(int element) {
         assert !noHeaders;
         return headerBuilder.getHeaderRow().getCells().getItem(element);
-    }
-
-    public Element getHeader() {
-        return headerBuilder.getHeaderRow();
     }
 
     // mechanism is slightly different - removing redundant columns, resetting others, however there is no that big difference from other updates so will leave it this way

@@ -38,7 +38,7 @@ public class ClientGrid extends ClientComponent {
 
     @Override
     protected Integer getDefaultHeight() {
-        return groupObject.getHeight(lineHeight) + (headerHeight >= 0 ? headerHeight : DEFAULT_HEADER_HEIGHT);
+        return groupObject.getHeight(lineHeight, headerHeight);
     }
 
     @Override

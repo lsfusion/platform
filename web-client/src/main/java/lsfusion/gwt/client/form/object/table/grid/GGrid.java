@@ -27,7 +27,7 @@ public class GGrid extends GComponent {
 
     @Override
     protected Integer getDefaultHeight() {
-        return groupObject.getHeight(lineHeight) + (headerHeight >= 0 ? headerHeight : GGridPropertyTableHeader.DEFAULT_HEADER_HEIGHT);
+        return groupObject.getHeight(lineHeight, headerHeight);
     }
 
     public boolean isBoxed(GTableView table) {

@@ -478,7 +478,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
     private GridColumn insertGridColumn(int index, GPropertyDraw property, GGroupObjectValue columnKey) {
         GridColumn column = new GridColumn(property, columnKey);
-        GGridPropertyTableHeader header = new GGridPropertyTableHeader(this, null, null, column.isSticky());
+        GGridPropertyTableHeader header = noHeaders ? null : new GGridPropertyTableHeader(this, null, null, column.isSticky());
         GGridPropertyTableFooter footer = property.hasFooter ? new GGridPropertyTableFooter(this, property, null, null) : null;
 
         insertColumn(index, column, header, footer);

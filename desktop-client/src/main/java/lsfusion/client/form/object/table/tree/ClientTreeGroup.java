@@ -143,6 +143,6 @@ public class ClientTreeGroup extends ClientComponent implements ClientIdentitySe
 
     @Override
     protected Integer getDefaultHeight() {
-        return getLastGroup().getHeight(lineHeight) + (headerHeight >= 0 ? headerHeight : ClientGrid.DEFAULT_HEADER_HEIGHT);
+        return getLastGroup().getHeight(lineHeight, headerHeight);
     }
 }
