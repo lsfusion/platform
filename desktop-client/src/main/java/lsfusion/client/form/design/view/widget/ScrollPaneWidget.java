@@ -36,6 +36,11 @@ public class ScrollPaneWidget extends JScrollPane implements Widget {
     }
 
     @Override
+    public boolean isVisible() {
+        return super.isVisible() && getViewport().getView().isVisible();
+    }
+
+    @Override
     public void checkMouseEvent(MouseEvent event) {
         int eventType = event.getID();
         if (eventType == MouseEvent.MOUSE_WHEEL && !event.isConsumed()) {
