@@ -125,6 +125,9 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public int valueWidth;
     public int valueHeight;
 
+    public int captionWidth;
+    public int captionHeight;
+
     public transient EditBindingMap editBindingMap;
     private transient PropertyRenderer renderer;
 
@@ -279,6 +282,20 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         if (image != null) // предпочитаемую высоту берем исходя из размера иконки
             height = Math.max(image.getIconHeight() + insetsHeight, height);
         return height;
+    }
+
+    public Integer getCaptionWidth() {
+        if(captionWidth >= 0)
+            return captionWidth;
+
+        return null;
+    }
+
+    public Integer getCaptionHeight() {
+        if(captionHeight >= 0)
+            return captionHeight;
+
+        return null;
     }
 
     @Override
@@ -441,6 +458,9 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         outStream.writeInt(valueWidth);
         outStream.writeInt(valueHeight);
 
+        outStream.writeInt(captionWidth);
+        outStream.writeInt(captionHeight);
+
         pool.writeObject(outStream, changeKey);
         pool.writeInt(outStream, changeKeyPriority);
         outStream.writeBoolean(showChangeKey);
@@ -482,6 +502,9 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         valueWidth = inStream.readInt();
         valueHeight = inStream.readInt();
+
+        captionWidth = inStream.readInt();
+        captionHeight = inStream.readInt();
 
         changeKey = pool.readObject(inStream);
         changeKeyPriority = pool.readInt(inStream);

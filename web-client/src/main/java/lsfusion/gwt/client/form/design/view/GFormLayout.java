@@ -246,8 +246,8 @@ public class GFormLayout extends ResizableComplexPanel {
         if(set) {
             // there are 2 problems : rounding (we need to round up), however it coukd be fixed differently
             // since we are changing for example grid basises (by changing fill to percent), we can get extra scrollbars in grids (which is not what we want), so we just add some extraOffset
-            int extraHorzOffset = DataGrid.nativeScrollbarWidth * grids.result;
-            int extraVertOffset = DataGrid.nativeScrollbarHeight * grids.result;
+            int extraHorzOffset = DataGrid.nativeScrollbarWidth * grids.result + 1; // 1 is for rounding
+            int extraVertOffset = DataGrid.nativeScrollbarHeight * grids.result + 1; // 1 is for rounding
 
             DataGrid.setMaxWidth(this, maxWidth, Style.Unit.PX);
             DataGrid.setMaxHeight(this, maxHeight, Style.Unit.PX);

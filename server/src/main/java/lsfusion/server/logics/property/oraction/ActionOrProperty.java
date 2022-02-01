@@ -618,6 +618,8 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         private int charWidth;
         private Integer valueWidth;
         private Integer valueHeight;
+        private Integer captionWidth;
+        private Integer captionHeight;
         private Boolean valueFlex;
 
         // свойства, но пока реализовано как для всех
@@ -689,6 +691,10 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
                 propertyView.setValueWidth(valueWidth);
             if(propertyView.valueHeight == null)
                 propertyView.setValueHeight(valueHeight);
+            if(propertyView.captionWidth == null)
+                propertyView.setCaptionWidth(captionWidth);
+            if(propertyView.captionHeight == null)
+                propertyView.setCaptionHeight(captionHeight);
             if (propertyView.design.getImage() == null && imagePath != null) {
                 propertyView.design.setImage(imagePath);
             }

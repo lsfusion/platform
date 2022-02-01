@@ -458,7 +458,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
             header.setCaption(columnCaption, property.notNull, property.hasChangeAction);
             header.setPaths(property.path, property.creationPath);
             header.setToolTip(property.getTooltipText(columnCaption));
-            header.setHeaderHeight(getHeaderHeight());
+            header.setHeaderHeight(property.getHeaderCaptionHeight(this));
         } else
             assert columnCaption == null || columnCaption.isEmpty();
     }
@@ -494,7 +494,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         return propFooters != null ? propFooters.get(columnKey) : null;
     }
 
-    protected abstract int getHeaderHeight();
+    public abstract int getHeaderHeight();
 
     protected String getUserCaption(GPropertyDraw propertyDraw) {
         return null;

@@ -1164,16 +1164,6 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     }
 
     @IdentityLazy
-    public boolean hasHeaders(GroupObjectEntity entity) {
-        for (PropertyDrawEntity property : getProperties(entity)) {
-            LocalizedString caption = property.getCaption();
-            if (!property.ignoreHasHeaders && !PropertyDrawView.hasNoCaption(caption.isEmpty() ? null : caption, property.getPropertyExtra(CAPTION)))
-                return true;
-        }
-        return false;
-    }
-
-    @IdentityLazy
     public boolean hasFooters(GroupObjectEntity entity) {
         for (PropertyDrawEntity property : getProperties(entity)) {
             if (property.getPropertyExtra(PropertyDrawExtraType.FOOTER) != null)

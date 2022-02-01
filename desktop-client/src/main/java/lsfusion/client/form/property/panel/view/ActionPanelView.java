@@ -143,7 +143,7 @@ public class ActionPanelView extends ButtonWidget implements PanelView, EditProp
             Integer baseSize = (vertical ? valueSizes.second : valueSizes.first) - 4; // it seems that 4 is the differrence between button insets (6) and label "future" insets (2)
             FlexPanel.setBaseSize(label, vertical, baseSize);  // oppositeAndFixed - false, since we're setting the size for the main direction
 
-            captionContainer.put(this, valueSizes, property.getPanelCaptionAlignment());
+            captionContainer.put(this, new Pair<>(null, null), valueSizes, property.getPanelCaptionAlignment());
         }
 
         if(property.panelCaptionVertical) {

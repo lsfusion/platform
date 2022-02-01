@@ -45,6 +45,7 @@ public class ContainerView extends ComponentView {
 
     public int lines = 1;
     public Integer lineSize = null;
+    public Integer captionLineSize = null;
     public Boolean lineShrink = null;
 
     public PropertyObjectEntity<?> showIf;
@@ -376,6 +377,7 @@ public class ContainerView extends ComponentView {
 
         outStream.writeInt(lines);
         pool.writeInt(outStream, lineSize);
+        pool.writeInt(outStream, captionLineSize);
         outStream.writeBoolean(isLineShrink(pool.context.entity));
     }
 
@@ -402,6 +404,7 @@ public class ContainerView extends ComponentView {
 
         lines = inStream.readInt();
         lineSize = pool.readInt(inStream);
+        captionLineSize = pool.readInt(inStream);
         lineShrink = inStream.readBoolean();
     }
 

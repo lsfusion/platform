@@ -16,6 +16,7 @@ import lsfusion.base.identity.IdentityObject;
 import lsfusion.interop.form.design.FontInfo;
 import lsfusion.interop.form.event.KeyInputEvent;
 import lsfusion.interop.form.event.MouseInputEvent;
+import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.SIDHandler;
 import lsfusion.server.base.version.Version;
@@ -54,6 +55,7 @@ import static java.util.Collections.synchronizedMap;
 import static lsfusion.base.BaseUtils.nvl;
 import static lsfusion.server.logics.LogicsModule.InsertType.AFTER;
 import static lsfusion.server.logics.form.interactive.design.object.GroupObjectContainerSet.*;
+import static lsfusion.server.logics.form.struct.property.PropertyDrawExtraType.CAPTION;
 
 public class FormView extends IdentityObject implements ServerCustomSerializable {
 
@@ -597,6 +599,14 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
 
     public void setCaptionFont(PropertyDrawView property, FontInfo captionFont) {
         property.design.setCaptionFont(captionFont);
+    }
+
+    @IdentityLazy
+    public boolean hasHeaders(GroupObjectEntity entity) {
+        for (PropertyDrawView property : getProperties(entity))
+            if (!property.entity.ignoreHasHeaders && property.getDrawCaption() != null)
+                return true;
+        return false;
     }
 
     public void setBackground(PropertyDrawView property, Color background) {

@@ -141,6 +141,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         container.alignCaptions = clientContainer.alignCaptions;
         container.lines = clientContainer.lines;
         container.lineSize = clientContainer.lineSize;
+        container.captionLineSize = clientContainer.captionLineSize;
         container.lineShrink = clientContainer.lineShrink;
 
         for (ClientComponent child : clientContainer.children) {
@@ -340,6 +341,9 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
 
         propertyDraw.valueWidth = clientPropertyDraw.valueWidth;
         propertyDraw.valueHeight = clientPropertyDraw.valueHeight;
+
+        propertyDraw.captionWidth = clientPropertyDraw.captionWidth;
+        propertyDraw.captionHeight = clientPropertyDraw.captionHeight;
 
         propertyDraw.panelCaptionVertical = clientPropertyDraw.panelCaptionVertical;
         propertyDraw.panelCaptionLast = clientPropertyDraw.panelCaptionLast;

@@ -575,7 +575,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     }
 
     @Override
-    protected int getHeaderHeight() {
+    public int getHeaderHeight() {
         return treeGroup.headerHeight;
     }
 

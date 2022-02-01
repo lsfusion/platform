@@ -142,8 +142,11 @@ To access design components, you can use their names or address property compone
 |`autoSize`|Automatic component size option. Applies to text components only|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`boxed`|Drawing a frame (box) around a component|Extended Boolean literal|`TRUE`|`TRUE`<br/>`FALSE`|
 |`valueWidth`|Width of the property value cell in pixels|Integer literal|depends on the property|`100`|
+|`valueHeight`|Height of the property value cell in pixels|Integer literal|depends on the property|`100`|
 |`charWidth`|Width of the property value cell in characters|Integer literal|depends on the property|`10`|
 |`charHeight`|Height of the property value cell in characters (rows).|Integer literal|depends on the property|`2`|
+|`captionWidth`|Width of the property caption in pixels|Integer literal|`-1`|`100`|
+|`captionHeight`|Height of the property caption in pixels|Integer literal|`-1`|`100`|
 |`clearText`|Specifying that the current text should be reset when input starts|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`echoSymbols`|Specifying that a set of `*` characters will be displayed instead of the property value. Used for passwords, for example|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`changeKey`|The key that will trigger the property change event. The definition principle is similar to specifying a parameter in [Keystroke.getKeystroke(String)](https://docs.oracle.com/javase/8/docs/api/javax/swing/KeyStroke.html#getKeyStroke-java.lang.String-)|String literal|`NULL`|`'ctrl F6'`<br/>`'BACK_SPACE'`<br/>`'alt shift X'`|

@@ -56,9 +56,9 @@ public class PropertyPanelRenderer extends PanelRenderer {
 
         GFlexAlignment panelCaptionAlignment = property.getPanelCaptionAlignment(); // vertical alignment
         boolean captionLast = property.isPanelCaptionLast();
+        SizedWidget sizedLabel = new SizedWidget(label, property.getCaptionWidth(), property.getCaptionHeight());
 
         if(property.isAlignCaption() && captionContainer != null) { // align caption
-            SizedWidget sizedLabel = new SizedWidget(label);
             if(!panelCaptionAlignment.equals(GFlexAlignment.END))
                 captionLast = false; // it's odd having caption last for alignments other than END
 
@@ -71,12 +71,12 @@ public class PropertyPanelRenderer extends PanelRenderer {
         panel = new FlexPanel(property.panelCaptionVertical);
 
         if (!captionLast)
-            panel.add(label, panelCaptionAlignment);
+            sizedLabel.add(panel, panelCaptionAlignment);
 
         valuePanel.addFill(panel);
 
         if (captionLast)
-            panel.add(label, panelCaptionAlignment);
+            sizedLabel.add(panel, panelCaptionAlignment);
 
         return new SizedWidget(panel);
     }

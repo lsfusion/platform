@@ -75,6 +75,9 @@ public class PropertyDrawView extends BaseComponentView {
     public Integer valueWidth;
     public Integer valueHeight;
 
+    public Integer captionWidth;
+    public Integer captionHeight;
+
     private Boolean valueFlex;
 
     public KeyInputEvent changeKey;
@@ -154,6 +157,20 @@ public class PropertyDrawView extends BaseComponentView {
             if(!isProperty()) // we want vertical size for action to be equal to text fields
                 return -2;
         }
+
+        return -1;
+    }
+
+    public int getCaptionWidth(FormEntity entity) {
+        if(captionWidth != null)
+            return captionWidth;
+
+        return -1;
+    }
+
+    public int getCaptionHeight(FormEntity entity) {
+        if(captionHeight != null)
+            return captionHeight;
 
         return -1;
     }
@@ -331,6 +348,9 @@ public class PropertyDrawView extends BaseComponentView {
 
         outStream.writeInt(getValueWidth(pool.context.entity));
         outStream.writeInt(getValueHeight(pool.context.entity));
+
+        outStream.writeInt(getCaptionWidth(pool.context.entity));
+        outStream.writeInt(getCaptionHeight(pool.context.entity));
 
         pool.writeObject(outStream, changeKey);
         pool.writeInt(outStream, changeKeyPriority);
@@ -526,6 +546,9 @@ public class PropertyDrawView extends BaseComponentView {
         setCharWidth(inStream.readInt());
         setValueSize(pool.readObject(inStream));
 
+        setCaptionWidth(inStream.readInt());
+        setCaptionHeight(inStream.readInt());
+
         changeKey = pool.readObject(inStream);
         changeKeyPriority = pool.readInt(inStream);
         showChangeKey = inStream.readBoolean();
@@ -586,6 +609,14 @@ public class PropertyDrawView extends BaseComponentView {
 
     public void setValueHeight(Integer valueHeight) {
         this.valueHeight = valueHeight;
+    }
+
+    public void setCaptionWidth(Integer captionWidth) {
+        this.captionWidth = captionWidth;
+    }
+
+    public void setCaptionHeight(Integer captionHeight) {
+        this.captionHeight = captionHeight;
     }
 
     public Boolean getValueFlex() {

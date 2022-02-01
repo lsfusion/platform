@@ -52,7 +52,7 @@ public class LinearClientContainerView extends AbstractClientContainerView {
             for (int i = 0; i < linesCount; i++) {
                 if(alignCaptions) {
                     FlexPanel captionLine = new FlexPanel(vertical, justifyContent);
-                    panel.add((Widget) captionLine, FlexAlignment.STRETCH); // however it seems that FlexAlignment.STRETCH is also possible
+                    panel.add((Widget) captionLine, FlexAlignment.STRETCH, 0, container.getCaptionLineSize()); // however it seems that FlexAlignment.STRETCH is also possible
                     captionLines[i] = captionLine;
                 }
 
@@ -114,9 +114,9 @@ public class LinearClientContainerView extends AbstractClientContainerView {
             if (view instanceof CaptionContainerHolder) {
                 captionPanel.captionHAlignment = ((CaptionContainerHolder) view).getCaptionHAlignment();
 
-                ((CaptionContainerHolder) view).setCaptionContainer((widget, valueSizes, alignment) -> {
+                ((CaptionContainerHolder) view).setCaptionContainer((widget, captionSizes, valueSizes, alignment) -> {
                     assert vertical; // because of aligncaptions first check (isVertical())
-                    captionPanel.add(widget, alignment);
+                    captionPanel.add(widget, alignment, captionSizes.first);
 
                     Integer baseSize = vertical ? valueSizes.second : valueSizes.first;
 

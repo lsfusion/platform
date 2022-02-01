@@ -30,9 +30,7 @@ public class LinearContainerView extends GAbstractContainerView {
     
     private GFormController formController;
 
-    private final static FlexPanel.FlexLayoutData captionLine = new FlexPanel.FlexLayoutData(0, null, false);
-
-    public static FlexPanel.GridLines getLineGridLayouts(boolean alignCaptions, Integer lineSize, int linesCount, boolean wrap, boolean lineShrink) {
+    public static FlexPanel.GridLines getLineGridLayouts(boolean alignCaptions, Integer lineSize, Integer captionLineSize, int linesCount, boolean wrap, boolean lineShrink) {
         FlexPanel.FlexLayoutData valueLine = new FlexPanel.FlexLayoutData(1, lineSize, lineShrink);
 
         if(wrap) {
@@ -49,7 +47,7 @@ public class LinearContainerView extends GAbstractContainerView {
 
         if(alignCaptions)
             for(int i = 0; i < linesCount; i++)
-                result[alignDiv * i] = captionLine;
+                result[alignDiv * i] = new FlexPanel.FlexLayoutData(0, captionLineSize, false);
         return new FlexPanel.GridFixedLines(result);
     }
 
@@ -73,10 +71,11 @@ public class LinearContainerView extends GAbstractContainerView {
             childrenCaptions = new ArrayList<>();
 
         Integer lineSize = container.getLineSize();
+        Integer captionLineSize = container.getCaptionLineSize();
         boolean lineShrink = container.isLineShrink();
 
         if(isSingleLine()) {
-            panel = new FlexPanel(vertical, flexAlignment, grid || alignCaptions ? getLineGridLayouts(alignCaptions, lineSize, linesCount, wrap, lineShrink) : null, wrap);
+            panel = new FlexPanel(vertical, flexAlignment, grid || alignCaptions ? getLineGridLayouts(alignCaptions, lineSize, captionLineSize, linesCount, wrap, lineShrink) : null, wrap);
         } else {
             panel = new FlexPanel(!vertical, GFlexAlignment.START, null, vertical && wrap);
 
@@ -88,9 +87,9 @@ public class LinearContainerView extends GAbstractContainerView {
 
             lines = new FlexPanel[linesCount];
             for (int i = 0; i < linesCount; i++) {
-                FlexPanel line = new FlexPanel(vertical, flexAlignment, alignCaptions ? getLineGridLayouts(true, null, 1, false, lineShrink) : null, !vertical && wrap); // in theory true can be used instead of lineShrink
+                FlexPanel line = new FlexPanel(vertical, flexAlignment, alignCaptions ? getLineGridLayouts(true, lineSize, captionLineSize, 1, false, lineShrink) : null, !vertical && wrap); // in theory true can be used instead of lineShrink
 
-                panel.add(line, GFlexAlignment.STRETCH, 1, lineShrink, lineSize);
+                panel.add(line, GFlexAlignment.STRETCH, 1, lineShrink, null);
                 lines[i] = line;
 
                 if (lineSize != null) // because of non-null flex-basis column won't take content size which may then overflow over column

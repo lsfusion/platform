@@ -210,7 +210,7 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
         if (captionContainer == null) {
             addCentered(leftPanel);
         } else {
-            captionContainer.put(leftPanel, DataPanelView.setBaseSize(valueView.valueTable, true, condition.property), FlexAlignment.CENTER);
+            captionContainer.put(leftPanel, new Pair<>(null, null), DataPanelView.setBaseSize(valueView.valueTable, true, condition.property), FlexAlignment.CENTER);
         }
 
         addCentered(rightPanel);

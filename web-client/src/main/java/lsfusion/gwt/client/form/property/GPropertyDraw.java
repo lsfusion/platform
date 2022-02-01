@@ -26,6 +26,7 @@ import lsfusion.gwt.client.form.event.GKeyInputEvent;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
+import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.property.async.GAsyncChange;
 import lsfusion.gwt.client.form.property.async.GAsyncEventExec;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
@@ -182,6 +183,9 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
     public int valueWidth = -1;
     public int valueHeight = -1;
+
+    public int captionWidth = -1;
+    public int captionHeight = -1;
 
     public boolean autoSize;
 
@@ -479,6 +483,29 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         return baseType.getDefaultWidth(font, this);
     }
 
+    public Integer getCaptionWidth() {
+        if(captionWidth >= 0)
+            return captionWidth;
+
+        return null;
+    }
+
+    public Integer getCaptionHeight() {
+        if(captionHeight >= 0)
+            return captionHeight;
+
+        return null;
+    }
+
+    public Integer getHeaderCaptionHeight(GGridPropertyTable table) {
+        int headerHeight = table.getHeaderHeight();
+        if(headerHeight >= 0)
+            return headerHeight;
+
+        Integer captionHeight = getCaptionHeight();
+        return captionHeight != null ? captionHeight : -1;
+    }
+
     public Object getFormat() {
         return (baseType instanceof GObjectType ? GLongType.instance : ((GFormatType)baseType)).getFormat(pattern);
     }
@@ -533,6 +560,6 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
     @Override
     public boolean isAlignCaption() {
-        return !hasColumnGroupObjects() && !isAction() && !panelCaptionVertical;
+        return caption != null && !hasColumnGroupObjects() && !isAction() && !panelCaptionVertical;
     }
 }
