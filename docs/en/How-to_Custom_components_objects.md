@@ -101,7 +101,7 @@ update: (element, controller, list) => {
             if (!controller.isCurrent(item)) controller.changeObject(item);
         }
         card.ondblclick = function(event) {
-            controller.changeProperty('edit', item, true);
+            controller.changeProperty('edit', item);
         }
     }
 }
@@ -128,8 +128,8 @@ On a single click _changeObject_ method is called on the controller, which chang
 The second parameter (_rendered_) is not specified (i.e. it is assumed to be _false_), which means that the server must eventually call the _update_ function with a new list of objects (probably the same one).
 Since the value of the _isCurrent_ method will change, re-creating the item cards will change the currently selected object in the interface.
 
-A double-click calls _changeProperty_ method, which changes the current value of the _edit_ property to the value passed in the second parameter.
-Since _edit_ is an action, _true_ is passed as the value, and will be called instead of changing it.
+On double-click, the _changeProperty_ method is called, which changes the current value of the _edit_ property for the object passed in the second parameter.
+Since _edit_ is an action, the third parameter, the value by which the current value of the property should be changed, is not passed, and the action will be called instead of the change.
 In this case the item editing form will be opened.
 
 To combine the _render_ and _update_ functions into one, _itemCards_ function is created, which returns them within the same object:

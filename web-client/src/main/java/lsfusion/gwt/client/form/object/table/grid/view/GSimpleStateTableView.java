@@ -266,6 +266,8 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
 
     // change key can be outside view window, and can be obtained from getAsyncValues for example
     protected GGroupObjectValue getChangeKey(JavaScriptObject object) {
+        if(object == null)
+            return getCurrentKey();
         if(hasKey(object, keysFieldName))
             object = getValue(object, keysFieldName);
         return toObject(object);
@@ -410,6 +412,10 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         var thisObj = this;
         return {
             changeProperty: function (property, object, newValue) {
+                if(object === undefined)
+                    object = null;
+                if(newValue === undefined)
+                    newValue = true;
                 return thisObj.@GSimpleStateTableView::changeProperty(*)(property, object, newValue);
             },
             changeDateTimeProperty: function (property, object, year, month, day, hour, minute, second) {
