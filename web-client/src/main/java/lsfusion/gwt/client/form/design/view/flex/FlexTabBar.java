@@ -31,7 +31,7 @@ public class FlexTabBar extends Composite implements TabBar {
             initWidget(panel);
         } else {
             FlexPanel tabBarContainer = new FlexPanel(vertical);
-            tabBarContainer.addFill(panel);
+            tabBarContainer.addFillShrink(panel);
             tabBarContainer.add(extraTabWidget);
             initWidget(tabBarContainer);
         }
