@@ -334,7 +334,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 for (Map.Entry<List<Field>, IndexOptions> index : mapIndex.getValue().entrySet()) {
                     ImOrderSet<Field> fields = SetFact.fromJavaOrderSet(index.getKey());
                     if (!getThreadLocalSql().checkIndex(table, table.keys, fields, index.getValue()))
-                        session.addIndex(table, table.keys, fields, index.getValue(), BusinessLogics.sqlLogger, false);
+                        session.addIndex(table, table.keys, fields, index.getValue(), BusinessLogics.sqlLogger, true);
                 }
                 session.addConstraint(table);
                 session.checkExtraIndices(getThreadLocalSql(), table, table.keys, BusinessLogics.sqlLogger);
