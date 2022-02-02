@@ -98,7 +98,7 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
         return calendar;
 
         function changeCurrentEvent(newEvent, elementClicked) {
-            controller.changeSimpleGroupObject(newEvent.extendedProps.object, true, elementClicked); // we're rerendering current event below
+            controller.changeObject(newEvent.extendedProps.object, true, elementClicked); // we're rerendering current event below
             @GCalendar::highlightEvent(*)(calendar, newEvent.extendedProps.key);
         }
 

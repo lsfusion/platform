@@ -169,7 +169,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
     protected final static String keysFieldName = "#__key";
 
     protected void changeSimpleGroupObject(JavaScriptObject object, boolean rendered, P elementClicked) {
-        GGroupObjectValue key = toObject(object);
+        GGroupObjectValue key = getKey(object);
 
         long requestIndex;
         if(!GwtClientUtils.nullEquals(this.currentKey, key))
@@ -433,9 +433,12 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             isPropertyReadOnly: function (property, object) {
                 return thisObj.@GSimpleStateTableView::isReadOnly(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(property, object);
             },
-            changeSimpleGroupObject: function (object, rendered, elementClicked) {
-                var jsObject = thisObj.@GSimpleStateTableView::fromObject(*)(thisObj.@GSimpleStateTableView::getKey(*)(object));
-                return thisObj.@GSimpleStateTableView::changeSimpleGroupObject(*)(jsObject, rendered, elementClicked);
+            changeObject: function (object, rendered, elementClicked) {
+                if(rendered === undefined)
+                    rendered = false;
+                if(elementClicked === undefined)
+                    elementClicked = null;
+                return thisObj.@GSimpleStateTableView::changeSimpleGroupObject(*)(object, rendered, elementClicked);
             },
             setDateIntervalViewFilter: function (property, pageSize, startYear, startMonth, startDay, endYear, endMonth, endDay, isDateTimeFilter) {
                 thisObj.@GSimpleStateTableView::setDateIntervalViewFilter(*)(property, pageSize, startYear, startMonth, startDay, endYear, endMonth, endDay, isDateTimeFilter);

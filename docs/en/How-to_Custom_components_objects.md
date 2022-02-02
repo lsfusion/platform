@@ -98,7 +98,7 @@ update: (element, controller, list) => {
         element.cards.appendChild(card);
 
         card.onclick = function(event) {
-            if (!controller.isCurrent(item)) controller.changeSimpleGroupObject(item, false, null);
+            if (!controller.isCurrent(item)) controller.changeObject(item);
         }
         card.ondblclick = function(event) {
             controller.changeProperty('edit', item, true);
@@ -124,8 +124,8 @@ The names of the object fields correspond to the names of the properties on the 
 
 At the very end of the function, mouse click handlers are added to the item card. 
 
-On a single click _changeSimpleGroupObject_ method is called on the controller, which changes the current object. 
-The second parameter (_false_) specifies that the server should call the _update_ function again with a new list of objects (possibly the same one).
+On a single click _changeObject_ method is called on the controller, which changes the current object.
+The second parameter (_rendered_) is not specified (i.e. it is assumed to be _false_), which means that the server must eventually call the _update_ function with a new list of objects (probably the same one).
 Since the value of the _isCurrent_ method will change, re-creating the item cards will change the currently selected object in the interface.
 
 A double-click calls _changeProperty_ method, which changes the current value of the _edit_ property to the value passed in the second parameter.

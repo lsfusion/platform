@@ -98,7 +98,7 @@ update: (element, controller, list) => {
         element.cards.appendChild(card);
 
         card.onclick = function(event) {
-            if (!controller.isCurrent(item)) controller.changeSimpleGroupObject(item, false, null);
+            if (!controller.isCurrent(item)) controller.changeObject(item);
         }
         card.ondblclick = function(event) {
             controller.changeProperty('edit', item, true);
@@ -124,8 +124,8 @@ for (let option of diff.remove) { ... }
 
 В самом конце функции добавляются обработчики нажатия кнопки мыши на карточку товара. 
 
-По одиночному нажатию у контроллера вызывается метод _changeSimpleGroupObject_, 
-который изменяет текущий объект. Вторым параметром (_false_) указывается, что сервер должен повторно вызвать функцию _update_ с новым списком объектов (возможно тем же). 
+По одиночному нажатию у контроллера вызывается метод _changeObject_, 
+который изменяет текущий объект. Второй параметр (_rendered_) не указывается (то есть считается равным _false_), что означает, что сервер должен в итоге вызвать функцию _update_ с новым списком объектов (возможно тем же). 
 Так как значение метода _isCurrent_ изменится, то повторное создание карточек товаров изменит текущий выделенный объект в интерфейсе.
 
 По двойному нажатию вызывается метод _changeProperty_, который изменяет текущее значение свойства _edit_ на значение, переданное вторым параметром.

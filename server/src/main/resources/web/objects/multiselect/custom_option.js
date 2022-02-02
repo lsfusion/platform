@@ -40,7 +40,7 @@ function option() {
 
                 option.addEventListener('click', function () {
                     controller.changeProperty('selected', this.key, !this.selected ? true : null);
-                    controller.changeSimpleGroupObject(this.key, false, null);
+                    controller.changeObject(this.key);
                 });
 
                 let currentOptions = options.children;
