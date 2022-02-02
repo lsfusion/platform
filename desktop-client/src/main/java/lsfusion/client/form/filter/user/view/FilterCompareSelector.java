@@ -1,6 +1,7 @@
 package lsfusion.client.form.filter.user.view;
 
 import lsfusion.client.form.filter.user.ClientPropertyFilter;
+import lsfusion.client.form.object.table.controller.TableController;
 import lsfusion.interop.form.property.Compare;
 
 import javax.swing.*;
@@ -19,8 +20,8 @@ public abstract class FilterCompareSelector extends FilterOptionSelector<Compare
     private boolean allowNull;
     private JCheckBox allowNullCB;
     
-    public FilterCompareSelector(ClientPropertyFilter condition, List<Compare> items, List<String> popupCaptions, boolean allowNull) {
-        super(items, popupCaptions);
+    public FilterCompareSelector(TableController logicsSupplier, ClientPropertyFilter condition, List<Compare> items, List<String> popupCaptions, boolean allowNull) {
+        super(logicsSupplier, items, popupCaptions);
         negation = condition.negation;
         this.allowNull = allowNull;
 

@@ -94,7 +94,7 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
         propertyLabel.setBorder(labelBorder);
         leftPanel.addCentered(propertyLabel);
 
-        propertyView = new FilterOptionSelector<Column>() {
+        propertyView = new FilterOptionSelector<Column>(logicsSupplier) {
             @Override
             public void valueChanged(Column value) {
                 condition.property = value.property;
@@ -124,7 +124,7 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
         for (Compare filterCompare : filterCompares) {
             conditionsFullStrings.add(filterCompare.getFullString());
         }
-        compareView = new FilterCompareSelector(condition, Arrays.asList(filterCompares), conditionsFullStrings, allowNull) {
+        compareView = new FilterCompareSelector(logicsSupplier, condition, Arrays.asList(filterCompares), conditionsFullStrings, allowNull) {
             @Override
             public void valueChanged(Compare value) {
                 condition.compare = value;

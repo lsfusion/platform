@@ -1435,7 +1435,7 @@ public class ClientFormController implements AsyncListener {
             }
         }
 
-        rmiQueue.syncRequest(new ProcessServerResponseRmiRequest("applyCurrentFilters") {
+        rmiQueue.asyncRequest(new ProcessServerResponseRmiRequest("applyCurrentFilters") {
             @Override
             protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
                 return remoteForm.setUserFilters(requestIndex, lastReceivedRequestIndex, filters.toArray(new byte[filters.size()][]));

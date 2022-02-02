@@ -3,6 +3,7 @@ package lsfusion.client.form.filter.user.view;
 import lsfusion.base.BaseUtils;
 import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.form.design.view.widget.TextFieldWidget;
+import lsfusion.client.form.object.table.controller.TableController;
 
 import javax.swing.*;
 import java.awt.*;
@@ -16,12 +17,15 @@ import static javax.swing.BorderFactory.*;
 public abstract class FilterOptionSelector<T> extends TextFieldWidget {
     JScrollPopupMenu menu = new JScrollPopupMenu();
     protected T currentValue;
+    private TableController logicsSupplier;
 
-    public FilterOptionSelector() {
-        this(Collections.emptyList(), Collections.emptyList());
+    public FilterOptionSelector(TableController logicsSupplier) {
+        this(logicsSupplier, Collections.emptyList(), Collections.emptyList());
     }
     
-    public FilterOptionSelector(List<T> items, List<String> popupCaptions) {
+    public FilterOptionSelector(TableController logicsSupplier, List<T> items, List<String> popupCaptions) {
+        this.logicsSupplier = logicsSupplier;
+        
         setEditable(false);
         setFocusable(false);
         
@@ -34,7 +38,7 @@ public abstract class FilterOptionSelector<T> extends TextFieldWidget {
         addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                showMenu();
+                onMousePressed();
             }
         });
     }
@@ -81,7 +85,9 @@ public abstract class FilterOptionSelector<T> extends TextFieldWidget {
         return new Dimension(width, SwingDefaults.getComponentHeight());
     }
 
-    public void showMenu() {
+    public void onMousePressed() {
+        logicsSupplier.getFormController().commitCurrentEditing();
+        
         menu.show(this, 0, getHeight());
     }
 
