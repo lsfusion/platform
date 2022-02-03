@@ -348,7 +348,6 @@ public class BaseUtils {
         };
     }
 
-    // возвращает более конкретный класс если 
     public static <K, V, CV extends V> Map<K, CV> filterClass(Map<K, V> map, Class<CV> cvClass) {
         for (Map.Entry<K, V> entry : map.entrySet())
             if (!cvClass.isInstance(entry.getValue()))
