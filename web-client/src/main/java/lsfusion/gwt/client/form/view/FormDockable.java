@@ -162,7 +162,8 @@ public final class FormDockable extends FormContainer<FormDockable.ContentWidget
             };
             closeButton.setText(EscapeUtils.UNICODE_CROSS);
             closeButton.setStyleName("closeTabButton");
-            closeButton.setSize(VALUE_HEIGHT - 2 + "px", VALUE_HEIGHT - 2 + "px");
+            int closeTabButtonWidth = VALUE_HEIGHT - 2;
+            closeButton.setSize(VALUE_HEIGHT - 2 + "px", closeTabButtonWidth + "px");
             closeButton.getElement().getStyle().setLineHeight(VALUE_HEIGHT - 4, Style.Unit.PX);
 
             FlexPanel labelWrapper = new FlexPanel();
@@ -170,7 +171,7 @@ public final class FormDockable extends FormContainer<FormDockable.ContentWidget
             labelWrapper.add(label);
             add(labelWrapper, GFlexAlignment.CENTER);
             
-            add(closeButton, GFlexAlignment.CENTER);
+            add(closeButton, GFlexAlignment.CENTER, 0, false, closeTabButtonWidth);
 
             closeButton.addClickHandler(event -> {
                 event.stopPropagation();
