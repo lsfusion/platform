@@ -17,6 +17,8 @@ import bibliothek.gui.dock.control.ControllerSetupCollection;
 import bibliothek.gui.dock.control.DefaultDockControllerFactory;
 import bibliothek.gui.dock.control.DockRelocator;
 import bibliothek.gui.dock.control.relocator.DefaultDockRelocator;
+import bibliothek.gui.dock.facile.mode.Location;
+import bibliothek.gui.dock.support.mode.ModeSettings;
 import bibliothek.gui.dock.title.DockTitle;
 import bibliothek.gui.dock.util.color.ColorManager;
 import com.google.common.base.Throwables;
@@ -57,7 +59,10 @@ import org.jboss.netty.util.internal.NonReentrantLock;
 import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.InputEvent;
+import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.*;
 import java.rmi.RemoteException;
 import java.util.LinkedHashMap;
@@ -417,29 +422,37 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
 
         setDefaultVisible();
 
+        // Unlike web-client desktop-client restores layout from layout.data, where all windows - 
+        // visible and invisible - are stored. As it seems impossible to check whether the window remained (in-)visible
+        // or changed its state, we store in windowDockables only visible windows.
         for (String s : mainControl.layouts()) {
             if (s.equals("default")) {
                 try {
                     //проверяем, бы ли созданы новые Dockable
-                    boolean hasNewDockables = false;
+                    boolean dockablesChanged = false;
                     CSetting setting = (CSetting) mainControl.intern().getSetting(s);
                     if (setting != null) {
-                        for (SingleCDockable dockable : windowDockables.keySet()) {
-                            boolean isNewDockable = true;
-                            for (int i = 0; i < setting.getModes().size(); i++) {
-                                if (setting.getModes().getId(i).equals("single " + dockable.getUniqueId())) {
-                                    isNewDockable = false;
+                        ModeSettings<Location, Location> modes = setting.getModes();
+                        if (windowDockables.size() != modes.size()) {
+                            dockablesChanged = true;
+                        } else {
+                            for (SingleCDockable dockable : windowDockables.keySet()) {
+                                boolean isNewDockable = true;
+                                for (int i = 0; i < modes.size(); i++) {
+                                    if (modes.getId(i).equals("single " + dockable.getUniqueId())) {
+                                        isNewDockable = false;
+                                        break;
+                                    }
+                                }
+                                if (isNewDockable) {
+                                    dockablesChanged = true;
                                     break;
                                 }
-                            }
-                            if (isNewDockable) {
-                                hasNewDockables = true;
-                                break;
                             }
                         }
                     }
                     //если новые Dockable созданы не были, грузим сохранённое расположение
-                    if (!hasNewDockables) {
+                    if (!dockablesChanged) {
                         mainControl.load("default");
                     }
                 } catch (Exception e) {
@@ -562,17 +575,21 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
         for (Map.Entry<ClientAbstractWindow, JComponent> entry : windows.entrySet()) {
             ClientAbstractWindow window = entry.getKey();
             JComponent component = entry.getValue();
-            if (window.position == WindowType.DOCKING_POSITION) {
-                ClientWindowDockable dockable = new ClientWindowDockable(window, entry.getValue());
-                dockable.setMinimizable(false);
-                navigatorController.recordDockable(component, dockable);
-                windowDockables.put(dockable, window);
-            } else {
-                add(component, window.borderConstraint);
+            if (window.visible) {
+                if (window.position == WindowType.DOCKING_POSITION) {
+                    ClientWindowDockable dockable = new ClientWindowDockable(window, entry.getValue());
+                    dockable.setMinimizable(false);
+                    navigatorController.recordDockable(component, dockable);
+                    windowDockables.put(dockable, window);
+                } else {
+                    add(component, window.borderConstraint);
+                }
             }
         }
 
-        windowDockables.put(formsController.getFormArea(), formsWindow);
+        if (formsWindow.visible) {
+            windowDockables.put(formsController.getFormArea(), formsWindow);
+        }
     }
 
     private CGrid createGrid() {

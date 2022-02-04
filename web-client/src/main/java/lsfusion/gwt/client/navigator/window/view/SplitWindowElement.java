@@ -295,7 +295,7 @@ public class SplitWindowElement extends WindowElement {
     @Override
     protected void setChildSize(WindowElement child) {
         if (isChildVisible(child)) {
-            if (windowDirections.get(child) != CENTER) {
+            if (splitPanel.getWidgetDirection(child.getView()) != CENTER) {
                 splitPanel.setWidgetSize(child.getView(), getChildSize(child));
             }
         }
@@ -359,7 +359,9 @@ public class SplitWindowElement extends WindowElement {
                         child.pixelWidth = storedSize;
                     }
                     if (isChildVisible(child)) {
-                        splitPanel.setWidgetSize(child.getView(), storedSize); // для сохранения при setInvisible
+                        if (splitPanel.getWidgetDirection(child.getView()) != CENTER) {
+                            splitPanel.setWidgetSize(child.getView(), storedSize); // для сохранения при setInvisible
+                        }
                     }
                     child.sizeStored = true;
                 }
@@ -371,7 +373,7 @@ public class SplitWindowElement extends WindowElement {
     public void resetDefaultSizes() {
         for (WindowElement windowElement : children.keySet()) {
             if (children.get(windowElement)) {
-                DockLayoutPanel.Direction direction = windowDirections.get(windowElement);
+                DockLayoutPanel.Direction direction = splitPanel.getWidgetDirection(windowElement.getView());
                 if (direction == NORTH || direction == SOUTH) {
                     splitPanel.setWidgetSize(windowElement.getView(), windowElement.getInitialHeight());
                 } else if (direction != CENTER) {

@@ -49,7 +49,7 @@ public abstract class GNavigatorController implements GINavigatorController {
             GNavigatorView view = views.get(entry.getKey());
             if (view != null) {
                 view.refresh(entry.getValue());
-                visibleElements.put(entry.getKey(), !entry.getValue().isEmpty());
+                visibleElements.put(entry.getKey(), !entry.getValue().isEmpty() && entry.getKey().visible);
             }
         }
         updateVisibility(visibleElements);
