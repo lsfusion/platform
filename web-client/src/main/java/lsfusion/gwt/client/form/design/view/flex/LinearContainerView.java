@@ -119,9 +119,11 @@ public class LinearContainerView extends GAbstractContainerView {
         if(childPanel instanceof CaptionPanel)
             return (CaptionPanel) childPanel;
 
-        Widget childWidget = childPanel.getWidget(0);
-        if(childWidget instanceof CaptionPanel)
-            return (CaptionPanel) childWidget;
+        if(childPanel.getWidgetCount() > 0) {
+            Widget childWidget = childPanel.getWidget(0);
+            if (childWidget instanceof CaptionPanel)
+                return (CaptionPanel) childWidget;
+        }
 
         return null;
     }
