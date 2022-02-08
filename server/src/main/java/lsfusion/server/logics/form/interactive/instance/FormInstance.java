@@ -1791,8 +1791,9 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     }
 
     private void updateActiveTabProperty(ComponentView page) throws SQLException, SQLHandledException {
-        for(ComponentView tab : visibleTabs.values()) {
-            tab.updateActiveTabProperty(session, null);
+        ComponentView prevActiveTab = visibleTabs.get(page.getLayoutParamContainer());
+        if(prevActiveTab != null) {
+            prevActiveTab.updateActiveTabProperty(session, null);
         }
         page.updateActiveTabProperty(session, true);
     }
