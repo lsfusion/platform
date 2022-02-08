@@ -1978,7 +1978,8 @@ public class GFormController implements EditManager {
             }
 
             this.cellEditor = cellEditor; // not sure if it should before or after startEditing, but definitely after removeAllChildren, since it leads to blur for example
-            cellEditor.start(event, element, oldValue);
+            //Since FileCellEditor uses a standard file selection mechanism that does not have a "cancel" event, we define "cancel" when the parent element receives focus, but if the parent element is set to "focusable = FALSE;" the edit is never finished because the parent element does not receive focus
+            cellEditor.start(event, !property.isFocusable() && cellEditor instanceof FileCellEditor ? getFocusedElement() : element, oldValue);
         } else
             cancel.accept(CancelReason.OTHER);
     }
