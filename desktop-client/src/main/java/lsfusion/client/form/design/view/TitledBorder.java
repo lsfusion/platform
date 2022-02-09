@@ -127,7 +127,8 @@ public class TitledBorder extends AbstractBorder implements MouseListener, Mouse
     public TitledBorder(Border border,
                         String title,
                         int titleJustification,
-                        int titlePosition, boolean collapsible)      {
+                        int titlePosition, 
+                        boolean collapsible)      {
         this(border, title, titleJustification,
              titlePosition, null, null, collapsible);
     }
@@ -146,7 +147,8 @@ public class TitledBorder extends AbstractBorder implements MouseListener, Mouse
                         String title,
                         int titleJustification,
                         int titlePosition,
-                        Font titleFont, boolean collapsible) {
+                        Font titleFont, 
+                        boolean collapsible) {
         this(border, title, titleJustification,
              titlePosition, titleFont, null, collapsible);
     }
@@ -168,7 +170,8 @@ public class TitledBorder extends AbstractBorder implements MouseListener, Mouse
                         int titleJustification,
                         int titlePosition,
                         Font titleFont,
-                        Color titleColor, boolean collapsible)       {
+                        Color titleColor, 
+                        boolean collapsible)       {
         this.title = title;
         this.border = border;
         this.titleFont = titleFont;
@@ -759,9 +762,13 @@ public class TitledBorder extends AbstractBorder implements MouseListener, Mouse
         return true;
     }
     
-    private void toggleCollapsed() {
-        collapsed = !collapsed;
+    public void setCollapsed(boolean collapsed) {
+        this.collapsed = collapsed;
         collapseImage = ClientImages.get(collapsed ? EXPAND_IMAGE_PATH : COLLAPSE_IMAGE_PATH);
+    }
+    
+    private void toggleCollapsed() {
+        setCollapsed(!collapsed);
         
         onCollapsedStateChanged(collapsed);
     }

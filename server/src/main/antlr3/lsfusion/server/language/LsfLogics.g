@@ -3127,6 +3127,7 @@ leafKeepContextActionDB[List<TypedParameter> context, boolean dynamic] returns [
 	|	importFormADB=importFormActionDefinitionBody[context, dynamic] { $action = $importFormADB.action; }
 	|	activeFormADB=activeFormActionDefinitionBody[context, dynamic] { $action = $activeFormADB.action; }
 	|	activateADB=activateActionDefinitionBody[context, dynamic] { $action = $activateADB.action; }
+	|	expandCollapseADB=expandCollapseActionDefinitionBody[context, dynamic] { $action = $expandCollapseADB.action; }
     |   externalADB=externalActionDefinitionBody[context, dynamic] { $action = $externalADB.action;}
 	|	emptyADB=emptyActionDefinitionBody[context, dynamic] { $action = $emptyADB.action; }
 	;
@@ -3903,6 +3904,23 @@ activateActionDefinitionBody[List<TypedParameter> context, boolean dynamic] retu
 		|	'TAB' fc = formComponentID { form = $fc.form; component = $fc.component; }
 		|   'PROPERTY' fp = formPropertyID { propertyDraw = $fp.propertyDraw; }
 		)
+	;
+
+expandCollapseActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
+@init {
+    ComponentView component = null;
+    boolean collapse = true;
+}
+@after {
+	if (inMainParseState()) {
+		 $action = self.addScriptedCollapseExpandAProp(component, collapse);
+	}
+}
+	:	(	'COLLAPSE'
+		|	'EXPAND' { collapse = false; }
+		) 
+		'CONTAINER'
+		fc = formComponentID { component = $fc.component; }
 	;
 
 listActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]

@@ -21,6 +21,7 @@ import lsfusion.server.logics.classes.user.ConcreteObjectClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.form.interactive.controller.remote.RemoteForm;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
+import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
@@ -55,6 +56,9 @@ public class FormChanges {
 
     private final ImList<ComponentView> activateTabs;
     private final ImList<PropertyDrawInstance> activateProps;
+    
+    private final ImList<ContainerView> collapseContainers;
+    private final ImList<ContainerView> expandContainers;
 
     // current (panel) objects
     private final ImMap<GroupObjectInstance, Boolean> updateStateObjects;
@@ -67,7 +71,9 @@ public class FormChanges {
                        ImMap<GroupObjectInstance, ImMap<ImMap<ObjectInstance, DataObject>, Boolean>> expandables,
                        ImMap<PropertyReaderInstance, ImMap<ImMap<ObjectInstance, DataObject>, ObjectValue>> properties,
                        ImSet<PropertyDrawInstance> dropProperties,
-                       ImMap<GroupObjectInstance, Boolean> updateStateObjects, ImList<ComponentView> activateTabs, ImList<PropertyDrawInstance> activateProps) {
+                       ImMap<GroupObjectInstance, Boolean> updateStateObjects, ImList<ComponentView> activateTabs, 
+                       ImList<PropertyDrawInstance> activateProps, ImList<ContainerView> collapseContainers, 
+                       ImList<ContainerView> expandContainers) {
         this.objects = objects;
         this.gridObjects = gridObjects;
         this.parentObjects = parentObjects;
@@ -77,6 +83,8 @@ public class FormChanges {
         this.updateStateObjects = updateStateObjects;
         this.activateTabs = activateTabs;
         this.activateProps = activateProps;
+        this.collapseContainers = collapseContainers;
+        this.expandContainers = expandContainers;
     }
 
     void out(FormInstance bv) {
@@ -114,6 +122,14 @@ public class FormChanges {
         System.out.println(" ------- Activate property ---------------");
         for (PropertyDrawInstance prop : activateProps)
             System.out.println(prop);
+
+        System.out.println(" ------- Collapse containers ---------------");
+        for (ContainerView container : collapseContainers)
+            System.out.println(container);
+
+        System.out.println(" ------- Expand containers ---------------");
+        for (ContainerView container : expandContainers)
+            System.out.println(container);
     }
 
     public void serialize(DataOutputStream outStream) throws IOException {
@@ -179,6 +195,16 @@ public class FormChanges {
         outStream.writeInt(activateProps.size());
         for (PropertyDrawInstance propertyView : activateProps) {
             outStream.writeInt(propertyView.getID());
+        }
+        
+        outStream.writeInt(collapseContainers.size());
+        for (ContainerView container : collapseContainers) {
+            outStream.writeInt(container.getID());
+        }
+        
+        outStream.writeInt(expandContainers.size());
+        for (ContainerView container : expandContainers) {
+            outStream.writeInt(container.getID());
         }
     }
 
@@ -383,5 +409,13 @@ public class FormChanges {
         logger.trace("   Activate props ---------------");
         for (PropertyDrawInstance property : activateProps)
             logger.trace("     " + property);
+
+        logger.trace("   Collapse containers ---------------");
+        for (ContainerView container : collapseContainers)
+            logger.trace("     " + container);
+
+        logger.trace("   Expand containers ---------------");
+        for (ContainerView container : expandContainers)
+            logger.trace("     " + container);
     }
 }

@@ -26,6 +26,7 @@ import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.base.result.ListResult;
 import lsfusion.gwt.client.base.result.NumberResult;
 import lsfusion.gwt.client.base.result.VoidResult;
+import lsfusion.gwt.client.base.view.CollapsiblePanel;
 import lsfusion.gwt.client.base.view.DialogBoxHelper;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.WindowHiddenHandler;
@@ -47,6 +48,7 @@ import lsfusion.gwt.client.form.controller.dispatch.GFormActionDispatcher;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.design.GFont;
+import lsfusion.gwt.client.form.design.view.GAbstractContainerView;
 import lsfusion.gwt.client.form.design.view.GFormLayout;
 import lsfusion.gwt.client.form.design.view.TabbedContainerView;
 import lsfusion.gwt.client.form.event.*;
@@ -622,6 +624,8 @@ public class GFormController implements EditManager {
         applyPropertyChanges(fc);
 
         update(fc, changesDTO.requestIndex);
+        
+        expandCollapseContainers(fc);
 
         formLayout.update(changesDTO.requestIndex);
 
@@ -675,6 +679,26 @@ public class GFormController implements EditManager {
             for(GPropertyDraw propertyDraw : fc.activateProps)
                 focusProperty(propertyDraw);
         });
+    }
+
+    private void expandCollapseContainers(GFormChanges formChanges) {
+        for (GContainer container : formChanges.collapseContainers) {
+            setContainerExtCollapsed(container, true);
+        }
+
+        for (GContainer container : formChanges.expandContainers) {
+            setContainerExtCollapsed(container, false);
+        }
+    }
+
+    private void setContainerExtCollapsed(GContainer container, boolean collapsed) {
+        if (container.container != null) {
+            GAbstractContainerView parentContainerView = formLayout.getContainerView(container.container);
+            Widget childWidget = parentContainerView.getChildView(container);
+            if (childWidget instanceof CollapsiblePanel) {
+                ((CollapsiblePanel) childWidget).setCollapsed(collapsed);
+            }
+        }
     }
 
     private void modifyFormChangesWithModifyObjectAsyncs(final int currentDispatchingRequestIndex, GFormChanges fc) {

@@ -31,7 +31,9 @@ public class ContainerView extends ComponentView {
     public NFOrderSet<ComponentView> children = NFFact.orderSet();
 
     public LocalizedString caption;
-    public Boolean collapsible;
+    private Boolean collapsible;
+    
+    public boolean collapsed;
 
     private ContainerType type = ContainerType.CONTAINERV;
     private boolean horizontal;
@@ -106,6 +108,10 @@ public class ContainerView extends ComponentView {
 
     private boolean hasCaption() {
         return !PropertyDrawView.hasNoCaption(caption, propertyCaption);
+    }
+    
+    public void setCollapsed(boolean collapsed) {
+        this.collapsed = isCollapsible() && collapsed;
     }
 
     public boolean isTabbed() {

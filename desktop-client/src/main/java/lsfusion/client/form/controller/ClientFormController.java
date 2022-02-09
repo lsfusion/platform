@@ -31,9 +31,8 @@ import lsfusion.client.form.controller.dispatch.ClientFormActionDispatcher;
 import lsfusion.client.form.controller.remote.serialization.ClientSerializationPool;
 import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.design.ClientContainer;
-import lsfusion.client.form.design.view.ClientFormLayout;
-import lsfusion.client.form.design.view.FlexPanel;
-import lsfusion.client.form.design.view.TabbedClientContainerView;
+import lsfusion.client.form.design.view.*;
+import lsfusion.client.form.design.view.flex.LinearClientContainerView;
 import lsfusion.client.form.design.view.widget.ComboBoxWidget;
 import lsfusion.client.form.design.view.widget.Widget;
 import lsfusion.client.form.filter.ClientRegularFilter;
@@ -730,6 +729,8 @@ public class ClientFormController implements AsyncListener {
             treeController.processFormChanges(formChanges, currentGridObjects);
         }
         
+        expandCollapseContainers(formChanges);
+        
         formLayout.autoShowHideContainers();
         
         activateElements(formChanges, firstChanges);
@@ -744,6 +745,28 @@ public class ClientFormController implements AsyncListener {
         } else {
             activateTabs(formChanges.activateTabs);
             activateProperties(formChanges.activateProps);
+        }
+    }
+    
+    private void expandCollapseContainers(ClientFormChanges formChanges) {
+        for (ClientContainer container : formChanges.collapseContainers) {
+            setContainerExtCollapsed(container, true);
+        }
+        
+        for (ClientContainer container : formChanges.expandContainers) {
+            setContainerExtCollapsed(container, false);
+        }
+    }
+    
+    private void setContainerExtCollapsed(ClientContainer container, boolean collapsed) {
+        if (container.container != null) {
+            ClientContainerView parentContainerView = formLayout.getContainerView(container.container);
+            if (parentContainerView instanceof LinearClientContainerView) {
+                Widget childWidget = ((LinearClientContainerView) parentContainerView).getChildView(container);
+                if (childWidget instanceof CollapsiblePanel) {
+                    ((CollapsiblePanel) childWidget).setExtCollapsed(collapsed);
+                }
+            }
         }
     }
 

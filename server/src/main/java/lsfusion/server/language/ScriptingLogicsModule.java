@@ -82,6 +82,7 @@ import lsfusion.server.logics.event.SessionEnvEvent;
 import lsfusion.server.logics.form.interactive.ManageSessionType;
 import lsfusion.server.logics.form.interactive.UpdateType;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
+import lsfusion.server.logics.form.interactive.action.expand.ExpandCollapseContainerAction;
 import lsfusion.server.logics.form.interactive.action.expand.ExpandCollapseType;
 import lsfusion.server.logics.form.interactive.action.focus.ActivateAction;
 import lsfusion.server.logics.form.interactive.action.focus.IsActiveFormAction;
@@ -2303,6 +2304,10 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public LAWithParams addScriptedActivateAProp(FormEntity form, ComponentView component) {
         return new LAWithParams(addAProp(null, new ActivateAction(LocalizedString.NONAME, form, component)), new ArrayList<>());
+    }
+
+    public LAWithParams addScriptedCollapseExpandAProp(ComponentView component, boolean collapse) {
+        return new LAWithParams(addAProp(null, new ExpandCollapseContainerAction(LocalizedString.NONAME, component, collapse)), new ArrayList<>());
     }
 
     public List<LP<?>> addLocalDataProperty(List<String> names, String returnClassName, List<String> paramClassNames,

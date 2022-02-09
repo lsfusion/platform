@@ -154,6 +154,8 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
 
     public boolean defaultComponent = false;
 
+    public boolean activated; // as tab
+
     private PropertyRevImplement<ClassPropertyInterface, ObjectEntity> activeTab;
 
     public PropertyRevImplement<ClassPropertyInterface, ObjectEntity> getActiveTab() {

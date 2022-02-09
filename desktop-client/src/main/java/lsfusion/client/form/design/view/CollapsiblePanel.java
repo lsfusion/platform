@@ -22,15 +22,26 @@ public class CollapsiblePanel extends CaptionPanel {
         return new TitledBorder(caption, true) {
             @Override
             public void onCollapsedStateChanged(boolean collapsed) {
-                CollapsiblePanel.this.collapsed = collapsed;
-                
-                for (Widget child : getChildren()) {
-                    child.setVisible(!collapsed);
-                }
+                CollapsiblePanel.this.setCollapsed(collapsed);
                 
                 formController.setContainerCollapsed(childContainer, collapsed);
             }
         };
+    }
+    
+    // set externally - not by clicking the icon
+    public void setExtCollapsed(boolean collapsed) {
+        setCollapsed(collapsed);
+
+        titledBorder.setCollapsed(collapsed);
+    }
+    
+    public void setCollapsed(boolean collapsed) {
+        CollapsiblePanel.this.collapsed = collapsed;
+
+        for (Widget child : getChildren()) {
+            child.setVisible(!collapsed);
+        }
     }
 
     @Override

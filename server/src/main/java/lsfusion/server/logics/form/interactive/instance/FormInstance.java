@@ -412,6 +412,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         
         if (!interactive) // deprecated ветка, в будущем должна уйти
             getChanges(stack);
+        
+        processComponent(entity.getRichDesign().getMainContainer());
 
         this.interactive = interactive; // обязательно в конце чтобы assertion с endApply не рушить
 
@@ -486,6 +488,24 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     public ImSet<GroupObjectInstance> getGroups() {
         return groups.getSet();
     }
+    
+    private void processComponent(ComponentView component) throws SQLException, SQLHandledException {
+        if (component instanceof ContainerView) {
+            ContainerView container = (ContainerView) component;
+            
+            if (container.collapsed) {
+                collapseContainer(container);
+            }
+            
+            for (ComponentView childComponent : container.getChildrenIt()) {
+                processComponent(childComponent);
+            }
+        }
+        
+        if (component.activated) {
+            activateTab(component);
+        }
+    } 
 
     public ImOrderSet<GroupObjectInstance> getOrderGroups() {
         return groups;
@@ -1667,6 +1687,18 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     public void activateProperty(PropertyDrawEntity view) {
         userActivateProps = userActivateProps.addList(instanceFactory.getInstance(view));
     }
+    
+    private ImList<ContainerView> userCollapseContainers = ListFact.EMPTY();
+    public void collapseContainer(ContainerView container) throws SQLException, SQLHandledException {
+        setContainerCollapsed(container, true);
+        userCollapseContainers = userCollapseContainers.addList(container);
+    } 
+    
+    private ImList<ContainerView> userExpandContainers = ListFact.EMPTY();
+    public void expandContainer(ContainerView container) throws SQLException, SQLHandledException {
+        setContainerCollapsed(container, false);
+        userExpandContainers = userExpandContainers.addList(container);
+    }
 
     // кэш на изменение
     protected Set<PropertyObjectInstance> isReallyChanged = new HashSet<>();
@@ -2073,10 +2105,15 @@ updateAsyncPropertyChanges();
         
         result.activateTabs.addAll(userActivateTabs);
         result.activateProps.addAll(userActivateProps);
+        
+        result.collapseContainers.addAll(userCollapseContainers);
+        result.expandContainers.addAll(userExpandContainers);
 
         // сбрасываем все пометки
         userActivateTabs = ListFact.EMPTY();
         userActivateProps = ListFact.EMPTY();
+        userCollapseContainers = ListFact.EMPTY();
+        userExpandContainers = ListFact.EMPTY();
         for (GroupObjectInstance group : getGroups()) {
             for (ObjectInstance object : group.objects)
                 object.updated = 0;
