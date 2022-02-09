@@ -73,6 +73,7 @@ function _select2(updateFunction) {
                 multiple: true,
                 placeholder: ' ',
                 closeOnSelect: false,
+                dropdownParent: element, // this way focus doesn't go to some unpredictable container when selecting item, however there can be some problems with z-indices
                 allowClear: true,
                 width: '100%'
             });

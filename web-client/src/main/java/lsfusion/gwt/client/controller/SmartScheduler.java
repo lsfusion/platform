@@ -3,12 +3,12 @@ package lsfusion.gwt.client.controller;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.impl.SchedulerImpl;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class SmartScheduler extends SchedulerImpl {
     private static SmartScheduler instance;
-    private final Map<Integer, ScheduledCommand> commandsMap = new HashMap<>();
+    private final Set<Integer> commandsSet = new HashSet<>();
+    private final List<ScheduledCommand> commandsList = new ArrayList<>();
     private int id = 0;
     private SmartScheduler() {
     }
@@ -32,15 +32,18 @@ public class SmartScheduler extends SchedulerImpl {
         ScheduledCommand finalCmd = cmd;
 
         cmd = () -> {
-            if(commandsMap.remove(id) != null)
+            if(commandsSet.remove(id))
                 finalCmd.execute();
         };
-        commandsMap.put(id, cmd);
+        commandsSet.add(id);
+        commandsList.add(cmd);
 
         Scheduler.get().scheduleDeferred(cmd);
     }
 
     public void flush() {
-        this.commandsMap.values().forEach(ScheduledCommand::execute);
+        while(!commandsList.isEmpty()) {
+            commandsList.remove(0).execute();
+        }
     }
 }

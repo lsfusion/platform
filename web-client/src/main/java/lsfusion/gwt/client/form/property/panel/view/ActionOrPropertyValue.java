@@ -134,10 +134,10 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
 
         super.onBrowserEvent(event);
 
-        if(!DataGrid.checkSinkEvents(event))
+        if(!DataGrid.checkSinkEvents(event) && !DataGrid.checkSinkFocusEvents(event))
             return;
 
-        EventHandler eventHandler = createEventHandler(event);
+        EventHandler eventHandler = new EventHandler(event);
 
         if(BrowserEvents.FOCUS.equals(event.getType())) {
             onFocus(eventHandler);
@@ -154,6 +154,8 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
                 //ctrl-c ctrl-v from excel adds \n in the end, trim() removes it
                 handler -> CopyPasteUtils.putIntoClipboard(getRenderElement()), handler -> CopyPasteUtils.getFromClipboard(handler, line -> pasteValue(line.trim())),
                 true, property.getCellRenderer().isCustomRenderer());
+
+        form.propagateFocusEvent(event);
     }
 
     private boolean isFocused;
@@ -176,8 +178,17 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
         borderWidget.removeStyleName("panelRendererValueFocused");
     }
 
-    public EventHandler createEventHandler(Event event) {
-        return new EventHandler(event);
+    public boolean isEditing;
+    @Override
+    public void startEditing() {
+        isEditing = true;
+        borderWidget.addStyleName("panelRendererValueEdited");
+    }
+
+    @Override
+    public void stopEditing() {
+        isEditing = false;
+        borderWidget.removeStyleName("panelRendererValueEdited");
     }
 
     protected abstract void onEditEvent(EventHandler handler);

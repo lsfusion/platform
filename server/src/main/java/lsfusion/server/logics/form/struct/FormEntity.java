@@ -83,7 +83,6 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import static lsfusion.interop.action.ServerResponse.CHANGE;
-import static lsfusion.server.logics.form.struct.property.PropertyDrawExtraType.CAPTION;
 
 public class FormEntity implements FormSelector<ObjectEntity> {
     private final static Logger logger = Logger.getLogger(FormEntity.class);
@@ -91,7 +90,8 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     public static Boolean DEFAULT_NOCANCEL = null;
 
     public static final IsDevProperty isDev = IsDevProperty.instance;
-    public static final SessionDataProperty isFloat = new SessionDataProperty(LocalizedString.create("Is dialog"), LogicalClass.instance);
+    public static final SessionDataProperty isDocked = new SessionDataProperty(LocalizedString.create("Is docked"), LogicalClass.instance);
+    public static final SessionDataProperty isEmbedded = new SessionDataProperty(LocalizedString.create("Is embedded"), LogicalClass.instance);
     public static final SessionDataProperty showOk = new SessionDataProperty(LocalizedString.create("Is modal"), LogicalClass.instance);
     public static final SessionDataProperty isAdd = new SessionDataProperty(LocalizedString.create("Is add"), LogicalClass.instance);
     public static final SessionDataProperty manageSession = new SessionDataProperty(LocalizedString.create("Manage session"), LogicalClass.instance);
@@ -289,6 +289,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         logMessagePropertyDraw.setPropertyExtra(addPropertyObject(externalShowIf), PropertyDrawExtraType.SHOWIF);
 
         addActionsOnEvent(FormEventType.QUERYCLOSE, true, version, new ActionObjectEntity<>(formClose.action, MapFact.EMPTYREV()));
+        addActionsOnEvent(FormEventType.QUERYOK, true, version, new ActionObjectEntity<>(formOk.action, MapFact.EMPTYREV()));
     }
 
     private void initDefaultGroupElements(GroupObjectEntity group, Version version) {

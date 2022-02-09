@@ -96,12 +96,6 @@ public class ActionOrPropertyPanelValue extends ActionOrPropertyValue implements
         this.forceSetFocus = false;
     }
 
-    protected void onBlur(EventHandler handler) {
-        form.previewBlurEvent(handler.event);
-
-        super.onBlur(handler);
-    }
-
     @Override
     protected void onFocus(EventHandler handler) {
         // prevent focusing

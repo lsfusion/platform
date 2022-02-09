@@ -17,6 +17,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.ImOrderValueMap;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.interop.action.*;
 import lsfusion.interop.form.UpdateMode;
+import lsfusion.interop.form.WindowFormType;
 import lsfusion.interop.form.design.FontInfo;
 import lsfusion.interop.form.event.FormEventType;
 import lsfusion.interop.form.object.table.grid.ListViewType;
@@ -193,13 +194,13 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     private final boolean checkOnOk;
 
     private final boolean isSync;
-    private final boolean isFloat;
+    private final boolean isModal;
 
     public boolean isSync() {
         return isSync;
     }
-    public boolean isFloat() {
-        return isFloat;
+    public boolean isModal() {
+        return isModal;
     }
 
     private final boolean manageSession;
@@ -219,11 +220,11 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                         ImMap<ObjectEntity, ? extends ObjectValue> mapObjects,
                         ExecutionStack stack,
                         boolean isSync, Boolean noCancel, ManageSessionType manageSession, boolean checkOnOk,
-                        boolean showDrop, boolean interactive, boolean isFloat,
+                        boolean showDrop, boolean interactive, WindowFormType type,
                         boolean isExternal, ImSet<ContextFilterInstance> contextFilters,
                         boolean showReadOnly, Locale locale) throws SQLException, SQLHandledException {
         this.isSync = isSync;
-        this.isFloat = isFloat;
+        this.isModal = type.isModal();
         this.checkOnOk = checkOnOk;
         this.showDrop = showDrop;
 
@@ -400,7 +401,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         }
 
         this.manageSession = adjManageSession;
-        environmentIncrement = createEnvironmentIncrement(isSync || adjManageSession, isFloat, isExternal, adjNoCancel, adjManageSession, showDrop);
+        environmentIncrement = createEnvironmentIncrement(isSync || adjManageSession, type, isExternal, adjNoCancel, adjManageSession, showDrop);
 
         MExclMap<SessionDataProperty, Pair<GroupObjectInstance, GroupObjectProp>> mEnvironmentIncrementSources = MapFact.mExclMap();
         for (GroupObjectInstance groupObject : groupObjects) {
@@ -474,10 +475,11 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         return false;
     }
 
-    private static IncrementChangeProps createEnvironmentIncrement(boolean showOk, boolean isFloat, boolean isExternal, boolean isAdd, boolean manageSession, boolean showDrop) throws SQLException, SQLHandledException {
+    private static IncrementChangeProps createEnvironmentIncrement(boolean showOk, WindowFormType type, boolean isExternal, boolean isAdd, boolean manageSession, boolean showDrop) throws SQLException, SQLHandledException {
         IncrementChangeProps environment = new IncrementChangeProps();
         environment.add(FormEntity.showOk, PropertyChange.STATIC(showOk));
-        environment.add(FormEntity.isFloat, PropertyChange.STATIC(isFloat));
+        environment.add(FormEntity.isDocked, PropertyChange.STATIC(type == WindowFormType.DOCKED));
+        environment.add(FormEntity.isEmbedded, PropertyChange.STATIC(type == WindowFormType.EMBEDDED));
         environment.add(FormEntity.isAdd, PropertyChange.STATIC(isAdd));
         environment.add(FormEntity.manageSession, PropertyChange.STATIC(manageSession));
         environment.add(FormEntity.isExternal, PropertyChange.STATIC(isExternal));
@@ -2544,8 +2546,8 @@ updateAsyncPropertyChanges();
         fireEvent(FormEventType.DROP, stack);
     }
 
-    public void fireQueryClose(ExecutionStack stack) throws SQLException, SQLHandledException {
-        fireEvent(FormEventType.QUERYCLOSE, stack);
+    public void fireQueryClose(ExecutionStack stack, boolean ok) throws SQLException, SQLHandledException {
+        fireEvent(ok ? FormEventType.QUERYOK : FormEventType.QUERYCLOSE, stack);
     }
 
     private void fireEvent(Object eventObject, ExecutionStack stack) throws SQLException, SQLHandledException {
@@ -2655,8 +2657,8 @@ updateAsyncPropertyChanges();
     }
 
     // close делать не надо, так как по умолчанию добавляется обработчик события formClose
-    public void formQueryClose(ExecutionStack stack) throws SQLException, SQLHandledException {
-        fireQueryClose(stack);
+    public void formQueryClose(ExecutionStack stack, boolean ok) throws SQLException, SQLHandledException {
+        fireQueryClose(stack, ok);
     }
 
     public void formCancel(ExecutionContext context) throws SQLException, SQLHandledException {

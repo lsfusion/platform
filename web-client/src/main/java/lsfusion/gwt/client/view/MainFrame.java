@@ -302,7 +302,7 @@ public class MainFrame implements EntryPoint {
                         public void onSuccess(ClientMessageResult result) {
                             setShouldRepeatPingRequest(true);
                             for (Integer idNotification : result.notificationList) {
-                                FormContainer<?> currentForm = MainFrame.getCurrentForm();
+                                FormContainer currentForm = MainFrame.getCurrentForm();
                                 GFormController form = currentForm != null ? currentForm.getForm() : null;
                                 if (form != null)
                                     try {
@@ -383,7 +383,7 @@ public class MainFrame implements EntryPoint {
         bodyStyle.setWidth(Window.getClientWidth(), Style.Unit.PX);
     }
 
-    private static FormContainer<?> currentForm;
+    private static FormContainer currentForm;
     private static boolean modalPopup;
 
     public static void setCurrentForm(FormContainer currentForm) {

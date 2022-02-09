@@ -231,18 +231,6 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         return form.previewEvent(target, event);
     }
 
-    @Override
-    public void onFocus() {
-        super.onFocus();
-    }
-
-    @Override
-    public void onBlur(Event event) {
-        form.previewBlurEvent(event);
-
-        super.onBlur(event);
-    }
-
     public GPropertyDraw getSelectedProperty() {
         if(getSelectedRow() >= 0 && getSelectedColumn() >= 0)
             return getProperty(getSelectedCell());
@@ -516,7 +504,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         return getColumnPropertyDraw(i).getValueWidthWithPadding(font);
     }
 
-    public <C> void onBrowserEvent(Cell cell, Event event, Column<T, C> column, Element parent) {
+    public <C> void onBrowserEvent(Cell cell, Event event, Column<T, C> column, TableCellElement parent) {
         form.onPropertyBrowserEvent(new EventHandler(event), parent, getTableDataFocusElement(),
                 handler -> selectionHandler.onCellBefore(handler, cell, rowChanged -> isChangeOnSingleClick(cell, (Boolean) rowChanged)),
                 handler -> column.onEditEvent(handler, cell, parent),
@@ -526,7 +514,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     }
 
     @Override
-    public void pasteData(Cell cell, Element parent, List<List<String>> table) {
+    public void pasteData(Cell cell, TableCellElement parent, List<List<String>> table) {
         if (!table.isEmpty() && !table.get(0).isEmpty()) {
             form.pasteValue(getEditContext(cell, parent), table.get(0).get(0));
         }
@@ -541,7 +529,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         protected abstract Object getValue(GPropertyDraw property, T record);
 
         @Override
-        public void onEditEvent(EventHandler handler, Cell editCell, Element editCellParent) {
+        public void onEditEvent(EventHandler handler, Cell editCell, TableCellElement editCellParent) {
             GGridPropertyTable.this.onEditEvent(handler, false, editCell, editCellParent);
         }
 

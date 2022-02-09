@@ -3294,6 +3294,7 @@ syncTypeLiteral returns [boolean val]
 windowTypeLiteral returns [WindowFormType val]
 	:	'FLOAT' { $val = WindowFormType.FLOAT; }
 	|	'DOCKED' { $val = WindowFormType.DOCKED; }
+	|	'EMBEDDED' { $val = WindowFormType.EMBEDDED; }
 	;
 
 printActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]

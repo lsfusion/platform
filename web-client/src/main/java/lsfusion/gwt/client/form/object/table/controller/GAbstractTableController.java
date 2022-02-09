@@ -42,7 +42,7 @@ public abstract class GAbstractTableController extends GPropertyController imple
 
         // we need to wrap into simple panel to make layout independent from property value (make flex-basis 0 for upper components)
         // plus we need this panel to change views
-        this.gridView = new GridContainerPanel(autoSize);
+        this.gridView = new GridContainerPanel(autoSize, formController);
 
         getFormLayout().addBaseComponent(getGridComponent(), this.gridView, getDefaultFocusReceiver());
 
@@ -57,11 +57,14 @@ public abstract class GAbstractTableController extends GPropertyController imple
 
     public static class GridContainerPanel extends ResizableSimplePanel implements HasMaxPreferredSize {
         private final boolean autoSize;
+        private final GFormController form;
 
-        public GridContainerPanel(boolean autoSize) {
+        public GridContainerPanel(boolean autoSize, GFormController form) {
             this.autoSize = autoSize;
 
             setStyleName("gridContainerPanel");
+
+            this.form = form;
 
             DataGrid.initSinkFocusEvents(this);
         }
@@ -80,39 +83,50 @@ public abstract class GAbstractTableController extends GPropertyController imple
             Element target = DataGrid.getTargetAndCheck(getElement(), event);
             if(target == null)
                 return;
-//            if(!form.previewEvent(target, event))
-//                return;
+            if(!form.previewEvent(target, event))
+                return;
 
             super.onBrowserEvent(event);
 
+            if(!DataGrid.checkSinkFocusEvents(event))
+                return;
+
             String eventType = event.getType();
             if (BrowserEvents.FOCUS.equals(eventType))
-                onFocus();
+                onFocus(target, event);
             else if (BrowserEvents.BLUR.equals(eventType))
-                onBlur(event);
+                onBlur(target, event);
+
+            form.propagateFocusEvent(event);
         }
 
         private boolean isFocused;
-        protected void onFocus() {
+        protected void onFocus(Element target, Event event) {
             if(isFocused)
                 return;
             isFocused = true;
 
             Widget widget = getWidget();
-            if(widget instanceof DataGrid) // we have to propagate focus to grid, since GWT proceeds the FOCUS event for the first widget that have eventListener (i.e initSinkEvents is called)
-                ((DataGrid<?>) widget).onFocus();
+            if(widget instanceof DataGrid) { // we have to propagate focus to grid, since GWT proceeds the FOCUS event for the first widget that have eventListener (i.e initSinkEvents is called)
+                DataGrid<?> grid = (DataGrid<?>) widget;
+                grid.onFocus();
+                grid.onGridBrowserEvent(target, event);
+            }
             addStyleName("gridContainerPanelFocused");
         }
 
-        protected void onBlur(Event event) {
+        protected void onBlur(Element target, Event event) {
             if(!isFocused || DataGrid.isFakeBlur(event, getElement())) {
                 return;
             }
             isFocused = false;
 
             Widget widget = getWidget();
-            if(widget instanceof DataGrid)
-                ((DataGrid<?>) widget).onBlur(event);
+            if(widget instanceof DataGrid) {
+                DataGrid<?> grid = (DataGrid<?>) widget;
+                grid.onBlur(event);
+                grid.onGridBrowserEvent(target, event);
+            }
             removeStyleName("gridContainerPanelFocused");
         }
 

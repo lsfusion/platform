@@ -27,12 +27,13 @@ public interface RequestEmbeddedCellEditor extends RequestCellEditor {
                 cancel(parent, CancelReason.ESCAPE_PRESSED);
             }
         } else if (BLUR.equals(type)) {
-            // Cancel the change. Ensure that we are blurring the input element and
-            // not the parent element itself.
-            if (!DataGrid.isFakeBlur(event, parent)) {
-                commit(parent, CommitReason.BLURRED);
-            }
+            onBlur(event, parent);
         }
+    }
+
+    default void onBlur(Event event, Element parent) {
+        if (!DataGrid.isFakeBlur(event, parent))
+            commit(parent, CommitReason.BLURRED);
     }
 
     default boolean checkEnterEvent(Event event) {

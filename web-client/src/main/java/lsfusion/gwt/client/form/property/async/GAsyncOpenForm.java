@@ -4,27 +4,27 @@ import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.property.cell.controller.EditContext;
-import lsfusion.gwt.client.form.view.ModalForm;
 import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
-import lsfusion.gwt.client.view.MainFrame;
+import lsfusion.gwt.client.navigator.window.GWindowFormType;
+import lsfusion.interop.form.WindowFormType;
 
 public class GAsyncOpenForm extends GAsyncExec {
     public String canonicalName;
     public String caption;
     public boolean forbidDuplicate;
     public boolean modal;
-    public boolean window;
+    public GWindowFormType type;
 
     @SuppressWarnings("UnusedDeclaration")
     public GAsyncOpenForm() {
     }
 
-    public GAsyncOpenForm(String canonicalName, String caption, boolean forbidDuplicate, boolean modal, boolean window) {
+    public GAsyncOpenForm(String canonicalName, String caption, boolean forbidDuplicate, boolean modal, GWindowFormType type) {
         this.canonicalName = canonicalName;
         this.caption = caption;
         this.forbidDuplicate = forbidDuplicate;
         this.modal = modal;
-        this.window = window;
+        this.type = type;
     }
 
     @Override
@@ -32,13 +32,17 @@ public class GAsyncOpenForm extends GAsyncExec {
         formController.asyncOpenForm(this, editContext, event, actionSID);
     }
 
-    public boolean isWindow(boolean canShowDockedModal) {
-        //if current form is modal, new async form can't be non-modal
-        return window || (modal && !canShowDockedModal);
+    public GWindowFormType getWindowType(boolean canShowDockedModal) {
+        if(type == GWindowFormType.DOCKED) {
+            //if current form is modal, new async form can't be non-modal
+            if(modal && !canShowDockedModal)
+                return GWindowFormType.FLOAT;
+        }
+        return type;
     }
 
     @Override
-    public void exec(GAsyncFormController asyncFormController, FormsController formsController) {
-        formsController.asyncOpenForm(asyncFormController, this);
+    public void exec(GAsyncFormController asyncFormController, FormsController formsController, Event editEvent, EditContext editContext, GFormController formController) {
+        formsController.asyncOpenForm(asyncFormController, this, editEvent, editContext, formController);
     }
 }

@@ -7,6 +7,8 @@ import lsfusion.client.form.property.async.ClientInputList;
 import lsfusion.client.form.property.cell.classes.controller.suggest.CompletionType;
 import lsfusion.gwt.client.form.property.async.*;
 import lsfusion.gwt.client.form.property.cell.classes.controller.suggest.GCompletionType;
+import lsfusion.gwt.client.navigator.window.GWindowFormType;
+import lsfusion.interop.form.WindowFormType;
 
 public class ClientAsyncToGwtConverter extends ObjectConverter {
     private static final class InstanceHolder {
@@ -43,10 +45,20 @@ public class ClientAsyncToGwtConverter extends ObjectConverter {
         return new GAsyncChange(typeConverter.convertOrCast(clientAsyncChange.changeType), convertOrCast(clientAsyncChange.inputList), clientAsyncChange.customEditorFunction);
     }
 
+    @Converter(from = WindowFormType.class)
+    public GWindowFormType convertWindowType(WindowFormType modalityType) {
+        switch (modalityType) {
+            case DOCKED: return GWindowFormType.DOCKED;
+            case FLOAT: return GWindowFormType.FLOAT;
+            case EMBEDDED: return GWindowFormType.EMBEDDED;
+        }
+        return null;
+    }
+
     @Cached
     @Converter(from = ClientAsyncOpenForm.class)
     public GAsyncOpenForm convertOpenForm(ClientAsyncOpenForm asyncOpenForm) {
-        return new GAsyncOpenForm(asyncOpenForm.canonicalName, asyncOpenForm.caption, asyncOpenForm.forbidDuplicate, asyncOpenForm.modal, asyncOpenForm.window);
+        return new GAsyncOpenForm(asyncOpenForm.canonicalName, asyncOpenForm.caption, asyncOpenForm.forbidDuplicate, asyncOpenForm.modal, convertOrCast(asyncOpenForm.type));
     }
     
     @Cached

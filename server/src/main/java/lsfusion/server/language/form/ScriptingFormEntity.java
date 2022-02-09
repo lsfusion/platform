@@ -751,7 +751,7 @@ public class ScriptingFormEntity {
                 form.addActionsOnEvent(getObjectEntity((String) eventType), version, actions.get(i));
             } else {
                 ActionObjectEntity action = actions.get(i);
-                form.addActionsOnEvent(eventType, eventType == FormEventType.QUERYCLOSE, version, action);
+                form.addActionsOnEvent(eventType, eventType == FormEventType.QUERYCLOSE || eventType == FormEventType.QUERYOK, version, action);
             }
         }
     }

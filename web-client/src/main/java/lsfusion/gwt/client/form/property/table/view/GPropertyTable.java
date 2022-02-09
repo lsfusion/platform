@@ -73,7 +73,7 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
 
     public abstract Object getValueAt(Cell cell);
 
-    public abstract void pasteData(Cell cell, Element parent, List<List<String>> table);
+    public abstract void pasteData(Cell cell, TableCellElement parent, List<List<String>> table);
 
     @Override
     protected int getRowByKey(Object key) {
@@ -91,11 +91,11 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
 //        CopyPasteUtils.setEmptySelection(getSelectedElement());
 //    }
 
-    public void onEditEvent(EventHandler handler, boolean isBinding, Cell editCell, Element editCellParent) {
+    public void onEditEvent(EventHandler handler, boolean isBinding, Cell editCell, TableCellElement editCellParent) {
         form.executePropertyEventAction(handler, isBinding, getEditContext(editCell, editCellParent));
     }
 
-    public ExecuteEditContext getEditContext(Cell editCell, Element editCellParent) {
+    public ExecuteEditContext getEditContext(Cell editCell, TableCellElement editCellParent) {
         final GPropertyDraw property = GPropertyTable.this.getProperty(editCell);
         Element editElement = GPropertyTableBuilder.getRenderSizedElement(editCellParent, property, GPropertyTable.this);
         return new ExecuteEditContext() {
@@ -180,6 +180,16 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
             @Override
             public void restoreSetFocus(Object forceSetFocus) {
                 setSelectedColumn((Integer) forceSetFocus);
+            }
+
+            @Override
+            public void startEditing() {
+                updateSelectedRowCellBackground(false, false, editCellParent);
+            }
+
+            @Override
+            public void stopEditing() {
+                updateSelectedRowCellBackground(true, true, editCellParent);
             }
         };
     }

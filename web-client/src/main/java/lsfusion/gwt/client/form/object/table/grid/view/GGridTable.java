@@ -791,7 +791,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     }
 
     @Override
-    public void pasteData(Cell cell, Element parent, final List<List<String>> table) {
+    public void pasteData(Cell cell, TableCellElement parent, final List<List<String>> table) {
         final int tableColumns = getMaxColumnsCount(table);
         final int selectedColumn = getSelectedColumn();
         if (table.size() > 1 || tableColumns > 1) {

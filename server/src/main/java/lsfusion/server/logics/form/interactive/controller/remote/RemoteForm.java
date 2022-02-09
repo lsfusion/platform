@@ -644,14 +644,14 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         return form.entity.getCanonicalName();
     }
 
-    public ServerResponse closedPressed(long requestIndex, long lastReceivedRequestIndex) throws RemoteException {
+    public ServerResponse closedPressed(long requestIndex, long lastReceivedRequestIndex, boolean ok) throws RemoteException {
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
 
             if (logger.isTraceEnabled()) {
                 logger.trace("closedPressed Action");
             }
 
-            form.formQueryClose(stack);
+            form.formQueryClose(stack, ok);
         });
     }
 

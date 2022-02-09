@@ -13,6 +13,7 @@ import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.form.classes.view.ClassChosenHandler;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.property.cell.controller.EditContext;
+import lsfusion.gwt.client.form.property.cell.controller.EndReason;
 import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
 import lsfusion.gwt.client.navigator.window.GModalityType;
 import lsfusion.gwt.client.view.MainFrame;
@@ -55,7 +56,7 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
             }
         };
         try {
-            form.openForm(getDispatchingIndex(), action.form, action.modalityType, action.forbidDuplicate, editEvent, onClose);
+            form.openForm(getDispatchingIndex(), action.form, action.modalityType, action.forbidDuplicate, editEvent, editContext, onClose);
         } catch (Throwable t) {
             onClose.onHidden();
             throw t;
@@ -108,7 +109,7 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
 
     @Override
     public void execute(GHideFormAction action) {
-        form.hideForm(action.closeDelay);
+        form.hideForm(action.closeDelay, editFormCloseReason);
     }
 
     @Override
@@ -142,6 +143,8 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
     public Event editEvent;
     public EditContext editContext; // needed for some input operations (input, update edit value)
 
+    public EndReason editFormCloseReason;
+
     @Override
     public Object execute(GRequestUserInputAction action) {
 
@@ -150,7 +153,7 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
         // we should not drop at least editSetValue since GUpdateEditValueAction might use it
         Result<Object> result = new Result<>();
         // we'll be optimists and assume that this value will stay
-        form.editProperty(action.readType, editEvent, action.hasOldValue, action.oldValue, action.inputList,
+        form.edit(action.readType, editEvent, action.hasOldValue, action.oldValue, action.inputList,
                 (value, requestIndex) -> continueDispatching(value, result),
                 (cancelReason) -> continueDispatching(GUserInputResult.canceled, result), editContext, ServerResponse.INPUT, getDispatchingIndex(), null);
         return result.result;

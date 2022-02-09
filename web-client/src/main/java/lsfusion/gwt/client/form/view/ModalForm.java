@@ -1,27 +1,31 @@
 package lsfusion.gwt.client.form.view;
 
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.ResizableModalWindow;
 import lsfusion.gwt.client.form.controller.FormsController;
-import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
+import lsfusion.gwt.client.form.property.cell.controller.EndReason;
+import lsfusion.gwt.client.navigator.window.GWindowFormType;
 import lsfusion.gwt.client.view.MainFrame;
 
-public class ModalForm extends FormContainer<ResizableModalWindow> {
+public class ModalForm extends FormContainer {
 
+    protected final ResizableModalWindow contentWidget;
 
-    public ModalForm(FormsController formsController, GAsyncFormController asyncFormController, String caption, boolean async) {
-        super(formsController, asyncFormController, async);
-
-        if(async) {
-            GwtClientUtils.setThemeImage(loadingAsyncImage, imageUrl -> setContent(createLoadingWidget(imageUrl)), false);
-            contentWidget.setDefaultSize();
-        }
-        contentWidget.setCaption(caption);
+    @Override
+    public GWindowFormType getWindowType() {
+        return GWindowFormType.FLOAT;
     }
 
     @Override
-    protected ResizableModalWindow initContentWidget() {
+    protected Element getFocusedElement() {
+        return contentWidget.getElement();
+    }
+
+    public ModalForm(FormsController formsController, String caption, boolean async, Event editEvent) {
+        super(formsController, async, editEvent);
+
         ResizableModalWindow window = new ResizableModalWindow() {
             @Override
             protected void onShow() {
@@ -31,7 +35,16 @@ public class ModalForm extends FormContainer<ResizableModalWindow> {
             }
         };
         window.setOuterContentWidget();
-        return window;
+        window.setCaption(caption);
+
+        contentWidget = window;
+    }
+
+    @Override
+    public void setContentLoading() {
+        super.setContentLoading();
+        assert async;
+        contentWidget.setDefaultSize();
     }
 
     @Override
@@ -60,7 +73,7 @@ public class ModalForm extends FormContainer<ResizableModalWindow> {
     }
 
     @Override
-    public void hide() {
+    public void hide(EndReason editFormCloseReason) {
         onBlur(true);
 
         contentWidget.hide();

@@ -15,7 +15,6 @@
  */
 package lsfusion.gwt.client.base.view.grid;
 
-import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.TableCellElement;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
@@ -29,7 +28,7 @@ public abstract class Column<T, C> {
 
   public abstract boolean isSticky();
 
-  public abstract void onEditEvent(EventHandler handler, Cell editCell, Element editCellParent);
+  public abstract void onEditEvent(EventHandler handler, Cell editCell, TableCellElement editCellParent);
 
   public abstract void renderAndUpdateDom(Cell cell, TableCellElement cellElement);
 

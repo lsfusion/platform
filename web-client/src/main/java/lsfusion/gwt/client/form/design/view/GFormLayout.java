@@ -36,7 +36,7 @@ public class GFormLayout extends ResizableComplexPanel {
 
     public final ResizableComplexPanel recordViews;
 
-    public GFormLayout(GFormController iform, GContainer mainContainer) {
+    public GFormLayout(GFormController iform, GContainer mainContainer, boolean autoSize) {
         this.form = iform;
 
         this.mainContainer = mainContainer;
@@ -44,7 +44,7 @@ public class GFormLayout extends ResizableComplexPanel {
         addContainers(mainContainer);
 
         Widget view = getMainView();
-        setSizedMain(view, false);
+        setSizedMain(view, autoSize);
         view.getElement().getStyle().setOverflow(Style.Overflow.AUTO);
 
         recordViews = new ResizableComplexPanel();

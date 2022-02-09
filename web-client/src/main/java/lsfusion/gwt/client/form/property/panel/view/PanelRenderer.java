@@ -40,6 +40,8 @@ public abstract class PanelRenderer {
         Widget label = getTooltipWidget();
         TooltipManager.registerWidget(label, new TooltipManager.TooltipHelper() {
             public String getTooltip() {
+                if(value.isEditing)
+                    return null;
                 return tooltip;
             }
 

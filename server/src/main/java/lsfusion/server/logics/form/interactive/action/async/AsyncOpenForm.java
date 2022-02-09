@@ -1,6 +1,6 @@
 package lsfusion.server.logics.form.interactive.action.async;
 
-import lsfusion.base.BaseUtils;
+import lsfusion.interop.form.WindowFormType;
 import lsfusion.interop.form.remote.serialization.SerializationUtil;
 
 import java.io.DataOutputStream;
@@ -11,14 +11,14 @@ public class AsyncOpenForm extends AsyncExec {
     public String caption;
     public boolean forbidDuplicate;
     public boolean modal;
-    public boolean window;
+    public WindowFormType type;
 
-    public AsyncOpenForm(String canonicalName, String caption, boolean forbidDuplicate, boolean modal, boolean window) {
+    public AsyncOpenForm(String canonicalName, String caption, boolean forbidDuplicate, boolean modal, WindowFormType type) {
         this.canonicalName = canonicalName;
         this.caption = caption;
         this.forbidDuplicate = forbidDuplicate;
         this.modal = modal;
-        this.window = window;
+        this.type = type;
     }
 
     @Override
@@ -34,6 +34,6 @@ public class AsyncOpenForm extends AsyncExec {
         SerializationUtil.writeString(outStream, caption);
         outStream.writeBoolean(forbidDuplicate);
         outStream.writeBoolean(modal);
-        outStream.writeBoolean(window);
+        type.serialize(outStream);
     }
 }
