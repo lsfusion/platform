@@ -78,9 +78,7 @@ public class FileCellEditor extends ARequestValueCellEditor implements KeepCellE
     public Object getValue(Element parent, Integer contextAction) {
         if(!uploaded)
             return RequestValueCellEditor.invalid;
-        ArrayList<String> fileSIDS = new ArrayList<>();
-        fileSIDS.add(fileInfo.filePrefix + "_" + fileInfo.fileName);
-        return new GFilesDTO(fileSIDS, false, storeName, validExtensions == null, named);
+        return new GFilesDTO(fileInfo.filePrefix + "_" + fileInfo.fileName, fileInfo.fileName, storeName, validExtensions == null, named);
     }
 
     @Override

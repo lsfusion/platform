@@ -1,11 +1,10 @@
 package lsfusion.gwt.client.form.property.cell.classes;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 
 public class GFilesDTO implements Serializable {
-    public ArrayList<String> filePaths;
-    public boolean multiple;
+    public String filePath;
+    public String fileName;
     public boolean storeName;
     public boolean custom;
     public boolean named;
@@ -13,9 +12,9 @@ public class GFilesDTO implements Serializable {
     public GFilesDTO() {
     }
 
-    public GFilesDTO(ArrayList<String> filePaths, boolean multiple, boolean storeName, boolean custom, boolean named) {
-        this.filePaths = filePaths;
-        this.multiple = multiple;
+    public GFilesDTO(String filePath, String fileName, boolean storeName, boolean custom, boolean named) {
+        this.filePath = filePath;
+        this.fileName = fileName;
         this.storeName = storeName;
         this.custom = custom;
         this.named = named;

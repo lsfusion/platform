@@ -86,7 +86,7 @@ public class FilePropertyEditor extends DialogBasedPropertyEditor {
             File[] files = multiple ? fileChooser.getSelectedFiles() : new File[]{fileChooser.getSelectedFile()};
 
             try {
-                content = BaseUtils.filesToBytes(multiple, storeName, custom, named, files);
+                content = BaseUtils.filesToBytes(multiple, storeName, custom, named, null, files);
             } catch (Exception e) {
                 canceled = true;
                 return;

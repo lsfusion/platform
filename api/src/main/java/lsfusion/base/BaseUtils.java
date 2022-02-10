@@ -63,7 +63,7 @@ public class BaseUtils {
     private static final int STRING_SERIALIZATION_CHUNK_SIZE = 65535/3;
 
     public static Integer getApiVersion() {
-        return 180;
+        return 181;
     }
 
     public static String getPlatformVersion() {
@@ -2327,7 +2327,11 @@ public class BaseUtils {
     }
 
     public static String getFileName(File file) {
-        return FilenameUtils.getBaseName(file.getName());
+        return getFileName(file.getName());
+    }
+
+    public static String getFileName(String filename) {
+        return FilenameUtils.getBaseName(filename);
     }
 
     public static String getFileExtension(File file) {
@@ -2341,10 +2345,10 @@ public class BaseUtils {
         return beginIndex == -1 ? "" : result.substring(beginIndex + 1);
     }
 
-    public static Object filesToBytes(boolean multiple, boolean storeName, boolean custom, boolean named, File... files) {
+    public static Object filesToBytes(boolean multiple, boolean storeName, boolean custom, boolean named, String namedFileName, File... files) {
         ByteArrayOutputStream byteOutStream = new ByteArrayOutputStream();
 
-        byte result[];
+        byte[] result;
         try(DataOutputStream outStream = new DataOutputStream(byteOutStream)) {
             if (multiple)
                 outStream.writeInt(files.length);
@@ -2360,7 +2364,7 @@ public class BaseUtils {
                     String ext = getFileExtension(file);
                     if(named) {
                         assert !multiple && !storeName;
-                        return new NamedFileData(new FileData(rawFileData, ext), getFileName(file));
+                        return new NamedFileData(new FileData(rawFileData, ext), namedFileName != null ? getFileName(namedFileName) : getFileName(file));
                     } else {
                         FileData fileData = new FileData(rawFileData, ext);
                         if(!(multiple || storeName))
