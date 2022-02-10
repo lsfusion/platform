@@ -352,8 +352,8 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
 
             @Override
             public void onSuccess(Pair<ArrayList<GAsync>, Boolean> result) {
-                if(result.first == null && !result.second) {
-                    if(failureCallBack != null)
+                if(result.first == null) {
+                    if(!result.second && failureCallBack != null)
                         GwtClientUtils.call(failureCallBack);
                     return;
                 }

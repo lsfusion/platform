@@ -932,7 +932,7 @@ public class GFormController implements EditManager {
 
             // hasChangeAction check is important for quickfilter not to consume event (however with propertyReadOnly, checkCanBeChanged there will be still some problems)
             if (isChangeEvent(actionSID) && //??????
-                    (editContext.isReadOnly() || !property.hasChangeAction || property.customRenderFunction != null)) // we're ignoring change if we use CUSTOM render function without CUSTOM CHANGE set
+                    (editContext.isReadOnly() || !property.hasUserChangeAction())) // we're ignoring change if we use CUSTOM render function without CUSTOM CHANGE set
                 return;
             if(GEditBindingMap.EDIT_OBJECT.equals(actionSID) && !property.hasEditObjectAction)
                 return;
@@ -2038,9 +2038,7 @@ public class GFormController implements EditManager {
         }
 
         this.cellEditor = cellEditor; // not sure if it should before or after startEditing, but definitely after removeAllChildren, since it leads to blur for example
-        //Since FileCellEditor uses a standard file selection mechanism that does not have a "cancel" event, we define "cancel" when the parent element receives focus, but if the parent element is set to "focusable = FALSE;" the edit is never finished because the parent element does not receive focus
-            cellEditor.start(event, !property.isFocusable() && cellEditor instanceof FileCellEditor ? getFocusedElement() : element, oldValue);
-
+        cellEditor.start(event, element, oldValue);
     }
 
     // only request cell editor can be long-living
