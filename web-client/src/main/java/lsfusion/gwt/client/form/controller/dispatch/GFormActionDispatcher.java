@@ -152,7 +152,7 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
         // we'll be optimists and assume that this value will stay
         form.editProperty(action.readType, editEvent, action.hasOldValue, action.oldValue, action.inputList,
                 (value, requestIndex) -> continueDispatching(value, result),
-                (cancelReason) -> continueDispatching(GUserInputResult.canceled, result), editContext, ServerResponse.INPUT, getDispatchingIndex());
+                (cancelReason) -> continueDispatching(GUserInputResult.canceled, result), editContext, ServerResponse.INPUT, getDispatchingIndex(), null);
         return result.result;
     }
 

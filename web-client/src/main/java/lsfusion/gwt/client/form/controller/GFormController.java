@@ -931,8 +931,8 @@ public class GFormController implements EditManager {
             }
 
             // hasChangeAction check is important for quickfilter not to consume event (however with propertyReadOnly, checkCanBeChanged there will be still some problems)
-            if (isChangeEvent(actionSID) &&
-                    (editContext.isReadOnly() || !property.hasChangeAction || (property.customRenderFunction != null && property.customChangeFunction == null))) // we're ignoring change if we use CUSTOM render function without CUSTOM CHANGE set
+            if (isChangeEvent(actionSID) && //??????
+                    (editContext.isReadOnly() || !property.hasChangeAction || property.customRenderFunction != null)) // we're ignoring change if we use CUSTOM render function without CUSTOM CHANGE set
                 return;
             if(GEditBindingMap.EDIT_OBJECT.equals(actionSID) && !property.hasEditObjectAction)
                 return;
@@ -1026,7 +1026,7 @@ public class GFormController implements EditManager {
                 GAsyncExec actionAsync = asyncChange.inputList.actionAsyncs[contextAction];
                 if (actionAsync != null) actionAsync.exec(getAsyncFormController(requestIndex), formsController);
             }
-        }, cancelReason -> {}, editContext, actionSID, null);
+        }, cancelReason -> {}, editContext, actionSID, null, asyncChange.customEditFunction);
     }
 
     public void asyncOpenForm(GAsyncOpenForm asyncOpenForm, EditContext editContext, Event editEvent, String actionSID) {
@@ -1940,7 +1940,7 @@ public class GFormController implements EditManager {
             getPessimisticValues(property.ID, currentKey, actionSID, value, editIndex, fCallback);
     }
 
-    public void editProperty(GType type, Event event, boolean hasOldValue, Object oldValue, GInputList inputList, BiConsumer<GUserInputResult, Long> afterCommit, Consumer<CancelReason> cancel, EditContext editContext, String actionSID, Long dispatchingIndex) {
+    public void editProperty(GType type, Event event, boolean hasOldValue, Object oldValue, GInputList inputList, BiConsumer<GUserInputResult, Long> afterCommit, Consumer<CancelReason> cancel, EditContext editContext, String actionSID, Long dispatchingIndex, String customChangeFunction) {
         lsfusion.gwt.client.base.Result<Long> requestIndex = new lsfusion.gwt.client.base.Result<>();
         edit(type, event, hasOldValue, oldValue, inputList, // actually it's assumed that actionAsyncs is used only here, in all subsequent calls it should not be referenced
                 (inputResult, commitReason) -> {
@@ -1957,16 +1957,15 @@ public class GFormController implements EditManager {
 //                            actionAsync.exec(getAsyncFormController(requestIndex.result), formsController);
 //                    }
                 },
-                cancel, editContext, actionSID);
+                cancel, editContext, actionSID, customChangeFunction);
     }
 
     public void edit(GType type, Event event, boolean hasOldValue, Object oldValue, GInputList inputList, BiConsumer<GUserInputResult, CommitReason> beforeCommit, BiConsumer<GUserInputResult, CommitReason> afterCommit,
-                     Consumer<CancelReason> cancel, EditContext editContext, String editAsyncValuesSID) {
+                     Consumer<CancelReason> cancel, EditContext editContext, String editAsyncValuesSID, String customChangeFunction) {
         assert this.editContext == null;
         GPropertyDraw property = editContext.getProperty();
 
         CellEditor cellEditor;
-        String customChangeFunction = property.customChangeFunction;
         if (customChangeFunction != null && !customChangeFunction.equals("DEFAULT")) // see LsfLogics.g propertyCustomView rule
             cellEditor = CustomReplaceCellEditor.create(this, property, customChangeFunction);
         else

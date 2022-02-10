@@ -466,7 +466,6 @@ public class PropertyDrawView extends BaseComponentView {
             outStream.writeByte(DataType.ACTION);
         
         pool.writeString(outStream, entity.customRenderFunction);
-        pool.writeString(outStream, entity.customEditorFunction);
 
         pool.writeString(outStream, entity.eventID);
 

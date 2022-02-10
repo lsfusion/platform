@@ -1316,10 +1316,6 @@ public class ScriptingLogicsModule extends LogicsModule {
         property.setCustomRenderFunction(customRenderFunction);
     }
 
-    public void setCustomEditorFunction(LAP property, String customEditorFunction) {
-        property.setCustomEditorFunction(customEditorFunction);
-    }
-
     public void setPivotOptions(LAP property, PivotOptions pivotOptions) {
         property.setPivotOptions(pivotOptions);
     }
@@ -2226,7 +2222,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     public LAWithParams addScriptedInputAProp(ValueClass requestValueClass, LPWithParams oldValue, NamedPropertyUsage targetProp, LAWithParams doAction, LAWithParams elseAction,
                                               List<TypedParameter> oldContext, List<TypedParameter> newContext, boolean assign, boolean constraintFilter, LPWithParams changeProp,
                                               LPWithParams listProp, LPWithParams whereProp, List<String> actionImages, List<LAWithParams> actions,
-                                              DebugInfo.DebugPoint assignDebugPoint, FormSessionScope listScope) throws ScriptingErrorLog.SemanticErrorException {
+                                              DebugInfo.DebugPoint assignDebugPoint, FormSessionScope listScope, String customEditorFunction) throws ScriptingErrorLog.SemanticErrorException {
         if(listScope == null)
             listScope = FormSessionScope.OLDSESSION;
 
@@ -2261,7 +2257,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             ILEWithParams contextEntity = getContextListEntity(oldContext.size(), listProp, whereProp, actionImages, actions);
             usedParams = contextEntity.usedParams;
 
-            action = addInputAProp(requestValueClass, tprop, oldValue != null, contextEntity.orderInterfaces, contextEntity.list, listScope, contextEntity.where, contextEntity.contextActions);
+            action = addInputAProp(requestValueClass, tprop, oldValue != null, contextEntity.orderInterfaces, contextEntity.list, listScope, contextEntity.where, contextEntity.contextActions, customEditorFunction);
         }
         
         List<LPWithParams> mapping = new ArrayList<>();

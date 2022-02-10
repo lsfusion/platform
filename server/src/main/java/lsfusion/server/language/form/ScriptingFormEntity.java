@@ -537,14 +537,6 @@ public class ScriptingFormEntity {
                 LM.getErrLog().emitCustomPropertyViewFunctionError(LM.getParser(), property.getSID(), customRenderFunction, true);
             }
         }
-        String customEditorFunction = options.getCustomEditorFunction();
-        if (customEditorFunction != null) {
-            if (!customEditorFunction.isEmpty()) {
-                property.customEditorFunction = customEditorFunction;
-            } else {
-                LM.getErrLog().emitCustomPropertyViewFunctionError(LM.getParser(), property.getSID(), customRenderFunction, false);
-            }
-        }
 
         if (options.getToDraw() != null) {
             property.toDraw = options.getToDraw();

@@ -25,6 +25,9 @@ public class ClientAsyncChange extends ClientAsyncInputExec {
         this.changeType = ClientTypeSerializer.deserializeClientType(inStream);
         if(inStream.readBoolean())
             this.inputList = ClientAsyncSerializer.deserializeInputList(inStream);
+
+        if (inStream.readBoolean())
+            customEditorFunction = inStream.readUTF();
     }
 
     @Override
