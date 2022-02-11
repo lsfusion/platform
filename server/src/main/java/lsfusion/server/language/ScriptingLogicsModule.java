@@ -1316,6 +1316,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         property.setCustomRenderFunction(customRenderFunction);
     }
 
+    public void setCustomEditorFunction(LAP property, String customEditorFunction) {
+        property.setCustomEditorFunction(customEditorFunction);
+    }
+
     public void setPivotOptions(LAP property, PivotOptions pivotOptions) {
         property.setPivotOptions(pivotOptions);
     }
@@ -2248,7 +2252,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                     whereProp != null ? ListFact.singleton(whereProp) : ListFact.EMPTY(), listProp, cccfs);
             usedParams = contextEntities.usedParams;            
             
-            action = addDialogInputAProp(classForm, tprop, classForm.virtualObject, oldValue != null, contextEntities.orderInterfaces, listScope, contextEntities.list, contextEntities.filters);
+            action = addDialogInputAProp(classForm, tprop, classForm.virtualObject, oldValue != null, contextEntities.orderInterfaces, listScope, contextEntities.list, contextEntities.filters, customEditorFunction);
         } else {
             // optimization. we don't use files on client side (see also DefaultChangeAction.executeCustom())
             if (oldValue != null && requestValueClass instanceof FileClass)
@@ -3525,7 +3529,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                                  manageSession, noCancel,
                                  contextEntities.orderInterfaces, contextEntities.filters,
                                  syncType, windowType, checkOnOk,
-                                 readonly);
+                                 readonly, null);
 
         for (int usedParam : contextEntities.usedParams) {
             mapping.add(new LPWithParams(usedParam));

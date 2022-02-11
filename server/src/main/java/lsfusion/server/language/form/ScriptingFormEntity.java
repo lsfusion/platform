@@ -531,11 +531,11 @@ public class ScriptingFormEntity {
         }
         String customRenderFunction = options.getCustomRenderFunction();
         if (customRenderFunction != null) {
-            if (!customRenderFunction.isEmpty()) {
-                property.customRenderFunction = customRenderFunction;
-            } else {
-                LM.getErrLog().emitCustomPropertyViewFunctionError(LM.getParser(), property.getSID(), customRenderFunction, true);
-            }
+            property.customRenderFunction = customRenderFunction;
+        }
+        String customEditorFunction = options.getCustomEditorFunction();
+        if (customEditorFunction != null) {
+            property.customChangeFunction = customEditorFunction;
         }
 
         if (options.getToDraw() != null) {

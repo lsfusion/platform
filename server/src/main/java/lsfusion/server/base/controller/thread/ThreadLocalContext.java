@@ -224,8 +224,8 @@ public class ThreadLocalContext {
     public static void unlockInputContext() {
         get().unlockInputContext();
     }
-    public static InputResult inputUserData(DataClass dataClass, Object oldValue, boolean hasOldValue, InputContext inputContext, InputList inputList) {
-        return get().inputUserData(dataClass, oldValue, hasOldValue, inputContext, inputList);
+    public static InputResult inputUserData(DataClass dataClass, Object oldValue, boolean hasOldValue, InputContext inputContext, String customChangeFunction, InputList inputList) {
+        return get().inputUserData(dataClass, oldValue, hasOldValue, inputContext, customChangeFunction, inputList);
     }
 
     public static ObjectValue requestUserClass(CustomClass baseClass, CustomClass defaultValue, boolean concrete) {

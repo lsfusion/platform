@@ -208,8 +208,8 @@ public class PropertyMapImplement<P extends PropertyInterface, T extends Propert
     }
 
     @Override
-    public ActionMapImplement<?, T> mapEventAction(String eventSID, FormSessionScope defaultChangeEventScope, ImList<Property> viewProperties) {
-        ActionMapImplement<?, P> eventAction = property.getEventAction(eventSID, defaultChangeEventScope, viewProperties);
+    public ActionMapImplement<?, T> mapEventAction(String eventSID, FormSessionScope defaultChangeEventScope, ImList<Property> viewProperties, String customChangeFunction) {
+        ActionMapImplement<?, P> eventAction = property.getEventAction(eventSID, defaultChangeEventScope, viewProperties, customChangeFunction);
         return eventAction == null ? null : eventAction.map(mapping);
     }
 

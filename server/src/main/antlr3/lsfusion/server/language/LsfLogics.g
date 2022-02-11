@@ -649,9 +649,11 @@ propertyClassViewType returns [ClassViewType type]
 	|   'TOOLBAR' {$type = ClassViewType.TOOLBAR;}
 	;
 
-propertyCustomView returns [String customRenderFunction]
+propertyCustomView returns [String customRenderFunction, String customEditorFunction]
 	:	'CUSTOM' ((renderFun=stringLiteral { $customRenderFunction = $renderFun.val;})
-	    | ((renderFun=stringLiteral { $customRenderFunction = $renderFun.val;})?))
+	    | ((renderFun=stringLiteral { $customRenderFunction = $renderFun.val;})?
+        // EDIT TEXT is a temporary fix for backward compatibility
+		(('CHANGE' | ('EDIT' PRIMITIVE_TYPE)) { $customEditorFunction = "DEFAULT"; } (editFun=stringLiteral {$customEditorFunction = $editFun.val; })?))) // "DEFAULT" is hardcoded and used in GFormController.edit
 	;
 
 listViewType returns [ListViewType type, PivotOptions options, String customRenderFunction, String mapTileProvider]
@@ -812,7 +814,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|	'HEADER' propObj=formPropertyObject { $options.setHeader($propObj.property); }
 		|	'FOOTER' propObj=formPropertyObject { $options.setFooter($propObj.property); }
 		|	viewType=propertyClassViewType { $options.setViewType($viewType.type); }
-		|	customView=propertyCustomView { $options.setCustomRenderFunction($customView.customRenderFunction);}
+		|	customView=propertyCustomView { $options.setCustomRenderFunction($customView.customRenderFunction); $options.setCustomEditorFunction($customView.customEditorFunction); }
 		|	pgt=propertyGroupType { $options.setAggrFunc($pgt.type); }
 		|	pla=propertyLastAggr { $options.setLastAggr($pla.properties, $pla.desc); }
 		|	pf=propertyFormula { $options.setFormula($pf.formula, $pf.operands); }
@@ -2776,6 +2778,7 @@ customViewSetting [LAP property]
 @after {
 	if (inMainParseState()) {
 		self.setCustomRenderFunction(property, $customView.customRenderFunction);
+		self.setCustomEditorFunction(property, $customView.customEditorFunction);
 	}
 }
 	:	customView=propertyCustomView

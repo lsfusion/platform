@@ -126,7 +126,7 @@ public class ObjectClassProperty extends SimpleIncrementProperty<ClassPropertyIn
 
     @Override
     @IdentityStrongLazy // STRONG пришлось поставить из-за использования в политике безопасности
-    public ActionMapImplement<?, ClassPropertyInterface> getDefaultEventAction(String eventActionSID, FormSessionScope defaultChangeEventScope, ImList<Property> viewProperties) {
+    public ActionMapImplement<?, ClassPropertyInterface> getDefaultEventAction(String eventActionSID, FormSessionScope defaultChangeEventScope, ImList<Property> viewProperties, String customChangeFunction) {
         if(eventActionSID.equals(ServerResponse.EDIT_OBJECT))
             return null;
         return ChangeClassAction.create(null, false, baseClass).getImplement(SetFact.singletonOrder(getInterface()));

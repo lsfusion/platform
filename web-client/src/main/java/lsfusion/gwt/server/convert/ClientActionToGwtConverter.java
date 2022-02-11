@@ -142,7 +142,7 @@ public class ClientActionToGwtConverter extends ObjectConverter {
 
         GInputList inputList = asyncConverter.convertOrCast(ClientAsyncSerializer.deserializeInputList(action.inputList));
 
-        return new GRequestUserInputAction(type, value, action.hasOldValue, inputList);
+        return new GRequestUserInputAction(type, value, action.hasOldValue, action.customChangeFunction, inputList);
     }
 
     private Object deserializeServerValue(byte[] valueBytes) throws IOException {

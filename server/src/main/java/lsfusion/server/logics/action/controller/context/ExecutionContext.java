@@ -630,7 +630,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
     public ObjectValue requestUserData(final DataClass dataClass, final Object oldValue) {
         try {
             return requestUser(dataClass, () -> {
-                InputResult inputResult = inputUserData(dataClass, oldValue, true, null, null);
+                InputResult inputResult = inputUserData(dataClass, oldValue, true, null, null, null);
                 return inputResult != null ? inputResult.value : null;
             });
         } catch (SQLException | SQLHandledException e) {
@@ -638,7 +638,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         }
     }
 
-    public <T extends PropertyInterface> InputResult inputUserData(DataClass dataClass, Object oldValue, boolean hasOldValue, InputListEntity<T, P> list, InputList inputList) {
+    public <T extends PropertyInterface> InputResult inputUserData(DataClass dataClass, Object oldValue, boolean hasOldValue, InputListEntity<T, P> list, String customChangeFunction, InputList inputList) {
         assertNotUserInteractionInTransaction();
         if(pushedAsyncResult instanceof PushAsyncChange)
             return ((PushAsyncChange) pushedAsyncResult).value;
@@ -646,7 +646,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         InputContext<T> inputContext = null;
         if(list != null)
             inputContext = new InputContext<>(list.map(getKeys()), list.newSession, getSession(), getModifier(), inputList.strict);
-        return ThreadLocalContext.inputUserData(dataClass, oldValue, hasOldValue, inputContext, inputList);
+        return ThreadLocalContext.inputUserData(dataClass, oldValue, hasOldValue, inputContext, customChangeFunction, inputList);
     }
 
     @Deprecated

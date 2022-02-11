@@ -248,7 +248,7 @@ public abstract class AbstractContext implements Context {
     public void unlockInputContext() {
         throw new UnsupportedOperationException("inputContext is not supported");
     }
-    public InputResult inputUserData(DataClass dataClass, Object oldValue, boolean hasOldValue, InputContext inputContext, InputList inputList) {
+    public InputResult inputUserData(DataClass dataClass, Object oldValue, boolean hasOldValue, InputContext inputContext, String customChangeFunction, InputList inputList) {
         throw new UnsupportedOperationException("requestUserData is not supported");
     }
 

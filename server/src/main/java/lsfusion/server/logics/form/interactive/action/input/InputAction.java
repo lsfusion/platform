@@ -46,20 +46,20 @@ public class InputAction extends SystemExplicitAction {
     protected final InputListEntity<?, ClassPropertyInterface> contextList;
     protected final InputFilterSelector<ClassPropertyInterface> contextFilter;
     protected final ImList<InputContextAction<?, ClassPropertyInterface>> contextActions; // + value param
-    private final String customEditorFunction;
+    private final String customChangeFunction;
 
     private static ValueClass[] getValueClasses(boolean hasOldValue, ValueClass valueClass, int contextInterfaces) {
         return ArrayUtils.addAll(hasOldValue ? new ValueClass[]{valueClass} : new ValueClass[]{}, BaseUtils.genArray(null, contextInterfaces, ValueClass[]::new));
     }
 
     public <C extends PropertyInterface> InputAction(LocalizedString caption, ValueClass valueClass, LP targetProp, boolean hasOldValue,
-                                                     ImOrderSet<C> orderContextInterfaces, InputListEntity<?, C> contextList, InputFilterSelector<C> contextFilter, ImList<InputContextAction<?, C>> contextActions, String customEditorFunction) {
+                                                     ImOrderSet<C> orderContextInterfaces, InputListEntity<?, C> contextList, InputFilterSelector<C> contextFilter, ImList<InputContextAction<?, C>> contextActions, String customChangeFunction) {
         super(caption, getValueClasses(hasOldValue, valueClass, orderContextInterfaces.size()));
 
         this.valueClass = valueClass;
         this.targetProp = targetProp;
         assert targetProp != null;
-        this.customEditorFunction = customEditorFunction;
+        this.customChangeFunction = customChangeFunction;
 
         ImOrderSet<ClassPropertyInterface> orderInterfaces = getOrderInterfaces();
 
@@ -105,7 +105,7 @@ public class InputAction extends SystemExplicitAction {
         Object oldValue = hasOldValue ? context.getKeyObject(oldValueInterface) : null;
 
         InputListEntity<?, ClassPropertyInterface> fullContextList = getFullContextList();
-        InputResult userValue = context.inputUserData(getInputClass(fullContextList), oldValue, hasOldValue, fullContextList, getInputList());
+        InputResult userValue = context.inputUserData(getInputClass(fullContextList), oldValue, hasOldValue, fullContextList, customChangeFunction, getInputList());
 
         Integer contextAction;
         if(userValue != null && (contextAction = userValue.contextAction) != null)
@@ -126,7 +126,7 @@ public class InputAction extends SystemExplicitAction {
     public AsyncMapEventExec<ClassPropertyInterface> calculateAsyncEventExec(boolean optimistic, boolean recursive) {
         if (optimistic || oldValueInterface == null) {
             InputListEntity<?, ClassPropertyInterface> fullContextList = getFullContextList();
-            return new AsyncMapChange<>(getInputClass(fullContextList), fullContextList, getInputList(), targetProp, customEditorFunction);
+            return new AsyncMapChange<>(getInputClass(fullContextList), fullContextList, getInputList(), targetProp, customChangeFunction);
         }
         return null;
     }

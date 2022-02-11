@@ -274,13 +274,13 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
 
     @Override
     @IdentityStrongLazy // STRONG пришлось поставить из-за использования в политике безопасности
-    public ActionMapImplement<?, Interface> getDefaultEventAction(String eventActionSID, FormSessionScope defaultChangeEventScope, ImList<Property> viewProperties) {
+    public ActionMapImplement<?, Interface> getDefaultEventAction(String eventActionSID, FormSessionScope defaultChangeEventScope, ImList<Property> viewProperties, String customChangeFunction) {
         Property<T> aggProp = implement.property;
 
         if (aggProp instanceof AndFormulaProperty) {
             final AndFormulaProperty andProperty = (AndFormulaProperty) aggProp;
             ImCol<PropertyInterfaceImplement<Interface>> ands = implement.mapping.filterFn(element -> element != andProperty.objectInterface).values();
-            ActionMapImplement<?, Interface> implementEdit = implement.mapping.get((T) andProperty.objectInterface).mapEventAction(eventActionSID, defaultChangeEventScope, viewProperties);
+            ActionMapImplement<?, Interface> implementEdit = implement.mapping.get((T) andProperty.objectInterface).mapEventAction(eventActionSID, defaultChangeEventScope, viewProperties, customChangeFunction);
             if (implementEdit != null) {
                 return PropertyFact.createIfAction(
                         interfaces,
@@ -294,17 +294,17 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
         if(eventActionSID.equals(ServerResponse.EDIT_OBJECT)) {
             ValueClass editClass = getValueClass(ClassType.tryEditPolicy);
             if((editClass != null && editClass.getDefaultOpenAction(getBaseLM()) != null)) // just call open action (see super implementation)
-                return super.getDefaultEventAction(eventActionSID, defaultChangeEventScope, viewProperties);
+                return super.getDefaultEventAction(eventActionSID, defaultChangeEventScope, viewProperties, customChangeFunction);
 
-            ActionMapImplement<?, T> editImplement = implement.property.getEventAction(eventActionSID, defaultChangeEventScope, ListFact.EMPTY());
+            ActionMapImplement<?, T> editImplement = implement.property.getEventAction(eventActionSID, defaultChangeEventScope, ListFact.EMPTY(), customChangeFunction);
             if(editImplement != null)
                 return PropertyFact.createJoinAction(editImplement.map(implement.mapping));
         }
 
         if (implement.mapping.size() == 1 && !isIdentity)
-            return implement.mapping.singleValue().mapEventAction(eventActionSID, defaultChangeEventScope, viewProperties.addList(aggProp));
+            return implement.mapping.singleValue().mapEventAction(eventActionSID, defaultChangeEventScope, viewProperties.addList(aggProp), customChangeFunction);
 
-        return super.getDefaultEventAction(eventActionSID, defaultChangeEventScope, viewProperties);
+        return super.getDefaultEventAction(eventActionSID, defaultChangeEventScope, viewProperties, customChangeFunction);
     }
 
     public boolean checkEquals() {
