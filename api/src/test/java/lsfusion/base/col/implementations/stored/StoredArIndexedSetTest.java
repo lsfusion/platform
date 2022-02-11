@@ -1,18 +1,16 @@
 package lsfusion.base.col.implementations.stored;
 
-import lsfusion.base.col.implementations.stored.StoredArrayTest.SerializableClass;
+import lsfusion.base.col.implementations.stored.StoredTestDataGenerators.StoredClass;
 import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.Comparator;
-
+import static lsfusion.base.col.implementations.stored.StoredTestDataGenerators.sortedArray;
 import static org.junit.Assert.*;
 
 public class StoredArIndexedSetTest {
     @Test
     public void createWithArray() {
-        SerializableClass[] arr = initSortedArray();
-        StoredArIndexedSet<SerializableClass> result = new StoredArIndexedSet<>(StoredArrayTest.serializer, arr);
+        StoredClass[] arr = sortedArray();
+        StoredArIndexedSet<StoredClass> result = new StoredArIndexedSet<>(StoredArrayTest.serializer, arr);
         assertEquals(arr.length, result.size());
         for (int i = 0; i < arr.length; ++i) {
             assertEquals(arr[i], result.get(i)); 
@@ -24,8 +22,8 @@ public class StoredArIndexedSetTest {
 
     @Test
     public void createWithStoredArray() {
-        SerializableClass[] arr = initSortedArray();
-        StoredArIndexedSet<SerializableClass> result = initSet(arr);
+        StoredClass[] arr = sortedArray();
+        StoredArIndexedSet<StoredClass> result = initSet(arr);
         assertEquals(arr.length, result.size());
         for (int i = 0; i < arr.length; ++i) {
             assertEquals(arr[i], result.get(i));
@@ -37,21 +35,20 @@ public class StoredArIndexedSetTest {
 
     @Test
     public void createWithStoredArIndexedSet() {
-        SerializableClass[] arr = initSortedArray();
-        StoredArIndexedSet<SerializableClass> result = initSet(arr);
-        StoredArIndexedSet<SerializableClass> copy = new StoredArIndexedSet<>(result);
+        StoredClass[] arr = sortedArray();
+        StoredArIndexedSet<StoredClass> result = initSet(arr);
+        StoredArIndexedSet<StoredClass> copy = new StoredArIndexedSet<>(result);
         assertEquals(copy.size(), result.size());
         for (int i = 0; i < arr.length; ++i) {
             assertEquals(result.get(i), copy.get(i));
         }
     }
 
-
     @Test
     public void contains() {
-        SerializableClass[] arr = initSortedArray();
-        SerializableClass other = new SerializableClass("otner", 6, true);
-        StoredArIndexedSet<SerializableClass> result = initSet(arr);
+        StoredClass[] arr = sortedArray();
+        StoredClass other = new StoredClass("otner", 6, true);
+        StoredArIndexedSet<StoredClass> result = initSet(arr);
         for (int i = 0; i < arr.length; ++i) {
             assertTrue(result.contains(arr[i]));
         }
@@ -61,15 +58,9 @@ public class StoredArIndexedSetTest {
         }
     }
     
-    private SerializableClass[] initSortedArray() {
-        SerializableClass[] array = StoredArrayTest.initArray();
-        Arrays.sort(array, Comparator.comparingInt(SerializableClass::hashCode));
-        return array;
-    }
-    
-    private StoredArIndexedSet<SerializableClass> initSet(SerializableClass[] arr) {
-        StoredArray<SerializableClass> stored = new StoredArray<>(arr, StoredArrayTest.serializer);
-        StoredArIndexedSet<SerializableClass> result = new StoredArIndexedSet<>(stored);
+    private StoredArIndexedSet<StoredClass> initSet(StoredClass[] arr) {
+        StoredArray<StoredClass> stored = new StoredArray<>(arr, StoredArrayTest.serializer);
+        StoredArIndexedSet<StoredClass> result = new StoredArIndexedSet<>(stored);
         return result;
     }
 

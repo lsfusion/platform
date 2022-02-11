@@ -2,7 +2,7 @@ package lsfusion.base.col.implementations.stored;
 
 import lsfusion.base.col.implementations.*;
 import lsfusion.base.col.implementations.order.*;
-import lsfusion.base.col.implementations.stored.StoredArrayTest.SerializableClass;
+import lsfusion.base.col.implementations.stored.StoredTestDataGenerators.StoredClass;
 import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.mutable.MOrderSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
@@ -28,14 +28,14 @@ public class SetsSerializationTest {
     
     @Test
     public void createAndSerializeArCol() {
-        StoredArray<ArCol<SerializableClass>> stored = new StoredArray<>(StoredArrayTest.serializer);
-        SerializableClass[] array = StoredArrayTest.initArrayWithNulls();
-        ArCol<SerializableClass> first = new ArCol<>();
+        StoredArray<ArCol<StoredClass>> stored = new StoredArray<>(StoredArrayTest.serializer);
+        StoredClass[] array = StoredTestDataGenerators.arrayWithNulls();
+        ArCol<StoredClass> first = new ArCol<>();
         for (int i = 0; i < array.length / 2; ++i) {
             first.add(array[i]);
         }
 
-        ArCol<SerializableClass> second = new ArCol<>();
+        ArCol<StoredClass> second = new ArCol<>();
         for (int i = array.length / 2; i < array.length; ++i) {
             second.add(array[i]);
         }
@@ -48,14 +48,14 @@ public class SetsSerializationTest {
 
     @Test
     public void createAndSerializeArList() {
-        StoredArray<ArList<SerializableClass>> stored = new StoredArray<>(StoredArrayTest.serializer);
-        SerializableClass[] array = StoredArrayTest.initArrayWithNulls();
-        ArList<SerializableClass> first = new ArList<>();
+        StoredArray<ArList<StoredClass>> stored = new StoredArray<>(StoredArrayTest.serializer);
+        StoredClass[] array = StoredTestDataGenerators.arrayWithNulls();
+        ArList<StoredClass> first = new ArList<>();
         for (int i = 0; i < array.length / 2; ++i) {
             first.add(array[i]);
         }
 
-        ArList<SerializableClass> second = new ArList<>();
+        ArList<StoredClass> second = new ArList<>();
         for (int i = array.length / 2; i < array.length; ++i) {
             second.add(array[i]);
         }
@@ -63,8 +63,8 @@ public class SetsSerializationTest {
         stored.append(first);
         stored.append(second);
 
-        ArList<SerializableClass> first1 = stored.get(0);
-        ArList<SerializableClass> second1 = stored.get(1);
+        ArList<StoredClass> first1 = stored.get(0);
+        ArList<StoredClass> second1 = stored.get(1);
 
         assertEquals(first1.size(), array.length / 2);
         assertEquals(second1.size(), array.length - array.length / 2);
@@ -79,34 +79,34 @@ public class SetsSerializationTest {
     
     @Test
     public void createAndSerializeArSet() {
-        StoredArray<ArSet<SerializableClass>> stored = new StoredArray<>(StoredArrayTest.serializer);
-        SerializableClass[] array = StoredArrayTest.initArray();
-        ArSet<SerializableClass> first = new ArSet<>(array.length / 2);
-        ArSet<SerializableClass> second = new ArSet<>(array.length - array.length / 2);
+        StoredArray<ArSet<StoredClass>> stored = new StoredArray<>(StoredArrayTest.serializer);
+        StoredClass[] array = StoredTestDataGenerators.simpleArray();
+        ArSet<StoredClass> first = new ArSet<>(array.length / 2);
+        ArSet<StoredClass> second = new ArSet<>(array.length - array.length / 2);
         fillMSets(array, first, second, stored);
         checkDeserializedEquality(array, stored);
     }
 
     @Test
     public void createAndSerializeHSet() {
-        StoredArray<HSet<SerializableClass>> stored = new StoredArray<>(StoredArrayTest.serializer);
-        SerializableClass[] array = StoredArrayTest.initArray();
-        HSet<SerializableClass> first = new HSet<>();
-        HSet<SerializableClass> second = new HSet<>();
+        StoredArray<HSet<StoredClass>> stored = new StoredArray<>(StoredArrayTest.serializer);
+        StoredClass[] array = StoredTestDataGenerators.simpleArray();
+        HSet<StoredClass> first = new HSet<>();
+        HSet<StoredClass> second = new HSet<>();
         fillMSets(array, first, second, stored);
         checkDeserializedEquality(array, stored);
     }
 
     @Test
     public void createAndSerializeArIndexedSet() {
-        StoredArray<ArIndexedSet<SerializableClass>> stored = new StoredArray<>(StoredArrayTest.serializer);
-        SerializableClass[] array = StoredArrayTest.initArray();
-        array = Arrays.stream(array).sorted(Comparator.comparingInt(SerializableClass::hashCode)).toArray(SerializableClass[]::new);
-        SerializableClass[] firstArray = Arrays.copyOfRange(array, 0, array.length / 2);
-        SerializableClass[] secondArray = Arrays.copyOfRange(array, array.length / 2, array.length);
+        StoredArray<ArIndexedSet<StoredClass>> stored = new StoredArray<>(StoredArrayTest.serializer);
+        StoredClass[] array = StoredTestDataGenerators.simpleArray();
+        array = Arrays.stream(array).sorted(Comparator.comparingInt(StoredClass::hashCode)).toArray(StoredClass[]::new);
+        StoredClass[] firstArray = Arrays.copyOfRange(array, 0, array.length / 2);
+        StoredClass[] secondArray = Arrays.copyOfRange(array, array.length / 2, array.length);
         
-        ArIndexedSet<SerializableClass> first = new ArIndexedSet<>(firstArray.length, firstArray);
-        ArIndexedSet<SerializableClass> second = new ArIndexedSet<>(secondArray.length, secondArray);
+        ArIndexedSet<StoredClass> first = new ArIndexedSet<>(firstArray.length, firstArray);
+        ArIndexedSet<StoredClass> second = new ArIndexedSet<>(secondArray.length, secondArray);
         stored.append(first);
         stored.append(second);
         checkDeserializedEquality(array, stored);
@@ -114,25 +114,25 @@ public class SetsSerializationTest {
 
     @Test
     public void createAndSerializeArOrderSet() {
-        StoredArray<ArOrderSet<SerializableClass>> stored = new StoredArray<>(StoredArrayTest.serializer);
-        SerializableClass[] array = StoredArrayTest.initArray();
-        ArOrderSet<SerializableClass> first = new ArOrderSet<>(array.length / 2);
-        ArOrderSet<SerializableClass> second = new ArOrderSet<>(array.length - array.length / 2);
+        StoredArray<ArOrderSet<StoredClass>> stored = new StoredArray<>(StoredArrayTest.serializer);
+        StoredClass[] array = StoredTestDataGenerators.simpleArray();
+        ArOrderSet<StoredClass> first = new ArOrderSet<>(array.length / 2);
+        ArOrderSet<StoredClass> second = new ArOrderSet<>(array.length - array.length / 2);
         fillMOrderSets(array, first, second, stored);
         checkDeserializedEqualityOrdered(array, stored);
     }
 
     @Test
     public void createAndSerializeHOrderSet() {
-        StoredArray<HOrderSet<SerializableClass>> stored = new StoredArray<>(StoredArrayTest.serializer);
-        SerializableClass[] array = StoredArrayTest.initArray();
-        HOrderSet<SerializableClass> first = new HOrderSet<>();
-        HOrderSet<SerializableClass> second = new HOrderSet<>();
+        StoredArray<HOrderSet<StoredClass>> stored = new StoredArray<>(StoredArrayTest.serializer);
+        StoredClass[] array = StoredTestDataGenerators.simpleArray();
+        HOrderSet<StoredClass> first = new HOrderSet<>();
+        HOrderSet<StoredClass> second = new HOrderSet<>();
         fillMOrderSets(array, first, second, stored);
         checkDeserializedEqualityOrdered(array, stored);
     }
 
-    private <T extends MSet<SerializableClass>> void fillMSets(SerializableClass[] array, T first, T second, StoredArray<T> stored) {
+    private <T extends MSet<StoredClass>> void fillMSets(StoredClass[] array, T first, T second, StoredArray<T> stored) {
         for (int i = 0; i < array.length / 2; ++i) {
             first.add(array[i]);
         }
@@ -145,7 +145,7 @@ public class SetsSerializationTest {
         stored.append(second);
     }
     
-    private <T extends MOrderSet<SerializableClass>> void fillMOrderSets(SerializableClass[] array, T first, T second, StoredArray<T> stored) {
+    private <T extends MOrderSet<StoredClass>> void fillMOrderSets(StoredClass[] array, T first, T second, StoredArray<T> stored) {
         for (int i = 0; i < array.length / 2; ++i) {
             first.add(array[i]);
         }
@@ -158,9 +158,9 @@ public class SetsSerializationTest {
         stored.append(second);
     }
     
-    private void checkDeserializedEquality(SerializableClass[] array, StoredArray<? extends ImCol<SerializableClass>> stored) {
-        ImCol<SerializableClass> first = stored.get(0);
-        ImCol<SerializableClass> second = stored.get(1);
+    private void checkDeserializedEquality(StoredClass[] array, StoredArray<? extends ImCol<StoredClass>> stored) {
+        ImCol<StoredClass> first = stored.get(0);
+        ImCol<StoredClass> second = stored.get(1);
 
         assertEquals(first.size(), array.length / 2);
         assertEquals(second.size(), array.length - array.length / 2);
@@ -173,9 +173,9 @@ public class SetsSerializationTest {
         }
     }
 
-    private void checkDeserializedEqualityOrdered(SerializableClass[] array, StoredArray<? extends MOrderSet<SerializableClass>> stored) {
-        MOrderSet<SerializableClass> first = stored.get(0);
-        MOrderSet<SerializableClass> second = stored.get(1);
+    private void checkDeserializedEqualityOrdered(StoredClass[] array, StoredArray<? extends MOrderSet<StoredClass>> stored) {
+        MOrderSet<StoredClass> first = stored.get(0);
+        MOrderSet<StoredClass> second = stored.get(1);
 
         assertEquals(first.size(), array.length / 2);
         assertEquals(second.size(), array.length - array.length / 2);

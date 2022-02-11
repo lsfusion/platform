@@ -5,6 +5,8 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.implementations.abs.AMRevMap;
 import lsfusion.base.col.implementations.order.ArOrderMap;
+import lsfusion.base.col.implementations.stored.StoredArIndexedMap;
+import lsfusion.base.col.implementations.stored.StoredArMap;
 import lsfusion.base.col.implementations.stored.StoredArraySerializer;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.AddValue;
@@ -17,9 +19,9 @@ import java.io.ByteArrayOutputStream;
 
 public class ArMap<K, V> extends AMRevMap<K, V> {
     
-    public int size;
-    public Object[] keys;
-    public Object[] values;
+    private int size;
+    private Object[] keys;
+    private Object[] values;
 
     public ArMap(AddValue<K, V> addValue) {
         super(addValue);
@@ -36,10 +38,13 @@ public class ArMap<K, V> extends AMRevMap<K, V> {
 
     public ArMap(ArMap<K, V> map, boolean clone) {
         assert clone;
-
-        size = map.size;
-        this.keys = map.keys.clone();
-        this.values = map.values.clone();
+        if (needSwitchToStored(map)) {
+            switchToStored(mapSize(), map.keys, map.values);
+        } else {
+            size = map.size;
+            this.keys = map.keys.clone();
+            this.values = map.values.clone();
+        }
     }
 
     public ArMap(ArMap<K, V> map, AddValue<K, V> addValue) {
@@ -67,35 +72,69 @@ public class ArMap<K, V> extends AMRevMap<K, V> {
         this(map.size, map.keys);
     }
     public ArMap(ArSet<K> set) {
-        this(set.size, set.array);
+        if (!set.isStored()) {
+            this.size = set.size();
+            this.keys = set.getArray();
+            this.values = new Object[size];
+        } else {
+            throw new UnsupportedOperationException();
+        }
     }
 
     public int size() {
-        return size;
+        if (!isStored()) {
+            return size;
+        } else {
+            return stored().size();
+        }
     }
 
     public K getKey(int i) {
-        return (K)keys[i];
+        if (!isStored()) {
+            return (K) keys[i];
+        } else {
+            return stored().getKey(i);
+        }
     }
 
     public V getValue(int i) {
-        return (V)values[i];
+        if (!isStored()) {
+            return (V) values[i];
+        } else {
+            return stored().getValue(i);
+        }
     }
 
     public void mapValue(int i, V value) {
-        values[i] = value;
+        if (!isStored()) {
+            values[i] = value;
+        } else {
+            stored().mapValue(i, value);
+        }
     }
 
     public <M> ImValueMap<K, M> mapItValues() {
-        return new ArMap<>(this);
+        if (!isStored()) {
+            return new ArMap<>(this);
+        } else {
+            return stored().mapItValues();
+        }
     }
 
     public <M> ImRevValueMap<K, M> mapItRevValues() {
-        return new ArMap<>(this);
+        if (!isStored()) {
+            return new ArMap<>(this);
+        } else {
+            return stored().mapItRevValues();
+        }
     }
 
     protected MExclMap<K, V> copy() {
-        return new ArMap<>(this, true);
+        if (!isStored()) {
+            return new ArMap<>(this, true);
+        } else {
+            return stored().copy();
+        }
     }
 
     private void resize(int length) {
@@ -109,58 +148,92 @@ public class ArMap<K, V> extends AMRevMap<K, V> {
 
     @Override
     public void exclAdd(K key, V value) { // не будем проверять, так как очень большое искажение при профайлинге будет
-        if (size >= keys.length) resize(2 * keys.length);
-        keys[size] = key;
-        values[size++] = value;
+        if (!isStored()) {
+            if (size >= keys.length) resize(2 * keys.length);
+            keys[size] = key;
+            values[size++] = value;
+            switchToStoredIfNeeded(size-1, size);
+        } else {
+            stored().exclAdd(key, value);
+        }
     }
     public boolean add(K key, V value) {
-        for(int i=0;i<size;i++)
-            if(BaseUtils.hashEquals(keys[i], key)) {
-                AddValue<K, V> addValue = getAddValue();
-                V addedValue = addValue.addValue(key, (V) values[i], value);
-                if(addValue.stopWhenNull() && addedValue==null)
-                    return false;
-                values[i] = addedValue;
-                return true;
-            }
-        exclAdd(key, value);
-        return true;
+        if (!isStored()) {
+            for (int i = 0; i < size; i++)
+                if (BaseUtils.hashEquals(keys[i], key)) {
+                    AddValue<K, V> addValue = getAddValue();
+                    V addedValue = addValue.addValue(key, (V) values[i], value);
+                    if (addValue.stopWhenNull() && addedValue == null)
+                        return false;
+                    values[i] = addedValue;
+                    return true;
+                }
+            exclAdd(key, value);
+            return true;
+        } else {
+            return stored().add(key, value);
+        }
     }
 
     public ImMap<K, V> immutable() {
-        ImMap<K, V> simple = simpleImmutable();
-        if(simple!=null)
-            return simple;
+        if (!isStored()) {
+            ImMap<K, V> simple = simpleImmutable();
+            if (simple != null)
+                return simple;
 
-        if(keys.length > size * SetFact.factorNotResize)
-            resize(size);
+            if (needSwitchToStored(this)) {
+                switchToStored(size, keys, values);
+                return stored().immutable();
+            }
+            
+            if (keys.length > size * SetFact.factorNotResize)
+                resize(size);
 
-        if(size < SetFact.useArrayMax)
-            return this;
+            if (size < SetFact.useArrayMax)
+                return this;
 
-        // упорядочиваем Set
-        ArSet.sortArray(size, keys, values);
-        return new ArIndexedMap<>(size, keys, values);
+            // упорядочиваем Set
+            ArSet.sortArray(size, keys, values);
+            return new ArIndexedMap<>(size, keys, values);
+        } else {
+            return stored().immutable();
+        }
     }
 
     @Override
     public ImRevMap<V, K> reverse() {
-        return new ArMap<>(size, values, keys);
+        if (!isStored()) {
+            return new ArMap<>(size, values, keys);
+        } else {
+            return stored().reverse();
+        }
     }
 
     @Override
     public ImOrderMap<K, V> toOrderMap() {
-        return new ArOrderMap<>(this);
+        if (!isStored()) {
+            return new ArOrderMap<>(this);
+        } else {
+            return stored().toOrderMap();
+        }
     }
 
     @Override
     public ImSet<K> keys() {
-        return new ArSet<>(size, keys);
+        if (!isStored()) {
+            return new ArSet<>(size, keys);
+        } else {
+            return stored().keys();
+        }
     }
 
     @Override
     public ImCol<V> values() {
-        return new ArCol<>(size, values);
+        if (!isStored()) {
+            return new ArCol<>(size, values);
+        } else {
+            return stored().values();
+        }
     }
 
     private ImMap<K, V> merge(int mgSize, Object[] mgKeys, Object[] mgValues, AddValue<K, V> add) {
@@ -214,43 +287,68 @@ public class ArMap<K, V> extends AMRevMap<K, V> {
     @Override
     public ImMap<K, V> merge(ImMap<? extends K, ? extends V> map, AddValue<K, V> add) { // важная оптимизация так как ОЧЕНЬ много раз вызывается
         if(map.isEmpty()) return this;
+        
+        if (!isStored()) {
 
-        if(add.reversed() && size < map.size()) return ((ImMap<K, V>)map).merge(this, add.reverse());
+            if (add.reversed() && size < map.size()) return ((ImMap<K, V>) map).merge(this, add.reverse());
 
-        ImMap<K, V> result;
-        if(map.size() <= SetFact.useIndexedAddInsteadOfMerge) {
-            ArMap<K, V> mResult = new ArMap<>(this, add);
-            if(add.exclusive()) {
-                mResult.exclAddAll(map);
-            } else {
-                if (!mResult.addAll(map))
-                    return null;
-            }
-            result = mResult.immutable();
-        } else {
-            if(map instanceof ArMap) {
-                ArMap<K, V> arMap = (ArMap<K, V>) map;
-                result = merge(arMap.size, arMap.keys, arMap.values, add);
-            } else {
-                int mapSize = map.size();
-                Object[] mapKeys = new Object[mapSize];
-                Object[] mapValues = new Object[mapSize];
-                for(int i=0;i<mapSize;i++) {
-                    mapKeys[i] = map.getKey(i);
-                    mapValues[i] = map.getValue(i);
+            ImMap<K, V> result;
+            if (map.size() <= SetFact.useIndexedAddInsteadOfMerge) {
+                ArMap<K, V> mResult = new ArMap<>(this, add);
+                if (add.exclusive()) {
+                    mResult.exclAddAll(map);
+                } else {
+                    if (!mResult.addAll(map))
+                        return null;
                 }
-                ArSet.sortArray(mapSize, mapKeys, mapValues);
-                result = merge(mapSize, mapKeys, mapValues, add);
+                result = mResult.immutable();
+            } else {
+                if (map instanceof ArMap) {
+                    ArMap<K, V> arMap = (ArMap<K, V>) map;
+                    result = merge(arMap.size, arMap.keys, arMap.values, add);
+                } else {
+                    int mapSize = map.size();
+                    Object[] mapKeys = new Object[mapSize];
+                    Object[] mapValues = new Object[mapSize];
+                    for (int i = 0; i < mapSize; i++) {
+                        mapKeys[i] = map.getKey(i);
+                        mapValues[i] = map.getValue(i);
+                    }
+                    ArSet.sortArray(mapSize, mapKeys, mapValues);
+                    result = merge(mapSize, mapKeys, mapValues, add);
+                }
             }
-        }
 
-//        assert BaseUtils.nullHashEquals(result, super.merge(map, add));
-        return result;
+            //        assert BaseUtils.nullHashEquals(result, super.merge(map, add));
+            return result;
+        } else {
+            return stored().merge(map, add);
+        }
     }
 
     @Override
     public ImMap<K, V> addExcl(ImMap<? extends K, ? extends V> map) {
-        return merge(map, MapFact.exclusive());
+        if (!isStored()) {
+            return merge(map, MapFact.exclusive());
+        } else {
+            return stored().addExcl(map);
+        }
+    }
+
+    public Object[] getKeys() {
+        return keys;
+    }
+
+    public void setKeys(Object[] keys) {
+        this.keys = keys;
+    }
+
+    public Object[] getValues() {
+        return values;
+    }
+
+    public void setValues(Object[] values) {
+        this.values = values;
     }
 
     public static void serialize(Object o, StoredArraySerializer serializer, ByteArrayOutputStream outStream) {
@@ -266,4 +364,38 @@ public class ArMap<K, V> extends AMRevMap<K, V> {
         Object[] values = ArCol.deserializeArray(inStream, serializer);
         return new ArMap<>(size, keys, values);
     }
+
+    private static final int STORED_FLAG = -42;
+
+    public boolean isStored() {
+        return size == STORED_FLAG;
+    }
+
+    private StoredArMap<K, V> stored() {
+        return (StoredArMap<K, V>) keys[0];
+    }
+
+    private void switchToStoredIfNeeded(int oldSize, int newSize) {
+        if (needSwitchToStored(oldSize, newSize)) {
+            switchToStored(size, keys, values);
+        }
+    }
+
+    private boolean needSwitchToStored(int oldSize, int newSize) {
+        // todo [dale]: temp
+        return data == null && oldSize <= LIMIT && newSize > LIMIT;
+    }
+
+    private boolean needSwitchToStored(ArMap<K, V> map) {
+        return map.data == null && map.size() > LIMIT;
+    }
+
+    private void switchToStored(int size, Object[] keys, Object[] values) {
+        StoredArIndexedMap<K, V> storedMap =
+                new StoredArIndexedMap<>(StoredArraySerializer.getInstance(), size, (K[])keys, (V[])values);
+        this.keys = new Object[]{storedMap};
+        this.size = STORED_FLAG;
+    }
+
+    private static final int LIMIT = 5000;
 }

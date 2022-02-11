@@ -4,7 +4,7 @@ import lsfusion.base.col.implementations.simple.SingletonOrderMap;
 import lsfusion.base.col.implementations.simple.SingletonOrderSet;
 import lsfusion.base.col.implementations.simple.SingletonRevMap;
 import lsfusion.base.col.implementations.simple.SingletonSet;
-import lsfusion.base.col.implementations.stored.StoredArrayTest.SerializableClass;
+import lsfusion.base.col.implementations.stored.StoredTestDataGenerators.StoredClass;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -19,15 +19,15 @@ public class SingletonMapsSerializationTest {
     
     @Test
     public void createAndSerializeRevMap() {
-        StoredArray<SingletonRevMap<SerializableClass, String>> stored = new StoredArray<>(StoredArrayTest.serializer);
-        SerializableClass[] array = StoredArrayTest.initArray();
-        String[] strings = StoredArrayTest.initStringArray();
+        StoredArray<SingletonRevMap<StoredClass, String>> stored = new StoredArray<>(StoredArrayTest.serializer);
+        StoredClass[] array = StoredTestDataGenerators.simpleArray();
+        String[] strings = StoredTestDataGenerators.stringArray();
         for (int i = 0; i < array.length; ++i) {
             stored.append(new SingletonRevMap<>(array[i], strings[i]));
         }
         
         for (int i = 0; i < array.length; ++i) {
-            SingletonRevMap<SerializableClass, String> map = stored.get(i);
+            SingletonRevMap<StoredClass, String> map = stored.get(i);
             assertEquals(map.getKey(0), array[i]);
             assertEquals(map.getValue(0), strings[i]);
             assertEquals(map.get(map.getKey(0)), strings[i]);
@@ -36,15 +36,15 @@ public class SingletonMapsSerializationTest {
 
     @Test
     public void createAndSerializeOrderMap() {
-        StoredArray<SingletonOrderMap<SerializableClass, String>> stored = new StoredArray<>(StoredArrayTest.serializer);
-        SerializableClass[] array = StoredArrayTest.initArray();
-        String[] strings = StoredArrayTest.initStringArray();
+        StoredArray<SingletonOrderMap<StoredClass, String>> stored = new StoredArray<>(StoredArrayTest.serializer);
+        StoredClass[] array = StoredTestDataGenerators.simpleArray();
+        String[] strings = StoredTestDataGenerators.stringArray();
         for (int i = 0; i < array.length; ++i) {
             stored.append(new SingletonOrderMap<>(array[i], strings[i]));
         }
 
         for (int i = 0; i < array.length; ++i) {
-            SingletonOrderMap<SerializableClass, String> map = stored.get(i);
+            SingletonOrderMap<StoredClass, String> map = stored.get(i);
             assertEquals(map.getKey(0), array[i]);
             assertEquals(map.getValue(0), strings[i]);
             assertEquals(map.get(map.getKey(0)), strings[i]);
@@ -53,28 +53,28 @@ public class SingletonMapsSerializationTest {
 
     @Test
     public void createAndSerializeSet() {
-        StoredArray<SingletonSet<SerializableClass>> stored = new StoredArray<>(StoredArrayTest.serializer);
-        SerializableClass[] array = StoredArrayTest.initArray();
+        StoredArray<SingletonSet<StoredClass>> stored = new StoredArray<>(StoredArrayTest.serializer);
+        StoredClass[] array = StoredTestDataGenerators.simpleArray();
         for (int i = 0; i < array.length; ++i) {
             stored.append(new SingletonSet<>(array[i]));
         }
 
         for (int i = 0; i < array.length; ++i) {
-            SingletonSet<SerializableClass> set = stored.get(i);
+            SingletonSet<StoredClass> set = stored.get(i);
             assertEquals(set.get(0), array[i]);
         }
     }
 
     @Test
     public void createAndSerializeOrderSet() {
-        StoredArray<SingletonOrderSet<SerializableClass>> stored = new StoredArray<>(StoredArrayTest.serializer);
-        SerializableClass[] array = StoredArrayTest.initArray();
+        StoredArray<SingletonOrderSet<StoredClass>> stored = new StoredArray<>(StoredArrayTest.serializer);
+        StoredClass[] array = StoredTestDataGenerators.simpleArray();
         for (int i = 0; i < array.length; ++i) {
             stored.append(new SingletonOrderSet<>(array[i]));
         }
 
         for (int i = 0; i < array.length; ++i) {
-            SingletonOrderSet<SerializableClass> set = stored.get(i);
+            SingletonOrderSet<StoredClass> set = stored.get(i);
             assertEquals(set.get(0), array[i]);
         }
     }

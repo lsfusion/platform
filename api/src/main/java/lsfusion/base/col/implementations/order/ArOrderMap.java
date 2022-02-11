@@ -59,37 +59,49 @@ public class ArOrderMap<K, V> extends AMWrapOrderMap<K, V, ArMap<K, V>> {
     }
 
     public ImOrderMap<K, V> immutableOrder() {
-        if(wrapMap.size==0)
+        if(wrapMap.size()==0)
             return MapFact.EMPTYORDER();
-        if(wrapMap.size==1)
+        if(wrapMap.size()==1)
             return MapFact.singletonOrder(singleKey(), singleValue());
 
-        if(wrapMap.keys.length > wrapMap.size * SetFact.factorNotResize) {
-            Object[] newKeys = new Object[wrapMap.size];
-            System.arraycopy(wrapMap.keys, 0, newKeys, 0, wrapMap.size);
-            wrapMap.keys = newKeys;
-            Object[] newValues = new Object[wrapMap.size];
-            System.arraycopy(wrapMap.values, 0, newValues, 0, wrapMap.size);
-            wrapMap.values = newValues;
+        if(!wrapMap.isStored() && wrapMap.getKeys().length > wrapMap.size() * SetFact.factorNotResize) {
+            Object[] newKeys = new Object[wrapMap.size()];
+            System.arraycopy(wrapMap.getKeys(), 0, newKeys, 0, wrapMap.size());
+            wrapMap.setKeys(newKeys);
+            Object[] newValues = new Object[wrapMap.size()];
+            System.arraycopy(wrapMap.getValues(), 0, newValues, 0, wrapMap.size());
+            wrapMap.setValues(newValues);
         }
 
-        if(wrapMap.size < SetFact.useArrayMax)
+        if(wrapMap.size() < SetFact.useArrayMax)
             return this;
 
-        // упорядочиваем Set
-        int[] order = new int[wrapMap.size];
-        ArSet.sortArray(wrapMap.size, wrapMap.keys, wrapMap.values, order);
-        return new ArOrderIndexedMap<>(new ArIndexedMap<>(wrapMap.size, wrapMap.keys, wrapMap.values), order);
+        if (!wrapMap.isStored()) {
+            // упорядочиваем Set
+            int[] order = new int[wrapMap.size()];
+            ArSet.sortArray(wrapMap.size(), wrapMap.getKeys(), wrapMap.getValues(), order);
+            return new ArOrderIndexedMap<>(new ArIndexedMap<>(wrapMap.size(), wrapMap.getKeys(), wrapMap.getValues()), order);
+        } else {
+            throw new UnsupportedOperationException();
+        }
     }
 
     @Override
     public ImOrderSet<K> keyOrderSet() {
-        return new ArOrderSet<>(new ArSet<>(wrapMap.size, wrapMap.keys));
+        if (!wrapMap.isStored()) {
+            return new ArOrderSet<>(new ArSet<>(wrapMap.size(), wrapMap.getKeys()));
+        } else {
+            throw new UnsupportedOperationException();
+        }
     }
 
     @Override
     public ImList<V> valuesList() {
-        return new ArList<>(new ArCol<>(wrapMap.size, wrapMap.values));
+        if (!wrapMap.isStored()) {
+            return new ArList<>(new ArCol<>(wrapMap.size(), wrapMap.getValues()));
+        } else {
+            throw new UnsupportedOperationException();  
+        }
     }
 
     public static void serialize(Object o, StoredArraySerializer serializer, ByteArrayOutputStream outStream) {

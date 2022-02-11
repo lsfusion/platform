@@ -212,12 +212,12 @@ public class ArIndexedSet<K> extends AMSet<K> {
         }
     }
     
-    private boolean needSwitchToStored(int oldSize, int newSize) {
+    private static boolean needSwitchToStored(int oldSize, int newSize) {
         // todo [dale]: temp
         return oldSize <= LIMIT && newSize > LIMIT;    
     }  
     
-    private boolean needSwitchToStored(ArIndexedSet<K> set) {
+    private static boolean needSwitchToStored(ArIndexedSet<?> set) {
         return set.size() > LIMIT; 
     }
     

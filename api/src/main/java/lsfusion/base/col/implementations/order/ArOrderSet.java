@@ -40,24 +40,28 @@ public class ArOrderSet<K> extends AMWrapOrderSet<K, ArSet<K>> {
     }
 
     public ImOrderSet<K> immutableOrder() {
-        if(wrapSet.size==0)
+        if(wrapSet.size()==0)
             return SetFact.EMPTYORDER();
-        if(wrapSet.size==1)
+        if(wrapSet.size()==1)
             return SetFact.singletonOrder(single());
 
-        if(wrapSet.array.length > wrapSet.size * SetFact.factorNotResize) {
-            Object[] newArray = new Object[wrapSet.size];
-            System.arraycopy(wrapSet.array, 0, newArray, 0, wrapSet.size);
-            wrapSet.array = newArray;
+        if(!wrapSet.isStored() && wrapSet.getArray().length > wrapSet.size() * SetFact.factorNotResize) {
+            Object[] newArray = new Object[wrapSet.size()];
+            System.arraycopy(wrapSet.getArray(), 0, newArray, 0, wrapSet.size());
+            wrapSet.setArray(newArray);
         }
 
-        if(wrapSet.size < SetFact.useArrayMax)
+        if(wrapSet.size() < SetFact.useArrayMax)
             return this;
 
-        // упорядочиваем Set
-        int[] order = new int[wrapSet.size];
-        ArSet.sortArray(wrapSet.size, wrapSet.array, order);
-        return new ArOrderIndexedSet<>(new ArIndexedSet<>(wrapSet.size, wrapSet.array), order);
+        if (!wrapSet.isStored()) {
+            // упорядочиваем Set
+            int[] order = new int[wrapSet.size()];
+            ArSet.sortArray(wrapSet.size(), wrapSet.getArray(), order);
+            return new ArOrderIndexedSet<>(new ArIndexedSet<>(wrapSet.size(), wrapSet.getArray()), order);
+        } else {
+            throw new UnsupportedOperationException();
+        }
     }
 
     public static void serialize(Object o, StoredArraySerializer serializer, ByteArrayOutputStream outStream) {

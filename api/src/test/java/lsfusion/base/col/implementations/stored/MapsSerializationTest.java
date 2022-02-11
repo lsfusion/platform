@@ -5,7 +5,7 @@ import lsfusion.base.col.implementations.ArMap;
 import lsfusion.base.col.implementations.HMap;
 import lsfusion.base.col.implementations.order.ArOrderMap;
 import lsfusion.base.col.implementations.order.HOrderMap;
-import lsfusion.base.col.implementations.stored.StoredArrayTest.SerializableClass;
+import lsfusion.base.col.implementations.stored.StoredTestDataGenerators.StoredClass;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.mutable.AddValue;
@@ -27,63 +27,63 @@ public class MapsSerializationTest {
 //        StoredArrayTest.serializer.register(ArOrderIndexedMap.class, ArOrderIndexedMap::serialize, ArOrderIndexedMap::deserialize);
     }
 
-    private final static AddValue<SerializableClass, String> changeValue = new SymmAddValue<SerializableClass, String>() {
-        public String addValue(SerializableClass key, String prevValue, String newValue) {
+    private final static AddValue<StoredClass, String> changeValue = new SymmAddValue<StoredClass, String>() {
+        public String addValue(StoredClass key, String prevValue, String newValue) {
             return newValue;
         }
     };
     
     @Test
     public void createAndSerializeArMap() {
-        StoredArray<ArMap<SerializableClass, String>> stored = new StoredArray<>(StoredArrayTest.serializer);
-        ArMap<SerializableClass, String> first = new ArMap<>(changeValue);
-        ArMap<SerializableClass, String> second = new ArMap<>(changeValue);
-        SerializableClass[] array = StoredArrayTest.initArray();
-        String[] strArray = StoredArrayTest.initStringArray();
+        StoredArray<ArMap<StoredClass, String>> stored = new StoredArray<>(StoredArrayTest.serializer);
+        ArMap<StoredClass, String> first = new ArMap<>(changeValue);
+        ArMap<StoredClass, String> second = new ArMap<>(changeValue);
+        StoredClass[] array = StoredTestDataGenerators.simpleArray();
+        String[] strArray = StoredTestDataGenerators.stringArray();
         fillMMap(array, strArray, first, second, stored);
         checkDeserializedEquality(array, strArray, stored);
     }
     
     @Test
     public void createAndSerializeHMap() {
-        StoredArray<HMap<SerializableClass, String>> stored = new StoredArray<>(StoredArrayTest.serializer);
-        HMap<SerializableClass, String> first = new HMap<>(changeValue);
-        HMap<SerializableClass, String> second = new HMap<>(changeValue);
-        SerializableClass[] array = StoredArrayTest.initArray();
-        String[] strArray = StoredArrayTest.initStringArray();
+        StoredArray<HMap<StoredClass, String>> stored = new StoredArray<>(StoredArrayTest.serializer);
+        HMap<StoredClass, String> first = new HMap<>(changeValue);
+        HMap<StoredClass, String> second = new HMap<>(changeValue);
+        StoredClass[] array = StoredTestDataGenerators.simpleArray();
+        String[] strArray = StoredTestDataGenerators.stringArray();
         fillMMap(array, strArray, first, second, stored);
         checkDeserializedEquality(array, strArray, stored);
     }
 
     @Test
     public void createAndSerializeArIndexedMap() {
-        StoredArray<ArIndexedMap<SerializableClass, String>> stored = new StoredArray<>(StoredArrayTest.serializer);
-        ArIndexedMap<SerializableClass, String> first = new ArIndexedMap<>(changeValue);
-        ArIndexedMap<SerializableClass, String> second = new ArIndexedMap<>(changeValue);
-        SerializableClass[] array = StoredArrayTest.initArray();
-        String[] strArray = StoredArrayTest.initStringArray();
+        StoredArray<ArIndexedMap<StoredClass, String>> stored = new StoredArray<>(StoredArrayTest.serializer);
+        ArIndexedMap<StoredClass, String> first = new ArIndexedMap<>(changeValue);
+        ArIndexedMap<StoredClass, String> second = new ArIndexedMap<>(changeValue);
+        StoredClass[] array = StoredTestDataGenerators.simpleArray();
+        String[] strArray = StoredTestDataGenerators.stringArray();
         fillMMap(array, strArray, first, second, stored);
         checkDeserializedEquality(array, strArray, stored);
     }
 
     @Test
     public void createAndSerializeArOrderMap() {
-        StoredArray<ArOrderMap<SerializableClass, String>> stored = new StoredArray<>(StoredArrayTest.serializer);
-        ArOrderMap<SerializableClass, String> first = new ArOrderMap<>(changeValue);
-        ArOrderMap<SerializableClass, String> second = new ArOrderMap<>(changeValue);
-        SerializableClass[] array = StoredArrayTest.initArray();
-        String[] strArray = StoredArrayTest.initStringArray();
+        StoredArray<ArOrderMap<StoredClass, String>> stored = new StoredArray<>(StoredArrayTest.serializer);
+        ArOrderMap<StoredClass, String> first = new ArOrderMap<>(changeValue);
+        ArOrderMap<StoredClass, String> second = new ArOrderMap<>(changeValue);
+        StoredClass[] array = StoredTestDataGenerators.simpleArray();
+        String[] strArray = StoredTestDataGenerators.stringArray();
         fillMOrderMap(array, strArray, first, second, stored);
         checkDeserializedOrderEquality(array, strArray, stored);
     }
 
     @Test
     public void createAndSerializeHOrderMap() {
-        StoredArray<HOrderMap<SerializableClass, String>> stored = new StoredArray<>(StoredArrayTest.serializer);
-        HOrderMap<SerializableClass, String> first = new HOrderMap<>(changeValue);
-        HOrderMap<SerializableClass, String> second = new HOrderMap<>(changeValue);
-        SerializableClass[] array = StoredArrayTest.initArray();
-        String[] strArray = StoredArrayTest.initStringArray();
+        StoredArray<HOrderMap<StoredClass, String>> stored = new StoredArray<>(StoredArrayTest.serializer);
+        HOrderMap<StoredClass, String> first = new HOrderMap<>(changeValue);
+        HOrderMap<StoredClass, String> second = new HOrderMap<>(changeValue);
+        StoredClass[] array = StoredTestDataGenerators.simpleArray();
+        String[] strArray = StoredTestDataGenerators.stringArray();
         fillMOrderMap(array, strArray, first, second, stored);
         checkDeserializedOrderEquality(array, strArray, stored);
     }
@@ -99,7 +99,7 @@ public class MapsSerializationTest {
 //        checkDeserializedOrderEquality(array, strArray, stored);
 //    }
     
-    private <T extends MMap<SerializableClass, String>> void fillMMap(SerializableClass[] array, String[] values, T first, T second, StoredArray<T> stored) {
+    private <T extends MMap<StoredClass, String>> void fillMMap(StoredClass[] array, String[] values, T first, T second, StoredArray<T> stored) {
         for (int i = 0; i < array.length / 2; ++i) {
             first.add(array[i], values[i]);
         }
@@ -112,7 +112,7 @@ public class MapsSerializationTest {
         stored.append(second);
     }
 
-    private <T extends MOrderMap<SerializableClass, String>> void fillMOrderMap(SerializableClass[] array, String[] values, T first, T second, StoredArray<T> stored) {
+    private <T extends MOrderMap<StoredClass, String>> void fillMOrderMap(StoredClass[] array, String[] values, T first, T second, StoredArray<T> stored) {
         for (int i = 0; i < array.length / 2; ++i) {
             first.add(array[i], values[i]);
         }
@@ -125,9 +125,9 @@ public class MapsSerializationTest {
         stored.append(second);
     }
     
-    private void checkDeserializedEquality(SerializableClass[] array, String[] strArray, StoredArray<? extends ImMap<SerializableClass, String>> stored) {
-        ImMap<SerializableClass, String> first = stored.get(0);
-        ImMap<SerializableClass, String> second = stored.get(1);
+    private void checkDeserializedEquality(StoredClass[] array, String[] strArray, StoredArray<? extends ImMap<StoredClass, String>> stored) {
+        ImMap<StoredClass, String> first = stored.get(0);
+        ImMap<StoredClass, String> second = stored.get(1);
         
         int size1 = array.length / 2;
         int size2 = array.length - size1;
@@ -143,9 +143,9 @@ public class MapsSerializationTest {
         }
     }
 
-    private void checkDeserializedOrderEquality(SerializableClass[] array, String[] strArray, StoredArray<? extends ImOrderMap<SerializableClass, String>> stored) {
-        ImOrderMap<SerializableClass, String> first = stored.get(0);
-        ImOrderMap<SerializableClass, String> second = stored.get(1);
+    private void checkDeserializedOrderEquality(StoredClass[] array, String[] strArray, StoredArray<? extends ImOrderMap<StoredClass, String>> stored) {
+        ImOrderMap<StoredClass, String> first = stored.get(0);
+        ImOrderMap<StoredClass, String> second = stored.get(1);
 
         int size1 = array.length / 2;
         int size2 = array.length - size1;

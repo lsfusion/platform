@@ -2,48 +2,44 @@ package lsfusion.base.col.implementations.stored;
 
 import lsfusion.base.col.implementations.ArIndexedMap;
 import lsfusion.base.col.implementations.ArIndexedSet;
-import lsfusion.base.col.implementations.stored.StoredArrayTest.SerializableClass;
+import lsfusion.base.col.implementations.stored.StoredTestDataGenerators.DerivedStoredClass;
+import lsfusion.base.col.implementations.stored.StoredTestDataGenerators.StoredClass;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Random;
-
+import static lsfusion.base.col.implementations.stored.StoredTestDataGenerators.largeSortedArray;
+import static lsfusion.base.col.implementations.stored.StoredTestDataGenerators.largeStringArray;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class ArIndexedTest {
     static {
         StoredArraySerializerRegistry serializer = (StoredArraySerializerRegistry) StoredArraySerializer.getInstance();
-        serializer.register(SerializableClass.class, SerializableClass::serialize, SerializableClass::deserialize);
-        StoredArraySerializer.getInstance();
+        serializer.register(StoredClass.class, StoredClass::serialize, StoredClass::deserialize);
+        serializer.register(DerivedStoredClass.class, DerivedStoredClass::serialize, DerivedStoredClass::deserialize);
     }
 
-    private final int SIZE = 10000; 
-    
     @Test
     public void checkArIndexedSetKeepTransformation() {
-        SerializableClass[] arr = generateSerializableArray();
-        ArIndexedSet<SerializableClass> set = new ArIndexedSet<>(SIZE);
-        for (SerializableClass cls : arr) {
+        StoredClass[] arr = largeSortedArray();
+        ArIndexedSet<StoredClass> set = new ArIndexedSet<>(arr.length);
+        for (StoredClass cls : arr) {
             set.keep(cls);
         }
         
         assertTrue(set.isStored());
-        assertEquals(set.size(), SIZE); 
-        for (int i = SIZE - 1; i >= 0; --i) {
+        assertEquals(set.size(), arr.length); 
+        for (int i = arr.length - 1; i >= 0; --i) {
             assertEquals(arr[i], set.get(i));
         }
     }
 
     @Test
     public void checkArIndexedSetImmutableTransformation() {
-        SerializableClass[] arr = generateSerializableArray();
-        ArIndexedSet<SerializableClass> set = new ArIndexedSet<>(arr.length, arr);
-        ImSet<SerializableClass> storedSet = set.immutable();   
+        StoredClass[] arr = largeSortedArray();
+        ArIndexedSet<StoredClass> set = new ArIndexedSet<>(arr.length, arr);
+        ImSet<StoredClass> storedSet = set.immutable();   
 
         assertTrue(storedSet instanceof StoredArIndexedSet);
         assertEquals(storedSet.size(), set.size());
@@ -54,9 +50,9 @@ public class ArIndexedTest {
     
     @Test
     public void checkArIndexedSetConstructorTransformation() {
-        SerializableClass[] arr = generateSerializableArray();
-        ArIndexedSet<SerializableClass> set = new ArIndexedSet<>(arr.length, arr);
-        ArIndexedSet<SerializableClass> targetSet = new ArIndexedSet<>(set);
+        StoredClass[] arr = largeSortedArray();
+        ArIndexedSet<StoredClass> set = new ArIndexedSet<>(arr.length, arr);
+        ArIndexedSet<StoredClass> targetSet = new ArIndexedSet<>(set);
 
         assertTrue(targetSet.isStored());
         assertEquals(targetSet.size(), set.size());
@@ -67,11 +63,11 @@ public class ArIndexedTest {
     
     @Test
     public void checkArIndexedMapImmutableTransformation() {
-        SerializableClass[] keys = generateSerializableArray();
-        String[] values = generateStringArray();
-        ArIndexedMap<SerializableClass, String> map = new ArIndexedMap<>(SIZE, keys, values);
+        StoredClass[] keys = largeSortedArray();
+        String[] values = largeStringArray();
+        ArIndexedMap<StoredClass, String> map = new ArIndexedMap<>(keys.length, keys, values);
         
-        ImMap<SerializableClass, String> storedMap = map.immutable();
+        ImMap<StoredClass, String> storedMap = map.immutable();
 
         assertTrue(storedMap instanceof StoredArIndexedMap);
         assertEquals(storedMap.size(), map.size());
@@ -86,10 +82,10 @@ public class ArIndexedTest {
 
     @Test
     public void checkArIndexedMapConstructorTransformation() {
-        SerializableClass[] keys = generateSerializableArray();
-        String[] values = generateStringArray();
-        ArIndexedMap<SerializableClass, String> map = new ArIndexedMap<>(keys.length, keys, values);
-        ArIndexedMap<SerializableClass, String> storedMap = new ArIndexedMap<>(map, true);
+        StoredClass[] keys = largeSortedArray();
+        String[] values = largeStringArray();
+        ArIndexedMap<StoredClass, String> map = new ArIndexedMap<>(keys.length, keys, values);
+        ArIndexedMap<StoredClass, String> storedMap = new ArIndexedMap<>(map, true);
 
         assertTrue(storedMap.isStored());
         assertEquals(storedMap.size(), keys.length);
@@ -98,49 +94,4 @@ public class ArIndexedTest {
             assertEquals(storedMap.getValue(i), values[i]);
         }
     }
-    
-    private SerializableClass[] generateSerializableArray() {
-        List<SerializableClass> list = new ArrayList<>();
-        for (int i = 0; i < SIZE; ++i) {
-            list.add(new SerializableClass("Name", i+1, true));
-        }
-        list.sort(Comparator.comparingInt(SerializableClass::hashCode));
-        return list.toArray(new SerializableClass[0]);
-    }
-    
-    private String[] generateStringArray() {
-        String[] res = new String[SIZE];
-        Random rand = new Random();
-        for (int i = 0; i < SIZE; ++i) {
-            res[i] = "String" + rand.nextInt(SIZE);
-        }
-        return res;
-    }
-    
-//    static {
-//        int sz;
-//        try {
-//            RandomAccessFile file = new RandomAccessFile("C:/raf.test", "rws");
-//            String s = "some not very long string, but not too short";
-//            sz = s.length();
-//            for (int i = 0; i < 10000; ++i) {
-//                file.writeBytes(s);
-//            }
-//        } catch (IOException ignored) {
-//            
-//        }
-//    }
-    
-//    @Test 
-//    public void randomAccessFileTest() throws IOException {
-//        file.seek(0);
-//        byte[] buffer = new byte[sz];
-//        for (int i = 0; i < 10000; ++i) {
-//            file.seek(i * sz);
-//            file.read(buffer);
-//            String t = new String(buffer);
-//            assertEquals(s, t);        
-//        }
-//        
-//    }
 }

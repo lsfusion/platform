@@ -75,6 +75,7 @@ public class StoredArIndexedSet<K> extends AMSet<K> {
         return new StoredArIndexedSet<>(this);
     }
 
+    @Override    
     public StoredArIndexedMap<K, K> toMap() {
         return new StoredArIndexedMap<>(array, array);
     }

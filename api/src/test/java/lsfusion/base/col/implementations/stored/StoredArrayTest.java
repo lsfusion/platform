@@ -1,11 +1,11 @@
 package lsfusion.base.col.implementations.stored;
 
+import lsfusion.base.col.implementations.stored.StoredTestDataGenerators.DerivedStoredClass;
+import lsfusion.base.col.implementations.stored.StoredTestDataGenerators.StoredClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import java.io.*;
-import java.math.BigInteger;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -20,47 +20,47 @@ public class StoredArrayTest {
     
     public static StoredArraySerializerRegistry serializer = new StoredArraySerializerRegistry();
     static {
-        serializer.register(SerializableClass.class, SerializableClass::serialize, SerializableClass::deserialize);
-        serializer.register(DerivedSerializableClass.class, DerivedSerializableClass::serialize, DerivedSerializableClass::deserialize);
+        serializer.register(StoredClass.class, StoredClass::serialize, StoredClass::deserialize);
+        serializer.register(DerivedStoredClass.class, DerivedStoredClass::serialize, DerivedStoredClass::deserialize);
     }
 
     @Test
     public void createWithArray() {
-        SerializableClass[] array = initArray();
-        StoredArray<SerializableClass> stored = new StoredArray<>(array, serializer);
+        StoredClass[] array = StoredTestDataGenerators.simpleArray();
+        StoredArray<StoredClass> stored = new StoredArray<>(array, serializer);
         assertEquals(stored.size(), array.length);
     }
 
     @Test
     public void createWithZeroLengthArray() {
-        StoredArray<SerializableClass> stored = new StoredArray<>(new SerializableClass[0], serializer);
+        StoredArray<StoredClass> stored = new StoredArray<>(new StoredClass[0], serializer);
         assertEquals(stored.size(), 0);
     }
 
     @Test
     public void createWithSize() {
-        StoredArray<SerializableClass> stored = new StoredArray<>(10, serializer);
+        StoredArray<StoredClass> stored = new StoredArray<>(10, serializer);
         assertEquals(stored.size(), 10);
     }
 
     @Test
     public void createEmpty() {
-        StoredArray<SerializableClass> stored = new StoredArray<>(serializer);
+        StoredArray<StoredClass> stored = new StoredArray<>(serializer);
         assertEquals(stored.size(), 0);
     }
 
     @Test
     public void createWithArrayAndGet() {
-        SerializableClass[] array = initArray();
-        StoredArray<SerializableClass> stored = new StoredArray<>(array, serializer);
+        StoredClass[] array = StoredTestDataGenerators.simpleArray();
+        StoredArray<StoredClass> stored = new StoredArray<>(array, serializer);
         checkEquality(array, stored);
     }
 
     @Test
     public void createWithArrayAndSize() {
-        SerializableClass[] array = initArray();
+        StoredClass[] array = StoredTestDataGenerators.simpleArray();
         final int size = 4;
-        StoredArray<SerializableClass> stored = new StoredArray<>(array, size, serializer, null);
+        StoredArray<StoredClass> stored = new StoredArray<>(array, size, serializer, null);
         assertEquals(size, stored.size());
         for (int i = 0; i < size; ++i) {
             assertEquals(array[i], stored.get(i));
@@ -69,8 +69,8 @@ public class StoredArrayTest {
     
     @Test
     public void createWithArrayAndGetReversed() {
-        SerializableClass[] array = initArray();
-        StoredArray<SerializableClass> stored = new StoredArray<>(array, serializer);
+        StoredClass[] array = StoredTestDataGenerators.simpleArray();
+        StoredArray<StoredClass> stored = new StoredArray<>(array, serializer);
         for (int i = stored.size() - 1; i >= 0; --i) {
             assertEquals(array[i], stored.get(i));
         }
@@ -78,35 +78,35 @@ public class StoredArrayTest {
 
     @Test
     public void createWithCopyConstructor() {
-        SerializableClass[] array = initArrayWithNulls();
-        StoredArray<SerializableClass> stored = new StoredArray<>(array, serializer);
-        StoredArray<SerializableClass> target = new StoredArray<>(stored);
+        StoredClass[] array = StoredTestDataGenerators.arrayWithNulls();
+        StoredArray<StoredClass> stored = new StoredArray<>(array, serializer);
+        StoredArray<StoredClass> target = new StoredArray<>(stored);
         checkEquality(array, target);
     }
 
     @Test
     public void checkArrayCopy() {
-        SerializableClass[] array = initArrayWithNulls();
-        StoredArray<SerializableClass> source = new StoredArray<>(array, serializer);
-        StoredArray<SerializableClass> target = new StoredArray<>(source);
-        source.set(0, new SerializableClass("test", 50, false));
+        StoredClass[] array = StoredTestDataGenerators.arrayWithNulls();
+        StoredArray<StoredClass> source = new StoredArray<>(array, serializer);
+        StoredArray<StoredClass> target = new StoredArray<>(source);
+        source.set(0, new StoredClass("test", 50, false));
         assertNull(target.get(0));
     }
 
     @Test
     public void checkUnserializableObjectAssert() {
-        SerializableClass[] array = initArray();
-        array[3] = new OtherSerializableClass("triangle", 5, true);
+        StoredClass[] array = StoredTestDataGenerators.simpleArray();
+        array[3] = new StoredTestDataGenerators.OtherStoredClass("triangle", 5, true);
         thrown.expect(RuntimeException.class);
-        StoredArray<SerializableClass> stored = new StoredArray<>(array, serializer);
+        StoredArray<StoredClass> stored = new StoredArray<>(array, serializer);
         stored.squeeze(); // this should flush inner buffer
     }
 
     @Test
     public void addAndGet() {
-        StoredArray<SerializableClass> stored = new StoredArray<>(serializer);
-        SerializableClass[] array = initArray();
-        for (SerializableClass element : array) {
+        StoredArray<StoredClass> stored = new StoredArray<>(serializer);
+        StoredClass[] array = StoredTestDataGenerators.simpleArray();
+        for (StoredClass element : array) {
             stored.append(element);
         }
         checkEquality(array, stored);
@@ -114,8 +114,8 @@ public class StoredArrayTest {
 
     @Test
     public void addAndImmediateGet() {
-        SerializableClass[] array = initArray();
-        StoredArray<SerializableClass> stored = new StoredArray<>(serializer);
+        StoredClass[] array = StoredTestDataGenerators.simpleArray();
+        StoredArray<StoredClass> stored = new StoredArray<>(serializer);
         for (int i = 0; i < stored.size(); ++i) {
             stored.append(array[i]);
             assertEquals(array[i], stored.get(i));
@@ -124,13 +124,13 @@ public class StoredArrayTest {
 
     @Test
     public void createAndReverseMultipleTimes() {
-        SerializableClass[] array = initArray();
-        StoredArray<SerializableClass> stored = new StoredArray<>(array, serializer);
+        StoredClass[] array = StoredTestDataGenerators.simpleArray();
+        StoredArray<StoredClass> stored = new StoredArray<>(array, serializer);
         int n = stored.size();
         for (int step = 0; step < 10; ++step) {
             for (int i = 0; i < n / 2; ++i) {
-                SerializableClass a = stored.get(i);
-                SerializableClass b = stored.get(n - i - 1);
+                StoredClass a = stored.get(i);
+                StoredClass b = stored.get(n - i - 1);
                 stored.set(i, b);
                 stored.set(n - i - 1, a);
             }
@@ -140,8 +140,8 @@ public class StoredArrayTest {
 
     @Test
     public void randomAddWithIndex() {
-        SerializableClass[] array = initArray();
-        StoredArray<SerializableClass> stored = new StoredArray<>(new SerializableClass[array.length], serializer);
+        StoredClass[] array = StoredTestDataGenerators.simpleArray();
+        StoredArray<StoredClass> stored = new StoredArray<>(new StoredClass[array.length], serializer);
         int n = stored.size();
         List<Integer> indexes = IntStream.range(0, n).boxed().collect(Collectors.toList());
         Collections.shuffle(indexes);
@@ -153,25 +153,25 @@ public class StoredArrayTest {
 
     @Test
     public void createWithSizeAndCheckForNulls() {
-        StoredArray<SerializableClass> stored = new StoredArray<>(10, serializer);
+        StoredArray<StoredClass> stored = new StoredArray<>(10, serializer);
         for (int i = 0; i < stored.size(); ++i) {
-            SerializableClass cls = stored.get(i);
+            StoredClass cls = stored.get(i);
             assertNull(cls);
         }
     }
 
     @Test
     public void createWithArrayWithNullsAndGet() {
-        SerializableClass[] array = initArrayWithNulls();
-        StoredArray<SerializableClass> stored = new StoredArray<>(array, serializer);
+        StoredClass[] array = StoredTestDataGenerators.arrayWithNulls();
+        StoredArray<StoredClass> stored = new StoredArray<>(array, serializer);
         checkEquality(array, stored);
     }
 
     @Test
     public void appendWithNullsAndGet() {
-        SerializableClass[] array = initArrayWithNulls();
-        StoredArray<SerializableClass> stored = new StoredArray<>(serializer);
-        for (SerializableClass obj : array) {
+        StoredClass[] array = StoredTestDataGenerators.arrayWithNulls();
+        StoredArray<StoredClass> stored = new StoredArray<>(serializer);
+        for (StoredClass obj : array) {
             stored.append(obj);
         }
         checkEquality(array, stored);
@@ -179,8 +179,8 @@ public class StoredArrayTest {
 
     @Test
     public void setWithNullsAndGet() {
-        SerializableClass[] array = initArrayWithNulls();
-        StoredArray<SerializableClass> stored = new StoredArray<>(array.length, serializer);
+        StoredClass[] array = StoredTestDataGenerators.arrayWithNulls();
+        StoredArray<StoredClass> stored = new StoredArray<>(array.length, serializer);
         for (int i = 0; i < array.length; ++i) {
             stored.set(i, array[i]);
         }
@@ -189,9 +189,9 @@ public class StoredArrayTest {
 
     @Test
     public void squeeze() {
-        SerializableClass[] array = initArrayWithNulls();
-        final DerivedSerializableClass weighty = new DerivedSerializableClass("LongStringStringString", 45, false, "                    ");
-        StoredArray<SerializableClass> stored = new StoredArray<>(array, serializer);
+        StoredClass[] array = StoredTestDataGenerators.arrayWithNulls();
+        final DerivedStoredClass weighty = new DerivedStoredClass("LongStringStringString", 45, false, "                    ");
+        StoredArray<StoredClass> stored = new StoredArray<>(array, serializer);
         for (int i = 0; i < stored.size(); ++i) {
             if (stored.get(i) == null) {
                 stored.set(i, weighty);
@@ -209,9 +209,9 @@ public class StoredArrayTest {
 
     @Test
     public void insertToBeginning() {
-        SerializableClass[] array = initArrayWithNulls();
+        StoredClass[] array = StoredTestDataGenerators.arrayWithNulls();
         int mid = array.length / 2;
-        StoredArray<SerializableClass> stored = new StoredArray<>(serializer);
+        StoredArray<StoredClass> stored = new StoredArray<>(serializer);
         for (int i = mid; i < array.length; ++i) {
             stored.append(array[i]);
         }
@@ -223,9 +223,9 @@ public class StoredArrayTest {
 
     @Test
     public void insertToMiddle() {
-        SerializableClass[] array = initArrayWithNulls();
+        StoredClass[] array = StoredTestDataGenerators.arrayWithNulls();
         int mid = array.length / 4;
-        StoredArray<SerializableClass> stored = new StoredArray<>(serializer);
+        StoredArray<StoredClass> stored = new StoredArray<>(serializer);
         for (int i = 0; i < mid; ++i) {
             stored.append(array[i]);
         }
@@ -240,8 +240,8 @@ public class StoredArrayTest {
 
     @Test
     public void insertToEnd() {
-        SerializableClass[] array = initArrayWithNulls();
-        StoredArray<SerializableClass> stored = new StoredArray<>(serializer);
+        StoredClass[] array = StoredTestDataGenerators.arrayWithNulls();
+        StoredArray<StoredClass> stored = new StoredArray<>(serializer);
         for (int i = 0; i < array.length; ++i) {
             stored.insert(i, array[i]);
         }
@@ -250,7 +250,7 @@ public class StoredArrayTest {
 
     @Test
     public void stringArray() {
-        String[] strings = initStringArray();
+        String[] strings = StoredTestDataGenerators.stringArray();
         StoredArray<String> stored = new StoredArray<>(strings, serializer);
         checkEquality(strings, stored);
         strings[0] = "First";
@@ -262,7 +262,7 @@ public class StoredArrayTest {
 
     @Test
     public void mixedArray() {
-        Object[] objects = initMixedArray();
+        Object[] objects = StoredTestDataGenerators.mixedArray();
         StoredArray<Object> stored = new StoredArray<>(objects, serializer);
         checkEquality(objects, stored);
         objects[0] = 5.0;
@@ -279,217 +279,22 @@ public class StoredArrayTest {
         }
     }
 
-    static SerializableClass[] initArray() {
-        List<SerializableClass> result = new ArrayList<>();
-        NameClass name = new NameClass("Square");
-        for (int i = 0; i < 1; ++i) {
-            result.add(new SerializableClass(name, 10, true));
-            result.add(new SerializableClass(name, 8, false));
-            result.add(new SerializableClass("Circle", 5, false));
-            result.add(new DerivedSerializableClass("Tricky circle", 20, true, "add"));
-            result.add(new SerializableClass("Triangle", 100000, true));
-            result.add(new DerivedSerializableClass("Tricky triangle", -454, false, "add"));
-            result.add(new SerializableClass("Rectangle", 1, true));
-            result.add(new SerializableClass("Rectangle", 1, false));
-            result.add(new DerivedSerializableClass("Tricky rectangle", 1, true, "add"));
-        }
-        return result.toArray(new SerializableClass[0]);
-    }
-
-    static SerializableClass[] initArray(int size) {
-        SerializableClass[] arr = initArray();  
-        List<SerializableClass> result = new ArrayList<>();
-        for (int i = 0; i < size; ++i) {
-            result.add(arr[i % arr.length]);
-        }
-        return result.toArray(new SerializableClass[0]);
-    }
-    
-    static SerializableClass[] initArrayWithNulls() {
-        return new SerializableClass[]{
-                null,
-                new SerializableClass("Square", 10, true),
-                null,
-                new SerializableClass("Square", 8, false),
-                new SerializableClass("Circle", 5, false),
-                new DerivedSerializableClass("Tricky circle", 20, true, "add"),
-                null,
-                null,
-                new DerivedSerializableClass("Tricky triangle", -454, false, "add"),
-                null
-        };
-    }
-
-    static String[] initStringArray() {
-        return new String[]{"Hello", " ", "World", "!", "4", "5", "6", "7", "8", "9"};
-    }
-
-    static Object[] initMixedArray() {
-        return new Object[]{
-                null,
-                new SerializableClass("Square", 10, true),
-                "text",
-                new BigInteger("3454654657567567567567567"),
-                null,
-                new SerializableClass("Square", 8, false),
-                null,
-                "text2",
-                new SerializableClass("Circle", 5, false),
-                null
-        };
-    }
-
-    static class SerializableClass {
-        private final StoredArrayTest.NameClass name;
-        public int cnt;
-        public boolean isLarge;
-
-        public SerializableClass(String name, int cnt, boolean isLarge) {
-            this(new NameClass(name), cnt, isLarge);
-        }
-
-        public SerializableClass(NameClass name, int cnt, boolean isLarge) {
-            this.name = name;
-            this.cnt = cnt;
-            this.isLarge = isLarge;
-        }
-
-        public String getName() {
-            return name.getName();
-        }
-
-        protected void serialize(ByteArrayOutputStream byteStream) {
-            try (ObjectOutputStream objStream = new ObjectOutputStream(byteStream)) {
-                objStream.writeObject(name.getName());
-                objStream.writeInt(cnt);
-                objStream.writeBoolean(isLarge);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        public static void serialize(Object o, StoredArraySerializer serializer, ByteArrayOutputStream stream) {
-            ((SerializableClass)o).serialize(stream);
-        }
-
-        public static SerializableClass deserialize(ByteArrayInputStream byteStream, StoredArraySerializer serializer) {
-            try {
-                ObjectInputStream objStream = new ObjectInputStream(byteStream);
-                String name = (String)objStream.readObject();
-                int cnt = objStream.readInt();
-                boolean isLarge = objStream.readBoolean();
-                return new SerializableClass(name, cnt, isLarge);
-            } catch (IOException | ClassNotFoundException e) {
-                e.printStackTrace();
-            }
-            return null;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            SerializableClass that = (SerializableClass) o;
-            return cnt == that.cnt &&
-                    isLarge == that.isLarge &&
-                    Objects.equals(name.getName(), that.name.getName());
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(name.getName(), cnt, isLarge);
-        }
-    }
-
-    static class DerivedSerializableClass extends SerializableClass {
-        private final String additional;
-
-        public DerivedSerializableClass(String name, int cnt, boolean isLarge, String additional) {
-            super(name, cnt, isLarge);
-            this.additional = additional;
-        }
-
-        @Override
-        protected void serialize(ByteArrayOutputStream byteStream) {
-            try {
-                ObjectOutputStream objStream = new ObjectOutputStream(byteStream);
-                objStream.writeObject(getName());
-                objStream.writeInt(cnt);
-                objStream.writeBoolean(isLarge);
-                objStream.writeObject(additional);
-                objStream.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        public static void serialize(Object o, StoredArraySerializer serializer, ByteArrayOutputStream oStream) {
-            ((DerivedSerializableClass)o).serialize(oStream);
-        }
-
-        public static DerivedSerializableClass deserialize(ByteArrayInputStream byteStream, StoredArraySerializer serializer) {
-            try {
-                ObjectInputStream objStream = new ObjectInputStream(byteStream);
-                String name = (String)objStream.readObject();
-                int cnt = objStream.readInt();
-                boolean isLarge = objStream.readBoolean();
-                String additional = (String)objStream.readObject();
-                return new DerivedSerializableClass(name, cnt, isLarge, additional);
-            } catch (IOException | ClassNotFoundException e) {
-                e.printStackTrace();
-            }
-            return null;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            if (!super.equals(o)) return false;
-            DerivedSerializableClass that = (DerivedSerializableClass) o;
-            return Objects.equals(additional, that.additional);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(super.hashCode(), additional);
-        }
-    }
-
-    private static class OtherSerializableClass extends SerializableClass {
-        public OtherSerializableClass(String name, int cnt, boolean isLarge) {
-            super(name, cnt, isLarge);
-        }
-    }
-
-    private static class NameClass implements Serializable {
-        private final String name;
-
-        public NameClass(String name) {
-            this.name = name;
-        }
-
-        public String getName() {
-            return name;
-        }
-    }
-
     @Test
     public void performanceTest() {
-        SerializableClass[] array = generateSerializableArray();
-        StoredArray<SerializableClass> stored = new StoredArray<>(array, serializer);
-        checkEquality(array, stored);
-    }
-    
-    
-    private final int SIZE = 3000;     
-    
-    private SerializableClass[] generateSerializableArray() {
-        List<SerializableClass> list = new ArrayList<>();
-        for (int i = 0; i < SIZE; ++i) {
-            list.add(new SerializableClass("Name", i+1, true));
+        StoredClass[] simpleArr = StoredTestDataGenerators.largeSimpleArray();
+        StoredArray<StoredClass> simpleStored = new StoredArray<>(simpleArr, serializer);
+        checkEquality(simpleArr, simpleStored);
+
+        StoredClass[] withNullsArr = StoredTestDataGenerators.largeArrayWithNulls();
+        StoredArray<StoredClass> storedWithNulls = new StoredArray<>(withNullsArr, serializer);
+        checkEquality(withNullsArr, storedWithNulls);
+
+        Object[] mixedArr = StoredTestDataGenerators.largeMixedArray();
+        StoredArray<Object> mixedStored = new StoredArray<>(mixedArr, serializer);
+        assertEquals(mixedArr.length, mixedStored.size());
+        for (int i = 0; i < mixedStored.size(); ++i) {
+            assertEquals(mixedArr[i], mixedStored.get(i));
         }
-        return list.toArray(new SerializableClass[0]);
     }
-    
+
 }

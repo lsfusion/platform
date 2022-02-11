@@ -242,6 +242,7 @@ public class ArIndexedMap<K, V> extends AMRevMap<K, V> {
             keys[insert] = key;
             values[insert] = value;
             size++;
+            switchToStoredIfNeeded(size-1, size);
             return true;
         } else {
             return stored().add(key, value);
@@ -376,8 +377,9 @@ public class ArIndexedMap<K, V> extends AMRevMap<K, V> {
 
     @Override
     public ImMap<K, V> merge(ImMap<? extends K, ? extends V> map, AddValue<K, V> add) { // важная оптимизация так как ОЧЕНЬ много раз вызывается
+        if (map.isEmpty()) return this;
+        
         if (!isStored()) {
-            if (map.isEmpty()) return this;
 
             if (add.reversed() && size < map.size()) return ((ImMap<K, V>) map).merge(this, add.reverse());
 
