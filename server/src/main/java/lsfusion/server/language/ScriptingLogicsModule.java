@@ -2361,9 +2361,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         return proceedInputDoClause(doAction, elseAction, oldContext, newContext, yesNo ? ListFact.singleton(targetProp) : ListFact.EMPTY(), inputAction, yesNo ? ListFact.singleton(null) : ListFact.EMPTY());
     }
 
-    public LAWithParams addScriptedMessageProp(LPWithParams msgProp, boolean noWait) {
+    public LAWithParams addScriptedMessageProp(LPWithParams msgProp, boolean noWait, boolean log) {
         List<Object> resultParams = getParamsPlainList(singletonList(msgProp));
-        LA asyncLA = addMAProp("lsFusion", noWait, resultParams.toArray());
+        LA asyncLA = addMAProp("lsFusion", noWait, log, resultParams.toArray());
         return new LAWithParams(asyncLA, msgProp.usedParams);
     }
 

@@ -113,7 +113,7 @@ public class ScriptingFormEntity {
             addObjectEntity(objectName, obj, groupObj, version);
 
             if (groupObject.events.get(j) != null) {
-                form.addActionsOnEvent(obj, version, groupObject.events.get(j));
+                form.addActionsOnEvent(obj, false, version, groupObject.events.get(j));
             }
 
             if (groupObject.integrationSIDs.get(j) != null) {
@@ -743,15 +743,18 @@ public class ScriptingFormEntity {
         }
     }
 
-    public void addScriptedFormEvents(List<ActionObjectEntity> actions, List<Object> types, Version version) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedFormEvents(List<ActionObjectEntity> actions, List<Object> types, List<Boolean> replaces, Version version) throws ScriptingErrorLog.SemanticErrorException {
         assert actions.size() == types.size();
         for (int i = 0; i < actions.size(); i++) {
             Object eventType = types.get(i);
+            Boolean replace = replaces.get(i);
+            if(replace == null)
+                replace = eventType == FormEventType.QUERYCLOSE || eventType == FormEventType.QUERYOK;
             if (eventType instanceof String) {
-                form.addActionsOnEvent(getObjectEntity((String) eventType), version, actions.get(i));
+                form.addActionsOnEvent(getObjectEntity((String) eventType), replace, version, actions.get(i));
             } else {
                 ActionObjectEntity action = actions.get(i);
-                form.addActionsOnEvent(eventType, eventType == FormEventType.QUERYCLOSE || eventType == FormEventType.QUERYOK, version, action);
+                form.addActionsOnEvent(eventType, replace, version, action);
             }
         }
     }

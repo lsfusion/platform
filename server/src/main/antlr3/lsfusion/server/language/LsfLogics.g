@@ -1151,19 +1151,20 @@ formEventsList
 @init {
 	List<ActionObjectEntity> actions = new ArrayList<>();
 	List<Object> types = new ArrayList<>();
+	List<Boolean> replaces = new ArrayList<>();
 }
 @after {
 	if (inMainParseState()) {
-		$formStatement::form.addScriptedFormEvents(actions, types, self.getVersion());
+		$formStatement::form.addScriptedFormEvents(actions, types, replaces, self.getVersion());
 	}
 }
 	:	'EVENTS'
-		decl=formEventDeclaration { actions.add($decl.action); types.add($decl.type); }
-		(',' decl=formEventDeclaration { actions.add($decl.action); types.add($decl.type); })*
+		decl=formEventDeclaration { actions.add($decl.action); types.add($decl.type); replaces.add($decl.replace); }
+		(',' decl=formEventDeclaration { actions.add($decl.action); types.add($decl.type); replaces.add($decl.replace); })*
 	;
 
 
-formEventDeclaration returns [ActionObjectEntity action, Object type]
+formEventDeclaration returns [ActionObjectEntity action, Object type, Boolean replace = null]
 @init {
     Boolean before = null;
 }
@@ -1174,9 +1175,11 @@ formEventDeclaration returns [ActionObjectEntity action, Object type]
 		|	'INIT'	 { $type = FormEventType.INIT; }
 		|	'CANCEL' { $type = FormEventType.CANCEL; }
 		|	'DROP'	 { $type = FormEventType.DROP; }
+		|	'QUERYOK'	 { $type = FormEventType.QUERYOK; }
 		|	'QUERYCLOSE'	 { $type = FormEventType.QUERYCLOSE; }
 		| 	'CHANGE' objectId=ID { $type = $objectId.text; }
 		)
+		('REPLACE' { $replace = true; } | 'NOREPLACE' { $replace = false; } )?
 		faprop=formActionObject { $action = $faprop.action; }
 	;
 
@@ -3665,15 +3668,19 @@ confirmActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams 
 messageActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
 @init {
     boolean noWait = false;
+    boolean log = false;
 }
 @after {
 	if (inMainParseState()) {
-		$action = self.addScriptedMessageProp($pe.property, noWait);
+		$action = self.addScriptedMessageProp($pe.property, noWait, log);
 	}
 }
 	:	'MESSAGE'
 	    pe=propertyExpression[context, dynamic]
-	    (sync = syncTypeLiteral { noWait = !$sync.val; })?
+	    (
+	        sync = syncTypeLiteral { noWait = !$sync.val; }
+	    |   'LOG' {  log = true; }
+        )*
 	;
 
 asyncUpdateActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]

@@ -316,6 +316,16 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     }
 
     @IdentityLazy
+    public LA getFormApplied() {
+        try {
+            return findAction("formApplied[]");
+        } catch (ScriptingErrorLog.SemanticErrorException e) {
+            Throwables.propagate(e);
+        }
+        return null;
+    }
+
+    @IdentityLazy
     public LA<?> getPolyEdit() {
         try {
             return findAction("edit[Object]");

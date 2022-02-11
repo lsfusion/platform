@@ -79,6 +79,11 @@ formRefresh '{action.form.refresh}'  INTERNAL  'lsfusion.server.logics.form.inte
 formOk '{action.form.ok}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.lifecycle.OkAction' () CHANGEKEY 'ctrl ENTER' CHANGEMOUSE 'DBLCLK;priority=1000;dialog=only;group=input;preview=only' IMAGE 'ok.png';
 formClose '{action.form.close}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.lifecycle.CloseAction' () CHANGEKEY 'ESCAPE' IMAGE 'close.png';
 
+formApplied ABSTRACT LIST FIRST (); 
+formApplied() + {
+    MESSAGE '{form.instance.changes.saved}' NOWAIT LOG;
+}
+
 seek '{system.seek}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.seek.SeekInternalAction' (Object);
 
 sleep '{system.sleep}'  INTERNAL  'lsfusion.server.logics.action.flow.SleepAction' (LONG);

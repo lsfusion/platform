@@ -276,6 +276,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
         LA<PropertyInterface> formOk = baseLM.getFormOk();
         LA<PropertyInterface> formClose = baseLM.getFormClose();
+        LA<PropertyInterface> formApplied = baseLM.getFormApplied();
 
         editActionPropertyDraw = addPropertyDraw(baseLM.getFormEditReport(), version);
         refreshActionPropertyDraw = addPropertyDraw(baseLM.getFormRefresh(), version);
@@ -288,8 +289,9 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         logMessagePropertyDraw = addPropertyDraw(baseLM.getLogMessage(), version);
         logMessagePropertyDraw.setPropertyExtra(addPropertyObject(externalShowIf), PropertyDrawExtraType.SHOWIF);
 
-        addActionsOnEvent(FormEventType.QUERYCLOSE, true, version, new ActionObjectEntity<>(formClose.action, MapFact.EMPTYREV()));
+        addActionsOnEvent(FormEventType.AFTERAPPLY, false, version, new ActionObjectEntity<>(formApplied.action, MapFact.EMPTYREV()));
         addActionsOnEvent(FormEventType.QUERYOK, true, version, new ActionObjectEntity<>(formOk.action, MapFact.EMPTYREV()));
+        addActionsOnEvent(FormEventType.QUERYCLOSE, true, version, new ActionObjectEntity<>(formClose.action, MapFact.EMPTYREV()));
     }
 
     private void initDefaultGroupElements(GroupObjectEntity group, Version version) {
@@ -1104,10 +1106,6 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     @IdentityInstanceLazy
     public GroupObjectHierarchy getSingleGroupObjectHierarchy(GroupObjectEntity groupObject) {
         return new GroupObjectHierarchy(groupObject, Collections.singletonMap(groupObject, SetFact.EMPTYORDER()));
-    }
-
-    public void addActionsOnEvent(Object eventObject, Version version, ActionObjectEntity<?>... actions) {
-        addActionsOnEvent(eventObject, false, version, actions);
     }
 
     public void addActionsOnEvent(Object eventObject, boolean drop, Version version, ActionObjectEntity<?>... actions) {

@@ -1594,17 +1594,13 @@ public abstract class LogicsModule {
 
     // ------------------- MESSAGE ----------------- //
 
-    protected LA addMAProp(String title, boolean noWait, Object... params) {
-        return addMAProp(null, LocalizedString.NONAME, title, noWait, params);
-    }
-
-    protected LA addMAProp(Group group, LocalizedString caption, String title, boolean noWait, Object... params) {
-        return addJoinAProp(group, caption, addMAProp(title, noWait), params);
+    protected LA addMAProp(String title, boolean noWait, boolean log, Object... params) {
+        return addJoinAProp(null, LocalizedString.NONAME, addMAProp(title, noWait, log), params);
     }
 
     @IdentityStrongLazy
-    protected LA addMAProp(String title, boolean noWait) {
-        return addAction(null, new LA(new MessageAction(LocalizedString.create("Message"), title, noWait)));
+    protected LA addMAProp(String title, boolean noWait, boolean log) {
+        return addAction(null, new LA(new MessageAction(LocalizedString.create("Message"), title, noWait, log)));
     }
 
     public LA addFocusAction(PropertyDrawEntity propertyDrawEntity) {

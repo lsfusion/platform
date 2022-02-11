@@ -1536,23 +1536,16 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         if(BL.LM.isBeforeCanceled(this))
             return false;
 
-        boolean succeeded = session.apply(BL, stack, interaction, applyActions.mergeOrder(getEventsOnApply()), keepProperties, this, applyMessage);
-        
-        if (!succeeded)
+        if (!session.apply(BL, stack, interaction, applyActions.mergeOrder(getEventsOnApply()), keepProperties, this, applyMessage))
             return false;
+
+        fireOnAfterApply(stack);
 
         environmentIncrement.add(FormEntity.isAdd, PropertyChange.STATIC(false));
         
-        refreshData(); // нужно перечитать ключи в таблицах, и т.п.
-        fireOnAfterApply(stack);
+        refreshData();
+        dataChanged = true;
 
-        dataChanged = true; // временно пока applyChanges синхронен, для того чтобы пересылался факт изменения данных
-
-        LogMessageClientAction message = new LogMessageClientAction(ThreadLocalContext.localize("{form.instance.changes.saved}"), false);
-        if(interaction!=null)
-            interaction.delayUserInteraction(message);
-        else
-            ThreadLocalContext.delayUserInteraction(message);
         return true;
     }
 
