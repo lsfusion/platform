@@ -1362,7 +1362,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     public boolean check(BusinessLogics BL, ExecutionEnvironment sessionEventFormEnv, ExecutionStack stack, UserInteraction interaction) throws SQLException, SQLHandledException {
         setApplyFilter(ApplyFilter.ONLYCHECK);
 
-        boolean result = apply(BL, stack, interaction, SetFact.EMPTYORDER(), SetFact.EMPTY(), sessionEventFormEnv);
+        boolean result = apply(BL, stack, interaction, SetFact.EMPTYORDER(), sessionEventFormEnv);
 
         setApplyFilter(ApplyFilter.NO);
         return result;
@@ -1746,12 +1746,12 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
     // inner / external server calls
     public String applyMessage(BusinessLogics BL, ExecutionStack stack) throws SQLException, SQLHandledException {
-        return applyMessage(BL, stack, null, SetFact.EMPTYORDER(), SetFact.EMPTY(), null);
+        return applyMessage(BL, stack, null, null);
     }
 
     // inner / external server calls
     public void applyException(BusinessLogics BL, ExecutionStack stack) throws SQLException, SQLHandledException {
-        applyException(BL, stack, null, SetFact.EMPTYORDER(), SetFact.EMPTY(), null);
+        applyException(BL, stack, null, null);
     }
 
     @AssertSynchronized
@@ -1773,9 +1773,11 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
             executeSessionEvents(sessionEventFormEnv, stack);
 
-            NotFunctionSet<SessionDataProperty> notKeepProps = new NotFunctionSet<>(keepProps);
-            copyDataTo(parentSession, notKeepProps);
-            parentSession.copySessionDataTo(this, notKeepProps);
+            // it was an odd behaviour to do not apply not nested properties in nested session
+            copyDataTo(parentSession, SetFact.EMPTY());
+//            NotFunctionSet<SessionDataProperty> notKeepProps = new NotFunctionSet<>(keepProps);
+//            copyDataTo(parentSession, notKeepProps);
+//            parentSession.copySessionDataTo(this, notKeepProps);
 
             cleanIsDataChangedProperty();
 
@@ -2533,6 +2535,10 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         parentSession.copyDataTo(this, SetFact.EMPTY()); // копируем все local'ы
 
         this.parentSession = parentSession;
+    }
+
+    public boolean isNested() {
+        return parentSession != null;
     }
 
     public DataSession getSession() {

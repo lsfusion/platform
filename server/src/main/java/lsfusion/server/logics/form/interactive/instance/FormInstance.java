@@ -386,8 +386,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         if(interactive) {
             int prevOwners = updateSessionOwner(true, stack);
 
-            if(manageSession == ManageSessionType.AUTO) // если нет других собственников и не readonly 
-                adjManageSession = heuristicManageSession(entity, showReadOnly, prevOwners); // по идее при showreadonly редактирование все равно могут включить политикой безопасности, но при определении manageSession не будем на это обращать внимание
+            if(manageSession == ManageSessionType.AUTO)
+                adjManageSession = heuristicManageSession(entity, showReadOnly, prevOwners, session.isNested());
             else
                 adjManageSession = manageSession.isManageSession();
 
@@ -460,8 +460,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         }
     }
 
-    private boolean heuristicManageSession(FormEntity entity, boolean showReadOnly, int prevOwners) {
-        return prevOwners <= 0 && !showReadOnly && !entity.hasNoChange();
+    private boolean heuristicManageSession(FormEntity entity, boolean showReadOnly, int prevOwners, boolean isNested) {
+        return prevOwners <= 0 && !showReadOnly && (!entity.hasNoChange() || isNested);
     }
 
     private boolean heuristicNoCancel(ImMap<ObjectEntity, ? extends ObjectValue> mapObjects) {
@@ -2706,7 +2706,7 @@ updateAsyncPropertyChanges();
             return;
 
         if (manageSession) {
-            if (!context.apply(getEventsOnOk(), SetFact.EMPTY())) {
+            if (!context.apply(getEventsOnOk())) {
                 return;
             }
         } else

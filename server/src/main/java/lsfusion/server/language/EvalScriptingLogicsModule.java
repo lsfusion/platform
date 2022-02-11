@@ -168,9 +168,9 @@ public class EvalScriptingLogicsModule extends ScriptingLogicsModule {
     
     @Override
     public LP addScriptedDProp(String returnClass, List<String> paramClasses, List<ResolveClassSet> signature, boolean sessionProp, boolean innerProp, boolean isLocalScope, LocalNestedType nestedType) throws ScriptingErrorLog.SemanticErrorException {
-        if (!sessionProp) {
-            nestedType = LocalNestedType.ALL;
-        }
+//        if (!sessionProp) {
+//            nestedType = LocalNestedType.ALL;
+//        }
         return super.addScriptedDProp(returnClass, paramClasses, signature, true, innerProp, isLocalScope, nestedType);
     }
     

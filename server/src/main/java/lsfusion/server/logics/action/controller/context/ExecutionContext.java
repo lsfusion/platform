@@ -497,32 +497,26 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
 
     // action calls
     public String applyMessage() throws SQLException, SQLHandledException {
-        return applyMessage(SetFact.<ActionValueImplement>EMPTYORDER(), SetFact.<SessionDataProperty>EMPTY());
+        return getEnv().applyMessage(getBL(), stack, this, getSessionEventFormEnv());
     }
 
     // action calls
     public boolean apply() throws SQLException, SQLHandledException {
-        return apply(SetFact.<ActionValueImplement>EMPTYORDER(), SetFact.<SessionDataProperty>EMPTY());
+        return apply(SetFact.EMPTYORDER());
     }
 
     // action calls
     public void applyException() throws SQLException, SQLHandledException {
-        applyException(SetFact.<ActionValueImplement>EMPTYORDER(), SetFact.<SessionDataProperty>EMPTY());
+        getEnv().applyException(getBL(), stack, this, getSessionEventFormEnv());
     }
 
     // action calls
-    public void applyException(ImOrderSet<ActionValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProperties) throws SQLException, SQLHandledException {
-        getEnv().applyException(getBL(), stack, this, applyActions, keepProperties, getSessionEventFormEnv());
-    }
 
     // action calls
-    public String applyMessage(ImOrderSet<ActionValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProperties) throws SQLException, SQLHandledException {
-        return getEnv().applyMessage(getBL(), stack, this, applyActions, keepProperties, getSessionEventFormEnv());
-    }
 
     // action calls
-    public boolean apply(ImOrderSet<ActionValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProperties) throws SQLException, SQLHandledException {
-        return getEnv().apply(getBL(), stack, this, applyActions, keepProperties, getSessionEventFormEnv());
+    public boolean apply(ImOrderSet<ActionValueImplement> applyActions) throws SQLException, SQLHandledException {
+        return getEnv().apply(getBL(), stack, this, applyActions, getSessionEventFormEnv());
     }
 
     // action calls
