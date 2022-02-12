@@ -1030,16 +1030,16 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
     protected abstract boolean previewEvent(Element target, Event event);
 
     public void onFocus() {
-//        if(isFocused)
-//            return;
+        if(isFocused)
+            return;
         DataGrid.sinkPasteEvent(getTableDataFocusElement());
         isFocused = true;
         focusedChanged();
     }
 
     public void onBlur(Event event) {
-//        if(!isFocused || isFakeBlur(event, getElement()))
-//            return;
+        if(!isFocused || isFakeBlur(event, getElement()))
+            return;
         //if !isFocused should be replaced to assert; isFocused must be true, but sometimes is not (related to LoadingManager)
         //assert isFocused;
         isFocused = false;

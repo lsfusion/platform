@@ -102,31 +102,32 @@ public abstract class GAbstractTableController extends GPropertyController imple
 
         private boolean isFocused;
         protected void onFocus(Element target, Event event) {
-            if(isFocused)
-                return;
-            isFocused = true;
-
             Widget widget = getWidget();
             if(widget instanceof DataGrid) { // we have to propagate focus to grid, since GWT proceeds the FOCUS event for the first widget that have eventListener (i.e initSinkEvents is called)
                 DataGrid<?> grid = (DataGrid<?>) widget;
                 grid.onFocus();
                 grid.onGridBrowserEvent(target, event);
             }
+
+            if(isFocused)
+                return;
+            isFocused = true;
             addStyleName("gridContainerPanelFocused");
         }
 
         protected void onBlur(Element target, Event event) {
-            if(!isFocused || DataGrid.isFakeBlur(event, getElement())) {
-                return;
-            }
-            isFocused = false;
-
+            // should be before isFakeBlur check to propagate the event to the cell editor
             Widget widget = getWidget();
             if(widget instanceof DataGrid) {
                 DataGrid<?> grid = (DataGrid<?>) widget;
                 grid.onBlur(event);
                 grid.onGridBrowserEvent(target, event);
             }
+
+            if(!isFocused || DataGrid.isFakeBlur(event, getElement())) {
+                return;
+            }
+            isFocused = false;
             removeStyleName("gridContainerPanelFocused");
         }
 
