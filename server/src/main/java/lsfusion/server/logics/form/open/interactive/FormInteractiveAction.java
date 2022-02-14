@@ -62,6 +62,8 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
                     return ModalityType.DOCKED_MODAL;
                 case EMBEDDED:
                     return ModalityType.EMBEDDED;
+                case POPUP:
+                    return ModalityType.POPUP;
                 default:
                     throw new UnsupportedOperationException();
             }

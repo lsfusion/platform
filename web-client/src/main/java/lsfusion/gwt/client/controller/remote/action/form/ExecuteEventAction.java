@@ -14,8 +14,6 @@ public class ExecuteEventAction extends FormRequestCountingAction<ServerResponse
     public ExecuteEventAction() {
     }
 
-    public transient boolean isEditing = false;
-
     public ExecuteEventAction(int[] propertyIds, GGroupObjectValue[] fullKeys, String actionSID, boolean[] externalChanges, GPushAsyncResult[] pushAsyncResults) {
         this.propertyIds = propertyIds;
         this.fullKeys = fullKeys;

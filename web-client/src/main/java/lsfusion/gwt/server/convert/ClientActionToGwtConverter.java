@@ -94,6 +94,7 @@ public class ClientActionToGwtConverter extends ObjectConverter {
             case DOCKED_MODAL: return GModalityType.DOCKED_MODAL;
             case DIALOG_MODAL: return GModalityType.DIALOG_MODAL;
             case EMBEDDED: return GModalityType.EMBEDDED;
+            case POPUP: return GModalityType.POPUP;
         }
         return null;
     }

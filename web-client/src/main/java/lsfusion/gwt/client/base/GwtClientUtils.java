@@ -363,9 +363,14 @@ public class GwtClientUtils {
 
     public static void showPopupInWindow(PopupDialogPanel popup, Widget widget, int mouseX, int mouseY) {
         popup.setWidget(widget);
-        popup.show();
-        Scheduler.get().scheduleDeferred(() -> widget.getElement().focus());
 
+        showPopup(popup, mouseX, mouseY);
+
+        Scheduler.get().scheduleDeferred(() -> widget.getElement().focus());
+    }
+
+    public static void showPopup(PopupDialogPanel popup, int mouseX, int mouseY) {
+        popup.show();
         setPopupPosition(popup, mouseX, mouseY);
     }
 

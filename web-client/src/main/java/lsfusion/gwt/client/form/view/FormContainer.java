@@ -152,19 +152,6 @@ public abstract class FormContainer {
         return form;
     }
 
-    protected void initPreferredSize() {
-        if(!async) {
-            int horzClientOffset = 20;
-            int vertClientOffset = 100;
-
-            int wndWidth = Window.getClientWidth();
-            int wndHeight = Window.getClientHeight();
-            Dimension size = form.getPreferredSize(wndWidth - horzClientOffset, wndHeight - vertClientOffset);
-            form.formLayout.setWidth(size.width + "px");
-            form.formLayout.setHeight(size.height + "px");
-        }
-    }
-
     protected void initQuickFilter() {
         if (editEvent != null) {
             Event event = editEvent;

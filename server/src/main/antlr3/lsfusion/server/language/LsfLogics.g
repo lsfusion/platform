@@ -3301,6 +3301,7 @@ windowTypeLiteral returns [WindowFormType val]
 	:	'FLOAT' { $val = WindowFormType.FLOAT; }
 	|	'DOCKED' { $val = WindowFormType.DOCKED; }
 	|	'EMBEDDED' { $val = WindowFormType.EMBEDDED; }
+	|	'POPUP' { $val = WindowFormType.POPUP; }
 	;
 
 printActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]

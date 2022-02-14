@@ -91,7 +91,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
     public static final IsDevProperty isDev = IsDevProperty.instance;
     public static final SessionDataProperty isDocked = new SessionDataProperty(LocalizedString.create("Is docked"), LogicalClass.instance);
-    public static final SessionDataProperty isEmbedded = new SessionDataProperty(LocalizedString.create("Is embedded"), LogicalClass.instance);
+    public static final SessionDataProperty isEditing = new SessionDataProperty(LocalizedString.create("Is embedded"), LogicalClass.instance);
     public static final SessionDataProperty showOk = new SessionDataProperty(LocalizedString.create("Is modal"), LogicalClass.instance);
     public static final SessionDataProperty isAdd = new SessionDataProperty(LocalizedString.create("Is add"), LogicalClass.instance);
     public static final SessionDataProperty manageSession = new SessionDataProperty(LocalizedString.create("Manage session"), LogicalClass.instance);

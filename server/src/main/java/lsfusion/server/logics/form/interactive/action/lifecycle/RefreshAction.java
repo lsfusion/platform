@@ -13,7 +13,7 @@ import java.sql.SQLException;
 
 public class RefreshAction extends FormFlowAction {
 
-    private static LP showIf = createIfProperty(new Property[]{FormEntity.isEmbedded}, new boolean[]{true});
+    private static LP showIf = createIfProperty(new Property[]{FormEntity.isEditing}, new boolean[]{true});
 
     public RefreshAction(BaseLogicsModule lm) {
         super(lm, false);

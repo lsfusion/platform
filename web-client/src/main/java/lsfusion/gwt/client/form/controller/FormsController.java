@@ -21,7 +21,8 @@ import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
 import lsfusion.gwt.client.controller.remote.action.RequestCountingAsyncCallback;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.controller.remote.action.navigator.ExecuteNavigatorAction;
-import lsfusion.gwt.client.form.FormEmbedded;
+import lsfusion.gwt.client.form.EmbeddedForm;
+import lsfusion.gwt.client.form.PopupForm;
 import lsfusion.gwt.client.form.design.view.flex.FlexTabbedPanel;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
 import lsfusion.gwt.client.form.object.table.view.GToolbarView;
@@ -188,7 +189,7 @@ public abstract class FormsController {
             asyncFormController.cancelScheduledOpening();
             formContainer = createFormContainer(windowType, false, -1, form.getCaption(), editEvent, editContext, formController);
         }
-        initForm(formContainer, form, hiddenHandler, modalityType.isDialog(), windowType.isEmbedded() && editContext.getProperty().autoSize);
+        initForm(formContainer, form, hiddenHandler, modalityType.isDialog(), isAutoSized(editContext, windowType));
         if(asyncOpened)
             formContainer.onAsyncInitialized();
         else
@@ -204,7 +205,9 @@ public abstract class FormsController {
             case DOCKED:
                 return new FormDockable(this, formCaption, async, editEvent);
             case EMBEDDED:
-                return new FormEmbedded(this, editRequestIndex, async, editEvent, editContext, formController);
+                return new EmbeddedForm(this, editRequestIndex, async, editEvent, editContext, formController);
+            case POPUP:
+                return new PopupForm(this, editRequestIndex, async, editEvent, editContext, formController);
         }
         throw new UnsupportedOperationException();
     }
@@ -220,11 +223,23 @@ public abstract class FormsController {
                 asyncFormController.putAsyncForm(formContainer);
             };
             // this types because for them size is unknown, so there'll be blinking
-            if(windowType == GWindowFormType.FLOAT || (windowType.isEmbedded() && editContext.getProperty().autoSize))
+            if(isCalculatedSized(editContext, windowType))
                 asyncFormController.scheduleOpen(runOpenForm);
             else
                 runOpenForm.execute();
         }
+    }
+
+    private boolean isCalculatedSized(EditContext editContext, GWindowFormType windowType) {
+        return isPreferredSize(editContext, windowType) || isAutoSized(editContext, windowType);
+    }
+
+    private boolean isAutoSized(EditContext editContext, GWindowFormType windowType) {
+        return (windowType.isEmbedded() && editContext.getProperty().autoSize) || windowType.isPopup();
+    }
+
+    private boolean isPreferredSize(EditContext editContext, GWindowFormType windowType) {
+        return windowType == GWindowFormType.FLOAT;
     }
 
     private FormDockable getDuplicateForm(String canonicalName, boolean forbidDuplicate) {

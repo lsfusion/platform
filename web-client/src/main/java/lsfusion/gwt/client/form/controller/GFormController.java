@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form.controller;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.Element;
@@ -76,7 +77,6 @@ import lsfusion.gwt.client.form.property.GPropertyReader;
 import lsfusion.gwt.client.form.property.async.*;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.classes.controller.CustomReplaceCellEditor;
-import lsfusion.gwt.client.form.property.cell.classes.controller.FileCellEditor;
 import lsfusion.gwt.client.form.property.cell.classes.controller.RequestCellEditor;
 import lsfusion.gwt.client.form.property.cell.classes.view.ActionCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.*;
@@ -963,17 +963,17 @@ public class GFormController implements EditManager {
         syncExecutePropertyEventAction(editContext, actionSID, event);
     }
 
-    public long asyncExecutePropertyEventAction(String actionSID, boolean editing, EditContext editContext, Event editEvent, GPushAsyncResult pushAsyncResult) {
-        return asyncExecutePropertyEventAction(actionSID, editing, editContext, editEvent, new GPropertyDraw[] {editContext.getProperty()}, new boolean[]{false}, new GGroupObjectValue[] {editContext.getColumnKey()}, new GPushAsyncResult[]{pushAsyncResult});
+    public long asyncExecutePropertyEventAction(String actionSID, EditContext editContext, Event editEvent, GPushAsyncResult pushAsyncResult) {
+        return asyncExecutePropertyEventAction(actionSID, editContext, editEvent, new GPropertyDraw[] {editContext.getProperty()}, new boolean[]{false}, new GGroupObjectValue[] {editContext.getColumnKey()}, new GPushAsyncResult[]{pushAsyncResult});
     }
-    public long asyncExecutePropertyEventAction(String actionSID, boolean editing, EditContext editContext, Event editEvent, GPropertyDraw[] properties, boolean[] externalChanges, GGroupObjectValue[] fullKeys, GPushAsyncResult[] pushAsyncResults) {
-        return executePropertyEventAction(actionSID, false, editing, editContext, editEvent, properties, externalChanges, fullKeys, pushAsyncResults);
+    public long asyncExecutePropertyEventAction(String actionSID, EditContext editContext, Event editEvent, GPropertyDraw[] properties, boolean[] externalChanges, GGroupObjectValue[] fullKeys, GPushAsyncResult[] pushAsyncResults) {
+        return executePropertyEventAction(actionSID, false, editContext, editEvent, properties, externalChanges, fullKeys, pushAsyncResults);
     }
     public long syncExecutePropertyEventAction(EditContext editContext, Event editEvent, GPropertyDraw property, GGroupObjectValue columnKey, String actionSID) {
-        return executePropertyEventAction(actionSID, true, false, editContext, editEvent, new GPropertyDraw[]{property}, new boolean[]{false}, new GGroupObjectValue[]{columnKey}, new GPushAsyncResult[] {null});
+        return executePropertyEventAction(actionSID, true, editContext, editEvent, new GPropertyDraw[]{property}, new boolean[]{false}, new GGroupObjectValue[]{columnKey}, new GPushAsyncResult[] {null});
     }
 
-    private long executePropertyEventAction(String actionSID, boolean sync, boolean editing, EditContext editContext, Event editEvent, GPropertyDraw[] properties, boolean[] externalChanges, GGroupObjectValue[] fullKeys, GPushAsyncResult[] pushAsyncResults) {
+    private long executePropertyEventAction(String actionSID, boolean sync, EditContext editContext, Event editEvent, GPropertyDraw[] properties, boolean[] externalChanges, GGroupObjectValue[] fullKeys, GPushAsyncResult[] pushAsyncResults) {
         int length = properties.length;
         int[] IDs = new int[length];
         GGroupObjectValue[] fullCurrentKeys = new GGroupObjectValue[length];
@@ -984,7 +984,6 @@ public class GFormController implements EditManager {
         }
 
         ExecuteEventAction executeEventAction = new ExecuteEventAction(IDs, fullCurrentKeys, actionSID, externalChanges, pushAsyncResults);
-        executeEventAction.isEditing = editing;
 
         ServerResponseCallback serverResponseCallback = new ServerResponseCallback() {
             @Override
@@ -1033,7 +1032,7 @@ public class GFormController implements EditManager {
 
     public void asyncOpenForm(GAsyncOpenForm asyncOpenForm, EditContext editContext, Event editEvent, String actionSID) {
         // here it's tricky, since for EMBEDDED type editing will be started, this will block dispatching (see RemoteDispatchAsync), so we have to force this dispatching (just like getAsyncValues)
-        long requestIndex = asyncExecutePropertyEventAction(actionSID, asyncOpenForm.type.isEmbedded(), editContext, editEvent, null);
+        long requestIndex = asyncExecutePropertyEventAction(actionSID, editContext, editEvent, null);
         formsController.asyncOpenForm(getAsyncFormController(requestIndex), asyncOpenForm, editEvent, editContext, this);
     }
 
@@ -1125,7 +1124,7 @@ public class GFormController implements EditManager {
         }
 
         if(changeRequestIndex == null)
-            changeRequestIndex = asyncExecutePropertyEventAction(actionSID, false, editContext, editEvent, properties, externalChanges, fullKeys, pushAsyncResults);
+            changeRequestIndex = asyncExecutePropertyEventAction(actionSID, editContext, editEvent, properties, externalChanges, fullKeys, pushAsyncResults);
 
         for (int i = 0; i < length; i++) {
             GPropertyDraw property = properties[i];
@@ -1166,7 +1165,7 @@ public class GFormController implements EditManager {
     }
 
     private void executeModifyObject(EditContext editContext, Event editEvent, String actionSID, GObject object, boolean add, GPushAsyncResult pushAsyncResult, GGroupObjectValue value, int position) {
-        long requestIndex = asyncExecutePropertyEventAction(actionSID, false, editContext, editEvent, pushAsyncResult);
+        long requestIndex = asyncExecutePropertyEventAction(actionSID, editContext, editEvent, pushAsyncResult);
 
         pendingChangeCurrentObjectsRequests.put(object.groupObject, requestIndex);
         pendingModifyObjectRequests.put(requestIndex, new ModifyObject(object, add, value, position));
@@ -2007,6 +2006,9 @@ public class GFormController implements EditManager {
 
     public void edit(CellEditor cellEditor, Event event, Object oldValue, BiConsumer<GUserInputResult, CommitReason> beforeCommit, BiConsumer<GUserInputResult, CommitReason> afterCommit,
                      Consumer<CancelReason> cancel, EditContext editContext, String editAsyncValuesSID, long editRequestIndex) {
+        // because for example embedded / popup (that use edit) forms are opened with a timer, there can be some pending edit calls so we need to avoid this
+        checkCommitEditing();
+
         assert this.editContext == null;
         editBeforeCommit = beforeCommit;
         editAfterCommit = afterCommit;
@@ -2015,7 +2017,7 @@ public class GFormController implements EditManager {
         this.editAsyncValuesSID = editAsyncValuesSID;
 
         this.editContext = editContext;
-        this.editRequestIndex = editRequestIndex;
+        this.editRequestIndex = editRequestIndex;  // we need to force dispatch responses till this index because otherwise we won't
 
         Element element = getEditElement();
         if (cellEditor instanceof ReplaceCellEditor) {
@@ -2076,7 +2078,7 @@ public class GFormController implements EditManager {
 
         EditContext editContext = this.editContext;
         this.editContext = null;
-        this.editRequestIndex = -1;
+//        this.editRequestIndex = -1; //it doesn't matter since it is not used when editContext / cellEditor is null
         this.editAsyncUsePessimistic = false;
         this.editAsyncValuesSID = null;
 

@@ -342,6 +342,10 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
 //        }
         return target;
     }
+    public static boolean isMouseEvent(Event event) {
+        String eventType = event.getType();
+        return getBrowserMouseEvents().contains(eventType);
+    }
     public static boolean checkSinkEvents(Event event) {
         String eventType = event.getType();
         return getBrowserMouseEvents().contains(eventType) ||

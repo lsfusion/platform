@@ -13,7 +13,7 @@ import java.sql.SQLException;
 
 public class CloseAction extends FormFlowAction {
 
-    private static LP showIf = createIfProperty(new Property[]{FormEntity.isEmbedded}, new boolean[]{true});
+    private static LP showIf = createIfProperty(new Property[]{FormEntity.isEditing}, new boolean[]{true});
 
     public CloseAction(BaseLogicsModule lm) {
         super(lm);

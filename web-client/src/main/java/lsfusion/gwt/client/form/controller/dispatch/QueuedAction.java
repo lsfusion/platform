@@ -14,13 +14,11 @@ public class QueuedAction<R extends Result> {
     private Throwable throwable;
 
     public Boolean preProceeded;
-    public boolean isEditing;
 
-    public QueuedAction(long requestIndex, RequestAsyncCallback callback, boolean preProceed, boolean isEditing) {
+    public QueuedAction(long requestIndex, RequestAsyncCallback callback, boolean preProceed) {
         this.requestIndex = requestIndex;
         this.callback = callback;
         this.preProceeded = preProceed ? false : null;
-        this.isEditing = isEditing;
     }
 
     public void succeeded(R result) {

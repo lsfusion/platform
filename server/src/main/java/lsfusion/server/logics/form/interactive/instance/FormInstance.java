@@ -479,7 +479,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         IncrementChangeProps environment = new IncrementChangeProps();
         environment.add(FormEntity.showOk, PropertyChange.STATIC(showOk));
         environment.add(FormEntity.isDocked, PropertyChange.STATIC(type == WindowFormType.DOCKED));
-        environment.add(FormEntity.isEmbedded, PropertyChange.STATIC(type == WindowFormType.EMBEDDED));
+        environment.add(FormEntity.isEditing, PropertyChange.STATIC(type.isEditing()));
         environment.add(FormEntity.isAdd, PropertyChange.STATIC(isAdd));
         environment.add(FormEntity.manageSession, PropertyChange.STATIC(manageSession));
         environment.add(FormEntity.isExternal, PropertyChange.STATIC(isExternal));

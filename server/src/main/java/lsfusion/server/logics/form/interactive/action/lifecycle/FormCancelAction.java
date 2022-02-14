@@ -14,7 +14,7 @@ import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import java.sql.SQLException;
 
 public class FormCancelAction extends FormFlowAction {
-    private static LP showIf = createIfProperty(new Property[] {FormEntity.manageSession, FormEntity.isAdd, FormEntity.isEmbedded}, new boolean[] {false, true, true});
+    private static LP showIf = createIfProperty(new Property[] {FormEntity.manageSession, FormEntity.isAdd, FormEntity.isEditing}, new boolean[] {false, true, true});
     private static LP readOnlyIf = createIfProperty(new Property[] {DataSession.isDataChanged}, new boolean[] {true});
 
     public FormCancelAction(BaseLogicsModule lm) {

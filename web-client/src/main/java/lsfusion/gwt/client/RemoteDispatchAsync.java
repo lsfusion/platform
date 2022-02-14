@@ -2,6 +2,7 @@ package lsfusion.gwt.client;
 
 import com.allen_sauer.gwt.log.client.Log;
 import com.google.gwt.core.client.Duration;
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import lsfusion.gwt.client.base.AsyncCallbackEx;
@@ -81,7 +82,7 @@ public abstract class RemoteDispatchAsync implements ServerMessageProvider {
         // in web there is no such mechanism, so we'll put the queued action to the very beginning of the queue
         // otherwise there might be deadlock, when, for example, between ExecuteEventAction and continueServerInvocation there was changePageSize
         long requestIndex = fillQueuedAction(action);
-        final QueuedAction queuedAction = new QueuedAction(requestIndex, callback, action instanceof GetAsyncValues, action instanceof ExecuteEventAction && ((ExecuteEventAction) action).isEditing);
+        final QueuedAction queuedAction = new QueuedAction(requestIndex, callback, action instanceof GetAsyncValues);
         if (continueInvocation) {
             q.add(0, queuedAction);
         } else {
@@ -157,7 +158,7 @@ public abstract class RemoteDispatchAsync implements ServerMessageProvider {
             long requestIndex = action.requestIndex;
 
             // when editing suspending all requests (except some actions that are marked for editing)
-            if (isEditing() && !(action.isEditing && requestIndex == getEditingRequestIndex()))
+            if (isEditing() && requestIndex > getEditingRequestIndex())
                 break;
 
             q.remove();

@@ -228,10 +228,10 @@ DESIGN interpreter {
             caption = '{eval.script.form.interpreter.caption.script}';
             NEW script {
                 caption = '{eval.script.form.interpreter.caption.options}';
-                type = CONTAINERH;
-                MOVE PROPERTY(copyScript(s)) { font = 'bold 24'; alignment = STRETCH; }
-                MOVE PROPERTY(findScript(s)) { font = 'bold 24'; alignment = STRETCH; }
-                MOVE PROPERTY(name(s)) { font = 'bold 24'; alignment = STRETCH; }
+                horizontal = TRUE;
+                MOVE PROPERTY(copyScript(s)); // { font = 'bold 24'; alignment = STRETCH; }
+                MOVE PROPERTY(findScript(s)); // { font = 'bold 24'; alignment = STRETCH; }
+                MOVE PROPERTY(name(s)); // { font = 'bold 24'; alignment = STRETCH; }
             }
             NEW execute {
                 caption = '{eval.script.form.interpreter.caption.run}';
@@ -246,11 +246,12 @@ DESIGN interpreter {
                 }
                 MOVE PROPERTY(executeScript(s)) {
                     focusable = FALSE;
+                    alignment = CENTER;
                 }
-                MOVE PROPERTY(scriptExecution(s)) { font = 'bold 24'; }
-                MOVE PROPERTY(actionBodyExecution(s)) { font = 'bold 24'; }
-                MOVE PROPERTY(formExecution(s)) { font = 'bold 24'; }
-                MOVE PROPERTY(javaActionBodyExecution(s)) { font = 'bold 24'; }
+                MOVE PROPERTY(scriptExecution(s)); // { font = 'bold 24'; }
+                MOVE PROPERTY(actionBodyExecution(s)); // { font = 'bold 24'; }
+                MOVE PROPERTY(formExecution(s)); // { font = 'bold 24'; }
+                MOVE PROPERTY(javaActionBodyExecution(s)); // { font = 'bold 24'; }
             }
             REMOVE TOOLBARSYSTEM(st);
             

@@ -142,6 +142,7 @@ public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
             case DOCKED: return GWindowFormType.DOCKED;
             case FLOAT: return GWindowFormType.FLOAT;
             case EMBEDDED: return GWindowFormType.EMBEDDED;
+            case POPUP: return GWindowFormType.POPUP;
         }
         return null;
     }
