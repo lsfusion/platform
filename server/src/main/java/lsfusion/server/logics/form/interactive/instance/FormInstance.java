@@ -195,6 +195,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
     private final boolean isSync;
     private final boolean isModal;
+    private final boolean isEditing;
 
     public boolean isSync() {
         return isSync;
@@ -225,6 +226,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                         boolean showReadOnly, Locale locale) throws SQLException, SQLHandledException {
         this.isSync = isSync;
         this.isModal = type.isModal();
+        this.isEditing = type.isEditing();
         this.checkOnOk = checkOnOk;
         this.showDrop = showDrop;
 
@@ -2662,7 +2664,7 @@ updateAsyncPropertyChanges();
     }
 
     public void formClose(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        if (manageSession && session.isStoredDataChanged()) {
+        if (manageSession && session.isStoredDataChanged() && !isEditing) {
             int result = (Integer) context.requestUserInteraction(new ConfirmClientAction("lsFusion", ThreadLocalContext.localize("{form.do.you.really.want.to.close.form}")));
             if (result != JOptionPane.YES_OPTION) {
                 return;
