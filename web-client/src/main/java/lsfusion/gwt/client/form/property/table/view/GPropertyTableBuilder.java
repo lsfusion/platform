@@ -40,19 +40,31 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
 
     public static Element renderSized(Element element, GPropertyDraw property, RenderContext renderContext) {
         boolean isTDorTH = GwtClientUtils.isTDorTH(element);
+        boolean isSimpleText = isTDorTH && property.getCellRenderer().isSimpleText(renderContext);
 
-        FlexPanel.setBaseSize(element, true, property.getValueHeightWithPadding(renderContext.getFont()), isTDorTH); // the thing is that td ignores min-height (however height in td works just like min-height)
+        boolean autoSize = property.autoSize && !isSimpleText;
+        int height = property.getValueHeightWithPadding(renderContext.getFont());
 
-        if(!(isTDorTH && property.getCellRenderer().isSimpleText(renderContext))) {
+        // the thing is that td ignores min-height (it matters only for not auto sized elements)
+        // however height in td works just like min-height, but only in Chrome
+        if(!autoSize) // it's not possible to do it for not auto sized element, since they have position absolute, and td doesn't respect their size
+            FlexPanel.setBaseSize(element, true, height, isTDorTH);
+
+        if(!isSimpleText) {
             element = wrapSized(element);
-            GwtClientUtils.setupSizedParent(element, property.autoSize);
+            GwtClientUtils.setupSizedParent(element, autoSize);
+
+            if(autoSize)
+                FlexPanel.setBaseSize(element, true, height, false);
         }
         return element;
     }
 
     public static Element getRenderSizedElement(Element element, GPropertyDraw property, UpdateContext updateContext) {
+        boolean isTDorTH = GwtClientUtils.isTDorTH(element);
+        boolean isSimpleText = isTDorTH && property.getCellRenderer().isSimpleText(updateContext);
 
-        if(!(GwtClientUtils.isTDorTH(element) && property.getCellRenderer().isSimpleText(updateContext))) // there is another unwrapping in GPropertyTableBuilder, so it also should be kept consistent
+        if(!isSimpleText) // there is another unwrapping in GPropertyTableBuilder, so it also should be kept consistent
             element = unwrapSized(element);
 
         return element;
@@ -60,13 +72,17 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
 
     public static boolean clearRenderSized(Element element, GPropertyDraw property, RenderContext renderContext) {
         boolean isTDorTH = GwtClientUtils.isTDorTH(element);
+        boolean isSimpleText = isTDorTH && property.getCellRenderer().isSimpleText(renderContext);
 
-        FlexPanel.setBaseSize(element, true, null, isTDorTH); // the thing is that td ignores min-height (however height in td works just like min-height)
+        boolean autoSize = property.autoSize && !isSimpleText;
 
-        if(!(isTDorTH && property.getCellRenderer().isSimpleText(renderContext))) {
+        if(!autoSize)
+            FlexPanel.setBaseSize(element, true, null, isTDorTH); // the thing is that td ignores min-height (however height in td works just like min-height)
+
+        if(!isSimpleText) {
             GwtClientUtils.removeAllChildren(element);
 
-            if(!property.autoSize)
+            if(!autoSize)
                 GwtClientUtils.clearFillParentElement(element);
 
             return true;
