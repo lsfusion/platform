@@ -1782,6 +1782,7 @@ expressionFriendlyPD[List<TypedParameter> context, boolean dynamic] returns [LPW
 	|	recDef=recursivePropertyDefinition[context, dynamic] { $property = $recDef.property; } 
 	|	structDef=structCreationPropertyDefinition[context, dynamic] { $property = $structDef.property; }
 	|	concatDef=concatPropertyDefinition[context, dynamic] { $property = $concatDef.property; }
+    |	jsonFormDef=jsonFormPropertyDefinition[context, dynamic] { $property = $jsonFormDef.property; }
 	|	castDef=castPropertyDefinition[context, dynamic] { $property = $castDef.property; }
 	|	sessionDef=sessionPropertyDefinition[context, dynamic] { $property = $sessionDef.property; }
 	|	signDef=signaturePropertyDefinition[context, dynamic] { $property = $signDef.property; }
@@ -2171,6 +2172,21 @@ concatPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns 
 }
 	:   'CONCAT' firstProp=propertyExpressionOrString[context] ',' list=nonEmptyPropertyExpressionList[context, dynamic]
 	;
+
+jsonFormPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property, FormEntity form, MappedForm mapped]
+@after {
+	if (inMainParseState()) {
+	    $property = self.addScriptedJSONProp($mapped); //, $plist.aliases, $plist.literals, $plist.properties
+	}
+}
+	:   'JSONX' formName=compoundID { if(inMainParseState()) { $form = self.findForm($formName.sid); } }
+         {
+             if(inMainParseState()) {
+                 $mapped = MappedForm.create($form, new ArrayList<ObjectEntity>());
+             }
+         }
+	;
+
 
 sessionPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
 @init {
