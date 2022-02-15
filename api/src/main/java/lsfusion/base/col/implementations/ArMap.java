@@ -17,6 +17,9 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 
+import static lsfusion.base.col.implementations.stored.StoredImplementationsPolicy.LIMIT;
+import static lsfusion.base.col.implementations.stored.StoredImplementationsPolicy.STORED_FLAG;
+
 public class ArMap<K, V> extends AMRevMap<K, V> {
     
     private int size;
@@ -365,8 +368,6 @@ public class ArMap<K, V> extends AMRevMap<K, V> {
         return new ArMap<>(size, keys, values);
     }
 
-    private static final int STORED_FLAG = -42;
-
     public boolean isStored() {
         return size == STORED_FLAG;
     }
@@ -387,7 +388,7 @@ public class ArMap<K, V> extends AMRevMap<K, V> {
     }
 
     private boolean needSwitchToStored(ArMap<K, V> map) {
-        return map.data == null && map.size() > LIMIT;
+        return map.data == null && !map.isStored() && map.size() > LIMIT;
     }
 
     private void switchToStored(int size, Object[] keys, Object[] values) {
@@ -396,6 +397,4 @@ public class ArMap<K, V> extends AMRevMap<K, V> {
         this.keys = new Object[]{storedMap};
         this.size = STORED_FLAG;
     }
-
-    private static final int LIMIT = 5000;
 }

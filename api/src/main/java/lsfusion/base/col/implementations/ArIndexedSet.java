@@ -15,6 +15,9 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 
+import static lsfusion.base.col.implementations.stored.StoredImplementationsPolicy.LIMIT;
+import static lsfusion.base.col.implementations.stored.StoredImplementationsPolicy.STORED_FLAG;
+
 public class ArIndexedSet<K> extends AMSet<K> {
 
     private int size;
@@ -196,8 +199,6 @@ public class ArIndexedSet<K> extends AMSet<K> {
         return new ArIndexedSet<>(size, array);
     }
     
-    private static final int STORED_FLAG = -42;
-    
     public boolean isStored() {
         return size == STORED_FLAG;
     }
@@ -218,7 +219,7 @@ public class ArIndexedSet<K> extends AMSet<K> {
     }  
     
     private static boolean needSwitchToStored(ArIndexedSet<?> set) {
-        return set.size() > LIMIT; 
+        return !set.isStored() && set.size() > LIMIT; 
     }
     
     private void switchToStored(int size, Object[] array) {
@@ -226,6 +227,4 @@ public class ArIndexedSet<K> extends AMSet<K> {
         this.array = new Object[]{storedSet};
         this.size = STORED_FLAG;
     }
-    
-    private static final int LIMIT = 5000; 
 }
