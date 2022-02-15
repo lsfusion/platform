@@ -83,6 +83,19 @@ function _select2(updateFunction) {
                     controller.changeProperty('selected', e.params.data.key, true);
             });
 
+            setTimeout(() => {
+                $('.select2-search--inline').keydown(function (e) {
+                    if (e.keyCode === 27 || e.key === 'Escape') {
+                        e.stopPropagation();
+                        element.dispatchEvent(new KeyboardEvent('keydown', {
+                            'key' : 'Escape',
+                            'keyCode': 27,
+                            'bubbles': true
+                        }));
+                    }
+                });
+            });
+
             select2Instance.on('select2:unselect', function (e) {
                 let data = e.params.data;
                 controller.changeProperty('selected', data.key == null ? data.element.key : data.key, null);
