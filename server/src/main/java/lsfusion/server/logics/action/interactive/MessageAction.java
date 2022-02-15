@@ -34,13 +34,15 @@ public class MessageAction extends SystemAction {
     }
 
     public FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
-        ObjectValue objValue = context.getSingleKeyValue();
-        showMessage(context, String.valueOf(objValue.getValue()));
+        Object value = context.getSingleKeyValue().getValue();
+        showMessage(context, value == null ? null : String.valueOf(value));
         return FlowResult.FINISH;
     }
 
     protected void showMessage(ExecutionContext<PropertyInterface> context, String message) throws SQLException, SQLHandledException {
         ClientAction action;
+        if(message == null)
+            message = "";
         if(log)
             action = new LogMessageClientAction(message, false);
         else
