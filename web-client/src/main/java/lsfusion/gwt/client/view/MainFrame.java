@@ -165,8 +165,10 @@ public class MainFrame implements EntryPoint {
     //heuristic
     //'visibilitychange' will not work, because 'focus' event is caught by editor earlier then by whole document
     //(https://stackoverflow.com/questions/28993157/visibilitychange-event-is-not-triggered-when-switching-program-window-with-altt)
+    //sourceCapabilities is for chrome, opera, edge: https://developer.mozilla.org/en-US/docs/Web/API/UIEvent/sourceCapabilities
+    //rangeParent is for firefox: http://help.dottoro.com/ljifpseq.php
     private static native boolean isSwitchedToAnotherWindow(Event event) /*-{
-        return event.relatedTarget == null && event.sourceCapabilities == null;
+        return event.relatedTarget == null && event.sourceCapabilities == null && event.rangeParent == null;
     }-*/;
 
     // it's odd, but dblclk works even when the first click was on different target
