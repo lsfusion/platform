@@ -596,7 +596,7 @@ public class GFormController implements EditManager {
         asyncResponseDispatch(new GetRemoteChanges(forceLocalEvents));
     }
 
-    private boolean formVisible = false;
+    private boolean formVisible = true;
 
     public void gainedFocus() {
         asyncResponseDispatch(new GainedFocus());
