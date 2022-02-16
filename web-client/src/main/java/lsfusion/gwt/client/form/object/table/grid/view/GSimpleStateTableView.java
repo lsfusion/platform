@@ -64,6 +64,9 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
 
         super.onBrowserEvent(event);
 
+        if(!DataGrid.checkSinkEvents(event))
+            return;
+
         form.onPropertyBrowserEvent(new EventHandler(event), getCellParent(target), getElement(),
                 handler -> {}, // no outer context
                 handler -> {}, // no edit
@@ -169,7 +172,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
     protected final static String keysFieldName = "#__key";
 
     protected void changeSimpleGroupObject(JavaScriptObject object, boolean rendered, P elementClicked) {
-        GGroupObjectValue key = toObject(object);
+        GGroupObjectValue key = getKey(object);
 
         long requestIndex;
         if(!GwtClientUtils.nullEquals(this.currentKey, key))
@@ -266,6 +269,8 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
 
     // change key can be outside view window, and can be obtained from getAsyncValues for example
     protected GGroupObjectValue getChangeKey(JavaScriptObject object) {
+        if(object == null)
+            return getCurrentKey();
         if(hasKey(object, keysFieldName))
             object = getValue(object, keysFieldName);
         return toObject(object);
@@ -347,8 +352,8 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
 
             @Override
             public void onSuccess(Pair<ArrayList<GAsync>, Boolean> result) {
-                if(result.first == null && !result.second) {
-                    if(failureCallBack != null)
+                if(result.first == null) {
+                    if(!result.second && failureCallBack != null)
                         GwtClientUtils.call(failureCallBack);
                     return;
                 }
@@ -410,6 +415,10 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         var thisObj = this;
         return {
             changeProperty: function (property, object, newValue) {
+                if(object === undefined)
+                    object = null;
+                if(newValue === undefined)
+                    newValue = true;
                 return thisObj.@GSimpleStateTableView::changeProperty(*)(property, object, newValue);
             },
             changeDateTimeProperty: function (property, object, year, month, day, hour, minute, second) {
@@ -433,9 +442,12 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             isPropertyReadOnly: function (property, object) {
                 return thisObj.@GSimpleStateTableView::isReadOnly(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(property, object);
             },
-            changeSimpleGroupObject: function (object, rendered, elementClicked) {
-                var jsObject = thisObj.@GSimpleStateTableView::fromObject(*)(thisObj.@GSimpleStateTableView::getKey(*)(object));
-                return thisObj.@GSimpleStateTableView::changeSimpleGroupObject(*)(jsObject, rendered, elementClicked);
+            changeObject: function (object, rendered, elementClicked) {
+                if(rendered === undefined)
+                    rendered = false;
+                if(elementClicked === undefined)
+                    elementClicked = null;
+                return thisObj.@GSimpleStateTableView::changeSimpleGroupObject(*)(object, rendered, elementClicked);
             },
             setDateIntervalViewFilter: function (property, pageSize, startYear, startMonth, startDay, endYear, endMonth, endDay, isDateTimeFilter) {
                 thisObj.@GSimpleStateTableView::setDateIntervalViewFilter(*)(property, pageSize, startYear, startMonth, startDay, endYear, endMonth, endDay, isDateTimeFilter);

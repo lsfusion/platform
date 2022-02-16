@@ -63,6 +63,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public boolean hasDynamicImage;
 
     public boolean autoSize;
+    public boolean boxed;
 
     // for pivoting
     public String formula;
@@ -124,6 +125,9 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public int valueWidth;
     public int valueHeight;
 
+    public int captionWidth;
+    public int captionHeight;
+
     public transient EditBindingMap editBindingMap;
     private transient PropertyRenderer renderer;
 
@@ -151,7 +155,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public boolean hide;
 
     public String customRenderFunction;
-    public String customChangeFunction;
 
     public String creationScript;
     public String creationPath;
@@ -161,6 +164,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public boolean notNull;
 
     public boolean sticky;
+
+    public boolean hasFooter;
 
     public ClientPropertyDraw() {
     }
@@ -278,6 +283,20 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return height;
     }
 
+    public Integer getCaptionWidth() {
+        if(captionWidth >= 0)
+            return captionWidth;
+
+        return null;
+    }
+
+    public Integer getCaptionHeight() {
+        if(captionHeight >= 0)
+            return captionHeight;
+
+        return null;
+    }
+
     @Override
     public double getFlex() {
         if (flex == -2) {
@@ -356,24 +375,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         }
     }
 
-    public String getEditCaption(String caption) {
-        if (caption == null) {
-            caption = this.caption;
-        }
-
-        return showChangeKey && changeKey != null
-               ? caption + " (" + getChangeKeyCaption() + ")"
-               : caption;
-    }
-    
-    private String getChangeKeyCaption() {
-        return SwingUtils.getKeyStrokeCaption(changeKey.keyStroke);
-    }
-
-    public String getEditCaption() {
-        return getEditCaption(caption);
-    }
-
     public String getNamespace() {
         return namespace;
     }
@@ -440,6 +441,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         super.customSerialize(pool, outStream);
 
         outStream.writeBoolean(autoSize);
+        outStream.writeBoolean(boxed);
 
         pool.writeString(outStream, caption);
         pool.writeString(outStream, regexp);
@@ -454,6 +456,9 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         
         outStream.writeInt(valueWidth);
         outStream.writeInt(valueHeight);
+
+        outStream.writeInt(captionWidth);
+        outStream.writeInt(captionHeight);
 
         pool.writeObject(outStream, changeKey);
         pool.writeInt(outStream, changeKeyPriority);
@@ -482,6 +487,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         super.customDeserialize(pool, inStream);
 
         autoSize = inStream.readBoolean();
+        boxed = inStream.readBoolean();
 
         caption = pool.readString(inStream);
         regexp = pool.readString(inStream);
@@ -495,6 +501,9 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         valueWidth = inStream.readInt();
         valueHeight = inStream.readInt();
+
+        captionWidth = inStream.readInt();
+        captionHeight = inStream.readInt();
 
         changeKey = pool.readObject(inStream);
         changeKeyPriority = pool.readInt(inStream);
@@ -593,7 +602,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         returnClass = ClientTypeSerializer.deserializeClientClass(inStream);
         
         customRenderFunction = pool.readString(inStream);
-        customChangeFunction = pool.readString(inStream);
 
         eventID = pool.readString(inStream);
 
@@ -631,6 +639,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         notNull = inStream.readBoolean();
 
         sticky = inStream.readBoolean();
+
+        hasFooter = inStream.readBoolean();
     }
 
     public boolean hasColumnGroupObjects() {
@@ -668,12 +678,30 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return getPropertyCaption();
     }
 
+    public String getChangeCaption(String caption) {
+        if (caption == null) {
+            caption = getCaptionOrEmpty();
+        }
+
+        return showChangeKey && changeKey != null
+                ? caption + " (" + getChangeKeyCaption() + ")"
+                : caption;
+    }
+
+    private String getChangeKeyCaption() {
+        return SwingUtils.getKeyStrokeCaption(changeKey.keyStroke);
+    }
+
+    public String getChangeCaption() {
+        return getChangeCaption(caption);
+    }
+
     public String getPropertyCaption() {
-        return caption;
+        return getCaptionOrEmpty();
     }
 
     public String getHTMLCaption() {
-        return caption == null ? null : escapeHTML(caption);
+        return escapeHTML(getCaptionOrEmpty());
     }
 
     public String getDynamicCaption(Object captionValue) {
@@ -690,10 +718,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
             return caption + " (" + getID() + ")";
 
         return getString("logics.undefined.property");
-    }
-
-    public String getFilterCaption(ClientGroupObject group) {
-        return caption + " (" + (groupObject != null ? groupObject.getCaption() : "") + ")";
     }
 
     public static final String TOOL_TIP_FORMAT =

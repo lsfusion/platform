@@ -5,7 +5,6 @@ import lsfusion.base.identity.IdentityObject;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.classes.ClientClass;
 import lsfusion.client.classes.ClientTypeSerializer;
-import lsfusion.client.form.classes.ClientClassChooser;
 import lsfusion.client.form.controller.remote.serialization.ClientIdentitySerializable;
 import lsfusion.client.form.controller.remote.serialization.ClientSerializationPool;
 
@@ -22,10 +21,7 @@ public class ClientObject extends IdentityObject implements ClientIdentitySerial
 
     public ClientClass baseClass;
 
-    public ClientClassChooser classChooser;
-
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream) throws IOException {
-        pool.serializeObject(outStream, classChooser);
     }
 
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
@@ -34,8 +30,6 @@ public class ClientObject extends IdentityObject implements ClientIdentitySerial
         caption = pool.readString(inStream);
 
         baseClass = ClientTypeSerializer.deserializeClientClass(inStream);
-
-        classChooser = pool.deserializeObject(inStream);
     }
 
     public String getCaption(){

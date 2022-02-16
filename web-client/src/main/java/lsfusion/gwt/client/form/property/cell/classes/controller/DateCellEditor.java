@@ -23,7 +23,7 @@ import lsfusion.gwt.client.view.StyleDefaults;
 import java.text.ParseException;
 import java.util.Date;
 
-public class DateCellEditor extends PopupBasedCellEditor {
+public class DateCellEditor extends PopupValueCellEditor {
 
     private static final DateTimeFormat format = GwtSharedUtils.getDefaultDateFormat(true);
 

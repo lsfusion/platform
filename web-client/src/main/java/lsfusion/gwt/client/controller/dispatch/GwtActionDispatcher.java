@@ -1,9 +1,11 @@
 package lsfusion.gwt.client.controller.dispatch;
 
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.media.client.Audio;
 import com.google.gwt.typedarrays.client.Uint8ArrayNative;
 import com.google.gwt.typedarrays.shared.ArrayBuffer;
 import com.google.gwt.typedarrays.shared.Uint8Array;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.xhr.client.XMLHttpRequest;
 import lsfusion.gwt.client.action.*;
@@ -20,6 +22,7 @@ import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.controller.remote.action.navigator.LogClientExceptionAction;
 import lsfusion.gwt.client.form.view.FormContainer;
 import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
+import lsfusion.gwt.client.navigator.window.GWindowFormType;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -390,6 +393,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
 
     private long lastCompletedRequest = -1L;
     private NativeHashMap<Long, FormContainer> asyncForms = new NativeHashMap<>();
+    private NativeHashMap<Long, Timer> openTimers = new NativeHashMap<>();
 
     public GAsyncFormController getAsyncFormController(long requestIndex) {
         return new GAsyncFormController() {
@@ -403,7 +407,6 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
                 asyncForms.put(requestIndex, container);
             }
 
-            @Override
             public boolean checkNotCompleted() {
                 return requestIndex > lastCompletedRequest;
             }
@@ -417,6 +420,36 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
             @Override
             public boolean canShowDockedModal() {
                 return GwtActionDispatcher.this.canShowDockedModal();
+            }
+
+            @Override
+            public long getEditRequestIndex() {
+                return requestIndex;
+            }
+
+            @Override
+            public void scheduleOpen(Scheduler.ScheduledCommand command) {
+                Timer openFormTimer = new Timer() {
+                    @Override
+                    public void run() {
+                        Scheduler.get().scheduleDeferred(() -> {
+                            if (openTimers.remove(requestIndex) != null) {
+                                if(checkNotCompleted())  //request is not completed yet
+                                    command.execute();
+                            } else
+                                assert !checkNotCompleted();
+                        });
+                    }
+                };
+                openFormTimer.schedule(100);
+                openTimers.put(requestIndex, openFormTimer);
+            }
+
+            @Override
+            public void cancelScheduledOpening() {
+                Timer timer = openTimers.remove(requestIndex);
+                if(timer != null)
+                    timer.cancel();
             }
         };
     }

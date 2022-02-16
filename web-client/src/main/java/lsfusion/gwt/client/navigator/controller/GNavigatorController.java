@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.navigator.controller;
 
 import com.google.gwt.dom.client.NativeEvent;
+import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.navigator.GNavigatorAction;
 import lsfusion.gwt.client.navigator.GNavigatorElement;
@@ -49,7 +50,7 @@ public abstract class GNavigatorController implements GINavigatorController {
             GNavigatorView view = views.get(entry.getKey());
             if (view != null) {
                 view.refresh(entry.getValue());
-                visibleElements.put(entry.getKey(), !entry.getValue().isEmpty());
+                visibleElements.put(entry.getKey(), !entry.getValue().isEmpty() && entry.getKey().visible);
             }
         }
         updateVisibility(visibleElements);
@@ -90,7 +91,7 @@ public abstract class GNavigatorController implements GINavigatorController {
             boolean sync = element.asyncExec == null;
             long requestIndex = formsController.executeNavigatorAction(element.canonicalName, nativeEvent, sync);
             if(!sync)
-                element.asyncExec.exec(formsController.getDispatcher().getAsyncFormController(requestIndex), formsController);
+                element.asyncExec.exec(formsController.getDispatcher().getAsyncFormController(requestIndex), formsController, nativeEvent instanceof Event ? (Event) nativeEvent : null, null, null);
         }
     }
 }

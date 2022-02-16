@@ -1,6 +1,8 @@
 package lsfusion.server.logics.action.interactive;
 
 import lsfusion.base.col.SetFact;
+import lsfusion.interop.action.ClientAction;
+import lsfusion.interop.action.LogMessageClientAction;
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.ObjectValue;
@@ -16,6 +18,7 @@ import java.sql.SQLException;
 public class MessageAction extends SystemAction {
     protected final String title;
     private boolean noWait = false;
+    private boolean log = false;
 
     public <I extends PropertyInterface> MessageAction(LocalizedString caption, String title) {
         super(caption, SetFact.singletonOrder(new PropertyInterface()));
@@ -23,23 +26,32 @@ public class MessageAction extends SystemAction {
         this.title = title;
     }
 
-    public <I extends PropertyInterface> MessageAction(LocalizedString caption, String title, boolean noWait) {
+    public <I extends PropertyInterface> MessageAction(LocalizedString caption, String title, boolean noWait, boolean log) {
         this(caption, title);
 
         this.noWait = noWait;
+        this.log = log;
     }
 
     public FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
-        ObjectValue objValue = context.getSingleKeyValue();
-        showMessage(context, objValue.getValue());
+        Object value = context.getSingleKeyValue().getValue();
+        showMessage(context, value == null ? null : String.valueOf(value));
         return FlowResult.FINISH;
     }
 
-    protected void showMessage(ExecutionContext<PropertyInterface> context, Object msgValue) throws SQLException, SQLHandledException {
+    protected void showMessage(ExecutionContext<PropertyInterface> context, String message) throws SQLException, SQLHandledException {
+        ClientAction action;
+        if(message == null)
+            message = "";
+        if(log)
+            action = new LogMessageClientAction(message, false);
+        else
+            action = new MessageClientAction(message, title);
+
         if (noWait) {
-            context.delayUserInteraction(new MessageClientAction(String.valueOf(msgValue), title));
+            context.delayUserInteraction(action);
         } else {
-            context.requestUserInteraction(new MessageClientAction(String.valueOf(msgValue), title));
+            context.requestUserInteraction(action);
         }
     }
 

@@ -27,6 +27,10 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         target.autoSize = autoSize;
     }
 
+    public void setBoxed(boolean boxed) {
+        target.boxed = boxed;
+    }
+
     public void setPanelCaptionVertical(boolean panelCaptionVertical) {
         target.panelCaptionVertical = panelCaptionVertical;
     }
@@ -96,6 +100,13 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
     }
     public void setValueWidth(int prefWidth) {
         target.valueWidth = prefWidth;
+    }
+
+    public void setCaptionHeight(int prefHeight) {
+        target.captionHeight = prefHeight;
+    }
+    public void setCaptionWidth(int prefWidth) {
+        target.captionWidth = prefWidth;
     }
 
     public void setCharHeight(int charHeight) {

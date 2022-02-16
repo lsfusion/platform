@@ -49,6 +49,11 @@ public class FormDispatchAsync extends RemoteDispatchAsync {
     }
 
     @Override
+    protected long getEditingRequestIndex() {
+        return formController.getEditingRequestIndex();
+    }
+
+    @Override
     protected boolean isClosed() {
         return formClosed;
     }

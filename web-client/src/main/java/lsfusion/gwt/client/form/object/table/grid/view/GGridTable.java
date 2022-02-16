@@ -81,11 +81,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
     private long setRequestIndex;
 
-    @Override
-    protected boolean isAutoSize() {
-        return groupObjectController.isGridAutosize();
-    }
-
     public GGridTable(GFormController iform, GGridController igroupController, GGridUserPreferences[] iuserPreferences) {
         super(iform, igroupController.groupObject, null);
 
@@ -483,8 +478,8 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
     private GridColumn insertGridColumn(int index, GPropertyDraw property, GGroupObjectValue columnKey) {
         GridColumn column = new GridColumn(property, columnKey);
-        GGridPropertyTableHeader header = new GGridPropertyTableHeader(this, null, null, column.isSticky());
-        GGridPropertyTableFooter footer = groupObject.hasFooters ? new GGridPropertyTableFooter(this, property, null, null) : null;
+        GGridPropertyTableHeader header = noHeaders ? null : new GGridPropertyTableHeader(this, null, null, column.isSticky());
+        GGridPropertyTableFooter footer = property.hasFooter ? new GGridPropertyTableFooter(this, property, null, null) : null;
 
         insertColumn(index, column, header, footer);
 
@@ -542,8 +537,11 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
     public Object getSelectedValue(GPropertyDraw property, GGroupObjectValue columnKey) {
         GridDataRecord selectedRecord = getSelectedRowValue();
-        if (selectedRecord != null)
-            return getGridColumn(getPropertyIndex(property, columnKey)).getValue(selectedRecord);
+        if (selectedRecord != null) {
+            int column = getPropertyIndex(property, columnKey);
+            if(column >= 0)
+                return getGridColumn(column).getValue(selectedRecord);
+        }
 
         return null;
     }
@@ -793,7 +791,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     }
 
     @Override
-    public void pasteData(Cell cell, Element parent, final List<List<String>> table) {
+    public void pasteData(Cell cell, TableCellElement parent, final List<List<String>> table) {
         final int tableColumns = getMaxColumnsCount(table);
         final int selectedColumn = getSelectedColumn();
         if (table.size() > 1 || tableColumns > 1) {

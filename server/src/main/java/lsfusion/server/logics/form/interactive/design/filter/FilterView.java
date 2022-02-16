@@ -1,6 +1,7 @@
 package lsfusion.server.logics.form.interactive.design.filter;
 
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
+import lsfusion.server.logics.form.interactive.design.BaseComponentView;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 
@@ -8,7 +9,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public class FilterView extends ComponentView {
+public class FilterView extends BaseComponentView {
     public PropertyDrawView property;
 
     public FilterView() {

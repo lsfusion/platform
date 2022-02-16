@@ -48,8 +48,10 @@ public abstract class StaticFormatFileClass extends FileClass<RawFileData> {
     public String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv, Type typeFrom) {
         if (typeFrom instanceof StringClass) {
             return "cast_string_to_file(" + value + ")";
-        } else if (typeFrom instanceof DynamicFormatFileClass) {
-            return "cast_from_custom_file(" + value + ")";
+        } else if (typeFrom instanceof NamedFileClass) {
+            return "cast_named_file_to_static_file(" + value + ")";
+        }else if (typeFrom instanceof DynamicFormatFileClass) {
+            return "cast_dynamic_file_to_static_file(" + value + ")";
         }
         return super.getCast(value, syntax, typeEnv, typeFrom);
     }

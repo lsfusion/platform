@@ -29,13 +29,18 @@ public class CollapsiblePanel extends CaptionPanel implements ColorThemeChangeLi
         MainFrame.addColorThemeChangeListener(this);
     }
 
-    private void toggleCollapsed() {
-        collapsed = !collapsed;
+    public void setCollapsed(boolean collapsed) {
+        this.collapsed = collapsed;
+
         collapseImage.setImagePath(collapsed ? EXPAND_IMAGE_PATH : COLLAPSE_IMAGE_PATH);
 
         for (int i = 1; i < getChildren().size(); i++) {
             getChildren().get(i).setVisible(!collapsed);
         }
+    }
+
+    private void toggleCollapsed() {
+        setCollapsed(!collapsed);
 
         if (formController != null)
             formController.setContainerCollapsed(container, collapsed);

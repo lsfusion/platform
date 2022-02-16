@@ -5,6 +5,7 @@ import lsfusion.base.file.RawFileData;
 import lsfusion.client.classes.data.ClientImageClass;
 import lsfusion.client.form.ClientFormChanges;
 import lsfusion.client.form.design.ClientComponent;
+import lsfusion.client.form.design.ClientContainer;
 import lsfusion.client.form.object.ClientCustomObjectValue;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientGroupObjectValue;
@@ -27,7 +28,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -164,6 +164,18 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
         i = 0;
         for (ClientPropertyDraw activateProperty : changes.activateProps) {
             dto.activatePropsIds[i++] = activateProperty.ID;
+        }
+
+        dto.collapseContainerIds = new int[changes.collapseContainers.size()];
+        i = 0;
+        for (ClientContainer container : changes.collapseContainers) {
+            dto.collapseContainerIds[i++] = container.ID;
+        }
+
+        dto.expandContainerIds = new int[changes.expandContainers.size()];
+        i = 0;
+        for (ClientContainer container : changes.expandContainers) {
+            dto.expandContainerIds[i++] = container.ID;
         }
 
         return dto;

@@ -323,6 +323,13 @@ public class GwtClientUtils {
             parentElement.getStyle().clearPosition();
     }
 
+    public static void setupSizedParent(Element element, boolean autoSize) {
+        if(autoSize)
+            setupPercentParent(element);
+        else
+            setupFillParent(element);
+    }
+
     public static void setupPercentParent(Element element) {
         element.getStyle().setWidth(100, Style.Unit.PCT);
         element.getStyle().setHeight(100, Style.Unit.PCT);
@@ -356,9 +363,14 @@ public class GwtClientUtils {
 
     public static void showPopupInWindow(PopupDialogPanel popup, Widget widget, int mouseX, int mouseY) {
         popup.setWidget(widget);
-        popup.show();
-        Scheduler.get().scheduleDeferred(() -> widget.getElement().focus());
 
+        showPopup(popup, mouseX, mouseY);
+
+        Scheduler.get().scheduleDeferred(() -> widget.getElement().focus());
+    }
+
+    public static void showPopup(PopupDialogPanel popup, int mouseX, int mouseY) {
+        popup.show();
         setPopupPosition(popup, mouseX, mouseY);
     }
 
@@ -576,8 +588,12 @@ public class GwtClientUtils {
 
         // flex колонки увеличиваем на нужную величину, соответственно остальные flex'ы надо уменьшить на эту величину
         double toAddFlex = delta * totalFlex / flexWidth;
-        if (greater(0.0, toAddFlex + flexes[column])) // не shrink'аем, но и левые столбцы не уменьшаются (то есть removeLeftFlex false)
+
+        double shrinkedFlex = 0.0;
+        if (greater(0.0, toAddFlex + flexes[column])) { // не shrink'аем, но и левые столбцы не уменьшаются (то есть removeLeftFlex false)
+            shrinkedFlex = toAddFlex + flexes[column];
             toAddFlex = -flexes[column];
+        }
 
         double restFlex = 0.0; // flex that wasn't added to the right flexes
         double toAddRightFlex = toAddFlex;
@@ -604,12 +620,12 @@ public class GwtClientUtils {
         if (!equals(restFlex, 0.0) && viewFixed) {
             // we can't increase / decrease right part using flexes (we're out of it they are zero already, since restflex is not zero), so we have to use prefs instead
             // assert that right flexes are zero (so moving flex width to prefs in left part won't change anything)
-            for (int i = 0; i < column; i++)
+            for (int i = 0; i <= column; i++)
                 prefs[i] += flexWidth * flexes[i] / totalFlex;
-            prefs[column] += flexWidth * ((flexes[column] + restFlex) / totalFlex);
+            prefs[column] += flexWidth * restFlex / totalFlex;
             restFlex = 0.0;
         }
-        return restFlex * flexWidth / totalFlex;
+        return (restFlex + shrinkedFlex) * flexWidth / totalFlex;
     }
 
     private static void adjustFlexesToFixedTableLayout(int viewWidth, double[] prefs, boolean[] flexes, double[] flexValues) {
@@ -632,7 +648,7 @@ public class GwtClientUtils {
     }
 
     //  prefs parameter is filled
-    public static void calculateNewFlexesForFixedTableLayout(int column, int delta, int viewWidth, double[] prefs, int[] basePrefs, boolean[] flexes) {
+    public static double calculateNewFlexesForFixedTableLayout(int column, int delta, int viewWidth, double[] prefs, int[] basePrefs, boolean[] flexes) {
         double[] flexValues = new double[prefs.length];
         double[] baseFlexValues = new double[prefs.length];
         for (int i = 0; i < prefs.length; i++) {
@@ -645,9 +661,11 @@ public class GwtClientUtils {
             }
         }
 
-        calculateNewFlexes(column, delta, viewWidth, prefs, flexValues, basePrefs, baseFlexValues, true);
+        double restDelta = calculateNewFlexes(column, delta, viewWidth, prefs, flexValues, basePrefs, baseFlexValues, true);
 
         adjustFlexesToFixedTableLayout(viewWidth, prefs, flexes, flexValues);
+
+        return restDelta;
     }
 
     //equal to BaseUtils.replaceSeparators

@@ -1,0 +1,37 @@
+
+.option-container {
+    display: flex;
+    flex-flow: row wrap;
+
+    /*background: var(--component-background-color);*/
+    cursor: pointer;
+}
+
+.option-item {
+    flex: 0 0 auto;
+    align-self: center;
+
+    /*background: var(--component-background-color);*/
+    padding: 0 3px;
+    border: var(--border-width) solid var(--component-border-color);
+    border-radius: var(--button-border-radius);
+    margin: var(--border-padding);
+
+    min-height: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.option-item:hover {
+    border: 1px solid var(--component-hover-border-color);
+    background: var(--component-hover-background-color);
+}
+
+.option-item-selected {
+    background: var(--selection-color);
+}
+
+.option-item-current {
+    border: var(--border-width) solid var(--focused-cell-border-color);
+}

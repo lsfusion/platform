@@ -16,6 +16,8 @@ public final class LayoutData {
     public boolean shrink;
     public boolean alignShrink;
 
+    public FlexPanel.FlexModifier flexModifier;
+
     public boolean isAutoSized() {
         return baseFlexBasis == null;
     }
@@ -37,4 +39,43 @@ public final class LayoutData {
         this.shrink = shrink;
         this.alignShrink = alignShrink;
     }
+
+    public double getFlex() {
+        Double modifiedFlex = getModifiedFlex();
+        if (modifiedFlex != null)
+            return modifiedFlex;
+
+        return flex;
+    }
+
+    private Double getModifiedFlex() {
+        if (flexModifier == FlexPanel.FlexModifier.COLLAPSE) {
+            return 0.0;
+        }
+        return null;
+    }
+
+    public double getBaseFlex() {
+        Double modifiedFlex = getModifiedFlex();
+        if (modifiedFlex != null)
+            return modifiedFlex;
+
+        return baseFlex;
+    }
+
+    public boolean isFlex() {
+        // we can use both baseFlex and flex
+        boolean result = getBaseFlex() > 0;
+        // falls on resize 
+//        assert result == getFlex() > 0;
+        return result;
+    }
+    
+    public Integer getFlexBasis() {
+        if (flexModifier == FlexPanel.FlexModifier.COLLAPSE) {
+            return null;
+        }
+        return flexBasis;
+    }  
+    
 }

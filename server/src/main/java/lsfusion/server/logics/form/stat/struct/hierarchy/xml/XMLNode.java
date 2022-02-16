@@ -237,7 +237,7 @@ public class XMLNode implements Node<XMLNode> {
     }
 
     public void addValue(XMLNode node, String key, boolean attr, Object value, Type type) {
-        String stringValue = type.formatXML(value);
+        String stringValue = value == null ? "" : type.formatXML(value);
         if(attr) {
             addXMLAttributeValue(node.element, key, stringValue);
         } else {

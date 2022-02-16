@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.base.resize;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.Style;
@@ -58,10 +59,6 @@ public class ResizeHandler implements Event.NativePreviewHandler {
                     helper.propagateChildResizeEvent(resizedChild.index + (resizedChild.outsideBorder ? 1 : 0), event, cursorElement);
             }
         }
-    }
-
-    public static int getAbsolutePosition(boolean vertical, Element element, boolean left) {
-        return vertical ? (left ? element.getAbsoluteTop() : element.getAbsoluteBottom()) : (left ? element.getAbsoluteLeft() : element.getAbsoluteRight());
     }
 
     public static int getEventPosition(boolean vertical, boolean main, NativeEvent event) {
@@ -155,8 +152,9 @@ public class ResizeHandler implements Event.NativePreviewHandler {
     private void resizeHeaders(int clientX) {
         int dragX = clientX - initialMouse;
         if (Math.abs(dragX) > 2) {
-            helper.resizeChild(index, dragX);
-            initialMouse = Math.max(clientX, getAbsoluteRight()); // делается max, чтобы при resize'е влево растягивание шло с момента когда курсор вернется на правый край колонки (вправо там другие проблемы)
+            double restDelta = helper.resizeChild(index, dragX);
+            initialMouse += dragX - Math.round(restDelta);
+//            initialMouse = Math.max(clientX, getAbsoluteRight()); // делается max, чтобы при resize'е влево растягивание шло с момента когда курсор вернется на правый край колонки (вправо там другие проблемы)
         }
     }
 }

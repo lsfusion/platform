@@ -46,6 +46,7 @@ public class NavigatorController implements INavigatorController {
                 view.refresh(entry.getValue());
                 SingleCDockable dockable = docks.get(view.getView());
                 if (dockable != null) {
+                    assert entry.getKey().visible; 
                     dockable.setVisible(entry.getValue().size() != 0);
                 }
             }

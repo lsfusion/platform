@@ -2,6 +2,7 @@ package lsfusion.client.form.design.view.widget;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.client.form.design.view.LayoutData;
+import lsfusion.client.form.object.table.grid.view.GridView;
 import lsfusion.interop.base.view.FlexComponent;
 import lsfusion.interop.base.view.FlexConstraints;
 
@@ -46,13 +47,13 @@ public interface Widget extends FlexComponent {
         Dimension actualSize = getPreferredSize();
         Integer flexWidth = getFlexWidth();
         Integer flexHeight = getFlexHeight();
-        return new Dimension(flexWidth != null ? (vertical == null || !vertical ? flexWidth : BaseUtils.max(flexWidth, actualSize.width)) : actualSize.width,
-                flexHeight != null ? (vertical == null || vertical ? flexHeight : BaseUtils.max(flexHeight, actualSize.height)) : actualSize.height);
+        return new Dimension(flexWidth != null ? ((vertical == null || !vertical) && !GridView.calcMaxPrefSize ? flexWidth : BaseUtils.max(flexWidth, actualSize.width)) : actualSize.width,
+                flexHeight != null ? ((vertical == null || vertical) && !GridView.calcMaxPrefSize ? flexHeight : BaseUtils.max(flexHeight, actualSize.height)) : actualSize.height);
     }
     @Override
     default FlexConstraints getFlexConstraints() {
         LayoutData layoutData = getLayoutData();
-        return new FlexConstraints(layoutData.alignment, layoutData.flex, layoutData.shrink, layoutData.alignShrink);
+        return new FlexConstraints(layoutData.alignment, layoutData.getFlex(), layoutData.shrink, layoutData.alignShrink);
     }
 
     static String toString(Widget w, String defaultToString) {

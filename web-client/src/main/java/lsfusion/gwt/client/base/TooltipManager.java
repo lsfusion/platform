@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.base;
 
 import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.*;
@@ -77,6 +78,12 @@ public class TooltipManager {
                             GwtClientUtils.setPopupPosition(tooltip, mouseX, mouseY);
                         } else {
                             tooltip = new PopupDialogPanel() {
+                                //if the previous focused element goes outside the visible area, the page will scroll to it when the tooltip is closed
+                                @Override
+                                public void setFocusedElement(Element focusedElement) {
+                                    super.setFocusedElement(null);
+                                }
+
                                 @Override
                                 protected void onAttach() {
                                     addDomHandler(ev -> tooltipFocused = true, MouseOverEvent.getType());

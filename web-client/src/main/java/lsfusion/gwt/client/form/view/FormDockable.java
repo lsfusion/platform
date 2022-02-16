@@ -1,6 +1,8 @@
 package lsfusion.gwt.client.form.view;
 
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
+import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
@@ -10,29 +12,35 @@ import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.base.view.ResizableComplexPanel;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.design.view.GFormLayout;
-import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
+import lsfusion.gwt.client.form.property.cell.controller.EndReason;
+import lsfusion.gwt.client.navigator.window.GWindowFormType;
 
 import static lsfusion.gwt.client.view.StyleDefaults.VALUE_HEIGHT;
 
-public final class FormDockable extends FormContainer<FormDockable.ContentWidget> {
+public final class FormDockable extends FormContainer {
     private TabWidget tabWidget;
     private FormDockable blockingForm; //GFormController
 
-    public FormDockable(FormsController formsController, GAsyncFormController asyncFormController, String caption, boolean async) {
-        super(formsController, asyncFormController, async);
+    protected final FormDockable.ContentWidget contentWidget;
+
+    @Override
+    public GWindowFormType getWindowType() {
+        return GWindowFormType.DOCKED;
+    }
+
+    @Override
+    protected Element getFocusedElement() {
+        return contentWidget.getElement();
+    }
+
+    public FormDockable(FormsController formsController, String caption, boolean async, Event editEvent) {
+        super(formsController, async, editEvent);
+
+        contentWidget = new ContentWidget();
 
         tabWidget = new TabWidget(caption);
         tabWidget.setBlocked(false);
         formsController.addContextMenuHandler(this);
-
-        if(async) {
-            GwtClientUtils.setThemeImage(loadingAsyncImage, imageUrl -> contentWidget.setContent(createLoadingWidget(imageUrl)), false);
-        }
-    }
-
-    @Override
-    protected ContentWidget initContentWidget() {
-        return new ContentWidget();
     }
 
     @Override
@@ -51,7 +59,7 @@ public final class FormDockable extends FormContainer<FormDockable.ContentWidget
     }
 
     @Override
-    public void hide() {
+    public void hide(EndReason editFormCloseReason) {
         formsController.removeDockable(this);
     }
 
@@ -67,16 +75,6 @@ public final class FormDockable extends FormContainer<FormDockable.ContentWidget
     public void unblock() {
         tabWidget.setBlocked(false);
         contentWidget.setBlocked(false);
-    }
-
-    public void closePressed() {
-        if(async) {
-            asyncFormController.removeAsyncForm();
-            formsController.removeDockable(this);
-            formsController.ensureTabSelected();
-        } else {
-            form.closePressed();
-        }
     }
 
     public Widget getTabWidget() {
@@ -108,7 +106,7 @@ public final class FormDockable extends FormContainer<FormDockable.ContentWidget
             }
 
             content = icontent;
-            setPercentMain(content); // we want to include paddings in content
+            setSizedMain(content, true); // we want to include paddings in content
         }
 
         private void initBlockedMask() {
@@ -162,7 +160,8 @@ public final class FormDockable extends FormContainer<FormDockable.ContentWidget
             };
             closeButton.setText(EscapeUtils.UNICODE_CROSS);
             closeButton.setStyleName("closeTabButton");
-            closeButton.setSize(VALUE_HEIGHT - 2 + "px", VALUE_HEIGHT - 2 + "px");
+            int closeTabButtonWidth = VALUE_HEIGHT - 2;
+            closeButton.setSize(VALUE_HEIGHT - 2 + "px", closeTabButtonWidth + "px");
             closeButton.getElement().getStyle().setLineHeight(VALUE_HEIGHT - 4, Style.Unit.PX);
 
             FlexPanel labelWrapper = new FlexPanel();
@@ -170,7 +169,7 @@ public final class FormDockable extends FormContainer<FormDockable.ContentWidget
             labelWrapper.add(label);
             add(labelWrapper, GFlexAlignment.CENTER);
             
-            add(closeButton, GFlexAlignment.CENTER);
+            add(closeButton, GFlexAlignment.CENTER, 0, false, closeTabButtonWidth);
 
             closeButton.addClickHandler(event -> {
                 event.stopPropagation();

@@ -24,9 +24,10 @@ public class ClientFormLayout extends PanelWidget {
         Integer width = mainContainer.getSize(false);
         Integer height = mainContainer.getSize(true);
 
-        Widget main = containerViews.get(mainContainer).getView();
+        Widget main = getMainView();
         try {
             GridView.calcMaxPrefSize = true;
+            invalidate((Component) main);
             Dimension maxPrefSize = main.getPreferredSize();
             return new Dimension(width != null ? width : maxPrefSize.width + extraHorzOffset, height != null ? height : maxPrefSize.height + extraVertOffset);
         } finally {
@@ -97,6 +98,10 @@ public class ClientFormLayout extends PanelWidget {
         enableEvents(AWTEvent.MOUSE_EVENT_MASK);
     }
 
+    public Widget getMainView() {
+        return getContainerView(mainContainer).getView();
+    }
+
     public void directProcessKeyEvent(KeyEvent e) {
         processKeyEvent(e);
     }
@@ -111,7 +116,7 @@ public class ClientFormLayout extends PanelWidget {
         if (container.tabbed) {
             containerView = new TabbedClientContainerView(form, container);
         } else {
-            containerView = new LinearClientContainerView(container);
+            containerView = new LinearClientContainerView(form, container);
         }
 
         containerViews.put(container, containerView);
@@ -130,8 +135,14 @@ public class ClientFormLayout extends PanelWidget {
         }
     }
 
+    public void updatePanels() {
+        FlexPanel.updatePanels(getMainView());
+    }
+
     public void autoShowHideContainers() { // hideEmptyContainerViews
         autoShowHideContainers(mainContainer);
+
+        updatePanels();
     }
 
     private boolean autoShowHideContainers(ClientContainer container) {

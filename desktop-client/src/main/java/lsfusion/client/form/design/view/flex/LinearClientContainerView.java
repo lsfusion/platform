@@ -1,19 +1,18 @@
 package lsfusion.client.form.design.view.flex;
 
 import lsfusion.client.base.view.ClientColorUtils;
+import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.design.ClientContainer;
 import lsfusion.client.form.design.view.AbstractClientContainerView;
 import lsfusion.client.form.design.view.CaptionPanel;
-import lsfusion.client.form.design.view.ClientContainerView;
+import lsfusion.client.form.design.view.CollapsiblePanel;
 import lsfusion.client.form.design.view.FlexPanel;
 import lsfusion.client.form.design.view.widget.Widget;
 import lsfusion.interop.base.view.FlexAlignment;
 
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class LinearClientContainerView extends AbstractClientContainerView {
 
@@ -25,9 +24,12 @@ public class LinearClientContainerView extends AbstractClientContainerView {
     protected FlexPanel[] lines;
     protected FlexPanel[] captionLines;
     protected List<AlignCaptionPanel> childrenCaptions;
+    
+    private ClientFormController formController;
 
-    public LinearClientContainerView(ClientContainer container) {
+    public LinearClientContainerView(ClientFormController formController, ClientContainer container) {
         super(container);
+        this.formController = formController;
 
         assert !container.tabbed;
 
@@ -50,7 +52,7 @@ public class LinearClientContainerView extends AbstractClientContainerView {
             for (int i = 0; i < linesCount; i++) {
                 if(alignCaptions) {
                     FlexPanel captionLine = new FlexPanel(vertical, justifyContent);
-                    panel.add((Widget) captionLine, FlexAlignment.STRETCH); // however it seems that FlexAlignment.STRETCH is also possible
+                    panel.add((Widget) captionLine, FlexAlignment.STRETCH, 0, container.getCaptionLineSize()); // however it seems that FlexAlignment.STRETCH is also possible
                     captionLines[i] = captionLine;
                 }
 
@@ -80,8 +82,13 @@ public class LinearClientContainerView extends AbstractClientContainerView {
         public FlexAlignment captionHAlignment;
     }
 
-    public void updateCaption(ClientContainer clientContainer) {
-        getCaptionPanel(clientContainer).setCaption(clientContainer.caption);
+    public void updateCaption(ClientContainer container) {
+        CaptionPanel captionPanel = getCaptionPanel(container);
+        String caption = container.caption;
+        if(captionPanel != null)
+            captionPanel.setCaption(caption);
+        else // it is possible if hasNoCaption is true, so captionPanel is not created, however dynamic caption changes may come to the client
+            assert caption == null;
     }
 
     public CaptionPanel getCaptionPanel(ClientContainer container) {
@@ -107,9 +114,9 @@ public class LinearClientContainerView extends AbstractClientContainerView {
             if (view instanceof CaptionContainerHolder) {
                 captionPanel.captionHAlignment = ((CaptionContainerHolder) view).getCaptionHAlignment();
 
-                ((CaptionContainerHolder) view).setCaptionContainer((widget, valueSizes, alignment) -> {
+                ((CaptionContainerHolder) view).setCaptionContainer((widget, captionSizes, valueSizes, alignment) -> {
                     assert vertical; // because of aligncaptions first check (isVertical())
-                    captionPanel.add(widget, alignment);
+                    captionPanel.add(widget, alignment, 0.0, captionSizes.first);
 
                     Integer baseSize = vertical ? valueSizes.second : valueSizes.first;
 
@@ -134,9 +141,14 @@ public class LinearClientContainerView extends AbstractClientContainerView {
 
     @Override
     protected FlexPanel wrapBorderImpl(ClientComponent child) {
-        ClientContainer childContainer;
-        if(child instanceof ClientContainer && (childContainer = (ClientContainer) child).caption != null)
-            return new CaptionPanel(childContainer.caption, vertical);
+        if (child instanceof ClientContainer) {
+            ClientContainer childContainer = (ClientContainer) child;
+            if (childContainer.collapsible) {
+                return new CollapsiblePanel(formController, childContainer, vertical);
+            } else if (childContainer.caption != null) {
+                return new CaptionPanel(childContainer.caption, vertical);
+            }
+        }
         return null;
     }
 

@@ -3,6 +3,7 @@ package lsfusion.server.logics.form.interactive.action.async.map;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
+import lsfusion.interop.form.WindowFormType;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.user.CustomClass;
@@ -24,23 +25,23 @@ public class AsyncMapOpenForm<T extends PropertyInterface> extends AsyncMapExec<
 
     private final boolean forbidDuplicate;
     private final boolean modal;
-    private final boolean window;
+    private final WindowFormType type;
 
     public final CustomClass propertyClass;
     public final T propertyInterface;
 
-    public AsyncMapOpenForm(FormSelector formSelector, boolean forbidDuplicate, boolean modal, boolean window, CustomClass propertyClass, T parameterInterface) {
+    public AsyncMapOpenForm(FormSelector formSelector, boolean forbidDuplicate, boolean modal, WindowFormType type, CustomClass propertyClass, T parameterInterface) {
         this.formSelector = formSelector;
         this.forbidDuplicate = forbidDuplicate;
         this.modal = modal;
-        this.window = window;
+        this.type = type;
         this.propertyClass = propertyClass;
         this.propertyInterface = parameterInterface;
         assert propertyClass == null || propertyInterface == null;
     }
 
     private <P extends PropertyInterface> AsyncMapOpenForm<P> override(P propertyInterface) {
-        return new AsyncMapOpenForm<P>(formSelector, forbidDuplicate, modal, window, propertyClass, propertyInterface);
+        return new AsyncMapOpenForm<P>(formSelector, forbidDuplicate, modal, type, propertyClass, propertyInterface);
     }
     
     @Override
@@ -73,7 +74,7 @@ public class AsyncMapOpenForm<T extends PropertyInterface> extends AsyncMapExec<
         if (mapJoin instanceof PropertyMapImplement) {
             ValueClass valueClass = ((PropertyMapImplement<?, P>) mapJoin).property.getValueClass(ClassType.tryEditPolicy);
             if(valueClass instanceof CustomClass)
-                return new AsyncMapOpenForm<>(formSelector, forbidDuplicate, modal, window, (CustomClass)valueClass, null);
+                return new AsyncMapOpenForm<>(formSelector, forbidDuplicate, modal, type, (CustomClass)valueClass, null);
             mapJoin = null;
         }
         return override((P) mapJoin);
@@ -96,7 +97,7 @@ public class AsyncMapOpenForm<T extends PropertyInterface> extends AsyncMapExec<
 
         return new AsyncOpenForm(staticForm != null ? staticForm.getCanonicalName() : null, 
                                  staticForm != null ? staticForm.getAsyncCaption() : null, 
-                                 forbidDuplicate, modal, window);
+                                 forbidDuplicate, modal, type);
     }
 
     @Override
@@ -122,6 +123,6 @@ public class AsyncMapOpenForm<T extends PropertyInterface> extends AsyncMapExec<
         else
             mergedClass = ClassFormSelector.merge(propertyClass, asyncOpenForm.propertyClass);
         
-        return new AsyncMapOpenForm<>(mergedForm, forbidDuplicate || asyncOpenForm.forbidDuplicate, modal || asyncOpenForm.modal, window || asyncOpenForm.window, mergedClass, BaseUtils.nullEquals(propertyInterface, asyncOpenForm.propertyInterface) ? propertyInterface : null);
+        return new AsyncMapOpenForm<>(mergedForm, forbidDuplicate || asyncOpenForm.forbidDuplicate, modal || asyncOpenForm.modal, type.getType() <= asyncOpenForm.type.getType() ? type : asyncOpenForm.type, mergedClass, BaseUtils.nullEquals(propertyInterface, asyncOpenForm.propertyInterface) ? propertyInterface : null);
     }
 }

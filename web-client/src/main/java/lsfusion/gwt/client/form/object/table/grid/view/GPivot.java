@@ -572,7 +572,11 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
             columnKeys.add(aggrColumn.columnKey);
         }
 
-        if(firstUpdateView == null || !firstUpdateView) { // we don't need to update server groups, since they should be already set
+        //don't reset firstUpdateView if no one column / row / inclusion is visible
+        // cols first element is GPivot.COLUMN
+        boolean isVisible = cols.length() > 1 || rows.length() > 0 || inclusions.getKeys().length() > 0;
+
+        if(isVisible && (firstUpdateView == null || !firstUpdateView)) { // we don't need to update server groups, since they should be already set
             updateRendererState(true); // will wait until server will answer us if we need to change something
             grid.changeGroups(properties, columnKeys, aggrProps, firstUpdateView != null, getGroupType(aggregatorName.toUpperCase())); // we need to do "changeListViewType" if it's firstUpdateView
             firstUpdateView = null;
@@ -2178,5 +2182,10 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
             arrayList.add(jsArray.getString(i));
         }
         return arrayList;
+    }
+
+    @Override
+    public boolean isDefaultBoxed() {
+        return false;
     }
 }

@@ -79,6 +79,11 @@ formRefresh '{action.form.refresh}'  INTERNAL  'lsfusion.server.logics.form.inte
 formOk '{action.form.ok}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.lifecycle.OkAction' () CHANGEKEY 'ctrl ENTER' CHANGEMOUSE 'DBLCLK;priority=1000;dialog=only;group=input;preview=only' IMAGE 'ok.png';
 formClose '{action.form.close}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.lifecycle.CloseAction' () CHANGEKEY 'ESCAPE' IMAGE 'close.png';
 
+formApplied ABSTRACT LIST FIRST (); 
+formApplied() + {
+    MESSAGE '{form.instance.changes.saved}' NOWAIT LOG;
+}
+
 seek '{system.seek}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.seek.SeekInternalAction' (Object);
 
 sleep '{system.sleep}'  INTERNAL  'lsfusion.server.logics.action.flow.SleepAction' (LONG);
@@ -171,6 +176,8 @@ open '{system.open.file}' (STRING[255] source)  { open(source, NULL); }
 //source file, name
 open '{system.open.file}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.open.OpenFileAction' (FILE, ISTRING[255]);
 open '{system.open.file}' (FILE source)  { open(source, NULL); }
+//source namedFile
+open '{system.open.file}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.open.OpenNamedFileAction' (NAMEDFILE);
 //source rawFile, name
 open '{system.open.file}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.open.OpenRawFileAction' (RAWFILE, ISTRING[255]);
 open '{system.open.file}' (RAWFILE source)  { open(source, NULL); }
@@ -238,6 +245,7 @@ exportHtmlFile = DATA LOCAL HTMLFILE ();
 exportJsonFile = DATA LOCAL JSONFILE ();
 exportXmlFile = DATA LOCAL XMLFILE ();
 exportTableFile = DATA LOCAL TABLEFILE ();
+exportNamedFile = DATA LOCAL NAMEDFILE ();
 exportWordLink = DATA LOCAL WORDLINK ();
 exportImageLink = DATA LOCAL IMAGELINK ();
 exportPdfLink = DATA LOCAL PDFLINK ();
@@ -258,8 +266,22 @@ importedString = DATA LOCAL BOOLEAN (STRING[10]);
 
 readFile = DATA LOCAL FILE ();
 
-getFileExtension(FILE file) = FORMULA TEXT 'get_extension($1)';
-getExtension = getFileExtension(FILE(file));
+//cast to FILE and NAMEDFILE
+file(RAWFILE rawFile, STRING extension) = FORMULA FILE 'cast_static_file_to_dynamic_file($1, $2)';
+namedFile(RAWFILE rawFile, STRING name, STRING extension) = FORMULA NAMEDFILE 'cast_static_file_to_named_file($1, $2, $3)';
+namedFile(FILE file, STRING name) = FORMULA NAMEDFILE 'cast_dynamic_file_to_named_file($1, $2)';
+
+//get name and extension
+extension(FILE file) = FORMULA TEXT 'get_extension($1)';
+name(NAMEDFILE file) = FORMULA TEXT 'get_named_file_name($1)';
+extension(NAMEDFILE file) = FORMULA TEXT 'get_named_file_extension($1)';
+
+getFileExtension(FILE file) = extension(file); //backward compatibility
+getExtension = getFileExtension(FILE(file)); //backward compatibility
+
+//change name and extension
+file(FILE file, STRING newExtension) = file(RAWFILE(file), newExtension);
+namedFile(NAMEDFILE file, STRING newName, STRING newExtension) = namedFile(RAWFILE(file), newName, newExtension);
 
 downloadFile '{system.download.file}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.DownloadFileAction' (STRING[100]); 
 
@@ -316,6 +338,7 @@ requestedHtmlFile = DATA LOCAL NESTED HTMLFILE ();
 requestedJsonFile = DATA LOCAL NESTED JSONFILE ();
 requestedXmlFile = DATA LOCAL NESTED XMLFILE ();
 requestedTableFile = DATA LOCAL NESTED TABLEFILE ();
+requestedNamedFile = DATA LOCAL NESTED NAMEDFILE ();
 requestedWordLink = DATA LOCAL NESTED WORDLINK ();
 requestedImageLink = DATA LOCAL NESTED IMAGELINK ();
 requestedPdfLink = DATA LOCAL NESTED PDFLINK ();

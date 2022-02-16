@@ -1,19 +1,21 @@
 package lsfusion.client.form.design.view;
 
-import lsfusion.client.form.design.view.widget.Widget;
-
-import java.awt.*;
-
 public class CaptionPanel extends FlexPanel {
     public CaptionPanel(String caption, boolean vertical) {
         super(vertical);
 
-        titledBorder = new TitledBorder(caption);
+        titledBorder = createBorder(caption);
 //                updateCaption();
         setBorder(titledBorder);
+        addMouseListener(titledBorder);
+        addMouseMotionListener(titledBorder);
     }
 
-    private TitledBorder titledBorder;
+    protected TitledBorder titledBorder;
+    
+    protected TitledBorder createBorder(String caption) {
+        return new TitledBorder(caption);
+    }
 
 //        @Override
 //        public boolean isValidateRoot() {

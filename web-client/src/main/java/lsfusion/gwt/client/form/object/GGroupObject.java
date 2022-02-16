@@ -53,6 +53,7 @@ public class GGroupObject implements Serializable, HasNativeSID {
     public boolean isCalendarDateTime;
     public boolean isCalendarPeriod;
 
+    public boolean hasHeaders;
     public boolean hasFooters;
 
     public GRowBackgroundReader rowBackgroundReader;
@@ -71,13 +72,13 @@ public class GGroupObject implements Serializable, HasNativeSID {
         return columnCount > 0 ? lines * columnSumWidth / columnCount : 0;
     }
 
-    public int getHeight(int lines) {
+    public int getHeight(int lines, int headerHeight) {
         if(lines == -1)
             lines = 5;
 
         return (lines * (rowMaxHeight + DataGrid.BORDER_VERT_SIZE)) +
                 + 3 * DataGrid.BORDER_VERT_SIZE // borders around grid + header border
-                ;
+                + (headerHeight >= 0 ? headerHeight : GGridPropertyTableHeader.DEFAULT_HEADER_HEIGHT);
     }
 
     public String getCaption() {

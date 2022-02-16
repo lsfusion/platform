@@ -42,6 +42,7 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
         setElement(Document.get().createDivElement());
 
         DataGrid.initSinkEvents(this);
+        DataGrid.initSinkFocusEvents(this);
 
         this.property = property;
         this.columnKey = columnKey;
@@ -79,46 +80,48 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
 
     private Widget borderWidget;
 
-    // when we don't want property value (it's content) to influence on layouting, and in particular flex - basis
-    // so we use absolute positioning for that (and not width 100%, or writing to div itself)
-    public void setStatic(ResizableMainPanel panel, boolean isProperty) { // assert that panel is resizable, panel and not resizable simple panel, since we want to append corners also to that panel (and it is not needed for it to be simple)
-        panel.setFillMain(this);
-        borderWidget = panel.getPanelWidget(); // panel
+    // assert that panel is resizable, panel and not resizable simple panel, since we want to append corners also to that panel (and it is not needed for it to be simple)
+    public SizedWidget setSized(ResizableMainPanel panel) {
+        boolean autoSize = property.autoSize;
+        if(panel != null) {
+            panel.setSizedMain(this, autoSize);
+            borderWidget = panel.getPanelWidget(); // panel
+        } else {
+            assert autoSize;
+            borderWidget = this;
+        }
 
-        setBorderStyles(isProperty);
-        setBaseSizes();
+        setBorderStyles();
+
+        Integer width;
+        Integer height;
+        if(!autoSize) {
+            assert panel != null;
+            width = property.getValueWidthWithPadding(null);
+            height = property.getValueHeightWithPadding(null);
+        } else {
+            width = property.getAutoSizeValueWidth(null);
+            height = property.getAutoSizeValueHeight(null);
+
+            if(panel != null) { // sort of optimization, in this case paddings will be calculated automatically
+                FlexPanel.setBaseSize(this, false, width, false);
+                FlexPanel.setBaseSize(this, true, height, false);
+                return new SizedWidget(borderWidget);
+            }
+        }
+
+        return new SizedWidget(borderWidget, width, height);
     }
-    // auto sized property with value
-    public void setDynamic(ResizableMainPanel panel, boolean isProperty) {
-        panel.setPercentMain(this);
-        borderWidget = panel.getPanelWidget(); // panel
 
-        setBorderStyles(isProperty);
-        setBaseSizes();
-    }
-    // auto sized action with caption
-    public void setDynamic(boolean isProperty) {
-        borderWidget = this;
-
-        setBorderStyles(isProperty);
-        setBaseSizes();
-    }
-
-    public void setBaseSizes() {
-        // if widget is wrapped into absolute positioned simple panel, we need to include paddings (since borderWidget doesn't include them)
-        boolean hasBorder = borderWidget != this;
-        // about the last parameter oppositeAndFixed, here it's tricky since we don't know where this borderWidget will be added, however it seems that all current stacks assume that they are added with STRETCH alignment
-        FlexPanel.setBaseSize(borderWidget, false, hasBorder ? property.getValueWidthWithPadding(null) : property.getValueWidth(null));
-        FlexPanel.setBaseSize(borderWidget, true, hasBorder ? property.getValueHeightWithPadding(null) : property.getValueHeight(null));
-    }
-
-    private void setBorderStyles(boolean isProperty) {
+    private void setBorderStyles() {
         // we have to set border for border element and not element itself, since absolute positioning include border INSIDE div, and default behaviour is OUTSIDE
         borderWidget.addStyleName("panelRendererValue");
-        if(isProperty)
-            borderWidget.addStyleName("propertyPanelRendererValue");
-        else
+        if(property.boxed)
+            borderWidget.addStyleName("panelRendererValueBoxed");
+        if(property.isAction())
             borderWidget.addStyleName("actionPanelRendererValue");
+        else
+            borderWidget.addStyleName("propertyPanelRendererValue");
     }
 
     @Override
@@ -131,10 +134,10 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
 
         super.onBrowserEvent(event);
 
-        if(!DataGrid.checkSinkEvents(event))
+        if(!DataGrid.checkSinkEvents(event) && !DataGrid.checkSinkFocusEvents(event))
             return;
 
-        EventHandler eventHandler = createEventHandler(event);
+        EventHandler eventHandler = new EventHandler(event);
 
         if(BrowserEvents.FOCUS.equals(event.getType())) {
             onFocus(eventHandler);
@@ -151,9 +154,11 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
                 //ctrl-c ctrl-v from excel adds \n in the end, trim() removes it
                 handler -> CopyPasteUtils.putIntoClipboard(getRenderElement()), handler -> CopyPasteUtils.getFromClipboard(handler, line -> pasteValue(line.trim())),
                 true, property.getCellRenderer().isCustomRenderer());
+
+        form.propagateFocusEvent(event);
     }
 
-    boolean isFocused;
+    private boolean isFocused;
     protected void onFocus(EventHandler handler) {
         if(isFocused)
             return;
@@ -173,8 +178,17 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
         borderWidget.removeStyleName("panelRendererValueFocused");
     }
 
-    public EventHandler createEventHandler(Event event) {
-        return new EventHandler(event);
+    public boolean isEditing;
+    @Override
+    public void startEditing() {
+        isEditing = true;
+        borderWidget.addStyleName("panelRendererValueEdited");
+    }
+
+    @Override
+    public void stopEditing() {
+        isEditing = false;
+        borderWidget.removeStyleName("panelRendererValueEdited");
     }
 
     protected abstract void onEditEvent(EventHandler handler);

@@ -205,7 +205,7 @@
             <artifactId>janino</artifactId>
         </dependency>
         <dependency>
-            <groupId>net.iryndin</groupId>
+            <groupId>com.github.spyhunter99</groupId>
             <artifactId>jdbf</artifactId>
         </dependency>
         <dependency> <!--net.iryndin(2.1) не справляется с записью dbf-->

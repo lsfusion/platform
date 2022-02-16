@@ -26,6 +26,7 @@ import lsfusion.gwt.client.form.event.GKeyInputEvent;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
+import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.property.async.GAsyncChange;
 import lsfusion.gwt.client.form.property.async.GAsyncEventExec;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
@@ -58,7 +59,6 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public String integrationSID;
     
     public String customRenderFunction;
-    public String customChangeFunction;
 
     public String toolTip;
     public boolean clearText;
@@ -80,6 +80,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public String pattern;
     public String defaultPattern;
     public GClass returnClass;
+
+    public boolean boxed = true;
 
     public GType externalChangeType;
     public Map<String, GAsyncEventExec> asyncExecMap;
@@ -107,7 +109,14 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public String askConfirmMessage;
 
     public boolean hasEditObjectAction;
-    public boolean hasChangeAction;
+    public boolean hasChangeAction; // programmatic or user
+    public boolean hasUserChangeAction() { // user
+        if(!hasChangeAction)
+            return false;
+
+        // if custom render change is the input of some type, then probably it is a programmatic change (i.e. custom renderer uses changeValue to set this value, and should not be replaced with the input)
+        return customRenderFunction == null || externalChangeType == null;
+    }
 
     public GEditBindingMap editBindingMap;
 
@@ -181,6 +190,9 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public int valueWidth = -1;
     public int valueHeight = -1;
 
+    public int captionWidth = -1;
+    public int captionHeight = -1;
+
     public boolean autoSize;
 
     public boolean panelCaptionVertical;
@@ -201,6 +213,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
     public boolean sticky;
 
+    public boolean hasFooter;
+
     // eventually gets to PropertyDrawEntity.getEventAction (which is symmetrical to this)
     public String getEventSID(Event editEvent) {
         String actionSID = null;
@@ -213,7 +227,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 //        }
         if (actionSID == null) {
             GType changeType = getChangeType();
-            actionSID = GEditBindingMap.getDefaultEventSID(editEvent, changeType == null ? null : changeType.getEditEventFilter(), hasEditObjectAction, hasChangeAction);
+            actionSID = GEditBindingMap.getDefaultEventSID(editEvent, changeType == null ? null : changeType.getEditEventFilter(), hasEditObjectAction, hasUserChangeAction());
         }
         return actionSID;
     }
@@ -271,26 +285,18 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         return type != null && baseType.getClass() == type.getClass();
     }
 
-    public String getCaptionOrEmpty() {
-        return caption == null ? "" : caption;
-    }
-
     public String getDynamicCaption(Object caption) {
         return caption == null ? "" : caption.toString().trim();
     }
 
-    public String getEditCaption(String caption) {
-        if (caption == null) {
-            caption = this.caption;
-        }
+    public String getCaption() {
+        return caption == null ? "" : caption;
+    }
 
+    public String getPanelCaption(String caption) {
         if(showChangeKey && hasKeyBinding())
             caption += " (" + getKeyBindingText() + ")";
         return caption;
-    }
-
-    public String getEditCaption() {
-        return getEditCaption(caption);
     }
 
     public String getNotEmptyCaption() {
@@ -462,12 +468,16 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public int getValueHeightWithPadding(GFont parentFont) {
         return getValueHeight(parentFont) + getCellRenderer().getHeightPadding() * 2;
     }
-    public boolean isAutoDynamicHeight() {
-        return getCellRenderer().isAutoDynamicHeight();
+    public Integer getAutoSizeValueWidth(GFont parentFont) {
+        assert autoSize;
+        if(valueWidth == -1)
+            return null;
+
+        return getValueWidth(parentFont);
     }
 
     public int getValueWidth(GFont parentFont) {
-        if (valueWidth != -1) {
+        if (valueWidth >= 0) {
             return valueWidth;
         }
 
@@ -479,12 +489,43 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         return baseType.getDefaultWidth(font, this);
     }
 
+    public Integer getCaptionWidth() {
+        if(captionWidth >= 0)
+            return captionWidth;
+
+        return null;
+    }
+
+    public Integer getCaptionHeight() {
+        if(captionHeight >= 0)
+            return captionHeight;
+
+        return null;
+    }
+
+    public Integer getHeaderCaptionHeight(GGridPropertyTable table) {
+        int headerHeight = table.getHeaderHeight();
+        if(headerHeight >= 0)
+            return headerHeight;
+
+        Integer captionHeight = getCaptionHeight();
+        return captionHeight != null ? captionHeight : -1;
+    }
+
     public Object getFormat() {
         return (baseType instanceof GObjectType ? GLongType.instance : ((GFormatType)baseType)).getFormat(pattern);
     }
 
+    public Integer getAutoSizeValueHeight(GFont parentFont) {
+        assert autoSize;
+        if(valueHeight == -1)
+            return null;
+
+        return getValueHeight(parentFont);
+    }
+
     public int getValueHeight(GFont parentFont) {
-        if (valueHeight != -1) {
+        if (valueHeight >= 0) {
             return valueHeight;
         }
 
@@ -525,6 +566,6 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
     @Override
     public boolean isAlignCaption() {
-        return !hasColumnGroupObjects() && !isAction() && !panelCaptionVertical;
+        return caption != null && !hasColumnGroupObjects() && !isAction() && !panelCaptionVertical;
     }
 }

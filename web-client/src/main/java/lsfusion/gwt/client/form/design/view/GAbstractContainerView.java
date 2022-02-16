@@ -200,13 +200,8 @@ public abstract class GAbstractContainerView {
         GFlexAlignment alignment = component.getAlignment();
         if(alignment != GFlexAlignment.STRETCH && component.isAlignShrink())
             alignment = GFlexAlignment.STRETCH; // it is wrapped (in wrapAndOverflowView) with 0 1 size and justify-content with right alignment
-        else  {
-            Integer crossSize = component.getSize(!vertical);
-            boolean isStretch = alignment == GFlexAlignment.STRETCH;
-            if(isStretch && crossSize != null && crossSize.equals(0)) // for opposite direction and stretch zero does not make any sense (it is zero by default)
-                crossSize = null;
-            FlexPanel.setBaseSize(widget, !vertical, crossSize, !isStretch);
-        }
+        else
+            panel.setOppositeSize(widget, component.getSize(!vertical), alignment);
 
         panel.add(widget, beforeIndex, alignment, component.getFlex(), component.isShrink(), component.getSize(vertical));
 

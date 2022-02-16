@@ -30,14 +30,16 @@ public class FileCellEditor extends ARequestValueCellEditor implements KeepCellE
     private static final ClientMessages messages = ClientMessages.Instance.get();
     private boolean storeName;
     private List<String> validExtensions; // null if FILE (with any extension/contenttype)
+    private boolean named;
 
     private Uploader newVersionUploader;
     private FileInfo fileInfo = new FileInfo();
     
-    public FileCellEditor(EditManager editManager, boolean storeName, List<String> validExtensions) {
+    public FileCellEditor(EditManager editManager, boolean storeName, List<String> validExtensions, boolean named) {
         super(editManager);
         this.storeName = storeName;
         this.validExtensions = validExtensions;
+        this.named = named;
     }
 
     private boolean addFilesToUploader(JsArray files, Element parent) {
@@ -76,9 +78,7 @@ public class FileCellEditor extends ARequestValueCellEditor implements KeepCellE
     public Object getValue(Element parent, Integer contextAction) {
         if(!uploaded)
             return RequestValueCellEditor.invalid;
-        ArrayList<String> fileSIDS = new ArrayList<>();
-        fileSIDS.add(fileInfo.filePrefix + "_" + fileInfo.fileName);
-        return new GFilesDTO(fileSIDS, false, storeName, validExtensions == null);
+        return new GFilesDTO(fileInfo.filePrefix + "_" + fileInfo.fileName, fileInfo.fileName, storeName, validExtensions == null, named);
     }
 
     @Override

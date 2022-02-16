@@ -645,7 +645,7 @@ changeInputMessage () {
             LOCAL extension = STRING ();
             extension() <- getWord(name(), '.', wordCount(name(), '.')) IF wordCount(name(), '.') > 1;
             attachmentName() <- left(name(), length(name()) - OVERRIDE (length(extension()) + 1), 0);
-            attachment() <- setExtension(decode(data(), 'base64'), (OVERRIDE extension(), 'dat'));
+            attachment() <- file(decode(data(), 'base64'), (OVERRIDE extension(), 'dat'));
         }
 
         IF action() = 'open' THEN {

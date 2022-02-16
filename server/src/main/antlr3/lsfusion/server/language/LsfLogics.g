@@ -830,6 +830,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|	'ATTR' { $options.setAttr(true); }
 		|   'IN' groupName=compoundID { $options.setGroupName($groupName.sid); }
 		|   'EXTID' id=stringLiteral { $options.setIntegrationSID($id.val); }
+		|   'EXTNULL' { $options.setExtNull(true); }
 		|   po=propertyDrawOrder { $options.setOrder($po.order); }
 		|   'FILTER' { $options.setFilter(true); }
 		|   'COLUMN' { $options.setPivotColumn(true); }
@@ -1150,19 +1151,20 @@ formEventsList
 @init {
 	List<ActionObjectEntity> actions = new ArrayList<>();
 	List<Object> types = new ArrayList<>();
+	List<Boolean> replaces = new ArrayList<>();
 }
 @after {
 	if (inMainParseState()) {
-		$formStatement::form.addScriptedFormEvents(actions, types, self.getVersion());
+		$formStatement::form.addScriptedFormEvents(actions, types, replaces, self.getVersion());
 	}
 }
 	:	'EVENTS'
-		decl=formEventDeclaration { actions.add($decl.action); types.add($decl.type); }
-		(',' decl=formEventDeclaration { actions.add($decl.action); types.add($decl.type); })*
+		decl=formEventDeclaration { actions.add($decl.action); types.add($decl.type); replaces.add($decl.replace); }
+		(',' decl=formEventDeclaration { actions.add($decl.action); types.add($decl.type); replaces.add($decl.replace); })*
 	;
 
 
-formEventDeclaration returns [ActionObjectEntity action, Object type]
+formEventDeclaration returns [ActionObjectEntity action, Object type, Boolean replace = null]
 @init {
     Boolean before = null;
 }
@@ -1173,9 +1175,11 @@ formEventDeclaration returns [ActionObjectEntity action, Object type]
 		|	'INIT'	 { $type = FormEventType.INIT; }
 		|	'CANCEL' { $type = FormEventType.CANCEL; }
 		|	'DROP'	 { $type = FormEventType.DROP; }
+		|	'QUERYOK'	 { $type = FormEventType.QUERYOK; }
 		|	'QUERYCLOSE'	 { $type = FormEventType.QUERYCLOSE; }
 		| 	'CHANGE' objectId=ID { $type = $objectId.text; }
 		)
+		('REPLACE' { $replace = true; } | 'NOREPLACE' { $replace = false; } )?
 		faprop=formActionObject { $action = $faprop.action; }
 	;
 
@@ -1802,7 +1806,7 @@ contextIndependentPD[List<TypedParameter> context, boolean dynamic, boolean inne
 }
 	: 	dataDef=dataPropertyDefinition[context, innerPD] { $property = $dataDef.property; $signature = $dataDef.signature; }
 	|	abstractDef=abstractPropertyDefinition[context, innerPD] { $property = $abstractDef.property; $signature = $abstractDef.signature; }
-	|	formulaProp=formulaPropertyDefinition { $property = $formulaProp.property; $signature = $formulaProp.signature; }
+	|	formulaProp=formulaPropertyDefinition[context, innerPD] { $property = $formulaProp.property; $signature = $formulaProp.signature; }
 	|	aggrDef=aggrPropertyDefinition[context, dynamic, innerPD] { $property = $aggrDef.property; $signature = $aggrDef.signature; $usedContext = $aggrDef.usedContext; }
 	|	goProp=groupObjectPropertyDefinition { $property = $goProp.property; $signature = $goProp.signature; }
 	|	reflectionDef=reflectionPropertyDefinition { $property = $reflectionDef.property; $signature = $reflectionDef.signature;  }
@@ -2237,7 +2241,7 @@ roundPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [
 	:	'ROUND' '(' expr=propertyExpression[context, dynamic] (',' scaleExpr = propertyExpression[context, dynamic] )? ')'
 	;
 
-formulaPropertyDefinition returns [LP property, List<ResolveClassSet> signature]
+formulaPropertyDefinition[List<TypedParameter> context, boolean innerPD] returns [LP property, List<ResolveClassSet> signature]
 @init {
 	String className = null;
 	boolean hasNotNullCondition = false;
@@ -2245,7 +2249,8 @@ formulaPropertyDefinition returns [LP property, List<ResolveClassSet> signature]
 @after {
 	if (inMainParseState()) {
 		$property = self.addScriptedSFProp(className, $synt.types, $synt.strings, hasNotNullCondition);
-		$signature = Collections.<ResolveClassSet>nCopies($property.listInterfaces.size(), null);
+		List<ResolveClassSet> contextParams = self.getClassesFromTypedParams(context);
+        $signature = innerPD || contextParams.isEmpty() ? Collections.<ResolveClassSet>nCopies($property.listInterfaces.size(), null) : contextParams;
 	}
 }
 	:	'FORMULA'
@@ -3150,6 +3155,7 @@ leafKeepContextActionDB[List<TypedParameter> context, boolean dynamic] returns [
 	|	importFormADB=importFormActionDefinitionBody[context, dynamic] { $action = $importFormADB.action; }
 	|	activeFormADB=activeFormActionDefinitionBody[context, dynamic] { $action = $activeFormADB.action; }
 	|	activateADB=activateActionDefinitionBody[context, dynamic] { $action = $activateADB.action; }
+	|	expandCollapseADB=expandCollapseActionDefinitionBody[context, dynamic] { $action = $expandCollapseADB.action; }
     |   externalADB=externalActionDefinitionBody[context, dynamic] { $action = $externalADB.action;}
 	|	emptyADB=emptyActionDefinitionBody[context, dynamic] { $action = $emptyADB.action; }
 	;
@@ -3319,6 +3325,8 @@ syncTypeLiteral returns [boolean val]
 windowTypeLiteral returns [WindowFormType val]
 	:	'FLOAT' { $val = WindowFormType.FLOAT; }
 	|	'DOCKED' { $val = WindowFormType.DOCKED; }
+	|	'EMBEDDED' { $val = WindowFormType.EMBEDDED; }
+	|	'POPUP' { $val = WindowFormType.POPUP; }
 	;
 
 printActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
@@ -3686,15 +3694,19 @@ confirmActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams 
 messageActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
 @init {
     boolean noWait = false;
+    boolean log = false;
 }
 @after {
 	if (inMainParseState()) {
-		$action = self.addScriptedMessageProp($pe.property, noWait);
+		$action = self.addScriptedMessageProp($pe.property, noWait, log);
 	}
 }
 	:	'MESSAGE'
 	    pe=propertyExpression[context, dynamic]
-	    (sync = syncTypeLiteral { noWait = !$sync.val; })?
+	    (
+	        sync = syncTypeLiteral { noWait = !$sync.val; }
+	    |   'LOG' {  log = true; }
+        )*
 	;
 
 asyncUpdateActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
@@ -3835,11 +3847,12 @@ inputActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams ac
 
     List<String> actionImages = new ArrayList<>();
     List<LAWithParams> actions = new ArrayList<>();
+    String customEditorFunction = null;
 }
 @after {
 	if (inMainParseState()) {
 		$action = self.addScriptedInputAProp($in.valueClass, $in.initValue, outProp, $dDB.action, $dDB.elseAction, context, newContext,
-		 assign, constraintFilter, changeProp, listProp, whereProp, actionImages, actions, assignDebugPoint, $fs.result);
+		 assign, constraintFilter, changeProp, listProp, whereProp, actionImages, actions, assignDebugPoint, $fs.result, customEditorFunction);
 	}
 }
 	:	'INPUT'
@@ -3861,6 +3874,7 @@ inputActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams ac
                 listDynamic = false;
             }
         }
+        ('CUSTOM' editFun=stringLiteral {customEditorFunction = $editFun.val;})?
 	    ('LIST' listExpr=propertyExpression[newListContext, listDynamic] { listProp = $listExpr.property; })?
         ('WHERE' whereExpr=propertyExpression[newListContext, listDynamic] { whereProp = $whereExpr.property; })?
         (acts = contextActions[newContext] { actionImages = $acts.actionImages; actions = $acts.actions; })?
@@ -3926,6 +3940,23 @@ activateActionDefinitionBody[List<TypedParameter> context, boolean dynamic] retu
 		|	'TAB' fc = formComponentID { form = $fc.form; component = $fc.component; }
 		|   'PROPERTY' fp = formPropertyID { propertyDraw = $fp.propertyDraw; }
 		)
+	;
+
+expandCollapseActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
+@init {
+    ComponentView component = null;
+    boolean collapse = true;
+}
+@after {
+	if (inMainParseState()) {
+		 $action = self.addScriptedCollapseExpandAProp(component, collapse);
+	}
+}
+	:	(	'COLLAPSE'
+		|	'EXPAND' { collapse = false; }
+		) 
+		'CONTAINER'
+		fc = formComponentID { component = $fc.component; }
 	;
 
 listActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
@@ -4858,9 +4889,11 @@ groupObjectTreeComponentSelector returns [String sid]
         |   gost=groupObjectTreeComponentSelectorType 
             { 
                 result = $gost.text;
-                // backward compatibility. USERFILTER component is removed in v5.0 
+                // backward compatibility. USERFILTER and GRIDBOX components are removed in v5.0
                 if ("USERFILTER".equals(result)) { 
                     result = "FILTERS";
+                } else if ("GRIDBOX".equals(result)) {
+                   result = "GRID";
                 }
             })
         '(' gots = groupObjectTreeSelector ')'
@@ -5454,7 +5487,7 @@ fragment INTERVAL_TYPE : 'DATE' | 'DATETIME' | 'TIME' | 'ZDATETIME';
 
 PRIMITIVE_TYPE  :	'INTEGER' | 'DOUBLE' | 'LONG' | 'BOOLEAN' | 'TBOOLEAN' | 'DATE' | 'DATETIME' | 'ZDATETIME' | 'YEAR'
                 |   'TEXT' | 'RICHTEXT' | 'HTMLTEXT' | 'TIME' | 'WORDFILE' | 'IMAGEFILE' | 'PDFFILE' | 'DBFFILE' | 'RAWFILE'
-				| 	'FILE' | 'EXCELFILE' | 'TEXTFILE' | 'CSVFILE' | 'HTMLFILE' | 'JSONFILE' | 'XMLFILE' | 'TABLEFILE'
+				| 	'FILE' | 'EXCELFILE' | 'TEXTFILE' | 'CSVFILE' | 'HTMLFILE' | 'JSONFILE' | 'XMLFILE' | 'TABLEFILE' | 'NAMEDFILE'
 				|   'WORDLINK' | 'IMAGELINK' | 'PDFLINK' | 'DBFLINK'
 				|   'RAWLINK' | 'LINK' | 'EXCELLINK' | 'TEXTLINK' | 'CSVLINK' | 'HTMLLINK' | 'JSONLINK' | 'XMLLINK' | 'TABLELINK'
 				|   ('BPSTRING' ('[' DIGITS ']')?) | ('BPISTRING' ('[' DIGITS ']')?)

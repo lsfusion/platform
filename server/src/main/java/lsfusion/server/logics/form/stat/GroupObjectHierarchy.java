@@ -131,7 +131,7 @@ public class GroupObjectHierarchy {
                     childNodes.add(childNode);
             }
 
-            if(childNodes.isEmpty() && shallowGroups.test(group))
+            if(childNodes.isEmpty() && group != null && shallowGroups.test(group))
                 return null;
 
             dependencies.put(thisNode, childNodes);

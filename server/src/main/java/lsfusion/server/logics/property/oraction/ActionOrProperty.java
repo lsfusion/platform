@@ -57,7 +57,6 @@ import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameParser;
 import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameUtils;
 
 import javax.swing.*;
-import java.awt.*;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -76,7 +75,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
     private boolean local = false;
     
     // вот отсюда идут свойства, которые отвечают за логику представлений и подставляются автоматически для PropertyDrawEntity и PropertyDrawView
-    public LocalizedString caption;
+    public LocalizedString caption; // assert not null
 
     public LocalizedString localizedToString() {
         LocalizedString result = LocalizedString.create(getSID());
@@ -145,6 +144,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
     public abstract boolean isInInterface(ImMap<T, ? extends AndClassSet> interfaceClasses, boolean isAny);
 
     public ActionOrProperty(LocalizedString caption, ImOrderSet<T> interfaces) {
+        assert caption != null;
         this.ID = BaseLogicsModule.generateStaticNewID();
         this.caption = caption;
         this.interfaces = interfaces.getSet();
@@ -280,20 +280,20 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
     }
 
     // actually protected (friend of PropertyMapImplement)
-    public ActionMapImplement<?, T> getEventAction(String eventActionSID, FormSessionScope defaultChangeEventScope, ImList<Property> viewProperties) {
+    public ActionMapImplement<?, T> getEventAction(String eventActionSID, FormSessionScope defaultChangeEventScope, ImList<Property> viewProperties, String customChangeFunction) {
         ActionMapImplement<?, T> eventAction = getExplicitEventAction(eventActionSID);
         if (eventAction != null)
             return eventAction;
 
         assert CHANGE.equals(eventActionSID) || EDIT_OBJECT.equals(eventActionSID); // explicit event actions can be also CONTEXTMENU
-        return getDefaultEventAction(eventActionSID, defaultChangeEventScope, viewProperties);
+        return getDefaultEventAction(eventActionSID, defaultChangeEventScope, viewProperties, customChangeFunction);
     }
 
     public ActionMapImplement<?, T> getExplicitEventAction(String eventActionSID) {
         return getEventActions().get(eventActionSID);
     }
 
-    public abstract ActionMapImplement<?, T> getDefaultEventAction(String eventActionSID, FormSessionScope defaultChangeEventScope, ImList<Property> viewProperties);
+    public abstract ActionMapImplement<?, T> getDefaultEventAction(String eventActionSID, FormSessionScope defaultChangeEventScope, ImList<Property> viewProperties, String customChangeFunction);
 
     public boolean checkEquals() {
         return this instanceof Property;
@@ -617,6 +617,8 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         private int charWidth;
         private Integer valueWidth;
         private Integer valueHeight;
+        private Integer captionWidth;
+        private Integer captionHeight;
         private Boolean valueFlex;
 
         // свойства, но пока реализовано как для всех
@@ -664,7 +666,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
             entity.shouldBeLast = BaseUtils.nvl(shouldBeLast, false);
             entity.viewType = viewType;
             entity.customRenderFunction = customRenderFunction;
-            entity.customEditorFunction = customEditorFunction;
+            entity.customChangeFunction = customEditorFunction;
             entity.askConfirm = BaseUtils.nvl(askConfirm, false);
             entity.askConfirmMessage = askConfirmMessage;
             entity.eventID = eventID;
@@ -688,6 +690,10 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
                 propertyView.setValueWidth(valueWidth);
             if(propertyView.valueHeight == null)
                 propertyView.setValueHeight(valueHeight);
+            if(propertyView.captionWidth == null)
+                propertyView.setCaptionWidth(captionWidth);
+            if(propertyView.captionHeight == null)
+                propertyView.setCaptionHeight(captionHeight);
             if (propertyView.design.getImage() == null && imagePath != null) {
                 propertyView.design.setImage(imagePath);
             }
@@ -763,8 +769,6 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
                 setViewType(options.viewType);
             if (customRenderFunction == null)
                 setCustomRenderFunction(options.customRenderFunction);
-            if (customEditorFunction == null)
-                setCustomEditorFunction(options.customEditorFunction);
             if(pivotOptions == null)
                 setPivotOptions(options.pivotOptions);
             if(sticky == null)

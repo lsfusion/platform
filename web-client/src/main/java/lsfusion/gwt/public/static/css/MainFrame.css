@@ -267,17 +267,23 @@ input[type=checkbox]:focus {
 }
 
 .panelRendererValue {
-    background: var(--component-background-color);
-    border: 1px solid var(--component-border-color); /* should correspond to the result in ActionOrPropertyValue.setBaseSize */
     margin: var(--border-padding);
 }
 
+.panelRendererValueBoxed {
+    background: var(--component-background-color);
+    border: 1px solid var(--component-border-color); /* should correspond to the result in ActionOrPropertyValue.setBaseSize */
+}
+
 .propertyPanelRendererValue {
+}
+
+.propertyPanelRendererValue.panelRendererValueBoxed {
     border-radius: var(--textfield-border-radius);
     overflow: hidden; /* to hide inner corners */
 }
 
-.actionPanelRendererValue {
+.actionPanelRendererValue.panelRendererValueBoxed {
     border-radius: var(--button-border-radius);
 }
 
@@ -287,12 +293,18 @@ button {
     border: 1px solid var(--component-border-color); /* should correspond to the result in ActionOrPropertyValue.setBaseSize */
 }
 
-.panelRendererValueFocused, button:focus {
+.panelRendererValueEdited {
+}
+
+.panelRendererValueFocused.panelRendererValueBoxed:not(.panelRendererValueEdited), button:focus {
     background-color: var(--selection-color);
+}
+
+.panelRendererValueFocused.panelRendererValueBoxed, button:focus {
     border: 1px solid var(--focus-color);
 }
 
-.panelRendererValue:hover:not(.panelRendererValueFocused), button:hover:not(focus) { /* we want focus to have higher priority than hover*/
+.panelRendererValueBoxed:hover:not(.panelRendererValueFocused), button:hover:not(focus) { /* we want focus to have higher priority than hover*/
     border: 1px solid var(--component-hover-border-color);
 }
 
@@ -345,7 +357,7 @@ button {
 }
 .captionPanelLegend {
     white-space: nowrap;
-    background-color: var(--background-color);
+    /*background-color: var(--background-color);*/
     color: var(--caption-panel-legend-color);
 }
 
@@ -355,28 +367,28 @@ button {
 }
 
 .notEmptyCaptionPanelLegend {
-    margin-left: 4px;
-    margin-right: 4px;
+    /*margin-left: 4px;*/
+    /*margin-right: 4px;*/
 
     padding-left: 4px;
     padding-right: 4px;
 }
 
 .captionCenteredLine {
-    position: absolute;
-    top : 50%;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    z-index: -1;
+    /*position: absolute;*/
+    /*top : 50%;*/
+    /*bottom: 0;*/
+    /*left: 0;*/
+    /*right: 0;*/
+    /*z-index: -1;*/
 
     border-top: 1px solid var(--panel-border-color);
 }
 
 .collapsePanelImage {
     cursor: default;
-    margin-top: var(--border-padding);
-    background: var(--background-color);
+    /*margin-top: var(--border-padding);*/
+    /*background: var(--background-color);*/
 }
 
 /* ------------ Navigator windows  ------------ */
@@ -452,10 +464,20 @@ button {
     margin-left: var(--border-padding);
 }
 
+/* mimicry of propertyPanelRendererValue / panelRendererValue, CELL_HORIZONTAL_PADDING (textbasedCellRenderer) */
 .userFilterSelector {
-    cursor: default;
-    padding: 2px;
-    color: var(--text-color); /* overrides .gwt-TextBox-readonly style */
+    cursor : default;
+    background: var(--component-background-color);
+    border: 1px solid var(--component-border-color);
+    margin: var(--border-padding);
+    border-radius: var(--textfield-border-radius);
+
+    padding-left: 3px;
+    padding-right: 3px;
+
+    /* aligning text vertically (the other way with line-height) */
+    display : flex;
+    align-items : center;
 }
 
 .userFilterNegationCheckBox input {
@@ -625,7 +647,7 @@ button {
 
 /* ------------ Leaflet components  ------------ */
 .leaflet-container {
-    border: 1px solid var(--component-border-color);
+    /*border: 1px solid var(--component-border-color);*/
 }
 
 .leaflet-popup-content-wrapper, .leaflet-popup-tip {
@@ -709,6 +731,23 @@ button {
 
 .gridContainerPanel{
     margin: var(--border-padding);
+}
+
+.gridContainerPanelBoxed {
+    border: 1px solid var(--component-border-color);
+    border-radius: var(--table-border-radius);
+
+    background: var(--component-background-color);
+}
+
+.gridContainerPanelFocused {
+}
+.gridContainerPanelBoxed.gridContainerPanelFocused {
+    /*background-color: var(--selection-color);*/
+    border: 1px solid var(--focus-color);
+}
+.gridContainerPanelBoxed:hover:not(.gridContainerPanelFocused) { /* we want focus to have higher priority than hover*/
+    border: 1px solid var(--component-hover-border-color);
 }
 
 .gridToolbarContainerPanel {

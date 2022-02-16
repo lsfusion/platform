@@ -105,6 +105,7 @@ public final class ClassCanonicalNameUtils {
         put("JSONFILE", JSONFileClass.get());
         put("XMLFILE", XMLClass.get());
         put("TABLEFILE", TableClass.get());
+        put("NAMEDFILE", NamedFileClass.instance);
         put("WORDLINK", WordLinkClass.get(false));
         put("IMAGELINK", ImageLinkClass.get(false));
         put("PDFLINK", PDFLinkClass.get(false));
@@ -180,6 +181,7 @@ public final class ClassCanonicalNameUtils {
         put("JSONFILE", JSONFileClass.get());
         put("XMLFILE", XMLClass.get());
         put("TABLEFILE", TableClass.get());
+        put("NAMEDFILE", NamedFileClass.instance);
         put("WORDLINK", WordLinkClass.get(false));
         put("IMAGELINK", ImageLinkClass.get(false));
         put("PDFLINK", PDFLinkClass.get(false));

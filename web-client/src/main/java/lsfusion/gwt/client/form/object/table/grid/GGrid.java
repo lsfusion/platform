@@ -3,6 +3,7 @@ package lsfusion.gwt.client.form.object.table.grid;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.object.GGroupObject;
+import lsfusion.gwt.client.form.object.table.grid.view.GTableView;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTableHeader;
 
 public class GGrid extends GComponent {
@@ -17,6 +18,8 @@ public class GGrid extends GComponent {
     public int lineWidth;
     public int lineHeight;
 
+    public Boolean boxed;
+
     @Override
     protected Integer getDefaultWidth() {
         return groupObject.getWidth(lineWidth);
@@ -24,6 +27,13 @@ public class GGrid extends GComponent {
 
     @Override
     protected Integer getDefaultHeight() {
-        return groupObject.getHeight(lineHeight) + (headerHeight >= 0 ? headerHeight : GGridPropertyTableHeader.DEFAULT_HEADER_HEIGHT);
+        return groupObject.getHeight(lineHeight, headerHeight);
+    }
+
+    public boolean isBoxed(GTableView table) {
+        if(boxed != null)
+            return boxed;
+
+        return table.isDefaultBoxed();
     }
 }

@@ -1,13 +1,14 @@
 package lsfusion.server.logics.form.interactive.design.object;
 
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
+import lsfusion.server.logics.form.interactive.design.BaseComponentView;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public class ToolbarView extends ComponentView {
+public class ToolbarView extends BaseComponentView {
     public boolean visible = true;
 
     public boolean showCountRows = true;

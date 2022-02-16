@@ -85,7 +85,7 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
                 (result, commitReason) -> acceptCommit(result, commitReason.equals(CommitReason.ENTERPRESSED)),
                 onCancel,
                 this,
-                ServerResponse.VALUES);
+                ServerResponse.VALUES, null);
     }
     
     private void acceptCommit(GUserInputResult result, boolean enterPressed) {
@@ -105,13 +105,6 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
     @Override
     public boolean isPropertyReadOnly() {
         return false;
-    }
-
-    @Override
-    protected void onBlur(EventHandler handler) {
-        form.previewBlurEvent(handler.event);
-
-        super.onBlur(handler);
     }
 
     public void setApplied(boolean applied) {

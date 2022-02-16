@@ -5,6 +5,7 @@ import com.allen_sauer.gwt.dnd.client.util.Location;
 import com.allen_sauer.gwt.dnd.client.util.WidgetLocation;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
+import lsfusion.gwt.client.base.Dimension;
 import lsfusion.gwt.client.base.TooltipManager;
 
 import static lsfusion.gwt.client.base.view.ResizableWindow.Direction.*;
@@ -86,6 +87,11 @@ public class ResizableWindow extends Composite {
         this.innerContentWidget = innerContentWidget;
         contentWidget.clear();
         contentWidget.add(innerContentWidget);
+    }
+
+    public void setInnerContentSize(Dimension size) {
+        innerContentWidget.setWidth(size.width + "px");
+        innerContentWidget.setHeight(size.height + "px");
     }
 
     private void initLayout() {

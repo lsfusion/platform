@@ -63,6 +63,7 @@ public class AnyValuePropertyHolder {
     private final LP jsonFileProperty;
     private final LP xmlFileProperty;
     private final LP tableFileProperty;
+    private final LP namedFileProperty;
     private final LP wordLinkProperty;
     private final LP imageLinkProperty;
     private final LP pdfLinkProperty;
@@ -83,7 +84,7 @@ public class AnyValuePropertyHolder {
                                   LP<?> logicalProperty, LP<?> tLogicalProperty, LP<?> dateProperty, LP<?> timeProperty, LP<?> colorProperty, LP<?> jsonProperty,
                                   LP<?> wordFileProperty, LP<?> imageFileProperty, LP<?> pdfFileProperty, LP<?> dbfFileProperty,
                                   LP<?> rawFileProperty, LP<?> customFileProperty, LP<?> excelFileProperty, LP<?> textFileProperty, LP<?> csvFileProperty,
-                                  LP<?> htmlFileProperty, LP<?> jsonFileProperty, LP<?> xmlFileProperty, LP<?> tableFileProperty,
+                                  LP<?> htmlFileProperty, LP<?> jsonFileProperty, LP<?> xmlFileProperty, LP<?> tableFileProperty, LP<?> namedFileProperty,
                                   LP<?> wordLinkProperty, LP<?> imageLinkProperty, LP<?> pdfLinkProperty, LP<?> dbfLinkProperty, LP<?> rawLinkProperty,
                                   LP<?> customLinkProperty, LP<?> excelLinkProperty, LP<?> textLinkProperty, LP<?> csvLinkProperty,
                                   LP<?> htmlLinkProperty, LP<?> jsonLinkProperty, LP<?> xmlLinkProperty, LP<?> tableLinkProperty) {
@@ -123,6 +124,7 @@ public class AnyValuePropertyHolder {
                 && jsonFileProperty.property.getType() == JSONFileClass.get()
                 && xmlFileProperty.property.getType() == XMLClass.get()
                 && tableFileProperty.property.getType() == TableClass.get()
+                && namedFileProperty.property.getType() == NamedFileClass.instance
                 && wordLinkProperty.property.getType() == WordLinkClass.get(false)
                 && imageLinkProperty.property.getType() == ImageLinkClass.get(false)
                 && pdfLinkProperty.property.getType() == PDFLinkClass.get(false)
@@ -174,6 +176,7 @@ public class AnyValuePropertyHolder {
         this.jsonFileProperty = jsonFileProperty;
         this.xmlFileProperty = xmlFileProperty;
         this.tableFileProperty = tableFileProperty;
+        this.namedFileProperty = namedFileProperty;
         this.wordLinkProperty = wordLinkProperty;
         this.imageLinkProperty = imageLinkProperty;
         this.pdfLinkProperty = pdfLinkProperty;
@@ -243,6 +246,8 @@ public class AnyValuePropertyHolder {
             return dbfFileProperty;
         } else if (valueType instanceof CustomStaticFormatFileClass) {
             return rawFileProperty;
+        }else if (valueType instanceof NamedFileClass) {
+            return namedFileProperty;
         } else if (valueType instanceof DynamicFormatFileClass) {
             return customFileProperty;
         } else if (valueType instanceof ExcelClass) {
@@ -299,7 +304,7 @@ public class AnyValuePropertyHolder {
         return SetFact.toOrderExclSet(
                 // files
                 customFileProperty, rawFileProperty, wordFileProperty, imageFileProperty, pdfFileProperty, dbfFileProperty, excelFileProperty,
-                textFileProperty, csvFileProperty, htmlFileProperty, jsonFileProperty, xmlFileProperty, tableFileProperty,
+                textFileProperty, csvFileProperty, htmlFileProperty, jsonFileProperty, xmlFileProperty, tableFileProperty, namedFileProperty,
                 // strings
                 textProperty, richTextProperty, htmlTextProperty, stringProperty, bpStringProperty,
                 // numbers

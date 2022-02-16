@@ -67,10 +67,6 @@ public class GGridController extends GAbstractTableController {
         return groupObject.mapTileProvider;
     }
 
-    public boolean isGridAutosize() {
-        return groupObject.grid.autoSize;
-    }
-
     public GGridController(GFormController iformController, GGroupObject groupObject, GGridUserPreferences[] userPreferences) {
         super(iformController, groupObject.toolbar, isList(groupObject));
         this.groupObject = groupObject;
@@ -203,7 +199,7 @@ public class GGridController extends GAbstractTableController {
         if (this.table != null)
             this.table.onClear();
 
-        changeGridView(table.getThisWidget());
+        changeGridView(table.getThisWidget(), groupObject.grid.isBoxed(table));
         table.onRender();
         this.table = table;
         updateSettingsButton();

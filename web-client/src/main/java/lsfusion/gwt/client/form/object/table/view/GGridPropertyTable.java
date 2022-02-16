@@ -72,12 +72,15 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
 
     protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Object>> cellImages = new NativeSIDMap<>();
 
+    public static String getPropertyCaption(GPropertyDraw property) {
+        return getPropertyCaption(null, property, null);
+    }
     public static String getPropertyCaption(NativeHashMap<GGroupObjectValue, Object> propCaptions, GPropertyDraw property, GGroupObjectValue columnKey) {
         String caption;
         if (propCaptions != null)
             caption = property.getDynamicCaption(propCaptions.get(columnKey));
         else
-            caption = property.getCaptionOrEmpty();
+            caption = property.getCaption();
         return caption;
     }
 
@@ -95,52 +98,50 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
 
     protected int preferredWidth;
 
-    public GGridPropertyTable(GFormController iform, GGroupObject iGroupObject, GFont font) {
-        super(iform, iGroupObject, getDefaultStyle(), false, !iGroupObject.hasFooters, false);
+    public GGridPropertyTable(GFormController form, GGroupObject groupObject, GFont font) {
+        super(form, groupObject, getDefaultStyle(), !groupObject.hasHeaders, !groupObject.hasFooters, false);
         
         this.font = font;
 
         setTableBuilder(new GGridPropertyTableBuilder<T>(this));
 
-        if(groupObject != null) {
-            // ADD FILTER
-            addFilterBinding(new GKeyInputEvent(ADD_USER_FILTER_KEY_STROKE),
-                    event -> getGroupController().addFilter(event));
-            // REPLACE FILTER
-            addFilterBinding(new GKeyInputEvent(REPLACE_USER_FILTER_KEY_STROKE),
-                    event -> getGroupController().replaceFilter(event));
-            // REMOVE FILTERS
-            GFormController.BindingExec removeFilters = event -> getGroupController().resetFilters();
-            addFilterBinding(new GKeyInputEvent(REMOVE_USER_FILTERS_KEY_STROKE),
-                    removeFilters);
-            addFilterBinding(nativeEvent -> {
-                        if (GKeyStroke.isEscapeKeyEvent(nativeEvent) && GKeyStroke.isPlainKeyEvent(nativeEvent)) {
-                            GAbstractTableController goController = getGroupController();
-                            return goController.filter != null && goController.filter.hasConditions();
-                        }
-                        return false;
-                    }, removeFilters);
-            // AUTO FILTER
-            addFilterBinding(GKeyStroke::isPossibleStartFilteringEvent,
-                    event -> {
-                    if (useQuickSearchInsteadOfQuickFilter()) {
-                        quickSearch(event);
-                    } else {
-                        GPropertyDraw filterProperty = null;
-                        GGroupObjectValue filterColumnKey = null;
-                        GPropertyDraw currentProperty = getSelectedProperty();
-                        if(currentProperty != null && currentProperty.quickFilterProperty != null) {
-                            filterProperty = currentProperty.quickFilterProperty;
-                            filterColumnKey = GGroupObjectValue.EMPTY;
-                            if(currentProperty.columnGroupObjects != null && filterProperty.columnGroupObjects != null && currentProperty.columnGroupObjects.equals(filterProperty.columnGroupObjects)) {
-                                filterColumnKey = getSelectedColumnKey();
-                            }
-                        }
-
-                        quickFilter(event, filterProperty, filterColumnKey);
+        // ADD FILTER
+        addFilterBinding(new GKeyInputEvent(ADD_USER_FILTER_KEY_STROKE),
+                event -> getGroupController().addFilter(event));
+        // REPLACE FILTER
+        addFilterBinding(new GKeyInputEvent(REPLACE_USER_FILTER_KEY_STROKE),
+                event -> getGroupController().replaceFilter(event));
+        // REMOVE FILTERS
+        GFormController.BindingExec removeFilters = event -> getGroupController().resetFilters();
+        addFilterBinding(new GKeyInputEvent(REMOVE_USER_FILTERS_KEY_STROKE),
+                removeFilters);
+        addFilterBinding(nativeEvent -> {
+                    if (GKeyStroke.isEscapeKeyEvent(nativeEvent) && GKeyStroke.isPlainKeyEvent(nativeEvent)) {
+                        GAbstractTableController goController = getGroupController();
+                        return goController.filter != null && goController.filter.hasConditions();
                     }
-                });
-        }
+                    return false;
+                }, removeFilters);
+        // AUTO FILTER
+        addFilterBinding(GKeyStroke::isPossibleStartFilteringEvent,
+                event -> {
+                if (useQuickSearchInsteadOfQuickFilter()) {
+                    quickSearch(event);
+                } else {
+                    GPropertyDraw filterProperty = null;
+                    GGroupObjectValue filterColumnKey = null;
+                    GPropertyDraw currentProperty = getSelectedProperty();
+                    if(currentProperty != null && currentProperty.quickFilterProperty != null) {
+                        filterProperty = currentProperty.quickFilterProperty;
+                        filterColumnKey = GGroupObjectValue.EMPTY;
+                        if(currentProperty.columnGroupObjects != null && filterProperty.columnGroupObjects != null && currentProperty.columnGroupObjects.equals(filterProperty.columnGroupObjects)) {
+                            filterColumnKey = getSelectedColumnKey();
+                        }
+                    }
+
+                    quickFilter(event, filterProperty, filterColumnKey);
+                }
+            });
         GwtClientUtils.setZeroZIndex(getElement());
     }
 
@@ -157,8 +158,8 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         }
 
         @Override
-        public void resizeChild(int index, int delta) {
-            resizeColumn(index, delta);
+        public double resizeChild(int index, int delta) {
+            return resizeColumn(index, delta);
         }
 
         @Override
@@ -197,10 +198,6 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         return new Cell(getSelectedRow(), column, getColumn(column), getSelectedRowValue());
     }
 
-    protected boolean isAutoSize() {
-        return false;
-    }
-
     public int getAutoSize() {
         return getTableBodyElement().getOffsetHeight();
     }
@@ -232,18 +229,6 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     protected boolean previewEvent(Element target, Event event) {
         SmartScheduler.getInstance().flush();
         return form.previewEvent(target, event);
-    }
-
-    @Override
-    protected void onFocus() {
-        super.onFocus();
-    }
-
-    @Override
-    protected void onBlur(Event event) {
-        form.previewBlurEvent(event);
-
-        super.onBlur(event);
     }
 
     public GPropertyDraw getSelectedProperty() {
@@ -388,16 +373,18 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         setMinimumTableWidth(totalPref, com.google.gwt.dom.client.Style.Unit.PX);
     }
 
-    public void resizeColumn(int column, int delta) {
+    public double resizeColumn(int column, int delta) {
 //        int body = ;
         int viewWidth = getViewportWidth() - 1; // непонятно откуда этот один пиксель берется (судя по всему padding)
-        GwtClientUtils.calculateNewFlexesForFixedTableLayout(column, delta, viewWidth, prefs, basePrefs, flexes);
+        double restDelta = GwtClientUtils.calculateNewFlexesForFixedTableLayout(column, delta, viewWidth, prefs, basePrefs, flexes);
         for (int i = 0; i < prefs.length; i++)
             setUserWidth(i, (int) Math.round(prefs[i]));
         updateLayoutWidthColumns();
 
         widthsChanged();
         onResize();
+
+        return restDelta;
     }
 
     protected abstract void setUserWidth(GPropertyDraw property, Integer value);
@@ -455,10 +442,13 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     protected void updatePropertyHeader(GGroupObjectValue columnKey, GPropertyDraw property, int index) {
         String columnCaption = getPropertyCaption(property, columnKey);
         GGridPropertyTableHeader header = getGridHeader(index);
-        header.setCaption(columnCaption, property.notNull, property.hasChangeAction);
-        header.setPaths(property.path, property.creationPath);
-        header.setToolTip(property.getTooltipText(columnCaption));
-        header.setHeaderHeight(getHeaderHeight());
+        if(header != null) {
+            header.setCaption(columnCaption, property.notNull, property.hasChangeAction);
+            header.setPaths(property.path, property.creationPath);
+            header.setToolTip(property.getTooltipText(columnCaption));
+            header.setHeaderHeight(property.getHeaderCaptionHeight(this));
+        } else
+            assert columnCaption == null || columnCaption.isEmpty();
     }
 
     protected void updatePropertyFooter(int index) {
@@ -492,9 +482,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         return propFooters != null ? propFooters.get(columnKey) : null;
     }
 
-    protected int getHeaderHeight() {
-        return 0;
-    }
+    public abstract int getHeaderHeight();
 
     protected String getUserCaption(GPropertyDraw propertyDraw) {
         return null;
@@ -516,7 +504,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         return getColumnPropertyDraw(i).getValueWidthWithPadding(font);
     }
 
-    public <C> void onBrowserEvent(Cell cell, Event event, Column<T, C> column, Element parent) {
+    public <C> void onBrowserEvent(Cell cell, Event event, Column<T, C> column, TableCellElement parent) {
         form.onPropertyBrowserEvent(new EventHandler(event), parent, getTableDataFocusElement(),
                 handler -> selectionHandler.onCellBefore(handler, cell, rowChanged -> isChangeOnSingleClick(cell, (Boolean) rowChanged)),
                 handler -> column.onEditEvent(handler, cell, parent),
@@ -526,7 +514,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     }
 
     @Override
-    public void pasteData(Cell cell, Element parent, List<List<String>> table) {
+    public void pasteData(Cell cell, TableCellElement parent, List<List<String>> table) {
         if (!table.isEmpty() && !table.get(0).isEmpty()) {
             form.pasteValue(getEditContext(cell, parent), table.get(0).get(0));
         }
@@ -541,7 +529,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         protected abstract Object getValue(GPropertyDraw property, T record);
 
         @Override
-        public void onEditEvent(EventHandler handler, Cell editCell, Element editCellParent) {
+        public void onEditEvent(EventHandler handler, Cell editCell, TableCellElement editCellParent) {
             GGridPropertyTable.this.onEditEvent(handler, false, editCell, editCellParent);
         }
 

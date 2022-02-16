@@ -47,6 +47,7 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
 
     public LP currentAuthToken;
     public LP secret;
+    public LP resultAuthToken;
 
     public LP hostnameComputer;
     public LP computerHostname;
@@ -160,6 +161,7 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
         calculatedHash = findProperty("calculatedHash[]");
 
         secret = findProperty("secret[]");
+        resultAuthToken = findProperty("resultAuthToken[]");
 
         useLDAP = findProperty("useLDAP[]");
         serverLDAP = findProperty("serverLDAP[]");

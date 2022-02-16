@@ -18,8 +18,6 @@ public class ObjectView extends IdentityObject implements ServerIdentitySerializ
     
     private GroupObjectView groupObject;
 
-    public ClassChooserView classChooser;
-
     public ObjectView() {
     }
 
@@ -28,8 +26,6 @@ public class ObjectView extends IdentityObject implements ServerIdentitySerializ
 
         this.entity = entity;
         this.groupObject = groupTo;
-
-        classChooser = new ClassChooserView(idGen.idShift(), this.entity, this);
     }
 
     public LocalizedString getCaption() {
@@ -41,16 +37,12 @@ public class ObjectView extends IdentityObject implements ServerIdentitySerializ
         pool.writeString(outStream, ThreadLocalContext.localize(entity.caption));
 
         entity.baseClass.serialize(outStream);
-        pool.serializeObject(outStream, classChooser);
     }
 
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
-        classChooser = pool.deserializeObject(inStream);
-
         entity = pool.context.entity.getObject(ID);
     }
 
     public void finalizeAroundInit() {
-        classChooser.finalizeAroundInit();
     }
 }

@@ -30,7 +30,6 @@ import lsfusion.gwt.client.form.object.table.view.GGridPropertyTableHeader;
 import lsfusion.gwt.client.form.order.user.GGridSortableHeaderManager;
 import lsfusion.gwt.client.form.order.user.GOrder;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 
 import java.util.*;
@@ -67,7 +66,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         tree = new GTreeTableTree(iform);
 
         Column<GTreeGridRecord, Object> column = new ExpandTreeColumn();
-        GGridPropertyTableHeader header = new GGridPropertyTableHeader(this, messages.formTree(), null, false);
+        GGridPropertyTableHeader header = noHeaders ? null : new GGridPropertyTableHeader(this, messages.formTree(), null, false);
         addColumn(column, header, null);
 
         hierarchicalWidth = treeGroup.getExpandWidth();
@@ -132,7 +131,6 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         return treeGroup.groups.size() > 0 ? treeGroup.groups.get(treeGroup.groups.size() - 1) : null;
     }
 
-    @Override
     protected boolean isAutoSize() {
         return autoSize;
     }
@@ -167,9 +165,9 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
             if (index > -1) {
                 GridColumn gridColumn = new GridColumn(property);
-                String propertyCaption = property.getCaptionOrEmpty();
-                GGridPropertyTableHeader header = new GGridPropertyTableHeader(this, propertyCaption, property.getTooltipText(propertyCaption), gridColumn.isSticky());
-                GGridPropertyTableFooter footer = groupObject.hasFooters ? new GGridPropertyTableFooter(this, property, null, null) : null;
+                String propertyCaption = getPropertyCaption(property);
+                GGridPropertyTableHeader header = noHeaders ? null : new GGridPropertyTableHeader(this, propertyCaption, property.getTooltipText(propertyCaption), gridColumn.isSticky());
+                GGridPropertyTableFooter footer = property.hasFooter ? new GGridPropertyTableFooter(this, property, null, null) : null;
 
                 insertColumn(index, gridColumn, header, footer);
 
@@ -342,7 +340,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         }
 
         @Override
-        public void onEditEvent(EventHandler handler, Cell editCell, Element editCellParent) {
+        public void onEditEvent(EventHandler handler, Cell editCell, TableCellElement editCellParent) {
             Event event = handler.event;
             boolean changeEvent = GMouseStroke.isChangeEvent(event);
             if (changeEvent || (treeGroupController.isExpandOnClick() && GMouseStroke.isDoubleChangeEvent(event))) { // we need to consume double click event to prevent treetable global dblclick binding (in this case node will be collapsed / expanded once again)
@@ -577,7 +575,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     }
 
     @Override
-    protected int getHeaderHeight() {
+    public int getHeaderHeight() {
         return treeGroup.headerHeight;
     }
 
@@ -811,9 +809,13 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     }
 
     public List<Pair<lsfusion.gwt.client.form.view.Column, String>> getSelectedColumns(GGroupObject selectedGroupObject) {
-        return tree.getProperties(selectedGroupObject).stream().map(property ->
-            getSelectedColumn(property, GGroupObjectValue.EMPTY)
-        ).collect(Collectors.toList());
+        List<GPropertyDraw> properties = tree.getProperties(selectedGroupObject);
+        if (properties != null) {
+            return properties.stream().map(property ->
+                    getSelectedColumn(property, GGroupObjectValue.EMPTY)
+            ).collect(Collectors.toList());
+        }
+        return new ArrayList<>();
     }
 
     public String getColumnSID(int column) {

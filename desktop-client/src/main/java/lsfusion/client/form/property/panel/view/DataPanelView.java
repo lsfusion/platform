@@ -64,8 +64,11 @@ public class DataPanelView extends FlexPanel implements PanelView {
         table = new DataPanelViewTable(iform, columnKey, property);
 
         label = new LabelWidget();
-        
-        setLabelText(property.getEditCaption());
+
+        Integer captionWidth = property.getCaptionWidth();
+        Integer captionHeight = property.getCaptionHeight();
+
+        setLabelText(property.getChangeCaption());
 
         property.design.designHeader(label);
         if (property.focusable != null) {
@@ -75,7 +78,7 @@ public class DataPanelView extends FlexPanel implements PanelView {
         }
 
         if (!tableFirst && captionContainer == null) {
-            add(label, property.getPanelCaptionAlignment(), 0.0);
+            add(label, property.getPanelCaptionAlignment(), 0.0, vertical ? captionHeight : captionWidth);
         }
 
         Pair<Integer, Integer> valueSizes;
@@ -91,10 +94,10 @@ public class DataPanelView extends FlexPanel implements PanelView {
         }
 
         if(captionContainer != null && valueSizes != null)
-            captionContainer.put(label, valueSizes, property.getPanelCaptionAlignment());
+            captionContainer.put(label, new Pair<>(captionWidth, captionHeight), valueSizes, property.getPanelCaptionAlignment());
 
         if (tableFirst && captionContainer == null) {
-            add(label, property.getPanelCaptionAlignment(), 0.0);
+            add(label, property.getPanelCaptionAlignment(), 0.0, vertical ? captionHeight : captionWidth);
         }
 
         if (!vertical)
@@ -257,7 +260,7 @@ public class DataPanelView extends FlexPanel implements PanelView {
     }
 
     public void setCaption(String caption) {
-        setLabelText(property.getEditCaption(caption));
+        setLabelText(property.getChangeCaption(caption));
     }
     
     public void setLabelText(String text) {

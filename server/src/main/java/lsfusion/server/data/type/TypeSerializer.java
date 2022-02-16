@@ -135,6 +135,11 @@ public class TypeSerializer {
             }
             return CustomStaticFormatFileClass.get(multiple, storeName, filterDescription, filterExtensions);
         }
+        if (type == DataType.NAMEDFILE) {
+            inStream.readBoolean(); //multiple
+            inStream.readBoolean(); //storeName
+            return NamedFileClass.instance;
+        }
         if (type == DataType.DYNAMICFORMATFILE) return DynamicFormatFileClass.get(inStream.readBoolean(), inStream.readBoolean());
         if (type == DataType.PDF) return PDFClass.get(inStream.readBoolean(), inStream.readBoolean());
 
