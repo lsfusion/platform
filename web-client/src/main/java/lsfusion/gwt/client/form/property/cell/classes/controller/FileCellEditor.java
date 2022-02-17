@@ -22,7 +22,6 @@ import lsfusion.gwt.client.form.property.cell.controller.KeepCellEditor;
 import org.moxieapps.gwt.uploader.client.File;
 import org.moxieapps.gwt.uploader.client.Uploader;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class FileCellEditor extends ARequestValueCellEditor implements KeepCellEditor {
@@ -104,19 +103,14 @@ public class FileCellEditor extends ARequestValueCellEditor implements KeepCellE
             needToCancel = !instance.@FileCellEditor::addFilesToUploader(*)(this.files, parent);
         }
 
-        //in grid focus returns to DataGrid, not cell
-        var dataGrid = @GwtClientUtils::getParentWithClass(*)(parent, @lsfusion.gwt.client.base.view.grid.DataGrid::DATA_GRID_CLASS);
-        if(dataGrid != null) {
-            parent = dataGrid.parentElement;
-        }
-
-        parent.onfocus = function () {
+        var focusedElement = @GwtClientUtils::getFocusedElement()();
+        focusedElement.onfocus = function () {
             setTimeout(function () {//onfocus event fires before onchange event, so we need a timeout
                 if (needToCancel) {
                     instance.@FileCellEditor::cancel(Lcom/google/gwt/dom/client/Element;)(parent);
                     needToCancel = false;
                 }
-                parent.onfocus = null;
+                focusedElement.onfocus = null;
             }, 300)
         }
 
