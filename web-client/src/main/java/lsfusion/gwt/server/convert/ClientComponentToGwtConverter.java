@@ -143,6 +143,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         container.lineSize = clientContainer.lineSize;
         container.captionLineSize = clientContainer.captionLineSize;
         container.lineShrink = clientContainer.lineShrink;
+        container.customDesign = clientContainer.customDesign;
 
         for (ClientComponent child : clientContainer.children) {
             GComponent childComponent = convertOrCast(child);

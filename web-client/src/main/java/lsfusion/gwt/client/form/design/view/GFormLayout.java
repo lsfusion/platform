@@ -63,11 +63,12 @@ public class GFormLayout extends ResizableComplexPanel {
     }
 
     private static GAbstractContainerView createContainerView(GFormController form, GContainer container) {
-        if (container.tabbed) {
+        if (container.tabbed)
             return new TabbedContainerView(form, container);
-        } else {
+        else if (container.isCustomDesign())
+            return new CustomContainerView(form, container);
+        else
             return new LinearContainerView(form, container);
-        }
     }
 
     @Override
@@ -91,7 +92,7 @@ public class GFormLayout extends ResizableComplexPanel {
     }
 
     // creating containers (all other components are created when creating controllers)
-    private GAbstractContainerView addContainers(GContainer container) {
+    private void addContainers(GContainer container) {
         GAbstractContainerView containerView = createContainerView(form, container);
 
         containerViews.put(container, containerView);
@@ -108,8 +109,6 @@ public class GFormLayout extends ResizableComplexPanel {
                 addContainers((GContainer) child);
             }
         }
-
-        return containerView;
     }
     public void addBaseComponent(GComponent component, Widget view, DefaultFocusReceiver focusReceiver) {
         // we wish that all base components margins, paddings and borders should be zero (since we're setting them with topBorder and others)

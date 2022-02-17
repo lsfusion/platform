@@ -54,7 +54,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
         }
     }
 
-    private GridLines gridLines;
+    private final GridLines gridLines;
     
     public FlexPanel(boolean vertical, GFlexAlignment flexAlignment) {
         this(vertical, flexAlignment, null, false);
@@ -139,21 +139,25 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
         add(widget, getWidgetCount(), alignment, flex, shrink, flexBasis);
     }
 
-    public void add(Widget widget, int beforeIndex, GFlexAlignment alignment, double flex, boolean shrink, Integer flexBasis) {
+    public void add(Widget widget, Element parent, int beforeIndex, GFlexAlignment alignment, double flex, boolean shrink, Integer flexBasis) {
         // Detach new child.
         widget.removeFromParent();
 
         // Logical attach.
-        getChildren().insert(widget, beforeIndex);
+        getChildren().insert(widget, Math.min(beforeIndex, getChildren().size()));
 
         // Physical attach.
         Element childElement = widget.getElement();
 
-        WidgetLayoutData layoutData = impl.insertChild(parentElement, childElement, beforeIndex, alignment, flex, shrink, flexBasis, vertical, isGrid());
+        WidgetLayoutData layoutData = impl.insertChild(parent == null ? parentElement : parent, childElement, beforeIndex, alignment, flex, shrink, flexBasis, vertical, isGrid());
         widget.setLayoutData(layoutData);
 
         // Adopt.
         adopt(widget);
+    }
+
+    public void add(Widget widget, int beforeIndex, GFlexAlignment alignment, double flex, boolean shrink, Integer flexBasis) {
+        add(widget, null, beforeIndex, alignment, flex, shrink, flexBasis);
     }
 
     // it's tricky here

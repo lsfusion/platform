@@ -3,8 +3,6 @@ package lsfusion.gwt.client.form.design.view.flex;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.Pair;
-import lsfusion.gwt.client.base.view.CaptionPanel;
-import lsfusion.gwt.client.base.view.CollapsiblePanel;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.form.controller.GFormController;
@@ -24,11 +22,7 @@ public class LinearContainerView extends GAbstractContainerView {
     protected final boolean grid;
 
     protected FlexPanel[] lines;
-    protected FlexPanel[] captionLines;
     protected List<AlignCaptionPanel> childrenCaptions;
-    protected List<Integer> childrenCaptionBaseSizes;
-    
-    private GFormController formController;
 
     public static FlexPanel.GridLines getLineGridLayouts(boolean alignCaptions, Integer lineSize, Integer captionLineSize, int linesCount, boolean wrap, boolean lineShrink) {
         FlexPanel.FlexLayoutData valueLine = new FlexPanel.FlexLayoutData(1, lineSize, lineShrink);
@@ -52,8 +46,7 @@ public class LinearContainerView extends GAbstractContainerView {
     }
 
     public LinearContainerView(GFormController formController, GContainer container) {
-        super(container);
-        this.formController = formController;
+        super(container, formController);
 
         assert !container.tabbed;
 
@@ -102,32 +95,6 @@ public class LinearContainerView extends GAbstractContainerView {
         return linesCount == 1 || grid;
     }
 
-    @Override
-    public void updateCaption(GContainer container) {
-        CaptionPanel captionPanel = getCaptionPanel(container);
-        String caption = container.caption;
-        if(captionPanel != null)
-            captionPanel.setCaption(caption);
-        else // it is possible if hasNoCaption is true, so captionPanel is not created, however dynamic caption changes may come to the client
-            assert caption == null;
-    }
-
-    public CaptionPanel getCaptionPanel(GContainer container) {
-        FlexPanel childPanel = (FlexPanel) getChildView(container);
-
-        // if we have caption it has to be either CaptionPanel, or it is wrapped into one more flexPanel (see addImpl)
-        if(childPanel instanceof CaptionPanel)
-            return (CaptionPanel) childPanel;
-
-        if(childPanel.getWidgetCount() > 0) {
-            Widget childWidget = childPanel.getWidget(0);
-            if (childWidget instanceof CaptionPanel)
-                return (CaptionPanel) childWidget;
-        }
-
-        return null;
-    }
-
     private static class AlignCaptionPanel extends FlexPanel {
         public AlignCaptionPanel(boolean vertical, GFlexAlignment flexAlignment) {
             super(vertical, flexAlignment);
@@ -160,19 +127,6 @@ public class LinearContainerView extends GAbstractContainerView {
             removeChildrenViews(index + 1, -1);
             addChildrenViews(index, 0);
         }
-    }
-
-    protected FlexPanel wrapBorderImpl(GComponent child) {
-        GContainer childContainer;
-        if (child instanceof GContainer) {
-            childContainer = (GContainer) child;
-            if (childContainer.collapsible) {
-                return new CollapsiblePanel(formController, childContainer);
-            } else if (childContainer.caption != null) {
-                return new CaptionPanel(childContainer.caption);
-            }
-        }
-        return null;
     }
 
     @Override

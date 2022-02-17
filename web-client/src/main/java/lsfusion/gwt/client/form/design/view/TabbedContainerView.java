@@ -20,7 +20,7 @@ public class TabbedContainerView extends GAbstractContainerView {
     protected GComponent currentChild;
 
     public TabbedContainerView(final GFormController formController, final GContainer container) {
-        super(container);
+        super(container, formController);
 
         assert container.tabbed;
 

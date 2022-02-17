@@ -24,4 +24,6 @@ public class PropertyReadType {
     public final static byte CONTAINER_CAPTION = 10;
 
     public final static byte IMAGE = 11;
+
+    public final static byte CUSTOM = 12;
 }
