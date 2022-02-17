@@ -49,7 +49,10 @@ public class ConcatenateUnionProperty extends UnionProperty {
 
     @IdentityLazy
     protected FormulaUnionImpl getFormula() {
-        return new ConcatenateFormulaImpl(separator);
+        if(separator != null)
+            return new StringConcatenateFormulaImpl(separator);
+        else
+            return JSONMergeFormulaImpl.instance;
     }
 
     @Override

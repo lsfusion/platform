@@ -42,7 +42,7 @@ import lsfusion.server.data.expr.classes.IsClassExpr;
 import lsfusion.server.data.expr.classes.IsClassType;
 import lsfusion.server.data.expr.formula.FormulaUnionExpr;
 import lsfusion.server.data.expr.formula.MLinearOperandMap;
-import lsfusion.server.data.expr.formula.ConcatenateFormulaImpl;
+import lsfusion.server.data.expr.formula.StringConcatenateFormulaImpl;
 import lsfusion.server.data.expr.join.classes.ObjectClassField;
 import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.expr.query.GroupExpr;
@@ -1158,7 +1158,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
         // FormulaUnionExpr.create(new StringAggConcatenateFormulaImpl(","), mAgg.immutableList()) , "value",
         Expr sumExpr = mSum.getExpr();
-        Expr aggExpr = FormulaUnionExpr.create(new ConcatenateFormulaImpl(","), mAgg.immutableList());
+        Expr aggExpr = FormulaUnionExpr.create(new StringConcatenateFormulaImpl(","), mAgg.immutableList());
         run.run(new Query<>(MapFact.singletonRev("key", key), sumExpr.compare(ValueExpr.COUNT, Compare.GREATER), MapFact.EMPTY(),
                 MapFact.toMap("sum", sumExpr, "agg", aggExpr)));
 

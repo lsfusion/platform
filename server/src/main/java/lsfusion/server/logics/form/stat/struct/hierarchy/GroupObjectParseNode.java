@@ -6,22 +6,27 @@ import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
+import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.ParseException;
+import lsfusion.server.logics.form.stat.struct.export.hierarchy.json.FormPropertyDataInterface;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
+import lsfusion.server.logics.property.PropertyFact;
+import lsfusion.server.logics.property.implement.PropertyMapImplement;
+import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 import java.sql.SQLException;
 
-public class GroupObjectParseNode extends GroupParseNode {
+public class GroupObjectParseNode extends GroupParseNode implements ChildParseNode {
     private final GroupObjectEntity group;
 
-    protected String getKey() {
+    public String getKey() {
         return group.getIntegrationSID();
     }
 
-    public GroupObjectParseNode(ImOrderSet<ParseNode> children, GroupObjectEntity group) {
+    public GroupObjectParseNode(ImOrderSet<ChildParseNode> children, GroupObjectEntity group) {
         super(children);
         this.group = group;
     }
@@ -93,5 +98,37 @@ public class GroupObjectParseNode extends GroupParseNode {
         }
         
         return isNotEmpty;
+    }
+
+    @Override
+    public <X extends PropertyInterface, P extends PropertyInterface> PropertyMapImplement<?, X> getJSONProperty(FormPropertyDataInterface<P> form, ImRevMap<P, X> mapValues, ImRevMap<ObjectEntity, X> mapObjects) {
+        "iterate" по ObjectEntity
+        генерим виртуальные интерфейсы передаем в getChildrenJSONProperties
+        тут конечно вопрос что брать те же или генерить новые и перемаппить ???
+        логично наверное генерить новые:
+
+        Z
+        из mapValues + mapObjects + getObjects
+
+        getChildrenJSONProperties(form, mapValues, mapObjects);
+
+        form.getWhere(group, mapValues, mapObjects);
+
+        form.getOrders(group)
+
+        ??? groupInterfaces надо фильтрануть
+
+        PropertyFact.createLastGProp(Z , по mapValues, where + , PI. )
+
+        делаем GROUP CONCAT chjs WHERE getFixedFilters ??? + ORDER getOrder
+        WHERE : StaticDataInterface.getWhere
+        ORDER : StaticDataInterface.getOrders (!! object)
+
+        return concat;
+
+        dsds
+        GROUP CONCAT properties
+
+        return null;
     }
 }

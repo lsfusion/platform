@@ -23,14 +23,14 @@ import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.form.open.ObjectSelector;
 import lsfusion.server.logics.form.struct.FormEntity;
-import lsfusion.server.logics.form.struct.property.PropertyObjectInterfaceEntity;
+import lsfusion.server.logics.form.struct.order.OrderEntity;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import static lsfusion.server.physics.dev.i18n.LocalizedString.create;
 
-public class ObjectEntity extends IdentityObject implements PropertyObjectInterfaceEntity, ObjectSelector {
+public class ObjectEntity extends IdentityObject implements OrderEntity<PropertyObjectInterfaceInstance>, ObjectSelector {
 
     public GroupObjectEntity groupTo;
 
@@ -74,18 +74,11 @@ public class ObjectEntity extends IdentityObject implements PropertyObjectInterf
         return instanceFactory.getInstance(this);
     }
 
-    public PropertyObjectInterfaceInstance getRemappedInstance(ObjectEntity oldObject, ObjectInstance newObject, InstanceFactory instanceFactory) {
-        return this == oldObject
-                ? newObject
-                : getInstance(instanceFactory).getObjectValue();
-    }
-
     @Override
     public String toString() {
         return ThreadLocalContext.localize(getCaption());
     }
 
-    @Override
     public AndClassSet getAndClassSet() {
         return baseClass.getUpSet();
     }
@@ -106,7 +99,6 @@ public class ObjectEntity extends IdentityObject implements PropertyObjectInterf
         return mapExprs.get(this);
     }
 
-    @Override
     public ObjectValue getObjectValue(ImMap<ObjectEntity, ? extends ObjectValue> mapObjects) {
         ObjectValue objectValue = mapObjects.get(this);
         if(objectValue != null)

@@ -46,12 +46,12 @@ import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectI
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
-import lsfusion.server.logics.form.struct.property.PropertyObjectInterfaceEntity;
+import lsfusion.server.logics.form.struct.order.OrderEntity;
 import lsfusion.server.physics.dev.integration.service.*;
 
 import java.sql.SQLException;
 
-public class DataObject extends ObjectValue<DataObject> implements PropertyObjectInterfaceEntity, ImportKeyInterface, ImportFieldInterface, ImportDeleteInterface {
+public class DataObject extends ObjectValue<DataObject> implements OrderEntity<PropertyObjectInterfaceInstance>, ImportKeyInterface, ImportFieldInterface, ImportDeleteInterface {
 
     public Object object;
     public ConcreteClass objectClass;
@@ -160,11 +160,6 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
         return object;
     }
 
-    @Override
-    public DataObject getObjectValue(ImMap<ObjectEntity, ? extends ObjectValue> mapObjects) {
-        return this;
-    }
-
     public static <K> ImMap<K, DataObject> filterDataObjects(ImMap<K, ? extends ObjectValue> map) {
         return BaseUtils.immutableCast(
                 ((ImMap<K, ObjectValue>)map).filterFnValues(element -> element instanceof DataObject));
@@ -256,10 +251,6 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
         return SetFact.EMPTY();
     }
 
-    public PropertyObjectInterfaceInstance getRemappedInstance(ObjectEntity oldObject, ObjectInstance newObject, InstanceFactory instanceFactory) {
-        return this;
-    }
-
     public DataObject getDataObject(ImportTable.Row row) {
         return this;
     }
@@ -279,11 +270,6 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
     @Override
     public Expr getDeleteExpr(SessionTableUsage<String, ImportField> importTable, KeyExpr intraKeyExpr, Modifier modifier) {
         return getExpr();
-    }
-
-    @Override
-    public ConcreteClass getAndClassSet() {
-        return objectClass;
     }
 
     public ParseInterface getParse(Type type, SQLSyntax syntax) {

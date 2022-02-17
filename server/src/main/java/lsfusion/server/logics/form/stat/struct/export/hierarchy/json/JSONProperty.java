@@ -69,7 +69,7 @@ public class JSONProperty {
 
         } else {
             assert parseNode instanceof PropertyParseNode;
-            Property property = ((PropertyParseNode) parseNode).getProperty();
+            Property property = ((PropertyParseNode) parseNode).getJSONProperty();
             return new ScriptingLogicsModule.LPWithParams(new LP(property), IntStream.range(0, property.getInterfaceCount()).boxed().collect(Collectors.toList()));
         }
     }
@@ -90,7 +90,7 @@ public class JSONProperty {
         List<ScriptingLogicsModule.LPWithParams> params = new ArrayList<>();
         List<String> integrationSIDs = new ArrayList<>();
         for(ParseNode c : child.children) {
-            params.add(new ScriptingLogicsModule.LPWithParams(new LP(((PropertyParseNode) c).getProperty()), 0));
+            params.add(new ScriptingLogicsModule.LPWithParams(new LP(((PropertyParseNode) c).getJSONProperty()), 0));
             integrationSIDs.add(((PropertyParseNode)c).getKey());
         }
 
