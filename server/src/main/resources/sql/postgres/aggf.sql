@@ -193,6 +193,11 @@ $$
              FULL JOIN jsonb_each(b) e2(kb, vb) ON ka = kb
 $$ LANGUAGE 'sql' IMMUTABLE;
 
+CREATE OR REPLACE FUNCTION notEmpty(jsonb) RETURNS jsonb AS
+$$
+SELECT CASE WHEN $1 = jsonb_build_object() THEN NULL ELSE $1 END;
+$$ LANGUAGE 'sql' IMMUTABLE;
+
 CREATE OR REPLACE FUNCTION first_agg ( anyelement, anyelement )
 RETURNS anyelement LANGUAGE sql IMMUTABLE AS $$
         SELECT $1;

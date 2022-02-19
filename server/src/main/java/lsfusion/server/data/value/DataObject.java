@@ -51,7 +51,7 @@ import lsfusion.server.physics.dev.integration.service.*;
 
 import java.sql.SQLException;
 
-public class DataObject extends ObjectValue<DataObject> implements OrderEntity<PropertyObjectInterfaceInstance>, ImportKeyInterface, ImportFieldInterface, ImportDeleteInterface {
+public class DataObject extends ObjectValue<DataObject> implements ImportKeyInterface, ImportFieldInterface, ImportDeleteInterface {
 
     public Object object;
     public ConcreteClass objectClass;
@@ -284,10 +284,5 @@ public class DataObject extends ObjectValue<DataObject> implements OrderEntity<P
         if(!shortName.isEmpty())
             result += "-" + shortName;
         return result;
-    }
-
-    @Override
-    public Expr getEntityExpr(ImMap<ObjectEntity, ? extends Expr> mapExprs, Modifier modifier) {
-        return getExpr();
     }
 }

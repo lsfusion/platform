@@ -358,11 +358,13 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
             result = InputFilterEntity.and(result, filt.getInputFilterEntity(getObjects().single(), mapObjects));
         return result;
     }
-    public <T extends PropertyInterface, P extends PropertyInterface> void fillWhereProperty(MList<PropertyMapImplement<?, T>> mList, ImSet<FilterEntity> filters, ImSet<ContextFilterEntity<?, P, ObjectEntity>> contextFilters, ImRevMap<P, T> mapValues, ImRevMap<ObjectEntity, T> mapObjects) {
+    private <T extends PropertyInterface, P extends PropertyInterface> PropertyMapImplement<?, T> getFilterWhereProperty(ImSet<FilterEntity> filters, ImSet<ContextFilterEntity<?, P, ObjectEntity>> contextFilters, ImRevMap<P, T> mapValues, ImRevMap<ObjectEntity, T> mapObjects) {
+        MList<PropertyMapImplement<?, T>> mList = ListFact.mList();
         for(FilterEntity filter : filters)
             mList.add(filter.getImplement(mapObjects));
         for(ContextFilterEntity<?, P, ObjectEntity> contextFilter : contextFilters)
             mList.add(contextFilter.getWhereProperty(mapValues, mapObjects));
+        return PropertyFact.createAnd(mList.immutableList().getCol());
     }
 
     private static ImMap<ObjectEntity, ValueClass> getGridClasses(ImSet<ObjectEntity> objects) {
@@ -385,10 +387,7 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         return InputFilterEntity.and(getFilterInputFilterEntity(filters, mapObjects), getClassInputFilterEntity());
     }
     public <T extends PropertyInterface, P extends PropertyInterface> PropertyMapImplement<?, T> getWhereProperty(ImSet<FilterEntity> filters, ImSet<ContextFilterEntity<?, P, ObjectEntity>> contextFilters, ImRevMap<P, T> mapValues, ImRevMap<ObjectEntity, T> mapObjects) {
-        MList<PropertyMapImplement<?, T>> mList = ListFact.mList();
-        fillWhereProperty(mList, filters, contextFilters, mapValues, mapObjects);
-        mList.add(getClassWhereProperty(mapObjects));
-        return PropertyFact.createAnd(mList.immutableList().getCol());
+        return PropertyFact.createAnd(getFilterWhereProperty(filters, contextFilters, mapValues, mapObjects), getClassWhereProperty(mapObjects));
     }
 
     // hack where ImMap used (it does not support null keys)

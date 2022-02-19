@@ -2178,17 +2178,22 @@ concatPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns 
 	;
 
 jsonFormPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property, FormEntity form, MappedForm mapped]
+@init {
+    List<TypedParameter> objectsContext = null;
+    List<LPWithParams> contextFilters = new ArrayList<>();
+}
 @after {
 	if (inMainParseState()) {
-	    $property = self.addScriptedJSONProp($mapped); //, $plist.aliases, $plist.literals, $plist.properties
+	    $property = self.addScriptedJSONFormProp($mf.mapped, $mf.props, objectsContext, contextFilters, context);
 	}
 }
-	:   'JSONX' formName=compoundID { if(inMainParseState()) { $form = self.findForm($formName.sid); } }
-         {
-             if(inMainParseState()) {
-                 $mapped = MappedForm.create($form, new ArrayList<ObjectEntity>());
-             }
-         }
+	:   '{' mf=mappedForm[context, null, dynamic] {
+                if(inMainParseState())
+                    objectsContext = self.getTypedObjectsNames($mf.mapped);
+            }
+            (cf = contextFiltersClause[context, objectsContext] { contextFilters.addAll($cf.contextFilters); })?
+        '}'
+//        'ENDJSONX'
 	;
 
 

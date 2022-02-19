@@ -44,7 +44,6 @@ public class PropertyParseNode implements ChildParseNode {
 
     @Override
     public <X extends PropertyInterface, P extends PropertyInterface> PropertyMapImplement<?, X> getJSONProperty(FormPropertyDataInterface<P> form, ImRevMap<P, X> mapValues, ImRevMap<ObjectEntity, X> mapObjects) {
-        returndssd property map'уе на upValues
-        json_build_object
+        return property.getValueProperty().getImplement(mapObjects);
     }
 }

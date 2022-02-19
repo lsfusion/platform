@@ -28,10 +28,16 @@ import java.sql.SQLException;
 
 public class FormPropertyDataInterface<P extends PropertyInterface> {
 
-    public final FormEntity form;
-    protected final ImSet<GroupObjectEntity> valueGroups;
+    private final FormEntity form;
+    private final ImSet<GroupObjectEntity> valueGroups;
 
-    protected final ImSet<ContextFilterEntity<?, P, ObjectEntity>> contextFilters; // with values shouldn't be cached
+    private final ImSet<ContextFilterEntity<?, P, ObjectEntity>> contextFilters; // with values shouldn't be cached
+
+    public FormPropertyDataInterface(FormEntity form, ImSet<GroupObjectEntity> valueGroups, ImSet<ContextFilterEntity<?, P, ObjectEntity>> contextFilters) {
+        this.form = form;
+        this.valueGroups = valueGroups;
+        this.contextFilters = contextFilters;
+    }
 
     public <T extends PropertyInterface> PropertyMapImplement<?, T> getWhere(GroupObjectEntity groupObject, ImRevMap<P, T> mapValues, ImRevMap<ObjectEntity, T> mapObjects) {
         ImSet<FilterEntity> filters = form.getGroupFixedFilters(valueGroups).get(groupObject);
@@ -44,16 +50,12 @@ public class FormPropertyDataInterface<P extends PropertyInterface> {
         return groupObject.getWhereProperty(filters, contextGroupFilters, mapValues, mapObjects);
     }
 
-    public <T> ImOrderMap<PropertyInterfaceImplement<>, Boolean> getOrders(GroupObjectEntity group) {
+    public <T extends PropertyInterface> ImOrderMap<PropertyInterfaceImplement<T>, Boolean> getOrders(GroupObjectEntity group, ImRevMap<ObjectEntity, T> mapObjects) {
         ImOrderMap<OrderEntity, Boolean> orders = form.getGroupOrdersList(valueGroups).get(group);
         if(orders == null)
             orders = MapFact.EMPTYORDER();
 
-        orders = orders.mergeOrder(group.getOrderObjects().toOrderMap(false));
-
-
-
-        return orders;
+        return orders.mergeOrder(group.getOrderObjects().toOrderMap(false)).mapOrderKeys(orderEntity -> ((OrderEntity<?>)orderEntity).getImplement(mapObjects));
     }
 
 

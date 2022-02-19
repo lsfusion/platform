@@ -28,7 +28,7 @@ import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 public enum GroupType implements AggrType {
-    SUM, MAX, MIN, ANY, CONCAT, AGGAR_SETADD, LAST;
+    SUM, MAX, MIN, ANY, CONCAT, AGGAR_SETADD, LAST, JSON_CONCAT;
     
     public static GroupType LOGICAL() {
         return ANY;
@@ -133,7 +133,7 @@ public enum GroupType implements AggrType {
     }
 
     public boolean hasAdd() {
-        return this!= CONCAT && this!=AGGAR_SETADD && this!=LAST;
+        return this!= CONCAT && this!=AGGAR_SETADD && this!=LAST && this!= JSON_CONCAT;
     }
     
     public boolean isMaxMin() {
@@ -198,6 +198,9 @@ public enum GroupType implements AggrType {
             case CONCAT:
                 assert exprs.size() == 1 || exprs.size() == 2;
                 return type.getCast(syntax.getOrderGroupAgg(this, type, exprs, exprReaders, orders, typeEnv), syntax, typeEnv); // тут точная ширина не нужна главное чтобы не больше
+            case JSON_CONCAT:
+                assert exprs.size() == 1;
+                return syntax.getOrderGroupAgg(this, type, exprs, exprReaders, orders, typeEnv);
             case AGGAR_SETADD:
                 assert exprs.size()==1 && orders.isEmpty();
                 return syntax.getArrayAgg(exprs.get(0), exprReaders.get(0), typeEnv);
@@ -209,15 +212,16 @@ public enum GroupType implements AggrType {
         }
     }
 
-    public int numExprs(PropertyInterfaceImplement property) {
-        if((this == CONCAT && !(property instanceof PropertyMapImplement && ((PropertyMapImplement<?, ?>) property).property.getType() instanceof JSONClass)) || this == LAST)
+    public int numExprs() {
+        if(this==CONCAT || this==LAST)
             return 2;
-        else return 1;
+        else
+            return 1;
     }
 
     public Type getType(Type exprType) {
-        if (this == CONCAT)
-            return exprType instanceof JSONClass ? exprType : ((StringClass) exprType).extend(10);
+        if(this==CONCAT)
+            return ((StringClass)exprType).extend(10);
         assert this != SUM || exprType instanceof IntegralClass;
 
         return exprType;

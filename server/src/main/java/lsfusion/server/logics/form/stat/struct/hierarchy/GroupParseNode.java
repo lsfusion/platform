@@ -3,8 +3,11 @@ package lsfusion.server.logics.form.stat.struct.hierarchy;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
+import lsfusion.server.data.expr.formula.JSONBuildFormulaImpl;
 import lsfusion.server.logics.form.stat.struct.export.hierarchy.json.FormPropertyDataInterface;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
+import lsfusion.server.logics.property.PropertyFact;
+import lsfusion.server.logics.property.classes.data.FormulaUnionProperty;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
@@ -29,12 +32,8 @@ public abstract class GroupParseNode implements ParseNode {
     }
 
     public <X extends PropertyInterface, P extends PropertyInterface> PropertyMapImplement<?, X> getChildrenJSONProperties(FormPropertyDataInterface<P> form, ImRevMap<P, X> mapValues, ImRevMap<ObjectEntity, X> mapObjects) {
-        // json_build_object по getKey() + getProperty
-        for(ChildParseNode child : children) {
-            child.getKey() + child.getJSONProperty(form, mapValues, mapObjects);dsds
-        }
-
-
-        return null;
+        // json_build_object - getKey() + getProperty
+        ImOrderSet<PropertyMapImplement<?, X>> childrenProps = children.mapOrderSetValues(child -> child.getJSONProperty(form, mapValues, mapObjects));
+        return PropertyFact.createFormulaUnion(new JSONBuildFormulaImpl(children.mapOrderSetValues(ChildParseNode::getKey)), childrenProps);
     }
 }

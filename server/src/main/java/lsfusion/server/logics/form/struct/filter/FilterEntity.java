@@ -24,7 +24,7 @@ import java.sql.SQLException;
 
 public class FilterEntity<P extends PropertyInterface> implements Instantiable<FilterInstance>, FilterEntityInstance {
 
-    public PropertyObjectEntity<P> property;
+    private PropertyObjectEntity<P> property;
     public boolean resolveAdd;
 
     // нельзя удалять - используется при сериализации
@@ -65,6 +65,6 @@ public class FilterEntity<P extends PropertyInterface> implements Instantiable<F
     }
 
     public <T extends PropertyInterface> PropertyMapImplement<?, T> getImplement(ImRevMap<ObjectEntity, T> mapObjects) {
-        return new PropertyMapImplement<P, T>(property.property, property.mapping.join(mapObjects));
+        return property.getImplement(mapObjects);
     }
 }

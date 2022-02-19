@@ -3749,6 +3749,39 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
+    public <O extends ObjectSelector> LPWithParams addScriptedJSONFormProp(MappedForm<O> mapped, List<FormActionProps> allObjectProps, List<TypedParameter> objectsContext,
+                                                                           List<LPWithParams> contextFilters, List<TypedParameter> params) throws ScriptingErrorLog.SemanticErrorException {
+
+        ImList<O> mappedObjects = mapped.objects;
+        ImOrderSet<O> contextObjects = getMappingObjectsArray(mapped, objectsContext);
+
+        List<LPWithParams> mapping = new ArrayList<>();
+        MList<Boolean> mNulls = ListFact.mListMax(mappedObjects.size());
+
+        for (int i = 0; i < mappedObjects.size(); i++) {
+            FormActionProps objectProp = allObjectProps.get(i);
+            assert objectProp.in != null;
+            mapping.add(objectProp.in);
+            mNulls.add(objectProp.inNull);
+            assert !objectProp.out && !objectProp.constraintFilter;
+        }
+
+        CFEWithParams<O> contextEntities = getContextFilterEntities(params.size(), contextObjects, ListFact.fromJavaList(contextFilters));
+
+        LP property = addJSONFormProp(null, LocalizedString.NONAME, mapped.form, mappedObjects, mNulls.immutableList(),
+                contextEntities.orderInterfaces, contextEntities.filters);
+
+        for (int usedParam : contextEntities.usedParams) {
+            mapping.add(new LPWithParams(usedParam));
+        }
+
+        if (mapping.size() > 0) {
+            return addScriptedJProp(property, mapping);
+        } else {
+            return new LPWithParams(property, Collections.emptyList());
+        }
+    }
+
     public <O extends ObjectSelector> LAWithParams addScriptedExportFAProp(MappedForm<O> mapped, List<FormActionProps> allObjectProps, FormIntegrationType exportType,
                                                                            LPWithParams rootProperty, LPWithParams tagProperty, boolean attr, boolean noHeader,
                                                                            String separator, boolean noEscape, Integer selectTop, String charset, NamedPropertyUsage propUsage,
@@ -3770,7 +3803,6 @@ public class ScriptingLogicsModule extends LogicsModule {
             mNulls.add(objectProp.inNull);
             assert !objectProp.out && !objectProp.constraintFilter;
         }
-
 
         LP<?> singleExportFile = null;
         MExclMap<GroupObjectEntity, LP> exportFiles = MapFact.mExclMap();

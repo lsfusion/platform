@@ -25,6 +25,8 @@ import lsfusion.server.base.version.LastVersion;
 import lsfusion.server.base.version.NFLazy;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.data.expr.formula.CustomFormulaSyntax;
+import lsfusion.server.data.expr.formula.JSONMergeFormulaImpl;
+import lsfusion.server.data.expr.formula.StringConcatenateFormulaImpl;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.query.PartitionType;
 import lsfusion.server.data.expr.value.StaticParamNullableExpr;
@@ -82,6 +84,7 @@ import lsfusion.server.logics.form.open.stat.PrintAction;
 import lsfusion.server.logics.form.stat.struct.FormIntegrationType;
 import lsfusion.server.logics.form.stat.struct.IntegrationFormEntity;
 import lsfusion.server.logics.form.stat.struct.export.hierarchy.json.ExportJSONAction;
+import lsfusion.server.logics.form.stat.struct.export.hierarchy.json.JSONProperty;
 import lsfusion.server.logics.form.stat.struct.export.hierarchy.xml.ExportXMLAction;
 import lsfusion.server.logics.form.stat.struct.export.plain.csv.ExportCSVAction;
 import lsfusion.server.logics.form.stat.struct.export.plain.dbf.ExportDBFAction;
@@ -576,6 +579,12 @@ public abstract class LogicsModule {
                                                           ValueClass printer, ValueClass sheetName, ValueClass password) {
         return addAction(group, new LA<>(new PrintAction<>(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters,
                 staticType, syncType, selectTop, targetProp, baseLM.formPageCount, removeNullsAndDuplicates, printer, sheetName, password)));
+    }
+    protected <O extends ObjectSelector> LP addJSONFormProp(Group group, LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls,
+                                                       ImOrderSet<PropertyInterface> orderContextInterfaces, ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters) {
+        JSONProperty<O> property = new JSONProperty<O>(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters);
+
+        return addProperty(group, new LP<>(property));
     }
     protected <O extends ObjectSelector> LA addEFAProp(Group group, LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls,
                                                        ImOrderSet<PropertyInterface> orderContextInterfaces, ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters,
@@ -1327,7 +1336,7 @@ public abstract class LogicsModule {
         return addOGProp(group, persist, caption, type, numOrders, ordersNotNull, descending, innerInterfaces, explicitInnerClasses, readCalcImplements(innerInterfaces, params));
     }
     public <T extends PropertyInterface> LP addOGProp(Group group, boolean persist, LocalizedString caption, GroupType type, int numOrders, boolean ordersNotNull, boolean descending, ImOrderSet<T> innerInterfaces, List<ResolveClassSet> explicitInnerClasses, ImList<PropertyInterfaceImplement<T>> listImplements) {
-        int numExprs = type.numExprs(listImplements.get(0));
+        int numExprs = type.numExprs();
         ImList<PropertyInterfaceImplement<T>> props = listImplements.subList(0, numExprs);
         ImOrderMap<PropertyInterfaceImplement<T>, Boolean> orders = listImplements.subList(numExprs, numExprs + numOrders).toOrderSet().toOrderMap(descending);
         ImList<PropertyInterfaceImplement<T>> groups = listImplements.subList(numExprs + numOrders, listImplements.size());
@@ -1442,7 +1451,7 @@ public abstract class LogicsModule {
                 property = new CaseUnionProperty(caption, listInterfaces, listOperands, true, false, false);
                 break;
             case CONCAT:
-                property = new ConcatenateUnionProperty(caption, listInterfaces, listOperands, separator);
+                property = new FormulaUnionProperty(caption, listInterfaces, listOperands, separator != null ? new StringConcatenateFormulaImpl(separator) : JSONMergeFormulaImpl.instance);
                 break;
         }
 

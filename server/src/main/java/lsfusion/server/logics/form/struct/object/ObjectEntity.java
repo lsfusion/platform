@@ -2,6 +2,7 @@ package lsfusion.server.logics.form.struct.object;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.identity.IdentityObject;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
@@ -25,6 +26,7 @@ import lsfusion.server.logics.form.open.ObjectSelector;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.order.OrderEntity;
 import lsfusion.server.logics.property.Property;
+import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
@@ -123,6 +125,11 @@ public class ObjectEntity extends IdentityObject implements OrderEntity<Property
 
     public String getIntegrationSID() {
         return integrationSID != null ? integrationSID : getSID();
+    }
+
+    @Override
+    public <T extends PropertyInterface> PropertyInterfaceImplement<T> getImplement(ImRevMap<ObjectEntity, T> mapObjects) {
+        return mapObjects.get(this);
     }
 
     @Override
