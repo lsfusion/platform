@@ -11,12 +11,14 @@ import lsfusion.server.logics.action.session.LocalNestedType;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.event.Event;
 import lsfusion.server.logics.form.struct.group.Group;
+import lsfusion.server.logics.property.LazyProperty;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.debug.PropertyFollowsDebug;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class EvalScriptingLogicsModule extends ScriptingLogicsModule {
@@ -136,6 +138,7 @@ public class EvalScriptingLogicsModule extends ScriptingLogicsModule {
         super.addScriptedGroup(groupName, captionStr, integrationSID, parentName);
     }
 
+    public List<LazyProperty> lazyProps = new ArrayList<>();
     @Override
     protected void addPropertyToGroup(ActionOrProperty<?> property, Group group) {
         if (group != null && !property.isLocal()) { 
@@ -144,7 +147,9 @@ public class EvalScriptingLogicsModule extends ScriptingLogicsModule {
             } else {
                 throw new RuntimeException(constructErrorMessage("addition of property or action to a group from another module is forbidden in EVAL module"));
             }
-        } 
+        }
+        if(property instanceof LazyProperty)
+            lazyProps.add((LazyProperty)property);
     }    
     
     private String constructErrorMessage(String message) {

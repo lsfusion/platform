@@ -988,4 +988,13 @@ public class GwtClientUtils {
         return str.substring(str.indexOf("(") + 1, str.length - 1).length > 0;
     }-*/;
 
+    public static native JavaScriptObject jsonParse(String value)/*-{
+        try {
+            if(value == null)
+                return null;
+            return JSON.parse(value);
+        } catch(e) {
+            return {};
+        }
+    }-*/;
 }

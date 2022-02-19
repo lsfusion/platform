@@ -75,8 +75,9 @@ public class JSONProperty<O extends ObjectSelector> extends LazyProperty {
     @Override
     protected PropertyMapImplement<?, ClassPropertyInterface> createProperty() {
         Pair<FormEntity, ImRevMap<ObjectEntity, O>> staticForm = this.form.getForm(getBaseLM());
+        ImRevMap<ObjectEntity, ClassPropertyInterface> mappedObjects = staticForm.second.rightJoin(this.mapObjects);
 
-        ImSet<GroupObjectEntity> valueGroups = AbstractFormDataInterface.getValueGroupObjects(staticForm.second.keys());
+        ImSet<GroupObjectEntity> valueGroups = AbstractFormDataInterface.getValueGroupObjects(mappedObjects.keys());
 
         StaticDataGenerator.Hierarchy staticHierarchy = staticForm.first.getStaticHierarchy(false, valueGroups, null);
 
@@ -84,7 +85,7 @@ public class JSONProperty<O extends ObjectSelector> extends LazyProperty {
 
         FormPropertyDataInterface<ClassPropertyInterface> formInterface = new FormPropertyDataInterface<>(staticForm.first, valueGroups, ContextFilterSelector.getEntities(contextFilters).mapSetValues(entity -> entity.mapObjects(staticForm.second.reverse())));
 
-        return parseNode.getJSONProperty(formInterface, contextInterfaces.toRevMap(), staticForm.second.rightJoin(mapObjects));
+        return parseNode.getJSONProperty(formInterface, contextInterfaces.toRevMap(), mappedObjects);
     }
 }
 

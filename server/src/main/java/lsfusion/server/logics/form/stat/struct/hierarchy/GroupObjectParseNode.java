@@ -20,8 +20,6 @@ import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 import java.sql.SQLException;
 
-import static org.apache.commons.compress.compressors.CompressorStreamFactory.Z;
-
 public class GroupObjectParseNode extends GroupParseNode implements ChildParseNode {
     private final GroupObjectEntity group;
 
@@ -112,7 +110,7 @@ public class GroupObjectParseNode extends GroupParseNode implements ChildParseNo
 
         ImRevMap<ObjectEntity, PropertyInterface> mapInnerObjects = MapFact.addRevExcl(mapObjects, mapGroupObjects);
 
-        PropertyMapImplement<?, PropertyInterface> group = PropertyFact.createAnd(getChildrenJSONProperties(form, BaseUtils.immutableCast(mapValues), mapInnerObjects), form.getWhere(this.group, BaseUtils.immutableCast(mapValues), mapInnerObjects));
+        PropertyMapImplement<?, PropertyInterface> group = PropertyFact.createAnd(getChildrenJSONProperties(form, BaseUtils.immutableCast(mapValues), mapInnerObjects, true), form.getWhere(this.group, BaseUtils.immutableCast(mapValues), mapInnerObjects));
 
         ImOrderMap<PropertyInterfaceImplement<PropertyInterface>, Boolean> orders = form.getOrders(this.group, mapInnerObjects);
 

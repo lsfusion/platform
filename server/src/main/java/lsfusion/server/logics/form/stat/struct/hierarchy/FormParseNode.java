@@ -26,6 +26,6 @@ public class FormParseNode extends GroupParseNode {
 
     @Override
     public <X extends PropertyInterface, P extends PropertyInterface> PropertyMapImplement<?, X> getJSONProperty(FormPropertyDataInterface<P> form, ImRevMap<P, X> mapValues, ImRevMap<ObjectEntity, X> mapObjects) {
-        return getChildrenJSONProperties(form, mapValues, mapObjects);
+        return getChildrenJSONProperties(form, mapValues, mapObjects, true);
     }
 }

@@ -27,8 +27,6 @@ public abstract class LazyProperty extends SimpleIncrementProperty<ClassProperty
 
     @Override
     protected Expr calculateExpr(ImMap<ClassPropertyInterface, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
-        if(property == null) // temporary for scriptingLogicsModule
-            property = createProperty();
         return property.mapExpr(joinImplement, calcType, propChanges, changedWhere);
     }
 

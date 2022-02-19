@@ -3999,6 +3999,58 @@ public class ScriptingLogicsModule extends LogicsModule {
         return getTypesByParamProperties(paramProps, params);
     }
 
+    public LPWithParams addScriptedJSONProperty(List<TypedParameter> oldContext, final List<String> ids, List<Boolean> literals,
+                                                List<LPWithParams> exprs, LPWithParams whereProperty,
+                                                List<LPWithParams> orderProperties, List<Boolean> orderDirections) throws ScriptingErrorLog.SemanticErrorException {
+
+        List<String> exIds = new ArrayList<>(ids);
+        List<Boolean> exLiterals = new ArrayList<>(literals);
+
+        MOrderExclMap<String, Boolean> mOrders = MapFact.mOrderExclMap(orderProperties.size());
+        for (int i = 0; i < orderProperties.size(); i++) {
+            LPWithParams orderProperty = orderProperties.get(i);
+            exprs.add(orderProperty);
+            String orderId = "order" + exIds.size();
+            exIds.add(orderId);
+            exLiterals.add(false);
+            mOrders.exclAdd(orderId, orderDirections.get(i));
+        }
+        ImOrderMap<String, Boolean> orders = mOrders.immutableOrder();
+
+        List<LPWithParams> props = exprs;
+        if(whereProperty != null)
+            props = BaseUtils.add(exprs, whereProperty);
+
+        // technically it's a mixed operator with exec technics (root, tag like SHOW / DIALOG) and operator technics (exprs, where like CHANGE)
+        List<Integer> resultInterfaces = getResultInterfaces(oldContext.size(), props.toArray(new LAPWithParams[props.size()]));
+        List<LPWithParams> mapping = new ArrayList<>();
+        for (int resI : resultInterfaces) {
+            mapping.add(new LPWithParams(resI));
+        }
+
+        List<LAPWithParams> paramsList = new ArrayList<>();
+        paramsList.addAll(mapping);
+        paramsList.addAll(exprs);
+        if (whereProperty != null) {
+            paramsList.add(whereProperty);
+        }
+//        ImList<Type> exprTypes = getTypesForExportProp(exprs, newContext);
+        List<Object> resultParams = getParamsPlainList(paramsList);
+
+        LP result = null;
+        try {
+            result = addJSONProp(LocalizedString.NONAME, resultInterfaces.size(), exIds, exLiterals, orders,
+                    whereProperty != null, resultParams.toArray());
+        } catch (FormEntity.AlreadyDefined alreadyDefined) {
+            throwAlreadyDefinePropertyDraw(alreadyDefined);
+        }
+
+        if(mapping.size() > resultInterfaces.size()) { // optimization
+            return addScriptedJProp(result, mapping);
+        } else
+            return new LPWithParams(result, resultInterfaces);
+    }
+
     public LAWithParams addScriptedExportAction(List<TypedParameter> oldContext, FormIntegrationType type, final List<String> ids, List<Boolean> literals,
                                                 List<LPWithParams> exprs, LPWithParams whereProperty, NamedPropertyUsage fileProp, LPWithParams rootProperty, LPWithParams tagProperty,
                                                 String separator, boolean noHeader, boolean noEscape, Integer selectTop, String charset, boolean attr,
