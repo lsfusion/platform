@@ -71,6 +71,6 @@ public class CustomFormulaImpl extends AbstractFormulaImpl implements FormulaJoi
 
     @Override
     public boolean equals(Object o) {
-        return formula.equals(((CustomFormulaImpl) o).formula) && mapParams.equals(((CustomFormulaImpl) o).mapParams) && nullEquals(valueClass, ((CustomFormulaImpl) o).valueClass) && hasNotNull==((CustomFormulaImpl) o).hasNotNull;
+        return this == o || o instanceof CustomFormulaImpl && formula.equals(((CustomFormulaImpl) o).formula) && mapParams.equals(((CustomFormulaImpl) o).mapParams) && nullEquals(valueClass, ((CustomFormulaImpl) o).valueClass) && hasNotNull==((CustomFormulaImpl) o).hasNotNull;
     }
 }

@@ -46,6 +46,10 @@ public class ContextFilterEntity<P extends PropertyInterface, V extends Property
         return new PropertyMapImplement<>(property, mapValues.addRevExcl(mapObjects.join(objects)));
     }
 
+    public <T extends PropertyInterface> PropertyMapImplement<P, T> getWhereProperty(ImRevMap<V, T> values, ImRevMap<O, T> objects) {
+        return new PropertyMapImplement<>(property, mapValues.join(values).addRevExcl(mapObjects.join(objects)));
+    }
+
     public ImSet<O> getObjects() {
         return mapObjects.valuesSet();
     }

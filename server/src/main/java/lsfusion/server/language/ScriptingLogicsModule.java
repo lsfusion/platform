@@ -8,6 +8,7 @@ import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.heavy.OrderedMap;
+import lsfusion.base.col.implementations.simple.SingletonSet;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.file.IOUtils;
@@ -96,6 +97,7 @@ import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
 import lsfusion.server.logics.form.open.MappedForm;
 import lsfusion.server.logics.form.open.ObjectSelector;
 import lsfusion.server.logics.form.stat.struct.FormIntegrationType;
+import lsfusion.server.logics.form.stat.struct.hierarchy.*;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.filter.CCCContextFilterEntity;
 import lsfusion.server.logics.form.struct.filter.ContextFilterEntity;
@@ -169,6 +171,8 @@ import java.util.*;
 import java.util.function.IntFunction;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
@@ -2054,7 +2058,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                 }
             }
             resultParams = getParamsPlainList(properties);
-            res = new LPWithParams(addUProp(null, LocalizedString.NONAME, Union.SUM, null, coeffs, resultParams.toArray()), mergeAllParams(properties));
+            res = new LPWithParams(addUProp(null, LocalizedString.NONAME, Union.SUM, coeffs, resultParams.toArray()), mergeAllParams(properties));
         }
         return res;
     }
@@ -2860,7 +2864,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public LP addScriptedGProp(List<LPWithParams> groupProps, GroupingType type, List<LPWithParams> mainProps, List<LPWithParams> orderProps, boolean ascending, LPWithParams whereProp, List<ResolveClassSet> explicitInnerClasses) throws ScriptingErrorLog.SemanticErrorException {
         checks.checkGPropAggrConstraints(type, mainProps, groupProps);
-        checks.checkGPropAggregateConsistence(type, mainProps.size());
+        checks.checkGPropAggregateConsistence(type, mainProps);
         checks.checkGPropWhereConsistence(type, whereProp);
         checks.checkGPropSumConstraints(type, mainProps.get(0));
 
@@ -2892,7 +2896,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         } else if (type == GroupingType.MAX || type == GroupingType.MIN) {
             resultProp = addMGProp(null, emptyCaption, type == GroupingType.MIN, groupPropParamCount, explicitInnerClasses, resultParams.toArray());
         } else if (type == GroupingType.CONCAT) {
-            resultProp = addOGProp(null, false, emptyCaption, GroupType.STRING_AGG, orderProps.size(), ordersNotNull, !ascending, groupPropParamCount, explicitInnerClasses, resultParams.toArray());
+            resultProp = addOGProp(null, false, emptyCaption, GroupType.CONCAT, orderProps.size(), ordersNotNull, !ascending, groupPropParamCount, explicitInnerClasses, resultParams.toArray());
         } else if (type == GroupingType.AGGR || type == GroupingType.NAGGR) {
             resultProp = addAGProp(null, false, false, emptyCaption, type == GroupingType.NAGGR, groupPropParamCount, explicitInnerClasses, resultParams.toArray());
         } else if (type == GroupingType.EQUAL) {
@@ -3026,7 +3030,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             }
         }
         List<Object> resultParams = getParamsPlainList(paramProps);
-        LP prop = addUProp(null, LocalizedString.NONAME, unionType, null, coeffs, resultParams.toArray());
+        LP prop = addUProp(null, LocalizedString.NONAME, unionType, coeffs, resultParams.toArray());
         return new LPWithParams(prop, mergeAllParams(paramProps));
     }
 
@@ -3061,7 +3065,9 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LPWithParams addScriptedConcatProp(String separator, List<LPWithParams> params) throws ScriptingErrorLog.SemanticErrorException {
-        return addScriptedJProp(addSFUProp(params.size(), separator), params);
+        if(separator == null)
+            checks.checkConcatenate(params);
+        return addScriptedJProp(addSFUProp(separator, params.size()), params);
     }
 
     public LPWithParams addScriptedDCCProp(LPWithParams ccProp, int index) throws ScriptingErrorLog.SemanticErrorException {
@@ -3743,6 +3749,39 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
+    public <O extends ObjectSelector> LPWithParams addScriptedJSONFormProp(MappedForm<O> mapped, List<FormActionProps> allObjectProps, List<TypedParameter> objectsContext,
+                                                                           List<LPWithParams> contextFilters, List<TypedParameter> params) throws ScriptingErrorLog.SemanticErrorException {
+
+        ImList<O> mappedObjects = mapped.objects;
+        ImOrderSet<O> contextObjects = getMappingObjectsArray(mapped, objectsContext);
+
+        List<LPWithParams> mapping = new ArrayList<>();
+        MList<Boolean> mNulls = ListFact.mListMax(mappedObjects.size());
+
+        for (int i = 0; i < mappedObjects.size(); i++) {
+            FormActionProps objectProp = allObjectProps.get(i);
+            assert objectProp.in != null;
+            mapping.add(objectProp.in);
+            mNulls.add(objectProp.inNull);
+            assert !objectProp.out && !objectProp.constraintFilter;
+        }
+
+        CFEWithParams<O> contextEntities = getContextFilterEntities(params.size(), contextObjects, ListFact.fromJavaList(contextFilters));
+
+        LP property = addJSONFormProp(null, LocalizedString.NONAME, mapped.form, mappedObjects, mNulls.immutableList(),
+                contextEntities.orderInterfaces, contextEntities.filters);
+
+        for (int usedParam : contextEntities.usedParams) {
+            mapping.add(new LPWithParams(usedParam));
+        }
+
+        if (mapping.size() > 0) {
+            return addScriptedJProp(property, mapping);
+        } else {
+            return new LPWithParams(property, Collections.emptyList());
+        }
+    }
+
     public <O extends ObjectSelector> LAWithParams addScriptedExportFAProp(MappedForm<O> mapped, List<FormActionProps> allObjectProps, FormIntegrationType exportType,
                                                                            LPWithParams rootProperty, LPWithParams tagProperty, boolean attr, boolean noHeader,
                                                                            String separator, boolean noEscape, Integer selectTop, String charset, NamedPropertyUsage propUsage,
@@ -3764,7 +3803,6 @@ public class ScriptingLogicsModule extends LogicsModule {
             mNulls.add(objectProp.inNull);
             assert !objectProp.out && !objectProp.constraintFilter;
         }
-
 
         LP<?> singleExportFile = null;
         MExclMap<GroupObjectEntity, LP> exportFiles = MapFact.mExclMap();
@@ -3959,6 +3997,58 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public ImList<Type> getTypesForExportProp(List<LPWithParams> paramProps, List<TypedParameter> params) {
         return getTypesByParamProperties(paramProps, params);
+    }
+
+    public LPWithParams addScriptedJSONProperty(List<TypedParameter> oldContext, final List<String> ids, List<Boolean> literals,
+                                                List<LPWithParams> exprs, LPWithParams whereProperty,
+                                                List<LPWithParams> orderProperties, List<Boolean> orderDirections) throws ScriptingErrorLog.SemanticErrorException {
+
+        List<String> exIds = new ArrayList<>(ids);
+        List<Boolean> exLiterals = new ArrayList<>(literals);
+
+        MOrderExclMap<String, Boolean> mOrders = MapFact.mOrderExclMap(orderProperties.size());
+        for (int i = 0; i < orderProperties.size(); i++) {
+            LPWithParams orderProperty = orderProperties.get(i);
+            exprs.add(orderProperty);
+            String orderId = "order" + exIds.size();
+            exIds.add(orderId);
+            exLiterals.add(false);
+            mOrders.exclAdd(orderId, orderDirections.get(i));
+        }
+        ImOrderMap<String, Boolean> orders = mOrders.immutableOrder();
+
+        List<LPWithParams> props = exprs;
+        if(whereProperty != null)
+            props = BaseUtils.add(exprs, whereProperty);
+
+        // technically it's a mixed operator with exec technics (root, tag like SHOW / DIALOG) and operator technics (exprs, where like CHANGE)
+        List<Integer> resultInterfaces = getResultInterfaces(oldContext.size(), props.toArray(new LAPWithParams[props.size()]));
+        List<LPWithParams> mapping = new ArrayList<>();
+        for (int resI : resultInterfaces) {
+            mapping.add(new LPWithParams(resI));
+        }
+
+        List<LAPWithParams> paramsList = new ArrayList<>();
+        paramsList.addAll(mapping);
+        paramsList.addAll(exprs);
+        if (whereProperty != null) {
+            paramsList.add(whereProperty);
+        }
+//        ImList<Type> exprTypes = getTypesForExportProp(exprs, newContext);
+        List<Object> resultParams = getParamsPlainList(paramsList);
+
+        LP result = null;
+        try {
+            result = addJSONProp(LocalizedString.NONAME, resultInterfaces.size(), exIds, exLiterals, orders,
+                    whereProperty != null, resultParams.toArray());
+        } catch (FormEntity.AlreadyDefined alreadyDefined) {
+            throwAlreadyDefinePropertyDraw(alreadyDefined);
+        }
+
+        if(mapping.size() > resultInterfaces.size()) { // optimization
+            return addScriptedJProp(result, mapping);
+        } else
+            return new LPWithParams(result, resultInterfaces);
     }
 
     public LAWithParams addScriptedExportAction(List<TypedParameter> oldContext, FormIntegrationType type, final List<String> ids, List<Boolean> literals,
@@ -4971,6 +5061,12 @@ public class ScriptingLogicsModule extends LogicsModule {
         checkNotExprInExpr(lp, ci);
         return ci instanceof LPLiteral ? (LPLiteral)ci : null;
     }
+
+    public String checkStringValueInExpr(LPWithParams lp, LPNotExpr ci) throws ScriptingErrorLog.SemanticErrorException {
+        checkNotExprInExpr(lp, ci);
+        return ci instanceof LPLiteral && ((LPLiteral) ci).value instanceof LocalizedString ? ((LocalizedString) ((LPLiteral) ci).value).getSourceString() : null;
+    }
+
     public LPCompoundID checkCompoundIDInExpr(LPWithParams lp, LPNotExpr ci) throws ScriptingErrorLog.SemanticErrorException {
         checks.checkNotCIInExpr(ci);
         checks.checkNotTLAInExpr(lp,ci);

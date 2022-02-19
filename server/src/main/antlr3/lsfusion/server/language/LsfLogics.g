@@ -653,7 +653,7 @@ propertyCustomView returns [String customRenderFunction, String customEditorFunc
 	:	'CUSTOM' ((renderFun=stringLiteral { $customRenderFunction = $renderFun.val;})
 	    | ((renderFun=stringLiteral { $customRenderFunction = $renderFun.val;})?
         // EDIT TEXT is a temporary fix for backward compatibility
-		(('CHANGE' | ('EDIT' PRIMITIVE_TYPE)) { $customEditorFunction = "DEFAULT"; } (editFun=stringLiteral {$customEditorFunction = $editFun.val; })?))) // "DEFAULT" is hardcoded and used in GFormController.edit
+		(('CHANGE' | ('EDIT' primitiveType)) { $customEditorFunction = "DEFAULT"; } (editFun=stringLiteral {$customEditorFunction = $editFun.val; })?))) // "DEFAULT" is hardcoded and used in GFormController.edit
 	;
 
 listViewType returns [ListViewType type, PivotOptions options, String customRenderFunction, String mapTileProvider]
@@ -1481,6 +1481,11 @@ propertyExpressionOrLiteral[List<TypedParameter> context] returns [LPWithParams 
         { if(inMainParseState()) { $literal = self.checkLiteralInExpr($exprOrNotExpr.property, $exprOrNotExpr.ci); } }
 ;
 
+propertyExpressionOrString[List<TypedParameter> context] returns [LPWithParams property, String str]
+    :   exprOrNotExpr=propertyExpressionOrNot[context, false, false] { $property = $exprOrNotExpr.property;  }
+        { if(inMainParseState()) { $str = self.checkStringValueInExpr($exprOrNotExpr.property, $exprOrNotExpr.ci); } }
+;
+
 propertyExpressionOrCompoundID[List<TypedParameter> context] returns [LPWithParams property, LPCompoundID id]
     :   exprOrNotExpr=propertyExpressionOrNot[context, false, false] { $property = $exprOrNotExpr.property;  }
         { if(inMainParseState()) { $id = self.checkCompoundIDInExpr($exprOrNotExpr.property, $exprOrNotExpr.ci); } }
@@ -1781,6 +1786,7 @@ expressionFriendlyPD[List<TypedParameter> context, boolean dynamic] returns [LPW
 	|	recDef=recursivePropertyDefinition[context, dynamic] { $property = $recDef.property; } 
 	|	structDef=structCreationPropertyDefinition[context, dynamic] { $property = $structDef.property; }
 	|	concatDef=concatPropertyDefinition[context, dynamic] { $property = $concatDef.property; }
+    |	jsonFormDef=jsonFormPropertyDefinition[context, dynamic] { $property = $jsonFormDef.property; }
 	|	castDef=castPropertyDefinition[context, dynamic] { $property = $castDef.property; }
 	|	sessionDef=sessionPropertyDefinition[context, dynamic] { $property = $sessionDef.property; }
 	|	signDef=signaturePropertyDefinition[context, dynamic] { $property = $signDef.property; }
@@ -2155,17 +2161,41 @@ castPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [L
 		$property = self.addScriptedCastProp($ptype.text, $expr.property);
 	}
 }
-	:   ptype=PRIMITIVE_TYPE '(' expr=propertyExpression[context, dynamic] ')'
+	:   ptype=primitiveType '(' expr=propertyExpression[context, dynamic] ')'
 	;
 
 concatPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
 @after {
 	if (inMainParseState()) {
-		$property = self.addScriptedConcatProp($separator.val, $list.props);
+	    if($firstProp.str != null) { //first property is separator
+		    $property = self.addScriptedConcatProp($firstProp.str, $list.props);
+		} else { //no separator, concat json
+		    $property = self.addScriptedConcatProp(null, BaseUtils.mergeList(Collections.singletonList($firstProp.property), $list.props));
+		}
 	}
 }
-	:   'CONCAT' separator=stringLiteral ',' list=nonEmptyPropertyExpressionList[context, dynamic]
+	:   'CONCAT' firstProp=propertyExpressionOrString[context] ',' list=nonEmptyPropertyExpressionList[context, dynamic]
 	;
+
+jsonFormPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property, FormEntity form, MappedForm mapped]
+@init {
+    List<TypedParameter> objectsContext = null;
+    List<LPWithParams> contextFilters = new ArrayList<>();
+}
+@after {
+	if (inMainParseState()) {
+	    $property = self.addScriptedJSONFormProp($mf.mapped, $mf.props, objectsContext, contextFilters, context);
+	}
+}
+	:   '{' mf=mappedForm[context, null, dynamic] {
+                if(inMainParseState())
+                    objectsContext = self.getTypedObjectsNames($mf.mapped);
+            }
+            (cf = contextFiltersClause[context, objectsContext] { contextFilters.addAll($cf.contextFilters); })?
+        '}'
+//        'ENDJSONX'
+	;
+
 
 sessionPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
 @init {
@@ -2373,7 +2403,7 @@ importFieldDefinition[List<TypedParameter> newContext] returns [String id, Boole
     DataClass dataClass = null;
 }
     :
-        ptype=PRIMITIVE_TYPE { if(inMainParseState()) dataClass = (DataClass)self.findClass($ptype.text); }
+        ptype=primitiveType { if(inMainParseState()) dataClass = (DataClass)self.findClass($ptype.text); }
         (varID=ID EQ)?
         (   pid=ID { $id = $pid.text; $literal = false; }
         |	sLiteral=stringLiteral { $id = $sLiteral.val; $literal = true; }
@@ -3878,7 +3908,7 @@ mappedInput[List<TypedParameter> context] returns [ValueClass valueClass, LPWith
     :    
     (
         (varID=ID EQ { varName = $varID.text; } )?
-        ptype=PRIMITIVE_TYPE
+        ptype=primitiveType
     )
     |	
     ( 
@@ -5019,7 +5049,7 @@ metaCodeIdList returns [List<String> ids]
 
 metaCodeId returns [String sid]
 	:	id=compoundID 		{ $sid = $id.sid; }
-	|	ptype=PRIMITIVE_TYPE	{ $sid = $ptype.text; } 
+	|	ptype=primitiveType	{ $sid = $ptype.text; } 
 	|	lit=metaCodeLiteral 	{ $sid = $lit.text; }
 	|				{ $sid = ""; }
 	;
@@ -5218,7 +5248,7 @@ literal returns [ScriptingLogicsModule.ConstType cls, Object value]
 
 classId returns [String sid]
 	:	id=compoundID { $sid = $id.sid; }
-	|	pid=PRIMITIVE_TYPE { $sid = $pid.text; }
+	|	pid=primitiveType { $sid = $pid.text; }
 	;
 
 signatureClass returns [String sid]
@@ -5305,6 +5335,10 @@ colorLiteral returns [Color val]
 stringLiteral returns [String val]
 	:	s=STRING_LITERAL { $val = self.transformStringLiteral($s.text); }
     |   s=ID { $val = null; }
+	;
+
+primitiveType returns [String val]
+:	    p=PRIMITIVE_TYPE | JSON_TYPE { $val = $p.text; }
 	;
 
 // there are some rules where ID is not desirable (see usages), where there is an ID
@@ -5464,6 +5498,7 @@ PRIMITIVE_TYPE  :	'INTEGER' | 'DOUBLE' | 'LONG' | 'BOOLEAN' | 'TBOOLEAN' | 'DATE
 				|   ('BPSTRING' ('[' DIGITS ']')?) | ('BPISTRING' ('[' DIGITS ']')?)
 				|	('STRING' ('[' DIGITS ']')?) | ('ISTRING' ('[' DIGITS ']')?) | 'NUMERIC' ('[' DIGITS ',' DIGITS ']')? | 'COLOR'
 				|   ('INTERVAL' ('[' INTERVAL_TYPE ']'));
+JSON_TYPE       :   'JSON';
 LOGICAL_LITERAL :	'TRUE' | 'FALSE';
 T_LOGICAL_LITERAL:	'TTRUE' | 'TFALSE';
 NULL_LITERAL	:	'NULL';

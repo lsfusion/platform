@@ -800,6 +800,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
                 getLCPByUniqueName(namePrefix + "Date"),
                 getLCPByUniqueName(namePrefix + "Time"),
                 getLCPByUniqueName(namePrefix + "Color"),
+                getLCPByUniqueName(namePrefix + "JSON"),
                 getLCPByUniqueName(namePrefix + "WordFile"),
                 getLCPByUniqueName(namePrefix + "ImageFile"),
                 getLCPByUniqueName(namePrefix + "PdfFile"),

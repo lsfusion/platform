@@ -226,7 +226,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return getValueActionOrProperty() instanceof PropertyObjectEntity;
     }
 
-    public OrderEntity<?> getOrder() {
+    public PropertyObjectEntity<?> getOrder() {
         return getValueProperty();
     }
 

@@ -1,18 +1,18 @@
 package lsfusion.server.data.expr.formula;
 
-import lsfusion.base.BaseUtils;
 import lsfusion.interop.form.property.ExtInt;
+import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.data.TextClass;
+import lsfusion.server.logics.classes.data.file.JSONClass;
+import lsfusion.server.physics.admin.Settings;
 
-public abstract class StringConcatenateFormulaImpl extends AbstractFormulaImpl {
+public class StringConcatenateFormulaImpl extends AbstractFormulaImpl implements FormulaUnionImpl {
     protected final String separator;
-    protected final Boolean forceCaseInsensitivity;
 
-    public StringConcatenateFormulaImpl(String separator, Boolean forceCaseInsensitivity) {
+    public StringConcatenateFormulaImpl(String separator) {
         this.separator = separator;
-        this.forceCaseInsensitivity = forceCaseInsensitivity;
     }
 
     protected String getExprSource(ExprSource source, StringClass selfType, int i) {
@@ -22,8 +22,7 @@ public abstract class StringConcatenateFormulaImpl extends AbstractFormulaImpl {
     }
 
     @Override
-    public StringClass getType(ExprType source) {
-
+    public Type getType(ExprType source) {
         int separatorLength = separator.length();
 
         ExtInt length = ExtInt.ZERO;
@@ -39,10 +38,13 @@ public abstract class StringConcatenateFormulaImpl extends AbstractFormulaImpl {
                 StringClass stringType = (StringClass) exprType;
                 caseInsensitive = caseInsensitive || stringType.caseInsensitive;
                 blankPadded = blankPadded && stringType.blankPadded;
-                if(exprType instanceof TextClass) {
+                if (exprType instanceof TextClass) {
                     isText = true;
                     sid = exprType.getSID();
                 }
+            } else if (exprType instanceof JSONClass) {
+                isText = true;
+                sid = TextClass.instance.getSID();
             }
 
             if (i > 0) {
@@ -50,25 +52,46 @@ public abstract class StringConcatenateFormulaImpl extends AbstractFormulaImpl {
             }
         }
 
-        if (forceCaseInsensitivity != null) {
-            caseInsensitive = forceCaseInsensitivity;
-        }
-
         if(isText)
             return TextClass.getInstance(sid);
         return StringClass.get(blankPadded, caseInsensitive, length);
     }
 
-    @Override
-    public boolean equals(Object o) {
-        StringConcatenateFormulaImpl that = (StringConcatenateFormulaImpl) o;
-        return BaseUtils.nullEquals(forceCaseInsensitivity,that.forceCaseInsensitivity) && separator.equals(that.separator);
+    public boolean supportRemoveNull() {
+        return true;
+    }
+
+    public boolean supportSingleSimplify() {
+        return false; // because it will break implicit cast'ing (CONCAT '', f(), 5 will return 5 when f() is null)
+    }
+
+    public boolean supportNeedValue() {
+        return true;
     }
 
     @Override
-    public int hashCode() {
-        int result = separator.hashCode();
-        result = 31 * result + (forceCaseInsensitivity == null ? 0 : forceCaseInsensitivity ? 1 : 2);
-        return result;
+    public String getSource(ExprSource source) {
+        int exprCount = source.getExprCount();
+        if (exprCount == 0) {
+            return "";
+        }
+
+        StringClass type = (StringClass) getType(source);
+        SQLSyntax syntax = source.getSyntax();
+
+        String result = getExprSource(source, type, 0);
+
+        for (int i = 1; i < exprCount; i++) {
+            String exprSource = getExprSource(source, type, i);
+
+            if (Settings.get().isUseSafeStringAgg()) {
+                result = "CASE WHEN " + result + " IS NOT NULL" +
+                        " THEN " + result + " " + syntax.getStringConcatenate() + " (CASE WHEN " + exprSource + " IS NOT NULL THEN '" + separator + "' " + syntax.getStringConcatenate() + " " + exprSource + " ELSE '' END)" +
+                        " ELSE " + exprSource + " END";
+            } else {
+                result = syntax.getStringCFunc() + "(" + result + "," + exprSource + ",'" + separator + "')";
+            }
+        }
+        return type.getCast("(" + result + ")", syntax, source.getMEnv());
     }
 }

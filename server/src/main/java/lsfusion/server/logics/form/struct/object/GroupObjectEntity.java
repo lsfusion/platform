@@ -1,16 +1,14 @@
 package lsfusion.server.logics.form.struct.object;
 
 import lsfusion.base.Pair;
+import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.base.col.interfaces.mutable.LongMutable;
-import lsfusion.base.col.interfaces.mutable.MExclMap;
-import lsfusion.base.col.interfaces.mutable.MExclSet;
-import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
+import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.identity.IdentityObject;
 import lsfusion.interop.form.object.table.grid.ListViewType;
 import lsfusion.interop.form.property.ClassViewType;
@@ -36,6 +34,7 @@ import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstan
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
 import lsfusion.server.logics.form.struct.filter.ContextFilterEntity;
+import lsfusion.server.logics.form.struct.filter.FilterEntity;
 import lsfusion.server.logics.form.struct.filter.FilterEntityInstance;
 import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
@@ -43,6 +42,7 @@ import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.classes.IsClassProperty;
+import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.implement.PropertyRevImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.Settings;
@@ -358,6 +358,14 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
             result = InputFilterEntity.and(result, filt.getInputFilterEntity(getObjects().single(), mapObjects));
         return result;
     }
+    private <T extends PropertyInterface, P extends PropertyInterface> PropertyMapImplement<?, T> getFilterWhereProperty(ImSet<FilterEntity> filters, ImSet<ContextFilterEntity<?, P, ObjectEntity>> contextFilters, ImRevMap<P, T> mapValues, ImRevMap<ObjectEntity, T> mapObjects) {
+        MList<PropertyMapImplement<?, T>> mList = ListFact.mList();
+        for(FilterEntity filter : filters)
+            mList.add(filter.getImplement(mapObjects));
+        for(ContextFilterEntity<?, P, ObjectEntity> contextFilter : contextFilters)
+            mList.add(contextFilter.getWhereProperty(mapValues, mapObjects));
+        return PropertyFact.createAnd(mList.immutableList().getCol());
+    }
 
     private static ImMap<ObjectEntity, ValueClass> getGridClasses(ImSet<ObjectEntity> objects) {
         return objects.filterFn(element -> !element.noClasses()).mapValues((ObjectEntity value) -> value.baseClass);
@@ -368,12 +376,18 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
     public <P extends PropertyInterface> InputFilterEntity<?, P> getClassInputFilterEntity() {
         return new InputFilterEntity<>(IsClassProperty.getProperty(getGridClasses(getObjects())).property, MapFact.EMPTYREV());
     }
+    public <P extends PropertyInterface> PropertyMapImplement<?, P> getClassWhereProperty(ImRevMap<ObjectEntity, P> mapObjects) {
+        return IsClassProperty.getProperty(getGridClasses(getObjects())).mapPropertyImplement(mapObjects);
+    }
 
     public Where getWhere(ImMap<ObjectEntity, ? extends Expr> mapKeys, Modifier modifier, ImSet<? extends FilterEntityInstance> filters) throws SQLException, SQLHandledException {
         return getFilterWhere(mapKeys, modifier, filters).and(getClassWhere(mapKeys, modifier));
     }
     public <P extends PropertyInterface> InputFilterEntity<?, P> getInputFilterEntity(ImSet<ContextFilterEntity<?, P, ObjectEntity>> filters, ImRevMap<ObjectEntity, P> mapObjects) {
         return InputFilterEntity.and(getFilterInputFilterEntity(filters, mapObjects), getClassInputFilterEntity());
+    }
+    public <T extends PropertyInterface, P extends PropertyInterface> PropertyMapImplement<?, T> getWhereProperty(ImSet<FilterEntity> filters, ImSet<ContextFilterEntity<?, P, ObjectEntity>> contextFilters, ImRevMap<P, T> mapValues, ImRevMap<ObjectEntity, T> mapObjects) {
+        return PropertyFact.createAnd(getFilterWhereProperty(filters, contextFilters, mapValues, mapObjects), getClassWhereProperty(mapObjects));
     }
 
     // hack where ImMap used (it does not support null keys)

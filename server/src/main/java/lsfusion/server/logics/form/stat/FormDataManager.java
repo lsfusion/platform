@@ -72,10 +72,9 @@ public abstract class FormDataManager {
     }
 
     public ExportResult getExportData(int selectTop) throws SQLException, SQLHandledException {
-        StaticDataGenerator.Hierarchy hierarchy = dataInterface.getHierarchy(false);
-        BaseStaticDataGenerator sourceGenerator = new BaseStaticDataGenerator(dataInterface, hierarchy, false);
+        ExportStaticDataGenerator sourceGenerator = new ExportStaticDataGenerator(dataInterface);
         Pair<Map<GroupObjectEntity, StaticKeyData>, StaticPropertyData<PropertyDrawEntity>> data = sourceGenerator.generate(selectTop);
-        return new ExportResult(data.first, data.second, hierarchy);
+        return new ExportResult(data.first, data.second, sourceGenerator.hierarchy);
     }
 
     private Pair<List<String>, List<List<String>>> getPrintTable(GroupObjectEntity group, final ExportResult sources, boolean removeNullsAndDuplicates) {

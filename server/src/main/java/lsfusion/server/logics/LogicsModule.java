@@ -25,6 +25,8 @@ import lsfusion.server.base.version.LastVersion;
 import lsfusion.server.base.version.NFLazy;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.data.expr.formula.CustomFormulaSyntax;
+import lsfusion.server.data.expr.formula.JSONMergeFormulaImpl;
+import lsfusion.server.data.expr.formula.StringConcatenateFormulaImpl;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.query.PartitionType;
 import lsfusion.server.data.expr.value.StaticParamNullableExpr;
@@ -82,6 +84,7 @@ import lsfusion.server.logics.form.open.stat.PrintAction;
 import lsfusion.server.logics.form.stat.struct.FormIntegrationType;
 import lsfusion.server.logics.form.stat.struct.IntegrationFormEntity;
 import lsfusion.server.logics.form.stat.struct.export.hierarchy.json.ExportJSONAction;
+import lsfusion.server.logics.form.stat.struct.export.hierarchy.json.JSONProperty;
 import lsfusion.server.logics.form.stat.struct.export.hierarchy.xml.ExportXMLAction;
 import lsfusion.server.logics.form.stat.struct.export.plain.csv.ExportCSVAction;
 import lsfusion.server.logics.form.stat.struct.export.plain.dbf.ExportDBFAction;
@@ -577,6 +580,12 @@ public abstract class LogicsModule {
         return addAction(group, new LA<>(new PrintAction<>(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters,
                 staticType, syncType, selectTop, targetProp, baseLM.formPageCount, removeNullsAndDuplicates, printer, sheetName, password)));
     }
+    protected <O extends ObjectSelector> LP addJSONFormProp(Group group, LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls,
+                                                       ImOrderSet<PropertyInterface> orderContextInterfaces, ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters) {
+        JSONProperty<O> property = new JSONProperty<O>(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters);
+
+        return addProperty(group, new LP<>(property));
+    }
     protected <O extends ObjectSelector> LA addEFAProp(Group group, LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls,
                                                        ImOrderSet<PropertyInterface> orderContextInterfaces, ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters,
                                                        FormIntegrationType staticType, boolean noHeader, String separator, boolean noEscape, Integer selectTop, String charset,
@@ -679,26 +688,53 @@ public abstract class LogicsModule {
                 mappedInterfaces, innerInterfaces.get(changeIndex), conditionalPart, getBaseClass()));
     }
 
-    // ------------------- Export property action ----------------- //
-    protected LA addExportPropertyAProp(LocalizedString caption, FormIntegrationType type, int resInterfaces, List<String> aliases, List<Boolean> literals, ImOrderMap<String, Boolean> orders,
-                                        LP singleExportFile, boolean hasWhere, ValueClass root, ValueClass tag, String separator,
-                                        boolean noHeader, boolean noEscape, Integer selectTop, String charset, boolean attr, Object... params) throws FormEntity.AlreadyDefined {
+    private static class IntegrationForm {
+        public final IntegrationFormEntity<PropertyInterface> form;
+        public final ImOrderSet<ObjectEntity> objectsToSet;
+        public final ImList<Boolean> nulls;
+
+        public IntegrationForm(IntegrationFormEntity<PropertyInterface> form, ImOrderSet<ObjectEntity> objectsToSet, ImList<Boolean> nulls) {
+            this.form = form;
+            this.objectsToSet = objectsToSet;
+            this.nulls = nulls;
+        }
+    }
+
+    private IntegrationForm addIntegrationForm(int resInterfaces, List<String> aliases, List<Boolean> literals, ImOrderMap<String, Boolean> orders, boolean hasWhere, Object[] params) throws FormEntity.AlreadyDefined {
         ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(getIntNum(params));
         ImList<PropertyInterfaceImplement<PropertyInterface>> readImplements = readCalcImplements(innerInterfaces, params);
         final ImList<PropertyInterfaceImplement<PropertyInterface>> exprs = readImplements.subList(resInterfaces, readImplements.size() - (hasWhere ? 1 : 0));
         ImOrderSet<PropertyInterface> mapInterfaces = BaseUtils.immutableCast(readImplements.subList(0, resInterfaces).toOrderExclSet());
-        
+
         // determining where
         PropertyInterfaceImplement<PropertyInterface> where = hasWhere ? readImplements.get(readImplements.size() - 1) : null;
         where = PropertyFact.getFullWhereProperty(innerInterfaces.getSet(), mapInterfaces.getSet(), where, exprs.getCol());
 
         // creating form
-        IntegrationFormEntity<PropertyInterface> form = new IntegrationFormEntity<>(baseLM, innerInterfaces, null, mapInterfaces, aliases, literals, exprs, where, orders, attr, version);
+        IntegrationFormEntity<PropertyInterface> form = new IntegrationFormEntity<>(baseLM, innerInterfaces, null, mapInterfaces, aliases, literals, exprs, where, orders, false, version);
         addAutoFormEntity(form);
 
         ImOrderSet<ObjectEntity> objectsToSet = mapInterfaces.mapOrder(form.mapObjects);
         ImList<Boolean> nulls = ListFact.toList(true, mapInterfaces.size());
-        
+
+        return new IntegrationForm(form, objectsToSet, nulls);
+    }
+
+    protected LP addJSONProp(LocalizedString caption, int resInterfaces, List<String> aliases, List<Boolean> literals, ImOrderMap<String, Boolean> orders,
+                                        boolean hasWhere, Object... params) throws FormEntity.AlreadyDefined {
+        IntegrationForm integrationForm = addIntegrationForm(resInterfaces, aliases, literals, orders, hasWhere, params);
+
+        // creating action
+        return addJSONFormProp(null, caption, integrationForm.form, integrationForm.objectsToSet, integrationForm.nulls, SetFact.EMPTYORDER(), SetFact.EMPTY());
+    }
+
+    // ------------------- Export property action ----------------- //
+    protected LA addExportPropertyAProp(LocalizedString caption, FormIntegrationType type, int resInterfaces, List<String> aliases, List<Boolean> literals, ImOrderMap<String, Boolean> orders,
+                                        LP singleExportFile, boolean hasWhere, ValueClass root, ValueClass tag, String separator,
+                                        boolean noHeader, boolean noEscape, Integer selectTop, String charset, boolean attr, Object... params) throws FormEntity.AlreadyDefined {
+        IntegrationForm integrationForm = addIntegrationForm(resInterfaces, aliases, literals, orders, hasWhere, params);
+        IntegrationFormEntity<PropertyInterface> form = integrationForm.form;
+
         ImMap<GroupObjectEntity, LP> exportFiles = MapFact.EMPTY();
         if(type.isPlain()) {
             exportFiles = MapFact.singleton(form.groupObject == null ? GroupObjectEntity.NULL : form.groupObject, singleExportFile);
@@ -706,7 +742,7 @@ public abstract class LogicsModule {
         }            
                 
         // creating action
-        return addEFAProp(null, caption, form, objectsToSet, nulls, SetFact.EMPTYORDER(), SetFact.EMPTY(), type, noHeader, separator, noEscape, selectTop, charset, singleExportFile, exportFiles, root, tag);
+        return addEFAProp(null, caption, form, integrationForm.objectsToSet, integrationForm.nulls, SetFact.EMPTYORDER(), SetFact.EMPTY(), type, noHeader, separator, noEscape, selectTop, charset, singleExportFile, exportFiles, root, tag);
     }
 
     protected LA addImportPropertyAProp(FormIntegrationType type, int paramsCount, List<String> aliases, List<Boolean> literals, ImList<ValueClass> paramClasses, LP<?> whereLCP, String separator, boolean noHeader, boolean noEscape, String charset, boolean sheetAll, boolean attr, boolean hasWhere, Object... params) throws FormEntity.AlreadyDefined {
@@ -1402,14 +1438,13 @@ public abstract class LogicsModule {
 
     // ------------------- UNION ----------------- //
 
-    protected LP addUProp(Group group, LocalizedString caption, Union unionType, String separator, int[] coeffs, Object... params) {
-        return addUProp(group, false, caption, unionType, null, coeffs, params);
+    protected LP addUProp(Group group, LocalizedString caption, Union unionType, int[] coeffs, Object... params) {
+        return addUProp(group, caption, unionType, null, coeffs, params);
     }
 
-    protected LP addUProp(Group group, boolean persistent, LocalizedString caption, Union unionType, String separator, int[] coeffs, Object... params) {
+    protected LP addUProp(Group group, LocalizedString caption, Union unionType, String separator, int[] coeffs, Object... params) {
 
         assert (unionType==Union.SUM)==(coeffs!=null);
-        assert (unionType==Union.STRING_AGG)==(separator !=null);
 
         int intNum = getIntNum(params);
         ImOrderSet<UnionProperty.Interface> listInterfaces = UnionProperty.getInterfaces(intNum);
@@ -1442,8 +1477,8 @@ public abstract class LogicsModule {
             case CLASSOVERRIDE:
                 property = new CaseUnionProperty(caption, listInterfaces, listOperands, true, false, false);
                 break;
-            case STRING_AGG:
-                property = new StringAggUnionProperty(caption, listInterfaces, listOperands, separator);
+            case CONCAT:
+                property = new FormulaUnionProperty(caption, listInterfaces, listOperands, separator != null ? new StringConcatenateFormulaImpl(separator) : JSONMergeFormulaImpl.instance);
                 break;
         }
 
@@ -1568,18 +1603,14 @@ public abstract class LogicsModule {
     }
 
     public LP addLWhereProp(LP logValueProperty, LP logDropProperty) {
-        return addUProp(null, LocalizedString.NONAME, Union.OVERRIDE, null, null, add(directLI(convertToLogical(logValueProperty)), directLI(logDropProperty)));
+        return addUProp(null, LocalizedString.NONAME, Union.OVERRIDE, null, add(directLI(convertToLogical(logValueProperty)), directLI(logDropProperty)));
                 
     }
 
     // ------------------- CONCAT ----------------- //
 
-    protected LP addSFUProp(int intNum, String separator) {
-        return addSFUProp(separator, intNum);
-    }
-
     protected LP addSFUProp(String separator, int intNum) {
-        return addUProp(null, false, LocalizedString.create("{logics.join}"), Union.STRING_AGG, separator, null, getUParams(intNum));
+        return addUProp(null, LocalizedString.create("{logics.join}"), Union.CONCAT, separator, null, getUParams(intNum));
     }
 
     // ------------------- ACTION ----------------- //

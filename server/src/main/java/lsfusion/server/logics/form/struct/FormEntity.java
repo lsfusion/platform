@@ -488,9 +488,9 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         });
     }
     // in theory upper method could be used but we can't do that with inheritance because of O generic type
-    public <P extends PropertyInterface> ImMap<GroupObjectEntity, ImSet<ContextFilterEntity<?, P, ObjectEntity>>> getGroupContextFilters(ImSet<ContextFilterEntity<?, P, ObjectEntity>> filters) {
+    public <P extends PropertyInterface> ImMap<GroupObjectEntity, ImSet<ContextFilterEntity<?, P, ObjectEntity>>> getGroupContextFilters(ImSet<ContextFilterEntity<?, P, ObjectEntity>> filters, ImSet<GroupObjectEntity> excludeGroupObjects) {
         return filters.group(key -> {
-            GroupObjectEntity applyObject = getApplyObject(key.getObjects(), SetFact.EMPTY());
+            GroupObjectEntity applyObject = getApplyObject(key.getObjects(), excludeGroupObjects);
             return applyObject == null ? GroupObjectEntity.NULL : applyObject;
         });
     }
@@ -515,7 +515,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
             filters = SetFact.EMPTY();
         ImSet<? extends ContextFilterEntity<?, P, ObjectEntity>> contextFilterEntities = filters.mapSetValues((FilterEntity filterEntity) -> ((FilterEntity<?>) filterEntity).getContext());
 
-        ImSet<ContextFilterEntity<?, P, ObjectEntity>> contextGroupFilters = getGroupContextFilters(contextFilters).get(groupObject);
+        ImSet<ContextFilterEntity<?, P, ObjectEntity>> contextGroupFilters = getGroupContextFilters(contextFilters, SetFact.EMPTY()).get(groupObject);
         if(contextGroupFilters == null)
             contextGroupFilters = SetFact.EMPTY();
 
@@ -647,14 +647,11 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
     @IdentityLazy
     public ImMap<GroupObjectEntity, ImOrderMap<OrderEntity, Boolean>> getGroupOrdersList(final ImSet<GroupObjectEntity> excludeGroupObjects) {
-        return BaseUtils.immutableCast(getDefaultOrdersList().mapOrderKeyValues((Function<PropertyDrawEntity<?>, OrderEntity<?>>) PropertyDrawEntity::getOrder, value -> !value).mergeOrder(getFixedOrdersList()).groupOrder(new BaseUtils.Group<GroupObjectEntity, OrderEntity<?>>() {
-            @Override
-            public GroupObjectEntity group(OrderEntity<?> key) {
-                GroupObjectEntity groupObject = key.getApplyObject(FormEntity.this, excludeGroupObjects);
-                if(groupObject == null)
-                    return GroupObjectEntity.NULL;
-                return groupObject;
-            }
+        return BaseUtils.immutableCast(getDefaultOrdersList().mapOrderKeyValues((Function<PropertyDrawEntity<?>, OrderEntity<?>>) PropertyDrawEntity::getOrder, value -> !value).mergeOrder(getFixedOrdersList()).groupOrder(key -> {
+            GroupObjectEntity groupObject = key.getApplyObject(FormEntity.this, excludeGroupObjects);
+            if(groupObject == null)
+                return GroupObjectEntity.NULL;
+            return groupObject;
         }));
     }
 
