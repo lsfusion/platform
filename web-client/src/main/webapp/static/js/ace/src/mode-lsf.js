@@ -151,7 +151,7 @@ define("ace/mode/lsf",["require","exports","module","ace/lib/oop","ace/mode/text
             "keyword.primitive.type": "INTEGER|DOUBLE|LONG|BOOLEAN|TBOOLEAN|DATE|DATETIME|ZDATETIME|YEAR|TEXT|RICHTEXT|HTMLTEXT|TIME|WORDFILE|IMAGEFILE|" +
                 "PDFFILE|DBFFILE|RAWFILE|FILE|EXCELFILE|TEXTFILE|CSVFILE|HTMLFILE|JSONFILE|XMLFILE|TABLEFILE|WORDLINK|IMAGELINK|" +
                 "PDFLINK|DBFLINK|RAWLINK|LINK|EXCELLINK|TEXTLINK|CSVLINK|HTMLLINK|JSONLINK|XMLLINK|TABLELINK|BPSTRING" +
-                "|BPISTRING|STRING|ISTRING|NUMERIC|COLOR|JSON|INTERVAL",
+                "|BPISTRING|STRING|ISTRING|NUMERIC|COLOR|INTERVAL",
             "keyword.logical.literal": "TRUE|FALSE",
             "keyword.t.logical.literal": "TTRUE|TFALSE",
             "keyword.null.literal": "NULL",
