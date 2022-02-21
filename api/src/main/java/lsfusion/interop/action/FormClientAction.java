@@ -11,13 +11,14 @@ public class FormClientAction extends ExecuteClientAction {
     public ModalityType modalityType;
 
     public boolean forbidDuplicate;
+    public boolean moreAsync;
 
     public Object[] immutableMethods;
     public byte[] firstChanges;
 
     public static String[] methodNames = new String[] {"getUserPreferences", "getRichDesignByteArray", "getInitFilterPropertyDraw", "getInputObjects"};
 
-    public FormClientAction(String canonicalName, String formSID, boolean forbidDuplicate, RemoteFormInterface remoteForm, Object[] immutableMethods, byte[] firstChanges, ModalityType modalityType) {
+    public FormClientAction(String canonicalName, String formSID, boolean forbidDuplicate, boolean moreAsync, RemoteFormInterface remoteForm, Object[] immutableMethods, byte[] firstChanges, ModalityType modalityType) {
         this.formSID = formSID;
         this.immutableMethods = immutableMethods;
         this.firstChanges = firstChanges;
@@ -25,6 +26,7 @@ public class FormClientAction extends ExecuteClientAction {
         this.remoteForm = remoteForm;
         this.modalityType = modalityType;
         this.forbidDuplicate = forbidDuplicate;
+        this.moreAsync = moreAsync;
     }
 
     @Override

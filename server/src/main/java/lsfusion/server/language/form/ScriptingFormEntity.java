@@ -828,6 +828,10 @@ public class ScriptingFormEntity {
         form.localAsync = localAsync;
     }
 
+    public void setMoreAsync(boolean moreAsync) {
+        form.moreAsync = moreAsync;
+    }
+
     private CustomClass findCustomClassForFormSetup(String className) throws ScriptingErrorLog.SemanticErrorException {
         ValueClass valueClass = LM.findClass(className);
         if (!(valueClass instanceof CustomClass)) {

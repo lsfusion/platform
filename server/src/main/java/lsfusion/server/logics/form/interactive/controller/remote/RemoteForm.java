@@ -644,6 +644,10 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         return form.entity.getCanonicalName();
     }
 
+    public boolean isMoreAsync() {
+        return form.entity.moreAsync;
+    }
+
     public ServerResponse closedPressed(long requestIndex, long lastReceivedRequestIndex, boolean ok) throws RemoteException {
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
 

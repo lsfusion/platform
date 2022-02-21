@@ -1,11 +1,9 @@
 package lsfusion.gwt.client.form.property.cell.view;
 
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.Style;
+import com.google.gwt.dom.client.*;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 
 public abstract class CellRenderer<T> {
 
@@ -123,6 +121,26 @@ public abstract class CellRenderer<T> {
 
     public void renderDynamic(Element element, Object value, UpdateContext updateContext) {
         renderDynamicContent(element, value, updateContext);
+    }
+
+    private static final String MOREASYNC = "more-async";
+    public void renderMoreAsync(Element element, boolean enable) {
+        if (enable) {
+            ImageElement imageElement = Document.get().createImageElement();
+            imageElement.setId(MOREASYNC);
+
+            GwtClientUtils.setThemeImage("loading.gif", imageElement::setSrc);
+
+            element.insertFirst(imageElement);
+        } else {
+            NodeList<Node> children = element.getChildNodes();
+            for (int i = 0; i < children.getLength(); i++) {
+                Element child = (Element) children.getItem(i);
+                if (MOREASYNC.equals(child.getId())) {
+                    element.removeChild(child);
+                }
+            }
+        }
     }
 
     public abstract void renderStaticContent(Element element, RenderContext renderContext);

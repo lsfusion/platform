@@ -168,7 +168,7 @@ public abstract class FormsController {
         return tabsPanel;
     }
 
-    public FormContainer openForm(GAsyncFormController asyncFormController, GForm form, GModalityType modalityType, boolean forbidDuplicate, Event editEvent, EditContext editContext, GFormController formController, WindowHiddenHandler hiddenHandler) {
+    public FormContainer openForm(GAsyncFormController asyncFormController, GForm form, GModalityType modalityType, boolean forbidDuplicate, boolean moreAsync, Event editEvent, EditContext editContext, GFormController formController, WindowHiddenHandler hiddenHandler) {
         FormDockable duplicateForm = getDuplicateForm(form.sID, forbidDuplicate);
         if(duplicateForm != null) {
             selectTab(duplicateForm);
@@ -189,7 +189,7 @@ public abstract class FormsController {
             asyncFormController.cancelScheduledOpening();
             formContainer = createFormContainer(windowType, false, -1, form.getCaption(), editEvent, editContext, formController);
         }
-        initForm(formContainer, form, hiddenHandler, modalityType.isDialog(), isAutoSized(editContext, windowType));
+        initForm(formContainer, form, hiddenHandler, modalityType.isDialog(), moreAsync, isAutoSized(editContext, windowType));
         if(asyncOpened)
             formContainer.onAsyncInitialized();
         else
@@ -266,12 +266,12 @@ public abstract class FormsController {
         }, ContextMenuEvent.getType());
     }
 
-    public void initForm(FormContainer formContainer, GForm form, WindowHiddenHandler hiddenHandler, boolean dialog, boolean autoSize) {
+    public void initForm(FormContainer formContainer, GForm form, WindowHiddenHandler hiddenHandler, boolean dialog, boolean moreAsync, boolean autoSize) {
         formContainer.initForm(this, form, editFormCloseReason -> {
             formContainer.queryHide(editFormCloseReason);
 
             hiddenHandler.onHidden();
-        }, dialog, autoSize);
+        }, dialog, moreAsync, autoSize);
     }
 
     public void selectTab(FormDockable dockable) {
