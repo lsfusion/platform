@@ -3065,8 +3065,6 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LPWithParams addScriptedConcatProp(String separator, List<LPWithParams> params) throws ScriptingErrorLog.SemanticErrorException {
-        if(separator == null)
-            checks.checkConcatenate(params);
         return addScriptedJProp(addSFUProp(separator, params.size()), params);
     }
 

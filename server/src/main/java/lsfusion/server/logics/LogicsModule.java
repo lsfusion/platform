@@ -25,7 +25,6 @@ import lsfusion.server.base.version.LastVersion;
 import lsfusion.server.base.version.NFLazy;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.data.expr.formula.CustomFormulaSyntax;
-import lsfusion.server.data.expr.formula.JSONMergeFormulaImpl;
 import lsfusion.server.data.expr.formula.StringConcatenateFormulaImpl;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.query.PartitionType;
@@ -1478,7 +1477,7 @@ public abstract class LogicsModule {
                 property = new CaseUnionProperty(caption, listInterfaces, listOperands, true, false, false);
                 break;
             case CONCAT:
-                property = new FormulaUnionProperty(caption, listInterfaces, listOperands, separator != null ? new StringConcatenateFormulaImpl(separator) : JSONMergeFormulaImpl.instance);
+                property = new FormulaUnionProperty(caption, listInterfaces, listOperands, new StringConcatenateFormulaImpl(separator));
                 break;
         }
 

@@ -10,7 +10,7 @@ import java.util.regex.Pattern;
 import static lsfusion.base.BaseUtils.nullEquals;
 import static lsfusion.base.BaseUtils.nullHash;
 
-public class CustomFormulaImpl extends AbstractFormulaImpl implements FormulaJoinImpl {
+public class CustomFormulaImpl extends AbstractFormulaImpl {
 
     public final CustomFormulaSyntax formula;
 
@@ -19,13 +19,7 @@ public class CustomFormulaImpl extends AbstractFormulaImpl implements FormulaJoi
 
     public final FormulaClass valueClass;
     
-    private final boolean hasNotNull;
-
-    public boolean hasNotNull() {
-        return hasNotNull;
-    }
-
-    public CustomFormulaImpl(CustomFormulaSyntax formula, ImMap<String, Integer> mapParams, FormulaClass valueClass, boolean hasNotNull) {
+    public CustomFormulaImpl(CustomFormulaSyntax formula, ImMap<String, Integer> mapParams, FormulaClass valueClass) {
         this.formula = formula;
         this.mapParams = mapParams;
         this.valueClass = valueClass;
@@ -36,8 +30,6 @@ public class CustomFormulaImpl extends AbstractFormulaImpl implements FormulaJoi
             patternString = "\\b(" + patternString + ")\\b"; 
         }
         this.paramsPattern = Pattern.compile(patternString);
-        
-        this.hasNotNull = hasNotNull;
     }
 
     @Override
@@ -66,11 +58,11 @@ public class CustomFormulaImpl extends AbstractFormulaImpl implements FormulaJoi
 
     @Override
     public int hashCode() {
-        return 31 * (31 * nullHash(valueClass) + mapParams.hashCode()) + formula.hashCode() + (hasNotNull?1:0);
+        return (31 * nullHash(valueClass) + mapParams.hashCode()) + formula.hashCode();
     }
 
     @Override
     public boolean equals(Object o) {
-        return this == o || o instanceof CustomFormulaImpl && formula.equals(((CustomFormulaImpl) o).formula) && mapParams.equals(((CustomFormulaImpl) o).mapParams) && nullEquals(valueClass, ((CustomFormulaImpl) o).valueClass) && hasNotNull==((CustomFormulaImpl) o).hasNotNull;
+        return this == o || o instanceof CustomFormulaImpl && formula.equals(((CustomFormulaImpl) o).formula) && mapParams.equals(((CustomFormulaImpl) o).mapParams) && nullEquals(valueClass, ((CustomFormulaImpl) o).valueClass);
     }
 }
