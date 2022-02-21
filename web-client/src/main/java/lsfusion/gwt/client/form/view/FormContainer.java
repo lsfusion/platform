@@ -121,8 +121,8 @@ public abstract class FormContainer {
 
     protected abstract Element getFocusedElement();
 
-    public void initForm(FormsController formsController, GForm gForm, Consumer<EndReason> hiddenHandler, boolean isDialog, boolean moreAsync, boolean autoSize) {
-        form = new GFormController(formsController, this, gForm, isDialog, moreAsync, autoSize) {
+    public void initForm(FormsController formsController, GForm gForm, Consumer<EndReason> hiddenHandler, boolean isDialog, boolean autoSize) {
+        form = new GFormController(formsController, this, gForm, isDialog, autoSize) {
             @Override
             public void onFormHidden(int closeDelay, EndReason editFormCloseReason) {
                 super.onFormHidden(closeDelay, editFormCloseReason);

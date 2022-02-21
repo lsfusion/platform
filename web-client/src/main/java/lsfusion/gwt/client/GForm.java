@@ -28,6 +28,7 @@ public class GForm implements Serializable, GWidthStringProcessor {
     public String creationPath;
 
     public int autoRefresh;
+    public boolean moreAsync;
 
     public GContainer mainContainer;
     public HashSet<GTreeGroup> treeGroups = new HashSet<>();

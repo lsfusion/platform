@@ -38,7 +38,7 @@ public class GNavigatorActionDispatcher extends GwtActionDispatcher {
         if (action.modalityType.isModal()) {
             pauseDispatching();
         }
-        formsController.openForm(getAsyncFormController(getDispatchingIndex()), action.form, action.modalityType, action.moreAsync, action.forbidDuplicate, null, null, null, () -> {
+        formsController.openForm(getAsyncFormController(getDispatchingIndex()), action.form, action.modalityType, action.forbidDuplicate, null, null, null, () -> {
             if(action.modalityType == GModalityType.DOCKED || action.modalityType == GModalityType.DOCKED_MODAL)
                 formsController.ensureTabSelected();
 

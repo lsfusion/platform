@@ -123,7 +123,6 @@ public class GFormController implements EditManager {
     public final GFormLayout formLayout;
 
     private final boolean isDialog;
-    private final boolean moreAsync;
 
     private final NativeSIDMap<GGroupObject, ArrayList<GGroupObjectValue>> currentGridObjects = new NativeSIDMap<>();
 
@@ -153,14 +152,13 @@ public class GFormController implements EditManager {
         return formsController;
     }
 
-    public GFormController(FormsController formsController, FormContainer formContainer, GForm gForm, boolean isDialog, boolean moreAsync, boolean autoSize) {
+    public GFormController(FormsController formsController, FormContainer formContainer, GForm gForm, boolean isDialog, boolean autoSize) {
         actionDispatcher = new GFormActionDispatcher(this);
 
         this.formsController = formsController;
         this.formContainer = formContainer;
         this.form = gForm;
         this.isDialog = isDialog;
-        this.moreAsync = moreAsync;
 
         dispatcher = new FormDispatchAsync(this);
 
@@ -794,12 +792,12 @@ public class GFormController implements EditManager {
             return panelController;
     }
 
-    public void openForm(Long requestIndex, GForm form, GModalityType modalityType, boolean forbidDuplicate,  boolean moreAsync, Event editEvent, EditContext editContext, final WindowHiddenHandler handler) {
+    public void openForm(Long requestIndex, GForm form, GModalityType modalityType, boolean forbidDuplicate, Event editEvent, EditContext editContext, final WindowHiddenHandler handler) {
         boolean isDockedModal = modalityType == GModalityType.DOCKED_MODAL;
         if (isDockedModal)
             ((FormDockable)formContainer).block();
 
-        FormContainer blockingForm = formsController.openForm(getAsyncFormController(requestIndex), form, modalityType, forbidDuplicate, moreAsync, editEvent, editContext, this, () -> {
+        FormContainer blockingForm = formsController.openForm(getAsyncFormController(requestIndex), form, modalityType, forbidDuplicate, editEvent, editContext, this, () -> {
             if(isDockedModal) {
                 ((FormDockable)formContainer).unblock();
 
@@ -964,6 +962,16 @@ public class GFormController implements EditManager {
             return;
         }
 
+        if(form.moreAsync) {
+            long requestIndex = asyncExecutePropertyEventAction(editContext, event, editContext.getProperty(), editContext.getColumnKey(), actionSID);
+            if (requestIndex > -1) {
+                Element element = editContext.getEditElement();
+                editContext.getProperty().getCellRenderer().renderMoreAsync(element, true);
+                pendingMoreAsyncRequests.put(requestIndex, () -> editContext.getProperty().getCellRenderer().renderMoreAsync(element, false));
+            }
+            return;
+        }
+
         syncExecutePropertyEventAction(editContext, actionSID, event);
     }
 
@@ -1005,7 +1013,7 @@ public class GFormController implements EditManager {
 
             @Override
             public void onSuccess(ServerResponseResult response, Runnable onDispatchFinished) {
-                if(moreAsync) {
+                if(form.moreAsync) {
                     Runnable runnable = pendingMoreAsyncRequests.remove(response.requestIndex);
                     if(runnable != null) {
                         runnable.run();
@@ -1032,16 +1040,7 @@ public class GFormController implements EditManager {
     }
 
     public void syncExecutePropertyEventAction(EditContext editContext, String actionSID, Event event) {
-        if(moreAsync) {
-            long requestIndex = asyncExecutePropertyEventAction(editContext, event, editContext.getProperty(), editContext.getColumnKey(), actionSID);
-            if (requestIndex > -1) {
-                Element element = getFocusedElement();
-                editContext.getProperty().getCellRenderer().renderMoreAsync(element, true);
-                pendingMoreAsyncRequests.put(requestIndex, () -> editContext.getProperty().getCellRenderer().renderMoreAsync(element, false));
-            }
-        } else {
-            syncExecutePropertyEventAction(editContext, event, editContext.getProperty(), editContext.getColumnKey(), actionSID);
-        }
+        syncExecutePropertyEventAction(editContext, event, editContext.getProperty(), editContext.getColumnKey(), actionSID);
     }
 
     public void asyncChange(Event event, EditContext editContext, String actionSID, GAsyncChange asyncChange) {

@@ -7,17 +7,15 @@ public class GFormAction extends GExecuteAction {
     public GModalityType modalityType;
     public GForm form;
     public boolean forbidDuplicate;
-    public boolean moreAsync;
 
     //needed for it to be gwt-serializable
     @SuppressWarnings("UnusedDeclaration")
     public GFormAction() {}
 
-    public GFormAction(GModalityType modalityType, GForm form, boolean forbidDuplicate, boolean moreAsync) {
+    public GFormAction(GModalityType modalityType, GForm form, boolean forbidDuplicate) {
         this.modalityType = modalityType;
         this.form = form;
         this.forbidDuplicate = forbidDuplicate;
-        this.moreAsync = moreAsync;
     }
 
     public void execute(GActionDispatcher dispatcher) throws Throwable {
