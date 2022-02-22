@@ -1781,6 +1781,7 @@ expressionFriendlyPD[List<TypedParameter> context, boolean dynamic] returns [LPW
 	|	recDef=recursivePropertyDefinition[context, dynamic] { $property = $recDef.property; } 
 	|	structDef=structCreationPropertyDefinition[context, dynamic] { $property = $structDef.property; }
 	|	concatDef=concatPropertyDefinition[context, dynamic] { $property = $concatDef.property; }
+    |	jsonDef=jsonPropertyDefinition[context, dynamic] { $property = $jsonDef.property; }
     |	jsonFormDef=jsonFormPropertyDefinition[context, dynamic] { $property = $jsonFormDef.property; }
 	|	castDef=castPropertyDefinition[context, dynamic] { $property = $castDef.property; }
 	|	sessionDef=sessionPropertyDefinition[context, dynamic] { $property = $sessionDef.property; }
@@ -2178,15 +2179,34 @@ jsonFormPropertyDefinition[List<TypedParameter> context, boolean dynamic] return
 	    $property = self.addScriptedJSONFormProp($mf.mapped, $mf.props, objectsContext, contextFilters, context);
 	}
 }
-	:   '{' mf=mappedForm[context, null, dynamic] {
+	:   'JSON' '(' mf=mappedForm[context, null, dynamic] {
                 if(inMainParseState())
                     objectsContext = self.getTypedObjectsNames($mf.mapped);
             }
             (cf = contextFiltersClause[context, objectsContext] { contextFilters.addAll($cf.contextFilters); })?
-        '}'
+        ')'
 //        'ENDJSONX'
 	;
 
+jsonPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
+@init {
+	List<TypedParameter> newContext = new ArrayList<>(context);
+    List<LPWithParams> orderProperties = new ArrayList<>();
+    List<Boolean> orderDirections = new ArrayList<>();
+}
+@after {
+	if (inMainParseState()) {
+		$property = self.addScriptedJSONProperty(context, $plist.aliases, $plist.literals, $plist.properties, $whereExpr.property, orderProperties, orderDirections);
+	}
+}
+	:	'JSON' '('
+		'FROM' plist=nonEmptyAliasedPropertyExpressionList[newContext, true]
+		('WHERE' whereExpr=propertyExpression[newContext, true])?
+		('ORDER' orderedProp=propertyExpressionWithOrder[newContext, true] { orderProperties.add($orderedProp.property); orderDirections.add($orderedProp.order); }
+        	(',' orderedProp=propertyExpressionWithOrder[newContext, true] { orderProperties.add($orderedProp.property); orderDirections.add($orderedProp.order); } )*
+        )?
+        ')'
+	;
 
 sessionPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
 @init {
