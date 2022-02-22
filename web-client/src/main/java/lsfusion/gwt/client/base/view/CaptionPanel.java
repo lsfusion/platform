@@ -32,7 +32,11 @@ public class CaptionPanel extends FlexPanel {
 
         rightCenteredLine = new DivWidget();
         rightCenteredLine.setStyleName("captionCenteredLine");
-        legendWrapper.add(rightCenteredLine, GFlexAlignment.CENTER, 1, false, 4);
+
+        // it's a tricky hack we emulate flex 0 to make updatePanels stretch this whole panel if needed (this hack makes stretching this line not important)
+        legendWrapper.add(rightCenteredLine, GFlexAlignment.CENTER, 0, false, 4);
+        rightCenteredLine.addStyleName("rightCaptionCenteredLine");
+//        legendWrapper.add(rightCenteredLine, GFlexAlignment.CENTER, 1, false, 4);
 
         add(legendWrapper, GFlexAlignment.STRETCH);
 
