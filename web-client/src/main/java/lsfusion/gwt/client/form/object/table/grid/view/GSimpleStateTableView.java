@@ -135,8 +135,13 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
     }
 
     public static JavaScriptObject convertValue(GPropertyDraw property, Object value) {
-        if (property.baseType instanceof GLogicalType)
-            return fromBoolean(((GLogicalType) property.baseType).threeState ? (boolean) value : value != null);
+        if (property.baseType instanceof GLogicalType) {
+            if(!((GLogicalType) property.baseType).threeState)
+                return fromBoolean(value != null);
+
+            if(value != null)
+                return fromBoolean((boolean) value);
+        }
         if(value == null)
             return null;
         if(property.baseType instanceof GIntegralType)
