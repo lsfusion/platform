@@ -2077,7 +2077,6 @@ public class GFormController implements EditManager {
         this.cellEditor = null;
 
         EditContext editContext = this.editContext;
-        this.editContext = null;
 //        this.editRequestIndex = -1; //it doesn't matter since it is not used when editContext / cellEditor is null
         this.editAsyncUsePessimistic = false;
         this.editAsyncValuesSID = null;
@@ -2104,6 +2103,9 @@ public class GFormController implements EditManager {
                 }
             }
         }
+
+        //getAsyncValues need editContext, so it must be after clearRenderer
+        this.editContext = null;
 
         update(editContext.getProperty(), renderElement, editContext.getValue(), editContext.getUpdateContext());
     }
