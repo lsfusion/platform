@@ -178,6 +178,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static lsfusion.base.BaseUtils.*;
 import static lsfusion.server.language.navigator.window.AlignmentUtils.*;
+import static lsfusion.server.logics.classes.data.StringClass.getv;
 import static lsfusion.server.logics.property.oraction.ActionOrPropertyUtils.*;
 
 public class ScriptingLogicsModule extends LogicsModule {
@@ -3169,8 +3170,8 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     private static StringClass getStringConstClass(LocalizedString value) {
         if(value.needToBeLocalized())
-            return StringClass.text;
-        return StringClass.getv(new ExtInt(value.getSourceString().length()));
+            return getv(false, ExtInt.UNLIMITED);
+        return getv(new ExtInt(value.getSourceString().length()));
     }
 
     public Pair<LP, LPNotExpr> addConstantProp(ConstType type, Object value) throws ScriptingErrorLog.SemanticErrorException {
