@@ -1035,7 +1035,7 @@ public abstract class LogicsModule {
         LA<?> resultAction;
         O inputObject;
         // wrapping dialog into input operator
-        if(inputObjects.size() == 1 && syncType && list != null && form.getBaseClass(inputObject = inputObjects.single()) instanceof CustomClass
+        if(inputObjects.size() == 1 && list != null && form.getBaseClass(inputObject = inputObjects.single()) instanceof CustomClass
                 && form.isSingleGroup(inputObject)) { // just like in InputListEntity.mapInner we will ignore the cases when there are not all objects
             LP<?> inputProp = inputProps.single();
 
