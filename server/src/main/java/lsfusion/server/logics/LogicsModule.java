@@ -35,7 +35,6 @@ import lsfusion.server.language.metacode.MetaCodeFragment;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.language.property.oraction.LAP;
 import lsfusion.server.logics.action.Action;
-import lsfusion.server.logics.action.InitJSAction;
 import lsfusion.server.logics.action.change.AddObjectAction;
 import lsfusion.server.logics.action.change.ChangeClassAction;
 import lsfusion.server.logics.action.change.SetAction;
@@ -1607,17 +1606,6 @@ public abstract class LogicsModule {
 
     public LA addFocusAction(PropertyDrawEntity propertyDrawEntity) {
         return addAction(null, new LA(new FocusAction(propertyDrawEntity)));
-    }
-
-    // ------------------- INITJS ----------------- //
-
-    protected LA addInitJSProp(Object... params) {
-        return addJoinAProp(null, LocalizedString.NONAME, addInitJSProp(Arrays.asList(params)), params);
-    }
-
-    @IdentityStrongLazy
-    protected LA addInitJSProp(List<Object> params) {
-        return addAction(null, new LA(new InitJSAction(params)));
     }
 
     // ------------------- CONFIRM ----------------- //

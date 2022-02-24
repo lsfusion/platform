@@ -71,7 +71,7 @@ public interface ClientActionDispatcher {
     
     void execute(ResetWindowsLayoutClientAction action);
 
-    void execute(InitJSClientAction action);
+    void execute(ClientJSAction action);
 
     EventBus getEventBus();
 

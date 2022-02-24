@@ -1,14 +1,17 @@
 package lsfusion.interop.action;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
-public class InitJSClientAction extends ExecuteClientAction {
+public class ClientJSAction extends ExecuteClientAction {
 
     public List<String> externalResources;
+    public ArrayList<byte[]> keys;
 
-    public InitJSClientAction(List<String> externalResources) {
+    public ClientJSAction(List<String> externalResources, ArrayList<byte[]> keys) {
         this.externalResources = externalResources;
+        this.keys = keys;
     }
 
     @Override

@@ -3113,7 +3113,6 @@ leafKeepContextActionDB[List<TypedParameter> context, boolean dynamic] returns [
 	|	exportFormADB=exportFormActionDefinitionBody[context, dynamic] { $action = $exportFormADB.action; }
 	|	exportADB=exportActionDefinitionBody[context, dynamic] { $action = $exportADB.action; }
 	|	msgADB=messageActionDefinitionBody[context, dynamic] { $action = $msgADB.action; }
-	|	initJSADB=initJSActionDefinitionBody[context, dynamic] { $action = $initJSADB.action; }
 	|	asyncADB=asyncUpdateActionDefinitionBody[context, dynamic] { $action = $asyncADB.action; }
 	|	seekADB=seekObjectActionDefinitionBody[context, dynamic] { $action = $seekADB.action; }
 	|	expandADB=expandGroupObjectActionDefinitionBody[context, dynamic] { $action = $expandADB.action; }
@@ -3479,18 +3478,22 @@ idEqualPEList[List<TypedParameter> context, boolean dynamic] returns [List<Strin
 	:	id=ID { $ids.add($id.text); } EQ expr=propertyExpression[context, dynamic] { $exprs.add($expr.property); } { allowNulls = false; } ('NULL' { allowNulls = true; })? { $nulls.add(allowNulls); }
 		(',' id=ID { $ids.add($id.text); } EQ expr=propertyExpression[context, dynamic] { $exprs.add($expr.property); } { allowNulls = false; } ('NULL' { allowNulls = true; })? { $nulls.add(allowNulls); })*
 	;
-	
+
 internalActionDefinitionBody[List<TypedParameter> context] returns [LA action, List<ResolveClassSet> signature]
 @init {
 	boolean allowNullValue = false;
 	List<String> classes = null;
+	List<String> jsList = new ArrayList<>();
+	boolean clientAction = false;
 }
 @after {
 	if (inMainParseState()) {
 
 	    List<ResolveClassSet> contextParams = self.getClassesFromTypedParams(context);
 
-	    if($code.val == null)
+        if(clientAction)
+            $action = self.addScriptedInternalClientAction(jsList, classes != null ? classes.size() : 0);
+        else if($code.val == null)
 	        $action = self.addScriptedInternalAction($classN.val, classes, contextParams, allowNullValue);
 	    else
 		    $action = self.addScriptedInternalAction($code.val, allowNullValue);
@@ -3498,22 +3501,22 @@ internalActionDefinitionBody[List<TypedParameter> context] returns [LA action, L
 	}
 }
 	:	'INTERNAL'
-        (   
-            classN = stringLiteral ('(' cls=classIdList ')' { classes = $cls.ids; })? 
-		|   code = codeLiteral
-        )
-	    ('NULL' { allowNullValue = true; })?
-	;
-
-initJSActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
-@after {
-	if (inMainParseState()) {
-		$action = self.addScriptedInternalInitJSAction($list.props);
-	}
-}
-	:	'INITJS'
-	    list=nonEmptyPropertyExpressionList[context, dynamic]
-	;
+       (
+            (
+                (
+                    classN = stringLiteral ('(' cls=classIdList ')' { classes = $cls.ids; })?
+		            |   code = codeLiteral
+		        )
+		        ('NULL' { allowNullValue = true; })?
+		    )
+		    |(
+		        'CLIENT' js = stringLiteral { jsList.add($js.val);}
+		        (',' nextJs = stringLiteral { jsList.add($nextJs.val);})*
+		        ('(' cls=classIdList ')' { classes = $cls.ids; })?
+		        { clientAction = true; }
+            )
+      )
+;
 
 externalActionDefinitionBody [List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
 @init {

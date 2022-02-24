@@ -1,16 +1,19 @@
 package lsfusion.gwt.client.action;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class GInitJSClientAction extends GExecuteAction {
+public class GClientJSAction extends GExecuteAction {
 
     public List<String> externalResources;
+    public ArrayList<Object> keys;
 
     @SuppressWarnings("UnusedDeclaration")
-    public GInitJSClientAction() {}
+    public GClientJSAction() {}
 
-    public GInitJSClientAction(List<String> externalResources) {
+    public GClientJSAction(List<String> externalResources, ArrayList<Object> keys) {
         this.externalResources = externalResources;
+        this.keys = keys;
     }
 
     @Override

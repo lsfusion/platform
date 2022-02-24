@@ -240,8 +240,12 @@ public class ClientActionToGwtConverter extends ObjectConverter {
         return new GResetWindowsLayoutAction();
     }
 
-    @Converter(from = InitJSClientAction.class)
-    public GInitJSClientAction convertAction(InitJSClientAction action) {
-        return new GInitJSClientAction(action.externalResources);
+    @Converter(from = ClientJSAction.class)
+    public GClientJSAction convertAction(ClientJSAction action) throws IOException {
+        ArrayList<Object> keys = new ArrayList<>();
+        for (byte[] key : action.keys) {
+            keys.add(deserializeServerValue(key));
+        }
+        return new GClientJSAction(action.externalResources, keys);
     }
 }

@@ -1,5 +1,8 @@
 package lsfusion.gwt.client.controller.dispatch;
 
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.core.client.JsArray;
 import com.google.gwt.media.client.Audio;
 import com.google.gwt.typedarrays.client.Uint8ArrayNative;
 import com.google.gwt.typedarrays.shared.ArrayBuffer;
@@ -334,11 +337,24 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     }
 
     @Override
-    public void execute(GInitJSClientAction action) {
-        action.externalResources.forEach(r -> initJS("/static" + r));
+    public void execute(GClientJSAction action) {
+        List<String> externalResources = action.externalResources;
+        if (externalResources.size() == 1 && !externalResources.get(0).contains(".js")) {
+            JsArray<JavaScriptObject> arguments = JavaScriptObject.createArray().cast();
+            action.keys.forEach(arg -> arguments.push(fromObject(arg)));
+
+            String function = externalResources.get(0);
+            GwtClientUtils.call(GwtClientUtils.getGlobalField(function.substring(0, function.indexOf("("))), arguments);
+        } else {
+            externalResources.forEach(r -> executeJS("/static" + r));
+        }
     }
 
-    protected native void initJS(String resourcePath)/*-{
+    protected static native <T> JavaScriptObject fromObject(T object) /*-{
+        return object;
+    }-*/;
+
+    protected native void executeJS(String resourcePath)/*-{
         if (resourcePath.endsWith('js')) {
             var documentScripts = $wnd.document.scripts, scriptAlreadyLoaded;
             for (var i = 0; i < documentScripts.length; i++) {
