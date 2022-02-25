@@ -1,6 +1,5 @@
 ---
 title: 'View logic'
-sidebar_label: Overview
 ---
 
 The key element of the view logic is the [form](Forms.md). Forms are used in the platform to organize the input and output of information into the system (from the system).

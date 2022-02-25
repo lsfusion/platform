@@ -73,6 +73,7 @@ function _select2(updateFunction) {
                 multiple: true,
                 placeholder: ' ',
                 closeOnSelect: false,
+                dropdownParent: element, // this way focus doesn't go to some unpredictable container when selecting item, however there can be some problems with z-indices
                 allowClear: true,
                 width: '100%'
             });
@@ -80,6 +81,19 @@ function _select2(updateFunction) {
             select2Instance.on('select2:select', function (e) {
                 if (e.params.data.async)
                     controller.changeProperty('selected', e.params.data.key, true);
+            });
+
+            setTimeout(() => {
+                $('.select2-search--inline').keydown(function (e) {
+                    if (e.keyCode === 27 || e.key === 'Escape') {
+                        e.stopPropagation();
+                        element.dispatchEvent(new KeyboardEvent('keydown', {
+                            'key' : 'Escape',
+                            'keyCode': 27,
+                            'bubbles': true
+                        }));
+                    }
+                });
             });
 
             select2Instance.on('select2:unselect', function (e) {

@@ -14,10 +14,11 @@ public class AsyncChange extends AsyncInputExec {
 
     public InputList inputList;
 
-    public AsyncChange(DataClass changeType, LP targetProp, InputList inputList) {
+    public AsyncChange(DataClass changeType, LP targetProp, InputList inputList, String customEditorFunction) {
         this.changeType = changeType;
         this.targetProp = targetProp;
         this.inputList = inputList;
+        this.customEditorFunction = customEditorFunction;
     }
 
     @Override
@@ -33,6 +34,10 @@ public class AsyncChange extends AsyncInputExec {
         dataOutputStream.writeBoolean(inputList != null);
         if(inputList != null)
             AsyncSerializer.serializeInputList(inputList, dataOutputStream);
+
+        dataOutputStream.writeBoolean(customEditorFunction != null);
+        if (customEditorFunction != null)
+            dataOutputStream.writeUTF(customEditorFunction);
     }
 
     // should correspond ClientPushAsyncChange.serialize

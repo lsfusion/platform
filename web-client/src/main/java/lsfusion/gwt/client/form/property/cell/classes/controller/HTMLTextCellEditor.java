@@ -24,12 +24,12 @@ public class HTMLTextCellEditor implements RequestEmbeddedCellEditor {
 
     @Override
     public void commit(Element parent, CommitReason commitReason) {
-        editManager.commitEditing(new GUserInputResult(getEditorValue(parent)), CommitReason.BLURRED);
+        editManager.commitEditing(new GUserInputResult(getEditorValue(parent)), commitReason);
     }
 
     @Override
-    public void cancel(Element parent) {
-        editManager.cancelEditing(CancelReason.OTHER);
+    public void cancel(Element parent, CancelReason cancelReason) {
+        editManager.cancelEditing(cancelReason);
     }
 
     @Override

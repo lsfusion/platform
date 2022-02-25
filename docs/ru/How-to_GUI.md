@@ -1,6 +1,5 @@
 ---
 title: 'How-to: GUI'
-sidebar_label: Обзор
 ---
 
 ### Порядок ознакомления

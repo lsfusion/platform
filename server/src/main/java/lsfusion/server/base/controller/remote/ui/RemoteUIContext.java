@@ -7,18 +7,17 @@ import lsfusion.interop.action.ChooseClassClientAction;
 import lsfusion.interop.action.FormClientAction;
 import lsfusion.interop.action.RequestUserInputClientAction;
 import lsfusion.interop.form.ModalityType;
+import lsfusion.interop.form.WindowFormType;
 import lsfusion.interop.form.property.cell.UserInputResult;
 import lsfusion.server.base.controller.context.AbstractContext;
 import lsfusion.server.base.controller.thread.ThreadUtils;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.DataObject;
-import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.user.CustomClass;
-import lsfusion.server.logics.form.interactive.FormCloseType;
 import lsfusion.server.logics.form.interactive.ManageSessionType;
 import lsfusion.server.logics.form.interactive.action.async.InputList;
 import lsfusion.server.logics.form.interactive.action.async.AsyncSerializer;
@@ -76,10 +75,10 @@ public abstract class RemoteUIContext extends AbstractContext {
         inputContextLock.unlock();
     }
 
-    public InputResult inputUserData(DataClass dataClass, Object oldValue, boolean hasOldValue, InputContext inputContext, InputList inputList) {
+    public InputResult inputUserData(DataClass dataClass, Object oldValue, boolean hasOldValue, InputContext inputContext, String customChangeFunction, InputList inputList) {
         this.inputContext = inputContext; // we don't have to lock here since thread-safety will be ok anyway
         try {
-            UserInputResult result = (UserInputResult) requestUserInteraction(new RequestUserInputClientAction(serializeType(dataClass), serializeObject(oldValue), hasOldValue, inputContext != null ? AsyncSerializer.serializeInputList(inputList) : null));
+            UserInputResult result = (UserInputResult) requestUserInteraction(new RequestUserInputClientAction(serializeType(dataClass), serializeObject(oldValue), hasOldValue, customChangeFunction, inputContext != null ? AsyncSerializer.serializeInputList(inputList) : null));
             if (result.isCanceled()) {
                 return null;
             }
@@ -115,13 +114,13 @@ public abstract class RemoteUIContext extends AbstractContext {
         return false;
     }
 
-    public FormInstance createFormInstance(FormEntity formEntity, ImSet<ObjectEntity> inputObjects, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, Boolean noCancel, ManageSessionType manageSession, ExecutionStack stack, boolean checkOnOk, boolean showDrop, boolean interactive, boolean isFloat, ImSet<ContextFilterInstance> contextFilters, boolean readonly) throws SQLException, SQLHandledException {
+    public FormInstance createFormInstance(FormEntity formEntity, ImSet<ObjectEntity> inputObjects, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, Boolean noCancel, ManageSessionType manageSession, ExecutionStack stack, boolean checkOnOk, boolean showDrop, boolean interactive, WindowFormType type, ImSet<ContextFilterInstance> contextFilters, boolean readonly) throws SQLException, SQLHandledException {
         return new FormInstance(formEntity, getLogicsInstance(), inputObjects,
                 session,
                 getSecurityPolicy(), getFocusListener(), getClassListener(),
                 mapObjects, stack, isModal,
                 noCancel, manageSession,
-                checkOnOk, showDrop, interactive, isFloat, isExternal(), contextFilters, readonly, getLocale());
+                checkOnOk, showDrop, interactive, type, isExternal(), contextFilters, readonly, getLocale());
     }
 
     protected abstract int getExportPort();

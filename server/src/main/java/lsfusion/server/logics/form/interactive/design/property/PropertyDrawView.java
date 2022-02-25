@@ -21,7 +21,7 @@ import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
 import lsfusion.server.logics.form.interactive.action.async.AsyncSerializer;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerContext;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
-import lsfusion.server.logics.form.interactive.design.ComponentView;
+import lsfusion.server.logics.form.interactive.design.BaseComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.stat.print.design.ReportDrawField;
 import lsfusion.server.logics.form.struct.FormEntity;
@@ -55,7 +55,7 @@ import static lsfusion.interop.action.ServerResponse.CHANGE;
 import static lsfusion.interop.action.ServerResponse.EDIT_OBJECT;
 import static lsfusion.server.logics.form.struct.property.PropertyDrawExtraType.*;
 
-public class PropertyDrawView extends ComponentView {
+public class PropertyDrawView extends BaseComponentView {
 
     public PropertyDrawEntity<?> entity;
 
@@ -74,6 +74,9 @@ public class PropertyDrawView extends ComponentView {
     public Dimension valueSize;
     public Integer valueWidth;
     public Integer valueHeight;
+
+    public Integer captionWidth;
+    public Integer captionHeight;
 
     private Boolean valueFlex;
 
@@ -138,8 +141,10 @@ public class PropertyDrawView extends ComponentView {
         if(valueWidth != null)
             return valueWidth;
 
-        if(isCustom() && isAutoSize(entity))
-            return 0;
+//        if(isAutoSize(entity)) {
+//            if(!isProperty())
+//                return -1;
+//        }
 
         return -1;
     }
@@ -148,8 +153,24 @@ public class PropertyDrawView extends ComponentView {
         if(valueHeight != null)
             return valueHeight;
 
-        if(isCustom() && isAutoSize(entity))
-            return 0;
+        if(isAutoSize(entity)) {
+            if(!isProperty()) // we want vertical size for action to be equal to text fields
+                return -2;
+        }
+
+        return -1;
+    }
+
+    public int getCaptionWidth(FormEntity entity) {
+        if(captionWidth != null)
+            return captionWidth;
+
+        return -1;
+    }
+
+    public int getCaptionHeight(FormEntity entity) {
+        if(captionHeight != null)
+            return captionHeight;
 
         return -1;
     }
@@ -164,9 +185,17 @@ public class PropertyDrawView extends ComponentView {
     @Override
     public double getDefaultFlex(FormEntity formEntity) {
         ContainerView container = getLayoutParamContainer();
-        if(((container != null && container.isHorizontal()) || entity.isList(formEntity)) && isHorizontalValueFlex()) // если верхний контейнер горизонтальный или grid и свойство - flex, возвращаем -2
-            return -2; // выставляем flex - равный ширине
+        if(((container != null && container.isHorizontal()) || entity.isList(formEntity)) && isHorizontalValueFlex())
+            return -2; // flex = width
         return super.getDefaultFlex(formEntity);
+    }
+
+    @Override
+    protected boolean isDefaultShrink(FormEntity formEntity, boolean explicit) {
+        ContainerView container = getLayoutParamContainer();
+        if(container != null && container.isHorizontal() && container.isWrap() && isHorizontalValueShrink())
+            return true;
+        return super.isDefaultShrink(formEntity, explicit);
     }
 
     @Override
@@ -175,6 +204,15 @@ public class PropertyDrawView extends ComponentView {
         if (container != null && !container.isHorizontal() && isHorizontalValueFlex())
             return FlexAlignment.STRETCH;
         return super.getDefaultAlignment(formEntity);
+    }
+
+    @Override
+    protected boolean isDefaultAlignShrink(FormEntity formEntity, boolean explicit) {
+        // actually not needed mostly since for STRETCH align shrink is set, but just in case
+        ContainerView container = getLayoutParamContainer();
+        if (container != null && !container.isHorizontal() && isHorizontalValueShrink())
+            return true;
+        return super.isDefaultAlignShrink(formEntity, explicit);
     }
 
     public Map<String, AsyncEventExec> getAsyncEventExec(ServerContext context) {
@@ -192,6 +230,19 @@ public class PropertyDrawView extends ComponentView {
         return caption != null
                 ? caption
                 : entity.getCaption();
+    }
+
+    // we return to the client null, if we're sure that caption is always empty (so we don't need to draw label)
+    public String getDrawCaption() {
+        LocalizedString caption = getCaption();
+        if(hasNoCaption(caption.isEmpty() ? null : caption, entity.getPropertyExtra(CAPTION)))
+            return null;
+
+        return ThreadLocalContext.localize(caption);
+    }
+
+    public static boolean hasNoCaption(LocalizedString caption, PropertyObjectEntity<?> propertyCaption) {
+        return (caption == null && propertyCaption == null) || (propertyCaption != null && propertyCaption.property.isExplicitNull()); // isEmpty can be better, but we just want to emulate NULL to be like NULL caption
     }
 
     public boolean isNotNull() {
@@ -276,8 +327,9 @@ public class PropertyDrawView extends ComponentView {
         super.customSerialize(pool, outStream);
 
         outStream.writeBoolean(isAutoSize(pool.context.entity));
+        outStream.writeBoolean(isBoxed(pool.context.entity));
 
-        pool.writeString(outStream, ThreadLocalContext.localize(getCaption()));
+        pool.writeString(outStream, getDrawCaption());
         pool.writeString(outStream, regexp);
         pool.writeString(outStream, regexpMessage);
         pool.writeLong(outStream, maxValue);
@@ -296,6 +348,9 @@ public class PropertyDrawView extends ComponentView {
 
         outStream.writeInt(getValueWidth(pool.context.entity));
         outStream.writeInt(getValueHeight(pool.context.entity));
+
+        outStream.writeInt(getCaptionWidth(pool.context.entity));
+        outStream.writeInt(getCaptionHeight(pool.context.entity));
 
         pool.writeObject(outStream, changeKey);
         pool.writeInt(outStream, changeKeyPriority);
@@ -411,7 +466,6 @@ public class PropertyDrawView extends ComponentView {
             outStream.writeByte(DataType.ACTION);
         
         pool.writeString(outStream, entity.customRenderFunction);
-        pool.writeString(outStream, entity.customEditorFunction);
 
         pool.writeString(outStream, entity.eventID);
 
@@ -442,6 +496,7 @@ public class PropertyDrawView extends ComponentView {
 
         outStream.writeBoolean(isNotNull());
         outStream.writeBoolean(isSticky(pool.context.view.entity));
+        outStream.writeBoolean(entity.getPropertyExtra(PropertyDrawExtraType.FOOTER) != null);
     }
 
     private OrderedMap<String, LocalizedString> filterContextMenuItems(OrderedMap<String, LocalizedString> contextMenuBindings, ServerContext context) {
@@ -476,6 +531,7 @@ public class PropertyDrawView extends ComponentView {
         super.customDeserialize(pool, inStream);
 
         autoSize = inStream.readBoolean();
+        boxed = inStream.readBoolean();
 
         caption = LocalizedString.create(pool.readString(inStream));
         regexp = pool.readString(inStream);
@@ -488,6 +544,9 @@ public class PropertyDrawView extends ComponentView {
         setCharHeight(inStream.readInt());
         setCharWidth(inStream.readInt());
         setValueSize(pool.readObject(inStream));
+
+        setCaptionWidth(inStream.readInt());
+        setCaptionHeight(inStream.readInt());
 
         changeKey = pool.readObject(inStream);
         changeKeyPriority = pool.readInt(inStream);
@@ -551,6 +610,14 @@ public class PropertyDrawView extends ComponentView {
         this.valueHeight = valueHeight;
     }
 
+    public void setCaptionWidth(Integer captionWidth) {
+        this.captionWidth = captionWidth;
+    }
+
+    public void setCaptionHeight(Integer captionHeight) {
+        this.captionHeight = captionHeight;
+    }
+
     public Boolean getValueFlex() {
         return valueFlex;
     }
@@ -562,6 +629,13 @@ public class PropertyDrawView extends ComponentView {
     public boolean isHorizontalValueFlex() {
         if(valueFlex != null)
             return valueFlex;
+        Type type;
+        return isProperty() && (type = getType()) != null && type.isFlex();
+    }
+
+    public boolean isHorizontalValueShrink() {
+//        if(valueFlex != null)
+//            return valueFlex;
         Type type;
         return isProperty() && (type = getType()) != null && type.isFlex();
     }
@@ -602,13 +676,22 @@ public class PropertyDrawView extends ComponentView {
         return valueAlignment;
     }
 
+    public Boolean boxed;
+
+    public boolean isBoxed(FormEntity entity) {
+        if(boxed != null)
+            return boxed;
+
+        return true;
+    }
+
     public Boolean autoSize;
 
     public boolean isAutoSize(FormEntity entity) {
         if(autoSize != null)
             return autoSize;
 
-        return isCustom();
+        return isCustom() || !isProperty();
     }
 
     protected boolean isCustom() {

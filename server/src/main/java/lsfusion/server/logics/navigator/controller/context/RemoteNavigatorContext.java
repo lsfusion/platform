@@ -5,6 +5,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.form.ModalityType;
+import lsfusion.interop.form.WindowFormType;
 import lsfusion.server.base.controller.remote.ui.RemoteUIContext;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.ObjectValue;
@@ -189,16 +190,16 @@ public class RemoteNavigatorContext extends RemoteConnectionContext {
         uiContext.unlockInputContext();
     }
 
-    public InputResult inputUserData(DataClass dataClass, Object oldValue, boolean hasOldValue, InputContext inputContext, InputList inputList) {
-        return uiContext.inputUserData(dataClass, oldValue, hasOldValue, inputContext, inputList);
+    public InputResult inputUserData(DataClass dataClass, Object oldValue, boolean hasOldValue, InputContext inputContext, String customChangeFunction, InputList inputList) {
+        return uiContext.inputUserData(dataClass, oldValue, hasOldValue, inputContext, customChangeFunction, inputList);
     }
 
     public ObjectValue requestUserClass(CustomClass baseClass, CustomClass defaultValue, boolean concrete) {
         return uiContext.requestUserClass(baseClass, defaultValue, concrete);
     }
 
-    public FormInstance createFormInstance(FormEntity formEntity, ImSet<ObjectEntity> inputObjects, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, Boolean noCancel, ManageSessionType manageSession, ExecutionStack stack, boolean checkOnOk, boolean showDrop, boolean interactive, boolean isFloat, ImSet<ContextFilterInstance> contextFilters, boolean readonly) throws SQLException, SQLHandledException {
-        return uiContext.createFormInstance(formEntity, inputObjects, mapObjects, session, isModal, noCancel, manageSession, stack, checkOnOk, showDrop, interactive, isFloat, contextFilters, readonly);
+    public FormInstance createFormInstance(FormEntity formEntity, ImSet<ObjectEntity> inputObjects, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, Boolean noCancel, ManageSessionType manageSession, ExecutionStack stack, boolean checkOnOk, boolean showDrop, boolean interactive, WindowFormType type, ImSet<ContextFilterInstance> contextFilters, boolean readonly) throws SQLException, SQLHandledException {
+        return uiContext.createFormInstance(formEntity, inputObjects, mapObjects, session, isModal, noCancel, manageSession, stack, checkOnOk, showDrop, interactive, type, contextFilters, readonly);
     }
 
     public RemoteForm createRemoteForm(FormInstance formInstance, ExecutionStack stack) {

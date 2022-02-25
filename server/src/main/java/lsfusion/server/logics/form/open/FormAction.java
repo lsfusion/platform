@@ -46,8 +46,8 @@ public abstract class FormAction<O extends ObjectSelector> extends SystemExplici
         return form.getStaticForm(getBaseLM());
     }
 
-    private static <O extends ObjectSelector> ValueClass[] getValueClasses(FormSelector<O> form, ImList<O> objects, int contextInterfaces, ValueClass[] extraValueClasses) {
-        ImList<ValueClass> objectClasses = objects.mapListValues((Function<O, ValueClass>) o -> form.getBaseClass(o));
+    public static <O extends ObjectSelector> ValueClass[] getValueClasses(FormSelector<O> form, ImList<O> objects, int contextInterfaces, ValueClass[] extraValueClasses) {
+        ImList<ValueClass> objectClasses = objects.mapListValues(o -> form.getBaseClass(o));
         return ArrayUtils.addAll(ArrayUtils.addAll(objectClasses.toArray(new ValueClass[objectClasses.size()]), BaseUtils.genArray(null, contextInterfaces, ValueClass[]::new)), extraValueClasses);
     }
 

@@ -297,18 +297,17 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
             }
         });
 
-        getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-            public void valueChanged(ListSelectionEvent e) {
-                if (isEditing()) {
-                    TableCellEditor cellEditor = getCellEditor();
-                    if (cellEditor != null) {
-                        cellEditor.stopCellEditing();
-                    }
+        getSelectionModel().addListSelectionListener(e -> {
+            if (isEditing()) {
+                TableCellEditor cellEditor = getCellEditor();
+                if (cellEditor != null) {
+                    cellEditor.stopCellEditing();
                 }
-
-                changeCurrentObjectLater();
-                moveToFocusableCellIfNeeded();
             }
+            if (!properties.isEmpty()) {
+                changeCurrentObjectLater();
+            }
+            moveToFocusableCellIfNeeded();
         });
 
         initializeActionMap();
@@ -1234,7 +1233,7 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
         if (propCaptions != null)
             caption = property.getDynamicCaption(propCaptions.get(columnKey));
         else
-            caption = property.getCaptionOrEmpty();
+            caption = property.getPropertyCaption();
         return caption;
     }
 

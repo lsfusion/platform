@@ -4,24 +4,28 @@ import lsfusion.base.Pair;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
+import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
 import lsfusion.server.logics.form.stat.StaticDataGenerator;
+import lsfusion.server.logics.form.stat.struct.export.hierarchy.json.FormPropertyDataInterface;
 import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
+import lsfusion.server.logics.property.implement.PropertyMapImplement;
+import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.Settings;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class ParseNode {
+public interface ParseNode {
 
-    public static ParseNode getIntegrationHierarchy(StaticDataGenerator.Hierarchy hierarchy) {
+    static ParseNode getIntegrationHierarchy(StaticDataGenerator.Hierarchy hierarchy) {
         return getGroupIntegrationHierarchy(hierarchy.getRoot(), hierarchy);
     }
 
-    private static ParseNode getGroupIntegrationHierarchy(GroupObjectEntity currentGroup, StaticDataGenerator.Hierarchy hierarchy) {
+    static ParseNode getGroupIntegrationHierarchy(GroupObjectEntity currentGroup, StaticDataGenerator.Hierarchy hierarchy) {
 
         // generating used property groups hierarchy
         Map<Group, MOrderExclSet<PGNode>> childGroupNodes = new HashMap<>(); // not MMap because we need null keys in this case
@@ -57,7 +61,7 @@ public abstract class ParseNode {
         return getPropertyGroupIntegrationHierarchy(null, childGroupNodes, currentGroup, hierarchy);
     }
 
-    private static int compareIndexes(Pair<Integer, Integer> propertyIndex, Pair<Integer, Integer> groupIndex) {
+    static int compareIndexes(Pair<Integer, Integer> propertyIndex, Pair<Integer, Integer> groupIndex) {
         if(propertyIndex == null) {
             return groupIndex == null ? 0 : -1;
         } else {
@@ -70,9 +74,9 @@ public abstract class ParseNode {
         }
     }
 
-    private static ParseNode getPropertyGroupIntegrationHierarchy(Group currentPropertyGroup, final Map<Group, MOrderExclSet<PGNode>> childGroupNodes, final GroupObjectEntity currentGroup, final StaticDataGenerator.Hierarchy hierarchy) {
+    static ParseNode getPropertyGroupIntegrationHierarchy(Group currentPropertyGroup, final Map<Group, MOrderExclSet<PGNode>> childGroupNodes, final GroupObjectEntity currentGroup, final StaticDataGenerator.Hierarchy hierarchy) {
         MOrderExclSet<PGNode> childGroups = childGroupNodes.get(currentPropertyGroup);
-        ImOrderSet<ParseNode> childNodes = childGroups.immutableOrder().mapOrderSetValues(value -> value.createNode(childGroupNodes, hierarchy, currentGroup == null || currentGroup.isIndex()));
+        ImOrderSet<ChildParseNode> childNodes = childGroups.immutableOrder().mapOrderSetValues(value -> value.createNode(childGroupNodes, hierarchy, currentGroup == null || currentGroup.isIndex()));
         if(currentPropertyGroup == null) {
             if(currentGroup == null)
                 return new FormParseNode(childNodes);
@@ -81,7 +85,7 @@ public abstract class ParseNode {
         return new PropertyGroupParseNode(childNodes, currentPropertyGroup);
     }
 
-    private static void fillPropertyGroupIntegrationHierarchy(PGNode node, Map<Group, MOrderExclSet<PGNode>> childGroupNodes) {
+    static void fillPropertyGroupIntegrationHierarchy(PGNode node, Map<Group, MOrderExclSet<PGNode>> childGroupNodes) {
         Group parentGroup = node.getParent();
         if(parentGroup != null && parentGroup.system)
             parentGroup = null;
@@ -96,17 +100,19 @@ public abstract class ParseNode {
         childGroups.exclAdd(node);
     }
 
-    public abstract <T extends Node<T>> void importNode(T node, ImMap<ObjectEntity, Object> upValues, ImportData importData);
+    <T extends Node<T>> void importNode(T node, ImMap<ObjectEntity, Object> upValues, ImportData importData);
     
-    public abstract <T extends Node<T>> boolean exportNode(T node, ImMap<ObjectEntity, Object> upValues, ExportData exportData);
+    <T extends Node<T>> boolean exportNode(T node, ImMap<ObjectEntity, Object> upValues, ExportData exportData);
 
-    private interface PGNode {
+    <X extends PropertyInterface, P extends PropertyInterface> PropertyMapImplement<?, X> getJSONProperty(FormPropertyDataInterface<P> form, ImRevMap<P, X> mapValues, ImRevMap<ObjectEntity, X> mapObjects);
+
+    interface PGNode {
         Group getParent();
 
-        ParseNode createNode(Map<Group, MOrderExclSet<PGNode>> childGroupNodes, StaticDataGenerator.Hierarchy hierarchy, boolean isExclusive);
+        ChildParseNode createNode(Map<Group, MOrderExclSet<PGNode>> childGroupNodes, StaticDataGenerator.Hierarchy hierarchy, boolean isExclusive);
     }
 
-    private static class PropertyPGNode implements PGNode {
+    class PropertyPGNode implements PGNode {
         public final PropertyDrawEntity<?> property;
 
         public PropertyPGNode(PropertyDrawEntity<?> property) {
@@ -117,12 +123,12 @@ public abstract class ParseNode {
             return property.getGroup();
         }
 
-        public ParseNode createNode(Map<Group, MOrderExclSet<PGNode>> childGroupNodes, StaticDataGenerator.Hierarchy hierarchy, boolean isExclusive) {
+        public ChildParseNode createNode(Map<Group, MOrderExclSet<PGNode>> childGroupNodes, StaticDataGenerator.Hierarchy hierarchy, boolean isExclusive) {
             return new PropertyParseNode(property, isExclusive);
         }
     }
 
-    private static class GroupObjectPGNode implements PGNode {
+    class GroupObjectPGNode implements PGNode {
         public final GroupObjectEntity groupObject;
 
         public GroupObjectPGNode(GroupObjectEntity groupObject) {
@@ -133,12 +139,12 @@ public abstract class ParseNode {
             return groupObject.propertyGroup;
         }
 
-        public ParseNode createNode(Map<Group, MOrderExclSet<PGNode>> childGroupNodes, StaticDataGenerator.Hierarchy hierarchy, boolean isExclusive) {
-            return getGroupIntegrationHierarchy(groupObject, hierarchy);
+        public ChildParseNode createNode(Map<Group, MOrderExclSet<PGNode>> childGroupNodes, StaticDataGenerator.Hierarchy hierarchy, boolean isExclusive) {
+            return (ChildParseNode) getGroupIntegrationHierarchy(groupObject, hierarchy);
         }
     }
 
-    private static class PropertyGroupPGNode implements PGNode {
+    class PropertyGroupPGNode implements PGNode {
         public final Group group;
 
         public PropertyGroupPGNode(Group group) {
@@ -150,8 +156,8 @@ public abstract class ParseNode {
         }
 
         @Override
-        public ParseNode createNode(Map<Group, MOrderExclSet<PGNode>> childGroupNodes, StaticDataGenerator.Hierarchy hierarchy, boolean isExclusive) {
-            return getPropertyGroupIntegrationHierarchy(group, childGroupNodes, null, hierarchy);
+        public ChildParseNode createNode(Map<Group, MOrderExclSet<PGNode>> childGroupNodes, StaticDataGenerator.Hierarchy hierarchy, boolean isExclusive) {
+            return (ChildParseNode) getPropertyGroupIntegrationHierarchy(group, childGroupNodes, null, hierarchy);
         }
     }
 }

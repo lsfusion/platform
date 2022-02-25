@@ -27,4 +27,7 @@ public interface EditContext {
     Object forceSetFocus();
     void restoreSetFocus(Object forceSetFocus);
     boolean isSetLastBlurred();
+
+    default void startEditing() {}
+    default void stopEditing() {}
 }

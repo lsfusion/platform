@@ -33,6 +33,7 @@ public class ClientContainer extends ClientComponent {
 
     public int lines = 1;
     public Integer lineSize = null;
+    public Integer captionLineSize = null;
     public boolean lineShrink = false;
 
     public List<ClientComponent> children = new ArrayList<>();
@@ -61,6 +62,7 @@ public class ClientContainer extends ClientComponent {
 
         outStream.writeInt(lines);
         pool.writeInt(outStream, lineSize);
+        pool.writeInt(outStream, captionLineSize);
         outStream.writeBoolean(lineShrink);
     }
 
@@ -85,6 +87,7 @@ public class ClientContainer extends ClientComponent {
 
         lines = inStream.readInt();
         lineSize = pool.readInt(inStream);
+        captionLineSize = pool.readInt(inStream);
         lineShrink = inStream.readBoolean();
     }
 
@@ -149,6 +152,10 @@ public class ClientContainer extends ClientComponent {
 
     public Integer getLineSize() {
         return lineSize;
+    }
+
+    public Integer getCaptionLineSize() {
+        return captionLineSize;
     }
 
     public ClientContainer findContainerBySID(String sID) {

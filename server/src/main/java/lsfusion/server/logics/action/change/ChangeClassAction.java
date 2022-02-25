@@ -165,8 +165,21 @@ public class ChangeClassAction<T extends PropertyInterface, I extends PropertyIn
                 if (objectInstance instanceof ObjectInstance) {
                     CustomObjectInstance customObjectInstance = (CustomObjectInstance) objectInstance;
                     if(readClass instanceof UnknownClass || !((CustomClass) readClass).isChild(customObjectInstance.gridClass)) { // если удаляется
-                        ImMap<ObjectInstance, DataObject> nearGroupObject = BaseUtils.getNearObject(MapFact.singleton((ObjectInstance) objectInstance, dataObject), customObjectInstance.groupTo.keys.keyOrderSet().toJavaList());
-                        nearObject = nearGroupObject != null ? nearGroupObject.singleValue() : null;
+                        List<ImMap<ObjectInstance, DataObject>> keys = customObjectInstance.groupTo.keys.keyOrderSet().toJavaList();
+                        boolean found = false;
+                        for (int i = keys.size() - 1; i >= 0; i--) {
+                            DataObject keyObject = keys.get(i).get((ObjectInstance) objectInstance);
+                            if (keyObject.equals(dataObject)) {
+                                if (i < keys.size() - 1) {
+                                    nearObject = keys.get(i + 1).get((ObjectInstance) objectInstance);
+                                    break;
+                                } else found = true;
+                            } else
+                                if (found) {
+                                    nearObject = keyObject;
+                                    break;
+                                }
+                        }
                         seekOther = true;
                     }
                 }

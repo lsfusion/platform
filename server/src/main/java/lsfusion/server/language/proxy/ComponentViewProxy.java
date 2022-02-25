@@ -20,6 +20,10 @@ public class ComponentViewProxy<T extends ComponentView> extends ViewProxy<T> {
     public void setDefaultComponent(boolean defaultComponent) {
         target.defaultComponent = defaultComponent;
     }
+    
+    public void setActivated(boolean activated) {
+        target.activated = activated;
+    }
 
     /* ========= constraints properties ========= */
 

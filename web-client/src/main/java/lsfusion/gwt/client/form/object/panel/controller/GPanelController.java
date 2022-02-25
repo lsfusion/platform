@@ -131,7 +131,10 @@ public class GPanelController extends GPropertyController {
     }
 
     public void focusProperty(GPropertyDraw propertyDraw) {
-        propertyControllers.get(propertyDraw).focusFirstWidget();
+        GPropertyPanelController propertyPanelController = propertyControllers.get(propertyDraw);
+        if (propertyPanelController != null) {
+            propertyPanelController.focusFirstWidget();
+        }
     }
 
     public boolean focusFirstWidget() {

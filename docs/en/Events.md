@@ -1,6 +1,5 @@
 ---
 title: 'Events'
-sidebar_label: Overview
 ---
 
 *Events* are a mechanism that allows to execute certain [actions](Actions.md) at certain points in time (these actions shall be called event *handlers*).

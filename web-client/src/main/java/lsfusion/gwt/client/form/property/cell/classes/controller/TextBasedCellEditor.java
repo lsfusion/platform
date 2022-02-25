@@ -132,12 +132,7 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
         String firstPart = currentValue == null ? "" : currentValue.substring(0, cursorPosition);
         String secondPart = currentValue == null ? "" : currentValue.substring(cursorPosition + selectionLength);
 
-        try {
-            tryParseInputText(firstPart + stringToAdd + secondPart, false);
-            return true;
-        } catch (ParseException e) {
-            return false;
-        }
+        return isStringValid(firstPart + stringToAdd + secondPart);
     }
     
     protected boolean isStringValid(String string) {

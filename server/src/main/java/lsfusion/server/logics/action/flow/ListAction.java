@@ -138,7 +138,7 @@ public class ListAction extends ListCaseAction {
 
     @Override
     public AsyncMapEventExec<PropertyInterface> calculateAsyncEventExec(boolean optimistic, boolean recursive) {
-        return getListAsyncEventExec(getListActions(), recursive);
+        return getListAsyncEventExec(getListActions(), optimistic, recursive);
     }
 
     @Override

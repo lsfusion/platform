@@ -15,6 +15,7 @@ import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.classes.data.GImageType;
 import lsfusion.gwt.client.classes.data.GIntegralType;
+import lsfusion.gwt.client.classes.data.GJSONType;
 import lsfusion.gwt.client.classes.data.GLogicalType;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.filter.user.GCompare;
@@ -63,6 +64,9 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             return;
 
         super.onBrowserEvent(event);
+
+        if(!DataGrid.checkSinkEvents(event))
+            return;
 
         form.onPropertyBrowserEvent(new EventHandler(event), getCellParent(target), getElement(),
                 handler -> {}, // no outer context
@@ -123,24 +127,31 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
 
                 GGroupObjectValue fullKey = key != null ? GGroupObjectValue.getFullKey(key, columnKey) : GGroupObjectValue.EMPTY;
 
-                pushValue(rowValues, property, propValues.get(fullKey));
+                rowValues.push(convertValue(property, propValues.get(fullKey)));
             }
         }
         rowValues.push(fromObject(key));
         return rowValues;
     }
 
-    private void pushValue(JsArray<JavaScriptObject> array, GPropertyDraw property, Object value) {
-        if (property.baseType instanceof GLogicalType)
-            array.push(fromBoolean(((GLogicalType) property.baseType).threeState ? (boolean) value : value != null));
-        else if(value == null)
-            array.push(null);
-        else if(property.baseType instanceof GIntegralType)
-            array.push(fromNumber(((Number)value).doubleValue()));
-        else if(property.baseType instanceof GImageType)
-            array.push(fromString(GwtClientUtils.getDownloadURL((String) value, null, ((GImageType)property.baseType).extension, false)));
-        else
-            array.push(fromString(value.toString()));
+    public static JavaScriptObject convertValue(GPropertyDraw property, Object value) {
+        if (property.baseType instanceof GLogicalType) {
+            if(!((GLogicalType) property.baseType).threeState)
+                return fromBoolean(value != null);
+
+            if(value != null)
+                return fromBoolean((boolean) value);
+        }
+        if(value == null)
+            return null;
+        if(property.baseType instanceof GIntegralType)
+            return fromNumber(((Number)value).doubleValue());
+        if(property.baseType instanceof GImageType)
+            return fromString(GwtClientUtils.getDownloadURL((String) value, null, ((GImageType)property.baseType).extension, false));
+        if(property.baseType instanceof GJSONType)
+            return GwtClientUtils.jsonParse((String)value);
+
+        return fromString(value.toString());
     }
 
     protected JsArray<JavaScriptObject> getCaptions(NativeHashMap<String, Column> columnMap, Predicate<GPropertyDraw> filter) {
@@ -169,7 +180,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
     protected final static String keysFieldName = "#__key";
 
     protected void changeSimpleGroupObject(JavaScriptObject object, boolean rendered, P elementClicked) {
-        GGroupObjectValue key = toObject(object);
+        GGroupObjectValue key = getKey(object);
 
         long requestIndex;
         if(!GwtClientUtils.nullEquals(this.currentKey, key))
@@ -266,6 +277,8 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
 
     // change key can be outside view window, and can be obtained from getAsyncValues for example
     protected GGroupObjectValue getChangeKey(JavaScriptObject object) {
+        if(object == null)
+            return getCurrentKey();
         if(hasKey(object, keysFieldName))
             object = getValue(object, keysFieldName);
         return toObject(object);
@@ -347,8 +360,8 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
 
             @Override
             public void onSuccess(Pair<ArrayList<GAsync>, Boolean> result) {
-                if(result.first == null && !result.second) {
-                    if(failureCallBack != null)
+                if(result.first == null) {
+                    if(!result.second && failureCallBack != null)
                         GwtClientUtils.call(failureCallBack);
                     return;
                 }
@@ -410,6 +423,10 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         var thisObj = this;
         return {
             changeProperty: function (property, object, newValue) {
+                if(object === undefined)
+                    object = null;
+                if(newValue === undefined)
+                    newValue = true;
                 return thisObj.@GSimpleStateTableView::changeProperty(*)(property, object, newValue);
             },
             changeDateTimeProperty: function (property, object, year, month, day, hour, minute, second) {
@@ -433,9 +450,12 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             isPropertyReadOnly: function (property, object) {
                 return thisObj.@GSimpleStateTableView::isReadOnly(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(property, object);
             },
-            changeSimpleGroupObject: function (object, rendered, elementClicked) {
-                var jsObject = thisObj.@GSimpleStateTableView::fromObject(*)(thisObj.@GSimpleStateTableView::getKey(*)(object));
-                return thisObj.@GSimpleStateTableView::changeSimpleGroupObject(*)(jsObject, rendered, elementClicked);
+            changeObject: function (object, rendered, elementClicked) {
+                if(rendered === undefined)
+                    rendered = false;
+                if(elementClicked === undefined)
+                    elementClicked = null;
+                return thisObj.@GSimpleStateTableView::changeSimpleGroupObject(*)(object, rendered, elementClicked);
             },
             setDateIntervalViewFilter: function (property, pageSize, startYear, startMonth, startDay, endYear, endMonth, endDay, isDateTimeFilter) {
                 thisObj.@GSimpleStateTableView::setDateIntervalViewFilter(*)(property, pageSize, startYear, startMonth, startDay, endYear, endMonth, endDay, isDateTimeFilter);

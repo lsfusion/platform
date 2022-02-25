@@ -1,6 +1,5 @@
 ---
 title: 'Logical model'
-sidebar_label: Overview
 ---
 
 The logical model is traditionally divided into two parts:

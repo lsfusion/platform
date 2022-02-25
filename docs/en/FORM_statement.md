@@ -1,6 +1,5 @@
 ---
 title: 'FORM statement'
-sidebar_label: Overview
 ---
 
 The `FORM` statement creates a [form](Forms.md). 

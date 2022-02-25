@@ -7,6 +7,11 @@ if (mapApiKeyGoogle != null && (typeof google !== 'object' || typeof google.maps
 else
     console.error("google key does not exist");
 
+function googleAutocomplete() {
+    return customGoogleAutocomplete();
+}
+
+// backward compatibility
 function customGoogleAutocomplete() {
     return {
         renderInput: (element, controller) => {

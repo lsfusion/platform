@@ -804,13 +804,17 @@ public class TreeGroupTable extends ClientFormTreeTable implements AsyncChangeCe
     }
 
     public List<Pair<Column, String>> getFilterColumns(ClientGroupObject selectedGroupObject) {
-        return model.getProperties(selectedGroupObject).stream().map(property ->
-                getSelectedColumn(property, ClientGroupObjectValue.EMPTY)
-        ).collect(Collectors.toList());
+        List<ClientPropertyDraw> properties = model.getProperties(selectedGroupObject);
+        if (properties != null) {
+            return properties.stream().map(property ->
+                    getSelectedColumn(property, ClientGroupObjectValue.EMPTY)
+            ).collect(Collectors.toList());
+        }
+        return new ArrayList<>();
     }
 
     public Pair<Column, String> getSelectedColumn(ClientPropertyDraw property, ClientGroupObjectValue columnKey) {
-        return new Pair<>(new Column(property, columnKey), property.getCaptionOrEmpty());
+        return new Pair<>(new Column(property, columnKey), property.getPropertyCaption());
     }
 
     @Override

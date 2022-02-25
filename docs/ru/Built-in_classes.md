@@ -23,7 +23,9 @@ title: 'Встроенные классы'
 |`TEXT`               |Строковый тип данных произвольной длины, зависимый от регистра||
 |`RICHTEXT`           |Строковый тип данных произвольной длины с форматированием||
 |`COLOR`              |Цвет|`#00ссff`, `#AA55CC`, `RGB(0, 255, 0)`|
+|`JSON`               |JSON|`{"a":["x","y","z"]}`|
 |`FILE`               |Файл динамического типа (содержимое файла вместе с его расширением)||
+|`NAMEDFILE`          |Файл динамического типа (содержимое файла вместе с его именем и расширением)||
 |`RAWFILE`, `WORDFILE`, `IMAGEFILE`, `PDFFILE`, `EXCELFILE`, `CSVFILE`, `HTMLFILE`, `JSONFILE`, `XMLFILE`, `TABLEFILE`|Файлы конкретного типа (`RAWFILE` - файл без расширения / с неизвестным расширением)||
 |`LINK`               |Символьный идентификатор-ссылка на файл (URI)||
 |`RAWLINK`, `WORDLINK`, `IMAGELINK`, `PDFLINK`, `EXCELLINK`, `CSVLINK`, `HTMLLINK`, `JSONLINK`, `XMLLINK`, `TABLELINK`|Символьный идентификатор-ссылка на файл конкретного типа (`RAWLINK` - ссылка на файл без расширения / с неизвестным расширением)||
@@ -108,12 +110,14 @@ title: 'Встроенные классы'
 |`DATE, TIME, DATETIME`|Текущие дата, время, дата / время|
 |`BOOLEAN`             |TRUE                 |
 |`COLOR`               |Белый цвет           |
+|`JSON`                |{}                   |
 |Файлы конкретного типа|Пустой файл          |
 |`FILE`                |Пустой файл с пустым расширением|
+|`NAMEDFILE`           |Пустой файл с пустым именем и расширением|
 
 ## Расширения файлов конкретного типа {#extension}
 
-При преобразовании файлов конкретного типа (`JSONFILE`, `XMLFILE`, ...) к файлу динамического типа (`FILE`), как явном, так и неявном (например при [импорте данных](Data_import_IMPORT.md) без указании формата или при [взаимодействии с внешними системами](Access_to_an_external_system_EXTERNAL.md)) расширение результирующего файла определяется следующим образом:
+При преобразовании файлов конкретного типа (`JSONFILE`, `XMLFILE`, ...) к файлу динамического типа (`FILE`, `NAMEDFILE`), как явном, так и неявном (например при [импорте данных](Data_import_IMPORT.md) без указании формата или при [взаимодействии с внешними системами](Access_to_an_external_system_EXTERNAL.md)) расширение результирующего файла определяется следующим образом:
 
 |Имя класса |Расширение   |
 |-----------|-------------|
@@ -132,10 +136,10 @@ title: 'Встроенные классы'
 
 |Имя класса|Имя свойства|
 |----------|------------|
-|`FILE`, `RAWFILE`, `WORDFILE`, `IMAGEFILE`, `PDFFILE`, `EXCELFILE`, `CSVFILE`, `HTMLFILE`, `JSONFILE`, `XMLFILE`, `TABLEFILE`|`exportFile`, `exportRawFile`, `exportWordFile`, `exportImageFile`, `exportPdfFile`, `exportExcelFile`, `exportCsvFile`, `exportHtmlFile`, `exportJsonFile`, `exportXmlFile`|
+|`FILE`, `NAMEDFILE`, `RAWFILE`, `WORDFILE`, `IMAGEFILE`, `PDFFILE`, `EXCELFILE`, `CSVFILE`, `HTMLFILE`, `JSONFILE`, `XMLFILE`, `TABLEFILE`|`exportFile`, `exportNamedFile`, `exportRawFile`, `exportWordFile`, `exportImageFile`, `exportPdfFile`, `exportExcelFile`, `exportCsvFile`, `exportHtmlFile`, `exportJsonFile`, `exportXmlFile`|
 |`TEXT`, `STRING`, `BPSTRING`|`exportText`, `exportString`, `exportBPString`|
 |`NUMERIC`, `LONG`, `INTEGER`, `DOUBLE`|`exportNumeric`, `exportLong`, `exportInteger`, `exportDouble`|
 |`DATETIME`, `DATE`, `TIME`, `YEAR`| `exportDateTime`, `exportDate`, `exportTime`, `exportYear`|
 |`LINK`, `RAWLINK`, `WORDLINK`, `IMAGELINK`, `PDFLINK`, `EXCELLINK`, `CSVLINK`, `HTMLLINK`, `JSONLINK`, `XMLLINK`, `TABLELINK`| `exportFile`, `exportRawFile`, `exportWordFile`, `exportImageFile`, `exportPdfFile`, `exportExcelFile`, `exportCsvFile`, `exportHtmlFile`, `exportJsonFile`, `exportXmlFile`|
-|`BOOLEAN`, `COLOR`|`exportBoolean`, `exportColor`|
+|`BOOLEAN`, `COLOR`, `JSON`|`exportBoolean`, `exportColor`, `exportJSON`|
 |[Пользовательские классы](User_classes.md)|`exportObject`|

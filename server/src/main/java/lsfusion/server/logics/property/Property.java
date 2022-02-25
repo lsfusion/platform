@@ -765,7 +765,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
 
     @IdentityStrongLazy // just in case
-    private <P extends PropertyInterface> ConstraintCheckChangeProperty<T, P> getMaxChangeProperty(Property<P> change) {
+    private <P extends PropertyInterface> ConstraintCheckChangeProperty<T, P> getConstraintCheckChangeProperty(Property<P> change) {
         return new ConstraintCheckChangeProperty<>(this, change);
     }
 
@@ -776,7 +776,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     public <O extends ObjectSelector> ImSet<ContextFilterEntity<?, T, O>> getCheckFilters(O object) {
         return ThreadLocalContext.getBusinessLogics().getCheckConstrainedProperties(this).filterFn(property -> depends(property, this)).
                 mapSetValues(property -> {
-                    ConstraintCheckChangeProperty<?, T> changeProperty = ((Property<?>) property).getMaxChangeProperty(this);
+                    ConstraintCheckChangeProperty<?, T> changeProperty = ((Property<?>) property).getConstraintCheckChangeProperty(this);
                     Pair<ImRevMap<ConstraintCheckChangeProperty.Interface<T>, T>, ConstraintCheckChangeProperty.Interface<T>> mapInterfaces = changeProperty.getMapInterfaces();
                     return new ContextFilterEntity<>(changeProperty, mapInterfaces.first, MapFact.singletonRev(mapInterfaces.second, object));
                 });
@@ -1617,7 +1617,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
     
     @IdentityStrongLazy // STRONG for using in security policy
-    public ActionMapImplement<?, T> getDefaultEventAction(String eventActionSID, FormSessionScope defaultChangeEventScope, ImList<Property> viewProperties) {
+    public ActionMapImplement<?, T> getDefaultEventAction(String eventActionSID, FormSessionScope defaultChangeEventScope, ImList<Property> viewProperties, String customChangeFunction) {
 //        ImMap<T, ValueClass> interfaceClasses = getInterfaceClasses(ClassType.tryEditPolicy); // так как в определении propertyDraw также используется FULL, а не ASSERTFULL
 //        if(interfaceClasses.size() < interfaces.size()) // не все классы есть
 //            return null;
@@ -1648,13 +1648,13 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
             ImOrderSet<T> orderInterfaces = lp.listInterfaces; // actually we don't need all interfaces in dialog input action itself (only used one in checkfilters), but for now it doesn't matter
 
             // selectors could be used, but since this method is used after logics initialization, getting form, check properties here is more effective
-            LA<?> inputAction = lm.addDialogInputAProp((CustomClass) valueClass, targetProp, BaseUtils.nvl(defaultChangeEventScope, PropertyDrawEntity.DEFAULT_CUSTOMCHANGE_EVENTSCOPE), orderInterfaces, list, MapFact.EMPTYREV(), objectEntity -> getCheckFilters(objectEntity));
+            LA<?> inputAction = lm.addDialogInputAProp((CustomClass) valueClass, targetProp, BaseUtils.nvl(defaultChangeEventScope, PropertyDrawEntity.DEFAULT_CUSTOMCHANGE_EVENTSCOPE), orderInterfaces, list, MapFact.EMPTYREV(), objectEntity -> getCheckFilters(objectEntity), customChangeFunction);
 
             action = ((LA<?>) lm.addJoinAProp(inputAction, BaseUtils.add(directLI(lp), getUParams(orderInterfaces.size())))).getImplement(orderInterfaces);
         } else {
             // INPUT valueCLass
             action = lm.addInputAProp((DataClass) valueClass, targetProp, false, SetFact.EMPTYORDER(),
-                    isDefaultWYSInput(valueClass) ? new InputListEntity<>(this, MapFact.EMPTYREV()) : null, BaseUtils.nvl(defaultChangeEventScope, PropertyDrawEntity.DEFAULT_DATACHANGE_EVENTSCOPE), null, ListFact.EMPTY()).getImplement();
+                    isDefaultWYSInput(valueClass) ? new InputListEntity<>(this, MapFact.EMPTYREV()) : null, BaseUtils.nvl(defaultChangeEventScope, PropertyDrawEntity.DEFAULT_DATACHANGE_EVENTSCOPE), null, ListFact.EMPTY(), customChangeFunction).getImplement();
         }
 
         return PropertyFact.createRequestAction(interfaces,
@@ -2038,6 +2038,10 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
     public boolean checkAlwaysNull(boolean constraint) {
         return !isEmpty(AlgType.checkType);
+    }
+
+    public boolean isExplicitNull() {
+        return this instanceof NullValueProperty; // isEmpty can be better, but we just want to emulate NULL to be like NULL caption
     }
 
     @IdentityLazy

@@ -82,7 +82,6 @@ public class TreeGroupContainerSet {
         set.toolbarLeftContainer.setSID(DefaultFormView.getToolbarLeftContainerSID(sid));
 
         set.boxContainer.setType(ContainerType.CONTAINERV);
-        set.boxContainer.setChildrenAlignment(FlexAlignment.START);
         set.boxContainer.setAlignment(FlexAlignment.STRETCH);
         set.boxContainer.setFlex(1);
         set.boxContainer.add(treeGroup.filtersContainer, version);
@@ -92,17 +91,15 @@ public class TreeGroupContainerSet {
 
         set.toolbarBoxContainer.setType(ContainerType.CONTAINERH);
         set.toolbarBoxContainer.setAlignment(FlexAlignment.STRETCH);
-        set.toolbarBoxContainer.setChildrenAlignment(FlexAlignment.START);
         set.toolbarBoxContainer.add(set.toolbarLeftContainer, version);
         set.toolbarBoxContainer.add(set.toolbarRightContainer, version);
 
         set.toolbarLeftContainer.setType(ContainerType.CONTAINERH);
-        set.toolbarLeftContainer.setAlignment(FlexAlignment.CENTER);
-        set.toolbarLeftContainer.setChildrenAlignment(FlexAlignment.END);
+        set.toolbarLeftContainer.setAlignment(FlexAlignment.STRETCH);
         set.toolbarLeftContainer.add(treeGroup.getToolbarSystem(), version);
 
         set.toolbarRightContainer.setType(ContainerType.CONTAINERH);
-        set.toolbarRightContainer.setAlignment(FlexAlignment.CENTER);
+        set.toolbarRightContainer.setAlignment(FlexAlignment.STRETCH);
         set.toolbarRightContainer.setChildrenAlignment(FlexAlignment.END);
         set.toolbarRightContainer.setFlex(1);
         set.toolbarRightContainer.add(set.filterGroupsContainer, version);
@@ -113,11 +110,10 @@ public class TreeGroupContainerSet {
         set.filterGroupsContainer.setChildrenAlignment(FlexAlignment.END);
 
         set.toolbarContainer.setType(ContainerType.CONTAINERH);
-        set.toolbarContainer.setAlignment(FlexAlignment.CENTER);
+        set.toolbarContainer.setAlignment(FlexAlignment.STRETCH);
 
         set.panelContainer.setType(ContainerType.CONTAINERV);
         set.panelContainer.setAlignment(FlexAlignment.STRETCH);
-        set.panelContainer.setChildrenAlignment(FlexAlignment.START);
         set.panelContainer.add(set.groupContainer, version);
 
         set.groupContainer.setType(ContainerType.COLUMNS);

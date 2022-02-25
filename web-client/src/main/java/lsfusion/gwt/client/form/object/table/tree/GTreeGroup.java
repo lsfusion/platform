@@ -17,6 +17,7 @@ public class GTreeGroup extends GComponent {
     public List<GFilter> filters = new ArrayList<>();
 
     public boolean autoSize;
+    public Boolean boxed;
 
     public GToolbar toolbar;
     
@@ -46,6 +47,6 @@ public class GTreeGroup extends GComponent {
 
     @Override
     protected Integer getDefaultHeight() {
-        return getLastGroup().getHeight(lineHeight) + (headerHeight >= 0 ? headerHeight : GGridPropertyTableHeader.DEFAULT_HEADER_HEIGHT);
+        return getLastGroup().getHeight(lineHeight, headerHeight);
     }
 }

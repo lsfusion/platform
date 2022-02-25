@@ -3,8 +3,10 @@ package lsfusion.gwt.client.base.view;
 import com.allen_sauer.gwt.dnd.client.DragContext;
 import com.allen_sauer.gwt.dnd.client.util.Location;
 import com.allen_sauer.gwt.dnd.client.util.WidgetLocation;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
+import lsfusion.gwt.client.base.Dimension;
 import lsfusion.gwt.client.base.TooltipManager;
 
 import static lsfusion.gwt.client.base.view.ResizableWindow.Direction.*;
@@ -86,6 +88,11 @@ public class ResizableWindow extends Composite {
         this.innerContentWidget = innerContentWidget;
         contentWidget.clear();
         contentWidget.add(innerContentWidget);
+    }
+
+    public void setInnerContentSize(Dimension size) {
+        innerContentWidget.setWidth(size.width + "px");
+        innerContentWidget.setHeight(size.height + "px");
     }
 
     private void initLayout() {
@@ -307,5 +314,14 @@ public class ResizableWindow extends Composite {
     public void setDefaultSize() {
         headerWidget.setPixelSize(790, 20);
         innerContentWidget.setPixelSize(790, 580);
+    }
+
+    public void focus() {
+        Element element = windowController.getBoundaryPanel().getElement();
+        int tabIndex = element.getTabIndex();
+        if (tabIndex == -1) {
+            element.setTabIndex(0);
+        }
+        element.focus();
     }
 }

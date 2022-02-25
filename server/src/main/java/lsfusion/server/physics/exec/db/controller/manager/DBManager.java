@@ -75,7 +75,6 @@ import lsfusion.server.logics.classes.user.ObjectValueClassSet;
 import lsfusion.server.logics.controller.manager.RestartManager;
 import lsfusion.server.logics.form.interactive.action.input.InputValueList;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
-import lsfusion.server.logics.form.interactive.property.Async;
 import lsfusion.server.logics.form.interactive.property.AsyncMode;
 import lsfusion.server.logics.form.interactive.property.PropertyAsync;
 import lsfusion.server.logics.navigator.controller.env.*;
@@ -335,7 +334,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 for (Map.Entry<List<Field>, IndexOptions> index : mapIndex.getValue().entrySet()) {
                     ImOrderSet<Field> fields = SetFact.fromJavaOrderSet(index.getKey());
                     if (!getThreadLocalSql().checkIndex(table, table.keys, fields, index.getValue()))
-                        session.addIndex(table, table.keys, fields, index.getValue(), BusinessLogics.sqlLogger);
+                        session.addIndex(table, table.keys, fields, index.getValue(), BusinessLogics.sqlLogger, true);
                 }
                 session.addConstraint(table);
                 session.checkExtraIndices(getThreadLocalSql(), table, table.keys, BusinessLogics.sqlLogger);
@@ -1549,7 +1548,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             for (Map.Entry<NamedTable, Map<List<Field>, IndexOptions>> mapIndex : newDBStructure.tables.entrySet())
                 for (Map.Entry<List<Field>, IndexOptions> index : mapIndex.getValue().entrySet()) {
                     NamedTable table = mapIndex.getKey();
-                    sql.addIndex(table, table.keys, SetFact.fromJavaOrderSet(index.getKey()), index.getValue(), oldDBStructure.getTable(table.getName()) == null ? null : startLogger); // если таблица новая нет смысла логировать
+                    sql.addIndex(table, table.keys, SetFact.fromJavaOrderSet(index.getKey()), index.getValue(), oldDBStructure.getTable(table.getName()) == null ? null : startLogger, Settings.get().isStartServerAnyWay()); // если таблица новая нет смысла логировать
                 }
 
             startLogger.info("Filling static objects ids");

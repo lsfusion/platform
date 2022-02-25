@@ -280,8 +280,8 @@ sendMessage '{chat.send.message.chat}' (Chat chat)  {
 
 sendMessage '{chat.send.message.user}' (CustomUser user)  { 
     createDialogChat(user, currentUser()) ;
-    seekChat(chatIn(user, currentUser()));
     sendMessage(chatIn(user, currentUser()));
+    seekChat(chatIn(user, currentUser()));
 }
 
 recentVisible = ABSTRACT BOOLEAN ();
@@ -476,7 +476,6 @@ EXTEND FORM fullChat
 recentVisible() += ACTIVE TAB fullChat.recent;
 seekChat (Chat chat) + { SEEK fullChat.c = chat; }
 
-activateMessage() + { ACTIVATE PROPERTY fullChat.message(); }
 seekLastMessage() + { SEEK LAST fullChat.m; }
 
 NAVIGATOR {
@@ -652,7 +651,7 @@ changeInputMessage () {
             LOCAL extension = STRING ();
             extension() <- getWord(name(), '.', wordCount(name(), '.')) IF wordCount(name(), '.') > 1;
             attachmentName() <- left(name(), length(name()) - OVERRIDE (length(extension()) + 1), 0);
-            attachment() <- setExtension(decode(data(), 'base64'), (OVERRIDE extension(), 'dat'));
+            attachment() <- file(decode(data(), 'base64'), (OVERRIDE extension(), 'dat'));
         }
 
         IF action() = 'open' THEN {
@@ -681,6 +680,13 @@ DESIGN fullChat {
             fill = 1; 
         }
     }
+}
+
+activateMessage() + { 
+    IF isWeb() THEN
+        ACTIVATE PROPERTY fullChat.jsonInputMessage();
+    ELSE
+        ACTIVATE PROPERTY fullChat.message(); 
 }
 
 EXTEND FORM shortChat

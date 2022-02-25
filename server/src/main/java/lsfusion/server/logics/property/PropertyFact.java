@@ -15,6 +15,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.data.expr.formula.CustomFormulaSyntax;
+import lsfusion.server.data.expr.formula.FormulaUnionImpl;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.query.PartitionType;
 import lsfusion.server.logics.BusinessLogics;
@@ -406,7 +407,11 @@ public class PropertyFact {
     }
 
     public static <T extends PropertyInterface> PropertyMapImplement<?, T> createLastGProp(Property<T> where, PropertyInterfaceImplement<T> last, ImSet<T> groupInterfaces, ImOrderMap<PropertyInterfaceImplement<T>, Boolean> orders, boolean ordersNotNull) {
-        OrderGroupProperty<T> groupProperty = new OrderGroupProperty<>(LocalizedString.NONAME, where.interfaces, BaseUtils.<ImCol<PropertyInterfaceImplement<T>>>immutableCast(groupInterfaces), ListFact.toList(where.getImplement(), last), GroupType.LAST, orders, ordersNotNull);
+        return createGProp(GroupType.LAST, where.interfaces, groupInterfaces, ListFact.toList(where.getImplement(), last), orders, ordersNotNull);
+    }
+
+    public static <T extends PropertyInterface> PropertyMapImplement<?, T> createGProp(GroupType type, ImSet<T> innerInterfaces, ImSet<T> groupInterfaces, ImList<PropertyInterfaceImplement<T>> props, ImOrderMap<PropertyInterfaceImplement<T>, Boolean> orders, boolean ordersNotNull) {
+        OrderGroupProperty<T> groupProperty = new OrderGroupProperty<>(LocalizedString.NONAME, innerInterfaces, BaseUtils.<ImCol<PropertyInterfaceImplement<T>>>immutableCast(groupInterfaces), props, type, orders, ordersNotNull);
         return new PropertyMapImplement<>(groupProperty, BaseUtils.<ImMap<GroupProperty.Interface<T>, T>>immutableCast(groupProperty.getMapInterfaces()).toRevExclMap());
     }
 
@@ -429,6 +434,13 @@ public class PropertyFact {
         JoinProperty<StringFormulaProperty.Interface> joinProperty = new JoinProperty<>(caption,
                 revJoinMap.keys().toOrderSet(), new PropertyImplement<>(implement, joinImplement));
         return new PropertyMapImplement<>(joinProperty, revJoinMap);
+    }
+    public static <T extends PropertyInterface> PropertyMapImplement<?,T> createFormulaUnion(FormulaUnionImpl formula, ImList<? extends PropertyInterfaceImplement<T>> params) {
+        ImSet<T> usedInterfaces = getUsedInterfaces(params.getCol());
+
+        ImRevMap<T, UnionProperty.Interface> joinMap = usedInterfaces.mapRevValues(UnionProperty.genInterface);
+
+        return new PropertyMapImplement<>(new FormulaUnionProperty(LocalizedString.NONAME, joinMap.valuesSet().toOrderSet(), mapImplements(params, joinMap), formula), joinMap.reverse());
     }
 
     private static <T extends PropertyInterface> PropertyMapImplement<?,T> createConcatenate(LocalizedString caption, ImSet<T> interfaces, ImList<? extends PropertyInterfaceImplement<T>> params) {

@@ -423,7 +423,7 @@ END
 
 META defineDocumentDetailClosed (object, detailClass)
     isClosed '{documents.is.closed}' (detailClass d) = isClosed(object(d));
-    isOpened '{documents.is.opened}' (detailClass d) = isPosted(d) AND NOT isClosed(d);
+    isOpened '{documents.is.opened}' (detailClass d) = isPosted(d) AND isOpened(object(d));
 END
 
 META defineDocumentDetailClosed (object)
@@ -449,7 +449,7 @@ DESIGN customUser { security { MOVE PROPERTY(allowedEditClosedDocuments(u)); } }
 
 // In dex
 META defineDocumentDetailIndex (object, detailClass)
-    dataIndex '{document.data.index.detail.class}' = DATA INTEGER (detailClass) INDEXED; 
+    dataIndex '{document.data.index.detail.class}' = DATA INTEGER (detailClass); 
     defaultIndex '{document.default.index.detail.class}' (detailClass d) =
         PARTITION SUM 1
         ORDER d BY object(d) CHARWIDTH 4;

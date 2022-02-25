@@ -11,7 +11,7 @@ import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import java.math.BigDecimal;
 import java.util.Date;
 
-public class IntervalCellEditor extends PopupBasedCellEditor {
+public class IntervalCellEditor extends PopupValueCellEditor {
 
     private final String intervalType;
     private final GIntervalType interval;

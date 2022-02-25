@@ -194,6 +194,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public LP readFile;
 
     public LP getExtension;
+    public LP inputFileName;
 
     public LP<?> imported;
     public LP importedString;
@@ -308,6 +309,16 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public LA getFormClose() {
         try {
             return findAction("formClose[]");
+        } catch (ScriptingErrorLog.SemanticErrorException e) {
+            Throwables.propagate(e);
+        }
+        return null;
+    }
+
+    @IdentityLazy
+    public LA getFormApplied() {
+        try {
+            return findAction("formApplied[]");
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             Throwables.propagate(e);
         }
@@ -789,6 +800,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
                 getLCPByUniqueName(namePrefix + "Date"),
                 getLCPByUniqueName(namePrefix + "Time"),
                 getLCPByUniqueName(namePrefix + "Color"),
+                getLCPByUniqueName(namePrefix + "JSON"),
                 getLCPByUniqueName(namePrefix + "WordFile"),
                 getLCPByUniqueName(namePrefix + "ImageFile"),
                 getLCPByUniqueName(namePrefix + "PdfFile"),
@@ -802,6 +814,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
                 getLCPByUniqueName(namePrefix + "JsonFile"),
                 getLCPByUniqueName(namePrefix + "XmlFile"),
                 getLCPByUniqueName(namePrefix + "TableFile"),
+                getLCPByUniqueName(namePrefix + "NamedFile"),
                 getLCPByUniqueName(namePrefix + "WordLink"),
                 getLCPByUniqueName(namePrefix + "ImageLink"),
                 getLCPByUniqueName(namePrefix + "PdfLink"),

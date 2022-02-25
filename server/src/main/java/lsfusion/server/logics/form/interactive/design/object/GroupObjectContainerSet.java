@@ -12,9 +12,7 @@ import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
 public class GroupObjectContainerSet {
     public static final String BOX_CONTAINER = "BOX";
         public static final String FILTERS_CONTAINER = "FILTERS";
-        public static final String GRIDBOX_CONTAINER = "GRIDBOX";
-            public static final String CLASSCHOOSER_COMPONENT = "CLASSCHOOSER";
-            public static final String GRID_COMPONENT = "GRID";
+        public static final String GRID_COMPONENT = "GRID";
         public static final String TOOLBARBOX_CONTAINER = "TOOLBARBOX";
             public static final String TOOLBARLEFT_CONTAINER = "TOOLBARLEFT";
                 public static final String TOOLBAR_SYSTEM_COMPONENT = "TOOLBARSYSTEM";
@@ -97,7 +95,6 @@ public class GroupObjectContainerSet {
         set.toolbarLeftContainer.setSID(DefaultFormView.getToolbarLeftContainerSID(sid));
 
         set.boxContainer.setType(ContainerType.CONTAINERV);
-        set.boxContainer.setChildrenAlignment(FlexAlignment.START);
         set.boxContainer.setAlignment(FlexAlignment.STRETCH);
         set.boxContainer.setFlex(1);
         set.boxContainer.add(group.filtersContainer, version);
@@ -107,17 +104,15 @@ public class GroupObjectContainerSet {
 
         set.toolbarBoxContainer.setType(ContainerType.CONTAINERH);
         set.toolbarBoxContainer.setAlignment(FlexAlignment.STRETCH);
-        set.toolbarBoxContainer.setChildrenAlignment(FlexAlignment.START);
         set.toolbarBoxContainer.add(set.toolbarLeftContainer, version);
         set.toolbarBoxContainer.add(set.toolbarRightContainer, version);
 
         set.toolbarLeftContainer.setType(ContainerType.CONTAINERH);
-        set.toolbarLeftContainer.setAlignment(FlexAlignment.CENTER);
-        set.toolbarLeftContainer.setChildrenAlignment(FlexAlignment.END);
+        set.toolbarLeftContainer.setAlignment(FlexAlignment.STRETCH);
         set.toolbarLeftContainer.add(group.getToolbarSystem(), version);
 
         set.toolbarRightContainer.setType(ContainerType.CONTAINERH);
-        set.toolbarRightContainer.setAlignment(FlexAlignment.CENTER);
+        set.toolbarRightContainer.setAlignment(FlexAlignment.STRETCH);
         set.toolbarRightContainer.setChildrenAlignment(FlexAlignment.END);
         set.toolbarRightContainer.setFlex(1);
         set.toolbarRightContainer.add(group.getCalculations(), version);
@@ -129,11 +124,10 @@ public class GroupObjectContainerSet {
         set.filterGroupsContainer.setChildrenAlignment(FlexAlignment.END);
 
         set.toolbarContainer.setType(ContainerType.CONTAINERH);
-        set.toolbarContainer.setAlignment(FlexAlignment.CENTER);
+        set.toolbarContainer.setAlignment(FlexAlignment.STRETCH);
 
         set.panelContainer.setType(ContainerType.CONTAINERV);
         set.panelContainer.setAlignment(FlexAlignment.STRETCH);
-        set.panelContainer.setChildrenAlignment(FlexAlignment.START);
         set.panelContainer.add(set.groupContainer, version);
 
         set.groupContainer.setType(ContainerType.COLUMNS);

@@ -1,6 +1,5 @@
 ---
 title: 'Оperators'
-sidebar_label: Overview
 ---
 
 Operators for creating actions can be divided into several categories:

@@ -34,13 +34,13 @@ public class ConfirmAction extends MessageAction {
     }
 
     @Override
-    protected void showMessage(ExecutionContext<PropertyInterface> context, Object msgValue) throws SQLException, SQLHandledException {
+    protected void showMessage(ExecutionContext<PropertyInterface> context, String message) throws SQLException, SQLHandledException {
         Integer result;
-        if(msgValue == null) // если NULL считаем что YES
+        if(message == null) // если NULL считаем что YES
             result = JOptionPane.YES_OPTION;
         else
             result = (Integer) context.requestUserInteraction(
-                    new ConfirmClientAction(toCaption(title), String.valueOf(msgValue), yesNo, 0, 0)
+                    new ConfirmClientAction(toCaption(title), message, yesNo, 0, 0)
             );
         
         assert result != null;

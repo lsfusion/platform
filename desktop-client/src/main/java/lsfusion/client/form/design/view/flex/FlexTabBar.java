@@ -45,14 +45,21 @@ public class FlexTabBar extends JTabbedPane implements FlexComponent, TabBar {
 
     public void insertTab(String tabText, int beforeIndex) {
         checkInsertBeforeTabIndex(beforeIndex);
+        if(selectedTab != null && beforeIndex <= selectedTab) {
+            selectedTab++; //if we insert tab before selected tab, selected tab index will be increased
+        }
+
         insertTab(tabText, null, null, null, beforeIndex);
     }
 
     public void removeTab(int index) {
         checkTabIndex(index);
-
-        if (selectedTab != null && index == selectedTab) {
-            selectedTab = null;
+        if(selectedTab != null) {
+            if (index == selectedTab) {
+                selectedTab = null;
+            } else if (index < selectedTab) {
+                selectedTab--; //if we remove one of the previous tabs, selected tab index will be decreased
+            }
         }
 
         removeTabAt(index);

@@ -30,6 +30,10 @@ public class ContainerViewProxy extends ComponentViewProxy<ContainerView> {
         target.setCollapsible(collapsible);
     }
 
+    public void setCollapsed(boolean collapsed) {
+        target.setCollapsed(collapsed);
+    }
+    
     public void setType(ContainerType type) {
         target.setType(type);
     }
@@ -69,6 +73,10 @@ public class ContainerViewProxy extends ComponentViewProxy<ContainerView> {
 
     public void setLineSize(int lineSize) {
         target.lineSize = lineSize;
+    }
+
+    public void setCaptionLineSize(int lineSize) {
+        target.captionLineSize = lineSize;
     }
 
     public void setShowIf(PropertyObjectEntity<?> showIf) {

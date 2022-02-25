@@ -7,6 +7,7 @@ import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 
 public class GAsyncChange extends GAsyncInputExec {
     public GType changeType;
+    public String customEditFunction;
 
     public GInputList inputList;
 
@@ -14,9 +15,10 @@ public class GAsyncChange extends GAsyncInputExec {
     public GAsyncChange() {
     }
 
-    public GAsyncChange(GType changeType, GInputList inputList) {
+    public GAsyncChange(GType changeType, GInputList inputList, String customEditFunction) {
         this.changeType = changeType;
         this.inputList = inputList;
+        this.customEditFunction = customEditFunction;
     }
 
     @Override

@@ -67,10 +67,6 @@ public class GGridController extends GAbstractTableController {
         return groupObject.mapTileProvider;
     }
 
-    public boolean isGridAutosize() {
-        return groupObject.grid.autoSize;
-    }
-
     public GGridController(GFormController iformController, GGroupObject groupObject, GGridUserPreferences[] userPreferences) {
         super(iformController, groupObject.toolbar, isList(groupObject));
         this.groupObject = groupObject;
@@ -203,7 +199,7 @@ public class GGridController extends GAbstractTableController {
         if (this.table != null)
             this.table.onClear();
 
-        changeGridView(table.getThisWidget());
+        changeGridView(table.getThisWidget(), groupObject.grid.isBoxed(table));
         table.onRender();
         this.table = table;
         updateSettingsButton();
@@ -311,7 +307,7 @@ public class GGridController extends GAbstractTableController {
                 quantityButton = new GCountQuantityButton() {
                     @Override
                     public ClickHandler getClickHandler() {
-                        return event -> formController.countRecords(groupObject);
+                        return event -> formController.countRecords(groupObject, event.getClientX(), event.getClientY());
                     }
                 };
                 addToToolbar(quantityButton);
@@ -324,11 +320,13 @@ public class GGridController extends GAbstractTableController {
                         return event -> {
                             GPropertyDraw property = getSelectedProperty();
                             if (property != null) {
-                                if (property.baseType instanceof GIntegralType) {
-                                    formController.calculateSum(groupObject, property, table.getCurrentColumnKey());
-                                } else {
-                                    showSum(null, property);
-                                }
+                                int clientX = event.getClientX();
+                                int clientY = event.getClientY();
+
+                                if (property.baseType instanceof GIntegralType)
+                                    formController.calculateSum(groupObject, property, table.getCurrentColumnKey(), clientX, clientY);
+                                else
+                                    showSum(null, property, clientX, clientY);
                             }
                         };
                     }
@@ -375,14 +373,14 @@ public class GGridController extends GAbstractTableController {
         addToToolbar(forceUpdateTableButton);
     }
 
-    public void showRecordQuantity(int quantity) {
+    public void showRecordQuantity(int quantity, int clientX, int clientY) {
         assert isList();
-        quantityButton.showPopup(quantity);
+        quantityButton.showPopup(quantity, clientX, clientY);
     }
 
-    public void showSum(Number sum, GPropertyDraw property) {
+    public void showSum(Number sum, GPropertyDraw property, int clientX, int clientY) {
         assert isList();
-        sumButton.showPopup(sum, property);
+        sumButton.showPopup(sum, property, clientX, clientY);
     }
 
     public void updateKeys(GGroupObject group, ArrayList<GGroupObjectValue> keys, GFormChanges fc) {

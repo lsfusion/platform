@@ -2,6 +2,7 @@ package lsfusion.client.form.object.panel.controller;
 
 import lsfusion.base.Pair;
 import lsfusion.base.file.RawFileData;
+import lsfusion.client.base.focus.FocusComponentProvider;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.design.view.ClientFormLayout;
 import lsfusion.client.form.design.view.FlexPanel;
@@ -14,6 +15,7 @@ import lsfusion.client.form.property.cell.classes.view.ImagePropertyRenderer;
 import lsfusion.client.form.property.panel.view.PanelView;
 import lsfusion.interop.base.view.FlexAlignment;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.InputEvent;
 import java.util.HashMap;
@@ -65,16 +67,24 @@ public class PropertyPanelController {
         }
         return false;
     }
+    
+    public JComponent getFocusComponent() {
+        if (views != null && !views.isEmpty()) {
+            return views.values().iterator().next().getFocusComponent();
+        }
+        return null;
+    }
 
     public boolean requestFocusInWindow() {
-        if (views != null && !views.isEmpty()) {
-            return views.values().iterator().next().getFocusComponent().requestFocusInWindow();
+        JComponent focusComponent = getFocusComponent();
+        if (focusComponent != null) {
+            return focusComponent.requestFocusInWindow();
         }
         return false;
     }
 
     public void addView(ClientFormLayout formLayout) {
-        formLayout.addBaseComponent(property, renderersPanel);
+        formLayout.addBaseComponent(property, renderersPanel, (FocusComponentProvider) PropertyPanelController.this::getFocusComponent);
     }
 
     public void removeView(ClientFormLayout formLayout) {

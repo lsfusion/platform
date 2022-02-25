@@ -96,6 +96,8 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
                 }
             });
         }
+
+        setComponentPopupMenu(new EditorContextMenu(this));
     }
 
     protected boolean disableSuggest() {

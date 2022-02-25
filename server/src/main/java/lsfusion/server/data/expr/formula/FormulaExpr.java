@@ -261,21 +261,28 @@ public class FormulaExpr extends StaticClassExpr implements FormulaExprInterface
     }
 
     public static Expr createCustomFormula(final String formula, final FormulaClass valueClass, ImMap<String, ? extends Expr> params) {
-        return createCustomFormula(new CustomFormulaSyntax(formula), valueClass, params, false); 
+        return createCustomFormula(new CustomFormulaSyntax(formula), false, valueClass, params, false);
     }
     
-    public static Expr createCustomFormula(final CustomFormulaSyntax formula, final FormulaClass valueClass, ImMap<String, ? extends Expr> params, boolean hasNotNull) {
+    public static Expr createCustomFormula(final CustomFormulaSyntax formula, boolean union, final FormulaClass valueClass, ImMap<String, ? extends Expr> params, boolean hasNotNull) {
         ImOrderSet<String> keys = params.keys().toOrderSet();
 
-        CustomFormulaImpl formulaImpl = createCustomFormulaImpl(formula, valueClass, hasNotNull, keys);
-        
         ImList<Expr> exprs = keys.mapList(params);
-        return create(formulaImpl, exprs);
+
+        if(union)
+            return FormulaUnionExpr.create(createUnionCustomFormulaImpl(formula, valueClass, keys), exprs);
+
+        return create(createJoinCustomFormulaImpl(formula, valueClass, hasNotNull, keys), exprs);
     }
 
-    public static CustomFormulaImpl createCustomFormulaImpl(CustomFormulaSyntax formula, FormulaClass valueClass, boolean hasNotNull, ImOrderSet<String> keys) {
+    public static JoinCustomFormulaImpl createJoinCustomFormulaImpl(CustomFormulaSyntax formula, FormulaClass valueClass, boolean hasNotNull, ImOrderSet<String> keys) {
         ImMap<String, Integer> mapParams = keys.mapOrderValues((int i) -> i);
-        return new CustomFormulaImpl(formula, mapParams, valueClass, hasNotNull);
+        return new JoinCustomFormulaImpl(formula, mapParams, valueClass, hasNotNull);
+    }
+
+    public static UnionCustomFormulaImpl createUnionCustomFormulaImpl(CustomFormulaSyntax formula, FormulaClass valueClass, ImOrderSet<String> keys) {
+        ImMap<String, Integer> mapParams = keys.mapOrderValues((int i) -> i);
+        return new UnionCustomFormulaImpl(formula, mapParams, valueClass);
     }
 
     public static Expr create(final FormulaJoinImpl formula, ImList<? extends Expr> exprs) {

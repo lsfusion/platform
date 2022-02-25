@@ -101,20 +101,12 @@ public class InteractiveFormDataInterface extends AbstractFormDataInterface {
     @Override
     public ImOrderMap<CompareEntity, Boolean> getOrders(GroupObjectEntity groupObject, ImSet<GroupObjectEntity> valueGroups) {
         GroupObjectInstance groupInstance = getInstance(groupObject, form);
-        return groupInstance.orders.mapOrderKeys(new Function<OrderInstance, CompareEntity>() {
-            public CompareEntity apply(final OrderInstance value) {
-                return new CompareEntity() {
-                    public Type getType() {
-                        return value.getType();
-                    }
-                    public Expr getEntityExpr(ImMap<ObjectEntity, ? extends Expr> mapExprs, Modifier modifier) throws SQLException, SQLHandledException {
-                        return value.getExpr(mapExprs.mapKeys(new Function<ObjectEntity, ObjectInstance>() {
-                            public ObjectInstance apply(ObjectEntity value) {
-                                return getInstance(value, form);
-                            }
-                        }), modifier);
-                    }
-                };
+        return groupInstance.orders.mapOrderKeys(value -> new CompareEntity() {
+            public Type getType() {
+                return value.getType();
+            }
+            public Expr getEntityExpr(ImMap<ObjectEntity, ? extends Expr> mapExprs, Modifier modifier) throws SQLException, SQLHandledException {
+                return value.getExpr(mapExprs.mapKeys(mapValue -> getInstance(mapValue, form)), modifier);
             }
         });
     }

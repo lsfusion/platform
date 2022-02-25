@@ -27,6 +27,7 @@ public class ClientTreeGroup extends ClientComponent implements ClientIdentitySe
     public ClientToolbar toolbar;
 
     public boolean autoSize;
+    public Boolean boxed;
 
     public boolean plainTreeMode;
     
@@ -58,6 +59,9 @@ public class ClientTreeGroup extends ClientComponent implements ClientIdentitySe
         super.customSerialize(pool, outStream);
 
         outStream.writeBoolean(autoSize);
+        outStream.writeBoolean(boxed != null);
+        if(boxed != null)
+            outStream.writeBoolean(boxed);
 
         pool.serializeCollection(outStream, groups);
         pool.serializeObject(outStream, toolbar);
@@ -76,6 +80,7 @@ public class ClientTreeGroup extends ClientComponent implements ClientIdentitySe
         super.customDeserialize(pool, inStream);
 
         autoSize = inStream.readBoolean();
+        boxed = inStream.readBoolean() ? inStream.readBoolean() : null;
 
         groups = pool.deserializeList(inStream);
         toolbar = pool.deserializeObject(inStream);
@@ -138,6 +143,6 @@ public class ClientTreeGroup extends ClientComponent implements ClientIdentitySe
 
     @Override
     protected Integer getDefaultHeight() {
-        return getLastGroup().getHeight(lineHeight) + (headerHeight >= 0 ? headerHeight : ClientGrid.DEFAULT_HEADER_HEIGHT);
+        return getLastGroup().getHeight(lineHeight, headerHeight);
     }
 }

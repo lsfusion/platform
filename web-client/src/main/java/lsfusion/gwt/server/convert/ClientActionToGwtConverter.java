@@ -15,6 +15,7 @@ import lsfusion.gwt.client.classes.GObjectClass;
 import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.form.property.async.GInputList;
 import lsfusion.gwt.client.navigator.window.GModalityType;
+import lsfusion.gwt.client.navigator.window.GWindowFormType;
 import lsfusion.gwt.client.view.GColorTheme;
 import lsfusion.gwt.server.FileUtils;
 import lsfusion.gwt.server.MainDispatchServlet;
@@ -23,6 +24,7 @@ import lsfusion.interop.ProgressBar;
 import lsfusion.interop.action.*;
 import lsfusion.interop.form.ModalityType;
 import lsfusion.client.form.property.cell.ClientAsync;
+import lsfusion.interop.form.WindowFormType;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 import lsfusion.interop.session.ExternalHttpMethod;
 import lsfusion.interop.session.HttpClientAction;
@@ -91,6 +93,8 @@ public class ClientActionToGwtConverter extends ObjectConverter {
             case MODAL: return GModalityType.MODAL;
             case DOCKED_MODAL: return GModalityType.DOCKED_MODAL;
             case DIALOG_MODAL: return GModalityType.DIALOG_MODAL;
+            case EMBEDDED: return GModalityType.EMBEDDED;
+            case POPUP: return GModalityType.POPUP;
         }
         return null;
     }
@@ -139,7 +143,7 @@ public class ClientActionToGwtConverter extends ObjectConverter {
 
         GInputList inputList = asyncConverter.convertOrCast(ClientAsyncSerializer.deserializeInputList(action.inputList));
 
-        return new GRequestUserInputAction(type, value, action.hasOldValue, inputList);
+        return new GRequestUserInputAction(type, value, action.hasOldValue, action.customChangeFunction, inputList);
     }
 
     private Object deserializeServerValue(byte[] valueBytes) throws IOException {

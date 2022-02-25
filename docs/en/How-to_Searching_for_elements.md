@@ -1,6 +1,5 @@
 ---
 title: 'How-to: Searching for elements'
-sidebar_label: Overview
 ---
 
 ### How to read these sections

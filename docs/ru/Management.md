@@ -1,6 +1,5 @@
 ---
 title: 'Управление'
-sidebar_label: Обзор
 ---
 
 ### [Системные параметры](System_parameters.md)

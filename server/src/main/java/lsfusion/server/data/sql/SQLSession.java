@@ -104,6 +104,7 @@ import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static lsfusion.server.data.table.IndexOptions.defaultIndexOptions;
 import static lsfusion.server.physics.admin.log.ServerLoggers.explainLogger;
 import static lsfusion.server.physics.admin.log.ServerLoggers.sqlSuppLog;
 
@@ -127,6 +128,9 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     private static ConcurrentIdentityWeakHashMap<SQLSession, Integer> sqlSessionMap = MapFact.getGlobalConcurrentIdentityWeakHashMap();
     public static ConcurrentHashMap<Long, Long> threadAllocatedBytesAMap = MapFact.getGlobalConcurrentHashMap();
     public static ConcurrentHashMap<Long, Long> threadAllocatedBytesBMap = MapFact.getGlobalConcurrentHashMap();
+
+    private static String likeIndexPostfix = "_like";
+    private static String matchIndexPostfix = "_match";
 
     private Long startTransaction;
     private Map<String, Integer> attemptCountMap = new HashMap<>();
@@ -743,7 +747,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     public void checkExtraIndices(SQLSession threadLocalSQL, NamedTable table, ImOrderSet<KeyField> keys, Logger logger) throws SQLException, SQLHandledException {
         for(int i=1;i<keys.size();i++) {
             ImOrderMap<Field, Boolean> fields = BaseUtils.<ImOrderSet<Field>>immutableCast(keys).subOrder(i, keys.size()).toOrderMap(true);
-            if (!threadLocalSQL.checkIndex(table, fields, false) && !threadLocalSQL.checkIndex(table, fields, true))
+            if (!threadLocalSQL.checkIndex(table, fields, defaultIndexOptions, false) && !threadLocalSQL.checkIndex(table, fields, defaultIndexOptions, true))
                 addIndex(table, fields, logger);
         }
     }
@@ -809,18 +813,29 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         return result;
     }
     
-    public void addIndex(NamedTable table, ImOrderSet<KeyField> keyFields, ImOrderSet<Field> fields, IndexOptions indexOptions, Logger logger) throws SQLException {
-        addIndex(table, getOrderFields(keyFields, indexOptions, fields), indexOptions, logger);
+    public void addIndex(NamedTable table, ImOrderSet<KeyField> keyFields, ImOrderSet<Field> fields, IndexOptions indexOptions, Logger logger, boolean ifNotExists) throws SQLException {
+        addIndex(table, getOrderFields(keyFields, indexOptions, fields), indexOptions, logger, ifNotExists);
     }
 
     public boolean checkIndex(NamedTable table, ImOrderSet<KeyField> keyFields, ImOrderSet<Field> fields, IndexOptions indexOptions) throws SQLException, SQLHandledException {
-        return checkIndex(table, getOrderFields(keyFields, indexOptions, fields), false);
+        return checkIndex(table, getOrderFields(keyFields, indexOptions, fields), indexOptions, false);
      }
 
-    public boolean checkIndex(NamedTable table, ImOrderMap<Field, Boolean> fields, boolean old) throws SQLException, SQLHandledException {
+
+    public boolean checkIndex(NamedTable table, ImOrderMap<Field, Boolean> fields, IndexOptions indexOptions, boolean old) throws SQLException, SQLHandledException {
+        boolean exists = checkIndex(table, fields, old, "");
+        if(indexOptions.type.isLike()) {
+            exists = exists && checkIndex(table, fields, old, likeIndexPostfix);
+        } else if(indexOptions.type.isMatch()) {
+            exists = exists && checkIndex(table, fields, old, likeIndexPostfix) && checkIndex(table, fields, old, matchIndexPostfix);
+        }
+        return exists;
+    }
+
+    public boolean checkIndex(NamedTable table, ImOrderMap<Field, Boolean> fields, boolean old, String postfix) throws SQLException, SQLHandledException {
         //начиная с Postgres 9.5 можно заменить на 'create index if not exists', но непонятно, что тогда делать с логами, поэтому пока проверяем наличие индекса
         //https://dba.stackexchange.com/questions/35616/create-index-if-it-does-not-exist
-        String command = "SELECT to_regclass('public." + (old ? getOldIndexName(table, fields.mapOrderKeys(Field.nameGetter()), syntax) : getIndexName(table, syntax, fields)) + "')";
+        String command = "SELECT to_regclass('public." + (old ? getOldIndexName(table, fields.mapOrderKeys(Field.nameGetter()), syntax) : (getIndexName(table, syntax, fields) + postfix)) + "')";
 
         MExclSet<String> propertyNames = SetFact.mExclSet();
         propertyNames.exclAdd("to_regclass");
@@ -852,10 +867,10 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     }
 
     public void addIndex(NamedTable table, ImOrderMap<Field, Boolean> fields, Logger logger) throws SQLException {
-        addIndex(table, fields, IndexOptions.defaultIndexOptions, logger);
+        addIndex(table, fields, defaultIndexOptions, logger, false);
     }
 
-    public void addIndex(NamedTable table, ImOrderMap<Field, Boolean> fields, IndexOptions indexOptions, Logger logger) throws SQLException {
+    public void addIndex(NamedTable table, ImOrderMap<Field, Boolean> fields, IndexOptions indexOptions, Logger logger, boolean ifNotExists) throws SQLException {
         String columns = fields.toString((key, value) -> {
             assert value || !(key instanceof KeyField);
             return key.getName(syntax) + (indexOptions.type.isDefault() ? (" " + syntax.getOrderDirection(false, value)) : "");
@@ -866,33 +881,32 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         if(logger != null)
             logger.info(String.format("Adding index started: %s", nameIndex));
         if (indexOptions.type.isLike()) {
-            createLikeIndex(table, nameIndex, columns);
+            createLikeIndex(table, nameIndex, columns, ifNotExists);
         } else if (indexOptions.type.isMatch()) {
-            createLikeIndex(table, nameIndex, columns);
-            createMatchIndex(table, nameIndex, columns, indexOptions);
-        } else {
-            createDefaultIndex(table, nameIndex, columns);
+            createLikeIndex(table, nameIndex, columns, ifNotExists);
+            createMatchIndex(table, nameIndex, columns, indexOptions, ifNotExists);
         }
+        createDefaultIndex(table, nameIndex, columns, ifNotExists);
         if(logger != null)
             logger.info(String.format("Adding index: %s, %sms", nameIndex, System.currentTimeMillis() - start));
     }
 
-    private void createLikeIndex(NamedTable table, String nameIndex, String columns) throws SQLException {
+    private void createLikeIndex(NamedTable table, String nameIndex, String columns, boolean ifNotExists) throws SQLException {
         if(DataAdapter.hasTrgmExtension())
-            createIndex(table, nameIndex + "_like", " USING GIN (" + columns + " gin_trgm_ops)");
+            createIndex(table, nameIndex + likeIndexPostfix, " USING GIN (" + columns + " gin_trgm_ops)", ifNotExists);
     }
 
-    private void createMatchIndex(NamedTable table, String nameIndex, String columns, IndexOptions indexOptions) throws SQLException {
+    private void createMatchIndex(NamedTable table, String nameIndex, String columns, IndexOptions indexOptions, boolean ifNotExists) throws SQLException {
         if(DataAdapter.hasTrgmExtension())
-            createIndex(table, nameIndex + "_match", " USING GIN (to_tsvector(" + (indexOptions.language != null ? ("'" + indexOptions.language + "', ") : "") + columns + "))");
+            createIndex(table, nameIndex + matchIndexPostfix, " USING GIN (to_tsvector(" + (indexOptions.language != null ? ("'" + indexOptions.language + "', ") : "") + columns + "))", ifNotExists);
     }
 
-    private void createDefaultIndex(NamedTable table, String nameIndex, String columns) throws SQLException {
-        createIndex(table, nameIndex, " (" + columns + ")");
+    private void createDefaultIndex(NamedTable table, String nameIndex, String columns, boolean ifNotExists) throws SQLException {
+        createIndex(table, nameIndex, " (" + columns + ")", ifNotExists);
     }
 
-    private void createIndex(NamedTable table, String nameIndex, String columnsPostfix) throws SQLException {
-        executeDDL("CREATE INDEX " + nameIndex + " ON " + table.getName(syntax) + columnsPostfix);
+    private void createIndex(NamedTable table, String nameIndex, String columnsPostfix, boolean ifNotExists) throws SQLException {
+        executeDDL("CREATE INDEX " + (ifNotExists ? "IF NOT EXISTS " : "") + nameIndex + " ON " + table.getName(syntax) + columnsPostfix);
     }
 
     public void dropIndex(NamedTable table, ImOrderSet<KeyField> keyFields, ImOrderSet<String> fields, IndexOptions indexOptions, boolean ifExists) throws SQLException {
@@ -902,17 +916,16 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         } else if(indexOptions.type.isMatch()) {
             dropLikeIndex(table, indexName, ifExists);
             dropMatchIndex(table, indexName, ifExists);
-        } else {
-            dropDefaultIndex(table, indexName, ifExists);
         }
+        dropDefaultIndex(table, indexName, ifExists);
     }
 
     public void dropLikeIndex(NamedTable table, String indexName, boolean ifExists) throws SQLException {
-        dropIndex(table, indexName + "_like", ifExists);
+        dropIndex(table, indexName + likeIndexPostfix, ifExists);
     }
 
     public void dropMatchIndex(NamedTable table, String indexName, boolean ifExists) throws SQLException {
-        dropIndex(table, indexName + "_match", ifExists);
+        dropIndex(table, indexName + matchIndexPostfix, ifExists);
     }
 
     public void dropDefaultIndex(NamedTable table, String indexName, boolean ifExists) throws SQLException {
@@ -3268,7 +3281,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         vacuumAnalyzeSessionTable(table, connection, typePool, syntax, owner);
     }
     private static void vacuumAnalyzeSessionTable(String table, Connection connection, TypePool typePool, SQLSyntax syntax, OperationOwner owner) throws SQLException {
-        Pair<String, StaticExecuteEnvironment> ddl = getVacuumAnalyzeDDL(table, syntax);
+        Pair<String, StaticExecuteEnvironment> ddl = getVacuumAnalyzeDDL(syntax.getSessionTableName(table), syntax);
         executeDDL(ddl, connection, typePool, owner);
     }
 

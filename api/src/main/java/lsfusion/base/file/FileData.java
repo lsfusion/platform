@@ -1,5 +1,6 @@
 package lsfusion.base.file;
 
+import com.google.common.primitives.Bytes;
 import lsfusion.base.mutability.TwinImmutableObject;
 
 import java.io.Serializable;
@@ -40,16 +41,8 @@ public class FileData extends TwinImmutableObject<FileData> implements Serializa
 
     public byte[] getBytes() {
         byte[] fileBytes = fileData.getBytes();
-        byte[] extensionBytes = extension.getBytes();        
-        
-        byte[] extBytes = new byte[0];
-        extBytes = new byte[extensionBytes.length + 1];
-        extBytes[0] = (byte) extensionBytes.length;
-        System.arraycopy(extensionBytes, 0, extBytes, 1, extensionBytes.length);
-        byte[] result = new byte[extBytes.length + fileBytes.length];
-        System.arraycopy(extBytes, 0, result, 0, extBytes.length);
-        System.arraycopy(fileBytes, 0, result, extBytes.length, fileBytes.length);
-        return result;
+        byte[] extensionBytes = extension.getBytes();
+        return Bytes.concat(new byte[] {(byte) extensionBytes.length}, extensionBytes, fileBytes);
     }
 
     @Override

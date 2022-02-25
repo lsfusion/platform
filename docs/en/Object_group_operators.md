@@ -1,6 +1,5 @@
 ---
 title: 'Object group operators'
-sidebar_label: Overview
 ---
 
 Object group operators include the following operators:

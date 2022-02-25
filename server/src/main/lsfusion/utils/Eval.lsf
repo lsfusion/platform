@@ -128,22 +128,22 @@ executeScript '{eval.execution}' (Script s) {
     }
 } IMAGE 'play.png';
 
-scriptExecution '{eval.script.script.execution}' (Script s, ScriptType st)  {
+scriptExecution '{eval.script.script.execution}' (Script s)  {
     dataScriptType() <- ScriptType.script;
     executeScript(s);    
 }
 
-actionBodyExecution '{eval.script.action.body.execution}' (Script s, ScriptType st)  {
+actionBodyExecution '{eval.script.action.body.execution}' (Script s)  {
     dataScriptType() <- ScriptType.action; 
     executeScript(s);    
 }
 
-formExecution '{eval.script.form.execution}' (Script s, ScriptType st)  {
+formExecution '{eval.script.form.execution}' (Script s)  {
     dataScriptType() <- ScriptType.form;   
     executeScript(s);    
 }
 
-javaActionBodyExecution '{eval.script.java.action.body.execution}' (Script s, ScriptType st)  {
+javaActionBodyExecution '{eval.script.java.action.body.execution}' (Script s)  {
     dataScriptType() <- ScriptType.java; 
     executeScript(s);    
 }
@@ -169,12 +169,16 @@ FORM interpreter '{eval.script.form.interpreter}'
     OBJECTS st = ScriptType CUSTOM 'option'
     PROPERTIES(st) SHOWIF isWeb() name=executionScriptTypeCaption, selected=selectedExecutionScriptType, executionScriptTypeName
     ORDERS executionScriptTypeName(st)
+    EVENTS 
+        ON INIT {
+            SEEK interpreter.st = dataScriptType();
+        }
     
     OBJECTS s = Script PANEL
     PROPERTIES name(s), json(s) CUSTOM 'interpreter' SHOWIF isWeb() ON CHANGE changeScript(s), text(s) SHOWIF NOT isWeb()
     
-    PROPERTIES(s, st) SHOWIF NOT isWeb() scriptExecution, actionBodyExecution, formExecution, javaActionBodyExecution
-    PROPERTIES(s) executeScript SHOWIF isWeb()
+    PROPERTIES(s) SHOWIF NOT isWeb() scriptExecution, actionBodyExecution, formExecution, javaActionBodyExecution
+    PROPERTIES(s) '' = executeScript SHOWIF isWeb()
                  
     OBJECTS r = Row GRID
     PROPERTIES(r) string1, string2, string3, string4, string5, string6, string7, string8, string9, string10 
@@ -233,33 +237,30 @@ DESIGN interpreter {
             caption = '{eval.script.form.interpreter.caption.script}';
             NEW script {
                 caption = '{eval.script.form.interpreter.caption.options}';
-                type = CONTAINERH;
-                MOVE PROPERTY(copyScript(s)) { font = 'bold 24'; alignment = STRETCH; }
-                MOVE PROPERTY(findScript(s)) { font = 'bold 24'; alignment = STRETCH; }
-                MOVE PROPERTY(name(s)) { font = 'bold 24'; alignment = STRETCH; }
+                horizontal = TRUE;
+                MOVE PROPERTY(copyScript(s)); // { font = 'bold 24'; alignment = STRETCH; }
+                MOVE PROPERTY(findScript(s)); // { font = 'bold 24'; alignment = STRETCH; }
+                MOVE PROPERTY(name(s)); // { font = 'bold 24'; alignment = STRETCH; }
             }
-            NEW executeParams {
+            NEW execute {
+                caption = '{eval.script.form.interpreter.caption.run}';
                 horizontal = TRUE;
                 MOVE BOX(st) {
                     caption = NULL;
                     flex = 0;
-                    alignment = START;
+                    alignment = CENTER;
                 };
-                NEW executeButton {
-                    MOVE PROPERTY(executeScript(s)) {
-                        focusable = FALSE;
-                        caption = '';
-                        height = 45;
-                    }
+                GRID(st) {
+                    boxed = FALSE;
                 }
-                NEW run {
-                    caption = '{eval.script.form.interpreter.caption.run}';
-                    horizontal = TRUE;
-                    MOVE PROPERTY(scriptExecution(s, st)) { font = 'bold 24'; }
-                    MOVE PROPERTY(actionBodyExecution(s, st)) { font = 'bold 24'; }
-                    MOVE PROPERTY(formExecution(s, st)) { font = 'bold 24'; }
-                    MOVE PROPERTY(javaActionBodyExecution(s, st)) { font = 'bold 24'; }
+                MOVE PROPERTY(executeScript(s)) {
+                    focusable = FALSE;
+                    alignment = CENTER;
                 }
+                MOVE PROPERTY(scriptExecution(s)); // { font = 'bold 24'; }
+                MOVE PROPERTY(actionBodyExecution(s)); // { font = 'bold 24'; }
+                MOVE PROPERTY(formExecution(s)); // { font = 'bold 24'; }
+                MOVE PROPERTY(javaActionBodyExecution(s)); // { font = 'bold 24'; }
             }
             REMOVE TOOLBARSYSTEM(st);
             

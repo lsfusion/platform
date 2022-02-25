@@ -11,7 +11,7 @@ public interface ResizeHelper {
     int getChildAbsolutePosition(int index, boolean left);
     void propagateChildResizeEvent(int index, NativeEvent event, Element cursorElement);
 
-    void resizeChild(int index, int delta);
+    double resizeChild(int index, int delta);
     boolean isChildResizable(int index);
 
     boolean isVertical();

@@ -161,7 +161,7 @@ attachmentEmail (id, email) = GROUP AGGR AttachmentEmail attachment WHERE attach
  
 name '{email.name.attachment.email}' = DATA STRING[255] (AttachmentEmail);
 file '{email.file.attachment.email}' = DATA FILE (AttachmentEmail);
-filename '{email.name.attachment.email}' (AttachmentEmail ae) = CONCAT '.', name(ae), getFileExtension(file(ae)); 
+filename '{email.name.attachment.email}' (AttachmentEmail ae) = CONCAT '.', name(ae), extension(file(ae)); 
 openFile '{email.open.file.attachment.email}' (AttachmentEmail attachmentEmail)  { open(file(attachmentEmail)); }
 saveFile '{email.save.file.attachment.email}' (AttachmentEmail attachmentEmail)  { WRITE CLIENT DIALOG file(attachmentEmail) TO name(attachmentEmail);}
 lastError '{email.last.error.attachment.email}' = DATA TEXT (AttachmentEmail);

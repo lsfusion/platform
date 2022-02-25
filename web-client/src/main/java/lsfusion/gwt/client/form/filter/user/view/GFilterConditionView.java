@@ -11,18 +11,23 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
+import lsfusion.gwt.client.base.view.SizedWidget;
 import lsfusion.gwt.client.form.design.view.flex.CaptionContainerHolder;
 import lsfusion.gwt.client.form.design.view.flex.LinearCaptionContainer;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
+import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.controller.GTableController;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
 import lsfusion.gwt.client.form.property.cell.controller.CancelReason;
 import lsfusion.gwt.client.form.view.Column;
 import lsfusion.gwt.client.view.StyleDefaults;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 public class GFilterConditionView extends FlexPanel implements CaptionContainerHolder {
     private static final ClientMessages messages = ClientMessages.Instance.get();
@@ -36,8 +41,6 @@ public class GFilterConditionView extends FlexPanel implements CaptionContainerH
     private static final String SEPARATOR_ICON_PATH = "filtseparator.png";
 
     private GPropertyFilter condition;
-
-    private Map<Column, String> columns = new HashMap<>();
     
     private Label propertyLabel;
     private GFilterOptionSelector<Column> propertyView;
@@ -55,6 +58,8 @@ public class GFilterConditionView extends FlexPanel implements CaptionContainerH
     private FlexPanel leftPanel;
     private FlexPanel rightPanel; 
     private LinearCaptionContainer captionContainer;
+    
+    private ColumnsProvider columnsProvider;
 
     public boolean allowNull;
 
@@ -65,9 +70,10 @@ public class GFilterConditionView extends FlexPanel implements CaptionContainerH
     // may not be applied without "Allow NULL", but we want to keep condition visible
     public boolean isConfirmed;
 
-    public GFilterConditionView(GPropertyFilter iCondition, GTableController logicsSupplier, final UIHandler uiHandler, boolean toolsVisible, boolean readSelectedValue) {
+    public GFilterConditionView(GPropertyFilter iCondition, GTableController logicsSupplier, final UIHandler uiHandler, ColumnsProvider columnsProvider, boolean toolsVisible, boolean readSelectedValue) {
         this.condition = iCondition;
         this.uiHandler = uiHandler;
+        this.columnsProvider = columnsProvider;
         this.toolsVisible = toolsVisible;
 
         allowNull = !condition.isFixed();
@@ -75,13 +81,8 @@ public class GFilterConditionView extends FlexPanel implements CaptionContainerH
         leftPanel = new FlexPanel();
         rightPanel = new FlexPanel();
 
-        List<Pair<Column, String>> selectedColumns = logicsSupplier.getSelectedColumns();
-        for (Pair<Column, String> column : selectedColumns) {
-            columns.put(column.first, column.second);
-        }
-
-        Column currentColumn = new Column(condition.property, condition.columnKey);
-        String currentCaption = columns.get(currentColumn);
+        Column currentColumn = new Column(condition.property, condition.columnKey != null ? condition.columnKey : GGroupObjectValue.EMPTY);
+        String currentCaption = columnsProvider.getColumns().get(currentColumn);
         
         propertyLabel = new Label(currentCaption);
         propertyLabel.setTitle(currentCaption);
@@ -94,7 +95,7 @@ public class GFilterConditionView extends FlexPanel implements CaptionContainerH
                 condition.property = column.property;
                 condition.columnKey = column.columnKey;
 
-                String columnCaption = columns.get(column);
+                String columnCaption = columnsProvider.getColumns().get(column);
                 propertyLabel.setText(columnCaption);
                 propertyLabel.setTitle(columnCaption);
 
@@ -103,7 +104,7 @@ public class GFilterConditionView extends FlexPanel implements CaptionContainerH
                 startEditing(GKeyStroke.createAddUserFilterKeyEvent());
             }
         };
-        for (Pair<Column, String> column : selectedColumns) {
+        for (Pair<Column, String> column : logicsSupplier.getSelectedColumns()) {
             propertyView.add(column.first, column.second);
         }
         propertyView.setSelectedValue(currentColumn, currentCaption);
@@ -162,8 +163,9 @@ public class GFilterConditionView extends FlexPanel implements CaptionContainerH
                 }
             }
         };
+        valueView.changeProperty(condition, readSelectedValue);
+
         rightPanel.addCentered(valueView);
-        valueView.changeProperty(condition, readSelectedValue); // it's important to do it after adding to the container because setStatic -> setBaseSize is called inside (and adding to container also calls it and override with default value)
         uiHandler.addEnterBinding(valueView.cell);
 
         deleteButton = new GToolbarButton(DELETE_ICON_PATH, messages.formFilterRemoveCondition()) {
@@ -200,7 +202,7 @@ public class GFilterConditionView extends FlexPanel implements CaptionContainerH
         if (captionContainer == null) {
             addCentered(leftPanel);
         } else {
-            captionContainer.put(leftPanel, GFlexAlignment.CENTER);
+            captionContainer.put(new SizedWidget(leftPanel), GFlexAlignment.CENTER);
         }
         
         addCentered(rightPanel);
@@ -298,5 +300,20 @@ public class GFilterConditionView extends FlexPanel implements CaptionContainerH
     @Override
     public GFlexAlignment getCaptionHAlignment() {
         return GFlexAlignment.START;
+    }
+
+    @Override
+    public void setVisible(boolean nVisible) {
+        super.setVisible(nVisible);
+
+        if (nVisible) {
+            String columnCaption = columnsProvider.getColumns().get(new Column(condition.property, condition.columnKey != null ? condition.columnKey : GGroupObjectValue.EMPTY));
+            propertyLabel.setText(columnCaption);
+            propertyLabel.setTitle(columnCaption);
+        }
+    }
+
+    public interface ColumnsProvider {
+        Map<Column, String> getColumns();
     }
 }

@@ -15,9 +15,11 @@ import lsfusion.server.data.type.reader.NullReader;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.data.file.FileClass;
+import lsfusion.server.logics.classes.data.file.JSONClass;
 import lsfusion.server.logics.classes.data.integral.IntegralClass;
 import lsfusion.server.logics.classes.data.link.LinkClass;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
+import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.property.set.GroupProperty;
 import lsfusion.server.logics.property.set.MaxGroupProperty;
@@ -26,7 +28,7 @@ import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 public enum GroupType implements AggrType {
-    SUM, MAX, MIN, ANY, STRING_AGG, AGGAR_SETADD, LAST;
+    SUM, MAX, MIN, ANY, CONCAT, AGGAR_SETADD, LAST, JSON_CONCAT;
     
     public static GroupType LOGICAL() {
         return ANY;
@@ -131,7 +133,7 @@ public enum GroupType implements AggrType {
     }
 
     public boolean hasAdd() {
-        return this!=STRING_AGG && this!=AGGAR_SETADD && this!=LAST;
+        return this!= CONCAT && this!=AGGAR_SETADD && this!=LAST && this!= JSON_CONCAT;
     }
     
     public boolean isMaxMin() {
@@ -193,9 +195,12 @@ public enum GroupType implements AggrType {
                         exprSource = type.getCast(exprSource, syntax, typeEnv);
                 }
                 return syntax.getNotZero("SUM(" + exprSource + ")", type, typeEnv);
-            case STRING_AGG:
-                assert exprs.size()==2;
+            case CONCAT:
+                assert exprs.size() == 1 || exprs.size() == 2;
                 return type.getCast(syntax.getOrderGroupAgg(this, type, exprs, exprReaders, orders, typeEnv), syntax, typeEnv); // тут точная ширина не нужна главное чтобы не больше
+            case JSON_CONCAT:
+                assert exprs.size() == 1;
+                return syntax.getOrderGroupAgg(this, type, exprs, exprReaders, orders, typeEnv);
             case AGGAR_SETADD:
                 assert exprs.size()==1 && orders.isEmpty();
                 return syntax.getArrayAgg(exprs.get(0), exprReaders.get(0), typeEnv);
@@ -208,17 +213,17 @@ public enum GroupType implements AggrType {
     }
 
     public int numExprs() {
-        if(this==STRING_AGG || this==LAST)
+        if(this==CONCAT || this==LAST)
             return 2;
         else
             return 1;
     }
 
     public Type getType(Type exprType) {
-        if(this==STRING_AGG)
+        if(this==CONCAT)
             return ((StringClass)exprType).extend(10);
-        assert this != SUM || exprType instanceof IntegralClass; 
-        
+        assert this != SUM || exprType instanceof IntegralClass;
+
         return exprType;
     }
 }

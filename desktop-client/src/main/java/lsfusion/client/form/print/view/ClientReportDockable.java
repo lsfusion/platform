@@ -32,6 +32,8 @@ public class ClientReportDockable extends ClientDockable {
             final ReportViewer reportViewer = new ReportViewer(print, printerName, editInvoker);
             setContent(prepareViewer(reportViewer));
             setTitleText(formCaption);
+            
+            onContendAdded();
 
             addKeyboardListener(new CKeyboardListener() {
                 @Override

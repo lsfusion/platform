@@ -20,6 +20,7 @@ import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.order.OrderEntity;
 import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyObjectEntity;
 import lsfusion.server.logics.property.Property;
+import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 import java.sql.SQLException;
@@ -67,6 +68,10 @@ public class PropertyObjectEntity<P extends PropertyInterface> extends ActionOrP
     @Override
     public <X extends PropertyInterface> PropertyObjectEntity<?> getDrawProperty(PropertyObjectEntity<X> readOnly) {
         return this;
+    }
+
+    public <T extends PropertyInterface> PropertyMapImplement<?, T> getImplement(ImRevMap<ObjectEntity, T> mapObjects) {
+        return new PropertyMapImplement<>(property, mapping.join(mapObjects));
     }
 
     public boolean isValueUnique(GroupObjectEntity grid) {

@@ -1,0 +1,40 @@
+.selectize-input {
+    z-index: unset;
+    border: 1px solid var(--component-border-color);
+    background: var(--component-background-color);
+    position: unset;
+}
+.selectize-control.multi .selectize-input > div {
+    background-color: var(--component-background-color);
+    color: var(--text-color);
+    border: 1px solid var(--component-border-color);
+}
+
+.selectize-control.multi .selectize-input > div.active {
+    background-color: var(--selection-color);
+    color: var(--text-color);
+    border: 1px solid var(--focus-color);
+}
+
+.selectize-control.plugin-remove_button .item .remove {
+    border-left: 1px solid var(--component-border-color);
+}
+
+.selectize-control.plugin-remove_button .item.active .remove {
+    border-left: 1px solid var(--component-border-color);
+}
+
+.selectize-dropdown {
+    background: var(--component-background-color);
+    border: 1px solid var(--component-border-color);
+}
+
+.selectize-dropdown .active {
+    background-color: var(--selection-color);
+    color: var(--text-color);
+    border: 1px solid var(--component-border-color);
+}
+
+.selectize-dropdown, .selectize-input, .selectize-input input {
+    color: var(--text-color);
+}

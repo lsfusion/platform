@@ -11,6 +11,10 @@ public class GridViewProxy extends ComponentViewProxy<GridView> {
         target.autoSize = autoSize;
     }
 
+    public void setBoxed(boolean boxed) {
+        target.boxed = boxed;
+    }
+
     public void setTabVertical(boolean tabVertical) {
         target.tabVertical = tabVertical;
     }

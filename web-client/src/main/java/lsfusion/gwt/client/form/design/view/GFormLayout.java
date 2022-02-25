@@ -6,6 +6,8 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.Dimension;
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.Pair;
+import lsfusion.gwt.client.base.Result;
 import lsfusion.gwt.client.base.focus.DefaultFocusReceiver;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.HasMaxPreferredSize;
@@ -34,7 +36,7 @@ public class GFormLayout extends ResizableComplexPanel {
 
     public final ResizableComplexPanel recordViews;
 
-    public GFormLayout(GFormController iform, GContainer mainContainer) {
+    public GFormLayout(GFormController iform, GContainer mainContainer, boolean autoSize) {
         this.form = iform;
 
         this.mainContainer = mainContainer;
@@ -42,7 +44,7 @@ public class GFormLayout extends ResizableComplexPanel {
         addContainers(mainContainer);
 
         Widget view = getMainView();
-        setFillMain(view);
+        setSizedMain(view, autoSize);
         view.getElement().getStyle().setOverflow(Style.Overflow.AUTO);
 
         recordViews = new ResizableComplexPanel();
@@ -214,38 +216,47 @@ public class GFormLayout extends ResizableComplexPanel {
         return hasVisible;
     }
 
-    public Dimension getPreferredSize(int maxWidth, int maxHeight, int extraHorzOffset, int extraVertOffset) {
+    public Dimension getPreferredSize(int maxWidth, int maxHeight) {
         Integer width = mainContainer.getSize(false);
         Integer height = mainContainer.getSize(true);
 
-        setPreferredSize(true, width, height, maxWidth - extraHorzOffset, maxHeight - extraVertOffset);
+        Pair<Integer, Integer> extraOffset = setPreferredSize(true, width, height, maxWidth, maxHeight);
         try {
             DataGrid.flushUpdateDOM(); // there can be some pending grid changes, and we need actual sizes
 
             int offsetWidth = getOffsetWidth();
             int offsetHeight = getOffsetHeight();
-            return new Dimension(offsetWidth + (width != null ? 0 : extraHorzOffset), offsetHeight + (height != null ? 0 : extraVertOffset));
+            return new Dimension(offsetWidth + (width != null ? 0 : extraOffset.first), offsetHeight + (height != null ? 0 : extraOffset.second));
         } finally {
             setPreferredSize(false, null, null, 0, 0);
         }
     }
 
-    public void setPreferredSize(boolean set, Integer width, Integer height, int maxWidth, int maxHeight) {
+    public Pair<Integer, Integer> setPreferredSize(boolean set, Integer width, Integer height, int maxWidth, int maxHeight) {
         GwtClientUtils.changePercentFillWidget(main, set);
 
         Element element = main.getElement();
         FlexPanel.setSize(element, true, height);
         FlexPanel.setSize(element, false, width);
 
+        Result<Integer> grids = new Result<>(0);
+        if(main instanceof HasMaxPreferredSize)
+            ((HasMaxPreferredSize) main).setPreferredSize(set, grids);
+
         if(set) {
+            // there are 2 problems : rounding (we need to round up), however it coukd be fixed differently
+            // since we are changing for example grid basises (by changing fill to percent), we can get extra scrollbars in grids (which is not what we want), so we just add some extraOffset
+            int extraHorzOffset = DataGrid.nativeScrollbarWidth * grids.result + 1; // 1 is for rounding
+            int extraVertOffset = DataGrid.nativeScrollbarHeight * grids.result + 1; // 1 is for rounding
+
             DataGrid.setMaxWidth(this, maxWidth, Style.Unit.PX);
             DataGrid.setMaxHeight(this, maxHeight, Style.Unit.PX);
+
+            return new Pair<>(extraHorzOffset, extraVertOffset);
         } else {
             DataGrid.clearMaxWidth(this);
             DataGrid.clearMaxHeight(this);
+            return null;
         }
-
-        if(main instanceof HasMaxPreferredSize)
-            ((HasMaxPreferredSize) main).setPreferredSize(set);
     }
 }

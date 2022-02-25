@@ -1,24 +1,32 @@
 package lsfusion.client.form.design.view;
 
 import lsfusion.base.ReflectionUtils;
+import lsfusion.client.base.view.ClientImages;
 import lsfusion.client.view.MainFrame;
 
 import javax.swing.*;
 import javax.swing.border.AbstractBorder;
 import javax.swing.border.Border;
 import java.awt.*;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 
 /** c/p from javax.swing.border.TitledBorder, чтобы убрать лишние Insets */
-public class TitledBorder extends AbstractBorder
-{
+public class TitledBorder extends AbstractBorder implements MouseListener, MouseMotionListener {
     protected String title;
     protected Border border;
     protected int    titlePosition;
     protected int    titleJustification;
     protected Font titleFont;
     protected Color  titleColor;
+    private boolean collapsible;
 
     private Point textLoc = new Point();
+
+    private boolean collapsed = false;
+    private Point imageLoc = new Point(5, 0);
+    protected ImageIcon collapseImage = ClientImages.get(COLLAPSE_IMAGE_PATH);
 
     /**
      * Use the default vertical orientation for the title text.
@@ -66,6 +74,12 @@ public class TitledBorder extends AbstractBorder
 
     // Horizontal inset of text that is left or right justified
     static protected final int TEXT_INSET_H = 5;
+    
+    // reduction of horizontal text inset in case collapse image is being drawn
+    static protected final int TEXT_IMAGE_INSET_H = -3;
+
+    private static final String COLLAPSE_IMAGE_PATH = "collapse_container.png";
+    private static final String EXPAND_IMAGE_PATH = "expand_container.png";
 
     /**
      * Creates a TitledBorder instance.
@@ -73,7 +87,11 @@ public class TitledBorder extends AbstractBorder
      * @param title  the title the border should display
      */
     public TitledBorder(String title)     {
-        this(null, title, LEADING, DEFAULT_POSITION, null, null);
+        this(title, false);
+    }
+
+    public TitledBorder(String title, boolean collapsible)     {
+        this(null, title, LEADING, DEFAULT_POSITION, null, null, collapsible);
     }
 
     /**
@@ -82,8 +100,8 @@ public class TitledBorder extends AbstractBorder
      *
      * @param border  the border
      */
-    public TitledBorder(Border border)       {
-        this(border, "", LEADING, DEFAULT_POSITION, null, null);
+    public TitledBorder(Border border, boolean collapsible)       {
+        this(border, "", LEADING, DEFAULT_POSITION, null, null, collapsible);
     }
 
     /**
@@ -93,8 +111,8 @@ public class TitledBorder extends AbstractBorder
      * @param border  the border
      * @param title  the title the border should display
      */
-    public TitledBorder(Border border, String title) {
-        this(border, title, LEADING, DEFAULT_POSITION, null, null);
+    public TitledBorder(Border border, String title, boolean collapsible) {
+        this(border, title, LEADING, DEFAULT_POSITION, null, null, collapsible);
     }
 
     /**
@@ -109,9 +127,10 @@ public class TitledBorder extends AbstractBorder
     public TitledBorder(Border border,
                         String title,
                         int titleJustification,
-                        int titlePosition)      {
+                        int titlePosition, 
+                        boolean collapsible)      {
         this(border, title, titleJustification,
-             titlePosition, null, null);
+             titlePosition, null, null, collapsible);
     }
 
     /**
@@ -128,9 +147,10 @@ public class TitledBorder extends AbstractBorder
                         String title,
                         int titleJustification,
                         int titlePosition,
-                        Font titleFont) {
+                        Font titleFont, 
+                        boolean collapsible) {
         this(border, title, titleJustification,
-             titlePosition, titleFont, null);
+             titlePosition, titleFont, null, collapsible);
     }
 
     /**
@@ -150,11 +170,13 @@ public class TitledBorder extends AbstractBorder
                         int titleJustification,
                         int titlePosition,
                         Font titleFont,
-                        Color titleColor)       {
+                        Color titleColor, 
+                        boolean collapsible)       {
         this.title = title;
         this.border = border;
         this.titleFont = titleFont;
         this.titleColor = titleColor;
+        this.collapsible = collapsible;
 
         setTitleJustification(titleJustification);
         setTitlePosition(titlePosition);
@@ -174,7 +196,7 @@ public class TitledBorder extends AbstractBorder
 
         Border border = getBorder();
 
-        if (getTitle() == null || getTitle().equals("")) {
+        if ((getTitle() == null || getTitle().equals("")) && !collapsible) {
             if (border != null) {
                 border.paintBorder(c, g, x, y, width, height);
             }
@@ -268,15 +290,15 @@ public class TitledBorder extends AbstractBorder
 
         switch (justification) {
             case LEFT:
-                textLoc.x = grooveRect.x + TEXT_INSET_H + insets.left;
+                textLoc.x = grooveRect.x + TEXT_INSET_H + insets.left + (collapsible ? collapseImage.getIconWidth() + TEXT_IMAGE_INSET_H : 0);
                 break;
             case RIGHT:
                 textLoc.x = (grooveRect.x + grooveRect.width) -
-                            (stringWidth + TEXT_INSET_H + insets.right);
+                            (stringWidth + TEXT_INSET_H + insets.right + (collapsible ? collapseImage.getIconWidth() + TEXT_IMAGE_INSET_H : 0));
                 break;
             case CENTER:
                 textLoc.x = grooveRect.x +
-                            ((grooveRect.width - stringWidth) / 2);
+                            ((grooveRect.width - stringWidth - (collapsible ? collapseImage.getIconWidth() : 0)) / 2);
                 break;
         }
 
@@ -298,7 +320,7 @@ public class TitledBorder extends AbstractBorder
 
                 // paint strip left of text
                 clipRect.setBounds(saveClip);
-                if (computeIntersection(clipRect, x, y, textLoc.x-1-x, height)) {
+                if (computeIntersection(clipRect, x, y, (collapsible ? imageLoc.x : textLoc.x-1)-x, height)) {
                     g.setClip(clipRect);
                     border.paintBorder(c, g, grooveRect.x, grooveRect.y,
                                        grooveRect.width, grooveRect.height);
@@ -316,8 +338,8 @@ public class TitledBorder extends AbstractBorder
                 if (titlePos == TOP || titlePos == DEFAULT_POSITION) {
                     // paint strip below text
                     clipRect.setBounds(saveClip);
-                    if (computeIntersection(clipRect, textLoc.x-1, textLoc.y+descent,
-                                            stringWidth+2, y+height-textLoc.y-descent)) {
+                    if (computeIntersection(clipRect, (collapsible ? imageLoc.x : textLoc.x-1), textLoc.y+descent,
+                                            stringWidth+(collapsible ? collapseImage.getIconWidth() : 0)+2, y+height-textLoc.y-descent)) {
                         g.setClip(clipRect);
                         border.paintBorder(c, g, grooveRect.x, grooveRect.y,
                                            grooveRect.width, grooveRect.height);
@@ -326,7 +348,7 @@ public class TitledBorder extends AbstractBorder
                 } else { // titlePos == BOTTOM
                     // paint strip above text
                     clipRect.setBounds(saveClip);
-                    if (computeIntersection(clipRect, textLoc.x-1, y,
+                    if (computeIntersection(clipRect, (collapsible ? imageLoc.x : textLoc.x-1), y,
                                             stringWidth+2, textLoc.y - ascent - y)) {
                         g.setClip(clipRect);
                         border.paintBorder(c, g, grooveRect.x, grooveRect.y,
@@ -343,6 +365,9 @@ public class TitledBorder extends AbstractBorder
             }
         }
 
+        if (collapsible) {
+            g.drawImage(collapseImage.getImage(), imageLoc.x, imageLoc.y, null);
+        }
         g.setColor(getTitleColor());
         //SwingUtilities2.drawString(jc, g, getTitle(), textLoc.x, textLoc.y);
         ReflectionUtils.getPrivateMethodValue(swingUtilities2Class, null, "drawString",
@@ -397,7 +422,7 @@ public class TitledBorder extends AbstractBorder
         insets.top += EDGE_SPACING + TEXT_SPACING;
         insets.bottom += EDGE_SPACING + TEXT_SPACING;
 
-        if(c == null || getTitle() == null || getTitle().equals(""))    {
+        if((c == null || getTitle() == null || getTitle().equals("")) && !collapsible)    {
             return insets;
         }
 
@@ -613,6 +638,9 @@ public class TitledBorder extends AbstractBorder
                 //minSize.width += SwingUtilities2.stringWidth(jc, fm, getTitle());
                 minSize.width += (int) ReflectionUtils.getPrivateMethodValue(swingUtilities2Class, null, "stringWidth",
                         new Class[] {JComponent.class, FontMetrics.class, String.class}, new Object[] {jc, fm, getTitle()});
+                if (collapsible) {
+                    minSize.width += collapseImage.getIconWidth() + imageLoc.x;
+                }
         }
         return minSize;
     }
@@ -732,5 +760,63 @@ public class TitledBorder extends AbstractBorder
             return false;
         }
         return true;
+    }
+    
+    public void setCollapsed(boolean collapsed) {
+        this.collapsed = collapsed;
+        collapseImage = ClientImages.get(collapsed ? EXPAND_IMAGE_PATH : COLLAPSE_IMAGE_PATH);
+    }
+    
+    private void toggleCollapsed() {
+        setCollapsed(!collapsed);
+        
+        onCollapsedStateChanged(collapsed);
+    }
+    
+    public void onCollapsedStateChanged(boolean collapsed) {
+    }
+
+    private boolean imageEvent(MouseEvent event) {
+        Point point = event.getPoint();
+        return imageLoc.x <= point.x
+                && point.x <= (imageLoc.x + collapseImage.getIconWidth())
+                && imageLoc.y <= point.y
+                && point.y <= (imageLoc.y + collapseImage.getIconHeight());
+    }
+
+    @Override
+    public void mouseClicked(MouseEvent e) {
+    }
+
+    @Override
+    public void mousePressed(MouseEvent e) {
+        if (imageEvent(e)) {
+            e.getComponent().setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+            toggleCollapsed();
+        }
+    }
+
+    @Override
+    public void mouseReleased(MouseEvent e) {
+    }
+
+    @Override
+    public void mouseEntered(MouseEvent e) {
+    }
+
+    @Override
+    public void mouseExited(MouseEvent e) {
+    }
+
+    @Override
+    public void mouseDragged(MouseEvent e) {
+    }
+
+    @Override
+    public void mouseMoved(MouseEvent e) {
+        if (imageEvent(e)) {
+            // resize cursor may be drawn if icon is next to resizable panel
+            e.getComponent().setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+        }
     }
 }
