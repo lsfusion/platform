@@ -7,6 +7,7 @@ import lsfusion.gwt.client.GFormChanges;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
+import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.classes.data.GIntegralType;
 import lsfusion.gwt.client.form.GUpdateMode;
 import lsfusion.gwt.client.form.controller.GFormController;
@@ -684,4 +685,10 @@ public class GGridController extends GAbstractTableController {
 //        setTitle(tooltip + ")");
 //    }
 
+
+    public void selectedRowChanged() {
+        if(table instanceof DataGrid) {
+            ((DataGrid<?>) table).selectedRowChanged();
+        }
+    }
 }

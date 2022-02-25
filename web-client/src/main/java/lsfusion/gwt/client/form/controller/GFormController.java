@@ -1495,7 +1495,11 @@ public class GFormController implements EditManager {
     }
 
     public Dimension getPreferredSize(int maxWidth, int maxHeight) {
-        return formLayout.getPreferredSize(maxWidth, maxHeight);
+        Dimension preferredSize = formLayout.getPreferredSize(maxWidth, maxHeight);
+        for(GGridController controller : controllers.values()) {
+            controller.selectedRowChanged();
+        }
+        return preferredSize;
     }
 
     public boolean isWindow() {
