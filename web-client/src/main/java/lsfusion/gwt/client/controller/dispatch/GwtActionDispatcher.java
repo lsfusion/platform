@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.controller.dispatch;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.core.client.Scheduler;
@@ -18,14 +17,15 @@ import lsfusion.gwt.client.base.exception.GExceptionManager;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.log.GLog;
 import lsfusion.gwt.client.base.view.DialogBoxHelper;
+import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.controller.remote.action.RequestAsyncCallback;
 import lsfusion.gwt.client.controller.remote.action.RequestCountingErrorHandlingCallback;
 import lsfusion.gwt.client.controller.remote.action.RequestErrorHandlingCallback;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.controller.remote.action.navigator.LogClientExceptionAction;
+import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
 import lsfusion.gwt.client.form.view.FormContainer;
 import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
-import lsfusion.gwt.client.navigator.window.GWindowFormType;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -342,14 +342,19 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     @Override
     public void execute(GClientJSAction action) {
         List<String> externalResources = action.externalResources;
-        if (externalResources.size() == 1 && !externalResources.get(0).contains(".js")) {
-            JsArray<JavaScriptObject> arguments = JavaScriptObject.createArray().cast();
-            action.keys.forEach(arg -> arguments.push(fromObject(arg)));
+        if (externalResources.size() == 1) {
+            String js = externalResources.get(0);
+            if (!js.contains(".js") && !js.contains(".css")) { //call js function
+                JsArray<JavaScriptObject> arguments = JavaScriptObject.createArray().cast();
+                for (int i = 0; i < action.types.size(); i++) {
+                    arguments.push(GSimpleStateTableView.convertValue((GType) action.types.get(i), action.values.get(i)));
+                }
 
-            String function = externalResources.get(0);
-            GwtClientUtils.call(GwtClientUtils.getGlobalField(function.substring(0, function.indexOf("("))), arguments);
-        } else {
-            externalResources.forEach(r -> executeJS("/static" + r));
+                String function = externalResources.get(0);
+                GwtClientUtils.call(GwtClientUtils.getGlobalField(function.substring(0, function.indexOf("("))), arguments);
+            } else { // add script to document
+                executeJS("/static" + js);
+            }
         }
     }
 

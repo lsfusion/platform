@@ -160,9 +160,14 @@ changeScript(Script sc) {
     }
 }
 
-initInterpreterLibraries INTERNAL CLIENT 'custom_option.js', 'custom_interpreter.js';
+initOptionJS INTERNAL CLIENT 'option.js';
+initOptionCSS INTERNAL CLIENT 'option.css';
+initInterpreterJS INTERNAL CLIENT 'interpreter.js';
+
 onWebClientStarted() + {
-    initInterpreterLibraries();
+    initOptionJS();
+    initOptionCSS();
+    initInterpreterJS();
 }
 
 FORM interpreter '{eval.script.form.interpreter}'

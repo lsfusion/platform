@@ -5,6 +5,7 @@ import lsfusion.base.ResourceUtils;
 import lsfusion.base.col.SetFact;
 import lsfusion.interop.action.ClientJSAction;
 import lsfusion.server.data.sql.exception.SQLHandledException;
+import lsfusion.server.data.type.TypeSerializer;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
@@ -15,38 +16,38 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Collections;
 import java.util.regex.Pattern;
 
 import static lsfusion.base.BaseUtils.serializeObject;
 
 public class ClientSystemAction extends SystemAction {
 
-    private final List<String> jsList;
+    private final String js;
 
-    public ClientSystemAction(List<String> jsList, int size) {
+    public ClientSystemAction(String js, int size) {
         super(LocalizedString.create("ClientJS"), SetFact.toOrderExclSet(size, i -> new PropertyInterface()));
-        this.jsList = jsList;
+        this.js = js;
     }
 
     @Override
     protected FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
-        List<String> resources = new ArrayList<>();
-        if (jsList.size() == 1 && !jsList.get(0).contains(".js"))
-            resources.addAll(jsList);
-        else
-            jsList.forEach(js -> resources.addAll(ResourceUtils.getResources(Pattern.compile("/web/.*/" + js.trim()))));
+        ArrayList<byte[]> values = new ArrayList<>();
+        ArrayList<byte[]> types = new ArrayList<>();
 
-        ArrayList<byte[]> keys = new ArrayList<>();
-        for (ObjectValue value : context.getKeys().values()) {
-            try {
-                keys.add(serializeObject(value.getValue()));
-            } catch (IOException e) {
-                throw Throwables.propagate(e);
+        try {
+            for (PropertyInterface orderInterface : getOrderInterfaces()) {
+                ObjectValue objectValue = context.getKeys().get(orderInterface);
+                values.add(serializeObject(objectValue.getValue()));
+                types.add(TypeSerializer.serializeType(objectValue.getType()));
             }
+        } catch (IOException e) {
+            throw Throwables.propagate(e);
         }
 
-        context.requestUserInteraction(new ClientJSAction(resources, keys));
+        context.delayUserInteraction(new ClientJSAction(js.contains(".js") || js.contains(".css") ? ResourceUtils.getResources(Pattern.compile("/web/.*/" + js.trim())) : Collections.singletonList(js),
+                values, types));
+
         return FlowResult.FINISH;
     }
 

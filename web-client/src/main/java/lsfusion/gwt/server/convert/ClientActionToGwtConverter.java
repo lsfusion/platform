@@ -15,7 +15,6 @@ import lsfusion.gwt.client.classes.GObjectClass;
 import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.form.property.async.GInputList;
 import lsfusion.gwt.client.navigator.window.GModalityType;
-import lsfusion.gwt.client.navigator.window.GWindowFormType;
 import lsfusion.gwt.client.view.GColorTheme;
 import lsfusion.gwt.server.FileUtils;
 import lsfusion.gwt.server.MainDispatchServlet;
@@ -24,7 +23,6 @@ import lsfusion.interop.ProgressBar;
 import lsfusion.interop.action.*;
 import lsfusion.interop.form.ModalityType;
 import lsfusion.client.form.property.cell.ClientAsync;
-import lsfusion.interop.form.WindowFormType;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 import lsfusion.interop.session.ExternalHttpMethod;
 import lsfusion.interop.session.HttpClientAction;
@@ -246,10 +244,17 @@ public class ClientActionToGwtConverter extends ObjectConverter {
 
     @Converter(from = ClientJSAction.class)
     public GClientJSAction convertAction(ClientJSAction action) throws IOException {
-        ArrayList<Object> keys = new ArrayList<>();
-        for (byte[] key : action.keys) {
-            keys.add(deserializeServerValue(key));
+        ArrayList<Object> values = new ArrayList<>();
+        ArrayList<Object> types = new ArrayList<>();
+
+        ArrayList<byte[]> actionTypes = action.types;
+        ArrayList<byte[]> actionValues = action.values;
+
+        for (int i = 0; i < actionTypes.size(); i++) {
+            types.add(typeConverter.convertOrCast(ClientTypeSerializer.deserializeClientType(actionTypes.get(i))));
+            values.add(deserializeServerValue(actionValues.get(i)));
         }
-        return new GClientJSAction(action.externalResources, keys);
+
+        return new GClientJSAction(action.externalResources, values, types);
     }
 }

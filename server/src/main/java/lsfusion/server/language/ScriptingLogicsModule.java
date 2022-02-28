@@ -1785,8 +1785,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public LA addScriptedInternalClientAction(List<String> jsList, int paramsCount) throws ScriptingErrorLog.SemanticErrorException {
-        return new LA(new ClientSystemAction(jsList, paramsCount));
+    public LA addScriptedInternalClientAction(String js, int paramsCount) throws ScriptingErrorLog.SemanticErrorException {
+        return new LA(new ClientSystemAction(js, paramsCount));
     }
 
     public LA addScriptedInternalAction(String javaClassName, List<String> paramClasses, List<ResolveClassSet> signature, boolean allowNullValue) throws ScriptingErrorLog.SemanticErrorException {

@@ -7,11 +7,13 @@ import java.util.List;
 public class ClientJSAction extends ExecuteClientAction {
 
     public List<String> externalResources;
-    public ArrayList<byte[]> keys;
+    public ArrayList<byte[]> values;
+    public ArrayList<byte[]> types;
 
-    public ClientJSAction(List<String> externalResources, ArrayList<byte[]> keys) {
+    public ClientJSAction(List<String> externalResources, ArrayList<byte[]> values, ArrayList<byte[]> types) {
         this.externalResources = externalResources;
-        this.keys = keys;
+        this.values = values;
+        this.types = types;
     }
 
     @Override

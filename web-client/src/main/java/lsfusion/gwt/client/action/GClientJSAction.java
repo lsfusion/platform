@@ -6,14 +6,16 @@ import java.util.List;
 public class GClientJSAction extends GExecuteAction {
 
     public List<String> externalResources;
-    public ArrayList<Object> keys;
+    public ArrayList<Object> values;
+    public ArrayList<Object> types;
 
     @SuppressWarnings("UnusedDeclaration")
     public GClientJSAction() {}
 
-    public GClientJSAction(List<String> externalResources, ArrayList<Object> keys) {
+    public GClientJSAction(List<String> externalResources, ArrayList<Object> values, ArrayList<Object> types) {
         this.externalResources = externalResources;
-        this.keys = keys;
+        this.values = values;
+        this.types = types;
     }
 
     @Override

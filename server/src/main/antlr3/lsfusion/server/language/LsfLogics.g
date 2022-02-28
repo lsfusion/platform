@@ -3532,7 +3532,6 @@ internalActionDefinitionBody[List<TypedParameter> context] returns [LA action, L
 @init {
 	boolean allowNullValue = false;
 	List<String> classes = null;
-	List<String> jsList = new ArrayList<>();
 	boolean clientAction = false;
 }
 @after {
@@ -3541,7 +3540,7 @@ internalActionDefinitionBody[List<TypedParameter> context] returns [LA action, L
 	    List<ResolveClassSet> contextParams = self.getClassesFromTypedParams(context);
 
         if(clientAction)
-            $action = self.addScriptedInternalClientAction(jsList, classes != null ? classes.size() : 0);
+            $action = self.addScriptedInternalClientAction($classN.val, classes != null ? classes.size() : 0);
         else if($code.val == null)
 	        $action = self.addScriptedInternalAction($classN.val, classes, contextParams, allowNullValue);
 	    else
@@ -3549,23 +3548,15 @@ internalActionDefinitionBody[List<TypedParameter> context] returns [LA action, L
 		$signature = classes == null ? (contextParams.isEmpty() ? Collections.<ResolveClassSet>nCopies($action.listInterfaces.size(), null) : contextParams) : self.createClassSetsFromClassNames(classes);
 	}
 }
+
 	:	'INTERNAL'
-       (
-            (
-                (
-                    classN = stringLiteral ('(' cls=classIdList ')' { classes = $cls.ids; })?
-		            |   code = codeLiteral
-		        )
-		        ('NULL' { allowNullValue = true; })?
-		    )
-		    |(
-		        'CLIENT' js = stringLiteral { jsList.add($js.val);}
-		        (',' nextJs = stringLiteral { jsList.add($nextJs.val);})*
-		        ('(' cls=classIdList ')' { classes = $cls.ids; })?
-		        { clientAction = true; }
-            )
-      )
-;
+        (
+            ('CLIENT' { clientAction = true; } )?
+            classN = stringLiteral ('(' cls=classIdList ')' { classes = $cls.ids; })?
+		|   code = codeLiteral
+        )
+	    ('NULL' { allowNullValue = true; })?
+	;
 
 externalActionDefinitionBody [List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
 @init {
