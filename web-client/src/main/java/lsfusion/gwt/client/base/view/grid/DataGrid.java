@@ -1887,6 +1887,8 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
     @Override
     public void onResize() {
         onResizeChanged();
+        //need to recalculate scrollTop in preAfterUpdateDOMScrollVertical
+        selectedRowChanged = true;
         super.onResize();
     }
 
