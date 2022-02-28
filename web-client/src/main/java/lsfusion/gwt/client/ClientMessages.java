@@ -26,6 +26,8 @@ public interface ClientMessages extends Messages {
     String hide();
 
     String loading();
+    
+    String navigator();
 
     String formRendererEmpty();
     String formRendererNotDefined();
