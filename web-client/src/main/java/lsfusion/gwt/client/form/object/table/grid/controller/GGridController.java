@@ -683,4 +683,5 @@ public class GGridController extends GAbstractTableController {
 //
 //        setTitle(tooltip + ")");
 //    }
+
 }
