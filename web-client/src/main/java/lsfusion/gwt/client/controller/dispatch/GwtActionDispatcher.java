@@ -27,6 +27,7 @@ import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
 import lsfusion.gwt.client.form.view.FormContainer;
 import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -343,26 +344,23 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     public void execute(GClientJSAction action) {
         List<String> externalResources = action.externalResources;
         if (externalResources.size() == 1) {
-            String js = externalResources.get(0);
-            if (!js.contains(".js") && !js.contains(".css")) { //call js function
-                JsArray<JavaScriptObject> arguments = JavaScriptObject.createArray().cast();
-                for (int i = 0; i < action.types.size(); i++) {
-                    arguments.push(GSimpleStateTableView.convertValue((GType) action.types.get(i), action.values.get(i)));
-                }
-
-                String function = externalResources.get(0);
-                GwtClientUtils.call(GwtClientUtils.getGlobalField(function.substring(0, function.indexOf("("))), arguments);
-            } else { // add script to document
-                executeJS("/static" + js);
-            }
+            if (action.isFile) // add script to document
+                executeJSFile("/static" + externalResources.get(0));
+            else //call js function
+                executeJSFunction(action.values, action.types, externalResources);
         }
     }
 
-    protected static native <T> JavaScriptObject fromObject(T object) /*-{
-        return object;
-    }-*/;
+    protected void executeJSFunction(ArrayList<Object> values, ArrayList<Object> types, List<String> externalResources) {
+        JsArray<JavaScriptObject> arguments = JavaScriptObject.createArray().cast();
+        for (int i = 0; i < types.size(); i++) {
+            arguments.push(GSimpleStateTableView.convertValue((GType) types.get(i), values.get(i)));
+        }
+        String function = externalResources.get(0);
+        GwtClientUtils.call(GwtClientUtils.getGlobalField(function.substring(0, function.indexOf("("))), arguments);
+    }
 
-    protected native void executeJS(String resourcePath)/*-{
+    protected native void executeJSFile(String resourcePath)/*-{
         if (resourcePath.endsWith('js')) {
             var documentScripts = $wnd.document.scripts, scriptAlreadyLoaded;
             for (var i = 0; i < documentScripts.length; i++) {

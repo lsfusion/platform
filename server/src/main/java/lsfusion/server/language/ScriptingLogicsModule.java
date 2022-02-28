@@ -1786,7 +1786,12 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LA addScriptedInternalClientAction(String js, int paramsCount) throws ScriptingErrorLog.SemanticErrorException {
-        return new LA(new ClientSystemAction(js, paramsCount));
+        boolean isFile = js.contains(".js") || js.contains(".css");
+
+        if(isFile && paramsCount > 0)
+            errLog.emitInternalClientActionHasParamsOnFileCallingError(parser, js);
+
+        return new LA(new ClientSystemAction(js, paramsCount, isFile));
     }
 
     public LA addScriptedInternalAction(String javaClassName, List<String> paramClasses, List<ResolveClassSet> signature, boolean allowNullValue) throws ScriptingErrorLog.SemanticErrorException {

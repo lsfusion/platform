@@ -255,6 +255,6 @@ public class ClientActionToGwtConverter extends ObjectConverter {
             values.add(deserializeServerValue(actionValues.get(i)));
         }
 
-        return new GClientJSAction(action.externalResources, values, types);
+        return new GClientJSAction(action.externalResources, values, types, action.isFile);
     }
 }

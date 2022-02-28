@@ -24,10 +24,12 @@ import static lsfusion.base.BaseUtils.serializeObject;
 public class ClientSystemAction extends SystemAction {
 
     private final String js;
+    private final boolean isFile;
 
-    public ClientSystemAction(String js, int size) {
+    public ClientSystemAction(String js, int size, boolean isFile) {
         super(LocalizedString.create("ClientJS"), SetFact.toOrderExclSet(size, i -> new PropertyInterface()));
         this.js = js;
+        this.isFile = isFile;
     }
 
     @Override
@@ -45,8 +47,8 @@ public class ClientSystemAction extends SystemAction {
             throw Throwables.propagate(e);
         }
 
-        context.delayUserInteraction(new ClientJSAction(js.contains(".js") || js.contains(".css") ? ResourceUtils.getResources(Pattern.compile("/web/.*/" + js.trim())) : Collections.singletonList(js),
-                values, types));
+        context.delayUserInteraction(new ClientJSAction(isFile ? ResourceUtils.getResources(Pattern.compile("/web/.*/" + js.trim())) : Collections.singletonList(js),
+                values, types, isFile));
 
         return FlowResult.FINISH;
     }
