@@ -345,7 +345,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
         List<String> externalResources = action.externalResources;
         if (externalResources.size() == 1) {
             if (action.isFile) // add script to document
-                executeJSFile("/static" + externalResources.get(0));
+                executeJSFile("static" + externalResources.get(0));
             else //call js function
                 executeJSFunction(action.values, action.types, externalResources);
         }
