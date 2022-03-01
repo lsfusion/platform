@@ -212,7 +212,7 @@ public class MainController {
 
         if(serverSettings != null)
             serverSettings.saveFiles(FileUtils.APP_PATH, externalResourcesParentPath);
-        model.addAttribute("filesUrls", getFileUrls(serverSettings));
+
         model.addAttribute("title", getTitle(serverSettings));
         model.addAttribute("logicsIcon", getLogicsIcon(serverSettings));
         model.addAttribute("logicsName", getLogicsName(serverSettings));
@@ -227,10 +227,6 @@ public class MainController {
 
     private boolean getDisableRegistration(ServerSettings serverSettings) {
         return serverSettings != null && serverSettings.disableRegistration;
-    }
-
-    private Set<String> getFileUrls(ServerSettings serverSettings) {
-        return serverSettings != null && serverSettings.filesUrls != null ? serverSettings.filesUrls : Collections.emptySet();
     }
 
     private String getTitle(ServerSettings serverSettings) {

@@ -686,6 +686,11 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
     }
 
     @Override
+    public void execute(ClientJSAction action) {
+        //desktop stub. do nothing
+    }
+
+    @Override
     public EventBus getEventBus() {
         return MainFrame.instance.eventBus;
     }

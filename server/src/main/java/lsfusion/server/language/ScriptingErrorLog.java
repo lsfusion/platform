@@ -141,6 +141,10 @@ public class ScriptingErrorLog {
         emitNotFoundError(parser, "filter group", name);
     }
 
+    public void emitInternalClientActionHasParamsOnFileCallingError(ScriptParser parser, String argument) throws SemanticErrorException {
+        emitSimpleError(parser, "Calling .js file: INTERNAL CLIENT '" + argument + "' - Should not have arguments. Use arguments only with js function() calling");
+    }
+
     public void emitIllegalAddNavigatorToSubnavigatorError(ScriptParser parser, String addedElement, String addedToElement) throws SemanticErrorException {
         emitSimpleError(parser, format("can't add navigator element '%s' to it's subelement '%s'", addedElement, addedToElement));
     }

@@ -3527,27 +3527,32 @@ idEqualPEList[List<TypedParameter> context, boolean dynamic] returns [List<Strin
 	:	id=ID { $ids.add($id.text); } EQ expr=propertyExpression[context, dynamic] { $exprs.add($expr.property); } { allowNulls = false; } ('NULL' { allowNulls = true; })? { $nulls.add(allowNulls); }
 		(',' id=ID { $ids.add($id.text); } EQ expr=propertyExpression[context, dynamic] { $exprs.add($expr.property); } { allowNulls = false; } ('NULL' { allowNulls = true; })? { $nulls.add(allowNulls); })*
 	;
-	
+
 internalActionDefinitionBody[List<TypedParameter> context] returns [LA action, List<ResolveClassSet> signature]
 @init {
 	boolean allowNullValue = false;
 	List<String> classes = null;
+	boolean clientAction = false;
 }
 @after {
 	if (inMainParseState()) {
 
 	    List<ResolveClassSet> contextParams = self.getClassesFromTypedParams(context);
 
-	    if($code.val == null)
+        if(clientAction)
+            $action = self.addScriptedInternalClientAction($classN.val, classes != null ? classes.size() : 0);
+        else if($code.val == null)
 	        $action = self.addScriptedInternalAction($classN.val, classes, contextParams, allowNullValue);
 	    else
 		    $action = self.addScriptedInternalAction($code.val, allowNullValue);
 		$signature = classes == null ? (contextParams.isEmpty() ? Collections.<ResolveClassSet>nCopies($action.listInterfaces.size(), null) : contextParams) : self.createClassSetsFromClassNames(classes);
 	}
 }
+
 	:	'INTERNAL'
-        (   
-            classN = stringLiteral ('(' cls=classIdList ')' { classes = $cls.ids; })? 
+        (
+            ('CLIENT' { clientAction = true; } )?
+            classN = stringLiteral ('(' cls=classIdList ')' { classes = $cls.ids; })?
 		|   code = codeLiteral
         )
 	    ('NULL' { allowNullValue = true; })?

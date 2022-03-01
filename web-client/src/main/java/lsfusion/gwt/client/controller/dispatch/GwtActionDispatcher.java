@@ -1,5 +1,7 @@
 package lsfusion.gwt.client.controller.dispatch;
 
+import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.core.client.JsArray;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.media.client.Audio;
 import com.google.gwt.typedarrays.client.Uint8ArrayNative;
@@ -15,15 +17,17 @@ import lsfusion.gwt.client.base.exception.GExceptionManager;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.log.GLog;
 import lsfusion.gwt.client.base.view.DialogBoxHelper;
+import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.controller.remote.action.RequestAsyncCallback;
 import lsfusion.gwt.client.controller.remote.action.RequestCountingErrorHandlingCallback;
 import lsfusion.gwt.client.controller.remote.action.RequestErrorHandlingCallback;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.controller.remote.action.navigator.LogClientExceptionAction;
+import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
 import lsfusion.gwt.client.form.view.FormContainer;
 import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
-import lsfusion.gwt.client.navigator.window.GWindowFormType;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -335,6 +339,61 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     @Override
     public void execute(GResetWindowsLayoutAction action) {
     }
+
+    @Override
+    public void execute(GClientJSAction action) {
+        List<String> externalResources = action.externalResources;
+        if (externalResources.size() == 1) {
+            if (action.isFile) // add script to document
+                executeJSFile("/static" + externalResources.get(0));
+            else //call js function
+                executeJSFunction(action.values, action.types, externalResources);
+        }
+    }
+
+    protected void executeJSFunction(ArrayList<Object> values, ArrayList<Object> types, List<String> externalResources) {
+        JsArray<JavaScriptObject> arguments = JavaScriptObject.createArray().cast();
+        for (int i = 0; i < types.size(); i++) {
+            arguments.push(GSimpleStateTableView.convertValue((GType) types.get(i), values.get(i)));
+        }
+        String function = externalResources.get(0);
+        GwtClientUtils.call(GwtClientUtils.getGlobalField(function.substring(0, function.indexOf("("))), arguments);
+    }
+
+    protected native void executeJSFile(String resourcePath)/*-{
+        if (resourcePath.endsWith('js')) {
+            var documentScripts = $wnd.document.scripts, scriptAlreadyLoaded;
+            for (var i = 0; i < documentScripts.length; i++) {
+                var src = documentScripts[i].src;
+                if (src != null && src.endsWith(resourcePath)){
+                    scriptAlreadyLoaded = true;
+                    break;
+                }
+            }
+            if (!scriptAlreadyLoaded) {
+                var scr = document.createElement('script');
+                scr.src = resourcePath;
+                scr.type = 'text/javascript';
+                $wnd.document.head.appendChild(scr);
+            }
+        } else if (resourcePath.endsWith('css')) {
+            var documentStyleSheets = $wnd.document.styleSheets, styleSheetAlreadyLoaded;
+            for (var j = 0; j < documentStyleSheets.length; j++) {
+                var href = documentStyleSheets[j].href;
+                if (href != null && href.endsWith(resourcePath)){
+                    styleSheetAlreadyLoaded = true;
+                    break;
+                }
+            }
+            if (!styleSheetAlreadyLoaded) {
+                var link = document.createElement("link");
+                link.href = resourcePath;
+                link.type = "text/css";
+                link.rel = "stylesheet";
+                $wnd.document.head.appendChild(link);
+            }
+        }
+    }-*/;
 
     @Override
     public Object execute(GHttpClientAction action) {

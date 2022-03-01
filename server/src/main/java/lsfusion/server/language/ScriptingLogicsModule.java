@@ -49,6 +49,7 @@ import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.action.Action;
+import lsfusion.server.logics.action.ClientSystemAction;
 import lsfusion.server.logics.action.ExplicitAction;
 import lsfusion.server.logics.action.flow.BreakAction;
 import lsfusion.server.logics.action.flow.ListCaseAction;
@@ -1782,6 +1783,15 @@ public class ScriptingLogicsModule extends LogicsModule {
         } else {
             return addScriptedUProp(Union.CLASSOVERRIDE, properties, "MULTI");
         }
+    }
+
+    public LA addScriptedInternalClientAction(String js, int paramsCount) throws ScriptingErrorLog.SemanticErrorException {
+        boolean isFile = js.contains(".js") || js.contains(".css");
+
+        if(isFile && paramsCount > 0)
+            errLog.emitInternalClientActionHasParamsOnFileCallingError(parser, js);
+
+        return new LA(new ClientSystemAction(js, paramsCount, isFile));
     }
 
     public LA addScriptedInternalAction(String javaClassName, List<String> paramClasses, List<ResolveClassSet> signature, boolean allowNullValue) throws ScriptingErrorLog.SemanticErrorException {

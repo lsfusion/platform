@@ -160,6 +160,16 @@ changeScript(Script sc) {
     }
 }
 
+initOptionJS INTERNAL CLIENT 'option.js';
+initOptionCSS INTERNAL CLIENT 'option.css';
+initInterpreterJS INTERNAL CLIENT 'interpreter.js';
+
+onWebClientStarted() + {
+    initOptionJS();
+    initOptionCSS();
+    initInterpreterJS();
+}
+
 FORM interpreter '{eval.script.form.interpreter}'
     OBJECTS st = ScriptType CUSTOM 'option'
     PROPERTIES(st) SHOWIF isWeb() name=executionScriptTypeCaption, selected=selectedExecutionScriptType, executionScriptTypeName
