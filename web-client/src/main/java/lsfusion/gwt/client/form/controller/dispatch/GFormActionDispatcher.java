@@ -135,7 +135,9 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
 
     @Override
     public void execute(GResetWindowsLayoutAction action) {
-        form.resetWindowsLayout();
+        if (!MainFrame.mobile) {
+            form.resetWindowsLayout();
+        }
     }
 
     // editing (INPUT) functionality

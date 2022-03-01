@@ -60,8 +60,10 @@ public abstract class FormsController {
 
     private final GToolbarButton linkEditButton;
 
-    private final GToolbarButton fullScreenButton;
+    private GToolbarButton fullScreenButton;
     private boolean fullScreenMode = false;
+    
+    private GToolbarButton mobileMenuButton;
 
     public FormsController(WindowsController windowsController) {
         this.windowsController = windowsController;
@@ -77,15 +79,26 @@ public abstract class FormsController {
         setCompactSize(linkEditButton);
         toolbarView.addComponent(linkEditButton);
 
-        fullScreenButton = new GToolbarButton(null) {
-            @Override
-            public ClickHandler getClickHandler() {
-                return event -> switchFullScreenMode();
-            }
-        };
-        setCompactSize(fullScreenButton);
-        toolbarView.addComponent(fullScreenButton);
-        updateFullScreenButton();
+        if (!MainFrame.mobile) {
+            fullScreenButton = new GToolbarButton(null) {
+                @Override
+                public ClickHandler getClickHandler() {
+                    return event -> switchFullScreenMode();
+                }
+            };
+            setCompactSize(fullScreenButton);
+            toolbarView.addComponent(fullScreenButton);
+            updateFullScreenButton();
+        } else {
+            mobileMenuButton = new GToolbarButton("hamburger.png") {
+                @Override
+                public ClickHandler getClickHandler() {
+                    return event -> MainFrame.openNavigatorMenu();
+                }
+            };
+            setCompactSize(mobileMenuButton);
+            toolbarView.addComponent(mobileMenuButton);
+        }
 
         tabsPanel = new FlexTabbedPanel("formsTabBar", toolbarView);
 

@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.form.controller;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.Element;
@@ -237,7 +236,7 @@ public class GFormController implements EditManager {
         NativeEvent nativeEvent = event.getNativeEvent();
         checkLinkEditModeEvents(formsController, nativeEvent);
 
-        if(GKeyStroke.isSwitchFullScreenModeEvent(nativeEvent)) {
+        if(GKeyStroke.isSwitchFullScreenModeEvent(nativeEvent) && !MainFrame.mobile) {
             formsController.switchFullScreenMode();
         }
     }
