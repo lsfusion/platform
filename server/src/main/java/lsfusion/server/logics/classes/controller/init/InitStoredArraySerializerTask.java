@@ -4,6 +4,7 @@ import lsfusion.base.col.implementations.stored.StoredArraySerializer;
 import lsfusion.base.col.implementations.stored.StoredArraySerializerRegistry;
 import lsfusion.server.logics.controller.init.SimpleBLTask;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
+import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import org.apache.log4j.Logger;
 
 public class InitStoredArraySerializerTask extends SimpleBLTask {
@@ -16,5 +17,6 @@ public class InitStoredArraySerializerTask extends SimpleBLTask {
     public void run(Logger logger) {
         StoredArraySerializerRegistry serializer = (StoredArraySerializerRegistry) StoredArraySerializer.getInstance(); 
         serializer.register(ObjectEntity.class, ObjectEntity::serialize, ObjectEntity::deserialize);
+        serializer.register(PropertyDrawEntity.class, PropertyDrawEntity::serialize, PropertyDrawEntity::deserialize);
     }
 }
