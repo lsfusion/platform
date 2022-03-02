@@ -5,7 +5,6 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.implementations.abs.AMRevMap;
 import lsfusion.base.col.implementations.order.ArOrderMap;
-import lsfusion.base.col.implementations.stored.StoredArIndexedMap;
 import lsfusion.base.col.implementations.stored.StoredArMap;
 import lsfusion.base.col.implementations.stored.StoredArraySerializer;
 import lsfusion.base.col.interfaces.immutable.*;
@@ -160,6 +159,7 @@ public class ArMap<K, V> extends AMRevMap<K, V> {
             stored().exclAdd(key, value);
         }
     }
+    
     public boolean add(K key, V value) {
         if (!isStored()) {
             for (int i = 0; i < size; i++)
@@ -377,24 +377,25 @@ public class ArMap<K, V> extends AMRevMap<K, V> {
     }
 
     private void switchToStoredIfNeeded(int oldSize, int newSize) {
-        if (needSwitchToStored(oldSize, newSize)) {
+        if (oldSize <= LIMIT && newSize > LIMIT && needSwitchToStored(this)) {
             switchToStored(size, keys, values);
         }
     }
 
-    private boolean needSwitchToStored(int oldSize, int newSize) {
-        // todo [dale]: temp
-        return data == null && oldSize <= LIMIT && newSize > LIMIT;
-    }
-
     private boolean needSwitchToStored(ArMap<K, V> map) {
-        return map.data == null && !map.isStored() && map.size() > LIMIT;
+        return !map.isStored() && map.size() > LIMIT 
+                && StoredArraySerializer.getInstance().canBeSerialized(map.getKey(0)) 
+                && StoredArraySerializer.getInstance().canBeSerialized(map.getValue(0));
     }
 
     private void switchToStored(int size, Object[] keys, Object[] values) {
-        StoredArIndexedMap<K, V> storedMap =
-                new StoredArIndexedMap<>(StoredArraySerializer.getInstance(), size, (K[])keys, (V[])values);
-        this.keys = new Object[]{storedMap};
-        this.size = STORED_FLAG;
+        try {
+            StoredArMap<K, V> storedMap =
+                    new StoredArMap<>(StoredArraySerializer.getInstance(), size, (K[]) keys, (V[]) values, getAddValue());
+            this.keys = new Object[]{storedMap};
+            this.size = STORED_FLAG;
+        } catch (RuntimeException e) {
+            e.printStackTrace();
+        }
     }
 }

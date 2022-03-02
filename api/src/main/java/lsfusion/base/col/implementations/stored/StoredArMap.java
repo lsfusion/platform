@@ -12,10 +12,22 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 public class StoredArMap<K, V> extends AMRevMap<K, V> {
     private StoredArray<K> keys;
     private StoredArray<V> values;
+    
+    public StoredArMap(StoredArraySerializer serializer, AddValue<K, V> addValue) {
+        super(addValue);
 
-    public StoredArMap(StoredArraySerializer serializer, int size, K[] keys, V[] values) {
+        this.keys = new StoredArray<>(serializer);
+        this.values = new StoredArray<>(serializer);
+    }
+
+    public StoredArMap(StoredArraySerializer serializer, int size, K[] keys, V[] values, AddValue<K, V> addValue) {
+        super(addValue);
         this.keys = new StoredArray<>(keys, size, serializer, null);
         this.values = new StoredArray<>(values, size, serializer, null);
+    }
+
+    public StoredArMap(StoredArraySerializer serializer, int size, K[] keys, V[] values) {
+        this(serializer, size, keys, values, null);
     }
 
     public StoredArMap(StoredArray<K> keys, StoredArray<V> values) {

@@ -20,10 +20,15 @@ public class StoredArIndexedMap<K, V> extends AMRevMap<K, V> {
     public StoredArray<K> keys;
     public StoredArray<V> values;
 
-    public StoredArIndexedMap(StoredArraySerializer serializer, int size, K[] keys, V[] values) {
+    public StoredArIndexedMap(StoredArraySerializer serializer, int size, K[] keys, V[] values, AddValue<K, V> addValue) {
+        super(addValue);
         this.keys = new StoredArray<>(keys, size, serializer, null);
         this.values = new StoredArray<>(values, size, serializer, null);
         assert keys.length == values.length;
+    }
+
+    public StoredArIndexedMap(StoredArraySerializer serializer, int size, K[] keys, V[] values) {
+        this(serializer, size, keys, values, null);
     }
 
     public StoredArIndexedMap(StoredArray<K> keys, StoredArray<V> values) {

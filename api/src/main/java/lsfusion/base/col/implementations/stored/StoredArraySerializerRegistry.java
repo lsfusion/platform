@@ -83,7 +83,8 @@ public class StoredArraySerializerRegistry implements StoredArraySerializer {
         } else if (o instanceof Serializable) {
             return SERIALIZABLE_ID;  
         }
-        throw new RuntimeException("Serialization of this object is not supported");
+        // todo [dale]: custom exception?
+        throw new RuntimeException(String.format("Serialization of this object (%s) is not supported", o.getClass()));
     }
     
     private Integer getId(Class<?> cls) {
@@ -104,7 +105,12 @@ public class StoredArraySerializerRegistry implements StoredArraySerializer {
         }
         return context.get().get();
     }
-    
+
+    @Override
+    public boolean canBeSerialized(Object o) {
+        return o == null || getId(o.getClass()) != null || o instanceof Serializable;
+    }
+
     static StoredArraySerializerRegistry getInstance() {
         if (instance == null) {
             synchronized (StoredArraySerializerRegistry.class) {

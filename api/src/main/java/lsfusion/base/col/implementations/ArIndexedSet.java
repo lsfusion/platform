@@ -208,18 +208,14 @@ public class ArIndexedSet<K> extends AMSet<K> {
     }
 
     private void switchToStoredIfNeeded(int oldSize, int newSize) {
-        if (needSwitchToStored(oldSize, newSize)) {
+        if (oldSize <= LIMIT && newSize > LIMIT && needSwitchToStored(this)) {
             switchToStored(size, array);
         }
     }
     
-    private static boolean needSwitchToStored(int oldSize, int newSize) {
-        // todo [dale]: temp
-        return oldSize <= LIMIT && newSize > LIMIT;    
-    }  
-    
     private static boolean needSwitchToStored(ArIndexedSet<?> set) {
-        return !set.isStored() && set.size() > LIMIT; 
+        return !set.isStored() && set.size() > LIMIT 
+                && StoredArraySerializer.getInstance().canBeSerialized(set.get(0)); 
     }
     
     private void switchToStored(int size, Object[] array) {

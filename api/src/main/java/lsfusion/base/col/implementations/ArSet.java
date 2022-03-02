@@ -85,7 +85,9 @@ public class ArSet<K> extends AMSet<K> {
     public void exclAdd(K key) { // не проверяем, чтобы в профайлере не мусорить
 //        assert !contains(key);
         if (!isStored()) {
+            if (size >= array.length) resize(2 * array.length);
             array[size++] = key;
+            switchToStoredIfNeeded(size-1, size);
         } else {
             stored().exclAdd(key);
         }
@@ -122,6 +124,12 @@ public class ArSet<K> extends AMSet<K> {
         System.arraycopy(array, i, subArray, 0, length);
         return null; //new ArSet<K>(subArray);
     }*/
+
+    private void resize(int length) {
+        Object[] newArray = new Object[length];
+        System.arraycopy(array, 0, newArray, 0, size);
+        array = newArray;
+    }
     
     public static void sortArray(int size, Object[] array) {
         sortArray(size, array, (int[])null);
@@ -361,18 +369,14 @@ public class ArSet<K> extends AMSet<K> {
     }
 
     private void switchToStoredIfNeeded(int oldSize, int newSize) {
-        if (needSwitchToStored(oldSize, newSize)) {
+        if (oldSize <= LIMIT && newSize > LIMIT && needSwitchToStored(this)) {
             switchToStored(size, array);
         }
     }
 
-    private static boolean needSwitchToStored(int oldSize, int newSize) {
-        // todo [dale]: temp
-        return oldSize <= LIMIT && newSize > LIMIT;
-    }
-
     private static boolean needSwitchToStored(ArSet<?> set) {
-        return !set.isStored() && set.size() > LIMIT;
+        return !set.isStored() && set.size() > LIMIT 
+                && StoredArraySerializer.getInstance().canBeSerialized(set.get(0));
     }
 
     private void switchToStored(int size, Object[] array) {

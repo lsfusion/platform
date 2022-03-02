@@ -11,6 +11,8 @@ public interface StoredArraySerializer {
     void setContext(Object context);
     Object getContext();    
     
+    boolean canBeSerialized(Object o);
+    
     static void serializeSerializable(Object o, ByteArrayOutputStream outStream) throws IOException {
         assert o instanceof Serializable;
         try (ObjectOutputStream objStream = new ObjectOutputStream(outStream)) {

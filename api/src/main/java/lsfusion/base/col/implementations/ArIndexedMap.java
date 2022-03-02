@@ -623,23 +623,21 @@ public class ArIndexedMap<K, V> extends AMRevMap<K, V> {
     }
 
     private void switchToStoredIfNeeded(int oldSize, int newSize) {
-        if (needSwitchToStored(oldSize, newSize)) {
+        if (oldSize <= LIMIT && newSize > LIMIT && needSwitchToStored(this)) {
             switchToStored(size, keys, values);
         }
     }
 
-    private boolean needSwitchToStored(int oldSize, int newSize) {
-        // todo [dale]: temp
-        return data == null && oldSize <= LIMIT && newSize > LIMIT;
-    }
-
     private boolean needSwitchToStored(ArIndexedMap<K, V> map) {
-        return map.data == null && !map.isStored() && map.size() > LIMIT;
+        return !map.isStored() && map.size() > LIMIT
+                && StoredArraySerializer.getInstance().canBeSerialized(map.getKey(0))
+                && StoredArraySerializer.getInstance().canBeSerialized(map.getValue(0));
     }
 
     private void switchToStored(int size, Object[] keys, Object[] values) {
+        AddValue<K, V> addValue = (data instanceof AddValue ? (AddValue<K, V>) data : null);
         StoredArIndexedMap<K, V> storedMap = 
-                new StoredArIndexedMap<>(StoredArraySerializer.getInstance(), size, (K[])keys, (V[])values);
+                new StoredArIndexedMap<>(StoredArraySerializer.getInstance(), size, (K[])keys, (V[])values, addValue);
         this.keys = new Object[]{storedMap};
         this.size = STORED_FLAG;
     }
