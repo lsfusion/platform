@@ -340,60 +340,92 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     public void execute(GResetWindowsLayoutAction action) {
     }
 
+    private static class JSExecutor {
+        private static final List<GClientJSAction> actions = new ArrayList<>();
+
+        public static void addAction(GClientJSAction action) {
+            if (action.resource != null) {
+                actions.add(action);
+                if (action.isFile)
+                    executeFile(action);
+                else
+                    flush();
+            } else {
+                GwtClientUtils.consoleError("Resource load error: " + action.resourceName);
+            }
+        }
+
+        private static void flush() {
+            for (GClientJSAction action : actions) {
+                if (action.isFile)
+                    return;
+
+                executeJSFunction(action);
+            }
+        }
+
+        private static native void executeFile(GClientJSAction action)/*-{
+            var resourcePath = 'static' + action.@GClientJSAction::resource;
+
+            if (resourcePath.endsWith('js')) {
+                var documentScripts = $wnd.document.scripts, scriptAlreadyLoaded;
+                for (var i = 0; i < documentScripts.length; i++) {
+                    var src = documentScripts[i].src;
+                    if (src != null && src.endsWith(resourcePath)){
+                        scriptAlreadyLoaded = true;
+                        break;
+                    }
+                }
+
+                if (!scriptAlreadyLoaded) {
+                    var scr = document.createElement('script');
+                    scr.src = resourcePath;
+                    scr.type = 'text/javascript';
+                    $wnd.document.head.appendChild(scr);
+                    scr.onload = function() { onFileLoad(); }
+                }
+            } else if (resourcePath.endsWith('css')) {
+                var documentStyleSheets = $wnd.document.styleSheets, styleSheetAlreadyLoaded;
+                for (var j = 0; j < documentStyleSheets.length; j++) {
+                    var href = documentStyleSheets[j].href;
+                    if (href != null && href.endsWith(resourcePath)){
+                        styleSheetAlreadyLoaded = true;
+                        break;
+                    }
+                }
+                if (!styleSheetAlreadyLoaded) {
+                    var link = document.createElement("link");
+                    link.href = resourcePath;
+                    link.type = "text/css";
+                    link.rel = "stylesheet";
+                    $wnd.document.head.appendChild(link);
+                    onFileLoad();
+                }
+            }
+
+            function onFileLoad() {
+                @JSExecutor::actions.@java.util.ArrayList::remove(Ljava/lang/Object;)(action);
+                @lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher.JSExecutor::flush()();
+            }
+        }-*/;
+
+        private static void executeJSFunction(GClientJSAction action) {
+            JsArray<JavaScriptObject> arguments = JavaScriptObject.createArray().cast();
+            ArrayList<Object> types = action.types;
+            for (int i = 0; i < types.size(); i++) {
+                arguments.push(GSimpleStateTableView.convertValue((GType) types.get(i), action.values.get(i)));
+            }
+            String function = action.resource;
+            GwtClientUtils.call(GwtClientUtils.getGlobalField(function.substring(0, function.indexOf("("))), arguments);
+            actions.remove(action);
+        }
+    }
+
+
     @Override
     public void execute(GClientJSAction action) {
-        List<String> externalResources = action.externalResources;
-        if (externalResources.size() == 1) {
-            if (action.isFile) // add script to document
-                executeJSFile("static" + externalResources.get(0));
-            else //call js function
-                executeJSFunction(action.values, action.types, externalResources);
-        }
+        JSExecutor.addAction(action);
     }
-
-    protected void executeJSFunction(ArrayList<Object> values, ArrayList<Object> types, List<String> externalResources) {
-        JsArray<JavaScriptObject> arguments = JavaScriptObject.createArray().cast();
-        for (int i = 0; i < types.size(); i++) {
-            arguments.push(GSimpleStateTableView.convertValue((GType) types.get(i), values.get(i)));
-        }
-        String function = externalResources.get(0);
-        GwtClientUtils.call(GwtClientUtils.getGlobalField(function.substring(0, function.indexOf("("))), arguments);
-    }
-
-    protected native void executeJSFile(String resourcePath)/*-{
-        if (resourcePath.endsWith('js')) {
-            var documentScripts = $wnd.document.scripts, scriptAlreadyLoaded;
-            for (var i = 0; i < documentScripts.length; i++) {
-                var src = documentScripts[i].src;
-                if (src != null && src.endsWith(resourcePath)){
-                    scriptAlreadyLoaded = true;
-                    break;
-                }
-            }
-            if (!scriptAlreadyLoaded) {
-                var scr = document.createElement('script');
-                scr.src = resourcePath;
-                scr.type = 'text/javascript';
-                $wnd.document.head.appendChild(scr);
-            }
-        } else if (resourcePath.endsWith('css')) {
-            var documentStyleSheets = $wnd.document.styleSheets, styleSheetAlreadyLoaded;
-            for (var j = 0; j < documentStyleSheets.length; j++) {
-                var href = documentStyleSheets[j].href;
-                if (href != null && href.endsWith(resourcePath)){
-                    styleSheetAlreadyLoaded = true;
-                    break;
-                }
-            }
-            if (!styleSheetAlreadyLoaded) {
-                var link = document.createElement("link");
-                link.href = resourcePath;
-                link.type = "text/css";
-                link.rel = "stylesheet";
-                $wnd.document.head.appendChild(link);
-            }
-        }
-    }-*/;
 
     @Override
     public Object execute(GHttpClientAction action) {

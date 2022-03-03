@@ -1001,4 +1001,8 @@ public class GwtClientUtils {
             return {};
         }
     }-*/;
+
+    public static native void consoleError(String error)/*-{
+        console.error(error);
+    }-*/;
 }
