@@ -16,19 +16,19 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.List;
 import java.util.regex.Pattern;
 
 import static lsfusion.base.BaseUtils.serializeObject;
 
 public class ClientSystemAction extends SystemAction {
 
-    private final String js;
+    private final String resourceName;
     private final boolean isFile;
 
-    public ClientSystemAction(String js, int size, boolean isFile) {
+    public ClientSystemAction(String resourceName, int size, boolean isFile) {
         super(LocalizedString.create("ClientJS"), SetFact.toOrderExclSet(size, i -> new PropertyInterface()));
-        this.js = js;
+        this.resourceName = resourceName;
         this.isFile = isFile;
     }
 
@@ -47,8 +47,10 @@ public class ClientSystemAction extends SystemAction {
             throw Throwables.propagate(e);
         }
 
-        context.delayUserInteraction(new ClientJSAction(isFile ? ResourceUtils.getResources(Pattern.compile("/web/.*/" + js.trim())) : Collections.singletonList(js),
-                values, types, isFile));
+        List<String> resources = ResourceUtils.getResources(Pattern.compile("/web/.*" + resourceName.trim()));
+        String resource = isFile ? (resources.size() == 1 ? resources.get(0) : null) : resourceName;
+
+        context.delayUserInteraction(new ClientJSAction(resource, resourceName, values, types, isFile));
 
         return FlowResult.FINISH;
     }
