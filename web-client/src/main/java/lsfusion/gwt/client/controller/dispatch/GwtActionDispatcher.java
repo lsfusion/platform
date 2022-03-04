@@ -346,21 +346,21 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
         public static void addAction(GClientJSAction action) {
             if (action.resource != null) {
                 actions.add(action);
-                if (action.isFile)
-                    executeFile(action);
-                else
-                    flush();
+                flush();
             } else {
                 GwtClientUtils.consoleError("Resource load error: " + action.resourceName);
             }
         }
 
+        private static boolean isExecuting = false;
         private static void flush() {
-            for (GClientJSAction action : actions) {
+            if (!isExecuting && !actions.isEmpty()) {
+                GClientJSAction action = actions.get(0);
+                isExecuting = true;
                 if (action.isFile)
-                    return;
-
-                executeJSFunction(action);
+                    executeFile(action);
+                else
+                    executeJSFunction(action);
             }
         }
 
@@ -382,7 +382,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
                     scr.src = resourcePath;
                     scr.type = 'text/javascript';
                     $wnd.document.head.appendChild(scr);
-                    scr.onload = function() { onFileLoad(); }
+                    scr.onload = function() { @JSExecutor::onActionExecuted(*)(action); }
                 }
             } else if (resourcePath.endsWith('css')) {
                 var documentStyleSheets = $wnd.document.styleSheets, styleSheetAlreadyLoaded;
@@ -399,15 +399,16 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
                     link.type = "text/css";
                     link.rel = "stylesheet";
                     $wnd.document.head.appendChild(link);
-                    onFileLoad();
+                    @JSExecutor::onActionExecuted(*)(action);
                 }
             }
-
-            function onFileLoad() {
-                @JSExecutor::actions.@java.util.ArrayList::remove(Ljava/lang/Object;)(action);
-                @lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher.JSExecutor::flush()();
-            }
         }-*/;
+
+        private static void onActionExecuted(GClientJSAction action) {
+            isExecuting = false;
+            actions.remove(action);
+            flush();
+        }
 
         private static void executeJSFunction(GClientJSAction action) {
             JsArray<JavaScriptObject> arguments = JavaScriptObject.createArray().cast();
@@ -417,7 +418,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
             }
             String function = action.resource;
             GwtClientUtils.call(GwtClientUtils.getGlobalField(function.substring(0, function.indexOf("("))), arguments);
-            actions.remove(action);
+            onActionExecuted(action);
         }
     }
 
