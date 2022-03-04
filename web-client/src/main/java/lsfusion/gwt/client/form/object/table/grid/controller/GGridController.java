@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.form.object.table.grid.controller;
 
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.GFormChanges;
@@ -67,7 +68,7 @@ public class GGridController extends GAbstractTableController {
         return groupObject.mapTileProvider;
     }
 
-    public GGridController(GFormController iformController, GGroupObject groupObject, GGridUserPreferences[] userPreferences) {
+    public GGridController(GFormController iformController, GGroupObject groupObject, GGridUserPreferences[] userPreferences, Event startEvent) {
         super(iformController, groupObject.toolbar, isList(groupObject));
         this.groupObject = groupObject;
 
@@ -98,7 +99,7 @@ public class GGridController extends GAbstractTableController {
                         ((GPivot)table).setDefaultChangesApplied();
                     break;
                 case CUSTOM:
-                    setCustomTableView();
+                    setCustomTableView(startEvent);
                     break;
                 case MAP:
                     setMapTableView();
@@ -172,7 +173,11 @@ public class GGridController extends GAbstractTableController {
     }
 
     private void setCustomTableView() {
-        changeTableView(new GCustom(formController, this, groupObject.customRenderFunction));
+        setCustomTableView(null);
+    }
+
+    private void setCustomTableView(Event startEvent) {
+        changeTableView(new GCustom(formController, this, groupObject.customRenderFunction), startEvent);
         if(mapTableButton != null)
             mapTableButton.showBackground(false);
         if (calendarTableButton != null)
@@ -194,13 +199,17 @@ public class GGridController extends GAbstractTableController {
     }
 
     private void changeTableView(GTableView table) {
+        changeTableView(table, null);
+    }
+
+    private void changeTableView(GTableView table, Event startEvent) {
         assert isList();
 
         if (this.table != null)
             this.table.onClear();
 
         changeGridView(table.getThisWidget(), groupObject.grid.isBoxed(table));
-        table.onRender();
+        table.onRender(startEvent);
         this.table = table;
         updateSettingsButton();
     }

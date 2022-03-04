@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.form.object.table.grid.view;
 
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
@@ -82,7 +83,7 @@ public interface GTableView {
 
     default void updateRecordLayout(long requestIndex) {}
 
-    default void onRender(){}
+    default void onRender(Event startEvent){}
     default void onClear(){}
 
     default boolean isDefaultBoxed() { return true; }

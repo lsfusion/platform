@@ -149,7 +149,7 @@ public class GFormController implements EditManager {
         return formsController;
     }
 
-    public GFormController(FormsController formsController, FormContainer formContainer, GForm gForm, boolean isDialog, boolean autoSize) {
+    public GFormController(FormsController formsController, FormContainer formContainer, GForm gForm, boolean isDialog, boolean autoSize, Event startEvent) {
         actionDispatcher = new GFormActionDispatcher(this);
 
         this.formsController = formsController;
@@ -167,7 +167,7 @@ public class GFormController implements EditManager {
 
         initializeParams(); // has to be done before initializeControllers (since adding component uses getSize)
 
-        initializeControllers();
+        initializeControllers(startEvent);
 
         initializeRegularFilters();
 
@@ -429,14 +429,14 @@ public class GFormController implements EditManager {
         setRemoteRegularFilter(filterGroup, filter);
     }
 
-    private void initializeControllers() {
+    private void initializeControllers(Event startEvent) {
         for (GTreeGroup treeGroup : form.treeGroups) {
             initializeTreeController(treeGroup);
         }
 
         for (GGroupObject group : form.groupObjects) {
             if (group.parent == null) {
-                initializeGroupController(group);
+                initializeGroupController(group, startEvent);
             }
         }
 
@@ -460,8 +460,8 @@ public class GFormController implements EditManager {
         }
     }
 
-    private void initializeGroupController(GGroupObject group) {
-        GGridController controller = new GGridController(this, group, form.userPreferences != null ? extractUserPreferences(form.userPreferences, group) : null);
+    private void initializeGroupController(GGroupObject group, Event startEvent) {
+        GGridController controller = new GGridController(this, group, form.userPreferences != null ? extractUserPreferences(form.userPreferences, group) : null, startEvent);
         controllers.put(group, controller);
     }
 
@@ -2038,8 +2038,8 @@ public class GFormController implements EditManager {
             ((ReplaceCellEditor)cellEditor).render(element, renderContext, renderedSize, oldValue); // rendering new one, filling inputElement
         }
 
-        this.cellEditor = cellEditor; // not sure if it should before or after startEditing, but definitely after removeAllChildren, since it leads to blur for example
         cellEditor.start(event, element, oldValue);
+        this.cellEditor = cellEditor; // not sure if it should before or after startEditing, but definitely after removeAllChildren, since it leads to blur for example
     }
 
     // only request cell editor can be long-living
@@ -2071,14 +2071,15 @@ public class GFormController implements EditManager {
         Element renderElement = getEditElement();
 
         CellEditor cellEditor = this.cellEditor;
-        if(cellEditor instanceof RequestCellEditor)
-            ((RequestCellEditor)cellEditor).stop(renderElement, cancel);
         this.cellEditor = null;
 
         EditContext editContext = this.editContext;
 //        this.editRequestIndex = -1; //it doesn't matter since it is not used when editContext / cellEditor is null
         this.editAsyncUsePessimistic = false;
         this.editAsyncValuesSID = null;
+
+        if(cellEditor instanceof RequestCellEditor)
+            ((RequestCellEditor)cellEditor).stop(renderElement, cancel);
 
         if(cellEditor instanceof ReplaceCellEditor) {
             RenderContext renderContext = editContext.getRenderContext();

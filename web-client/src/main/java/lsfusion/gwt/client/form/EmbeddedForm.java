@@ -2,6 +2,7 @@ package lsfusion.gwt.client.form;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
+import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.GForm;
@@ -22,6 +23,8 @@ import lsfusion.gwt.client.view.MainFrame;
 import java.util.function.Consumer;
 
 public class EmbeddedForm extends EditingForm {
+
+    private Event startEvent;
 
     private class EmbeddedCellEditor extends CellEditor implements RequestReplaceCellEditor {
 
@@ -49,6 +52,11 @@ public class EmbeddedForm extends EditingForm {
         public void render(Element cellParent, RenderContext renderContext, Pair<Integer, Integer> renderedSize, Object oldValue) {
             renderElement = cellParent;
         }
+
+        @Override
+        public void start(Event event, Element parent, Object oldValue) {
+            startEvent = event;
+        }
     }
 
     @Override
@@ -59,6 +67,11 @@ public class EmbeddedForm extends EditingForm {
     @Override
     protected Element getFocusedElement() {
         return renderElement;
+    }
+
+    @Override
+    protected Event getStartEvent() {
+        return startEvent;
     }
 
     private Element renderElement;
@@ -78,6 +91,16 @@ public class EmbeddedForm extends EditingForm {
         Element element = widget.getElement();
         GwtClientUtils.setupPercentParent(element);
         renderElement.appendChild(element);
+    }
+
+    @Override
+    protected void onSyncFocus(boolean add) {
+        super.onSyncFocus(add);
+        if(add && startEvent != null) {
+            Element focusedElement = GwtClientUtils.getFocusedElement();
+            DOM.dispatchEvent(startEvent, focusedElement);
+            startEvent = null;
+        }
     }
 
     @Override
