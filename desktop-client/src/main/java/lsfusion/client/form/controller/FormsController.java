@@ -132,7 +132,7 @@ public class FormsController implements ColorThemeChangeListener {
     }
 
     public ClientFormDockable openForm(AsyncFormController asyncFormController, ClientNavigator navigator, String canonicalName, String formSID, boolean forbidDuplicate, RemoteFormInterface remoteForm, byte[] firstChanges, MainFrame.FormCloseListener closeListener) {
-        ClientFormDockable page = getDuplicateForm(canonicalName, forbidDuplicate);
+        ClientFormDockable page = getDuplicateForm(canonicalName, forbidDuplicate, true);
         if(page != null) {
             page.toFront();
             page.requestFocusInWindow();
@@ -162,7 +162,7 @@ public class FormsController implements ColorThemeChangeListener {
     //we don't want flashing, so we use timer
     Timer openFormTimer;
     public void asyncOpenForm(AsyncFormController asyncFormController, ClientAsyncOpenForm asyncOpenForm) {
-        if (getDuplicateForm(asyncOpenForm.canonicalName, asyncOpenForm.forbidDuplicate) == null) {
+        if (getDuplicateForm(asyncOpenForm.canonicalName, asyncOpenForm.forbidDuplicate, false) == null) {
             openFormTimer = new Timer(100, e -> {
                 if(openFormTimer != null) {
                     if (asyncFormController.checkNotCompleted()) { //request is not completed yet
@@ -179,10 +179,12 @@ public class FormsController implements ColorThemeChangeListener {
         }
     }
 
-    private ClientFormDockable getDuplicateForm(String canonicalName, boolean forbidDuplicate) {
+    private ClientFormDockable getDuplicateForm(String canonicalName, boolean forbidDuplicate, boolean onlySync) {
         if (MainController.forbidDuplicateForms && forbidDuplicate) {
-            if (forms.getFormsList().contains(canonicalName)) {
-                CDockable dockable = control.getCDockable(control.getCDockableCount() - forms.getFormsList().size() + forms.getFormsList().indexOf(canonicalName));
+            List<ClientDockable> formsList = forms.getFormsList();
+            ClientDockable duplicate = formsList.stream().filter(dockable -> (!onlySync || !dockable.async) && dockable.getCanonicalName().equals(canonicalName)).findFirst().orElse(null);
+            if (duplicate != null) {
+                CDockable dockable = control.getCDockable(control.getCDockableCount() - formsList.size() + formsList.indexOf(duplicate));
                 if (dockable instanceof ClientFormDockable) {
                     return (ClientFormDockable) dockable;
                 }
@@ -235,13 +237,10 @@ public class FormsController implements ColorThemeChangeListener {
         public void visibilityChanged(CDockable cdockable) {
             ClientDockable dockable = (ClientDockable) cdockable;
 
-            String canonicalName = dockable.getCanonicalName();
             if (dockable.isVisible()) {
-                if(!dockable.async) {
-                    forms.add(canonicalName);
-                }
+                forms.add(dockable);
             } else {
-                forms.remove(canonicalName);
+                forms.remove(dockable);
                 control.removeDockable(dockable);
 
                 dockable.onClosed();
