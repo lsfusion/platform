@@ -173,7 +173,7 @@ public class GGridController extends GAbstractTableController {
     }
 
     private void setCustomTableView() {
-        changeTableView(new GCustom(formController, this, groupObject.customRenderFunction), formController.popEditEvent());
+        changeTableView(new GCustom(formController, this, groupObject.customRenderFunction));
         if(mapTableButton != null)
             mapTableButton.showBackground(false);
         if (calendarTableButton != null)
@@ -195,17 +195,13 @@ public class GGridController extends GAbstractTableController {
     }
 
     private void changeTableView(GTableView table) {
-        changeTableView(table, null);
-    }
-
-    private void changeTableView(GTableView table, Event editEvent) {
         assert isList();
 
         if (this.table != null)
             this.table.onClear();
 
         changeGridView(table.getThisWidget(), groupObject.grid.isBoxed(table));
-        table.onRender(editEvent);
+        table.onRender(formController.popEditEvent());
         this.table = table;
         updateSettingsButton();
     }
