@@ -2048,8 +2048,8 @@ public class GFormController implements EditManager {
             ((ReplaceCellEditor)cellEditor).render(element, renderContext, renderedSize, oldValue); // rendering new one, filling inputElement
         }
 
-        cellEditor.start(event, element, oldValue);
         this.cellEditor = cellEditor; // not sure if it should before or after startEditing, but definitely after removeAllChildren, since it leads to blur for example
+        cellEditor.start(event, element, oldValue); //need to be after this.cellEditor = cellEditor, because there is commitEditing in start in LogicalCellEditor
     }
 
     // only request cell editor can be long-living
