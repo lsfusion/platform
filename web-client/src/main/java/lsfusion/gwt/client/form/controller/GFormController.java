@@ -123,6 +123,8 @@ public class GFormController implements EditManager {
 
     private final boolean isDialog;
 
+    private Event editEvent;
+
     private final NativeSIDMap<GGroupObject, ArrayList<GGroupObjectValue>> currentGridObjects = new NativeSIDMap<>();
 
     public NativeSIDMap<GGroupObject, ArrayList<GGroupObjectValue>> getCurrentGridObjects() {
@@ -149,7 +151,7 @@ public class GFormController implements EditManager {
         return formsController;
     }
 
-    public GFormController(FormsController formsController, FormContainer formContainer, GForm gForm, boolean isDialog, boolean autoSize) {
+    public GFormController(FormsController formsController, FormContainer formContainer, GForm gForm, boolean isDialog, boolean autoSize, Event editEvent) {
         actionDispatcher = new GFormActionDispatcher(this);
 
         this.formsController = formsController;
@@ -162,6 +164,8 @@ public class GFormController implements EditManager {
         formLayout = new GFormLayout(this, form.mainContainer, autoSize);
         if (form.sID != null)
             formLayout.getElement().setAttribute("lsfusion-form", form.sID);
+
+        this.editEvent = editEvent;
 
         updateFormCaption();
 
@@ -188,6 +192,12 @@ public class GFormController implements EditManager {
 
     public void checkGlobalMouseEvent(Event event) {
         checkFormEvent(event, (handler, preview) -> checkMouseEvent(handler, preview, null, false, true));
+    }
+
+    public Event popEditEvent() {
+        Event result = editEvent;
+        editEvent = null;
+        return result;
     }
 
     private interface CheckEvent {
@@ -2038,8 +2048,8 @@ public class GFormController implements EditManager {
             ((ReplaceCellEditor)cellEditor).render(element, renderContext, renderedSize, oldValue); // rendering new one, filling inputElement
         }
 
-        this.cellEditor = cellEditor; // not sure if it should before or after startEditing, but definitely after removeAllChildren, since it leads to blur for example
         cellEditor.start(event, element, oldValue);
+        this.cellEditor = cellEditor; // not sure if it should before or after startEditing, but definitely after removeAllChildren, since it leads to blur for example
     }
 
     // only request cell editor can be long-living
@@ -2071,14 +2081,15 @@ public class GFormController implements EditManager {
         Element renderElement = getEditElement();
 
         CellEditor cellEditor = this.cellEditor;
-        if(cellEditor instanceof RequestCellEditor)
-            ((RequestCellEditor)cellEditor).stop(renderElement, cancel);
         this.cellEditor = null;
 
         EditContext editContext = this.editContext;
 //        this.editRequestIndex = -1; //it doesn't matter since it is not used when editContext / cellEditor is null
         this.editAsyncUsePessimistic = false;
         this.editAsyncValuesSID = null;
+
+        if(cellEditor instanceof RequestCellEditor)
+            ((RequestCellEditor)cellEditor).stop(renderElement, cancel);
 
         if(cellEditor instanceof ReplaceCellEditor) {
             RenderContext renderContext = editContext.getRenderContext();

@@ -2,6 +2,7 @@ package lsfusion.gwt.client.form;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
+import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.GForm;
@@ -78,6 +79,15 @@ public class EmbeddedForm extends EditingForm {
         Element element = widget.getElement();
         GwtClientUtils.setupPercentParent(element);
         renderElement.appendChild(element);
+    }
+
+    @Override
+    protected void onSyncFocus(boolean add) {
+        super.onSyncFocus(add);
+        if(add) {
+            Element focusedElement = GwtClientUtils.getFocusedElement();
+            DOM.dispatchEvent(editEvent, focusedElement);
+        }
     }
 
     @Override

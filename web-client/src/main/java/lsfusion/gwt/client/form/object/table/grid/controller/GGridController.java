@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.form.object.table.grid.controller;
 
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.GFormChanges;
@@ -200,7 +201,7 @@ public class GGridController extends GAbstractTableController {
             this.table.onClear();
 
         changeGridView(table.getThisWidget(), groupObject.grid.isBoxed(table));
-        table.onRender();
+        table.onRender(formController.popEditEvent());
         this.table = table;
         updateSettingsButton();
     }
