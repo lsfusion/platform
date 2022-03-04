@@ -19,9 +19,9 @@ public class GCustom extends GTippySimpleStateTableView {
     }
 
     @Override
-    public void onRender(Event startEvent) {
+    public void onRender(Event editEvent) {
         if (renderFunctionWithoutArguments)
-            render(renderFunction, getDrawElement(), controller, startEvent);
+            render(renderFunction, getDrawElement(), controller, editEvent);
     }
 
     @Override

@@ -24,8 +24,6 @@ import java.util.function.Consumer;
 
 public class EmbeddedForm extends EditingForm {
 
-    private Event startEvent;
-
     private class EmbeddedCellEditor extends CellEditor implements RequestReplaceCellEditor {
 
         @Override
@@ -52,11 +50,6 @@ public class EmbeddedForm extends EditingForm {
         public void render(Element cellParent, RenderContext renderContext, Pair<Integer, Integer> renderedSize, Object oldValue) {
             renderElement = cellParent;
         }
-
-        @Override
-        public void start(Event event, Element parent, Object oldValue) {
-            startEvent = event;
-        }
     }
 
     @Override
@@ -67,11 +60,6 @@ public class EmbeddedForm extends EditingForm {
     @Override
     protected Element getFocusedElement() {
         return renderElement;
-    }
-
-    @Override
-    protected Event getStartEvent() {
-        return startEvent;
     }
 
     private Element renderElement;
@@ -96,10 +84,9 @@ public class EmbeddedForm extends EditingForm {
     @Override
     protected void onSyncFocus(boolean add) {
         super.onSyncFocus(add);
-        if(add && startEvent != null) {
+        if(add) {
             Element focusedElement = GwtClientUtils.getFocusedElement();
-            DOM.dispatchEvent(startEvent, focusedElement);
-            startEvent = null;
+            DOM.dispatchEvent(editEvent, focusedElement);
         }
     }
 

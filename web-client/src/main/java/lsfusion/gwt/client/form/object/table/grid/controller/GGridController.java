@@ -68,7 +68,7 @@ public class GGridController extends GAbstractTableController {
         return groupObject.mapTileProvider;
     }
 
-    public GGridController(GFormController iformController, GGroupObject groupObject, GGridUserPreferences[] userPreferences, Event startEvent) {
+    public GGridController(GFormController iformController, GGroupObject groupObject, GGridUserPreferences[] userPreferences) {
         super(iformController, groupObject.toolbar, isList(groupObject));
         this.groupObject = groupObject;
 
@@ -99,7 +99,7 @@ public class GGridController extends GAbstractTableController {
                         ((GPivot)table).setDefaultChangesApplied();
                     break;
                 case CUSTOM:
-                    setCustomTableView(startEvent);
+                    setCustomTableView();
                     break;
                 case MAP:
                     setMapTableView();
@@ -173,11 +173,7 @@ public class GGridController extends GAbstractTableController {
     }
 
     private void setCustomTableView() {
-        setCustomTableView(null);
-    }
-
-    private void setCustomTableView(Event startEvent) {
-        changeTableView(new GCustom(formController, this, groupObject.customRenderFunction), startEvent);
+        changeTableView(new GCustom(formController, this, groupObject.customRenderFunction), formController.popEditEvent());
         if(mapTableButton != null)
             mapTableButton.showBackground(false);
         if (calendarTableButton != null)
@@ -202,14 +198,14 @@ public class GGridController extends GAbstractTableController {
         changeTableView(table, null);
     }
 
-    private void changeTableView(GTableView table, Event startEvent) {
+    private void changeTableView(GTableView table, Event editEvent) {
         assert isList();
 
         if (this.table != null)
             this.table.onClear();
 
         changeGridView(table.getThisWidget(), groupObject.grid.isBoxed(table));
-        table.onRender(startEvent);
+        table.onRender(editEvent);
         this.table = table;
         updateSettingsButton();
     }

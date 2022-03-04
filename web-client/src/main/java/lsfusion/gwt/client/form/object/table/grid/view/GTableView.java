@@ -83,7 +83,7 @@ public interface GTableView {
 
     default void updateRecordLayout(long requestIndex) {}
 
-    default void onRender(Event startEvent){}
+    default void onRender(Event editEvent){}
     default void onClear(){}
 
     default boolean isDefaultBoxed() { return true; }

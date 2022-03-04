@@ -123,6 +123,8 @@ public class GFormController implements EditManager {
 
     private final boolean isDialog;
 
+    private Event editEvent;
+
     private final NativeSIDMap<GGroupObject, ArrayList<GGroupObjectValue>> currentGridObjects = new NativeSIDMap<>();
 
     public NativeSIDMap<GGroupObject, ArrayList<GGroupObjectValue>> getCurrentGridObjects() {
@@ -149,7 +151,7 @@ public class GFormController implements EditManager {
         return formsController;
     }
 
-    public GFormController(FormsController formsController, FormContainer formContainer, GForm gForm, boolean isDialog, boolean autoSize, Event startEvent) {
+    public GFormController(FormsController formsController, FormContainer formContainer, GForm gForm, boolean isDialog, boolean autoSize, Event editEvent) {
         actionDispatcher = new GFormActionDispatcher(this);
 
         this.formsController = formsController;
@@ -163,11 +165,13 @@ public class GFormController implements EditManager {
         if (form.sID != null)
             formLayout.getElement().setAttribute("lsfusion-form", form.sID);
 
+        this.editEvent = editEvent;
+
         updateFormCaption();
 
         initializeParams(); // has to be done before initializeControllers (since adding component uses getSize)
 
-        initializeControllers(startEvent);
+        initializeControllers();
 
         initializeRegularFilters();
 
@@ -188,6 +192,12 @@ public class GFormController implements EditManager {
 
     public void checkGlobalMouseEvent(Event event) {
         checkFormEvent(event, (handler, preview) -> checkMouseEvent(handler, preview, null, false, true));
+    }
+
+    public Event popEditEvent() {
+        Event result = editEvent;
+        editEvent = null;
+        return result;
     }
 
     private interface CheckEvent {
@@ -429,14 +439,14 @@ public class GFormController implements EditManager {
         setRemoteRegularFilter(filterGroup, filter);
     }
 
-    private void initializeControllers(Event startEvent) {
+    private void initializeControllers() {
         for (GTreeGroup treeGroup : form.treeGroups) {
             initializeTreeController(treeGroup);
         }
 
         for (GGroupObject group : form.groupObjects) {
             if (group.parent == null) {
-                initializeGroupController(group, startEvent);
+                initializeGroupController(group);
             }
         }
 
@@ -460,8 +470,8 @@ public class GFormController implements EditManager {
         }
     }
 
-    private void initializeGroupController(GGroupObject group, Event startEvent) {
-        GGridController controller = new GGridController(this, group, form.userPreferences != null ? extractUserPreferences(form.userPreferences, group) : null, startEvent);
+    private void initializeGroupController(GGroupObject group) {
+        GGridController controller = new GGridController(this, group, form.userPreferences != null ? extractUserPreferences(form.userPreferences, group) : null);
         controllers.put(group, controller);
     }
 
