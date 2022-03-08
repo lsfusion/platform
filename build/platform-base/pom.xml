@@ -36,7 +36,7 @@
         <jasper.htmlcomponent.version>6.12.2</jasper.htmlcomponent.version>
         <ecj.version>4.6.1</ecj.version>
         <olap4j.version>1.2.0</olap4j.version>
-        <apache.poi.version>4.1.2</apache.poi.version>
+        <apache.poi.version>5.2.1</apache.poi.version>
         <docking.frames.version>1.1.3p1</docking.frames.version>
         <jexcelapi.version>2.6.12</jexcelapi.version>
         <batik.version>1.8</batik.version>
