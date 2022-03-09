@@ -272,6 +272,38 @@ public class StoredArrayTest {
         checkEquality(objects, stored);
     }
 
+    @Test
+    public void sort() {
+        StoredClass[] objects = StoredTestDataGenerators.largeSimpleArray();
+        StoredClass[] sortedObjects = StoredTestDataGenerators.largeSortedArray();
+        StoredArray<Object> stored = new StoredArray<>(objects, serializer);
+        stored.sort();
+        assertEquals(sortedObjects.length, stored.size());
+        for (int i = 0; i < stored.size(); ++i) {
+            assertEquals(sortedObjects[i].hashCode(), stored.get(i).hashCode());
+        }
+    }
+
+    @Test    
+    public void sortWithNulls() {
+        Object[] objects = StoredTestDataGenerators.largeMixedArray();
+        StoredArray<Object> stored = new StoredArray<>(objects, serializer);
+        Arrays.sort(objects, (a, b) -> {
+            int ahash = (a == null ? 0 : a.hashCode());
+            int bhash = (b == null ? 0 : b.hashCode());
+            return Integer.compare(ahash, bhash);
+        });
+        stored.sort();
+        assertEquals(objects.length, stored.size());
+        for (int i = 0; i < stored.size(); ++i) {
+            if (objects[i] == null) {
+                assertNull(stored.get(i));
+            } else {
+                assertEquals(objects[i].hashCode(), stored.get(i).hashCode());
+            }
+        }
+    }
+    
     private void checkEquality(Object[] array, StoredArray<?> stored) {
         assertEquals(array.length, stored.size());
         for (int i = 0; i < stored.size(); ++i) {

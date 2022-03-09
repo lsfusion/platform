@@ -1,5 +1,7 @@
 package lsfusion.base.col.implementations.stored;
 
+import lsfusion.base.Pair;
+
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -106,6 +108,46 @@ public class StoredArray<T> {
         }        
     }
 
+    // loads hashes of all elements into memory
+    public void sort() {
+        try {
+            flushBuffer(); // ?
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+        
+        ArrayList<Pair<Integer, Integer>> hashes = new ArrayList<>();
+        for (int i = 0; i < size(); ++i) {
+            Object element = get(i);
+            hashes.add(new Pair<>(element == null ? 0 : element.hashCode(), i));    
+        }
+        
+        hashes.sort((o1, o2) -> {
+            if (o1.first < o2.first) return -1;
+            if (o1.first > o2.first) return 1;
+            return Integer.compare(o1.second, o2.second);
+        });
+
+        File tmpIndexFile = fileManager.tmpIndexFile();
+        try {
+            try (
+                    DataOutputStream tmpIndexStream = new DataOutputStream(new FileOutputStream(tmpIndexFile));
+            ) {
+                for (int i = 0; i < size(); ++i) {
+                    Pair<Integer, Integer> offsetLen = getOffsetLen(hashes.get(i).second);
+                    tmpIndexStream.writeInt(offsetLen.first);
+                    tmpIndexStream.writeInt(offsetLen.second);
+                }
+            }
+
+            indexFile.close();
+            fileManager.replaceIndexFileByTmpFile();
+            indexFile = fileManager.openIndexFile();
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+    
     // time-consuming operation
     public void insert(int index, T element) {
         assert index >= 0 && index <= size();
@@ -235,17 +277,24 @@ public class StoredArray<T> {
     }
     
     private int prepareForElementReading(int index) throws IOException {
-        assert index < storedSize;
-        seekToIndex(index);
-        ByteBuffer buf = readOffsetLen();
-        int offset = buf.getInt();
-        int len = buf.getInt();
+        Pair<Integer, Integer> offsetLen = getOffsetLen(index);
+        int offset = offsetLen.first;
+        int len = offsetLen.second; 
         if (len > 0) {
             seekToObject(offset);
         }
         return len;
     }
 
+    private Pair<Integer, Integer> getOffsetLen(int index) throws IOException {
+        assert index < storedSize;
+        seekToIndex(index);
+        ByteBuffer buf = readOffsetLen();
+        int offset = buf.getInt();
+        int len = buf.getInt();
+        return new Pair<>(offset, len);
+    }
+    
     private ByteBuffer readOffsetLen() throws IOException {
         indexFile.read(twoIntBuffer);
         return ByteBuffer.wrap(twoIntBuffer);

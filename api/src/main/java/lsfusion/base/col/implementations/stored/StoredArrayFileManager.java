@@ -13,6 +13,7 @@ public interface StoredArrayFileManager {
     File tmpDataFile();
     
     void replaceFilesByTmpFiles() throws IOException;
+    void replaceIndexFileByTmpFile() throws IOException;
 
     void deleteFiles();
 }

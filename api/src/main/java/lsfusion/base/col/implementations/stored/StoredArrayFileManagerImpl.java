@@ -46,8 +46,13 @@ public class StoredArrayFileManagerImpl implements StoredArrayFileManager {
     
     @Override
     public void replaceFilesByTmpFiles() throws IOException {
-        Files.move(Paths.get(getTmpIndexFilePath()), Paths.get(getIndexFilePath()), REPLACE_EXISTING);
+        replaceIndexFileByTmpFile();
         Files.move(Paths.get(getTmpDataFilePath()), Paths.get(getDataFilePath()), REPLACE_EXISTING);
+    }
+    
+    @Override
+    public void replaceIndexFileByTmpFile() throws IOException {
+        Files.move(Paths.get(getTmpIndexFilePath()), Paths.get(getIndexFilePath()), REPLACE_EXISTING);
     }
     
     @Override
