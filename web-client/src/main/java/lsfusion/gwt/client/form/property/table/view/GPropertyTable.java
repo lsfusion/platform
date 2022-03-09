@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<T> implements RenderContext, UpdateContext {
+public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<T> implements RenderContext {
 
     protected final GFormController form;
     protected final GGroupObject groupObject;
@@ -99,7 +99,8 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
 
     public ExecuteEditContext getEditContext(Cell editCell, TableCellElement editCellParent) {
         final GPropertyDraw property = GPropertyTable.this.getProperty(editCell);
-        Element editElement = GPropertyTableBuilder.getRenderSizedElement(editCellParent, property, GPropertyTable.this);
+        UpdateContext updateContext = GPropertyTable.this.getUpdateContext(editCell, editCellParent);
+        Element editElement = GPropertyTableBuilder.getRenderSizedElement(editCellParent, property, updateContext);
         return new ExecuteEditContext() {
             @Override
             public RenderContext getRenderContext() {
@@ -108,7 +109,7 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
 
             @Override
             public UpdateContext getUpdateContext() {
-                return GPropertyTable.this.getUpdateContext(editCell, editCellParent);
+                return updateContext;
             }
 
             @Override
@@ -204,16 +205,6 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
     @Override
     public boolean globalCaptionIsDrawn() {
         return true;
-    }
-
-    @Override
-    public Consumer<Object> getCustomRendererValueChangeConsumer() {
-        return null;
-    }
-
-    @Override
-    public boolean isPropertyReadOnly() {
-        return false;
     }
 
     public abstract GFont getFont();

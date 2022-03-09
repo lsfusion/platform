@@ -557,8 +557,9 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
             if (property == null) // in tree there can be no property in groups other than last
                 return;
 
-            form.update(property, GPropertyTableBuilder.getRenderSizedElement(cellElement, property, GGridPropertyTable.this),
-                    getValue(property, (T) cell.getRow()), getUpdateContext(cell, cellElement));
+            UpdateContext updateContext = getUpdateContext(cell, cellElement);
+            form.update(property, GPropertyTableBuilder.getRenderSizedElement(cellElement, property, updateContext),
+                    getValue(property, (T) cell.getRow()), updateContext);
         }
     }
 
