@@ -182,15 +182,17 @@ public abstract class FormsController {
     }
 
     public FormContainer openForm(GAsyncFormController asyncFormController, GForm form, GModalityType modalityType, boolean forbidDuplicate, Event editEvent, EditContext editContext, GFormController formController, WindowHiddenHandler hiddenHandler) {
-        FormDockable duplicateForm = getDuplicateForm(form.canonicalName, forbidDuplicate, true);
-        if(duplicateForm != null) {
-            selectTab(duplicateForm);
-            return null;
-        }
-
         GWindowFormType windowType = modalityType.getWindowType();
         FormContainer formContainer = asyncFormController.removeAsyncForm();
         boolean asyncOpened = formContainer != null;
+
+        if(!asyncOpened) {
+            FormDockable duplicateForm = getDuplicateForm(form.canonicalName, forbidDuplicate);
+            if (duplicateForm != null) {
+                selectTab(duplicateForm);
+                return null;
+            }
+        }
 
         // if form is async opened with different type - close it
         if(asyncOpened && formContainer.getWindowType() != windowType && !formContainer.isAsyncHidden()) {
@@ -226,7 +228,7 @@ public abstract class FormsController {
     }
 
     public void asyncOpenForm(GAsyncFormController asyncFormController, GAsyncOpenForm openForm, Event editEvent, EditContext editContext, GFormController formController) {
-        FormDockable duplicateForm = getDuplicateForm(openForm.canonicalName, openForm.forbidDuplicate, false);
+        FormDockable duplicateForm = getDuplicateForm(openForm.canonicalName, openForm.forbidDuplicate);
         if (duplicateForm == null) {
             GWindowFormType windowType = openForm.getWindowType(asyncFormController.canShowDockedModal());
             Scheduler.ScheduledCommand runOpenForm = () -> {
@@ -255,9 +257,9 @@ public abstract class FormsController {
         return windowType == GWindowFormType.FLOAT;
     }
 
-    private FormDockable getDuplicateForm(String canonicalName, boolean forbidDuplicate, boolean onlySync) {
+    private FormDockable getDuplicateForm(String canonicalName, boolean forbidDuplicate) {
         if(forbidDuplicate && MainFrame.forbidDuplicateForms) {
-            return findForm(canonicalName, onlySync);
+            return findForm(canonicalName);
         }
         return null;
     }
@@ -292,13 +294,13 @@ public abstract class FormsController {
     }
 
     public void selectTab(String formCanonicalName) {
-        FormDockable form = findForm(formCanonicalName, true);
+        FormDockable form = findForm(formCanonicalName);
         if(form != null)
             selectTab(form);
     }
 
-    public FormDockable findForm(String formCanonicalName, boolean onlySync) {
-        return findInList(forms, dockable -> (!onlySync || !dockable.async) && dockable.getCanonicalName().equals(formCanonicalName));
+    public FormDockable findForm(String formCanonicalName) {
+        return findInList(forms, dockable -> dockable.getCanonicalName().equals(formCanonicalName));
     }
 
     public void addDockable(FormDockable dockable) {

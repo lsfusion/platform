@@ -132,29 +132,31 @@ public class FormsController implements ColorThemeChangeListener {
     }
 
     public ClientFormDockable openForm(AsyncFormController asyncFormController, ClientNavigator navigator, String canonicalName, String formSID, boolean forbidDuplicate, RemoteFormInterface remoteForm, byte[] firstChanges, MainFrame.FormCloseListener closeListener) {
-        ClientFormDockable page = getDuplicateForm(canonicalName, forbidDuplicate, true);
-        if(page != null) {
-            page.toFront();
-            page.requestFocusInWindow();
+        ClientForm clientForm = ClientFormController.deserializeClientForm(remoteForm);
+        ClientFormDockable page = asyncFormController.removeAsyncForm();
+        boolean asyncOpened = page != null;
+
+        if (!asyncOpened) {
+            ClientFormDockable duplicateForm = getDuplicateForm(canonicalName, forbidDuplicate);
+            if (duplicateForm != null) {
+                duplicateForm.toFront();
+                duplicateForm.requestFocusInWindow();
+                return duplicateForm;
+            }
+        }
+
+        if (!asyncOpened) {
+            if (openFormTimer != null) {
+                openFormTimer.stop();
+                openFormTimer = null;
+            }
+            page = new ClientFormDockable(clientForm.canonicalName, clientForm.getCaption(), this, openedForms, null, false);
         } else {
-
-            ClientForm clientForm = ClientFormController.deserializeClientForm(remoteForm);
-            page = asyncFormController.removeAsyncForm();
-
-            boolean asyncOpened = page != null;
-            if (!asyncOpened) {
-                if(openFormTimer != null) {
-                    openFormTimer.stop();
-                    openFormTimer = null;
-                }
-                page = new ClientFormDockable(clientForm.canonicalName, clientForm.getCaption(), this, openedForms, null, false);
-            } else {
-                page.getContentPane().removeAll(); //remove loading
-            }
-            page.init(navigator, canonicalName, formSID, remoteForm, clientForm, closeListener, firstChanges);
-            if (!asyncOpened) {
-                openForm(page);
-            }
+            page.getContentPane().removeAll(); //remove loading
+        }
+        page.init(navigator, canonicalName, formSID, remoteForm, clientForm, closeListener, firstChanges);
+        if (!asyncOpened) {
+            openForm(page);
         }
         return page;
     }
@@ -162,7 +164,7 @@ public class FormsController implements ColorThemeChangeListener {
     //we don't want flashing, so we use timer
     Timer openFormTimer;
     public void asyncOpenForm(AsyncFormController asyncFormController, ClientAsyncOpenForm asyncOpenForm) {
-        if (getDuplicateForm(asyncOpenForm.canonicalName, asyncOpenForm.forbidDuplicate, false) == null) {
+        if (getDuplicateForm(asyncOpenForm.canonicalName, asyncOpenForm.forbidDuplicate) == null) {
             openFormTimer = new Timer(100, e -> {
                 if(openFormTimer != null) {
                     if (asyncFormController.checkNotCompleted()) { //request is not completed yet
@@ -179,10 +181,10 @@ public class FormsController implements ColorThemeChangeListener {
         }
     }
 
-    private ClientFormDockable getDuplicateForm(String canonicalName, boolean forbidDuplicate, boolean onlySync) {
+    private ClientFormDockable getDuplicateForm(String canonicalName, boolean forbidDuplicate) {
         if (MainController.forbidDuplicateForms && forbidDuplicate) {
             List<ClientDockable> formsList = forms.getFormsList();
-            ClientDockable duplicate = formsList.stream().filter(dockable -> (!onlySync || !dockable.async) && dockable.getCanonicalName().equals(canonicalName)).findFirst().orElse(null);
+            ClientDockable duplicate = formsList.stream().filter(dockable -> dockable.getCanonicalName().equals(canonicalName)).findFirst().orElse(null);
             if (duplicate != null) {
                 CDockable dockable = control.getCDockable(control.getCDockableCount() - formsList.size() + formsList.indexOf(duplicate));
                 if (dockable instanceof ClientFormDockable) {
