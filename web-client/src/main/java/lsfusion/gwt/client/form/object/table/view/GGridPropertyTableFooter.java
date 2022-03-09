@@ -3,7 +3,10 @@ package lsfusion.gwt.client.form.object.table.view;
 import com.google.gwt.dom.client.TableCellElement;
 import lsfusion.gwt.client.base.view.grid.Header;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
+
+import java.util.function.Consumer;
 
 import static lsfusion.gwt.client.base.GwtSharedUtils.nullEquals;
 
@@ -25,16 +28,33 @@ public class GGridPropertyTableFooter extends Header<String> {
         this.value = value;
     }
 
+    private final UpdateContext updateContext = new UpdateContext() {
+            @Override
+            public Consumer<Object> getCustomRendererValueChangeConsumer() {
+                return null;
+            }
+
+            @Override
+            public boolean isPropertyReadOnly() {
+                return false;
+            }
+
+            @Override
+            public boolean globalCaptionIsDrawn() {
+                return true;
+            }
+        };
+
     @Override
     public void renderAndUpdateDom(TableCellElement th) {
-        GPropertyTableBuilder.renderAndUpdate(property, th, value, table, table);
+        GPropertyTableBuilder.renderAndUpdate(property, th, value, table, updateContext);
         prevValue = value;
     }
 
     @Override
     public void updateDom(TableCellElement th) {
         if (!nullEquals(this.value, prevValue)) {
-            GPropertyTableBuilder.update(property, th, value, table);
+            GPropertyTableBuilder.update(property, th, value, updateContext);
             prevValue = value;
         }
     }
