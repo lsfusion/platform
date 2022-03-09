@@ -438,7 +438,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
             if(!GwtClientUtils.nullEquals(oldProperty, newProperty) && !form.isEditing()) { // we don't want to clear editing (it will be rerendered anyway, however not sure if this check is needed)
                 if(oldProperty != null) {
                     if(!GPropertyTableBuilder.clearRenderSized(cellElement, oldProperty, GTreeTable.this)) {
-                        assert cellElement == GPropertyTableBuilder.getRenderSizedElement(cellElement, oldProperty, GTreeTable.this);
+                        assert cellElement == GPropertyTableBuilder.getRenderSizedElement(cellElement, oldProperty, getUpdateContext(cell, cellElement));
                         oldProperty.getCellRenderer().clearRender(cellElement, GTreeTable.this);
                     }
                     cellElement.setPropertyObject(PDRAW_ATTRIBUTE, null);
