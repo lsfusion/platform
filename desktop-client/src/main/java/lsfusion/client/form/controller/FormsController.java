@@ -132,29 +132,31 @@ public class FormsController implements ColorThemeChangeListener {
     }
 
     public ClientFormDockable openForm(AsyncFormController asyncFormController, ClientNavigator navigator, String canonicalName, String formSID, boolean forbidDuplicate, RemoteFormInterface remoteForm, byte[] firstChanges, MainFrame.FormCloseListener closeListener) {
-        ClientFormDockable page = getDuplicateForm(canonicalName, forbidDuplicate);
-        if(page != null) {
-            page.toFront();
-            page.requestFocusInWindow();
+        ClientForm clientForm = ClientFormController.deserializeClientForm(remoteForm);
+        ClientFormDockable page = asyncFormController.removeAsyncForm();
+        boolean asyncOpened = page != null;
+
+        if (!asyncOpened) {
+            ClientFormDockable duplicateForm = getDuplicateForm(canonicalName, forbidDuplicate);
+            if (duplicateForm != null) {
+                duplicateForm.toFront();
+                duplicateForm.requestFocusInWindow();
+                return duplicateForm;
+            }
+        }
+
+        if (!asyncOpened) {
+            if (openFormTimer != null) {
+                openFormTimer.stop();
+                openFormTimer = null;
+            }
+            page = new ClientFormDockable(clientForm.canonicalName, clientForm.getCaption(), this, openedForms, null, false);
         } else {
-
-            ClientForm clientForm = ClientFormController.deserializeClientForm(remoteForm);
-            page = asyncFormController.removeAsyncForm();
-
-            boolean asyncOpened = page != null;
-            if (!asyncOpened) {
-                if(openFormTimer != null) {
-                    openFormTimer.stop();
-                    openFormTimer = null;
-                }
-                page = new ClientFormDockable(clientForm.canonicalName, clientForm.getCaption(), this, openedForms, null, false);
-            } else {
-                page.getContentPane().removeAll(); //remove loading
-            }
-            page.init(navigator, canonicalName, formSID, remoteForm, clientForm, closeListener, firstChanges);
-            if (!asyncOpened) {
-                openForm(page);
-            }
+            page.getContentPane().removeAll(); //remove loading
+        }
+        page.init(navigator, canonicalName, formSID, remoteForm, clientForm, closeListener, firstChanges);
+        if (!asyncOpened) {
+            openForm(page);
         }
         return page;
     }
@@ -181,8 +183,10 @@ public class FormsController implements ColorThemeChangeListener {
 
     private ClientFormDockable getDuplicateForm(String canonicalName, boolean forbidDuplicate) {
         if (MainController.forbidDuplicateForms && forbidDuplicate) {
-            if (forms.getFormsList().contains(canonicalName)) {
-                CDockable dockable = control.getCDockable(control.getCDockableCount() - forms.getFormsList().size() + forms.getFormsList().indexOf(canonicalName));
+            List<ClientDockable> formsList = forms.getFormsList();
+            ClientDockable duplicate = formsList.stream().filter(dockable -> dockable.getCanonicalName().equals(canonicalName)).findFirst().orElse(null);
+            if (duplicate != null) {
+                CDockable dockable = control.getCDockable(control.getCDockableCount() - formsList.size() + formsList.indexOf(duplicate));
                 if (dockable instanceof ClientFormDockable) {
                     return (ClientFormDockable) dockable;
                 }
@@ -235,13 +239,10 @@ public class FormsController implements ColorThemeChangeListener {
         public void visibilityChanged(CDockable cdockable) {
             ClientDockable dockable = (ClientDockable) cdockable;
 
-            String canonicalName = dockable.getCanonicalName();
             if (dockable.isVisible()) {
-                if(!dockable.async) {
-                    forms.add(canonicalName);
-                }
+                forms.add(dockable);
             } else {
-                forms.remove(canonicalName);
+                forms.remove(dockable);
                 control.removeDockable(dockable);
 
                 dockable.onClosed();

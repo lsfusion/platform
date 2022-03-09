@@ -18,6 +18,7 @@ import lsfusion.gwt.client.navigator.window.GWindowFormType;
 import static lsfusion.gwt.client.view.StyleDefaults.VALUE_HEIGHT;
 
 public final class FormDockable extends FormContainer {
+    private String canonicalName;
     private TabWidget tabWidget;
     private FormDockable blockingForm; //GFormController
 
@@ -33,8 +34,9 @@ public final class FormDockable extends FormContainer {
         return contentWidget.getElement();
     }
 
-    public FormDockable(FormsController formsController, String caption, boolean async, Event editEvent) {
+    public FormDockable(FormsController formsController, String canonicalName, String caption, boolean async, Event editEvent) {
         super(formsController, async, editEvent);
+        this.canonicalName = canonicalName;
 
         contentWidget = new ContentWidget();
 
@@ -83,6 +85,10 @@ public final class FormDockable extends FormContainer {
 
     public Widget getContentWidget() {
         return contentWidget;
+    }
+
+    public String getCanonicalName() {
+        return canonicalName;
     }
 
     public class ContentWidget extends ResizableComplexPanel {
