@@ -882,7 +882,7 @@ public class GFormController implements EditManager {
         changeProperty(editContext, value);
 
         if(property.canUseChangeValueForRendering(pasteType))
-            update(editContext, value);
+            updateValue(editContext, value);
     }
 
     public void changePageSizeAfterUnlock(final GGroupObject groupObject, final int pageSize) {
@@ -2117,7 +2117,7 @@ public class GFormController implements EditManager {
         //getAsyncValues need editContext, so it must be after clearRenderer
         this.editContext = null;
 
-        update(editContext.getProperty(), renderElement, editContext.getValue(), editContext.getUpdateContext());
+        update(editContext, renderElement, editContext.getValue());
     }
 
     public void render(GPropertyDraw property, Element element, RenderContext renderContext) {
@@ -2129,10 +2129,15 @@ public class GFormController implements EditManager {
         property.getCellRenderer().renderStatic(element, renderContext);
     }
     // "external" update - paste + server update edit value
-    public void update(EditContext editContext, Object value) {
+    public void updateValue(EditContext editContext, Object value) {
         editContext.setValue(value);
 
-        update(editContext.getProperty(), editContext.getEditElement(), value, editContext.getUpdateContext());
+        update(editContext, editContext.getEditElement(), value);
+    }
+    public void update(EditContext editContext, Element renderElement, Object value) {
+        assert renderElement == editContext.getEditElement();
+        assert value == editContext.getValue();
+        update(editContext.getProperty(), renderElement, value, editContext.getUpdateContext());
     }
     public void update(GPropertyDraw property, Element element, Object value, UpdateContext updateContext) {
         if(isEdited(element))

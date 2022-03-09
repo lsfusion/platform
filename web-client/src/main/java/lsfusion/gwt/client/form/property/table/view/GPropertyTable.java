@@ -95,6 +95,8 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
         form.executePropertyEventAction(handler, isBinding, getEditContext(editCell, editCellParent));
     }
 
+    protected abstract UpdateContext getUpdateContext(Cell cell, TableCellElement cellElement);
+
     public ExecuteEditContext getEditContext(Cell editCell, TableCellElement editCellParent) {
         final GPropertyDraw property = GPropertyTable.this.getProperty(editCell);
         Element editElement = GPropertyTableBuilder.getRenderSizedElement(editCellParent, property, GPropertyTable.this);
@@ -106,7 +108,7 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
 
             @Override
             public UpdateContext getUpdateContext() {
-                return GPropertyTable.this;
+                return GPropertyTable.this.getUpdateContext(editCell, editCellParent);
             }
 
             @Override

@@ -554,26 +554,30 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         @Override
         public void updateDom(Cell cell, TableCellElement cellElement) {
             GPropertyDraw property = getProperty(cell);
-            if (property != null) // in tree there can be no property in groups other than last
-            {
-                Object oldValue = getValue(property, (T) cell.getRow());
-                form.update(property, GPropertyTableBuilder.getRenderSizedElement(cellElement, property, GGridPropertyTable.this), oldValue, new UpdateContext() {
-                    @Override
-                    public Consumer<Object> getCustomRendererValueChangeConsumer() {
-                        return value -> form.changeProperty(getEditContext(cell, cellElement), value);
-                    }
+            if (property == null) // in tree there can be no property in groups other than last
+                return;
 
-                    @Override
-                    public boolean isPropertyReadOnly() {
-                        return GGridPropertyTable.this.isReadOnly(cell);
-                    }
-
-                    @Override
-                    public boolean globalCaptionIsDrawn() {
-                        return GGridPropertyTable.this.globalCaptionIsDrawn();
-                    }
-                });
-            }
+            form.update(property, GPropertyTableBuilder.getRenderSizedElement(cellElement, property, GGridPropertyTable.this),
+                    getValue(property, (T) cell.getRow()), getUpdateContext(cell, cellElement));
         }
+    }
+
+    protected UpdateContext getUpdateContext(Cell cell, TableCellElement cellElement) {
+        return new UpdateContext() {
+            @Override
+            public Consumer<Object> getCustomRendererValueChangeConsumer() {
+                return value -> form.changeProperty(getEditContext(cell, cellElement), value);
+            }
+
+            @Override
+            public boolean isPropertyReadOnly() {
+                return GGridPropertyTable.this.isReadOnly(cell);
+            }
+
+            @Override
+            public boolean globalCaptionIsDrawn() {
+                return GGridPropertyTable.this.globalCaptionIsDrawn();
+            }
+        };
     }
 }
