@@ -1,9 +1,7 @@
 package lsfusion.server.logics.form.interactive.design;
 
-import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
-import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.design.ContainerType;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
@@ -353,16 +351,12 @@ public class ContainerView extends ComponentView {
         return container != null && (super.isNFAncestorOf(container, version) || isNFAncestorOf(container.getNFContainer(version), version));
     }
 
-    MList<ComponentView> lazyChildren;
+    ImList<ComponentView> lazyChildren;
     private ImList<ComponentView> getLazyChildren() {
-        if(lazyChildren == null) {
-            lazyChildren = ListFact.mList();
-            for (ComponentView child : children.getList()) {
-                if(child.getContainer() == this)
-                    lazyChildren.add(child);
-            }
+        if (lazyChildren == null) {
+            lazyChildren = children.getList().filterList(child -> child.getContainer() == ContainerView.this);
         }
-        return lazyChildren.immutableList();
+        return lazyChildren;
     }
 
     public Iterable<ComponentView> getChildrenIt() {
