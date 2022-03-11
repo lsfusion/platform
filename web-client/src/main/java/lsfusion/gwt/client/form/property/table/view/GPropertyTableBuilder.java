@@ -198,9 +198,11 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
         String foregroundColor = getForeground(rowValue, columnIndex);
         GFormController.setForegroundColor(td, foregroundColor, true);
 
-        // assert that it is action and rendered with ActionCellRenderer
-        // also since we know that its grid and not simple text (since there is dynamic image) and its td, we can unwrap td without having CellRenderer (however, it should be consistent with CellRenderer renderDynamic/Static)
-        GFormController.setDynamicImage(unwrapSized(td), getImage(rowValue, columnIndex).orElse(null));
+        Optional<Object> image = getImage(rowValue, columnIndex);
+        if(image != null)
+            // assert that it is action and rendered with ActionCellRenderer
+            // also since we know that its grid and not simple text (since there is dynamic image) and its td, we can unwrap td without having CellRenderer (however, it should be consistent with CellRenderer renderDynamic/Static)
+            GFormController.setDynamicImage(unwrapSized(td), image.orElse(null));
     }
 
     @Override
