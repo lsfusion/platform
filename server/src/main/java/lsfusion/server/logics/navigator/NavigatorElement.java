@@ -2,9 +2,8 @@ package lsfusion.server.logics.navigator;
 
 import lsfusion.base.ResourceUtils;
 import lsfusion.base.col.MapFact;
+import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
-import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.file.IOUtils;
 import lsfusion.base.file.SerializableImageIconHolder;
 import lsfusion.interop.form.remote.serialization.SerializationUtil;
@@ -74,16 +73,24 @@ public abstract class NavigatorElement {
         this.parent.set(parent, version);
     }
 
+    ImList<NavigatorElement> lazyChildren;
+    private ImList<NavigatorElement> getLazyChildren() {
+        if (lazyChildren == null) {
+            lazyChildren = children.getList().filterList(child -> child.getParent() == NavigatorElement.this);
+        }
+        return lazyChildren;
+    }
+
     private Iterable<NavigatorElement> getChildrenIt() {
-        return children.getIt();
+        return getLazyChildren();
     }
     
-    public ImSet<NavigatorElement> getChildren() {
-        return children.getSet();
+    public ImList<NavigatorElement> getChildren() {
+        return getLazyChildren();
     }
     
-    public ImOrderSet<NavigatorElement> getChildrenList() {
-        return children.getOrderSet();
+    public ImList<NavigatorElement> getChildrenList() {
+        return getLazyChildren();
     }
 
     public NavigatorElement getParent() {
