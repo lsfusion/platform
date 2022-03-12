@@ -29,7 +29,7 @@ import static lsfusion.gwt.client.base.GwtClientUtils.createVerticalStrut;
 import static lsfusion.gwt.client.form.design.GFont.DEFAULT_FONT_FAMILY;
 
 @SuppressWarnings("GWTStyleCheck")
-public abstract class GUserPreferencesDialog extends ResizableSystemModalWindow {
+public abstract class GUserPreferencesDialog extends WindowBox {
     private static final ClientMessages messages = ClientMessages.Instance.get();
     private static final String CSS_USER_PREFERENCES_DUAL_LIST = "userPreferencesDualList";
 
@@ -50,7 +50,9 @@ public abstract class GUserPreferencesDialog extends ResizableSystemModalWindow 
     private TextBox columnPatternBox;
 
     public GUserPreferencesDialog(GGridTable grid, GGridController groupController, GPanelController panelController, boolean canBeSaved) {
-        super(messages.formGridPreferences());
+        super(false, false, true);
+        
+        setText(messages.formGridPreferences());
 
         this.groupController = groupController;
 
@@ -232,7 +234,8 @@ public abstract class GUserPreferencesDialog extends ResizableSystemModalWindow 
         mainContainer.setCellHeight(focusPanel, "100%");
         mainContainer.setSize("430px", "450px");
 
-        setContentWidget(mainContainer);
+        setWidget(mainContainer);
+        center();
 
         refreshValues(mergeFont());
     }

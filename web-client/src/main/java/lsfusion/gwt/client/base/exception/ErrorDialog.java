@@ -1,31 +1,40 @@
 package lsfusion.gwt.client.base.exception;
 
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.event.dom.client.*;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.event.dom.client.KeyDownEvent;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
-import lsfusion.gwt.client.base.view.ResizableSystemModalWindow;
+import lsfusion.gwt.client.base.view.WindowBox;
 import lsfusion.gwt.client.form.design.view.flex.FlexTabbedPanel;
 
-@SuppressWarnings("GWTStyleCheck")
-public class ErrorDialog extends ResizableSystemModalWindow {
+public class ErrorDialog extends WindowBox {
     private static final ClientMessages messages = ClientMessages.Instance.get();
-    private FlexPanel mainPane;
+
     private Button closeButton;
     private FlexTabbedPanel stacksPanel = null;
-    
-    public ErrorDialog(String caption, String message, String javaStack, String lsfStack) {
-        super(caption);
 
-        mainPane = new FlexPanel(true);
+    public ErrorDialog(String caption, String message, String javaStack, String lsfStack) {
+        super(false, false, true);
+        setModal(true);
+        setGlassEnabled(true);
+
+        setText(caption);
+
+        VerticalPanel mainPanel = new VerticalPanel();
+
+        FlexPanel topPanel = new FlexPanel(true);
+        topPanel.setHeight("100%");
+        mainPanel.add(topPanel);
 
         Widget messageWidget = new HTML(message);
         messageWidget.addStyleName("errorBox-message");
-        mainPane.add(messageWidget, GFlexAlignment.START);
-        
+        topPanel.add(messageWidget);
+
         if (javaStack != null || lsfStack != null) {
             stacksPanel = new FlexTabbedPanel();
             if (javaStack != null) {
@@ -42,50 +51,36 @@ public class ErrorDialog extends ResizableSystemModalWindow {
             }
             stacksPanel.selectTab(0);
             stacksPanel.setVisible(false);
-            
-            mainPane.addFill(stacksPanel, 1);
+
+            topPanel.addFill(stacksPanel);
         }
 
         FlexPanel buttonsPanel = new FlexPanel(false, GFlexAlignment.CENTER);
+        mainPanel.setVerticalAlignment(HasVerticalAlignment.ALIGN_BOTTOM);
+        mainPanel.add(buttonsPanel);
 
-        closeButton = new Button(messages.close(), new ClickHandler() {
-            @Override
-            public void onClick(final ClickEvent event) {
-                hide();
-            }
-        });
+        closeButton = new Button(messages.close(), (ClickHandler) event -> hide());
         closeButton.addStyleName("errorBox-button");
         buttonsPanel.add(closeButton);
 
         if (stacksPanel != null) {
-            Button moreButton = new Button(messages.more(), new ClickHandler() {
-                @Override
-                public void onClick(final ClickEvent event) {
-                    stacksPanel.setVisible(!stacksPanel.isVisible());
-                    int height = 0;
-                    Element mainPaneElement = mainPane.getElement();
-                    for (int i = 0; i < mainPaneElement.getChildCount(); i++) {
-                        height += ((Element) mainPaneElement.getChild(i)).getOffsetHeight();
-                    }
-                    setContentSize(mainPane.getOffsetWidth(), height);
-                }
-            });
+            Button moreButton = new Button(messages.more(), (ClickHandler) event -> stacksPanel.setVisible(!stacksPanel.isVisible()));
             moreButton.addStyleName("errorBox-button");
             buttonsPanel.add(moreButton);
         }
+        
+        mainPanel.getElement().getStyle().setProperty("maxWidth", (int) (Window.getClientWidth() * 0.9) + "px");
+        mainPanel.getElement().getStyle().setProperty("maxHeight", (int) (Window.getClientHeight() * 0.9) + "px");
 
-        mainPane.add(buttonsPanel, GFlexAlignment.CENTER);
-
-        mainPane.setHeight("100%");
-        FocusPanel focusPanel = new FocusPanel(mainPane);
-        focusPanel.addKeyDownHandler(event -> {
+        mainPanel.addDomHandler(event -> {
             if (event.getNativeKeyCode() == KeyCodes.KEY_ESCAPE) {
                 GwtClientUtils.stopPropagation(event);
                 hide();
             }
-        });
-        
-        setContentWidget(focusPanel);
+        }, KeyDownEvent.getType());
+
+        setWidget(mainPanel);
+        center();
     }
 
     @Override
