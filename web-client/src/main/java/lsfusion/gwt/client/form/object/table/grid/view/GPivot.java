@@ -78,6 +78,8 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         setStyleName(getDrawElement(), "pivotTable");
 
         MainFrame.addColorThemeChangeListener(this);
+
+        GwtClientUtils.setZeroZIndex(getElement());
     }
 
     // in theory we can order all properties once, but so far there is no full list of properties
