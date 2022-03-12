@@ -51,6 +51,7 @@ public abstract class GUserPreferencesDialog extends WindowBox {
 
     public GUserPreferencesDialog(GGridTable grid, GGridController groupController, GPanelController panelController, boolean canBeSaved) {
         super(false, false, true);
+        setGlassEnabled(true);
         
         setText(messages.formGridPreferences());
 

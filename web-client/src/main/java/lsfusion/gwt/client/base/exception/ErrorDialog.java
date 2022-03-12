@@ -20,7 +20,6 @@ public class ErrorDialog extends WindowBox {
 
     public ErrorDialog(String caption, String message, String javaStack, String lsfStack) {
         super(false, false, true);
-        setModal(true);
         setGlassEnabled(true);
 
         setText(caption);
