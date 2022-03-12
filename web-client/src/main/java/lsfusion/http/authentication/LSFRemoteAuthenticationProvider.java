@@ -4,7 +4,6 @@ import com.google.common.base.Throwables;
 import lsfusion.base.Pair;
 import lsfusion.base.file.FileData;
 import lsfusion.http.controller.LogicsRequestHandler;
-import lsfusion.http.controller.MainController;
 import lsfusion.http.provider.navigator.NavigatorProviderImpl;
 import lsfusion.interop.base.exception.LockedException;
 import lsfusion.interop.base.exception.LoginException;
@@ -12,8 +11,6 @@ import lsfusion.interop.base.exception.RemoteMessageException;
 import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.connection.LocalePreferences;
 import lsfusion.interop.connection.authentication.PasswordAuthentication;
-import lsfusion.interop.logics.LogicsRunnable;
-import lsfusion.interop.logics.LogicsSessionObject;
 import lsfusion.interop.logics.remote.RemoteLogicsInterface;
 import lsfusion.interop.session.ExternalResponse;
 import lsfusion.interop.session.SessionInfo;
@@ -45,18 +42,16 @@ public class LSFRemoteAuthenticationProvider extends LogicsRequestHandler implem
 
         try {
             HttpServletRequest request = getHttpServletRequest();
-            Pair<AuthenticationToken, Locale> authLocale = runRequest(request, new LogicsRunnable<Pair<AuthenticationToken, Locale>>() {
-                public Pair<AuthenticationToken, Locale> run(LogicsSessionObject sessionObject, boolean retry) throws RemoteException {
-                    try {
-                        AuthenticationToken authToken = sessionObject.remoteLogics.authenticateUser(new PasswordAuthentication(username, password));
-                        return new Pair<>(authToken, getUserLocale(sessionObject.remoteLogics, authentication, authToken, request));
-                    } catch (LoginException le) {
-                        throw new UsernameNotFoundException(le.getMessage());
-                    } catch (LockedException le) {
-                        throw new org.springframework.security.authentication.LockedException(le.getMessage());
-                    } catch (RemoteMessageException le) {
-                        throw new RuntimeException(le.getMessage());
-                    }
+            Pair<AuthenticationToken, Locale> authLocale = runRequest(request, (sessionObject, retry) -> {
+                try {
+                    AuthenticationToken authToken = sessionObject.remoteLogics.authenticateUser(new PasswordAuthentication(username, password));
+                    return new Pair<>(authToken, getUserLocale(sessionObject.remoteLogics, authentication, authToken, request));
+                } catch (LoginException le) {
+                    throw new UsernameNotFoundException(le.getMessage());
+                } catch (LockedException le) {
+                    throw new org.springframework.security.authentication.LockedException(le.getMessage());
+                } catch (RemoteMessageException le) {
+                    throw new RuntimeException(le.getMessage());
                 }
             });
 

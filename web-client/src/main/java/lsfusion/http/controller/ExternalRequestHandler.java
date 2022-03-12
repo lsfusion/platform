@@ -6,9 +6,8 @@ import lsfusion.base.Pair;
 import lsfusion.interop.base.exception.AuthenticationException;
 import lsfusion.interop.base.exception.RemoteInternalException;
 import lsfusion.interop.base.exception.RemoteMessageException;
-import lsfusion.interop.session.ExternalUtils;
-import lsfusion.interop.logics.LogicsRunnable;
 import lsfusion.interop.logics.LogicsSessionObject;
+import lsfusion.interop.session.ExternalUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.entity.StringEntity;
@@ -38,6 +37,7 @@ public abstract class ExternalRequestHandler extends LogicsRequestHandler implem
                 response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                 response.setContentType("text/html; charset=utf-8");
 
+                //we know that there will be a re-request, so we do not write in response - we can call getWriter() only once
                 if(!(e instanceof NoSuchObjectException) || retry) {
                     String errString = getErrorMessage(e);
                     try { // in theory here can be changed exception (despite of the fact that remote call is wrapped into RemoteExceptionAspect)
@@ -64,12 +64,9 @@ public abstract class ExternalRequestHandler extends LogicsRequestHandler implem
     @Override
     public void handleRequest(final HttpServletRequest request, final HttpServletResponse response) throws IOException {
         try {
-            runRequest(request, new LogicsRunnable<Object>() {
-                @Override
-                public Object run(LogicsSessionObject sessionObject, boolean retry) throws RemoteException {
-                    handleRequestException(sessionObject, request, response, retry);
-                    return null;
-                }
+            runRequest(request, (sessionObject, retry) -> {
+                handleRequestException(sessionObject, request, response, retry);
+                return null;
             });
         } catch (RemoteException e) { // will suppress that error, because we rethrowed it when handling request (see above)
         }
