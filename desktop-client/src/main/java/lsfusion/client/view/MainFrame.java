@@ -73,7 +73,7 @@ public abstract class MainFrame extends JFrame {
                             public RemoteNavigatorInterface call() throws Exception {
                                 try {
                                     return MainController.runRequest(new LogicsRunnable<RemoteNavigatorInterface>() {
-                                        public RemoteNavigatorInterface run(LogicsSessionObject sessionObject) throws RemoteException {
+                                        public RemoteNavigatorInterface run(LogicsSessionObject sessionObject, boolean retry) throws RemoteException {
                                             RemoteLogicsInterface remoteLogics = sessionObject.remoteLogics;
                                             MainController.remoteLogics = remoteLogics;
                                             MainController.initRmiClassLoader(remoteLogics);

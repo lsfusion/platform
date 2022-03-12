@@ -51,7 +51,7 @@ public class LSFClientRegistrationRepository extends LogicsRequestHandler implem
             try {
                 clientRegistrations = runRequest(request, new LogicsRunnable<List<ClientRegistration>>() {
                     @Override
-                    public List<ClientRegistration> run(LogicsSessionObject sessionObject) throws RemoteException {
+                    public List<ClientRegistration> run(LogicsSessionObject sessionObject, boolean retry) throws RemoteException {
                         return getOauth2ClientCredentials(sessionObject.remoteLogics, request);
                     }
                 });

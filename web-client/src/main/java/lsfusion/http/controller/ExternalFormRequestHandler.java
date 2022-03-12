@@ -44,7 +44,7 @@ public class ExternalFormRequestHandler extends ExternalRequestHandler {
         if (action.equals("genids")) {
             final int count = jsonObject.getInt("count");
             jsonResult = new JSONArray(runRequest(request, new LogicsRunnable<Object>() {
-                public Object run(LogicsSessionObject sessionObject) throws RemoteException {
+                public Object run(LogicsSessionObject sessionObject, boolean retry) throws RemoteException {
                     long[] ids = new long[count];
                     for(int i = 0; i< count; i++)
                         ids[i] = sessionObject.remoteLogics.generateID();

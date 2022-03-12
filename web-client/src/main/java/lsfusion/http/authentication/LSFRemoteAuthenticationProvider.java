@@ -46,7 +46,7 @@ public class LSFRemoteAuthenticationProvider extends LogicsRequestHandler implem
         try {
             HttpServletRequest request = getHttpServletRequest();
             Pair<AuthenticationToken, Locale> authLocale = runRequest(request, new LogicsRunnable<Pair<AuthenticationToken, Locale>>() {
-                public Pair<AuthenticationToken, Locale> run(LogicsSessionObject sessionObject) throws RemoteException {
+                public Pair<AuthenticationToken, Locale> run(LogicsSessionObject sessionObject, boolean retry) throws RemoteException {
                     try {
                         AuthenticationToken authToken = sessionObject.remoteLogics.authenticateUser(new PasswordAuthentication(username, password));
                         return new Pair<>(authToken, getUserLocale(sessionObject.remoteLogics, authentication, authToken, request));

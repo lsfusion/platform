@@ -433,7 +433,7 @@ public class MainController {
             assert authToken == null;
             final UserInfo fUserInfo = userInfo;
             authToken = runRequest(new LogicsRunnable<AuthenticationToken>() {
-                public AuthenticationToken run(LogicsSessionObject sessionObject) throws RemoteException {
+                public AuthenticationToken run(LogicsSessionObject sessionObject, boolean retry) throws RemoteException {
                     return fUserInfo.isAnonymous() ? AuthenticationToken.ANONYMOUS : sessionObject.remoteLogics.authenticateUser(new PasswordAuthentication(fUserInfo.name, fUserInfo.password));
                 }
             });

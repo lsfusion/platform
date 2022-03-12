@@ -19,7 +19,7 @@ public class GenerateIDHandler extends LogicsActionHandler<GenerateID, GenerateI
     @Override
     public GenerateIDResult executeEx(GenerateID action, ExecutionContext context) throws RemoteException, AppServerNotAvailableDispatchException {
         return runRequest(action, new LogicsRunnable<GenerateIDResult>() {
-            public GenerateIDResult run(LogicsSessionObject sessionObject) throws RemoteException {
+            public GenerateIDResult run(LogicsSessionObject sessionObject, boolean retry) throws RemoteException {
                 return new GenerateIDResult(sessionObject.remoteLogics.generateID());
             }
         });
