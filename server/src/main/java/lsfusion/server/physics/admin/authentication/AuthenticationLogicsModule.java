@@ -37,11 +37,11 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
     public LP isLockedCustomUser;
     public LP<?> loginCustomUser;
     public LP customUserNormalized;
+    public LP logNameCustomUser;
     public LP sha256PasswordCustomUser;
     public LP calculatedHash;
     public LP currentUser;
     public LP currentUserName;
-    public LP nameContact;
 
     public LP intersectingLoginsCount;
 
@@ -140,7 +140,6 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
         emailContact = findProperty("email[Contact]");
         contactEmail = findProperty("contact[STRING[400]]");
 
-        nameContact = findProperty("name[Contact]");
         currentUserName = findProperty("currentUserName[]");
 
         intersectingLoginsCount = findProperty("intersectingLoginsCount[]");
@@ -154,6 +153,7 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
 
         loginCustomUser = findProperty("login[CustomUser]");
         customUserNormalized = findProperty("customUserNormalized[ISTRING[100]]");
+        logNameCustomUser = findProperty("logName[CustomUser]");
 
         sha256PasswordCustomUser = findProperty("sha256Password[CustomUser]");
         sha256PasswordCustomUser.setEchoSymbols(true);

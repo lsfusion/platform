@@ -221,7 +221,7 @@ public abstract class RemoteConnection extends RemoteRequestObject {
     }
 
     public static LogInfo readLogInfo(DataSession session, DataObject user, BusinessLogics businessLogics, String computerName, String remoteAddress) throws SQLException, SQLHandledException {
-        String userName = (String) businessLogics.authenticationLM.nameContact.read(session, user);
+        String userName = (String) businessLogics.authenticationLM.logNameCustomUser.read(session, user);
         boolean allowExcessAllocatedBytes = businessLogics.serviceLM.allowExcessAllocatedBytes.read(session, user) != null;
         String userRoles = (String) businessLogics.securityLM.userRolesUser.read(session, user);
         return new LogInfo(allowExcessAllocatedBytes, userName, userRoles, computerName, remoteAddress);
