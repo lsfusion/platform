@@ -60,6 +60,8 @@ public class GNavigatorActionDispatcher extends GwtActionDispatcher {
 
     @Override
     public void execute(final GMaximizeFormAction action) {
-        formsController.setFullScreenMode(true);
+        if (!MainFrame.mobile) {
+            formsController.setFullScreenMode(true);
+        }
     }
 }

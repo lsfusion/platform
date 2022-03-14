@@ -80,6 +80,8 @@ public class ModalForm extends FormContainer {
         contentWidget.show();
 
         onFocus(true);
+        if(async)
+            contentWidget.focus();
     }
 
     @Override

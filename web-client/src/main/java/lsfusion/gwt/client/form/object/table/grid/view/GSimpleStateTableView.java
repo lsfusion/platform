@@ -13,6 +13,7 @@ import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.view.ColorUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
+import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.classes.data.GImageType;
 import lsfusion.gwt.client.classes.data.GIntegralType;
 import lsfusion.gwt.client.classes.data.GJSONType;
@@ -133,20 +134,28 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         rowValues.push(fromObject(key));
         return rowValues;
     }
+    public static JavaScriptObject convertValue(GType type, Object value) {
+        if (type instanceof GLogicalType) {
+            if(!((GLogicalType) type).threeState)
+                return fromBoolean(value != null);
 
-    public static JavaScriptObject convertValue(GPropertyDraw property, Object value) {
-        if (property.baseType instanceof GLogicalType)
-            return fromBoolean(((GLogicalType) property.baseType).threeState ? (boolean) value : value != null);
+            if(value != null)
+                return fromBoolean((boolean) value);
+        }
         if(value == null)
             return null;
-        if(property.baseType instanceof GIntegralType)
+        if(type instanceof GIntegralType)
             return fromNumber(((Number)value).doubleValue());
-        if(property.baseType instanceof GImageType)
-            return fromString(GwtClientUtils.getDownloadURL((String) value, null, ((GImageType)property.baseType).extension, false));
-        if(property.baseType instanceof GJSONType)
+        if(type instanceof GImageType)
+            return fromString(GwtClientUtils.getDownloadURL((String) value, null, ((GImageType)type).extension, false));
+        if(type instanceof GJSONType)
             return GwtClientUtils.jsonParse((String)value);
 
         return fromString(value.toString());
+    }
+
+    public static JavaScriptObject convertValue(GPropertyDraw property, Object value) {
+        return convertValue(property.baseType, value);
     }
 
     protected JsArray<JavaScriptObject> getCaptions(NativeHashMap<String, Column> columnMap, Predicate<GPropertyDraw> filter) {

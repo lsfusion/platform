@@ -49,6 +49,7 @@ import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.action.Action;
+import lsfusion.server.logics.action.ClientSystemAction;
 import lsfusion.server.logics.action.ExplicitAction;
 import lsfusion.server.logics.action.flow.BreakAction;
 import lsfusion.server.logics.action.flow.ListCaseAction;
@@ -178,6 +179,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static lsfusion.base.BaseUtils.*;
 import static lsfusion.server.language.navigator.window.AlignmentUtils.*;
+import static lsfusion.server.logics.classes.data.StringClass.getv;
 import static lsfusion.server.logics.property.oraction.ActionOrPropertyUtils.*;
 
 public class ScriptingLogicsModule extends LogicsModule {
@@ -1784,6 +1786,15 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
+    public LA addScriptedInternalClientAction(String resourceName, int paramsCount) throws ScriptingErrorLog.SemanticErrorException {
+        boolean isFile = resourceName.contains(".js") || resourceName.contains(".css");
+
+        if(isFile && paramsCount > 0)
+            errLog.emitInternalClientActionHasParamsOnFileCallingError(parser, resourceName);
+
+        return new LA(new ClientSystemAction(resourceName, paramsCount, isFile));
+    }
+
     public LA addScriptedInternalAction(String javaClassName, List<String> paramClasses, List<ResolveClassSet> signature, boolean allowNullValue) throws ScriptingErrorLog.SemanticErrorException {
         try {
             Object instanceObject = null;
@@ -3170,8 +3181,8 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     private static StringClass getStringConstClass(LocalizedString value) {
         if(value.needToBeLocalized())
-            return StringClass.text;
-        return StringClass.getv(new ExtInt(value.getSourceString().length()));
+            return getv(false, ExtInt.UNLIMITED);
+        return getv(new ExtInt(value.getSourceString().length()));
     }
 
     public Pair<LP, LPNotExpr> addConstantProp(ConstType type, Object value) throws ScriptingErrorLog.SemanticErrorException {

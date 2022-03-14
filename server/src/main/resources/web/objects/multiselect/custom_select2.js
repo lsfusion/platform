@@ -50,7 +50,7 @@ function _select2(updateFunction) {
     }
 
     return {
-        render: (element, controller) => {
+        render: (element, controller, event) => {
             let selectElement = document.createElement('select');
             element.appendChild(selectElement);
             let select2Instance = controller.select2Instance = $(selectElement).select2({
@@ -84,6 +84,19 @@ function _select2(updateFunction) {
             });
 
             setTimeout(() => {
+
+                //check as in GKeyStroke.isCharAddKeyEvent
+                if(event != null && event.type === 'keypress' && !event.ctrlKey && !event.shiftKey && !event.altKey && event.key !== 'Enter' && event.key !== 'Escape' && event.charCode !== 0) {
+                    //https://stackoverflow.com/a/30552284/2235787
+                    select2Instance.select2('open');
+                    // Get the search box within the dropdown or the selection
+                    // Dropdown = single, Selection = multiple
+                    var $search = select2Instance.data('select2').dropdown.$search || select2Instance.data('select2').selection.$search;
+                    // This is undocumented and may change in the future
+                    $search.val(event.key);
+                    $search.trigger('keyup');
+                }
+
                 $('.select2-search--inline').keydown(function (e) {
                     if (e.keyCode === 27 || e.key === 'Escape') {
                         e.stopPropagation();

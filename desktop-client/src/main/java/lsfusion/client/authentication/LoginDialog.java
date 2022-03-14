@@ -449,7 +449,7 @@ public class LoginDialog extends JDialog {
         // synchronizing userInfos
         final Result<List<UserInfo>> rUserInfos = new Result<>(userInfos);
         try {
-            LogicsProvider.instance.runRequest(serverInfo, sessionObject -> {
+            LogicsProvider.instance.runRequest(serverInfo, (sessionObject, retry) -> {
                 syncUsers(sessionObject.remoteLogics, rUserInfos);
                 return null;
             });

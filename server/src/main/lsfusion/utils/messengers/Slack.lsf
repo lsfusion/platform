@@ -158,7 +158,7 @@ receiveMessages '{messenger.receive.messages}' (Chat chat) {
                         chat(message) <- chat;
                         message(message) <- text(i);
                         ts(message) <- ts(i);
-                        dateTime(message) <- fromEpochMSToTimestamp(ts(message));
+                        dateTime(message) <- DATETIME(toZDateTime(LONG(ts(message))));
                         LOCAL user = User();
                         user() <- user(userMessage(i));
                         IF user() THEN {

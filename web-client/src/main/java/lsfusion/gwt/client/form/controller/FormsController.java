@@ -60,8 +60,10 @@ public abstract class FormsController {
 
     private final GToolbarButton linkEditButton;
 
-    private final GToolbarButton fullScreenButton;
+    private GToolbarButton fullScreenButton;
     private boolean fullScreenMode = false;
+    
+    private GToolbarButton mobileMenuButton;
 
     public FormsController(WindowsController windowsController) {
         this.windowsController = windowsController;
@@ -77,15 +79,26 @@ public abstract class FormsController {
         setCompactSize(linkEditButton);
         toolbarView.addComponent(linkEditButton);
 
-        fullScreenButton = new GToolbarButton(null) {
-            @Override
-            public ClickHandler getClickHandler() {
-                return event -> switchFullScreenMode();
-            }
-        };
-        setCompactSize(fullScreenButton);
-        toolbarView.addComponent(fullScreenButton);
-        updateFullScreenButton();
+        if (!MainFrame.mobile) {
+            fullScreenButton = new GToolbarButton(null) {
+                @Override
+                public ClickHandler getClickHandler() {
+                    return event -> switchFullScreenMode();
+                }
+            };
+            setCompactSize(fullScreenButton);
+            toolbarView.addComponent(fullScreenButton);
+            updateFullScreenButton();
+        } else {
+            mobileMenuButton = new GToolbarButton("hamburger.png") {
+                @Override
+                public ClickHandler getClickHandler() {
+                    return event -> MainFrame.openNavigatorMenu();
+                }
+            };
+            setCompactSize(mobileMenuButton);
+            toolbarView.addComponent(mobileMenuButton);
+        }
 
         tabsPanel = new FlexTabbedPanel("formsTabBar", toolbarView);
 
@@ -169,15 +182,17 @@ public abstract class FormsController {
     }
 
     public FormContainer openForm(GAsyncFormController asyncFormController, GForm form, GModalityType modalityType, boolean forbidDuplicate, Event editEvent, EditContext editContext, GFormController formController, WindowHiddenHandler hiddenHandler) {
-        FormDockable duplicateForm = getDuplicateForm(form.sID, forbidDuplicate);
-        if(duplicateForm != null) {
-            selectTab(duplicateForm);
-            return null;
-        }
-
         GWindowFormType windowType = modalityType.getWindowType();
         FormContainer formContainer = asyncFormController.removeAsyncForm();
         boolean asyncOpened = formContainer != null;
+
+        if(!asyncOpened) {
+            FormDockable duplicateForm = getDuplicateForm(form.canonicalName, forbidDuplicate);
+            if (duplicateForm != null) {
+                selectTab(duplicateForm);
+                return null;
+            }
+        }
 
         // if form is async opened with different type - close it
         if(asyncOpened && formContainer.getWindowType() != windowType && !formContainer.isAsyncHidden()) {
@@ -187,7 +202,7 @@ public abstract class FormsController {
 
         if (!asyncOpened) {
             asyncFormController.cancelScheduledOpening();
-            formContainer = createFormContainer(windowType, false, -1, form.getCaption(), editEvent, editContext, formController);
+            formContainer = createFormContainer(windowType, false, -1, form.canonicalName, form.getCaption(), editEvent, editContext, formController);
         }
         initForm(formContainer, form, hiddenHandler, modalityType.isDialog(), isAutoSized(editContext, windowType));
         if(asyncOpened)
@@ -198,12 +213,12 @@ public abstract class FormsController {
         return formContainer;
     }
 
-    private FormContainer createFormContainer(GWindowFormType windowType, boolean async, long editRequestIndex, String formCaption, Event editEvent, EditContext editContext, GFormController formController) {
+    private FormContainer createFormContainer(GWindowFormType windowType, boolean async, long editRequestIndex, String formCanonicalName, String formCaption, Event editEvent, EditContext editContext, GFormController formController) {
         switch (windowType) {
             case FLOAT:
                 return new ModalForm(this, formCaption, async, editEvent);
             case DOCKED:
-                return new FormDockable(this, formCaption, async, editEvent);
+                return new FormDockable(this, formCanonicalName, formCaption, async, editEvent);
             case EMBEDDED:
                 return new EmbeddedForm(this, editRequestIndex, async, editEvent, editContext, formController);
             case POPUP:
@@ -217,7 +232,7 @@ public abstract class FormsController {
         if (duplicateForm == null) {
             GWindowFormType windowType = openForm.getWindowType(asyncFormController.canShowDockedModal());
             Scheduler.ScheduledCommand runOpenForm = () -> {
-                FormContainer formContainer = createFormContainer(windowType, true, asyncFormController.getEditRequestIndex(), openForm.caption, editEvent, editContext, formController);
+                FormContainer formContainer = createFormContainer(windowType, true, asyncFormController.getEditRequestIndex(), openForm.canonicalName, openForm.caption, editEvent, editContext, formController);
                 formContainer.setContentLoading();
                 formContainer.show();
                 asyncFormController.putAsyncForm(formContainer);
@@ -285,7 +300,7 @@ public abstract class FormsController {
     }
 
     public FormDockable findForm(String formCanonicalName) {
-        return findInList(forms, dockable -> !dockable.async && dockable.getForm().getForm().sID.equals(formCanonicalName));
+        return findInList(forms, dockable -> dockable.getCanonicalName().equals(formCanonicalName));
     }
 
     public void addDockable(FormDockable dockable) {

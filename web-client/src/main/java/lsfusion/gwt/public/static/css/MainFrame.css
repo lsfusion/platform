@@ -385,6 +385,10 @@ button {
     border-top: 1px solid var(--panel-border-color);
 }
 
+.rightCaptionCenteredLine {
+    flex-grow : 1 !important;
+}
+
 .collapsePanelImage {
     cursor: default;
     /*margin-top: var(--border-padding);*/

@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.form.controller;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.Element;
@@ -124,6 +123,8 @@ public class GFormController implements EditManager {
 
     private final boolean isDialog;
 
+    private Event editEvent;
+
     private final NativeSIDMap<GGroupObject, ArrayList<GGroupObjectValue>> currentGridObjects = new NativeSIDMap<>();
 
     public NativeSIDMap<GGroupObject, ArrayList<GGroupObjectValue>> getCurrentGridObjects() {
@@ -152,7 +153,7 @@ public class GFormController implements EditManager {
         return formsController;
     }
 
-    public GFormController(FormsController formsController, FormContainer formContainer, GForm gForm, boolean isDialog, boolean autoSize) {
+    public GFormController(FormsController formsController, FormContainer formContainer, GForm gForm, boolean isDialog, boolean autoSize, Event editEvent) {
         actionDispatcher = new GFormActionDispatcher(this);
 
         this.formsController = formsController;
@@ -165,6 +166,8 @@ public class GFormController implements EditManager {
         formLayout = new GFormLayout(this, form.mainContainer, autoSize);
         if (form.sID != null)
             formLayout.getElement().setAttribute("lsfusion-form", form.sID);
+
+        this.editEvent = editEvent;
 
         updateFormCaption();
 
@@ -191,6 +194,12 @@ public class GFormController implements EditManager {
 
     public void checkGlobalMouseEvent(Event event) {
         checkFormEvent(event, (handler, preview) -> checkMouseEvent(handler, preview, null, false, true));
+    }
+
+    public Event popEditEvent() {
+        Event result = editEvent;
+        editEvent = null;
+        return result;
     }
 
     private interface CheckEvent {
@@ -239,7 +248,7 @@ public class GFormController implements EditManager {
         NativeEvent nativeEvent = event.getNativeEvent();
         checkLinkEditModeEvents(formsController, nativeEvent);
 
-        if(GKeyStroke.isSwitchFullScreenModeEvent(nativeEvent)) {
+        if(GKeyStroke.isSwitchFullScreenModeEvent(nativeEvent) && !MainFrame.mobile) {
             formsController.switchFullScreenMode();
         }
     }
@@ -875,7 +884,7 @@ public class GFormController implements EditManager {
         changeProperty(editContext, value);
 
         if(property.canUseChangeValueForRendering(pasteType))
-            update(editContext, value);
+            updateValue(editContext, value);
     }
 
     public void changePageSizeAfterUnlock(final GGroupObject groupObject, final int pageSize) {
@@ -2064,7 +2073,7 @@ public class GFormController implements EditManager {
         }
 
         this.cellEditor = cellEditor; // not sure if it should before or after startEditing, but definitely after removeAllChildren, since it leads to blur for example
-        cellEditor.start(event, element, oldValue);
+        cellEditor.start(event, element, oldValue); //need to be after this.cellEditor = cellEditor, because there is commitEditing in start in LogicalCellEditor
     }
 
     // only request cell editor can be long-living
@@ -2096,20 +2105,20 @@ public class GFormController implements EditManager {
         Element renderElement = getEditElement();
 
         CellEditor cellEditor = this.cellEditor;
-        if(cellEditor instanceof RequestCellEditor)
-            ((RequestCellEditor)cellEditor).stop(renderElement, cancel);
         this.cellEditor = null;
 
         EditContext editContext = this.editContext;
-        this.editContext = null;
 //        this.editRequestIndex = -1; //it doesn't matter since it is not used when editContext / cellEditor is null
         this.editAsyncUsePessimistic = false;
         this.editAsyncValuesSID = null;
 
+        if(cellEditor instanceof RequestCellEditor)
+            ((RequestCellEditor)cellEditor).stop(renderElement, cancel);
+
         if(cellEditor instanceof ReplaceCellEditor) {
             RenderContext renderContext = editContext.getRenderContext();
             ((ReplaceCellEditor) cellEditor).clearRender(renderElement, renderContext, cancel);
-            editContext.getProperty().getCellRenderer().renderStatic(renderElement, renderContext);
+            editContext.getProperty().getCellRenderer().render(renderElement, renderContext);
 
             editContext.stopEditing();
 
@@ -2129,7 +2138,10 @@ public class GFormController implements EditManager {
             }
         }
 
-        update(editContext.getProperty(), renderElement, editContext.getValue(), editContext.getUpdateContext());
+        //getAsyncValues need editContext, so it must be after clearRenderer
+        this.editContext = null;
+
+        update(editContext);
     }
 
     public void render(GPropertyDraw property, Element element, RenderContext renderContext) {
@@ -2138,19 +2150,36 @@ public class GFormController implements EditManager {
             return;
         }
 
-        property.getCellRenderer().renderStatic(element, renderContext);
+        property.getCellRenderer().render(element, renderContext);
     }
-    // "external" update - paste + server update edit value
-    public void update(EditContext editContext, Object value) {
-        editContext.setValue(value);
 
-        update(editContext.getProperty(), editContext.getEditElement(), value, editContext.getUpdateContext());
-    }
-    public void update(GPropertyDraw property, Element element, Object value, UpdateContext updateContext) {
+    public void rerender(GPropertyDraw property, Element element, Runnable changeContext, RenderContext renderContext, UpdateContext updateContext) {
         if(isEdited(element))
             return;
 
-        property.getCellRenderer().renderDynamic(element, value, updateContext);
+        CellRenderer cellRenderer = property.getCellRenderer();
+        cellRenderer.clearRender(element, renderContext);
+
+        changeContext.run();
+
+        cellRenderer.render(element, renderContext);
+        cellRenderer.update(element, updateContext);
+    }
+
+    // "external" update - paste + server update edit value
+    public void updateValue(EditContext editContext, Object value) {
+        editContext.setValue(value);
+
+        update(editContext);
+    }
+    public void update(EditContext editContext) {
+        update(editContext.getProperty(), editContext.getEditElement(), editContext.getUpdateContext());
+    }
+    public void update(GPropertyDraw property, Element element, UpdateContext updateContext) {
+        if(isEdited(element))
+            return;
+
+        property.getCellRenderer().update(element, updateContext);
     }
 
     public boolean isEdited(Element element) {

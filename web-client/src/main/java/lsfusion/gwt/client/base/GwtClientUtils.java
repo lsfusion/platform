@@ -2,6 +2,7 @@ package lsfusion.gwt.client.base;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.core.client.JsArray;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.event.dom.client.DomEvent;
@@ -956,6 +957,9 @@ public class GwtClientUtils {
     public static native JavaScriptObject call(JavaScriptObject object, Object param)/*-{
         return object(param);
     }-*/;
+    public static native JavaScriptObject call(JavaScriptObject object, JsArray<JavaScriptObject> params)/*-{
+        return object.apply(object, params);
+    }-*/;
     public static native JavaScriptObject newObject()/*-{
         return {};
     }-*/;
@@ -996,5 +1000,9 @@ public class GwtClientUtils {
         } catch(e) {
             return {};
         }
+    }-*/;
+
+    public static native void consoleError(String error)/*-{
+        console.error(error);
     }-*/;
 }

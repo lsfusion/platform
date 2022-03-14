@@ -991,12 +991,22 @@ public abstract class LogicsModule {
                                                              ImOrderSet<T> orderInterfaces, InputListEntity<?, T> contextList,
                                                              FormSessionScope contextScope, InputFilterSelector<T> filterList,
                                                              ImList<InputContextAction<?, T>> contextActions, String customEditorFunction) {
-        if(contextList != null && contextScope == FormSessionScope.NEWSESSION)
-            contextList = contextList.newSession();
+        if(contextList != null) {
 
-        // adding newedit action
-        if(valueClass instanceof ConcreteCustomClass)
-            contextActions = ListFact.add(contextList.getNewEditAction(baseLM, (ConcreteCustomClass) valueClass, targetProp, contextScope), contextActions);
+            if (contextScope == FormSessionScope.NEWSESSION) {
+                contextList = contextList.newSession();
+            }
+
+            // adding reset action
+            if (!contextList.isNotNull()) {
+                contextActions = ListFact.add(contextActions, ListFact.toList(contextList.getResetAction(baseLM, targetProp)));
+            }
+
+            if (valueClass instanceof ConcreteCustomClass) {
+                // adding newedit action
+                contextActions = ListFact.add(contextList.getNewEditAction(baseLM, (ConcreteCustomClass) valueClass, targetProp, contextScope), contextActions);
+            }
+        }
         
         return addAction(null, new LA(new InputAction(LocalizedString.create("Input"), valueClass, targetProp, hasOldValue, orderInterfaces, contextList, filterList, contextActions, customEditorFunction)));
     }
@@ -1035,7 +1045,7 @@ public abstract class LogicsModule {
         LA<?> resultAction;
         O inputObject;
         // wrapping dialog into input operator
-        if(inputObjects.size() == 1 && syncType && list != null && form.getBaseClass(inputObject = inputObjects.single()) instanceof CustomClass
+        if(inputObjects.size() == 1 && list != null && form.getBaseClass(inputObject = inputObjects.single()) instanceof CustomClass
                 && form.isSingleGroup(inputObject)) { // just like in InputListEntity.mapInner we will ignore the cases when there are not all objects
             LP<?> inputProp = inputProps.single();
 

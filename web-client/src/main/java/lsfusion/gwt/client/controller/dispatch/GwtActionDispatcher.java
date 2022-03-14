@@ -1,5 +1,7 @@
 package lsfusion.gwt.client.controller.dispatch;
 
+import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.core.client.JsArray;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.media.client.Audio;
 import com.google.gwt.typedarrays.client.Uint8ArrayNative;
@@ -15,15 +17,17 @@ import lsfusion.gwt.client.base.exception.GExceptionManager;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.log.GLog;
 import lsfusion.gwt.client.base.view.DialogBoxHelper;
+import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.controller.remote.action.RequestAsyncCallback;
 import lsfusion.gwt.client.controller.remote.action.RequestCountingErrorHandlingCallback;
 import lsfusion.gwt.client.controller.remote.action.RequestErrorHandlingCallback;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.controller.remote.action.navigator.LogClientExceptionAction;
+import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
 import lsfusion.gwt.client.form.view.FormContainer;
 import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
-import lsfusion.gwt.client.navigator.window.GWindowFormType;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -334,6 +338,94 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
 
     @Override
     public void execute(GResetWindowsLayoutAction action) {
+    }
+
+    private static class JSExecutor {
+        private static final List<GClientJSAction> actions = new ArrayList<>();
+
+        public static void addAction(GClientJSAction action) {
+            if (action.resource != null) {
+                actions.add(action);
+                flush();
+            } else {
+                GwtClientUtils.consoleError("Resource load error: " + action.resourceName);
+            }
+        }
+
+        private static boolean isExecuting = false;
+        private static void flush() {
+            if (!isExecuting && !actions.isEmpty()) {
+                GClientJSAction action = actions.get(0);
+                isExecuting = true;
+                if (action.isFile)
+                    executeFile(action);
+                else
+                    executeJSFunction(action);
+            }
+        }
+
+        private static native void executeFile(GClientJSAction action)/*-{
+            var resourcePath = 'static' + action.@GClientJSAction::resource;
+
+            if (resourcePath.endsWith('js')) {
+                var documentScripts = $wnd.document.scripts, scriptAlreadyLoaded;
+                for (var i = 0; i < documentScripts.length; i++) {
+                    var src = documentScripts[i].src;
+                    if (src != null && src.endsWith(resourcePath)){
+                        scriptAlreadyLoaded = true;
+                        break;
+                    }
+                }
+
+                if (!scriptAlreadyLoaded) {
+                    var scr = document.createElement('script');
+                    scr.src = resourcePath;
+                    scr.type = 'text/javascript';
+                    $wnd.document.head.appendChild(scr);
+                    scr.onload = function() { @JSExecutor::onActionExecuted(*)(action); }
+                }
+            } else if (resourcePath.endsWith('css')) {
+                var documentStyleSheets = $wnd.document.styleSheets, styleSheetAlreadyLoaded;
+                for (var j = 0; j < documentStyleSheets.length; j++) {
+                    var href = documentStyleSheets[j].href;
+                    if (href != null && href.endsWith(resourcePath)){
+                        styleSheetAlreadyLoaded = true;
+                        break;
+                    }
+                }
+                if (!styleSheetAlreadyLoaded) {
+                    var link = document.createElement("link");
+                    link.href = resourcePath;
+                    link.type = "text/css";
+                    link.rel = "stylesheet";
+                    $wnd.document.head.appendChild(link);
+                    @JSExecutor::onActionExecuted(*)(action);
+                }
+            }
+        }-*/;
+
+        private static void onActionExecuted(GClientJSAction action) {
+            isExecuting = false;
+            actions.remove(action);
+            flush();
+        }
+
+        private static void executeJSFunction(GClientJSAction action) {
+            JsArray<JavaScriptObject> arguments = JavaScriptObject.createArray().cast();
+            ArrayList<Object> types = action.types;
+            for (int i = 0; i < types.size(); i++) {
+                arguments.push(GSimpleStateTableView.convertValue((GType) types.get(i), action.values.get(i)));
+            }
+            String function = action.resource;
+            GwtClientUtils.call(GwtClientUtils.getGlobalField(function.substring(0, function.indexOf("("))), arguments);
+            onActionExecuted(action);
+        }
+    }
+
+
+    @Override
+    public void execute(GClientJSAction action) {
+        JSExecutor.addAction(action);
     }
 
     @Override

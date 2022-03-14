@@ -179,7 +179,7 @@ public class MainController {
         FileData fileData = new FileData(new RawFileData(jsonArray.toString().getBytes(StandardCharsets.UTF_8)), "json");
         try {
             ExternalResponse externalResponse = logicsProvider.runRequest(request,
-                    sessionObject -> sessionObject.remoteLogics.exec(AuthenticationToken.ANONYMOUS, NavigatorProviderImpl.getSessionInfo(request),
+                    (sessionObject, retry) -> sessionObject.remoteLogics.exec(AuthenticationToken.ANONYMOUS, NavigatorProviderImpl.getSessionInfo(request),
                     method + "[JSONFILE]", getExternalRequest(new Object[]{fileData}, request)));
             return new JSONObject(new String(((FileData) externalResponse.results[0]).getRawFile().getBytes(), StandardCharsets.UTF_8));
         } catch (IOException | AppServerNotAvailableDispatchException e) {
@@ -212,7 +212,7 @@ public class MainController {
 
         if(serverSettings != null)
             serverSettings.saveFiles(FileUtils.APP_PATH, externalResourcesParentPath);
-        model.addAttribute("filesUrls", getFileUrls(serverSettings));
+
         model.addAttribute("title", getTitle(serverSettings));
         model.addAttribute("logicsIcon", getLogicsIcon(serverSettings));
         model.addAttribute("logicsName", getLogicsName(serverSettings));
@@ -227,10 +227,6 @@ public class MainController {
 
     private boolean getDisableRegistration(ServerSettings serverSettings) {
         return serverSettings != null && serverSettings.disableRegistration;
-    }
-
-    private Set<String> getFileUrls(ServerSettings serverSettings) {
-        return serverSettings != null && serverSettings.filesUrls != null ? serverSettings.filesUrls : Collections.emptySet();
     }
 
     private String getTitle(ServerSettings serverSettings) {

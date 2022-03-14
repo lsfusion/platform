@@ -1111,15 +1111,6 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
         return isRowWithinBounds(selectedRow) ? getRowValue(selectedRow) : null;
     }
 
-    /**
-     * Check whether or not the data set is empty. That is, the row count is exactly 0.
-     *
-     * @return true if data set is empty
-     */
-    public boolean isEmpty() {
-        return getRowCount() == 0;
-    }
-
     protected void startResolving() {
         if (isResolvingState) {
             return;
@@ -1887,6 +1878,8 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
     @Override
     public void onResize() {
         onResizeChanged();
+        //need to recalculate scrollTop in preAfterUpdateDOMScrollVertical
+        selectedRowChanged = true;
         super.onResize();
     }
 

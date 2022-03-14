@@ -45,7 +45,7 @@ public abstract class CellRenderer<T> {
 
     // should be consistent with getWidthPadding and getHeightPadding
     // and with TextBasedCellEditor.renderDOM
-    public void renderStatic(Element element, RenderContext renderContext) {
+    public void render(Element element, RenderContext renderContext) {
         Style.TextAlign textAlign = property.getTextAlignStyle();
         if (textAlign == null)
             textAlign = getDefaultHorzAlignment();
@@ -119,8 +119,8 @@ public abstract class CellRenderer<T> {
         element.getStyle().clearProperty("justifyContent");
     }
 
-    public void renderDynamic(Element element, Object value, UpdateContext updateContext) {
-        renderDynamicContent(element, value, updateContext);
+    public void update(Element element, UpdateContext updateContext) {
+        renderDynamicContent(element, updateContext.getValue(), updateContext);
     }
 
     private static final String MOREASYNC = "more-async";
