@@ -991,12 +991,31 @@ public abstract class LogicsModule {
                                                              ImOrderSet<T> orderInterfaces, InputListEntity<?, T> contextList,
                                                              FormSessionScope contextScope, InputFilterSelector<T> filterList,
                                                              ImList<InputContextAction<?, T>> contextActions, String customEditorFunction) {
+        return addInputAProp(valueClass, targetProp, hasOldValue, orderInterfaces, contextList, contextScope, filterList, contextActions, null, customEditorFunction);
+    }
+
+    public <T extends PropertyInterface> LA<?> addInputAProp(ValueClass valueClass, LP targetProp, boolean hasOldValue,
+                                                             ImOrderSet<T> orderInterfaces, InputListEntity<?, T> contextList,
+                                                             FormSessionScope contextScope, InputFilterSelector<T> filterList,
+                                                             ImList<InputContextAction<?, T>> contextActions, InputContextAction<?, T> dialogAction, String customEditorFunction) {
         if(contextList != null && contextScope == FormSessionScope.NEWSESSION)
             contextList = contextList.newSession();
 
-        // adding newedit action
-        if(valueClass instanceof ConcreteCustomClass)
+
+        if(contextList != null && valueClass instanceof ConcreteCustomClass) {
+            // adding reset action
+            if(!contextList.isNotNull()) {
+                contextActions = ListFact.add(contextList.getResetAction(baseLM, (ConcreteCustomClass) valueClass, targetProp, contextScope), contextActions);
+            }
+
+            //adding dialog action
+            if(dialogAction != null) {
+                contextActions = ListFact.add(dialogAction, contextActions);
+            }
+
+            // adding newedit action
             contextActions = ListFact.add(contextList.getNewEditAction(baseLM, (ConcreteCustomClass) valueClass, targetProp, contextScope), contextActions);
+        }
         
         return addAction(null, new LA(new InputAction(LocalizedString.create("Input"), valueClass, targetProp, hasOldValue, orderInterfaces, contextList, filterList, contextActions, customEditorFunction)));
     }
@@ -1049,7 +1068,7 @@ public abstract class LogicsModule {
             // the order will / have to be the same as in formAction itself
             return addInputAProp(form.getBaseClass(inputObject), inputProp, false, listInterfaces,
                     // getting inputList entity with all filters
-                    mappedList.result, scope, inputFilter, ListFact.toList(new InputContextAction<>("dialog", formImplement.action, formImplement.mapping)), customChangeFunction); // // adding dialog action (no string parameter, but extra parameters)
+                    mappedList.result, scope, inputFilter, ListFact.EMPTY(), new InputContextAction<>("dialog", formImplement.action, formImplement.mapping), customChangeFunction); // // adding dialog action (no string parameter, but extra parameters)
         }
 
         resultAction = new LA<>(formImplement.action, listInterfaces.mapOrder(formImplement.mapping.reverse()));
@@ -1820,6 +1839,16 @@ public abstract class LogicsModule {
     }
 
     // ---------------------- Add Form ---------------------- //
+
+    public LA<?> addResetAction(CustomClass cls, LP targetProp, int contextParams, FormSessionScope scope) {
+        LA action = addForAProp(LocalizedString.create("{logics.property.reset}"), false, false, false, false, contextParams, cls, true, false, 0, false,
+                BaseUtils.add(getUParams(contextParams + 1), directLI(addResetAProp(targetProp.property))));
+
+        if(scope.isNewSession())
+            action = addNewSessionAProp(null, action, scope.isNestedSession(), false, false, getMigrateInputProps(ListFact.singleton(targetProp)));
+
+        return action;
+    }
 
     // assumes 1 parameter - new, others - context
     protected LA addNewEditAction(CustomClass cls, LA setAction, LA doAction, int contextParams) {
