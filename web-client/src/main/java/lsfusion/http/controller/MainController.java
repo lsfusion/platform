@@ -179,7 +179,7 @@ public class MainController {
         FileData fileData = new FileData(new RawFileData(jsonArray.toString().getBytes(StandardCharsets.UTF_8)), "json");
         try {
             ExternalResponse externalResponse = logicsProvider.runRequest(request,
-                    sessionObject -> sessionObject.remoteLogics.exec(AuthenticationToken.ANONYMOUS, NavigatorProviderImpl.getSessionInfo(request),
+                    (sessionObject, retry) -> sessionObject.remoteLogics.exec(AuthenticationToken.ANONYMOUS, NavigatorProviderImpl.getSessionInfo(request),
                     method + "[JSONFILE]", getExternalRequest(new Object[]{fileData}, request)));
             return new JSONObject(new String(((FileData) externalResponse.results[0]).getRawFile().getBytes(), StandardCharsets.UTF_8));
         } catch (IOException | AppServerNotAvailableDispatchException e) {

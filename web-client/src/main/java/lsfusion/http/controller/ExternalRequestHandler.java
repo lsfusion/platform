@@ -6,9 +6,8 @@ import lsfusion.base.Pair;
 import lsfusion.interop.base.exception.AuthenticationException;
 import lsfusion.interop.base.exception.RemoteInternalException;
 import lsfusion.interop.base.exception.RemoteMessageException;
-import lsfusion.interop.session.ExternalUtils;
-import lsfusion.interop.logics.LogicsRunnable;
 import lsfusion.interop.logics.LogicsSessionObject;
+import lsfusion.interop.session.ExternalUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.entity.StringEntity;
@@ -19,6 +18,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.rmi.NoSuchObjectException;
 import java.rmi.RemoteException;
 
 import static lsfusion.base.BaseUtils.nvl;
@@ -27,7 +27,7 @@ public abstract class ExternalRequestHandler extends LogicsRequestHandler implem
 
     protected abstract void handleRequest(LogicsSessionObject sessionObject, HttpServletRequest request, HttpServletResponse response) throws Exception;
 
-    private void handleRequestException(LogicsSessionObject sessionObject, HttpServletRequest request, HttpServletResponse response) throws RemoteException {
+    private void handleRequestException(LogicsSessionObject sessionObject, HttpServletRequest request, HttpServletResponse response, boolean retry) throws RemoteException {
         try {
             handleRequest(sessionObject, request, response);
         } catch (Exception e) {
@@ -37,11 +37,14 @@ public abstract class ExternalRequestHandler extends LogicsRequestHandler implem
                 response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                 response.setContentType("text/html; charset=utf-8");
 
-                String errString = getErrorMessage(e);
-                try { // in theory here can be changed exception (despite of the fact that remote call is wrapped into RemoteExceptionAspect)
-                    response.getWriter().print(errString);
-                } catch (IOException e1) {
-                    throw Throwables.propagate(e1);
+                //we know that there will be a re-request, so we do not write in response - we can call getWriter() only once
+                if(!(e instanceof NoSuchObjectException) || retry) {
+                    String errString = getErrorMessage(e);
+                    try { // in theory here can be changed exception (despite of the fact that remote call is wrapped into RemoteExceptionAspect)
+                        response.getWriter().print(errString);
+                    } catch (IOException e1) {
+                        throw Throwables.propagate(e1);
+                    }
                 }
 
                 if (e instanceof RemoteException)  // rethrow RemoteException to invalidate LogicsSessionObject in LogicsProvider
@@ -61,12 +64,9 @@ public abstract class ExternalRequestHandler extends LogicsRequestHandler implem
     @Override
     public void handleRequest(final HttpServletRequest request, final HttpServletResponse response) throws IOException {
         try {
-            runRequest(request, new LogicsRunnable<Object>() {
-                @Override
-                public Object run(LogicsSessionObject sessionObject) throws RemoteException {
-                    handleRequestException(sessionObject, request, response);
-                    return null;
-                }
+            runRequest(request, (sessionObject, retry) -> {
+                handleRequestException(sessionObject, request, response, retry);
+                return null;
             });
         } catch (RemoteException e) { // will suppress that error, because we rethrowed it when handling request (see above)
         }

@@ -7,8 +7,6 @@ import lsfusion.http.controller.MainController;
 import lsfusion.http.provider.navigator.NavigatorProviderImpl;
 import lsfusion.interop.base.exception.AuthenticationException;
 import lsfusion.interop.connection.AuthenticationToken;
-import lsfusion.interop.logics.LogicsRunnable;
-import lsfusion.interop.logics.LogicsSessionObject;
 import lsfusion.interop.logics.remote.RemoteLogicsInterface;
 import lsfusion.interop.session.ExternalResponse;
 import org.json.JSONArray;
@@ -49,12 +47,7 @@ public class LSFClientRegistrationRepository extends LogicsRequestHandler implem
             HttpServletRequest request = LSFRemoteAuthenticationProvider.getHttpServletRequest();
             List<ClientRegistration> clientRegistrations;
             try {
-                clientRegistrations = runRequest(request, new LogicsRunnable<List<ClientRegistration>>() {
-                    @Override
-                    public List<ClientRegistration> run(LogicsSessionObject sessionObject) throws RemoteException {
-                        return getOauth2ClientCredentials(sessionObject.remoteLogics, request);
-                    }
-                });
+                clientRegistrations = runRequest(request, (sessionObject, retry) -> getOauth2ClientCredentials(sessionObject.remoteLogics, request));
             } catch (IOException e) {
                 throw Throwables.propagate(e);
             }
