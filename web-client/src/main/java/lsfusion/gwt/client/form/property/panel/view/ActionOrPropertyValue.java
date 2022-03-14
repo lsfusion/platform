@@ -236,6 +236,6 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
     public void updateValue(Object value) {
         this.value = value;
 
-        form.update(property, getRenderElement(), value, this);
+        form.update(property, getRenderElement(), this);
     }
 }

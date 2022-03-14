@@ -11,7 +11,6 @@ import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.table.grid.view.GPivot;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 
@@ -104,20 +103,20 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
     }
 
     // pivot / footer
-    public static void renderAndUpdate(GPropertyDraw property, Element element, Object value, RenderContext renderContext, UpdateContext updateContext) {
+    public static void renderAndUpdate(GPropertyDraw property, Element element, RenderContext renderContext, UpdateContext updateContext) {
         // // can be div in renderColAttrCell : if + is added or sort
 //        assert GwtClientUtils.isTDorTH(element);
         render(property, element, renderContext);
-        update(property, element, value, updateContext);
+        update(property, element, updateContext);
     }
 
     public static void render(GPropertyDraw property, Element element, RenderContext renderContext) {
-        property.getCellRenderer().renderStatic(renderSized(element, property, renderContext), renderContext);
+        property.getCellRenderer().render(renderSized(element, property, renderContext), renderContext);
     }
 
     // pivot (render&update), footer (render&update, update)
-    public static void update(GPropertyDraw property, Element element, Object value, UpdateContext updateContext) {
-        property.getCellRenderer().renderDynamic(getRenderSizedElement(element, property, updateContext), value, updateContext);
+    public static void update(GPropertyDraw property, Element element, UpdateContext updateContext) {
+        property.getCellRenderer().update(getRenderSizedElement(element, property, updateContext), updateContext);
     }
 
     @Override

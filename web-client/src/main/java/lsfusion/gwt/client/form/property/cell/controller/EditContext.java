@@ -19,7 +19,7 @@ public interface EditContext {
     Element getEditElement();
     Element getEditEventElement();
 
-    Object getValue();
+    default Object getValue() { return getUpdateContext().getValue(); }
     void setValue(Object value);
 
     Element getFocusElement();

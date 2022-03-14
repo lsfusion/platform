@@ -21,9 +21,8 @@ import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
 
-public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<T> implements RenderContext {
+public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<T> {
 
     protected final GFormController form;
     protected final GGroupObject groupObject;
@@ -56,6 +55,7 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
 
     public abstract GPropertyDraw getProperty(int row, int column);
     public abstract GPropertyDraw getProperty(Cell cell);
+    public abstract GGridPropertyTable<T>.GridPropertyColumn getGridColumn(int column);
 
     @Override
     public boolean isChangeOnSingleClick(Cell cell, boolean rowChanged) {
@@ -70,8 +70,6 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
     public abstract GGroupObjectValue getRowKey(Cell editCell);
 
     public abstract void setValueAt(Cell cell, Object value);
-
-    public abstract Object getValueAt(Cell cell);
 
     public abstract void pasteData(Cell cell, TableCellElement parent, List<List<String>> table);
 
@@ -95,16 +93,19 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
         form.executePropertyEventAction(handler, isBinding, getEditContext(editCell, editCellParent));
     }
 
-    protected abstract UpdateContext getUpdateContext(Cell cell, TableCellElement cellElement);
+    protected abstract RenderContext getRenderContext(Cell cell, TableCellElement cellElement);
+
+    protected abstract UpdateContext getUpdateContext(Cell cell, TableCellElement cellElement, GPropertyDraw property, GGridPropertyTable<T>.GridPropertyColumn column);
 
     public ExecuteEditContext getEditContext(Cell editCell, TableCellElement editCellParent) {
         final GPropertyDraw property = GPropertyTable.this.getProperty(editCell);
-        UpdateContext updateContext = GPropertyTable.this.getUpdateContext(editCell, editCellParent);
+        RenderContext renderContext = getRenderContext(editCell, editCellParent);
+        UpdateContext updateContext = getUpdateContext(editCell, editCellParent, property, getGridColumn(editCell.getColumnIndex()));
         Element editElement = GPropertyTableBuilder.getRenderSizedElement(editCellParent, property, updateContext);
         return new ExecuteEditContext() {
             @Override
             public RenderContext getRenderContext() {
-                return GPropertyTable.this;
+                return renderContext;
             }
 
             @Override
@@ -125,11 +126,6 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
             @Override
             public Element getEditEventElement() {
                 return editCellParent;
-            }
-
-            @Override
-            public Object getValue() {
-                return getValueAt(editCell);
             }
 
             @Override
@@ -195,16 +191,6 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
                 updateSelectedRowCellBackground(true, true, editCellParent);
             }
         };
-    }
-
-    @Override
-    public boolean isAlwaysSelected() {
-        return false;
-    }
-
-    @Override
-    public boolean globalCaptionIsDrawn() {
-        return true;
     }
 
     public abstract GFont getFont();

@@ -2094,7 +2094,7 @@ public class GFormController implements EditManager {
         if(cellEditor instanceof ReplaceCellEditor) {
             RenderContext renderContext = editContext.getRenderContext();
             ((ReplaceCellEditor) cellEditor).clearRender(renderElement, renderContext, cancel);
-            editContext.getProperty().getCellRenderer().renderStatic(renderElement, renderContext);
+            editContext.getProperty().getCellRenderer().render(renderElement, renderContext);
 
             editContext.stopEditing();
 
@@ -2117,7 +2117,7 @@ public class GFormController implements EditManager {
         //getAsyncValues need editContext, so it must be after clearRenderer
         this.editContext = null;
 
-        update(editContext, renderElement, editContext.getValue());
+        update(editContext);
     }
 
     public void render(GPropertyDraw property, Element element, RenderContext renderContext) {
@@ -2126,24 +2126,36 @@ public class GFormController implements EditManager {
             return;
         }
 
-        property.getCellRenderer().renderStatic(element, renderContext);
+        property.getCellRenderer().render(element, renderContext);
     }
+
+    public void rerender(GPropertyDraw property, Element element, Runnable changeContext, RenderContext renderContext, UpdateContext updateContext) {
+        if(isEdited(element))
+            return;
+
+        CellRenderer cellRenderer = property.getCellRenderer();
+        cellRenderer.clearRender(element, renderContext);
+
+        changeContext.run();
+
+        cellRenderer.render(element, renderContext);
+        cellRenderer.update(element, updateContext);
+    }
+
     // "external" update - paste + server update edit value
     public void updateValue(EditContext editContext, Object value) {
         editContext.setValue(value);
 
-        update(editContext, editContext.getEditElement(), value);
+        update(editContext);
     }
-    public void update(EditContext editContext, Element renderElement, Object value) {
-        assert renderElement == editContext.getEditElement();
-        assert value == editContext.getValue();
-        update(editContext.getProperty(), renderElement, value, editContext.getUpdateContext());
+    public void update(EditContext editContext) {
+        update(editContext.getProperty(), editContext.getEditElement(), editContext.getUpdateContext());
     }
-    public void update(GPropertyDraw property, Element element, Object value, UpdateContext updateContext) {
+    public void update(GPropertyDraw property, Element element, UpdateContext updateContext) {
         if(isEdited(element))
             return;
 
-        property.getCellRenderer().renderDynamic(element, value, updateContext);
+        property.getCellRenderer().update(element, updateContext);
     }
 
     public boolean isEdited(Element element) {

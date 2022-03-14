@@ -25,6 +25,7 @@ import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController;
 import lsfusion.gwt.client.form.order.user.GGridSortableHeaderManager;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTable;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
@@ -185,7 +186,6 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         form.addBinding(event, new GBindingEnv(null, null, null, GBindingMode.ONLY, GBindingMode.NO, null, null, null), pressed, GGridPropertyTable.this, groupObject);
     }
 
-    @Override
     public GFont getFont() {
         return font;
     }
@@ -524,7 +524,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         return property.focusable == null || property.focusable;
     }
 
-    protected abstract class GridPropertyColumn extends Column<T, Object> {
+    public abstract class GridPropertyColumn extends Column<T, Object> {
 
         protected abstract Object getValue(GPropertyDraw property, T record);
 
@@ -547,8 +547,11 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
 
         public void renderDom(Cell cell, TableCellElement cellElement) {
             GPropertyDraw property = getProperty(cell);
-            if(property != null) // in tree there can be no property in groups other than last
-                form.render(property, GPropertyTableBuilder.renderSized(cellElement, property, GGridPropertyTable.this), GGridPropertyTable.this);
+            if(property == null) // in tree there can be no property in groups other than last
+                return;
+
+            RenderContext renderContext = getRenderContext(cell, cellElement);
+            form.render(property, GPropertyTableBuilder.renderSized(cellElement, property, renderContext), renderContext);
         }
 
         @Override
@@ -557,13 +560,40 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
             if (property == null) // in tree there can be no property in groups other than last
                 return;
 
-            UpdateContext updateContext = getUpdateContext(cell, cellElement);
-            form.update(property, GPropertyTableBuilder.getRenderSizedElement(cellElement, property, updateContext),
-                    getValue(property, (T) cell.getRow()), updateContext);
+            UpdateContext updateContext = getUpdateContext(cell, cellElement, property, this);
+            form.update(property, GPropertyTableBuilder.getRenderSizedElement(cellElement, property, updateContext), updateContext);
         }
     }
 
-    protected UpdateContext getUpdateContext(Cell cell, TableCellElement cellElement) {
+    public GridPropertyColumn getGridColumn(int column) {
+        return (GridPropertyColumn) getColumn(column);
+    }
+
+    @Override
+    protected RenderContext getRenderContext(Cell cell, TableCellElement cellElement) {
+        return new RenderContext() {
+            @Override
+            public boolean isAlwaysSelected() {
+                return false;
+            }
+
+            @Override
+            public boolean globalCaptionIsDrawn() {
+                return GGridPropertyTable.this.globalCaptionIsDrawn();
+            }
+
+            @Override
+            public GFont getFont() {
+                return GGridPropertyTable.this.getFont();
+            }
+        };
+    }
+
+    private boolean globalCaptionIsDrawn() {
+        return true;
+    }
+
+    public UpdateContext getUpdateContext(Cell cell, TableCellElement cellElement, GPropertyDraw property, GridPropertyColumn column) {
         return new UpdateContext() {
             @Override
             public Consumer<Object> getCustomRendererValueChangeConsumer() {
@@ -578,6 +608,11 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
             @Override
             public boolean globalCaptionIsDrawn() {
                 return GGridPropertyTable.this.globalCaptionIsDrawn();
+            }
+
+            @Override
+            public Object getValue() {
+                return column.getValue(property, (T) cell.getRow());
             }
         };
     }
