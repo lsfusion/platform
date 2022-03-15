@@ -264,7 +264,8 @@ public class MainController {
         Charset charset = getCharsetFromContentType(contentTypeString != null ? ContentType.parse(contentTypeString) : null);
         return new ExternalRequest(new String[0], params, charset == null ? null : charset.toString(), new String[0], new String[0], null,
                 null, null, null, null, request.getScheme(), request.getMethod(), request.getServerName(), request.getServerPort(), request.getContextPath(),
-                request.getServletPath(), request.getPathInfo() == null ? "" : request.getPathInfo(), request.getQueryString() != null ? request.getQueryString() : "");
+                request.getServletPath(), request.getPathInfo() == null ? "" : request.getPathInfo(), request.getQueryString() != null ? request.getQueryString() : "",
+                contentTypeString, null);
     }
 
     public static String getURLPreservingParameters(String url, List<String> paramsToRemove, HttpServletRequest request) {
