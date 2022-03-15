@@ -454,7 +454,16 @@ public class MainFrame implements EntryPoint {
                 
                 formsController.initRoot(formsController);
 
-                formsController.executeNotificationAction("SystemEvents.onClientStarted[]", 0);
+                formsController.executeNotificationAction("SystemEvents.onClientStarted[]", 0, formsController.new ServerResponseCallback(false) {
+                    @Override
+                    public void onSuccess(ServerResponseResult result, Runnable onDispatchFinished) {
+                        super.onSuccess(result, onDispatchFinished);
+
+                        if (formsController.getFormsCount() == 0) {
+                            openNavigatorMenu();
+                        }
+                    }
+                });
             }
         });
     }
