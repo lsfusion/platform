@@ -105,6 +105,16 @@ input[type=checkbox]:focus {
     padding-right: 5px;
 }
 
+.formsTabBar .mobileTabPanelBar {
+    flex-wrap: nowrap !important;
+    overflow-x: auto;
+    
+    scrollbar-width: none;  /* hide scrollbars in Firefox */
+}
+.formsTabBar .mobileTabPanelBar::-webkit-scrollbar {
+    display: none;  /* hide scrollbars in Safari and Chrome */
+}
+
 .tabLayoutPanelTabWidget {
     height: 100%;
 }
