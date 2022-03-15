@@ -187,6 +187,13 @@ urlDecoded = DATA LOCAL TEXT();
 urlDecode  INTERNAL 'lsfusion.server.logics.classes.data.utils.string.UrlDecodeAction' (TEXT, TEXT);
 urlDecode (TEXT text) { urlDecode(text, 'UTF-8'); };
 
+urlFormatted = DATA LOCAL TEXT();
+urlParsed = DATA LOCAL TEXT(TEXT);
+//urlFormatted -> urlParsed
+urlParse INTERNAL 'lsfusion.server.logics.classes.data.utils.string.UrlParseAction' ();
+//urlParsed -> urlFormatted
+urlFormat INTERNAL 'lsfusion.server.logics.classes.data.utils.string.UrlFormatAction' ();
+
 generatedUUID = DATA LOCAL TEXT();
 generateUUID  INTERNAL 'lsfusion.server.logics.classes.data.utils.string.GenerateUUIDAction' ();
 
