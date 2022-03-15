@@ -184,7 +184,7 @@ public class FormsController implements ColorThemeChangeListener {
     private ClientFormDockable getDuplicateForm(String canonicalName, boolean forbidDuplicate) {
         if (MainController.forbidDuplicateForms && forbidDuplicate) {
             List<ClientDockable> formsList = forms.getFormsList();
-            ClientDockable duplicate = formsList.stream().filter(dockable -> dockable.getCanonicalName().equals(canonicalName)).findFirst().orElse(null);
+            ClientDockable duplicate = formsList.stream().filter(dockable -> dockable.getCanonicalName() != null && dockable.getCanonicalName().equals(canonicalName)).findFirst().orElse(null);
             if (duplicate != null) {
                 CDockable dockable = control.getCDockable(control.getCDockableCount() - formsList.size() + formsList.indexOf(duplicate));
                 if (dockable instanceof ClientFormDockable) {
