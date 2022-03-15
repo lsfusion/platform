@@ -47,7 +47,7 @@ public class ExternalRequest implements Serializable {
 
     public ExternalRequest(String query) {
         this(new String[0], new Object[0], "utf-8", new String[0], new String[0], null,
-                null, null, null, null, null, null, null, null, null, null, null, query);
+                null, null, null, null, null, null, null, null, null, null, null, query, null, null);
     }
 
     public ExternalRequest(String[] returnNames, Object[] params, String charsetName,
