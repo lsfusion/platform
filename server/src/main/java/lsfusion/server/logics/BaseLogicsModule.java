@@ -153,6 +153,8 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public LP<?> cookiesTo;
     public LP<?> query;
     public LP<?> params;
+    public LP<?> contentType;
+    public LP<?> body;
     public LP<?> appHost;
     public LP<?> appPort;
     public LP<?> exportName;
@@ -498,6 +500,8 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         cookiesTo = findProperty("cookiesTo[TEXT]");
         query = findProperty("query[]");
         params = findProperty("params[TEXT]");
+        contentType = findProperty("contentType[]");
+        body = findProperty("body[]");
         appHost = findProperty("appHost[]");
         appPort = findProperty("appPort[]");
         exportName = findProperty("exportName[]");
