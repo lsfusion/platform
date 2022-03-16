@@ -99,7 +99,7 @@ public class ExternalUtils {
         ExternalRequest request = new ExternalRequest(returns.toArray(new String[0]), paramsList.toArray(new Object[paramsList.size()]),
                 charset == null ? null : charset.toString(), headerNames, headerValues, cookieNames,
                 cookieValues, logicsHost, logicsPort, logicsExportName, scheme, method, webHost, webPort, contextPath,
-                servletPath, pathInfo, query, requestContentType.toString(), body);
+                servletPath, pathInfo, query, requestContentType != null ? requestContentType.toString() : null, body);
 
         String path = servletPath + pathInfo;
         boolean isEvalAction = path.endsWith("/eval/action");
