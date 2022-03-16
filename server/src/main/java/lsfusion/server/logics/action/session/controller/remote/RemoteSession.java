@@ -168,7 +168,7 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
         if (action.uses(businessLogics.LM.cookies.property)) {
             ExternalHTTPAction.writePropertyValues(session, businessLogics.LM.cookies, request.headerNames, request.headerValues);
         }
-        if (action.uses(businessLogics.LM.query.property)) {
+        if (request.query != null) {
             businessLogics.LM.query.change(request.query, session);
         }
         if (request.query != null && action.uses(businessLogics.LM.params.property)) {
@@ -189,34 +189,34 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
         if (action.uses(businessLogics.LM.body.property)) {
             businessLogics.LM.body.change(new RawFileData(request.body), session);
         }
-        if (action.uses(businessLogics.LM.appHost.property)) {
+        if (request.appHost != null) {
             businessLogics.LM.appHost.change(request.appHost, session);
         }
-        if (action.uses(businessLogics.LM.appPort.property)) {
+        if (request.appPort != null) {
             businessLogics.LM.appPort.change(request.appPort, session);
         }
-        if (action.uses(businessLogics.LM.exportName.property)) {
+        if (request.exportName != null) {
             businessLogics.LM.exportName.change(request.exportName, session);
         }
-        if (action.uses(businessLogics.LM.scheme.property)) {
+        if (request.scheme != null) {
             businessLogics.LM.scheme.change(request.scheme, session);
         }
-        if (action.uses(businessLogics.LM.method.property)) {
+        if (request.method != null) {
             businessLogics.LM.method.change(request.method, session);
         }
-        if (action.uses(businessLogics.LM.webHost.property)) {
+        if (request.webHost != null) {
             businessLogics.LM.webHost.change(request.webHost, session);
         }
-        if (action.uses(businessLogics.LM.webPort.property)) {
+        if (request.webPort != null) {
             businessLogics.LM.webPort.change(request.webPort, session);
         }
-        if (action.uses(businessLogics.LM.contextPath.property)) {
+        if (request.contextPath != null) {
             businessLogics.LM.contextPath.change(request.contextPath, session);
         }
-        if (action.uses(businessLogics.LM.servletPath.property)) {
+        if (request.servletPath != null) {
             businessLogics.LM.servletPath.change(request.servletPath, session);
         }
-        if (action.uses(businessLogics.LM.pathInfo.property)) {
+        if (request.pathInfo != null) {
             businessLogics.LM.pathInfo.change(request.pathInfo, session);
         }
     }
