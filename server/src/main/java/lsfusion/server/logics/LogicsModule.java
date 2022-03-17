@@ -1745,10 +1745,11 @@ public abstract class LogicsModule {
 
     public void setupResetProperty(Property property) {
         if (property.supportsReset()) {
-            LA<?> resetFormProperty = addSetupResetAProp(new LP(property));
+            LP lp = new LP(property);
+            LA<?> resetFormProperty = addSetupResetAProp(lp);
             Action formProperty = resetFormProperty.action;
             property.setContextMenuAction(formProperty.getSID(), formProperty.caption);
-            property.setEventAction(formProperty.getSID(), formProperty.getImplement(property.getReflectionOrderInterfaces()));
+            property.setEventAction(formProperty.getSID(), resetFormProperty.getImplement(lp.listInterfaces));
         }
     }
 
@@ -1766,7 +1767,6 @@ public abstract class LogicsModule {
         return addListAProp(addResetProperty(baseLM.getRequestCanceledProperty()), addResetProperty(property));
     }
 
-    @IdentityStrongLazy
     public LA<?> addResetProperty(LP property) {
         return addSetPropertyAProp(null, LocalizedString.create("{logics.property.reset}"), property.listInterfaces.size(), false,
                 add(getUParams(property.listInterfaces.size()), add(directLI(property), baseLM.vnull)));
@@ -1839,6 +1839,39 @@ public abstract class LogicsModule {
     }
 
     // ---------------------- Add Form ---------------------- //
+
+    // assumes 1 parameter - new, others - context
+    protected LA addNewEditAction2(CustomClass cls, LA setAction, LA doAction, int contextParams) {
+        int newIndex = contextParams + 1;
+        Object[] setEditWithParams = new Object[]{baseLM.getPolyEdit(), newIndex};
+        if(setAction != null) // adding setAction if any
+            setEditWithParams = directLI(addListAProp(BaseUtils.add(directLI(setAction), setEditWithParams)));
+
+        LA edit = addRequestAProp(null, true, LocalizedString.NONAME, // REQUEST
+                BaseUtils.add(BaseUtils.add(
+                                setEditWithParams, // edit(x);
+                                directLI(doAction)), // DO <<doAction>>
+                        new Object[]{addIfAProp(baseLM.sessionOwners, baseLM.getPolyDelete(), 1), newIndex}) // ELSE IF seekOwners THEN delete(x)
+        );
+
+        return addForAProp(LocalizedString.create("{logics.add}"), false, false, false, false, contextParams, cls, true, false, 0, false,
+                BaseUtils.add(getUParams(contextParams + 1), directLI(edit))); // context + addedInterface + action
+    }
+
+    public LA<?> addNewEditAction2(CustomClass cls, LP targetProp, int contextParams, FormSessionScope scope, Object... setProperty) {
+        Object[] externalParams = getUParams(contextParams + 1); // + new object
+        LA action = addNewEditAction2(cls,
+                addSetPropertyAProp(null, LocalizedString.NONAME, contextParams + 1, false, BaseUtils.add(externalParams, setProperty)),
+                addSetPropertyAProp(null, LocalizedString.NONAME, contextParams + 1, false, BaseUtils.add(externalParams, new Object[] {targetProp, contextParams + 1})), // targetProp() <- new object
+                contextParams);
+
+        if(scope.isNewSession())
+            action = addNewSessionAProp(null, action, scope.isNestedSession(), false, false, getMigrateInputProps(ListFact.singleton(targetProp)));
+
+        return action;
+    }
+
+
 
     // assumes 1 parameter - new, others - context
     protected LA addNewEditAction(CustomClass cls, LA setAction, LA doAction, int contextParams) {
