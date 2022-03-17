@@ -15,8 +15,8 @@ import TabItem from '@theme/TabItem';
 Executable exe files:
 lsFusion **4.1** Server & Client (+ OpenJDK **11.0.9**, PostgreSQL **13.1**(x64) / **10.8**(x32), Tomcat **9.0.21**):
 
-- [x32](http://download.lsfusion.org/exe/lsfusion-4.1.exe)
-- [x64](http://download.lsfusion.org/exe/lsfusion-4.1-x64.exe)
+- [x32](https://download.lsfusion.org/exe/lsfusion-4.1.exe)
+- [x64](https://download.lsfusion.org/exe/lsfusion-4.1-x64.exe)
 - <details><summary>Older versions</summary>
 
     - lsFusion 4.0 Server & Client
@@ -91,7 +91,7 @@ To give users access to the installed system, you must:
 Send users a link to `http://<web address of the web server (Client)>:8080`. When users open this link, they will be redirected by default to the login page, where, if necessary, they can install the desktop client via Java Web Start (requires Java (JDK) installed, for example, by following [this](https://developers.redhat.com/products/openjdk/download) link with registration or this one [without](https://github.com/ojdkbuild/ojdkbuild)). Web and desktop clients are updated automatically with [updates to the web server](#update) (Client)
 
 :::info
-Under Windows, you can also use desktop client [installers](http://download.lsfusion.org/exe/) (`lsfusion-desktop-*` files with the correct OS version and bit width). However, unlike installing with Java Web Start, a desktop client installed in this way will not be automatically updated. Therefore, you will need to update it manually by downloading the file of the new version of the desktop client (`lsfusion-client-4.<new version>.jar`) from [the central server](https://download.lsfusion.org/java) and replacing the `$INSTALL_DIR$/client.jar` file with it.
+Under Windows, you can also use desktop client [installers](https://download.lsfusion.org/exe/) (`lsfusion-desktop-*` files with the correct OS version and bit width). However, unlike installing with Java Web Start, a desktop client installed in this way will not be automatically updated. Therefore, you will need to update it manually by downloading the file of the new version of the desktop client (`lsfusion-client-4.<new version>.jar`) from [the central server](https://download.lsfusion.org/java) and replacing the `$INSTALL_DIR$/client.jar` file with it.
 :::
 
 :::caution
