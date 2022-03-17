@@ -270,6 +270,7 @@ readFile = DATA LOCAL FILE ();
 
 //cast to FILE and NAMEDFILE
 file(RAWFILE rawFile, STRING extension) = FORMULA FILE 'cast_static_file_to_dynamic_file($1, $2)';
+setExtension(RAWFILE rawFile, STRING extension) = FORMULA FILE 'cast_static_file_to_dynamic_file($1, $2)'; // backward compatibility
 namedFile(RAWFILE rawFile, STRING name, STRING extension) = FORMULA NAMEDFILE 'cast_static_file_to_named_file($1, $2, $3)';
 namedFile(FILE file, STRING name) = FORMULA NAMEDFILE 'cast_dynamic_file_to_named_file($1, $2)';
 
