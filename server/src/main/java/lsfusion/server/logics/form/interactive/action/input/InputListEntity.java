@@ -101,7 +101,7 @@ public class InputListEntity<P extends PropertyInterface, V extends PropertyInte
     }
 
     public <X extends PropertyInterface> InputContextAction<?, V> getResetAction(BaseLogicsModule baseLM, LP targetProp) {
-        LA<X> reset = (LA<X>) baseLM.addResetAProp(targetProp.property);
+        LA<X> reset = (LA<X>) baseLM.addResetAProp(targetProp);
         return new InputContextAction("reset", reset.getActionOrProperty(), reset.listInterfaces.toIndexedMap());
     }
 
