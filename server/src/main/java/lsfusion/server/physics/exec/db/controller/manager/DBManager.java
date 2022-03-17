@@ -82,6 +82,7 @@ import lsfusion.server.logics.property.AggregateProperty;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.infer.AlgType;
 import lsfusion.server.logics.property.data.DataProperty;
+import lsfusion.server.logics.property.data.StoredDataProperty;
 import lsfusion.server.logics.property.implement.PropertyObjectImplement;
 import lsfusion.server.logics.property.implement.PropertyObjectInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyRevImplement;
@@ -1703,7 +1704,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         ImSet<PropertyField> skipRecalculateFields = null;
         if(properties != null) {
             fields = SetFact.fromJavaOrderSet(properties).getSet().mapKeyValues(value -> value.field, ActionOrProperty::getCanonicalName);
-            skipRecalculateFields = SetFact.fromJavaOrderSet(properties).getSet().filterFn(property -> property instanceof DataProperty).mapSetValues(property -> property.field);
+            skipRecalculateFields = SetFact.fromJavaOrderSet(properties).getSet().filterFn(property -> property instanceof StoredDataProperty).mapSetValues(property -> property.field);
         }
         long start = System.currentTimeMillis();
         startLogger.info(String.format("Update Aggregation Stats started: %s", table));
