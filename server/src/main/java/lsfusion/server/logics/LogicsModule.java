@@ -1741,26 +1741,35 @@ public abstract class LogicsModule {
         return baseLM.getIsActiveFormProperty();
     }
 
-    // ------------------- RESET FILE ----------------- //
+    // ------------------- RESET ----------------- //
 
     public void setupResetProperty(Property property) {
         if (property.supportsReset()) {
-            LA<?> resetFormProperty = addResetAProp(new LP(property));
+            LA<?> resetFormProperty = addSetupResetAProp(new LP(property));
             Action formProperty = resetFormProperty.action;
             property.setContextMenuAction(formProperty.getSID(), formProperty.caption);
             property.setEventAction(formProperty.getSID(), formProperty.getImplement(property.getReflectionOrderInterfaces()));
         }
     }
 
-    @IdentityStrongLazy
-    public LA<?> addResetAProp(LP property) {
-        LA result = addSetPropertyAProp(null, LocalizedString.create("{logics.property.reset}"), 0, false, BaseUtils.add(directLI(property), baseLM.vnull));
+    public LA<?> addSetupResetAProp(LP property) {
+        LA result = addResetProperty(property);
         if (property.property.isNamed()) {
             List<ResolveClassSet> signature = new ArrayList<>();
             String name = nameForResetAction(property.property, signature);
             makeActionPublic(result, name, signature);
         }
         return result;
+    }
+
+    public LA<?> addResetAProp(LP property) {
+        return addListAProp(addResetProperty(baseLM.getRequestCanceledProperty()), addResetProperty(property));
+    }
+
+    @IdentityStrongLazy
+    public LA<?> addResetProperty(LP property) {
+        return addSetPropertyAProp(null, LocalizedString.create("{logics.property.reset}"), property.listInterfaces.size(), false,
+                add(getUParams(property.listInterfaces.size()), add(directLI(property), baseLM.vnull)));
     }
 
     private String nameForResetAction(Property property, List<ResolveClassSet> signature) {
