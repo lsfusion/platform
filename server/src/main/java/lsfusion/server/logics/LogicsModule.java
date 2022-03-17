@@ -132,7 +132,6 @@ import lsfusion.server.logics.property.value.ValueProperty;
 import lsfusion.server.physics.admin.drilldown.action.LazyAction;
 import lsfusion.server.physics.admin.drilldown.form.DrillDownFormEntity;
 import lsfusion.server.physics.admin.monitor.SystemEventsLogicsModule;
-import lsfusion.server.physics.admin.systemevents.ResetAction;
 import lsfusion.server.physics.dev.debug.ActionDebugger;
 import lsfusion.server.physics.dev.debug.ActionDelegationType;
 import lsfusion.server.physics.dev.debug.DebugInfo;
@@ -1746,18 +1745,19 @@ public abstract class LogicsModule {
 
     public void setupResetProperty(Property property) {
         if (property.supportsReset()) {
-            LA<?> resetFormProperty = addResetAProp(property);
+            LA<?> resetFormProperty = addResetAProp(new LP(property));
             Action formProperty = resetFormProperty.action;
             property.setContextMenuAction(formProperty.getSID(), formProperty.caption);
             property.setEventAction(formProperty.getSID(), formProperty.getImplement(property.getReflectionOrderInterfaces()));
         }
     }
 
-    public LA<?> addResetAProp(Property property) {
-        LA result = addAProp(null, new ResetAction(LocalizedString.create("{logics.property.reset}"), property));
-        if (property.isNamed()) {
+    @IdentityStrongLazy
+    public LA<?> addResetAProp(LP property) {
+        LA result = addSetPropertyAProp(null, LocalizedString.create("{logics.property.reset}"), 0, false, BaseUtils.add(directLI(property), baseLM.vnull));
+        if (property.property.isNamed()) {
             List<ResolveClassSet> signature = new ArrayList<>();
-            String name = nameForResetAction(property, signature);
+            String name = nameForResetAction(property.property, signature);
             makeActionPublic(result, name, signature);
         }
         return result;
