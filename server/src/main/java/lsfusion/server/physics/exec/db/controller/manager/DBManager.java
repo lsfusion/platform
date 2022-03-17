@@ -1700,14 +1700,16 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
     private void recalculateAndUpdateStat(DataSession session, ImplementTable table, List<Property> properties) throws SQLException, SQLHandledException {
         ImMap<PropertyField, String> fields = null;
+        ImSet<PropertyField> skipRecalculateFields = null;
         if(properties != null) {
             fields = SetFact.fromJavaOrderSet(properties).getSet().mapKeyValues(value -> value.field, ActionOrProperty::getCanonicalName);
+            skipRecalculateFields = SetFact.fromJavaOrderSet(properties).getSet().filterFn(property -> property instanceof DataProperty).mapSetValues(property -> property.field);
         }
         long start = System.currentTimeMillis();
         startLogger.info(String.format("Update Aggregation Stats started: %s", table));
         
-        table.recalculateStat(reflectionLM, session, fields, false);
-        ImplementTable.CalcStat calculateStatResult = table.recalculateStat(reflectionLM, session, fields, true);
+        table.recalculateStat(reflectionLM, session, fields, skipRecalculateFields, false);
+        ImplementTable.CalcStat calculateStatResult = table.recalculateStat(reflectionLM, session, fields, skipRecalculateFields, true);
         apply(session);
         
         long time = System.currentTimeMillis() - start;
