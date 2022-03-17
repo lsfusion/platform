@@ -300,7 +300,7 @@ public abstract class FormsController {
     }
 
     public FormDockable findForm(String formCanonicalName) {
-        return findInList(forms, dockable -> dockable.getCanonicalName().equals(formCanonicalName));
+        return findInList(forms, dockable -> dockable.getCanonicalName() != null && dockable.getCanonicalName().equals(formCanonicalName));
     }
 
     public void addDockable(FormDockable dockable) {
