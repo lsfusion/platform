@@ -1518,7 +1518,6 @@ public class GFormController implements EditManager {
 
     public void setContainerCustomDesign(GContainer container, String customDesign) {
         GAbstractContainerView containerView = formLayout.getContainerView(container);
-        assert containerView instanceof CustomContainerView;
         ((CustomContainerView)containerView).updateCustomDesign(customDesign);
     }
 

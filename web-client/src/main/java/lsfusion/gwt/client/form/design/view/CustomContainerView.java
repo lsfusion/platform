@@ -11,21 +11,21 @@ import lsfusion.gwt.client.form.design.view.flex.LayoutContainerView;
 public class CustomContainerView extends LayoutContainerView {
 
     private final ResizableComplexPanel panel;
-    private final GFormController formController;
     private String currentCustomDesign = "";
 
     public CustomContainerView(GFormController formController, GContainer container) {
         super(container, formController);
-
-        this.formController = formController;
         panel = new ResizableComplexPanel();
+    }
+
+    protected void addImpl(int index, GComponent child, Widget view, ResizableComplexPanel attachContainer) {
+        childrenViews.forEach(attachContainer::add);
     }
 
     @Override
     public void updateLayout(long requestIndex, boolean[] childrenVisible) {
         if (!currentCustomDesign.equals(container.getCustomDesign())) {
             currentCustomDesign = container.getCustomDesign();
-            childrenViews.forEach(childrenView -> formController.getFormLayout().recordViews.add(childrenView));
 
             Element panelElement = panel.getElement();
             panelElement.setInnerHTML(getTagCustomDesign(container.getCustomDesign()));

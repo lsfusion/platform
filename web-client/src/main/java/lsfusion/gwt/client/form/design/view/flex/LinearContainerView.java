@@ -5,6 +5,7 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
+import lsfusion.gwt.client.base.view.ResizableComplexPanel;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
@@ -101,7 +102,7 @@ public class LinearContainerView extends LayoutContainerView {
     }
 
     @Override
-    protected void addImpl(int index, GComponent child, Widget view) {
+    protected void addImpl(int index, GComponent child, Widget view, ResizableComplexPanel attachContainer) {
         if(alignCaptions) { // when adding GPropertyPanelController.Panel is empty, so we have to do everything wit callback
             AlignCaptionPanel captionPanel;
             if(child.isAlignCaption()) { // from alignCaptions
