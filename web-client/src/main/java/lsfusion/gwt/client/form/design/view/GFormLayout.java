@@ -42,7 +42,7 @@ public class GFormLayout extends ResizableComplexPanel {
 
         attachContainer = new ResizableComplexPanel();
         attachContainer.setVisible(false);
-        addContainers(mainContainer, attachContainer);
+        addContainers(mainContainer);
 
         Widget view = getMainView();
         setSizedMain(view, false);
@@ -91,12 +91,12 @@ public class GFormLayout extends ResizableComplexPanel {
     }
 
     // creating containers (all other components are created when creating controllers)
-    private void addContainers(GContainer container, ResizableComplexPanel attachContainer) {
+    private void addContainers(GContainer container) {
         GAbstractContainerView containerView = createContainerView(form, container);
 
         containerViews.put(container, containerView);
         Widget viewWidget = containerView.getView();
-        add(container, viewWidget, null, attachContainer);
+        add(container, viewWidget, null);
 
         // debug info
         viewWidget.getElement().setAttribute("lsfusion-container-type", container.getContainerType());
@@ -105,7 +105,7 @@ public class GFormLayout extends ResizableComplexPanel {
             if(child instanceof GGrid)
                 child = ((GGrid)child).record;
             if (child instanceof GContainer) {
-                addContainers((GContainer) child, attachContainer);
+                addContainers((GContainer) child);
             }
         }
     }
@@ -115,10 +115,10 @@ public class GFormLayout extends ResizableComplexPanel {
 //        assert GwtClientUtils.getAllMargins(view.getElement()) == 0;
         assert !(component instanceof GContainer);
         baseComponentViews.put(component, view);
-        add(component, view, focusReceiver, attachContainer);
+        add(component, view, focusReceiver);
     }
 
-    public void add(GComponent key, Widget view, DefaultFocusReceiver focusReceiver, ResizableComplexPanel attachContainer) {
+    public void add(GComponent key, Widget view, DefaultFocusReceiver focusReceiver) {
         // debug info
         if (key.sID != null)
             view.getElement().setAttribute("lsfusion-container", key.sID);

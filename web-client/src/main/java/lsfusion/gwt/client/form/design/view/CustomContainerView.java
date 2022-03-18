@@ -19,7 +19,7 @@ public class CustomContainerView extends LayoutContainerView {
     }
 
     protected void addImpl(int index, GComponent child, Widget view, ResizableComplexPanel attachContainer) {
-        childrenViews.forEach(attachContainer::add);
+        attachContainer.add(childrenViews.get(index));
     }
 
     @Override
