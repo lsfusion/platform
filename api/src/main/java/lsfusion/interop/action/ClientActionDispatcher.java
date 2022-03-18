@@ -71,6 +71,8 @@ public interface ClientActionDispatcher {
     
     void execute(ResetWindowsLayoutClientAction action);
 
+    void execute(ClientJSAction action);
+
     EventBus getEventBus();
 
     void addCleanListener(ICleanListener daemonTask);

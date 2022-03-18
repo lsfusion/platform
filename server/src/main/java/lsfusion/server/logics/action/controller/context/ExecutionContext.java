@@ -10,6 +10,7 @@ import lsfusion.base.lambda.Processor;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.form.ModalityType;
+import lsfusion.interop.form.WindowFormType;
 import lsfusion.server.base.controller.remote.RmiManager;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.QueryEnvironment;
@@ -496,32 +497,26 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
 
     // action calls
     public String applyMessage() throws SQLException, SQLHandledException {
-        return applyMessage(SetFact.<ActionValueImplement>EMPTYORDER(), SetFact.<SessionDataProperty>EMPTY());
+        return getEnv().applyMessage(getBL(), stack, this, getSessionEventFormEnv());
     }
 
     // action calls
     public boolean apply() throws SQLException, SQLHandledException {
-        return apply(SetFact.<ActionValueImplement>EMPTYORDER(), SetFact.<SessionDataProperty>EMPTY());
+        return apply(SetFact.EMPTYORDER());
     }
 
     // action calls
     public void applyException() throws SQLException, SQLHandledException {
-        applyException(SetFact.<ActionValueImplement>EMPTYORDER(), SetFact.<SessionDataProperty>EMPTY());
+        getEnv().applyException(getBL(), stack, this, getSessionEventFormEnv());
     }
 
     // action calls
-    public void applyException(ImOrderSet<ActionValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProperties) throws SQLException, SQLHandledException {
-        getEnv().applyException(getBL(), stack, this, applyActions, keepProperties, getSessionEventFormEnv());
-    }
 
     // action calls
-    public String applyMessage(ImOrderSet<ActionValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProperties) throws SQLException, SQLHandledException {
-        return getEnv().applyMessage(getBL(), stack, this, applyActions, keepProperties, getSessionEventFormEnv());
-    }
 
     // action calls
-    public boolean apply(ImOrderSet<ActionValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProperties) throws SQLException, SQLHandledException {
-        return getEnv().apply(getBL(), stack, this, applyActions, keepProperties, getSessionEventFormEnv());
+    public boolean apply(ImOrderSet<ActionValueImplement> applyActions) throws SQLException, SQLHandledException {
+        return getEnv().apply(getBL(), stack, this, applyActions, getSessionEventFormEnv());
     }
 
     // action calls
@@ -635,7 +630,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
     public ObjectValue requestUserData(final DataClass dataClass, final Object oldValue) {
         try {
             return requestUser(dataClass, () -> {
-                InputResult inputResult = inputUserData(dataClass, oldValue, true, null, null);
+                InputResult inputResult = inputUserData(dataClass, oldValue, true, null, null, null);
                 return inputResult != null ? inputResult.value : null;
             });
         } catch (SQLException | SQLHandledException e) {
@@ -643,7 +638,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         }
     }
 
-    public <T extends PropertyInterface> InputResult inputUserData(DataClass dataClass, Object oldValue, boolean hasOldValue, InputListEntity<T, P> list, InputList inputList) {
+    public <T extends PropertyInterface> InputResult inputUserData(DataClass dataClass, Object oldValue, boolean hasOldValue, InputListEntity<T, P> list, String customChangeFunction, InputList inputList) {
         assertNotUserInteractionInTransaction();
         if(pushedAsyncResult instanceof PushAsyncChange)
             return ((PushAsyncChange) pushedAsyncResult).value;
@@ -651,7 +646,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         InputContext<T> inputContext = null;
         if(list != null)
             inputContext = new InputContext<>(list.map(getKeys()), list.newSession, getSession(), getModifier(), inputList.strict);
-        return ThreadLocalContext.inputUserData(dataClass, oldValue, hasOldValue, inputContext, inputList);
+        return ThreadLocalContext.inputUserData(dataClass, oldValue, hasOldValue, inputContext, customChangeFunction, inputList);
     }
 
     @Deprecated
@@ -659,13 +654,13 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         return requestUser(ObjectType.instance, () -> ThreadLocalContext.requestUserClass(baseClass, defaultValue, concrete));
     }
 
-    public FormInstance createFormInstance(FormEntity formEntity, ImSet<ObjectEntity> inputObjects, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, Boolean noCancel, ManageSessionType manageSession, boolean checkOnOk, boolean showDrop, boolean interactive, boolean isFloat, ImSet<ContextFilterInstance> contextFilters, boolean readonly) throws SQLException, SQLHandledException {
-        return ThreadLocalContext.createFormInstance(formEntity, inputObjects, mapObjects, stack, session, isModal, noCancel, manageSession, checkOnOk, showDrop, interactive, isFloat, contextFilters, readonly);
+    public FormInstance createFormInstance(FormEntity formEntity, ImSet<ObjectEntity> inputObjects, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, Boolean noCancel, ManageSessionType manageSession, boolean checkOnOk, boolean showDrop, boolean interactive, WindowFormType type, ImSet<ContextFilterInstance> contextFilters, boolean readonly) throws SQLException, SQLHandledException {
+        return ThreadLocalContext.createFormInstance(formEntity, inputObjects, mapObjects, stack, session, isModal, noCancel, manageSession, checkOnOk, showDrop, interactive, type, contextFilters, readonly);
     }
 
     @Deprecated
     public FormInstance createFormInstance(FormEntity formEntity) throws SQLException, SQLHandledException {
-        return createFormInstance(formEntity, null, MapFact.<ObjectEntity, DataObject>EMPTY(), getSession(), false, FormEntity.DEFAULT_NOCANCEL, ManageSessionType.AUTO, false, false, false, false, null, false);
+        return createFormInstance(formEntity, null, MapFact.<ObjectEntity, DataObject>EMPTY(), getSession(), false, FormEntity.DEFAULT_NOCANCEL, ManageSessionType.AUTO, false, false, false, WindowFormType.FLOAT, null, false);
     }
 
     public SQLSyntax getDbSyntax() {

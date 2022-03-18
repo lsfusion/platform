@@ -19,7 +19,7 @@ public interface EditContext {
     Element getEditElement();
     Element getEditEventElement();
 
-    Object getValue();
+    default Object getValue() { return getUpdateContext().getValue(); }
     void setValue(Object value);
 
     Element getFocusElement();
@@ -27,4 +27,7 @@ public interface EditContext {
     Object forceSetFocus();
     void restoreSetFocus(Object forceSetFocus);
     boolean isSetLastBlurred();
+
+    default void startEditing() {}
+    default void stopEditing() {}
 }

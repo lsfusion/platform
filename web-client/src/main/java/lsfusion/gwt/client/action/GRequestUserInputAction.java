@@ -10,16 +10,19 @@ public class GRequestUserInputAction implements GAction {
     public Serializable oldValue;
     public boolean hasOldValue;
 
+    public String customChangeFunction;
+
     public GInputList inputList;
 
     //needed for it to be gwt-serializable
     @SuppressWarnings("UnusedDeclaration")
     public GRequestUserInputAction() {}
 
-    public GRequestUserInputAction(GType readType, Object oldValue, boolean hasOldValue, GInputList inputList) {
+    public GRequestUserInputAction(GType readType, Object oldValue, boolean hasOldValue, String customChangeFunction, GInputList inputList) {
         this.readType = readType;
         this.oldValue = (Serializable) oldValue;
         this.hasOldValue = hasOldValue;
+        this.customChangeFunction = customChangeFunction;
         this.inputList = inputList;
     }
 

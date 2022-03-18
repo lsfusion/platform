@@ -160,10 +160,24 @@ changeScript(Script sc) {
     }
 }
 
+initOptionJS INTERNAL CLIENT 'option.js';
+initOptionCSS INTERNAL CLIENT 'option.css';
+initInterpreterJS INTERNAL CLIENT 'interpreter.js';
+
+onWebClientStarted() + {
+    initOptionJS();
+    initOptionCSS();
+    initInterpreterJS();
+}
+
 FORM interpreter '{eval.script.form.interpreter}'
     OBJECTS st = ScriptType CUSTOM 'option'
     PROPERTIES(st) SHOWIF isWeb() name=executionScriptTypeCaption, selected=selectedExecutionScriptType, executionScriptTypeName
     ORDERS executionScriptTypeName(st)
+    EVENTS 
+        ON INIT {
+            SEEK interpreter.st = dataScriptType();
+        }
     
     OBJECTS s = Script PANEL
     PROPERTIES name(s), json(s) CUSTOM 'interpreter' SHOWIF isWeb() ON CHANGE changeScript(s), text(s) SHOWIF NOT isWeb()
@@ -228,10 +242,10 @@ DESIGN interpreter {
             caption = '{eval.script.form.interpreter.caption.script}';
             NEW script {
                 caption = '{eval.script.form.interpreter.caption.options}';
-                type = CONTAINERH;
-                MOVE PROPERTY(copyScript(s)) { font = 'bold 24'; alignment = STRETCH; }
-                MOVE PROPERTY(findScript(s)) { font = 'bold 24'; alignment = STRETCH; }
-                MOVE PROPERTY(name(s)) { font = 'bold 24'; alignment = STRETCH; }
+                horizontal = TRUE;
+                MOVE PROPERTY(copyScript(s)); // { font = 'bold 24'; alignment = STRETCH; }
+                MOVE PROPERTY(findScript(s)); // { font = 'bold 24'; alignment = STRETCH; }
+                MOVE PROPERTY(name(s)); // { font = 'bold 24'; alignment = STRETCH; }
             }
             NEW execute {
                 caption = '{eval.script.form.interpreter.caption.run}';
@@ -246,11 +260,12 @@ DESIGN interpreter {
                 }
                 MOVE PROPERTY(executeScript(s)) {
                     focusable = FALSE;
+                    alignment = CENTER;
                 }
-                MOVE PROPERTY(scriptExecution(s)) { font = 'bold 24'; }
-                MOVE PROPERTY(actionBodyExecution(s)) { font = 'bold 24'; }
-                MOVE PROPERTY(formExecution(s)) { font = 'bold 24'; }
-                MOVE PROPERTY(javaActionBodyExecution(s)) { font = 'bold 24'; }
+                MOVE PROPERTY(scriptExecution(s)); // { font = 'bold 24'; }
+                MOVE PROPERTY(actionBodyExecution(s)); // { font = 'bold 24'; }
+                MOVE PROPERTY(formExecution(s)); // { font = 'bold 24'; }
+                MOVE PROPERTY(javaActionBodyExecution(s)); // { font = 'bold 24'; }
             }
             REMOVE TOOLBARSYSTEM(st);
             

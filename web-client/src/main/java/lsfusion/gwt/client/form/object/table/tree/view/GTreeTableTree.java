@@ -263,12 +263,12 @@ public class GTreeTableTree {
         return groupProperties.get(column);
     }
 
-    public Object getValue(GGroupObject group, int column, GGroupObjectValue key) {
-        GPropertyDraw property = getProperty(group, column);
+    public Object getValue(GTreeGridRecord record, int column) {
+        GPropertyDraw property = getProperty(record.getGroup(), column);
         if (property == null) {
             return null;
         }
-        return values.get(property).get(key);
+        return record.getValue(property);
     }
 
     public boolean isReadOnly(GGroupObject group, int column, GGroupObjectValue key) {

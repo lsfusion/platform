@@ -1688,7 +1688,7 @@ public class ClientFormController implements AsyncListener {
         rmiQueue.syncRequest(new ProcessServerResponseRmiRequest("closePressed") {
             @Override
             protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                return remoteForm.closedPressed(requestIndex, lastReceivedRequestIndex);
+                return remoteForm.closedPressed(requestIndex, lastReceivedRequestIndex, false);
             }
         });
     }

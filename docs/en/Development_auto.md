@@ -10,8 +10,8 @@ On this page you can download installers that install everything needed for deve
 
 **lsFusion 4.1** (OpenJDK **11.0.9**, PostgreSQL **13.1**(x64)/**10.8**(x32), Tomcat **9.0.21**, IntelliJ IDEA Community Edition **2020.3.1**)
 
-- [x32](http://download.lsfusion.org/exe/lsfusion-dev-4.1.exe)
-- [x64](http://download.lsfusion.org/exe/lsfusion-dev-4.1-x64.exe)
+- [x32](https://download.lsfusion.org/exe/lsfusion-dev-4.1.exe)
+- [x64](https://download.lsfusion.org/exe/lsfusion-dev-4.1-x64.exe)
 
 <details><summary><strong>Older versions</strong></summary>
 <br/>

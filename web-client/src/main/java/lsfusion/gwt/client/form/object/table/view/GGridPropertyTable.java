@@ -25,6 +25,7 @@ import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController;
 import lsfusion.gwt.client.form.order.user.GGridSortableHeaderManager;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTable;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
@@ -185,7 +186,6 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         form.addBinding(event, new GBindingEnv(null, null, null, GBindingMode.ONLY, GBindingMode.NO, null, null, null), pressed, GGridPropertyTable.this, groupObject);
     }
 
-    @Override
     public GFont getFont() {
         return font;
     }
@@ -229,18 +229,6 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     protected boolean previewEvent(Element target, Event event) {
         SmartScheduler.getInstance().flush();
         return form.previewEvent(target, event);
-    }
-
-    @Override
-    public void onFocus() {
-        super.onFocus();
-    }
-
-    @Override
-    public void onBlur(Event event) {
-        form.previewBlurEvent(event);
-
-        super.onBlur(event);
     }
 
     public GPropertyDraw getSelectedProperty() {
@@ -516,7 +504,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         return getColumnPropertyDraw(i).getValueWidthWithPadding(font);
     }
 
-    public <C> void onBrowserEvent(Cell cell, Event event, Column<T, C> column, Element parent) {
+    public <C> void onBrowserEvent(Cell cell, Event event, Column<T, C> column, TableCellElement parent) {
         form.onPropertyBrowserEvent(new EventHandler(event), parent, getTableDataFocusElement(),
                 handler -> selectionHandler.onCellBefore(handler, cell, rowChanged -> isChangeOnSingleClick(cell, (Boolean) rowChanged)),
                 handler -> column.onEditEvent(handler, cell, parent),
@@ -526,7 +514,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     }
 
     @Override
-    public void pasteData(Cell cell, Element parent, List<List<String>> table) {
+    public void pasteData(Cell cell, TableCellElement parent, List<List<String>> table) {
         if (!table.isEmpty() && !table.get(0).isEmpty()) {
             form.pasteValue(getEditContext(cell, parent), table.get(0).get(0));
         }
@@ -536,12 +524,12 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         return property.focusable == null || property.focusable;
     }
 
-    protected abstract class GridPropertyColumn extends Column<T, Object> {
+    public abstract class GridPropertyColumn extends Column<T, Object> {
 
         protected abstract Object getValue(GPropertyDraw property, T record);
 
         @Override
-        public void onEditEvent(EventHandler handler, Cell editCell, Element editCellParent) {
+        public void onEditEvent(EventHandler handler, Cell editCell, TableCellElement editCellParent) {
             GGridPropertyTable.this.onEditEvent(handler, false, editCell, editCellParent);
         }
 
@@ -559,33 +547,73 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
 
         public void renderDom(Cell cell, TableCellElement cellElement) {
             GPropertyDraw property = getProperty(cell);
-            if(property != null) // in tree there can be no property in groups other than last
-                form.render(property, GPropertyTableBuilder.renderSized(cellElement, property, GGridPropertyTable.this), GGridPropertyTable.this);
+            if(property == null) // in tree there can be no property in groups other than last
+                return;
+
+            RenderContext renderContext = getRenderContext(cell, cellElement);
+            form.render(property, GPropertyTableBuilder.renderSized(cellElement, property, renderContext), renderContext);
         }
 
         @Override
         public void updateDom(Cell cell, TableCellElement cellElement) {
             GPropertyDraw property = getProperty(cell);
-            if (property != null) // in tree there can be no property in groups other than last
-            {
-                Object oldValue = getValue(property, (T) cell.getRow());
-                form.update(property, GPropertyTableBuilder.getRenderSizedElement(cellElement, property, GGridPropertyTable.this), oldValue, new UpdateContext() {
-                    @Override
-                    public Consumer<Object> getCustomRendererValueChangeConsumer() {
-                        return value -> form.changeProperty(getEditContext(cell, cellElement), value);
-                    }
+            if (property == null) // in tree there can be no property in groups other than last
+                return;
 
-                    @Override
-                    public boolean isPropertyReadOnly() {
-                        return GGridPropertyTable.this.isReadOnly(cell);
-                    }
-
-                    @Override
-                    public boolean globalCaptionIsDrawn() {
-                        return GGridPropertyTable.this.globalCaptionIsDrawn();
-                    }
-                });
-            }
+            UpdateContext updateContext = getUpdateContext(cell, cellElement, property, this);
+            form.update(property, GPropertyTableBuilder.getRenderSizedElement(cellElement, property, updateContext), updateContext);
         }
+    }
+
+    public GridPropertyColumn getGridColumn(int column) {
+        return (GridPropertyColumn) getColumn(column);
+    }
+
+    @Override
+    protected RenderContext getRenderContext(Cell cell, TableCellElement cellElement) {
+        return new RenderContext() {
+            @Override
+            public boolean isAlwaysSelected() {
+                return false;
+            }
+
+            @Override
+            public boolean globalCaptionIsDrawn() {
+                return GGridPropertyTable.this.globalCaptionIsDrawn();
+            }
+
+            @Override
+            public GFont getFont() {
+                return GGridPropertyTable.this.getFont();
+            }
+        };
+    }
+
+    private boolean globalCaptionIsDrawn() {
+        return true;
+    }
+
+    public UpdateContext getUpdateContext(Cell cell, TableCellElement cellElement, GPropertyDraw property, GridPropertyColumn column) {
+        return new UpdateContext() {
+            @Override
+            public Consumer<Object> getCustomRendererValueChangeConsumer() {
+                return value -> form.changeProperty(getEditContext(cell, cellElement), value);
+            }
+
+            @Override
+            public boolean isPropertyReadOnly() {
+                return GGridPropertyTable.this.isReadOnly(cell);
+            }
+
+            @Override
+            public boolean globalCaptionIsDrawn() {
+                return GGridPropertyTable.this.globalCaptionIsDrawn();
+            }
+
+            @Override
+            public Object getValue() {
+                return column.getValue(property, (T) cell.getRow());
+            }
+        };
     }
 }

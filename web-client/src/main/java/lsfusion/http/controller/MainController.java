@@ -179,7 +179,7 @@ public class MainController {
         FileData fileData = new FileData(new RawFileData(jsonArray.toString().getBytes(StandardCharsets.UTF_8)), "json");
         try {
             ExternalResponse externalResponse = logicsProvider.runRequest(request,
-                    sessionObject -> sessionObject.remoteLogics.exec(AuthenticationToken.ANONYMOUS, NavigatorProviderImpl.getSessionInfo(request),
+                    (sessionObject, retry) -> sessionObject.remoteLogics.exec(AuthenticationToken.ANONYMOUS, NavigatorProviderImpl.getSessionInfo(request),
                     method + "[JSONFILE]", getExternalRequest(new Object[]{fileData}, request)));
             return new JSONObject(new String(((FileData) externalResponse.results[0]).getRawFile().getBytes(), StandardCharsets.UTF_8));
         } catch (IOException | AppServerNotAvailableDispatchException e) {
@@ -212,7 +212,7 @@ public class MainController {
 
         if(serverSettings != null)
             serverSettings.saveFiles(FileUtils.APP_PATH, externalResourcesParentPath);
-        model.addAttribute("filesUrls", getFileUrls(serverSettings));
+
         model.addAttribute("title", getTitle(serverSettings));
         model.addAttribute("logicsIcon", getLogicsIcon(serverSettings));
         model.addAttribute("logicsName", getLogicsName(serverSettings));
@@ -227,10 +227,6 @@ public class MainController {
 
     private boolean getDisableRegistration(ServerSettings serverSettings) {
         return serverSettings != null && serverSettings.disableRegistration;
-    }
-
-    private Set<String> getFileUrls(ServerSettings serverSettings) {
-        return serverSettings != null && serverSettings.filesUrls != null ? serverSettings.filesUrls : Collections.emptySet();
     }
 
     private String getTitle(ServerSettings serverSettings) {
@@ -268,7 +264,8 @@ public class MainController {
         Charset charset = getCharsetFromContentType(contentTypeString != null ? ContentType.parse(contentTypeString) : null);
         return new ExternalRequest(new String[0], params, charset == null ? null : charset.toString(), new String[0], new String[0], null,
                 null, null, null, null, request.getScheme(), request.getMethod(), request.getServerName(), request.getServerPort(), request.getContextPath(),
-                request.getServletPath(), request.getPathInfo() == null ? "" : request.getPathInfo(), request.getQueryString() != null ? request.getQueryString() : "");
+                request.getServletPath(), request.getPathInfo() == null ? "" : request.getPathInfo(), request.getQueryString() != null ? request.getQueryString() : "",
+                contentTypeString, null);
     }
 
     public static String getURLPreservingParameters(String url, List<String> paramsToRemove, HttpServletRequest request) {

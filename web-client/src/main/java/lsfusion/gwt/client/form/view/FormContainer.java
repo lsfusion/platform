@@ -10,57 +10,89 @@ import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.base.Dimension;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.result.NumberResult;
-import lsfusion.gwt.client.base.view.WindowHiddenHandler;
 import lsfusion.gwt.client.controller.remote.action.PriorityErrorHandlingCallback;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.event.GKeyStroke;
+import lsfusion.gwt.client.form.property.cell.controller.EndReason;
 import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
+import lsfusion.gwt.client.navigator.window.GWindowFormType;
 import lsfusion.gwt.client.view.MainFrame;
+
+import java.util.function.Consumer;
 
 import static java.lang.Math.min;
 
 // multiple inheritance
-public abstract class FormContainer<W extends Widget> {
+public abstract class FormContainer {
     private static final ClientMessages messages = ClientMessages.Instance.get();
 
     protected final FormsController formsController;
-    protected final W contentWidget;
 
-    protected Event initFilterEvent;
+    protected Event editEvent;
 
     protected GFormController form;
 
     public GAsyncFormController asyncFormController;
     public boolean async;
 
-    public FormContainer(FormsController formsController, GAsyncFormController asyncFormController, boolean async) {
-        this.formsController = formsController;
-        this.asyncFormController = asyncFormController;
-        this.async = async;
-
-        this.contentWidget = initContentWidget();
+    private boolean asyncHidden;
+    private EndReason asyncHiddenReason;
+    public boolean isAsyncHidden() {
+        return asyncHidden;
     }
 
-    protected abstract W initContentWidget();
+    public FormContainer(FormsController formsController, boolean async, Event editEvent) {
+        this.formsController = formsController;
+        this.async = async;
+        this.editEvent = editEvent;
+    }
 
     protected abstract void setContent(Widget widget);
+
+    public abstract GWindowFormType getWindowType();
+
+    protected FormContainer getContainerForm() { // hack
+        return this;
+    }
 
     public void onAsyncInitialized() {
         assert !async;
         // if it's an active form setting focus
-        if(MainFrame.getAssertCurrentForm() == this)
+        if(MainFrame.getAssertCurrentForm() == getContainerForm())
             onSyncFocus(true);
+    }
+
+    public void closePressed() {
+        closePressed(null);
+    }
+
+    public void closePressed(EndReason reason) {
+        if(async) {
+            // we shouldn't remove async form here, because it will be removed either in FormAction, or on response noneMatch FormAction check
+//            asyncFormController.removeAsyncForm();
+            hide(reason);
+            asyncHidden = true;
+            asyncHiddenReason = reason;
+        } else {
+            form.closePressed(reason);
+        }
     }
 
     public abstract void show();
 
-    public abstract void hide();
+    // server response reaction - hideFormAction dispatch, and incorrect modalitytype when getting form, or no form at all
+    public void queryHide(EndReason editFormCloseReason) {
+        if(!isAsyncHidden())
+            hide(editFormCloseReason);
+    }
+    public abstract void hide(EndReason editFormCloseReason);
 
     private Element focusedElement;
     public void onFocus(boolean add) {
         MainFrame.setCurrentForm(this);
-        assert !MainFrame.isModalPopup();
+        // this assertion can be broken in tooltips (since their showing is async) - for example it's showing is scheduled, change initiated, after that tooltip is showm and then response is received and message is shown
+//        assert !MainFrame.isModalPopup();
 
         if(!async)
             onSyncFocus(add);
@@ -74,7 +106,7 @@ public abstract class FormContainer<W extends Widget> {
         MainFrame.setCurrentForm(null);
     }
 
-    private void onSyncFocus(boolean add) {
+    protected void onSyncFocus(boolean add) {
         if(add || focusedElement == null)
             form.focusFirstWidget();
         else
@@ -84,18 +116,18 @@ public abstract class FormContainer<W extends Widget> {
 
     private void onSyncBlur(boolean remove) {
         form.lostFocus();
-        focusedElement = remove ? null : GwtClientUtils.getFocusedChild(contentWidget.getElement());
+        focusedElement = remove ? null : GwtClientUtils.getFocusedChild(getFocusedElement());
     }
 
-    public void initForm(FormsController formsController, GForm gForm, WindowHiddenHandler hiddenHandler, boolean isDialog, Event initFilterEvent) {
-        this.initFilterEvent = initFilterEvent;
+    protected abstract Element getFocusedElement();
 
-        form = new GFormController(formsController, this, gForm, isDialog) {
+    public void initForm(FormsController formsController, GForm gForm, Consumer<EndReason> hiddenHandler, boolean isDialog, boolean autoSize) {
+        form = new GFormController(formsController, this, gForm, isDialog, autoSize, editEvent) {
             @Override
-            public void onFormHidden(int closeDelay) {
-                super.onFormHidden(closeDelay);
+            public void onFormHidden(int closeDelay, EndReason editFormCloseReason) {
+                super.onFormHidden(closeDelay, editFormCloseReason);
 
-                hiddenHandler.onHidden();
+                hiddenHandler.accept(editFormCloseReason);
             }
 
             @Override
@@ -104,11 +136,14 @@ public abstract class FormContainer<W extends Widget> {
             }
         };
 
-        setContent(form.getWidget());
+        if(isAsyncHidden())
+            form.closePressed(asyncHiddenReason);
+        else {
+            setContent(form.getWidget());
+            Scheduler.get().scheduleDeferred(this::initQuickFilter);
+        }
 
-        Scheduler.get().scheduleDeferred(this::initQuickFilter);
         async = false;
-        asyncFormController = null;
     }
 
     protected abstract void setCaption(String caption, String tooltip);
@@ -117,22 +152,9 @@ public abstract class FormContainer<W extends Widget> {
         return form;
     }
 
-    protected void initPreferredSize() {
-        if(!async) {
-            int horzClientOffset = 20;
-            int vertClientOffset = 100;
-
-            int wndWidth = Window.getClientWidth();
-            int wndHeight = Window.getClientHeight();
-            Dimension size = form.getPreferredSize(wndWidth - horzClientOffset, wndHeight - vertClientOffset);
-            form.formLayout.setWidth(size.width + "px");
-            form.formLayout.setHeight(size.height + "px");
-        }
-    }
-
     protected void initQuickFilter() {
-        if (initFilterEvent != null) {
-            Event event = initFilterEvent;
+        if (editEvent != null) {
+            Event event = editEvent;
             if (GKeyStroke.isPossibleStartFilteringEvent(event) && !GKeyStroke.isSpaceKeyEvent(event)) {
                 form.getInitialFilterProperty(new PriorityErrorHandlingCallback<NumberResult>() {
                     @Override
@@ -140,7 +162,7 @@ public abstract class FormContainer<W extends Widget> {
                         Integer initialFilterPropertyID = (Integer) result.value;
 
                         if (initialFilterPropertyID != null) {
-                            form.quickFilter(initFilterEvent, initialFilterPropertyID);
+                            form.quickFilter(editEvent, initialFilterPropertyID);
                         }
                     }
                 });
@@ -148,8 +170,11 @@ public abstract class FormContainer<W extends Widget> {
         }
     }
 
-    protected String loadingAsyncImage = "loading_async.gif";
-    protected Widget createLoadingWidget(String imageUrl) {
+    public void setContentLoading() {
+        GwtClientUtils.setThemeImage(loadingAsyncImage, imageUrl -> setContent(createLoadingWidget(imageUrl)), false);
+    }
+    protected static String loadingAsyncImage = "loading_async.gif";
+    protected static Widget createLoadingWidget(String imageUrl) {
         VerticalPanel loadingWidget = new VerticalPanel();
         loadingWidget.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
         loadingWidget.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);

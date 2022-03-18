@@ -38,7 +38,7 @@ public class GNavigatorActionDispatcher extends GwtActionDispatcher {
         if (action.modalityType.isModal()) {
             pauseDispatching();
         }
-        formsController.openForm(getAsyncFormController(getDispatchingIndex()), action.form, action.modalityType, action.forbidDuplicate, null, () -> {
+        formsController.openForm(getAsyncFormController(getDispatchingIndex()), action.form, action.modalityType, action.forbidDuplicate, null, null, null, () -> {
             if(action.modalityType == GModalityType.DOCKED || action.modalityType == GModalityType.DOCKED_MODAL)
                 formsController.ensureTabSelected();
 
@@ -60,6 +60,8 @@ public class GNavigatorActionDispatcher extends GwtActionDispatcher {
 
     @Override
     public void execute(final GMaximizeFormAction action) {
-        formsController.setFullScreenMode(true);
+        if (!MainFrame.mobile) {
+            formsController.setFullScreenMode(true);
+        }
     }
 }

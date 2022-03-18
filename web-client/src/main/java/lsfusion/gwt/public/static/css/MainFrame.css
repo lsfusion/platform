@@ -105,6 +105,16 @@ input[type=checkbox]:focus {
     padding-right: 5px;
 }
 
+.formsTabBar .mobileTabPanelBar {
+    flex-wrap: nowrap !important;
+    overflow-x: auto;
+    
+    scrollbar-width: none;  /* hide scrollbars in Firefox */
+}
+.formsTabBar .mobileTabPanelBar::-webkit-scrollbar {
+    display: none;  /* hide scrollbars in Safari and Chrome */
+}
+
 .tabLayoutPanelTabWidget {
     height: 100%;
 }
@@ -293,8 +303,14 @@ button {
     border: 1px solid var(--component-border-color); /* should correspond to the result in ActionOrPropertyValue.setBaseSize */
 }
 
-.panelRendererValueFocused.panelRendererValueBoxed, button:focus {
+.panelRendererValueEdited {
+}
+
+.panelRendererValueFocused.panelRendererValueBoxed:not(.panelRendererValueEdited), button:focus {
     background-color: var(--selection-color);
+}
+
+.panelRendererValueFocused.panelRendererValueBoxed, button:focus {
     border: 1px solid var(--focus-color);
 }
 
@@ -351,7 +367,7 @@ button {
 }
 .captionPanelLegend {
     white-space: nowrap;
-    background-color: var(--background-color);
+    /*background-color: var(--background-color);*/
     color: var(--caption-panel-legend-color);
 }
 
@@ -361,28 +377,32 @@ button {
 }
 
 .notEmptyCaptionPanelLegend {
-    margin-left: 4px;
-    margin-right: 4px;
+    /*margin-left: 4px;*/
+    /*margin-right: 4px;*/
 
     padding-left: 4px;
     padding-right: 4px;
 }
 
 .captionCenteredLine {
-    position: absolute;
-    top : 50%;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    z-index: -1;
+    /*position: absolute;*/
+    /*top : 50%;*/
+    /*bottom: 0;*/
+    /*left: 0;*/
+    /*right: 0;*/
+    /*z-index: -1;*/
 
     border-top: 1px solid var(--panel-border-color);
 }
 
+.rightCaptionCenteredLine {
+    flex-grow : 1 !important;
+}
+
 .collapsePanelImage {
     cursor: default;
-    margin-top: var(--border-padding);
-    background: var(--background-color);
+    /*margin-top: var(--border-padding);*/
+    /*background: var(--background-color);*/
 }
 
 /* ------------ Navigator windows  ------------ */
@@ -737,7 +757,7 @@ button {
 .gridContainerPanelFocused {
 }
 .gridContainerPanelBoxed.gridContainerPanelFocused {
-    background-color: var(--selection-color);
+    /*background-color: var(--selection-color);*/
     border: 1px solid var(--focus-color);
 }
 .gridContainerPanelBoxed:hover:not(.gridContainerPanelFocused) { /* we want focus to have higher priority than hover*/

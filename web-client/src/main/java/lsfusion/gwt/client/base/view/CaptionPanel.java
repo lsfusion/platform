@@ -8,8 +8,9 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 public class CaptionPanel extends FlexPanel {
 
     protected Label legend;
-    protected final DivWidget centeredLineWidget;
-    
+    protected final DivWidget leftCenteredLine;
+    protected final DivWidget rightCenteredLine;
+
     protected FlexPanel legendWrapper;
 
     public CaptionPanel(String caption) {
@@ -19,15 +20,23 @@ public class CaptionPanel extends FlexPanel {
 
         legendWrapper = new FlexPanel(false);
         legendWrapper.setStyleName("captionLegendContainerPanel");
-        GwtClientUtils.setZeroZIndex(legendWrapper.getElement()); // since in captionCenteredLine we're using -1 z-index (we can't set captionPanelLegend z-index 1 since it will be above dialogs blocking masks)
+//        GwtClientUtils.setZeroZIndex(legendWrapper.getElement()); // since in captionCenteredLine we're using -1 z-index (we can't set captionPanelLegend z-index 1 since it will be above dialogs blocking masks)
+
+        leftCenteredLine = new DivWidget();
+        leftCenteredLine.setStyleName("captionCenteredLine");
+        legendWrapper.add(leftCenteredLine, GFlexAlignment.CENTER, 0, false, 4);
 
         legend = new Label();
         legend.setStyleName("captionPanelLegend");
         legendWrapper.addCentered(legend);
 
-        centeredLineWidget = new DivWidget();
-        centeredLineWidget.setStyleName("captionCenteredLine");
-        legendWrapper.add(centeredLineWidget);
+        rightCenteredLine = new DivWidget();
+        rightCenteredLine.setStyleName("captionCenteredLine");
+
+        // it's a tricky hack we emulate flex 0 to make updatePanels stretch this whole panel if needed (this hack makes stretching this line not important)
+        legendWrapper.add(rightCenteredLine, GFlexAlignment.CENTER, 0, false, 4);
+        rightCenteredLine.addStyleName("rightCaptionCenteredLine");
+//        legendWrapper.add(rightCenteredLine, GFlexAlignment.CENTER, 1, false, 4);
 
         add(legendWrapper, GFlexAlignment.STRETCH);
 
@@ -51,7 +60,7 @@ public class CaptionPanel extends FlexPanel {
                 legend.addStyleName("notNullCaptionPanelLegend");
             else
                 legend.removeStyleName("notNullCaptionPanelLegend");
-            centeredLineWidget.setVisible(notNullCaption);
+            rightCenteredLine.setVisible(notNullCaption);
             this.notNullCaption = notNullCaption;
         }
 

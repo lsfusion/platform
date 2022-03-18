@@ -53,7 +53,7 @@ import static lsfusion.gwt.client.base.view.ColorUtils.*;
 import static lsfusion.gwt.client.view.MainFrame.colorTheme;
 import static lsfusion.gwt.client.view.StyleDefaults.*;
 
-public class GPivot extends GStateTableView implements ColorThemeChangeListener, RenderContext, UpdateContext {
+public class GPivot extends GStateTableView implements ColorThemeChangeListener, RenderContext {
 
     private final String ICON_LEAF = "tree_leaf.png";
     private final String ICON_OPEN = "tree_open.png";
@@ -78,6 +78,8 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         setStyleName(getDrawElement(), "pivotTable");
 
         MainFrame.addColorThemeChangeListener(this);
+
+        GwtClientUtils.setZeroZIndex(getElement());
     }
 
     // in theory we can order all properties once, but so far there is no full list of properties
@@ -1133,7 +1135,28 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
     private void renderColumn(Element th, JavaScriptObject value, String columnName) {
         GPropertyDraw property = columnMap.get(columnName).property;
         GPivot.setTableToExcelPropertyAttributes(th, value, property);
-        GPropertyTableBuilder.renderAndUpdate(property, th, value, this, this);
+
+        UpdateContext updateContext = new UpdateContext() {
+            @Override
+            public boolean globalCaptionIsDrawn() {
+                return true;
+            }
+            @Override
+            public Consumer<Object> getCustomRendererValueChangeConsumer() {
+                return null;
+            }
+
+            @Override
+            public boolean isPropertyReadOnly() {
+                return true;
+            }
+
+            @Override
+            public Object getValue() {
+                return value;
+            }
+        };
+        GPropertyTableBuilder.renderAndUpdate(property, th, this, updateContext);
     }
 
     @Override
@@ -1149,16 +1172,6 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
     @Override
     public GFont getFont() {
         return font;
-    }
-
-    @Override
-    public Consumer<Object> getCustomRendererValueChangeConsumer() {
-        return null;
-    }
-
-    @Override
-    public boolean isPropertyReadOnly() {
-        return true;
     }
 
     public void renderColAttrCell(Element jsElement, JavaScriptObject value, JsArrayMixed colKeyValues, Boolean isSubtotal, Boolean isExpanded, Boolean isArrow) {

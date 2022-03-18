@@ -466,7 +466,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     }
 
     public GridColumn getGridColumn(int column) {
-        return (GridColumn) getColumn(column);
+        return (GridColumn) super.getGridColumn(column);
     }
 
     public GridColumn getGridColumn(Cell cell) {
@@ -494,15 +494,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
     private void removeGridColumn(GridColumn column) {
         removeColumn(column);
-    }
-
-    public boolean isEmpty() {
-        for (GPropertyDraw property : properties) {
-            if (!values.get(property).isEmpty()) {
-                return false;
-            }
-        }
-        return true;
     }
 
     public GGroupObjectValue getSelectedKey() {
@@ -760,15 +751,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         return getGridRow(editCell).getKey();
     }
 
-    public Object getValueAt(Cell cell) {
-        GridColumn column = getGridColumn(cell);
-        GridDataRecord rowValue = getGridRow(cell);
-        if (column == null || rowValue == null) {
-            return null;
-        }
-        return column.getValue(rowValue);
-    }
-    
     public Object getValueAt(int row, int col) {
         GridColumn column = getGridColumn(col);
         GridDataRecord rowValue = getRowValue(row);
@@ -791,7 +773,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     }
 
     @Override
-    public void pasteData(Cell cell, Element parent, final List<List<String>> table) {
+    public void pasteData(Cell cell, TableCellElement parent, final List<List<String>> table) {
         final int tableColumns = getMaxColumnsCount(table);
         final int selectedColumn = getSelectedColumn();
         if (table.size() > 1 || tableColumns > 1) {

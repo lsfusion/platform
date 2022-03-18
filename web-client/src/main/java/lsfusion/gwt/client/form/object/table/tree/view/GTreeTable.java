@@ -30,6 +30,7 @@ import lsfusion.gwt.client.form.object.table.view.GGridPropertyTableHeader;
 import lsfusion.gwt.client.form.order.user.GGridSortableHeaderManager;
 import lsfusion.gwt.client.form.order.user.GOrder;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 
 import java.util.*;
@@ -340,7 +341,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         }
 
         @Override
-        public void onEditEvent(EventHandler handler, Cell editCell, Element editCellParent) {
+        public void onEditEvent(EventHandler handler, Cell editCell, TableCellElement editCellParent) {
             Event event = handler.event;
             boolean changeEvent = GMouseStroke.isChangeEvent(event);
             if (changeEvent || (treeGroupController.isExpandOnClick() && GMouseStroke.isDoubleChangeEvent(event))) { // we need to consume double click event to prevent treetable global dblclick binding (in this case node will be collapsed / expanded once again)
@@ -437,9 +438,10 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
             // if property changed - rerender
             if(!GwtClientUtils.nullEquals(oldProperty, newProperty) && !form.isEditing()) { // we don't want to clear editing (it will be rerendered anyway, however not sure if this check is needed)
                 if(oldProperty != null) {
-                    if(!GPropertyTableBuilder.clearRenderSized(cellElement, oldProperty, GTreeTable.this)) {
-                        assert cellElement == GPropertyTableBuilder.getRenderSizedElement(cellElement, oldProperty, GTreeTable.this);
-                        oldProperty.getCellRenderer().clearRender(cellElement, GTreeTable.this);
+                    RenderContext renderContext = getRenderContext(cell, cellElement);
+                    if(!GPropertyTableBuilder.clearRenderSized(cellElement, oldProperty, renderContext)) {
+                        assert cellElement == GPropertyTableBuilder.getRenderSizedElement(cellElement, oldProperty, getUpdateContext(cell, cellElement, oldProperty, this));
+                        oldProperty.getCellRenderer().clearRender(cellElement, renderContext);
                     }
                     cellElement.setPropertyObject(PDRAW_ATTRIBUTE, null);
                 }
@@ -545,9 +547,9 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     protected TreeGridColumn getTreeGridColumn(int i) {
         return (TreeGridColumn) getColumn(i);
     }
-    protected GridColumn getGridColumn(int i) {
+    public GridColumn getGridColumn(int i) {
         assert i > 0;
-        return (GridColumn)getTreeGridColumn(i);
+        return (GridColumn)super.getGridColumn(i);
     }
 
     @Override
@@ -853,12 +855,6 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     @Override
     public GGroupObjectValue getRowKey(Cell editCell) {
         return getTreeGridRow(editCell).getKey();
-    }
-
-    @Override
-    public Object getValueAt(Cell cell) {
-        GTreeGridRecord record = getTreeGridRow(cell);
-        return record == null ? null : tree.getValue(record.getGroup(), cell.getColumnIndex(), record.getKey());
     }
 
     @Override

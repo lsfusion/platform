@@ -65,7 +65,7 @@ public class OAuth2ToLSFTokenFilter extends OncePerRequestFilter {
         LSFAuthenticationToken lsfAuthentication;
         String authSecret = servletContext.getInitParameter(AUTH_SECRET_KEY);
         try {
-            Pair<AuthenticationToken, Locale> authLocale = logicsProvider.runRequest(request, (LogicsSessionObject sessionObject) -> {
+            Pair<AuthenticationToken, Locale> authLocale = logicsProvider.runRequest(request, (LogicsSessionObject sessionObject, boolean retry) -> {
                 try {
                     Map<String, Object> userInfo = new HashMap<>(principal.getAttributes());
                     AuthenticationToken authToken = sessionObject.remoteLogics.authenticateUser(new OAuth2Authentication(username, authSecret, userInfo));

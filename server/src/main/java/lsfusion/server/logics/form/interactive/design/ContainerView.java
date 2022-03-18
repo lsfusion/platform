@@ -368,14 +368,19 @@ public class ContainerView extends ComponentView {
         return container != null && (super.isNFAncestorOf(container, version) || isNFAncestorOf(container.getNFContainer(version), version));
     }
 
+    ImList<ComponentView> lazyChildren;
+    private ImList<ComponentView> getLazyChildren() {
+        if (lazyChildren == null) {
+            lazyChildren = children.getList().filterList(child -> child.getContainer() == ContainerView.this);
+        }
+        return lazyChildren;
+    }
+
     public Iterable<ComponentView> getChildrenIt() {
-        return children.getIt();
+        return getLazyChildren();
     }
     public ImList<ComponentView> getChildrenList() {
-        return children.getList();
-    }
-    public Iterable<ComponentView> getNFChildrenIt(Version version) {
-        return children.getNFIt(version);
+        return getLazyChildren();
     }
 
     @Override

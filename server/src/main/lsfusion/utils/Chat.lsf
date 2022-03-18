@@ -10,6 +10,18 @@ TABLE chatCustomUser(Chat, CustomUser);
 
 EXTEND CLASS UserRole : Chat;
 
+initQuillJS INTERNAL CLIENT 'input-quill.js';
+initQuillCSS INTERNAL CLIENT 'input-quill.css';
+initChatJS INTERNAL CLIENT 'chat.js';
+initChatCSS INTERNAL CLIENT 'chat.css';
+
+onWebClientStarted() + {
+    initQuillJS();
+    initQuillCSS();
+    initChatJS();
+    initChatCSS();
+}
+
 @defineExternalizable(chat, STRING[100]);
 
 in '{chat.in.chat}' = DATA BOOLEAN (Chat, CustomUser);

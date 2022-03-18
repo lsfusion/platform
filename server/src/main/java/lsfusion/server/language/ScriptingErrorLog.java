@@ -141,6 +141,10 @@ public class ScriptingErrorLog {
         emitNotFoundError(parser, "filter group", name);
     }
 
+    public void emitInternalClientActionHasParamsOnFileCallingError(ScriptParser parser, String argument) throws SemanticErrorException {
+        emitSimpleError(parser, "Calling .js file: INTERNAL CLIENT '" + argument + "' - Should not have arguments. Use arguments only with js function() calling");
+    }
+
     public void emitIllegalAddNavigatorToSubnavigatorError(ScriptParser parser, String addedElement, String addedToElement) throws SemanticErrorException {
         emitSimpleError(parser, format("can't add navigator element '%s' to it's subelement '%s'", addedElement, addedToElement));
     }
@@ -361,7 +365,7 @@ public class ScriptingErrorLog {
     }
 
     public void emitConcatAggrGPropError(ScriptParser parser) throws SemanticErrorException {
-        emitSimpleError(parser, "GROUP CONCAT property should have two aggregate properties exactly (second is a separator)");
+        emitSimpleError(parser, "GROUP CONCAT property should have single aggregate property (JSON type) OR two aggregate properties (second is a separator)");
     }
 
     public void emitNonIntegralSumArgumentError(ScriptParser parser) throws SemanticErrorException {
@@ -426,6 +430,10 @@ public class ScriptingErrorLog {
         } else if (index > size) {
             emitSimpleError(parser, format("wrong index '%d', should be at most %d", index, size));
         }
+    }
+
+    public void emitConcatError(ScriptParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "CONCAT first param should be string literal OR all params should be JSON");
     }
 
     public void emitDeconcatError(ScriptParser parser) throws SemanticErrorException {

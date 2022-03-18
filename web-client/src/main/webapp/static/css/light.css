@@ -12,6 +12,7 @@
     --panel-border-color: #D1D1D1;
     --grid-separator-border-color: #E6E6E6; /* also hardcoded in StyleDefaults.java */
     --dialog-outer-border-color: #bbb;
+    --mobile-navigator-arrow-color: var(--dialog-outer-border-color);
     
     --caption-panel-legend-color: #929292; 
     --null-value-string-color: #A7A7A7;

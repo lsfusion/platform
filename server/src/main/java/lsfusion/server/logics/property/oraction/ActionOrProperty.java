@@ -57,7 +57,6 @@ import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameParser;
 import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameUtils;
 
 import javax.swing.*;
-import java.awt.*;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -281,20 +280,20 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
     }
 
     // actually protected (friend of PropertyMapImplement)
-    public ActionMapImplement<?, T> getEventAction(String eventActionSID, FormSessionScope defaultChangeEventScope, ImList<Property> viewProperties) {
+    public ActionMapImplement<?, T> getEventAction(String eventActionSID, FormSessionScope defaultChangeEventScope, ImList<Property> viewProperties, String customChangeFunction) {
         ActionMapImplement<?, T> eventAction = getExplicitEventAction(eventActionSID);
         if (eventAction != null)
             return eventAction;
 
         assert CHANGE.equals(eventActionSID) || EDIT_OBJECT.equals(eventActionSID); // explicit event actions can be also CONTEXTMENU
-        return getDefaultEventAction(eventActionSID, defaultChangeEventScope, viewProperties);
+        return getDefaultEventAction(eventActionSID, defaultChangeEventScope, viewProperties, customChangeFunction);
     }
 
     public ActionMapImplement<?, T> getExplicitEventAction(String eventActionSID) {
         return getEventActions().get(eventActionSID);
     }
 
-    public abstract ActionMapImplement<?, T> getDefaultEventAction(String eventActionSID, FormSessionScope defaultChangeEventScope, ImList<Property> viewProperties);
+    public abstract ActionMapImplement<?, T> getDefaultEventAction(String eventActionSID, FormSessionScope defaultChangeEventScope, ImList<Property> viewProperties, String customChangeFunction);
 
     public boolean checkEquals() {
         return this instanceof Property;
@@ -655,6 +654,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         // для всех
         private ClassViewType viewType;
         private String customRenderFunction;
+        private String customEditorFunction;
         private PivotOptions pivotOptions;
 
         private Boolean sticky;
@@ -666,6 +666,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
             entity.shouldBeLast = BaseUtils.nvl(shouldBeLast, false);
             entity.viewType = viewType;
             entity.customRenderFunction = customRenderFunction;
+            entity.customChangeFunction = customEditorFunction;
             entity.askConfirm = BaseUtils.nvl(askConfirm, false);
             entity.askConfirmMessage = askConfirmMessage;
             entity.eventID = eventID;
@@ -879,6 +880,10 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         
         public void setCustomRenderFunction(String customRenderFunction) {
             this.customRenderFunction = customRenderFunction;
+        }
+
+        public void setCustomEditorFunction(String customEditorFunction) {
+            this.customEditorFunction = customEditorFunction;
         }
 
         public void setPivotOptions(PivotOptions pivotOptions) {

@@ -6,6 +6,7 @@ import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.cell.controller.dispatch.EditPropertyDispatcher;
 import lsfusion.client.view.DockableMainFrame;
 import lsfusion.client.view.MainFrame;
+import lsfusion.interop.form.WindowFormType;
 import lsfusion.interop.form.remote.serialization.SerializationUtil;
 
 import java.io.DataInputStream;
@@ -16,7 +17,7 @@ public class ClientAsyncOpenForm extends ClientAsyncExec {
     public String caption;
     public boolean forbidDuplicate;
     public boolean modal;
-    public boolean window;
+    public WindowFormType type;
 
     @SuppressWarnings("UnusedDeclaration")
     public ClientAsyncOpenForm() {
@@ -29,14 +30,7 @@ public class ClientAsyncOpenForm extends ClientAsyncExec {
         this.caption = SerializationUtil.readString(inStream);
         this.forbidDuplicate = inStream.readBoolean();
         this.modal = inStream.readBoolean();
-        this.window = inStream.readBoolean();
-    }
-
-    public ClientAsyncOpenForm(String canonicalName, String caption, boolean forbidDuplicate, boolean modal) {
-        this.canonicalName = canonicalName;
-        this.caption = caption;
-        this.forbidDuplicate = forbidDuplicate;
-        this.modal = modal;
+        this.type = WindowFormType.deserialize(inStream);
     }
 
     @Override
@@ -51,6 +45,6 @@ public class ClientAsyncOpenForm extends ClientAsyncExec {
     }
 
     public boolean isDesktopEnabled(boolean canShowDockedModal) { // should correspond SwingClientActionDispatcher.getModalityType
-        return !window && !(modal && !canShowDockedModal);
+        return type == WindowFormType.DOCKED && !(modal && !canShowDockedModal);
     }
 }

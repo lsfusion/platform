@@ -4,6 +4,8 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.classes.data.GJSONType;
+import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.classes.controller.CustomCellEditor;
 import lsfusion.gwt.client.form.property.cell.classes.controller.CustomReplaceCellEditor;
@@ -31,7 +33,7 @@ public class CustomCellRenderer extends CellRenderer<Object> {
     public void renderDynamicContent(Element element, Object value, UpdateContext updateContext) {
         setRendererValue(customRenderer, element,
                 getController(updateContext.getCustomRendererValueChangeConsumer(), updateContext.isPropertyReadOnly()),
-                fromObject(value));
+                GSimpleStateTableView.convertValue(property, value));
     }
 
     protected native void setRendererValue(JavaScriptObject customRenderer, Element element, JavaScriptObject controller, JavaScriptObject value)/*-{

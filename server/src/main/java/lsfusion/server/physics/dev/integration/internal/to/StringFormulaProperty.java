@@ -4,6 +4,7 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.data.expr.Expr;
+import lsfusion.server.data.expr.formula.CustomFormulaImpl;
 import lsfusion.server.data.expr.formula.CustomFormulaSyntax;
 import lsfusion.server.data.expr.formula.FormulaExpr;
 import lsfusion.server.data.where.WhereBuilder;
@@ -20,7 +21,8 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 public class StringFormulaProperty extends ValueFormulaProperty<StringFormulaProperty.Interface> {
 
     private final CustomFormulaSyntax formula;
-    private final boolean hasNotNull;
+    private final boolean valueNull;
+    private final boolean paramsNull;
     
     public static String getParamName(String prmID) {
         return "prm" + prmID;
@@ -48,10 +50,11 @@ public class StringFormulaProperty extends ValueFormulaProperty<StringFormulaPro
         throw new RuntimeException("not found");
     }
 
-    public StringFormulaProperty(DataClass valueClass, CustomFormulaSyntax formula, int paramCount, boolean hasNotNull) {
+    public StringFormulaProperty(DataClass valueClass, CustomFormulaSyntax formula, int paramCount, boolean valueNull) {
         super(LocalizedString.create(formula.getDefaultSyntax()),getInterfaces(paramCount),valueClass);
         this.formula = formula;
-        this.hasNotNull = hasNotNull;
+        this.valueNull = valueNull;
+        this.paramsNull = false;
 
         finalizeInit();
     }
@@ -60,11 +63,13 @@ public class StringFormulaProperty extends ValueFormulaProperty<StringFormulaPro
 
         ImMap<String, Expr> params = interfaces.mapKeyValues(Interface::getString, joinImplement::get);
 
-        return FormulaExpr.createCustomFormula(formula, value, params, hasNotNull);
+        return FormulaExpr.createCustomFormula(formula, paramsNull, value, params, valueNull);
     }
 
     @Override
     public ExClassSet calcInferValueClass(ImMap<Interface, ExClassSet> inferred, InferType inferType) {
-        return FormulaImplProperty.inferValueClass(getOrderInterfaces(), FormulaExpr.createCustomFormulaImpl(formula, value, hasNotNull, getOrderInterfaces().mapOrderSetValues(Interface::getString)), inferred);
+        // here it doesn't matter if it is union or join
+        CustomFormulaImpl formulaImpl = FormulaExpr.createJoinCustomFormulaImpl(formula, value, valueNull, getOrderInterfaces().mapOrderSetValues(Interface::getString));
+        return FormulaImplProperty.inferValueClass(getOrderInterfaces(), formulaImpl, inferred);
     }
 }

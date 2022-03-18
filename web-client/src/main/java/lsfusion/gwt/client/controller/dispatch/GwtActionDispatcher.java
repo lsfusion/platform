@@ -1,9 +1,13 @@
 package lsfusion.gwt.client.controller.dispatch;
 
+import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.core.client.JsArray;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.media.client.Audio;
 import com.google.gwt.typedarrays.client.Uint8ArrayNative;
 import com.google.gwt.typedarrays.shared.ArrayBuffer;
 import com.google.gwt.typedarrays.shared.Uint8Array;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.xhr.client.XMLHttpRequest;
 import lsfusion.gwt.client.action.*;
@@ -13,14 +17,17 @@ import lsfusion.gwt.client.base.exception.GExceptionManager;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.log.GLog;
 import lsfusion.gwt.client.base.view.DialogBoxHelper;
+import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.controller.remote.action.RequestAsyncCallback;
 import lsfusion.gwt.client.controller.remote.action.RequestCountingErrorHandlingCallback;
 import lsfusion.gwt.client.controller.remote.action.RequestErrorHandlingCallback;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.controller.remote.action.navigator.LogClientExceptionAction;
+import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
 import lsfusion.gwt.client.form.view.FormContainer;
 import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -333,6 +340,94 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     public void execute(GResetWindowsLayoutAction action) {
     }
 
+    private static class JSExecutor {
+        private static final List<GClientJSAction> actions = new ArrayList<>();
+
+        public static void addAction(GClientJSAction action) {
+            if (action.resource != null) {
+                actions.add(action);
+                flush();
+            } else {
+                GwtClientUtils.consoleError("Resource load error: " + action.resourceName);
+            }
+        }
+
+        private static boolean isExecuting = false;
+        private static void flush() {
+            if (!isExecuting && !actions.isEmpty()) {
+                GClientJSAction action = actions.get(0);
+                isExecuting = true;
+                if (action.isFile)
+                    executeFile(action);
+                else
+                    executeJSFunction(action);
+            }
+        }
+
+        private static native void executeFile(GClientJSAction action)/*-{
+            var resourcePath = 'static' + action.@GClientJSAction::resource;
+
+            if (resourcePath.endsWith('js')) {
+                var documentScripts = $wnd.document.scripts, scriptAlreadyLoaded;
+                for (var i = 0; i < documentScripts.length; i++) {
+                    var src = documentScripts[i].src;
+                    if (src != null && src.endsWith(resourcePath)){
+                        scriptAlreadyLoaded = true;
+                        break;
+                    }
+                }
+
+                if (!scriptAlreadyLoaded) {
+                    var scr = document.createElement('script');
+                    scr.src = resourcePath;
+                    scr.type = 'text/javascript';
+                    $wnd.document.head.appendChild(scr);
+                    scr.onload = function() { @JSExecutor::onActionExecuted(*)(action); }
+                }
+            } else if (resourcePath.endsWith('css')) {
+                var documentStyleSheets = $wnd.document.styleSheets, styleSheetAlreadyLoaded;
+                for (var j = 0; j < documentStyleSheets.length; j++) {
+                    var href = documentStyleSheets[j].href;
+                    if (href != null && href.endsWith(resourcePath)){
+                        styleSheetAlreadyLoaded = true;
+                        break;
+                    }
+                }
+                if (!styleSheetAlreadyLoaded) {
+                    var link = document.createElement("link");
+                    link.href = resourcePath;
+                    link.type = "text/css";
+                    link.rel = "stylesheet";
+                    $wnd.document.head.appendChild(link);
+                    @JSExecutor::onActionExecuted(*)(action);
+                }
+            }
+        }-*/;
+
+        private static void onActionExecuted(GClientJSAction action) {
+            isExecuting = false;
+            actions.remove(action);
+            flush();
+        }
+
+        private static void executeJSFunction(GClientJSAction action) {
+            JsArray<JavaScriptObject> arguments = JavaScriptObject.createArray().cast();
+            ArrayList<Object> types = action.types;
+            for (int i = 0; i < types.size(); i++) {
+                arguments.push(GSimpleStateTableView.convertValue((GType) types.get(i), action.values.get(i)));
+            }
+            String function = action.resource;
+            GwtClientUtils.call(GwtClientUtils.getGlobalField(function.substring(0, function.indexOf("("))), arguments);
+            onActionExecuted(action);
+        }
+    }
+
+
+    @Override
+    public void execute(GClientJSAction action) {
+        JSExecutor.addAction(action);
+    }
+
     @Override
     public Object execute(GHttpClientAction action) {
         pauseDispatching();
@@ -390,6 +485,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
 
     private long lastCompletedRequest = -1L;
     private NativeHashMap<Long, FormContainer> asyncForms = new NativeHashMap<>();
+    private NativeHashMap<Long, Timer> openTimers = new NativeHashMap<>();
 
     public GAsyncFormController getAsyncFormController(long requestIndex) {
         return new GAsyncFormController() {
@@ -403,7 +499,6 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
                 asyncForms.put(requestIndex, container);
             }
 
-            @Override
             public boolean checkNotCompleted() {
                 return requestIndex > lastCompletedRequest;
             }
@@ -417,6 +512,36 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
             @Override
             public boolean canShowDockedModal() {
                 return GwtActionDispatcher.this.canShowDockedModal();
+            }
+
+            @Override
+            public long getEditRequestIndex() {
+                return requestIndex;
+            }
+
+            @Override
+            public void scheduleOpen(Scheduler.ScheduledCommand command) {
+                Timer openFormTimer = new Timer() {
+                    @Override
+                    public void run() {
+                        Scheduler.get().scheduleDeferred(() -> {
+                            if (openTimers.remove(requestIndex) != null) {
+                                if(checkNotCompleted())  //request is not completed yet
+                                    command.execute();
+                            } else
+                                assert !checkNotCompleted();
+                        });
+                    }
+                };
+                openFormTimer.schedule(100);
+                openTimers.put(requestIndex, openFormTimer);
+            }
+
+            @Override
+            public void cancelScheduledOpening() {
+                Timer timer = openTimers.remove(requestIndex);
+                if(timer != null)
+                    timer.cancel();
             }
         };
     }

@@ -13,6 +13,7 @@ import lsfusion.gwt.client.navigator.GNavigatorElement;
 import lsfusion.gwt.client.navigator.GNavigatorFolder;
 import lsfusion.gwt.client.navigator.window.*;
 import lsfusion.interop.action.ClientAction;
+import lsfusion.interop.form.WindowFormType;
 
 import java.util.ArrayList;
 
@@ -135,9 +136,21 @@ public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
         return initNavigatorWindow(clientWindow, new GTreeNavigatorWindow());
     }
 
+    @Converter(from = WindowFormType.class)
+    public GWindowFormType convertWindowType(WindowFormType modalityType) {
+        switch (modalityType) {
+            case DOCKED: return GWindowFormType.DOCKED;
+            case FLOAT: return GWindowFormType.FLOAT;
+            case EMBEDDED: return GWindowFormType.EMBEDDED;
+            case POPUP: return GWindowFormType.POPUP;
+        }
+        return null;
+    }
+
     @Cached
     @Converter(from = ClientAsyncOpenForm.class)
     public GAsyncOpenForm convertOpenForm(ClientAsyncOpenForm asyncOpenForm) {
-        return new GAsyncOpenForm(asyncOpenForm.canonicalName, asyncOpenForm.caption, asyncOpenForm.forbidDuplicate, asyncOpenForm.modal, asyncOpenForm.window);
+        GWindowFormType type = convertOrCast(asyncOpenForm.type);
+        return new GAsyncOpenForm(asyncOpenForm.canonicalName, asyncOpenForm.caption, asyncOpenForm.forbidDuplicate, asyncOpenForm.modal, type);
     }
 }

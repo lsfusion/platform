@@ -23,6 +23,7 @@ title: 'Built-in classes'
 |`TEXT`               |String data type of arbitrary length, case-sensitive||
 |`RICHTEXT`           |String data type of arbitrary length with formatting||
 |`COLOR`              |Color                         |`#00ccff`, `#AA55CC`, `RGB(0, 255, 0)`|
+|`JSON`               |JSON                          |`{"a":["x","y","z"]}`|
 |`FILE`               |File of dynamic type (file content together with extension)||
 |`NAMEDFILE`          |File of dynamic type (file content together with name and extension)||
 |`RAWFILE`, `WORDFILE`, `IMAGEFILE`, `PDFFILE`, `EXCELFILE`, `CSVFILE`, `HTMLFILE`, `JSONFILE`, `XMLFILE`, `TABLEFILE`|Files of specific type (`RAWFILE`: file with no extension or with unknown extension)||
@@ -109,6 +110,7 @@ It is sometimes necessary to use some value for a built-in class which will diff
 |`DATE, TIME, DATETIME`    |The current date / time / date and time|
 |`BOOLEAN`                 |TRUE         |
 |`COLOR`                   |White        |
+|`JSON`                    |{}           |
 |Files of a specific type  |Empty file   |
 |`FILE`                    |Empty file with empty extension|
 |`NAMEDFILE`               |Empty file with empty name and extension|
@@ -139,5 +141,5 @@ When files of a specific type (`JSONFILE`, `XMLFILE`, ...) are cast into a file 
 |`NUMERIC`, `LONG`, `INTEGER`, `DOUBLE`|`exportNumeric`, `exportLong`, `exportInteger`, `exportDouble`|
 |`DATETIME`, `DATE`, `TIME`, `YEAR`|`exportDateTime`, `exportDate`, `exportTime`, `exportYear`|
 |`LINK`, `RAWLINK`, `WORDLINK`, `IMAGELINK`, `PDFLINK`, `EXCELLINK`, `CSVLINK`, `HTMLLINK`, `JSONLINK`, `XMLLINK`, `TABLELINK`|`exportFile`, `exportRawFile`, `exportWordFile`, `exportImageFile`, `exportPdfFile`, `exportExcelFile`, `exportCsvFile`, `exportHtmlFile`, `exportJsonFile`, `exportXmlFile`|
-|`BOOLEAN`, `COLOR`|`exportBoolean`, `exportColor`|
+|`BOOLEAN`, `COLOR`, `JSON`|`exportBoolean`, `exportColor`, `exportJSON`|
 |[User classes](User_classes.md)|`exportObject`|

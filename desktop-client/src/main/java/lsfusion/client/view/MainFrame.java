@@ -25,8 +25,6 @@ import lsfusion.interop.connection.LocalePreferences;
 import lsfusion.interop.form.event.EventBus;
 import lsfusion.interop.form.print.ReportGenerationData;
 import lsfusion.interop.form.remote.RemoteFormInterface;
-import lsfusion.interop.logics.LogicsRunnable;
-import lsfusion.interop.logics.LogicsSessionObject;
 import lsfusion.interop.logics.remote.RemoteLogicsInterface;
 import lsfusion.interop.navigator.ClientSettings;
 import lsfusion.interop.navigator.NavigatorInfo;
@@ -72,13 +70,11 @@ public abstract class MainFrame extends JFrame {
                         return RmiQueue.runRetryableRequest(new Callable<RemoteNavigatorInterface>() { // we need to retry request (at leastbecause remoteLogics ref can be invalid), just like in logicsDispatchAsync in web-client
                             public RemoteNavigatorInterface call() throws Exception {
                                 try {
-                                    return MainController.runRequest(new LogicsRunnable<RemoteNavigatorInterface>() {
-                                        public RemoteNavigatorInterface run(LogicsSessionObject sessionObject) throws RemoteException {
-                                            RemoteLogicsInterface remoteLogics = sessionObject.remoteLogics;
-                                            MainController.remoteLogics = remoteLogics;
-                                            MainController.initRmiClassLoader(remoteLogics);
-                                            return MainController.remoteLogics.createNavigator(MainController.authToken, getNavigatorInfo());
-                                        }
+                                    return MainController.runRequest((sessionObject, retry) -> {
+                                        RemoteLogicsInterface remoteLogics = sessionObject.remoteLogics;
+                                        MainController.remoteLogics = remoteLogics;
+                                        MainController.initRmiClassLoader(remoteLogics);
+                                        return MainController.remoteLogics.createNavigator(MainController.authToken, getNavigatorInfo());
                                     });
                                 } catch (AppServerNotAvailableException e) { // suppress and try again
                                     return null;

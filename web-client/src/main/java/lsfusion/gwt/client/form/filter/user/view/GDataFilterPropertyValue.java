@@ -107,13 +107,6 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
         return false;
     }
 
-    @Override
-    protected void onBlur(EventHandler handler) {
-        form.previewBlurEvent(handler.event);
-
-        super.onBlur(handler);
-    }
-
     public void setApplied(boolean applied) {
         if (applied) {
             getElement().addClassName("userFilerValueCellApplied");

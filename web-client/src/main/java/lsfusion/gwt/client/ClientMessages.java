@@ -26,6 +26,8 @@ public interface ClientMessages extends Messages {
     String hide();
 
     String loading();
+    
+    String navigator();
 
     String formRendererEmpty();
     String formRendererNotDefined();
@@ -148,6 +150,7 @@ public interface ClientMessages extends Messages {
     String typeActionCaption();
     String typeColorCaption();
     String typeNamedFileCaption();
+    String typeJSONCaption();
     String typeCustomDynamicFormatFileCaption();
     String typeCustomStaticFormatFileCaption();
     String typeDateCaption();

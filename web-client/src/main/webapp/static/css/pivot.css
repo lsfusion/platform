@@ -347,6 +347,7 @@ reproduces in chrome 80, in firefox 73 (latest) and chrome 70 (2018-10-16) width
     text-align: center;
     display: flex;
     flex-direction: column;
+    z-index: 1000;
 }
 
 .pvtFilterBox h4 {

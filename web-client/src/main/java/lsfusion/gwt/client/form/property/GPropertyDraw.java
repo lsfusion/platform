@@ -109,7 +109,14 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public String askConfirmMessage;
 
     public boolean hasEditObjectAction;
-    public boolean hasChangeAction;
+    public boolean hasChangeAction; // programmatic or user
+    public boolean hasUserChangeAction() { // user
+        if(!hasChangeAction)
+            return false;
+
+        // if custom render change is the input of some type, then probably it is a programmatic change (i.e. custom renderer uses changeValue to set this value, and should not be replaced with the input)
+        return customRenderFunction == null || externalChangeType == null;
+    }
 
     public GEditBindingMap editBindingMap;
 
@@ -220,7 +227,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 //        }
         if (actionSID == null) {
             GType changeType = getChangeType();
-            actionSID = GEditBindingMap.getDefaultEventSID(editEvent, changeType == null ? null : changeType.getEditEventFilter(), hasEditObjectAction, hasChangeAction);
+            actionSID = GEditBindingMap.getDefaultEventSID(editEvent, changeType == null ? null : changeType.getEditEventFilter(), hasEditObjectAction, hasUserChangeAction());
         }
         return actionSID;
     }
@@ -356,7 +363,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
                         propCaption, keyBindingText, canonicalName, ifaceObjects, scriptPath, propertyFormName, scriptFormPath);
             } else {
                 String tableName = this.tableName != null ? this.tableName : "&lt;none&gt;";
-                String returnClass = this.returnClass.toString();
+                String returnClass = this.returnClass != null ? this.returnClass.toString() : "";
                 String ifaceClasses = GwtSharedUtils.toString(", ", interfacesTypes);
                 String script = creationScript != null ? escapeLineBreakHTML(escapeHTML(creationScript)) : "";
                 

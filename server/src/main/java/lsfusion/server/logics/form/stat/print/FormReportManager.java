@@ -167,15 +167,15 @@ public abstract class FormReportManager extends FormDataManager {
     }
 
     public ReportGenerationData getReportData(FormPrintType printType, int selectTop) throws SQLException, SQLHandledException {
-        // report hierarchy and design prefix
-        Result<String> reportPrefix = new Result<>();
-        StaticDataGenerator.ReportHierarchy hierarchy = getReportHierarchy(reportPrefix);
-
         // report sources
-        FullStaticDataGenerator sourceGenerator = new FullStaticDataGenerator(reportInterface, hierarchy.hierarchy, true);
+        ReportStaticDataGenerator sourceGenerator = new ReportStaticDataGenerator(reportInterface);
         Pair<Map<GroupObjectEntity, StaticKeyData>, StaticPropertyData<PropertyReaderEntity>> sources = sourceGenerator.generate(selectTop);
         Map<GroupObjectEntity, StaticKeyData> keyData = sources.first;
         StaticPropertyData<PropertyReaderEntity> propData = sources.second;
+
+        // report hierarchy and design prefix
+        Result<String> reportPrefix = new Result<>();
+        StaticDataGenerator.ReportHierarchy hierarchy = getReportHierarchy(reportPrefix);
 
         // report design
         Map<GroupObjectHierarchy.ReportNode, JasperDesign> designs = getReportDesigns(printType, reportPrefix.result, hierarchy, propData.columnData, propData.types);
@@ -189,7 +189,7 @@ public abstract class FormReportManager extends FormDataManager {
 
     protected StaticDataGenerator.ReportHierarchy getReportHierarchy(Result<String> reportPrefix) {
         reportPrefix.set(reportInterface.getReportPrefix());
-        return dataInterface.getHierarchy(true).getReportHierarchy();
+        return reportInterface.getHierarchy(true).getReportHierarchy();
     }
 
     private byte[] getReportHierarchyByteArray(GroupObjectHierarchy.ReportHierarchy reportHierarchy) {

@@ -76,6 +76,7 @@ public class GConnectionLostManager {
 
     public static void blockIfHasFailed() {
         if (shouldBeBlocked() && blockDialog == null) {
+            MainFrame.closeNavigatorMenu();
             blockDialog = new GBlockDialog(false, true);
             blockDialog.addOpenHandler(new OpenHandler<WindowBox>() {
                 @Override

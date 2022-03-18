@@ -24,7 +24,7 @@ public class HTMLTextCellEditor implements RequestEmbeddedCellEditor {
 
     @Override
     public void commit(Element parent, CommitReason commitReason) {
-        editManager.commitEditing(new GUserInputResult(getEditorValue(parent)), CommitReason.BLURRED);
+        editManager.commitEditing(new GUserInputResult(getEditorValue(parent)), commitReason);
     }
 
     @Override

@@ -342,12 +342,19 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
 //        }
         return target;
     }
+    public static boolean isMouseEvent(Event event) {
+        String eventType = event.getType();
+        return getBrowserMouseEvents().contains(eventType);
+    }
     public static boolean checkSinkEvents(Event event) {
         String eventType = event.getType();
-        return getBrowserFocusEvents().contains(eventType) ||
-                getBrowserMouseEvents().contains(eventType) ||
+        return getBrowserMouseEvents().contains(eventType) ||
                 getBrowserDragDropEvents().contains(eventType) ||
                 checkSinkGlobalEvents(event);
+    }
+    public static boolean checkSinkFocusEvents(Event event) {
+        String eventType = event.getType();
+        return getBrowserFocusEvents().contains(eventType);
     }
     public static boolean checkSinkGlobalEvents(Event event) {
         return getBrowserKeyEvents().contains(event.getType()) || event.getTypeInt() == Event.ONPASTE || event.getType().equals(BrowserEvents.CONTEXTMENU);
@@ -439,6 +446,10 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
         if(!checkSinkEvents(event))
             return;
 
+        onGridBrowserEvent(target, event);
+    }
+
+    public void onGridBrowserEvent(Element target, Event event) {
         // moved to GridContainerPanel
 //        String eventType = event.getType();
 //        if (BrowserEvents.FOCUS.equals(eventType))
@@ -453,7 +464,7 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
 
         int row = -1;
         Column column = null;
-        Element columnParent = null;
+        TableCellElement columnParent = null;
 
         Header header = null;
         Element headerParent = null;
@@ -485,7 +496,7 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
                 if (column == null) {
                     column = tableBuilder.getColumn(cur);
                     if(column != null)
-                        columnParent = cur;
+                        columnParent = (TableCellElement) cur; // COLUMN_ATTRIBUTE is only set for TableCellElement
                 }
                 if (header == null && !noHeaders) {
                     header = headerBuilder.getHeader(cur);
@@ -514,7 +525,7 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
         }
     }
 
-    public abstract <C> void onBrowserEvent(Cell cell, Event event, Column<T, C> column, Element parent);
+    public abstract <C> void onBrowserEvent(Cell cell, Event event, Column<T, C> column, TableCellElement parent);
 
     /**
      * Checks that the row is within bounds of the view.
@@ -979,15 +990,15 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
         return rows.getItem(row);
     }
 
-    protected Element getSelectedElement() {
+    protected TableCellElement getSelectedElement() {
         return getSelectedElement(getSelectedColumn());
     }
 
-    protected Element getSelectedElement(int column) {
+    protected TableCellElement getSelectedElement(int column) {
         return getElement(getSelectedRow(), column);
     }
 
-    protected Element getElement(int rowIndex, int colIndex) { // element used for rendering
+    protected TableCellElement getElement(int rowIndex, int colIndex) { // element used for rendering
         TableCellElement result = null;
         TableRowElement tr = getRowElementNoFlush(rowIndex); // Do not use getRowElement() because that will flush the presenter.
         if (tr != null && colIndex >= 0) {
@@ -1023,16 +1034,16 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
     protected abstract boolean previewEvent(Element target, Event event);
 
     public void onFocus() {
-//        if(isFocused)
-//            return;
+        if(isFocused)
+            return;
         DataGrid.sinkPasteEvent(getTableDataFocusElement());
         isFocused = true;
         focusedChanged();
     }
 
     public void onBlur(Event event) {
-//        if(!isFocused || isFakeBlur(event, getElement()))
-//            return;
+        if(!isFocused || isFakeBlur(event, getElement()))
+            return;
         //if !isFocused should be replaced to assert; isFocused must be true, but sometimes is not (related to LoadingManager)
         //assert isFocused;
         isFocused = false;
@@ -1098,15 +1109,6 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
     public T getSelectedRowValue() {
         int selectedRow = getSelectedRow();
         return isRowWithinBounds(selectedRow) ? getRowValue(selectedRow) : null;
-    }
-
-    /**
-     * Check whether or not the data set is empty. That is, the row count is exactly 0.
-     *
-     * @return true if data set is empty
-     */
-    public boolean isEmpty() {
-        return getRowCount() == 0;
     }
 
     protected void startResolving() {
@@ -1434,23 +1436,28 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
         for (int column = 0; column < cells.getLength(); column++) {
             TableCellElement td = cells.getItem(column);
 
-            String background = td.getPropertyString(GPropertyTableBuilder.BKCOLOR);
-            if(background != null && background.isEmpty())
-                background = null;
+            updateSelectedRowCellBackground(selected, column == focusedColumn, td);
 
-            String setColor;
-            if (selected) {
-                setColor = (column == focusedColumn) ? getFocusedCellBackgroundColor(true) : getSelectedRowBackgroundColor(true);
-                if (background != null)
-                    setColor = mixColors(background, setColor);
-            } else {
-                assert column != focusedColumn;
-                setColor = background != null ? getDisplayColor(background) : "var(--component-background-color)";
-            }
             onSelectedChanged(td, row, column, selected);
-
-            GFormController.setBackgroundColor(td, setColor);
         }
+    }
+
+    protected void updateSelectedRowCellBackground(boolean selected, boolean focused, TableCellElement td) {
+        String background = td.getPropertyString(GPropertyTableBuilder.BKCOLOR);
+        if(background != null && background.isEmpty())
+            background = null;
+
+        String setColor;
+        if (selected) {
+            setColor = focused ? getFocusedCellBackgroundColor(background != null) : getSelectedRowBackgroundColor(background != null);
+            if (background != null)
+                setColor = mixColors(background, setColor);
+        } else {
+            assert !focused;
+            setColor = background != null ? getDisplayColor(background) : null;
+        }
+
+        GFormController.setBackgroundColor(td, setColor);
     }
 
     protected abstract void onSelectedChanged(TableCellElement td, int row, int column, boolean selected);
@@ -1871,6 +1878,8 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
     @Override
     public void onResize() {
         onResizeChanged();
+        //need to recalculate scrollTop in preAfterUpdateDOMScrollVertical
+        selectedRowChanged = true;
         super.onResize();
     }
 

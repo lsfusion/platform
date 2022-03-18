@@ -10,6 +10,7 @@ import lsfusion.gwt.client.base.busy.GBusyDialogDisplayer;
 import lsfusion.gwt.client.base.busy.LoadingManager;
 import lsfusion.gwt.client.controller.dispatch.DispatchAsyncWrapper;
 import lsfusion.gwt.client.controller.remote.action.*;
+import lsfusion.gwt.client.controller.remote.action.form.ExecuteEventAction;
 import lsfusion.gwt.client.controller.remote.action.form.GetAsyncValues;
 import lsfusion.gwt.client.form.controller.dispatch.QueuedAction;
 import lsfusion.gwt.client.view.ServerMessageProvider;
@@ -139,28 +140,35 @@ public abstract class RemoteDispatchAsync implements ServerMessageProvider {
     protected boolean isEditing() {
         return false;
     }
+    protected long getEditingRequestIndex() {
+        return -1;
+    }
 
     public void flushCompletedRequests(Runnable preProceed, Runnable postProceed) {
-        if (isEditing()) {
-            q.forEach(action -> {
-                if (action.preProceeded != null && !action.preProceeded && action.finished) {
-                    preProceed.run();
-                    action.proceed(postProceed);
-                    action.preProceeded = true;
-                }
-            });
-        } else {
-            while (!q.isEmpty() && q.peek().finished) {
-                QueuedAction action = q.remove();
-                long requestIndex = action.requestIndex;
-                if (requestIndex >= 0) {
-                    lastReceivedRequestIndex = requestIndex;
-                }
+        q.forEach(queuedAction -> {
+            if (queuedAction.preProceeded != null && !queuedAction.preProceeded && queuedAction.finished) {
+                preProceed.run();
+                queuedAction.proceed(postProceed);
+                queuedAction.preProceeded = true;
+            }
+        });
 
-                if (action.preProceeded == null || !action.preProceeded) {
-                    preProceed.run();
-                    action.proceed(postProceed);
-                }
+        QueuedAction action;
+        while (!q.isEmpty() && (action = q.peek()).finished) {
+            long requestIndex = action.requestIndex;
+
+            // when editing suspending all requests (except some actions that are marked for editing)
+            if (isEditing() && requestIndex > getEditingRequestIndex())
+                break;
+
+            q.remove();
+            if (requestIndex >= 0) {
+                lastReceivedRequestIndex = requestIndex;
+            }
+
+            if (action.preProceeded == null || !action.preProceeded) {
+                preProceed.run();
+                action.proceed(postProceed);
             }
         }
     }

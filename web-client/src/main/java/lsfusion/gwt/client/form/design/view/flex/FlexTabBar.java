@@ -11,6 +11,7 @@ import com.google.gwt.user.client.ui.*;
 import com.google.gwt.user.client.ui.impl.FocusImpl;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
+import lsfusion.gwt.client.view.MainFrame;
 import lsfusion.gwt.client.view.StyleDefaults;
 
 import java.util.function.Consumer;
@@ -27,6 +28,11 @@ public class FlexTabBar extends Composite implements TabBar {
 
     public FlexTabBar(Widget extraTabWidget, boolean vertical) {
         panel = new FlexPanel(vertical);
+        
+        if (MainFrame.mobile) {
+            panel.getElement().addClassName("mobileTabPanelBar");
+        }
+        
         if (extraTabWidget == null) {
             initWidget(panel);
         } else {
@@ -91,6 +97,7 @@ public class FlexTabBar extends Composite implements TabBar {
         delWidgetStyle.setProperty("alignItems", "center");
 
         panel.add(delWidget, beforeIndex + 1, GFlexAlignment.STRETCH);
+        delWidget.getElement().scrollIntoView();
 
 //        setStyleName(DOM.getParent(delWidget.getElement()), STYLENAME_DEFAULT + "-wrapper", true);
     }

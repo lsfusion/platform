@@ -248,7 +248,7 @@ public class MSSQLSQLSyntax extends DefaultSQLSyntax {
         }
 
         ImList<Type> fixedTypes;
-        if(groupType == GroupType.STRING_AGG) { // будем считать что все implicit прокастится
+        if(groupType == GroupType.CONCAT) { // будем считать что все implicit прокастится
             assert exprs.size() == 2;
             StringClass textClass = StringClass.getv(ExtInt.UNLIMITED);
             fixedTypes = ListFact.toList(textClass, textClass);
@@ -275,7 +275,7 @@ public class MSSQLSQLSyntax extends DefaultSQLSyntax {
     public static String getOrderGroupAggName(GroupType groupType, ImList<Type> types) {
         String fnc;
         switch (groupType) {
-            case STRING_AGG:
+            case CONCAT:
                 fnc = "STRING_AGG";
                 break;
             case LAST:

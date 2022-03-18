@@ -73,7 +73,7 @@ public class RemoteLogicsLoader extends LogicsManager implements RemoteLogicsLoa
             remoteLogics.businessLogics.systemEventsLM.onStarted.execute(session, getStack());
             apply(session);
         } catch (Exception e) {
-            throw new RuntimeException("Error executing on started: ", e);
+            throw new RuntimeException("Error executing onStarted: ", e);
         }
         logger.info("Exporting RMI Logics object (port: " + rmiManager.getPort() + ")");
         try {

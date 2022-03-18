@@ -1,6 +1,8 @@
 package lsfusion.gwt.client.form.view;
 
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
+import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
@@ -10,29 +12,37 @@ import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.base.view.ResizableComplexPanel;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.design.view.GFormLayout;
-import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
+import lsfusion.gwt.client.form.property.cell.controller.EndReason;
+import lsfusion.gwt.client.navigator.window.GWindowFormType;
 
 import static lsfusion.gwt.client.view.StyleDefaults.VALUE_HEIGHT;
 
-public final class FormDockable extends FormContainer<FormDockable.ContentWidget> {
+public final class FormDockable extends FormContainer {
+    private String canonicalName;
     private TabWidget tabWidget;
     private FormDockable blockingForm; //GFormController
 
-    public FormDockable(FormsController formsController, GAsyncFormController asyncFormController, String caption, boolean async) {
-        super(formsController, asyncFormController, async);
+    protected final FormDockable.ContentWidget contentWidget;
+
+    @Override
+    public GWindowFormType getWindowType() {
+        return GWindowFormType.DOCKED;
+    }
+
+    @Override
+    protected Element getFocusedElement() {
+        return contentWidget.getElement();
+    }
+
+    public FormDockable(FormsController formsController, String canonicalName, String caption, boolean async, Event editEvent) {
+        super(formsController, async, editEvent);
+        this.canonicalName = canonicalName;
+
+        contentWidget = new ContentWidget();
 
         tabWidget = new TabWidget(caption);
         tabWidget.setBlocked(false);
         formsController.addContextMenuHandler(this);
-
-        if(async) {
-            GwtClientUtils.setThemeImage(loadingAsyncImage, imageUrl -> contentWidget.setContent(createLoadingWidget(imageUrl)), false);
-        }
-    }
-
-    @Override
-    protected ContentWidget initContentWidget() {
-        return new ContentWidget();
     }
 
     @Override
@@ -51,7 +61,7 @@ public final class FormDockable extends FormContainer<FormDockable.ContentWidget
     }
 
     @Override
-    public void hide() {
+    public void hide(EndReason editFormCloseReason) {
         formsController.removeDockable(this);
     }
 
@@ -69,22 +79,16 @@ public final class FormDockable extends FormContainer<FormDockable.ContentWidget
         contentWidget.setBlocked(false);
     }
 
-    public void closePressed() {
-        if(async) {
-            asyncFormController.removeAsyncForm();
-            formsController.removeDockable(this);
-            formsController.ensureTabSelected();
-        } else {
-            form.closePressed();
-        }
-    }
-
     public Widget getTabWidget() {
         return tabWidget;
     }
 
     public Widget getContentWidget() {
         return contentWidget;
+    }
+
+    public String getCanonicalName() {
+        return canonicalName;
     }
 
     public class ContentWidget extends ResizableComplexPanel {

@@ -70,7 +70,7 @@ public abstract class AbstractLogicsProviderImpl {
     private <R> R runRequest(LogicsConnection connection, LogicsRunnable<R> runnable, boolean retry) throws AppServerNotAvailableException, RemoteException {
         LogicsSessionObject logicsSessionObject = createOrGetLogicsSessionObject(connection);
         try {
-            return runnable.run(logicsSessionObject);
+            return runnable.run(logicsSessionObject, retry);
         } catch (AuthenticationException e) {
             // if there is an AuthenticationException and server has anonymousUI, that means that the mode has changed, so we we'll drop serverSettings cache
             if(logicsSessionObject.serverSettings != null && logicsSessionObject.serverSettings.anonymousUI)
@@ -87,7 +87,7 @@ public abstract class AbstractLogicsProviderImpl {
 
     public ServerSettings getServerSettings(LogicsConnection connection, final SessionInfo sessionInfo, final String contextPath, final boolean noCache) {
         try {
-            return runRequest(connection, sessionObject -> sessionObject.getServerSettings(sessionInfo, contextPath, noCache));
+            return runRequest(connection, (sessionObject, retry) -> sessionObject.getServerSettings(sessionInfo, contextPath, noCache));
         } catch (Throwable t) {
 //            throw Throwables.propagate(t);
             return null;

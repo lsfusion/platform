@@ -42,14 +42,14 @@ import java.util.function.Function;
 public abstract class StaticDataGenerator<SDP extends PropertyReaderEntity> {
     
     protected final FormDataInterface formInterface;
-    private final Hierarchy hierarchy;
+    public final Hierarchy hierarchy;
     
     private final boolean supportColumnGroups;
 
-    public StaticDataGenerator(FormDataInterface formInterface, Hierarchy hierarchy, boolean supportColumnGroups) {
+    public StaticDataGenerator(FormDataInterface formInterface, boolean isReport) {
         this.formInterface = formInterface;
-        this.hierarchy = hierarchy;
-        this.supportColumnGroups = supportColumnGroups; 
+        this.hierarchy = formInterface.getHierarchy(isReport);
+        this.supportColumnGroups = isReport;
     }
 
     public static class ReportHierarchy {
@@ -134,19 +134,17 @@ public abstract class StaticDataGenerator<SDP extends PropertyReaderEntity> {
         return formInterface.getWhere(group, valueGroups, mapExprs).and(formInterface.getValueWhere(group, valueGroups, mapExprs));
     }
     protected ImOrderMap<CompareEntity, Boolean> getOrders(GroupObjectEntity group, ImSet<GroupObjectEntity> valueGroups) {
-        return formInterface.getOrders(group, valueGroups).mergeOrder(group.getOrderObjects().toOrderMap(false)).mapOrderKeys(new Function<CompareEntity, CompareEntity>() {
-            public CompareEntity apply(final CompareEntity value) {
-                if(value instanceof ObjectEntity) // hack, need this because in Query keys and values should not intersect (because of ClassWhere), but CompareEntity and ObjectEntity have common class ObjectEntity
-                    return new CompareEntity() {
-                        public Type getType() {
-                            return value.getType();
-                        }
-                        public Expr getEntityExpr(ImMap<ObjectEntity, ? extends Expr> mapExprs, Modifier modifier) throws SQLException, SQLHandledException {
-                            return value.getEntityExpr(mapExprs, modifier);
-                        }
-                    };
-                return value;
-            }
+        return formInterface.getOrders(group, valueGroups).mergeOrder(group.getOrderObjects().toOrderMap(false)).mapOrderKeys(value -> {
+            if(value instanceof ObjectEntity) // hack, need this because in Query keys and values should not intersect (because of ClassWhere), but CompareEntity and ObjectEntity have common class ObjectEntity
+                return new CompareEntity() {
+                    public Type getType() {
+                        return value.getType();
+                    }
+                    public Expr getEntityExpr(ImMap<ObjectEntity, ? extends Expr> mapExprs, Modifier modifier) throws SQLException, SQLHandledException {
+                        return value.getEntityExpr(mapExprs, modifier);
+                    }
+                };
+            return value;
         });
     }
 
