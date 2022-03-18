@@ -69,7 +69,7 @@ public class EmbeddedForm extends EditingForm {
     }
 
     private ResizableComplexPanel getAttachContainer() {
-        return contextForm.formLayout.recordViews;
+        return contextForm.formLayout.attachContainer;
     }
 
     @Override
