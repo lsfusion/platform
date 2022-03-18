@@ -2,11 +2,8 @@ package lsfusion.gwt.client.form.design.view;
 
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.client.base.view.CaptionPanel;
-import lsfusion.gwt.client.base.view.CollapsiblePanel;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
-import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.design.view.flex.FlexTabbedPanel;
@@ -18,16 +15,14 @@ import static lsfusion.gwt.client.base.GwtSharedUtils.relativePosition;
 
 public abstract class GAbstractContainerView {
     protected final GContainer container;
-    private final GFormController formController;
 
     protected final boolean vertical;
 
     protected final List<GComponent> children = new ArrayList<>();
     protected final List<Widget> childrenViews = new ArrayList<>();
 
-    protected GAbstractContainerView(GContainer container, GFormController formController) {
+    protected GAbstractContainerView(GContainer container) {
         this.container = container;
-        this.formController = formController;
 
         vertical = container.isVertical();
     }
@@ -180,24 +175,7 @@ public abstract class GAbstractContainerView {
         return children.get(index);
     }
 
-    public void updateCaption(GContainer container) {
-        CaptionPanel captionPanel = null;
-        FlexPanel childPanel = (FlexPanel) getChildView(container);
-
-        // if we have caption it has to be either CaptionPanel, or it is wrapped into one more flexPanel (see addImpl)
-        if(childPanel instanceof CaptionPanel)
-            captionPanel = (CaptionPanel) childPanel;
-
-        Widget childWidget = childPanel.getWidget(0);
-        if(childWidget instanceof CaptionPanel)
-            captionPanel = (CaptionPanel) childWidget;
-
-        String caption = container.caption;
-        if(captionPanel != null)
-            captionPanel.setCaption(caption);
-        else // it is possible if hasNoCaption is true, so captionPanel is not created, however dynamic caption changes may come to the client
-            assert caption == null;
-    }
+    public abstract void updateCaption(GContainer container);
 
     public Widget getChildView(GComponent child) {
         int index = children.indexOf(child);
@@ -233,21 +211,8 @@ public abstract class GAbstractContainerView {
     protected Widget addChildrenWidget(FlexPanel flexPanel, int i, int beforeIndex) {
         return add(flexPanel, childrenViews.get(i), children.get(i), beforeIndex);
     }
-
-    protected FlexPanel wrapBorderImpl(GComponent child) {
-        GContainer childContainer;
-        if (child instanceof GContainer) {
-            childContainer = (GContainer) child;
-            if (childContainer.collapsible) {
-                return new CollapsiblePanel(formController, childContainer);
-            } else if (childContainer.caption != null) {
-                return new CaptionPanel(childContainer.caption);
-            }
-        }
-        return null;
-    }
-
-    protected abstract void addImpl(int index, GComponent child, Widget view);
+    protected void addImpl(int index, GComponent child, Widget view) {}
+    protected abstract FlexPanel wrapBorderImpl(GComponent child);
     protected abstract void removeImpl(int index, GComponent child);
     public abstract Widget getView();
 }

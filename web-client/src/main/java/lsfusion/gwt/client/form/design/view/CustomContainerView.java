@@ -1,17 +1,18 @@
 package lsfusion.gwt.client.form.design.view;
 
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.view.ResizableComplexPanel;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
+import lsfusion.gwt.client.form.design.view.flex.LayoutContainerView;
 
-public class CustomContainerView extends GAbstractContainerView {
+public class CustomContainerView extends LayoutContainerView {
 
     private final ResizableComplexPanel panel;
     private final GFormController formController;
+    private String currentCustomDesign = "";
 
     public CustomContainerView(GFormController formController, GContainer container) {
         super(container, formController);
@@ -21,35 +22,24 @@ public class CustomContainerView extends GAbstractContainerView {
     }
 
     @Override
-    protected void addImpl(int index, GComponent child, Widget view) {
-        //adding is done in updateLayout()
-    }
-
-    @Override
     public void updateLayout(long requestIndex, boolean[] childrenVisible) {
-        childrenViews.forEach(childrenView -> formController.getFormLayout().recordViews.add(childrenView));
+        if (!currentCustomDesign.equals(container.getCustomDesign())) {
+            currentCustomDesign = container.getCustomDesign();
+            childrenViews.forEach(childrenView -> formController.getFormLayout().recordViews.add(childrenView));
 
-        Element panelElement = panel.getElement();
-        panelElement.setInnerHTML(getTagCustomDesign(container.getCustom()));
-
-        for (int i = 0; i < getChildrenCount(); i++) {
-            GComponent child = getChild(i);
-            NodeList<Element> panelChildren = panelElement.getElementsByTagName(child.sID);
-            int childrenLength = panelChildren.getLength();
-            if (childrenLength > 0) {
-                for (int j = 0; j < childrenLength; j++) {
-                    Element elementToReplace = panelChildren.getItem(j);
-                    Widget childView = getChildView(child);
-                    childView.setVisible(childrenVisible[i]);
-                    elementToReplace.getParentElement().replaceChild(childView.getElement(), elementToReplace);
-                }
+            Element panelElement = panel.getElement();
+            panelElement.setInnerHTML(getTagCustomDesign(container.getCustomDesign()));
+            for (GComponent child : children) {
+                Element panelChild = panelElement.getElementsByTagName(child.sID).getItem(0);
+                if (panelChild != null)
+                    panelChild.getParentElement().replaceChild(getChildView(child).getElement(), panelChild);
             }
         }
         super.updateLayout(requestIndex, childrenVisible);
     }
 
-    public void updateCustom(String customDesign) {
-        this.container.customDesign = customDesign;
+    public void updateCustomDesign(String customDesign) {
+        this.container.setCustomDesign(customDesign);
     }
 
     private String getTagCustomDesign(String rawCustomDesign) {

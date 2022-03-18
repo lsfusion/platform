@@ -8,12 +8,11 @@ import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
-import lsfusion.gwt.client.form.design.view.GAbstractContainerView;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class LinearContainerView extends GAbstractContainerView {
+public class LinearContainerView extends LayoutContainerView {
 
     protected final FlexPanel panel;
 
@@ -212,17 +211,6 @@ public class LinearContainerView extends GAbstractContainerView {
                 container.remove(containerIndex);
 
         container.remove(containerIndex);
-    }
-
-    @Override
-    public void updateLayout(long requestIndex, boolean[] childrenVisible) {
-        for (int i = 0, size = children.size(); i < size; i++) {
-            GComponent child = children.get(i);
-            if (child instanceof GContainer) // optimization
-                childrenViews.get(i).setVisible(childrenVisible[i]);
-        }
-
-        super.updateLayout(requestIndex, childrenVisible);
     }
 
     @Override

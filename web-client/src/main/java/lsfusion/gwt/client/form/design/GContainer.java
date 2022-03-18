@@ -184,8 +184,12 @@ public class GContainer extends GComponent {
         return lineShrink;
     }
 
-    public String getCustom() {
+    public String getCustomDesign() {
         return customDesign;
+    }
+
+    public void setCustomDesign(String customDesign) {
+        this.customDesign = customDesign;
     }
 
     public boolean isCustomDesign() {

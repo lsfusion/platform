@@ -20,7 +20,7 @@ public class TabbedContainerView extends GAbstractContainerView {
     protected GComponent currentChild;
 
     public TabbedContainerView(final GFormController formController, final GContainer container) {
-        super(container, formController);
+        super(container);
 
         assert container.tabbed;
 
@@ -74,11 +74,6 @@ public class TabbedContainerView extends GAbstractContainerView {
                 formController.setTabActive(container, selectedChild);
             }
         }
-    }
-
-    @Override
-    protected void addImpl(int index, GComponent child, Widget view) {
-        //adding is done in updateLayout()
     }
 
     @Override
