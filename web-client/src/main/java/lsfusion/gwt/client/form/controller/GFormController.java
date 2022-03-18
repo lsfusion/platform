@@ -48,6 +48,7 @@ import lsfusion.gwt.client.form.controller.dispatch.GFormActionDispatcher;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.design.GFont;
+import lsfusion.gwt.client.form.design.view.CustomContainerView;
 import lsfusion.gwt.client.form.design.view.GAbstractContainerView;
 import lsfusion.gwt.client.form.design.view.GFormLayout;
 import lsfusion.gwt.client.form.design.view.TabbedContainerView;
@@ -940,7 +941,7 @@ public class GFormController implements EditManager {
             }
 
             // hasChangeAction check is important for quickfilter not to consume event (however with propertyReadOnly, checkCanBeChanged there will be still some problems)
-            if (isChangeEvent(actionSID) && //??????
+            if (isChangeEvent(actionSID) &&
                     (editContext.isReadOnly() || !property.hasUserChangeAction())) // we're ignoring change if we use CUSTOM render function without CUSTOM CHANGE set
                 return;
             if(GEditBindingMap.EDIT_OBJECT.equals(actionSID) && !property.hasEditObjectAction)
@@ -993,7 +994,6 @@ public class GFormController implements EditManager {
         }
 
         ExecuteEventAction executeEventAction = new ExecuteEventAction(IDs, fullCurrentKeys, actionSID, externalChanges, pushAsyncResults);
-
         ServerResponseCallback serverResponseCallback = new ServerResponseCallback() {
             @Override
             protected Runnable getOnRequestFinished() {
@@ -1542,6 +1542,11 @@ public class GFormController implements EditManager {
             updateFormCaption();
         else
             layout.getContainerView(container.container).updateCaption(container);
+    }
+
+    public void setContainerCustomDesign(GContainer container, String customDesign) {
+        GAbstractContainerView containerView = formLayout.getContainerView(container);
+        ((CustomContainerView)containerView).updateCustomDesign(customDesign);
     }
 
     private static final class Change {

@@ -4,6 +4,7 @@ import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
+import lsfusion.gwt.client.base.view.ResizableComplexPanel;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.design.view.flex.FlexTabbedPanel;
@@ -27,7 +28,7 @@ public abstract class GAbstractContainerView {
         vertical = container.isVertical();
     }
 
-    public void add(GComponent child, final Widget view) {
+    public void add(GComponent child, final Widget view, ResizableComplexPanel attachContainer) {
         assert child != null && view != null && container.children.contains(child);
 
         int index = relativePosition(child, container.children, children);
@@ -47,7 +48,7 @@ public abstract class GAbstractContainerView {
         children.add(index, child);
         childrenViews.add(index, wrapAndOverflowView(child, view, fixFlexBasis));
 
-        addImpl(index, child, view);
+        addImpl(index, child, view, attachContainer);
     }
 
     private Widget wrapAndOverflowView(GComponent child, Widget view, boolean fixFlexBasis) {
@@ -186,7 +187,7 @@ public abstract class GAbstractContainerView {
         void updateLayout(long requestIndex);
     }
 
-    private List<UpdateLayoutListener> updateLayoutListeners = new ArrayList<>();
+    private final List<UpdateLayoutListener> updateLayoutListeners = new ArrayList<>();
     public void addUpdateLayoutListener(UpdateLayoutListener listener) {
         updateLayoutListeners.add(listener);
     }
@@ -212,7 +213,7 @@ public abstract class GAbstractContainerView {
         return add(flexPanel, childrenViews.get(i), children.get(i), beforeIndex);
     }
 
-    protected abstract void addImpl(int index, GComponent child, Widget view);
+    protected abstract void addImpl(int index, GComponent child, Widget view, ResizableComplexPanel attachContainer);
     protected abstract FlexPanel wrapBorderImpl(GComponent child);
     protected abstract void removeImpl(int index, GComponent child);
     public abstract Widget getView();

@@ -24,32 +24,31 @@ import java.util.*;
 
 public class GFormLayout extends ResizableComplexPanel {
 
-    private GFormController form;
+    private final GFormController form;
 
-    private GContainer mainContainer;
+    private final GContainer mainContainer;
 
-    private Map<GContainer, GAbstractContainerView> containerViews = new HashMap<>();
-    private Map<GComponent, Widget> baseComponentViews = new HashMap<>();
+    private final Map<GContainer, GAbstractContainerView> containerViews = new HashMap<>();
+    private final Map<GComponent, Widget> baseComponentViews = new HashMap<>();
 
-    private ArrayList<GComponent> defaultComponents = new ArrayList<>();
-    private ArrayList<DefaultFocusReceiver> defaultFocusReceivers = new ArrayList<>();
+    private final ArrayList<GComponent> defaultComponents = new ArrayList<>();
+    private final ArrayList<DefaultFocusReceiver> defaultFocusReceivers = new ArrayList<>();
 
-    public final ResizableComplexPanel recordViews;
+    public final ResizableComplexPanel attachContainer;
 
     public GFormLayout(GFormController iform, GContainer mainContainer, boolean autoSize) {
         this.form = iform;
-
         this.mainContainer = mainContainer;
 
+        attachContainer = new ResizableComplexPanel();
+        attachContainer.setVisible(false);
         addContainers(mainContainer);
 
         Widget view = getMainView();
         setSizedMain(view, autoSize);
         view.getElement().getStyle().setOverflow(Style.Overflow.AUTO);
 
-        recordViews = new ResizableComplexPanel();
-        recordViews.setVisible(false);
-        add(recordViews);
+        add(attachContainer);
 
         DataGrid.initSinkMouseEvents(this);
     }
@@ -63,11 +62,12 @@ public class GFormLayout extends ResizableComplexPanel {
     }
 
     private static GAbstractContainerView createContainerView(GFormController form, GContainer container) {
-        if (container.tabbed) {
+        if (container.tabbed)
             return new TabbedContainerView(form, container);
-        } else {
+        else if (container.isCustomDesign())
+            return new CustomContainerView(form, container);
+        else
             return new LinearContainerView(form, container);
-        }
     }
 
     @Override
@@ -91,7 +91,7 @@ public class GFormLayout extends ResizableComplexPanel {
     }
 
     // creating containers (all other components are created when creating controllers)
-    private GAbstractContainerView addContainers(GContainer container) {
+    private void addContainers(GContainer container) {
         GAbstractContainerView containerView = createContainerView(form, container);
 
         containerViews.put(container, containerView);
@@ -108,8 +108,6 @@ public class GFormLayout extends ResizableComplexPanel {
                 addContainers((GContainer) child);
             }
         }
-
-        return containerView;
     }
     public void addBaseComponent(GComponent component, Widget view, DefaultFocusReceiver focusReceiver) {
         // we wish that all base components margins, paddings and borders should be zero (since we're setting them with topBorder and others)
@@ -127,7 +125,7 @@ public class GFormLayout extends ResizableComplexPanel {
 
         GAbstractContainerView containerView;
         if(key.container != null && (containerView = containerViews.get(key.container)) != null) { // container can be null when component should be layouted manually, containerView can be null when it is removed 
-            containerView.add(key, view);
+            containerView.add(key, view, attachContainer);
 
             maybeAddDefaultFocusReceiver(key, focusReceiver);
         }

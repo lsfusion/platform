@@ -54,7 +54,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
         }
     }
 
-    private GridLines gridLines;
+    private final GridLines gridLines;
     
     public FlexPanel(boolean vertical, GFlexAlignment flexAlignment) {
         this(vertical, flexAlignment, null, false);

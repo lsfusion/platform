@@ -2358,6 +2358,7 @@ updateAsyncPropertyChanges();
 
             ContainerViewInstance containerInstance = instanceFactory.getInstance(container);
             fillChangedReader(containerInstance.captionReader, null, result, gridGroups, hidden, update, true, mReadProperties, changedDrawProps, changedProps);
+            fillChangedReader(containerInstance.customDesignReader, null, result, gridGroups, hidden, update, true, mReadProperties, changedDrawProps, changedProps);
         }
         return mReadProperties.immutable();
     }
