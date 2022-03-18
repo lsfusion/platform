@@ -599,7 +599,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
                                  : null;
         }
 
-        returnClass = ClientTypeSerializer.deserializeClientClass(inStream);
+        returnClass = inStream.readBoolean() ? ClientTypeSerializer.deserializeClientClass(inStream) : null;
         
         customRenderFunction = pool.readString(inStream);
 
@@ -767,7 +767,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
             } else {
                 String tableName = this.tableName != null ? this.tableName : "&lt;none&gt;";
                 String ifaceClasses = BaseUtils.toString(", ", interfacesTypes);
-                String returnClass = this.returnClass.toString();
+                String returnClass = this.returnClass != null ? this.returnClass.toString() : "";
                 String script = creationScript != null ? escapeLineBreakHTML(escapeHTML(creationScript)) : "";
                 
                 return String.format(TOOL_TIP_FORMAT + DETAILED_TOOL_TIP_FORMAT,

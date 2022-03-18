@@ -16,6 +16,7 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.TypeSerializer;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.StringClass;
+import lsfusion.server.logics.classes.data.integral.IntegerClass;
 import lsfusion.server.logics.form.interactive.action.async.AsyncChange;
 import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
 import lsfusion.server.logics.form.interactive.action.async.AsyncSerializer;
@@ -379,9 +380,13 @@ public class PropertyDrawView extends BaseComponentView {
         outStream.writeBoolean(hide);
 
         //entity часть
-        if(isProperty())
-            TypeSerializer.serializeType(outStream, getType());
-        else {
+        if(isProperty()) {
+            Type type = getType();
+            // however this hack helps only in some rare cases, since baseType is used in a lot of places
+            if(type == null) // temporary hack, will not be needed when expression will be automatically patched with "IS Class"
+                type = IntegerClass.instance;
+            TypeSerializer.serializeType(outStream, type);
+        } else {
             outStream.writeByte(1);
             outStream.writeByte(DataType.ACTION);
         }
@@ -460,10 +465,15 @@ public class PropertyDrawView extends BaseComponentView {
             }
         }
 
-        if(debug instanceof PropertyObjectEntity)
-            ((PropertyObjectEntity<?>)debug).property.getValueClass(ClassType.formPolicy).serialize(outStream);
-        else
+        if(debug instanceof PropertyObjectEntity) {
+            ValueClass valueClass = ((PropertyObjectEntity<?>) debug).property.getValueClass(ClassType.formPolicy);
+            outStream.writeBoolean(valueClass != null);
+            if(valueClass != null)
+                valueClass.serialize(outStream);
+        } else {
+            outStream.writeBoolean(true);
             outStream.writeByte(DataType.ACTION);
+        }
         
         pool.writeString(outStream, entity.customRenderFunction);
 
