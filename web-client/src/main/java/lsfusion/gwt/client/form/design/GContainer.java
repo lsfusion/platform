@@ -197,6 +197,7 @@ public class GContainer extends GComponent {
     }
 
     private class GCaptionReader implements GPropertyReader {
+        private final String sID;
 
         public GCaptionReader() {
             sID = "_CONTAINER_" + "CAPTION" + "_" + GContainer.this.sID;
@@ -216,7 +217,13 @@ public class GContainer extends GComponent {
     }
     public final GPropertyReader captionReader = new GCaptionReader();
 
-    public final GPropertyReader customDesignCaptionReader = new GPropertyReader() {
+    private class GCustomDesignCaptionReader implements GPropertyReader {
+        private final String sID;
+
+        public GCustomDesignCaptionReader() {
+            sID = "_CONTAINER_" + "CUSTOM_DESIGN" + "_" + GContainer.this.sID;
+        }
+
         @Override
         public void update(GFormController controller, NativeHashMap<GGroupObjectValue, Object> values, boolean updateKeys) {
             assert values.firstKey().isEmpty();
@@ -225,7 +232,8 @@ public class GContainer extends GComponent {
 
         @Override
         public String getNativeSID() {
-            return "_CONTAINER_" + "CUSTOM_DESIGN" + "_" + GContainer.this.sID;
+            return sID;
         }
-    };
+    }
+    public final GPropertyReader customDesignCaptionReader = new GCustomDesignCaptionReader();
 }
