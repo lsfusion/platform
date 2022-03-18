@@ -82,6 +82,7 @@ import lsfusion.server.logics.property.AggregateProperty;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.infer.AlgType;
 import lsfusion.server.logics.property.data.DataProperty;
+import lsfusion.server.logics.property.data.StoredDataProperty;
 import lsfusion.server.logics.property.implement.PropertyObjectImplement;
 import lsfusion.server.logics.property.implement.PropertyObjectInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyRevImplement;
@@ -1700,14 +1701,17 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
     private void recalculateAndUpdateStat(DataSession session, ImplementTable table, List<Property> properties) throws SQLException, SQLHandledException {
         ImMap<PropertyField, String> fields = null;
+        ImSet<PropertyField> skipRecalculateFields = null;
         if(properties != null) {
-            fields = SetFact.fromJavaOrderSet(properties).getSet().mapKeyValues(value -> value.field, ActionOrProperty::getCanonicalName);
+            ImSet<Property> propertySet = SetFact.fromJavaOrderSet(properties).getSet();
+            fields = propertySet.mapKeyValues(value -> value.field, ActionOrProperty::getCanonicalName);
+            skipRecalculateFields = propertySet.filterFn(property -> property instanceof StoredDataProperty).mapSetValues(property -> property.field);
         }
         long start = System.currentTimeMillis();
         startLogger.info(String.format("Update Aggregation Stats started: %s", table));
         
-        table.recalculateStat(reflectionLM, session, fields, false);
-        ImplementTable.CalcStat calculateStatResult = table.recalculateStat(reflectionLM, session, fields, true);
+        table.recalculateStat(reflectionLM, session, fields, skipRecalculateFields, false);
+        ImplementTable.CalcStat calculateStatResult = table.recalculateStat(reflectionLM, session, fields, skipRecalculateFields, true);
         apply(session);
         
         long time = System.currentTimeMillis() - start;
