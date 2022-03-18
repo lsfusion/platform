@@ -119,7 +119,7 @@ public class GFormChanges {
             case GPropertyReadType.CONTAINER_CAPTION:
                 return form.findContainerByID(readerId).captionReader;
             case GPropertyReadType.CUSTOM:
-                return form.findContainerByID(readerId).propertyCustomDesignReader;
+                return form.findContainerByID(readerId).customDesignCaptionReader;
             default:
                 return null;
         }

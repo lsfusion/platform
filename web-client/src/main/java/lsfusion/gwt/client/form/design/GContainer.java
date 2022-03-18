@@ -216,7 +216,7 @@ public class GContainer extends GComponent {
     }
     public final GPropertyReader captionReader = new GCaptionReader();
 
-    public final GPropertyReader propertyCustomDesignReader = new GPropertyReader() {
+    public final GPropertyReader customDesignCaptionReader = new GPropertyReader() {
         @Override
         public void update(GFormController controller, NativeHashMap<GGroupObjectValue, Object> values, boolean updateKeys) {
             assert values.firstKey().isEmpty();
@@ -225,7 +225,7 @@ public class GContainer extends GComponent {
 
         @Override
         public String getNativeSID() {
-            return sID;
+            return "_CONTAINER_" + "CUSTOM_DESIGN" + "_" + GContainer.this.sID;
         }
     };
 }
