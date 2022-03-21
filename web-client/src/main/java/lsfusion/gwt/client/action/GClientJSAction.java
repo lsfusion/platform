@@ -9,18 +9,16 @@ public class GClientJSAction extends GExecuteAction {
     public ArrayList<Object> values;
     public ArrayList<Object> types;
     public boolean isFile;
-    public boolean inDevMode;
 
     @SuppressWarnings("UnusedDeclaration")
     public GClientJSAction() {}
 
-    public GClientJSAction(String resource, String resourceName, ArrayList<Object> values, ArrayList<Object> types, boolean isFile, boolean inDevMode) {
+    public GClientJSAction(String resource, String resourceName, ArrayList<Object> values, ArrayList<Object> types, boolean isFile) {
         this.resource = resource;
         this.resourceName = resourceName;
         this.values = values;
         this.types = types;
         this.isFile = isFile;
-        this.inDevMode = inDevMode;
     }
 
     @Override

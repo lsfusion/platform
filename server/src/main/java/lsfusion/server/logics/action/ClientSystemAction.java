@@ -51,7 +51,7 @@ public class ClientSystemAction extends SystemAction {
         List<String> resources = ResourceUtils.getResources(Pattern.compile("/web/.*" + resourceName.trim()));
         String resource = isFile ? (resources.size() == 1 ? resources.get(0) : null) : resourceName;
 
-        context.delayUserInteraction(new ClientJSAction(resource, resourceName, values, types, isFile, SystemProperties.inDevMode));
+        context.delayUserInteraction(new ClientJSAction(resource, resourceName, values, types, isFile));
 
         return FlowResult.FINISH;
     }
