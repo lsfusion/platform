@@ -365,7 +365,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
         }
 
         private static native void executeFile(GClientJSAction action)/*-{
-            var resourcePath = 'static' + action.@GClientJSAction::resource;
+            var resourcePath = (action.@GClientJSAction::inDevMode ? 'dev' : 'static') + action.@GClientJSAction::resource;
 
             if (resourcePath.endsWith('js')) {
                 var documentScripts = $wnd.document.scripts, scriptAlreadyLoaded;

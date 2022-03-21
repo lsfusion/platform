@@ -11,6 +11,7 @@ import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.action.flow.FlowResult;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
+import lsfusion.server.physics.admin.SystemProperties;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.io.IOException;
@@ -50,7 +51,7 @@ public class ClientSystemAction extends SystemAction {
         List<String> resources = ResourceUtils.getResources(Pattern.compile("/web/.*" + resourceName.trim()));
         String resource = isFile ? (resources.size() == 1 ? resources.get(0) : null) : resourceName;
 
-        context.delayUserInteraction(new ClientJSAction(resource, resourceName, values, types, isFile));
+        context.delayUserInteraction(new ClientJSAction(resource, resourceName, values, types, isFile, SystemProperties.inDevMode));
 
         return FlowResult.FINISH;
     }

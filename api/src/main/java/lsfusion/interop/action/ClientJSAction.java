@@ -10,13 +10,15 @@ public class ClientJSAction extends ExecuteClientAction {
     public ArrayList<byte[]> values;
     public ArrayList<byte[]> types;
     public boolean isFile;
+    public boolean inDevMode;
 
-    public ClientJSAction(String resource, String resourceName, ArrayList<byte[]> values, ArrayList<byte[]> types, boolean isFile) {
+    public ClientJSAction(String resource, String resourceName, ArrayList<byte[]> values, ArrayList<byte[]> types, boolean isFile, boolean inDevMode) {
         this.resource = resource;
         this.resourceName = resourceName;
         this.values = values;
         this.types = types;
         this.isFile = isFile;
+        this.inDevMode = inDevMode;
     }
 
     @Override

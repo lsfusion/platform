@@ -58,7 +58,6 @@ public class MainController {
     private final Map<String, String> oauth2AuthenticationUrls = new HashMap<>();
     private static final String authorizationRequestBaseUri = "/oauth2/authorization/";
     private final Result<String> checkVersionError = new Result<>();
-    private static final String externalResourcesParentPath = "static/web/";
 
     @RequestMapping(value = "/login", method = RequestMethod.GET)
     public String processLogin(ModelMap model, HttpServletRequest request) {
@@ -211,7 +210,7 @@ public class MainController {
         ServerSettings serverSettings = getServerSettings(request, false);
 
         if(serverSettings != null)
-            serverSettings.saveFiles(FileUtils.APP_PATH, externalResourcesParentPath);
+            serverSettings.saveFiles(FileUtils.APP_PATH, (serverSettings.inDevMode ? "dev" : "static") + "/web/");
 
         model.addAttribute("title", getTitle(serverSettings));
         model.addAttribute("logicsIcon", getLogicsIcon(serverSettings));
