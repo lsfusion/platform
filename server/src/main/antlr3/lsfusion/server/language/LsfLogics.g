@@ -3551,12 +3551,12 @@ internalActionDefinitionBody[List<TypedParameter> context] returns [LA action, L
 }
 
 	:	'INTERNAL'
+	    ('CLIENT' { clientAction = true; } )?
         (
-            ('CLIENT' { clientAction = true; } )?
             classN = stringLiteral ('(' cls=classIdList ')' { classes = $cls.ids; })?
-            (sync = syncTypeLiteral { syncType = $sync.val; })?
 		|   code = codeLiteral
         )
+        (sync = syncTypeLiteral { syncType = $sync.val; })?
 	    ('NULL' { allowNullValue = true; })?
 	;
 
