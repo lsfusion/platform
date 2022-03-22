@@ -25,11 +25,13 @@ public class ClientSystemAction extends SystemAction {
 
     private final String resourceName;
     private final boolean isFile;
+    private final boolean syncType;
 
-    public ClientSystemAction(String resourceName, int size, boolean isFile) {
+    public ClientSystemAction(String resourceName, int size, boolean isFile, boolean syncType) {
         super(LocalizedString.create("ClientJS"), SetFact.toOrderExclSet(size, i -> new PropertyInterface()));
         this.resourceName = resourceName;
         this.isFile = isFile;
+        this.syncType = syncType;
     }
 
     @Override
@@ -50,7 +52,7 @@ public class ClientSystemAction extends SystemAction {
         List<String> resources = ResourceUtils.getResources(Pattern.compile("/web/.*" + resourceName.trim()));
         String resource = isFile ? (resources.size() == 1 ? resources.get(0) : null) : resourceName;
 
-        context.delayUserInteraction(new ClientJSAction(resource, resourceName, values, types, isFile));
+        context.delayUserInteraction(new ClientJSAction(resource, resourceName, values, types, isFile, syncType));
 
         return FlowResult.FINISH;
     }
