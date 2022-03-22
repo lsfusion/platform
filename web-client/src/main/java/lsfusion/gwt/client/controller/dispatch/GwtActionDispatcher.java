@@ -340,10 +340,13 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     public void execute(GResetWindowsLayoutAction action) {
     }
 
-    private static class JSExecutor {
-        private static final List<GClientJSAction> actions = new ArrayList<>();
+    private class JSExecutor {
+        private final List<GClientJSAction> actions = new ArrayList<>();
 
-        public static void addAction(GClientJSAction action) {
+        public void addAction(GClientJSAction action) {
+            if (action.syncType)
+                pauseDispatching();
+
             if (action.resource != null) {
                 actions.add(action);
                 flush();
@@ -352,8 +355,8 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
             }
         }
 
-        private static boolean isExecuting = false;
-        private static void flush() {
+        private boolean isExecuting = false;
+        private void flush() {
             if (!isExecuting && !actions.isEmpty()) {
                 GClientJSAction action = actions.get(0);
                 isExecuting = true;
@@ -364,7 +367,8 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
             }
         }
 
-        private static native void executeFile(GClientJSAction action)/*-{
+        private native void executeFile(GClientJSAction action)/*-{
+            var thisObj = this;
             var resourcePath = (@lsfusion.gwt.client.view.MainFrame::devMode ? 'dev' : 'static') + action.@GClientJSAction::resource;
 
             if (resourcePath.endsWith('js')) {
@@ -382,7 +386,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
                     scr.src = resourcePath;
                     scr.type = 'text/javascript';
                     $wnd.document.head.appendChild(scr);
-                    scr.onload = function() { @JSExecutor::onActionExecuted(*)(action); }
+                    scr.onload = function() {thisObj.@JSExecutor::onActionExecuted(*)(action); }
                 }
             } else if (resourcePath.endsWith('css')) {
                 var documentStyleSheets = $wnd.document.styleSheets, styleSheetAlreadyLoaded;
@@ -399,18 +403,21 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
                     link.type = "text/css";
                     link.rel = "stylesheet";
                     $wnd.document.head.appendChild(link);
-                    @JSExecutor::onActionExecuted(*)(action);
+                    thisObj.@JSExecutor::onActionExecuted(*)(action);
                 }
             }
         }-*/;
 
-        private static void onActionExecuted(GClientJSAction action) {
+        private void onActionExecuted(GClientJSAction action) {
+            if (action.syncType)
+                continueDispatching();
+
             isExecuting = false;
             actions.remove(action);
             flush();
         }
 
-        private static void executeJSFunction(GClientJSAction action) {
+        private void executeJSFunction(GClientJSAction action) {
             JsArray<JavaScriptObject> arguments = JavaScriptObject.createArray().cast();
             ArrayList<Object> types = action.types;
             for (int i = 0; i < types.size(); i++) {
@@ -422,10 +429,12 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
         }
     }
 
-
+    private JSExecutor jsExecutor;
     @Override
     public void execute(GClientJSAction action) {
-        JSExecutor.addAction(action);
+        if (jsExecutor == null)
+            jsExecutor = new JSExecutor();
+        jsExecutor.addAction(action);
     }
 
     @Override
