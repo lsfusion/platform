@@ -10,7 +10,6 @@ import lsfusion.gwt.client.base.busy.GBusyDialogDisplayer;
 import lsfusion.gwt.client.base.busy.LoadingManager;
 import lsfusion.gwt.client.controller.dispatch.DispatchAsyncWrapper;
 import lsfusion.gwt.client.controller.remote.action.*;
-import lsfusion.gwt.client.controller.remote.action.form.ExecuteEventAction;
 import lsfusion.gwt.client.controller.remote.action.form.GetAsyncValues;
 import lsfusion.gwt.client.form.controller.dispatch.QueuedAction;
 import lsfusion.gwt.client.view.ServerMessageProvider;
@@ -122,19 +121,30 @@ public abstract class RemoteDispatchAsync implements ServerMessageProvider {
 
             @Override
             public void postProcess() {
-                flushCompletedRequests(() -> {
-                    if(syncCount > 0 && flushCount == 0)
-                        loadingManager.stop(false);
-                    flushCount++;
-                    }, () -> {
-                    flushCount--;
-                    if(syncCount > 0 && flushCount == 0)
-                        loadingManager.start();
-                });
+                flushCompletedRequests();
             }
         });
 
         return requestIndex;
+    }
+
+    public void onEditingFinished() {
+        if(pendingFlushCompletedRequests) {
+            flushCompletedRequests();
+            pendingFlushCompletedRequests = false;
+        }
+    }
+
+    private void flushCompletedRequests() {
+        flushCompletedRequests(() -> {
+            if(syncCount > 0 && flushCount == 0)
+                loadingManager.stop(false);
+            flushCount++;
+        }, () -> {
+            flushCount--;
+            if(syncCount > 0 && flushCount == 0)
+                loadingManager.start();
+        });
     }
 
     protected boolean isEditing() {
@@ -144,6 +154,7 @@ public abstract class RemoteDispatchAsync implements ServerMessageProvider {
         return -1;
     }
 
+    private boolean pendingFlushCompletedRequests;
     public void flushCompletedRequests(Runnable preProceed, Runnable postProceed) {
         q.forEach(queuedAction -> {
             if (queuedAction.preProceeded != null && !queuedAction.preProceeded && queuedAction.finished) {
@@ -158,8 +169,10 @@ public abstract class RemoteDispatchAsync implements ServerMessageProvider {
             long requestIndex = action.requestIndex;
 
             // when editing suspending all requests (except some actions that are marked for editing)
-            if (isEditing() && requestIndex > getEditingRequestIndex())
+            if (isEditing() && requestIndex > getEditingRequestIndex()) {
+                pendingFlushCompletedRequests = true;
                 break;
+            }
 
             q.remove();
             if (requestIndex >= 0) {

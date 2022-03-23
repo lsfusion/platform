@@ -2126,6 +2126,7 @@ public class GFormController implements EditManager {
 
         //getAsyncValues need editContext, so it must be after clearRenderer
         this.editContext = null;
+        dispatcher.onEditingFinished();
 
         update(editContext);
     }
