@@ -62,6 +62,13 @@ public class ContainerViewProxy extends ComponentViewProxy<ContainerView> {
         target.setWrap(wrap);
     }
 
+    public void setCustom(Object caption) {
+        if(caption instanceof LocalizedString)
+            target.setCustomDesign(caption.toString());
+        else
+            target.setPropertyCustomDesign((PropertyObjectEntity<?>) caption);
+    }
+
     //backward compatibility
     public void setColumns(int columns) {
         target.lines = columns;

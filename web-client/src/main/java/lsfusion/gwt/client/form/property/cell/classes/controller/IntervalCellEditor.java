@@ -108,6 +108,7 @@ public class IntervalCellEditor extends PopupValueCellEditor {
             endDate: new Date(endDate),
             timePicker: !date,
             timePicker24Hour: true,
+            showDropdowns: true,
             autoApply: false,
             ranges: !time ? $wnd.getRanges($wnd, messages.@lsfusion.gwt.client.ClientMessages::today()(),
                     messages.@lsfusion.gwt.client.ClientMessages::yesterday()(),

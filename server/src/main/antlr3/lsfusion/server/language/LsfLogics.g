@@ -3535,6 +3535,7 @@ internalActionDefinitionBody[List<TypedParameter> context] returns [LA action, L
 	boolean allowNullValue = false;
 	List<String> classes = null;
 	boolean clientAction = false;
+    boolean syncType = false;
 }
 @after {
 	if (inMainParseState()) {
@@ -3542,7 +3543,7 @@ internalActionDefinitionBody[List<TypedParameter> context] returns [LA action, L
 	    List<ResolveClassSet> contextParams = self.getClassesFromTypedParams(context);
 
         if(clientAction)
-            $action = self.addScriptedInternalClientAction($classN.val, classes != null ? classes.size() : 0);
+            $action = self.addScriptedInternalClientAction($classN.val, classes != null ? classes.size() : 0, syncType);
         else if($code.val == null)
 	        $action = self.addScriptedInternalAction($classN.val, classes, contextParams, allowNullValue);
 	    else
@@ -3552,11 +3553,12 @@ internalActionDefinitionBody[List<TypedParameter> context] returns [LA action, L
 }
 
 	:	'INTERNAL'
+	    ('CLIENT' { clientAction = true; } )?
         (
-            ('CLIENT' { clientAction = true; } )?
             classN = stringLiteral ('(' cls=classIdList ')' { classes = $cls.ids; })?
 		|   code = codeLiteral
         )
+        (sync = syncTypeLiteral { syncType = $sync.val; })?
 	    ('NULL' { allowNullValue = true; })?
 	;
 

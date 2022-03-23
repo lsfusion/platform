@@ -48,6 +48,7 @@ import lsfusion.gwt.client.form.controller.dispatch.GFormActionDispatcher;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.design.GFont;
+import lsfusion.gwt.client.form.design.view.CustomContainerView;
 import lsfusion.gwt.client.form.design.view.GAbstractContainerView;
 import lsfusion.gwt.client.form.design.view.GFormLayout;
 import lsfusion.gwt.client.form.design.view.TabbedContainerView;
@@ -964,7 +965,7 @@ public class GFormController implements EditManager {
             }
 
             // hasChangeAction check is important for quickfilter not to consume event (however with propertyReadOnly, checkCanBeChanged there will be still some problems)
-            if (isChangeEvent(actionSID) && //??????
+            if (isChangeEvent(actionSID) &&
                     (editContext.isReadOnly() || !property.hasUserChangeAction())) // we're ignoring change if we use CUSTOM render function without CUSTOM CHANGE set
                 return;
             if(GEditBindingMap.EDIT_OBJECT.equals(actionSID) && !property.hasEditObjectAction)
@@ -1030,7 +1031,6 @@ public class GFormController implements EditManager {
         }
 
         ExecuteEventAction executeEventAction = new ExecuteEventAction(IDs, fullCurrentKeys, actionSID, externalChanges, pushAsyncResults);
-
         ServerResponseCallback serverResponseCallback = new ServerResponseCallback() {
             @Override
             protected Runnable getOnRequestFinished() {
@@ -1579,6 +1579,11 @@ public class GFormController implements EditManager {
             layout.getContainerView(container.container).updateCaption(container);
     }
 
+    public void setContainerCustomDesign(GContainer container, String customDesign) {
+        GAbstractContainerView containerView = formLayout.getContainerView(container);
+        ((CustomContainerView)containerView).updateCustomDesign(customDesign);
+    }
+
     private static final class Change {
         public final long requestIndex;
         public final Object newValue;
@@ -1761,7 +1766,7 @@ public class GFormController implements EditManager {
                 if(bindPreview(bindingEnv, isMouse, preview) &&
                     bindDialog(bindingEnv) &&
                     bindGroup(bindingEnv, groupObject, equalGroup = nullEquals(groupObject, binding.groupObject)) &&
-                    bindEditing(bindingEnv) &&
+                    bindEditing(bindingEnv, event) &&
                     bindShowing(bindingEnv, binding.showing()) &&
                     bindPanel(bindingEnv, isMouse, panel) &&
                     bindCell(bindingEnv, isMouse, cellParent != null))
@@ -1832,9 +1837,10 @@ public class GFormController implements EditManager {
         }
     }
 
-    private boolean bindEditing(GBindingEnv binding) {
+    private boolean bindEditing(GBindingEnv binding, Event event) {
         switch (binding.bindEditing) {
             case AUTO:
+                return !isEditing() || !targetElementIsEditing(event);
             case ALL:
                 return true;
             case ONLY:
@@ -1845,6 +1851,10 @@ public class GFormController implements EditManager {
             default:
                 throw new UnsupportedOperationException("Unsupported bindingMode " + binding.bindEditing);
         }
+    }
+
+    private boolean targetElementIsEditing(Event event) {
+        return editContext.getEditElement().isOrHasChild(Element.as(event.getEventTarget()));
     }
 
     private boolean bindShowing(GBindingEnv binding, boolean showing) {
@@ -2154,6 +2164,8 @@ public class GFormController implements EditManager {
         }
 
         update(editContext);
+
+        dispatcher.onEditingFinished();
     }
 
     public void render(EditContext editContext) {

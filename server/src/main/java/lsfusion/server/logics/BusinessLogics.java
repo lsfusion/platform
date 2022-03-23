@@ -2107,7 +2107,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 
             FileUtils.synchronizeDirectories(resourcesPath.toString(), targetPath.toString());
 
-        }, false, 3, false, "Copy files from 'resources/web' into target. Only for debug");
+        }, false, 1, false, "Copy files from 'resources/web' into target. Only for debug");
     }
 
     private Scheduler.SchedulerTask getAllocatedBytesUpdateTask(Scheduler scheduler) {

@@ -331,6 +331,10 @@ public abstract class FormsController {
 
         ensureTabSelected();
     }
+    
+    public int getFormsCount() {
+        return forms.size();
+    }
 
     private void closeAllTabs() {
         Scheduler.get().scheduleFixedDelay(new Scheduler.RepeatingCommand() {
@@ -381,7 +385,7 @@ public abstract class FormsController {
 
     public abstract GNavigatorActionDispatcher getDispatcher();
 
-    private class ServerResponseCallback extends GwtActionDispatcher.ServerResponseCallback {
+    public class ServerResponseCallback extends GwtActionDispatcher.ServerResponseCallback {
 
         @Override
         protected GwtActionDispatcher getDispatcher() {
@@ -403,7 +407,11 @@ public abstract class FormsController {
     }
 
     public void executeNotificationAction(String actionSID, int type) {
-        syncDispatch(new ExecuteNavigatorAction(actionSID, type), new ServerResponseCallback(false));
+        executeNotificationAction(actionSID, type, new ServerResponseCallback(false));
+    }
+    
+    public void executeNotificationAction(String actionSID, int type, RequestCountingAsyncCallback<ServerResponseResult> callback) {
+        syncDispatch(new ExecuteNavigatorAction(actionSID, type), callback);
     }
 
 }

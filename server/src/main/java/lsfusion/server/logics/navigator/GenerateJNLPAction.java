@@ -1,6 +1,8 @@
 package lsfusion.server.logics.navigator;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.col.SetFact;
+import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.IOUtils;
 import lsfusion.base.file.RawFileData;
@@ -8,6 +10,7 @@ import lsfusion.server.data.value.DataObject;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.StringClass;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.authentication.security.SecurityLogicsModule;
@@ -15,8 +18,7 @@ import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.net.URLDecoder;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Iterator;
+import java.util.*;
 
 import static lsfusion.base.BaseUtils.isRedundantString;
 
@@ -54,15 +56,15 @@ public class GenerateJNLPAction extends InternalAction {
             String maxHeapFreeRatio = (String) LM.findProperty("maxHeapFreeRatio[]").read(context);
             String vmargs = (String) LM.findProperty("vmargs[]").read(context);
 
-            String url = (String) LM.findProperty("url[]").read(context);
+            String url = (String) LM.baseLM.url.read(context);
             int execSlashIndex = url.lastIndexOf("/");
             String codebaseUrl = url.substring(0, execSlashIndex);
-            String query = (String) LM.findProperty("query[]").read(context);
+            String query = (String) LM.baseLM.query.read(context);
             query = query.replaceAll("&", "&amp;"); // escaping
             String jnlpUrl = url.substring(execSlashIndex + 1) + "?" + query;
-            String host = (String) LM.findProperty("appHost[]").read(context);
-            Integer port = (Integer) LM.findProperty("appPort[]").read(context);
-            String exportName = (String) LM.findProperty("exportName[]").read(context);
+            String host = (String) LM.baseLM.appHost.read(context);
+            Integer port = (Integer) LM.baseLM.appPort.read(context);
+            String exportName = (String) LM.baseLM.exportName.read(context);
             
             String jnlpString = IOUtils.readStreamToString(getClass().getResourceAsStream("/client.jnlp"));
             jnlpString = jnlpString.replace("${jnlp.codebase}", !isRedundantString(codebaseUrl) ? codebaseUrl : DEFAULT_CODEBASE_URL) 
@@ -87,5 +89,10 @@ public class GenerateJNLPAction extends InternalAction {
         } catch (Exception e) {
             Throwables.propagate(e);
         }
+    }
+
+    @Override
+    public ImSet<Property> getUsedProps() {
+        return SetFact.fromJavaSet(new HashSet<>(Arrays.asList(LM.baseLM.url.property, LM.baseLM.query.property, LM.baseLM.appHost.property, LM.baseLM.appPort.property, LM.baseLM.exportName.property)));
     }
 }

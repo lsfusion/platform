@@ -49,6 +49,7 @@ public class ContainerView extends ComponentView {
     public Integer lineSize = null;
     public Integer captionLineSize = null;
     public Boolean lineShrink = null;
+    private String customDesign = null;
 
     public PropertyObjectEntity<?> showIf;
 
@@ -66,10 +67,13 @@ public class ContainerView extends ComponentView {
 
     // extras
     public PropertyObjectEntity<?> propertyCaption;
+    public PropertyObjectEntity<?> propertyCustomDesign;
     public PropertyObjectEntity<?> getExtra(ContainerViewExtraType type) {
         switch (type) {
             case CAPTION:
                 return propertyCaption;
+            case CUSTOM:
+                return propertyCustomDesign;
         }
         throw new UnsupportedOperationException();
     }
@@ -284,6 +288,19 @@ public class ContainerView extends ComponentView {
         this.lineShrink = lineShrink;
     }
 
+    public void setPropertyCustomDesign(PropertyObjectEntity<?> propertyCustomDesign) {
+        this.propertyCustomDesign = propertyCustomDesign;
+        this.customDesign = "";
+    }
+
+    public void setCustomDesign(String customDesign) {
+        this.customDesign = customDesign;
+    }
+
+    public boolean isCustomDesign() {
+        return customDesign != null;
+    }
+
     public PropertyObjectEntity<?> getShowIf() {
         return showIf;
     }
@@ -335,7 +352,7 @@ public class ContainerView extends ComponentView {
     }
 
     public void fillPropertyContainers(MExclSet<ContainerView> mContainers) {
-        if(showIf != null || propertyCaption != null)
+        if(showIf != null || propertyCaption != null || propertyCustomDesign != null)
             mContainers.exclAdd(this);
 
         for(ComponentView child : getChildrenIt())
@@ -390,6 +407,10 @@ public class ContainerView extends ComponentView {
         pool.writeInt(outStream, lineSize);
         pool.writeInt(outStream, captionLineSize);
         outStream.writeBoolean(isLineShrink(pool.context.entity));
+
+        outStream.writeBoolean(isCustomDesign());
+        if (isCustomDesign())
+            pool.writeString(outStream, customDesign);
     }
 
     @Override
@@ -417,6 +438,9 @@ public class ContainerView extends ComponentView {
         lineSize = pool.readInt(inStream);
         captionLineSize = pool.readInt(inStream);
         lineShrink = inStream.readBoolean();
+
+        if (inStream.readBoolean())
+            customDesign = pool.readString(inStream);
     }
 
     @Override

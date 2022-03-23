@@ -180,12 +180,19 @@ decodedBase64 = DATA LOCAL TEXT();
 decodeBase64  INTERNAL  'lsfusion.server.logics.classes.data.utils.string.DecodeBase64Action' (TEXT);
 
 urlEncoded = DATA LOCAL TEXT();
-urlEncode  INTERNAL 'lsfusion.server.logics.classes.data.utils.string.UrlEncodeAction' (TEXT, BPSTRING[20]);
+urlEncode  INTERNAL 'lsfusion.server.logics.classes.data.utils.string.UrlEncodeAction' (TEXT, TEXT);
 urlEncode (TEXT text) { urlEncode(text, 'UTF-8'); };
 
 urlDecoded = DATA LOCAL TEXT();
-urlDecode  INTERNAL 'lsfusion.server.logics.classes.data.utils.string.UrlDecodeAction' (TEXT, BPSTRING[20]);
+urlDecode  INTERNAL 'lsfusion.server.logics.classes.data.utils.string.UrlDecodeAction' (TEXT, TEXT);
 urlDecode (TEXT text) { urlDecode(text, 'UTF-8'); };
+
+urlFormatted = DATA LOCAL TEXT();
+urlParsed = DATA LOCAL TEXT(TEXT);
+//urlFormatted -> urlParsed
+urlParse INTERNAL 'lsfusion.server.logics.classes.data.utils.string.UrlParseAction' ();
+//urlParsed -> urlFormatted
+urlFormat INTERNAL 'lsfusion.server.logics.classes.data.utils.string.UrlFormatAction' ();
 
 generatedUUID = DATA LOCAL TEXT();
 generateUUID  INTERNAL 'lsfusion.server.logics.classes.data.utils.string.GenerateUUIDAction' ();

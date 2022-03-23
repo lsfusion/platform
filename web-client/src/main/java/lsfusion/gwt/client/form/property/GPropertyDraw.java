@@ -364,7 +364,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
                         propCaption, keyBindingText, canonicalName, ifaceObjects, scriptPath, propertyFormName, scriptFormPath);
             } else {
                 String tableName = this.tableName != null ? this.tableName : "&lt;none&gt;";
-                String returnClass = this.returnClass.toString();
+                String returnClass = this.returnClass != null ? this.returnClass.toString() : "";
                 String ifaceClasses = GwtSharedUtils.toString(", ", interfacesTypes);
                 String script = creationScript != null ? escapeLineBreakHTML(escapeHTML(creationScript)) : "";
                 

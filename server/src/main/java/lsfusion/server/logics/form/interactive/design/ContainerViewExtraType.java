@@ -10,6 +10,11 @@ public enum ContainerViewExtraType {
         public byte getContainerReadType() {
             return PropertyReadType.CONTAINER_CAPTION;
         }
+    }, CUSTOM {
+        @Override
+        public byte getContainerReadType() {
+            return PropertyReadType.CUSTOM;
+        }
     };
 
     public static final ImSet<ContainerViewExtraType> extras = SetFact.toSet(values());

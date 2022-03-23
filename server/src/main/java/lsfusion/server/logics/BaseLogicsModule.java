@@ -153,6 +153,8 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public LP<?> cookiesTo;
     public LP<?> query;
     public LP<?> params;
+    public LP<?> contentType;
+    public LP<?> body;
     public LP<?> appHost;
     public LP<?> appPort;
     public LP<?> exportName;
@@ -163,6 +165,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public LP<?> contextPath;
     public LP<?> servletPath;
     public LP<?> pathInfo;
+    public LP<?> url;
 
     public LP messageCaughtException;
     public LP javaStackTraceCaughtException;
@@ -498,6 +501,8 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         cookiesTo = findProperty("cookiesTo[TEXT]");
         query = findProperty("query[]");
         params = findProperty("params[TEXT]");
+        contentType = findProperty("contentType[]");
+        body = findProperty("body[]");
         appHost = findProperty("appHost[]");
         appPort = findProperty("appPort[]");
         exportName = findProperty("exportName[]");
@@ -508,6 +513,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         contextPath = findProperty("contextPath[]");
         servletPath = findProperty("servletPath[]");
         pathInfo = findProperty("pathInfo[]");
+        url = findProperty("url[]");
 
         messageCaughtException = findProperty("messageCaughtException[]");
         javaStackTraceCaughtException = findProperty("javaStackTraceCaughtException[]");

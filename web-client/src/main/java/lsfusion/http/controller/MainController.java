@@ -58,7 +58,6 @@ public class MainController {
     private final Map<String, String> oauth2AuthenticationUrls = new HashMap<>();
     private static final String authorizationRequestBaseUri = "/oauth2/authorization/";
     private final Result<String> checkVersionError = new Result<>();
-    private static final String externalResourcesParentPath = "static/web/";
 
     @RequestMapping(value = "/login", method = RequestMethod.GET)
     public String processLogin(ModelMap model, HttpServletRequest request) {
@@ -211,7 +210,7 @@ public class MainController {
         ServerSettings serverSettings = getServerSettings(request, false);
 
         if(serverSettings != null)
-            serverSettings.saveFiles(FileUtils.APP_PATH, externalResourcesParentPath);
+            serverSettings.saveFiles(FileUtils.APP_PATH, (serverSettings.inDevMode ? "dev" : "static") + "/web/");
 
         model.addAttribute("title", getTitle(serverSettings));
         model.addAttribute("logicsIcon", getLogicsIcon(serverSettings));
@@ -264,7 +263,8 @@ public class MainController {
         Charset charset = getCharsetFromContentType(contentTypeString != null ? ContentType.parse(contentTypeString) : null);
         return new ExternalRequest(new String[0], params, charset == null ? null : charset.toString(), new String[0], new String[0], null,
                 null, null, null, null, request.getScheme(), request.getMethod(), request.getServerName(), request.getServerPort(), request.getContextPath(),
-                request.getServletPath(), request.getPathInfo() == null ? "" : request.getPathInfo(), request.getQueryString() != null ? request.getQueryString() : "");
+                request.getServletPath(), request.getPathInfo() == null ? "" : request.getPathInfo(), request.getQueryString() != null ? request.getQueryString() : "",
+                contentTypeString, null);
     }
 
     public static String getURLPreservingParameters(String url, List<String> paramsToRemove, HttpServletRequest request) {

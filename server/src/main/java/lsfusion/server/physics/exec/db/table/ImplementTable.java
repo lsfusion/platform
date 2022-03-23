@@ -499,8 +499,8 @@ public class ImplementTable extends DBTable { // последний интерф
     }
 
     public void recalculateStat(ReflectionLogicsModule reflectionLM, Set<String> disableStatsTableColumnSet, DataSession session) throws SQLException, SQLHandledException {
-        recalculateStat(reflectionLM, session, null, disableStatsTableColumnSet, false);
-        recalculateStat(reflectionLM, session, null, disableStatsTableColumnSet, true);
+        recalculateStat(reflectionLM, session, null, disableStatsTableColumnSet, SetFact.EMPTY(), false);
+        recalculateStat(reflectionLM, session, null, disableStatsTableColumnSet, SetFact.EMPTY(), true);
     }
 
     public static class CalcStat {
@@ -515,11 +515,12 @@ public class ImplementTable extends DBTable { // последний интерф
         }
     }
 
-    public CalcStat recalculateStat(ReflectionLogicsModule reflectionLM, DataSession session, ImMap<PropertyField, String> props, boolean top) throws SQLException, SQLHandledException {
-        return recalculateStat(reflectionLM, session, props, new HashSet<String>(), top);
+    public CalcStat recalculateStat(ReflectionLogicsModule reflectionLM, DataSession session, ImMap<PropertyField, String> props, ImSet<PropertyField> skipRecalculateFields, boolean top) throws SQLException, SQLHandledException {
+        return recalculateStat(reflectionLM, session, props, new HashSet<>(), skipRecalculateFields, top);
     }
 
-    public CalcStat recalculateStat(ReflectionLogicsModule reflectionLM, DataSession session, ImMap<PropertyField, String> props, Set<String> disableStatsTableColumnSet, boolean top) throws SQLException, SQLHandledException {
+    public CalcStat recalculateStat(ReflectionLogicsModule reflectionLM, DataSession session, ImMap<PropertyField, String> props,
+                                    Set<String> disableStatsTableColumnSet, ImSet<PropertyField> skipRecalculateFields, boolean top) throws SQLException, SQLHandledException {
         ImMap<String, Integer> keyStat = MapFact.EMPTY();
         ImMap<String, Pair<Integer, Integer>> propStats = MapFact.EMPTY();
         int rows = 0;
@@ -545,11 +546,12 @@ public class ImplementTable extends DBTable { // последний интерф
 
             for (PropertyField prop : propertyFieldSet) {
                 if(!disableStatsTableColumnSet.contains(prop.getName())) {
-                    Integer notNullCount = (Integer) readCount(session, join.getExpr(prop).getWhere());
+                    boolean skipRecalculate = skipRecalculateFields.contains(prop);
+                    Integer notNullCount = skipRecalculate ? 0 : (Integer) readCount(session, join.getExpr(prop).getWhere());
                     mNotNulls.exclAdd(prop, notNullCount);
 
                     if (props != null ? props.containsKey(prop) : !(prop.type instanceof DataClass && !((DataClass) prop.type).calculateStat())) {
-                        mResult.exclAdd(prop, readCount(session, getCountWhere(session.sql,
+                        mResult.exclAdd(prop, skipRecalculate ? 0 : readCount(session, getCountWhere(session.sql,
                                 GroupExpr.create(MapFact.singleton(0, join.getExpr(prop)), Where.TRUE(), MapFact.singleton(0, countKeyExpr), true),
                                 GroupExpr.create(MapFact.singleton(0, join.getExpr(prop)), Where.TRUE(), MapFact.singleton(0, countKeyExpr), false),
                                 countKeyExpr, notNullCount, top), notNullCount, top));

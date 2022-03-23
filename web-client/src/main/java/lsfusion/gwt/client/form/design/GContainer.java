@@ -30,6 +30,7 @@ public class GContainer extends GComponent {
     public Integer lineSize;
     public Integer captionLineSize;
     public boolean lineShrink;
+    public String customDesign = null;
 
     public ArrayList<GComponent> children = new ArrayList<>();
 
@@ -183,7 +184,20 @@ public class GContainer extends GComponent {
         return lineShrink;
     }
 
+    public String getCustomDesign() {
+        return customDesign;
+    }
+
+    public void setCustomDesign(String customDesign) {
+        this.customDesign = customDesign;
+    }
+
+    public boolean isCustomDesign() {
+        return customDesign != null;
+    }
+
     private class GCaptionReader implements GPropertyReader {
+        private final String sID;
 
         public GCaptionReader() {
             sID = "_CONTAINER_" + "CAPTION" + "_" + GContainer.this.sID;
@@ -202,4 +216,24 @@ public class GContainer extends GComponent {
         }
     }
     public final GPropertyReader captionReader = new GCaptionReader();
+
+    private class GCustomDesignCaptionReader implements GPropertyReader {
+        private final String sID;
+
+        public GCustomDesignCaptionReader() {
+            sID = "_CONTAINER_" + "CUSTOM_DESIGN" + "_" + GContainer.this.sID;
+        }
+
+        @Override
+        public void update(GFormController controller, NativeHashMap<GGroupObjectValue, Object> values, boolean updateKeys) {
+            assert values.firstKey().isEmpty();
+            controller.setContainerCustomDesign(GContainer.this, values.firstValue().toString());
+        }
+
+        @Override
+        public String getNativeSID() {
+            return sID;
+        }
+    }
+    public final GPropertyReader customDesignCaptionReader = new GCustomDesignCaptionReader();
 }

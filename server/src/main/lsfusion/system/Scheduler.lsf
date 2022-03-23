@@ -277,7 +277,11 @@ DESIGN scheduledTask {
                         MOVE PROPERTY(allTasksTl);
                     }
                 }
-                MOVE BOX(ctl);
+                MOVE BOX(ctl) {
+                    GRID(ctl) {
+                        height = 0;
+                    }
+                }
             }
             NEW dowContainer {
                 caption = '{scheduler.form.scheduled.task.caption.filter.by.days}';
