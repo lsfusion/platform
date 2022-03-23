@@ -167,6 +167,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public boolean drawAsync;
 
     public GCaptionReader captionReader;
+    public GLoadingReader loadingReader;
     public GShowIfReader showIfReader;
     public GFooterReader footerReader;
     public GReadOnlyReader readOnlyReader;

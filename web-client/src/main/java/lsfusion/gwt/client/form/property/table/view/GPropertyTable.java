@@ -71,6 +71,8 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
 
     public abstract void setValueAt(Cell cell, Object value);
 
+    public abstract void setLoadingAt(Cell cell);
+
     public abstract void pasteData(Cell cell, TableCellElement parent, List<List<String>> table);
 
     @Override
@@ -93,14 +95,15 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
         form.executePropertyEventAction(handler, isBinding, getEditContext(editCell, editCellParent));
     }
 
-    protected abstract RenderContext getRenderContext(Cell cell, TableCellElement cellElement);
+    protected abstract RenderContext getRenderContext(Cell cell, TableCellElement cellElement, GPropertyDraw property, GGridPropertyTable<T>.GridPropertyColumn column);
 
     protected abstract UpdateContext getUpdateContext(Cell cell, TableCellElement cellElement, GPropertyDraw property, GGridPropertyTable<T>.GridPropertyColumn column);
 
     public ExecuteEditContext getEditContext(Cell editCell, TableCellElement editCellParent) {
         final GPropertyDraw property = GPropertyTable.this.getProperty(editCell);
-        RenderContext renderContext = getRenderContext(editCell, editCellParent);
-        UpdateContext updateContext = getUpdateContext(editCell, editCellParent, property, getGridColumn(editCell.getColumnIndex()));
+        GGridPropertyTable<T>.GridPropertyColumn gridColumn = getGridColumn(editCell.getColumnIndex());
+        RenderContext renderContext = getRenderContext(editCell, editCellParent, property, gridColumn);
+        UpdateContext updateContext = getUpdateContext(editCell, editCellParent, property, gridColumn);
         Element editElement = GPropertyTableBuilder.getRenderSizedElement(editCellParent, property, updateContext);
         return new ExecuteEditContext() {
             @Override
@@ -131,6 +134,11 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
             @Override
             public void setValue(Object value) {
                 setValueAt(editCell, value);
+            }
+
+            @Override
+            public void setLoading() {
+                setLoadingAt(editCell);
             }
 
             @Override

@@ -11,4 +11,8 @@ public interface UpdateContext {
     boolean globalCaptionIsDrawn();
 
     Object getValue();
+
+    boolean isLoading();
+
+    Object getImage();
 }

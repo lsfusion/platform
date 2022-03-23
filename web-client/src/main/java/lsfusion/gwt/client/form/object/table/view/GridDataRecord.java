@@ -3,6 +3,7 @@ package lsfusion.gwt.client.form.object.table.view;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.jsni.NativeStringMap;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
+import lsfusion.gwt.client.form.property.GPropertyDraw;
 
 import java.util.HashMap;
 import java.util.Optional;
@@ -18,8 +19,6 @@ public class GridDataRecord {
     private NativeStringMap<Boolean> readOnlys;
     private NativeStringMap<String> backgrounds;
     private NativeStringMap<String> foregrounds;
-
-    private NativeStringMap<Optional<Object>> images;
 
     public GridDataRecord(GGroupObjectValue key) {
         this(-1, key);
@@ -48,6 +47,22 @@ public class GridDataRecord {
 
     public Object getValue(String column) {
         return getAttribute(column);
+    }
+
+    public void setLoading(String column, boolean loading) {
+        setAttribute(column + "_loading", loading ? true : null);
+    }
+
+    public boolean isLoading(String column) {
+        return getAttribute(column + "_loading") != null;
+    }
+
+    public Object getImage(String column) {
+        return getAttribute(column + "_image");
+    }
+
+    public void setImage(String column, Object image) {
+        setAttribute(column + "_image", image);
     }
 
     public void setBackground(String column, Object color) {
@@ -82,14 +97,6 @@ public class GridDataRecord {
         } else if (readOnlys != null) {
             readOnlys.remove(column);
         }
-    }
-
-    public Optional<Object> getImage(String column) {
-        return images == null ? null : images.get(column);
-    }
-
-    public void setImage(String column, Object image) {
-        createImages().put(column, Optional.ofNullable(image));
     }
 
     public boolean isReadonly(String column) {
@@ -134,13 +141,6 @@ public class GridDataRecord {
             readOnlys = new NativeStringMap<>();
         }
         return readOnlys;
-    }
-
-    private NativeStringMap<Optional<Object>> createImages() {
-        if (images == null) {
-            images = new NativeStringMap<>();
-        }
-        return images;
     }
 
     public void reinit(GGroupObjectValue newKey, Object newRowBackground, Object newRowForeground) {

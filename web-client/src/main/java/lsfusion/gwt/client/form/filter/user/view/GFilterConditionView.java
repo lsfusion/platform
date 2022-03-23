@@ -278,7 +278,7 @@ public class GFilterConditionView extends FlexPanel implements CaptionContainerH
     }
 
     public void clearValueView() {
-        valueView.cell.updateValue(null);
+        valueView.cell.update(null);
         setApplied(allowNull);
     }
     

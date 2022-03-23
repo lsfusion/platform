@@ -82,7 +82,7 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
             GwtClientUtils.removeAllChildren(element);
 
             if(!autoSize)
-                GwtClientUtils.clearFillParentElement(element);
+                GwtClientUtils.clearFillParentElement(element.getParentElement());
 
             return true;
         }
@@ -110,6 +110,7 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
         update(property, element, updateContext);
     }
 
+    // pivot / footer
     public static void render(GPropertyDraw property, Element element, RenderContext renderContext) {
         property.getCellRenderer().render(renderSized(element, property, renderContext), renderContext);
     }
@@ -196,12 +197,6 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
 
         String foregroundColor = getForeground(rowValue, columnIndex);
         GFormController.setForegroundColor(td, foregroundColor, true);
-
-        Optional<Object> image = getImage(rowValue, columnIndex);
-        if(image != null)
-            // assert that it is action and rendered with ActionCellRenderer
-            // also since we know that its grid and not simple text (since there is dynamic image) and its td, we can unwrap td without having CellRenderer (however, it should be consistent with CellRenderer renderDynamic/Static)
-            GFormController.setDynamicImage(unwrapSized(td), image.orElse(null));
     }
 
     @Override
@@ -252,6 +247,5 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
 
     public abstract String getBackground(T rowValue, int column);
     public abstract String getForeground(T rowValue, int column);
-    public abstract Optional<Object> getImage(T rowValue, int column);
 }
 

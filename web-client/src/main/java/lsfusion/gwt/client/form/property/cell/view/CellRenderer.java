@@ -7,6 +7,8 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 
 public abstract class CellRenderer<T> {
 
+    protected static final String ICON_LOADING = "loading.gif";
+
     protected final GPropertyDraw property;
 
     public CellRenderer(GPropertyDraw property) {
@@ -25,7 +27,7 @@ public abstract class CellRenderer<T> {
         return false;
     }
 
-    protected Style.TextAlign getDefaultHorzAlignment() {
+    protected Style.TextAlign getDefaultHorzTextAlignment() {
         return Style.TextAlign.LEFT;
     }
     protected String getDefaultVertAlignment() {
@@ -44,11 +46,9 @@ public abstract class CellRenderer<T> {
     }
 
     // should be consistent with getWidthPadding and getHeightPadding
-    // and with TextBasedCellEditor.renderDOM
+    // and with TextBasedCellEditor.renderStaticContent
     public void render(Element element, RenderContext renderContext) {
-        Style.TextAlign textAlign = property.getTextAlignStyle();
-        if (textAlign == null)
-            textAlign = getDefaultHorzAlignment();
+        Style.TextAlign horzTextAlignment = getHorzTextAlignment();
 
         String vertAlignment = getDefaultVertAlignment();
 
@@ -57,11 +57,18 @@ public abstract class CellRenderer<T> {
 
         if(GwtClientUtils.isTDorTH(element)) {
             assert isSimpleText(renderContext);
-            renderSimpleStatic(element, textAlign, vertAlignment);
+            renderSimpleStatic(element, horzTextAlignment, vertAlignment);
         } else
-            renderFlexStatic(element, getFlexAlign(textAlign), vertAlignment);
+            renderFlexStatic(element, getFlexAlign(horzTextAlignment), vertAlignment);
 
         renderStaticContent(element, renderContext);
+    }
+
+    private Style.TextAlign getHorzTextAlignment() {
+        Style.TextAlign textAlign = property.getTextAlignStyle();
+        if (textAlign == null)
+            textAlign = getDefaultHorzTextAlignment();
+        return textAlign;
     }
 
     public static void renderEditSelected(Element element, GPropertyDraw property) {
@@ -119,32 +126,53 @@ public abstract class CellRenderer<T> {
         element.getStyle().clearProperty("justifyContent");
     }
 
+    private static final String MOREASYNC = "more-async";
+
     public void update(Element element, UpdateContext updateContext) {
-        renderDynamicContent(element, updateContext.getValue(), updateContext);
+        renderDynamicContent(element, updateContext.getValue(), updateContext.isLoading(), updateContext);
     }
 
-    private static final String MOREASYNC = "more-async";
-    public void renderMoreAsync(Element element, boolean enable) {
-        if (enable) {
-            ImageElement imageElement = Document.get().createImageElement();
-            imageElement.setId(MOREASYNC);
+    // cleared - cleared with setInnerText / setInnerHTML
+    protected void renderLoadingContent(Element element, boolean loading, boolean cleared) {
+        ImageElement loadingImage = (ImageElement) element.getPropertyObject(MOREASYNC);
+        if ((loadingImage != null) == loading) { // already rendered
+            if(!(cleared && loading)) // if cleared we still need to rerender the image
+                return;
+        }
 
-            GwtClientUtils.setThemeImage("loading.gif", imageElement::setSrc);
+        if (loading) {
+            loadingImage = Document.get().createImageElement();
+            loadingImage.addClassName("wrap-img-paddings"); // setting paddings
+            GwtClientUtils.setThemeImage(ICON_LOADING, loadingImage::setSrc);
 
-            element.insertFirst(imageElement);
-        } else {
-            NodeList<Node> children = element.getChildNodes();
-            for (int i = 0; i < children.getLength(); i++) {
-                Element child = (Element) children.getItem(i);
-                if (MOREASYNC.equals(child.getId())) {
-                    element.removeChild(child);
-                }
+            Style.TextAlign horzTextAlignment = getHorzTextAlignment();
+            if(horzTextAlignment.equals(Style.TextAlign.CENTER)) {
+                element.insertFirst(loadingImage); // just adding first assuming that it will be centered by the element parent
+            } else {
+                element.appendChild(loadingImage);
+                GwtClientUtils.setupEdgeParent(loadingImage, true, horzTextAlignment.equals(Style.TextAlign.RIGHT));
             }
+
+            element.setPropertyObject(MOREASYNC, loadingImage);
+        } else {
+            if (!cleared)
+                element.removeChild(loadingImage);
+
+            GwtClientUtils.clearFillParentElement(element);
+            element.setPropertyObject(MOREASYNC, null);
+        }
+    }
+
+    protected void clearRenderLoadingContent(Element element, RenderContext renderContext) {
+        ImageElement loadingImage = (ImageElement) element.getPropertyObject(MOREASYNC);
+        if(loadingImage != null) {
+            GwtClientUtils.clearFillParentElement(element);
+            element.setPropertyObject(MOREASYNC, null);
         }
     }
 
     public abstract void renderStaticContent(Element element, RenderContext renderContext);
-    public abstract void renderDynamicContent(Element element, Object value, UpdateContext updateContext);
+    public abstract void renderDynamicContent(Element element, Object value, boolean loading, UpdateContext updateContext);
     public abstract void clearRenderContent(Element element, RenderContext renderContext);
 
     public int getWidthPadding() {

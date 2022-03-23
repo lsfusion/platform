@@ -1155,6 +1155,16 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
             public Object getValue() {
                 return value;
             }
+
+            @Override
+            public boolean isLoading() {
+                return false;
+            }
+
+            @Override
+            public Object getImage() {
+                return null;
+            }
         };
         GPropertyTableBuilder.renderAndUpdate(property, th, this, updateContext);
     }

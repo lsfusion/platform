@@ -16,7 +16,7 @@ public class LogicalCellRenderer extends CellRenderer {
     }
 
     @Override
-    protected Style.TextAlign getDefaultHorzAlignment() {
+    protected Style.TextAlign getDefaultHorzTextAlignment() {
         return Style.TextAlign.CENTER;
     }
 
@@ -37,7 +37,7 @@ public class LogicalCellRenderer extends CellRenderer {
     }
 
     @Override
-    public void renderDynamicContent(Element element, Object value, UpdateContext updateContext) {
+    public void renderDynamicContent(Element element, Object value, boolean loading, UpdateContext updateContext) {
 //        if (GwtClientUtils.isIEUserAgent()) {
 //            ImageElement img = element.getFirstChild().cast();
 //            img.setSrc(getCBImagePath(value));

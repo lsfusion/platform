@@ -67,8 +67,8 @@ public abstract class PanelRenderer {
         return getSizedWidget().widget;
     }
 
-    public void updateValue(Object value) {
-        this.value.updateValue(value);
+    public void updateValue(Object value, boolean loading, Object image) {
+        this.value.update(value, loading, image);
     }
 
     public void setReadOnly(boolean readOnly) {

@@ -36,6 +36,14 @@ public class GPanelController extends GPropertyController {
     }-*/;
 
     @Override
+    public void updateLoadings(GLoadingReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
+        GPropertyDraw property = formController.getProperty(reader.propertyID);
+        propertyControllers.get(property).setLoadings(values);
+
+        updatedProperties.put(property, TRUE);
+    }
+
+    @Override
     public void updateProperty(GPropertyDraw property, ArrayList<GGroupObjectValue> columnKeys, boolean updateKeys, NativeHashMap<GGroupObjectValue, Object> values) {
         GPropertyPanelController propertyController = propertyControllers.get(property);
         if(!updateKeys) {

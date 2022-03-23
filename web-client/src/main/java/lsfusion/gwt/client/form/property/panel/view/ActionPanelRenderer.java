@@ -3,6 +3,7 @@ package lsfusion.gwt.client.form.property.panel.view;
 import com.google.gwt.dom.client.Element;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
+import lsfusion.gwt.client.base.view.ResizableComplexPanel;
 import lsfusion.gwt.client.base.view.SizedWidget;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.view.flex.LinearCaptionContainer;
@@ -21,7 +22,10 @@ public class ActionPanelRenderer extends PanelRenderer {
     public ActionPanelRenderer(final GFormController form, ActionOrPropertyValueController controller, final GPropertyDraw property, GGroupObjectValue columnKey, LinearCaptionContainer captionContainer) {
         super(form, controller, property, columnKey, captionContainer);
 
-        sizedView = value.setSized(null);
+        ResizableComplexPanel valuePanel = null;
+        if(property.autoSize && property.hasDynamicImage()) // optimization, we don't want to create extra DOM elements, because when we have static image / text, it's size is usually calculated to fit them
+            valuePanel = new ResizableComplexPanel();
+        sizedView = value.setSized(valuePanel);
 
         finalizeInit();
     }
@@ -35,16 +39,6 @@ public class ActionPanelRenderer extends PanelRenderer {
     @Override
     protected void setLabelText(String text) {
         ActionCellRenderer.setLabelText(value.getRenderElement(), text);
-    }
-
-    private Object image;
-    public void setDynamicImage(Object image) {
-        if (!GwtSharedUtils.nullEquals(this.image, image)) {
-            this.image = image;
-
-            assert property.hasDynamicImage();
-            GFormController.setDynamicImage(value.getRenderElement(), image);
-        }
     }
 
     // interface for refresh button

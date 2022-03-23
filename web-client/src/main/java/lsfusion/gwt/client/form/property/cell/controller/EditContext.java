@@ -22,6 +22,9 @@ public interface EditContext {
     default Object getValue() { return getUpdateContext().getValue(); }
     void setValue(Object value);
 
+    default boolean isLoading() { return getUpdateContext().isLoading(); }
+    void setLoading();
+
     Element getFocusElement();
     boolean isFocusable();
     Object forceSetFocus();

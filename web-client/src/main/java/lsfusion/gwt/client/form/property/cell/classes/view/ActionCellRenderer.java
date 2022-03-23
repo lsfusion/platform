@@ -11,6 +11,8 @@ import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 
 import java.util.function.Consumer;
 
+import static lsfusion.gwt.client.base.GwtClientUtils.getDownloadURL;
+import static lsfusion.gwt.client.base.GwtClientUtils.setThemeImage;
 import static lsfusion.gwt.client.form.property.cell.classes.view.TextBasedCellRenderer.clearBasedTextFonts;
 import static lsfusion.gwt.client.form.property.cell.classes.view.TextBasedCellRenderer.setBasedTextFonts;
 import static lsfusion.gwt.client.view.StyleDefaults.BUTTON_HORIZONTAL_PADDING;
@@ -50,7 +52,7 @@ public class ActionCellRenderer extends CellRenderer {
     }
 
     @Override
-    protected Style.TextAlign getDefaultHorzAlignment() {
+    protected Style.TextAlign getDefaultHorzTextAlignment() {
         return Style.TextAlign.CENTER;
     }
 
@@ -91,8 +93,11 @@ public class ActionCellRenderer extends CellRenderer {
         element.getStyle().clearPadding();
         element.setPropertyObject(TEXT, null);
 
-        if(!hasImage(renderContext))
+        if(!hasImage(renderContext)) {
             clearBasedTextFonts(property, element.getStyle(), renderContext);
+
+            clearRenderLoadingContent(element, renderContext);
+        }
 
         element.removeClassName("gwt-Button-disabled");
     }
@@ -126,19 +131,43 @@ public class ActionCellRenderer extends CellRenderer {
     }
 
     @Override
-    public void renderDynamicContent(Element element, Object value, UpdateContext updateContext) {
+    public void renderDynamicContent(Element element, Object value, boolean loading, UpdateContext updateContext) {
         boolean enabled = !property.isReadOnly() && (value != null) && (Boolean) value;
 
-        boolean hasStaticImage = property.hasStaticImage();
-        if(hasStaticImage || updateContext.globalCaptionIsDrawn()) {
-            String absolutePath = hasStaticImage ?
-                    GwtClientUtils.getAppImagePath(property.getImage(enabled).url) :
-                    GwtClientUtils.getModuleImagePath(ICON_EXECUTE);
-            setImage(element, absolutePath, false);
-            if(property.drawAsync) {
-                element.setPropertyObject(ASYNCIMAGE, absolutePath);
+        // we have it here and not in renderStaticContent because of using enabled
+        if(hasImage(updateContext)) {
+            String imagePath;
+            boolean absolute = true;
+
+            Object image;
+            if(loading) {
+                imagePath = ICON_LOADING;
+                absolute = false;
+            } else if(property.hasDynamicImage()) {
+                if ((image = updateContext.getImage()) instanceof String)
+                    imagePath = getDownloadURL((String) image, null, null, false);
+                else
+                    imagePath = "";
+            } else if(property.hasStaticImage())
+                imagePath = GwtClientUtils.getAppImagePath(property.getImage(enabled).url);
+            else {
+                imagePath = ICON_EXECUTE;
+                absolute = false;
             }
-        }
+
+            Consumer<String> setImage = absolutePath -> setImage(element, absolutePath, false);
+
+            if(absolute)
+                setImage.accept(imagePath);
+            else
+                setThemeImage(imagePath, setImage);
+
+            if(property.drawAsync) {
+                element.setPropertyObject(ASYNCIMAGE, imagePath);
+            }
+        } else
+            renderLoadingContent(element, loading, false);
+
         if(!enabled)
             element.addClassName("gwt-Button-disabled");
         else

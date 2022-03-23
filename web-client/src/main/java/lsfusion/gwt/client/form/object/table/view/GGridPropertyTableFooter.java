@@ -41,6 +41,16 @@ public class GGridPropertyTableFooter extends Header<String> implements RenderCo
     }
 
     @Override
+    public boolean isLoading() {
+        return false;
+    }
+
+    @Override
+    public Object getImage() {
+        return null;
+    }
+
+    @Override
     public GFont getFont() {
         return table.getFont();
     }
