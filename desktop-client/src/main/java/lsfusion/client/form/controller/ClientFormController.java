@@ -2016,7 +2016,7 @@ public class ClientFormController implements AsyncListener {
     private boolean bindEditing(Binding binding, java.awt.event.InputEvent ke) {
         switch (binding.bindEditing) {
             case AUTO:
-                return !isEditing() || ke instanceof MouseEvent || (ke instanceof KeyEvent && notTextCharEvent((KeyEvent) ke));
+                return !isEditing() || !targetElementIsEditing(ke) || ke instanceof MouseEvent || (ke instanceof KeyEvent && notTextCharEvent((KeyEvent) ke));
             case ALL:
                 return true;
             case ONLY:
@@ -2025,6 +2025,10 @@ public class ClientFormController implements AsyncListener {
                 return !isEditing();
         }
         return true;
+    }
+
+    private boolean targetElementIsEditing(java.awt.event.InputEvent event) {
+        return getCurrentEditingTable().getEditorComponent().equals(event.getSource());
     }
 
     private static List<Character> textChars = Arrays.asList(new Character[]{KeyEvent.VK_DELETE, KeyEvent.VK_BACK_SPACE, KeyEvent.VK_ENTER,

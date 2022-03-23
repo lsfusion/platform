@@ -1731,7 +1731,7 @@ public class GFormController implements EditManager {
                 if(bindPreview(bindingEnv, isMouse, preview) &&
                     bindDialog(bindingEnv) &&
                     bindGroup(bindingEnv, groupObject, equalGroup = nullEquals(groupObject, binding.groupObject)) &&
-                    bindEditing(bindingEnv) &&
+                    bindEditing(bindingEnv, event) &&
                     bindShowing(bindingEnv, binding.showing()) &&
                     bindPanel(bindingEnv, isMouse, panel) &&
                     bindCell(bindingEnv, isMouse, cellParent != null))
@@ -1802,9 +1802,10 @@ public class GFormController implements EditManager {
         }
     }
 
-    private boolean bindEditing(GBindingEnv binding) {
+    private boolean bindEditing(GBindingEnv binding, Event event) {
         switch (binding.bindEditing) {
             case AUTO:
+                return !isEditing() || !targetElementIsEditing(event);
             case ALL:
                 return true;
             case ONLY:
@@ -1815,6 +1816,10 @@ public class GFormController implements EditManager {
             default:
                 throw new UnsupportedOperationException("Unsupported bindingMode " + binding.bindEditing);
         }
+    }
+
+    private boolean targetElementIsEditing(Event event) {
+        return editContext.getEditElement().isOrHasChild(Element.as(event.getEventTarget()));
     }
 
     private boolean bindShowing(GBindingEnv binding, boolean showing) {
