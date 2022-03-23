@@ -15,11 +15,6 @@ public class TextCellRenderer extends StringBasedCellRenderer {
     }
 
     @Override
-    protected void setInnerContent(Element element, String innerText) {
-        super.setInnerContent(element, innerText);
-    }
-
-    @Override
     public String format(Object value) {
         return (String) value;
     }

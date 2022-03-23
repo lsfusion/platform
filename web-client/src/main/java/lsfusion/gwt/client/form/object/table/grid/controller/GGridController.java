@@ -424,6 +424,11 @@ public class GGridController extends GAbstractTableController {
     }
 
     @Override
+    public void updateLoadings(GLoadingReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
+        table.updateLoadings(formController.getProperty(reader.propertyID), values);
+    }
+
+    @Override
     public void updateShowIfValues(GShowIfReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
         table.updateShowIfValues(formController.getProperty(reader.propertyID), values);
     }

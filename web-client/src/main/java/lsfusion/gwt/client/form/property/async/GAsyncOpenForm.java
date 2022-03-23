@@ -6,7 +6,8 @@ import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
 import lsfusion.gwt.client.navigator.window.GWindowFormType;
-import lsfusion.interop.form.WindowFormType;
+
+import java.util.function.Consumer;
 
 public class GAsyncOpenForm extends GAsyncExec {
     public String canonicalName;
@@ -28,8 +29,8 @@ public class GAsyncOpenForm extends GAsyncExec {
     }
 
     @Override
-    public void exec(GFormController formController, Event event, EditContext editContext, String actionSID) {
-        formController.asyncOpenForm(this, editContext, event, actionSID);
+    public void exec(GFormController formController, Event event, EditContext editContext, String actionSID, Consumer<Long> onExec) {
+        formController.asyncOpenForm(this, editContext, event, actionSID, onExec);
     }
 
     public GWindowFormType getWindowType(boolean canShowDockedModal) {

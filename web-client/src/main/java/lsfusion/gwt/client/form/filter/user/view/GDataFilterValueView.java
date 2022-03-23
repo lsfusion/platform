@@ -50,11 +50,13 @@ public class GDataFilterValueView extends FlexPanel {
         sizedView.widget.addStyleName("userFilterDataPropertyValue");
         sizedView.addFill(this);
 
+        Object value;
         if (readSelectedValue) {
-            cell.updateValue(logicsSupplier.getSelectedValue(property, condition.columnKey));
+            value = logicsSupplier.getSelectedValue(property, condition.columnKey);
         } else {
-            cell.updateValue(filterValue.value);
+            value = filterValue.value;
         }
+        cell.update(value);
     }
 
     public void valueChanged(Object value) {
@@ -66,7 +68,7 @@ public class GDataFilterValueView extends FlexPanel {
     }
     
     public void editingCancelled(CancelReason cancelReason) {
-        cell.updateValue(filterValue.value);
+        cell.update(filterValue.value);
     }
 
     public void focusOnValue() {

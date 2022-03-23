@@ -421,6 +421,16 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
             return record.getValue(property);
         }
 
+        @Override
+        protected boolean isLoading(GPropertyDraw property, GTreeGridRecord record) {
+            return record.isLoading(property);
+        }
+
+        @Override
+        protected Object getImage(GPropertyDraw property, GTreeGridRecord record) {
+            return record.getImage(property);
+        }
+
         // in tree property might change
         private static final String PDRAW_ATTRIBUTE = "__gwt_pdraw"; // actually it represents nod depth
 
@@ -438,7 +448,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
             // if property changed - rerender
             if(!GwtClientUtils.nullEquals(oldProperty, newProperty) && !form.isEditing()) { // we don't want to clear editing (it will be rerendered anyway, however not sure if this check is needed)
                 if(oldProperty != null) {
-                    RenderContext renderContext = getRenderContext(cell, cellElement);
+                    RenderContext renderContext = getRenderContext(cell, cellElement, oldProperty, this);
                     if(!GPropertyTableBuilder.clearRenderSized(cellElement, oldProperty, renderContext)) {
                         assert cellElement == GPropertyTableBuilder.getRenderSizedElement(cellElement, oldProperty, getUpdateContext(cell, cellElement, oldProperty, this));
                         oldProperty.getCellRenderer().clearRender(cellElement, renderContext);
@@ -469,17 +479,19 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         dataUpdated = true;
     }
 
+    public void updateLoadings(GPropertyDraw property, NativeHashMap<GGroupObjectValue, Object> propLoadings) {
+        tree.setLoadings(property, propLoadings);
+        dataUpdated = true;
+    }
+
     public void updatePropertyValues(GPropertyDraw property, NativeHashMap<GGroupObjectValue, Object> propValues, boolean updateKeys) {
-        if (propValues != null) {
-            dataUpdated = true;
-            tree.setPropertyValues(property, propValues, updateKeys);
-        }
+        tree.setPropertyValues(property, propValues, updateKeys);
+        dataUpdated = true;
     }
 
     public void updateReadOnlyValues(GPropertyDraw property, NativeHashMap<GGroupObjectValue, Object> readOnlyValues) {
-        if (readOnlyValues != null) {
-            tree.setReadOnlyValues(property, readOnlyValues);
-        }
+        tree.setReadOnlyValues(property, readOnlyValues);
+        dataUpdated = true;
     }
 
     @Override
@@ -680,9 +692,8 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
                     record.setForeground(columnSID, foreground == null ? readerProperty.foreground : foreground);
                     if (readerProperty.hasDynamicImage()) {
                         NativeHashMap<GGroupObjectValue, Object> actionImages = cellImages.get(readerProperty);
-                        record.setImage(columnSID, actionImages == null ? null : actionImages.get(key));
+                        record.setImage(readerProperty, actionImages == null ? null : actionImages.get(key));
                     }
-
                 }
             }
         }
@@ -870,6 +881,21 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
         rowRecord.setValue(property, value);
         tree.values.get(property).put(rowRecord.getKey(), value);
+    }
+
+    @Override
+    public void setLoadingAt(Cell cell) {
+        GTreeGridRecord rowRecord = getTreeGridRow(cell);
+        GPropertyDraw property = getProperty(cell);
+        // assert property is not null since we want get here if property is null
+
+        rowRecord.setLoading(property, true);
+        NativeHashMap<GGroupObjectValue, Object> loadingMap = tree.loadings.get(property);
+        if(loadingMap == null) {
+            loadingMap = new NativeHashMap<>();
+            tree.loadings.put(property, loadingMap);
+        }
+        loadingMap.put(rowRecord.getKey(), true);
     }
 
     public boolean changeOrders(GGroupObject groupObject, LinkedHashMap<GPropertyDraw, Boolean> orders, boolean alreadySet) {

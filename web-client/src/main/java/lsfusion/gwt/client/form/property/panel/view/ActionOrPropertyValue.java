@@ -18,6 +18,8 @@ import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 public abstract class ActionOrPropertyValue extends FocusWidget implements EditContext, RenderContext, UpdateContext {
 
     private Object value;
+    private boolean loading;
+    private Object image;
 
     public Object getValue() {
         return value;
@@ -28,6 +30,23 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
         this.value = value; // updating inner model
 
         controller.setValue(columnKey, value); // updating outer model - controller
+    }
+
+    @Override
+    public void setLoading() {
+        this.loading = true;
+
+        controller.setLoading(columnKey, true);
+    }
+
+    @Override
+    public boolean isLoading() {
+        return loading;
+    }
+
+    @Override
+    public Object getImage() {
+        return image;
     }
 
     protected GPropertyDraw property;
@@ -75,7 +94,7 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
     }
 
     protected void finalizeInit() {
-        this.form.render(this.property, getRenderElement(), this);
+        render();
     }
 
     private Widget borderWidget;
@@ -233,8 +252,20 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
 
     public abstract void pasteValue(final String value);
 
-    public void updateValue(Object value) {
+    public void update(Object value) {
+        update(value, false, null);
+    }
+
+    private void render() {
+        this.form.render(this.property, getRenderElement(), this);
+    }
+
+    public void update(Object value, boolean loading, Object image) {
         this.value = value;
+        this.loading = loading;
+        this.image = image;
+
+        // RERENDER IF NEEDED : we have the previous state
 
         form.update(property, getRenderElement(), this);
     }

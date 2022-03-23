@@ -148,6 +148,11 @@ public class GTreeGroupController extends GAbstractTableController {
     }
 
     @Override
+    public void updateLoadings(GLoadingReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
+        tree.updateLoadings(formController.getProperty(reader.propertyID), values);
+    }
+
+    @Override
     public void updateShowIfValues(GShowIfReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
     }
 

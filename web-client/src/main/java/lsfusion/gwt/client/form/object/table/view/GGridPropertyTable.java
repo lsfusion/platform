@@ -527,6 +527,8 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     public abstract class GridPropertyColumn extends Column<T, Object> {
 
         protected abstract Object getValue(GPropertyDraw property, T record);
+        protected abstract boolean isLoading(GPropertyDraw property, T record);
+        protected abstract Object getImage(GPropertyDraw property, T record);
 
         @Override
         public void onEditEvent(EventHandler handler, Cell editCell, TableCellElement editCellParent) {
@@ -550,7 +552,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
             if(property == null) // in tree there can be no property in groups other than last
                 return;
 
-            RenderContext renderContext = getRenderContext(cell, cellElement);
+            RenderContext renderContext = getRenderContext(cell, cellElement, property, this);
             form.render(property, GPropertyTableBuilder.renderSized(cellElement, property, renderContext), renderContext);
         }
 
@@ -559,6 +561,8 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
             GPropertyDraw property = getProperty(cell);
             if (property == null) // in tree there can be no property in groups other than last
                 return;
+
+            // RERENDER IF NEEDED : we don't have the previous state, so we have to store it in element
 
             UpdateContext updateContext = getUpdateContext(cell, cellElement, property, this);
             form.update(property, GPropertyTableBuilder.getRenderSizedElement(cellElement, property, updateContext), updateContext);
@@ -570,7 +574,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     }
 
     @Override
-    protected RenderContext getRenderContext(Cell cell, TableCellElement cellElement) {
+    protected RenderContext getRenderContext(Cell cell, TableCellElement cellElement, GPropertyDraw property, GridPropertyColumn column) {
         return new RenderContext() {
             @Override
             public boolean isAlwaysSelected() {
@@ -586,6 +590,11 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
             public GFont getFont() {
                 return GGridPropertyTable.this.getFont();
             }
+//
+//            @Override
+//            public boolean isLoading() {
+//                return column.isLoading(property, (T) cell.getRow());
+//            }
         };
     }
 
@@ -613,6 +622,16 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
             @Override
             public Object getValue() {
                 return column.getValue(property, (T) cell.getRow());
+            }
+
+            @Override
+            public boolean isLoading() {
+                return column.isLoading(property, (T) cell.getRow());
+            }
+
+            @Override
+            public Object getImage() {
+                return column.getImage(property, (T) cell.getRow());
             }
         };
     }

@@ -8,5 +8,7 @@ public interface RenderContext {
 
     boolean globalCaptionIsDrawn();
 
+//    boolean isLoading();
+
     GFont getFont();
 }

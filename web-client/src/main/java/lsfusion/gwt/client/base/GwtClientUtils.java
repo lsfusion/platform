@@ -291,12 +291,34 @@ public class GwtClientUtils {
         return el == rootElement;
     }
 
+    public static void setupEdgeParent(Element child, boolean horz, boolean start) {
+        Element parentElement = child.getParentElement();
+        setupFillParentElement(parentElement);
+
+        Style childStyle = child.getStyle();
+        childStyle.setPosition(Style.Position.ABSOLUTE);
+        if(horz) {
+            if(start)
+                childStyle.setLeft(0, Style.Unit.PX);
+            else
+                childStyle.setRight(0, Style.Unit.PX);
+
+            childStyle.setTop(50, Style.Unit.PCT);
+            childStyle.setProperty("transform", "translateY(-50%)");
+        } else {
+            if(start)
+                childStyle.setTop(0, Style.Unit.PX);
+            else
+                childStyle.setBottom(0, Style.Unit.PX);
+
+            childStyle.setLeft(50, Style.Unit.PCT);
+            childStyle.setProperty("transform", "translateX(-50%)");
+        }
+    }
+
     // using absolute positioning, but because in that case it is positioned relative to first not static element, will have to set position to relative (if it's static)
     public static void setupFillParent(Element child) {
-        Element parentElement = child.getParentElement();
-        String parentPosition = parentElement.getStyle().getPosition();
-        if (parentPosition == null || parentPosition.isEmpty() || parentPosition.equals(Style.Position.STATIC.getCssName()))
-            parentElement.getStyle().setPosition(Style.Position.RELATIVE);
+        setupFillParentElement(child.getParentElement());
 
         Style childStyle = child.getStyle();
         childStyle.setPosition(Style.Position.ABSOLUTE);
@@ -306,8 +328,14 @@ public class GwtClientUtils {
         childStyle.setRight(0, Style.Unit.PX);
     }
 
+    private static void setupFillParentElement(Element parentElement) {
+        String parentPosition = parentElement.getStyle().getPosition();
+        if (parentPosition == null || parentPosition.isEmpty() || parentPosition.equals(Style.Position.STATIC.getCssName()))
+            parentElement.getStyle().setPosition(Style.Position.RELATIVE);
+    }
+
     public static void clearFillParent(Element child) {
-        clearFillParentElement(child);
+        clearFillParentElement(child.getParentElement());
 
         Style childStyle = child.getStyle();
         childStyle.clearPosition();
@@ -317,8 +345,7 @@ public class GwtClientUtils {
         childStyle.clearRight();
     }
 
-    public static void clearFillParentElement(Element child) {
-        Element parentElement = child.getParentElement();
+    public static void clearFillParentElement(Element parentElement) {
         String parentPosition = parentElement.getStyle().getPosition();
         if (parentPosition != null && parentPosition.equals(Style.Position.RELATIVE.getCssName()))
             parentElement.getStyle().clearPosition();

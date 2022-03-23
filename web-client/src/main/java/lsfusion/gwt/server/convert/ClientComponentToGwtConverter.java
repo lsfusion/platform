@@ -314,6 +314,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.checkEquals = clientPropertyDraw.checkEquals;
 
         propertyDraw.captionReader = convertCaptionReader(clientPropertyDraw.captionReader);
+        propertyDraw.loadingReader = new GLoadingReader(clientPropertyDraw.getID(), clientPropertyDraw.getGroupObject() != null ? clientPropertyDraw.getGroupObject().ID : -1);
         propertyDraw.showIfReader = convertShowIfReader(clientPropertyDraw.showIfReader);
         propertyDraw.footerReader = convertFooterReader(clientPropertyDraw.footerReader);
         propertyDraw.readOnlyReader = convertReadOnlyReader(clientPropertyDraw.readOnlyReader);
@@ -613,6 +614,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
 
         form.creationPath = clientForm.creationPath;
         form.autoRefresh = clientForm.autoRefresh;
+        form.moreAsync = clientForm.moreAsync;
         GContainer mainContainer = convertOrCast(clientForm.mainContainer);
         mainContainer.main = true;
         form.mainContainer = mainContainer;

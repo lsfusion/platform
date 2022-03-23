@@ -30,6 +30,7 @@ public abstract class GPropertyController {
     public abstract void updateCellForegroundValues(GForegroundReader reader, NativeHashMap<GGroupObjectValue, Object> values);
     public abstract void updateImageValues(GImageReader reader, NativeHashMap<GGroupObjectValue, Object> values);
     public abstract void updatePropertyCaptions(GCaptionReader reader, NativeHashMap<GGroupObjectValue, Object> values);
+    public abstract void updateLoadings(GLoadingReader reader, NativeHashMap<GGroupObjectValue, Object> values);
     public abstract void updateShowIfValues(GShowIfReader reader, NativeHashMap<GGroupObjectValue, Object> values);
     public abstract void updateFooterValues(GFooterReader reader, NativeHashMap<GGroupObjectValue, Object> values);
     public abstract void updateReadOnlyValues(GReadOnlyReader reader, NativeHashMap<GGroupObjectValue, Object> values);

@@ -52,6 +52,8 @@ public abstract class TextBasedCellRenderer<T> extends CellRenderer<T> {
     public void clearRenderContent(Element element, RenderContext renderContext) {
         element.getStyle().clearPadding();
         clearBasedTextFonts(property, element.getStyle(), renderContext);
+
+        clearRenderLoadingContent(element, renderContext);
     }
 
     protected boolean isMultiLine() {
@@ -96,7 +98,7 @@ public abstract class TextBasedCellRenderer<T> extends CellRenderer<T> {
         }
     }
 
-    public void renderDynamicContent(Element element, Object value, UpdateContext updateContext) {
+    public void renderDynamicContent(Element element, Object value, boolean loading, UpdateContext updateContext) {
         if (value == null) {
             element.setTitle(property.isEditableNotNull() ? REQUIRED_VALUE : "");
             setInnerText(element, null);
@@ -105,8 +107,9 @@ public abstract class TextBasedCellRenderer<T> extends CellRenderer<T> {
             setInnerText(element, stringValue);
             element.setTitle(property.echoSymbols ? "" : stringValue);
         }
-    }
 
+        renderLoadingContent(element, loading, true);
+    }
 
     public abstract String format(T value);
 

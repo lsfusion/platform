@@ -5,6 +5,8 @@ import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 
+import java.util.function.Consumer;
+
 public class GAsyncChange extends GAsyncInputExec {
     public GType changeType;
     public String customEditFunction;
@@ -22,7 +24,7 @@ public class GAsyncChange extends GAsyncInputExec {
     }
 
     @Override
-    public void exec(GFormController formController, Event event, EditContext editContext, String actionSID) {
-        formController.asyncChange(event, editContext, actionSID, this);
+    public void exec(GFormController formController, Event event, EditContext editContext, String actionSID, Consumer<Long> onExec) {
+        formController.asyncChange(event, editContext, actionSID, this, onExec);
     }
 }
