@@ -981,24 +981,12 @@ public class GFormController implements EditManager {
         GPropertyDraw property = editContext.getProperty();
         GAsyncEventExec asyncEventExec = property.getAsyncEventExec(actionSID);
 
-        boolean wait = property.sync != null && property.sync;
-        boolean nowait = property.sync != null && !property.sync;
-        if(nowait && asyncEventExec == null)
-            asyncEventExec = new GAsyncEventExec() {
-                @Override
-                public void exec(GFormController formController, Event event, EditContext editContext, String actionSID, Consumer<Long> onExec) {
-                    onExec.accept(asyncExecutePropertyEventAction(actionSID, editContext, event, null));
-                }
-            };
-
-        if (!wait && asyncEventExec != null) {
+        if (asyncEventExec != null) {
             Consumer<Long> onExec = requestIndex -> setLoading(editContext, requestIndex);
-
             if (isChangeEvent(actionSID) && property.askConfirm) {
-                GAsyncEventExec fAsyncEventExec = asyncEventExec;
                 blockingConfirm("lsFusion", property.askConfirmMessage, false, chosenOption -> {
                     if (chosenOption == DialogBoxHelper.OptionType.YES) {
-                        fAsyncEventExec.exec(this, event, editContext, actionSID, onExec);
+                        asyncEventExec.exec(this, event, editContext, actionSID, onExec);
                     }
                 });
             } else {

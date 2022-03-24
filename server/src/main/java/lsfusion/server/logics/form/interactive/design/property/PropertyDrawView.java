@@ -19,6 +19,7 @@ import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.data.integral.IntegerClass;
 import lsfusion.server.logics.form.interactive.action.async.AsyncChange;
 import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
+import lsfusion.server.logics.form.interactive.action.async.AsyncNoWaitExec;
 import lsfusion.server.logics.form.interactive.action.async.AsyncSerializer;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerContext;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
@@ -222,7 +223,13 @@ public class PropertyDrawView extends BaseComponentView {
         Map<String, AsyncEventExec> asyncExecMap = new HashMap<>();
         for (String actionId : ServerResponse.events) {
             AsyncEventExec asyncEventExec = entity.getAsyncEventExec(context.entity, context.securityPolicy, actionId, false);
-            if (asyncEventExec != null) {
+            Boolean sync = getSync();
+            boolean wait = sync != null && sync;
+            boolean nowait = sync != null && !sync;
+            if (nowait && asyncEventExec == null) {
+                asyncEventExec = new AsyncNoWaitExec();
+            }
+            if (!wait && asyncEventExec != null) {
                 asyncExecMap.put(actionId, asyncEventExec);
             }
         }
@@ -512,7 +519,6 @@ public class PropertyDrawView extends BaseComponentView {
 
         outStream.writeBoolean(isNotNull());
         outStream.writeBoolean(isSticky(pool.context.view.entity));
-        pool.writeObject(outStream, getSync());
         outStream.writeBoolean(entity.getPropertyExtra(PropertyDrawExtraType.FOOTER) != null);
     }
 

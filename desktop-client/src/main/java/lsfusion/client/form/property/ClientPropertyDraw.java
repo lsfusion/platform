@@ -164,7 +164,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public boolean notNull;
 
     public boolean sticky;
-    public Boolean sync;
 
     public boolean hasFooter;
 
@@ -640,7 +639,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         notNull = inStream.readBoolean();
 
         sticky = inStream.readBoolean();
-        sync = pool.readObject(inStream);
 
         hasFooter = inStream.readBoolean();
     }
