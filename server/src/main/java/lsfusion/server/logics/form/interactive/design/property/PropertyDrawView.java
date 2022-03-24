@@ -52,6 +52,7 @@ import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
 
+import static lsfusion.base.BaseUtils.nvl;
 import static lsfusion.interop.action.ServerResponse.CHANGE;
 import static lsfusion.interop.action.ServerResponse.EDIT_OBJECT;
 import static lsfusion.server.logics.form.struct.property.PropertyDrawExtraType.*;
@@ -109,6 +110,7 @@ public class PropertyDrawView extends BaseComponentView {
     public boolean notNull;
 
     public Boolean sticky;
+    public Boolean sync;
 
     @SuppressWarnings({"UnusedDeclaration"})
     public PropertyDrawView() {
@@ -252,6 +254,10 @@ public class PropertyDrawView extends BaseComponentView {
 
     public boolean isSticky(FormEntity formEntity) {
         return entity.sticky != null ? entity.sticky : sticky != null ? sticky : isProperty() && entity.getPropertyObjectEntity().isValueUnique(entity.getToDraw(formEntity));
+    }
+
+    public Boolean getSync() {
+        return nvl(entity.sync, sync);
     }
 
     //Для Jasper'а экранируем кавычки
@@ -506,6 +512,7 @@ public class PropertyDrawView extends BaseComponentView {
 
         outStream.writeBoolean(isNotNull());
         outStream.writeBoolean(isSticky(pool.context.view.entity));
+        pool.writeObject(outStream, getSync());
         outStream.writeBoolean(entity.getPropertyExtra(PropertyDrawExtraType.FOOTER) != null);
     }
 

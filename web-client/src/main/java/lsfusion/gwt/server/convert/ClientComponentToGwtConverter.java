@@ -364,6 +364,8 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
 
         propertyDraw.sticky = clientPropertyDraw.sticky;
 
+        propertyDraw.sync = clientPropertyDraw.sync;
+
         propertyDraw.hasFooter = clientPropertyDraw.hasFooter;
 
 //        propertyDraw.getValueWidth(null, form); // parentFont - null потому как на этом этапе интересуют только в панели свойства (а parentFont для грида, там своя ветка)
@@ -614,7 +616,6 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
 
         form.creationPath = clientForm.creationPath;
         form.autoRefresh = clientForm.autoRefresh;
-        form.moreAsync = clientForm.moreAsync;
         GContainer mainContainer = convertOrCast(clientForm.mainContainer);
         mainContainer.main = true;
         form.mainContainer = mainContainer;

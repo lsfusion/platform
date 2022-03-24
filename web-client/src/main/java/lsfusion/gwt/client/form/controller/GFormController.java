@@ -981,8 +981,9 @@ public class GFormController implements EditManager {
         GPropertyDraw property = editContext.getProperty();
         GAsyncEventExec asyncEventExec = property.getAsyncEventExec(actionSID);
 
-        boolean asyncProp = form.moreAsync;
-        if(asyncProp && asyncEventExec == null)
+        boolean wait = property.sync != null && property.sync;
+        boolean nowait = property.sync != null && !property.sync;
+        if(nowait && asyncEventExec == null)
             asyncEventExec = new GAsyncEventExec() {
                 @Override
                 public void exec(GFormController formController, Event event, EditContext editContext, String actionSID, Consumer<Long> onExec) {
@@ -990,7 +991,7 @@ public class GFormController implements EditManager {
                 }
             };
 
-        if (asyncEventExec != null) {
+        if (!wait && asyncEventExec != null) {
             Consumer<Long> onExec = requestIndex -> setLoading(editContext, requestIndex);
 
             if (isChangeEvent(actionSID) && property.askConfirm) {

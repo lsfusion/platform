@@ -97,7 +97,6 @@ public class DefaultFormView extends FormView {
         canonicalName = entity.getSID();
         creationPath = entity.getCreationPath();
         autoRefresh = entity.autoRefresh;
-        moreAsync = entity.moreAsync;
 
         FormContainerSet formSet = FormContainerSet.fillContainers(mainContainer, containerFactory, version);
         

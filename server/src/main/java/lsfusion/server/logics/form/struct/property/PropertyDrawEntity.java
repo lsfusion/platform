@@ -93,6 +93,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public String eventID;
 
     public Boolean sticky;
+    public Boolean sync;
 
     private String formPath;
 

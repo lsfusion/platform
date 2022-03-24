@@ -71,7 +71,6 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
     public Integer overridePageWidth;
 
     public int autoRefresh = 0;
-    public boolean moreAsync;
 
     // список деревеьев
     private NFSet<TreeGroupView> treeGroups = NFFact.set();
@@ -716,7 +715,6 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         pool.writeString(outStream, creationPath);
         pool.writeInt(outStream, overridePageWidth);
         outStream.writeInt(autoRefresh);
-        outStream.writeBoolean(moreAsync);
     }
 
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
@@ -738,7 +736,6 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         creationPath = pool.readString(inStream);
         overridePageWidth = pool.readInt(inStream);
         autoRefresh = inStream.readInt();
-        moreAsync = inStream.readBoolean();
 
         entity = pool.context.entity;
 
