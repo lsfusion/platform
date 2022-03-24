@@ -2690,6 +2690,7 @@ semiActionOrPropertyOption[LAP property, String propertyName, LocalizedString ca
 	|	charWidthSetting [property]
 	|	changeKeySetting [property]
 	|	changeMouseSetting [property]
+	|	stickySetting [property]
 	|   '@@' ann = ID { ps.annotation = $ann.text; }
     ;
 
@@ -2709,7 +2710,6 @@ semiPropertyOption[LP property, String propertyName, LocalizedString caption, Pr
 	|	setNotNullSetting [ps]
 	|	aggrSetting [property]
 	|	eventIdSetting [property]
-	|	stickySetting [property]
     ;
 
 semiActionOption[LA action, String actionName, LocalizedString caption, ActionSettings ps, List<TypedParameter> context]
@@ -3013,7 +3013,7 @@ eventIdSetting [LAP property]
 	:	'EVENTID' id=stringLiteral
 	;
 
-stickySetting [LP property]
+stickySetting [LAP property]
 @init {
 	boolean sticky = false;
 }

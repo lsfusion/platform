@@ -1484,7 +1484,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         property.getActionOrProperty().drawOptions.setEventID(id);
     }
 
-    public void setSticky(LP property, boolean sticky) {
+    public void setSticky(LAP property, boolean sticky) {
         property.getActionOrProperty().drawOptions.setSticky(sticky);
     }
 
