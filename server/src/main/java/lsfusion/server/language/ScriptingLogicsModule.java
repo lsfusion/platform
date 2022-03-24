@@ -787,7 +787,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public ScriptingFormEntity createScriptedForm(String formName, LocalizedString caption, DebugInfo.DebugPoint point, String icon,
-                                                  ModalityType modalityType, int autoRefresh, boolean localAsync, boolean moreAsync) throws ScriptingErrorLog.SemanticErrorException {
+                                                  ModalityType modalityType, int autoRefresh, boolean localAsync) throws ScriptingErrorLog.SemanticErrorException {
         checks.checkDuplicateForm(formName);
         caption = (caption == null ? LocalizedString.create(formName) : caption);
 
@@ -800,7 +800,6 @@ public class ScriptingLogicsModule extends LogicsModule {
         form.setModalityType(modalityType);
         form.setAutoRefresh(autoRefresh);
         form.setLocalAsync(localAsync);
-        form.setMoreAsync(moreAsync);
 
         return form;
     }
@@ -1486,6 +1485,10 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public void setSticky(LAP property, boolean sticky) {
         property.getActionOrProperty().drawOptions.setSticky(sticky);
+    }
+
+    public void setSync(LAP property, boolean sync) {
+        property.getActionOrProperty().drawOptions.setSync(sync);
     }
 
     public List<ResolveClassSet> getParamClasses(NamedPropertyUsage usage) throws ScriptingErrorLog.SemanticErrorException {

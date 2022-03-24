@@ -29,7 +29,6 @@ public class ClientForm extends ContextIdentityObject implements ClientCustomSer
     public String creationPath = "";
 
     public int autoRefresh = 0;
-    public boolean moreAsync;
 
     public static ClientGroupObject lastActiveGroupObject;
 
@@ -183,7 +182,6 @@ public class ClientForm extends ContextIdentityObject implements ClientCustomSer
         pool.writeString(outStream, creationPath);
         pool.writeInt(outStream, overridePageWidth);
         outStream.writeInt(autoRefresh);
-        outStream.writeBoolean(moreAsync);
     }
 
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
@@ -210,7 +208,6 @@ public class ClientForm extends ContextIdentityObject implements ClientCustomSer
         creationPath = pool.readString(inStream);
         overridePageWidth = pool.readInt(inStream);
         autoRefresh = inStream.readInt();
-        moreAsync = inStream.readBoolean();
     }
 
     private List<List<ClientPropertyDraw>> deserializePivot(ClientSerializationPool pool, DataInputStream inStream) throws IOException {

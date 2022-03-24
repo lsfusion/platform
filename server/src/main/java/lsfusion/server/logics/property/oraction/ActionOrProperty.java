@@ -658,6 +658,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         private PivotOptions pivotOptions;
 
         private Boolean sticky;
+        private Boolean sync;
 
         // для всех 
         private ImList<DefaultProcessor> processors = ListFact.EMPTY();
@@ -720,6 +721,8 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
 
             if(propertyView.sticky == null)
                 propertyView.sticky = sticky;
+            if(propertyView.sync == null)
+                propertyView.sync = sync;
 
             for(DefaultProcessor processor : processors)
                 processor.proceedDefaultDesign(propertyView);
@@ -773,6 +776,8 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
                 setPivotOptions(options.pivotOptions);
             if(sticky == null)
                 setSticky(options.sticky);
+            if(sync == null)
+                setSync(options.sync);
             
             processors = options.processors.addList(processors);
         }
@@ -892,6 +897,10 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
 
         public void setSticky(Boolean sticky) {
             this.sticky = sticky;
+        }
+
+        public void setSync(Boolean sync) {
+            this.sync = sync;
         }
     }
 

@@ -63,7 +63,7 @@ public class BaseUtils {
     private static final int STRING_SERIALIZATION_CHUNK_SIZE = 65535/3;
 
     public static Integer getApiVersion() {
-        return 190;
+        return 191;
     }
 
     public static String getPlatformVersion() {

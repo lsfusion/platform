@@ -255,7 +255,6 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     public ModalityType modalityType = ModalityType.DOCKED;
     public int autoRefresh = 0;
     public boolean localAsync = false;
-    public boolean moreAsync = false;
 
     public PropertyObjectEntity<?> reportPathProp;
 

@@ -20,6 +20,8 @@ public class ClientAsyncSerializer {
                 return new ClientAsyncChange(inStream);
             case 3:
                 return new ClientAsyncAddRemove(inStream);
+            case 4:
+                return new ClientAsyncNoWaitExec();
         }
         throw new UnsupportedOperationException();
     }
