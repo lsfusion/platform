@@ -120,6 +120,7 @@ import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -2099,14 +2100,20 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     }
 
     private Scheduler.SchedulerTask getSynchronizeWebDirectoriesTask(Scheduler scheduler) {
+        Map<Path, Path> actualPaths = new HashMap<>();
+        for (String path : System.getProperty("java.class.path").split(File.pathSeparator)) {
+            Path targetPath = Paths.get(path, "web");
+            if (targetPath.toFile().exists()) {
+                int endIndex = path.indexOf("/target/classes");
+                Path resourcesPath = Paths.get(path.substring(0, endIndex != -1 ? endIndex : path.indexOf("out/production")), "src/main/resources/web");
+                actualPaths.put(resourcesPath, targetPath);
+            }
+        }
+
         return scheduler.createSystemTask(stack -> {
-            Path resourcesPath = Paths.get(SystemProperties.userDir, "src/main/resources/web");
-            Path targetPath = Paths.get(SystemProperties.userDir, "target/classes/web");
-            if (!targetPath.toFile().exists())
-                targetPath = Paths.get(SystemProperties.userDir, "out/production/" + Paths.get(SystemProperties.userDir).toFile().getName() + "/web");
-
-            FileUtils.synchronizeDirectories(resourcesPath.toString(), targetPath.toString());
-
+            for (Map.Entry<Path, Path> entry : actualPaths.entrySet()) {
+                FileUtils.synchronizeDirectories(entry.getKey().toString(), entry.getValue().toString());
+            }
         }, false, 1, false, "Copy files from 'resources/web' into target. Only for debug");
     }
 
