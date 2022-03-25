@@ -164,7 +164,7 @@ public class MainFrame implements EntryPoint {
                     return false;
                 }
             } else if (BrowserEvents.BLUR.equals(event.getType())) {
-                switchedToAnotherWindow = isSwitchedToAnotherWindow(event);
+                switchedToAnotherWindow = isSwitchedToAnotherWindow(event, Document.get());
                 return !switchedToAnotherWindow;
             }
         }
@@ -174,10 +174,10 @@ public class MainFrame implements EntryPoint {
     //heuristic
     //'visibilitychange' will not work, because 'focus' event is caught by editor earlier then by whole document
     //(https://stackoverflow.com/questions/28993157/visibilitychange-event-is-not-triggered-when-switching-program-window-with-altt)
-    //sourceCapabilities is for chrome, opera, edge: https://developer.mozilla.org/en-US/docs/Web/API/UIEvent/sourceCapabilities
-    //rangeParent is for firefox: http://help.dottoro.com/ljifpseq.php
-    private static native boolean isSwitchedToAnotherWindow(Event event) /*-{
-        return event.relatedTarget == null && event.sourceCapabilities == null && event.rangeParent == null;
+    //ignore focus/blur events when switching tabs/windows:
+    //https://stackoverflow.com/questions/61713458/ignore-blur-focusout-events-when-switching-tabs-windows
+    private static native boolean isSwitchedToAnotherWindow(Event event, Document document) /*-{
+        return event.target === document.activeElement;
     }-*/;
 
     // it's odd, but dblclk works even when the first click was on different target
