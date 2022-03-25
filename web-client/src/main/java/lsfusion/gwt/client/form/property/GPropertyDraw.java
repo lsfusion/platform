@@ -552,7 +552,9 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     }
 
     public boolean isFocusable() {
-        return focusable == null || focusable;
+        if(focusable != null)
+            return focusable;
+        return !hasKeyBinding();
     }
 
     @Override
