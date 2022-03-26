@@ -6,6 +6,7 @@ import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.ImageDescription;
 import lsfusion.gwt.client.base.ImageHolder;
+import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
@@ -29,6 +30,7 @@ import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.property.async.GAsyncChange;
 import lsfusion.gwt.client.form.property.async.GAsyncEventExec;
+import lsfusion.gwt.client.form.property.async.GInputList;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.classes.view.FormatCellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
@@ -99,6 +101,20 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public GType getChangeType() {
         GAsyncEventExec asyncExec = getAsyncEventExec(ServerResponse.CHANGE);
         return asyncExec instanceof GAsyncChange ? ((GAsyncChange) asyncExec).changeType : null;
+    }
+
+    public GInputList getInputList() {
+        GAsyncEventExec asyncExec = getAsyncEventExec(ServerResponse.CHANGE);
+        return asyncExec instanceof GAsyncChange ? ((GAsyncChange) asyncExec).inputList : null;
+    }
+
+    public static class SelectedAction {
+        public final String action;
+        public final String action;
+
+    }
+    public Pair<String, GAsyncChange>[] getSelectedActions() {
+        getInputList()ss
     }
 
     public GAsyncEventExec getAsyncEventExec(String actionSID) {

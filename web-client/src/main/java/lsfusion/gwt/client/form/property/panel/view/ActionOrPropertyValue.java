@@ -45,6 +45,11 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
     }
 
     @Override
+    public boolean isSelected() {
+        return true;
+    }
+
+    @Override
     public Object getImage() {
         return image;
     }

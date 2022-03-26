@@ -26,9 +26,9 @@ public class CustomCellRenderer extends CellRenderer<Object> {
     }-*/;
 
     @Override
-    public void renderDynamicContent(Element element, Object value, boolean loading, UpdateContext updateContext) {
+    public void renderDynamicContent(Element element, Object value, UpdateContext updateContext) {
         setRendererValue(customRenderer, element,
-                getController(updateContext.getCustomRendererValueChangeConsumer(), updateContext.isPropertyReadOnly()),
+                getController(valueTo -> updateContext.changeProperty(new GUserInputResult(valueTo)), updateContext.isPropertyReadOnly()),
                 GSimpleStateTableView.convertValue(property, value));
     }
 

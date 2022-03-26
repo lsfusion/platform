@@ -37,7 +37,7 @@ public class LogicalCellRenderer extends CellRenderer {
     }
 
     @Override
-    public void renderDynamicContent(Element element, Object value, boolean loading, UpdateContext updateContext) {
+    public void renderDynamicContent(Element element, Object value, UpdateContext updateContext) {
 //        if (GwtClientUtils.isIEUserAgent()) {
 //            ImageElement img = element.getFirstChild().cast();
 //            img.setSrc(getCBImagePath(value));

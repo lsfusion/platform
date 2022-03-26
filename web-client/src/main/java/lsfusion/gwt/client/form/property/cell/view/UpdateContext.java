@@ -4,8 +4,8 @@ import java.util.function.Consumer;
 
 public interface UpdateContext {
     
-    Consumer<Object> getCustomRendererValueChangeConsumer();
-    
+    void changeProperty(GUserInputResult result);
+
     boolean isPropertyReadOnly();
 
     boolean globalCaptionIsDrawn();
@@ -15,4 +15,6 @@ public interface UpdateContext {
     boolean isLoading();
 
     Object getImage();
+
+    boolean isSelected();
 }

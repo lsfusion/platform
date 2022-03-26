@@ -21,10 +21,10 @@ public class HTMLLinkCellRenderer extends CellRenderer<Object> {
     }
 
     @Override
-    public void renderDynamicContent(Element element, Object value, boolean loading, UpdateContext updateContext) {
+    public void renderDynamicContent(Element element, Object value, UpdateContext updateContext) {
         element.setInnerHTML("<iframe src=\"" + value + "\" style=\"width:100%; height:100%;\" >Unfortunately this content could not be displayed</iframe>");
 
-        renderLoadingContent(element, loading, true);
+        renderToolbarContent(element, updateContext, true);
     }
 
     public String format(Object value) {

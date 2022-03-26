@@ -29,13 +29,13 @@ public class ColorCellRenderer extends CellRenderer<Object> {
     }
 
     @Override
-    public void renderDynamicContent(Element element, Object value, boolean loading, UpdateContext updateContext) {
+    public void renderDynamicContent(Element element, Object value, UpdateContext updateContext) {
         String color = getColorValue(value);
         element.getStyle().setColor(color);
         element.getStyle().setBackgroundColor(color);
         element.setTitle(color);
 
-        renderLoadingContent(element, loading, false);
+        renderToolbarContent(element, updateContext, false);
     }
 
     private String getColorValue(Object value) {

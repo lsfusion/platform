@@ -98,7 +98,7 @@ public abstract class TextBasedCellRenderer<T> extends CellRenderer<T> {
         }
     }
 
-    public void renderDynamicContent(Element element, Object value, boolean loading, UpdateContext updateContext) {
+    public void renderDynamicContent(Element element, Object value, UpdateContext updateContext) {
         if (value == null) {
             element.setTitle(property.isEditableNotNull() ? REQUIRED_VALUE : "");
             setInnerText(element, null);
@@ -108,7 +108,7 @@ public abstract class TextBasedCellRenderer<T> extends CellRenderer<T> {
             element.setTitle(property.echoSymbols ? "" : stringValue);
         }
 
-        renderLoadingContent(element, loading, true);
+        renderToolbarContent(element, updateContext, true);
     }
 
     public abstract String format(T value);

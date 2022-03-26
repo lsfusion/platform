@@ -7,6 +7,7 @@ import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.controller.ExecuteEditContext;
+import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
 import lsfusion.gwt.client.view.MainFrame;
 
 import java.util.function.Consumer;
@@ -120,7 +121,7 @@ public class ActionOrPropertyPanelValue extends ActionOrPropertyValue implements
     }
 
     @Override
-    public Consumer<Object> getCustomRendererValueChangeConsumer() {
-        return value -> form.changeProperty(this, value);
+    public void changeProperty(GUserInputResult result) {
+        form.changeProperty(this, result);
     }
 }

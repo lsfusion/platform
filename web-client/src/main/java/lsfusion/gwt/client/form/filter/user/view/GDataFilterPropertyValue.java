@@ -16,6 +16,7 @@ import lsfusion.gwt.client.form.property.panel.view.ActionOrPropertyValue;
 import lsfusion.gwt.client.form.property.panel.view.ActionOrPropertyValueController;
 import lsfusion.interop.action.ServerResponse;
 
+import java.io.Serializable;
 import java.text.ParseException;
 import java.util.function.Consumer;
 
@@ -105,11 +106,10 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
     }
 
     @Override
-    public Consumer<Object> getCustomRendererValueChangeConsumer() {
-        return value -> {
-            update(value);
-            afterCommit.accept(value);
-        };
+    public void changeProperty(GUserInputResult result) {
+        Serializable value = result.getValue();
+        update(value);
+        afterCommit.accept(value);
     }
 
     @Override

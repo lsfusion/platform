@@ -78,7 +78,6 @@ import lsfusion.gwt.client.form.property.async.*;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.classes.controller.CustomReplaceCellEditor;
 import lsfusion.gwt.client.form.property.cell.classes.controller.RequestCellEditor;
-import lsfusion.gwt.client.form.property.cell.classes.view.ActionCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.*;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
@@ -907,7 +906,7 @@ public class GFormController implements EditManager {
         setLoading(editContext, requestIndex);
 
         if(property.canUseChangeValueForRendering(pasteType))
-            updateValue(editContext, value);
+            setValue(editContext, value);
     }
 
     public void changePageSizeAfterUnlock(final GGroupObject groupObject, final int pageSize) {
@@ -1145,7 +1144,10 @@ public class GFormController implements EditManager {
 
     // for custom renderer and paste
     public long changeProperty(EditContext editContext, Object value) {
-        return changeProperty(editContext, null, GPropertyDraw.externalChangeTypeUsage, GEditBindingMap.CHANGE, new GUserInputResult(value), null);
+        return changeProperty(editContext, new GUserInputResult(value));
+    }
+    public long changeProperty(EditContext editContext, GUserInputResult result) {
+        return changeProperty(editContext, null, GPropertyDraw.externalChangeTypeUsage, GEditBindingMap.CHANGE, result, null);
     }
 
     public long changeProperty(EditContext editContext, Event editEvent, GType changeType, String actionSID, GUserInputResult result, Long changeRequestIndex) {
@@ -2195,7 +2197,7 @@ public class GFormController implements EditManager {
         putToDoubleNativeMap(pendingLoadingRequests, property, GGroupObjectValue.getFullKey(rowKey, editContext.getColumnKey()), requestIndex);
     }
     // "external" update - paste + server update edit value
-    public void updateValue(EditContext editContext, Object value) {
+    public void setValue(EditContext editContext, Object value) {
         editContext.setValue(value);
 
         update(editContext);

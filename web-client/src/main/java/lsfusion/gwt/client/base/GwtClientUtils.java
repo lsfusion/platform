@@ -291,7 +291,7 @@ public class GwtClientUtils {
         return el == rootElement;
     }
 
-    public static void setupEdgeParent(Element child, boolean horz, boolean start) {
+    public static void setupEdgeCenteredParent(Element child, boolean horz, boolean start) {
         Element parentElement = child.getParentElement();
         setupFillParentElement(parentElement);
 
@@ -1031,5 +1031,11 @@ public class GwtClientUtils {
 
     public static native void consoleError(String error)/*-{
         console.error(error);
+    }-*/;
+
+    public static native void setOnClick(Element element, Runnable run)/*-{
+        element.translateAction.onclick = function(event) {
+            run.@Runnable::run()();
+        }
     }-*/;
 }

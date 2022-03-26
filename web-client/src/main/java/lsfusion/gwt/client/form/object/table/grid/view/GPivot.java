@@ -35,6 +35,7 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.GPropertyGroupType;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
+import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
@@ -1142,8 +1143,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
                 return true;
             }
             @Override
-            public Consumer<Object> getCustomRendererValueChangeConsumer() {
-                return null;
+            public void changeProperty(GUserInputResult result) {
             }
 
             @Override
@@ -1159,6 +1159,11 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
             @Override
             public boolean isLoading() {
                 return false;
+            }
+
+            @Override
+            public boolean isSelected() {
+                return true;
             }
 
             @Override

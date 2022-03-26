@@ -137,7 +137,7 @@ public abstract class AbstractDataGridBuilder<T> {
      * @param columnsToRedraw
      * @param tr
      */
-    private void updateRow(int rowIndex, T rowValue, int[] columnsToRedraw, TableRowElement tr) {
+    public void updateRow(int rowIndex, T rowValue, int[] columnsToRedraw, TableRowElement tr) {
         setRowValueIndex(tr, rowIndex);
         updateRowImpl(rowIndex, rowValue, columnsToRedraw, tr);
     }

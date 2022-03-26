@@ -15,7 +15,7 @@ public abstract class FileBasedCellRenderer extends CellRenderer {
     }
 
     @Override
-    public void renderDynamicContent(Element element, Object value, boolean loading, UpdateContext updateContext) {
+    public void renderDynamicContent(Element element, Object value, UpdateContext updateContext) {
         element.setInnerText(null);
 
         ImageElement img = null;
@@ -43,7 +43,7 @@ public abstract class FileBasedCellRenderer extends CellRenderer {
         }
         element.appendChild(wrapImage(img));
 
-        renderLoadingContent(element, loading, true);
+        renderToolbarContent(element, updateContext, true);
     }
 
     private Element wrapImage(ImageElement img) {

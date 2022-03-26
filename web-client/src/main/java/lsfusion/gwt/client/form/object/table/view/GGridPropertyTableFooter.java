@@ -4,6 +4,7 @@ import com.google.gwt.dom.client.TableCellElement;
 import lsfusion.gwt.client.base.view.grid.Header;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
@@ -46,6 +47,11 @@ public class GGridPropertyTableFooter extends Header<String> implements RenderCo
     }
 
     @Override
+    public boolean isSelected() {
+        return true;
+    }
+
+    @Override
     public Object getImage() {
         return null;
     }
@@ -56,8 +62,7 @@ public class GGridPropertyTableFooter extends Header<String> implements RenderCo
     }
 
     @Override
-    public Consumer<Object> getCustomRendererValueChangeConsumer() {
-        return null;
+    public void changeProperty(GUserInputResult result) {
     }
 
     @Override

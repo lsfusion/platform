@@ -131,7 +131,7 @@ public class ActionCellRenderer extends CellRenderer {
     }
 
     @Override
-    public void renderDynamicContent(Element element, Object value, boolean loading, UpdateContext updateContext) {
+    public void renderDynamicContent(Element element, Object value, UpdateContext updateContext) {
         boolean enabled = !property.isReadOnly() && (value != null) && (Boolean) value;
 
         // we have it here and not in renderStaticContent because of using enabled
@@ -140,7 +140,7 @@ public class ActionCellRenderer extends CellRenderer {
             boolean absolute = true;
 
             Object image;
-            if(loading) {
+            if(updateContext.isLoading()) {
                 imagePath = ICON_LOADING;
                 absolute = false;
             } else if(property.hasDynamicImage()) {
@@ -166,7 +166,7 @@ public class ActionCellRenderer extends CellRenderer {
                 element.setPropertyObject(ASYNCIMAGE, imagePath);
             }
         } else
-            renderLoadingContent(element, loading, false);
+            renderToolbarContent(element, updateContext, false);
 
         if(!enabled)
             element.addClassName("gwt-Button-disabled");

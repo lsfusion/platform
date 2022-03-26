@@ -487,12 +487,14 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
 
             for(int i = 0; i < actions.length; i++) {
                 int index = i;
-                GwtClientUtils.setThemeImage(actions[index] + ".png", (image -> buttonsPanel.add(new SuggestPopupButton(new Image(image)) {
+                SuggestPopupButton actionButton = new SuggestPopupButton() {
                     @Override
                     protected void onClickStart() {
                         validateAndCommit(suggestBox.getElement(), index, true, CommitReason.OTHER);
                     }
-                })));
+                };
+                GwtClientUtils.setThemeImage(actions[index] + ".png", (image -> actionButton.getUpFace().setImage(new Image(image))));
+                buttonsPanel.add(actionButton);
             }
 
             bottomPanel.add(buttonsPanel);
