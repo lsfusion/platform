@@ -393,6 +393,11 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         }
 
         @Override
+        public boolean hasQuickAccessAction(Cell cell) {
+            return false;
+        }
+
+        @Override
         public boolean isCustomRenderer() {
             return false;
         }

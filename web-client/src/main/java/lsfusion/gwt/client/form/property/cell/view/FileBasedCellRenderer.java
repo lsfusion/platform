@@ -71,7 +71,7 @@ public abstract class FileBasedCellRenderer extends CellRenderer {
         element.removeClassName("requiredValueString");
         element.setTitle("");
 
-        clearRenderLoadingContent(element, renderContext);
+        clearRenderToolbarContent(element, renderContext);
     }
 
     protected void setBasedEmptyElement(Element element) {

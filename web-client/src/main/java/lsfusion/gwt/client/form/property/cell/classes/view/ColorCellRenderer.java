@@ -25,7 +25,7 @@ public class ColorCellRenderer extends CellRenderer<Object> {
         element.getStyle().clearBackgroundColor();
         element.setTitle(null);
 
-        clearRenderLoadingContent(element, renderContext);
+        clearRenderToolbarContent(element, renderContext);
     }
 
     @Override

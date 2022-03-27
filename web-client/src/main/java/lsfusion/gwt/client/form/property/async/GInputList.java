@@ -9,6 +9,7 @@ public class GInputList implements Serializable {
     public String[] actions; // null if there is no list
     public GAsyncExec[] actionAsyncs;
     public GCompletionType completionType;
+    public boolean[] quickAccesses;
 
     public GInputList() {
     }

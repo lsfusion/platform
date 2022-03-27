@@ -53,7 +53,7 @@ public abstract class TextBasedCellRenderer<T> extends CellRenderer<T> {
         element.getStyle().clearPadding();
         clearBasedTextFonts(property, element.getStyle(), renderContext);
 
-        clearRenderLoadingContent(element, renderContext);
+        clearRenderToolbarContent(element, renderContext);
     }
 
     protected boolean isMultiLine() {

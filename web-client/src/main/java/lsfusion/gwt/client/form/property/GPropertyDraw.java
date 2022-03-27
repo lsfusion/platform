@@ -6,7 +6,6 @@ import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.ImageDescription;
 import lsfusion.gwt.client.base.ImageHolder;
-import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
@@ -108,13 +107,38 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         return asyncExec instanceof GAsyncChange ? ((GAsyncChange) asyncExec).inputList : null;
     }
 
-    public static class SelectedAction {
+    public static class QuickAccessAction {
         public final String action;
-        public final String action;
+        public final GAsyncEventExec asyncExec;
+        public final int index;
 
+        public QuickAccessAction(String action, GAsyncEventExec asyncExec, int index) {
+            this.action = action;
+            this.asyncExec = asyncExec;
+            this.index = index;
+        }
     }
-    public Pair<String, GAsyncChange>[] getSelectedActions() {
-        getInputList()ss
+
+    private transient QuickAccessAction[] quickAccessActions;
+    public QuickAccessAction[] getQuickAccessActions() {
+        if(quickAccessActions == null) {
+            GInputList inputList = getInputList();
+            QuickAccessAction[] actions;
+            if(inputList != null) {
+                int actionsCount = 0;
+                for(int i = 0; i < inputList.actions.length ; i++)
+                    if(true)// inputList.quickAccesses[i])
+                        actionsCount++;
+                actions = new QuickAccessAction[actionsCount];
+                int j = 0;
+                for(int i = 0; i < inputList.actions.length ; i++)
+                    if(true) //inputList.quickAccesses[i])
+                        actions[j++] = new QuickAccessAction(inputList.actions[i], inputList.actionAsyncs[i], i);
+            } else
+                actions = new QuickAccessAction[0];
+            quickAccessActions = actions;
+        }
+        return quickAccessActions;
     }
 
     public GAsyncEventExec getAsyncEventExec(String actionSID) {

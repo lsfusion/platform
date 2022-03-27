@@ -19,6 +19,7 @@ import com.google.gwt.dom.client.*;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
 
 import java.util.List;
+import java.util.function.BiPredicate;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.removeAllChildren;
 
@@ -131,7 +132,6 @@ public abstract class AbstractDataGridBuilder<T> {
 
     /**
      * Build zero or more table rows for the specified row value.
-     *
      * @param rowIndex the absolute row index
      * @param rowValue    the value for the row to render
      * @param columnsToRedraw
@@ -139,10 +139,10 @@ public abstract class AbstractDataGridBuilder<T> {
      */
     public void updateRow(int rowIndex, T rowValue, int[] columnsToRedraw, TableRowElement tr) {
         setRowValueIndex(tr, rowIndex);
-        updateRowImpl(rowIndex, rowValue, columnsToRedraw, tr);
+        updateRow(rowIndex, rowValue, columnsToRedraw, tr, null);
     }
 
-    protected abstract void updateRowImpl(int rowIndex, T rowValue, int[] columnsToRedraw, TableRowElement rowElement);
+    public abstract void updateRow(int rowIndex, T rowValue, int[] columnsToRedraw, TableRowElement rowElement, BiPredicate<Column<T, ?>, Cell> filter);
 
     public void updateRowStickyLeft(TableSectionElement tbodyElement, List<Integer> stickyColumns, List<Integer> stickyLefts) {
         int rowCount = tbodyElement.getChildCount();

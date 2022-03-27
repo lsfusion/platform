@@ -3,9 +3,7 @@ package lsfusion.gwt.client.form.property.cell.view;
 import com.google.gwt.dom.client.*;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.async.GAsyncChange;
 
 public abstract class CellRenderer<T> {
 
@@ -128,7 +126,7 @@ public abstract class CellRenderer<T> {
         element.getStyle().clearProperty("justifyContent");
     }
 
-    private static final String STATE = "state";
+    private static final String TOOLBAR = "toolbar";
 
     public void update(Element element, UpdateContext updateContext) {
         renderDynamicContent(element, updateContext.getValue(), updateContext);
@@ -155,38 +153,38 @@ public abstract class CellRenderer<T> {
         return stateA.loading == stateB.loading && stateA.selectedQuickAccess == stateB.selectedQuickAccess;
     }
 
-    optimization to update only if selected has quick access ???
+//    optimization to update only if selected has quick access ??? (selectedActions.length > 0)
 
     // cleared - cleared with setInnerText / setInnerHTML
     protected void renderToolbarContent(Element element, UpdateContext updateContext, boolean cleared) {
         boolean loading = updateContext.isLoading();
-        Pair<String, GAsyncChange>[] selectedActions = null;
-        boolean selectedQuickAccess = updateContext.isSelected() && (selectedActions = property.getSelectedActions()).length > 0;
+        GPropertyDraw.QuickAccessAction[] quickAccessActions = null;
+        boolean selectedQuickAccess = updateContext.isSelected() && (quickAccessActions = property.getQuickAccessActions()).length > 0;
 
         boolean needToolbar = loading || selectedQuickAccess;
         ToolbarState toolbarState = needToolbar ? new ToolbarState(loading, selectedQuickAccess) : null;
 
-        ToolbarState prevState = (ToolbarState) element.getPropertyObject(STATE);
+        ToolbarState prevState = (ToolbarState) element.getPropertyObject(TOOLBAR);
         if (equalsState(toolbarState, prevState)) { // already rendered
             if(!(cleared && needToolbar)) // if cleared we still need to rerender the toolbar
                 return;
 
-            toolbarState = prevState;
+            toolbarState = prevState; // to keep toolbarElement
         } else {
-            if(prevState != null)
+            if(prevState != null && toolbarState != null)
                 toolbarState.toolbarElement = prevState.toolbarElement;
 
-            element.setPropertyObject(STATE, toolbarState);
+            element.setPropertyObject(TOOLBAR, toolbarState);
         }
 
-        Element toolbarElement = cleared ? null : toolbarState.toolbarElement;
         if(needToolbar) {
+            Element toolbarElement = cleared ? null : toolbarState.toolbarElement;
             boolean start = getHorzTextAlignment().equals(Style.TextAlign.RIGHT);
             if(toolbarElement == null) {
                 toolbarElement = Document.get().createDivElement();
-                toolbarElement.addClassName("wrap-img-paddings");dssd
+                toolbarElement.addClassName("wrap-center");
                 element.appendChild(toolbarElement);
-                GwtClientUtils.setupEdgeCenteredParent(toolbarElement, true, start);
+                GwtClientUtils.setupEdgeStretchParent(toolbarElement, true, start);
 
                 toolbarState.toolbarElement = toolbarElement;
             } else
@@ -201,47 +199,21 @@ public abstract class CellRenderer<T> {
             }
 
             if(selectedQuickAccess) {
-                for(Pair<String, GAsyncChange> selectedAction : selectedActions) {
-                    ImageElement actionImage = Document.get().createImageElement();
-                    actionImage.addClassName("wrap-img-paddings"); // setting paddings
-                    GwtClientUtils.setThemeImage(selectedAction + ".png", actionImage::setSrc);
-                    sdsd
-                    GwtClientUtils.setOnClick(actionImage, () -> {
-                        updateContext.changeProperty(new GUserInputResult(null, ));
-                    });
+                for(GPropertyDraw.QuickAccessAction quickAccessAction : quickAccessActions) {
+                    int actionIndex = quickAccessAction.index;
+                    ImageElement actionElement = Document.get().createImageElement();
+                    actionElement.addClassName("wrap-img-paddings"); // setting paddings
+                    GwtClientUtils.setThemeImage(quickAccessAction.action + ".png", actionElement::setSrc);
+                    GwtClientUtils.setOnClick(actionElement, () -> updateContext.changeProperty(new GUserInputResult(null, actionIndex)));
 
-                    addToToolbar(toolbarElement, start, actionImage);
+                    addToToolbar(toolbarElement, start, actionElement);
                 }
             }
         } else {
             if (!cleared)
-                element.removeChild(toolbarElement);
+                element.removeChild(prevState.toolbarElement);
 
             GwtClientUtils.clearFillParentElement(element);
-            toolbarState.toolbarElement = null;
-        }
-
-
-        if (loading) {
-            loadingImage = Document.get().createImageElement();
-            loadingImage.addClassName("wrap-img-paddings"); // setting paddings
-            GwtClientUtils.setThemeImage(ICON_LOADING, loadingImage::setSrc);
-
-            Style.TextAlign horzTextAlignment = getHorzTextAlignment();
-            if(horzTextAlignment.equals(Style.TextAlign.CENTER)) {
-                element.insertFirst(loadingImage); // just adding first assuming that it will be centered by the element parent
-            } else {
-                element.appendChild(loadingImage);
-                GwtClientUtils.setupEdgeCenteredParent(loadingImage, true, horzTextAlignment.equals(Style.TextAlign.RIGHT));
-            }
-
-            element.setPropertyObject(LOADING, loadingImage);
-        } else {
-            if (!cleared)
-                element.removeChild(loadingImage);
-
-            GwtClientUtils.clearFillParentElement(element);
-            element.setPropertyObject(LOADING, null);
         }
     }
 
@@ -252,11 +224,11 @@ public abstract class CellRenderer<T> {
             toolbarElement.appendChild(element);
     }
 
-    protected void clearRenderLoadingContent(Element element, RenderContext renderContext) {
-        ImageElement loadingImage = (ImageElement) element.getPropertyObject(LOADING);
-        if(loadingImage != null) {
+    protected void clearRenderToolbarContent(Element element, RenderContext renderContext) {
+        ToolbarState toolbarState = (ToolbarState) element.getPropertyObject(TOOLBAR);
+        if(toolbarState != null) {
             GwtClientUtils.clearFillParentElement(element);
-            element.setPropertyObject(LOADING, null);
+            element.setPropertyObject(TOOLBAR, null);
         }
     }
 

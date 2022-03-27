@@ -33,7 +33,6 @@ import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
 
 import static java.lang.Math.max;
 import static lsfusion.gwt.client.form.event.GKeyStroke.*;
@@ -545,6 +544,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
             if(isSticky()) {
                 //class dataGridStickyCell is also used in DataGrid isStickyCell()
                 cellElement.addClassName("dataGridStickyCell");
+                cellElement.getStyle().setProperty("position", "sticky");
             }
         }
 
@@ -567,6 +567,12 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
 
             UpdateContext updateContext = getUpdateContext(cell, cellElement, property, this);
             form.update(property, GPropertyTableBuilder.getRenderSizedElement(cellElement, property, updateContext), updateContext);
+        }
+
+        @Override
+        public boolean hasQuickAccessAction(Cell cell) {
+            GPropertyDraw property = getProperty(cell);
+            return property != null && property.getQuickAccessActions().length > 0;
         }
     }
 

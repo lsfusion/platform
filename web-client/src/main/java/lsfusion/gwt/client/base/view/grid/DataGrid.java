@@ -1130,7 +1130,7 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
             updateDataDOM(columnsChanged, dataColumnsChanged); // updating data (rows + column values)
 
         if (columnsChanged || selectedRowChanged || selectedColumnChanged || dataChanged) // dataChanged because background is data (and updated during data update)
-            updateSelectedDOM(selectedRowChanged && !columnsChanged && (!dataChanged || dataColumnsChanged != null));
+            updateSelectedDOM(selectedRowChanged && !columnsChanged && (!dataChanged || dataColumnsChanged != null), dataColumnsChanged);
 
         if (columnsChanged || selectedRowChanged || selectedColumnChanged || focusedChanged)
             updateFocusedCellDOM(); // updating focus cell border
@@ -1372,9 +1372,9 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
         }
     }
 
-    private void updateSelectedCells(int rowIndex) {
-        // in theory we don't need to reupdate dataColumnsChanged, but it's easier to update the cell one more time
-        tableBuilder.updateRow(rowIndex, getRowValue(rowIndex), null, getChildElement(rowIndex));
+    private void updateSelectedCells(int rowIndex, ArrayList<Column> dataColumnsChanged) {
+        // last parameter is an optimization
+        tableBuilder.updateRow(rowIndex, getRowValue(rowIndex), null, getChildElement(rowIndex), (tColumn, cell) -> tColumn.hasQuickAccessAction(cell) && (dataColumnsChanged == null || !dataColumnsChanged.contains(tColumn)));
     }
 
     private void updateDataDOM(boolean columnsChanged, ArrayList<Column> dataColumnsChanged) {
@@ -1417,7 +1417,7 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
         return stickyColumns;
     }
 
-    private void updateSelectedDOM(boolean needCellUpdate) {
+    private void updateSelectedDOM(boolean needCellUpdate, ArrayList<Column> dataColumnsChanged) {
         NodeList<TableRowElement> rows = tableData.tableElement.getRows();
         int rowCount = rows.getLength();
 
@@ -1427,7 +1427,7 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
         if (renderedSelectedRow >= 0 && renderedSelectedRow < rowCount &&
                 renderedSelectedRow != newLocalSelectedRow) {
             if(needCellUpdate)
-                updateSelectedCells(renderedSelectedRow);
+                updateSelectedCells(renderedSelectedRow, dataColumnsChanged);
 
             updateSelectedRowCellsBackground(renderedSelectedRow, rows, false, -1);
         }
@@ -1435,7 +1435,7 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
         // SET NEW STATE
         if (newLocalSelectedRow >= 0 && newLocalSelectedRow < rowCount) {
             if(needCellUpdate)
-                updateSelectedCells(newLocalSelectedRow);
+                updateSelectedCells(newLocalSelectedRow, dataColumnsChanged);
 
             updateSelectedRowCellsBackground(newLocalSelectedRow, rows, true, this.isFocused ? getSelectedColumn() : -1);
         }

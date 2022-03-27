@@ -96,7 +96,7 @@ public class ActionCellRenderer extends CellRenderer {
         if(!hasImage(renderContext)) {
             clearBasedTextFonts(property, element.getStyle(), renderContext);
 
-            clearRenderLoadingContent(element, renderContext);
+            clearRenderToolbarContent(element, renderContext);
         }
 
         element.removeClassName("gwt-Button-disabled");

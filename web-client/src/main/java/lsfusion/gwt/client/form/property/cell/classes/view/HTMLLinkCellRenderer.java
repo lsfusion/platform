@@ -17,7 +17,7 @@ public class HTMLLinkCellRenderer extends CellRenderer<Object> {
 
     @Override
     public void clearRenderContent(Element element, RenderContext renderContext) {
-        clearRenderLoadingContent(element, renderContext);
+        clearRenderToolbarContent(element, renderContext);
     }
 
     @Override

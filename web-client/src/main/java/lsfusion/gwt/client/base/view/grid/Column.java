@@ -35,4 +35,6 @@ public abstract class Column<T, C> {
   public abstract void updateDom(Cell cell, TableCellElement cellElement);
 
   public abstract boolean isCustomRenderer();
+
+  public abstract boolean hasQuickAccessAction(Cell cell);
 }

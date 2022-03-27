@@ -900,10 +900,7 @@ public class GFormController implements EditManager {
         GType pasteType = property.getExternalChangeType();
         Serializable value = (Serializable) property.parsePaste(sValue, pasteType);
 
-        long requestIndex = changeProperty(editContext, value);
-
-        // maybe later need to be moved inside
-        setLoading(editContext, requestIndex);
+        changeProperty(editContext, new GUserInputResult(value));
 
         if(property.canUseChangeValueForRendering(pasteType))
             setValue(editContext, value);
@@ -1065,16 +1062,22 @@ public class GFormController implements EditManager {
     }
 
     public void asyncChange(Event event, EditContext editContext, String actionSID, GAsyncChange asyncChange, Consumer<Long> onExec) {
-        edit(asyncChange.changeType, event, false, null, asyncChange.inputList, (value, requestIndex) -> {
+        GInputList inputList = asyncChange.inputList;
+        edit(asyncChange.changeType, event, false, null, inputList, (value, requestIndex) -> {
             onExec.accept(requestIndex);
 
             // it seems that it's better to do everything after commit to avoid potential problems with focus, etc.
-            Integer contextAction = value.getContextAction();
-            if (contextAction != null/* && requestIndex.result >= 0*/) {
-                GAsyncExec actionAsync = asyncChange.inputList.actionAsyncs[contextAction];
-                if (actionAsync != null) actionAsync.exec(getAsyncFormController(requestIndex), formsController, event, editContext, GFormController.this);
-            }
+            asyncCommit(event, editContext, inputList, value, requestIndex);
         }, cancelReason -> {}, editContext, actionSID, null, asyncChange.customEditFunction);
+    }
+
+    private void asyncCommit(Event event, EditContext editContext, GInputList inputList, GUserInputResult value, Long requestIndex) {
+        Integer contextAction = value.getContextAction();
+        if (contextAction != null/* && requestIndex.result >= 0*/) {
+            GAsyncExec actionAsync = inputList.actionAsyncs[contextAction];
+            if (actionAsync != null)
+                actionAsync.exec(getAsyncFormController(requestIndex), formsController, event, editContext, GFormController.this);
+        }
     }
 
     public void asyncOpenForm(GAsyncOpenForm asyncOpenForm, EditContext editContext, Event editEvent, String actionSID, Consumer<Long> onExec) {
@@ -1142,12 +1145,15 @@ public class GFormController implements EditManager {
         return fullKey.toGroupObjectValue();
     }
 
-    // for custom renderer and paste
-    public long changeProperty(EditContext editContext, Object value) {
-        return changeProperty(editContext, new GUserInputResult(value));
-    }
-    public long changeProperty(EditContext editContext, GUserInputResult result) {
-        return changeProperty(editContext, null, GPropertyDraw.externalChangeTypeUsage, GEditBindingMap.CHANGE, result, null);
+    // for custom renderer, quick access and paste
+    public void changeProperty(EditContext editContext, GUserInputResult result) {
+        Event editEvent = null;
+
+        long requestIndex = changeProperty(editContext, editEvent, GPropertyDraw.externalChangeTypeUsage, CHANGE, result, null);
+
+        setLoading(editContext, requestIndex);
+
+        asyncCommit(editEvent, editContext, editContext.getProperty().getInputList(), result, requestIndex);
     }
 
     public long changeProperty(EditContext editContext, Event editEvent, GType changeType, String actionSID, GUserInputResult result, Long changeRequestIndex) {

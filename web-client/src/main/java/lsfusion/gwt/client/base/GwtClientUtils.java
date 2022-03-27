@@ -316,6 +316,31 @@ public class GwtClientUtils {
         }
     }
 
+    public static void setupEdgeStretchParent(Element child, boolean horz, boolean start) {
+        Element parentElement = child.getParentElement();
+        setupFillParentElement(parentElement);
+
+        Style childStyle = child.getStyle();
+        childStyle.setPosition(Style.Position.ABSOLUTE);
+        if(horz) {
+            if(start)
+                childStyle.setLeft(0, Style.Unit.PX);
+            else
+                childStyle.setRight(0, Style.Unit.PX);
+
+            childStyle.setTop(0, Style.Unit.PX);
+            childStyle.setBottom(0, Style.Unit.PX);
+        } else {
+            if(start)
+                childStyle.setTop(0, Style.Unit.PX);
+            else
+                childStyle.setBottom(0, Style.Unit.PX);
+
+            childStyle.setLeft(0, Style.Unit.PX);
+            childStyle.setRight(0, Style.Unit.PX);
+        }
+    }
+
     // using absolute positioning, but because in that case it is positioned relative to first not static element, will have to set position to relative (if it's static)
     public static void setupFillParent(Element child) {
         setupFillParentElement(child.getParentElement());
@@ -1034,7 +1059,8 @@ public class GwtClientUtils {
     }-*/;
 
     public static native void setOnClick(Element element, Runnable run)/*-{
-        element.translateAction.onclick = function(event) {
+        element.onmousedown = function(event) {
+            event.stopPropagation();
             run.@Runnable::run()();
         }
     }-*/;
