@@ -32,6 +32,10 @@
     background: var(--selection-color);
 }
 
+.option-item-selected:hover {
+    background: var(--option-selected-hover-color);
+}
+
 .option-item-current {
     border: var(--border-width) solid var(--focused-cell-border-color);
 }
