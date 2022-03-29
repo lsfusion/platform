@@ -83,32 +83,26 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
         List<GGroupObjectValue> optionsToAdd = new ArrayList<>();
         List<GGroupObjectValue> optionsToRemove = new ArrayList<>();
 
+        NativeHashMap<GGroupObjectValue, Integer> newRenderedColumnKeys = new NativeHashMap<>();
         for (int i = 0; i < columnKeys.size(); i++) {
             GGroupObjectValue columnKey = columnKeys.get(i);
             if (showIfs == null || showIfs.get(columnKey) != null) {
                 Integer oldColumnKeyOrder = renderedColumnKeys.remove(columnKey);
-                if (oldColumnKeyOrder != null) { //такой columnKey есть в старом списке
-                    if (i != oldColumnKeyOrder) { //индекс не совпадает
+                if (oldColumnKeyOrder != null) {
+                    if (i != oldColumnKeyOrder) {
                         optionsToRemove.add(columnKey);
                         optionsToAdd.add(columnKey);
                     }
-                } else { //такого columnKey нет в старом списке
+                } else {
                     optionsToAdd.add(columnKey);
                 }
+                newRenderedColumnKeys.put(columnKey, i);
             }
         }
 
-        //все, которые есть в старом списке, но нет в новом - на удаление
         renderedColumnKeys.foreachKey(optionsToRemove::add);
 
-        //пересоздаём renderedColumnKeys уже для новых columnKeys
-        renderedColumnKeys = new NativeHashMap<>();
-        for (int i = 0; i < columnKeys.size(); i++) {
-            GGroupObjectValue columnKey = columnKeys.get(i);
-            if (showIfs == null || showIfs.get(columnKey) != null) {
-                renderedColumnKeys.put(columnKeys.get(i), i);
-            }
-        }
+        renderedColumnKeys = newRenderedColumnKeys;
 
         return new Pair<>(optionsToAdd, optionsToRemove);
     }
