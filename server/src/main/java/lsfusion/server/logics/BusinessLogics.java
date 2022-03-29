@@ -46,7 +46,6 @@ import lsfusion.server.language.property.oraction.LAP;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
-import lsfusion.server.logics.action.implement.ActionImplement;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.ApplyFilter;
 import lsfusion.server.logics.action.session.DataSession;
@@ -2100,19 +2099,11 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     }
 
     private Scheduler.SchedulerTask getSynchronizeWebDirectoriesTask(Scheduler scheduler) {
-        Map<Path, Path> actualPaths = new HashMap<>();
-        for (String path : System.getProperty("java.class.path").split(File.pathSeparator)) {
-            Path targetPath = Paths.get(path, "web");
-            if (targetPath.toFile().exists()) {
-                int endIndex = path.indexOf("/target/classes");
-                Path resourcesPath = Paths.get(path.substring(0, endIndex != -1 ? endIndex : path.indexOf("out/production")), "src/main/resources/web");
-                actualPaths.put(resourcesPath, targetPath);
-            }
-        }
-
         return scheduler.createSystemTask(stack -> {
-            for (Map.Entry<Path, Path> entry : actualPaths.entrySet()) {
-                FileUtils.synchronizeDirectories(entry.getKey().toString(), entry.getValue().toString());
+            for (String path : ResourceUtils.findInClassPath("web")) {
+                int endIndex = path.indexOf("/target/classes");
+                FileUtils.synchronizeDirectories(Paths
+                        .get(path.substring(0, endIndex != -1 ? endIndex : path.indexOf("out/production")), "src/main/resources/web").toString(), path);
             }
         }, false, 1, false, "Copy files from 'resources/web' into target. Only for debug");
     }
