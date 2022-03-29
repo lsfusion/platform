@@ -2,6 +2,7 @@ package lsfusion.gwt.client.form.object.panel.controller;
 
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtSharedUtils;
+import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
@@ -18,6 +19,7 @@ import lsfusion.gwt.client.form.property.panel.view.PanelRenderer;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.isShowing;
 
@@ -78,68 +80,69 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
         return renderersPanel.asWidget();
     }
 
+    private Pair<List<GGroupObjectValue>, List<GGroupObjectValue>> getDiff() {
+        List<GGroupObjectValue> optionsToAdd = new ArrayList<>();
+        List<GGroupObjectValue> optionsToRemove = new ArrayList<>();
+
+        for (int i = 0; i < columnKeys.size(); i++) {
+            GGroupObjectValue columnKey = columnKeys.get(i);
+
+            Integer oldColumnKeyOrder = columnKeysOrder.remove(columnKey);
+            if (oldColumnKeyOrder != null) { //такой columnKey есть в старом списке
+                if (i != oldColumnKeyOrder) { //индекс не совпадает
+                    optionsToRemove.add(columnKey);
+                    optionsToAdd.add(columnKey);
+                }
+            } else { //такого columnKey нет в старом списке
+                optionsToAdd.add(columnKey);
+            }
+        }
+
+        //все, которые есть в старом списке, но нет в новом - на удаление
+        columnKeysOrder.foreachKey(optionsToRemove::add);
+
+        return new Pair<>(optionsToAdd, optionsToRemove);
+    }
+
     public void update() {
         if (columnsUpdated) {
 
-            List<GGroupObjectValue> optionsToAdd = new ArrayList<>();
-            List<GGroupObjectValue> optionsToUpdate = new ArrayList<>();
-            List<GGroupObjectValue> optionsToRemove = new ArrayList<>();
-
-            for (int i = 0; i < columnKeys.size(); i++) {
-                GGroupObjectValue columnKey = columnKeys.get(i);
-
-                Integer oldColumnKeyOrder = columnKeysOrder.get(columnKey);
-                if (oldColumnKeyOrder != null) { //такой columnKey есть в старом списке
-                    if (i != oldColumnKeyOrder) { //индекс не совпадает
-                        optionsToRemove.add(columnKey);
-                        optionsToAdd.add(columnKey);
-                    } else {
-                        optionsToUpdate.add(columnKey);
-                    }
-                } else { //такого columnKey нет в старом списке
-                    optionsToAdd.add(columnKey);
-                }
-            }
+            Pair<List<GGroupObjectValue>, List<GGroupObjectValue>> pair = getDiff();
+            List<GGroupObjectValue> optionsToAdd = pair.first;
+            List<GGroupObjectValue> optionsToRemove = pair.second;
 
             // removing old renderers
-            renderers.foreachEntry((columnKey, renderer) -> {
-                if(optionsToRemove.contains(columnKey) || !optionsToUpdate.contains(columnKey)) {
-                    form.removePropertyBindings(renderer.bindingEventIndices);
-                    if (!property.hide) {
-                        renderersPanel.remove(renderer.getComponent());
-                    }
+            optionsToRemove.forEach(columnKey -> {
+                PanelRenderer renderer = renderers.get(columnKey);
+                form.removePropertyBindings(renderer.bindingEventIndices);
+                if (!property.hide) {
+                    renderersPanel.remove(renderer.getComponent());
                 }
             });
 
             //adding new renderers
             NativeHashMap<GGroupObjectValue, Integer> newColumnKeysOrder = new NativeHashMap<>();
             NativeHashMap<GGroupObjectValue, PanelRenderer> newRenderers = new NativeHashMap<>();
-            for (GGroupObjectValue columnKey : columnKeys) {
+            optionsToAdd.forEach(columnKey -> {
                 if (showIfs == null || showIfs.get(columnKey) != null) {
-                    int newIndex = optionsToAdd.indexOf(columnKey);
-                    if(newIndex >= 0) { //есть в добавляемых
-                        if (!property.hide || property.hasKeyBinding()) {
-                            PanelRenderer newRenderer = property.createPanelRenderer(form, this, columnKey, renderersPanel.captionContainer);
-                            newRenderer.setReadOnly(property.isReadOnly());
-                            SizedWidget component = newRenderer.getSizedWidget();
-                            if(!property.hide) {
-                                component.addFill(renderersPanel);
-                            }
-                            newRenderer.bindingEventIndices = form.addPropertyBindings(property, newRenderer::onBinding, component.widget);
+                    if (!property.hide || property.hasKeyBinding()) {
+                        PanelRenderer newRenderer = property.createPanelRenderer(form, GPropertyPanelController.this, columnKey, renderersPanel.captionContainer);
+                        newRenderer.setReadOnly(property.isReadOnly());
+                        SizedWidget component = newRenderer.getSizedWidget();
+                        if(!property.hide) {
+                            component.addFill(renderersPanel);
+                        }
+                        newRenderer.bindingEventIndices = form.addPropertyBindings(property, newRenderer::onBinding, component.widget);
 
-                            newColumnKeysOrder.put(columnKey, newIndex);
-                            newRenderers.put(columnKey, newRenderer);
-                        }
-                    } else { //нет в добавляемых
-                        PanelRenderer renderer = renderers.remove(columnKey);
-                        if(renderer != null) { //нашли - значит, не изменился
-                            newColumnKeysOrder.put(columnKey, columnKeysOrder.get(columnKey));
-                            newRenderers.put(columnKey, renderer);
-                        }
+                        int newIndex = optionsToAdd.indexOf(columnKey);
+                        newColumnKeysOrder.put(columnKey, newIndex);
+                        newRenderers.put(columnKey, newRenderer);
                     }
-
                 }
-            }
+                columnKeys.remove(columnKey);
+            });
+
+            //todo: надо в newColumnKeysOrder и newRenderers добавить те, которые не изменились
 
 //            // removing old renderers
 //            renderers.foreachValue(renderer -> {
