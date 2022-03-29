@@ -15,7 +15,7 @@ public abstract class FileBasedCellRenderer extends CellRenderer {
     }
 
     @Override
-    public void renderDynamicContent(Element element, Object value, UpdateContext updateContext) {
+    public boolean renderDynamicContent(Element element, Object value, boolean loading, UpdateContext updateContext) {
         element.setInnerText(null);
 
         ImageElement img = null;
@@ -43,7 +43,7 @@ public abstract class FileBasedCellRenderer extends CellRenderer {
         }
         element.appendChild(wrapImage(img));
 
-        renderToolbarContent(element, updateContext, true);
+        return true;
     }
 
     private Element wrapImage(ImageElement img) {
@@ -70,8 +70,6 @@ public abstract class FileBasedCellRenderer extends CellRenderer {
         element.getStyle().clearPadding();
         element.removeClassName("requiredValueString");
         element.setTitle("");
-
-        clearRenderToolbarContent(element, renderContext);
     }
 
     protected void setBasedEmptyElement(Element element) {

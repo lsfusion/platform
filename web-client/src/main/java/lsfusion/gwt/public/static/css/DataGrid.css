@@ -74,6 +74,12 @@
     overflow: hidden;
 }
 
+.property-toolbar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
 .wrap-wrapimgdiv {
     display: flex;
 
@@ -169,9 +175,7 @@
 }
 
 .dataGridStickyCell {
-    position: sticky;
     z-index: 1000;
-    background-color: var(--component-background-color);
 }
 
 .dataGridStickyHeader {

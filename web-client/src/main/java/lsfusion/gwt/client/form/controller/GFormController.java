@@ -2222,10 +2222,6 @@ public class GFormController implements EditManager {
         return editContext != null && editContext.getEditElement() == element;
     }
 
-    public static void setBackgroundColor(Element element, String color) {
-        setBackgroundColor(element, color, false);
-    }
-
     public static void setBackgroundColor(Element element, String color, boolean themeConvert) {
         if (color != null) {
             element.getStyle().setBackgroundColor(themeConvert ? getDisplayColor(color) : color);

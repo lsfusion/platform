@@ -12,9 +12,14 @@ public interface UpdateContext {
 
     Object getValue();
 
-    boolean isLoading();
+    default boolean isLoading() { return false; }
 
-    Object getImage();
+    default Object getImage() { return null; }
 
-    boolean isSelected();
+    boolean isSelectedRow();
+    default boolean isSelectedLink() { return isSelectedRow(); }
+
+    default String getBackground() { return null; }
+
+    default String getForeground() { return null; }
 }

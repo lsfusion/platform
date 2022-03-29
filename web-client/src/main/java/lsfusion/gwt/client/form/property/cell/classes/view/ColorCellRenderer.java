@@ -24,18 +24,16 @@ public class ColorCellRenderer extends CellRenderer<Object> {
         element.getStyle().clearColor();
         element.getStyle().clearBackgroundColor();
         element.setTitle(null);
-
-        clearRenderToolbarContent(element, renderContext);
     }
 
     @Override
-    public void renderDynamicContent(Element element, Object value, UpdateContext updateContext) {
+    public boolean renderDynamicContent(Element element, Object value, boolean loading, UpdateContext updateContext) {
         String color = getColorValue(value);
         element.getStyle().setColor(color);
         element.getStyle().setBackgroundColor(color);
         element.setTitle(color);
 
-        renderToolbarContent(element, updateContext, false);
+        return false;
     }
 
     private String getColorValue(Object value) {

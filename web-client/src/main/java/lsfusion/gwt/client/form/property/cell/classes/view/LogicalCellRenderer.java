@@ -37,7 +37,7 @@ public class LogicalCellRenderer extends CellRenderer {
     }
 
     @Override
-    public void renderDynamicContent(Element element, Object value, UpdateContext updateContext) {
+    public boolean renderDynamicContent(Element element, Object value, boolean loading, UpdateContext updateContext) {
 //        if (GwtClientUtils.isIEUserAgent()) {
 //            ImageElement img = element.getFirstChild().cast();
 //            img.setSrc(getCBImagePath(value));
@@ -46,10 +46,17 @@ public class LogicalCellRenderer extends CellRenderer {
         input.setTabIndex(-1);
         input.setChecked(value != null && (Boolean) value);
         input.setDisabled(threeState && value == null);
+
+        return false;
 //        }
     }
 
-//    private String getCBImagePath(Object value) {
+    @Override
+    protected boolean needToRenderToolbarContent() {
+        return false;
+    }
+
+    //    private String getCBImagePath(Object value) {
 //        boolean checked = value != null && (Boolean) value;
 //        return GwtClientUtils.getModuleImagePath("checkbox_" + (checked ? "checked" : "unchecked") + ".png");
 //    }

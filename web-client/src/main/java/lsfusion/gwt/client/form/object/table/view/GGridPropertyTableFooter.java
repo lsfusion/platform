@@ -32,28 +32,13 @@ public class GGridPropertyTableFooter extends Header<String> implements RenderCo
     }
 
     @Override
-    public boolean isAlwaysSelected() {
-        return false;
-    }
-
-    @Override
     public boolean globalCaptionIsDrawn() {
         return true;
     }
 
     @Override
-    public boolean isLoading() {
+    public boolean isSelectedRow() {
         return false;
-    }
-
-    @Override
-    public boolean isSelected() {
-        return true;
-    }
-
-    @Override
-    public Object getImage() {
-        return null;
     }
 
     @Override

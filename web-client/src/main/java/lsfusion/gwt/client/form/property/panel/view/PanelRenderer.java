@@ -67,8 +67,8 @@ public abstract class PanelRenderer {
         return getSizedWidget().widget;
     }
 
-    public void updateValue(Object value, boolean loading, Object image) {
-        this.value.update(value, loading, image);
+    public void update(Object value, boolean loading, Object image, Object background, Object foreground) {
+        this.value.update(value, loading, image, background, foreground);
     }
 
     public void setReadOnly(boolean readOnly) {
@@ -92,26 +92,8 @@ public abstract class PanelRenderer {
 
     protected abstract void setLabelText(String text);
 
-    private Object background;
-    public void updateCellBackgroundValue(Object value) {
-        if (!nullEquals(background, value)) {
-            background = value;
-
-            this.value.setBackground(value != null ? value.toString() : null);
-        }
-    }
-
     public void onBinding(Event event) {
         value.onBinding(event);
-    }
-
-    private Object foreground;
-    public void updateCellForegroundValue(Object value) {
-        if (!nullEquals(foreground, value)) {
-            foreground = value;
-
-            this.value.setForeground(value != null ? value.toString() : null);
-        }
     }
 
     public void focus() {

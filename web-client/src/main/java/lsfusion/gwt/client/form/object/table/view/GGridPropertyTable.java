@@ -295,8 +295,6 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     public abstract void quickFilter(Event event, GPropertyDraw filterProperty, GGroupObjectValue columnKey);
     public abstract GAbstractTableController getGroupController();
 
-    public abstract String getColumnSID(int column);
-
     public void runGroupReport() {
         form.runGroupReport(groupObject.ID);
     }
@@ -529,23 +527,12 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         protected abstract Object getValue(GPropertyDraw property, T record);
         protected abstract boolean isLoading(GPropertyDraw property, T record);
         protected abstract Object getImage(GPropertyDraw property, T record);
+        protected abstract String getBackground(GPropertyDraw property, T record);
+        protected abstract String getForeground(GPropertyDraw property, T record);
 
         @Override
         public void onEditEvent(EventHandler handler, Cell editCell, TableCellElement editCellParent) {
             GGridPropertyTable.this.onEditEvent(handler, false, editCell, editCellParent);
-        }
-
-        @Override
-        public void renderAndUpdateDom(Cell cell, TableCellElement cellElement) {
-            renderDom(cell, cellElement);
-
-            updateDom(cell, cellElement);
-
-            if(isSticky()) {
-                //class dataGridStickyCell is also used in DataGrid isStickyCell()
-                cellElement.addClassName("dataGridStickyCell");
-                cellElement.getStyle().setProperty("position", "sticky");
-            }
         }
 
         public void renderDom(Cell cell, TableCellElement cellElement) {
@@ -568,12 +555,6 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
             UpdateContext updateContext = getUpdateContext(cell, cellElement, property, this);
             form.update(property, GPropertyTableBuilder.getRenderSizedElement(cellElement, property, updateContext), updateContext);
         }
-
-        @Override
-        public boolean hasQuickAccessAction(Cell cell) {
-            GPropertyDraw property = getProperty(cell);
-            return property != null && property.getQuickAccessActions().length > 0;
-        }
     }
 
     public GridPropertyColumn getGridColumn(int column) {
@@ -583,11 +564,6 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     @Override
     protected RenderContext getRenderContext(Cell cell, TableCellElement cellElement, GPropertyDraw property, GridPropertyColumn column) {
         return new RenderContext() {
-            @Override
-            public boolean isAlwaysSelected() {
-                return false;
-            }
-
             @Override
             public boolean globalCaptionIsDrawn() {
                 return GGridPropertyTable.this.globalCaptionIsDrawn();
@@ -637,13 +613,23 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
             }
 
             @Override
-            public boolean isSelected() {
-                return cell.getRowIndex() == getSelectedRow();
+            public boolean isSelectedRow() {
+                return GGridPropertyTable.this.isSelectedRow(cell);
             }
 
             @Override
             public Object getImage() {
                 return column.getImage(property, (T) cell.getRow());
+            }
+
+            @Override
+            public String getBackground() {
+                return DataGrid.getSelectedCellBackground(isSelectedRow(), GGridPropertyTable.this.isFocusedColumn(cell), column.getBackground(property, (T) cell.getRow()));
+            }
+
+            @Override
+            public String getForeground() {
+                return column.getForeground(property, (T) cell.getRow());
             }
         };
     }

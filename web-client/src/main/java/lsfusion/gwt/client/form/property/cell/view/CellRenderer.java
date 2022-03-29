@@ -3,6 +3,9 @@ package lsfusion.gwt.client.form.property.cell.view;
 import com.google.gwt.dom.client.*;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder;
+import lsfusion.gwt.client.base.view.grid.DataGrid;
+import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
 public abstract class CellRenderer<T> {
@@ -49,12 +52,7 @@ public abstract class CellRenderer<T> {
     // and with TextBasedCellEditor.renderStaticContent
     public void render(Element element, RenderContext renderContext) {
         Style.TextAlign horzTextAlignment = getHorzTextAlignment();
-
         String vertAlignment = getDefaultVertAlignment();
-
-        if (renderContext.isAlwaysSelected())
-            renderEditSelected(element, property);
-
         if(GwtClientUtils.isTDorTH(element)) {
             assert isSimpleText(renderContext);
             renderSimpleStatic(element, horzTextAlignment, vertAlignment);
@@ -103,9 +101,6 @@ public abstract class CellRenderer<T> {
     public void clearRender(Element element, RenderContext renderContext) {
         GwtClientUtils.removeAllChildren(element);
 
-        if(renderContext.isAlwaysSelected())
-            clearEditSelected(element, property);
-
         if(GwtClientUtils.isTDorTH(element)) { // optimization
             assert isSimpleText(renderContext);
             clearRenderSimpleStatic(element);
@@ -113,6 +108,14 @@ public abstract class CellRenderer<T> {
             clearRenderFlexStatic(element);
 
         clearRenderContent(element, renderContext);
+
+        AbstractDataGridBuilder.clearColors(element);
+
+        clearEditSelected(element, property);
+
+        if(needToRenderToolbarContent())
+            clearRenderToolbarContent(element, renderContext, (RenderedState) element.getPropertyObject(RENDERED));
+        element.setPropertyObject(RENDERED, null);
     }
     private static void clearRenderSimpleStatic(Element element) {
 //        if(staticHeight != null)
@@ -126,10 +129,58 @@ public abstract class CellRenderer<T> {
         element.getStyle().clearProperty("justifyContent");
     }
 
-    private static final String TOOLBAR = "toolbar";
+    protected boolean renderedLoadingContent(UpdateContext updateContext) {
+        return false;
+    }
+
+    protected boolean needToRenderToolbarContent() {
+        return true;
+    }
+
+    // in theory in most case we can get previous state without storing it in Element, but for now it's the easiest way
+    private static class RenderedState {
+        public Object value;
+        public boolean loading;
+
+        public ToolbarState toolbar;
+    }
+    private boolean equalsDynamicState(RenderedState state, Object value, boolean isLoading) {
+        return GwtClientUtils.nullEquals(state.value, value) && state.loading == isLoading;
+    }
+
+    private static final String RENDERED = "rendered";
 
     public void update(Element element, UpdateContext updateContext) {
-        renderDynamicContent(element, updateContext.getValue(), updateContext);
+        String background = updateContext.getBackground();
+        AbstractDataGridBuilder.updateColors(element, background, updateContext.getForeground(), true);
+
+        boolean selected = updateContext.isSelectedLink();
+        if(selected)
+            renderEditSelected(element, property);
+        else
+            clearEditSelected(element, property);
+
+        Object value = updateContext.getValue();
+        boolean loading = updateContext.isLoading() && renderedLoadingContent(updateContext);
+
+        RenderedState renderedState = (RenderedState) element.getPropertyObject(RENDERED);
+        boolean isNew = false;
+        if(renderedState == null) {
+            renderedState = new RenderedState();
+            element.setPropertyObject(RENDERED, renderedState);
+
+            isNew = true;
+        }
+        boolean cleared = false;
+        if(isNew || !equalsDynamicState(renderedState, value, loading)) {
+            cleared = renderDynamicContent(element, value, loading, updateContext);
+
+            renderedState.value = value;
+            renderedState.loading = loading;
+        }
+
+        if(needToRenderToolbarContent())
+            renderToolbarContent(element, updateContext, renderedState, background, cleared);
     }
 
     // in theory in most case we can get previous state without storing it in Element, but for now it's the easiest way
@@ -137,58 +188,65 @@ public abstract class CellRenderer<T> {
         public final boolean loading;
         public final boolean selectedQuickAccess;
 
-        public Element toolbarElement;
+        public final String background;
 
-        public ToolbarState(boolean loading, boolean selectedQuickAccess) {
+        public Element element;
+
+        public ToolbarState(boolean loading, boolean selectedQuickAccess, String background) {
             this.loading = loading;
             this.selectedQuickAccess = selectedQuickAccess;
+
+            this.background = background;
         }
     }
+
     private boolean equalsState(ToolbarState stateA, ToolbarState stateB) {
         if(stateA == null)
             return stateB == null;
         if(stateB == null)
             return false;
 
-        return stateA.loading == stateB.loading && stateA.selectedQuickAccess == stateB.selectedQuickAccess;
+        return stateA.loading == stateB.loading && stateA.selectedQuickAccess == stateB.selectedQuickAccess && stateA.background == stateB.background;
     }
 
-//    optimization to update only if selected has quick access ??? (selectedActions.length > 0)
-
     // cleared - cleared with setInnerText / setInnerHTML
-    protected void renderToolbarContent(Element element, UpdateContext updateContext, boolean cleared) {
-        boolean loading = updateContext.isLoading();
+    protected void renderToolbarContent(Element element, UpdateContext updateContext, RenderedState renderedState, String background, boolean cleared) {
+        boolean loading = updateContext.isLoading() && !renderedLoadingContent(updateContext);
         GPropertyDraw.QuickAccessAction[] quickAccessActions = null;
-        boolean selectedQuickAccess = updateContext.isSelected() && (quickAccessActions = property.getQuickAccessActions()).length > 0;
+        boolean selectedQuickAccess = updateContext.isSelectedRow() && (quickAccessActions = property.getQuickAccessActions()).length > 0;
 
         boolean needToolbar = loading || selectedQuickAccess;
-        ToolbarState toolbarState = needToolbar ? new ToolbarState(loading, selectedQuickAccess) : null;
 
-        ToolbarState prevState = (ToolbarState) element.getPropertyObject(TOOLBAR);
+        ToolbarState toolbarState = needToolbar ? new ToolbarState(loading, selectedQuickAccess, background) : null;
+        ToolbarState prevState = renderedState.toolbar;
         if (equalsState(toolbarState, prevState)) { // already rendered
             if(!(cleared && needToolbar)) // if cleared we still need to rerender the toolbar
                 return;
 
-            toolbarState = prevState; // to keep toolbarElement
+            toolbarState = prevState; // to keep toolbar element
         } else {
             if(prevState != null && toolbarState != null)
-                toolbarState.toolbarElement = prevState.toolbarElement;
+                toolbarState.element = prevState.element;
 
-            element.setPropertyObject(TOOLBAR, toolbarState);
+            renderedState.toolbar = toolbarState;
         }
 
         if(needToolbar) {
-            Element toolbarElement = cleared ? null : toolbarState.toolbarElement;
+            Element toolbarElement = cleared ? null : toolbarState.element;
             boolean start = getHorzTextAlignment().equals(Style.TextAlign.RIGHT);
             if(toolbarElement == null) {
                 toolbarElement = Document.get().createDivElement();
-                toolbarElement.addClassName("wrap-center");
+                toolbarElement.addClassName("property-toolbar");
+                toolbarElement.addClassName("background-inherit");
                 element.appendChild(toolbarElement);
                 GwtClientUtils.setupEdgeStretchParent(toolbarElement, true, start);
 
-                toolbarState.toolbarElement = toolbarElement;
+                toolbarState.element = toolbarElement;
             } else
                 GwtClientUtils.removeAllChildren(toolbarElement);
+
+            // we cannot inherit parent background, since it's set for element (so we can't use background-inherit technique)
+            GFormController.setBackgroundColor(toolbarElement, background, true);
 
             if(loading) {
                 ImageElement loadingImage = Document.get().createImageElement();
@@ -211,7 +269,7 @@ public abstract class CellRenderer<T> {
             }
         } else {
             if (!cleared)
-                element.removeChild(prevState.toolbarElement);
+                element.removeChild(prevState.element);
 
             GwtClientUtils.clearFillParentElement(element);
         }
@@ -224,16 +282,13 @@ public abstract class CellRenderer<T> {
             toolbarElement.appendChild(element);
     }
 
-    protected void clearRenderToolbarContent(Element element, RenderContext renderContext) {
-        ToolbarState toolbarState = (ToolbarState) element.getPropertyObject(TOOLBAR);
-        if(toolbarState != null) {
+    protected void clearRenderToolbarContent(Element element, RenderContext renderContext, RenderedState renderedState) {
+        if(renderedState.toolbar != null)
             GwtClientUtils.clearFillParentElement(element);
-            element.setPropertyObject(TOOLBAR, null);
-        }
     }
 
     public abstract void renderStaticContent(Element element, RenderContext renderContext);
-    public abstract void renderDynamicContent(Element element, Object value, UpdateContext updateContext);
+    public abstract boolean renderDynamicContent(Element element, Object value, boolean loading, UpdateContext updateContext);
     public abstract void clearRenderContent(Element element, RenderContext renderContext);
 
     public int getWidthPadding() {

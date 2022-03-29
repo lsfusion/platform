@@ -20,6 +20,8 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
     private Object value;
     private boolean loading;
     private Object image;
+    private Object background;
+    private Object foreground;
 
     public Object getValue() {
         return value;
@@ -45,13 +47,23 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
     }
 
     @Override
-    public boolean isSelected() {
+    public boolean isSelectedRow() {
         return true;
     }
 
     @Override
     public Object getImage() {
         return image;
+    }
+
+    @Override
+    public String getBackground() {
+        return background != null ? background.toString() : null;
+    }
+
+    @Override
+    public String getForeground() {
+        return foreground != null ? foreground.toString() : null;
     }
 
     protected GPropertyDraw property;
@@ -237,11 +249,6 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
     }
 
     @Override
-    public boolean isAlwaysSelected() {
-        return true;
-    }
-
-    @Override
     public boolean globalCaptionIsDrawn() {
         return globalCaptionIsDrawn;
     }
@@ -258,17 +265,19 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
     public abstract void pasteValue(final String value);
 
     public void update(Object value) {
-        update(value, false, null);
+        update(value, false, null, null, null);
     }
 
     private void render() {
         this.form.render(this.property, getRenderElement(), this);
     }
 
-    public void update(Object value, boolean loading, Object image) {
+    public void update(Object value, boolean loading, Object image, Object background, Object foreground) {
         this.value = value;
         this.loading = loading;
         this.image = image;
+        this.background = background;
+        this.foreground = foreground;
 
         // RERENDER IF NEEDED : we have the previous state
 

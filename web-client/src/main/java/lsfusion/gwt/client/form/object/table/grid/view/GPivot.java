@@ -1157,26 +1157,16 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
             }
 
             @Override
-            public boolean isLoading() {
+            public boolean isSelectedRow() {
                 return false;
             }
 
             @Override
-            public boolean isSelected() {
+            public boolean isSelectedLink() {
                 return true;
-            }
-
-            @Override
-            public Object getImage() {
-                return null;
             }
         };
         GPropertyTableBuilder.renderAndUpdate(property, th, this, updateContext);
-    }
-
-    @Override
-    public boolean isAlwaysSelected() {
-        return true;
     }
 
     @Override

@@ -17,6 +17,8 @@ package lsfusion.gwt.client.base.view.grid;
 
 import com.google.gwt.dom.client.*;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
+import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 
 import java.util.List;
 import java.util.function.BiPredicate;
@@ -158,7 +160,14 @@ public abstract class AbstractDataGridBuilder<T> {
 
     protected final <C> void renderCell(TableCellElement td, Cell cell, Column<T, C> column) {
         td.setPropertyObject(COLUMN_ATTRIBUTE, column);
-        column.renderAndUpdateDom(cell, td);
+        column.renderDom(cell, td);
+
+        if(column.isSticky()) {
+            //class dataGridStickyCell is also used in DataGrid isStickyCell()
+            td.addClassName("dataGridStickyCell");
+            td.addClassName("background-inherit");
+            td.getStyle().setProperty("position", "sticky"); // we need to add it explicitly since it is used in setupFillParent
+        }
     }
 
     public final Column<T, ?> getColumn(Element elem) {
@@ -167,5 +176,15 @@ public abstract class AbstractDataGridBuilder<T> {
 
     protected final <C> void updateCell(TableCellElement cellParent, Cell cell, Column<T, C> column) {
         column.updateDom(cell, cellParent);
+    }
+
+    public static void updateColors(Element element, String backgroundColor, String foregroundColor, boolean themeConvert) {
+        GFormController.setBackgroundColor(element, backgroundColor, themeConvert);
+        GFormController.setForegroundColor(element, foregroundColor, themeConvert);
+    }
+
+    public static void clearColors(Element element) {
+        GFormController.setBackgroundColor(element, null, false);
+        GFormController.setForegroundColor(element, null, false);
     }
 }

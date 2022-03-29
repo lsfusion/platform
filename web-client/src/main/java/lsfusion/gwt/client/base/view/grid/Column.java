@@ -30,11 +30,9 @@ public abstract class Column<T, C> {
 
   public abstract void onEditEvent(EventHandler handler, Cell editCell, TableCellElement editCellParent);
 
-  public abstract void renderAndUpdateDom(Cell cell, TableCellElement cellElement);
+  public abstract void renderDom(Cell cell, TableCellElement cellElement);
 
   public abstract void updateDom(Cell cell, TableCellElement cellElement);
 
   public abstract boolean isCustomRenderer();
-
-  public abstract boolean hasQuickAccessAction(Cell cell);
 }

@@ -42,18 +42,6 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
     public abstract GPropertyDraw getSelectedProperty();
     public abstract GGroupObjectValue getSelectedColumnKey();
 
-    @Override
-    protected void onSelectedChanged(TableCellElement td, int row, int column, boolean selected) {
-        GPropertyDraw property = getProperty(row, column);
-        if(property != null) {
-            if(selected)
-                CellRenderer.renderEditSelected(td, property);
-            else
-                CellRenderer.clearEditSelected(td, property);
-        }
-    }
-
-    public abstract GPropertyDraw getProperty(int row, int column);
     public abstract GPropertyDraw getProperty(Cell cell);
     public abstract GGridPropertyTable<T>.GridPropertyColumn getGridColumn(int column);
 
@@ -191,12 +179,10 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
 
             @Override
             public void startEditing() {
-                updateSelectedRowCellBackground(false, false, editCellParent);
             }
 
             @Override
             public void stopEditing() {
-                updateSelectedRowCellBackground(true, true, editCellParent);
             }
         };
     }

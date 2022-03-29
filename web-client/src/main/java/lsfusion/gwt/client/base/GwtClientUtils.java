@@ -916,6 +916,8 @@ public class GwtClientUtils {
     public static boolean nullEquals(Object obj1, Object obj2) {
         if (obj1 == null)
             return obj2 == null;
+        if (obj1 == obj2)
+            return true;
         return obj1.equals(obj2);
     }
 

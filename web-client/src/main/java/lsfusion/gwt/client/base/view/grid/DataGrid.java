@@ -758,6 +758,19 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
         return selectedColumn;
     }
 
+    public int getFocusedColumn() {
+        return this.isFocused ? getSelectedColumn() : -1;
+    }
+
+    public boolean isSelectedRow(Cell cell) {
+        return getSelectedRow() == cell.getRowIndex();
+    }
+
+    public boolean isFocusedColumn(Cell cell) {
+        return getFocusedColumn() == cell.getColumnIndex();
+    }
+
+
     protected TableRowElement getChildElement(int row) {
         return getRowElementNoFlush(row);
     }
@@ -1129,8 +1142,9 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
         if (columnsChanged || dataChanged)
             updateDataDOM(columnsChanged, dataColumnsChanged); // updating data (rows + column values)
 
-        if (columnsChanged || selectedRowChanged || selectedColumnChanged || dataChanged) // dataChanged because background is data (and updated during data update)
-            updateSelectedDOM(selectedRowChanged && !columnsChanged && (!dataChanged || dataColumnsChanged != null), dataColumnsChanged);
+        if((selectedRowChanged || selectedColumnChanged || focusedChanged)
+                && !columnsChanged && !(dataChanged && dataColumnsChanged == null)) // this is the check that all columns are already updated
+            updateSelectedDOM(dataColumnsChanged);
 
         if (columnsChanged || selectedRowChanged || selectedColumnChanged || focusedChanged)
             updateFocusedCellDOM(); // updating focus cell border
@@ -1374,7 +1388,8 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
 
     private void updateSelectedCells(int rowIndex, ArrayList<Column> dataColumnsChanged) {
         // last parameter is an optimization
-        tableBuilder.updateRow(rowIndex, getRowValue(rowIndex), null, getChildElement(rowIndex), (tColumn, cell) -> tColumn.hasQuickAccessAction(cell) && (dataColumnsChanged == null || !dataColumnsChanged.contains(tColumn)));
+        // actually only background and selected changed (i.e. tColumn.hasQuickAccessAction(cell))
+        tableBuilder.updateRow(rowIndex, getRowValue(rowIndex), null, getChildElement(rowIndex), (tColumn, cell) -> (dataColumnsChanged == null || !dataColumnsChanged.contains(tColumn)));
     }
 
     private void updateDataDOM(boolean columnsChanged, ArrayList<Column> dataColumnsChanged) {
@@ -1417,7 +1432,7 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
         return stickyColumns;
     }
 
-    private void updateSelectedDOM(boolean needCellUpdate, ArrayList<Column> dataColumnsChanged) {
+    private void updateSelectedDOM(ArrayList<Column> dataColumnsChanged) {
         NodeList<TableRowElement> rows = tableData.tableElement.getRows();
         int rowCount = rows.getLength();
 
@@ -1425,53 +1440,25 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
 
         // CLEAR PREVIOUS STATE
         if (renderedSelectedRow >= 0 && renderedSelectedRow < rowCount &&
-                renderedSelectedRow != newLocalSelectedRow) {
-            if(needCellUpdate)
-                updateSelectedCells(renderedSelectedRow, dataColumnsChanged);
-
-            updateSelectedRowCellsBackground(renderedSelectedRow, rows, false, -1);
-        }
+                renderedSelectedRow != newLocalSelectedRow)
+            updateSelectedCells(renderedSelectedRow, dataColumnsChanged);
 
         // SET NEW STATE
-        if (newLocalSelectedRow >= 0 && newLocalSelectedRow < rowCount) {
-            if(needCellUpdate)
-                updateSelectedCells(newLocalSelectedRow, dataColumnsChanged);
-
-            updateSelectedRowCellsBackground(newLocalSelectedRow, rows, true, this.isFocused ? getSelectedColumn() : -1);
-        }
+        if (newLocalSelectedRow >= 0 && newLocalSelectedRow < rowCount)
+            updateSelectedCells(newLocalSelectedRow, dataColumnsChanged);
     }
 
-    private void updateSelectedRowCellsBackground(int row, NodeList<TableRowElement> rows, boolean selected, int focusedColumn) {
-        TableRowElement tr = rows.getItem(row);
-        NodeList<TableCellElement> cells = tr.getCells();
-        for (int column = 0; column < cells.getLength(); column++) {
-            TableCellElement td = cells.getItem(column);
-
-            updateSelectedRowCellBackground(selected, column == focusedColumn, td);
-
-            onSelectedChanged(td, row, column, selected);
-        }
-    }
-
-    protected void updateSelectedRowCellBackground(boolean selected, boolean focused, TableCellElement td) {
-        String background = td.getPropertyString(GPropertyTableBuilder.BKCOLOR);
-        if(background != null && background.isEmpty())
-            background = null;
-
+    public static String getSelectedCellBackground(boolean selected, boolean focused, String background) {
         String setColor;
         if (selected) {
             setColor = focused ? getFocusedCellBackgroundColor(background != null) : getSelectedRowBackgroundColor(background != null);
             if (background != null)
                 setColor = mixColors(background, setColor);
         } else {
-            assert !focused;
             setColor = background != null ? getDisplayColor(background) : null;
         }
-
-        GFormController.setBackgroundColor(td, setColor);
+        return setColor;
     }
-
-    protected abstract void onSelectedChanged(TableCellElement td, int row, int column, boolean selected);
 
     private void updateFocusedCellDOM() {
         NodeList<TableRowElement> rows = tableData.tableElement.getRows();

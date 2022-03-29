@@ -31,9 +31,16 @@ body {
     margin: 10px;
     border: 0px;
     padding: 0px;
-    background: var(--background-color);
     direction: ltr;
 }
+
+.background-inherit {
+}
+
+body, body .background-inherit {
+    background: var(--background-color);
+}
+
 a, a:visited {
     color: var(--focus-color);
     text-decoration:none;

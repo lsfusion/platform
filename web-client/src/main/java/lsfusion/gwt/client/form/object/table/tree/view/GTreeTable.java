@@ -11,6 +11,7 @@ import lsfusion.gwt.client.base.jsni.JSNIHelper;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.base.view.EventHandler;
+import lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder;
 import lsfusion.gwt.client.base.view.grid.Column;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
@@ -367,7 +368,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         }
 
         @Override
-        public void renderAndUpdateDom(Cell cell, TableCellElement cellElement) {
+        public void renderDom(Cell cell, TableCellElement cellElement) {
             GTreeTable.renderExpandDom(cellElement, getTreeValue(cell));
         }
 
@@ -390,11 +391,9 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
                 updateIndentElement(img, treeValue, i);
             }
-        }
 
-        @Override
-        public boolean hasQuickAccessAction(Cell cell) {
-            return false;
+            GTreeGridRecord rowValue = (GTreeGridRecord) cell.getRow();
+            AbstractDataGridBuilder.updateColors(cellElement, DataGrid.getSelectedCellBackground(isSelectedRow(cell), isFocusedColumn(cell), rowValue.getRowBackground()), rowValue.getRowForeground(), true);
         }
 
         @Override
@@ -434,6 +433,16 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         @Override
         protected Object getImage(GPropertyDraw property, GTreeGridRecord record) {
             return record.getImage(property);
+        }
+
+        @Override
+        protected String getBackground(GPropertyDraw property, GTreeGridRecord record) {
+            return record.getBackground(property);
+        }
+
+        @Override
+        protected String getForeground(GPropertyDraw property, GTreeGridRecord record) {
+            return record.getForeground(property);
         }
 
         // in tree property might change
@@ -692,9 +701,8 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
                         }
                     }
 
-                    String columnSID = getColumnSID(i);
-                    record.setBackground(columnSID, background == null ? readerProperty.background : background);
-                    record.setForeground(columnSID, foreground == null ? readerProperty.foreground : foreground);
+                    record.setBackground(readerProperty, background == null ? readerProperty.background : background);
+                    record.setForeground(readerProperty, foreground == null ? readerProperty.foreground : foreground);
                     if (readerProperty.hasDynamicImage()) {
                         NativeHashMap<GGroupObjectValue, Object> actionImages = cellImages.get(readerProperty);
                         record.setImage(readerProperty, actionImages == null ? null : actionImages.get(key));
@@ -834,16 +842,6 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
             ).collect(Collectors.toList());
         }
         return new ArrayList<>();
-    }
-
-    public String getColumnSID(int column) {
-        return "" + column;
-    }
-
-    @Override
-    public GPropertyDraw getProperty(int row, int column) {
-        GTreeGridRecord rowValue = getRowValue(row);
-        return rowValue == null ? null : tree.getProperty(rowValue.getGroup(), column);
     }
 
     @Override

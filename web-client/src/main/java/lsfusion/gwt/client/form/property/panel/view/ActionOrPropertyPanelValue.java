@@ -10,8 +10,6 @@ import lsfusion.gwt.client.form.property.cell.controller.ExecuteEditContext;
 import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
 import lsfusion.gwt.client.view.MainFrame;
 
-import java.util.function.Consumer;
-
 import static lsfusion.gwt.client.base.view.ColorUtils.getDisplayColor;
 
 public class ActionOrPropertyPanelValue extends ActionOrPropertyValue implements ExecuteEditContext {
@@ -110,14 +108,6 @@ public class ActionOrPropertyPanelValue extends ActionOrPropertyValue implements
     @Override
     public void pasteValue(String stringValue) {
         form.pasteValue(this, stringValue);
-    }
-
-    public void setBackground(String color) {
-        GFormController.setBackgroundColor(getRenderElement(), getDisplayColor(color));
-    }
-
-    public void setForeground(String color) {
-        GFormController.setForegroundColor(getRenderElement(), getDisplayColor(color));
     }
 
     @Override

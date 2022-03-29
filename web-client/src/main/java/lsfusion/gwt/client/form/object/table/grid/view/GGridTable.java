@@ -674,18 +674,8 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         return getGridColumn(column).property;
     }
 
-    @Override
-    public GPropertyDraw getProperty(int row, int column) {
-        return getProperty(column);
-    }
-
     public GPropertyDraw getProperty(Cell cell) {
         return getGridColumn(cell).property;
-    }
-
-    @Override
-    public String getColumnSID(int column) {
-        return ((GridColumn) getColumn(column)).columnSID;
     }
 
     public int getPropertyIndex(GPropertyDraw property, GGroupObjectValue columnKey) {
@@ -1178,6 +1168,14 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         @Override
         protected Object getImage(GPropertyDraw property, GridDataRecord record) {
             return record.getImage(columnSID);
+        }
+        @Override
+        protected String getBackground(GPropertyDraw property, GridDataRecord record) {
+            return record.getBackground(columnSID);
+        }
+        @Override
+        protected String getForeground(GPropertyDraw property, GridDataRecord record) {
+            return record.getForeground(columnSID);
         }
     }
 

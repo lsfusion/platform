@@ -118,23 +118,19 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
     }
 
     private void updateRenderer(GGroupObjectValue columnKey, PanelRenderer renderer) {
-        renderer.updateValue(values.get(columnKey), loadings != null && loadings.get(columnKey) != null, images != null ? images.get(columnKey) : null);
-
-        if (readOnly != null) {
-            renderer.setReadOnly(readOnly.get(columnKey) != null);
-        }
-
         Object background = null;
         if (cellBackgroundValues != null) {
             background = cellBackgroundValues.get(columnKey);
         }
-        renderer.updateCellBackgroundValue(background == null ? property.background : background);
-
         Object foreground = null;
         if (cellForegroundValues != null) {
             foreground = cellForegroundValues.get(columnKey);
         }
-        renderer.updateCellForegroundValue(foreground == null ? property.foreground : foreground);
+        renderer.update(values.get(columnKey), loadings != null && loadings.get(columnKey) != null, images != null ? images.get(columnKey) : null, background == null ? property.background : background, foreground == null ? property.foreground : foreground);
+
+        if (readOnly != null) {
+            renderer.setReadOnly(readOnly.get(columnKey) != null);
+        }
 
         if (captions != null) {
             renderer.setCaption(GGridPropertyTable.getPropertyCaption(captions, property, columnKey));
