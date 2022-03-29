@@ -85,15 +85,16 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
 
         for (int i = 0; i < columnKeys.size(); i++) {
             GGroupObjectValue columnKey = columnKeys.get(i);
-
-            Integer oldColumnKeyOrder = renderedColumnKeys.remove(columnKey);
-            if (oldColumnKeyOrder != null) { //такой columnKey есть в старом списке
-                if (i != oldColumnKeyOrder) { //индекс не совпадает
-                    optionsToRemove.add(columnKey);
+            if (showIfs == null || showIfs.get(columnKey) != null) {
+                Integer oldColumnKeyOrder = renderedColumnKeys.remove(columnKey);
+                if (oldColumnKeyOrder != null) { //такой columnKey есть в старом списке
+                    if (i != oldColumnKeyOrder) { //индекс не совпадает
+                        optionsToRemove.add(columnKey);
+                        optionsToAdd.add(columnKey);
+                    }
+                } else { //такого columnKey нет в старом списке
                     optionsToAdd.add(columnKey);
                 }
-            } else { //такого columnKey нет в старом списке
-                optionsToAdd.add(columnKey);
             }
         }
 
@@ -102,8 +103,11 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
 
         //пересоздаём renderedColumnKeys уже для новых columnKeys
         renderedColumnKeys = new NativeHashMap<>();
-        for(int i = 0; i < columnKeys.size(); i++) {
-            renderedColumnKeys.put(columnKeys.get(i), i);
+        for (int i = 0; i < columnKeys.size(); i++) {
+            GGroupObjectValue columnKey = columnKeys.get(i);
+            if (showIfs == null || showIfs.get(columnKey) != null) {
+                renderedColumnKeys.put(columnKeys.get(i), i);
+            }
         }
 
         return new Pair<>(optionsToAdd, optionsToRemove);
@@ -112,34 +116,34 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
     public void update() {
         if (columnsUpdated) {
 
-            Pair<List<GGroupObjectValue>, List<GGroupObjectValue>> pair = getDiff();
-            List<GGroupObjectValue> optionsToAdd = pair.first;
-            List<GGroupObjectValue> optionsToRemove = pair.second;
+            if (!property.hide || property.hasKeyBinding()) {
 
-            // removing old renderers
-            optionsToRemove.forEach(columnKey -> {
-                PanelRenderer renderer = renderers.remove(columnKey);
-                form.removePropertyBindings(renderer.bindingEventIndices);
-                if (!property.hide) {
-                    renderersPanel.remove(renderer.getComponent());
-                }
-            });
+                Pair<List<GGroupObjectValue>, List<GGroupObjectValue>> pair = getDiff();
+                List<GGroupObjectValue> optionsToAdd = pair.first;
+                List<GGroupObjectValue> optionsToRemove = pair.second;
 
-            //adding new renderers
-            optionsToAdd.forEach(columnKey -> {
-                if (showIfs == null || showIfs.get(columnKey) != null) {
-                    if (!property.hide || property.hasKeyBinding()) {
-                        PanelRenderer newRenderer = property.createPanelRenderer(form, GPropertyPanelController.this, columnKey, renderersPanel.captionContainer);
-                        newRenderer.setReadOnly(property.isReadOnly());
-                        SizedWidget component = newRenderer.getSizedWidget();
-                        if(!property.hide) {
-                            component.addFill(renderersPanel, renderedColumnKeys.get(columnKey));
-                        }
-                        newRenderer.bindingEventIndices = form.addPropertyBindings(property, newRenderer::onBinding, component.widget);
-                        renderers.put(columnKey, newRenderer);
+                // removing old renderers
+                optionsToRemove.forEach(columnKey -> {
+                    PanelRenderer renderer = renderers.remove(columnKey);
+                    form.removePropertyBindings(renderer.bindingEventIndices);
+                    if (!property.hide) {
+                        renderersPanel.remove(renderer.getComponent());
                     }
-                }
-            });
+                });
+
+                //adding new renderers
+                optionsToAdd.forEach(columnKey -> {
+                    PanelRenderer newRenderer = property.createPanelRenderer(form, GPropertyPanelController.this, columnKey, renderersPanel.captionContainer);
+                    newRenderer.setReadOnly(property.isReadOnly());
+                    SizedWidget component = newRenderer.getSizedWidget();
+                    if (!property.hide) {
+                        component.addFill(renderersPanel, renderedColumnKeys.get(columnKey));
+                    }
+                    newRenderer.bindingEventIndices = form.addPropertyBindings(property, newRenderer::onBinding, component.widget);
+                    renderers.put(columnKey, newRenderer);
+                });
+
+            }
 
             columnsUpdated = false;
 
