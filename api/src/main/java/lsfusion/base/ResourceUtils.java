@@ -224,7 +224,7 @@ public class ResourceUtils {
     public static List<String> findInClassPath(String endpoint) {
         return Arrays.stream(ResourceUtils.getClassPathElements())
                 .filter(path -> Files.exists(Paths.get(path, endpoint)))
-                .map(path -> Paths.get(path, endpoint).toString())
+                .map(path -> FilenameUtils.separatorsToUnix(Paths.get(path, endpoint).toString()))
                 .collect(Collectors.toList());
     }
 }
