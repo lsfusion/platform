@@ -32,9 +32,7 @@ public class ActionOrPropertyPanelValue extends ActionOrPropertyValue implements
     }
 
     public boolean isFocusable() {
-        if(property.focusable != null)
-            return property.focusable;
-        return !property.hasKeyBinding();
+        return property.isFocusable();
     }
 
     private boolean readOnly;
@@ -94,12 +92,6 @@ public class ActionOrPropertyPanelValue extends ActionOrPropertyValue implements
     @Override
     public void restoreSetFocus(Object forceSetFocus) {
         this.forceSetFocus = false;
-    }
-
-    protected void onBlur(EventHandler handler) {
-        form.previewBlurEvent(handler.event);
-
-        super.onBlur(handler);
     }
 
     @Override

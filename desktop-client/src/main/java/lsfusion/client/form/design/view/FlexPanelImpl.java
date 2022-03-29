@@ -120,7 +120,7 @@ public class FlexPanelImpl {
     }*/
 
     public void setFlex(FlexLayout layout, Widget child, LayoutData layoutData, boolean vertical) {
-        setFlex(layout, child, layoutData.flexBasis, vertical);
+        setFlex(layout, child, layoutData.getFlexBasis(), vertical);
     }
     public void setFlex(FlexLayout layout, Widget child, Integer flexBasis, boolean vertical) {
         // it's important to set min-width, min-height, because flex-basis is automatically set to min-height if it's smaller (test case in LinearContainerView)

@@ -33,6 +33,7 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
     // it doesn't make sense to make this maps Native since they come from server and are built anyway
     private NativeHashMap<GGroupObjectValue, Object> values;
     private NativeHashMap<GGroupObjectValue, Object> captions;
+    private NativeHashMap<GGroupObjectValue, Object> loadings;
     private NativeHashMap<GGroupObjectValue, Object> showIfs;
     private NativeHashMap<GGroupObjectValue, Object> readOnly;
     private NativeHashMap<GGroupObjectValue, Object> cellBackgroundValues;
@@ -117,7 +118,7 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
     }
 
     private void updateRenderer(GGroupObjectValue columnKey, PanelRenderer renderer) {
-        renderer.updateValue(values.get(columnKey));
+        renderer.updateValue(values.get(columnKey), loadings != null && loadings.get(columnKey) != null, images != null ? images.get(columnKey) : null);
 
         if (readOnly != null) {
             renderer.setReadOnly(readOnly.get(columnKey) != null);
@@ -138,11 +139,6 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
         if (captions != null) {
             renderer.setCaption(GGridPropertyTable.getPropertyCaption(captions, property, columnKey));
         }
-
-        if (images != null && renderer instanceof ActionPanelRenderer) {
-            Object image = images.get(columnKey);
-            ((ActionPanelRenderer)renderer).setDynamicImage(image != null ? image : "null");
-        }
     }
 
     public boolean focusFirstWidget() {
@@ -161,6 +157,19 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
     @Override
     public void setValue(GGroupObjectValue columnKey, Object value) {
         values.put(columnKey, value);
+    }
+
+    @Override
+    public void setLoading(GGroupObjectValue columnKey, Object value) {
+        if(loadings == null)
+            loadings = new NativeHashMap<>();
+        loadings.put(columnKey, value);
+    }
+
+    public void setLoadings(NativeHashMap<GGroupObjectValue, Object> loadingMap) {
+        if(loadings == null)
+            loadings = new NativeHashMap<>();
+        loadings.putAll(loadingMap);
     }
 
     public void setPropertyValues(NativeHashMap<GGroupObjectValue, Object> valueMap, boolean updateKeys) {

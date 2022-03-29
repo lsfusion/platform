@@ -144,7 +144,7 @@ public class IsClassExpr extends InnerExpr implements StaticClassExprInterface {
                 result = mLinear.getExpr();
                 break;
             case AGGCONSISTENT:
-                result = FormulaUnionExpr.create(new StringAggConcatenateFormulaImpl(","), mAgg.immutableList());
+                result = FormulaUnionExpr.create(new StringConcatenateFormulaImpl(","), mAgg.immutableList());
                 break;
             default:
                 result = mCases.getFinal();

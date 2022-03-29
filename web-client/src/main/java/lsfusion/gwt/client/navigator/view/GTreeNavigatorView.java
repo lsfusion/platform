@@ -80,7 +80,7 @@ public class GTreeNavigatorView extends GNavigatorView {
         }
     }
 
-    private void doubleClicked(NativeEvent event) {
+    private void doubleClicked(Event event) {
         TreeNavigatorItem selectedItem = (TreeNavigatorItem) tree.getSelectedItem();
         if (selectedItem != null) {
             selected = selectedItem.element;

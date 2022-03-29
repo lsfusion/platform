@@ -4,7 +4,6 @@ import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.interactive.design.filter.FilterView;
-import lsfusion.server.logics.form.interactive.design.object.ClassChooserView;
 import lsfusion.server.logics.form.interactive.design.object.GridView;
 import lsfusion.server.logics.form.interactive.design.object.ToolbarView;
 import lsfusion.server.logics.form.interactive.design.object.TreeGroupView;
@@ -26,7 +25,6 @@ public class ViewProxyFactory {
 
     private ViewProxyFactory() {
         proxyClasses.put(ComponentView.class, ComponentViewProxy.class);
-        proxyClasses.put(ClassChooserView.class, ClassChooserViewProxy.class);
         proxyClasses.put(ContainerView.class, ContainerViewProxy.class);
         proxyClasses.put(FormView.class, FormViewProxy.class);
         proxyClasses.put(GridView.class, GridViewProxy.class);

@@ -51,7 +51,7 @@ public class StringClass extends DataClass<String> {
 
     @Override
     public String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv, Type typeFrom) {
-        if (typeFrom instanceof TXTClass || typeFrom instanceof CSVClass || typeFrom instanceof HTMLClass || typeFrom instanceof JSONClass || typeFrom instanceof XMLClass) {
+        if (typeFrom instanceof TXTClass || typeFrom instanceof CSVClass || typeFrom instanceof HTMLClass || typeFrom instanceof JSONFileClass || typeFrom instanceof XMLClass) {
             return "cast_file_to_string(" + value + ")";
         }
         String result = super.getCast(value, syntax, typeEnv, typeFrom);

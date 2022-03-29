@@ -19,12 +19,18 @@ public interface EditContext {
     Element getEditElement();
     Element getEditEventElement();
 
-    Object getValue();
+    default Object getValue() { return getUpdateContext().getValue(); }
     void setValue(Object value);
+
+    default boolean isLoading() { return getUpdateContext().isLoading(); }
+    void setLoading();
 
     Element getFocusElement();
     boolean isFocusable();
     Object forceSetFocus();
     void restoreSetFocus(Object forceSetFocus);
     boolean isSetLastBlurred();
+
+    default void startEditing() {}
+    default void stopEditing() {}
 }

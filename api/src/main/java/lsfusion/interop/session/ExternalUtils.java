@@ -28,7 +28,10 @@ import javax.mail.BodyPart;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.util.ByteArrayDataSource;
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.*;
 import java.nio.charset.Charset;
 import java.rmi.RemoteException;
@@ -82,7 +85,8 @@ public class ExternalUtils {
         List<NameValuePair> queryParams = URLEncodedUtils.parse(query, charset);
 
         ImList<String> queryActionParams = getParameterValues(queryParams, PARAMS_PARAM);
-        ImList<Object> bodyActionParams = getListFromInputStream(is, requestContentType);
+        byte[] body = IOUtils.readBytesFromStream(is);
+        ImList<Object> bodyActionParams = getListFromInputStream(body, requestContentType);
         ImList<Object> paramsList = ListFact.add(queryActionParams, bodyActionParams);
         
         ImList<String> returns = getParameterValues(queryParams, RETURN_PARAM);
@@ -94,7 +98,8 @@ public class ExternalUtils {
 
         ExternalRequest request = new ExternalRequest(returns.toArray(new String[0]), paramsList.toArray(new Object[paramsList.size()]),
                 charset == null ? null : charset.toString(), headerNames, headerValues, cookieNames,
-                cookieValues, logicsHost, logicsPort, logicsExportName, scheme, method, webHost, webPort, contextPath, servletPath, pathInfo, query);
+                cookieValues, logicsHost, logicsPort, logicsExportName, scheme, method, webHost, webPort, contextPath,
+                servletPath, pathInfo, query, requestContentType != null ? requestContentType.toString() : null, body);
 
         String path = servletPath + pathInfo;
         boolean isEvalAction = path.endsWith("/eval/action");

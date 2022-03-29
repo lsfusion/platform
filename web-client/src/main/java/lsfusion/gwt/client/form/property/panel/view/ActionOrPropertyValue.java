@@ -18,6 +18,8 @@ import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 public abstract class ActionOrPropertyValue extends FocusWidget implements EditContext, RenderContext, UpdateContext {
 
     private Object value;
+    private boolean loading;
+    private Object image;
 
     public Object getValue() {
         return value;
@@ -28,6 +30,23 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
         this.value = value; // updating inner model
 
         controller.setValue(columnKey, value); // updating outer model - controller
+    }
+
+    @Override
+    public void setLoading() {
+        this.loading = true;
+
+        controller.setLoading(columnKey, true);
+    }
+
+    @Override
+    public boolean isLoading() {
+        return loading;
+    }
+
+    @Override
+    public Object getImage() {
+        return image;
     }
 
     protected GPropertyDraw property;
@@ -42,6 +61,7 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
         setElement(Document.get().createDivElement());
 
         DataGrid.initSinkEvents(this);
+        DataGrid.initSinkFocusEvents(this);
 
         this.property = property;
         this.columnKey = columnKey;
@@ -74,13 +94,14 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
     }
 
     protected void finalizeInit() {
-        this.form.render(this.property, getRenderElement(), this);
+        render();
     }
 
     private Widget borderWidget;
 
     // assert that panel is resizable, panel and not resizable simple panel, since we want to append corners also to that panel (and it is not needed for it to be simple)
-    public SizedWidget setSized(boolean autoSize, boolean isProperty, ResizableMainPanel panel) {
+    public SizedWidget setSized(ResizableMainPanel panel) {
+        boolean autoSize = property.autoSize;
         if(panel != null) {
             panel.setSizedMain(this, autoSize);
             borderWidget = panel.getPanelWidget(); // panel
@@ -89,21 +110,21 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
             borderWidget = this;
         }
 
-        setBorderStyles(isProperty);
+        setBorderStyles();
 
         Integer width;
         Integer height;
-        if(!autoSize) { // if we wrapped into we
+        if(!autoSize) {
             assert panel != null;
             width = property.getValueWidthWithPadding(null);
             height = property.getValueHeightWithPadding(null);
         } else {
-            width = property.getValueWidth(null);
-            height = property.getValueHeight(null);
+            width = property.getAutoSizeValueWidth(null);
+            height = property.getAutoSizeValueHeight(null);
 
-            if(panel != null) { // optimization
-                FlexPanel.setBaseSize(this, false, width);
-                FlexPanel.setBaseSize(this, true, height);
+            if(panel != null) { // sort of optimization, in this case paddings will be calculated automatically
+                FlexPanel.setBaseSize(this, false, width, false);
+                FlexPanel.setBaseSize(this, true, height, false);
                 return new SizedWidget(borderWidget);
             }
         }
@@ -111,13 +132,15 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
         return new SizedWidget(borderWidget, width, height);
     }
 
-    private void setBorderStyles(boolean isProperty) {
+    private void setBorderStyles() {
         // we have to set border for border element and not element itself, since absolute positioning include border INSIDE div, and default behaviour is OUTSIDE
         borderWidget.addStyleName("panelRendererValue");
-        if(isProperty)
-            borderWidget.addStyleName("propertyPanelRendererValue");
-        else
+        if(property.boxed)
+            borderWidget.addStyleName("panelRendererValueBoxed");
+        if(property.isAction())
             borderWidget.addStyleName("actionPanelRendererValue");
+        else
+            borderWidget.addStyleName("propertyPanelRendererValue");
     }
 
     @Override
@@ -130,10 +153,10 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
 
         super.onBrowserEvent(event);
 
-        if(!DataGrid.checkSinkEvents(event))
+        if(!DataGrid.checkSinkEvents(event) && !DataGrid.checkSinkFocusEvents(event))
             return;
 
-        EventHandler eventHandler = createEventHandler(event);
+        EventHandler eventHandler = new EventHandler(event);
 
         if(BrowserEvents.FOCUS.equals(event.getType())) {
             onFocus(eventHandler);
@@ -150,9 +173,11 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
                 //ctrl-c ctrl-v from excel adds \n in the end, trim() removes it
                 handler -> CopyPasteUtils.putIntoClipboard(getRenderElement()), handler -> CopyPasteUtils.getFromClipboard(handler, line -> pasteValue(line.trim())),
                 true, property.getCellRenderer().isCustomRenderer());
+
+        form.propagateFocusEvent(event);
     }
 
-    boolean isFocused;
+    private boolean isFocused;
     protected void onFocus(EventHandler handler) {
         if(isFocused)
             return;
@@ -172,8 +197,17 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
         borderWidget.removeStyleName("panelRendererValueFocused");
     }
 
-    public EventHandler createEventHandler(Event event) {
-        return new EventHandler(event);
+    public boolean isEditing;
+    @Override
+    public void startEditing() {
+        isEditing = true;
+        borderWidget.addStyleName("panelRendererValueEdited");
+    }
+
+    @Override
+    public void stopEditing() {
+        isEditing = false;
+        borderWidget.removeStyleName("panelRendererValueEdited");
     }
 
     protected abstract void onEditEvent(EventHandler handler);
@@ -218,9 +252,21 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
 
     public abstract void pasteValue(final String value);
 
-    public void updateValue(Object value) {
-        this.value = value;
+    public void update(Object value) {
+        update(value, false, null);
+    }
 
-        form.update(property, getRenderElement(), value, this);
+    private void render() {
+        this.form.render(this.property, getRenderElement(), this);
+    }
+
+    public void update(Object value, boolean loading, Object image) {
+        this.value = value;
+        this.loading = loading;
+        this.image = image;
+
+        // RERENDER IF NEEDED : we have the previous state
+
+        form.update(property, getRenderElement(), this);
     }
 }

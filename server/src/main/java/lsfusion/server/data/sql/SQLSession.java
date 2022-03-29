@@ -104,6 +104,7 @@ import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static lsfusion.server.data.table.IndexOptions.defaultIndexOptions;
 import static lsfusion.server.physics.admin.log.ServerLoggers.explainLogger;
 import static lsfusion.server.physics.admin.log.ServerLoggers.sqlSuppLog;
 
@@ -127,6 +128,9 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     private static ConcurrentIdentityWeakHashMap<SQLSession, Integer> sqlSessionMap = MapFact.getGlobalConcurrentIdentityWeakHashMap();
     public static ConcurrentHashMap<Long, Long> threadAllocatedBytesAMap = MapFact.getGlobalConcurrentHashMap();
     public static ConcurrentHashMap<Long, Long> threadAllocatedBytesBMap = MapFact.getGlobalConcurrentHashMap();
+
+    private static String likeIndexPostfix = "_like";
+    private static String matchIndexPostfix = "_match";
 
     private Long startTransaction;
     private Map<String, Integer> attemptCountMap = new HashMap<>();
@@ -743,7 +747,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     public void checkExtraIndices(SQLSession threadLocalSQL, NamedTable table, ImOrderSet<KeyField> keys, Logger logger) throws SQLException, SQLHandledException {
         for(int i=1;i<keys.size();i++) {
             ImOrderMap<Field, Boolean> fields = BaseUtils.<ImOrderSet<Field>>immutableCast(keys).subOrder(i, keys.size()).toOrderMap(true);
-            if (!threadLocalSQL.checkIndex(table, fields, false) && !threadLocalSQL.checkIndex(table, fields, true))
+            if (!threadLocalSQL.checkIndex(table, fields, defaultIndexOptions, false) && !threadLocalSQL.checkIndex(table, fields, defaultIndexOptions, true))
                 addIndex(table, fields, logger);
         }
     }
@@ -814,13 +818,24 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     }
 
     public boolean checkIndex(NamedTable table, ImOrderSet<KeyField> keyFields, ImOrderSet<Field> fields, IndexOptions indexOptions) throws SQLException, SQLHandledException {
-        return checkIndex(table, getOrderFields(keyFields, indexOptions, fields), false);
+        return checkIndex(table, getOrderFields(keyFields, indexOptions, fields), indexOptions, false);
      }
 
-    public boolean checkIndex(NamedTable table, ImOrderMap<Field, Boolean> fields, boolean old) throws SQLException, SQLHandledException {
+
+    public boolean checkIndex(NamedTable table, ImOrderMap<Field, Boolean> fields, IndexOptions indexOptions, boolean old) throws SQLException, SQLHandledException {
+        boolean exists = checkIndex(table, fields, old, "");
+        if(indexOptions.type.isLike()) {
+            exists = exists && checkIndex(table, fields, old, likeIndexPostfix);
+        } else if(indexOptions.type.isMatch()) {
+            exists = exists && checkIndex(table, fields, old, likeIndexPostfix) && checkIndex(table, fields, old, matchIndexPostfix);
+        }
+        return exists;
+    }
+
+    public boolean checkIndex(NamedTable table, ImOrderMap<Field, Boolean> fields, boolean old, String postfix) throws SQLException, SQLHandledException {
         //начиная с Postgres 9.5 можно заменить на 'create index if not exists', но непонятно, что тогда делать с логами, поэтому пока проверяем наличие индекса
         //https://dba.stackexchange.com/questions/35616/create-index-if-it-does-not-exist
-        String command = "SELECT to_regclass('public." + (old ? getOldIndexName(table, fields.mapOrderKeys(Field.nameGetter()), syntax) : getIndexName(table, syntax, fields)) + "')";
+        String command = "SELECT to_regclass('public." + (old ? getOldIndexName(table, fields.mapOrderKeys(Field.nameGetter()), syntax) : (getIndexName(table, syntax, fields) + postfix)) + "')";
 
         MExclSet<String> propertyNames = SetFact.mExclSet();
         propertyNames.exclAdd("to_regclass");
@@ -852,7 +867,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     }
 
     public void addIndex(NamedTable table, ImOrderMap<Field, Boolean> fields, Logger logger) throws SQLException {
-        addIndex(table, fields, IndexOptions.defaultIndexOptions, logger, false);
+        addIndex(table, fields, defaultIndexOptions, logger, false);
     }
 
     public void addIndex(NamedTable table, ImOrderMap<Field, Boolean> fields, IndexOptions indexOptions, Logger logger, boolean ifNotExists) throws SQLException {
@@ -878,12 +893,12 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
     private void createLikeIndex(NamedTable table, String nameIndex, String columns, boolean ifNotExists) throws SQLException {
         if(DataAdapter.hasTrgmExtension())
-            createIndex(table, nameIndex + "_like", " USING GIN (" + columns + " gin_trgm_ops)", ifNotExists);
+            createIndex(table, nameIndex + likeIndexPostfix, " USING GIN (" + columns + " gin_trgm_ops)", ifNotExists);
     }
 
     private void createMatchIndex(NamedTable table, String nameIndex, String columns, IndexOptions indexOptions, boolean ifNotExists) throws SQLException {
         if(DataAdapter.hasTrgmExtension())
-            createIndex(table, nameIndex + "_match", " USING GIN (to_tsvector(" + (indexOptions.language != null ? ("'" + indexOptions.language + "', ") : "") + columns + "))", ifNotExists);
+            createIndex(table, nameIndex + matchIndexPostfix, " USING GIN (to_tsvector(" + (indexOptions.language != null ? ("'" + indexOptions.language + "', ") : "") + columns + "))", ifNotExists);
     }
 
     private void createDefaultIndex(NamedTable table, String nameIndex, String columns, boolean ifNotExists) throws SQLException {
@@ -906,11 +921,11 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     }
 
     public void dropLikeIndex(NamedTable table, String indexName, boolean ifExists) throws SQLException {
-        dropIndex(table, indexName + "_like", ifExists);
+        dropIndex(table, indexName + likeIndexPostfix, ifExists);
     }
 
     public void dropMatchIndex(NamedTable table, String indexName, boolean ifExists) throws SQLException {
-        dropIndex(table, indexName + "_match", ifExists);
+        dropIndex(table, indexName + matchIndexPostfix, ifExists);
     }
 
     public void dropDefaultIndex(NamedTable table, String indexName, boolean ifExists) throws SQLException {
@@ -1739,6 +1754,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         //      также при нарушении GROUP AGGR может возникать, так как GROUP AGGR тоже не детерминирован 
         // неправильный вывод классов в таблицах (см. SessionTable.assertCheckClasses),
         // !!! также при нарушении checkSessionCount (тестится fifo.add логом)
+        //еще может быть ситуация при материализации подзапросов, если она выполняется не в транзакции (скорее всего в длинных запросах)
+        //      что одни и те же ключи появляются в двух подзапросах и при объединении дублируются
         if(syntax.isUniqueViolation(e))
             handled = new SQLUniqueViolationException(false);
 

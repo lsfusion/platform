@@ -4,7 +4,6 @@ import com.google.gwt.event.dom.client.KeyCodes;
 import lsfusion.client.classes.ClientActionClass;
 import lsfusion.client.classes.data.ClientFileClass;
 import lsfusion.client.form.ClientForm;
-import lsfusion.client.form.classes.ClientClassChooser;
 import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.design.ClientContainer;
 import lsfusion.client.form.filter.ClientRegularFilter;
@@ -40,8 +39,10 @@ import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
 import lsfusion.gwt.client.form.property.*;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.navigator.window.GModalityType;
+import lsfusion.gwt.client.navigator.window.GWindowFormType;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.ModalityType;
+import lsfusion.interop.form.WindowFormType;
 import lsfusion.interop.form.design.FontInfo;
 import lsfusion.interop.form.event.BindingMode;
 import lsfusion.interop.form.event.KeyInputEvent;
@@ -142,7 +143,9 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         container.alignCaptions = clientContainer.alignCaptions;
         container.lines = clientContainer.lines;
         container.lineSize = clientContainer.lineSize;
+        container.captionLineSize = clientContainer.captionLineSize;
         container.lineShrink = clientContainer.lineShrink;
+        container.customDesign = clientContainer.customDesign;
 
         for (ClientComponent child : clientContainer.children) {
             GComponent childComponent = convertOrCast(child);
@@ -206,12 +209,6 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
     }
 
     @Cached
-    @Converter(from = ClientClassChooser.class)
-    public GComponent convertClassChooser(ClientClassChooser clientClassChooser) {
-        return initGwtComponent(clientClassChooser, new GComponent());
-    }
-
-    @Cached
     @Converter(from = ClientGrid.class)
     public GGrid convertGrid(ClientGrid clientGrid) {
         GGrid grid = initGwtComponent(clientGrid, new GGrid());
@@ -220,6 +217,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         grid.headerHeight = clientGrid.headerHeight;
 
         grid.autoSize = clientGrid.autoSize;
+        grid.boxed = clientGrid.boxed;
 
         grid.lineWidth = clientGrid.lineWidth;
         grid.lineHeight = clientGrid.lineHeight;
@@ -244,9 +242,9 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.integrationSID = clientPropertyDraw.getIntegrationSID();
 
         propertyDraw.autoSize = clientPropertyDraw.autoSize;
+        propertyDraw.boxed = clientPropertyDraw.boxed;
 
         propertyDraw.customRenderFunction = clientPropertyDraw.customRenderFunction;
-        propertyDraw.customChangeFunction = clientPropertyDraw.customChangeFunction;
 
         propertyDraw.toolTip = clientPropertyDraw.toolTip;
         propertyDraw.clearText = clientPropertyDraw.clearText;
@@ -316,6 +314,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.checkEquals = clientPropertyDraw.checkEquals;
 
         propertyDraw.captionReader = convertCaptionReader(clientPropertyDraw.captionReader);
+        propertyDraw.loadingReader = new GLoadingReader(clientPropertyDraw.getID(), clientPropertyDraw.getGroupObject() != null ? clientPropertyDraw.getGroupObject().ID : -1);
         propertyDraw.showIfReader = convertShowIfReader(clientPropertyDraw.showIfReader);
         propertyDraw.footerReader = convertFooterReader(clientPropertyDraw.footerReader);
         propertyDraw.readOnlyReader = convertReadOnlyReader(clientPropertyDraw.readOnlyReader);
@@ -345,6 +344,9 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
 
         propertyDraw.valueWidth = clientPropertyDraw.valueWidth;
         propertyDraw.valueHeight = clientPropertyDraw.valueHeight;
+
+        propertyDraw.captionWidth = clientPropertyDraw.captionWidth;
+        propertyDraw.captionHeight = clientPropertyDraw.captionHeight;
 
         propertyDraw.panelCaptionVertical = clientPropertyDraw.panelCaptionVertical;
         propertyDraw.panelCaptionLast = clientPropertyDraw.panelCaptionLast;
@@ -515,6 +517,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         }
 
         treeGroup.autoSize = clientTreeGroup.autoSize;
+        treeGroup.boxed = clientTreeGroup.boxed;
 
         treeGroup.toolbar = convertOrCast(clientTreeGroup.toolbar);
         
@@ -571,6 +574,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         groupObject.isCalendarPeriod = clientGroupObject.isCalendarPeriod;
         groupObject.parent = convertOrCast(clientGroupObject.parent);
 
+        groupObject.hasHeaders = clientGroupObject.hasHeaders;
         groupObject.hasFooters = clientGroupObject.hasFooters;
 
         for (ClientGroupObject clientUpGroup : clientGroupObject.upTreeGroups) {

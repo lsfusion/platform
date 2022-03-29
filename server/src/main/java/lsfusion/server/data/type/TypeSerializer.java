@@ -84,6 +84,7 @@ public class TypeSerializer {
         if (type == DataType.DATETIMEINTERVAL) return IntervalClass.getInstance("DATETIME");
         if (type == DataType.ZDATETIMEINTERVAL) return IntervalClass.getInstance("ZDATETIME");
         if (type == DataType.COLOR) return ColorClass.instance;
+        if (type == DataType.JSON) return JSONClass.instance;
 
         if (type == DataType.STRING) {
             boolean blankPadded = inStream.readBoolean();
@@ -114,7 +115,7 @@ public class TypeSerializer {
         if (type == DataType.TXT) return TXTClass.get(inStream.readBoolean(), inStream.readBoolean());
         if (type == DataType.CSV) return CSVClass.get(inStream.readBoolean(), inStream.readBoolean());
         if (type == DataType.HTML) return HTMLClass.get(inStream.readBoolean(), inStream.readBoolean());
-        if (type == DataType.JSON) return JSONClass.get(inStream.readBoolean(), inStream.readBoolean());
+        if (type == DataType.JSONFILE) return JSONFileClass.get(inStream.readBoolean(), inStream.readBoolean());
         if (type == DataType.XML) return XMLClass.get(inStream.readBoolean(), inStream.readBoolean());
         if (type == DataType.TABLE) return TableClass.get(inStream.readBoolean(), inStream.readBoolean());
         if (type == DataType.CUSTOMSTATICFORMATFILE) {
@@ -134,7 +135,11 @@ public class TypeSerializer {
             }
             return CustomStaticFormatFileClass.get(multiple, storeName, filterDescription, filterExtensions);
         }
-        if (type == DataType.NAMEDFILE) return NamedFileClass.instance;
+        if (type == DataType.NAMEDFILE) {
+            inStream.readBoolean(); //multiple
+            inStream.readBoolean(); //storeName
+            return NamedFileClass.instance;
+        }
         if (type == DataType.DYNAMICFORMATFILE) return DynamicFormatFileClass.get(inStream.readBoolean(), inStream.readBoolean());
         if (type == DataType.PDF) return PDFClass.get(inStream.readBoolean(), inStream.readBoolean());
 

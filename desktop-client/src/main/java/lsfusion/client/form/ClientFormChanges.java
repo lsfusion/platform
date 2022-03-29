@@ -2,11 +2,11 @@ package lsfusion.client.form;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.client.form.design.ClientComponent;
+import lsfusion.client.form.design.ClientContainer;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.ClientPropertyReader;
-import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.PropertyReadType;
 
 import java.io.ByteArrayInputStream;
@@ -36,6 +36,9 @@ public class ClientFormChanges {
 
     public final List<ClientComponent> activateTabs;
     public final List<ClientPropertyDraw> activateProps;
+    
+    public final List<ClientContainer> collapseContainers;
+    public final List<ClientContainer> expandContainers;
 
     public ClientFormChanges(byte[] formChanges, ClientForm clientForm) throws IOException {
         DataInputStream inStream = new DataInputStream(new ByteArrayInputStream(formChanges));
@@ -109,6 +112,20 @@ public class ClientFormChanges {
         for (int i = 0; i < count; i++) {
             activateProps.add(clientForm.getProperty(inStream.readInt()));
         }
+
+        //CollapseContainers
+        collapseContainers = new ArrayList<>();
+        count = inStream.readInt();
+        for (int i = 0; i < count; i++) {
+            collapseContainers.add(clientForm.findContainerByID(inStream.readInt()));
+        }
+
+        //ExpandContainers
+        expandContainers = new ArrayList<>();
+        count = inStream.readInt();
+        for (int i = 0; i < count; i++) {
+            expandContainers.add(clientForm.findContainerByID(inStream.readInt()));
+        }
     }
 
     private ClientPropertyReader deserializePropertyReader(ClientForm clientForm, DataInputStream inStream) throws IOException {
@@ -137,6 +154,8 @@ public class ClientFormChanges {
                 return clientForm.findContainerByID(inStream.readInt()).captionReader;
             case PropertyReadType.IMAGE:
                 return clientForm.getProperty(inStream.readInt()).imageReader;
+            case PropertyReadType.CUSTOM:
+                return clientForm.findContainerByID(inStream.readInt()).customPropertyDesignReader;
             default:
                 throw new IOException();
         }

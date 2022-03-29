@@ -24,10 +24,6 @@ public class FlexPanelImpl {
         return grid ? "grid" : "flex";
     }
 
-    protected String getDirectionAttrName() {
-        return "flexDirection";
-    }
-
     protected String getDirectionValue(boolean vertical) {
         return vertical ? getVertDirectionValue() : getHorzDirectionValue();
     }
@@ -40,42 +36,16 @@ public class FlexPanelImpl {
         return "column";
     }
 
-    protected String getStartAlignmentValue(boolean grid) {
-        return grid ? "start" : "flex-start";
-    }
-
-    protected String getCenterAlignmentValue() {
-        return "center";
-    }
-
-    protected String getEndAlignmentValue(boolean grid) {
-        return grid ? "end" : "flex-end";
-    }
-
-    protected String getStretchAlignmentValue() {
-        return "stretch";
-    }
-
-    protected String getJustifyContentAttrName(boolean grid, boolean vertical) {
-        if(!grid || vertical)
-            return "justifyContent";
-        else
-            return "alignContent";
-    }
-
-    protected String getAlignAttrName(boolean grid, boolean vertical) {
-        if(!grid || !vertical)
-            return "alignSelf";
-        else
-            return "justifySelf";
-    }
-
     protected String getAlignmentValue(GFlexAlignment justify, boolean grid) {
         switch (justify) {
-            case START: return getStartAlignmentValue(grid);
-            case CENTER: return getCenterAlignmentValue();
-            case END: return getEndAlignmentValue(grid);
-            case STRETCH: return getStretchAlignmentValue();
+            case START:
+                return grid ? "start" : "flex-start";
+            case CENTER:
+                return "center";
+            case END:
+                return grid ? "end" : "flex-end";
+            case STRETCH:
+                return "stretch";
         }
         throw new IllegalStateException("Unknown alignment");
     }
@@ -91,14 +61,22 @@ public class FlexPanelImpl {
             parent.getStyle().setProperty(getGridLinesAttrName(!vertical), gridLines.getString());
         } else {
             if(wrap)
-                parent.getStyle().setProperty("flexWrap", "wrap");
+                setWrap(parent);
 
-            parent.getStyle().setProperty(getDirectionAttrName(), getDirectionValue(vertical));
+            parent.getStyle().setProperty("flexDirection", getDirectionValue(vertical));
         }
     }
 
+    public void setWrap(Element parent) {
+        parent.getStyle().setProperty("flexWrap", "wrap");
+    }
+
+    public void dropWrap(Element parent) {
+        parent.getStyle().clearProperty("flexWrap");
+    }
+
     public void setFlexAlignment(DivElement parent, boolean vertical, boolean grid, GFlexAlignment justify) {
-        parent.getStyle().setProperty(getJustifyContentAttrName(grid, vertical), getAlignmentValue(justify, grid));
+        parent.getStyle().setProperty(!grid || vertical ? "justifyContent" : "alignContent", getAlignmentValue(justify, grid));
     }
 
     public void setVisible(DivElement parent, boolean visible, boolean grid) {
@@ -124,15 +102,22 @@ public class FlexPanelImpl {
     }
 
     public void setAutoSizeFlex(Element child, FlexPanel.FlexLayoutData layoutData, boolean vertical, boolean grid) {
-        setFlex(child, 0, null, layoutData.gridLine, vertical, grid, layoutData.shrink);
+        setFlex(child, 0, null, layoutData.gridLine, vertical, grid, false);
     }
 
     public void setPreferredSize(boolean set, Element child, FlexPanel.FlexLayoutData layoutData, boolean vertical, boolean grid) {
-//        setFlex(child, layoutData.flex, set ? null : layoutData.flexBasis, layoutData.gridLine, vertical, grid, set ? false : layoutData.shrink);
-        setFlexParams(child, layoutData.getFlex(), set ? null : layoutData.flexBasis, layoutData.gridLine, vertical, grid, layoutData.shrink);
+//        setFlex(child, layoutData.flex, set ? null : layoutData.getFlexBasis(), layoutData.gridLine, vertical, grid, set ? false : layoutData.shrink);
+        if(set) { // we're moving flexBasis to min-size
+            setFlexParams(child, layoutData.getFlex(), null, layoutData.gridLine, vertical, grid, false);
 
-        if(layoutData.shrink) // if we have shrink we want to drop it and have actual min-size
-            FlexPanel.setBaseSize(child, vertical, set ? layoutData.flexBasis : (Integer)0, false); // last parameter is false because we're setting main size
+            FlexPanel.setBaseSize(child, vertical, layoutData.getFlexBasis(), false);
+
+            FlexPanel.setBaseSize(child, vertical, null, true);
+        } else
+            updateFlex(layoutData, child, vertical, grid);
+//
+//        if(layoutData.shrink) // if we have shrink we want to drop it and have actual min-size
+//            FlexPanel.setBaseSize(child, vertical, layoutData.flexBasis, true); // last parameter is false because we're setting main size
     }
 
     public void setGridLines(Element parent, int count, boolean vertical) {
@@ -194,11 +179,11 @@ public class FlexPanelImpl {
     public void setFlex(Element child, double flex, Integer flexBasis, Integer gridLine, boolean vertical, boolean grid, boolean shrink) {
         setFlexParams(child, flex, flexBasis, gridLine, vertical, grid, shrink);
 
-        if(shrink) // otherwise min-width won't let the container to shrink
-            flexBasis = 0;
+        // otherwise min-width won't let the container to shrink
+        FlexPanel.setBaseSize(child, vertical, shrink ? 0 : null, false);
 
         // it's important to set min-width, min-height, because flex-basis is automatically set to min-height if it's smaller (test case in LinearContainerView)
-        FlexPanel.setBaseSize(child, vertical, flexBasis, false); // last parameter is false because we're setting main size
+        FlexPanel.setBaseSize(child, vertical, flexBasis, true); // last parameter is false because we're setting main size
     }
 
     private void setFlexParams(Element child, double flex, Integer flexBasis, Integer gridLine, boolean vertical, boolean grid, boolean shrink) {
@@ -231,11 +216,11 @@ public class FlexPanelImpl {
     }
 
     public void updateFlex(FlexPanel.FlexLayoutData layoutData, Element child, boolean vertical, boolean grid) {
-        setFlex(child, layoutData.getFlex(), layoutData.flexBasis, layoutData.gridLine, vertical, grid, layoutData.shrink);
+        setFlex(child, layoutData.getFlex(), layoutData.getFlexBasis(), layoutData.gridLine, vertical, grid, layoutData.shrink);
     }
 
     public void updateAlignment(FlexPanel.AlignmentLayoutData layoutData, Element child, boolean vertical, boolean grid) {
-        child.getStyle().setProperty(getAlignAttrName(grid, vertical), getAlignmentValue(layoutData.alignment, grid));
+        child.getStyle().setProperty(!grid || !vertical ? "alignSelf" : "justifySelf", getAlignmentValue(layoutData.alignment, grid));
     }
 
     public void setFlexBasis(FlexPanel.FlexLayoutData layoutData, Element child, int flexBasis, boolean vertical, boolean grid) {
@@ -260,7 +245,7 @@ public class FlexPanelImpl {
 
     public void fixFlexBasis(Widget widget, boolean vertical, boolean grid) {
         FlexPanel.FlexLayoutData layoutData = ((FlexPanel.WidgetLayoutData) widget.getLayoutData()).flex;
-        if(layoutData.flexBasis != null)
+        if(layoutData.getFlexBasis() != null)
             return;
 
         Element element = widget.getElement();

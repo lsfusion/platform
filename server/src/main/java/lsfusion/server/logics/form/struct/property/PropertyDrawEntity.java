@@ -92,16 +92,19 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public Boolean shouldBeLast;
     public ClassViewType viewType; // assert not null, after initialization
     public String customRenderFunction;
-    public String customEditorFunction;
+    public String customChangeFunction;
     public String eventID;
 
     public Boolean sticky;
+    public Boolean sync;
 
     private String formPath;
 
     private Pair<Integer, Integer> scriptIndex;
     
     public LocalizedString initCaption = null; // чисто техническая особенность реализации
+
+    public boolean ignoreHasHeaders = false; // hack for property count property
     
     // предполагается что propertyObject ссылается на все (хотя и не обязательно)
     public String columnsName;
@@ -227,7 +230,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return getValueActionOrProperty() instanceof PropertyObjectEntity;
     }
 
-    public OrderEntity<?> getOrder() {
+    public PropertyObjectEntity<?> getOrder() {
         return getValueProperty();
     }
 
@@ -304,7 +307,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
             if (eventAction != null)
                 return eventAction.getGroupChange(getToDraw(form));
         } else { // default handler
-            eventActionImplement = eventProperty.getDefaultEventAction(actionId, actionId.equals(CHANGE) ? defaultChangeEventScope : null, ListFact.EMPTY());
+            eventActionImplement = eventProperty.getDefaultEventAction(actionId, actionId.equals(CHANGE) ? defaultChangeEventScope : null, ListFact.EMPTY(), actionId.equals(CHANGE) ? customChangeFunction : null);
             if (eventActionImplement != null)
                 return eventActionImplement.mapObjects(eventMapping);
         }
@@ -340,7 +343,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
             ImOrderSet<PropertyInterface> orderUsedInterfaces = listMapObjects.valuesSet().toOrderSet();
 
             // first parameter - object, other used orderInterfaces
-            LA<?> dialogInput = lm.addDialogInputAProp(customClass, targetProp, BaseUtils.nvl(defaultChangeEventScope, DEFAULT_SELECTOR_EVENTSCOPE), orderUsedInterfaces, list, listMapParamExprs, objectEntity -> SetFact.singleton(filter.getFilter(objectEntity)));
+            LA<?> dialogInput = lm.addDialogInputAProp(customClass, targetProp, BaseUtils.nvl(defaultChangeEventScope, DEFAULT_SELECTOR_EVENTSCOPE), orderUsedInterfaces, list, listMapParamExprs, objectEntity -> SetFact.singleton(filter.getFilter(objectEntity)), null);
 
             ImOrderSet<PropertyInterface> allOrderUsedInterfaces = SetFact.addOrderExcl(SetFact.singletonOrder(objectInterface), orderUsedInterfaces);
             return PropertyFact.createRequestAction(allOrderUsedInterfaces.getSet(), dialogInput.getImplement(allOrderUsedInterfaces),

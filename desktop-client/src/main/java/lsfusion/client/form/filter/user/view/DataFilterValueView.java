@@ -2,6 +2,7 @@ package lsfusion.client.form.filter.user.view;
 
 import lsfusion.client.classes.data.ClientLogicalClass;
 import lsfusion.client.form.controller.ClientFormController;
+import lsfusion.client.form.design.view.FlexPanel;
 import lsfusion.client.form.design.view.widget.PanelWidget;
 import lsfusion.client.form.filter.user.ClientDataFilterValue;
 import lsfusion.client.form.filter.user.ClientPropertyFilter;
@@ -16,7 +17,7 @@ import javax.swing.table.TableCellEditor;
 import java.awt.*;
 import java.util.EventObject;
 
-public abstract class DataFilterValueView extends PanelWidget {
+public abstract class DataFilterValueView extends FlexPanel {
     private final ClientDataFilterValue filterValue;
     public DataFilterValueViewTable valueTable;
 
@@ -26,8 +27,6 @@ public abstract class DataFilterValueView extends PanelWidget {
     private ClientGroupObjectValue columnKey;
 
     public DataFilterValueView(ClientPropertyFilter condition, TableController ilogicsSupplier, boolean readSelectedValue) {
-        setLayout(new BorderLayout());
-
         this.filterValue = condition.value;
         logicsSupplier = ilogicsSupplier;
 
@@ -36,7 +35,7 @@ public abstract class DataFilterValueView extends PanelWidget {
         // непосредственно объект для изменения значения свойств
         valueTable = new DataFilterValueViewTable(this, condition.property, condition.compare, ilogicsSupplier);
 
-        add(valueTable, BorderLayout.CENTER);
+        addFill(valueTable);
         
         changeProperty(condition.property, columnKey, readSelectedValue);
     }

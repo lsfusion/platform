@@ -203,6 +203,10 @@ public abstract class DefaultSQLSyntax implements SQLSyntax {
         return "integer";
     }
 
+    public String getJSON() {
+        return "jsonb";
+    }
+
     public int getColorSQL() {
         return Types.INTEGER;
     }
@@ -473,9 +477,12 @@ public abstract class DefaultSQLSyntax implements SQLSyntax {
 
         String fnc;
         switch (groupType) {
-            case STRING_AGG:
+            case CONCAT:
                 fnc = "STRING_AGG";
                 exprs = SumFormulaImpl.castToVarStrings(exprs, readers, resultType, this, typeEnv);
+                break;
+            case JSON_CONCAT:
+                fnc = "JSONB_AGG";
                 break;
             case LAST:
                 fnc = getLastFunc();

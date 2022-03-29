@@ -1,6 +1,7 @@
 CREATE OR REPLACE FUNCTION cast_static_file_to_dynamic_file(file bytea, ext VARCHAR) RETURNS bytea AS
 $$
 BEGIN
+    ext = COALESCE(ext, 'dat');
 	if ((ext = 'doc' or ext = 'xls') and (length(file) > 3) and (get_byte(file, 0) = 80) and (get_byte(file, 1) = 75) and (get_byte(file, 2) = 3) and (get_byte(file, 3) = 4)) then
 		ext = ext || 'x';
 	end if;
@@ -65,13 +66,11 @@ RETURN substring(file, (get_byte(file, 0) + 2));
 END;
 $$ LANGUAGE 'plpgsql' IMMUTABLE;
 
-CREATE OR REPLACE FUNCTION cast_dynamic_file_to_named_file(file bytea) RETURNS bytea AS
+CREATE OR REPLACE FUNCTION cast_dynamic_file_to_named_file(file bytea, name VARCHAR) RETURNS bytea AS
 $$
-DECLARE
-name bytea;
 BEGIN
-name = 'file';
-RETURN chr(length(name))::bytea || name || file;
+name = COALESCE(name, 'file');
+RETURN chr(length(name))::bytea || name::bytea || file;
 END;
 $$ LANGUAGE 'plpgsql' IMMUTABLE;
 
@@ -85,12 +84,11 @@ RETURN substring(file, extLengthPosition + get_byte(file, extLengthPosition - 1)
 END;
 $$ LANGUAGE 'plpgsql' IMMUTABLE;
 
-CREATE OR REPLACE FUNCTION cast_static_file_to_named_file(file bytea, ext bytea) RETURNS bytea AS
+CREATE OR REPLACE FUNCTION cast_static_file_to_named_file(file bytea, name varchar, ext varchar) RETURNS bytea AS
 $$
-DECLARE
-name bytea;
 BEGIN
-name = 'file';
-RETURN chr(length(name))::bytea || name || chr(length(ext))::bytea || ext || file;
+name = COALESCE(name, 'file');
+ext = COALESCE(ext, 'dat');
+RETURN chr(length(name))::bytea || name::bytea || chr(length(ext))::bytea || ext::bytea || file;
 END;
 $$ LANGUAGE 'plpgsql' IMMUTABLE;

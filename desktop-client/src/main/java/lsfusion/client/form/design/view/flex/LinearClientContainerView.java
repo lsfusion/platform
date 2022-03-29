@@ -52,7 +52,7 @@ public class LinearClientContainerView extends AbstractClientContainerView {
             for (int i = 0; i < linesCount; i++) {
                 if(alignCaptions) {
                     FlexPanel captionLine = new FlexPanel(vertical, justifyContent);
-                    panel.add((Widget) captionLine, FlexAlignment.STRETCH); // however it seems that FlexAlignment.STRETCH is also possible
+                    panel.add((Widget) captionLine, FlexAlignment.STRETCH, 0, container.getCaptionLineSize()); // however it seems that FlexAlignment.STRETCH is also possible
                     captionLines[i] = captionLine;
                 }
 
@@ -82,8 +82,13 @@ public class LinearClientContainerView extends AbstractClientContainerView {
         public FlexAlignment captionHAlignment;
     }
 
-    public void updateCaption(ClientContainer clientContainer) {
-        getCaptionPanel(clientContainer).setCaption(clientContainer.caption);
+    public void updateCaption(ClientContainer container) {
+        CaptionPanel captionPanel = getCaptionPanel(container);
+        String caption = container.caption;
+        if(captionPanel != null)
+            captionPanel.setCaption(caption);
+        else // it is possible if hasNoCaption is true, so captionPanel is not created, however dynamic caption changes may come to the client
+            assert caption == null;
     }
 
     public CaptionPanel getCaptionPanel(ClientContainer container) {
@@ -109,9 +114,9 @@ public class LinearClientContainerView extends AbstractClientContainerView {
             if (view instanceof CaptionContainerHolder) {
                 captionPanel.captionHAlignment = ((CaptionContainerHolder) view).getCaptionHAlignment();
 
-                ((CaptionContainerHolder) view).setCaptionContainer((widget, valueSizes, alignment) -> {
+                ((CaptionContainerHolder) view).setCaptionContainer((widget, captionSizes, valueSizes, alignment) -> {
                     assert vertical; // because of aligncaptions first check (isVertical())
-                    captionPanel.add(widget, alignment);
+                    captionPanel.add(widget, alignment, 0.0, captionSizes.first);
 
                     Integer baseSize = vertical ? valueSizes.second : valueSizes.first;
 

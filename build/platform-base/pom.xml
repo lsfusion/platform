@@ -103,7 +103,7 @@
         <jakarta.activation.version>1.2.1</jakarta.activation.version>
         <javax.activation.version>1.1.1</javax.activation.version>
 
-        <com.google.zxing.version>3.4.1</com.google.zxing.version>
+        <com.google.zxing.version>3.4.1-patched</com.google.zxing.version>
 
         <tess4j.version>4.3.1</tess4j.version>
         <pdfbox.version>2.0.12</pdfbox.version>

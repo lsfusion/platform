@@ -653,7 +653,7 @@ propertyCustomView returns [String customRenderFunction, String customEditorFunc
 	:	'CUSTOM' ((renderFun=stringLiteral { $customRenderFunction = $renderFun.val;})
 	    | ((renderFun=stringLiteral { $customRenderFunction = $renderFun.val;})?
         // EDIT TEXT is a temporary fix for backward compatibility
-		(('CHANGE' | ('EDIT' PRIMITIVE_TYPE)) { $customEditorFunction = "DEFAULT"; } (editFun=stringLiteral {$customEditorFunction = $editFun.val; })?))) // "DEFAULT" is hardcoded and used in GFormController.edit
+		(('CHANGE' | ('EDIT' primitiveType)) { $customEditorFunction = "DEFAULT"; } (editFun=stringLiteral {$customEditorFunction = $editFun.val; })?))) // "DEFAULT" is hardcoded and used in GFormController.edit
 	;
 
 listViewType returns [ListViewType type, PivotOptions options, String customRenderFunction, String mapTileProvider]
@@ -837,6 +837,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|   'ROW' { $options.setPivotRow(true); }
 		|   'MEASURE' { $options.setPivotMeasure(true); }
 		|   st = stickyOption { $options.setSticky($st.sticky); }
+		|   sync = syncTypeLiteral { $options.setSync($sync.val); }
 		)*
 	;
 
@@ -1151,19 +1152,20 @@ formEventsList
 @init {
 	List<ActionObjectEntity> actions = new ArrayList<>();
 	List<Object> types = new ArrayList<>();
+	List<Boolean> replaces = new ArrayList<>();
 }
 @after {
 	if (inMainParseState()) {
-		$formStatement::form.addScriptedFormEvents(actions, types, self.getVersion());
+		$formStatement::form.addScriptedFormEvents(actions, types, replaces, self.getVersion());
 	}
 }
 	:	'EVENTS'
-		decl=formEventDeclaration { actions.add($decl.action); types.add($decl.type); }
-		(',' decl=formEventDeclaration { actions.add($decl.action); types.add($decl.type); })*
+		decl=formEventDeclaration { actions.add($decl.action); types.add($decl.type); replaces.add($decl.replace); }
+		(',' decl=formEventDeclaration { actions.add($decl.action); types.add($decl.type); replaces.add($decl.replace); })*
 	;
 
 
-formEventDeclaration returns [ActionObjectEntity action, Object type]
+formEventDeclaration returns [ActionObjectEntity action, Object type, Boolean replace = null]
 @init {
     Boolean before = null;
 }
@@ -1174,9 +1176,11 @@ formEventDeclaration returns [ActionObjectEntity action, Object type]
 		|	'INIT'	 { $type = FormEventType.INIT; }
 		|	'CANCEL' { $type = FormEventType.CANCEL; }
 		|	'DROP'	 { $type = FormEventType.DROP; }
+		|	'QUERYOK'	 { $type = FormEventType.QUERYOK; }
 		|	'QUERYCLOSE'	 { $type = FormEventType.QUERYCLOSE; }
 		| 	'CHANGE' objectId=ID { $type = $objectId.text; }
 		)
+		('REPLACE' { $replace = true; } | 'NOREPLACE' { $replace = false; } )?
 		faprop=formActionObject { $action = $faprop.action; }
 	;
 
@@ -1778,6 +1782,8 @@ expressionFriendlyPD[List<TypedParameter> context, boolean dynamic] returns [LPW
 	|	recDef=recursivePropertyDefinition[context, dynamic] { $property = $recDef.property; } 
 	|	structDef=structCreationPropertyDefinition[context, dynamic] { $property = $structDef.property; }
 	|	concatDef=concatPropertyDefinition[context, dynamic] { $property = $concatDef.property; }
+    |	jsonDef=jsonPropertyDefinition[context, dynamic] { $property = $jsonDef.property; }
+    |	jsonFormDef=jsonFormPropertyDefinition[context, dynamic] { $property = $jsonFormDef.property; }
 	|	castDef=castPropertyDefinition[context, dynamic] { $property = $castDef.property; }
 	|	sessionDef=sessionPropertyDefinition[context, dynamic] { $property = $sessionDef.property; }
 	|	signDef=signaturePropertyDefinition[context, dynamic] { $property = $signDef.property; }
@@ -1797,7 +1803,7 @@ contextIndependentPD[List<TypedParameter> context, boolean dynamic, boolean inne
 }
 	: 	dataDef=dataPropertyDefinition[context, innerPD] { $property = $dataDef.property; $signature = $dataDef.signature; }
 	|	abstractDef=abstractPropertyDefinition[context, innerPD] { $property = $abstractDef.property; $signature = $abstractDef.signature; }
-	|	formulaProp=formulaPropertyDefinition { $property = $formulaProp.property; $signature = $formulaProp.signature; }
+	|	formulaProp=formulaPropertyDefinition[context, innerPD] { $property = $formulaProp.property; $signature = $formulaProp.signature; }
 	|	aggrDef=aggrPropertyDefinition[context, dynamic, innerPD] { $property = $aggrDef.property; $signature = $aggrDef.signature; $usedContext = $aggrDef.usedContext; }
 	|	goProp=groupObjectPropertyDefinition { $property = $goProp.property; $signature = $goProp.signature; }
 	|	reflectionDef=reflectionPropertyDefinition { $property = $reflectionDef.property; $signature = $reflectionDef.signature;  }
@@ -2152,7 +2158,7 @@ castPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [L
 		$property = self.addScriptedCastProp($ptype.text, $expr.property);
 	}
 }
-	:   ptype=PRIMITIVE_TYPE '(' expr=propertyExpression[context, dynamic] ')'
+	:   ptype=primitiveType '(' expr=propertyExpression[context, dynamic] ')'
 	;
 
 concatPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
@@ -2162,6 +2168,45 @@ concatPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns 
 	}
 }
 	:   'CONCAT' separator=stringLiteral ',' list=nonEmptyPropertyExpressionList[context, dynamic]
+	;
+
+jsonFormPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property, FormEntity form, MappedForm mapped]
+@init {
+    List<TypedParameter> objectsContext = null;
+    List<LPWithParams> contextFilters = new ArrayList<>();
+}
+@after {
+	if (inMainParseState()) {
+	    $property = self.addScriptedJSONFormProp($mf.mapped, $mf.props, objectsContext, contextFilters, context);
+	}
+}
+	:   'JSON' '(' mf=mappedForm[context, null, dynamic] {
+                if(inMainParseState())
+                    objectsContext = self.getTypedObjectsNames($mf.mapped);
+            }
+            (cf = contextFiltersClause[context, objectsContext] { contextFilters.addAll($cf.contextFilters); })?
+        ')'
+//        'ENDJSONX'
+	;
+
+jsonPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
+@init {
+	List<TypedParameter> newContext = new ArrayList<>(context);
+    List<LPWithParams> orderProperties = new ArrayList<>();
+    List<Boolean> orderDirections = new ArrayList<>();
+}
+@after {
+	if (inMainParseState()) {
+		$property = self.addScriptedJSONProperty(context, $plist.aliases, $plist.literals, $plist.properties, $whereExpr.property, orderProperties, orderDirections);
+	}
+}
+	:	'JSON' '('
+		'FROM' plist=nonEmptyAliasedPropertyExpressionList[newContext, true]
+		('WHERE' whereExpr=propertyExpression[newContext, true])?
+		('ORDER' orderedProp=propertyExpressionWithOrder[newContext, true] { orderProperties.add($orderedProp.property); orderDirections.add($orderedProp.order); }
+        	(',' orderedProp=propertyExpressionWithOrder[newContext, true] { orderProperties.add($orderedProp.property); orderDirections.add($orderedProp.order); } )*
+        )?
+        ')'
 	;
 
 sessionPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
@@ -2213,7 +2258,7 @@ roundPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [
 	:	'ROUND' '(' expr=propertyExpression[context, dynamic] (',' scaleExpr = propertyExpression[context, dynamic] )? ')'
 	;
 
-formulaPropertyDefinition returns [LP property, List<ResolveClassSet> signature]
+formulaPropertyDefinition[List<TypedParameter> context, boolean innerPD] returns [LP property, List<ResolveClassSet> signature]
 @init {
 	String className = null;
 	boolean hasNotNullCondition = false;
@@ -2221,7 +2266,8 @@ formulaPropertyDefinition returns [LP property, List<ResolveClassSet> signature]
 @after {
 	if (inMainParseState()) {
 		$property = self.addScriptedSFProp(className, $synt.types, $synt.strings, hasNotNullCondition);
-		$signature = Collections.<ResolveClassSet>nCopies($property.listInterfaces.size(), null);
+		List<ResolveClassSet> contextParams = self.getClassesFromTypedParams(context);
+        $signature = innerPD || contextParams.isEmpty() ? Collections.<ResolveClassSet>nCopies($property.listInterfaces.size(), null) : contextParams;
 	}
 }
 	:	'FORMULA'
@@ -2369,7 +2415,7 @@ importFieldDefinition[List<TypedParameter> newContext] returns [String id, Boole
     DataClass dataClass = null;
 }
     :
-        ptype=PRIMITIVE_TYPE { if(inMainParseState()) dataClass = (DataClass)self.findClass($ptype.text); }
+        ptype=primitiveType { if(inMainParseState()) dataClass = (DataClass)self.findClass($ptype.text); }
         (varID=ID EQ)?
         (   pid=ID { $id = $pid.text; $literal = false; }
         |	sLiteral=stringLiteral { $id = $sLiteral.val; $literal = true; }
@@ -2643,6 +2689,8 @@ semiActionOrPropertyOption[LAP property, String propertyName, LocalizedString ca
 	|	charWidthSetting [property]
 	|	changeKeySetting [property]
 	|	changeMouseSetting [property]
+	|	stickySetting [property]
+	|	syncSetting [property]
 	|   '@@' ann = ID { ps.annotation = $ann.text; }
     ;
 
@@ -2662,7 +2710,6 @@ semiPropertyOption[LP property, String propertyName, LocalizedString caption, Pr
 	|	setNotNullSetting [ps]
 	|	aggrSetting [property]
 	|	eventIdSetting [property]
-	|	stickySetting [property]
     ;
 
 semiActionOption[LA action, String actionName, LocalizedString caption, ActionSettings ps, List<TypedParameter> context]
@@ -2966,7 +3013,7 @@ eventIdSetting [LAP property]
 	:	'EVENTID' id=stringLiteral
 	;
 
-stickySetting [LP property]
+stickySetting [LAP property]
 @init {
 	boolean sticky = false;
 }
@@ -2982,6 +3029,19 @@ stickySetting [LP property]
 stickyOption returns[boolean sticky = false]
 	:	'STICKY' { sticky = true; } | 'NOSTICKY' { sticky = false; }
 	;
+
+syncSetting [LAP property]
+@init {
+	Boolean sync = null;
+}
+@after {
+	if (inMainParseState()) {
+		self.setSync(property, sync);
+	}
+}
+    :
+        s = syncTypeLiteral { sync = $s.val; }
+    ;
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////// ACTION PROPERTIES ///////////////////////////
@@ -3126,6 +3186,7 @@ leafKeepContextActionDB[List<TypedParameter> context, boolean dynamic] returns [
 	|	importFormADB=importFormActionDefinitionBody[context, dynamic] { $action = $importFormADB.action; }
 	|	activeFormADB=activeFormActionDefinitionBody[context, dynamic] { $action = $activeFormADB.action; }
 	|	activateADB=activateActionDefinitionBody[context, dynamic] { $action = $activateADB.action; }
+	|	expandCollapseADB=expandCollapseActionDefinitionBody[context, dynamic] { $action = $expandCollapseADB.action; }
     |   externalADB=externalActionDefinitionBody[context, dynamic] { $action = $externalADB.action;}
 	|	emptyADB=emptyActionDefinitionBody[context, dynamic] { $action = $emptyADB.action; }
 	;
@@ -3295,6 +3356,8 @@ syncTypeLiteral returns [boolean val]
 windowTypeLiteral returns [WindowFormType val]
 	:	'FLOAT' { $val = WindowFormType.FLOAT; }
 	|	'DOCKED' { $val = WindowFormType.DOCKED; }
+	|	'EMBEDDED' { $val = WindowFormType.EMBEDDED; }
+	|	'POPUP' { $val = WindowFormType.POPUP; }
 	;
 
 printActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
@@ -3479,27 +3542,34 @@ idEqualPEList[List<TypedParameter> context, boolean dynamic] returns [List<Strin
 	:	id=ID { $ids.add($id.text); } EQ expr=propertyExpression[context, dynamic] { $exprs.add($expr.property); } { allowNulls = false; } ('NULL' { allowNulls = true; })? { $nulls.add(allowNulls); }
 		(',' id=ID { $ids.add($id.text); } EQ expr=propertyExpression[context, dynamic] { $exprs.add($expr.property); } { allowNulls = false; } ('NULL' { allowNulls = true; })? { $nulls.add(allowNulls); })*
 	;
-	
+
 internalActionDefinitionBody[List<TypedParameter> context] returns [LA action, List<ResolveClassSet> signature]
 @init {
 	boolean allowNullValue = false;
 	List<String> classes = null;
+	boolean clientAction = false;
+    boolean syncType = false;
 }
 @after {
 	if (inMainParseState()) {
 
 	    List<ResolveClassSet> contextParams = self.getClassesFromTypedParams(context);
 
-	    if($code.val == null)
+        if(clientAction)
+            $action = self.addScriptedInternalClientAction($classN.val, classes != null ? classes.size() : 0, syncType);
+        else if($code.val == null)
 	        $action = self.addScriptedInternalAction($classN.val, classes, contextParams, allowNullValue);
 	    else
 		    $action = self.addScriptedInternalAction($code.val, allowNullValue);
 		$signature = classes == null ? (contextParams.isEmpty() ? Collections.<ResolveClassSet>nCopies($action.listInterfaces.size(), null) : contextParams) : self.createClassSetsFromClassNames(classes);
 	}
 }
+
 	:	'INTERNAL'
-        (   
-            classN = stringLiteral ('(' cls=classIdList ')' { classes = $cls.ids; })? 
+	    ('CLIENT' { clientAction = true; } )?
+        (sync = syncTypeLiteral { syncType = $sync.val; })?
+        (
+            classN = stringLiteral ('(' cls=classIdList ')' { classes = $cls.ids; })?
 		|   code = codeLiteral
         )
 	    ('NULL' { allowNullValue = true; })?
@@ -3662,15 +3732,19 @@ confirmActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams 
 messageActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
 @init {
     boolean noWait = false;
+    boolean log = false;
 }
 @after {
 	if (inMainParseState()) {
-		$action = self.addScriptedMessageProp($pe.property, noWait);
+		$action = self.addScriptedMessageProp($pe.property, noWait, log);
 	}
 }
 	:	'MESSAGE'
 	    pe=propertyExpression[context, dynamic]
-	    (sync = syncTypeLiteral { noWait = !$sync.val; })?
+	    (
+	        sync = syncTypeLiteral { noWait = !$sync.val; }
+	    |   'LOG' {  log = true; }
+        )*
 	;
 
 asyncUpdateActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
@@ -3811,11 +3885,12 @@ inputActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams ac
 
     List<String> actionImages = new ArrayList<>();
     List<LAWithParams> actions = new ArrayList<>();
+    String customEditorFunction = null;
 }
 @after {
 	if (inMainParseState()) {
 		$action = self.addScriptedInputAProp($in.valueClass, $in.initValue, outProp, $dDB.action, $dDB.elseAction, context, newContext,
-		 assign, constraintFilter, changeProp, listProp, whereProp, actionImages, actions, assignDebugPoint, $fs.result);
+		 assign, constraintFilter, changeProp, listProp, whereProp, actionImages, actions, assignDebugPoint, $fs.result, customEditorFunction);
 	}
 }
 	:	'INPUT'
@@ -3837,6 +3912,7 @@ inputActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams ac
                 listDynamic = false;
             }
         }
+        ('CUSTOM' editFun=stringLiteral {customEditorFunction = $editFun.val;})?
 	    ('LIST' listExpr=propertyExpression[newListContext, listDynamic] { listProp = $listExpr.property; })?
         ('WHERE' whereExpr=propertyExpression[newListContext, listDynamic] { whereProp = $whereExpr.property; })?
         (acts = contextActions[newContext] { actionImages = $acts.actionImages; actions = $acts.actions; })?
@@ -3865,7 +3941,7 @@ mappedInput[List<TypedParameter> context] returns [ValueClass valueClass, LPWith
     :    
     (
         (varID=ID EQ { varName = $varID.text; } )?
-        ptype=PRIMITIVE_TYPE
+        ptype=primitiveType
     )
     |	
     ( 
@@ -3902,6 +3978,23 @@ activateActionDefinitionBody[List<TypedParameter> context, boolean dynamic] retu
 		|	'TAB' fc = formComponentID { form = $fc.form; component = $fc.component; }
 		|   'PROPERTY' fp = formPropertyID { propertyDraw = $fp.propertyDraw; }
 		)
+	;
+
+expandCollapseActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
+@init {
+    ComponentView component = null;
+    boolean collapse = true;
+}
+@after {
+	if (inMainParseState()) {
+		 $action = self.addScriptedCollapseExpandAProp(component, collapse);
+	}
+}
+	:	(	'COLLAPSE'
+		|	'EXPAND' { collapse = false; }
+		) 
+		'CONTAINER'
+		fc = formComponentID { component = $fc.component; }
 	;
 
 listActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
@@ -4834,9 +4927,11 @@ groupObjectTreeComponentSelector returns [String sid]
         |   gost=groupObjectTreeComponentSelectorType 
             { 
                 result = $gost.text;
-                // backward compatibility. USERFILTER component is removed in v5.0 
+                // backward compatibility. USERFILTER and GRIDBOX components are removed in v5.0
                 if ("USERFILTER".equals(result)) { 
                     result = "FILTERS";
+                } else if ("GRIDBOX".equals(result)) {
+                   result = "GRID";
                 }
             })
         '(' gots = groupObjectTreeSelector ')'
@@ -4987,7 +5082,7 @@ metaCodeIdList returns [List<String> ids]
 
 metaCodeId returns [String sid]
 	:	id=compoundID 		{ $sid = $id.sid; }
-	|	ptype=PRIMITIVE_TYPE	{ $sid = $ptype.text; } 
+	|	ptype=primitiveType	{ $sid = $ptype.text; } 
 	|	lit=metaCodeLiteral 	{ $sid = $lit.text; }
 	|				{ $sid = ""; }
 	;
@@ -5186,7 +5281,7 @@ literal returns [ScriptingLogicsModule.ConstType cls, Object value]
 
 classId returns [String sid]
 	:	id=compoundID { $sid = $id.sid; }
-	|	pid=PRIMITIVE_TYPE { $sid = $pid.text; }
+	|	pid=primitiveType { $sid = $pid.text; }
 	;
 
 signatureClass returns [String sid]
@@ -5273,6 +5368,10 @@ colorLiteral returns [Color val]
 stringLiteral returns [String val]
 	:	s=STRING_LITERAL { $val = self.transformStringLiteral($s.text); }
     |   s=ID { $val = null; }
+	;
+
+primitiveType returns [String val]
+:	    p=PRIMITIVE_TYPE | JSON_TYPE { $val = $p.text; }
 	;
 
 // there are some rules where ID is not desirable (see usages), where there is an ID
@@ -5432,6 +5531,7 @@ PRIMITIVE_TYPE  :	'INTEGER' | 'DOUBLE' | 'LONG' | 'BOOLEAN' | 'TBOOLEAN' | 'DATE
 				|   ('BPSTRING' ('[' DIGITS ']')?) | ('BPISTRING' ('[' DIGITS ']')?)
 				|	('STRING' ('[' DIGITS ']')?) | ('ISTRING' ('[' DIGITS ']')?) | 'NUMERIC' ('[' DIGITS ',' DIGITS ']')? | 'COLOR'
 				|   ('INTERVAL' ('[' INTERVAL_TYPE ']'));
+JSON_TYPE       :   'JSON';
 LOGICAL_LITERAL :	'TRUE' | 'FALSE';
 T_LOGICAL_LITERAL:	'TTRUE' | 'TFALSE';
 NULL_LITERAL	:	'NULL';

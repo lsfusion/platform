@@ -1,70 +1,44 @@
 package lsfusion.client.form.controller;
 
 
-import lsfusion.client.form.view.ClientFormDockable;
+import lsfusion.client.base.view.ClientDockable;
 import lsfusion.interop.form.remote.serialization.SerializationUtil;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class DockableRepository {
-    /**
-     * the formsList in this repository
-     */
-    private List<String> formsList = new ArrayList<>();
 
-    /**
-     * Writes the formsList of this repository into <code>out</code>.
-     * @param out the stream to write into
-     * @throws IOException if an I/O error occurs
-     */
+    private List<ClientDockable> formsList = new ArrayList<>();
+
     public void write(DataOutputStream out) throws IOException {
-        out.writeInt(formsList.size());
-        for (String formID : formsList) {
-            SerializationUtil.writeString(out, formID);
-        }
+        out.writeInt(0); //backward compatibility
     }
 
-
-    /**
-     * Reads the formsList of this repository from <code>in</code>.
-     * @param in the stream to read from
-     * @throws IOException if an I/O error occurs
-     */
     public void read(DataInputStream in) throws IOException {
         formsList.clear();
-        int n = in.readInt();
+        int n = in.readInt(); //backward compatibility
         for (int i = 0; i < n; ++i) {
-            formsList.add(SerializationUtil.readString(in));
+            SerializationUtil.readString(in);
         }
     }
 
-    /**
-     * Adds a formID to the list of formsList.
-     * @param formID the new formID
-     */
-    public void add(String formID) {
-        formsList.add(formID);
+    public void add(ClientDockable form) {
+        formsList.add(form);
     }
 
-    /**
-     * Removes a formID from the list of formsList.
-     * @param formID the formID to remove
-     */
-    public void remove(String formID) {
-        formsList.remove(formID);
+    public void remove(ClientDockable form) {
+        formsList.remove(form);
     }
 
     public void clear() {
         formsList.clear();
     }
 
-    public List<String> getFormsList() {
-        return new ArrayList<>(formsList);
+    public List<ClientDockable> getFormsList() {
+        return formsList;
     }
 }

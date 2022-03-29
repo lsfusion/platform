@@ -2,6 +2,7 @@ package lsfusion.gwt.client.form.design.view;
 
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.view.FlexPanel;
+import lsfusion.gwt.client.base.view.ResizableComplexPanel;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
@@ -77,7 +78,7 @@ public class TabbedContainerView extends GAbstractContainerView {
     }
 
     @Override
-    protected void addImpl(int index, GComponent child, Widget view) {
+    protected void addImpl(int index, GComponent child, Widget view, ResizableComplexPanel attachContainer) {
         //adding is done in updateLayout()
     }
 

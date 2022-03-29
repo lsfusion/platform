@@ -90,8 +90,8 @@
 - **Разработка**
 
     Программы установки **lsFusion 4.1**, которые установят все необходимое для разработки в один клик (OpenJDK 11.0.9, PostgreSQL 13.1(x64)/10.8(x32), Tomcat 9.0.21, IntelliJ IDEA Community Edition 2020.3.1)  
-    - [x32](http://download.lsfusion.org/exe/lsfusion-dev-4.1.exe)  
-    - [x64](http://download.lsfusion.org/exe/lsfusion-dev-4.1-x64.exe)
+    - [x32](https://download.lsfusion.org/exe/lsfusion-dev-4.1.exe)  
+    - [x64](https://download.lsfusion.org/exe/lsfusion-dev-4.1-x64.exe)
 
     Помимо **lsFusion** эти программы также устанавливают **OpenJDK**, **PostgreSQL**, **Tomcat** и **IntelliJ IDEA Community Edition** со встроенным **lsFusion плагином**. Если какие-то из этих программ уже есть на вашем компьютере, то их можно будет исключить в процессе установки.
 
@@ -100,8 +100,8 @@
 - **Запуск**
 
     Программы установки **lsFusion 4.1 Server & Client**, которые установят все необходимое в один клик (OpenJDK 11.0.9, PostgreSQL 13.1(x64)/10.8(x32), Tomcat 9.0.21)
-    - [x32](http://download.lsfusion.org/exe/lsfusion-4.1.exe)  
-    - [x64](http://download.lsfusion.org/exe/lsfusion-4.1-x64.exe)
+    - [x32](https://download.lsfusion.org/exe/lsfusion-4.1.exe)  
+    - [x64](https://download.lsfusion.org/exe/lsfusion-4.1-x64.exe)
 
     Помимо установки **lsFusion** эти программы / скрипты установки также устанавливают **OpenJDK**, **PostgreSQL** и **Tomcat**. При этом **Tomcat** встраивается в установку **lsFusion Client**, а **OpenJDK** и **PostgreSQL** устанавливаются отдельно (в частности, в отдельные папки).
 

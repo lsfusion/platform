@@ -330,12 +330,6 @@ public abstract class FilterController implements FilterConditionView.UIHandler 
     }
 
     public void applyFilters(boolean focusFirstComponent) {
-        if (logicsSupplier.getFormController().isEditing()) {
-            // apply via valueChanged()
-            logicsSupplier.getFormController().commitCurrentEditing();
-            return;
-        }
-        
         ArrayList<ClientPropertyFilter> result = new ArrayList<>();
         for (Map.Entry<ClientPropertyFilter, FilterConditionView> entry : conditionViews.entrySet()) {
             FilterConditionView conditionView = entry.getValue();

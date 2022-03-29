@@ -3,6 +3,7 @@ package lsfusion.gwt.client.form.object.table.grid.view;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
@@ -18,9 +19,9 @@ public class GCustom extends GTippySimpleStateTableView {
     }
 
     @Override
-    public void onRender() {
+    public void onRender(Event editEvent) {
         if (renderFunctionWithoutArguments)
-            render(renderFunction, getDrawElement(), controller);
+            render(renderFunction, getDrawElement(), controller, editEvent);
     }
 
     @Override
@@ -46,8 +47,8 @@ public class GCustom extends GTippySimpleStateTableView {
         renderFunction(element, list, controller);
     }-*/;
 
-    protected native void render(JavaScriptObject renderFunction, Element element, JavaScriptObject controller)/*-{
-        renderFunction().render(element, controller);
+    protected native void render(JavaScriptObject renderFunction, Element element, JavaScriptObject controller, Event event)/*-{
+        renderFunction().render(element, controller, event);
     }-*/;
 
     protected native void update(JavaScriptObject renderFunction, Element element, JavaScriptObject controller, JsArray<JavaScriptObject> list)/*-{

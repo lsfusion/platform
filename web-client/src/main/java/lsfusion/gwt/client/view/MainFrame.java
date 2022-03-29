@@ -3,7 +3,10 @@ package lsfusion.gwt.client.view;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.dom.client.*;
+import com.google.gwt.dom.client.BrowserEvents;
+import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.event.logical.shared.ResizeEvent;
@@ -12,11 +15,15 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.busy.LoadingManager;
-import lsfusion.gwt.client.base.exception.*;
+import lsfusion.gwt.client.base.exception.AppServerNotAvailableDispatchException;
+import lsfusion.gwt.client.base.exception.AuthenticationDispatchException;
+import lsfusion.gwt.client.base.exception.GExceptionManager;
+import lsfusion.gwt.client.base.exception.RemoteMessageDispatchException;
 import lsfusion.gwt.client.base.log.GLog;
 import lsfusion.gwt.client.base.result.VoidResult;
 import lsfusion.gwt.client.base.view.DialogBoxHelper;
@@ -35,6 +42,7 @@ import lsfusion.gwt.client.navigator.ConnectionInfo;
 import lsfusion.gwt.client.navigator.controller.GNavigatorController;
 import lsfusion.gwt.client.navigator.controller.dispatch.GNavigatorActionDispatcher;
 import lsfusion.gwt.client.navigator.controller.dispatch.NavigatorDispatchAsync;
+import lsfusion.gwt.client.navigator.view.GMobileNavigatorView;
 import lsfusion.gwt.client.navigator.window.GAbstractWindow;
 import lsfusion.gwt.client.navigator.window.GNavigatorWindow;
 import lsfusion.gwt.client.navigator.window.view.WindowsController;
@@ -55,6 +63,7 @@ public class MainFrame implements EntryPoint {
     public static NavigatorDispatchAsync navigatorDispatchAsync;
 
     public static boolean mobile;
+    private static GMobileNavigatorView mobileNavigatorView = null;
 
     // settings    
     public static boolean devMode;
@@ -155,7 +164,7 @@ public class MainFrame implements EntryPoint {
                     return false;
                 }
             } else if (BrowserEvents.BLUR.equals(event.getType())) {
-                switchedToAnotherWindow = isSwitchedToAnotherWindow(event);
+                switchedToAnotherWindow = isSwitchedToAnotherWindow(event, Document.get());
                 return !switchedToAnotherWindow;
             }
         }
@@ -165,8 +174,10 @@ public class MainFrame implements EntryPoint {
     //heuristic
     //'visibilitychange' will not work, because 'focus' event is caught by editor earlier then by whole document
     //(https://stackoverflow.com/questions/28993157/visibilitychange-event-is-not-triggered-when-switching-program-window-with-altt)
-    private static native boolean isSwitchedToAnotherWindow(Event event) /*-{
-        return event.relatedTarget == null && event.sourceCapabilities == null;
+    //ignore focus/blur events when switching tabs/windows:
+    //https://stackoverflow.com/questions/61713458/ignore-blur-focusout-events-when-switching-tabs-windows
+    private static native boolean isSwitchedToAnotherWindow(Event event, Document document) /*-{
+        return event.target === document.activeElement;
     }-*/;
 
     // it's odd, but dblclk works even when the first click was on different target
@@ -262,7 +273,9 @@ public class MainFrame implements EntryPoint {
             @Override
             public void onClose(CloseEvent event) {
                 try {
-                    windowsController.storeWindowsSizes();
+                    if (!mobile) {
+                        windowsController.storeWindowsSizes();
+                    }
                 } finally {
                     clean();
                 }
@@ -302,7 +315,7 @@ public class MainFrame implements EntryPoint {
                         public void onSuccess(ClientMessageResult result) {
                             setShouldRepeatPingRequest(true);
                             for (Integer idNotification : result.notificationList) {
-                                FormContainer<?> currentForm = MainFrame.getCurrentForm();
+                                FormContainer currentForm = MainFrame.getCurrentForm();
                                 GFormController form = currentForm != null ? currentForm.getForm() : null;
                                 if (form != null)
                                     try {
@@ -383,7 +396,7 @@ public class MainFrame implements EntryPoint {
         bodyStyle.setWidth(Window.getClientWidth(), Style.Unit.PX);
     }
 
-    private static FormContainer<?> currentForm;
+    private static FormContainer currentForm;
     private static boolean modalPopup;
 
     public static void setCurrentForm(FormContainer currentForm) {
@@ -423,19 +436,34 @@ public class MainFrame implements EntryPoint {
                 // пока прячем всё, что не поддерживается
                 result.status.visible = false;
 
-                navigatorController.initializeNavigatorViews(result.navigatorWindows);
-                navigatorController.setRootElement(result.root);
+                if (mobile) {
+                    mobileNavigatorView = new GMobileNavigatorView(result.root, navigatorController);
+                    RootLayoutPanel.get().add(windowsController.getWindowView(formsWindow));
+                } else {
+                    navigatorController.initializeNavigatorViews(result.navigatorWindows);
+                    navigatorController.setRootElement(result.root);
+                    
+                    List<GAbstractWindow> allWindows = new ArrayList<>();
+                    allWindows.addAll(result.navigatorWindows);
+                    allWindows.addAll(commonWindows.keySet());
 
-                List<GAbstractWindow> allWindows = new ArrayList<>();
-                allWindows.addAll(result.navigatorWindows);
-                allWindows.addAll(commonWindows.keySet());
+                    windowsController.initializeWindows(allWindows, formsWindow);
 
-                windowsController.initializeWindows(allWindows, formsWindow);
+                    navigatorController.update();
+                }
+                
                 formsController.initRoot(formsController);
 
-                navigatorController.update();
+                formsController.executeNotificationAction("SystemEvents.onClientStarted[]", 0, formsController.new ServerResponseCallback(false) {
+                    @Override
+                    public void onSuccess(ServerResponseResult result, Runnable onDispatchFinished) {
+                        super.onSuccess(result, onDispatchFinished);
 
-                formsController.executeNotificationAction("SystemEvents.onClientStarted[]", 0);
+                        if (formsController.getFormsCount() == 0) {
+                            openNavigatorMenu();
+                        }
+                    }
+                });
             }
         });
     }
@@ -477,6 +505,18 @@ public class MainFrame implements EntryPoint {
                 }
             }
         });
+    }
+    
+    public static void openNavigatorMenu() {
+        if (mobileNavigatorView != null) {
+            mobileNavigatorView.openNavigatorMenu();
+        }
+    }
+    
+    public static void closeNavigatorMenu() {
+        if (mobileNavigatorView != null) {
+            mobileNavigatorView.closeNavigatorMenu();
+        }
     }
 
     public void clean() {

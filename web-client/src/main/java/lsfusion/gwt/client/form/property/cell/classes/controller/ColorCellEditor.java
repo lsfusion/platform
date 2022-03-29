@@ -14,7 +14,7 @@ import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import net.auroris.ColorPicker.client.ColorPicker;
 
-public class ColorCellEditor extends PopupBasedCellEditor {
+public class ColorCellEditor extends PopupValueCellEditor {
     private static final ClientMessages messages = ClientMessages.Instance.get();
 
     private ColorPicker colorPicker;

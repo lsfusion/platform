@@ -2,11 +2,15 @@ package lsfusion.server.logics.form.stat.struct.hierarchy;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.logics.classes.data.ParseException;
+import lsfusion.server.logics.form.stat.struct.export.hierarchy.json.FormPropertyDataInterface;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
+import lsfusion.server.logics.property.implement.PropertyMapImplement;
+import lsfusion.server.logics.property.oraction.PropertyInterface;
 
-public class PropertyParseNode extends ParseNode {
+public class PropertyParseNode implements ChildParseNode {
     private final PropertyDrawEntity<?> property;
     private final boolean isExclusive;
 
@@ -15,7 +19,7 @@ public class PropertyParseNode extends ParseNode {
         this.isExclusive = isExclusive;
     }
 
-    protected String getKey() {
+    public String getKey() {
         return property.getIntegrationSID();
     }
 
@@ -36,5 +40,10 @@ public class PropertyParseNode extends ParseNode {
             return true;
         }
         return false;
+    }
+
+    @Override
+    public <X extends PropertyInterface, P extends PropertyInterface> PropertyMapImplement<?, X> getJSONProperty(FormPropertyDataInterface<P> form, ImRevMap<P, X> mapValues, ImRevMap<ObjectEntity, X> mapObjects) {
+        return property.getValueProperty().getImplement(mapObjects);
     }
 }

@@ -152,9 +152,9 @@ public class ClientTypeToGwtConverter extends ObjectConverter {
         return initializeFileClass(htmlClass, new GHTMLType());
     }
     
-    @Converter(from = ClientJSONClass.class)
-    public GJSONType convertJSONClass(ClientJSONClass jsonClass) {
-        return initializeFileClass(jsonClass, new GJSONType());
+    @Converter(from = ClientJSONFileClass.class)
+    public GJSONFileType convertJSONClass(ClientJSONFileClass jsonClass) {
+        return initializeFileClass(jsonClass, new GJSONFileType());
     }
 
     @Converter(from = ClientXMLClass.class)
@@ -284,6 +284,11 @@ public class ClientTypeToGwtConverter extends ObjectConverter {
     @Converter(from = ClientColorClass.class)
     public GColorType convertColorClass(ClientColorClass clientColorClass) {
         return GColorType.instance;
+    }
+
+    @Converter(from = ClientJSONClass.class)
+    public GJSONType convertJSONClass(ClientJSONClass clientJSONClass) {
+        return GJSONType.instance;
     }
 
     @Converter(from = ClientObjectType.class)

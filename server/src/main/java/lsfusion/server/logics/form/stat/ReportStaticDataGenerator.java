@@ -1,14 +1,15 @@
 package lsfusion.server.logics.form.stat;
 
 import lsfusion.base.col.interfaces.mutable.MExclSet;
+import lsfusion.server.logics.form.stat.print.FormReportInterface;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.struct.property.PropertyReaderEntity;
 
 // with headers, footers, etc.
-public class FullStaticDataGenerator extends StaticDataGenerator<PropertyReaderEntity> {
+public class ReportStaticDataGenerator extends StaticDataGenerator<PropertyReaderEntity> {
 
-    public FullStaticDataGenerator(FormDataInterface formInterface, Hierarchy hierarchy, boolean supportGroupColumns) {
-        super(formInterface, hierarchy, supportGroupColumns);
+    public ReportStaticDataGenerator(FormReportInterface formInterface) {
+        super(formInterface, true);
     }
 
     @Override

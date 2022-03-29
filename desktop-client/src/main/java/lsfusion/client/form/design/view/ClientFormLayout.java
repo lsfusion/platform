@@ -27,6 +27,7 @@ public class ClientFormLayout extends PanelWidget {
         Widget main = getMainView();
         try {
             GridView.calcMaxPrefSize = true;
+            invalidate((Component) main);
             Dimension maxPrefSize = main.getPreferredSize();
             return new Dimension(width != null ? width : maxPrefSize.width + extraHorzOffset, height != null ? height : maxPrefSize.height + extraVertOffset);
         } finally {

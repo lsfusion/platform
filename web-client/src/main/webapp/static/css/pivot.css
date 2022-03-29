@@ -1,12 +1,14 @@
 .pivotTable {
-    border: 1px solid var(--panel-border-color);
-    border-radius: var(--panel-border-radius);
-    -webkit-border-radius: var(--panel-border-radius);
-    -moz-border-radius: var(--panel-border-radius);
+    /*border: 1px solid var(--panel-border-color);*/
+    /*border-radius: var(--panel-border-radius);*/
+    /*-webkit-border-radius: var(--panel-border-radius);*/
+    /*-moz-border-radius: var(--panel-border-radius);*/
+
+    background: var(--background-color);
 }
 
 .pivotTable:focus {
-    border: 1px solid var(--focus-color);
+    /*border: 1px solid var(--focus-color);*/
 }
 
 .pivotTable-noSettings {
@@ -68,6 +70,10 @@
     /*to stretch last empty paxis*/
     height:100%;
     width: 100%;
+
+    /* there are plenty of elements using padding (see below) but also having height:100% width:100% leading to unnecessary scrolls */
+    /*.pvtUiCell > div:not(.pvtUnusedCellDivWrapper), .pvtUnusedCellDivWrapper > div {*/
+    overflow: hidden;
 }
 
 .pvtUi-noSettings {
@@ -341,6 +347,7 @@ reproduces in chrome 80, in firefox 73 (latest) and chrome 70 (2018-10-16) width
     text-align: center;
     display: flex;
     flex-direction: column;
+    z-index: 1000;
 }
 
 .pvtFilterBox h4 {

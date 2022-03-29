@@ -53,7 +53,7 @@ import static lsfusion.gwt.client.base.view.ColorUtils.*;
 import static lsfusion.gwt.client.view.MainFrame.colorTheme;
 import static lsfusion.gwt.client.view.StyleDefaults.*;
 
-public class GPivot extends GStateTableView implements ColorThemeChangeListener, RenderContext, UpdateContext {
+public class GPivot extends GStateTableView implements ColorThemeChangeListener, RenderContext {
 
     private final String ICON_LEAF = "tree_leaf.png";
     private final String ICON_OPEN = "tree_open.png";
@@ -78,6 +78,8 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         setStyleName(getDrawElement(), "pivotTable");
 
         MainFrame.addColorThemeChangeListener(this);
+
+        GwtClientUtils.setZeroZIndex(getElement());
     }
 
     // in theory we can order all properties once, but so far there is no full list of properties
@@ -572,7 +574,11 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
             columnKeys.add(aggrColumn.columnKey);
         }
 
-        if(firstUpdateView == null || !firstUpdateView) { // we don't need to update server groups, since they should be already set
+        //don't reset firstUpdateView if no one column / row / inclusion is visible
+        // cols first element is GPivot.COLUMN
+        boolean isVisible = cols.length() > 1 || rows.length() > 0 || inclusions.getKeys().length() > 0;
+
+        if(isVisible && (firstUpdateView == null || !firstUpdateView)) { // we don't need to update server groups, since they should be already set
             updateRendererState(true); // will wait until server will answer us if we need to change something
             grid.changeGroups(properties, columnKeys, aggrProps, firstUpdateView != null, getGroupType(aggregatorName.toUpperCase())); // we need to do "changeListViewType" if it's firstUpdateView
             firstUpdateView = null;
@@ -1129,7 +1135,38 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
     private void renderColumn(Element th, JavaScriptObject value, String columnName) {
         GPropertyDraw property = columnMap.get(columnName).property;
         GPivot.setTableToExcelPropertyAttributes(th, value, property);
-        GPropertyTableBuilder.renderAndUpdate(property, th, value, this, this);
+
+        UpdateContext updateContext = new UpdateContext() {
+            @Override
+            public boolean globalCaptionIsDrawn() {
+                return true;
+            }
+            @Override
+            public Consumer<Object> getCustomRendererValueChangeConsumer() {
+                return null;
+            }
+
+            @Override
+            public boolean isPropertyReadOnly() {
+                return true;
+            }
+
+            @Override
+            public Object getValue() {
+                return value;
+            }
+
+            @Override
+            public boolean isLoading() {
+                return false;
+            }
+
+            @Override
+            public Object getImage() {
+                return null;
+            }
+        };
+        GPropertyTableBuilder.renderAndUpdate(property, th, this, updateContext);
     }
 
     @Override
@@ -1145,16 +1182,6 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
     @Override
     public GFont getFont() {
         return font;
-    }
-
-    @Override
-    public Consumer<Object> getCustomRendererValueChangeConsumer() {
-        return null;
-    }
-
-    @Override
-    public boolean isPropertyReadOnly() {
-        return true;
     }
 
     public void renderColAttrCell(Element jsElement, JavaScriptObject value, JsArrayMixed colKeyValues, Boolean isSubtotal, Boolean isExpanded, Boolean isArrow) {
@@ -2178,5 +2205,10 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
             arrayList.add(jsArray.getString(i));
         }
         return arrayList;
+    }
+
+    @Override
+    public boolean isDefaultBoxed() {
+        return false;
     }
 }

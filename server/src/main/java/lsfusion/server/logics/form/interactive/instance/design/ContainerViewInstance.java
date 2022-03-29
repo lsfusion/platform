@@ -6,7 +6,6 @@ import lsfusion.server.logics.form.interactive.design.ContainerViewExtraType;
 import lsfusion.server.logics.form.interactive.instance.CellInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyReaderInstance;
-import lsfusion.server.logics.form.struct.property.PropertyDrawExtraType;
 
 public class ContainerViewInstance extends CellInstance<ContainerView> {
 
@@ -14,12 +13,17 @@ public class ContainerViewInstance extends CellInstance<ContainerView> {
         super(entity);
 
         propertyCaption = extras.get(ContainerViewExtraType.CAPTION);
-
         captionReader = new ExtraReaderInstance(ContainerViewExtraType.CAPTION, propertyCaption);
+
+        propertyCustomDesign = extras.get(ContainerViewExtraType.CUSTOM);
+        customDesignReader = new ExtraReaderInstance(ContainerViewExtraType.CUSTOM, propertyCustomDesign);
     }
 
     public final PropertyObjectInstance<?> propertyCaption;
     public final ExtraReaderInstance captionReader;
+
+    public final PropertyObjectInstance<?> propertyCustomDesign;
+    public final ExtraReaderInstance customDesignReader;
 
     public class ExtraReaderInstance implements PropertyReaderInstance {
         private final ContainerViewExtraType type;

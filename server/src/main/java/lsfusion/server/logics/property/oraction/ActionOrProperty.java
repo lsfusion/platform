@@ -57,7 +57,6 @@ import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameParser;
 import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameUtils;
 
 import javax.swing.*;
-import java.awt.*;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -281,20 +280,20 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
     }
 
     // actually protected (friend of PropertyMapImplement)
-    public ActionMapImplement<?, T> getEventAction(String eventActionSID, FormSessionScope defaultChangeEventScope, ImList<Property> viewProperties) {
+    public ActionMapImplement<?, T> getEventAction(String eventActionSID, FormSessionScope defaultChangeEventScope, ImList<Property> viewProperties, String customChangeFunction) {
         ActionMapImplement<?, T> eventAction = getExplicitEventAction(eventActionSID);
         if (eventAction != null)
             return eventAction;
 
         assert CHANGE.equals(eventActionSID) || EDIT_OBJECT.equals(eventActionSID); // explicit event actions can be also CONTEXTMENU
-        return getDefaultEventAction(eventActionSID, defaultChangeEventScope, viewProperties);
+        return getDefaultEventAction(eventActionSID, defaultChangeEventScope, viewProperties, customChangeFunction);
     }
 
     public ActionMapImplement<?, T> getExplicitEventAction(String eventActionSID) {
         return getEventActions().get(eventActionSID);
     }
 
-    public abstract ActionMapImplement<?, T> getDefaultEventAction(String eventActionSID, FormSessionScope defaultChangeEventScope, ImList<Property> viewProperties);
+    public abstract ActionMapImplement<?, T> getDefaultEventAction(String eventActionSID, FormSessionScope defaultChangeEventScope, ImList<Property> viewProperties, String customChangeFunction);
 
     public boolean checkEquals() {
         return this instanceof Property;
@@ -618,6 +617,8 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         private int charWidth;
         private Integer valueWidth;
         private Integer valueHeight;
+        private Integer captionWidth;
+        private Integer captionHeight;
         private Boolean valueFlex;
 
         // свойства, но пока реализовано как для всех
@@ -657,6 +658,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         private PivotOptions pivotOptions;
 
         private Boolean sticky;
+        private Boolean sync;
 
         // для всех 
         private ImList<DefaultProcessor> processors = ListFact.EMPTY();
@@ -665,7 +667,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
             entity.shouldBeLast = BaseUtils.nvl(shouldBeLast, false);
             entity.viewType = viewType;
             entity.customRenderFunction = customRenderFunction;
-            entity.customEditorFunction = customEditorFunction;
+            entity.customChangeFunction = customEditorFunction;
             entity.askConfirm = BaseUtils.nvl(askConfirm, false);
             entity.askConfirmMessage = askConfirmMessage;
             entity.eventID = eventID;
@@ -689,6 +691,10 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
                 propertyView.setValueWidth(valueWidth);
             if(propertyView.valueHeight == null)
                 propertyView.setValueHeight(valueHeight);
+            if(propertyView.captionWidth == null)
+                propertyView.setCaptionWidth(captionWidth);
+            if(propertyView.captionHeight == null)
+                propertyView.setCaptionHeight(captionHeight);
             if (propertyView.design.getImage() == null && imagePath != null) {
                 propertyView.design.setImage(imagePath);
             }
@@ -715,6 +721,8 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
 
             if(propertyView.sticky == null)
                 propertyView.sticky = sticky;
+            if(propertyView.sync == null)
+                propertyView.sync = sync;
 
             for(DefaultProcessor processor : processors)
                 processor.proceedDefaultDesign(propertyView);
@@ -764,12 +772,12 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
                 setViewType(options.viewType);
             if (customRenderFunction == null)
                 setCustomRenderFunction(options.customRenderFunction);
-            if (customEditorFunction == null)
-                setCustomEditorFunction(options.customEditorFunction);
             if(pivotOptions == null)
                 setPivotOptions(options.pivotOptions);
             if(sticky == null)
                 setSticky(options.sticky);
+            if(sync == null)
+                setSync(options.sync);
             
             processors = options.processors.addList(processors);
         }
@@ -889,6 +897,10 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
 
         public void setSticky(Boolean sticky) {
             this.sticky = sticky;
+        }
+
+        public void setSync(Boolean sync) {
+            this.sync = sync;
         }
     }
 

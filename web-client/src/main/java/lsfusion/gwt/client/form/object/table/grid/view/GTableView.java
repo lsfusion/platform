@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.form.object.table.grid.view;
 
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
@@ -36,6 +37,7 @@ public interface GTableView {
     void updateCellForegroundValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, Object> values);
     void updateImageValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, Object> values);
     void updatePropertyCaptions(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, Object> values);
+    void updateLoadings(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, Object> values);
     void updatePropertyFooters(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, Object> values);
     void updateShowIfValues(GPropertyDraw property, NativeHashMap<GGroupObjectValue, Object> values);
     void updateReadOnlyValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, Object> values);
@@ -82,7 +84,8 @@ public interface GTableView {
 
     default void updateRecordLayout(long requestIndex) {}
 
-    default void onRender(){}
+    default void onRender(Event editEvent){}
     default void onClear(){}
 
+    default boolean isDefaultBoxed() { return true; }
 }

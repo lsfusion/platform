@@ -30,6 +30,7 @@ import lsfusion.gwt.client.form.object.table.view.GGridPropertyTableHeader;
 import lsfusion.gwt.client.form.order.user.GGridSortableHeaderManager;
 import lsfusion.gwt.client.form.order.user.GOrder;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 
 import java.util.*;
@@ -66,7 +67,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         tree = new GTreeTableTree(iform);
 
         Column<GTreeGridRecord, Object> column = new ExpandTreeColumn();
-        GGridPropertyTableHeader header = new GGridPropertyTableHeader(this, messages.formTree(), null, false);
+        GGridPropertyTableHeader header = noHeaders ? null : new GGridPropertyTableHeader(this, messages.formTree(), null, false);
         addColumn(column, header, null);
 
         hierarchicalWidth = treeGroup.getExpandWidth();
@@ -131,7 +132,6 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         return treeGroup.groups.size() > 0 ? treeGroup.groups.get(treeGroup.groups.size() - 1) : null;
     }
 
-    @Override
     protected boolean isAutoSize() {
         return autoSize;
     }
@@ -167,7 +167,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
             if (index > -1) {
                 GridColumn gridColumn = new GridColumn(property);
                 String propertyCaption = getPropertyCaption(property);
-                GGridPropertyTableHeader header = new GGridPropertyTableHeader(this, propertyCaption, property.getTooltipText(propertyCaption), gridColumn.isSticky());
+                GGridPropertyTableHeader header = noHeaders ? null : new GGridPropertyTableHeader(this, propertyCaption, property.getTooltipText(propertyCaption), gridColumn.isSticky());
                 GGridPropertyTableFooter footer = property.hasFooter ? new GGridPropertyTableFooter(this, property, null, null) : null;
 
                 insertColumn(index, gridColumn, header, footer);
@@ -341,7 +341,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         }
 
         @Override
-        public void onEditEvent(EventHandler handler, Cell editCell, Element editCellParent) {
+        public void onEditEvent(EventHandler handler, Cell editCell, TableCellElement editCellParent) {
             Event event = handler.event;
             boolean changeEvent = GMouseStroke.isChangeEvent(event);
             if (changeEvent || (treeGroupController.isExpandOnClick() && GMouseStroke.isDoubleChangeEvent(event))) { // we need to consume double click event to prevent treetable global dblclick binding (in this case node will be collapsed / expanded once again)
@@ -421,6 +421,16 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
             return record.getValue(property);
         }
 
+        @Override
+        protected boolean isLoading(GPropertyDraw property, GTreeGridRecord record) {
+            return record.isLoading(property);
+        }
+
+        @Override
+        protected Object getImage(GPropertyDraw property, GTreeGridRecord record) {
+            return record.getImage(property);
+        }
+
         // in tree property might change
         private static final String PDRAW_ATTRIBUTE = "__gwt_pdraw"; // actually it represents nod depth
 
@@ -438,9 +448,10 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
             // if property changed - rerender
             if(!GwtClientUtils.nullEquals(oldProperty, newProperty) && !form.isEditing()) { // we don't want to clear editing (it will be rerendered anyway, however not sure if this check is needed)
                 if(oldProperty != null) {
-                    if(!GPropertyTableBuilder.clearRenderSized(cellElement, oldProperty, GTreeTable.this)) {
-                        assert cellElement == GPropertyTableBuilder.getRenderSizedElement(cellElement, oldProperty, GTreeTable.this);
-                        oldProperty.getCellRenderer().clearRender(cellElement, GTreeTable.this);
+                    RenderContext renderContext = getRenderContext(cell, cellElement, oldProperty, this);
+                    if(!GPropertyTableBuilder.clearRenderSized(cellElement, oldProperty, renderContext)) {
+                        assert cellElement == GPropertyTableBuilder.getRenderSizedElement(cellElement, oldProperty, getUpdateContext(cell, cellElement, oldProperty, this));
+                        oldProperty.getCellRenderer().clearRender(cellElement, renderContext);
                     }
                     cellElement.setPropertyObject(PDRAW_ATTRIBUTE, null);
                 }
@@ -468,17 +479,19 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         dataUpdated = true;
     }
 
+    public void updateLoadings(GPropertyDraw property, NativeHashMap<GGroupObjectValue, Object> propLoadings) {
+        tree.setLoadings(property, propLoadings);
+        dataUpdated = true;
+    }
+
     public void updatePropertyValues(GPropertyDraw property, NativeHashMap<GGroupObjectValue, Object> propValues, boolean updateKeys) {
-        if (propValues != null) {
-            dataUpdated = true;
-            tree.setPropertyValues(property, propValues, updateKeys);
-        }
+        tree.setPropertyValues(property, propValues, updateKeys);
+        dataUpdated = true;
     }
 
     public void updateReadOnlyValues(GPropertyDraw property, NativeHashMap<GGroupObjectValue, Object> readOnlyValues) {
-        if (readOnlyValues != null) {
-            tree.setReadOnlyValues(property, readOnlyValues);
-        }
+        tree.setReadOnlyValues(property, readOnlyValues);
+        dataUpdated = true;
     }
 
     @Override
@@ -546,9 +559,9 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     protected TreeGridColumn getTreeGridColumn(int i) {
         return (TreeGridColumn) getColumn(i);
     }
-    protected GridColumn getGridColumn(int i) {
+    public GridColumn getGridColumn(int i) {
         assert i > 0;
-        return (GridColumn)getTreeGridColumn(i);
+        return (GridColumn)super.getGridColumn(i);
     }
 
     @Override
@@ -576,7 +589,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     }
 
     @Override
-    protected int getHeaderHeight() {
+    public int getHeaderHeight() {
         return treeGroup.headerHeight;
     }
 
@@ -679,9 +692,8 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
                     record.setForeground(columnSID, foreground == null ? readerProperty.foreground : foreground);
                     if (readerProperty.hasDynamicImage()) {
                         NativeHashMap<GGroupObjectValue, Object> actionImages = cellImages.get(readerProperty);
-                        record.setImage(columnSID, actionImages == null ? null : actionImages.get(key));
+                        record.setImage(readerProperty, actionImages == null ? null : actionImages.get(key));
                     }
-
                 }
             }
         }
@@ -857,12 +869,6 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     }
 
     @Override
-    public Object getValueAt(Cell cell) {
-        GTreeGridRecord record = getTreeGridRow(cell);
-        return record == null ? null : tree.getValue(record.getGroup(), cell.getColumnIndex(), record.getKey());
-    }
-
-    @Override
     public void quickFilter(Event event, GPropertyDraw filterProperty, GGroupObjectValue columnKey) {
         treeGroupController.quickEditFilter(event, filterProperty, columnKey);
     }
@@ -875,6 +881,21 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
         rowRecord.setValue(property, value);
         tree.values.get(property).put(rowRecord.getKey(), value);
+    }
+
+    @Override
+    public void setLoadingAt(Cell cell) {
+        GTreeGridRecord rowRecord = getTreeGridRow(cell);
+        GPropertyDraw property = getProperty(cell);
+        // assert property is not null since we want get here if property is null
+
+        rowRecord.setLoading(property, true);
+        NativeHashMap<GGroupObjectValue, Object> loadingMap = tree.loadings.get(property);
+        if(loadingMap == null) {
+            loadingMap = new NativeHashMap<>();
+            tree.loadings.put(property, loadingMap);
+        }
+        loadingMap.put(rowRecord.getKey(), true);
     }
 
     public boolean changeOrders(GGroupObject groupObject, LinkedHashMap<GPropertyDraw, Boolean> orders, boolean alreadySet) {

@@ -91,6 +91,8 @@ public class ClientActionToGwtConverter extends ObjectConverter {
             case MODAL: return GModalityType.MODAL;
             case DOCKED_MODAL: return GModalityType.DOCKED_MODAL;
             case DIALOG_MODAL: return GModalityType.DIALOG_MODAL;
+            case EMBEDDED: return GModalityType.EMBEDDED;
+            case POPUP: return GModalityType.POPUP;
         }
         return null;
     }
@@ -139,7 +141,7 @@ public class ClientActionToGwtConverter extends ObjectConverter {
 
         GInputList inputList = asyncConverter.convertOrCast(ClientAsyncSerializer.deserializeInputList(action.inputList));
 
-        return new GRequestUserInputAction(type, value, action.hasOldValue, inputList);
+        return new GRequestUserInputAction(type, value, action.hasOldValue, action.customChangeFunction, inputList);
     }
 
     private Object deserializeServerValue(byte[] valueBytes) throws IOException {
@@ -238,5 +240,21 @@ public class ClientActionToGwtConverter extends ObjectConverter {
     @Converter(from = ResetWindowsLayoutClientAction.class)
     public GResetWindowsLayoutAction convertAction(ResetWindowsLayoutClientAction action) {
         return new GResetWindowsLayoutAction();
+    }
+
+    @Converter(from = ClientJSAction.class)
+    public GClientJSAction convertAction(ClientJSAction action) throws IOException {
+        ArrayList<Object> values = new ArrayList<>();
+        ArrayList<Object> types = new ArrayList<>();
+
+        ArrayList<byte[]> actionTypes = action.types;
+        ArrayList<byte[]> actionValues = action.values;
+
+        for (int i = 0; i < actionTypes.size(); i++) {
+            types.add(typeConverter.convertOrCast(ClientTypeSerializer.deserializeClientType(actionTypes.get(i))));
+            values.add(deserializeServerValue(actionValues.get(i)));
+        }
+
+        return new GClientJSAction(action.resource, action.resourceName,  values, types, action.isFile, action.syncType);
     }
 }

@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.form.object.table.grid.controller;
 
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.GFormChanges;
@@ -67,10 +68,6 @@ public class GGridController extends GAbstractTableController {
         return groupObject.mapTileProvider;
     }
 
-    public boolean isGridAutosize() {
-        return groupObject.grid.autoSize;
-    }
-
     public GGridController(GFormController iformController, GGroupObject groupObject, GGridUserPreferences[] userPreferences) {
         super(iformController, groupObject.toolbar, isList(groupObject));
         this.groupObject = groupObject;
@@ -88,7 +85,7 @@ public class GGridController extends GAbstractTableController {
 
                 // we need to add recordview somewhere, to attach it (events, listeners, etc.)
                 // need to wrap recordView to setVisible false recordView's parent and not recordView itself (since it will be moved and shown by table view implementation)
-                formLayout.recordViews.add(this.recordView);
+                formLayout.attachContainer.add(this.recordView);
             }
 
             this.userPreferences = userPreferences;
@@ -203,8 +200,8 @@ public class GGridController extends GAbstractTableController {
         if (this.table != null)
             this.table.onClear();
 
-        changeGridView(table.getThisWidget());
-        table.onRender();
+        changeGridView(table.getThisWidget(), groupObject.grid.isBoxed(table));
+        table.onRender(formController.popEditEvent());
         this.table = table;
         updateSettingsButton();
     }
@@ -424,6 +421,11 @@ public class GGridController extends GAbstractTableController {
     @Override
     public void updatePropertyCaptions(GCaptionReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
         table.updatePropertyCaptions(formController.getProperty(reader.propertyID), values);
+    }
+
+    @Override
+    public void updateLoadings(GLoadingReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
+        table.updateLoadings(formController.getProperty(reader.propertyID), values);
     }
 
     @Override

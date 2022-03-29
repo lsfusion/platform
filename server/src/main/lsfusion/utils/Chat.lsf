@@ -10,6 +10,18 @@ TABLE chatCustomUser(Chat, CustomUser);
 
 EXTEND CLASS UserRole : Chat;
 
+initQuillJS INTERNAL CLIENT 'input-quill.js';
+initQuillCSS INTERNAL CLIENT 'input-quill.css';
+initChatJS INTERNAL CLIENT 'chat.js';
+initChatCSS INTERNAL CLIENT 'chat.css';
+
+onWebClientStarted() + {
+    initQuillJS();
+    initQuillCSS();
+    initChatJS();
+    initChatCSS();
+}
+
 @defineExternalizable(chat, STRING[100]);
 
 in '{chat.in.chat}' = DATA BOOLEAN (Chat, CustomUser);
@@ -645,7 +657,7 @@ changeInputMessage () {
             LOCAL extension = STRING ();
             extension() <- getWord(name(), '.', wordCount(name(), '.')) IF wordCount(name(), '.') > 1;
             attachmentName() <- left(name(), length(name()) - OVERRIDE (length(extension()) + 1), 0);
-            attachment() <- setExtension(decode(data(), 'base64'), (OVERRIDE extension(), 'dat'));
+            attachment() <- file(decode(data(), 'base64'), (OVERRIDE extension(), 'dat'));
         }
 
         IF action() = 'open' THEN {

@@ -15,8 +15,8 @@ import TabItem from '@theme/TabItem';
 Исполняемые exe файлы:
 lsFusion **4.1** Server & Client (+ OpenJDK **11.0.9**, PostgreSQL **13.1**(x64) / **10.8**(x32), Tomcat **9.0.21**):
 
-- [x32](http://download.lsfusion.org/exe/lsfusion-4.1.exe)
-- [x64](http://download.lsfusion.org/exe/lsfusion-4.1-x64.exe)
+- [x32](https://download.lsfusion.org/exe/lsfusion-4.1.exe)
+- [x64](https://download.lsfusion.org/exe/lsfusion-4.1-x64.exe)
 - <details><summary>Предыдущие версии</summary>
 
     - lsFusion 4.0 Server & Client
@@ -91,7 +91,7 @@ Classpath сервера по умолчанию устанавливается 
 Отправить пользователям ссылку `http://<сетевой адрес веб-сервера (Client)>:8080`. При открытии этой ссылки, пользователь, по умолчанию, будет перенаправлен на страницу логина, где он, в свою очередь, при необходимости, может установить себе десктоп-клиент через Java Web Start, предварительно установив себе Java (JDK) (например, по [этой](https://developers.redhat.com/products/openjdk/download) ссылке с регистрацией или по этой - [без](https://github.com/ojdkbuild/ojdkbuild)). Обновление веб и десктоп-клиентов происходит автоматически вместе с [обновлением веб-сервера](#update) (Client).
 
 :::info
-Под Windows также можно воспользоваться [программами установки](http://download.lsfusion.org/exe/) десктоп клиента (файлы `lsfusion-desktop-*` с нужной версией и разрядностью ОС). Однако в отличие от установки при помощи Java Web Start, установленный таким образом десктоп-клиент не будет автоматически обновляться. Соответственно для его ручного обновления необходимо скачать файл новой версии десктоп клиента (`lsfusion-client-4.<новая версия>.jar`) с [центрального сервера](https://download.lsfusion.org/java) и заместить им файл `$INSTALL_DIR$/client.jar`.
+Под Windows также можно воспользоваться [программами установки](https://download.lsfusion.org/exe/) десктоп клиента (файлы `lsfusion-desktop-*` с нужной версией и разрядностью ОС). Однако в отличие от установки при помощи Java Web Start, установленный таким образом десктоп-клиент не будет автоматически обновляться. Соответственно для его ручного обновления необходимо скачать файл новой версии десктоп клиента (`lsfusion-client-4.<новая версия>.jar`) с [центрального сервера](https://download.lsfusion.org/java) и заместить им файл `$INSTALL_DIR$/client.jar`.
 :::
 
 :::caution

@@ -2,6 +2,7 @@ package lsfusion.gwt.client.form.object.table.tree.view;
 
 import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.base.GwtSharedUtils;
+import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.form.object.GGroupObject;
@@ -19,6 +20,7 @@ public class GTreeTableTree {
     private Map<GGroupObject, Set<GTreeTableNode>> groupNodes = new HashMap<>();
 
     public NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Object>> values = new NativeSIDMap<>();
+    public NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Object>> loadings = new NativeSIDMap<>();
     public NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Object>> readOnly = new NativeSIDMap<>();
 
     public GTreeTableNode root;
@@ -47,6 +49,7 @@ public class GTreeTableTree {
 
     public int removeProperty(GPropertyDraw property) {
         values.remove(property);
+        loadings.remove(property);
 
         GGroupObject group = property.groupObject;
         List<GPropertyDraw> properties = groupProperties.get(group);
@@ -180,6 +183,11 @@ public class GTreeTableTree {
     }
 
 
+    public void setLoadings(GPropertyDraw property, NativeHashMap<GGroupObjectValue, Object> propLoadings) {
+        // here can be leaks because of nulls (so in theory nulls better to be removed)
+        GwtSharedUtils.putUpdate(loadings, property, propLoadings, true);
+    }
+
     public void setPropertyValues(GPropertyDraw property, NativeHashMap<GGroupObjectValue, Object> propValues, boolean updateKeys) {
         GwtSharedUtils.putUpdate(values, property, propValues, updateKeys);
     }
@@ -202,12 +210,16 @@ public class GTreeTableTree {
     private List<GTreeGridRecord> getNodeChildrenRecords(int columnCount, GTreeTableNode node, int level, GTreeColumnValue parentValue) {
         List<GTreeGridRecord> result = new ArrayList<>();
         for (GTreeTableNode child : node.getChildren()) {
-            HashMap<GPropertyDraw, Object> valueMap = new HashMap<>();
+            HashMap<GPropertyDraw, Pair<Object, Boolean>> valueMap = new HashMap<>();
             for (int i = 1; i < columnCount; i++) {
                 GPropertyDraw property = getProperty(child.getGroup(), i);
                 if (property != null) {
-                    Object value = values.get(property).get(child.getKey());
-                    valueMap.put(property, value);
+                    GGroupObjectValue key = child.getKey();
+                    Object value = values.get(property).get(key);
+                    NativeHashMap<GGroupObjectValue, Object> loadingMap = loadings.get(property);
+                    boolean loading = loadingMap != null && loadingMap.get(key) != null;
+
+                    valueMap.put(property, new Pair<>(value, loading));
                 }
             }
             GTreeGridRecord record = new GTreeGridRecord(child.getGroup(), child.getKey(), valueMap);
@@ -261,14 +273,6 @@ public class GTreeTableTree {
         }
 
         return groupProperties.get(column);
-    }
-
-    public Object getValue(GGroupObject group, int column, GGroupObjectValue key) {
-        GPropertyDraw property = getProperty(group, column);
-        if (property == null) {
-            return null;
-        }
-        return values.get(property).get(key);
     }
 
     public boolean isReadOnly(GGroupObject group, int column, GGroupObjectValue key) {

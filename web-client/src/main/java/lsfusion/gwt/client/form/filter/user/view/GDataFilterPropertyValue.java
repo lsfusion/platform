@@ -5,6 +5,7 @@ import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
+import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.async.GAsyncExec;
 import lsfusion.gwt.client.form.property.async.GInputList;
 import lsfusion.gwt.client.form.property.cell.classes.controller.suggest.GCompletionType;
@@ -12,6 +13,7 @@ import lsfusion.gwt.client.form.property.cell.controller.CancelReason;
 import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
 import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
 import lsfusion.gwt.client.form.property.panel.view.ActionOrPropertyValue;
+import lsfusion.gwt.client.form.property.panel.view.ActionOrPropertyValueController;
 import lsfusion.interop.action.ServerResponse;
 
 import java.text.ParseException;
@@ -27,7 +29,15 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
     public boolean enterPressed;
 
     public GDataFilterPropertyValue(GPropertyFilter condition, GFormController form, Consumer<Object> afterCommit, Consumer<CancelReason> onCancel) {
-        super(condition.property, condition.columnKey, form, false, (columnKeyValue, value) -> {});
+        super(condition.property, condition.columnKey, form, false, new ActionOrPropertyValueController() {
+            @Override
+            public void setValue(GGroupObjectValue columnKey, Object value) {
+            }
+
+            @Override
+            public void setLoading(GGroupObjectValue columnKey, Object value) {
+            }
+        });
         this.afterCommit = afterCommit;
         this.onCancel = onCancel;
         
@@ -42,7 +52,7 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
         try {
             objValue = property.baseType.parseString(stringValue, property.pattern);
         } catch (ParseException ignored) {}
-        updateValue(objValue);
+        update(objValue);
 
         afterCommit.accept(objValue);
     }
@@ -85,7 +95,7 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
                 (result, commitReason) -> acceptCommit(result, commitReason.equals(CommitReason.ENTERPRESSED)),
                 onCancel,
                 this,
-                ServerResponse.VALUES);
+                ServerResponse.VALUES, null);
     }
     
     private void acceptCommit(GUserInputResult result, boolean enterPressed) {
@@ -97,7 +107,7 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
     @Override
     public Consumer<Object> getCustomRendererValueChangeConsumer() {
         return value -> {
-            updateValue(value);
+            update(value);
             afterCommit.accept(value);
         };
     }
@@ -105,13 +115,6 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
     @Override
     public boolean isPropertyReadOnly() {
         return false;
-    }
-
-    @Override
-    protected void onBlur(EventHandler handler) {
-        form.previewBlurEvent(handler.event);
-
-        super.onBlur(handler);
     }
 
     public void setApplied(boolean applied) {

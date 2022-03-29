@@ -2,7 +2,6 @@ package lsfusion.client.form.controller.remote.serialization;
 
 import lsfusion.base.context.ApplicationContext;
 import lsfusion.client.form.ClientForm;
-import lsfusion.client.form.classes.ClientClassChooser;
 import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.design.ClientContainer;
 import lsfusion.client.form.filter.ClientRegularFilter;
@@ -45,7 +44,6 @@ public class ClientSerializationPool extends SerializationPool<ClientForm> {
         addMapping(ClientToolbar.class);
         addMapping(ClientFilter.class);
         addMapping(ClientCalculations.class);
-        addMapping(ClientClassChooser.class);
         addMapping(ClientObject.class);
         addMapping(ClientPropertyDraw.class);
         addMapping(ClientRegularFilter.class);

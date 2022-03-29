@@ -46,7 +46,6 @@ import lsfusion.server.language.property.oraction.LAP;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
-import lsfusion.server.logics.action.implement.ActionImplement;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.ApplyFilter;
 import lsfusion.server.logics.action.session.DataSession;
@@ -120,6 +119,7 @@ import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -2100,14 +2100,12 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 
     private Scheduler.SchedulerTask getSynchronizeWebDirectoriesTask(Scheduler scheduler) {
         return scheduler.createSystemTask(stack -> {
-            Path resourcesPath = Paths.get(SystemProperties.userDir, "src/main/resources/web");
-            Path targetPath = Paths.get(SystemProperties.userDir, "target/classes/web");
-            if (!targetPath.toFile().exists())
-                targetPath = Paths.get(SystemProperties.userDir, "out/production/" + Paths.get(SystemProperties.userDir).toFile().getName() + "/web");
-
-            FileUtils.synchronizeDirectories(resourcesPath.toString(), targetPath.toString());
-
-        }, false, 3, false, "Copy files from 'resources/web' into target. Only for debug");
+            for (String path : ResourceUtils.findInClassPath("web")) {
+                int endIndex = path.indexOf("/target/classes");
+                FileUtils.synchronizeDirectories(Paths
+                        .get(path.substring(0, endIndex != -1 ? endIndex : path.indexOf("out/production")), "src/main/resources/web").toString(), path);
+            }
+        }, false, 1, false, "Copy files from 'resources/web' into target. Only for debug");
     }
 
     private Scheduler.SchedulerTask getAllocatedBytesUpdateTask(Scheduler scheduler) {

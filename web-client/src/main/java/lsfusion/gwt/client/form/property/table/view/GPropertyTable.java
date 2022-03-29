@@ -21,9 +21,8 @@ import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
 
-public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<T> implements RenderContext, UpdateContext {
+public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<T> {
 
     protected final GFormController form;
     protected final GGroupObject groupObject;
@@ -56,6 +55,7 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
 
     public abstract GPropertyDraw getProperty(int row, int column);
     public abstract GPropertyDraw getProperty(Cell cell);
+    public abstract GGridPropertyTable<T>.GridPropertyColumn getGridColumn(int column);
 
     @Override
     public boolean isChangeOnSingleClick(Cell cell, boolean rowChanged) {
@@ -71,9 +71,9 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
 
     public abstract void setValueAt(Cell cell, Object value);
 
-    public abstract Object getValueAt(Cell cell);
+    public abstract void setLoadingAt(Cell cell);
 
-    public abstract void pasteData(Cell cell, Element parent, List<List<String>> table);
+    public abstract void pasteData(Cell cell, TableCellElement parent, List<List<String>> table);
 
     @Override
     protected int getRowByKey(Object key) {
@@ -91,22 +91,29 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
 //        CopyPasteUtils.setEmptySelection(getSelectedElement());
 //    }
 
-    public void onEditEvent(EventHandler handler, boolean isBinding, Cell editCell, Element editCellParent) {
+    public void onEditEvent(EventHandler handler, boolean isBinding, Cell editCell, TableCellElement editCellParent) {
         form.executePropertyEventAction(handler, isBinding, getEditContext(editCell, editCellParent));
     }
 
-    public ExecuteEditContext getEditContext(Cell editCell, Element editCellParent) {
+    protected abstract RenderContext getRenderContext(Cell cell, TableCellElement cellElement, GPropertyDraw property, GGridPropertyTable<T>.GridPropertyColumn column);
+
+    protected abstract UpdateContext getUpdateContext(Cell cell, TableCellElement cellElement, GPropertyDraw property, GGridPropertyTable<T>.GridPropertyColumn column);
+
+    public ExecuteEditContext getEditContext(Cell editCell, TableCellElement editCellParent) {
         final GPropertyDraw property = GPropertyTable.this.getProperty(editCell);
-        Element editElement = GPropertyTableBuilder.getRenderSizedElement(editCellParent, property, GPropertyTable.this);
+        GGridPropertyTable<T>.GridPropertyColumn gridColumn = getGridColumn(editCell.getColumnIndex());
+        RenderContext renderContext = getRenderContext(editCell, editCellParent, property, gridColumn);
+        UpdateContext updateContext = getUpdateContext(editCell, editCellParent, property, gridColumn);
+        Element editElement = GPropertyTableBuilder.getRenderSizedElement(editCellParent, property, updateContext);
         return new ExecuteEditContext() {
             @Override
             public RenderContext getRenderContext() {
-                return GPropertyTable.this;
+                return renderContext;
             }
 
             @Override
             public UpdateContext getUpdateContext() {
-                return GPropertyTable.this;
+                return updateContext;
             }
 
             @Override
@@ -125,13 +132,13 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
             }
 
             @Override
-            public Object getValue() {
-                return getValueAt(editCell);
+            public void setValue(Object value) {
+                setValueAt(editCell, value);
             }
 
             @Override
-            public void setValue(Object value) {
-                setValueAt(editCell, value);
+            public void setLoading() {
+                setLoadingAt(editCell);
             }
 
             @Override
@@ -181,27 +188,17 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
             public void restoreSetFocus(Object forceSetFocus) {
                 setSelectedColumn((Integer) forceSetFocus);
             }
+
+            @Override
+            public void startEditing() {
+                updateSelectedRowCellBackground(false, false, editCellParent);
+            }
+
+            @Override
+            public void stopEditing() {
+                updateSelectedRowCellBackground(true, true, editCellParent);
+            }
         };
-    }
-
-    @Override
-    public boolean isAlwaysSelected() {
-        return false;
-    }
-
-    @Override
-    public boolean globalCaptionIsDrawn() {
-        return true;
-    }
-
-    @Override
-    public Consumer<Object> getCustomRendererValueChangeConsumer() {
-        return null;
-    }
-
-    @Override
-    public boolean isPropertyReadOnly() {
-        return false;
     }
 
     public abstract GFont getFont();

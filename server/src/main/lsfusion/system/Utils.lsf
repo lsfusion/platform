@@ -44,8 +44,8 @@ richTextToString '{utils.rich.text.to.string}' INTERNAL 'lsfusion.server.logics.
 appendToFile '{utils.append.to.file}' INTERNAL 'lsfusion.server.physics.dev.integration.external.to.file.AppendToFileAction' (STRING[1000], TEXT, STRING[10]);
 appendToFile(STRING[1000] path, TEXT text) { appendToFile(path, text, 'UTF-8'); };
 
-setExtension = FORMULA FILE 'cast_static_file_to_dynamic_file(($1),$2)'; // for RAWFILE, PDFFILE...
-changeExtension(FILE file, TEXT extension) = setExtension(RAWFILE(file), extension); // for FILE
+setExtension = FORMULA FILE 'cast_static_file_to_dynamic_file(($1),$2)'; // for RAWFILE, PDFFILE... //backward compatibility
+changeExtension(FILE file, TEXT extension) = setExtension(RAWFILE(file), extension); // for FILE //backward compatibility
 
 // --------------------------------- Logging --------------------------------- //
 
@@ -143,7 +143,7 @@ isSubstring = FORMULA NULL BOOLEAN PG 'CASE WHEN position(($2) in ($1)) > 0 THEN
 
 replace (TEXT p1, TEXT p2, TEXT p3) = FORMULA TEXT 'replace($1,$2,$3)';
 
-length (TEXT p1) = FORMULA INTEGER PG 'length($1)', MS 'len($1)';
+length = FORMULA INTEGER PG 'length($1)', MS 'len($1)';
 
 strpos (TEXT string, TEXT substring) = FORMULA INTEGER PG 'strpos($1, $2)', MS 'charindex($2, $1)'; 
 regexpReplace (STRING source, STRING pattern, STRING replace, STRING flags) = FORMULA STRING PG 'REGEXP_REPLACE($1, $2, $3, $4)'; 
@@ -180,12 +180,19 @@ decodedBase64 = DATA LOCAL TEXT();
 decodeBase64  INTERNAL  'lsfusion.server.logics.classes.data.utils.string.DecodeBase64Action' (TEXT);
 
 urlEncoded = DATA LOCAL TEXT();
-urlEncode  INTERNAL 'lsfusion.server.logics.classes.data.utils.string.UrlEncodeAction' (TEXT, BPSTRING[20]);
+urlEncode  INTERNAL 'lsfusion.server.logics.classes.data.utils.string.UrlEncodeAction' (TEXT, TEXT);
 urlEncode (TEXT text) { urlEncode(text, 'UTF-8'); };
 
 urlDecoded = DATA LOCAL TEXT();
-urlDecode  INTERNAL 'lsfusion.server.logics.classes.data.utils.string.UrlDecodeAction' (TEXT, BPSTRING[20]);
+urlDecode  INTERNAL 'lsfusion.server.logics.classes.data.utils.string.UrlDecodeAction' (TEXT, TEXT);
 urlDecode (TEXT text) { urlDecode(text, 'UTF-8'); };
+
+urlFormatted = DATA LOCAL TEXT();
+urlParsed = DATA LOCAL TEXT(TEXT);
+//urlFormatted -> urlParsed
+urlParse INTERNAL 'lsfusion.server.logics.classes.data.utils.string.UrlParseAction' ();
+//urlParsed -> urlFormatted
+urlFormat INTERNAL 'lsfusion.server.logics.classes.data.utils.string.UrlFormatAction' ();
 
 generatedUUID = DATA LOCAL TEXT();
 generateUUID  INTERNAL 'lsfusion.server.logics.classes.data.utils.string.GenerateUUIDAction' ();
@@ -252,6 +259,7 @@ toMilliseconds '{utils.to.milliseconds}' INTERNAL 'lsfusion.server.logics.classe
 
 jsonArrayLength (TEXT j) = FORMULA INTEGER 'json_array_length(($1)::json)';
 jsonArrayElement (TEXT j, INTEGER i, STRING id) = FORMULA STRING '((($1)::json)->(($2)-1))->>($3)';
+merge(JSON a, JSON b) = FORMULA JSON 'jsonb_recursive_merge(($1)::jsonb,($2)::jsonb)';
 
 // -------------------------------------------- Свойства под файлы ---------------------------- //
 

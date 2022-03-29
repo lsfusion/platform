@@ -9,4 +9,10 @@ public interface UpdateContext {
     boolean isPropertyReadOnly();
 
     boolean globalCaptionIsDrawn();
+
+    Object getValue();
+
+    boolean isLoading();
+
+    Object getImage();
 }

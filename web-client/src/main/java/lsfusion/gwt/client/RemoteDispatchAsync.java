@@ -121,46 +121,67 @@ public abstract class RemoteDispatchAsync implements ServerMessageProvider {
 
             @Override
             public void postProcess() {
-                flushCompletedRequests(() -> {
-                    if(syncCount > 0 && flushCount == 0)
-                        loadingManager.stop(false);
-                    flushCount++;
-                    }, () -> {
-                    flushCount--;
-                    if(syncCount > 0 && flushCount == 0)
-                        loadingManager.start();
-                });
+                flushCompletedRequests();
             }
         });
 
         return requestIndex;
     }
 
+    public void onEditingFinished() {
+        if(pendingFlushCompletedRequests) {
+            flushCompletedRequests();
+            pendingFlushCompletedRequests = false;
+        }
+    }
+
+    private void flushCompletedRequests() {
+        flushCompletedRequests(() -> {
+            if(syncCount > 0 && flushCount == 0)
+                loadingManager.stop(false);
+            flushCount++;
+        }, () -> {
+            flushCount--;
+            if(syncCount > 0 && flushCount == 0)
+                loadingManager.start();
+        });
+    }
+
     protected boolean isEditing() {
         return false;
     }
+    protected long getEditingRequestIndex() {
+        return -1;
+    }
 
+    private boolean pendingFlushCompletedRequests;
     public void flushCompletedRequests(Runnable preProceed, Runnable postProceed) {
-        if (isEditing()) {
-            q.forEach(action -> {
-                if (action.preProceeded != null && !action.preProceeded && action.finished) {
-                    preProceed.run();
-                    action.proceed(postProceed);
-                    action.preProceeded = true;
-                }
-            });
-        } else {
-            while (!q.isEmpty() && q.peek().finished) {
-                QueuedAction action = q.remove();
-                long requestIndex = action.requestIndex;
-                if (requestIndex >= 0) {
-                    lastReceivedRequestIndex = requestIndex;
-                }
+        q.forEach(queuedAction -> {
+            if (queuedAction.preProceeded != null && !queuedAction.preProceeded && queuedAction.finished) {
+                preProceed.run();
+                queuedAction.proceed(postProceed);
+                queuedAction.preProceeded = true;
+            }
+        });
 
-                if (action.preProceeded == null || !action.preProceeded) {
-                    preProceed.run();
-                    action.proceed(postProceed);
-                }
+        QueuedAction action;
+        while (!q.isEmpty() && (action = q.peek()).finished) {
+            long requestIndex = action.requestIndex;
+
+            // when editing suspending all requests (except some actions that are marked for editing)
+            if (isEditing() && requestIndex > getEditingRequestIndex()) {
+                pendingFlushCompletedRequests = true;
+                break;
+            }
+
+            q.remove();
+            if (requestIndex >= 0) {
+                lastReceivedRequestIndex = requestIndex;
+            }
+
+            if (action.preProceeded == null || !action.preProceeded) {
+                preProceed.run();
+                action.proceed(postProceed);
             }
         }
     }

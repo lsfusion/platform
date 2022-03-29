@@ -53,13 +53,19 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
         }
 
         if(syncType) {
-            if (windowType == WindowFormType.FLOAT) {
-                if(!inputObjects.isEmpty())
-                    return ModalityType.DIALOG_MODAL;
-                return ModalityType.MODAL;
-            } else {
-                assert (windowType == WindowFormType.DOCKED);
-                return ModalityType.DOCKED_MODAL;
+            switch (windowType) {
+                case FLOAT:
+                    if(!inputObjects.isEmpty())
+                        return ModalityType.DIALOG_MODAL;
+                    return ModalityType.MODAL;
+                case DOCKED:
+                    return ModalityType.DOCKED_MODAL;
+                case EMBEDDED:
+                    return ModalityType.EMBEDDED;
+                case POPUP:
+                    return ModalityType.POPUP;
+                default:
+                    throw new UnsupportedOperationException();
             }
         } else
             return ModalityType.DOCKED;
@@ -119,7 +125,7 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
 
     private boolean heuristicSyncType(ExecutionContext<ClassPropertyInterface> context) {
         FormInstance formInstance;
-        return context.hasMoreSessionUsages || ((formInstance = context.getFormInstance(false, false)) != null && formInstance.isFloat()) || (windowType != null && windowType.equals(WindowFormType.FLOAT));
+        return context.hasMoreSessionUsages || ((formInstance = context.getFormInstance(false, false)) != null && formInstance.isModal()) || (windowType != null && windowType.isModal());
     }
 
     //todo: same as above
@@ -141,7 +147,7 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
 
         ImList<ObjectEntity> resolvedInputObjects = inputObjects.mapList(mapRevObjects);
 
-        FormInstance newFormInstance = context.createFormInstance(form, resolvedInputObjects.getCol().toSet(), mapObjectValues, context.getSession(), syncType, noCancel, manageSession, checkOnOk, isShowDrop(), true, modalityType.isModal(), contextFilters, readOnly);
+        FormInstance newFormInstance = context.createFormInstance(form, resolvedInputObjects.getCol().toSet(), mapObjectValues, context.getSession(), syncType, noCancel, manageSession, checkOnOk, isShowDrop(), true, modalityType.getWindowType(), contextFilters, readOnly);
         context.requestFormUserInteraction(newFormInstance, modalityType, forbidDuplicate, context.stack);
 
         if (syncType) {
@@ -192,7 +198,7 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
     @Override
     public AsyncMapEventExec<ClassPropertyInterface> calculateAsyncEventExec(boolean optimistic, boolean recursive) {
         ModalityType modalityType = getModalityType();
-        return new AsyncMapOpenForm<>(form, forbidDuplicate, modalityType.isModal(), modalityType.isWindow(), null, mapObjects.size() == 1 ? mapObjects.singleValue() : null);
+        return new AsyncMapOpenForm<>(form, forbidDuplicate, modalityType.isModal(), modalityType.getWindowType(), null, mapObjects.size() == 1 ? mapObjects.singleValue() : null);
     }
 
     private ModalityType getModalityType() {

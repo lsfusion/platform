@@ -100,6 +100,11 @@ public class InputListEntity<P extends PropertyInterface, V extends PropertyInte
         return mapValues.innerCrossJoin(property.getInterfaceClasses(ClassType.wherePolicy));
     }
 
+    public <X extends PropertyInterface> InputContextAction<?, V> getResetAction(BaseLogicsModule baseLM, LP targetProp) {
+        LA<X> reset = (LA<X>) baseLM.addResetAProp(targetProp);
+        return new InputContextAction("reset", reset.getActionOrProperty(), reset.listInterfaces.toIndexedMap());
+    }
+
     public <X extends PropertyInterface> InputContextAction<?, V> getNewEditAction(BaseLogicsModule baseLM, ConcreteCustomClass baseClass, LP targetProp, FormSessionScope scope) {
         LP<P> lp = new LP<>(property);
         ImOrderSet<P> listInterfaces = lp.listInterfaces;
@@ -139,6 +144,10 @@ public class InputListEntity<P extends PropertyInterface, V extends PropertyInte
     public boolean isValueUnique(ImRevMap<V, StaticParamNullableExpr> listParamExprs) {
         ImRevMap<P, StaticParamNullableExpr> mapExprs = mapValues.join(listParamExprs);
         return property.isValueFull(mapExprs) && property.isValueUnique(mapExprs, true);
+    }
+    
+    public boolean isNotNull() {
+        return property.isNotNull();
     }
 
     @Override

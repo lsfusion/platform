@@ -199,6 +199,10 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     }
 
     @Override
+    public void updateLoadings(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, Object> values) {
+    }
+
+    @Override
     public void updatePropertyFooters(GPropertyDraw property, NativeHashMap<GGroupObjectValue, Object> values) {
     }
 
@@ -523,35 +527,35 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
         }-*/;
     }
 
-    protected native final boolean hasKey(JavaScriptObject object, String key) /*-{
+    protected static native boolean hasKey(JavaScriptObject object, String key) /*-{
         return object[key] !== undefined;
     }-*/;
-    protected native final JavaScriptObject getValue(JavaScriptObject object, String key) /*-{
+    protected static native JavaScriptObject getValue(JavaScriptObject object, String key) /*-{
         return object[key];
     }-*/;
 
-    protected native final JavaScriptObject fromString(String string) /*-{
+    protected static native JavaScriptObject fromString(String string) /*-{
         return string;
     }-*/;
-    protected native final String toString(JavaScriptObject string) /*-{
+    protected static native String toString(JavaScriptObject string) /*-{
         return string;
     }-*/;
-    protected native final JavaScriptObject fromNumber(double d) /*-{
+    protected static native JavaScriptObject fromNumber(double d) /*-{
         return d;
     }-*/;
-    protected native final double toNumber(JavaScriptObject d) /*-{
+    protected static native double toNumber(JavaScriptObject d) /*-{
         return d;
     }-*/;
-    protected native final JavaScriptObject fromBoolean(boolean b) /*-{
+    protected static native JavaScriptObject fromBoolean(boolean b) /*-{
         return b;
     }-*/;
-    protected native final boolean toBoolean(JavaScriptObject b) /*-{
+    protected static native boolean toBoolean(JavaScriptObject b) /*-{
         return b;
     }-*/;
-    protected native final <T> JavaScriptObject fromObject(T object) /*-{
+    protected static native <T> JavaScriptObject fromObject(T object) /*-{
         return object;
     }-*/;
-    protected native final <T> T toObject(JavaScriptObject object) /*-{
+    protected static native <T> T toObject(JavaScriptObject object) /*-{
         return object;
     }-*/;
 }

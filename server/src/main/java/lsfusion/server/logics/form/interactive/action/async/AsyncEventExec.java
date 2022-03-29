@@ -9,6 +9,8 @@ import java.io.IOException;
 
 public abstract class AsyncEventExec {
 
+    public String customEditorFunction = null;
+
     public abstract byte getTypeId();
 
     public void serialize(DataOutputStream dataOutputStream) throws IOException {

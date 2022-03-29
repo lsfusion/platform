@@ -1,6 +1,7 @@
 package lsfusion.server.logics;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.ExceptionUtils;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.server.base.controller.manager.LifecycleManager;
 import lsfusion.server.base.controller.remote.RmiManager;
@@ -202,9 +203,10 @@ public class LogicsInstance implements InitializingBean {
 
             logger.info("Logics instance has successfully started");
         } catch (Throwable throwable) {
-            ThrowableWithStack[] throwables = throwable instanceof NestedThreadException // don't need NestedThreadException message+stack (they are always the same / don't matter)
-                                     ? ((NestedThreadException) throwable).getThrowables()
-                                     : new ThrowableWithStack[]{new ThrowableWithStack(throwable)};
+            Throwable rootThrowable = ExceptionUtils.getRootCause(throwable);
+            ThrowableWithStack[] throwables = rootThrowable instanceof NestedThreadException // don't need NestedThreadException message+stack (they are always the same / don't matter)
+                                     ? ((NestedThreadException) rootThrowable).getThrowables()
+                                     : new ThrowableWithStack[]{new ThrowableWithStack(rootThrowable)};
             
             for (ThrowableWithStack nestedThrowable : throwables) {
                 nestedThrowable.log("Exception while starting logics instance", logger);

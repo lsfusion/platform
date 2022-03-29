@@ -31,9 +31,8 @@ import lsfusion.client.form.controller.dispatch.ClientFormActionDispatcher;
 import lsfusion.client.form.controller.remote.serialization.ClientSerializationPool;
 import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.design.ClientContainer;
-import lsfusion.client.form.design.view.ClientFormLayout;
-import lsfusion.client.form.design.view.FlexPanel;
-import lsfusion.client.form.design.view.TabbedClientContainerView;
+import lsfusion.client.form.design.view.*;
+import lsfusion.client.form.design.view.flex.LinearClientContainerView;
 import lsfusion.client.form.design.view.widget.ComboBoxWidget;
 import lsfusion.client.form.design.view.widget.Widget;
 import lsfusion.client.form.filter.ClientRegularFilter;
@@ -730,6 +729,8 @@ public class ClientFormController implements AsyncListener {
             treeController.processFormChanges(formChanges, currentGridObjects);
         }
         
+        expandCollapseContainers(formChanges);
+        
         formLayout.autoShowHideContainers();
         
         activateElements(formChanges, firstChanges);
@@ -744,6 +745,28 @@ public class ClientFormController implements AsyncListener {
         } else {
             activateTabs(formChanges.activateTabs);
             activateProperties(formChanges.activateProps);
+        }
+    }
+    
+    private void expandCollapseContainers(ClientFormChanges formChanges) {
+        for (ClientContainer container : formChanges.collapseContainers) {
+            setContainerExtCollapsed(container, true);
+        }
+        
+        for (ClientContainer container : formChanges.expandContainers) {
+            setContainerExtCollapsed(container, false);
+        }
+    }
+    
+    private void setContainerExtCollapsed(ClientContainer container, boolean collapsed) {
+        if (container.container != null) {
+            ClientContainerView parentContainerView = formLayout.getContainerView(container.container);
+            if (parentContainerView instanceof LinearClientContainerView) {
+                Widget childWidget = ((LinearClientContainerView) parentContainerView).getChildView(container);
+                if (childWidget instanceof CollapsiblePanel) {
+                    ((CollapsiblePanel) childWidget).setExtCollapsed(collapsed);
+                }
+            }
         }
     }
 
@@ -1435,7 +1458,7 @@ public class ClientFormController implements AsyncListener {
             }
         }
 
-        rmiQueue.syncRequest(new ProcessServerResponseRmiRequest("applyCurrentFilters") {
+        rmiQueue.asyncRequest(new ProcessServerResponseRmiRequest("applyCurrentFilters") {
             @Override
             protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
                 return remoteForm.setUserFilters(requestIndex, lastReceivedRequestIndex, filters.toArray(new byte[filters.size()][]));
@@ -1665,7 +1688,7 @@ public class ClientFormController implements AsyncListener {
         rmiQueue.syncRequest(new ProcessServerResponseRmiRequest("closePressed") {
             @Override
             protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                return remoteForm.closedPressed(requestIndex, lastReceivedRequestIndex);
+                return remoteForm.closedPressed(requestIndex, lastReceivedRequestIndex, false);
             }
         });
     }
@@ -1993,7 +2016,7 @@ public class ClientFormController implements AsyncListener {
     private boolean bindEditing(Binding binding, java.awt.event.InputEvent ke) {
         switch (binding.bindEditing) {
             case AUTO:
-                return !isEditing() || ke instanceof MouseEvent || (ke instanceof KeyEvent && notTextCharEvent((KeyEvent) ke));
+                return !isEditing() || !targetElementIsEditing(ke) || ke instanceof MouseEvent || (ke instanceof KeyEvent && notTextCharEvent((KeyEvent) ke));
             case ALL:
                 return true;
             case ONLY:
@@ -2002,6 +2025,10 @@ public class ClientFormController implements AsyncListener {
                 return !isEditing();
         }
         return true;
+    }
+
+    private boolean targetElementIsEditing(java.awt.event.InputEvent event) {
+        return getCurrentEditingTable().getEditorComponent().equals(event.getSource());
     }
 
     private static List<Character> textChars = Arrays.asList(new Character[]{KeyEvent.VK_DELETE, KeyEvent.VK_BACK_SPACE, KeyEvent.VK_ENTER,

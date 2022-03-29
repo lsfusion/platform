@@ -33,7 +33,9 @@ public class ClientContainer extends ClientComponent {
 
     public int lines = 1;
     public Integer lineSize = null;
+    public Integer captionLineSize = null;
     public boolean lineShrink = false;
+    public String customDesign = null;
 
     public List<ClientComponent> children = new ArrayList<>();
     
@@ -61,7 +63,12 @@ public class ClientContainer extends ClientComponent {
 
         outStream.writeInt(lines);
         pool.writeInt(outStream, lineSize);
+        pool.writeInt(outStream, captionLineSize);
         outStream.writeBoolean(lineShrink);
+
+        outStream.writeBoolean(isCustomDesign());
+        if (isCustomDesign())
+            pool.writeString(outStream, customDesign);
     }
 
     @Override
@@ -85,7 +92,11 @@ public class ClientContainer extends ClientComponent {
 
         lines = inStream.readInt();
         lineSize = pool.readInt(inStream);
+        captionLineSize = pool.readInt(inStream);
         lineShrink = inStream.readBoolean();
+
+        if (inStream.readBoolean())
+            customDesign = pool.readString(inStream);
     }
 
     @Override
@@ -141,14 +152,19 @@ public class ClientContainer extends ClientComponent {
                 notActions++;
         }
 
-        if(notActions <= 1)
-            return false;
-
-        return true;
+        return notActions > 1;
     }
 
     public Integer getLineSize() {
         return lineSize;
+    }
+
+    public Integer getCaptionLineSize() {
+        return captionLineSize;
+    }
+
+    public boolean isCustomDesign() {
+        return customDesign != null;
     }
 
     public ClientContainer findContainerBySID(String sID) {
@@ -205,6 +221,23 @@ public class ClientContainer extends ClientComponent {
 
         public byte getType() {
             return PropertyReadType.CONTAINER_CAPTION;
+        }
+    };
+
+    public final ClientPropertyReader customPropertyDesignReader = new ClientPropertyReader() {
+        public ClientGroupObject getGroupObject() {
+            return null;
+        }
+
+        public void update(Map<ClientGroupObjectValue, Object> readKeys, boolean updateKeys, TableController controller) {
+        }
+
+        public int getID() {
+            return ClientContainer.this.getID();
+        }
+
+        public byte getType() {
+            return PropertyReadType.CUSTOM;
         }
     };
 

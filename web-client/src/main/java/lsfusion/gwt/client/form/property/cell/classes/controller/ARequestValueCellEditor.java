@@ -57,7 +57,7 @@ public abstract class ARequestValueCellEditor implements RequestValueCellEditor 
     }
 
     public void validateAndCommit(Element parent, Integer contextAction, boolean cancelIfInvalid, CommitReason commitReason) {
-        SmartScheduler.getInstance().scheduleDeferred(commitReason.equals(CommitReason.BLURRED) && isDeferredCommitOnBlur(), () -> {
+        SmartScheduler.getInstance().scheduleDeferred(commitReason.isBlurred() && isDeferredCommitOnBlur(), () -> {
             Object value = getValue(parent, contextAction);
             if(value == null || !value.equals(RequestValueCellEditor.invalid))
                 commitFinish(parent, value, contextAction, commitReason);

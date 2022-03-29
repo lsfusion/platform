@@ -146,7 +146,7 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
 
             JavaScriptObject marker = oldMarkers.remove(key);
             if(marker == null) {
-                marker = createMarker(map, groupMarker.polygon != null, fromObject(key), markerClusters, object);
+                marker = createMarker(map, groupMarker.polygon != null, markerClusters, object);
                 markers.put(key, marker);
                 fitBounds = true;
             }
@@ -320,7 +320,7 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
     }-*/;
 
 
-    protected native JavaScriptObject createMarker(JavaScriptObject map, boolean polygon, JavaScriptObject key, JavaScriptObject markerClusters, JavaScriptObject object)/*-{
+    protected native JavaScriptObject createMarker(JavaScriptObject map, boolean polygon, JavaScriptObject markerClusters, JavaScriptObject object)/*-{
         var L = $wnd.L;
 
         var thisObject = this;
@@ -350,26 +350,29 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
         }
 
         marker.on('click', function (e) {
-            var oldKey = thisObject.@GMap::getCurrentKey()();
-
-            thisObject.@GMap::changeSimpleGroupObject(*)(key, true, marker); // we want "full rerender", at least for now
-
-            if (!@Objects::equals(Ljava/lang/Object;Ljava/lang/Object;)(oldKey, key)) {
-                thisObject.@GMap::updateCurrent(*)(oldKey, false);
-
-                thisObject.@GMap::updateCurrent(*)(key, true);
-            }
-
+            thisObject.@GMap::changeSimpleGroupObject(*)(object, true, marker); // we want "full rerender", at least for now
         });
 
         markerClusters.addLayer(marker);
         
         return marker;
     }-*/;
-    
-    protected void updateCurrent(JavaScriptObject keyObject, boolean isCurrent) {
-        if(keyObject != null) {
-            GGroupObjectValue key = toObject(keyObject);
+
+    @Override
+    protected long changeGroupObject(GGroupObjectValue key, boolean rendered) {
+        GGroupObjectValue oldKey = this.currentKey;
+
+        long result = super.changeGroupObject(key, rendered);
+
+        updateCurrent(oldKey, false);
+
+        updateCurrent(key, true);
+
+        return result;
+    }
+
+    protected void updateCurrent(GGroupObjectValue key, boolean isCurrent) {
+        if(key != null) {
             GroupMarker groupMarker = groupMarkers.get(key);
             JavaScriptObject marker = markers.get(key);
             boolean isPoly = groupMarker.polygon != null;

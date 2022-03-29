@@ -477,6 +477,14 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
 
             HorizontalPanel buttonsPanel = new HorizontalPanel();
 
+            buttonsPanel.add(refreshButton = new SuggestPopupButton() {
+                @Override
+                protected void onClickStart() {
+                    refreshButtonPressed = true;
+                    suggestBox.showSuggestionList();
+                }
+            });
+
             for(int i = 0; i < actions.length; i++) {
                 int index = i;
                 GwtClientUtils.setThemeImage(actions[index] + ".png", (image -> buttonsPanel.add(new SuggestPopupButton(new Image(image)) {
@@ -486,14 +494,6 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
                     }
                 })));
             }
-
-            buttonsPanel.add(refreshButton = new SuggestPopupButton() {
-                @Override
-                protected void onClickStart() {
-                    refreshButtonPressed = true;
-                    suggestBox.showSuggestionList();
-                }
-            });
 
             bottomPanel.add(buttonsPanel);
 

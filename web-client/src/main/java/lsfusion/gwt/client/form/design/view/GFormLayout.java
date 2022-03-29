@@ -6,6 +6,8 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.Dimension;
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.Pair;
+import lsfusion.gwt.client.base.Result;
 import lsfusion.gwt.client.base.focus.DefaultFocusReceiver;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.HasMaxPreferredSize;
@@ -22,32 +24,31 @@ import java.util.*;
 
 public class GFormLayout extends ResizableComplexPanel {
 
-    private GFormController form;
+    private final GFormController form;
 
-    private GContainer mainContainer;
+    private final GContainer mainContainer;
 
-    private Map<GContainer, GAbstractContainerView> containerViews = new HashMap<>();
-    private Map<GComponent, Widget> baseComponentViews = new HashMap<>();
+    private final Map<GContainer, GAbstractContainerView> containerViews = new HashMap<>();
+    private final Map<GComponent, Widget> baseComponentViews = new HashMap<>();
 
-    private ArrayList<GComponent> defaultComponents = new ArrayList<>();
-    private ArrayList<DefaultFocusReceiver> defaultFocusReceivers = new ArrayList<>();
+    private final ArrayList<GComponent> defaultComponents = new ArrayList<>();
+    private final ArrayList<DefaultFocusReceiver> defaultFocusReceivers = new ArrayList<>();
 
-    public final ResizableComplexPanel recordViews;
+    public final ResizableComplexPanel attachContainer;
 
-    public GFormLayout(GFormController iform, GContainer mainContainer) {
+    public GFormLayout(GFormController iform, GContainer mainContainer, boolean autoSize) {
         this.form = iform;
-
         this.mainContainer = mainContainer;
 
+        attachContainer = new ResizableComplexPanel();
+        attachContainer.setVisible(false);
         addContainers(mainContainer);
 
         Widget view = getMainView();
-        setSizedMain(view, false);
+        setSizedMain(view, autoSize);
         view.getElement().getStyle().setOverflow(Style.Overflow.AUTO);
 
-        recordViews = new ResizableComplexPanel();
-        recordViews.setVisible(false);
-        add(recordViews);
+        add(attachContainer);
 
         DataGrid.initSinkMouseEvents(this);
     }
@@ -61,11 +62,12 @@ public class GFormLayout extends ResizableComplexPanel {
     }
 
     private static GAbstractContainerView createContainerView(GFormController form, GContainer container) {
-        if (container.tabbed) {
+        if (container.tabbed)
             return new TabbedContainerView(form, container);
-        } else {
+        else if (container.isCustomDesign())
+            return new CustomContainerView(form, container);
+        else
             return new LinearContainerView(form, container);
-        }
     }
 
     @Override
@@ -89,7 +91,7 @@ public class GFormLayout extends ResizableComplexPanel {
     }
 
     // creating containers (all other components are created when creating controllers)
-    private GAbstractContainerView addContainers(GContainer container) {
+    private void addContainers(GContainer container) {
         GAbstractContainerView containerView = createContainerView(form, container);
 
         containerViews.put(container, containerView);
@@ -106,8 +108,6 @@ public class GFormLayout extends ResizableComplexPanel {
                 addContainers((GContainer) child);
             }
         }
-
-        return containerView;
     }
     public void addBaseComponent(GComponent component, Widget view, DefaultFocusReceiver focusReceiver) {
         // we wish that all base components margins, paddings and borders should be zero (since we're setting them with topBorder and others)
@@ -125,7 +125,7 @@ public class GFormLayout extends ResizableComplexPanel {
 
         GAbstractContainerView containerView;
         if(key.container != null && (containerView = containerViews.get(key.container)) != null) { // container can be null when component should be layouted manually, containerView can be null when it is removed 
-            containerView.add(key, view);
+            containerView.add(key, view, attachContainer);
 
             maybeAddDefaultFocusReceiver(key, focusReceiver);
         }
@@ -214,38 +214,47 @@ public class GFormLayout extends ResizableComplexPanel {
         return hasVisible;
     }
 
-    public Dimension getPreferredSize(int maxWidth, int maxHeight, int extraHorzOffset, int extraVertOffset) {
+    public Dimension getPreferredSize(int maxWidth, int maxHeight) {
         Integer width = mainContainer.getSize(false);
         Integer height = mainContainer.getSize(true);
 
-        setPreferredSize(true, width, height, maxWidth - extraHorzOffset, maxHeight - extraVertOffset);
+        Pair<Integer, Integer> extraOffset = setPreferredSize(true, width, height, maxWidth, maxHeight);
         try {
             DataGrid.flushUpdateDOM(); // there can be some pending grid changes, and we need actual sizes
 
             int offsetWidth = getOffsetWidth();
             int offsetHeight = getOffsetHeight();
-            return new Dimension(offsetWidth + (width != null ? 0 : extraHorzOffset), offsetHeight + (height != null ? 0 : extraVertOffset));
+            return new Dimension(offsetWidth + (width != null ? 0 : extraOffset.first), offsetHeight + (height != null ? 0 : extraOffset.second));
         } finally {
             setPreferredSize(false, null, null, 0, 0);
         }
     }
 
-    public void setPreferredSize(boolean set, Integer width, Integer height, int maxWidth, int maxHeight) {
+    public Pair<Integer, Integer> setPreferredSize(boolean set, Integer width, Integer height, int maxWidth, int maxHeight) {
         GwtClientUtils.changePercentFillWidget(main, set);
 
         Element element = main.getElement();
         FlexPanel.setSize(element, true, height);
         FlexPanel.setSize(element, false, width);
 
+        Result<Integer> grids = new Result<>(0);
+        if(main instanceof HasMaxPreferredSize)
+            ((HasMaxPreferredSize) main).setPreferredSize(set, grids);
+
         if(set) {
+            // there are 2 problems : rounding (we need to round up), however it coukd be fixed differently
+            // since we are changing for example grid basises (by changing fill to percent), we can get extra scrollbars in grids (which is not what we want), so we just add some extraOffset
+            int extraHorzOffset = DataGrid.nativeScrollbarWidth * grids.result + 1; // 1 is for rounding
+            int extraVertOffset = DataGrid.nativeScrollbarHeight * grids.result + 1; // 1 is for rounding
+
             DataGrid.setMaxWidth(this, maxWidth, Style.Unit.PX);
             DataGrid.setMaxHeight(this, maxHeight, Style.Unit.PX);
+
+            return new Pair<>(extraHorzOffset, extraVertOffset);
         } else {
             DataGrid.clearMaxWidth(this);
             DataGrid.clearMaxHeight(this);
+            return null;
         }
-
-        if(main instanceof HasMaxPreferredSize)
-            ((HasMaxPreferredSize) main).setPreferredSize(set);
     }
 }

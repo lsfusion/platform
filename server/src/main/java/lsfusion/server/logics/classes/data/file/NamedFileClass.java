@@ -50,12 +50,10 @@ public class NamedFileClass extends AbstractDynamicFormatFileClass<NamedFileData
     @Override
     public String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv, Type typeFrom) {
         if (typeFrom instanceof DynamicFormatFileClass) {
-            return "cast_dynamic_file_to_named_file(" + value + ")";
+            return "cast_dynamic_file_to_named_file(" + value + ", null)";
         } else if (typeFrom instanceof StaticFormatFileClass) {
             String extension = ((StaticFormatFileClass) typeFrom).getExtension();
-            if (extension != null) {
-                return "cast_static_file_to_named_file(" + value + ", CAST('" + extension + "' AS BYTEA))";
-            }
+            return "cast_static_file_to_named_file(" + value + ", null, " + (extension != null ? ("'" + extension + "'") : "null") + ")";
         }
         return super.getCast(value, syntax, typeEnv, typeFrom);
     }

@@ -104,7 +104,7 @@ public class GGridPropertyTableHeader extends Header<String> {
         Boolean sortDir = table.getSortDirection(this);
 
         int headerHeight = this.headerHeight;
-        renderedCaptionElement = renderTD(th, headerHeight >= 0 ? headerHeight : DEFAULT_HEADER_HEIGHT, sortDir, caption, false);
+        renderedCaptionElement = renderTD(th, headerHeight >= 0 ? headerHeight : null, sortDir, caption, false);
         renderedSortDir = sortDir;
         renderedCaption = caption;
 

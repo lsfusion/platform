@@ -70,4 +70,12 @@ public final class LayoutData {
 //        assert result == getFlex() > 0;
         return result;
     }
+    
+    public Integer getFlexBasis() {
+        if (flexModifier == FlexPanel.FlexModifier.COLLAPSE) {
+            return null;
+        }
+        return flexBasis;
+    }  
+    
 }

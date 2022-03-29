@@ -11,7 +11,6 @@ import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.table.grid.view.GPivot;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 
@@ -40,19 +39,31 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
 
     public static Element renderSized(Element element, GPropertyDraw property, RenderContext renderContext) {
         boolean isTDorTH = GwtClientUtils.isTDorTH(element);
+        boolean isSimpleText = isTDorTH && property.getCellRenderer().isSimpleText(renderContext);
 
-        FlexPanel.setBaseSize(element, true, property.getValueHeightWithPadding(renderContext.getFont()), isTDorTH); // the thing is that td ignores min-height (however height in td works just like min-height)
+        boolean autoSize = property.autoSize && !isSimpleText;
+        int height = property.getValueHeightWithPadding(renderContext.getFont());
 
-        if(!(isTDorTH && property.getCellRenderer().isSimpleText(renderContext))) {
+        // the thing is that td ignores min-height (it matters only for not auto sized elements)
+        // however height in td works just like min-height, but only in Chrome
+        if(!autoSize) // it's not possible to do it for not auto sized element, since they have position absolute, and td doesn't respect their size
+            FlexPanel.setBaseSize(element, true, height, isTDorTH);
+
+        if(!isSimpleText) {
             element = wrapSized(element);
-            GwtClientUtils.setupSizedParent(element, property.autoSize);
+            GwtClientUtils.setupSizedParent(element, autoSize);
+
+            if(autoSize)
+                FlexPanel.setBaseSize(element, true, height, false);
         }
         return element;
     }
 
     public static Element getRenderSizedElement(Element element, GPropertyDraw property, UpdateContext updateContext) {
+        boolean isTDorTH = GwtClientUtils.isTDorTH(element);
+        boolean isSimpleText = isTDorTH && property.getCellRenderer().isSimpleText(updateContext);
 
-        if(!(GwtClientUtils.isTDorTH(element) && property.getCellRenderer().isSimpleText(updateContext))) // there is another unwrapping in GPropertyTableBuilder, so it also should be kept consistent
+        if(!isSimpleText) // there is another unwrapping in GPropertyTableBuilder, so it also should be kept consistent
             element = unwrapSized(element);
 
         return element;
@@ -60,14 +71,18 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
 
     public static boolean clearRenderSized(Element element, GPropertyDraw property, RenderContext renderContext) {
         boolean isTDorTH = GwtClientUtils.isTDorTH(element);
+        boolean isSimpleText = isTDorTH && property.getCellRenderer().isSimpleText(renderContext);
 
-        FlexPanel.setBaseSize(element, true, null, isTDorTH); // the thing is that td ignores min-height (however height in td works just like min-height)
+        boolean autoSize = property.autoSize && !isSimpleText;
 
-        if(!(isTDorTH && property.getCellRenderer().isSimpleText(renderContext))) {
+        if(!autoSize)
+            FlexPanel.setBaseSize(element, true, null, isTDorTH); // the thing is that td ignores min-height (however height in td works just like min-height)
+
+        if(!isSimpleText) {
             GwtClientUtils.removeAllChildren(element);
 
-            if(!property.autoSize)
-                GwtClientUtils.clearFillParentElement(element);
+            if(!autoSize)
+                GwtClientUtils.clearFillParentElement(element.getParentElement());
 
             return true;
         }
@@ -88,19 +103,21 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
     }
 
     // pivot / footer
-    public static void renderAndUpdate(GPropertyDraw property, Element element, Object value, RenderContext renderContext, UpdateContext updateContext) {
+    public static void renderAndUpdate(GPropertyDraw property, Element element, RenderContext renderContext, UpdateContext updateContext) {
         // // can be div in renderColAttrCell : if + is added or sort
 //        assert GwtClientUtils.isTDorTH(element);
         render(property, element, renderContext);
-        update(property, element, value, updateContext);
+        update(property, element, updateContext);
     }
 
+    // pivot / footer
     public static void render(GPropertyDraw property, Element element, RenderContext renderContext) {
-        property.getCellRenderer().renderStatic(renderSized(element, property, renderContext), renderContext);
+        property.getCellRenderer().render(renderSized(element, property, renderContext), renderContext);
     }
 
-    public static void update(GPropertyDraw property, Element element, Object value, UpdateContext updateContext) {
-        property.getCellRenderer().renderDynamic(getRenderSizedElement(element, property, updateContext), value, updateContext);
+    // pivot (render&update), footer (render&update, update)
+    public static void update(GPropertyDraw property, Element element, UpdateContext updateContext) {
+        property.getCellRenderer().update(getRenderSizedElement(element, property, updateContext), updateContext);
     }
 
     @Override
@@ -180,12 +197,6 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
 
         String foregroundColor = getForeground(rowValue, columnIndex);
         GFormController.setForegroundColor(td, foregroundColor, true);
-
-        Optional<Object> image = getImage(rowValue, columnIndex);
-        if(image != null)
-            // assert that it is action and rendered with ActionCellRenderer
-            // also since we know that its grid and not simple text (since there is dynamic image) and its td, we can unwrap td without having CellRenderer (however, it should be consistent with CellRenderer renderDynamic/Static)
-            GFormController.setDynamicImage(unwrapSized(td), image.orElse(null));
     }
 
     @Override
@@ -236,6 +247,5 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
 
     public abstract String getBackground(T rowValue, int column);
     public abstract String getForeground(T rowValue, int column);
-    public abstract Optional<Object> getImage(T rowValue, int column);
 }
 

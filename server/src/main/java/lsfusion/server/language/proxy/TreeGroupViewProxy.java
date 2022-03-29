@@ -11,6 +11,10 @@ public class TreeGroupViewProxy extends ComponentViewProxy<TreeGroupView> {
         target.autoSize = autoSize;
     }
 
+    public void setBoxed(boolean boxed) {
+        target.boxed = boxed;
+    }
+
     public void setExpandOnClick(boolean expandOnClick) {
         target.expandOnClick = expandOnClick;
     }

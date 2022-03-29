@@ -6,7 +6,6 @@ import lsfusion.base.identity.DefaultIDGenerator;
 import lsfusion.base.identity.IDGenerator;
 import lsfusion.base.identity.IdentityObject;
 import lsfusion.client.ClientResourceBundle;
-import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.form.controller.remote.serialization.ClientIdentitySerializable;
 import lsfusion.client.form.controller.remote.serialization.ClientSerializationPool;
 import lsfusion.client.form.design.ClientComponent;
@@ -46,6 +45,7 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
     public boolean isCalendarDateTime;
     public boolean isCalendarPeriod;
 
+    public boolean hasHeaders;
     public boolean hasFooters;
 
     public ClassViewType viewType;
@@ -82,13 +82,13 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
 
     public final static int BORDER_VERT_SIZE = 1;
 
-    public int getHeight(int lines) {
+    public int getHeight(int lines, int headerHeight) {
         if(lines == -1)
             lines = 5;
 
         return (lines * (rowMaxHeight + BORDER_VERT_SIZE)) +
                 + 3 * BORDER_VERT_SIZE // borders around grid + header border
-                ;
+                + (headerHeight >= 0 ? headerHeight : ClientGrid.DEFAULT_HEADER_HEIGHT);
     }
 
     public boolean mayHaveChildren() {
@@ -183,6 +183,7 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
         isCalendarDateTime = inStream.readBoolean();
         isCalendarPeriod= inStream.readBoolean();
 
+        hasHeaders = inStream.readBoolean();
         hasFooters = inStream.readBoolean();
 
         Integer ps = pool.readInt(inStream);

@@ -21,10 +21,5 @@ public class GGridPropertyTableBuilder<T extends GridDataRecord> extends GProper
     public String getForeground(T rowValue, int column) {
         return rowValue.getForeground(getColumnSID(column));
     }
-
-    @Override
-    public Optional<Object> getImage(T rowValue, int column) {
-        return rowValue.getImage(getColumnSID(column));
-    }
 }
 

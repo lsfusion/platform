@@ -63,6 +63,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public boolean hasDynamicImage;
 
     public boolean autoSize;
+    public boolean boxed;
 
     // for pivoting
     public String formula;
@@ -124,6 +125,9 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public int valueWidth;
     public int valueHeight;
 
+    public int captionWidth;
+    public int captionHeight;
+
     public transient EditBindingMap editBindingMap;
     private transient PropertyRenderer renderer;
 
@@ -151,7 +155,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public boolean hide;
 
     public String customRenderFunction;
-    public String customChangeFunction;
 
     public String creationScript;
     public String creationPath;
@@ -278,6 +281,20 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         if (image != null) // предпочитаемую высоту берем исходя из размера иконки
             height = Math.max(image.getIconHeight() + insetsHeight, height);
         return height;
+    }
+
+    public Integer getCaptionWidth() {
+        if(captionWidth >= 0)
+            return captionWidth;
+
+        return null;
+    }
+
+    public Integer getCaptionHeight() {
+        if(captionHeight >= 0)
+            return captionHeight;
+
+        return null;
     }
 
     @Override
@@ -424,6 +441,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         super.customSerialize(pool, outStream);
 
         outStream.writeBoolean(autoSize);
+        outStream.writeBoolean(boxed);
 
         pool.writeString(outStream, caption);
         pool.writeString(outStream, regexp);
@@ -438,6 +456,9 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         
         outStream.writeInt(valueWidth);
         outStream.writeInt(valueHeight);
+
+        outStream.writeInt(captionWidth);
+        outStream.writeInt(captionHeight);
 
         pool.writeObject(outStream, changeKey);
         pool.writeInt(outStream, changeKeyPriority);
@@ -466,6 +487,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         super.customDeserialize(pool, inStream);
 
         autoSize = inStream.readBoolean();
+        boxed = inStream.readBoolean();
 
         caption = pool.readString(inStream);
         regexp = pool.readString(inStream);
@@ -479,6 +501,9 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         valueWidth = inStream.readInt();
         valueHeight = inStream.readInt();
+
+        captionWidth = inStream.readInt();
+        captionHeight = inStream.readInt();
 
         changeKey = pool.readObject(inStream);
         changeKeyPriority = pool.readInt(inStream);
@@ -574,10 +599,9 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
                                  : null;
         }
 
-        returnClass = ClientTypeSerializer.deserializeClientClass(inStream);
+        returnClass = inStream.readBoolean() ? ClientTypeSerializer.deserializeClientClass(inStream) : null;
         
         customRenderFunction = pool.readString(inStream);
-        customChangeFunction = pool.readString(inStream);
 
         eventID = pool.readString(inStream);
 
@@ -743,7 +767,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
             } else {
                 String tableName = this.tableName != null ? this.tableName : "&lt;none&gt;";
                 String ifaceClasses = BaseUtils.toString(", ", interfacesTypes);
-                String returnClass = this.returnClass.toString();
+                String returnClass = this.returnClass != null ? this.returnClass.toString() : "";
                 String script = creationScript != null ? escapeLineBreakHTML(escapeHTML(creationScript)) : "";
                 
                 return String.format(TOOL_TIP_FORMAT + DETAILED_TOOL_TIP_FORMAT,

@@ -166,16 +166,14 @@ public class FileUtils {
     }
 
     public static Object readFilesAndDelete(GFilesDTO filesObj) {
-        File[] files = new File[filesObj.filePaths.size()];
-        for (int i = 0; i < filesObj.filePaths.size(); i++) {
-            files[i] = new File(APP_TEMP_FOLDER_URL, filesObj.filePaths.get(i));
+        File file = new File(APP_TEMP_FOLDER_URL, filesObj.filePath);
+        try {
+            return BaseUtils.filesToBytes(false, filesObj.storeName, filesObj.custom, filesObj.named, filesObj.fileName, file);
+        } finally {
+            if (!file.delete()) {
+                file.deleteOnExit();
+            }
         }
-        
-        Object bytes = BaseUtils.filesToBytes(filesObj.multiple, filesObj.storeName, filesObj.custom, filesObj.named, files);
-        for (File file : files) {
-            file.delete();
-        }
-        return bytes;
     }
 
     public static String saveApplicationFile(RawFileData fileData) { // for login page, logo and icon images

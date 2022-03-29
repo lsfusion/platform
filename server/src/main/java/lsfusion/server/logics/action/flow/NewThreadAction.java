@@ -10,11 +10,8 @@ import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
-import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
-import lsfusion.server.logics.action.controller.stack.EnvStackRunnable;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
-import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -52,43 +49,37 @@ public class NewThreadAction extends AroundAspectAction {
 
     @Override
     protected FlowResult aroundAspect(final ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
-
-        DataSession session = context.getSession();
-        session.registerThreadStack();
-
-        final EnvStackRunnable run = (env, stack) -> {
-            try {
-                DataSession session1 = context.getSession();
-                if(env != null) {
-                    session1.unregisterThreadStack(); // уже не нужна сессия
-                    proceed(context.override(env, stack));
-                } else {
-                    try {
-                        proceed(context.override(stack));
-                    } finally {
-                        session1.unregisterThreadStack();
-                    }
-                }
-            } catch (Throwable t) {
-                ServerLoggers.schedulerLogger.error("New thread error : ", t);
-                throw Throwables.propagate(t);
-            }
-        };
-
         if (connectionProp != null) {
             ObjectValue connectionObject = connectionProp.readClasses(context);
             if(connectionObject instanceof DataObject)
-                context.getNavigatorsManager().pushNotificationCustomUser((DataObject) connectionObject, run);
+                context.getNavigatorsManager().pushNotificationCustomUser((DataObject) connectionObject, (env, stack) -> {
+                    try {
+                        proceed(context.override(env, stack));
+                    } catch (Throwable t) {
+                        ServerLoggers.schedulerLogger.error("New thread error : ", t);
+                        throw Throwables.propagate(t);
+                    }
+                });
         } else {
-            Long delay = 0L, period = null;
-            if (delayProp != null) {
-                delay = ((Number) delayProp.read(context, context.getKeys())).longValue();
-            }
-            if (periodProp != null) {
-                period = ((Number) periodProp.read(context, context.getKeys())).longValue();
-            }
-            
-            Runnable runContext = () -> run.run(null, ThreadLocalContext.getStack());
+            context.getSession().registerThreadStack();
+            Long delay = delayProp != null ? ((Number) delayProp.read(context, context.getKeys())).longValue() : 0L;
+            Long period = periodProp != null ? ((Number) periodProp.read(context, context.getKeys())).longValue() : null;
+
+            Runnable runContext = () -> {
+                ExecutionStack stack = ThreadLocalContext.getStack();
+                try {
+                    try {
+                        proceed(context.override(stack));
+                    } finally {
+                        if (periodProp == null) {
+                            context.getSession().unregisterThreadStack();
+                        }
+                    }
+                } catch (Throwable t) {
+                    ServerLoggers.schedulerLogger.error("New thread error : ", t);
+                    throw Throwables.propagate(t);
+                }
+            };
             boolean externalExecutor = context.getExecutorService() != null;
             ScheduledExecutorService executor = externalExecutor ? context.getExecutorService() : ExecutorFactory.createNewThreadService(context);
             if (period != null)

@@ -43,7 +43,7 @@ public class GTreeGroupController extends GAbstractTableController {
 
         initGridView(treeGroup.autoSize);
 
-        changeGridView(tree);
+        changeGridView(tree, treeGroup.boxed == null || treeGroup.boxed);
     }
 
     protected void configureToolbar() {
@@ -145,6 +145,11 @@ public class GTreeGroupController extends GAbstractTableController {
     @Override
     public void updatePropertyCaptions(GCaptionReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
         tree.updatePropertyCaptions(formController.getProperty(reader.propertyID), values);
+    }
+
+    @Override
+    public void updateLoadings(GLoadingReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
+        tree.updateLoadings(formController.getProperty(reader.propertyID), values);
     }
 
     @Override

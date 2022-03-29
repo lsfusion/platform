@@ -3,6 +3,7 @@ package lsfusion.server.logics.form.struct.object;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.implementations.stored.StoredArraySerializer;
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.identity.IdentityObject;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
@@ -24,6 +25,9 @@ import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.form.open.ObjectSelector;
 import lsfusion.server.logics.form.struct.FormEntity;
+import lsfusion.server.logics.form.struct.order.OrderEntity;
+import lsfusion.server.logics.property.Property;
+import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.form.struct.property.PropertyObjectInterfaceEntity;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
@@ -33,7 +37,7 @@ import java.io.ByteArrayOutputStream;
 
 import static lsfusion.server.physics.dev.i18n.LocalizedString.create;
 
-public class ObjectEntity extends IdentityObject implements PropertyObjectInterfaceEntity, ObjectSelector {
+public class ObjectEntity extends IdentityObject implements OrderEntity<PropertyObjectInterfaceInstance>, ObjectSelector {
 
     public GroupObjectEntity groupTo;
 
@@ -77,18 +81,11 @@ public class ObjectEntity extends IdentityObject implements PropertyObjectInterf
         return instanceFactory.getInstance(this);
     }
 
-    public PropertyObjectInterfaceInstance getRemappedInstance(ObjectEntity oldObject, ObjectInstance newObject, InstanceFactory instanceFactory) {
-        return this == oldObject
-                ? newObject
-                : getInstance(instanceFactory).getObjectValue();
-    }
-
     @Override
     public String toString() {
         return ThreadLocalContext.localize(getCaption());
     }
 
-    @Override
     public AndClassSet getAndClassSet() {
         return baseClass.getUpSet();
     }
@@ -109,7 +106,6 @@ public class ObjectEntity extends IdentityObject implements PropertyObjectInterf
         return mapExprs.get(this);
     }
 
-    @Override
     public ObjectValue getObjectValue(ImMap<ObjectEntity, ? extends ObjectValue> mapObjects) {
         ObjectValue objectValue = mapObjects.get(this);
         if(objectValue != null)
@@ -134,6 +130,11 @@ public class ObjectEntity extends IdentityObject implements PropertyObjectInterf
 
     public String getIntegrationSID() {
         return integrationSID != null ? integrationSID : getSID();
+    }
+
+    @Override
+    public <T extends PropertyInterface> PropertyInterfaceImplement<T> getImplement(ImRevMap<ObjectEntity, T> mapObjects) {
+        return mapObjects.get(this);
     }
 
     @Override

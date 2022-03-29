@@ -51,6 +51,8 @@ headersTo = DATA LOCAL NESTED TEXT(TEXT);
 cookiesTo = DATA LOCAL NESTED TEXT(TEXT);
 query = DATA LOCAL NESTED TEXT();
 params = DATA LOCAL NESTED TEXT(TEXT);
+contentType = DATA LOCAL NESTED TEXT();
+body = DATA LOCAL NESTED RAWFILE();
 appHost = DATA LOCAL NESTED TEXT();
 appPort = DATA LOCAL NESTED INTEGER();
 exportName = DATA LOCAL NESTED TEXT();
@@ -78,6 +80,11 @@ formDrop '{action.form.drop}'  INTERNAL  'lsfusion.server.logics.form.interactiv
 formRefresh '{action.form.refresh}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.lifecycle.RefreshAction' () CHANGEKEY 'F5;priority=-100' IMAGE 'refresh.png';
 formOk '{action.form.ok}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.lifecycle.OkAction' () CHANGEKEY 'ctrl ENTER' CHANGEMOUSE 'DBLCLK;priority=1000;dialog=only;group=input;preview=only' IMAGE 'ok.png';
 formClose '{action.form.close}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.lifecycle.CloseAction' () CHANGEKEY 'ESCAPE' IMAGE 'close.png';
+
+formApplied ABSTRACT LIST FIRST (); 
+formApplied() + {
+    MESSAGE '{form.instance.changes.saved}' NOWAIT LOG;
+}
 
 seek '{system.seek}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.seek.SeekInternalAction' (Object);
 
@@ -226,6 +233,7 @@ exportTBoolean = DATA LOCAL TBOOLEAN ();
 exportDate = DATA LOCAL DATE ();
 exportTime = DATA LOCAL TIME ();
 exportColor = DATA LOCAL COLOR ();
+exportJSON = DATA LOCAL JSON ();
 exportWordFile = DATA LOCAL WORDFILE ();
 exportImageFile = DATA LOCAL IMAGEFILE ();
 exportPdfFile = DATA LOCAL PDFFILE ();
@@ -260,14 +268,23 @@ importedString = DATA LOCAL BOOLEAN (STRING[10]);
 
 readFile = DATA LOCAL FILE ();
 
-namedFileName(NAMEDFILE file) = FORMULA TEXT 'get_named_file_name($1)';
-namedFileExtension(NAMEDFILE file) = FORMULA TEXT 'get_named_file_extension($1)';
-fileExtension(FILE file) = FORMULA TEXT 'get_extension($1)';
-extension = fileExtension(FILE(file));
+//cast to FILE and NAMEDFILE
+file(RAWFILE rawFile, STRING extension) = FORMULA FILE 'cast_static_file_to_dynamic_file($1, $2)';
+setExtension(RAWFILE rawFile, STRING extension) = FORMULA FILE 'cast_static_file_to_dynamic_file($1, $2)'; // backward compatibility
+namedFile(RAWFILE rawFile, STRING name, STRING extension) = FORMULA NAMEDFILE 'cast_static_file_to_named_file($1, $2, $3)';
+namedFile(FILE file, STRING name) = FORMULA NAMEDFILE 'cast_dynamic_file_to_named_file($1, $2)';
 
-getFileExtension(FILE file) = fileExtension(file); //backward compatibility
+//get name and extension
+extension(FILE file) = FORMULA TEXT 'get_extension($1)';
+name(NAMEDFILE file) = FORMULA TEXT 'get_named_file_name($1)';
+extension(NAMEDFILE file) = FORMULA TEXT 'get_named_file_extension($1)';
+
+getFileExtension(FILE file) = extension(file); //backward compatibility
 getExtension = getFileExtension(FILE(file)); //backward compatibility
 
+//change name and extension
+file(FILE file, STRING newExtension) = file(RAWFILE(file), newExtension);
+namedFile(NAMEDFILE file, STRING newName, STRING newExtension) = namedFile(RAWFILE(file), newName, newExtension);
 
 downloadFile '{system.download.file}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.DownloadFileAction' (STRING[100]); 
 
@@ -310,6 +327,7 @@ requestedTBoolean = DATA LOCAL NESTED TBOOLEAN ();
 requestedDate = DATA LOCAL NESTED DATE ();
 requestedTime = DATA LOCAL NESTED TIME ();
 requestedColor = DATA LOCAL NESTED COLOR ();
+requestedJSON = DATA LOCAL NESTED JSON ();
 requestedWordFile = DATA LOCAL NESTED WORDFILE ();
 requestedImageFile = DATA LOCAL NESTED IMAGEFILE ();
 requestedPdfFile = DATA LOCAL NESTED PDFFILE ();

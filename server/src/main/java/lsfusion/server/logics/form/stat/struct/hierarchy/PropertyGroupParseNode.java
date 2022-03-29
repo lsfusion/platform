@@ -2,17 +2,21 @@ package lsfusion.server.logics.form.stat.struct.hierarchy;
 
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
+import lsfusion.base.col.interfaces.immutable.ImRevMap;
+import lsfusion.server.logics.form.stat.struct.export.hierarchy.json.FormPropertyDataInterface;
 import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
+import lsfusion.server.logics.property.implement.PropertyMapImplement;
+import lsfusion.server.logics.property.oraction.PropertyInterface;
 
-public class PropertyGroupParseNode extends GroupParseNode {
+public class PropertyGroupParseNode extends GroupParseNode implements ChildParseNode {
     private final Group group;
 
-    protected String getKey() {
+    public String getKey() {
         return group.getIntegrationSID();
     }
 
-    public PropertyGroupParseNode(ImOrderSet<ParseNode> children, Group group) {
+    public PropertyGroupParseNode(ImOrderSet<ChildParseNode> children, Group group) {
         super(children);
         this.group = group;
     }
@@ -39,5 +43,10 @@ public class PropertyGroupParseNode extends GroupParseNode {
                 node.removeNode(node, newNode);
         }
         return hasNotEmptyChild;
+    }
+
+    @Override
+    public <X extends PropertyInterface, P extends PropertyInterface> PropertyMapImplement<?, X> getJSONProperty(FormPropertyDataInterface<P> form, ImRevMap<P, X> mapValues, ImRevMap<ObjectEntity, X> mapObjects) {
+        return getChildrenJSONProperties(form, mapValues, mapObjects, false);
     }
 }

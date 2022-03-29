@@ -150,7 +150,12 @@
                 'static/js/ace/src/worker-lsf.js',
                 'static/js/ace/src/ext-language_tools.js',
                 'static/js/ace/src/theme-chrome.js',
-                'static/js/ace/src/theme-ambiance.js'
+                'static/js/ace/src/theme-ambiance.js',
+                
+                <!-- MMenuLight -->
+                'https://cdn.jsdelivr.net/npm/mmenu-light@3.1.0/dist/mmenu-light.js',
+                'https://cdn.jsdelivr.net/npm/mmenu-light@3.1.0/dist/mmenu-light.css',
+                'static/css/mmenu.css'
             ]);
 
         </script>
@@ -159,15 +164,6 @@
             <script>
                 lsfParams["${lsfParam.key}"] = "${lsfParam.value}";
             </script>
-        </c:forEach>
-
-        <c:forEach items="${filesUrls}" var="fileUrl">
-            <c:if test="${fileUrl.endsWith('js')}">
-                <script type="text/javascript" src="${fileUrl}"></script>
-            </c:if>
-            <c:if test="${fileUrl.endsWith('css')}">
-                <link rel="stylesheet" type="text/css" href="${fileUrl}"/>
-            </c:if>
         </c:forEach>
 
     </head>

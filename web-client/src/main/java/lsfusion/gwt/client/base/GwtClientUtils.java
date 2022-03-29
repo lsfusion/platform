@@ -2,6 +2,7 @@ package lsfusion.gwt.client.base;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.core.client.JsArray;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.event.dom.client.DomEvent;
@@ -290,12 +291,34 @@ public class GwtClientUtils {
         return el == rootElement;
     }
 
+    public static void setupEdgeParent(Element child, boolean horz, boolean start) {
+        Element parentElement = child.getParentElement();
+        setupFillParentElement(parentElement);
+
+        Style childStyle = child.getStyle();
+        childStyle.setPosition(Style.Position.ABSOLUTE);
+        if(horz) {
+            if(start)
+                childStyle.setLeft(0, Style.Unit.PX);
+            else
+                childStyle.setRight(0, Style.Unit.PX);
+
+            childStyle.setTop(50, Style.Unit.PCT);
+            childStyle.setProperty("transform", "translateY(-50%)");
+        } else {
+            if(start)
+                childStyle.setTop(0, Style.Unit.PX);
+            else
+                childStyle.setBottom(0, Style.Unit.PX);
+
+            childStyle.setLeft(50, Style.Unit.PCT);
+            childStyle.setProperty("transform", "translateX(-50%)");
+        }
+    }
+
     // using absolute positioning, but because in that case it is positioned relative to first not static element, will have to set position to relative (if it's static)
     public static void setupFillParent(Element child) {
-        Element parentElement = child.getParentElement();
-        String parentPosition = parentElement.getStyle().getPosition();
-        if (parentPosition == null || parentPosition.isEmpty() || parentPosition.equals(Style.Position.STATIC.getCssName()))
-            parentElement.getStyle().setPosition(Style.Position.RELATIVE);
+        setupFillParentElement(child.getParentElement());
 
         Style childStyle = child.getStyle();
         childStyle.setPosition(Style.Position.ABSOLUTE);
@@ -305,8 +328,14 @@ public class GwtClientUtils {
         childStyle.setRight(0, Style.Unit.PX);
     }
 
+    private static void setupFillParentElement(Element parentElement) {
+        String parentPosition = parentElement.getStyle().getPosition();
+        if (parentPosition == null || parentPosition.isEmpty() || parentPosition.equals(Style.Position.STATIC.getCssName()))
+            parentElement.getStyle().setPosition(Style.Position.RELATIVE);
+    }
+
     public static void clearFillParent(Element child) {
-        clearFillParentElement(child);
+        clearFillParentElement(child.getParentElement());
 
         Style childStyle = child.getStyle();
         childStyle.clearPosition();
@@ -316,8 +345,7 @@ public class GwtClientUtils {
         childStyle.clearRight();
     }
 
-    public static void clearFillParentElement(Element child) {
-        Element parentElement = child.getParentElement();
+    public static void clearFillParentElement(Element parentElement) {
         String parentPosition = parentElement.getStyle().getPosition();
         if (parentPosition != null && parentPosition.equals(Style.Position.RELATIVE.getCssName()))
             parentElement.getStyle().clearPosition();
@@ -363,9 +391,14 @@ public class GwtClientUtils {
 
     public static void showPopupInWindow(PopupDialogPanel popup, Widget widget, int mouseX, int mouseY) {
         popup.setWidget(widget);
-        popup.show();
-        Scheduler.get().scheduleDeferred(() -> widget.getElement().focus());
 
+        showPopup(popup, mouseX, mouseY);
+
+        Scheduler.get().scheduleDeferred(() -> widget.getElement().focus());
+    }
+
+    public static void showPopup(PopupDialogPanel popup, int mouseX, int mouseY) {
+        popup.show();
         setPopupPosition(popup, mouseX, mouseY);
     }
 
@@ -583,8 +616,12 @@ public class GwtClientUtils {
 
         // flex колонки увеличиваем на нужную величину, соответственно остальные flex'ы надо уменьшить на эту величину
         double toAddFlex = delta * totalFlex / flexWidth;
-        if (greater(0.0, toAddFlex + flexes[column])) // не shrink'аем, но и левые столбцы не уменьшаются (то есть removeLeftFlex false)
+
+        double shrinkedFlex = 0.0;
+        if (greater(0.0, toAddFlex + flexes[column])) { // не shrink'аем, но и левые столбцы не уменьшаются (то есть removeLeftFlex false)
+            shrinkedFlex = toAddFlex + flexes[column];
             toAddFlex = -flexes[column];
+        }
 
         double restFlex = 0.0; // flex that wasn't added to the right flexes
         double toAddRightFlex = toAddFlex;
@@ -611,12 +648,12 @@ public class GwtClientUtils {
         if (!equals(restFlex, 0.0) && viewFixed) {
             // we can't increase / decrease right part using flexes (we're out of it they are zero already, since restflex is not zero), so we have to use prefs instead
             // assert that right flexes are zero (so moving flex width to prefs in left part won't change anything)
-            for (int i = 0; i < column; i++)
+            for (int i = 0; i <= column; i++)
                 prefs[i] += flexWidth * flexes[i] / totalFlex;
-            prefs[column] += flexWidth * ((flexes[column] + restFlex) / totalFlex);
+            prefs[column] += flexWidth * restFlex / totalFlex;
             restFlex = 0.0;
         }
-        return restFlex * flexWidth / totalFlex;
+        return (restFlex + shrinkedFlex) * flexWidth / totalFlex;
     }
 
     private static void adjustFlexesToFixedTableLayout(int viewWidth, double[] prefs, boolean[] flexes, double[] flexValues) {
@@ -639,7 +676,7 @@ public class GwtClientUtils {
     }
 
     //  prefs parameter is filled
-    public static void calculateNewFlexesForFixedTableLayout(int column, int delta, int viewWidth, double[] prefs, int[] basePrefs, boolean[] flexes) {
+    public static double calculateNewFlexesForFixedTableLayout(int column, int delta, int viewWidth, double[] prefs, int[] basePrefs, boolean[] flexes) {
         double[] flexValues = new double[prefs.length];
         double[] baseFlexValues = new double[prefs.length];
         for (int i = 0; i < prefs.length; i++) {
@@ -652,9 +689,11 @@ public class GwtClientUtils {
             }
         }
 
-        calculateNewFlexes(column, delta, viewWidth, prefs, flexValues, basePrefs, baseFlexValues, true);
+        double restDelta = calculateNewFlexes(column, delta, viewWidth, prefs, flexValues, basePrefs, baseFlexValues, true);
 
         adjustFlexesToFixedTableLayout(viewWidth, prefs, flexes, flexValues);
+
+        return restDelta;
     }
 
     //equal to BaseUtils.replaceSeparators
@@ -945,6 +984,9 @@ public class GwtClientUtils {
     public static native JavaScriptObject call(JavaScriptObject object, Object param)/*-{
         return object(param);
     }-*/;
+    public static native JavaScriptObject call(JavaScriptObject object, JsArray<JavaScriptObject> params)/*-{
+        return object.apply(object, params);
+    }-*/;
     public static native JavaScriptObject newObject()/*-{
         return {};
     }-*/;
@@ -977,4 +1019,17 @@ public class GwtClientUtils {
         return str.substring(str.indexOf("(") + 1, str.length - 1).length > 0;
     }-*/;
 
+    public static native JavaScriptObject jsonParse(String value)/*-{
+        try {
+            if(value == null)
+                return null;
+            return JSON.parse(value);
+        } catch(e) {
+            return {};
+        }
+    }-*/;
+
+    public static native void consoleError(String error)/*-{
+        console.error(error);
+    }-*/;
 }

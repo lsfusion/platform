@@ -75,21 +75,21 @@ public abstract class ExecutionEnvironment extends MutableClosedObject<Object> {
     public abstract boolean apply(BusinessLogics BL, ExecutionStack stack, UserInteraction interaction, ImOrderSet<ActionValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProperties, ExecutionEnvironment sessionEventFormEnv, Result<String> applyMessage) throws SQLException, SQLHandledException;
     
     // no message needed
-    public boolean apply(BusinessLogics BL, ExecutionStack stack, UserInteraction interaction, ImOrderSet<ActionValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProperties, ExecutionEnvironment sessionEventFormEnv) throws SQLException, SQLHandledException {
-        return apply(BL, stack, interaction, applyActions, keepProperties, sessionEventFormEnv, null);
+    public boolean apply(BusinessLogics BL, ExecutionStack stack, UserInteraction interaction, ImOrderSet<ActionValueImplement> applyActions, ExecutionEnvironment sessionEventFormEnv) throws SQLException, SQLHandledException {
+        return apply(BL, stack, interaction, applyActions, SetFact.EMPTY(), sessionEventFormEnv, null);
     }
 
     // if canceled throw exception with message
-    public void applyException(BusinessLogics BL, ExecutionStack stack, UserInteraction interaction, ImOrderSet<ActionValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProps, ExecutionEnvironment sessionEventFormEnv) throws SQLException, SQLHandledException {
-        String message = applyMessage(BL, stack, interaction, applyActions, keepProps, sessionEventFormEnv);
+    public void applyException(BusinessLogics BL, ExecutionStack stack, UserInteraction interaction, ExecutionEnvironment sessionEventFormEnv) throws SQLException, SQLHandledException {
+        String message = applyMessage(BL, stack, interaction, sessionEventFormEnv);
         if(message != null)
             throw new ApplyCanceledException(message);
     }
 
     // if canceled return message
-    public String applyMessage(BusinessLogics BL, ExecutionStack stack, UserInteraction interaction, ImOrderSet<ActionValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProps, ExecutionEnvironment sessionEventFormEnv) throws SQLException, SQLHandledException {
+    public String applyMessage(BusinessLogics BL, ExecutionStack stack, UserInteraction interaction, ExecutionEnvironment sessionEventFormEnv) throws SQLException, SQLHandledException {
         Result<String> message = new Result<>();
-        if (!apply(BL, stack, interaction, applyActions, keepProps, sessionEventFormEnv, message))
+        if (!apply(BL, stack, interaction, SetFact.EMPTYORDER(), SetFact.EMPTY(), sessionEventFormEnv, message))
             return message.result;
         return null;
     }

@@ -1,7 +1,6 @@
 package lsfusion.gwt.client.form.property.cell.classes.view;
 
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.Style;
 import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
@@ -25,14 +24,18 @@ public class ColorCellRenderer extends CellRenderer<Object> {
         element.getStyle().clearColor();
         element.getStyle().clearBackgroundColor();
         element.setTitle(null);
+
+        clearRenderLoadingContent(element, renderContext);
     }
 
     @Override
-    public void renderDynamicContent(Element element, Object value, UpdateContext updateContext) {
+    public void renderDynamicContent(Element element, Object value, boolean loading, UpdateContext updateContext) {
         String color = getColorValue(value);
         element.getStyle().setColor(color);
         element.getStyle().setBackgroundColor(color);
         element.setTitle(color);
+
+        renderLoadingContent(element, loading, false);
     }
 
     private String getColorValue(Object value) {

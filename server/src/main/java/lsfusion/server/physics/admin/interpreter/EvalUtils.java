@@ -11,6 +11,8 @@ import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.event.Event;
 import lsfusion.server.logics.form.struct.FormEntity;
+import lsfusion.server.logics.property.LazyProperty;
+import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.ArrayList;
@@ -45,7 +47,7 @@ public class EvalUtils {
         WrapResult wrapResult = wrapScript(BL, parentModule, namespace, require, priorities, script, name);
         
         String code = wrapResult.code;
-        ScriptingLogicsModule module = new EvalScriptingLogicsModule(BL.LM, BL, parentLM, code);
+        EvalScriptingLogicsModule module = new EvalScriptingLogicsModule(BL.LM, BL, parentLM, code);
         module.getErrLog().setLineNumberShift(wrapResult.additionalLines);
         
         module.order = BL.getLogicModules().size() + 1;
@@ -65,6 +67,8 @@ public class EvalUtils {
             module.markFormsForFinalization();
             for(FormEntity form : module.getAllModuleForms())
                 form.finalizeAroundInit();
+            for(LazyProperty property : module.lazyProps)
+                property.finalizeInit(); // needed at least for lazy properties
         } finally {
             if(prevEventScope)
                 module.dropPrevScope(Event.SESSION);

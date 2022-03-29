@@ -9,10 +9,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class ServerSettings {
     public String logicsName;
@@ -26,7 +24,6 @@ public class ServerSettings {
     public boolean anonymousUI;
     public String jnlpUrls;
     public List<Pair<String, RawFileData>> resourceFiles;
-    public Set<String> filesUrls = null;
     public boolean disableRegistration;
     public Map<String, String> lsfParams;
 
@@ -48,9 +45,9 @@ public class ServerSettings {
         this.lsfParams = lsfParams;
     }
 
+    private boolean filesSaved = false;
     public synchronized void saveFiles(String appPath, String  externalResourcesParentPath) {
-        if (filesUrls == null) {
-            filesUrls = new HashSet<>();
+        if (!filesSaved) {
             try {
                 String externalResourcesAbsolutePath = appPath + "/" + externalResourcesParentPath;
                 FileUtils.deleteDirectory(new File(externalResourcesAbsolutePath));
@@ -61,16 +58,12 @@ public class ServerSettings {
                         try (OutputStream out = new FileOutputStream(outputFile)) {
                             out.write(pair.second.getBytes());
                         }
-                        filesUrls.add(externalResourcesParentPath + pair.first);
                     }
                 }
+                filesSaved = true;
             } catch (IOException e) {
                 throw Throwables.propagate(e);
             }
         }
-    }
-
-    public Set<String> getFilesUrls() {
-        return filesUrls;
     }
 }

@@ -28,7 +28,9 @@ public class GContainer extends GComponent {
 
     public int lines;
     public Integer lineSize;
+    public Integer captionLineSize;
     public boolean lineShrink;
+    public String customDesign = null;
 
     public ArrayList<GComponent> children = new ArrayList<>();
 
@@ -149,6 +151,8 @@ public class GContainer extends GComponent {
         // align caption has a higher priority than wrap
         if(horizontal) // later maybe it makes sense to support align captions for horizontal containers, but with no-wrap it doesn't make much sense
             return false;
+        if(children.size() <= lines) // if there are fewer components than lines, there is no point in creating grids (however later it makes sense to avoid creating grids for specific lines)
+            return false;
 
         if (alignCaptions != null) {
             return alignCaptions;
@@ -172,11 +176,28 @@ public class GContainer extends GComponent {
         return lineSize;
     }
 
+    public Integer getCaptionLineSize() {
+        return captionLineSize;
+    }
+
     public boolean isLineShrink() {
         return lineShrink;
     }
 
+    public String getCustomDesign() {
+        return customDesign;
+    }
+
+    public void setCustomDesign(String customDesign) {
+        this.customDesign = customDesign;
+    }
+
+    public boolean isCustomDesign() {
+        return customDesign != null;
+    }
+
     private class GCaptionReader implements GPropertyReader {
+        private final String sID;
 
         public GCaptionReader() {
             sID = "_CONTAINER_" + "CAPTION" + "_" + GContainer.this.sID;
@@ -195,4 +216,24 @@ public class GContainer extends GComponent {
         }
     }
     public final GPropertyReader captionReader = new GCaptionReader();
+
+    private class GCustomDesignCaptionReader implements GPropertyReader {
+        private final String sID;
+
+        public GCustomDesignCaptionReader() {
+            sID = "_CONTAINER_" + "CUSTOM_DESIGN" + "_" + GContainer.this.sID;
+        }
+
+        @Override
+        public void update(GFormController controller, NativeHashMap<GGroupObjectValue, Object> values, boolean updateKeys) {
+            assert values.firstKey().isEmpty();
+            controller.setContainerCustomDesign(GContainer.this, values.firstValue().toString());
+        }
+
+        @Override
+        public String getNativeSID() {
+            return sID;
+        }
+    }
+    public final GPropertyReader customDesignCaptionReader = new GCustomDesignCaptionReader();
 }

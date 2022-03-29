@@ -12,6 +12,7 @@
     --panel-border-color: #D1D1D1;
     --grid-separator-border-color: #E6E6E6; /* also hardcoded in StyleDefaults.java */
     --dialog-outer-border-color: #bbb;
+    --mobile-navigator-arrow-color: var(--dialog-outer-border-color);
     
     --caption-panel-legend-color: #929292; 
     --null-value-string-color: #A7A7A7;
@@ -32,6 +33,8 @@
     --date-picker-day-is-value-background-color: #d7dfe8;
     --date-picker-day-is-today-background-color: #497bc5;
     --date-picker-day-is-highlighted-background-color: #F0E68C;
+
+    --option-selected-hover-color: #99c3ca;
 
     --link-color: #0000FF;
 

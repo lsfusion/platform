@@ -102,7 +102,7 @@ public final class ClassCanonicalNameUtils {
         put("TEXTFILE", TXTClass.get());
         put("CSVFILE", CSVClass.get());
         put("HTMLFILE", HTMLClass.get());
-        put("JSONFILE", JSONClass.get());
+        put("JSONFILE", JSONFileClass.get());
         put("XMLFILE", XMLClass.get());
         put("TABLEFILE", TableClass.get());
         put("NAMEDFILE", NamedFileClass.instance);
@@ -120,6 +120,7 @@ public final class ClassCanonicalNameUtils {
         put("XMLLINK", XMLLinkClass.get(false));
         put("TABLELINK", TableLinkClass.get(false));
         put("COLOR", ColorClass.instance);
+        put("JSON", JSONClass.instance);
         put("STRING", defaultStringClassObj);
         put("NUMERIC", defaultNumericClassObj);
     }};
@@ -177,7 +178,7 @@ public final class ClassCanonicalNameUtils {
         put("TEXTFILE", TXTClass.get());
         put("CSVFILE", CSVClass.get());
         put("HTMLFILE", HTMLClass.get());
-        put("JSONFILE", JSONClass.get());
+        put("JSONFILE", JSONFileClass.get());
         put("XMLFILE", XMLClass.get());
         put("TABLEFILE", TableClass.get());
         put("NAMEDFILE", NamedFileClass.instance);
@@ -195,6 +196,7 @@ public final class ClassCanonicalNameUtils {
         put("XMLLINK", XMLLinkClass.get(false));
         put("TABLELINK", TableLinkClass.get(false));
         put("COLOR", ColorClass.instance);
+        put("JSON", JSONClass.instance);
         put("TEXT", TextClass.instance);
         put("RICHTEXT", RichTextClass.instance);
         put("HTMLTEXT", HTMLTextClass.instance);

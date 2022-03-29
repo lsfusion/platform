@@ -3,6 +3,7 @@ package lsfusion.gwt.client;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.form.design.GComponent;
+import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -24,6 +25,9 @@ public class GFormChanges {
 
     public final ArrayList<GComponent> activateTabs = new ArrayList<>();
     public final ArrayList<GPropertyDraw> activateProps = new ArrayList<>();
+    
+    public final ArrayList<GContainer> collapseContainers = new ArrayList<>();
+    public final ArrayList<GContainer> expandContainers = new ArrayList<>();
 
     public final HashSet<GPropertyDraw> updateProperties = new HashSet<>();
 
@@ -66,6 +70,14 @@ public class GFormChanges {
             remapped.activateProps.add(form.getProperty(activateProp));
         }
 
+        for (int collapseContainerId : dto.collapseContainerIds) {
+            remapped.collapseContainers.add(form.findContainerByID(collapseContainerId));
+        }
+
+        for (int expandContainerId : dto.expandContainerIds) {
+            remapped.expandContainers.add(form.findContainerByID(expandContainerId));
+        }
+
         return remapped;
     }
 
@@ -106,6 +118,8 @@ public class GFormChanges {
                 return form.getProperty(readerId).lastReaders.get(index);
             case GPropertyReadType.CONTAINER_CAPTION:
                 return form.findContainerByID(readerId).captionReader;
+            case GPropertyReadType.CUSTOM:
+                return form.findContainerByID(readerId).customDesignCaptionReader;
             default:
                 return null;
         }
@@ -125,5 +139,6 @@ public class GFormChanges {
         public final static byte LAST = 9;
         public final static byte CONTAINER_CAPTION = 10;
         public final static byte IMAGE = 11;
+        public final static byte CUSTOM = 12;
     }
 }

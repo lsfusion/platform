@@ -35,7 +35,6 @@ import lsfusion.interop.connection.authentication.PasswordAuthentication;
 import lsfusion.interop.form.object.table.grid.user.design.ColorPreferences;
 import lsfusion.interop.logics.LogicsConnection;
 import lsfusion.interop.logics.LogicsRunnable;
-import lsfusion.interop.logics.LogicsSessionObject;
 import lsfusion.interop.logics.ServerSettings;
 import lsfusion.interop.logics.remote.RemoteLogicsInterface;
 import lsfusion.interop.session.SessionInfo;
@@ -432,11 +431,7 @@ public class MainController {
         try {
             assert authToken == null;
             final UserInfo fUserInfo = userInfo;
-            authToken = runRequest(new LogicsRunnable<AuthenticationToken>() {
-                public AuthenticationToken run(LogicsSessionObject sessionObject) throws RemoteException {
-                    return fUserInfo.isAnonymous() ? AuthenticationToken.ANONYMOUS : sessionObject.remoteLogics.authenticateUser(new PasswordAuthentication(fUserInfo.name, fUserInfo.password));
-                }
-            });
+            authToken = runRequest((sessionObject, retry) -> fUserInfo.isAnonymous() ? AuthenticationToken.ANONYMOUS : sessionObject.remoteLogics.authenticateUser(new PasswordAuthentication(fUserInfo.name, fUserInfo.password)));
         } catch (Exception e) {
             return loginAndAuthenticateUser(e.getMessage(), null);
         }

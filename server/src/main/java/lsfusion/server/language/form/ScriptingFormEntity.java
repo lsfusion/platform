@@ -113,7 +113,7 @@ public class ScriptingFormEntity {
             addObjectEntity(objectName, obj, groupObj, version);
 
             if (groupObject.events.get(j) != null) {
-                form.addActionsOnEvent(obj, version, groupObject.events.get(j));
+                form.addActionsOnEvent(obj, false, version, groupObject.events.get(j));
             }
 
             if (groupObject.integrationSIDs.get(j) != null) {
@@ -531,19 +531,11 @@ public class ScriptingFormEntity {
         }
         String customRenderFunction = options.getCustomRenderFunction();
         if (customRenderFunction != null) {
-            if (!customRenderFunction.isEmpty()) {
-                property.customRenderFunction = customRenderFunction;
-            } else {
-                LM.getErrLog().emitCustomPropertyViewFunctionError(LM.getParser(), property.getSID(), customRenderFunction, true);
-            }
+            property.customRenderFunction = customRenderFunction;
         }
         String customEditorFunction = options.getCustomEditorFunction();
         if (customEditorFunction != null) {
-            if (!customEditorFunction.isEmpty()) {
-                property.customEditorFunction = customEditorFunction;
-            } else {
-                LM.getErrLog().emitCustomPropertyViewFunctionError(LM.getParser(), property.getSID(), customRenderFunction, false);
-            }
+            property.customChangeFunction = customEditorFunction;
         }
 
         if (options.getToDraw() != null) {
@@ -636,6 +628,9 @@ public class ScriptingFormEntity {
         Boolean sticky = options.getSticky();
         if(sticky != null)
             property.sticky = sticky;
+        Boolean sync = options.getSync();
+        if(sync != null)
+            property.sync = sync;
     }
 
     private void movePropertyDraw(PropertyDrawEntity<?> property, FormPropertyOptions options, Version version) throws ScriptingErrorLog.SemanticErrorException {
@@ -751,15 +746,18 @@ public class ScriptingFormEntity {
         }
     }
 
-    public void addScriptedFormEvents(List<ActionObjectEntity> actions, List<Object> types, Version version) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedFormEvents(List<ActionObjectEntity> actions, List<Object> types, List<Boolean> replaces, Version version) throws ScriptingErrorLog.SemanticErrorException {
         assert actions.size() == types.size();
         for (int i = 0; i < actions.size(); i++) {
             Object eventType = types.get(i);
+            Boolean replace = replaces.get(i);
+            if(replace == null)
+                replace = eventType == FormEventType.QUERYCLOSE || eventType == FormEventType.QUERYOK;
             if (eventType instanceof String) {
-                form.addActionsOnEvent(getObjectEntity((String) eventType), version, actions.get(i));
+                form.addActionsOnEvent(getObjectEntity((String) eventType), replace, version, actions.get(i));
             } else {
                 ActionObjectEntity action = actions.get(i);
-                form.addActionsOnEvent(eventType, eventType == FormEventType.QUERYCLOSE, version, action);
+                form.addActionsOnEvent(eventType, replace, version, action);
             }
         }
     }

@@ -46,12 +46,12 @@ import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectI
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
-import lsfusion.server.logics.form.struct.property.PropertyObjectInterfaceEntity;
+import lsfusion.server.logics.form.struct.order.OrderEntity;
 import lsfusion.server.physics.dev.integration.service.*;
 
 import java.sql.SQLException;
 
-public class DataObject extends ObjectValue<DataObject> implements PropertyObjectInterfaceEntity, ImportKeyInterface, ImportFieldInterface, ImportDeleteInterface {
+public class DataObject extends ObjectValue<DataObject> implements ImportKeyInterface, ImportFieldInterface, ImportDeleteInterface {
 
     public Object object;
     public ConcreteClass objectClass;
@@ -160,11 +160,6 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
         return object;
     }
 
-    @Override
-    public DataObject getObjectValue(ImMap<ObjectEntity, ? extends ObjectValue> mapObjects) {
-        return this;
-    }
-
     public static <K> ImMap<K, DataObject> filterDataObjects(ImMap<K, ? extends ObjectValue> map) {
         return BaseUtils.immutableCast(
                 ((ImMap<K, ObjectValue>)map).filterFnValues(element -> element instanceof DataObject));
@@ -256,10 +251,6 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
         return SetFact.EMPTY();
     }
 
-    public PropertyObjectInterfaceInstance getRemappedInstance(ObjectEntity oldObject, ObjectInstance newObject, InstanceFactory instanceFactory) {
-        return this;
-    }
-
     public DataObject getDataObject(ImportTable.Row row) {
         return this;
     }
@@ -281,11 +272,6 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
         return getExpr();
     }
 
-    @Override
-    public ConcreteClass getAndClassSet() {
-        return objectClass;
-    }
-
     public ParseInterface getParse(Type type, SQLSyntax syntax) {
         return new TypeObject(this, type, syntax);
     }
@@ -298,10 +284,5 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
         if(!shortName.isEmpty())
             result += "-" + shortName;
         return result;
-    }
-
-    @Override
-    public Expr getEntityExpr(ImMap<ObjectEntity, ? extends Expr> mapExprs, Modifier modifier) {
-        return getExpr();
     }
 }

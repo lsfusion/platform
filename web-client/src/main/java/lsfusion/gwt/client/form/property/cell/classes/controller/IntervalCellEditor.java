@@ -11,7 +11,7 @@ import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import java.math.BigDecimal;
 import java.util.Date;
 
-public class IntervalCellEditor extends PopupBasedCellEditor {
+public class IntervalCellEditor extends PopupValueCellEditor {
 
     private final String intervalType;
     private final GIntervalType interval;
@@ -108,6 +108,7 @@ public class IntervalCellEditor extends PopupBasedCellEditor {
             endDate: new Date(endDate),
             timePicker: !date,
             timePicker24Hour: true,
+            showDropdowns: true,
             autoApply: false,
             ranges: !time ? $wnd.getRanges($wnd, messages.@lsfusion.gwt.client.ClientMessages::today()(),
                     messages.@lsfusion.gwt.client.ClientMessages::yesterday()(),

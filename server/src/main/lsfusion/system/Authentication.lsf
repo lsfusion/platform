@@ -35,6 +35,10 @@ DESIGN computersDialog { BOX { size = (1024, 768); }}
 currentComputer = NATIVE Computer ();
 hostnameCurrentComputer () = hostname(currentComputer());
 
+EXTEND FORM computers
+    FILTERGROUP current FILTER '{logics.property.current.computer}' c = currentComputer()
+; 
+
 // -------------------------- Users ---------------------------- //
 
 // Contact
@@ -71,6 +75,7 @@ name '{authentication.name.user}' (CustomUser user) = name[User](user AS CustomU
 login '{authentication.login}' = DATA ISTRING[100] (CustomUser) CHARWIDTH 15;
 customUserLower (login) = GROUP AGGR CustomUser customUser WHERE customUser IS CustomUser BY ISTRING[100](lower(login(customUser)));
 customUserNormalized (ISTRING[100] login) = customUserLower(ISTRING[100](lower(login)));
+logName (CustomUser user) = OVERRIDE name(user), login(user);
 
 //backward compatibility
 customUser (login) = GROUP AGGR CustomUser customUser WHERE customUser IS CustomUser BY login(customUser);
@@ -124,6 +129,9 @@ secret = DATA TEXT();
 getAuthToken() {
     exportText() <- currentAuthToken();
 } @@api;
+
+resultAuthToken = DATA LOCAL TEXT();
+generateAuthToken INTERNAL 'lsfusion.server.physics.admin.authentication.action.GenerateAuthTokenAction' (STRING);
 
 // LDAP
 useLDAP '{authentication.use.ldap}' = DATA BOOLEAN ();

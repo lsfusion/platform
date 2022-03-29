@@ -53,6 +53,7 @@ public class FormPropertyOptions {
     private Boolean pivotRow;
     private Boolean pivotMeasure;
     private Boolean sticky;
+    private Boolean sync;
 
     // for pivoting
     public String formula;
@@ -429,6 +430,14 @@ public class FormPropertyOptions {
         this.sticky = sticky;
     }
 
+    public Boolean getSync() {
+        return sync;
+    }
+
+    public void setSync(Boolean sync) {
+        this.sync = sync;
+    }
+
     public FormPropertyOptions overrideWith(FormPropertyOptions overrides) {
         FormPropertyOptions merged = new FormPropertyOptions();
 
@@ -478,6 +487,7 @@ public class FormPropertyOptions {
         merged.setPivotMeasure(nvl(overrides.getPivotMeasure(), pivotMeasure));
 
         merged.setSticky(nvl(overrides.getSticky(), sticky));
+        merged.setSync(nvl(overrides.getSync(), sync));
 
         return merged;
     }

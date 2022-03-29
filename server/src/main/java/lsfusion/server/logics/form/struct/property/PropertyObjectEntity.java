@@ -20,6 +20,7 @@ import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.order.OrderEntity;
 import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyObjectEntity;
 import lsfusion.server.logics.property.Property;
+import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 import java.sql.SQLException;
@@ -69,9 +70,13 @@ public class PropertyObjectEntity<P extends PropertyInterface> extends ActionOrP
         return this;
     }
 
+    public <T extends PropertyInterface> PropertyMapImplement<?, T> getImplement(ImRevMap<ObjectEntity, T> mapObjects) {
+        return new PropertyMapImplement<>(property, mapping.join(mapObjects));
+    }
+
     public boolean isValueUnique(GroupObjectEntity grid) {
         // remapping all objects except ones in the grid
-        ImRevMap<P, StaticParamNullableExpr> fixedExprs = mapping.filterFnValuesRev(value -> !grid.getObjects().contains(value)).mapRevValues(ObjectEntity::getParamExpr);
+        ImRevMap<P, StaticParamNullableExpr> fixedExprs = mapping.filterFnValuesRev(value -> grid != null && !grid.getObjects().contains(value)).mapRevValues(ObjectEntity::getParamExpr);
         return property.isValueFull(fixedExprs) && property.isValueUnique(fixedExprs, false);
     }
 }

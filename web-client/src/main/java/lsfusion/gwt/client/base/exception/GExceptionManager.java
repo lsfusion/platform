@@ -40,7 +40,8 @@ public class GExceptionManager {
                     @Override
                     public void onFailure(Throwable caught) {
                         loggingFailed(caught, throwable);
-                        super.onFailure(caught);
+                        //commented because we don't want to repeat logClientError exceptions
+                        //super.onFailure(caught);
                     }
                 });
             }
@@ -70,7 +71,8 @@ public class GExceptionManager {
                         @Override
                         public void onFailure(Throwable caught) {
                             Log.error("Error logging unreported client exception", caught);
-                            super.onFailure(caught);
+                            //commented because we don't want to repeat logClientError exceptions
+                            //super.onFailure(caught);
                         }
 
                         @Override
