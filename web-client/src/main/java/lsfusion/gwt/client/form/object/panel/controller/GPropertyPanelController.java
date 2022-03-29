@@ -12,9 +12,12 @@ import lsfusion.gwt.client.form.design.view.flex.LinearCaptionContainer;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.panel.view.*;
+import lsfusion.gwt.client.form.property.panel.view.ActionOrPropertyValueController;
+import lsfusion.gwt.client.form.property.panel.view.ActionPanelRenderer;
+import lsfusion.gwt.client.form.property.panel.view.PanelRenderer;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.isShowing;
 
@@ -25,6 +28,7 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
 
     private final GFormController form;
 
+    public NativeHashMap<GGroupObjectValue, Integer> columnKeysOrder;
     public NativeHashMap<GGroupObjectValue, PanelRenderer> renderers;
 
     public Panel renderersPanel;
@@ -44,6 +48,7 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
     public GPropertyPanelController(GPropertyDraw property, GFormController form) {
         this.property = property;
         this.form = form;
+        columnKeysOrder = new NativeHashMap<>();
         renderers = new NativeHashMap<>();
 
         renderersPanel = new Panel(property.panelColumnVertical); // needed for groups-to-columns
@@ -76,35 +81,74 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
     public void update() {
         if (columnsUpdated) {
 
-            //adding new renderers
-            NativeHashMap<GGroupObjectValue, PanelRenderer> newRenderers = new NativeHashMap<>();
-            for (GGroupObjectValue columnKey : columnKeys) {
-                if (showIfs == null || showIfs.get(columnKey) != null) {
-                    PanelRenderer renderer = renderers.remove(columnKey);
-                    if (renderer == null && (!property.hide || property.hasKeyBinding())) {
-                        PanelRenderer newRenderer = property.createPanelRenderer(form, this, columnKey, renderersPanel.captionContainer);
-                        newRenderer.setReadOnly(property.isReadOnly());
-                        SizedWidget component = newRenderer.getSizedWidget();
-                        if(!property.hide) {
-                            component.addFill(renderersPanel);
-                        }
-                        newRenderer.bindingEventIndices = form.addPropertyBindings(property, newRenderer::onBinding, component.widget);
+            List<GGroupObjectValue> optionsToAdd = new ArrayList<>();
+            List<GGroupObjectValue> optionsToUpdate = new ArrayList<>();
+            List<GGroupObjectValue> optionsToRemove = new ArrayList<>();
 
-                        renderer = newRenderer;
+            for (int i = 0; i < columnKeys.size(); i++) {
+                GGroupObjectValue columnKey = columnKeys.get(i);
+
+                Integer oldColumnKeyOrder = columnKeysOrder.get(columnKey);
+                if (oldColumnKeyOrder != null) { //такой columnKey есть в старом списке
+                    if (i != oldColumnKeyOrder) { //индекс не совпадает
+                        optionsToRemove.add(columnKey);
+                        optionsToAdd.add(columnKey);
+                    } else {
+                        optionsToUpdate.add(columnKey);
                     }
-                    if(renderer != null) {
-                        newRenderers.put(columnKey, renderer);
-                    }
+                } else { //такого columnKey нет в старом списке
+                    optionsToAdd.add(columnKey);
                 }
             }
 
             // removing old renderers
-            renderers.foreachValue(renderer -> {
-                form.removePropertyBindings(renderer.bindingEventIndices);
-                if (!property.hide) {
-                    renderersPanel.remove(renderer.getComponent());
+            renderers.foreachEntry((columnKey, renderer) -> {
+                if(optionsToRemove.contains(columnKey) || !optionsToUpdate.contains(columnKey)) {
+                    form.removePropertyBindings(renderer.bindingEventIndices);
+                    if (!property.hide) {
+                        renderersPanel.remove(renderer.getComponent());
+                    }
                 }
             });
+
+            //adding new renderers
+            NativeHashMap<GGroupObjectValue, Integer> newColumnKeysOrder = new NativeHashMap<>();
+            NativeHashMap<GGroupObjectValue, PanelRenderer> newRenderers = new NativeHashMap<>();
+            for (GGroupObjectValue columnKey : columnKeys) {
+                if (showIfs == null || showIfs.get(columnKey) != null) {
+                    int newIndex = optionsToAdd.indexOf(columnKey);
+                    if(newIndex >= 0) { //есть в добавляемых
+                        if (!property.hide || property.hasKeyBinding()) {
+                            PanelRenderer newRenderer = property.createPanelRenderer(form, this, columnKey, renderersPanel.captionContainer);
+                            newRenderer.setReadOnly(property.isReadOnly());
+                            SizedWidget component = newRenderer.getSizedWidget();
+                            if(!property.hide) {
+                                component.addFill(renderersPanel);
+                            }
+                            newRenderer.bindingEventIndices = form.addPropertyBindings(property, newRenderer::onBinding, component.widget);
+
+                            newColumnKeysOrder.put(columnKey, newIndex);
+                            newRenderers.put(columnKey, newRenderer);
+                        }
+                    } else { //нет в добавляемых
+                        PanelRenderer renderer = renderers.remove(columnKey);
+                        if(renderer != null) { //нашли - значит, не изменился
+                            newColumnKeysOrder.put(columnKey, columnKeysOrder.get(columnKey));
+                            newRenderers.put(columnKey, renderer);
+                        }
+                    }
+
+                }
+            }
+
+//            // removing old renderers
+//            renderers.foreachValue(renderer -> {
+//                form.removePropertyBindings(renderer.bindingEventIndices);
+//                if (!property.hide) {
+//                    renderersPanel.remove(renderer.getComponent());
+//                }
+//            });
+            columnKeysOrder = newColumnKeysOrder;
             renderers = newRenderers;
 
             columnsUpdated = false;
