@@ -18,6 +18,7 @@ import lsfusion.interop.base.view.FlexAlignment;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.InputEvent;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +37,7 @@ public class PropertyPanelController {
     private Map<ClientGroupObjectValue, Object> cellForegroundValues;
     private Map<ClientGroupObjectValue, Object> imageValues;
 
+    private Map<ClientGroupObjectValue, Integer> renderedColumnKeys;
     private Map<ClientGroupObjectValue, PanelView> views;
 
     private final Panel renderersPanel;
@@ -45,6 +47,9 @@ public class PropertyPanelController {
         this.form = form;
         this.panelController = panelController;
         this.property = property;
+
+        renderedColumnKeys = new HashMap<>();
+        views = new HashMap<>();
 
         form.addPropertyBindings(property, () -> new ClientFormController.Binding(property.groupObject, 0) {
             public boolean pressed(InputEvent ke) {
@@ -154,44 +159,68 @@ public class PropertyPanelController {
         }
     }
 
-    public void update(Color rowBackground, Color rowForeground) {
-        Map<ClientGroupObjectValue, PanelView> newViews = new HashMap<>();
+    private Pair<List<ClientGroupObjectValue>, List<ClientGroupObjectValue>> getDiff(List<ClientGroupObjectValue> columnKeys) {
+        List<ClientGroupObjectValue> optionsToAdd = new ArrayList<>();
+        List<ClientGroupObjectValue> optionsToRemove = new ArrayList<>();
 
-        List<ClientGroupObjectValue> columnKeys = this.columnKeys != null ? this.columnKeys : ClientGroupObjectValue.SINGLE_EMPTY_KEY_LIST;
-        for (final ClientGroupObjectValue columnKey : columnKeys) {
+        Map<ClientGroupObjectValue, Integer> newRenderedColumnKeys = new HashMap<>();
+        for (int i = 0; i < columnKeys.size(); i++) {
+            ClientGroupObjectValue columnKey = columnKeys.get(i);
             if (showIfs == null || showIfs.get(columnKey) != null) {
-                PanelView view = views != null ? views.remove(columnKey) : null;
-                if (view == null && (!property.hide || property.changeKey != null)) {
-                    view = property.getPanelView(form, columnKey, renderersPanel.captionContainer);
-                    view.setReadOnly(property.isReadOnly());
-
-                    view.getEditPropertyDispatcher().setUpdateEditValueCallback(result -> values.put(columnKey, result));
-
-                    panelController.addGroupObjectActions(view.getWidget().getComponent());
+                Integer oldColumnKeyOrder = renderedColumnKeys.remove(columnKey);
+                if (oldColumnKeyOrder != null) {
+                    if (i != oldColumnKeyOrder) {
+                        optionsToRemove.add(columnKey);
+                        optionsToAdd.add(columnKey);
+                    }
+                } else {
+                    optionsToAdd.add(columnKey);
                 }
-                if(view != null) {
-                    newViews.put(columnKey, view);
-                }
+                newRenderedColumnKeys.put(columnKey, i);
             }
         }
 
-        if(views != null && !property.hide) {
-            views.values().forEach(panelView -> renderersPanel.remove(panelView.getWidget()));
-        }
-        views = newViews;
+        optionsToRemove.addAll(renderedColumnKeys.keySet());
 
-        //вообще надо бы удалять всё, и добавлять заново, чтобы соблюдался порядок,
-        //но при этом будет терятся фокус с удалённых компонентов, поэтому пока забиваем на порядок
-//        viewsPanel.removeAll();
+        renderedColumnKeys = newRenderedColumnKeys;
 
-        if (!property.hide) {
-            for (ClientGroupObjectValue columnKey : columnKeys) {
-                PanelView view = views.get(columnKey);
-                if (view != null && view.getWidget().getParent() != renderersPanel.getComponent()) {
-//                    viewsPanel.add(view.getComponent(), new FlexConstraints(property.getAlignment(), property.getValueWidth(viewsPanel)));
-                    renderersPanel.addFill(view.getWidget());
+        return new Pair<>(optionsToAdd, optionsToRemove);
+    }
+
+    public void update(Color rowBackground, Color rowForeground) {
+        if (!property.hide || property.changeKey != null) {
+
+            List<ClientGroupObjectValue> columnKeys = this.columnKeys != null ? this.columnKeys : ClientGroupObjectValue.SINGLE_EMPTY_KEY_LIST;
+            Pair<List<ClientGroupObjectValue>, List<ClientGroupObjectValue>> pair = getDiff(columnKeys);
+            List<ClientGroupObjectValue> optionsToAdd = pair.first;
+            List<ClientGroupObjectValue> optionsToRemove = pair.second;
+
+            // removing old renderers
+            optionsToRemove.forEach(columnKey -> {
+                PanelView view = views.remove(columnKey);
+                if (!property.hide) {
+                    renderersPanel.remove(view.getWidget());
                 }
-            }
+            });
+
+            //adding new renderers
+            optionsToAdd.forEach(columnKey -> {
+                PanelView newView = property.getPanelView(form, columnKey, renderersPanel.captionContainer);
+                newView.setReadOnly(property.isReadOnly());
+
+                newView.getEditPropertyDispatcher().setUpdateEditValueCallback(result -> values.put(columnKey, result));
+
+                panelController.addGroupObjectActions(newView.getWidget().getComponent());
+
+                if (!property.hide) {
+                    if (newView.getWidget().getParent() != renderersPanel.getComponent()) {
+                        renderersPanel.addFill(newView.getWidget(), renderedColumnKeys.get(columnKey));
+                    }
+                }
+
+                views.put(columnKey, newView);
+
+            });
         }
 
         for (Map.Entry<ClientGroupObjectValue, PanelView> e : views.entrySet()) {

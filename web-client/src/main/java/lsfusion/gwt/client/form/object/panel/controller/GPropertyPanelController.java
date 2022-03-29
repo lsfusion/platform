@@ -29,8 +29,8 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
 
     private final GFormController form;
 
-    public NativeHashMap<GGroupObjectValue, Integer> renderedColumnKeys;
-    public NativeHashMap<GGroupObjectValue, PanelRenderer> renderers;
+    private NativeHashMap<GGroupObjectValue, Integer> renderedColumnKeys;
+    private NativeHashMap<GGroupObjectValue, PanelRenderer> renderers;
 
     public Panel renderersPanel;
 
