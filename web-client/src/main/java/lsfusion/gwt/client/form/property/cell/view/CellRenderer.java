@@ -4,7 +4,6 @@ import com.google.gwt.dom.client.*;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder;
-import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
@@ -186,15 +185,15 @@ public abstract class CellRenderer<T> {
     // in theory in most case we can get previous state without storing it in Element, but for now it's the easiest way
     private static class ToolbarState {
         public final boolean loading;
-        public final boolean selectedQuickAccess;
+        public final GPropertyDraw.QuickAccessAction[] quickAccessActions;
 
         public final String background;
 
         public Element element;
 
-        public ToolbarState(boolean loading, boolean selectedQuickAccess, String background) {
+        public ToolbarState(boolean loading, GPropertyDraw.QuickAccessAction[] quickAccessActions, String background) {
             this.loading = loading;
-            this.selectedQuickAccess = selectedQuickAccess;
+            this.quickAccessActions = quickAccessActions;
 
             this.background = background;
         }
@@ -206,18 +205,28 @@ public abstract class CellRenderer<T> {
         if(stateB == null)
             return false;
 
-        return stateA.loading == stateB.loading && stateA.selectedQuickAccess == stateB.selectedQuickAccess && stateA.background == stateB.background;
+        if(!(stateA.loading == stateB.loading && GwtClientUtils.nullEquals(stateA.background, stateB.background)))
+            return false;
+
+        if(stateA.quickAccessActions != stateB.quickAccessActions) {
+            if (stateA.quickAccessActions.length != stateB.quickAccessActions.length)
+                return false;
+            for(int i=0;i<stateA.quickAccessActions.length;i++)
+                if(stateA.quickAccessActions[i].index != stateB.quickAccessActions[i].index)
+                    return false;
+        }
+
+        return true;
     }
 
     // cleared - cleared with setInnerText / setInnerHTML
     protected void renderToolbarContent(Element element, UpdateContext updateContext, RenderedState renderedState, String background, boolean cleared) {
         boolean loading = updateContext.isLoading() && !renderedLoadingContent(updateContext);
-        GPropertyDraw.QuickAccessAction[] quickAccessActions = null;
-        boolean selectedQuickAccess = updateContext.isSelectedRow() && (quickAccessActions = property.getQuickAccessActions()).length > 0;
+        GPropertyDraw.QuickAccessAction[] quickAccessActions = property.getQuickAccessActions(updateContext.isSelectedRow(), updateContext.isFocusedColumn());
 
-        boolean needToolbar = loading || selectedQuickAccess;
+        boolean needToolbar = loading || quickAccessActions.length > 0;
 
-        ToolbarState toolbarState = needToolbar ? new ToolbarState(loading, selectedQuickAccess, background) : null;
+        ToolbarState toolbarState = needToolbar ? new ToolbarState(loading, quickAccessActions, background) : null;
         ToolbarState prevState = renderedState.toolbar;
         if (equalsState(toolbarState, prevState)) { // already rendered
             if(!(cleared && needToolbar)) // if cleared we still need to rerender the toolbar
@@ -256,16 +265,14 @@ public abstract class CellRenderer<T> {
                 addToToolbar(toolbarElement, start, loadingImage);
             }
 
-            if(selectedQuickAccess) {
-                for(GPropertyDraw.QuickAccessAction quickAccessAction : quickAccessActions) {
-                    int actionIndex = quickAccessAction.index;
-                    ImageElement actionElement = Document.get().createImageElement();
-                    actionElement.addClassName("wrap-img-paddings"); // setting paddings
-                    GwtClientUtils.setThemeImage(quickAccessAction.action + ".png", actionElement::setSrc);
-                    GwtClientUtils.setOnClick(actionElement, () -> updateContext.changeProperty(new GUserInputResult(null, actionIndex)));
+            for(GPropertyDraw.QuickAccessAction quickAccessAction : quickAccessActions) {
+                int actionIndex = quickAccessAction.index;
+                ImageElement actionElement = Document.get().createImageElement();
+                actionElement.addClassName("wrap-img-paddings"); // setting paddings
+                GwtClientUtils.setThemeImage(quickAccessAction.action + ".png", actionElement::setSrc);
+                GwtClientUtils.setOnClick(actionElement, () -> updateContext.changeProperty(new GUserInputResult(null, actionIndex)));
 
-                    addToToolbar(toolbarElement, start, actionElement);
-                }
+                addToToolbar(toolbarElement, start, actionElement);
             }
         } else {
             if (!cleared)

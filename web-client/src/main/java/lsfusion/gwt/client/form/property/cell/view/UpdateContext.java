@@ -19,6 +19,8 @@ public interface UpdateContext {
     boolean isSelectedRow();
     default boolean isSelectedLink() { return isSelectedRow(); }
 
+    default boolean isFocusedColumn() { return false; }
+
     default String getBackground() { return null; }
 
     default String getForeground() { return null; }

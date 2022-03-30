@@ -52,6 +52,11 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
     }
 
     @Override
+    public boolean isFocusedColumn() {
+        return isFocused;
+    }
+
+    @Override
     public Object getImage() {
         return image;
     }
@@ -199,9 +204,10 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
         if(isFocused)
             return;
         DataGrid.sinkPasteEvent(getFocusElement());
-        isFocused = true;
 
+        isFocused = true;
         borderWidget.addStyleName("panelRendererValueFocused");
+        update();
     }
 
     protected void onBlur(EventHandler handler) {
@@ -212,6 +218,7 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
         //assert isFocused;
         isFocused = false;
         borderWidget.removeStyleName("panelRendererValueFocused");
+        update();
     }
 
     public boolean isEditing;
@@ -281,6 +288,10 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
 
         // RERENDER IF NEEDED : we have the previous state
 
+        update();
+    }
+
+    public void update() {
         form.update(property, getRenderElement(), this);
     }
 }

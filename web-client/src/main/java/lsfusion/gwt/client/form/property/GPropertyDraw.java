@@ -111,34 +111,59 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         public final String action;
         public final GAsyncEventExec asyncExec;
         public final int index;
+        public final boolean hover;
 
-        public QuickAccessAction(String action, GAsyncEventExec asyncExec, int index) {
+        public QuickAccessAction(String action, GAsyncEventExec asyncExec, int index, boolean hover) {
             this.action = action;
             this.asyncExec = asyncExec;
             this.index = index;
+            this.hover = hover;
         }
     }
 
+    private transient QuickAccessAction[] quickAccessSelectedFocusedActions;
+    private transient QuickAccessAction[] quickAccessSelectedActions;
     private transient QuickAccessAction[] quickAccessActions;
-    public QuickAccessAction[] getQuickAccessActions() {
+    // manual caching
+    public QuickAccessAction[] getQuickAccessActions(boolean isSelected, boolean isFocused) {
+        if(isSelected) {
+            if(isFocused) {
+                if (quickAccessSelectedFocusedActions == null) {
+                    quickAccessSelectedFocusedActions = calculateQuickAccessActions(true, true);
+                }
+                return quickAccessSelectedFocusedActions;
+            }
+            if (quickAccessSelectedActions == null) {
+                quickAccessSelectedActions = calculateQuickAccessActions(true, false);
+            }
+            return quickAccessSelectedActions;
+        }
+
         if(quickAccessActions == null) {
-            GInputList inputList = getInputList();
-            QuickAccessAction[] actions;
-            if(inputList != null) {
-                int actionsCount = 0;
-                for(int i = 0; i < inputList.actions.length ; i++)
-                    if(true)// inputList.quickAccesses[i])
-                        actionsCount++;
-                actions = new QuickAccessAction[actionsCount];
-                int j = 0;
-                for(int i = 0; i < inputList.actions.length ; i++)
-                    if(true) //inputList.quickAccesses[i])
-                        actions[j++] = new QuickAccessAction(inputList.actions[i], inputList.actionAsyncs[i], i);
-            } else
-                actions = new QuickAccessAction[0];
-            quickAccessActions = actions;
+            quickAccessActions = calculateQuickAccessActions(false, false);
         }
         return quickAccessActions;
+    }
+
+    private QuickAccessAction[] calculateQuickAccessActions(boolean isSelected, boolean isFocused) {
+        if(!isSelected)
+            return new QuickAccessAction[0];
+
+        GInputList inputList = getInputList();
+        QuickAccessAction[] actions;
+        if(inputList != null) {
+            int actionsCount = 0;
+            for(int i = 0; i < inputList.actions.length ; i++)
+                if(true)// inputList.quickAccesses[i]) check for selected / focused all, selected, selected + focused
+                    actionsCount++;
+            actions = new QuickAccessAction[actionsCount];
+            int j = 0;
+            for(int i = 0; i < inputList.actions.length ; i++)
+                if(true)// inputList.quickAccesses[i]) check for selected / focused all, selected, selected + focused
+                    actions[j++] = new QuickAccessAction(inputList.actions[i], inputList.actionAsyncs[i], i, false);
+        } else
+            actions = new QuickAccessAction[0];
+        return actions;
     }
 
     public GAsyncEventExec getAsyncEventExec(String actionSID) {

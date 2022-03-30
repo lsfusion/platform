@@ -618,13 +618,18 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
             }
 
             @Override
+            public boolean isFocusedColumn() {
+                return GGridPropertyTable.this.isFocusedColumn(cell);
+            }
+
+            @Override
             public Object getImage() {
                 return column.getImage(property, (T) cell.getRow());
             }
 
             @Override
             public String getBackground() {
-                return DataGrid.getSelectedCellBackground(isSelectedRow(), GGridPropertyTable.this.isFocusedColumn(cell), column.getBackground(property, (T) cell.getRow()));
+                return DataGrid.getSelectedCellBackground(isSelectedRow(), isFocusedColumn(), column.getBackground(property, (T) cell.getRow()));
             }
 
             @Override
