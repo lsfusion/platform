@@ -495,12 +495,11 @@ formDeclaration returns [ScriptingFormEntity form]
 	String image = null;
 	String title = null;
 	boolean localAsync = false;
-	boolean moreAsync = false;
 	DebugInfo.DebugPoint point = getCurrentDebugPoint();
 }
 @after {
 	if (inMainParseState()) {
-		$form = self.createScriptedForm($formNameCaption.name, $formNameCaption.caption, point, image, modalityType, autoRefresh, localAsync, moreAsync);
+		$form = self.createScriptedForm($formNameCaption.name, $formNameCaption.caption, point, image, modalityType, autoRefresh, localAsync);
 	}
 }
 	:	'FORM' 
@@ -508,7 +507,6 @@ formDeclaration returns [ScriptingFormEntity form]
 		(	('IMAGE' img=stringLiteral { image = $img.val; })
 		|	('AUTOREFRESH' refresh=intLiteral { autoRefresh = $refresh.val; })
 		|	('LOCALASYNC' { localAsync = true; })
-		|	('MOREASYNC' { moreAsync = true; })
 		)*
 	;
 
@@ -839,6 +837,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|   'ROW' { $options.setPivotRow(true); }
 		|   'MEASURE' { $options.setPivotMeasure(true); }
 		|   st = stickyOption { $options.setSticky($st.sticky); }
+		|   sync = syncTypeLiteral { $options.setSync($sync.val); }
 		)*
 	;
 
@@ -2690,6 +2689,8 @@ semiActionOrPropertyOption[LAP property, String propertyName, LocalizedString ca
 	|	charWidthSetting [property]
 	|	changeKeySetting [property]
 	|	changeMouseSetting [property]
+	|	stickySetting [property]
+	|	syncSetting [property]
 	|   '@@' ann = ID { ps.annotation = $ann.text; }
     ;
 
@@ -2709,7 +2710,6 @@ semiPropertyOption[LP property, String propertyName, LocalizedString caption, Pr
 	|	setNotNullSetting [ps]
 	|	aggrSetting [property]
 	|	eventIdSetting [property]
-	|	stickySetting [property]
     ;
 
 semiActionOption[LA action, String actionName, LocalizedString caption, ActionSettings ps, List<TypedParameter> context]
@@ -3013,7 +3013,7 @@ eventIdSetting [LAP property]
 	:	'EVENTID' id=stringLiteral
 	;
 
-stickySetting [LP property]
+stickySetting [LAP property]
 @init {
 	boolean sticky = false;
 }
@@ -3029,6 +3029,19 @@ stickySetting [LP property]
 stickyOption returns[boolean sticky = false]
 	:	'STICKY' { sticky = true; } | 'NOSTICKY' { sticky = false; }
 	;
+
+syncSetting [LAP property]
+@init {
+	Boolean sync = null;
+}
+@after {
+	if (inMainParseState()) {
+		self.setSync(property, sync);
+	}
+}
+    :
+        s = syncTypeLiteral { sync = $s.val; }
+    ;
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////// ACTION PROPERTIES ///////////////////////////
@@ -3554,11 +3567,11 @@ internalActionDefinitionBody[List<TypedParameter> context] returns [LA action, L
 
 	:	'INTERNAL'
 	    ('CLIENT' { clientAction = true; } )?
+        (sync = syncTypeLiteral { syncType = $sync.val; })?
         (
             classN = stringLiteral ('(' cls=classIdList ')' { classes = $cls.ids; })?
 		|   code = codeLiteral
         )
-        (sync = syncTypeLiteral { syncType = $sync.val; })?
 	    ('NULL' { allowNullValue = true; })?
 	;
 

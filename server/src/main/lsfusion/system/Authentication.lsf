@@ -35,6 +35,10 @@ DESIGN computersDialog { BOX { size = (1024, 768); }}
 currentComputer = NATIVE Computer ();
 hostnameCurrentComputer () = hostname(currentComputer());
 
+EXTEND FORM computers
+    FILTERGROUP current FILTER '{logics.property.current.computer}' c = currentComputer()
+; 
+
 // -------------------------- Users ---------------------------- //
 
 // Contact

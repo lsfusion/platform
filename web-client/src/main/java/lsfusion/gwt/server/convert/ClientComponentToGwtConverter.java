@@ -614,7 +614,6 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
 
         form.creationPath = clientForm.creationPath;
         form.autoRefresh = clientForm.autoRefresh;
-        form.moreAsync = clientForm.moreAsync;
         GContainer mainContainer = convertOrCast(clientForm.mainContainer);
         mainContainer.main = true;
         form.mainContainer = mainContainer;

@@ -1,9 +1,6 @@
 package lsfusion.gwt.server.convert;
 
-import lsfusion.client.form.property.async.ClientAsyncAddRemove;
-import lsfusion.client.form.property.async.ClientAsyncChange;
-import lsfusion.client.form.property.async.ClientAsyncOpenForm;
-import lsfusion.client.form.property.async.ClientInputList;
+import lsfusion.client.form.property.async.*;
 import lsfusion.client.form.property.cell.classes.controller.suggest.CompletionType;
 import lsfusion.gwt.client.form.property.async.*;
 import lsfusion.gwt.client.form.property.cell.classes.controller.suggest.GCompletionType;
@@ -60,6 +57,12 @@ public class ClientAsyncToGwtConverter extends ObjectConverter {
     @Converter(from = ClientAsyncOpenForm.class)
     public GAsyncOpenForm convertOpenForm(ClientAsyncOpenForm asyncOpenForm) {
         return new GAsyncOpenForm(asyncOpenForm.canonicalName, asyncOpenForm.caption, asyncOpenForm.forbidDuplicate, asyncOpenForm.modal, convertOrCast(asyncOpenForm.type));
+    }
+
+    @Cached
+    @Converter(from = ClientAsyncNoWaitExec.class)
+    public GAsyncNoWaitExec convertNoWaitExec(ClientAsyncNoWaitExec asyncNoWaitExec) {
+        return new GAsyncNoWaitExec();
     }
     
     @Cached

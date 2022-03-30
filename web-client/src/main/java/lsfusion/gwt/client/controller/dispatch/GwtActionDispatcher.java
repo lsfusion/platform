@@ -372,39 +372,34 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
             var resourcePath = (@lsfusion.gwt.client.view.MainFrame::devMode ? 'dev' : 'static') + action.@GClientJSAction::resource;
 
             if (resourcePath.endsWith('js')) {
-                var documentScripts = $wnd.document.scripts, scriptAlreadyLoaded;
+                var documentScripts = $wnd.document.scripts;
                 for (var i = 0; i < documentScripts.length; i++) {
                     var src = documentScripts[i].src;
-                    if (src != null && src.endsWith(resourcePath)){
-                        scriptAlreadyLoaded = true;
-                        break;
+                    if (src != null && src.endsWith(resourcePath)) {
+                        thisObj.@JSExecutor::onActionExecuted(*)(action);
+                        return;
                     }
                 }
-
-                if (!scriptAlreadyLoaded) {
-                    var scr = document.createElement('script');
-                    scr.src = resourcePath;
-                    scr.type = 'text/javascript';
-                    $wnd.document.head.appendChild(scr);
-                    scr.onload = function() {thisObj.@JSExecutor::onActionExecuted(*)(action); }
-                }
+                var scr = document.createElement('script');
+                scr.src = resourcePath;
+                scr.type = 'text/javascript';
+                $wnd.document.head.appendChild(scr);
+                scr.onload = function() {thisObj.@JSExecutor::onActionExecuted(*)(action); }
             } else if (resourcePath.endsWith('css')) {
-                var documentStyleSheets = $wnd.document.styleSheets, styleSheetAlreadyLoaded;
+                var documentStyleSheets = $wnd.document.styleSheets;
                 for (var j = 0; j < documentStyleSheets.length; j++) {
                     var href = documentStyleSheets[j].href;
-                    if (href != null && href.endsWith(resourcePath)){
-                        styleSheetAlreadyLoaded = true;
-                        break;
+                    if (href != null && href.endsWith(resourcePath)) {
+                        thisObj.@JSExecutor::onActionExecuted(*)(action);
+                        return;
                     }
                 }
-                if (!styleSheetAlreadyLoaded) {
-                    var link = document.createElement("link");
-                    link.href = resourcePath;
-                    link.type = "text/css";
-                    link.rel = "stylesheet";
-                    $wnd.document.head.appendChild(link);
-                    thisObj.@JSExecutor::onActionExecuted(*)(action);
-                }
+                var link = document.createElement("link");
+                link.href = resourcePath;
+                link.type = "text/css";
+                link.rel = "stylesheet";
+                $wnd.document.head.appendChild(link);
+                thisObj.@JSExecutor::onActionExecuted(*)(action);
             }
         }-*/;
 

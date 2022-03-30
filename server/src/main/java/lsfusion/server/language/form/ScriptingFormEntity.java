@@ -628,6 +628,9 @@ public class ScriptingFormEntity {
         Boolean sticky = options.getSticky();
         if(sticky != null)
             property.sticky = sticky;
+        Boolean sync = options.getSync();
+        if(sync != null)
+            property.sync = sync;
     }
 
     private void movePropertyDraw(PropertyDrawEntity<?> property, FormPropertyOptions options, Version version) throws ScriptingErrorLog.SemanticErrorException {
@@ -826,10 +829,6 @@ public class ScriptingFormEntity {
 
     public void setLocalAsync(boolean localAsync) {
         form.localAsync = localAsync;
-    }
-
-    public void setMoreAsync(boolean moreAsync) {
-        form.moreAsync = moreAsync;
     }
 
     private CustomClass findCustomClassForFormSetup(String className) throws ScriptingErrorLog.SemanticErrorException {

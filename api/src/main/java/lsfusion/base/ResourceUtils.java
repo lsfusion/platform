@@ -1,15 +1,19 @@
 package lsfusion.base;
 
+import org.apache.commons.io.FilenameUtils;
+
 import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -165,4 +169,62 @@ public class ResourceUtils {
     public static InputStream getResourceAsStream(String path) {
         return ResourceUtils.class.getResourceAsStream(path);
     }
-}  
+
+    public static Path getTargetDir(String projDir) {
+        Path targetDir = Paths.get(projDir, "target/classes");
+        if(!Files.exists(targetDir)) { // if not maven then idea-project
+            targetDir = Paths.get(projDir, "out/production/" + Paths.get(projDir).toFile().getName());
+            if(!Files.exists(targetDir))
+                targetDir = null;
+        }
+        return targetDir;
+    }
+
+    public static Path getTargetPath(String projDir, String fileName) {
+        Path targetDir = getTargetDir(projDir);
+        return targetDir == null ? Paths.get(projDir, fileName) : Paths.get(targetDir.toString(), fileName);
+    }
+
+    public static Path getCustomPath(String projDir, String fileName) {
+        Path srcPath = getTargetDir(projDir) == null ? null : Paths.get(projDir, "src/main/lsfusion/");
+        return srcPath == null || !Files.exists(srcPath) ? Paths.get(projDir, fileName) : Paths.get(srcPath.toString(), fileName);
+    }
+
+    public static String getFileParentDirectoryPath(String fileName) {
+        URL resource = ResourceUtils.class.getResource(fileName);
+        String fullPath = "";
+        if(resource != null) {
+            try {
+                fullPath = FilenameUtils.separatorsToUnix(Paths.get(resource.toURI()).toString());
+            } catch (URISyntaxException ignored) {
+            }
+        }
+
+        assert fullPath.endsWith(fileName);
+        return fullPath.substring(0, fullPath.length() - fileName.length());
+    }
+
+    public static Path getTargetClassesParentPath(String currentPath) {
+        Path classesDir = Paths.get(currentPath);
+        Path targetDir = classesDir.getParent();
+        return equalName(classesDir, "classes") && equalName(targetDir, "target") ? Paths.get(currentPath, "../..") : null;
+    }
+
+    public static Path getOutProductionParentPath(String currentPath) {
+        Path moduleDir = Paths.get(currentPath);
+        Path productionDir = moduleDir.getParent();
+        Path outDir = productionDir.getParent();
+        return equalName(productionDir, "production") && equalName(outDir, "out") && equalName(outDir.getParent(), moduleDir.toFile().getName()) ? Paths.get(currentPath, "../../..") : null;
+    }
+
+    private static boolean equalName(Path path, String name) {
+        return path.toFile().getName().equals(name);
+    }
+
+    public static List<String> findInClassPath(String endpoint) {
+        return Arrays.stream(ResourceUtils.getClassPathElements())
+                .filter(path -> Files.exists(Paths.get(path, endpoint)))
+                .map(path -> FilenameUtils.separatorsToUnix(Paths.get(path, endpoint).toString()))
+                .collect(Collectors.toList());
+    }
+}

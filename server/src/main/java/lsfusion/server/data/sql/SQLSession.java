@@ -1754,6 +1754,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         //      также при нарушении GROUP AGGR может возникать, так как GROUP AGGR тоже не детерминирован 
         // неправильный вывод классов в таблицах (см. SessionTable.assertCheckClasses),
         // !!! также при нарушении checkSessionCount (тестится fifo.add логом)
+        //еще может быть ситуация при материализации подзапросов, если она выполняется не в транзакции (скорее всего в длинных запросах)
+        //      что одни и те же ключи появляются в двух подзапросах и при объединении дублируются
         if(syntax.isUniqueViolation(e))
             handled = new SQLUniqueViolationException(false);
 

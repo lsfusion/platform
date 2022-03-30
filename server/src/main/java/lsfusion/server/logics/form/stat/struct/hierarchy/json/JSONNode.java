@@ -99,7 +99,7 @@ public class JSONNode implements Node<JSONNode> {
 
     @Override
     public JSONNode createNode() {
-        return new JSONNode(new JSONObject());
+        return new JSONNode(new OrderedJSONObject());
     }
 
     @Override
@@ -135,7 +135,7 @@ public class JSONNode implements Node<JSONNode> {
                     array.put(putJSONNode(value.second, true));
                 addObject = array;
             } else {
-                JSONObject object = new JSONObject();
+                JSONObject object = new OrderedJSONObject();
                 for(Pair<Object, JSONNode> value : map)
                     object.put((String) value.first, putJSONNode(value.second, true));
                 addObject = object;

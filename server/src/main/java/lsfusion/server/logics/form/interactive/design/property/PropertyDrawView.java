@@ -19,6 +19,7 @@ import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.data.integral.IntegerClass;
 import lsfusion.server.logics.form.interactive.action.async.AsyncChange;
 import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
+import lsfusion.server.logics.form.interactive.action.async.AsyncNoWaitExec;
 import lsfusion.server.logics.form.interactive.action.async.AsyncSerializer;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerContext;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
@@ -52,6 +53,7 @@ import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
 
+import static lsfusion.base.BaseUtils.nvl;
 import static lsfusion.interop.action.ServerResponse.CHANGE;
 import static lsfusion.interop.action.ServerResponse.EDIT_OBJECT;
 import static lsfusion.server.logics.form.struct.property.PropertyDrawExtraType.*;
@@ -109,6 +111,7 @@ public class PropertyDrawView extends BaseComponentView {
     public boolean notNull;
 
     public Boolean sticky;
+    public Boolean sync;
 
     @SuppressWarnings({"UnusedDeclaration"})
     public PropertyDrawView() {
@@ -220,7 +223,13 @@ public class PropertyDrawView extends BaseComponentView {
         Map<String, AsyncEventExec> asyncExecMap = new HashMap<>();
         for (String actionId : ServerResponse.events) {
             AsyncEventExec asyncEventExec = entity.getAsyncEventExec(context.entity, context.securityPolicy, actionId, false);
-            if (asyncEventExec != null) {
+            Boolean sync = getSync();
+            boolean wait = sync != null && sync;
+            boolean nowait = sync != null && !sync;
+            if (nowait && asyncEventExec == null) {
+                asyncEventExec = new AsyncNoWaitExec();
+            }
+            if (!wait && asyncEventExec != null) {
                 asyncExecMap.put(actionId, asyncEventExec);
             }
         }
@@ -252,6 +261,10 @@ public class PropertyDrawView extends BaseComponentView {
 
     public boolean isSticky(FormEntity formEntity) {
         return entity.sticky != null ? entity.sticky : sticky != null ? sticky : isProperty() && entity.getPropertyObjectEntity().isValueUnique(entity.getToDraw(formEntity));
+    }
+
+    public Boolean getSync() {
+        return nvl(entity.sync, sync);
     }
 
     //Для Jasper'а экранируем кавычки

@@ -10,12 +10,12 @@ import lsfusion.server.logics.form.open.ObjectSelector;
 import lsfusion.server.logics.form.stat.struct.FormIntegrationType;
 import lsfusion.server.logics.form.stat.struct.export.hierarchy.ExportHierarchicalAction;
 import lsfusion.server.logics.form.stat.struct.hierarchy.json.JSONNode;
+import lsfusion.server.logics.form.stat.struct.hierarchy.json.OrderedJSONObject;
 import lsfusion.server.logics.form.stat.struct.imports.hierarchy.json.JSONReader;
 import lsfusion.server.logics.form.struct.filter.ContextFilterSelector;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -29,7 +29,7 @@ public class ExportJSONAction<O extends ObjectSelector> extends ExportHierarchic
     }
 
     protected JSONNode createRootNode(String root, String tag) {
-        return new JSONNode(new JSONObject());
+        return new JSONNode(new OrderedJSONObject());
     }
 
     @Override
