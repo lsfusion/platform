@@ -23,6 +23,7 @@ import lsfusion.interop.ProgressBar;
 import lsfusion.interop.action.*;
 import lsfusion.interop.form.ModalityType;
 import lsfusion.client.form.property.cell.ClientAsync;
+import lsfusion.interop.form.print.FormPrintType;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 import lsfusion.interop.session.ExternalHttpMethod;
 import lsfusion.interop.session.HttpClientAction;
@@ -127,8 +128,10 @@ public class ClientActionToGwtConverter extends ObjectConverter {
 
     @Converter(from = ReportClientAction.class)
     public GReportAction convertAction(ReportClientAction action, final MainDispatchServlet servlet) throws IOException {
-        Pair<String, String> report = FileUtils.exportReport(action.printType, action.generationData, servlet.getNavigatorProvider().getRemoteLogics());
-        return new GReportAction(report.first, report.second);
+        boolean webAutoPrint = action.printType == FormPrintType.AUTO;
+        Pair<String, String> report = FileUtils.exportReport(webAutoPrint ? FormPrintType.HTML : action.printType,
+                action.generationData, servlet.getNavigatorProvider().getRemoteLogics());
+        return new GReportAction(report.first, report.second, webAutoPrint);
     }
 
     @Converter(from = RequestUserInputClientAction.class)

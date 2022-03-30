@@ -229,7 +229,10 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
 
     @Override
     public void execute(GReportAction action) {
-        GwtClientUtils.downloadFile(action.reportFileName, "lsfReport", action.reportExtension);
+        if (action.isAutoPrint)
+            GwtClientUtils.newWindowPrint(action);
+        else
+            GwtClientUtils.downloadFile(action.reportFileName, "lsfReport", action.reportExtension);
     }
 
     @Override

@@ -13,6 +13,7 @@ import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.ClientMessages;
+import lsfusion.gwt.client.action.GReportAction;
 import lsfusion.gwt.client.base.view.PopupDialogPanel;
 import lsfusion.gwt.client.view.MainFrame;
 
@@ -66,6 +67,16 @@ public class GwtClientUtils {
             Window.open(fileUrl, "_blank", ""); // displayName != null ? displayName : name
         }
     }
+
+    public static native void newWindowPrint(GReportAction action)/*-{
+        var window = $wnd.open(@GwtClientUtils::getDownloadURL(*)(action.@GReportAction::reportFileName, "", action.@GReportAction::reportExtension, true));
+        window.onload = function () {
+            window.print();
+        }
+        window.onafterprint = function () {
+            window.close();
+        }
+    }-*/;
 
     public static String getDownloadURL(String name, String displayName, String extension, boolean actionFile) {
         return getWebAppBaseURL() + GwtSharedUtils.getDownloadURL(name, displayName, extension, actionFile);
