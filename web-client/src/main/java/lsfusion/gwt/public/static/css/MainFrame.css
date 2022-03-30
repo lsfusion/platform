@@ -185,10 +185,6 @@ input[type=checkbox]:focus {
     opacity: 1;
 }
 
-.ResizableWindow, .ResizableWindow .background-inherit {
-    background-color: var(--background-color); /* prevent transparency */
-}
-
 .ResizableWindow {
     position: absolute;
     border: 1px solid var(--dialog-outer-border-color);

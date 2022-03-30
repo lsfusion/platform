@@ -60,6 +60,7 @@ public class ResizableWindow extends Composite {
         initWidget(mainPanel = new FocusPanel());
 
         addStyleName(RESIZABLE_DIALOG_STYLE);
+        addStyleName("background-inherit");
     }
 
     public void setCaption(String caption) {

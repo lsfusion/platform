@@ -34,11 +34,12 @@ body {
     direction: ltr;
 }
 
+/* this is is a hack class, when we want to inherit background-color but not the immediate parent, but the first non-transparent parent */
 .background-inherit {
 }
 
 body, body .background-inherit {
-    background: var(--background-color);
+    background-color: var(--background-color);
 }
 
 a, a:visited {
