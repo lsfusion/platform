@@ -242,7 +242,7 @@ public abstract class CellRenderer<T> {
 
         if(needToolbar) {
             Element toolbarElement = cleared ? null : toolbarState.element;
-            boolean start = getHorzTextAlignment().equals(Style.TextAlign.RIGHT);
+            boolean start = !getHorzTextAlignment().equals(Style.TextAlign.LEFT);
             if(toolbarElement == null) {
                 toolbarElement = Document.get().createDivElement();
                 toolbarElement.addClassName("property-toolbar");
@@ -265,14 +265,18 @@ public abstract class CellRenderer<T> {
                 addToToolbar(toolbarElement, start, loadingImage);
             }
 
-            for(GPropertyDraw.QuickAccessAction quickAccessAction : quickAccessActions) {
-                int actionIndex = quickAccessAction.index;
-                ImageElement actionElement = Document.get().createImageElement();
-                actionElement.addClassName("wrap-img-paddings"); // setting paddings
-                GwtClientUtils.setThemeImage(quickAccessAction.action + ".png", actionElement::setSrc);
-                GwtClientUtils.setOnClick(actionElement, () -> updateContext.changeProperty(new GUserInputResult(null, actionIndex)));
+            if(quickAccessActions.length > 0) {
+                addToToolbar(toolbarElement, start, GwtClientUtils.createVerticalStretchSeparator().getElement());
 
-                addToToolbar(toolbarElement, start, actionElement);
+                for (GPropertyDraw.QuickAccessAction quickAccessAction : quickAccessActions) {
+                    int actionIndex = quickAccessAction.index;
+                    ImageElement actionElement = Document.get().createImageElement();
+                    actionElement.addClassName("wrap-img-paddings"); // setting paddings
+                    GwtClientUtils.setThemeImage(quickAccessAction.action + ".png", actionElement::setSrc);
+                    GwtClientUtils.setOnClick(actionElement, () -> updateContext.changeProperty(new GUserInputResult(null, actionIndex)));
+
+                    addToToolbar(toolbarElement, start, actionElement);
+                }
             }
         } else {
             if (!cleared)

@@ -244,6 +244,12 @@ public class GwtClientUtils {
         return strut;
     }
 
+    public static Widget createVerticalStretchSeparator() {
+        SimplePanel separator = new SimplePanel();
+        separator.addStyleName("verticalStretchSeparator");
+        return separator;
+    }
+
     public static Widget createVerticalSeparator(int height) {
         SimplePanel separator = new SimplePanel();
         separator.setHeight(height + "px");

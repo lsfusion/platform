@@ -104,6 +104,12 @@
 .wrap-img-paddings {
     /*overflow: hidden;*/
     padding: 1px 2px;
+    border: 1px solid transparent;
+    border-radius: var(--button-border-radius);
+}
+
+.wrap-img-paddings:hover {
+    border: 1px solid var(--component-hover-border-color);
 }
 
 .dataGridHeaderCell-caption {

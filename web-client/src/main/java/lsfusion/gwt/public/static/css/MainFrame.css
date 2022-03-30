@@ -861,6 +861,12 @@ button {
     padding: 1px;
 }
 
+.verticalStretchSeparator {
+    border-left: 1px solid var(--panel-border-color);
+    margin: 3px 2px;
+    align-self: stretch;
+}
+
 .verticalSeparator {
     border-left: 1px solid var(--panel-border-color);
 }
