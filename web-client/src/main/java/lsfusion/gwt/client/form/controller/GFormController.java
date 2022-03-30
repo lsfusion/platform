@@ -777,9 +777,9 @@ public class GFormController implements EditManager {
         pendingChangePropertyRequests.foreachEntry((property, values) -> {
             final NativeHashMap<GGroupObjectValue, Object> propertyValues = fc.properties.get(property);
             if (propertyValues != null) {
-                values.foreachEntry((group, change) -> {
+                values.foreachEntry((key, change) -> {
                     if (change.canUseNewValueForRendering) {
-                        propertyValues.put(group, change.newValue);
+                        propertyValues.put(key, change.newValue);
                     }
                 });
             }
@@ -961,8 +961,7 @@ public class GFormController implements EditManager {
             }
 
             // hasChangeAction check is important for quickfilter not to consume event (however with propertyReadOnly, checkCanBeChanged there will be still some problems)
-            if (isChangeEvent(actionSID) &&
-                    (editContext.isReadOnly() || !property.hasUserChangeAction())) // we're ignoring change if we use CUSTOM render function without CUSTOM CHANGE set
+            if (isChangeEvent(actionSID) && (editContext.isReadOnly() || !property.hasUserChangeAction()))
                 return;
             if(GEditBindingMap.EDIT_OBJECT.equals(actionSID) && !property.hasEditObjectAction)
                 return;

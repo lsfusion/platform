@@ -128,7 +128,6 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
                 //adding new renderers
                 optionsToAdd.forEach(columnKey -> {
                     PanelRenderer newRenderer = property.createPanelRenderer(form, GPropertyPanelController.this, columnKey, renderersPanel.captionContainer);
-                    newRenderer.setReadOnly(property.isReadOnly());
                     SizedWidget component = newRenderer.getSizedWidget();
                     if (!property.hide) {
                         component.addFill(renderersPanel, renderedColumnKeys.get(columnKey));
@@ -158,11 +157,12 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
         if (cellForegroundValues != null) {
             foreground = cellForegroundValues.get(columnKey);
         }
-        renderer.update(values.get(columnKey), loadings != null && loadings.get(columnKey) != null, images != null ? images.get(columnKey) : null, background == null ? property.background : background, foreground == null ? property.foreground : foreground);
-
-        if (readOnly != null) {
-            renderer.setReadOnly(readOnly.get(columnKey) != null);
-        }
+        renderer.update(values.get(columnKey),
+                loadings != null && loadings.get(columnKey) != null,
+                images != null ? images.get(columnKey) : null,
+                background == null ? property.background : background,
+                foreground == null ? property.foreground : foreground,
+                readOnly != null && readOnly.get(columnKey) != null);
 
         if (captions != null) {
             renderer.setCaption(GGridPropertyTable.getPropertyCaption(captions, property, columnKey));

@@ -6,7 +6,7 @@ public interface UpdateContext {
     
     void changeProperty(GUserInputResult result);
 
-    boolean isPropertyReadOnly();
+    default boolean isPropertyReadOnly() { return false; }
 
     boolean globalCaptionIsDrawn();
 

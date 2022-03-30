@@ -51,11 +51,6 @@ public class GGridPropertyTableFooter extends Header<String> implements RenderCo
     }
 
     @Override
-    public boolean isPropertyReadOnly() {
-        return false;
-    }
-
-    @Override
     public Object getValue() {
         return value;
     }

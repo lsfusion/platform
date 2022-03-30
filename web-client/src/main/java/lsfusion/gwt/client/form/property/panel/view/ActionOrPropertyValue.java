@@ -22,6 +22,7 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
     private Object image;
     private Object background;
     private Object foreground;
+    protected boolean readOnly;
 
     public Object getValue() {
         return value;
@@ -59,6 +60,11 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
     @Override
     public Object getImage() {
         return image;
+    }
+
+    @Override
+    public boolean isPropertyReadOnly() {
+        return readOnly;
     }
 
     @Override
@@ -272,19 +278,20 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
     public abstract void pasteValue(final String value);
 
     public void update(Object value) {
-        update(value, false, null, null, null);
+        update(value, false, null, null, null, false);
     }
 
     private void render() {
         this.form.render(this.property, getRenderElement(), this);
     }
 
-    public void update(Object value, boolean loading, Object image, Object background, Object foreground) {
+    public void update(Object value, boolean loading, Object image, Object background, Object foreground, boolean readOnly) {
         this.value = value;
         this.loading = loading;
         this.image = image;
         this.background = background;
         this.foreground = foreground;
+        this.readOnly = readOnly;
 
         // RERENDER IF NEEDED : we have the previous state
 

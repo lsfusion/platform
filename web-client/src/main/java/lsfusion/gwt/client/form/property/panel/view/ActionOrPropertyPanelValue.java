@@ -34,11 +34,6 @@ public class ActionOrPropertyPanelValue extends ActionOrPropertyValue implements
         return property.isFocusable();
     }
 
-    private boolean readOnly;
-    public void setReadOnly(boolean readOnly) {
-        this.readOnly = readOnly;
-    }
-
     @Override
     protected void onEditEvent(EventHandler handler) {
         onEditEvent(handler, false);
@@ -46,12 +41,12 @@ public class ActionOrPropertyPanelValue extends ActionOrPropertyValue implements
 
     @Override
     public boolean isReadOnly() {
-        return readOnly;
+        return isPropertyReadOnly();
     }
 
     @Override
     public boolean isPropertyReadOnly() {
-        return isReadOnly();
+        return super.isPropertyReadOnly() || property.isReadOnly();
     }
 
     @Override

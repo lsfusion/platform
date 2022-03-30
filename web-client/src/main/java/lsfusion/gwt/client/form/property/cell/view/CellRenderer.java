@@ -185,7 +185,7 @@ public abstract class CellRenderer<T> {
         }
 
         if(needToRenderToolbarContent())
-            renderToolbarContent(element, updateContext, renderedState, background, cleared);
+            renderToolbarContent(element, updateContext, renderedState, value, background, cleared);
     }
 
     // in theory in most case we can get previous state without storing it in Element, but for now it's the easiest way
@@ -225,10 +225,11 @@ public abstract class CellRenderer<T> {
         return true;
     }
 
+    private final static GPropertyDraw.QuickAccessAction[] readonlyQuickAccessActions = new GPropertyDraw.QuickAccessAction[0];
     // cleared - cleared with setInnerText / setInnerHTML
-    protected void renderToolbarContent(Element element, UpdateContext updateContext, RenderedState renderedState, String background, boolean cleared) {
+    protected void renderToolbarContent(Element element, UpdateContext updateContext, RenderedState renderedState, Object value, String background, boolean cleared) {
         boolean loading = updateContext.isLoading() && !renderedLoadingContent(updateContext);
-        GPropertyDraw.QuickAccessAction[] quickAccessActions = property.getQuickAccessActions(updateContext.isSelectedRow(), updateContext.isFocusedColumn());
+        GPropertyDraw.QuickAccessAction[] quickAccessActions = updateContext.isPropertyReadOnly() ? readonlyQuickAccessActions : property.getQuickAccessActions(updateContext.isSelectedRow(), updateContext.isFocusedColumn());
 
         boolean needToolbar = loading || quickAccessActions.length > 0;
 
@@ -285,7 +286,7 @@ public abstract class CellRenderer<T> {
                         hoverCount++;
                     }
                     GwtClientUtils.setThemeImage(quickAccessAction.action + ".png", actionElement::setSrc);
-                    GwtClientUtils.setOnClick(actionElement, () -> updateContext.changeProperty(new GUserInputResult(null, actionIndex)));
+                    GwtClientUtils.setOnClick(actionElement, () -> updateContext.changeProperty(new GUserInputResult(value, actionIndex)));
 
                     addToToolbar(toolbarElement, start, actionElement);
                 }

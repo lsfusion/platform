@@ -112,11 +112,6 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
         afterCommit.accept(value);
     }
 
-    @Override
-    public boolean isPropertyReadOnly() {
-        return false;
-    }
-
     public void setApplied(boolean applied) {
         if (applied) {
             getElement().addClassName("userFilerValueCellApplied");
