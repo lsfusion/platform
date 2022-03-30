@@ -7,6 +7,8 @@ import lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
+import java.util.Arrays;
+
 public abstract class CellRenderer<T> {
 
     protected static final String ICON_LOADING = "loading.gif";
@@ -112,8 +114,12 @@ public abstract class CellRenderer<T> {
 
         clearEditSelected(element, property);
 
-        if(needToRenderToolbarContent())
-            clearRenderToolbarContent(element, renderContext, (RenderedState) element.getPropertyObject(RENDERED));
+        if(needToRenderToolbarContent()) {
+            RenderedState renderedState = (RenderedState) element.getPropertyObject(RENDERED);
+            if(renderedState.toolbar != null) {
+                clearRenderToolbarContent(element);
+            }
+        }
         element.setPropertyObject(RENDERED, null);
     }
     private static void clearRenderSimpleStatic(Element element) {
@@ -259,30 +265,43 @@ public abstract class CellRenderer<T> {
 
             if(loading) {
                 ImageElement loadingImage = Document.get().createImageElement();
-                loadingImage.addClassName("wrap-img-paddings"); // setting paddings
+                loadingImage.addClassName("property-toolbar-item"); // setting paddings
                 GwtClientUtils.setThemeImage(ICON_LOADING, loadingImage::setSrc);
 
                 addToToolbar(toolbarElement, start, loadingImage);
             }
 
-            if(quickAccessActions.length > 0) {
-                addToToolbar(toolbarElement, start, GwtClientUtils.createVerticalStretchSeparator().getElement());
+            if (quickAccessActions.length > 0) {
+                Element verticalSeparator = GwtClientUtils.createVerticalStretchSeparator().getElement();
+                addToToolbar(toolbarElement, start, verticalSeparator);
 
+                int hoverCount = 0;
                 for (GPropertyDraw.QuickAccessAction quickAccessAction : quickAccessActions) {
                     int actionIndex = quickAccessAction.index;
                     ImageElement actionElement = Document.get().createImageElement();
-                    actionElement.addClassName("wrap-img-paddings"); // setting paddings
+                    actionElement.addClassName("property-toolbar-item"); // setting paddings
+                    if (quickAccessAction.hover) {
+                        actionElement.addClassName("hide");
+                        hoverCount++;
+                    }
                     GwtClientUtils.setThemeImage(quickAccessAction.action + ".png", actionElement::setSrc);
                     GwtClientUtils.setOnClick(actionElement, () -> updateContext.changeProperty(new GUserInputResult(null, actionIndex)));
 
                     addToToolbar(toolbarElement, start, actionElement);
+                }
+
+                if (hoverCount > 0) {
+                    element.addClassName("property-toolbar-on-hover");
+                }
+                if (hoverCount == quickAccessActions.length) {
+                    verticalSeparator.addClassName("hide");
                 }
             }
         } else {
             if (!cleared)
                 element.removeChild(prevState.element);
 
-            GwtClientUtils.clearFillParentElement(element);
+            clearRenderToolbarContent(element);
         }
     }
 
@@ -293,9 +312,9 @@ public abstract class CellRenderer<T> {
             toolbarElement.appendChild(element);
     }
 
-    protected void clearRenderToolbarContent(Element element, RenderContext renderContext, RenderedState renderedState) {
-        if(renderedState.toolbar != null)
-            GwtClientUtils.clearFillParentElement(element);
+    protected void clearRenderToolbarContent(Element element) {
+        GwtClientUtils.clearFillParentElement(element);
+        element.removeClassName("property-toolbar-on-hover");
     }
 
     public abstract void renderStaticContent(Element element, RenderContext renderContext);
