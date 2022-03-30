@@ -7,6 +7,8 @@ import lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
+import java.util.Arrays;
+
 public abstract class CellRenderer<T> {
 
     protected static final String ICON_LOADING = "loading.gif";
@@ -259,19 +261,30 @@ public abstract class CellRenderer<T> {
 
             if(loading) {
                 ImageElement loadingImage = Document.get().createImageElement();
-                loadingImage.addClassName("wrap-img-paddings"); // setting paddings
+                loadingImage.addClassName("property-toolbar-item"); // setting paddings
                 GwtClientUtils.setThemeImage(ICON_LOADING, loadingImage::setSrc);
 
                 addToToolbar(toolbarElement, start, loadingImage);
             }
 
             if(quickAccessActions.length > 0) {
-                addToToolbar(toolbarElement, start, GwtClientUtils.createVerticalStretchSeparator().getElement());
+                if(Arrays.stream(quickAccessActions).anyMatch(action -> action.hover)) {
+                    element.addClassName("property-toolbar-on-hover");
+                }
+
+                Element verticalSeparator = GwtClientUtils.createVerticalStretchSeparator().getElement();
+                if(Arrays.stream(quickAccessActions).allMatch(action -> action.hover)) {
+                    verticalSeparator.addClassName("hide");
+                }
+                addToToolbar(toolbarElement, start, verticalSeparator);
 
                 for (GPropertyDraw.QuickAccessAction quickAccessAction : quickAccessActions) {
                     int actionIndex = quickAccessAction.index;
                     ImageElement actionElement = Document.get().createImageElement();
-                    actionElement.addClassName("wrap-img-paddings"); // setting paddings
+                    actionElement.addClassName("property-toolbar-item"); // setting paddings
+                    if(quickAccessAction.hover) {
+                        actionElement.addClassName("hide");
+                    }
                     GwtClientUtils.setThemeImage(quickAccessAction.action + ".png", actionElement::setSrc);
                     GwtClientUtils.setOnClick(actionElement, () -> updateContext.changeProperty(new GUserInputResult(null, actionIndex)));
 

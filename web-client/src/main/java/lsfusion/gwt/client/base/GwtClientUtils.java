@@ -380,6 +380,7 @@ public class GwtClientUtils {
         String parentPosition = parentElement.getStyle().getPosition();
         if (parentPosition != null && parentPosition.equals(Style.Position.RELATIVE.getCssName()))
             parentElement.getStyle().clearPosition();
+        parentElement.removeClassName("property-toolbar-on-hover");
     }
 
     public static void setupSizedParent(Element element, boolean autoSize) {

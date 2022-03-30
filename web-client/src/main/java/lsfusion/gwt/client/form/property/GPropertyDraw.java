@@ -160,7 +160,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
             int j = 0;
             for(int i = 0; i < inputList.actions.length ; i++)
                 if(true)// inputList.quickAccesses[i]) check for selected / focused all, selected, selected + focused
-                    actions[j++] = new QuickAccessAction(inputList.actions[i], inputList.actionAsyncs[i], i, false);
+                    actions[j++] = new QuickAccessAction(inputList.actions[i], inputList.actionAsyncs[i], i, true);
         } else
             actions = new QuickAccessAction[0];
         return actions;
