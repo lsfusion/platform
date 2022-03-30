@@ -114,8 +114,12 @@ public abstract class CellRenderer<T> {
 
         clearEditSelected(element, property);
 
-        if(needToRenderToolbarContent())
-            clearRenderToolbarContent(element, renderContext, (RenderedState) element.getPropertyObject(RENDERED));
+        if(needToRenderToolbarContent()) {
+            RenderedState renderedState = (RenderedState) element.getPropertyObject(RENDERED);
+            if(renderedState.toolbar != null) {
+                clearRenderToolbarContent(element);
+            }
+        }
         element.setPropertyObject(RENDERED, null);
     }
     private static void clearRenderSimpleStatic(Element element) {
@@ -267,35 +271,37 @@ public abstract class CellRenderer<T> {
                 addToToolbar(toolbarElement, start, loadingImage);
             }
 
-            if(quickAccessActions.length > 0) {
-                if(Arrays.stream(quickAccessActions).anyMatch(action -> action.hover)) {
-                    element.addClassName("property-toolbar-on-hover");
-                }
-
+            if (quickAccessActions.length > 0) {
                 Element verticalSeparator = GwtClientUtils.createVerticalStretchSeparator().getElement();
-                if(Arrays.stream(quickAccessActions).allMatch(action -> action.hover)) {
-                    verticalSeparator.addClassName("hide");
-                }
                 addToToolbar(toolbarElement, start, verticalSeparator);
 
+                int hoverCount = 0;
                 for (GPropertyDraw.QuickAccessAction quickAccessAction : quickAccessActions) {
                     int actionIndex = quickAccessAction.index;
                     ImageElement actionElement = Document.get().createImageElement();
                     actionElement.addClassName("property-toolbar-item"); // setting paddings
-                    if(quickAccessAction.hover) {
+                    if (quickAccessAction.hover) {
                         actionElement.addClassName("hide");
+                        hoverCount++;
                     }
                     GwtClientUtils.setThemeImage(quickAccessAction.action + ".png", actionElement::setSrc);
                     GwtClientUtils.setOnClick(actionElement, () -> updateContext.changeProperty(new GUserInputResult(null, actionIndex)));
 
                     addToToolbar(toolbarElement, start, actionElement);
                 }
+
+                if (hoverCount > 0) {
+                    element.addClassName("property-toolbar-on-hover");
+                }
+                if (hoverCount == quickAccessActions.length) {
+                    verticalSeparator.addClassName("hide");
+                }
             }
         } else {
             if (!cleared)
                 element.removeChild(prevState.element);
 
-            GwtClientUtils.clearFillParentElement(element);
+            clearRenderToolbarContent(element);
         }
     }
 
@@ -306,9 +312,9 @@ public abstract class CellRenderer<T> {
             toolbarElement.appendChild(element);
     }
 
-    protected void clearRenderToolbarContent(Element element, RenderContext renderContext, RenderedState renderedState) {
-        if(renderedState.toolbar != null)
-            GwtClientUtils.clearFillParentElement(element);
+    protected void clearRenderToolbarContent(Element element) {
+        GwtClientUtils.clearFillParentElement(element);
+        element.removeClassName("property-toolbar-on-hover");
     }
 
     public abstract void renderStaticContent(Element element, RenderContext renderContext);
