@@ -7,8 +7,6 @@ import lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
-import java.util.Arrays;
-
 public abstract class CellRenderer<T> {
 
     protected static final String ICON_LOADING = "loading.gif";
@@ -191,15 +189,15 @@ public abstract class CellRenderer<T> {
     // in theory in most case we can get previous state without storing it in Element, but for now it's the easiest way
     private static class ToolbarState {
         public final boolean loading;
-        public final GPropertyDraw.QuickAccessAction[] quickAccessActions;
+        public final ToolbarAction[] toolbarActions;
 
         public final String background;
 
         public Element element;
 
-        public ToolbarState(boolean loading, GPropertyDraw.QuickAccessAction[] quickAccessActions, String background) {
+        public ToolbarState(boolean loading, ToolbarAction[] toolbarActions, String background) {
             this.loading = loading;
-            this.quickAccessActions = quickAccessActions;
+            this.toolbarActions = toolbarActions;
 
             this.background = background;
         }
@@ -214,26 +212,36 @@ public abstract class CellRenderer<T> {
         if(!(stateA.loading == stateB.loading && GwtClientUtils.nullEquals(stateA.background, stateB.background)))
             return false;
 
-        if(stateA.quickAccessActions != stateB.quickAccessActions) {
-            if (stateA.quickAccessActions.length != stateB.quickAccessActions.length)
+        if(stateA.toolbarActions != stateB.toolbarActions) {
+            if (stateA.toolbarActions.length != stateB.toolbarActions.length)
                 return false;
-            for(int i=0;i<stateA.quickAccessActions.length;i++)
-                if(stateA.quickAccessActions[i].index != stateB.quickAccessActions[i].index)
+            for(int i = 0; i<stateA.toolbarActions.length; i++)
+                if(!stateA.toolbarActions[i].matches(stateB.toolbarActions[i]))
                     return false;
         }
 
         return true;
     }
 
-    private final static GPropertyDraw.QuickAccessAction[] readonlyQuickAccessActions = new GPropertyDraw.QuickAccessAction[0];
+    public interface ToolbarAction {
+
+        boolean isHover();
+        String getImage();
+
+        void onClick(UpdateContext updateContext, Object value);
+
+        boolean matches(ToolbarAction action);
+    }
+
+    public final static GPropertyDraw.QuickAccessAction[] noToolbarActions = new GPropertyDraw.QuickAccessAction[0];
     // cleared - cleared with setInnerText / setInnerHTML
     protected void renderToolbarContent(Element element, UpdateContext updateContext, RenderedState renderedState, Object value, String background, boolean cleared) {
         boolean loading = updateContext.isLoading() && !renderedLoadingContent(updateContext);
-        GPropertyDraw.QuickAccessAction[] quickAccessActions = updateContext.isPropertyReadOnly() ? readonlyQuickAccessActions : property.getQuickAccessActions(updateContext.isSelectedRow(), updateContext.isFocusedColumn());
+        ToolbarAction[] toolbarActions = updateContext.getToolbarActions();
 
-        boolean needToolbar = loading || quickAccessActions.length > 0;
+        boolean needToolbar = loading || toolbarActions.length > 0;
 
-        ToolbarState toolbarState = needToolbar ? new ToolbarState(loading, quickAccessActions, background) : null;
+        ToolbarState toolbarState = needToolbar ? new ToolbarState(loading, toolbarActions, background) : null;
         ToolbarState prevState = renderedState.toolbar;
         if (equalsState(toolbarState, prevState)) { // already rendered
             if(!(cleared && needToolbar)) // if cleared we still need to rerender the toolbar
@@ -272,21 +280,21 @@ public abstract class CellRenderer<T> {
                 addToToolbar(toolbarElement, start, loadingImage);
             }
 
-            if (quickAccessActions.length > 0) {
+            if (toolbarActions.length > 0) {
                 Element verticalSeparator = GwtClientUtils.createVerticalStretchSeparator().getElement();
                 addToToolbar(toolbarElement, start, verticalSeparator);
 
                 int hoverCount = 0;
-                for (GPropertyDraw.QuickAccessAction quickAccessAction : quickAccessActions) {
-                    int actionIndex = quickAccessAction.index;
+                for (ToolbarAction toolbarAction : toolbarActions) {
                     ImageElement actionElement = Document.get().createImageElement();
                     actionElement.addClassName("property-toolbar-item"); // setting paddings
-                    if (quickAccessAction.hover) {
+                    if (toolbarAction.isHover()) {
                         actionElement.addClassName("hide");
                         hoverCount++;
                     }
-                    GwtClientUtils.setThemeImage(quickAccessAction.action + ".png", actionElement::setSrc);
-                    GwtClientUtils.setOnClick(actionElement, () -> updateContext.changeProperty(new GUserInputResult(value, actionIndex)));
+                    GwtClientUtils.setThemeImage(toolbarAction.getImage() + ".png", actionElement::setSrc);
+
+                    GwtClientUtils.setOnClick(actionElement, () -> toolbarAction.onClick(updateContext, value));
 
                     addToToolbar(toolbarElement, start, actionElement);
                 }
@@ -294,7 +302,7 @@ public abstract class CellRenderer<T> {
                 if (hoverCount > 0) {
                     element.addClassName("property-toolbar-on-hover");
                 }
-                if (hoverCount == quickAccessActions.length) {
+                if (hoverCount == toolbarActions.length) {
                     verticalSeparator.addClassName("hide");
                 }
             }

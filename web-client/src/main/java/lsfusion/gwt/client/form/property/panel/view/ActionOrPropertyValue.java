@@ -17,8 +17,8 @@ import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 // property value renderer with editing
 public abstract class ActionOrPropertyValue extends FocusWidget implements EditContext, RenderContext, UpdateContext {
 
-    private Object value;
-    private boolean loading;
+    protected Object value;
+    protected boolean loading;
     private Object image;
     private Object background;
     private Object foreground;
@@ -50,11 +50,6 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
     @Override
     public boolean isSelectedRow() {
         return true;
-    }
-
-    @Override
-    public boolean isFocusedColumn() {
-        return isFocused;
     }
 
     @Override
@@ -205,7 +200,7 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
         form.propagateFocusEvent(event);
     }
 
-    private boolean isFocused;
+    protected boolean isFocused;
     protected void onFocus(EventHandler handler) {
         if(isFocused)
             return;
@@ -276,10 +271,6 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
     }
 
     public abstract void pasteValue(final String value);
-
-    public void update(Object value) {
-        update(value, false, null, null, null, false);
-    }
 
     private void render() {
         this.form.render(this.property, getRenderElement(), this);

@@ -25,6 +25,7 @@ import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController;
 import lsfusion.gwt.client.form.order.user.GGridSortableHeaderManager;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
@@ -617,7 +618,6 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
                 return GGridPropertyTable.this.isSelectedRow(cell);
             }
 
-            @Override
             public boolean isFocusedColumn() {
                 return GGridPropertyTable.this.isFocusedColumn(cell);
             }
@@ -625,6 +625,11 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
             @Override
             public Object getImage() {
                 return column.getImage(property, (T) cell.getRow());
+            }
+
+            @Override
+            public CellRenderer.ToolbarAction[] getToolbarActions() {
+                return isPropertyReadOnly() ? UpdateContext.super.getToolbarActions() : property.getQuickAccessActions(isSelectedRow(), isFocusedColumn());
             }
 
             @Override

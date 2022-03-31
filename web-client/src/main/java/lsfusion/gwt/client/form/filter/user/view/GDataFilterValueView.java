@@ -56,7 +56,7 @@ public class GDataFilterValueView extends FlexPanel {
         } else {
             value = filterValue.value;
         }
-        cell.update(value);
+        cell.updateValue(value);
     }
 
     public void valueChanged(Object value) {
@@ -68,7 +68,7 @@ public class GDataFilterValueView extends FlexPanel {
     }
     
     public void editingCancelled(CancelReason cancelReason) {
-        cell.update(filterValue.value);
+        cell.updateValue(filterValue.value);
     }
 
     public void focusOnValue() {

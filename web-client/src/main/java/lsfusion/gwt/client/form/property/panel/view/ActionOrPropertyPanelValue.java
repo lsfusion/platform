@@ -7,6 +7,7 @@ import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.controller.ExecuteEditContext;
+import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
 import lsfusion.gwt.client.view.MainFrame;
 
@@ -47,6 +48,11 @@ public class ActionOrPropertyPanelValue extends ActionOrPropertyValue implements
     @Override
     public boolean isPropertyReadOnly() {
         return super.isPropertyReadOnly() || property.isReadOnly();
+    }
+
+    @Override
+    public CellRenderer.ToolbarAction[] getToolbarActions() {
+        return isPropertyReadOnly() ? super.getToolbarActions() : property.getQuickAccessActions(true, isFocused);
     }
 
     @Override

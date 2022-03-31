@@ -252,8 +252,8 @@ public class GTreeGroupController extends GAbstractTableController {
     }
 
     @Override
-    protected void changeFilter(ArrayList<GPropertyFilter> conditions) {
-        formController.changeFilter(treeGroup, conditions);
+    protected long changeFilter(ArrayList<GPropertyFilter> conditions) {
+        return formController.changeFilter(treeGroup, conditions);
     }
     
     public boolean isExpandOnClick() {

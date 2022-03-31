@@ -1,12 +1,10 @@
 package lsfusion.gwt.client.form.property.cell.view;
 
-import java.util.function.Consumer;
-
 public interface UpdateContext {
     
     void changeProperty(GUserInputResult result);
 
-    default boolean isPropertyReadOnly() { return false; }
+    default boolean isPropertyReadOnly() { return true; }
 
     boolean globalCaptionIsDrawn();
 
@@ -19,7 +17,7 @@ public interface UpdateContext {
     boolean isSelectedRow();
     default boolean isSelectedLink() { return isSelectedRow(); }
 
-    default boolean isFocusedColumn() { return false; }
+    default CellRenderer.ToolbarAction[] getToolbarActions() { return CellRenderer.noToolbarActions; } ;
 
     default String getBackground() { return null; }
 

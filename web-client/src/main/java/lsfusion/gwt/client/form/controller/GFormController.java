@@ -57,6 +57,7 @@ import lsfusion.gwt.client.form.filter.GRegularFilter;
 import lsfusion.gwt.client.form.filter.GRegularFilterGroup;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilterDTO;
+import lsfusion.gwt.client.form.filter.user.view.GFilterConditionView;
 import lsfusion.gwt.client.form.object.*;
 import lsfusion.gwt.client.form.object.panel.controller.GPanelController;
 import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController;
@@ -142,7 +143,8 @@ public class GFormController implements EditManager {
     private final LinkedHashMap<Long, ModifyObject> pendingModifyObjectRequests = new LinkedHashMap<>();
     private final NativeSIDMap<GGroupObject, Long> pendingChangeCurrentObjectsRequests = new NativeSIDMap<>();
     private final NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Change>> pendingChangePropertyRequests = new NativeSIDMap<>(); // assert that should contain columnKeys + list keys if property is in list
-    private final NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Long>> pendingLoadingRequests = new NativeSIDMap<>(); // assert that should contain columnKeys + list keys if property is in list
+    private final NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Long>> pendingLoadingPropertyRequests = new NativeSIDMap<>(); // assert that should contain columnKeys + list keys if property is in list
+    private final NativeSIDMap<GFilterConditionView, Long> pendingLoadingFilterRequests = new NativeSIDMap<>();
 
     private boolean hasColumnGroupObjects;
 
@@ -623,23 +625,27 @@ public class GFormController implements EditManager {
         if (hasColumnGroupObjects) // optimization
             fc.gridObjects.foreachEntry((key, value) -> currentGridObjects.put(key, value));
 
-        modifyFormChangesWithModifyObjectAsyncs(changesDTO.requestIndex, fc);
+        int requestIndex = changesDTO.requestIndex;
 
-        modifyFormChangesWithChangeCurrentObjectAsyncs(changesDTO.requestIndex, fc);
+        modifyFormChangesWithModifyObjectAsyncs(requestIndex, fc);
 
-        modifyFormChangesWithChangePropertyAsyncs(changesDTO.requestIndex, fc);
+        modifyFormChangesWithChangeCurrentObjectAsyncs(requestIndex, fc);
 
-        modifyFormChangesWithLoadingAsyncs(changesDTO.requestIndex, fc);
+        modifyFormChangesWithChangePropertyAsyncs(requestIndex, fc);
+
+        modifyFormChangesWithLoadingPropertyAsyncs(requestIndex, fc);
+
+        applyLoadingFilterAsyncs(requestIndex, fc);
 
         applyKeyChanges(fc);
 
         applyPropertyChanges(fc);
 
-        update(fc, changesDTO.requestIndex);
+        update(fc, requestIndex);
 
         expandCollapseContainers(fc);
 
-        formLayout.update(changesDTO.requestIndex);
+        formLayout.update(requestIndex);
 
         activateElements(fc);
 
@@ -786,11 +792,11 @@ public class GFormController implements EditManager {
         });
     }
 
-    private void modifyFormChangesWithLoadingAsyncs(final int currentDispatchingRequestIndex, final GFormChanges fc) {
-        pendingLoadingRequests.foreachEntry((property, values) -> values.foreachEntry((keys, requestIndex) -> {
+    private void modifyFormChangesWithLoadingPropertyAsyncs(final int currentDispatchingRequestIndex, final GFormChanges fc) {
+        pendingLoadingPropertyRequests.foreachEntry((property, values) -> values.foreachEntry((keys, requestIndex) -> {
             if (requestIndex <= currentDispatchingRequestIndex) {
 
-                removeFromDoubleMap(pendingLoadingRequests, property, keys);
+                removeFromDoubleMap(pendingLoadingPropertyRequests, property, keys);
 
                 if(getPropertyController(property).isPropertyShown(property) && !fc.dropProperties.contains(property)) {
                     NativeHashMap<GGroupObjectValue, Object> propertyLoadings = fc.properties.get(property.loadingReader);
@@ -802,6 +808,18 @@ public class GFormController implements EditManager {
                 }
             }
         }));
+    }
+
+    private void applyLoadingFilterAsyncs(final int currentDispatchingRequestIndex, final GFormChanges fc) {
+        pendingLoadingFilterRequests.foreachEntry((filter, requestIndex) -> {
+            if (requestIndex <= currentDispatchingRequestIndex) {
+
+                pendingLoadingFilterRequests.remove(filter);
+
+                if(!filter.isRemoved)
+                    filter.updateLoading(false);
+            }
+        });
     }
 
     public GAbstractTableController getGroupObjectController(GGroupObject group) {
@@ -1275,12 +1293,12 @@ public class GFormController implements EditManager {
         syncResponseDispatch(new SetRegularFilter(filterGroup.ID, (filter == null) ? -1 : filter.ID));
     }
 
-    public void changeFilter(GGroupObject groupObject, ArrayList<GPropertyFilter> conditions) {
+    public long changeFilter(GGroupObject groupObject, ArrayList<GPropertyFilter> conditions) {
         currentFilters.put(groupObject, conditions);
-        applyCurrentFilters();
+        return applyCurrentFilters();
     }
 
-    public void changeFilter(GTreeGroup treeGroup, ArrayList<GPropertyFilter> conditions) {
+    public long changeFilter(GTreeGroup treeGroup, ArrayList<GPropertyFilter> conditions) {
         Map<GGroupObject, ArrayList<GPropertyFilter>> filters = GwtSharedUtils.groupList(new GwtSharedUtils.Group<GGroupObject, GPropertyFilter>() {
             public GGroupObject group(GPropertyFilter key) {
                 return key.groupObject;
@@ -1295,13 +1313,13 @@ public class GFormController implements EditManager {
             currentFilters.put(group, groupFilters);
         }
 
-        applyCurrentFilters();
+        return applyCurrentFilters();
     }
 
-    private void applyCurrentFilters() {
+    private long applyCurrentFilters() {
         ArrayList<GPropertyFilterDTO> filters = new ArrayList<>();
         currentFilters.foreachValue(groupFilters -> groupFilters.stream().map(GPropertyFilter::getFilterDTO).collect(Collectors.toCollection(() -> filters)));
-        asyncResponseDispatch(new SetUserFilters(filters));
+        return asyncResponseDispatch(new SetUserFilters(filters));
     }
 
     public void setViewFilters(ArrayList<GPropertyFilter> conditions, int pageSize) {
@@ -2188,7 +2206,15 @@ public class GFormController implements EditManager {
         GPropertyDraw property = editContext.getProperty();
         GGroupObjectValue rowKey = property.isList ? editContext.getRowKey() : GGroupObjectValue.EMPTY; // because for example in custom renderer editContext can be not the currentKey
 
-        putToDoubleNativeMap(pendingLoadingRequests, property, GGroupObjectValue.getFullKey(rowKey, editContext.getColumnKey()), requestIndex);
+        putToDoubleNativeMap(pendingLoadingPropertyRequests, property, GGroupObjectValue.getFullKey(rowKey, editContext.getColumnKey()), requestIndex);
+    }
+    public void setLoading(GFilterConditionView filterView, long requestIndex) {
+
+        // RERENDER IF NEEDED : we have the previous state
+
+        filterView.updateLoading(true);
+
+        pendingLoadingFilterRequests.put(filterView, requestIndex);
     }
     // "external" update - paste + server update edit value
     public void setValue(EditContext editContext, Object value) {

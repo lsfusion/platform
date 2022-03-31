@@ -34,6 +34,8 @@ import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.classes.view.FormatCellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.CustomCellRenderer;
+import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
+import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 import lsfusion.gwt.client.form.property.panel.view.ActionOrPropertyValueController;
 import lsfusion.gwt.client.form.property.panel.view.PanelRenderer;
 import lsfusion.gwt.client.view.MainFrame;
@@ -107,15 +109,36 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         return asyncExec instanceof GAsyncChange ? ((GAsyncChange) asyncExec).inputList : null;
     }
 
-    public static class QuickAccessAction {
+    public static class QuickAccessAction implements CellRenderer.ToolbarAction {
         public final String action;
-        public final GAsyncEventExec asyncExec;
         public final int index;
         public final boolean hover;
 
-        public QuickAccessAction(String action, GAsyncEventExec asyncExec, int index, boolean hover) {
+        @Override
+        public boolean isHover() {
+            return hover;
+        }
+
+        @Override
+        public String getImage() {
+            return action;
+        }
+
+        @Override
+        public void onClick(UpdateContext updateContext, Object value) {
+            updateContext.changeProperty(new GUserInputResult(value, index));
+        }
+
+        @Override
+        public boolean matches(CellRenderer.ToolbarAction action) {
+            if(!(action instanceof QuickAccessAction))
+                return false;
+
+            return index == ((QuickAccessAction) action).index;
+        }
+
+        public QuickAccessAction(String action, int index, boolean hover) {
             this.action = action;
-            this.asyncExec = asyncExec;
             this.index = index;
             this.hover = hover;
         }
@@ -160,7 +183,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
             int j = 0;
             for(int i = 0; i < inputList.actions.length ; i++)
                 if(true)// inputList.quickAccesses[i]) check for selected / focused all, selected, selected + focused
-                    actions[j++] = new QuickAccessAction(inputList.actions[i], inputList.actionAsyncs[i], i, true);
+                    actions[j++] = new QuickAccessAction(inputList.actions[i], i, true);
         } else
             actions = new QuickAccessAction[0];
         return actions;

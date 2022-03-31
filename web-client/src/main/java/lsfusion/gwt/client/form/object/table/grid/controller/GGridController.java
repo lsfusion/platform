@@ -1,7 +1,6 @@
 package lsfusion.gwt.client.form.object.table.grid.controller;
 
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.GFormChanges;
@@ -624,8 +623,8 @@ public class GGridController extends GAbstractTableController {
     }
 
     @Override
-    protected void changeFilter(ArrayList<GPropertyFilter> conditions) {
-        formController.changeFilter(groupObject, conditions);
+    protected long changeFilter(ArrayList<GPropertyFilter> conditions) {
+        return formController.changeFilter(groupObject, conditions);
     }
 
     private void changeMode(Runnable updateView, GListViewType viewType, boolean setManualUpdateMode) {

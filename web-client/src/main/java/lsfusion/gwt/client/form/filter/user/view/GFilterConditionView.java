@@ -9,6 +9,7 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Pair;
+import lsfusion.gwt.client.base.jsni.HasNativeSID;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.base.view.SizedWidget;
@@ -29,12 +30,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-public class GFilterConditionView extends FlexPanel implements CaptionContainerHolder {
+public class GFilterConditionView extends FlexPanel implements CaptionContainerHolder, HasNativeSID {
     private static final ClientMessages messages = ClientMessages.Instance.get();
     public interface UIHandler {
         void addEnterBinding(Widget widget);
         void removeCondition(GPropertyFilter condition);
-        void applyFilters(boolean focusFirstComponent);
+        void applyFilters(boolean focusFirstComponent, GFilterConditionView changedView);
     }
 
     private static final String DELETE_ICON_PATH = "filtdel.png";
@@ -70,11 +71,23 @@ public class GFilterConditionView extends FlexPanel implements CaptionContainerH
     // may not be applied without "Allow NULL", but we want to keep condition visible
     public boolean isConfirmed;
 
+    private static int idCounter = 0;
+    private final String sID;
+
+    @Override
+    public String getNativeSID() {
+        return sID;
+    }
+
+    public boolean isRemoved;
+
     public GFilterConditionView(GPropertyFilter iCondition, GTableController logicsSupplier, final UIHandler uiHandler, ColumnsProvider columnsProvider, boolean toolsVisible, boolean readSelectedValue) {
         this.condition = iCondition;
         this.uiHandler = uiHandler;
         this.columnsProvider = columnsProvider;
         this.toolsVisible = toolsVisible;
+
+        this.sID = "" + (idCounter++);
 
         allowNull = !condition.isFixed();
         
@@ -126,13 +139,13 @@ public class GFilterConditionView extends FlexPanel implements CaptionContainerH
             public void negationChanged(boolean value) {
                 condition.negation = value;
                 updateCompareLabelText();
-                uiHandler.applyFilters(false);
+                applyFilters();
             }
 
             @Override
             public void allowNullChanged(boolean value) {
                 allowNull = value;
-                uiHandler.applyFilters(false);
+                applyFilters();
             }
 
             @Override
@@ -141,7 +154,7 @@ public class GFilterConditionView extends FlexPanel implements CaptionContainerH
                 condition.compare = value;
                 updateCompareLabelText();
                 valueView.changeCompare(value);
-                uiHandler.applyFilters(false);
+                applyFilters();
             }
         };
         compareView.setSelectedValue(condition.compare);
@@ -152,7 +165,7 @@ public class GFilterConditionView extends FlexPanel implements CaptionContainerH
             @Override
             public void valueChanged(Object value) {
                 super.valueChanged(value);
-                uiHandler.applyFilters(cell.enterPressed);
+                applyFilters(cell.enterPressed);
             }
 
             @Override
@@ -188,7 +201,7 @@ public class GFilterConditionView extends FlexPanel implements CaptionContainerH
                 return event -> {
                     condition.junction = !condition.junction;
                     showBackground(!condition.junction);
-                    uiHandler.applyFilters(false);
+                    applyFilters();
                 };
             }
         };
@@ -197,7 +210,14 @@ public class GFilterConditionView extends FlexPanel implements CaptionContainerH
         junctionView.showBackground(!condition.junction);
         rightPanel.addCentered(junctionView);
     }
-    
+
+    private void applyFilters() {
+        applyFilters(false);
+    }
+    private void applyFilters(boolean focusFirstComponent) {
+        uiHandler.applyFilters(focusFirstComponent, this);
+    }
+
     public void initView() {
         if (captionContainer == null) {
             addCentered(leftPanel);
@@ -277,9 +297,18 @@ public class GFilterConditionView extends FlexPanel implements CaptionContainerH
         Scheduler.get().scheduleDeferred(() -> valueView.startEditing(keyEvent));
     }
 
-    public void clearValueView() {
-        valueView.cell.update(null);
+    public boolean clearValueView() {
+        if(valueView.cell.getValue() == null)
+            return false;
+
+        valueView.cell.updateValue(null);
         setApplied(allowNull);
+
+        return true;
+    }
+
+    public void updateLoading(boolean loading) {
+        valueView.cell.updateLoading(loading);
     }
     
     private void remove() {

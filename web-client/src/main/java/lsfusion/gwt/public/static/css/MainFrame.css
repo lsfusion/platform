@@ -492,7 +492,6 @@ button {
 /* mimicry of propertyPanelRendererValue / panelRendererValue, CELL_HORIZONTAL_PADDING (textbasedCellRenderer) */
 .userFilterSelector {
     cursor : default;
-    background: var(--component-background-color);
     border: 1px solid var(--component-border-color);
     margin: var(--border-padding);
     border-radius: var(--textfield-border-radius);
@@ -505,6 +504,14 @@ button {
     align-items : center;
 }
 
+.userFilterSelector, .userFilterSelector .background-inherit {
+    background-color: var(--component-background-color);
+}
+
+.userFilerValueCellApplied, .userFilerValueCellApplied .background-inherit {
+    background-color: var(--selection-color);
+}
+
 .userFilterNegationCheckBox input {
     margin-left: 3px;
 }
@@ -513,9 +520,6 @@ button {
     margin: 0 7px 0 12px;
 }
 
-.userFilerValueCellApplied {
-    background-color: var(--selection-color);
-}
 
 .gwt-ProgressBar-shell {
     border: 1px solid var(--component-border-color);

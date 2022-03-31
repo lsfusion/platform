@@ -1147,11 +1147,6 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
             }
 
             @Override
-            public boolean isPropertyReadOnly() {
-                return true;
-            }
-
-            @Override
             public Object getValue() {
                 return value;
             }
@@ -1937,7 +1932,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
                 filters.addAll(getFilters(config.getArrayString("cols"), colKeyValues));
 
                 config.getArrayString("rows").push(caption);
-                grid.filter.applyFilters(filters, false);
+                grid.filter.applyFilters(filters, new ArrayList<>(), false);
 //                updateView(true, null);
             });
             menuBar.addItem(menuItem);
