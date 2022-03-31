@@ -879,6 +879,10 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         return mapLProp(null, false, lp.property.getClassProperty().cloneProp(), lp);
     }
 
+    private LA addObjInputAProp(DataClass dataClass, LP targetProp, ObjectEntity objectEntity) {
+        return addInputAProp(dataClass, targetProp, false, SetFact.EMPTYORDER(), null, null, null, ListFact.EMPTY(), null, objectEntity.getContextInput());
+    }
+
     @Override
     @IdentityStrongLazy
     public Pair<LP, ActionObjectSelector> getObjValueProp(FormEntity formEntity, ObjectEntity obj) {
@@ -899,7 +903,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
             LP targetProp = getRequestedValueProperty(dataClass);
 
-            LA<?> input = addInputAProp(dataClass, targetProp, false);
+            LA<?> input = addObjInputAProp(dataClass, targetProp, obj);
 
             onChange = PropertyFact.createRequestAction(SetFact.<ClassPropertyInterface>EMPTY(), input.getImplement(), obj.getSeekPanelAction(this, targetProp), null).mapObjects(MapFact.EMPTYREV());
         }
@@ -923,7 +927,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
             LP targetProp = getRequestedValueProperty(dataClass);
 
-            LA<?> input = addInputAProp(dataClass, targetProp, false);
+            LA<?> input = addObjInputAProp(dataClass, targetProp, objectFrom);
 
             onChange = PropertyFact.createRequestAction(SetFact.<ClassPropertyInterface>EMPTY(), input.getImplement(),
                     PropertyFact.createListAction(SetFact.<ClassPropertyInterface>EMPTY(),

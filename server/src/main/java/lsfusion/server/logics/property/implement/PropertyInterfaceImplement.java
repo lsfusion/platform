@@ -55,6 +55,7 @@ public interface PropertyInterfaceImplement<P extends PropertyInterface> extends
 
     ActionMapImplement<?, P> mapEventAction(String eventSID, FormSessionScope defaultChangeEventScope, ImList<Property> viewProperties, String customChangeFunction);
 
+    boolean mapIsNotNull();
     boolean mapHasAlotKeys();
     int mapEstComplexity();
     

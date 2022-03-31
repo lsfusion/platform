@@ -167,6 +167,11 @@ public class PropertyMapImplement<P extends PropertyInterface, T extends Propert
     }
 
     @Override
+    public boolean mapIsNotNull() {
+        return property.isNotNull();
+    }
+
+    @Override
     public boolean mapHasAlotKeys() {
         return property.hasAlotKeys();
     }
