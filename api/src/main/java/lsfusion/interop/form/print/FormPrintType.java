@@ -35,4 +35,8 @@ public enum FormPrintType implements FormStaticType {
                 return "pdf"; // by default exporting to pdf
         }
     }
+
+    public boolean isAutoPrint() {
+        return this == FormPrintType.AUTO;
+    }
 }

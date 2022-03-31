@@ -1416,7 +1416,7 @@ public class GFormController implements EditManager {
         syncDispatch(new GroupReport(groupObjectID, getUserPreferences()), new CustomErrorHandlingCallback<GroupReportResult>() {
             @Override
             public void onSuccess(GroupReportResult result) {
-                GwtClientUtils.downloadFile(result.filename, "lsfReport", result.extension);
+                GwtClientUtils.downloadFile(result.filename, "lsfReport", result.extension, false);
             }
         });
     }

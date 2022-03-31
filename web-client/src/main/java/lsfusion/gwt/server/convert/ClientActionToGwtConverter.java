@@ -128,10 +128,10 @@ public class ClientActionToGwtConverter extends ObjectConverter {
 
     @Converter(from = ReportClientAction.class)
     public GReportAction convertAction(ReportClientAction action, final MainDispatchServlet servlet) throws IOException {
-        boolean webAutoPrint = action.printType == FormPrintType.AUTO;
-        Pair<String, String> report = FileUtils.exportReport(webAutoPrint ? FormPrintType.HTML : action.printType,
+        boolean autoPrint = action.printType.isAutoPrint();
+        Pair<String, String> report = FileUtils.exportReport(autoPrint ? FormPrintType.HTML : action.printType,
                 action.generationData, servlet.getNavigatorProvider().getRemoteLogics());
-        return new GReportAction(report.first, report.second, webAutoPrint);
+        return new GReportAction(report.first, report.second, autoPrint);
     }
 
     @Converter(from = RequestUserInputClientAction.class)

@@ -61,21 +61,20 @@ public class GwtClientUtils {
         MainFrame.cleanRemote(() -> Window.open(GwtClientUtils.getLogoutUrl(), "_self", null), connectionLost);
     }
 
-    public static void downloadFile(String name, String displayName, String extension) {
+    public static void downloadFile(String name, String displayName, String extension, boolean autoPrint) {
         if (name != null) {
             String fileUrl = getDownloadURL(name, displayName, extension, true);
-            Window.open(fileUrl, "_blank", ""); // displayName != null ? displayName : name
+            if (autoPrint)
+                newWindowPrint(fileUrl);
+            else
+                Window.open(fileUrl, "_blank", ""); // displayName != null ? displayName : name
         }
     }
 
-    public static native void newWindowPrint(GReportAction action)/*-{
-        var window = $wnd.open(@GwtClientUtils::getDownloadURL(*)(action.@GReportAction::reportFileName, "", action.@GReportAction::reportExtension, true));
-        window.onload = function () {
-            window.print();
-        }
-        window.onafterprint = function () {
-            window.close();
-        }
+    public static native void newWindowPrint(String fileUrl)/*-{
+        var window = $wnd.open(fileUrl);
+        window.onload = function () { window.print(); }
+        window.onafterprint = function () { window.close(); }
     }-*/;
 
     public static String getDownloadURL(String name, String displayName, String extension, boolean actionFile) {
