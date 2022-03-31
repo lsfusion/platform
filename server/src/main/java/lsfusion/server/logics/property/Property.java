@@ -1639,6 +1639,14 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
         LP targetProp = lm.getRequestedValueProperty(valueClass);
 
+        // target prop will be used to change this property
+        LogicsModule.ContextInput contextInput = new LogicsModule.ContextInput() {
+            @Override
+            public boolean isNotNull() {
+                return Property.this.isNotNull();
+            }
+        };
+
         ActionMapImplement<?, T> action;
         if(valueClass instanceof CustomClass) {
             InputListEntity<?, T> list = !viewProperties.isEmpty() ? new InputListEntity<>(PropertyFact.createViewProperty(viewProperties).property, MapFact.EMPTYREV()) : null;
@@ -1648,13 +1656,13 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
             ImOrderSet<T> orderInterfaces = lp.listInterfaces; // actually we don't need all interfaces in dialog input action itself (only used one in checkfilters), but for now it doesn't matter
 
             // selectors could be used, but since this method is used after logics initialization, getting form, check properties here is more effective
-            LA<?> inputAction = lm.addDialogInputAProp((CustomClass) valueClass, targetProp, BaseUtils.nvl(defaultChangeEventScope, PropertyDrawEntity.DEFAULT_CUSTOMCHANGE_EVENTSCOPE), orderInterfaces, list, MapFact.EMPTYREV(), objectEntity -> getCheckFilters(objectEntity), customChangeFunction);
+            LA<?> inputAction = lm.addDialogInputAProp((CustomClass) valueClass, targetProp, BaseUtils.nvl(defaultChangeEventScope, PropertyDrawEntity.DEFAULT_CUSTOMCHANGE_EVENTSCOPE), orderInterfaces, list, MapFact.EMPTYREV(), objectEntity -> getCheckFilters(objectEntity), customChangeFunction, contextInput);
 
             action = ((LA<?>) lm.addJoinAProp(inputAction, BaseUtils.add(directLI(lp), getUParams(orderInterfaces.size())))).getImplement(orderInterfaces);
         } else {
             // INPUT valueCLass
             action = lm.addInputAProp((DataClass) valueClass, targetProp, false, SetFact.EMPTYORDER(),
-                    isDefaultWYSInput(valueClass) ? new InputListEntity<>(this, MapFact.EMPTYREV()) : null, BaseUtils.nvl(defaultChangeEventScope, PropertyDrawEntity.DEFAULT_DATACHANGE_EVENTSCOPE), null, ListFact.EMPTY(), customChangeFunction).getImplement();
+                    isDefaultWYSInput(valueClass) ? new InputListEntity<>(this, MapFact.EMPTYREV()) : null, BaseUtils.nvl(defaultChangeEventScope, PropertyDrawEntity.DEFAULT_DATACHANGE_EVENTSCOPE), null, ListFact.EMPTY(), customChangeFunction, contextInput).getImplement();
         }
 
         return PropertyFact.createRequestAction(interfaces,

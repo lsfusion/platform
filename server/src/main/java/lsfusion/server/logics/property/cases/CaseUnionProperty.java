@@ -295,6 +295,23 @@ public class CaseUnionProperty extends IncrementUnionProperty {
     }
 
     @Override
+    @IdentityLazy
+    public boolean isNotNull() {
+        if(super.isNotNull())
+            return true;
+
+        ImList<CalcCase<Interface>> cases = getCases();
+        if(cases.isEmpty())
+            return false;
+
+        for(CalcCase<Interface> propCase : cases)
+            if(!propCase.implement.mapIsNotNull())
+                return false;
+
+        return true;
+    }
+
+    @Override
     @IdentityStartLazy // только компиляция, построение лексикографики и несколько мелких использований
     public ImSet<DataProperty> getChangeProps() {
         MSet<DataProperty> result = SetFact.mSet();

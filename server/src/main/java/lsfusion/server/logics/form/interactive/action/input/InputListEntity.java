@@ -100,9 +100,10 @@ public class InputListEntity<P extends PropertyInterface, V extends PropertyInte
         return mapValues.innerCrossJoin(property.getInterfaceClasses(ClassType.wherePolicy));
     }
 
-    public <X extends PropertyInterface> InputContextAction<?, V> getResetAction(BaseLogicsModule baseLM, LP targetProp) {
+    public static <X extends PropertyInterface, V extends PropertyInterface> InputContextAction<?, V> getResetAction(BaseLogicsModule baseLM, LP targetProp) {
+        assert targetProp.listInterfaces.isEmpty();
         LA<X> reset = (LA<X>) baseLM.addResetAProp(targetProp);
-        return new InputContextAction("reset", reset.getActionOrProperty(), reset.listInterfaces.toIndexedMap());
+        return new InputContextAction<>("reset", reset.getActionOrProperty(), MapFact.EMPTYREV());
     }
 
     public <X extends PropertyInterface> InputContextAction<?, V> getNewEditAction(BaseLogicsModule baseLM, ConcreteCustomClass baseClass, LP targetProp, FormSessionScope scope) {
@@ -146,10 +147,6 @@ public class InputListEntity<P extends PropertyInterface, V extends PropertyInte
         return property.isValueFull(mapExprs) && property.isValueUnique(mapExprs, true);
     }
     
-    public boolean isNotNull() {
-        return property.isNotNull();
-    }
-
     @Override
     public String toString() {
         return property + "(" + mapValues + ")" + (newSession ? " NEW" : "");

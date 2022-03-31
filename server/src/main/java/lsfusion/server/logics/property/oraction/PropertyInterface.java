@@ -156,6 +156,11 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
         return SetFact.EMPTY();
     }
 
+    @Override
+    public boolean mapIsNotNull() {
+        return true;
+    }
+
     public boolean mapHasAlotKeys() {
         return true;
     }
