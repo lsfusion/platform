@@ -27,7 +27,7 @@ import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
-import lsfusion.gwt.client.form.property.async.GAsyncChange;
+import lsfusion.gwt.client.form.property.async.GAsyncInput;
 import lsfusion.gwt.client.form.property.async.GAsyncEventExec;
 import lsfusion.gwt.client.form.property.async.GInputList;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
@@ -101,12 +101,12 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
     public GType getChangeType() {
         GAsyncEventExec asyncExec = getAsyncEventExec(ServerResponse.CHANGE);
-        return asyncExec instanceof GAsyncChange ? ((GAsyncChange) asyncExec).changeType : null;
+        return asyncExec instanceof GAsyncInput ? ((GAsyncInput) asyncExec).changeType : null;
     }
 
     public GInputList getInputList() {
         GAsyncEventExec asyncExec = getAsyncEventExec(ServerResponse.CHANGE);
-        return asyncExec instanceof GAsyncChange ? ((GAsyncChange) asyncExec).inputList : null;
+        return asyncExec instanceof GAsyncInput ? ((GAsyncInput) asyncExec).inputList : null;
     }
 
     public static class QuickAccessAction implements CellRenderer.ToolbarAction {

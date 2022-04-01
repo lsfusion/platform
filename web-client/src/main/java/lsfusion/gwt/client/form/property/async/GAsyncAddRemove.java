@@ -6,7 +6,7 @@ import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 
 import java.util.function.Consumer;
 
-public class GAsyncAddRemove extends GAsyncInputExec {
+public class GAsyncAddRemove extends GAsyncFormExec {
     // we cannot use GObject, since it's converted not only in design (ClientComponentToGwtConverter) but also in ClientActionToGwtConverter
     // so we need sort of DTO, in GFormChangesDTO, but then we have to do remap, and it is not that clear when we should do this, so we'll use primitive type
     public int object;

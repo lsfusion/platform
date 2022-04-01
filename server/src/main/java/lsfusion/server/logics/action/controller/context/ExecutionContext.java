@@ -57,7 +57,7 @@ import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.filter.ContextFilterInstance;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.interactive.action.async.PushAsyncAdd;
-import lsfusion.server.logics.form.interactive.action.async.PushAsyncChange;
+import lsfusion.server.logics.form.interactive.action.async.PushAsyncInput;
 import lsfusion.server.logics.form.interactive.action.async.PushAsyncResult;
 import lsfusion.server.logics.navigator.controller.manager.NavigatorsManager;
 import lsfusion.server.logics.property.data.SessionDataProperty;
@@ -640,8 +640,8 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
 
     public <T extends PropertyInterface> InputResult inputUserData(DataClass dataClass, Object oldValue, boolean hasOldValue, InputListEntity<T, P> list, String customChangeFunction, InputList inputList) {
         assertNotUserInteractionInTransaction();
-        if(pushedAsyncResult instanceof PushAsyncChange)
-            return ((PushAsyncChange) pushedAsyncResult).value;
+        if(pushedAsyncResult instanceof PushAsyncInput)
+            return ((PushAsyncInput) pushedAsyncResult).value;
 
         InputContext<T> inputContext = null;
         if(list != null)

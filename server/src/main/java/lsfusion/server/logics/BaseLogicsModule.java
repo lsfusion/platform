@@ -21,7 +21,6 @@ import lsfusion.server.data.expr.formula.*;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.sql.lambda.SQLCallable;
 import lsfusion.server.data.type.Type;
-import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.ScriptingLogicsModule;
@@ -50,7 +49,6 @@ import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
-import lsfusion.server.logics.form.interactive.action.async.AsyncChange;
 import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.logics.navigator.window.AbstractWindow;
 import lsfusion.server.logics.navigator.window.NavigatorWindow;
@@ -1058,15 +1056,6 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
     public boolean isRequestCanceled(ExecutionEnvironment env) throws SQLException, SQLHandledException {
         return getRequestCanceledProperty().read(env) != null;
-    }
-
-    public <R> R pushRequestedValue(Object value, AsyncChange asyncChange, ExecutionEnvironment env, SQLCallable<R> callable) throws SQLException, SQLHandledException {
-        if(asyncChange != null) {
-            dropRequestCanceled(env);
-            asyncChange.targetProp.change(DataObject.getValue(value, asyncChange.changeType), env);
-            return pushRequest(env, callable);
-        } else
-            return callable.call();
     }
 
     @Deprecated

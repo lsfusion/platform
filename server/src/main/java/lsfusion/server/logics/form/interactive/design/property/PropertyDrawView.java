@@ -17,7 +17,7 @@ import lsfusion.server.data.type.TypeSerializer;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.data.integral.IntegerClass;
-import lsfusion.server.logics.form.interactive.action.async.AsyncChange;
+import lsfusion.server.logics.form.interactive.action.async.AsyncInput;
 import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
 import lsfusion.server.logics.form.interactive.action.async.AsyncNoWaitExec;
 import lsfusion.server.logics.form.interactive.action.async.AsyncSerializer;
@@ -183,7 +183,7 @@ public class PropertyDrawView extends BaseComponentView {
     // for that purpose we have to send to client that type to do parsing, rendering, etc.
     public Type getExternalChangeType(ServerContext context) {
         AsyncEventExec asyncEventExec = entity.getAsyncEventExec(context.entity, context.securityPolicy, CHANGE, true);
-        return asyncEventExec instanceof AsyncChange ? ((AsyncChange) asyncEventExec).changeType : null;
+        return asyncEventExec instanceof AsyncInput ? ((AsyncInput) asyncEventExec).changeType : null;
     }
 
     @Override

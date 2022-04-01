@@ -2,14 +2,13 @@ package lsfusion.server.logics.form.interactive.action.async;
 
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.logics.classes.user.CustomClass;
-import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public class AsyncAddRemove extends AsyncInputExec {
+public class AsyncAddRemove extends AsyncFormExec {
     public ObjectEntity object;
     public boolean add;
 

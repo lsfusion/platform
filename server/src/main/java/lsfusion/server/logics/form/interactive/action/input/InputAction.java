@@ -14,7 +14,7 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.form.interactive.action.async.AsyncExec;
 import lsfusion.server.logics.form.interactive.action.async.InputList;
-import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapChange;
+import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapInput;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
@@ -126,7 +126,7 @@ public class InputAction extends SystemExplicitAction {
     public AsyncMapEventExec<ClassPropertyInterface> calculateAsyncEventExec(boolean optimistic, boolean recursive) {
         if (optimistic || oldValueInterface == null) {
             InputListEntity<?, ClassPropertyInterface> fullContextList = getFullContextList();
-            return new AsyncMapChange<>(getInputClass(fullContextList), fullContextList, getInputList(), targetProp, customChangeFunction);
+            return new AsyncMapInput<>(getInputClass(fullContextList), fullContextList, getInputList(), customChangeFunction);
         }
         return null;
     }

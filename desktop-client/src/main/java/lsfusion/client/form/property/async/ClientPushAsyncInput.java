@@ -6,15 +6,15 @@ import lsfusion.interop.form.property.cell.UserInputResult;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public class ClientPushAsyncChange extends ClientPushAsyncResult {
+public class ClientPushAsyncInput extends ClientPushAsyncResult {
     
     public final UserInputResult result;
 
-    public ClientPushAsyncChange(Object value, Integer contextAction) {
+    public ClientPushAsyncInput(Object value, Integer contextAction) {
         this(new UserInputResult(value, contextAction));
     }
 
-    public ClientPushAsyncChange(UserInputResult result) {
+    public ClientPushAsyncInput(UserInputResult result) {
         this.result = result;
     }
 

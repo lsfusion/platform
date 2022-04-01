@@ -2,21 +2,20 @@ package lsfusion.server.logics.form.interactive.action.async;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.server.data.type.TypeSerializer;
-import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.form.interactive.action.input.InputResult;
 
 import java.io.*;
 
-public class AsyncChange extends AsyncInputExec {
-    public DataClass changeType;
-    public LP targetProp;
+public class AsyncInput extends AsyncFormExec {
+    public final DataClass changeType;
 
-    public InputList inputList;
+    public final InputList inputList;
 
-    public AsyncChange(DataClass changeType, LP targetProp, InputList inputList, String customEditorFunction) {
+    public final String customEditorFunction;
+
+    public AsyncInput(DataClass changeType, InputList inputList, String customEditorFunction) {
         this.changeType = changeType;
-        this.targetProp = targetProp;
         this.inputList = inputList;
         this.customEditorFunction = customEditorFunction;
     }
@@ -43,6 +42,6 @@ public class AsyncChange extends AsyncInputExec {
     // should correspond ClientPushAsyncChange.serialize
     @Override
     public PushAsyncResult deserializePush(DataInputStream inStream) throws IOException {
-        return new PushAsyncChange(InputResult.get(BaseUtils.readObject(inStream), changeType));
+        return new PushAsyncInput(InputResult.get(BaseUtils.readObject(inStream), changeType));
     }
 }

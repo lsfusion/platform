@@ -13,7 +13,7 @@ import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
-public class AsyncMapAdd<T extends PropertyInterface> extends AsyncMapInputExec<T> {
+public class AsyncMapAdd<T extends PropertyInterface> extends AsyncMapFormExec<T> {
     public final CustomClass customClass;
 
     public AsyncMapAdd(CustomClass customClass) {

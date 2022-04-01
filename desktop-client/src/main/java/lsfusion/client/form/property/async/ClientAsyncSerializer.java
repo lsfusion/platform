@@ -17,7 +17,7 @@ public class ClientAsyncSerializer {
             case 1:
                 return new ClientAsyncOpenForm(inStream);
             case 2:
-                return new ClientAsyncChange(inStream);
+                return new ClientAsyncInput(inStream);
             case 3:
                 return new ClientAsyncAddRemove(inStream);
             case 4:

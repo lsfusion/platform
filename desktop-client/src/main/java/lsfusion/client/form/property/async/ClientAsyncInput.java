@@ -10,16 +10,18 @@ import lsfusion.client.form.property.cell.controller.dispatch.EditPropertyDispat
 import java.io.DataInputStream;
 import java.io.IOException;
 
-public class ClientAsyncChange extends ClientAsyncInputExec {
+public class ClientAsyncInput extends ClientAsyncFormExec {
     public ClientType changeType;
 
     public ClientInputList inputList;
 
+    public String customEditorFunction;
+
     @SuppressWarnings("UnusedDeclaration")
-    public ClientAsyncChange() {
+    public ClientAsyncInput() {
     }
 
-    public ClientAsyncChange(DataInputStream inStream) throws IOException {
+    public ClientAsyncInput(DataInputStream inStream) throws IOException {
         super(inStream);
 
         this.changeType = ClientTypeSerializer.deserializeClientType(inStream);

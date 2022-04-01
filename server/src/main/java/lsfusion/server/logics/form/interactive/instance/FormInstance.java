@@ -81,9 +81,9 @@ import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.form.interactive.FormCloseType;
 import lsfusion.server.logics.form.interactive.ManageSessionType;
 import lsfusion.server.logics.form.interactive.UpdateType;
-import lsfusion.server.logics.form.interactive.action.async.AsyncChange;
+import lsfusion.server.logics.form.interactive.action.async.AsyncInput;
 import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
-import lsfusion.server.logics.form.interactive.action.async.PushAsyncChange;
+import lsfusion.server.logics.form.interactive.action.async.PushAsyncInput;
 import lsfusion.server.logics.form.interactive.action.async.PushAsyncResult;
 import lsfusion.server.logics.form.interactive.action.input.InputContext;
 import lsfusion.server.logics.form.interactive.action.input.InputValueList;
@@ -1047,7 +1047,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 if (columnKey != null) {
                     key = key.addExcl(columnKey);
                 }
-                executeEventAction(property, CHANGE, key, true, asyncChange -> asyncChange instanceof AsyncChange ? new PushAsyncChange(ObjectValue.getValue(value, ((AsyncChange) asyncChange).changeType)) : null, stack);
+                executeEventAction(property, CHANGE, key, true, asyncChange -> asyncChange instanceof AsyncInput ? new PushAsyncInput(ObjectValue.getValue(value, ((AsyncInput) asyncChange).changeType)) : null, stack);
             }
         }
     }

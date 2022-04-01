@@ -8,7 +8,7 @@ import lsfusion.client.form.property.cell.controller.dispatch.EditPropertyDispat
 import java.io.DataInputStream;
 import java.io.IOException;
 
-public class ClientAsyncAddRemove extends ClientAsyncInputExec {
+public class ClientAsyncAddRemove extends ClientAsyncFormExec {
     // we could use ClientObject, but there is no context when deserializing ClientForm, so clientform will be null (it could be fixed by setting context in customDeserialize, but it's simpler to make everything symmetric with GAsyncAddRemove)
     public int object;
     public Boolean add;

@@ -7,17 +7,18 @@ import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 
 import java.util.function.Consumer;
 
-public class GAsyncChange extends GAsyncInputExec {
+public class GAsyncInput extends GAsyncFormExec {
     public GType changeType;
-    public String customEditFunction;
 
     public GInputList inputList;
 
+    public String customEditFunction;
+
     @SuppressWarnings("UnusedDeclaration")
-    public GAsyncChange() {
+    public GAsyncInput() {
     }
 
-    public GAsyncChange(GType changeType, GInputList inputList, String customEditFunction) {
+    public GAsyncInput(GType changeType, GInputList inputList, String customEditFunction) {
         this.changeType = changeType;
         this.inputList = inputList;
         this.customEditFunction = customEditFunction;

@@ -2,9 +2,8 @@ package lsfusion.server.logics.form.interactive.action.async.map;
 
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
-import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.classes.data.DataClass;
-import lsfusion.server.logics.form.interactive.action.async.AsyncChange;
+import lsfusion.server.logics.form.interactive.action.async.AsyncInput;
 import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
 import lsfusion.server.logics.form.interactive.action.async.InputList;
 import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
@@ -14,7 +13,7 @@ import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
-public class AsyncMapChange<T extends PropertyInterface> extends AsyncMapInputExec<T> {
+public class AsyncMapInput<T extends PropertyInterface> extends AsyncMapFormExec<T> {
 
     public final DataClass type;
 
@@ -22,58 +21,55 @@ public class AsyncMapChange<T extends PropertyInterface> extends AsyncMapInputEx
 
     public final InputList inputList;
 
-    public final LP targetProp;
-
     public final String customEditorFunction;
 
-    public AsyncMapChange(DataClass type, InputListEntity<?, T> list, InputList inputList, LP targetProp, String customEditorFunction) {
+    public AsyncMapInput(DataClass type, InputListEntity<?, T> list, InputList inputList, String customEditorFunction) {
         this.type = type;
         this.list = list;
         this.inputList = inputList;
-        this.targetProp = targetProp;
         this.customEditorFunction = customEditorFunction;
     }
 
-    private <P extends PropertyInterface> AsyncMapChange<P> override(InputListEntity<?, P> list) {
-        return new AsyncMapChange<P>(type, list, inputList, targetProp, customEditorFunction);
+    private <P extends PropertyInterface> AsyncMapInput<P> override(InputListEntity<?, P> list) {
+        return new AsyncMapInput<P>(type, list, inputList, customEditorFunction);
     }
 
-    public AsyncMapChange<T> newSession() {
+    public AsyncMapInput<T> newSession() {
         return override(list != null ? list.newSession() : null);
     }
 
     @Override
-    public <P extends PropertyInterface> AsyncMapInputExec<P> map(ImRevMap<T, P> mapping) {
+    public <P extends PropertyInterface> AsyncMapFormExec<P> map(ImRevMap<T, P> mapping) {
         return override(list != null ? list.map(mapping) : null);
     }
 
     @Override
-    public <P extends PropertyInterface> AsyncMapInputExec<P> mapInner(ImRevMap<T, P> mapping) {
+    public <P extends PropertyInterface> AsyncMapFormExec<P> mapInner(ImRevMap<T, P> mapping) {
         return override(list != null ? list.mapInner(mapping) : null);
     }
 
     @Override
-    public <P extends PropertyInterface> AsyncMapInputExec<P> mapJoin(ImMap<T, PropertyInterfaceImplement<P>> mapping) {
+    public <P extends PropertyInterface> AsyncMapFormExec<P> mapJoin(ImMap<T, PropertyInterfaceImplement<P>> mapping) {
         return override(list != null ? list.mapJoin(mapping) : null);
     }
 
     @Override
     public AsyncEventExec map(ImRevMap<T, ObjectEntity> mapObjects, FormEntity form, GroupObjectEntity toDraw) {
-        return new AsyncChange(type, targetProp, list != null ? inputList : null, customEditorFunction);
+        return new AsyncInput(type, list != null ? inputList : null, customEditorFunction);
     }
 
     @Override
     public AsyncMapEventExec<T> merge(AsyncMapEventExec<T> input) {
-        if(!(input instanceof AsyncMapChange))
+        if(!(input instanceof AsyncMapInput))
             return null;
 
-        AsyncMapChange<T> dataInput = ((AsyncMapChange<T>)input);
+        AsyncMapInput<T> dataInput = ((AsyncMapInput<T>)input);
         if(list != null || dataInput.list != null) // later it maybe makes sense to "or" this lists
             return null;
 
         DataClass compatibleType = ((DataClass<?>)type).getCompatible(dataInput.type, true);
-        if(compatibleType != null && targetProp.property.equals(dataInput.targetProp.property))
-            return new AsyncMapChange<>(compatibleType, null, null, targetProp, customEditorFunction);
+        if(compatibleType != null)
+            return new AsyncMapInput<>(compatibleType, null, null, customEditorFunction);
         return null;
     }
 }

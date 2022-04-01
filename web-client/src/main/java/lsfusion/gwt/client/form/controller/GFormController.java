@@ -1067,7 +1067,7 @@ public class GFormController implements EditManager {
         syncExecutePropertyEventAction(editContext, event, editContext.getProperty(), editContext.getColumnKey(), actionSID);
     }
 
-    public void asyncChange(Event event, EditContext editContext, String actionSID, GAsyncChange asyncChange, Consumer<Long> onExec) {
+    public void asyncChange(Event event, EditContext editContext, String actionSID, GAsyncInput asyncChange, Consumer<Long> onExec) {
         GInputList inputList = asyncChange.inputList;
         edit(asyncChange.changeType, event, false, null, inputList, (value, requestIndex) -> {
             onExec.accept(requestIndex);
@@ -1176,7 +1176,7 @@ public class GFormController implements EditManager {
         for (int i = 0; i < length; i++) {
             fullKeys[i] = GGroupObjectValue.getFullKey(rowKeys[i], columnKeys[i]);
             externalChanges[i] = changeTypes[i] == null;
-            pushAsyncResults[i] = new GPushAsyncChange(values[i]);
+            pushAsyncResults[i] = new GPushAsyncInput(values[i]);
         }
 
         if(changeRequestIndex == null)
