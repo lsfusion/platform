@@ -2,6 +2,7 @@ package lsfusion.base.col.implementations;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.SetFact;
+import lsfusion.base.col.implementations.abs.AMRevMap;
 import lsfusion.base.col.implementations.abs.AMSet;
 import lsfusion.base.col.implementations.order.ArOrderSet;
 import lsfusion.base.col.implementations.stored.StoredArSet;
@@ -318,11 +319,11 @@ public class ArSet<K> extends AMSet<K> {
     }
 
     @Override
-    public ArMap<K, K> toMap() {
+    public AMRevMap<K, K> toMap() {
         if (!isStored()) {
             return new ArMap<>(size, array, array);
         } else {
-            throw new UnsupportedOperationException();
+            return stored().toMap();
         }
     }
 

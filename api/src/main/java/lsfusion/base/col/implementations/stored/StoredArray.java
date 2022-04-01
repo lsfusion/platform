@@ -108,33 +108,54 @@ public class StoredArray<T> {
         }        
     }
 
-    // loads hashes of all elements into memory
     public void sort() {
-        try {
-            flushBuffer(); // ?
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
-        
+        sort(null, null);
+    }
+
+    public void sort(int[] order) {
+        sort(null, order);
+    }
+
+    public <V> void sort(StoredArray<V> mappedArray) {
+        sort(mappedArray, null);
+    }
+
+    // loads hashes of all elements into memory
+    public <V> void sort(StoredArray<V> mappedArray, int[] order) {
+        assert order == null || order.length == size();
         ArrayList<Pair<Integer, Integer>> hashes = new ArrayList<>();
         for (int i = 0; i < size(); ++i) {
             Object element = get(i);
-            hashes.add(new Pair<>(element == null ? 0 : element.hashCode(), i));    
+            hashes.add(new Pair<>(element == null ? 0 : element.hashCode(), i));
         }
-        
+
         hashes.sort((o1, o2) -> {
             if (o1.first < o2.first) return -1;
             if (o1.first > o2.first) return 1;
             return Integer.compare(o1.second, o2.second);
         });
+        rearrange(hashes);
+        if (mappedArray != null) {
+            mappedArray.rearrange(hashes);
+        }
+        if (order != null) {
+            for (int i = 0; i < hashes.size(); ++i) {
+                order[hashes.get(i).second] = i;
+            }
+        }
+    }
 
-        File tmpIndexFile = fileManager.tmpIndexFile();
+    // Uses only the second integer of each pair. Takes an array of pairs only to get rid of unnecessary copying
+    private void rearrange(ArrayList<Pair<Integer, Integer>> sortedHashes) {
         try {
+            flushBuffer(); // ?
+
+            File tmpIndexFile = fileManager.tmpIndexFile();
             try (
                     DataOutputStream tmpIndexStream = new DataOutputStream(new FileOutputStream(tmpIndexFile));
             ) {
                 for (int i = 0; i < size(); ++i) {
-                    Pair<Integer, Integer> offsetLen = getOffsetLen(hashes.get(i).second);
+                    Pair<Integer, Integer> offsetLen = getOffsetLen(sortedHashes.get(i).second);
                     tmpIndexStream.writeInt(offsetLen.first);
                     tmpIndexStream.writeInt(offsetLen.second);
                 }
@@ -147,7 +168,7 @@ public class StoredArray<T> {
             throw new UncheckedIOException(e);
         }
     }
-    
+
     // time-consuming operation
     public void insert(int index, T element) {
         assert index >= 0 && index <= size();

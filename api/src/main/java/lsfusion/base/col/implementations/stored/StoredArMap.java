@@ -124,7 +124,8 @@ public class StoredArMap<K, V> extends AMRevMap<K, V> {
 
     @Override
     public ImMap<K, V> immutable() {
-        throw new UnsupportedOperationException();
+        keys.sort(values);
+        return new StoredArIndexedMap<>(keys, values);
     }
 
     @Override

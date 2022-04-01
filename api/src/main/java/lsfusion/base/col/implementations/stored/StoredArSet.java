@@ -73,15 +73,8 @@ public class StoredArSet<K> extends AMSet<K> {
 
     @Override
     public ImSet<K> immutable() {
-//        if (size() == 0)
-//            return SetFact.EMPTY();
-//        if (size() == 1)
-//            return SetFact.singleton(single());
-//
-//        if (size() < SetFact.useArrayMax)
-//            return this;
-//
-        throw new UnsupportedOperationException();
+        array.sort();
+        return new StoredArIndexedSet<K>(array);
     }
 
     @Override
