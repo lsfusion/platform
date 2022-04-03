@@ -253,17 +253,15 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
     protected void changeProperties(String[] properties, JavaScriptObject[] objects, Serializable[] newValues) {
         int length = properties.length;
         GPropertyDraw[] gProperties = new GPropertyDraw[length];
-        GGroupObjectValue[] columnKeys = new GGroupObjectValue[length];
-        GGroupObjectValue[] rowKeys = new GGroupObjectValue[length];
+        GGroupObjectValue[] fullKeys = new GGroupObjectValue[length];
 
         for (int i = 0; i < length; i++) {
             Column column = columnMap.get(properties[i]);
             gProperties[i] = column.property;
-            columnKeys[i] = column.columnKey;
-            rowKeys[i] = getChangeKey(objects[i]);
+            fullKeys[i] = GGroupObjectValue.getFullKey(getChangeKey(objects[i]), column.columnKey);
         }
 
-        changeProperties(gProperties, rowKeys, columnKeys, newValues);
+        changeProperties(gProperties, fullKeys, newValues);
     }
 
     protected boolean isReadOnly(String property, GGroupObjectValue object) {

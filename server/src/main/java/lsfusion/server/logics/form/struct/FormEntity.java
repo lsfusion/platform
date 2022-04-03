@@ -575,6 +575,21 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return ((ImOrderSet<PropertyDrawEntity>)getPropertyDrawsList()).filterOrder(element -> element.isProperty() && element.getIntegrationSID() != null && element != logMessagePropertyDraw);
     }
 
+    кэширование непонятное
+    что-то типа getGroupAllProperties ???
+    public <X extends PropertyInterface, T extends PropertyInterface> PropertyDrawEntity findChangedProperty(PropertyObjectEntity<X> changeProp, boolean toNull) {
+        ImSet<ObjectEntity> valuesSet = changeProp.mapping.valuesSet();
+        for(PropertyDrawEntity property : getPropertyDrawsList()) {
+            PropertyObjectEntity<T> valueProperty = property.getValueProperty();
+            if(valueProperty.mapping.valuesSet().equals(valuesSet)) {
+                getIdentityImplement хотя при изменении toNull можно идти по Join если там заведомо не null
+                valueProperty.property.isIdentity(valueProperty.mapping.crossValuesRev(changeProp.mapping)
+            }
+        }
+        dss
+        dsdsdssd
+    }
+
     public static class PropMetaExternal {
         private final String caption;
         private final String type;

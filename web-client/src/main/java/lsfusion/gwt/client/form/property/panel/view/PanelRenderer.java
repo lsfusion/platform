@@ -12,6 +12,7 @@ import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
 import java.util.ArrayList;
+import java.util.Optional;
 
 import static lsfusion.gwt.client.base.GwtSharedUtils.nullEquals;
 
@@ -94,5 +95,11 @@ public abstract class PanelRenderer {
 
     public void focus() {
         value.setFocus(true);
+    }
+
+    public Optional<Object> setValue(Object value) {
+        Object oldValue  = this.value.getValue();
+        this.value.setValue(value);
+        return Optional.of(oldValue);
     }
 }

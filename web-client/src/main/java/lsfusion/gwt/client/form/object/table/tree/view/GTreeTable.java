@@ -23,11 +23,13 @@ import lsfusion.gwt.client.form.event.GMouseStroke;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController;
+import lsfusion.gwt.client.form.object.table.grid.view.GGridTable;
 import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
 import lsfusion.gwt.client.form.object.table.tree.controller.GTreeGroupController;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTableFooter;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTableHeader;
+import lsfusion.gwt.client.form.object.table.view.GridDataRecord;
 import lsfusion.gwt.client.form.order.user.GGridSortableHeaderManager;
 import lsfusion.gwt.client.form.order.user.GOrder;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -882,7 +884,22 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         GPropertyDraw property = getProperty(cell);
         // assert property is not null since we want get here if property is null
 
+        setValueAt(property, rowRecord, value);
+    }
+
+    public Optional<Object> setValueAt(GPropertyDraw property, GGroupObjectValue fullCurrentKey, Object value) {
+        GTreeGridRecord rowRecord = getRowValue(getRowByKeyOptimistic(treeGroup.filterRowKeys(property.groupObject, fullCurrentKey)));
+
+        Object oldValue = rowRecord.getValue(property);
+
+        setValueAt(property, rowRecord, value);
+
+        return Optional.of(oldValue);
+    }
+
+    private void setValueAt(GPropertyDraw property, GTreeGridRecord rowRecord, Object value) {
         rowRecord.setValue(property, value);
+
         tree.values.get(property).put(rowRecord.getKey(), value);
     }
 

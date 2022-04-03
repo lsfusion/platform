@@ -10,6 +10,7 @@ import lsfusion.gwt.client.form.object.table.controller.GPropertyController;
 import lsfusion.gwt.client.form.property.*;
 
 import java.util.ArrayList;
+import java.util.Optional;
 
 import static java.lang.Boolean.TRUE;
 
@@ -160,6 +161,11 @@ public class GPanelController extends GPropertyController {
         }
 
         return false;
+    }
+
+    @Override
+    public Optional<Object> setValueAt(GPropertyDraw property, GGroupObjectValue fullCurrentKey, Object value) {
+        return propertyControllers.get(property).setValueAt(fullCurrentKey, value);
     }
 
     @Override

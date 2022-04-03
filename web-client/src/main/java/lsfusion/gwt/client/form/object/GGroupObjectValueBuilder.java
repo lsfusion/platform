@@ -2,6 +2,7 @@ package lsfusion.gwt.client.form.object;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.List;
 import java.util.TreeMap;
 
 public class GGroupObjectValueBuilder {

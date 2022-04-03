@@ -436,10 +436,13 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     }
 
     protected Object getValue(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {
-        return values.get(properties.indexOf(property)).get(GGroupObjectValue.getFullKey(rowKey, columnKey));
+        return getValue(property, GGroupObjectValue.getFullKey(rowKey, columnKey));
+    }
+    protected Object getValue(GPropertyDraw property, GGroupObjectValue fullKey) {
+        return values.get(properties.indexOf(property)).get(fullKey);
     }
 
-    protected void changeProperties(GPropertyDraw[] properties, GGroupObjectValue[] rowKeys, GGroupObjectValue[] columnKeys, Serializable[] newValues) {
+    protected void changeProperties(GPropertyDraw[] properties, GGroupObjectValue[] fullKeys, Serializable[] newValues) {
         int length = properties.length;
         Object[] oldValues = new Object[length];
         GType[] changeTypes = new GType[length];
@@ -447,10 +450,10 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
         for (int i = 0; i < length; i++) {
             newInputResults[i] = new GUserInputResult(newValues[i]);
             changeTypes[i] = GPropertyDraw.externalChangeTypeUsage;
-            oldValues[i] = getValue(properties[i], rowKeys[i], columnKeys[i]);
+            oldValues[i] = getValue(properties[i], fullKeys[i]);
         }
 
-        form.changeProperties(GEditBindingMap.CHANGE, null, null, properties, changeTypes, rowKeys, columnKeys, newInputResults, oldValues, null);
+        form.changeProperties(GEditBindingMap.CHANGE, null, null, properties, changeTypes, fullKeys, newInputResults, oldValues, null);
     }
 
     protected boolean isReadOnly(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {

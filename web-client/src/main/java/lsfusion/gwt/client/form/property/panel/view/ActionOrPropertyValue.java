@@ -14,6 +14,8 @@ import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 
+import java.util.Optional;
+
 // property value renderer with editing
 public abstract class ActionOrPropertyValue extends FocusWidget implements EditContext, RenderContext, UpdateContext {
 
@@ -33,13 +35,6 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
         this.value = value; // updating inner model
 
         controller.setValue(columnKey, value); // updating outer model - controller
-    }
-
-    @Override
-    public void setLoading() {
-        this.loading = true;
-
-        controller.setLoading(columnKey, true);
     }
 
     @Override

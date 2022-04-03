@@ -16,14 +16,17 @@ public interface EditContext {
 
     GGroupObjectValue getRowKey();
 
+    default GGroupObjectValue getFullKey() {
+        GPropertyDraw property = getProperty();
+        GGroupObjectValue rowKey = property.isList ? getRowKey() : GGroupObjectValue.EMPTY; // because for example in custom renderer editContext can be not the currentKey
+        return GGroupObjectValue.getFullKey(rowKey, getColumnKey());
+    }
+
     Element getEditElement();
     Element getEditEventElement();
 
     default Object getValue() { return getUpdateContext().getValue(); }
     void setValue(Object value);
-
-//    default boolean isLoading() { return getUpdateContext().isLoading(); }
-    void setLoading();
 
     Element getFocusElement();
     boolean isFocusable();

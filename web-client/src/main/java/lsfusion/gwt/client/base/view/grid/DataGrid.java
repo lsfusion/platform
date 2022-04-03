@@ -1011,6 +1011,10 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
         return getElement(getSelectedRow(), column);
     }
 
+    protected TableCellElement getElement(Cell cell) {
+        return getElement(cell.getRowIndex(), cell.getColumnIndex());
+    }
+
     protected TableCellElement getElement(int rowIndex, int colIndex) { // element used for rendering
         TableCellElement result = null;
         TableRowElement tr = getChildElement(rowIndex); // Do not use getRowElement() because that will flush the presenter.

@@ -77,6 +77,13 @@ public class ActionOrPropertyPanelValue extends ActionOrPropertyValue implements
         form.executePropertyEventAction(handler, isBinding, this);
     }
 
+    @Override
+    public void setLoading() {
+        this.loading = true;
+
+        controller.setLoading(columnKey, true);
+    }
+
     private boolean forceSetFocus;
     @Override
     public Object forceSetFocus() {

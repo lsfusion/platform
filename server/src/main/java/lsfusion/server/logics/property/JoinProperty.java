@@ -67,7 +67,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
     }
 
     public <X extends PropertyInterface> PropertyMapImplement<?, X> getIdentityImplement(ImRevMap<Interface, X> mapping) {
-        if(isIdentity()) {
+        if(isIdentity) {
             ImRevMap<T, Interface> joinMapping = BaseUtils.immutableCast(implement.mapping.toRevExclMap());
             return implement.property.getIdentityImplement(joinMapping.join(mapping));
         }

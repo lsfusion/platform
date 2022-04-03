@@ -329,7 +329,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     }
 
     public boolean containsProperty(GPropertyDraw property) {
-        return getPropertyIndex(property, null) >= 0;
+        return getGridColumn(property, null) != null;
     }
 
     public List<GPropertyDraw> getOrderedVisibleProperties(List<GPropertyDraw> propertiesList) {
@@ -532,9 +532,9 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     public Object getSelectedValue(GPropertyDraw property, GGroupObjectValue columnKey) {
         GridDataRecord selectedRecord = getSelectedRowValue();
         if (selectedRecord != null) {
-            int column = getPropertyIndex(property, columnKey);
-            if(column >= 0)
-                return getGridColumn(column).getValue(selectedRecord);
+            GridColumn column = getGridColumn(property, columnKey);
+            if(column != null)
+                return column.getValue(selectedRecord);
         }
 
         return null;
@@ -608,7 +608,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     }
 
     public void onBinding(GPropertyDraw property, Event event) {
-        int column = getPropertyIndex(property, null);
+        int column = getGridColumnIndex(property, null);
         if(column >= 0 && getSelectedRow() >= 0)
             onEditEvent(new EventHandler(event), true, getSelectedCell(column), getSelectedElement(column));
     }
@@ -678,7 +678,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         return getGridColumn(cell).property;
     }
 
-    public int getPropertyIndex(GPropertyDraw property, GGroupObjectValue columnKey) {
+    public int getGridColumnIndex(GPropertyDraw property, GGroupObjectValue columnKey) {
         for(int i=0,size=getColumnCount();i<size;i++) {
             GridColumn gridColumn = getGridColumn(i);
             if (property == gridColumn.property && (columnKey == null || columnKey.equals(gridColumn.columnKey))) {
@@ -686,6 +686,16 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
             }
         }
         return -1;
+    }
+
+    public GridColumn getGridColumn(GPropertyDraw property, GGroupObjectValue columnKey) {
+        for(int i=0,size=getColumnCount();i<size;i++) {
+            GridColumn gridColumn = getGridColumn(i);
+            if (property == gridColumn.property && (columnKey == null || columnKey.equals(gridColumn.columnKey))) {
+                return gridColumn;
+            }
+        }
+        return null;
     }
 
     public void modifyGroupObject(GGroupObjectValue rowKey, boolean add, int position) {
@@ -726,9 +736,9 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     }
 
     private HashMap<GPropertyDraw, GGroupObjectValue> getMinColumnKey(GPropertyDraw property) {
-        int ind = getPropertyIndex(property, null);
+        GridColumn column = getGridColumn(property, null);
         HashMap<GPropertyDraw, GGroupObjectValue> key = new HashMap<>();
-        key.put(property, ind == -1 ? GGroupObjectValue.EMPTY : getColumnKey(ind));
+        key.put(property, column == null ? GGroupObjectValue.EMPTY : column.columnKey);
         return key;
     }
 
@@ -875,7 +885,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     }
 
     public void focusProperty(GPropertyDraw propertyDraw) {
-        int ind = getPropertyIndex(propertyDraw, null);
+        int ind = getGridColumnIndex(propertyDraw, null);
         if (ind != -1) {
             changeSelectedColumn(ind);
         }
@@ -883,9 +893,21 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
     // editing set value (in EditContext), changes model and value itself
     public void setValueAt(Cell cell, Object value) {
-        GridDataRecord rowRecord = getGridRow(cell);
-        GridColumn column = getGridColumn(cell);
+        setValueAt(getGridColumn(cell), getGridRow(cell), value);
+    }
 
+    public Optional<Object> setValueAt(GPropertyDraw property, GGroupObjectValue fullCurrentKey, Object value) {
+        GridColumn column = getGridColumn(property, property.filterColumnKeys(fullCurrentKey));
+        GridDataRecord rowRecord = getRowValue(getRowByKeyOptimistic(groupObject.filterRowKeys(fullCurrentKey)));
+
+        Object oldValue = column.getValue(rowRecord);
+
+        setValueAt(column, rowRecord, value);
+
+        return Optional.of(oldValue);
+    }
+
+    private void setValueAt(GridColumn column, GridDataRecord rowRecord, Object value) {
         column.setValue(rowRecord, value); // updating inner model
 
         values.get(column.property).put(rowRecord.getKey(), value); // updating outer model - controller

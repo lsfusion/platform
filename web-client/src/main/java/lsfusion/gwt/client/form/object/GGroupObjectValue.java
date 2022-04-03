@@ -1,5 +1,10 @@
 package lsfusion.gwt.client.form.object;
 
+import lsfusion.gwt.client.base.jsni.NativeHashMap;
+import lsfusion.gwt.client.base.jsni.NativeSIDMap;
+import lsfusion.gwt.client.base.jsni.NativeStringMap;
+import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,8 +22,8 @@ public class GGroupObjectValue implements Serializable {
     public static final ArrayList<GGroupObjectValue> SINGLE_EMPTY_KEY_LIST = createEmptyList();
 
     private int size = 0;
-    private int keys[];
-    private Serializable values[];
+    private int[] keys;
+    private Serializable[] values;
 
     private int singleKey;
     private Serializable singleValue;
@@ -42,6 +47,18 @@ public class GGroupObjectValue implements Serializable {
                     keys[i] = e.getKey();
                     values[i++] = e.getValue();
                 }
+            }
+        }
+    }
+
+    public GGroupObjectValue(int size, int[] keys, Serializable[] values) {
+        if(size != 0) {
+            if (size == 1)
+                initSingle(keys[0], values[0]);
+            else {
+                this.size = size;
+                this.keys = keys;
+                this.values = values;
             }
         }
     }
@@ -133,5 +150,39 @@ public class GGroupObjectValue implements Serializable {
             caption += "]";
             return caption;
         }
+    }
+
+    // assert that the keys contain all the groups
+    public GGroupObjectValue filterIncl(List<GGroupObject> groups) {
+        if(size == 0)
+            return this;
+
+        if(groups.isEmpty())
+            return GGroupObjectValue.EMPTY;
+
+        if(size == 1) {
+            assert groups.size() == 1 && groups.get(0).objects.get(0).ID == singleKey;
+            return this;
+        }
+
+        int filteredSize = 0;
+        NativeStringMap<Boolean> objects = new NativeStringMap<>();
+        for(GGroupObject group : groups) {
+            filteredSize += group.objects.size();
+            for(GObject object : group.objects)
+                objects.put(String.valueOf(object.ID), true);
+        }
+        int f = 0;
+        int[] filteredKeys = new int[filteredSize];
+        Serializable[] filteredValues = new Serializable[filteredSize];
+        // we need to preserver keys order
+        for(int i = 0 ; i < size ; i++) {
+            int key = keys[i];
+            if (objects.containsKey(String.valueOf(key))) {
+                filteredKeys[f] = key;
+                filteredValues[f++] = values[i];
+            }
+        }
+        return new GGroupObjectValue(filteredSize, filteredKeys, filteredValues);
     }
 }

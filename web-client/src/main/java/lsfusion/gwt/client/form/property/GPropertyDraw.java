@@ -109,6 +109,10 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         return asyncExec instanceof GAsyncInput ? ((GAsyncInput) asyncExec).inputList : null;
     }
 
+    public GGroupObjectValue filterColumnKeys(GGroupObjectValue fullCurrentKey) {
+        return fullCurrentKey.filterIncl(columnGroupObjects);
+    }
+
     public static class QuickAccessAction implements CellRenderer.ToolbarAction {
         public final String action;
         public final int index;
