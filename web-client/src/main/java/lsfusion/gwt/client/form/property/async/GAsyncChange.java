@@ -11,7 +11,7 @@ import java.util.function.Consumer;
 
 public class GAsyncChange extends GAsyncFormExec {
 
-    public int propertyID;
+    public int[] propertyIDs;
 
     public Serializable value;
 
@@ -19,15 +19,17 @@ public class GAsyncChange extends GAsyncFormExec {
     public GAsyncChange() {
     }
 
-    public GAsyncChange(int propertyID) {
-        this.propertyID = propertyID;
+    public GAsyncChange(int[] propertyIDs, Serializable value) {
+        this.propertyIDs = propertyIDs;
+        this.value = value;
     }
 
     @Override
     public void exec(GFormController formController, Event event, EditContext editContext, String actionSID, Consumer<Long> onExec) {
         long requestIndex = formController.asyncExecutePropertyEventAction(actionSID, editContext, event, null);
 
-        formController.setValueAt(propertyID, editContext.getFullKey(), value, requestIndex);
+        for(int propertyID : propertyIDs)
+            formController.setValueAt(propertyID, editContext.getFullKey(), value, requestIndex);
 
         onExec.accept(requestIndex);
     }

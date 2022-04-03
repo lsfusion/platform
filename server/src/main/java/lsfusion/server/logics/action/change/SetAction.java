@@ -1,5 +1,6 @@
 package lsfusion.server.logics.action.change;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
@@ -23,6 +24,8 @@ import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.session.change.PropertyChange;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.action.session.table.SessionTableUsage;
+import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapChange;
+import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.classes.IsClassProperty;
@@ -31,10 +34,12 @@ import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
+import lsfusion.server.logics.property.value.StaticValueProperty;
 import lsfusion.server.logics.property.value.ValueProperty;
 import lsfusion.server.physics.dev.debug.ActionDelegationType;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
+import java.io.Serializable;
 import java.sql.SQLException;
 
 import static lsfusion.server.logics.property.PropertyFact.createSetAction;
@@ -175,5 +180,15 @@ public class SetAction<P extends PropertyInterface, W extends PropertyInterface,
     @Override
     public ActionDelegationType getDelegationType(boolean modifyContext) {
         return ActionDelegationType.IN_DELEGATE; // need this for property breakpoints
+    }
+
+    @Override
+    protected AsyncMapEventExec<PropertyInterface> calculateAsyncEventExec(boolean optimistic, boolean recursive) {
+        if((where == null || where.property instanceof ValueProperty) &&
+                writeFrom instanceof PropertyMapImplement && ((PropertyMapImplement<?, ?>) writeFrom).property instanceof StaticValueProperty &&
+                mapInterfaces.valuesSet().containsAll(writeTo.mapping.valuesSet())) {
+            return new AsyncMapChange<>(writeTo.map(mapInterfaces.reverse()), (Serializable) ((StaticValueProperty) ((PropertyMapImplement<?, ?>) writeFrom).property).getStaticValue());
+        }
+        return null;
     }
 }

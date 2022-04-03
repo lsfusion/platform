@@ -1,6 +1,7 @@
 package lsfusion.server.logics.property.implement;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.Pair;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MSet;
@@ -26,10 +27,12 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
 import lsfusion.server.logics.event.PrevScope;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
+import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
+import lsfusion.server.logics.property.JoinProperty;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.UnionProperty;
@@ -265,6 +268,32 @@ public class PropertyMapImplement<P extends PropertyInterface, T extends Propert
 
     public PropertyMapImplement<?, T> mapClassProperty() {
         return property.getClassProperty().mapPropertyImplement(mapping);
+    }
+
+    @Override
+    public <X extends PropertyInterface> boolean mapChangedWhen(boolean toNull, Property<X> changeProperty, ImRevMap<T, X> changeMapping) {
+         return property.isChangedWhen(toNull, changeProperty, mapping.join(changeMapping));
+    }
+
+    public <C extends PropertyInterface> PropertyMapImplement<P, C> mapInner(ImRevMap<T, C> map) {
+        // here it's not evident if we should consider the case like FOR f=g(a) DO INPUT ... LIST x(d) IF g(d) = f as a simple input
+        // we won't since we don't do that in FilterEntity, ContextFilterEntity.getInputListEntity
+        ImRevMap<P, C> joinMapValues = mapping.innerJoin(map);
+        if(joinMapValues.size() != mapping.size())
+            return null;
+        return new PropertyMapImplement<>(property, joinMapValues);
+    }
+
+    public <C extends PropertyInterface> PropertyMapImplement<P, C> mapJoin(ImMap<T, PropertyInterfaceImplement<C>> map) {
+        ImMap<P, PropertyInterfaceImplement<C>> joinMapValues = mapping.innerJoin(map);
+        if(joinMapValues.size() != mapping.size())
+            return null;
+
+        ImRevMap<P, C> revJoinMapValues = PropertyInterface.getIdentityMap(joinMapValues);
+        if(revJoinMapValues == null)
+            return null;
+
+        return new PropertyMapImplement<>(property, revJoinMapValues);
     }
 
     // временно

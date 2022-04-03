@@ -199,4 +199,9 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
     public boolean mapIsFull(ImSet<P> interfaces) {
         return false;
     }
+
+    @Override
+    public <X extends PropertyInterface> boolean mapChangedWhen(boolean toNull, Property<X> changeProperty, ImRevMap<P, X> changeMapping) {
+        return false;
+    }
 }

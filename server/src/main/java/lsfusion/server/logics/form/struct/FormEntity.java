@@ -6,10 +6,7 @@ import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
-import lsfusion.base.col.interfaces.mutable.LongMutable;
-import lsfusion.base.col.interfaces.mutable.MCol;
-import lsfusion.base.col.interfaces.mutable.MExclSet;
-import lsfusion.base.col.interfaces.mutable.MSet;
+import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterRevValueMap;
 import lsfusion.base.comb.Subsets;
@@ -575,19 +572,16 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return ((ImOrderSet<PropertyDrawEntity>)getPropertyDrawsList()).filterOrder(element -> element.isProperty() && element.getIntegrationSID() != null && element != logMessagePropertyDraw);
     }
 
-    кэширование непонятное
-    что-то типа getGroupAllProperties ???
-    public <X extends PropertyInterface, T extends PropertyInterface> PropertyDrawEntity findChangedProperty(PropertyObjectEntity<X> changeProp, boolean toNull) {
-        ImSet<ObjectEntity> valuesSet = changeProp.mapping.valuesSet();
+    public <X extends PropertyInterface, T extends PropertyInterface> ImList<PropertyDrawEntity> findChangedProperties(PropertyObjectEntity<X> changeProp, boolean toNull) {
+        MList<PropertyDrawEntity> mProps = ListFact.mList();
         for(PropertyDrawEntity property : getPropertyDrawsList()) {
             PropertyObjectEntity<T> valueProperty = property.getValueProperty();
-            if(valueProperty.mapping.valuesSet().equals(valuesSet)) {
-                getIdentityImplement хотя при изменении toNull можно идти по Join если там заведомо не null
-                valueProperty.property.isIdentity(valueProperty.mapping.crossValuesRev(changeProp.mapping)
-            }
+            if(Property.depends(valueProperty.property, changeProp.property) && // optimization
+                changeProp.mapping.valuesSet().containsAll(valueProperty.mapping.valuesSet()) &&
+                valueProperty.property.isChangedWhen(toNull, changeProp.property, valueProperty.mapping.crossValuesRev(changeProp.mapping)))
+                    mProps.add(property);
         }
-        dss
-        dsdsdssd
+        return mProps.immutableList();
     }
 
     public static class PropMetaExternal {

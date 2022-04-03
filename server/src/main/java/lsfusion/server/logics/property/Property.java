@@ -558,6 +558,10 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return ExClassSet.fromExValue(inferred).removeNulls();
     }
 
+    public <X extends PropertyInterface> boolean isChangedWhen(boolean toNull, Property<X> changeProperty, ImRevMap<T, X> changeMapping) {
+        return BaseUtils.hashEquals(this, changeProperty) && BaseUtils.hashEquals(interfaces.toRevMap(), changeMapping);
+    }
+
     public static class VirtualTable<P extends PropertyInterface> extends NamedTable {
 
         public final ImRevMap<KeyField, P> mapFields;

@@ -9,13 +9,14 @@ import lsfusion.server.logics.action.session.change.PropertyChanges;
 import lsfusion.server.logics.classes.StaticClass;
 import lsfusion.server.logics.property.CalcType;
 import lsfusion.server.logics.property.NoIncrementProperty;
+import lsfusion.server.logics.property.classes.data.FormulaProperty;
 import lsfusion.server.logics.property.classes.infer.ExClassSet;
 import lsfusion.server.logics.property.classes.infer.InferType;
 import lsfusion.server.logics.property.classes.infer.Inferred;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
-public class ValueProperty extends NoIncrementProperty<PropertyInterface> {
+public class ValueProperty extends StaticValueProperty {
 
     public final Object value;
     public final StaticClass staticClass;
@@ -51,5 +52,10 @@ public class ValueProperty extends NoIncrementProperty<PropertyInterface> {
     @Override
     public ExClassSet calcInferValueClass(ImMap<PropertyInterface, ExClassSet> inferred, InferType inferType) {
         return new ExClassSet(staticClass.getResolveSet(), value);
+    }
+
+    @Override
+    public Object getStaticValue() {
+        return value;
     }
 }

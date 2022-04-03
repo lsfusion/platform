@@ -38,8 +38,14 @@ public class ClientAsyncToGwtConverter extends ObjectConverter {
 
     @Cached
     @Converter(from = ClientAsyncInput.class)
-    public GAsyncInput convertAsyncChange(ClientAsyncInput clientAsyncInput) {
+    public GAsyncInput convertAsyncInput(ClientAsyncInput clientAsyncInput) {
         return new GAsyncInput(typeConverter.convertOrCast(clientAsyncInput.changeType), convertOrCast(clientAsyncInput.inputList), clientAsyncInput.customEditorFunction);
+    }
+
+    @Cached
+    @Converter(from = ClientAsyncChange.class)
+    public GAsyncChange convertAsyncChange(ClientAsyncChange clientAsyncChange) {
+        return new GAsyncChange(clientAsyncChange.propertyIDs, clientAsyncChange.value);
     }
 
     @Converter(from = WindowFormType.class)

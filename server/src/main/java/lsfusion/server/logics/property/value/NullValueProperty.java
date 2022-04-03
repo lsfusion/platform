@@ -14,7 +14,7 @@ import lsfusion.server.logics.property.classes.infer.Inferred;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
-public class NullValueProperty extends FormulaProperty<PropertyInterface> {
+public class NullValueProperty extends StaticValueProperty {
 
     private NullValueProperty() {
         super(LocalizedString.create("Значение NULL"), SetFact.EMPTYORDER());
@@ -41,5 +41,10 @@ public class NullValueProperty extends FormulaProperty<PropertyInterface> {
     @Override
     protected ExClassSet calcInferValueClass(ImMap<PropertyInterface, ExClassSet> inferred, InferType inferType) {
         return ExClassSet.FALSE;
+    }
+
+    @Override
+    public Object getStaticValue() {
+        return null;
     }
 }

@@ -79,4 +79,6 @@ public interface PropertyInterfaceImplement<P extends PropertyInterface> extends
     AndClassSet mapValueClassSet(ClassWhere<P> interfaceClasses);
 
     Graph<CalcCase<P>> mapAbstractGraph();
+
+    <X extends PropertyInterface> boolean mapChangedWhen(boolean toNull, Property<X> changeProperty, ImRevMap<P, X> changeMapping);
 }

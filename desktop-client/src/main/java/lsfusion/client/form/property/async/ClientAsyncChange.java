@@ -12,7 +12,7 @@ import java.io.Serializable;
 
 public class ClientAsyncChange extends ClientAsyncFormExec implements Serializable {
 
-    public int propertyID;
+    public int[] propertyIDs;
 
     public Serializable value;
 
@@ -23,14 +23,12 @@ public class ClientAsyncChange extends ClientAsyncFormExec implements Serializab
     public ClientAsyncChange(DataInputStream inStream) throws IOException {
         super(inStream);
 
-        this.propertyID = inStream.readInt();
+        int size = inStream.readInt();
+        propertyIDs = new int[size];
+        for(int i=0;i<size;i++)
+            propertyIDs[i] = inStream.readInt();
         this.value = (Serializable) BaseUtils.deserializeObject(inStream);
     }
-
-    public ClientAsyncChange(int propertyID) {
-        this.propertyID = propertyID;
-    }
-
 
     @Override
     public boolean exec(ClientFormController form, EditPropertyDispatcher dispatcher, ClientPropertyDraw property, ClientGroupObjectValue columnKey, String actionSID) throws IOException {
