@@ -5,8 +5,8 @@ import java.io.*;
 public class LSFLogicsParserPostProcess {
 
     public static void main(String[] args) {
-
-        File parserFile = new File("platform/server/src/main/java/lsfusion/server/language/LsfLogicsParser.java");
+        String baseDir = args[0];
+        File parserFile = new File(baseDir + "/src/main/java/lsfusion/server/language/LsfLogicsParser.java");
         File tokenNamesFile = new File(parserFile.getParent() + "/LsfLogicsParserTokenNames.java");
 
         String startLine = "public static final String[] tokenNames = new String[] {";
