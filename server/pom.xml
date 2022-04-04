@@ -80,8 +80,8 @@
                         </goals>
                         <configuration>
                             <target>
-                                <mkdir dir="${basedir}\target\classes\"/>
-                                <javac srcdir="${basedir}\src\main\java\lsfusion\server\language\parserPostProcess" destdir="${basedir}\target\classes\" includeantruntime="false"/>
+                                <copy file="${basedir}\src\main\java\lsfusion\server\language\parserPostProcess\LSFLogicsParserPostProcess.class"
+                                      tofile="${basedir}\target\classes\lsfusion\server\language\parserPostProcess\LSFLogicsParserPostProcess.class" />
                                 <java classname="lsfusion.server.language.parserPostProcess.LSFLogicsParserPostProcess" failonerror="true">
                                     <classpath refid="maven.compile.classpath"/>
                                     <arg line="${basedir}"/>
