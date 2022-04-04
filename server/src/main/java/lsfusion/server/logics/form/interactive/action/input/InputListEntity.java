@@ -19,6 +19,7 @@ import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
+import lsfusion.server.logics.form.interactive.action.async.QuickAccess;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.property.JoinProperty;
@@ -103,7 +104,7 @@ public class InputListEntity<P extends PropertyInterface, V extends PropertyInte
     public static <X extends PropertyInterface, V extends PropertyInterface> InputContextAction<?, V> getResetAction(BaseLogicsModule baseLM, LP targetProp) {
         assert targetProp.listInterfaces.isEmpty();
         LA<X> reset = (LA<X>) baseLM.addResetAProp(targetProp);
-        return new InputContextAction<>("reset", reset.getActionOrProperty(), MapFact.EMPTYREV());
+        return new InputContextAction<>("reset", QuickAccess.DEFAULT, reset.getActionOrProperty(), MapFact.EMPTYREV());
     }
 
     public <X extends PropertyInterface> InputContextAction<?, V> getNewEditAction(BaseLogicsModule baseLM, ConcreteCustomClass baseClass, LP targetProp, FormSessionScope scope) {
@@ -118,7 +119,7 @@ public class InputListEntity<P extends PropertyInterface, V extends PropertyInte
                 BaseUtils.add(BaseUtils.add(lp, ActionOrPropertyUtils.getIntParams(lp, singleIndex, contextParams + 1)), // remapping single interface to the new object
                         singleIndex)); // replacing property with the string
 
-        return new InputContextAction<>("new", newEdit.getActionOrProperty(),
+        return new InputContextAction<>("new", QuickAccess.EMPTY, newEdit.getActionOrProperty(),
                 listInterfaces.mapSet(newEdit.listInterfaces).removeRev(singleInterface).crossJoin(mapValues));
     }
 

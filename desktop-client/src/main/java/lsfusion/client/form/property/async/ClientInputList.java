@@ -4,11 +4,11 @@ import lsfusion.client.form.property.cell.classes.controller.suggest.CompletionT
 
 public class ClientInputList {
 
-    public final String[] actions;
+    public final ClientInputListAction[] actions;
     public final ClientAsyncExec[] actionEvents;
     public final CompletionType completionType;
 
-    public ClientInputList(String[] actions, ClientAsyncExec[] actionEvents, CompletionType completionType) {
+    public ClientInputList(ClientInputListAction[] actions, ClientAsyncExec[] actionEvents, CompletionType completionType) {
         this.actions = actions;
         this.actionEvents = actionEvents;
         this.completionType = completionType;

@@ -63,6 +63,7 @@ import lsfusion.server.logics.event.Event;
 import lsfusion.server.logics.event.PrevScope;
 import lsfusion.server.logics.form.interactive.ManageSessionType;
 import lsfusion.server.logics.form.interactive.UpdateType;
+import lsfusion.server.logics.form.interactive.action.async.QuickAccess;
 import lsfusion.server.logics.form.interactive.action.change.ActionObjectSelector;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.action.expand.ExpandCollapseGroupObjectAction;
@@ -1059,7 +1060,7 @@ public abstract class LogicsModule {
             // the order will / have to be the same as in formAction itself
             return addInputAProp(form.getBaseClass(inputObject), inputProp, false, listInterfaces,
                     // getting inputList entity with all filters
-                    mappedList.result, scope, inputFilter, ListFact.toList(new InputContextAction<>("dialog", formImplement.action, formImplement.mapping)), customChangeFunction, contextInput); // // adding dialog action (no string parameter, but extra parameters)
+                    mappedList.result, scope, inputFilter, ListFact.toList(new InputContextAction<>("dialog", QuickAccess.DEFAULT, formImplement.action, formImplement.mapping)), customChangeFunction, contextInput); // // adding dialog action (no string parameter, but extra parameters)
         }
 
         resultAction = new LA<>(formImplement.action, listInterfaces.mapOrder(formImplement.mapping.reverse()));

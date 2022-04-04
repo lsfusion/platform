@@ -27,9 +27,7 @@ import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
-import lsfusion.gwt.client.form.property.async.GAsyncInput;
-import lsfusion.gwt.client.form.property.async.GAsyncEventExec;
-import lsfusion.gwt.client.form.property.async.GInputList;
+import lsfusion.gwt.client.form.property.async.*;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.classes.view.FormatCellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
@@ -47,6 +45,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import static lsfusion.gwt.client.base.EscapeUtils.escapeLineBreakHTML;
@@ -117,11 +116,18 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public static class QuickAccessAction implements CellRenderer.ToolbarAction {
         public final String action;
         public final int index;
-        public final boolean hover;
+        public final List<GQuickAccess> quickAccessList;
 
         @Override
         public boolean isHover() {
-            return hover;
+            return true;
+            /*int hoverCount = 0;
+            for(GQuickAccess quickAccess :  quickAccessList) {
+                if(quickAccess.hover) {
+                    hoverCount++;
+                }
+            }
+            return hoverCount == quickAccessList.size();*/
         }
 
         @Override
@@ -142,10 +148,10 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
             return index == ((QuickAccessAction) action).index;
         }
 
-        public QuickAccessAction(String action, int index, boolean hover) {
+        public QuickAccessAction(String action, int index, List<GQuickAccess> quickAccessList) {
             this.action = action;
             this.index = index;
-            this.hover = hover;
+            this.quickAccessList = quickAccessList;
         }
     }
 
@@ -174,24 +180,42 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     }
 
     private QuickAccessAction[] calculateQuickAccessActions(boolean isSelected, boolean isFocused) {
-        if(!isSelected)
-            return new QuickAccessAction[0];
-
         GInputList inputList = getInputList();
+
         QuickAccessAction[] actions;
         if(inputList != null) {
             int actionsCount = 0;
-            for(int i = 0; i < inputList.actions.length ; i++)
-                if(true)// inputList.quickAccesses[i]) check for selected / focused all, selected, selected + focused
+            for (int i = 0; i < inputList.actions.length; i++) {
+                if (enabledQuickAccessAction(inputList.actions[i].quickAccessList, isSelected, isFocused))
                     actionsCount++;
+            }
             actions = new QuickAccessAction[actionsCount];
             int j = 0;
-            for(int i = 0; i < inputList.actions.length ; i++)
-                if(true)// inputList.quickAccesses[i]) check for selected / focused all, selected, selected + focused
-                    actions[j++] = new QuickAccessAction(inputList.actions[i], i, true);
+            for(int i = 0; i < inputList.actions.length ; i++) {
+                GInputListAction action = inputList.actions[i];
+                if (enabledQuickAccessAction(inputList.actions[i].quickAccessList, isSelected, isFocused)) {
+                    actions[j++] = new QuickAccessAction(action.action, i, action.quickAccessList);
+                }
+            }
         } else
             actions = new QuickAccessAction[0];
         return actions;
+    }
+
+    private boolean enabledQuickAccessAction(List<GQuickAccess> quickAccessList, boolean isSelected, boolean isFocused) {
+        if(quickAccessList.isEmpty())
+            return true;
+        for (GQuickAccess quickAccess : quickAccessList) {
+            switch (quickAccess.mode) {
+                case ALL:
+                    return true;
+                case SELECTED:
+                    if (isSelected) return true;
+                case FOCUSED:
+                    if (isSelected && isFocused) return true;
+            }
+        }
+        return false;
     }
 
     public GAsyncEventExec getAsyncEventExec(String actionSID) {

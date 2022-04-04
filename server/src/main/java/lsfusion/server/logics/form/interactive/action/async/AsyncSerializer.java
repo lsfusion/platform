@@ -1,8 +1,5 @@
 package lsfusion.server.logics.form.interactive.action.async;
 
-import lsfusion.base.BaseUtils;
-import lsfusion.interop.form.remote.serialization.SerializationUtil;
-
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -25,9 +22,33 @@ public class AsyncSerializer {
     }
 
     public static void serializeInputList(InputList inputList, DataOutputStream dataStream) throws IOException {
-        SerializationUtil.serializeArray(dataStream, inputList.actions);
+        dataStream.write(inputList.actions.length);
+        for(InputListAction action : inputList.actions) {
+            dataStream.writeUTF(action.action);
+            dataStream.write(action.quickAccessList.size());
+            for(QuickAccess quickAccess : action.quickAccessList) {
+                dataStream.writeByte(serializeQuickAccessMode(quickAccess.mode));
+                dataStream.writeBoolean(quickAccess.hover);
+            }
+        }
         for(AsyncExec actionAsync : inputList.actionAsyncs)
             AsyncSerializer.serializeEventExec(actionAsync, dataStream);
         dataStream.writeBoolean(inputList.strict);
+    }
+
+    public static int serializeQuickAccessMode(QuickAccessMode quickAccessMode) {
+            if (quickAccessMode == null) {
+                return 0;
+            } else {
+                switch (quickAccessMode) {
+                    case ALL:
+                        return 1;
+                    case SELECTED:
+                        return 2;
+                    case FOCUSED:
+                        return 3;
+                }
+            }
+        throw new UnsupportedOperationException();
     }
 }

@@ -10,6 +10,7 @@ import lsfusion.client.base.view.ClientImages;
 import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.async.ClientInputList;
+import lsfusion.client.form.property.async.ClientInputListAction;
 import lsfusion.client.form.property.cell.classes.controller.suggest.BasicComboBoxUI;
 import lsfusion.client.form.property.cell.classes.controller.suggest.CompletionType;
 import lsfusion.client.form.property.cell.controller.PropertyTableCellEditor;
@@ -48,7 +49,7 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
     private String actionSID;
     private boolean hasList;
     private CompletionType completionType;
-    private String[] actions;
+    private ClientInputListAction[] actions;
 
     private EventObject editEvent;
 
@@ -315,7 +316,7 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
 
                             for (int i = 0; i < actions.length; i++) {
                                 int index = i;
-                                SuggestPopupButton button = new SuggestPopupButton(ClientImages.get(actions[index] + ".png"), e -> {
+                                SuggestPopupButton button = new SuggestPopupButton(ClientImages.get(actions[index].action + ".png"), e -> {
                                     asyncChange.setContextAction(index);
                                     tableEditor.stopCellEditing();
                                     asyncChange.setContextAction(null);

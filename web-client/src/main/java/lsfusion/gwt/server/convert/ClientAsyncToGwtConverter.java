@@ -7,6 +7,9 @@ import lsfusion.gwt.client.form.property.cell.classes.controller.suggest.GComple
 import lsfusion.gwt.client.navigator.window.GWindowFormType;
 import lsfusion.interop.form.WindowFormType;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class ClientAsyncToGwtConverter extends ObjectConverter {
     private static final class InstanceHolder {
         private static final ClientAsyncToGwtConverter instance = new ClientAsyncToGwtConverter();
@@ -24,10 +27,39 @@ public class ClientAsyncToGwtConverter extends ObjectConverter {
     @Cached
     @Converter(from = ClientInputList.class)
     public GInputList convertInputList(ClientInputList inputList) {
+        GInputListAction[] inputListActions = new GInputListAction[inputList.actions.length];
+        for(int i = 0; i < inputList.actions.length;i++) {
+            inputListActions[i] = convertOrCast(inputList.actions[i]);
+        }
         GAsyncExec[] actionAsyncs = new GAsyncExec[inputList.actionEvents.length];
         for(int i=0;i<inputList.actionEvents.length;i++)
             actionAsyncs[i] = convertOrCast(inputList.actionEvents[i]);
-        return new GInputList(inputList.actions, actionAsyncs, convertOrCast(inputList.completionType));
+        return new GInputList(inputListActions, actionAsyncs, convertOrCast(inputList.completionType));
+    }
+
+    @Cached
+    @Converter(from = ClientInputListAction.class)
+    public GInputListAction convertInputListAction(ClientInputListAction clientInputListAction) {
+        ArrayList<GQuickAccess> quickAccessList = new ArrayList<>();
+        for(int i = 0; i < clientInputListAction.quickAccessList.size(); i++) {
+            quickAccessList.add(convertOrCast(clientInputListAction.quickAccessList.get(i)));
+        }
+        return new GInputListAction(clientInputListAction.action, quickAccessList);
+    }
+
+    @Converter(from = ClientQuickAccess.class)
+    public GQuickAccess convertQuickAccess(ClientQuickAccess quickAccess) {
+        return new GQuickAccess(convertOrCast(quickAccess.mode), quickAccess.hover);
+    }
+
+    @Converter(from = ClientQuickAccessMode.class)
+    public GQuickAccessMode convertQuickAccessMode(ClientQuickAccessMode quickAccess) {
+        switch (quickAccess) {
+            case ALL: return GQuickAccessMode.ALL;
+            case SELECTED: return GQuickAccessMode.SELECTED;
+            case FOCUSED: return GQuickAccessMode.FOCUSED;
+        }
+        return null;
     }
 
     @Cached

@@ -14,6 +14,7 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.form.interactive.action.async.AsyncExec;
 import lsfusion.server.logics.form.interactive.action.async.InputList;
+import lsfusion.server.logics.form.interactive.action.async.InputListAction;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapInput;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
 import lsfusion.server.logics.property.Property;
@@ -94,7 +95,7 @@ public class InputAction extends SystemExplicitAction {
 
     private InputList getInputList() {
         return new InputList(
-                contextActions.mapListValues(value -> value.image).toArray(new String[contextActions.size()]),
+                contextActions.mapListValues(value -> new InputListAction(value.image, value.quickAccessList)).toArray(new InputListAction[contextActions.size()]),
                 contextActions.mapListValues(InputContextAction::getAsyncExec).toArray(new AsyncExec[contextActions.size()]),
                 !(valueClass instanceof DataClass));
     }

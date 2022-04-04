@@ -21,6 +21,7 @@ import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.event.GMouseStroke;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.async.GInputList;
+import lsfusion.gwt.client.form.property.async.GInputListAction;
 import lsfusion.gwt.client.form.property.cell.classes.controller.suggest.GCompletionType;
 import lsfusion.gwt.client.form.property.cell.classes.controller.suggest.SuggestBox;
 import lsfusion.gwt.client.form.property.cell.classes.controller.suggest.TextBox;
@@ -46,7 +47,7 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
 
     boolean hasList;
     GCompletionType completionType;
-    String[] actions;
+    GInputListAction[] actions;
     CustomSuggestBox suggestBox = null;
 
     public TextBasedCellEditor(EditManager editManager, GPropertyDraw property) {
@@ -493,7 +494,7 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
                         validateAndCommit(suggestBox.getElement(), index, true, CommitReason.OTHER);
                     }
                 };
-                GwtClientUtils.setThemeImage(actions[index] + ".png", (image -> actionButton.getUpFace().setImage(new Image(image))));
+                GwtClientUtils.setThemeImage(actions[index].action + ".png", (image -> actionButton.getUpFace().setImage(new Image(image))));
                 buttonsPanel.add(actionButton);
             }
 

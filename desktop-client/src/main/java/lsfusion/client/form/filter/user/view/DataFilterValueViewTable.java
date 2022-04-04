@@ -10,6 +10,7 @@ import lsfusion.client.form.object.table.controller.TableController;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.async.ClientAsyncExec;
 import lsfusion.client.form.property.async.ClientInputList;
+import lsfusion.client.form.property.async.ClientInputListAction;
 import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
 import lsfusion.client.form.property.cell.classes.controller.suggest.CompletionType;
 import lsfusion.client.form.property.cell.controller.PropertyTableCellEditor;
@@ -312,7 +313,7 @@ class DataFilterValueViewTable extends TableWidget implements TableTransferHandl
     }
 
     public void changeInputList(Compare compare) {
-        inputList = new ClientInputList(new String[0],
+        inputList = new ClientInputList(new ClientInputListAction[0],
                 new ClientAsyncExec[0],
                 compare == Compare.EQUALS || compare == Compare.NOT_EQUALS ? CompletionType.SEMI_STRICT : CompletionType.NON_STRICT);
     }

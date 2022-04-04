@@ -1,11 +1,12 @@
 package lsfusion.client.form.property.async;
 
 import lsfusion.client.form.property.cell.classes.controller.suggest.CompletionType;
-import lsfusion.interop.form.remote.serialization.SerializationUtil;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ClientAsyncSerializer {
 
@@ -29,9 +30,20 @@ public class ClientAsyncSerializer {
     }
 
     public static ClientInputList deserializeInputList(DataInputStream inStream) throws IOException {
-        String[] actions = SerializationUtil.deserializeArray(inStream);
+        int actionsLength = inStream.readByte();
+        ClientInputListAction[] actions = new ClientInputListAction[actionsLength];
+        for (int i = 0; i < actionsLength; i++) {
+            String action = inStream.readUTF();
+            int quickAccessLength = inStream.readByte();
+            List<ClientQuickAccess> quickAccessList = new ArrayList<>();
+            for (int j = 0; j < quickAccessLength; j++) {
+                quickAccessList.add(new ClientQuickAccess(deserializeQuickAccessMode(inStream), inStream.readBoolean()));
+            }
+            actions[i] = new ClientInputListAction(action, quickAccessList);
+        }
+
         ClientAsyncExec[] actionAsyncs = new ClientAsyncExec[actions.length];
-        for(int i=0;i<actions.length;i++)
+        for (int i = 0; i < actionsLength; i++)
             actionAsyncs[i] = (ClientAsyncExec) deserializeEventExec(inStream);
         return new ClientInputList(actions, actionAsyncs, inStream.readBoolean() ? CompletionType.STRICT : CompletionType.NON_STRICT);
     }
@@ -40,5 +52,20 @@ public class ClientAsyncSerializer {
         if(array == null)
             return null;
         return deserializeInputList(new DataInputStream(new ByteArrayInputStream(array)));
+    }
+
+    public static ClientQuickAccessMode deserializeQuickAccessMode(DataInputStream inStream) throws IOException {
+        byte type = inStream.readByte();
+        switch (type) {
+            case 0:
+                return null;
+            case 1:
+                return ClientQuickAccessMode.ALL;
+            case 2:
+                return ClientQuickAccessMode.SELECTED;
+            case 3:
+                return ClientQuickAccessMode.FOCUSED;
+        }
+        throw new UnsupportedOperationException();
     }
 }

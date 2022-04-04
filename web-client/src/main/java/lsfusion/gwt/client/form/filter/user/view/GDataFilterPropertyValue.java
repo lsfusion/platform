@@ -8,6 +8,7 @@ import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.async.GAsyncExec;
 import lsfusion.gwt.client.form.property.async.GInputList;
+import lsfusion.gwt.client.form.property.async.GInputListAction;
 import lsfusion.gwt.client.form.property.cell.classes.controller.suggest.GCompletionType;
 import lsfusion.gwt.client.form.property.cell.controller.CancelReason;
 import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
@@ -133,7 +134,7 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
     }
 
     public void changeInputList(GCompare compare) {
-        inputList = new GInputList(new String[0],
+        inputList = new GInputList(new GInputListAction[0],
                 new GAsyncExec[0],
                 compare == GCompare.EQUALS || compare == GCompare.NOT_EQUALS ? GCompletionType.SEMI_STRICT : GCompletionType.NON_STRICT);
     }
