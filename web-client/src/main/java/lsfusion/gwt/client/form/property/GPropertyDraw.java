@@ -116,18 +116,11 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public static class QuickAccessAction implements CellRenderer.ToolbarAction {
         public final String action;
         public final int index;
-        public final List<GQuickAccess> quickAccessList;
+        public final boolean hover;
 
         @Override
         public boolean isHover() {
-            return true;
-            /*int hoverCount = 0;
-            for(GQuickAccess quickAccess :  quickAccessList) {
-                if(quickAccess.hover) {
-                    hoverCount++;
-                }
-            }
-            return hoverCount == quickAccessList.size();*/
+            return hover;
         }
 
         @Override
@@ -148,10 +141,10 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
             return index == ((QuickAccessAction) action).index;
         }
 
-        public QuickAccessAction(String action, int index, List<GQuickAccess> quickAccessList) {
+        public QuickAccessAction(String action, int index, boolean hover) {
             this.action = action;
             this.index = index;
-            this.quickAccessList = quickAccessList;
+            this.hover = hover;
         }
     }
 
@@ -194,12 +187,31 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
             for(int i = 0; i < inputList.actions.length ; i++) {
                 GInputListAction action = inputList.actions[i];
                 if (enabledQuickAccessAction(inputList.actions[i].quickAccessList, isSelected, isFocused)) {
-                    actions[j++] = new QuickAccessAction(action.action, i, action.quickAccessList);
+                    actions[j++] = new QuickAccessAction(action.action, i, !notHover(inputList.actions[i].quickAccessList, isSelected, isFocused));
                 }
             }
         } else
             actions = new QuickAccessAction[0];
         return actions;
+    }
+
+    private boolean notHover(List<GQuickAccess> quickAccessList, boolean isSelected, boolean isFocused) {
+        if(quickAccessList.isEmpty())
+            return true;
+        for (GQuickAccess quickAccess : quickAccessList) {
+            switch (quickAccess.mode) {
+                case ALL:
+                    if(!quickAccess.hover)
+                        return true;
+                case SELECTED:
+                    if (isSelected && !quickAccess.hover)
+                        return true;
+                case FOCUSED:
+                    if (isSelected && isFocused && !quickAccess.hover)
+                        return true;
+            }
+        }
+        return false;
     }
 
     private boolean enabledQuickAccessAction(List<GQuickAccess> quickAccessList, boolean isSelected, boolean isFocused) {
