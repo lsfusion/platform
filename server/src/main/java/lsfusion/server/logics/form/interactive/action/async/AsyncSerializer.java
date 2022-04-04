@@ -25,30 +25,25 @@ public class AsyncSerializer {
         dataStream.write(inputList.actions.length);
         for(InputListAction action : inputList.actions) {
             dataStream.writeUTF(action.action);
+            AsyncSerializer.serializeEventExec(action.asyncExec, dataStream);
             dataStream.write(action.quickAccessList.size());
             for(QuickAccess quickAccess : action.quickAccessList) {
                 dataStream.writeByte(serializeQuickAccessMode(quickAccess.mode));
                 dataStream.writeBoolean(quickAccess.hover);
             }
         }
-        for(AsyncExec actionAsync : inputList.actionAsyncs)
-            AsyncSerializer.serializeEventExec(actionAsync, dataStream);
         dataStream.writeBoolean(inputList.strict);
     }
 
     public static int serializeQuickAccessMode(QuickAccessMode quickAccessMode) {
-            if (quickAccessMode == null) {
+        switch (quickAccessMode) {
+            case ALL:
                 return 0;
-            } else {
-                switch (quickAccessMode) {
-                    case ALL:
-                        return 1;
-                    case SELECTED:
-                        return 2;
-                    case FOCUSED:
-                        return 3;
-                }
-            }
+            case SELECTED:
+                return 1;
+            case FOCUSED:
+                return 2;
+        }
         throw new UnsupportedOperationException();
     }
 }

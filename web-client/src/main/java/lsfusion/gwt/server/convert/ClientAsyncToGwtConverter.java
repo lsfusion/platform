@@ -31,10 +31,7 @@ public class ClientAsyncToGwtConverter extends ObjectConverter {
         for(int i = 0; i < inputList.actions.length;i++) {
             inputListActions[i] = convertOrCast(inputList.actions[i]);
         }
-        GAsyncExec[] actionAsyncs = new GAsyncExec[inputList.actionEvents.length];
-        for(int i=0;i<inputList.actionEvents.length;i++)
-            actionAsyncs[i] = convertOrCast(inputList.actionEvents[i]);
-        return new GInputList(inputListActions, actionAsyncs, convertOrCast(inputList.completionType));
+        return new GInputList(inputListActions, convertOrCast(inputList.completionType));
     }
 
     @Cached
@@ -44,7 +41,7 @@ public class ClientAsyncToGwtConverter extends ObjectConverter {
         for(int i = 0; i < clientInputListAction.quickAccessList.size(); i++) {
             quickAccessList.add(convertOrCast(clientInputListAction.quickAccessList.get(i)));
         }
-        return new GInputListAction(clientInputListAction.action, quickAccessList);
+        return new GInputListAction(clientInputListAction.action, convertOrCast(clientInputListAction.asyncExec), quickAccessList);
     }
 
     @Converter(from = ClientQuickAccess.class)

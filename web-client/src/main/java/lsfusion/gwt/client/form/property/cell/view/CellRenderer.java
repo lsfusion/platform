@@ -274,7 +274,6 @@ public abstract class CellRenderer<T> {
 
             if(loading) {
                 ImageElement loadingImage = Document.get().createImageElement();
-                loadingImage.addClassName("property-toolbar-item"); // setting paddings
                 GwtClientUtils.setThemeImage(ICON_LOADING, loadingImage::setSrc);
 
                 addToToolbar(toolbarElement, start, loadingImage);

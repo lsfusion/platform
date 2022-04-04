@@ -95,8 +95,7 @@ public class InputAction extends SystemExplicitAction {
 
     private InputList getInputList() {
         return new InputList(
-                contextActions.mapListValues(value -> new InputListAction(value.image, value.quickAccessList)).toArray(new InputListAction[contextActions.size()]),
-                contextActions.mapListValues(InputContextAction::getAsyncExec).toArray(new AsyncExec[contextActions.size()]),
+                contextActions.mapListValues(value -> new InputListAction(value.image, value.getAsyncExec(), value.quickAccessList)).toArray(new InputListAction[contextActions.size()]),
                 !(valueClass instanceof DataClass));
     }
 

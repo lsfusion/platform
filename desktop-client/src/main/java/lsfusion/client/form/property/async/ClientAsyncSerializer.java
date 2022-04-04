@@ -34,18 +34,16 @@ public class ClientAsyncSerializer {
         ClientInputListAction[] actions = new ClientInputListAction[actionsLength];
         for (int i = 0; i < actionsLength; i++) {
             String action = inStream.readUTF();
+            ClientAsyncExec asyncExec = (ClientAsyncExec) deserializeEventExec(inStream);
             int quickAccessLength = inStream.readByte();
             List<ClientQuickAccess> quickAccessList = new ArrayList<>();
             for (int j = 0; j < quickAccessLength; j++) {
                 quickAccessList.add(new ClientQuickAccess(deserializeQuickAccessMode(inStream), inStream.readBoolean()));
             }
-            actions[i] = new ClientInputListAction(action, quickAccessList);
+            actions[i] = new ClientInputListAction(action, asyncExec, quickAccessList);
         }
 
-        ClientAsyncExec[] actionAsyncs = new ClientAsyncExec[actions.length];
-        for (int i = 0; i < actionsLength; i++)
-            actionAsyncs[i] = (ClientAsyncExec) deserializeEventExec(inStream);
-        return new ClientInputList(actions, actionAsyncs, inStream.readBoolean() ? CompletionType.STRICT : CompletionType.NON_STRICT);
+        return new ClientInputList(actions, inStream.readBoolean() ? CompletionType.STRICT : CompletionType.NON_STRICT);
     }
 
     public static ClientInputList deserializeInputList(byte[] array) throws IOException {
@@ -58,12 +56,10 @@ public class ClientAsyncSerializer {
         byte type = inStream.readByte();
         switch (type) {
             case 0:
-                return null;
-            case 1:
                 return ClientQuickAccessMode.ALL;
-            case 2:
+            case 1:
                 return ClientQuickAccessMode.SELECTED;
-            case 3:
+            case 2:
                 return ClientQuickAccessMode.FOCUSED;
         }
         throw new UnsupportedOperationException();

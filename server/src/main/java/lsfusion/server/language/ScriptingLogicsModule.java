@@ -2239,7 +2239,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                 ListFact.fromJavaList(actionImages).mapListValues((i, actionImage) -> {
                     LAWithParams action = actions.get(i);
                     return(splitAPParams(action, contextSize, usedInterfaces, value -> 0, (property, mapValues, mapExternal) ->
-                            new InputContextAction(actionImage, quickAccesses.get(i), action.getLP().action, mapValues))); //todo: тут передавать
+                            new InputContextAction(actionImage, quickAccesses.get(i), action.getLP().action, mapValues)));
                 }));
     }
 

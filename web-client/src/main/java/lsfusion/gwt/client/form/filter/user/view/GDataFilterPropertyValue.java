@@ -135,7 +135,6 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
 
     public void changeInputList(GCompare compare) {
         inputList = new GInputList(new GInputListAction[0],
-                new GAsyncExec[0],
                 compare == GCompare.EQUALS || compare == GCompare.NOT_EQUALS ? GCompletionType.SEMI_STRICT : GCompletionType.NON_STRICT);
     }
 

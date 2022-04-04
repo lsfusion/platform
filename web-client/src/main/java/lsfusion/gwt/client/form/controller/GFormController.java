@@ -1080,7 +1080,7 @@ public class GFormController implements EditManager {
     private void asyncCommit(Event event, EditContext editContext, GInputList inputList, GUserInputResult value, Long requestIndex) {
         Integer contextAction = value.getContextAction();
         if (contextAction != null/* && requestIndex.result >= 0*/) {
-            GAsyncExec actionAsync = inputList.actionAsyncs[contextAction];
+            GAsyncExec actionAsync = inputList.actions[contextAction].asyncExec;
             if (actionAsync != null)
                 actionAsync.exec(getAsyncFormController(requestIndex), formsController, event, editContext, GFormController.this);
         }

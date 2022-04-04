@@ -314,7 +314,6 @@ class DataFilterValueViewTable extends TableWidget implements TableTransferHandl
 
     public void changeInputList(Compare compare) {
         inputList = new ClientInputList(new ClientInputListAction[0],
-                new ClientAsyncExec[0],
                 compare == Compare.EQUALS || compare == Compare.NOT_EQUALS ? CompletionType.SEMI_STRICT : CompletionType.NON_STRICT);
     }
 
