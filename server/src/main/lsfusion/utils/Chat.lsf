@@ -10,14 +10,10 @@ TABLE chatCustomUser(Chat, CustomUser);
 
 EXTEND CLASS UserRole : Chat;
 
-initQuillJS INTERNAL CLIENT 'input-quill.js';
-initQuillCSS INTERNAL CLIENT 'input-quill.css';
 initChatJS INTERNAL CLIENT 'chat.js';
 initChatCSS INTERNAL CLIENT 'chat.css';
 
-onWebClientStarted() + {
-    initQuillJS();
-    initQuillCSS();
+onWebClientLoad() + {
     initChatJS();
     initChatCSS();
 }
