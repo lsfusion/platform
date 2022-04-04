@@ -45,6 +45,7 @@ import lsfusion.interop.action.ServerResponse;
 import java.io.Serializable;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -110,7 +111,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     }
 
     public GGroupObjectValue filterColumnKeys(GGroupObjectValue fullCurrentKey) {
-        return fullCurrentKey.filterIncl(columnGroupObjects);
+        return fullCurrentKey.filterIncl(columnGroupObjects != null ? columnGroupObjects : Collections.emptyList());
     }
 
     public static class QuickAccessAction implements CellRenderer.ToolbarAction {

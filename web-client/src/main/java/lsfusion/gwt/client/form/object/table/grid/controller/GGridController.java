@@ -32,7 +32,6 @@ import lsfusion.gwt.client.form.view.Column;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Optional;
 
 public class GGridController extends GAbstractTableController {
     private final ClientMessages messages = ClientMessages.Instance.get();
@@ -666,10 +665,10 @@ public class GGridController extends GAbstractTableController {
     }
 
     @Override
-    public Optional<Object> setValueAt(GPropertyDraw property, GGroupObjectValue fullCurrentKey, Object value) {
+    public Pair<GGroupObjectValue, Object> setLoadingValueAt(GPropertyDraw property, GGroupObjectValue fullCurrentKey, Object value) {
         if(table instanceof GGridTable) {
             GGridTable gridTable = (GGridTable) table;
-            return gridTable.setValueAt(property, fullCurrentKey, value);
+            return gridTable.setLoadingValueAt(property, fullCurrentKey, value);
         }
         return null;
     }

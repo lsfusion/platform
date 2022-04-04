@@ -23,7 +23,6 @@ import lsfusion.gwt.client.form.view.Column;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Optional;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.isShowing;
 
@@ -92,8 +91,8 @@ public class GTreeGroupController extends GAbstractTableController {
     }
 
     @Override
-    public Optional<Object> setValueAt(GPropertyDraw property, GGroupObjectValue fullCurrentKey, Object value) {
-        return tree.setValueAt(property, fullCurrentKey, value);
+    public Pair<GGroupObjectValue, Object> setLoadingValueAt(GPropertyDraw property, GGroupObjectValue fullCurrentKey, Object value) {
+        return tree.setLoadingValueAt(property, fullCurrentKey, value);
     }
 
     @Override

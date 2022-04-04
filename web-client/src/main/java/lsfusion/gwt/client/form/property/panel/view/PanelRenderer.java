@@ -97,9 +97,9 @@ public abstract class PanelRenderer {
         value.setFocus(true);
     }
 
-    public Optional<Object> setValue(Object value) {
-        Object oldValue  = this.value.getValue();
-        this.value.setValue(value);
-        return Optional.of(oldValue);
+    public Object setLoadingValue(Object value) {
+        Object oldValue = this.value.getValue();
+        this.value.setLoadingValue(value);
+        return oldValue;
     }
 }

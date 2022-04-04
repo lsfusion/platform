@@ -1,9 +1,7 @@
 package lsfusion.gwt.client.form.property.async;
 
 import com.google.gwt.user.client.Event;
-import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.form.controller.GFormController;
-import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 
 import java.io.Serializable;
@@ -29,7 +27,7 @@ public class GAsyncChange extends GAsyncFormExec {
         long requestIndex = formController.asyncExecutePropertyEventAction(actionSID, editContext, event, null);
 
         for(int propertyID : propertyIDs)
-            formController.setValueAt(propertyID, editContext.getFullKey(), value, requestIndex);
+            formController.setLoadingValueAt(propertyID, editContext.getFullKey(), value, requestIndex);
 
         onExec.accept(requestIndex);
     }

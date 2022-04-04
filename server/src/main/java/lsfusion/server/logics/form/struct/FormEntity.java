@@ -572,16 +572,24 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return ((ImOrderSet<PropertyDrawEntity>)getPropertyDrawsList()).filterOrder(element -> element.isProperty() && element.getIntegrationSID() != null && element != logMessagePropertyDraw);
     }
 
+    // assumes that there is an equals check for a PropertyObjectEntity
+    @IdentityLazy
     public <X extends PropertyInterface, T extends PropertyInterface> ImList<PropertyDrawEntity> findChangedProperties(PropertyObjectEntity<X> changeProp, boolean toNull) {
-        MList<PropertyDrawEntity> mProps = ListFact.mList();
+        MList<PropertyDrawEntity> mProps = null;
         for(PropertyDrawEntity property : getPropertyDrawsList()) {
-            PropertyObjectEntity<T> valueProperty = property.getValueProperty();
-            if(Property.depends(valueProperty.property, changeProp.property) && // optimization
+            PropertyObjectEntity<T> valueProperty;
+            if(property.isProperty() &&
+                Property.depends((valueProperty = property.getValueProperty()).property, changeProp.property) && // optimization
                 changeProp.mapping.valuesSet().containsAll(valueProperty.mapping.valuesSet()) &&
-                valueProperty.property.isChangedWhen(toNull, changeProp.property, valueProperty.mapping.crossValuesRev(changeProp.mapping)))
-                    mProps.add(property);
+                valueProperty.property.isChangedWhen(toNull, changeProp.property, valueProperty.mapping.crossValuesRev(changeProp.mapping))) {
+                if(mProps == null)
+                    mProps = ListFact.mList();
+                mProps.add(property);
+            }
         }
-        return mProps.immutableList();
+        if(mProps != null)
+            return mProps.immutableList();
+        return null;
     }
 
     public static class PropMetaExternal {

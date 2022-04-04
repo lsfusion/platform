@@ -887,14 +887,20 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         setValueAt(property, rowRecord, value);
     }
 
-    public Optional<Object> setValueAt(GPropertyDraw property, GGroupObjectValue fullCurrentKey, Object value) {
-        GTreeGridRecord rowRecord = getRowValue(getRowByKeyOptimistic(treeGroup.filterRowKeys(property.groupObject, fullCurrentKey)));
+    public Pair<GGroupObjectValue, Object> setLoadingValueAt(GPropertyDraw property, GGroupObjectValue fullCurrentKey, Object value) {
+        GGroupObjectValue propertyRowKey = treeGroup.filterRowKeys(property.groupObject, fullCurrentKey);
+        int row = getRowByKeyOptimistic(propertyRowKey);
+        if(row < 0)
+            return null;
+
+        GTreeGridRecord rowRecord = getRowValue(row);
 
         Object oldValue = rowRecord.getValue(property);
 
+        setLoadingAt(property, rowRecord);
         setValueAt(property, rowRecord, value);
 
-        return Optional.of(oldValue);
+        return new Pair<>(propertyRowKey, oldValue);
     }
 
     private void setValueAt(GPropertyDraw property, GTreeGridRecord rowRecord, Object value) {
@@ -909,6 +915,10 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         GPropertyDraw property = getProperty(cell);
         // assert property is not null since we want get here if property is null
 
+        setLoadingAt(property, rowRecord);
+    }
+
+    private void setLoadingAt(GPropertyDraw property, GTreeGridRecord rowRecord) {
         rowRecord.setLoading(property, true);
         NativeHashMap<GGroupObjectValue, Object> loadingMap = tree.loadings.get(property);
         if(loadingMap == null) {

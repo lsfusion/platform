@@ -1343,13 +1343,15 @@ public class GFormController implements EditManager {
         getPropertyController(propertyDraw).focusProperty(propertyDraw);
     }
 
-    public void setValueAt(int propertyID, GGroupObjectValue fullKey, Serializable value, long requestIndex) {
+    public void setLoadingValueAt(int propertyID, GGroupObjectValue fullKey, Serializable value, long requestIndex) {
         GPropertyDraw property = getProperty(propertyID);
         GGroupObjectValue fullCurrentKey = getFullCurrentKey(property, fullKey);
-        Optional<Object> oldValue = getPropertyController(property).setValueAt(property, fullCurrentKey, value);
+        Pair<GGroupObjectValue, Object> propertyCell = getPropertyController(property).setLoadingValueAt(property, fullCurrentKey, value);
 
-        if(oldValue != null)
-            pendingChangeProperty(property, fullKey, value, oldValue.get(), true, requestIndex);
+        if(propertyCell != null) {
+            pendingChangeProperty(property, propertyCell.first, value, propertyCell.second, true, requestIndex);
+            pendingLoadingProperty(property, propertyCell.first, requestIndex);
+        }
     }
 
     private Map<Integer, Integer> getTabMap(TabbedContainerView containerView, GContainer component) {
@@ -2216,8 +2218,13 @@ public class GFormController implements EditManager {
         GPropertyDraw property = editContext.getProperty();
         GGroupObjectValue rowKey = property.isList ? editContext.getRowKey() : GGroupObjectValue.EMPTY; // because for example in custom renderer editContext can be not the currentKey
 
-        putToDoubleNativeMap(pendingLoadingPropertyRequests, property, GGroupObjectValue.getFullKey(rowKey, editContext.getColumnKey()), requestIndex);
+        pendingLoadingProperty(property, GGroupObjectValue.getFullKey(rowKey, editContext.getColumnKey()), requestIndex);
     }
+
+    private void pendingLoadingProperty(GPropertyDraw property, GGroupObjectValue fullKey, long requestIndex) {
+        putToDoubleNativeMap(pendingLoadingPropertyRequests, property, fullKey, requestIndex);
+    }
+
     public void setLoading(GFilterConditionView filterView, long requestIndex) {
 
         // RERENDER IF NEEDED : we have the previous state

@@ -23,7 +23,7 @@ public class AsyncChange extends AsyncFormExec {
         outStream.writeInt(properties.size());
         for(PropertyDrawEntity property : properties)
             outStream.writeInt(property.getID());
-        BaseUtils.serializeObject(value);
+        BaseUtils.serializeObject(outStream, value);
     }
 
     @Override

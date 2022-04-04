@@ -24,6 +24,7 @@ import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.action.session.changed.OldProperty;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
+import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapChange;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.property.CalcType;
 import lsfusion.server.logics.property.Property;
@@ -203,5 +204,10 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
     @Override
     public <X extends PropertyInterface> boolean mapChangedWhen(boolean toNull, Property<X> changeProperty, ImRevMap<P, X> changeMapping) {
         return false;
+    }
+
+    @Override
+    public <X extends PropertyInterface> AsyncMapChange<X, P> mapAsyncChange(PropertyMapImplement<X, P> writeTo) {
+        return new AsyncMapChange<>(writeTo, null, (P)this);
     }
 }

@@ -19,7 +19,6 @@ import lsfusion.gwt.client.form.property.panel.view.PanelRenderer;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.isShowing;
 
@@ -243,7 +242,8 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
         this.images = images;
     }
 
-    public Optional<Object> setValueAt(GGroupObjectValue fullCurrentKey, Object value) {
-        return renderers.get(property.filterColumnKeys(fullCurrentKey)).setValue(value);
+    public Pair<GGroupObjectValue, Object> setLoadingValueAt(GGroupObjectValue fullCurrentKey, Object value) {
+        GGroupObjectValue propertyColumnKey = property.filterColumnKeys(fullCurrentKey);
+        return new Pair<>(propertyColumnKey, renderers.get(propertyColumnKey).setLoadingValue(value));
     }
 }

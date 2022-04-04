@@ -20,18 +20,25 @@ public class AsyncMapChange<X extends PropertyInterface, T extends PropertyInter
 
     public final PropertyMapImplement<X, T> property;
 
+    public final T valueInterface;
     public final Serializable value;
 
-    public AsyncMapChange(PropertyMapImplement<X, T> property, Serializable value) {
+    public AsyncMapChange(PropertyMapImplement<X, T> property, Serializable value, T valueInterface) {
         this.property = property;
         this.value = value;
+        this.valueInterface = valueInterface;
+        assert valueInterface == null || value == null;
     }
 
     @Override
     public AsyncEventExec map(ImRevMap<T, ObjectEntity> mapObjects, FormEntity form, GroupObjectEntity toDraw) {
+        if(valueInterface != null)
+            return null;
+
         ImList<PropertyDrawEntity> changedProps = form.findChangedProperties(property.mapEntityObjects(mapObjects), value == null);
         if(changedProps != null)
             return new AsyncChange(changedProps, value);
+
         return null;
     }
 
@@ -42,22 +49,38 @@ public class AsyncMapChange<X extends PropertyInterface, T extends PropertyInter
 
     @Override
     public <P extends PropertyInterface> AsyncMapEventExec<P> map(ImRevMap<T, P> mapping) {
-        return new AsyncMapChange<>(property.map(mapping), value);
+        PropertyMapImplement<X, P> mappedProperty = property.map(mapping);
+        if (valueInterface != null)
+            return new AsyncMapChange<>(mappedProperty, null, mapping.get(valueInterface));
+        else
+            return new AsyncMapChange<>(mappedProperty, value, null);
     }
 
     @Override
     public <P extends PropertyInterface> AsyncMapEventExec<P> mapInner(ImRevMap<T, P> mapping) {
         PropertyMapImplement<X, P> mappedProperty = property.mapInner(mapping);
-        if(mappedProperty != null)
-            return new AsyncMapChange<>(mappedProperty, value);
+        if(mappedProperty != null) {
+            if(valueInterface != null) {
+                P mappedValueInterface = mapping.get(valueInterface);
+                if(mappedValueInterface != null)
+                    return new AsyncMapChange<>(mappedProperty, null, mappedValueInterface);
+            } else
+                return new AsyncMapChange<>(mappedProperty, value, null);
+        }
         return null;
     }
 
     @Override
     public <P extends PropertyInterface> AsyncMapEventExec<P> mapJoin(ImMap<T, PropertyInterfaceImplement<P>> mapping) {
         PropertyMapImplement<X, P> mappedProperty = property.mapJoin(mapping);
-        if(mappedProperty != null)
-            return new AsyncMapChange<>(mappedProperty, value);
+        if(mappedProperty != null) {
+            if(valueInterface != null) {
+                PropertyInterfaceImplement<P> mappedValueInterface = mapping.get(valueInterface);
+                if(mappedValueInterface != null)
+                    return mappedValueInterface.mapAsyncChange(mappedProperty);
+            } else
+                return new AsyncMapChange<>(mappedProperty, value, null);
+        }
         return null;
     }
 

@@ -185,9 +185,11 @@ public class SetAction<P extends PropertyInterface, W extends PropertyInterface,
     @Override
     protected AsyncMapEventExec<PropertyInterface> calculateAsyncEventExec(boolean optimistic, boolean recursive) {
         if((where == null || where.property instanceof ValueProperty) &&
-                writeFrom instanceof PropertyMapImplement && ((PropertyMapImplement<?, ?>) writeFrom).property instanceof StaticValueProperty &&
                 mapInterfaces.valuesSet().containsAll(writeTo.mapping.valuesSet())) {
-            return new AsyncMapChange<>(writeTo.map(mapInterfaces.reverse()), (Serializable) ((StaticValueProperty) ((PropertyMapImplement<?, ?>) writeFrom).property).getStaticValue());
+            // it can be mapped because of the assertion mapInterfaces.values + writeTo.values contains all inner interfaces
+            AsyncMapChange<P, I> asyncChange = writeFrom.mapAsyncChange(writeTo);
+            if(asyncChange != null)
+                return asyncChange.map(mapInterfaces.reverse());
         }
         return null;
     }

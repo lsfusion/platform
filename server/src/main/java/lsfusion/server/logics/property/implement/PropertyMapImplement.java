@@ -26,6 +26,7 @@ import lsfusion.server.logics.action.session.changed.OldProperty;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
 import lsfusion.server.logics.event.PrevScope;
+import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapChange;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInstance;
@@ -43,7 +44,9 @@ import lsfusion.server.logics.property.classes.infer.*;
 import lsfusion.server.logics.property.data.DataProperty;
 import lsfusion.server.logics.property.oraction.ActionOrPropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
+import lsfusion.server.logics.property.value.StaticValueProperty;
 
+import java.io.Serializable;
 import java.sql.SQLException;
 
 public class PropertyMapImplement<P extends PropertyInterface, T extends PropertyInterface> extends PropertyRevImplement<P, T> implements PropertyInterfaceImplement<T> {
@@ -273,6 +276,13 @@ public class PropertyMapImplement<P extends PropertyInterface, T extends Propert
     @Override
     public <X extends PropertyInterface> boolean mapChangedWhen(boolean toNull, Property<X> changeProperty, ImRevMap<T, X> changeMapping) {
          return property.isChangedWhen(toNull, changeProperty, mapping.join(changeMapping));
+    }
+
+    @Override
+    public <X extends PropertyInterface> AsyncMapChange<X, T> mapAsyncChange(PropertyMapImplement<X, T> writeTo) {
+        if(property instanceof StaticValueProperty)
+            return new AsyncMapChange<>(writeTo, (Serializable) ((StaticValueProperty) property).getStaticValue(), null);
+        return null;
     }
 
     public <C extends PropertyInterface> PropertyMapImplement<P, C> mapInner(ImRevMap<T, C> map) {

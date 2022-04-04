@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form.object.table.controller;
 
+import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.view.GFormLayout;
@@ -7,7 +8,6 @@ import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.*;
 
 import java.util.ArrayList;
-import java.util.Optional;
 
 public abstract class GPropertyController {
 
@@ -37,5 +37,5 @@ public abstract class GPropertyController {
     public abstract void updateProperty(GPropertyDraw property, ArrayList<GGroupObjectValue> columnKeys, boolean updateKeys, NativeHashMap<GGroupObjectValue, Object> values);
     public abstract void removeProperty(GPropertyDraw property);
 
-    public abstract Optional<Object> setValueAt(GPropertyDraw property, GGroupObjectValue fullCurrentKey, Object value);
+    public abstract Pair<GGroupObjectValue, Object> setLoadingValueAt(GPropertyDraw property, GGroupObjectValue fullCurrentKey, Object value);
 }
