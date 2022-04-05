@@ -557,7 +557,7 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
         var myIcon = L.divIcon({
             html: "<img class=\"" + (filterStyle ? filterStyle : "") + "\" src=" + iconUrl + " alt=\"\" tabindex=\"0\" " +
                 @lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder::COLUMN_ATTRIBUTE + "=\"true\" " +
-                @lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder::IGNORE_DBLCLICK_CHECK + "=\"true\">",
+                @lsfusion.gwt.client.view.MainFrame::IGNORE_DBLCLICK_CHECK + "=\"true\">",
             className: ''
         });
         marker.setIcon(myIcon);
