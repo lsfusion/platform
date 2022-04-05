@@ -13,7 +13,6 @@ import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.ClientMessages;
-import lsfusion.gwt.client.action.GReportAction;
 import lsfusion.gwt.client.base.view.PopupDialogPanel;
 import lsfusion.gwt.client.view.MainFrame;
 
@@ -63,17 +62,18 @@ public class GwtClientUtils {
 
     public static void downloadFile(String name, String displayName, String extension, boolean autoPrint) {
         if (name != null) {
-            String fileUrl = getDownloadURL(name, displayName, extension, true);
+            JavaScriptObject window = openWindow(getDownloadURL(name, displayName, extension, true));
             if (autoPrint)
-                newWindowPrint(fileUrl);
-            else
-                Window.open(fileUrl, "_blank", ""); // displayName != null ? displayName : name
+                print(window);
         }
     }
 
-    public static native void newWindowPrint(String fileUrl)/*-{
-        var window = $wnd.open(fileUrl);
-        window.onload = function () { window.print(); }
+    public static native JavaScriptObject openWindow(String url)/*-{
+        return $wnd.open(url);
+    }-*/;
+
+    public static native void print(JavaScriptObject window)/*-{
+            window.onload = function () { window.print(); }
         window.onafterprint = function () { window.close(); }
     }-*/;
 

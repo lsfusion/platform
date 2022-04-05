@@ -18,7 +18,6 @@ import lsfusion.client.form.ClientForm;
 import lsfusion.client.form.classes.view.ClassDialog;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.controller.remote.proxy.RemoteFormProxy;
-import lsfusion.client.form.print.ClientReportUtils;
 import lsfusion.client.form.view.ClientFormDockable;
 import lsfusion.client.form.view.ClientModalForm;
 import lsfusion.client.navigator.controller.AsyncFormController;
@@ -49,6 +48,7 @@ import java.util.Arrays;
 import java.util.EventObject;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -292,7 +292,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
         Integer pageCount = null;
         try {
             if (action.printType == FormPrintType.AUTO) {
-                ClientReportUtils.autoprintReport(action.generationData, action.printerName);
+                Executors.newSingleThreadExecutor().submit(new ServerPrintAction(action.generationData, action.printerName));
             } else if (action.printType != FormPrintType.PRINT) {
                 int editChoice = JOptionPane.NO_OPTION;
                 if (action.inDevMode && action.reportPathList.isEmpty()) {

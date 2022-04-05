@@ -5,6 +5,7 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.interop.action.LogMessageClientAction;
 import lsfusion.interop.action.ReportClientAction;
 import lsfusion.interop.action.ReportPath;
+import lsfusion.interop.action.ServerPrintAction;
 import lsfusion.interop.form.print.FormPrintType;
 import lsfusion.interop.form.print.ReportGenerationData;
 import lsfusion.interop.form.print.ReportGenerator;
@@ -31,6 +32,7 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executors;
 
 public class PrintAction<O extends ObjectSelector> extends FormStaticAction<O, FormPrintType> {
 
@@ -45,6 +47,7 @@ public class PrintAction<O extends ObjectSelector> extends FormStaticAction<O, F
     private final boolean removeNullsAndDuplicates; // print message
 
     protected final LP<?> exportFile; // nullable
+    private boolean server;
 
     private static ValueClass[] getExtraParams(ValueClass printer, ValueClass sheetName, ValueClass password) {
         List<ValueClass> params = new ArrayList<>();
@@ -63,6 +66,7 @@ public class PrintAction<O extends ObjectSelector> extends FormStaticAction<O, F
                        ImOrderSet<PropertyInterface> orderContextInterfaces,
                        ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters,
                        FormPrintType staticType,
+                       boolean server,
                        boolean syncType,
                        Integer top,
                        LP exportFile,
@@ -82,6 +86,7 @@ public class PrintAction<O extends ObjectSelector> extends FormStaticAction<O, F
         this.removeNullsAndDuplicates = removeNullsAndDuplicates;
         
         this.exportFile = exportFile;
+        this.server = server;
     }
 
     @Override
@@ -104,13 +109,15 @@ public class PrintAction<O extends ObjectSelector> extends FormStaticAction<O, F
             String sheetName = sheetNameInterface != null ? (String) context.getKeyObject(sheetNameInterface) : null;
             String password = passwordInterface != null ? (String) context.getKeyObject(passwordInterface) : null;
 
-            if (exportFile != null)
+            //printer and sheet/password options doesn't intersect
+            String printer = printerInterface != null ? (String)context.getKeyObject(printerInterface) : null;
+            if (server) {
+                Executors.newSingleThreadExecutor().submit(new ServerPrintAction(reportData, printer));
+            } else if (exportFile != null)
                 //on the app-server the jasper classes should already be loaded, so remoteLogic is null
                 writeResult(exportFile, staticType, context, ReportGenerator.exportToFileByteArray(reportData, staticType, sheetName, password, null));
             else {
                 String formCaption = staticType == FormPrintType.PRINT ? formReportManager.readFormCaption() : null;
-                //printer and sheet/password options doesn't intersect
-                String printer = printerInterface != null ? (String)context.getKeyObject(printerInterface) : null;
                 List<ReportPath> customReportPathList = SystemProperties.inDevMode && form.isNamed() && context.getBL().findForm(form.getCanonicalName()) != null ? formReportManager.getCustomReportPathList(staticType) : new ArrayList<>(); // checking that form is not in script, etc.
                 Integer pageCount = (Integer) context.requestUserInteraction(new ReportClientAction(customReportPathList, formCaption, form.getSID(), syncType, reportData, staticType, printer, SystemProperties.inDevMode, password, sheetName));
                 formPageCount.change(pageCount, context);

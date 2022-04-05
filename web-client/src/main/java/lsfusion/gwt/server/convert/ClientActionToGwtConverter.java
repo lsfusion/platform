@@ -129,7 +129,7 @@ public class ClientActionToGwtConverter extends ObjectConverter {
     @Converter(from = ReportClientAction.class)
     public GReportAction convertAction(ReportClientAction action, final MainDispatchServlet servlet) throws IOException {
         boolean autoPrint = action.printType.isAutoPrint();
-        Pair<String, String> report = FileUtils.exportReport(autoPrint ? FormPrintType.HTML : action.printType,
+        Pair<String, String> report = FileUtils.exportReport(autoPrint ? FormPrintType.HTML : action.printType, //We can not append any script to the PDF window because it is from MIME type "application/pdf" and detect the print events only for HTML-documents
                 action.generationData, servlet.getNavigatorProvider().getRemoteLogics());
         return new GReportAction(report.first, report.second, autoPrint);
     }
