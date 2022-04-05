@@ -55,7 +55,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder.IGNORE_DBLCLICK_CHECK;
+import static lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder.*;
 
 // scope - every single tab (not browser) even for static
 public class MainFrame implements EntryPoint {
@@ -195,10 +195,16 @@ public class MainFrame implements EntryPoint {
                 lastClickedTarget = target;
             }
         if(GMouseStroke.isDblClickEvent(event)) {
+            if(ignoreDblClickAfterClick(lastClickedTarget))
+                return false;
             if(beforeLastClickedTarget != null && lastClickedTarget != null && target == lastClickedTarget && beforeLastClickedTarget != lastClickedTarget && noIgnoreDblClickCheck(lastClickedTarget))
                 return false;
         }
         return true;
+    }
+
+    private static boolean ignoreDblClickAfterClick(Element element) {
+        return GwtClientUtils.getParentWithAttribute(element, IGNORE_DBLCLICK_AFTER_CLICK) != null;
     }
 
     //lastClickedTarget and beforeLastClickedTarget can be not equal if we change element at first click
