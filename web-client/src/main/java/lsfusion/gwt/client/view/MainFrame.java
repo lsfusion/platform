@@ -55,7 +55,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder.IGNORE_DBLCLICK_CHECK;
+import static lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder.*;
 
 // scope - every single tab (not browser) even for static
 public class MainFrame implements EntryPoint {
@@ -195,11 +195,34 @@ public class MainFrame implements EntryPoint {
                 lastClickedTarget = target;
             }
         if(GMouseStroke.isDblClickEvent(event)) {
+            if(lastClickedTarget != null && ignoreDblClickAfterClick(lastClickedTarget))
+                return false;
             if(beforeLastClickedTarget != null && lastClickedTarget != null && target == lastClickedTarget && beforeLastClickedTarget != lastClickedTarget && noIgnoreDblClickCheck(lastClickedTarget))
                 return false;
         }
         return true;
     }
+
+    //if we process two single clicks, we don't want to process double click
+    public static final String IGNORE_DBLCLICK_AFTER_CLICK = "__ignore_dblclick_after_click";
+
+    public static void preventDblClickAfterClick(Element element) {
+        element.setAttribute(IGNORE_DBLCLICK_AFTER_CLICK, "true");
+
+        new Timer() {
+            @Override
+            public void run() {
+                element.removeAttribute(IGNORE_DBLCLICK_AFTER_CLICK);
+            }
+        }.schedule(500);
+    }
+
+    private static boolean ignoreDblClickAfterClick(Element element) {
+        return GwtClientUtils.getParentWithAttribute(element, IGNORE_DBLCLICK_AFTER_CLICK) != null;
+    }
+
+    //we change element at first click and should process dblclick
+    public static final String IGNORE_DBLCLICK_CHECK = "__ignore_dblclick_check";
 
     //lastClickedTarget and beforeLastClickedTarget can be not equal if we change element at first click
     private static boolean noIgnoreDblClickCheck(Element element) {
