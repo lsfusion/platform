@@ -69,7 +69,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         if(!DataGrid.checkSinkEvents(event))
             return;
 
-        form.onPropertyBrowserEvent(new EventHandler(event), getCellParent(target), getElement(),
+        form.onPropertyBrowserEvent(new EventHandler(event), null, getCellParent(target), getElement(),
                 handler -> {}, // no outer context
                 handler -> {}, // no edit
                 handler -> {}, // no outer context

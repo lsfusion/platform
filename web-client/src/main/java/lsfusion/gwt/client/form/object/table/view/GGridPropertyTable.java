@@ -505,7 +505,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     }
 
     public <C> void onBrowserEvent(Cell cell, Event event, Column<T, C> column, TableCellElement parent) {
-        form.onPropertyBrowserEvent(new EventHandler(event), parent, getTableDataFocusElement(),
+        form.onPropertyBrowserEvent(new EventHandler(event), getSelectedProperty(), parent, getTableDataFocusElement(),
                 handler -> selectionHandler.onCellBefore(handler, cell, rowChanged -> isChangeOnSingleClick(cell, (Boolean) rowChanged)),
                 handler -> column.onEditEvent(handler, cell, parent),
                 handler -> selectionHandler.onCellAfter(handler, cell),

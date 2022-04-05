@@ -166,7 +166,7 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
         if(eventHandler.consumed)
             return;
 
-        form.onPropertyBrowserEvent(eventHandler, getRenderElement(), getFocusElement(),
+        form.onPropertyBrowserEvent(eventHandler, null, getRenderElement(), getFocusElement(),
                 handler -> {}, // no outer context
                 this::onEditEvent,
                 handler -> {}, // no outer context
