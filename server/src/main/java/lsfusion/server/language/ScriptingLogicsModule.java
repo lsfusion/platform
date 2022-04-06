@@ -2242,6 +2242,16 @@ public class ScriptingLogicsModule extends LogicsModule {
                 }));
     }
 
+    private ContextInput getInputDoContextInput(LAWithParams doAction) {
+        // this targetProp will be used in doAction
+        return new ContextInput() {
+            @Override
+            public boolean isNotNull() {
+                return false;
+            }
+        };
+    }
+
     public LAWithParams addScriptedInputAProp(ValueClass requestValueClass, LPWithParams oldValue, NamedPropertyUsage targetProp, LAWithParams doAction, LAWithParams elseAction,
                                               List<TypedParameter> oldContext, List<TypedParameter> newContext, boolean assign, boolean constraintFilter, LPWithParams changeProp,
                                               LPWithParams listProp, LPWithParams whereProp, List<String> actionImages, List<LAWithParams> actions,
@@ -2258,6 +2268,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         if(assign && doAction == null) // we will need to add change props, temporary will make this action empty to avoid extra null checks 
             doAction = new LAWithParams(baseLM.getEmpty(), new ArrayList<Integer>());
 
+        ContextInput contextInput = getInputDoContextInput(doAction);
+
         LA action;
         ImOrderSet<Integer> usedParams;
         if(requestValueClass instanceof CustomClass) {
@@ -2271,7 +2283,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                     whereProp != null ? ListFact.singleton(whereProp) : ListFact.EMPTY(), listProp, cccfs);
             usedParams = contextEntities.usedParams;            
             
-            action = addDialogInputAProp(classForm, tprop, classForm.virtualObject, oldValue != null, contextEntities.orderInterfaces, listScope, contextEntities.list, contextEntities.filters, customEditorFunction);
+            action = addDialogInputAProp(classForm, tprop, classForm.virtualObject, oldValue != null, contextEntities.orderInterfaces, listScope, contextEntities.list, contextEntities.filters, customEditorFunction, contextInput);
         } else {
             // optimization. we don't use files on client side (see also DefaultChangeAction.executeCustom())
             if (oldValue != null && requestValueClass instanceof FileClass)
@@ -2280,7 +2292,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             ILEWithParams contextEntity = getContextListEntity(oldContext.size(), listProp, whereProp, actionImages, actions);
             usedParams = contextEntity.usedParams;
 
-            action = addInputAProp(requestValueClass, tprop, oldValue != null, contextEntity.orderInterfaces, contextEntity.list, listScope, contextEntity.where, contextEntity.contextActions, customEditorFunction);
+            action = addInputAProp(requestValueClass, tprop, oldValue != null, contextEntity.orderInterfaces, contextEntity.list, listScope, contextEntity.where, contextEntity.contextActions, customEditorFunction, contextInput);
         }
         
         List<LPWithParams> mapping = new ArrayList<>();
@@ -3543,12 +3555,14 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         boolean syncType = doAction != null || elseAction != null; // optimization
 
+        ContextInput contextInput = getInputDoContextInput(doAction);
+
         LA action = addDialogInputAProp(mapped.form, objects, mNulls.immutableList(),
                                  inputObjects, inputProps, inputNulls, scope, contextEntities.list,
                                  manageSession, noCancel,
                                  contextEntities.orderInterfaces, contextEntities.filters,
                                  syncType, windowType, checkOnOk,
-                                 readonly, null);
+                                 readonly, null, contextInput);
 
         for (int usedParam : contextEntities.usedParams) {
             mapping.add(new LPWithParams(usedParam));

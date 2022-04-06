@@ -409,7 +409,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
         if (super.isNotNull()) {
             return true;
         }
-        if (implement.mapping.size() == 1 && implement.mapping instanceof PropertyMapImplement) {
+        if (implement.mapping.size() == 1 && implement.mapping.singleValue() instanceof PropertyMapImplement) {
             return ((PropertyMapImplement) implement.mapping.singleValue()).property.isNotNull();    
         }
         return false;

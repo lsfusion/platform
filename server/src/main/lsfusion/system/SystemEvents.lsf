@@ -7,6 +7,17 @@ onClientStarted ABSTRACT LIST ();
 onDesktopClientStarted  ABSTRACT LIST ( );
 onWebClientStarted  ABSTRACT LIST ( );
 
+onWebClientLoad ABSTRACT LIST ();
+onWebClientStarted () +{ 
+    onWebClientLoad();
+
+    initQuillJS();
+    initQuillCSS();
+    
+    initOptionJS();
+    initOptionCSS();
+}
+
 CLASS ABSTRACT Exception '{system.events.exception}';
 CLASS ClientException '{system.events.client.exception}' : Exception;
 CLASS WebClientException '{system.events.web.client.exception}' : ClientException;

@@ -58,7 +58,7 @@ public class InputAction extends SystemExplicitAction {
 
         this.valueClass = valueClass;
         this.targetProp = targetProp;
-        assert targetProp != null;
+        assert targetProp != null && targetProp.listInterfaces.isEmpty();
         this.customChangeFunction = customChangeFunction;
 
         ImOrderSet<ClassPropertyInterface> orderInterfaces = getOrderInterfaces();

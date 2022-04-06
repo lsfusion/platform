@@ -14,6 +14,7 @@ import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BaseLogicsModule;
+import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.classes.ValueClass;
@@ -44,6 +45,16 @@ public class ObjectEntity extends IdentityObject implements OrderEntity<Property
                : baseClass != null && !BaseUtils.isRedundantString(baseClass.toString())
                  ? create(baseClass.toString())
                  : create("{logics.undefined.object}");
+    }
+
+    public LogicsModule.ContextInput getContextInput() {
+        // targetProp is used for seeking object
+        return new LogicsModule.ContextInput() {
+            @Override
+            public boolean isNotNull() {
+                return false;
+            }
+        };
     }
 
     public ValueClass baseClass;

@@ -40,11 +40,6 @@ public abstract class AbstractDataGridBuilder<T> {
      */
     private static final String ROW_ATTRIBUTE = "__gwt_row";
 
-    /**
-     * We change element at first click and should process dblclick
-     */
-    public static final String IGNORE_DBLCLICK_CHECK = "__ignore_dblclick_check";
-
     protected final DataGrid<T> cellTable;
 
     /**

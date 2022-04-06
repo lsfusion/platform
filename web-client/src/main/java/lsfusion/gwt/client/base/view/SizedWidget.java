@@ -18,15 +18,23 @@ public class SizedWidget {
     }
 
     private void add(FlexPanel panel, GFlexAlignment alignment, double flex, boolean shrink) {
+        add(panel, panel.getWidgetCount(), alignment, flex, shrink);
+    }
+
+    private void add(FlexPanel panel, int beforeIndex, GFlexAlignment alignment, double flex, boolean shrink) {
         boolean vertical = panel.isVertical();
 
         panel.setOppositeSize(widget, vertical ? width : height, alignment);
 
-        panel.add(widget, alignment, flex, shrink, vertical ? height : width);
+        panel.add(widget, beforeIndex, alignment, flex, shrink, vertical ? height : width);
     }
 
     public void addFill(FlexPanel panel) {
         add(panel, GFlexAlignment.STRETCH, 1, true);
+    }
+
+    public void addFill(FlexPanel panel, int beforeIndex) {
+        add(panel, beforeIndex, GFlexAlignment.STRETCH, 1, true);
     }
 
     public void add(FlexPanel panel, GFlexAlignment alignment) {

@@ -6,6 +6,7 @@ import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.controller.KeepCellEditor;
 import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
+import lsfusion.gwt.client.view.MainFrame;
 
 public class LogicalCellEditor implements KeepCellEditor {
 
@@ -20,6 +21,8 @@ public class LogicalCellEditor implements KeepCellEditor {
 
     @Override
     public void start(Event editEvent, Element parent, Object oldValue) {
+        MainFrame.preventDblClickAfterClick(parent);
+
         Boolean nextValue = getNextValue(oldValue, threeState);
         Object value = threeState ? nextValue : (nextValue != null && nextValue ? true : null);
         editManager.commitEditing(new GUserInputResult(value), CommitReason.OTHER);

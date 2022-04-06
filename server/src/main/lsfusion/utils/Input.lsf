@@ -1,0 +1,16 @@
+MODULE Input;
+
+REQUIRE SystemEvents;
+
+initQuillJS INTERNAL CLIENT 'input-quill.js';
+initQuillCSS INTERNAL CLIENT 'input-quill.css';
+
+initInput INTERNAL CLIENT 'input.js';
+
+onWebClientLoad() +{ 
+    initQuillJS();
+    initQuillCSS();
+
+    initInput();
+}
+
