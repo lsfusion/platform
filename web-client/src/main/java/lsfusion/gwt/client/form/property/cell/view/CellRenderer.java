@@ -285,17 +285,19 @@ public abstract class CellRenderer<T> {
 
                 int hoverCount = 0;
                 for (ToolbarAction toolbarAction : toolbarActions) {
-                    ImageElement actionElement = Document.get().createImageElement();
-                    actionElement.addClassName("property-toolbar-item"); // setting paddings
+                    DivElement actionDivElement = Document.get().createDivElement();
+                    ImageElement actionImgElement = Document.get().createImageElement();
+                    actionDivElement.appendChild(actionImgElement);
+                    actionDivElement.addClassName("property-toolbar-item"); // setting paddings
                     if (toolbarAction.isHover()) {
-                        actionElement.addClassName("hide");
+                        actionDivElement.addClassName("hide");
                         hoverCount++;
                     }
-                    GwtClientUtils.setThemeImage(toolbarAction.getImage() + ".png", actionElement::setSrc);
+                    GwtClientUtils.setThemeImage(toolbarAction.getImage() + ".png", actionImgElement::setSrc);
 
-                    GwtClientUtils.setOnClick(actionElement, () -> toolbarAction.onClick(updateContext, value));
+                    GwtClientUtils.setOnClick(actionDivElement, () -> toolbarAction.onClick(updateContext, value));
 
-                    addToToolbar(toolbarElement, start, actionElement);
+                    addToToolbar(toolbarElement, start, actionDivElement);
                 }
 
                 if (hoverCount > 0) {

@@ -103,13 +103,18 @@
 
 .property-toolbar-item {
     /*overflow: hidden;*/
-    padding: 1px 2px;
+    padding: 2px;
     border: 1px solid transparent;
     border-radius: var(--button-border-radius);
+
+    /*stretch self and center image inside*/
+    display: flex;
+    align-self: stretch;
+    align-items: center;
 }
 
 .property-toolbar-item:hover {
-    border: 1px solid var(--component-hover-border-color);
+    background-color: var(--button-hover-background-color);
 }
 
 .dataGridHeaderCell-caption {

@@ -180,8 +180,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
             for (int i = 0; i < inputList.actions.length; i++) {
                 List<GQuickAccess> quickAccessList = inputList.actions[i].quickAccessList;
 
-                boolean enable = quickAccessList.isEmpty();
-                boolean hover = !quickAccessList.isEmpty();
+                boolean enable = false;
+                boolean hover = true;
                 for (GQuickAccess quickAccess : quickAccessList) {
                     switch (quickAccess.mode) {
                         case ALL:
