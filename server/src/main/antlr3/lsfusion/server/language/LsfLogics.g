@@ -3372,10 +3372,11 @@ printActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
     LPWithParams sheetNameProperty = null;
     LPWithParams passwordProperty = null;
     boolean server = false;
+    boolean autoPrint = false;
 }
 @after {
 	if (inMainParseState()) {
-		$action = self.addScriptedPrintFAProp($mf.mapped, $mf.props, printType, server, $pUsage.propUsage, syncType, selectTop, printerProperty, sheetNameProperty, passwordProperty,
+		$action = self.addScriptedPrintFAProp($mf.mapped, $mf.props, printType, server, autoPrint, $pUsage.propUsage, syncType, selectTop, printerProperty, sheetNameProperty, passwordProperty,
 		                                      objectsContext, contextFilters, context);
 	}
 }
@@ -3385,18 +3386,21 @@ printActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
                  objectsContext = self.getTypedObjectsNames($mf.mapped);
         }
         (cf = contextFiltersClause[context, objectsContext] { contextFilters.addAll($cf.contextFilters); })?
-		(   ( // static - jasper
-		        type = printType [context, dynamic] { printType = $type.printType; sheetNameProperty = $type.sheetNameProperty; passwordProperty = $type.passwordProperty;}
+        (
+            ( // static - rest
+                'MESSAGE' { printType = FormPrintType.MESSAGE; }
+                (sync = syncTypeLiteral { syncType = $sync.val; })?
+                ('TOP' top = intLiteral { selectTop = $top.val; } )?
+            )
+            |
+            ( // static - interactive
+                { printType = FormPrintType.PRINT; }
+                ( // static - jasper
+                type = printType [context, dynamic] { printType = $type.printType; sheetNameProperty = $type.sheetNameProperty; passwordProperty = $type.passwordProperty;}
                 ('TO' pUsage=propertyUsage)?
-            )?
-            (   ( // static - rest
-                    'MESSAGE' { printType = FormPrintType.MESSAGE; }
-                    (sync = syncTypeLiteral { syncType = $sync.val; })?
-                    ('TOP' top = intLiteral { selectTop = $top.val; } )?
-                )
-                | { printType = FormPrintType.PRINT; } // static - interactive
-                ( 'PREVIEW' | 'NOPREVIEW' { printType = FormPrintType.AUTO; } )?
-		        (sync = syncTypeLiteral { syncType = $sync.val; })?
+                )?
+                ( 'PREVIEW' | 'NOPREVIEW' { autoPrint = true; } )?
+                (sync = syncTypeLiteral { syncType = $sync.val; })?
                 ('TO' pe = propertyExpression[context, dynamic] { printerProperty = $pe.property; })?
             )
         )

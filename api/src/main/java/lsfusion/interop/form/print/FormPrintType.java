@@ -2,8 +2,7 @@ package lsfusion.interop.form.print;
 
 
 public enum FormPrintType implements FormStaticType {
-    PRINT, // preview - interactive  
-    AUTO, // print - interactive
+    PRINT, // preview - interactive
     MESSAGE, // message - interactive
     XLSX, XLS, PDF, DOC, DOCX, HTML, RTF; // external formats - static
 
@@ -34,9 +33,5 @@ public enum FormPrintType implements FormStaticType {
             default:
                 return "pdf"; // by default exporting to pdf
         }
-    }
-
-    public boolean isAutoPrint() {
-        return this == FormPrintType.AUTO;
     }
 }

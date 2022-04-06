@@ -223,13 +223,16 @@ public class FileUtils {
         }
     }
 
-    public static Pair<String, String> exportReport(FormPrintType type, ReportGenerationData reportData, RemoteLogicsInterface remoteLogics) {
+    public static Pair<String, String> exportReport(FormPrintType type, RawFileData report) {
         try {
-            RawFileData report = ReportGenerator.exportToFileByteArray(reportData, type, remoteLogics);
             return new Pair<>(FileUtils.saveActionFile(report), type.getExtension());
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
+    }
+
+    public static Pair<String, String> exportReport(FormPrintType type, ReportGenerationData reportData, RemoteLogicsInterface remoteLogics) {
+        return exportReport(type, ReportGenerator.exportToFileByteArray(reportData, type, remoteLogics));
     }
 
     public static Pair<String, String> exportFile(RawFileData file) {

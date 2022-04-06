@@ -1,6 +1,5 @@
 package lsfusion.interop.action;
 
-import com.google.common.base.Throwables;
 import lsfusion.interop.form.print.FormPrintType;
 import lsfusion.interop.form.print.ReportGenerationData;
 import lsfusion.interop.form.print.ReportGenerator;
@@ -25,17 +24,27 @@ import javax.print.attribute.standard.SheetCollate;
 import javax.print.attribute.standard.Sides;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.function.Consumer;
 
 import static lsfusion.base.BaseUtils.nullEmpty;
 
 public class ServerPrintAction implements Runnable {
     private final ReportGenerationData generationData;
     private String printerName;
-    private final DocFlavor flavor = DocFlavor.INPUT_STREAM.AUTOSENSE;
+    private final Consumer<Exception> exceptionLogger;
+    private static final DocFlavor flavor = DocFlavor.INPUT_STREAM.AUTOSENSE;
+    private static final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
-    public ServerPrintAction(ReportGenerationData generationData, String printerName) {
+    public static void autoPrintReport(ReportGenerationData generationData, String printerName, Consumer<Exception> exceptionLogger) {
+        executorService.submit(new ServerPrintAction(generationData, printerName, exceptionLogger));
+    }
+
+    private ServerPrintAction(ReportGenerationData generationData, String printerName, Consumer<Exception> exceptionLogger) {
         this.generationData = generationData;
         this.printerName = printerName;
+        this.exceptionLogger = exceptionLogger;
     }
 
     @Override
@@ -89,7 +98,7 @@ public class ServerPrintAction implements Runnable {
 
             String copiesValue = printOptions.get("copies");
             if (copiesValue != null) {
-                Integer copies = Integer.parseInt(copiesValue);
+                int copies = Integer.parseInt(copiesValue);
                 if (copies > 0) {
                     attrSet.add(new Copies(copies));
                 }
@@ -108,7 +117,7 @@ public class ServerPrintAction implements Runnable {
 
             exporter.exportReport();
         } catch (Exception e) {
-            Throwables.propagate(e); //todo
+            exceptionLogger.accept(e);
         }
     }
 

@@ -573,10 +573,10 @@ public abstract class LogicsModule {
     }
     protected <O extends ObjectSelector> LA<?> addPFAProp(Group group, LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls,
                                                           ImOrderSet<PropertyInterface> orderContextInterfaces, ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters,
-                                                          FormPrintType staticType, boolean server, boolean syncType, Integer selectTop, LP targetProp, boolean removeNullsAndDuplicates,
+                                                          FormPrintType staticType, boolean server, boolean autoPrint, boolean syncType, Integer selectTop, LP targetProp, boolean removeNullsAndDuplicates,
                                                           ValueClass printer, ValueClass sheetName, ValueClass password) {
         return addAction(group, new LA<>(new PrintAction<>(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters,
-                staticType, server, syncType, selectTop, targetProp, baseLM.formPageCount, removeNullsAndDuplicates, printer, sheetName, password)));
+                staticType, server, syncType, autoPrint, selectTop, targetProp, baseLM.formPageCount, removeNullsAndDuplicates, printer, sheetName, password)));
     }
     protected <O extends ObjectSelector> LP addJSONFormProp(Group group, LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls,
                                                        ImOrderSet<PropertyInterface> orderContextInterfaces, ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters) {
@@ -2102,7 +2102,7 @@ public abstract class LogicsModule {
         ActionMapImplement<ClassPropertyInterface, ClassPropertyInterface> logAction;
 //            logAction = new LogPropertyActionProperty<T>(property, messageProperty).getImplement();
         //  PRINT OUT property MESSAGE NOWAIT;
-        logAction = (ActionMapImplement<ClassPropertyInterface, ClassPropertyInterface>) addPFAProp(null, LocalizedString.concat("Constraint - ", lp.property.caption), new OutFormSelector<P>((Property) lp.property, messageLP.property, properties), ListFact.EMPTY(), ListFact.EMPTY(), SetFact.EMPTYORDER(), SetFact.EMPTY(), FormPrintType.MESSAGE, false, false, 30, null, true, null, null, null).action.getImplement();
+        logAction = (ActionMapImplement<ClassPropertyInterface, ClassPropertyInterface>) addPFAProp(null, LocalizedString.concat("Constraint - ", lp.property.caption), new OutFormSelector<P>((Property) lp.property, messageLP.property, properties), ListFact.EMPTY(), ListFact.EMPTY(), SetFact.EMPTYORDER(), SetFact.EMPTY(), FormPrintType.MESSAGE, false, false, false, 30, null, true, null, null, null).action.getImplement();
         ActionMapImplement<?, ClassPropertyInterface> constraintAction =
                 PropertyFact.createListAction(
                         SetFact.EMPTY(),

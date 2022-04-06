@@ -3706,7 +3706,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public <O extends ObjectSelector> LAWithParams addScriptedPrintFAProp(MappedForm<O> mapped, List<FormActionProps> allObjectProps, FormPrintType printType,
-                                                                          boolean server, NamedPropertyUsage propUsage, Boolean syncType, Integer selectTop,
+                                                                          boolean server, boolean autoPrint, NamedPropertyUsage propUsage, Boolean syncType, Integer selectTop,
                                                                           LPWithParams printerProperty, LPWithParams sheetNameProperty, LPWithParams passwordProperty,
                                                                           List<TypedParameter> objectsContext, List<LPWithParams> contextFilters, List<TypedParameter> params) throws ScriptingErrorLog.SemanticErrorException {
         assert printType != null;
@@ -3739,7 +3739,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         CFEWithParams<O> contextEntities = getContextFilterEntities(params.size(), contextObjects, ListFact.fromJavaList(contextFilters));
 
         LA action = addPFAProp(null, LocalizedString.NONAME, mapped.form, mappedObjects, mNulls.immutableList(),
-                contextEntities.orderInterfaces, contextEntities.filters, printType, server, syncType, selectTop,
+                contextEntities.orderInterfaces, contextEntities.filters, printType, server, autoPrint, syncType, selectTop,
                 targetProp, false, printer, sheetName, password);
 
         for (int usedParam : contextEntities.usedParams) {
