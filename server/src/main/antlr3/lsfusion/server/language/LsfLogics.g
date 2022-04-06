@@ -3395,17 +3395,13 @@ printActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
             |
             ( // static - interactive
                 { printType = FormPrintType.PRINT; }
-                // static - jasper
-                ( type = printType [context, dynamic] { printType = $type.printType; sheetNameProperty = $type.sheetNameProperty; passwordProperty = $type.passwordProperty; })?
-                (
-                    ('TO' pUsage=propertyUsage)
-                    |
-                    (
-                        ( 'PREVIEW' | 'NOPREVIEW' { autoPrint = true; } )?
-                        (sync = syncTypeLiteral { syncType = $sync.val; })?
-                        ('TO' pe = propertyExpression[context, dynamic] { printerProperty = $pe.property; })?
-                    )
-                )
+                ( // static - jasper
+                    type = printType [context, dynamic] { printType = $type.printType; sheetNameProperty = $type.sheetNameProperty; passwordProperty = $type.passwordProperty;}
+                    ('TO' pUsage=propertyUsage)?
+                )?
+                ( 'PREVIEW' | 'NOPREVIEW' { autoPrint = true; } )?
+                (sync = syncTypeLiteral { syncType = $sync.val; })?
+                ('TO' pe = propertyExpression[context, dynamic] { printerProperty = $pe.property; })?
             )
         )
 	;
