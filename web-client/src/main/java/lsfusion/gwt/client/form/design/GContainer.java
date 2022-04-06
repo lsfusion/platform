@@ -197,10 +197,9 @@ public class GContainer extends GComponent {
     }
 
     private class GCaptionReader implements GPropertyReader {
-        private final String sID;
+        private String sID;
 
         public GCaptionReader() {
-            sID = "_CONTAINER_" + "CAPTION" + "_" + GContainer.this.sID;
         }
 
         @Override
@@ -212,16 +211,18 @@ public class GContainer extends GComponent {
 
         @Override
         public String getNativeSID() {
+            if(sID == null) {
+                sID = "_CONTAINER_" + "CAPTION" +  "_" + GContainer.this.sID;
+            }
             return sID;
         }
     }
     public final GPropertyReader captionReader = new GCaptionReader();
 
     private class GCustomDesignCaptionReader implements GPropertyReader {
-        private final String sID;
+        private String sID;
 
         public GCustomDesignCaptionReader() {
-            sID = "_CONTAINER_" + "CUSTOM_DESIGN" + "_" + GContainer.this.sID;
         }
 
         @Override
@@ -232,6 +233,9 @@ public class GContainer extends GComponent {
 
         @Override
         public String getNativeSID() {
+            if(sID == null) {
+                sID = "_CONTAINER_" + "CUSTOM_DESIGN" + "_" + GContainer.this.sID;
+            }
             return sID;
         }
     }
