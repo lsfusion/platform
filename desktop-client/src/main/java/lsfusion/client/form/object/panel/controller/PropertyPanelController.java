@@ -247,13 +247,13 @@ public class PropertyPanelController {
         if (background == null && cellBackgroundValues != null) {
             background = (Color) cellBackgroundValues.get(columnKey);
         }
-        view.setBackgroundColor(background);
+        view.setBackgroundColor(background == null ? property.design.background : background);
 
         Color foreground = rowForeground;
         if (foreground == null && cellForegroundValues != null) {
             foreground = (Color) cellForegroundValues.get(columnKey);
         }
-        view.setForegroundColor(foreground);
+        view.setForegroundColor(foreground == null ? property.design.foreground : foreground);
 
         if(imageValues != null) {
             RawFileData image = (RawFileData) imageValues.get(columnKey);
