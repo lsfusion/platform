@@ -5,6 +5,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.SystemUtils;
 import lsfusion.base.file.FileDialogUtils;
 import lsfusion.base.file.RawFileData;
+import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.base.exception.ClientExceptionManager;
 import lsfusion.client.base.log.Log;
@@ -18,7 +19,6 @@ import lsfusion.client.form.ClientForm;
 import lsfusion.client.form.classes.view.ClassDialog;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.controller.remote.proxy.RemoteFormProxy;
-import lsfusion.client.form.print.ClientReportUtils;
 import lsfusion.client.form.view.ClientFormDockable;
 import lsfusion.client.form.view.ClientModalForm;
 import lsfusion.client.navigator.controller.AsyncFormController;
@@ -31,6 +31,7 @@ import lsfusion.interop.form.ModalityType;
 import lsfusion.interop.form.event.EventBus;
 import lsfusion.interop.form.print.FormPrintType;
 import lsfusion.interop.form.print.ReportGenerator;
+import net.sf.jasperreports.engine.JRException;
 import org.apache.commons.io.FileUtils;
 
 import javax.sound.sampled.AudioInputStream;
@@ -42,6 +43,7 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.awt.print.PrinterAbortException;
 import java.io.*;
 import java.rmi.RemoteException;
 import java.text.DecimalFormat;
@@ -291,8 +293,13 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
     public Integer execute(ReportClientAction action) {
         Integer pageCount = null;
         try {
-            if (action.printType == FormPrintType.AUTO) {
-                ClientReportUtils.autoprintReport(action.generationData, action.printerName);
+            if (action.autoPrint) {
+                ServerPrintAction.autoPrintReport(action.generationData, action.printerName, (e) -> {
+                    if (e instanceof JRException && e.getCause() instanceof PrinterAbortException)
+                        Log.message(ClientResourceBundle.getString("form.error.print.job.aborted"), false);
+                    else
+                        ClientExceptionManager.handle(e, false);
+                    });
             } else if (action.printType != FormPrintType.PRINT) {
                 int editChoice = JOptionPane.NO_OPTION;
                 if (action.inDevMode && action.reportPathList.isEmpty()) {

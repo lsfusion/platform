@@ -6,7 +6,6 @@ import lsfusion.interop.form.event.EventBus;
 import java.io.IOException;
 import java.util.Map;
 
-// такая дебильная схема с Dispatcher'ом чтобы модульность не нарушать
 public interface ClientActionDispatcher {
 
     void execute(FormClientAction action);

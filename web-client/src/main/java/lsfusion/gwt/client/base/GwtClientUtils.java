@@ -60,12 +60,30 @@ public class GwtClientUtils {
         MainFrame.cleanRemote(() -> Window.open(GwtClientUtils.getLogoutUrl(), "_self", null), connectionLost);
     }
 
-    public static void downloadFile(String name, String displayName, String extension) {
+    public static void downloadFile(String name, String displayName, String extension, boolean autoPrint, Integer autoPrintTimeout) {
         if (name != null) {
-            String fileUrl = getDownloadURL(name, displayName, extension, true);
-            Window.open(fileUrl, "_blank", ""); // displayName != null ? displayName : name
+            JavaScriptObject window = openWindow(getDownloadURL(name, displayName, extension, true));
+            if (autoPrint)
+                print(window, autoPrintTimeout);
         }
     }
+
+    public static native JavaScriptObject openWindow(String url)/*-{
+        return $wnd.open(url);
+    }-*/;
+
+    public static native void print(JavaScriptObject window, Integer timeout)/*-{
+        window.onload = function () {
+            window.print();
+
+            //We can not append any script to the PDF window because it is from MIME type "application/pdf" and detect the print events only for HTML-documents
+            if (timeout != null)
+                setTimeout(function closeWindow() { window.close(); }, timeout);
+        }
+        window.onafterprint = function () {
+            window.close();
+        }
+    }-*/;
 
     public static String getDownloadURL(String name, String displayName, String extension, boolean actionFile) {
         return getWebAppBaseURL() + GwtSharedUtils.getDownloadURL(name, displayName, extension, actionFile);

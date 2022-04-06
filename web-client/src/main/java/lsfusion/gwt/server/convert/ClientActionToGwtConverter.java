@@ -1,6 +1,7 @@
 package lsfusion.gwt.server.convert;
 
 import lsfusion.base.Pair;
+import lsfusion.base.file.RawFileData;
 import lsfusion.base.file.WriteClientAction;
 import lsfusion.client.classes.ClientObjectClass;
 import lsfusion.client.classes.ClientTypeSerializer;
@@ -23,6 +24,8 @@ import lsfusion.interop.ProgressBar;
 import lsfusion.interop.action.*;
 import lsfusion.interop.form.ModalityType;
 import lsfusion.client.form.property.cell.ClientAsync;
+import lsfusion.interop.form.print.FormPrintType;
+import lsfusion.interop.form.print.ReportGenerator;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 import lsfusion.interop.session.ExternalHttpMethod;
 import lsfusion.interop.session.HttpClientAction;
@@ -127,8 +130,11 @@ public class ClientActionToGwtConverter extends ObjectConverter {
 
     @Converter(from = ReportClientAction.class)
     public GReportAction convertAction(ReportClientAction action, final MainDispatchServlet servlet) throws IOException {
-        Pair<String, String> report = FileUtils.exportReport(action.printType, action.generationData, servlet.getNavigatorProvider().getRemoteLogics());
-        return new GReportAction(report.first, report.second);
+        boolean autoPrint = action.autoPrint;
+        RawFileData rawFileData = ReportGenerator.exportToFileByteArray(action.generationData, action.printType, servlet.getNavigatorProvider().getRemoteLogics());
+
+        Pair<String, String> report = FileUtils.exportReport(action.printType, rawFileData);
+        return new GReportAction(report.first, report.second, autoPrint, autoPrint && action.printType != FormPrintType.HTML ? rawFileData.getLength() / 15 : null);
     }
 
     @Converter(from = RequestUserInputClientAction.class)
