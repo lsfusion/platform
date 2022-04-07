@@ -1,6 +1,8 @@
 package lsfusion.server.logics.form.struct.object;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.Pair;
+import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
@@ -26,7 +28,6 @@ import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectI
 import lsfusion.server.logics.form.open.ObjectSelector;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.order.OrderEntity;
-import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
@@ -45,16 +46,6 @@ public class ObjectEntity extends IdentityObject implements OrderEntity<Property
                : baseClass != null && !BaseUtils.isRedundantString(baseClass.toString())
                  ? create(baseClass.toString())
                  : create("{logics.undefined.object}");
-    }
-
-    public LogicsModule.ContextInput getContextInput() {
-        // targetProp is used for seeking object
-        return new LogicsModule.ContextInput() {
-            @Override
-            public boolean isNotNull() {
-                return false;
-            }
-        };
     }
 
     public ValueClass baseClass;
@@ -151,5 +142,10 @@ public class ObjectEntity extends IdentityObject implements OrderEntity<Property
     @IdentityInstanceLazy
     public StaticParamNullableExpr getParamExpr() {
         return new StaticParamNullableExpr(baseClass);
+    }
+
+    @Override
+    public ImSet<ObjectEntity> getObjects() {
+        return SetFact.singleton(this);
     }
 }

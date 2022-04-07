@@ -20,6 +20,7 @@ import lsfusion.server.logics.action.session.changed.OldProperty;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapChange;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
+import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.CalcType;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.cases.CalcCase;
@@ -69,7 +70,7 @@ public interface PropertyInterfaceImplement<P extends PropertyInterface> extends
     DataChanges mapJoinDataChanges(PropertyChange<P> change, CalcDataType type, GroupType groupType, WhereBuilder changedWhere, PropertyChanges propChanges);
 
     void fill(MSet<P> interfaces, MSet<PropertyMapImplement<?, P>> properties);
-    ImCol<P> getInterfaces();
+    ImSet<P> getInterfaces();
 
     Inferred<P> mapInferInterfaceClasses(ExClassSet commonValue, InferType inferType);
     boolean mapNeedInferredForValueClass(InferType inferType);
@@ -79,9 +80,14 @@ public interface PropertyInterfaceImplement<P extends PropertyInterface> extends
 
     AndClassSet mapValueClassSet(ClassWhere<P> interfaceClasses);
 
-    <X extends PropertyInterface> AsyncMapChange<X, P> mapAsyncChange(PropertyMapImplement<X, P> writeTo);
+    <X extends PropertyInterface> AsyncMapChange<X, P> mapAsyncChange(PropertyMapImplement<X, P> writeTo, ObjectEntity object);
 
     Graph<CalcCase<P>> mapAbstractGraph();
 
-    <X extends PropertyInterface> boolean mapChangedWhen(boolean toNull, Property<X> changeProperty, ImRevMap<P, X> changeMapping);
+    boolean mapChangedWhen(boolean toNull, PropertyInterfaceImplement<P> changeProperty);
+//    OrderEntity mapEntityObjects(ImRevMap<P, ObjectEntity> mapObjects);
+//
+//    <C extends PropertyInterface> PropertyInterfaceImplement<C> mapInner(ImRevMap<P, C> map);
+//
+//    <C extends PropertyInterface> PropertyInterfaceImplement<C> mapJoin(ImMap<P, PropertyInterfaceImplement<C>> map);
 }

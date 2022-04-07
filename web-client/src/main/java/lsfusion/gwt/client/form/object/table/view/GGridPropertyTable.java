@@ -461,6 +461,29 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         }
     }
 
+    protected Pair<GGroupObjectValue, Object> setLoadingValueAt(GPropertyDraw property, GGroupObjectValue propertyRowKey, int columnIndex, GGroupObjectValue propertyColumnKey, Object value) {
+        if(columnIndex < 0)
+            return null;
+
+        int rowIndex = getRowByKeyOptimistic(propertyRowKey);
+        if(rowIndex < 0)
+            return null;
+
+        GridPropertyColumn column = getGridColumn(columnIndex);
+        T rowRecord = getRowValue(rowIndex);
+        Cell cell = new Cell(rowIndex, columnIndex, column, rowRecord);
+
+        Object oldValue = column.getValue(property, rowRecord);
+
+        setLoadingAt(cell);
+        setValueAt(cell, value);
+
+        TableCellElement element = getElement(cell);
+        form.update(property, element, getUpdateContext(cell, element, property, column));
+
+        return new Pair<>(GGroupObjectValue.getFullKey(propertyRowKey, propertyColumnKey), oldValue);
+    }
+
     public Pair<lsfusion.gwt.client.form.view.Column, String> getSelectedColumn(GPropertyDraw property, GGroupObjectValue columnKey) {
         return new Pair<>(new lsfusion.gwt.client.form.view.Column(property, columnKey), getPropertyCaption(property, columnKey));
     }

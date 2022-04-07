@@ -2,6 +2,7 @@ package lsfusion.gwt.client.form.filter.user.view;
 
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.base.view.EventHandler;
+import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
@@ -164,5 +165,10 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
     @Override
     public CellRenderer.ToolbarAction[] getToolbarActions() {
         return filterActions;
+    }
+
+    @Override
+    public boolean canUseChangeValueForRendering(GType type) {
+        return true;
     }
 }

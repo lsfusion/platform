@@ -279,12 +279,12 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
         this.foreground = foreground;
         this.readOnly = readOnly;
 
-        // RERENDER IF NEEDED : we have the previous state
-
         update();
     }
 
-    public void update() {
+    protected void update() {
+        // RERENDER IF NEEDED : we have the previous state
+
         form.update(property, getRenderElement(), this);
     }
 }

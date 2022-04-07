@@ -1,12 +1,15 @@
 package lsfusion.server.logics.form.interactive.action.async;
 
+import lsfusion.base.col.ListFact;
+import lsfusion.base.col.interfaces.immutable.ImList;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 public class QuickAccess {
-    public static List<QuickAccess> DEFAULT = Arrays.asList(new QuickAccess(QuickAccessMode.SELECTED, true), new QuickAccess(QuickAccessMode.FOCUSED, false));
-    public static List<QuickAccess> EMPTY = Collections.emptyList();
+    public static ImList<QuickAccess> DEFAULT = ListFact.toList(new QuickAccess(QuickAccessMode.SELECTED, true), new QuickAccess(QuickAccessMode.FOCUSED, false));
+    public static ImList<QuickAccess> EMPTY = ListFact.EMPTY();
 
     public QuickAccessMode mode;
     public boolean hover;

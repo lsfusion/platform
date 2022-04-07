@@ -19,6 +19,9 @@ public abstract class AsyncMapEventExec<T extends PropertyInterface> {
     public abstract <P extends PropertyInterface> AsyncMapEventExec<P> mapJoin(ImMap<T, PropertyInterfaceImplement<P>> mapping);
 
     public abstract AsyncMapEventExec<T> merge(AsyncMapEventExec<T> input);
+    public int getMergeOptimisticPriority() { // interactive should have higher prioirty
+        return 0;
+    }
     
     public abstract AsyncEventExec map(ImRevMap<T, ObjectEntity> mapObjects, FormEntity form, GroupObjectEntity toDraw);
 }

@@ -67,6 +67,10 @@ public class ListFact {
         return ((ImList<T>)list1).addList(list2);
     }
 
+    public static <T> ImList<T> add(ImList<? extends T> list1, T element) {
+        return ((ImList<T>)list1).addList(element);
+    }
+
     public static <T, X extends T, V> ImList<V> mapList(ImList<X> list, ImMap<T, V> map) {
         return ((ImList<T>)list).mapList(map);
     }

@@ -1,12 +1,13 @@
 package lsfusion.gwt.client.form.property.cell.controller;
 
 import com.google.gwt.dom.client.Element;
+import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 
-public interface EditContext {
+public interface EditContext extends ExecContext {
 
     RenderContext getRenderContext();
     UpdateContext getUpdateContext();
@@ -36,4 +37,6 @@ public interface EditContext {
 
     default void startEditing() {}
     default void stopEditing() {}
+
+    boolean canUseChangeValueForRendering(GType type);
 }

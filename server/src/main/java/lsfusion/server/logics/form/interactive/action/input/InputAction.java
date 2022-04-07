@@ -17,6 +17,8 @@ import lsfusion.server.logics.form.interactive.action.async.InputList;
 import lsfusion.server.logics.form.interactive.action.async.InputListAction;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapInput;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
+import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapInputList;
+import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapInputListAction;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
@@ -93,9 +95,9 @@ public class InputAction extends SystemExplicitAction {
         return valueClass instanceof DataClass ? (DataClass) valueClass : fullContextList.getDataClass();
     }
 
-    private InputList getInputList() {
-        return new InputList(
-                contextActions.mapListValues(value -> new InputListAction(value.image, value.getAsyncExec(), value.quickAccessList)).toArray(new InputListAction[contextActions.size()]),
+    private AsyncMapInputList<ClassPropertyInterface> getMapInputList() {
+        return new AsyncMapInputList<ClassPropertyInterface>(
+                contextActions.mapListValues(value -> new AsyncMapInputListAction<>(value.image, value.getAsyncEventExec(), value.quickAccessList)),
                 !(valueClass instanceof DataClass));
     }
 
@@ -105,7 +107,7 @@ public class InputAction extends SystemExplicitAction {
         Object oldValue = hasOldValue ? context.getKeyObject(oldValueInterface) : null;
 
         InputListEntity<?, ClassPropertyInterface> fullContextList = getFullContextList();
-        InputResult userValue = context.inputUserData(getInputClass(fullContextList), oldValue, hasOldValue, fullContextList, customChangeFunction, getInputList());
+        InputResult userValue = context.inputUserData(getInputClass(fullContextList), oldValue, hasOldValue, fullContextList, customChangeFunction, getMapInputList().map());
 
         Integer contextAction;
         if(userValue != null && (contextAction = userValue.contextAction) != null)
@@ -126,7 +128,7 @@ public class InputAction extends SystemExplicitAction {
     public AsyncMapEventExec<ClassPropertyInterface> calculateAsyncEventExec(boolean optimistic, boolean recursive) {
         if (optimistic || oldValueInterface == null) {
             InputListEntity<?, ClassPropertyInterface> fullContextList = getFullContextList();
-            return new AsyncMapInput<>(getInputClass(fullContextList), fullContextList, getInputList(), customChangeFunction);
+            return new AsyncMapInput<>(getInputClass(fullContextList), fullContextList, getMapInputList(), customChangeFunction);
         }
         return null;
     }

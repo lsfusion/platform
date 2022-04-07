@@ -60,6 +60,7 @@ import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyClas
 import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyObjectEntity;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.data.SessionDataProperty;
+import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.implement.PropertyRevImplement;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -574,14 +575,14 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
     // assumes that there is an equals check for a PropertyObjectEntity
     @IdentityLazy
-    public <X extends PropertyInterface, T extends PropertyInterface> ImList<PropertyDrawEntity> findChangedProperties(PropertyObjectEntity<X> changeProp, boolean toNull) {
+    public <X extends PropertyInterface, T extends PropertyInterface> ImList<PropertyDrawEntity> findChangedProperties(OrderEntity<?> changeProp, boolean toNull) {
         MList<PropertyDrawEntity> mProps = null;
         for(PropertyDrawEntity property : getPropertyDrawsList()) {
             PropertyObjectEntity<T> valueProperty;
             if(property.isProperty() &&
-                Property.depends((valueProperty = property.getValueProperty()).property, changeProp.property) && // optimization
-                changeProp.mapping.valuesSet().containsAll(valueProperty.mapping.valuesSet()) &&
-                valueProperty.property.isChangedWhen(toNull, changeProp.property, valueProperty.mapping.crossValuesRev(changeProp.mapping))) {
+                (valueProperty = property.getValueProperty()).mapping.valuesSet().containsAll(changeProp.getObjects()) &&
+                (!(changeProp instanceof PropertyMapImplement) || Property.depends(valueProperty.property, ((PropertyMapImplement<?, ?>) changeProp).property)) && // optimization
+                valueProperty.property.isChangedWhen(toNull, changeProp.getImplement(valueProperty.mapping.reverse()))) {
                 if(mProps == null)
                     mProps = ListFact.mList();
                 mProps.add(property);

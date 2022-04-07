@@ -4,10 +4,10 @@ import java.util.List;
 
 public class ClientInputListAction {
     public String action;
-    public ClientAsyncExec asyncExec;
+    public ClientAsyncEventExec asyncExec;
     public List<ClientQuickAccess> quickAccessList;
 
-    public ClientInputListAction(String action, ClientAsyncExec asyncExec, List<ClientQuickAccess> quickAccessList) {
+    public ClientInputListAction(String action, ClientAsyncEventExec asyncExec, List<ClientQuickAccess> quickAccessList) {
         this.action = action;
         this.asyncExec = asyncExec;
         this.quickAccessList = quickAccessList;

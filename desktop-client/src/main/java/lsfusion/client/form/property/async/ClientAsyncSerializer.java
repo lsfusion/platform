@@ -34,7 +34,7 @@ public class ClientAsyncSerializer {
         ClientInputListAction[] actions = new ClientInputListAction[actionsLength];
         for (int i = 0; i < actionsLength; i++) {
             String action = inStream.readUTF();
-            ClientAsyncExec asyncExec = (ClientAsyncExec) deserializeEventExec(inStream);
+            ClientAsyncEventExec asyncExec = deserializeEventExec(inStream);
             int quickAccessLength = inStream.readByte();
             List<ClientQuickAccess> quickAccessList = new ArrayList<>();
             for (int j = 0; j < quickAccessLength; j++) {

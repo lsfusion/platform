@@ -1,7 +1,6 @@
 package lsfusion.server.logics.property.implement;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.Pair;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MSet;
@@ -28,12 +27,10 @@ import lsfusion.server.logics.classes.user.set.AndClassSet;
 import lsfusion.server.logics.event.PrevScope;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapChange;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
-import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
-import lsfusion.server.logics.property.JoinProperty;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.UnionProperty;
@@ -274,14 +271,14 @@ public class PropertyMapImplement<P extends PropertyInterface, T extends Propert
     }
 
     @Override
-    public <X extends PropertyInterface> boolean mapChangedWhen(boolean toNull, Property<X> changeProperty, ImRevMap<T, X> changeMapping) {
-         return property.isChangedWhen(toNull, changeProperty, mapping.join(changeMapping));
+    public boolean mapChangedWhen(boolean toNull, PropertyInterfaceImplement<T> changeProperty) {
+         return property.isChangedWhen(toNull, changeProperty.map(mapping.reverse()));
     }
 
     @Override
-    public <X extends PropertyInterface> AsyncMapChange<X, T> mapAsyncChange(PropertyMapImplement<X, T> writeTo) {
+    public <X extends PropertyInterface> AsyncMapChange<X, T> mapAsyncChange(PropertyMapImplement<X, T> writeTo, ObjectEntity object) {
         if(property instanceof StaticValueProperty)
-            return new AsyncMapChange<>(writeTo, (Serializable) ((StaticValueProperty) property).getStaticValue(), null);
+            return new AsyncMapChange<>(writeTo, object, ((StaticValueProperty) property).getStaticValue(), null);
         return null;
     }
 

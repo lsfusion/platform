@@ -79,4 +79,9 @@ public class PropertyObjectEntity<P extends PropertyInterface> extends ActionOrP
         ImRevMap<P, StaticParamNullableExpr> fixedExprs = mapping.filterFnValuesRev(value -> grid != null && !grid.getObjects().contains(value)).mapRevValues(ObjectEntity::getParamExpr);
         return property.isValueFull(fixedExprs) && property.isValueUnique(fixedExprs, false);
     }
+
+    @Override
+    public ImSet<ObjectEntity> getObjects() {
+        return mapping.valuesSet();
+    }
 }

@@ -70,14 +70,6 @@ public class InputFilterEntity<P extends PropertyInterface, V extends PropertyIn
         return property.interfaces.removeIncl(mapValues.keys()).single();
     }
 
-    public ActionMapImplement<?, V> getDefaultAsyncUpdateAction(BaseLogicsModule lm, PropertyMapImplement<?, V> targetProp) {
-        ImRevMap<P, PropertyInterfaceImplement<V>> mapIntValues = BaseUtils.immutableCast(mapValues);
-        return PropertyFact.createIfAction(SetFact.EMPTY(), PropertyFact.createNot(lm.getRequestCanceledProperty().getImplement()), // IF NOT requestCanceled()
-                PropertyFact.createJoinAction(lm.addAsyncUpdateAProp().getActionOrProperty(), // ASYNCUPDATE
-                        // list(requestedProperty(), ...)
-                        PropertyFact.createJoin(new PropertyImplement<>(property, MapFact.addExcl(mapIntValues, singleInterface(), targetProp)))), null);
-    }
-
     public <O extends ObjectSelector> ContextFilterEntity<P, V, O> getFilter(O object) {
         return new ContextFilterEntity<>(property, mapValues, MapFact.singletonRev(singleInterface(), object));
     }

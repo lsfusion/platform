@@ -89,8 +89,6 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public GType externalChangeType;
     public Map<String, GAsyncEventExec> asyncExecMap;
 
-    // custom renderers, simple state views, paste
-    public static final GType externalChangeTypeUsage = null;
     public GType getExternalChangeType() {
         return externalChangeType;
     }

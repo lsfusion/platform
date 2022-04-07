@@ -32,6 +32,7 @@ import lsfusion.gwt.client.form.object.table.view.GridDataRecord;
 import lsfusion.gwt.client.form.order.user.GGridSortableHeaderManager;
 import lsfusion.gwt.client.form.order.user.GOrder;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 
 import java.util.*;
 
@@ -893,34 +894,17 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
     // editing set value (in EditContext), changes model and value itself
     public void setValueAt(Cell cell, Object value) {
-        setValueAt(getGridColumn(cell), getGridRow(cell), value);
+        GridColumn gridColumn = getGridColumn(cell);
+        GridDataRecord gridRow = getGridRow(cell);
+
+        gridColumn.setValue(gridRow, value); // updating inner model
+
+        values.get(gridColumn.property).put(gridRow.getKey(), value); // updating outer model - controller
     }
 
     public Pair<GGroupObjectValue, Object> setLoadingValueAt(GPropertyDraw property, GGroupObjectValue fullCurrentKey, Object value) {
         GGroupObjectValue propertyColumnKey = property.filterColumnKeys(fullCurrentKey);
-        GGroupObjectValue propertyRowKey = groupObject.filterRowKeys(fullCurrentKey);
-
-        GridColumn column = getGridColumn(property, propertyColumnKey);
-        if(column == null)
-            return null;
-
-        int row = getRowByKeyOptimistic(propertyRowKey);
-        if(row < 0)
-            return null;
-        GridDataRecord rowRecord = getRowValue(row);
-
-        Object oldValue = column.getValue(rowRecord);
-
-        setLoadingAt(column, rowRecord);
-        setValueAt(column, rowRecord, value);
-
-        return new Pair<>(GGroupObjectValue.getFullKey(propertyRowKey, propertyColumnKey), oldValue);
-    }
-
-    private void setValueAt(GridColumn column, GridDataRecord rowRecord, Object value) {
-        column.setValue(rowRecord, value); // updating inner model
-
-        values.get(column.property).put(rowRecord.getKey(), value); // updating outer model - controller
+        return setLoadingValueAt(property, groupObject.filterRowKeys(fullCurrentKey), getGridColumnIndex(property, propertyColumnKey), propertyColumnKey, value);
     }
 
     @Override
@@ -928,10 +912,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         GridDataRecord rowRecord = getGridRow(cell);
         GridColumn column = getGridColumn(cell);
 
-        setLoadingAt(column, rowRecord);
-    }
-
-    private void setLoadingAt(GridColumn column, GridDataRecord rowRecord) {
         column.setLoading(rowRecord, true); // updating inner model
 
         // updating outer model - controller

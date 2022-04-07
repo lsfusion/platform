@@ -84,9 +84,15 @@ public class ActionOrPropertyPanelValue extends ActionOrPropertyValue implements
         controller.setLoading(columnKey, true);
     }
 
-    public void setLoadingValue(Object value) {
+    public Object setLoadingValue(Object value) {
+        Object oldValue = getValue();
+
         setLoading();
         setValue(value);
+
+        update();
+
+        return oldValue;
     }
 
     private boolean forceSetFocus;

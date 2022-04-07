@@ -12,6 +12,7 @@ import lsfusion.gwt.client.controller.remote.action.RequestAsyncCallback;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.form.classes.view.ClassChosenHandler;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.property.cell.controller.EndReason;
 import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
@@ -155,9 +156,14 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
         // we should not drop at least editSetValue since GUpdateEditValueAction might use it
         Result<Object> result = new Result<>();
         // we'll be optimists and assume that this value will stay
+        long dispatchingIndex = getDispatchingIndex();
         form.edit(action.readType, editEvent, action.hasOldValue, action.oldValue, action.inputList,
-                (value, requestIndex) -> continueDispatching(value, result),
-                (cancelReason) -> continueDispatching(GUserInputResult.canceled, result), editContext, ServerResponse.INPUT, getDispatchingIndex(), null);
+                (value, onExec) -> {
+                    onExec.accept(dispatchingIndex);
+
+                    continueDispatching(value, result);
+                },
+                (cancelReason) -> continueDispatching(GUserInputResult.canceled, result), editContext, ServerResponse.INPUT, null);
         return result.result;
     }
 

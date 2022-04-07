@@ -888,19 +888,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     }
 
     public Pair<GGroupObjectValue, Object> setLoadingValueAt(GPropertyDraw property, GGroupObjectValue fullCurrentKey, Object value) {
-        GGroupObjectValue propertyRowKey = treeGroup.filterRowKeys(property.groupObject, fullCurrentKey);
-        int row = getRowByKeyOptimistic(propertyRowKey);
-        if(row < 0)
-            return null;
-
-        GTreeGridRecord rowRecord = getRowValue(row);
-
-        Object oldValue = rowRecord.getValue(property);
-
-        setLoadingAt(property, rowRecord);
-        setValueAt(property, rowRecord, value);
-
-        return new Pair<>(propertyRowKey, oldValue);
+        return setLoadingValueAt(property, treeGroup.filterRowKeys(property.groupObject, fullCurrentKey), tree.getPropertyIndex(property), GGroupObjectValue.EMPTY, value);
     }
 
     private void setValueAt(GPropertyDraw property, GTreeGridRecord rowRecord, Object value) {

@@ -26,6 +26,7 @@ import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapChange;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
+import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.CalcType;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.cases.CalcCase;
@@ -123,7 +124,7 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
         interfaces.add((P) this);
     }
 
-    public ImCol<P> getInterfaces() {
+    public ImSet<P> getInterfaces() {
         return SetFact.singleton((P) this);
     }
 
@@ -202,12 +203,32 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
     }
 
     @Override
-    public <X extends PropertyInterface> boolean mapChangedWhen(boolean toNull, Property<X> changeProperty, ImRevMap<P, X> changeMapping) {
-        return false;
+    public boolean mapChangedWhen(boolean toNull, PropertyInterfaceImplement<P> changeProperty) {
+        return BaseUtils.hashEquals(this, changeProperty);
     }
 
+//    @Override
+//    public OrderEntity mapEntityObjects(ImRevMap<P, ObjectEntity> mapObjects) {
+//        return mapObjects.get((P)this);
+//    }
+//
+//    @Override
+//    public <C extends PropertyInterface> PropertyInterfaceImplement<C> mapInner(ImRevMap<P, C> map) {
+//        // here it's not evident if we should consider the case like FOR f=g(a) DO INPUT ... LIST x(d) IF g(d) = f as a simple input
+//        // we won't since we don't do that in FilterEntity, ContextFilterEntity.getInputListEntity
+//        return map.get((P) this);
+//    }
+//
+//    @Override
+//    public <C extends PropertyInterface> PropertyInterfaceImplement<C> mapJoin(ImMap<P, PropertyInterfaceImplement<C>> map) {
+//        PropertyInterfaceImplement<C> mappedInterface = map.get((P) this);
+//        if(mappedInterface instanceof PropertyInterface)
+//            return mappedInterface;
+//        return null;
+//    }
+
     @Override
-    public <X extends PropertyInterface> AsyncMapChange<X, P> mapAsyncChange(PropertyMapImplement<X, P> writeTo) {
-        return new AsyncMapChange<>(writeTo, null, (P)this);
+    public <X extends PropertyInterface> AsyncMapChange<X, P> mapAsyncChange(PropertyMapImplement<X, P> writeTo, ObjectEntity object) {
+        return new AsyncMapChange<>(writeTo, object, null, (P)this);
     }
 }

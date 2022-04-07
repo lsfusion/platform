@@ -13,7 +13,6 @@ import lsfusion.gwt.client.base.view.DivWidget;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.ResizableSimplePanel;
 import lsfusion.gwt.client.base.view.SimpleImageButton;
-import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
@@ -21,6 +20,8 @@ import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGroupObjectUserPreferences;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.async.GPushAsyncInput;
+import lsfusion.gwt.client.form.property.async.GPushAsyncResult;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
 import lsfusion.gwt.client.form.view.Column;
@@ -440,20 +441,6 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     }
     protected Object getValue(GPropertyDraw property, GGroupObjectValue fullKey) {
         return values.get(properties.indexOf(property)).get(fullKey);
-    }
-
-    protected void changeProperties(GPropertyDraw[] properties, GGroupObjectValue[] fullKeys, Serializable[] newValues) {
-        int length = properties.length;
-        Object[] oldValues = new Object[length];
-        GType[] changeTypes = new GType[length];
-        GUserInputResult[] newInputResults = new GUserInputResult[length];
-        for (int i = 0; i < length; i++) {
-            newInputResults[i] = new GUserInputResult(newValues[i]);
-            changeTypes[i] = GPropertyDraw.externalChangeTypeUsage;
-            oldValues[i] = getValue(properties[i], fullKeys[i]);
-        }
-
-        form.changeProperties(GEditBindingMap.CHANGE, null, null, properties, changeTypes, fullKeys, newInputResults, oldValues, null);
     }
 
     protected boolean isReadOnly(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {

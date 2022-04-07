@@ -1,6 +1,5 @@
 package lsfusion.server.logics.action.change;
 
-import lsfusion.base.BaseUtils;
 import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
@@ -22,7 +21,6 @@ import lsfusion.server.logics.action.flow.ForAction;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.session.change.PropertyChange;
-import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.action.session.table.SessionTableUsage;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapChange;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
@@ -34,12 +32,10 @@ import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
-import lsfusion.server.logics.property.value.StaticValueProperty;
 import lsfusion.server.logics.property.value.ValueProperty;
 import lsfusion.server.physics.dev.debug.ActionDelegationType;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
-import java.io.Serializable;
 import java.sql.SQLException;
 
 import static lsfusion.server.logics.property.PropertyFact.createSetAction;
@@ -187,7 +183,7 @@ public class SetAction<P extends PropertyInterface, W extends PropertyInterface,
         if((where == null || where.property instanceof ValueProperty) &&
                 mapInterfaces.valuesSet().containsAll(writeTo.mapping.valuesSet())) {
             // it can be mapped because of the assertion mapInterfaces.values + writeTo.values contains all inner interfaces
-            AsyncMapChange<P, I> asyncChange = writeFrom.mapAsyncChange(writeTo);
+            AsyncMapChange<?, I> asyncChange = writeFrom.mapAsyncChange(writeTo, null);
             if(asyncChange != null)
                 return asyncChange.map(mapInterfaces.reverse());
         }

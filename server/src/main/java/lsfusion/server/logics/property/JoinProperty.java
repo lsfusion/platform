@@ -64,19 +64,20 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
     }
 
     @Override
-    public <X extends PropertyInterface> boolean isChangedWhen(boolean toNull, Property<X> changeProperty, ImRevMap<Interface, X> changeMapping) {
+    public boolean isChangedWhen(boolean toNull, PropertyInterfaceImplement<JoinProperty.Interface> changeProperty) {
         if(isIdentity) {
             ImRevMap<T, Interface> joinMapping = BaseUtils.immutableCast(implement.mapping.toRevExclMap());
-            return implement.property.isChangedWhen(toNull, changeProperty, joinMapping.join(changeMapping));
+            return implement.property.isChangedWhen(toNull, changeProperty.map(joinMapping.reverse()));
         }
 
         if(toNull && implement.property.isNotNull(AlgType.actionType))
             for(PropertyInterfaceImplement<Interface> mapImpl : implement.mapping.valueIt()) {
-                if(mapImpl.mapChangedWhen(toNull, changeProperty, changeMapping))
+                if(mapImpl.getInterfaces().containsAll(changeProperty.getInterfaces()) &&
+                    mapImpl.mapChangedWhen(toNull, changeProperty))
                     return true;
             }
 
-        return super.isChangedWhen(toNull, changeProperty, changeMapping);
+        return super.isChangedWhen(toNull, changeProperty);
     }
 
     public <X extends PropertyInterface> PropertyMapImplement<?, X> getIdentityImplement(ImRevMap<Interface, X> mapping) {

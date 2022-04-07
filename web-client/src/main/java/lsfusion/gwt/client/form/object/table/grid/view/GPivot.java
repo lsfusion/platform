@@ -34,6 +34,7 @@ import lsfusion.gwt.client.form.property.GPivotOptions;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.GPropertyGroupType;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
+import lsfusion.gwt.client.form.property.cell.controller.ExecContext;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
@@ -1986,8 +1987,20 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         }
     }
 
-    private long executePropertyEditAction(Column column, Integer rowIndex) {
-        return form.syncExecutePropertyEventAction(null, null, column.property, keys.get(rowIndex), GEditBindingMap.EDIT_OBJECT);
+    private void executePropertyEditAction(Column column, Integer rowIndex) {
+        GPropertyDraw property = column.property;
+        GGroupObjectValue fullKey = GGroupObjectValue.getFullKey(keys.get(rowIndex), column.columnKey);
+        form.executePropertyEventAction(null, null, new ExecContext() {
+            @Override
+            public GPropertyDraw getProperty() {
+                return property;
+            }
+
+            @Override
+            public GGroupObjectValue getFullKey() {
+                return fullKey;
+            }
+        }, GEditBindingMap.EDIT_OBJECT, requestIndex -> {});
     }
 
     private Integer getRowIndex(JsArrayMixed keyValues, boolean cols) {

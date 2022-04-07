@@ -98,8 +98,6 @@ public abstract class PanelRenderer {
     }
 
     public Object setLoadingValue(Object value) {
-        Object oldValue = this.value.getValue();
-        this.value.setLoadingValue(value);
-        return oldValue;
+        return this.value.setLoadingValue(value);
     }
 }

@@ -29,6 +29,7 @@ import lsfusion.gwt.client.form.object.table.view.GToolbarView;
 import lsfusion.gwt.client.form.property.async.GAsyncOpenForm;
 import lsfusion.gwt.client.form.property.cell.controller.CancelReason;
 import lsfusion.gwt.client.form.property.cell.controller.EditContext;
+import lsfusion.gwt.client.form.property.cell.controller.ExecContext;
 import lsfusion.gwt.client.form.view.FormContainer;
 import lsfusion.gwt.client.form.view.FormDockable;
 import lsfusion.gwt.client.form.view.ModalForm;
@@ -227,7 +228,7 @@ public abstract class FormsController {
         throw new UnsupportedOperationException();
     }
 
-    public void asyncOpenForm(GAsyncFormController asyncFormController, GAsyncOpenForm openForm, Event editEvent, EditContext editContext, GFormController formController) {
+    public void asyncOpenForm(GAsyncFormController asyncFormController, GAsyncOpenForm openForm, Event editEvent, EditContext editContext, ExecContext execContext, GFormController formController) {
         FormDockable duplicateForm = getDuplicateForm(openForm.canonicalName, openForm.forbidDuplicate);
         if (duplicateForm == null) {
             GWindowFormType windowType = openForm.getWindowType(asyncFormController.canShowDockedModal());
@@ -245,15 +246,15 @@ public abstract class FormsController {
         }
     }
 
-    private boolean isCalculatedSized(EditContext editContext, GWindowFormType windowType) {
-        return isPreferredSize(editContext, windowType) || isAutoSized(editContext, windowType);
+    private boolean isCalculatedSized(ExecContext execContext, GWindowFormType windowType) {
+        return isPreferredSize(execContext, windowType) || isAutoSized(execContext, windowType);
     }
 
-    private boolean isAutoSized(EditContext editContext, GWindowFormType windowType) {
-        return (windowType.isEmbedded() && editContext.getProperty().autoSize) || windowType.isPopup();
+    private boolean isAutoSized(ExecContext execContext, GWindowFormType windowType) {
+        return (windowType.isEmbedded() && execContext.getProperty().autoSize) || windowType.isPopup();
     }
 
-    private boolean isPreferredSize(EditContext editContext, GWindowFormType windowType) {
+    private boolean isPreferredSize(ExecContext execContext, GWindowFormType windowType) {
         return windowType == GWindowFormType.FLOAT;
     }
 
