@@ -2121,6 +2121,8 @@ public class GFormController implements EditManager {
         BiConsumer<GUserInputResult, CommitReason> editAfterCommit = this.editAfterCommit;
         this.editAfterCommit = null; // it seems this is needed because after commit another editing can be started
         editAfterCommit.accept(result, commitReason);
+
+        onEditingFinished();
     }
 
     @Override
@@ -2129,6 +2131,13 @@ public class GFormController implements EditManager {
 
         editCancel.accept(cancelReason);
         editCancel = null;
+
+        onEditingFinished();
+    }
+
+    // we have to do it after "after commit" is called because there can be for example applyRemoteChanges, and pendingChangeProperty not yet called (so there will be previous value set)
+    private void onEditingFinished() {
+        dispatcher.onEditingFinished();
     }
 
     private void finishEditing(boolean blurred, boolean cancel) {
@@ -2173,8 +2182,6 @@ public class GFormController implements EditManager {
         }
 
         update(editContext);
-
-        dispatcher.onEditingFinished();
     }
 
     public void render(EditContext editContext) {
