@@ -29,6 +29,7 @@ grammar LsfLogics;
     import lsfusion.server.language.ScriptingLogicsModule.*;
     import lsfusion.server.language.action.ActionSettings;
     import lsfusion.server.language.action.LA;
+    import lsfusion.server.language.form.FormOptions;
     import lsfusion.server.language.form.FormPropertyOptions;
     import lsfusion.server.language.form.ScriptingFormEntity;
     import lsfusion.server.language.form.ScriptingFormEntity.RegularFilterInfo;
@@ -397,19 +398,24 @@ scope {
 @init {
 	boolean initialDeclaration = false;
 	DebugInfo.DebugPoint point = getCurrentDebugPoint();
+	FormOptions options = null;
 }
 @after {
-	if (inMainParseState() && initialDeclaration) {
-		self.finalizeScriptedForm($formStatement::form);
+	if (inMainParseState()) {
+        if (initialDeclaration) {
+            self.finalizeScriptedForm($formStatement::form);
+		}
+		$formStatement::form.setFormOptions(options, self.getVersion());
 	}
 }
 	:	(	declaration=formDeclaration { $formStatement::form = $declaration.form; initialDeclaration = true; }
 		|	extDecl=extendingFormDeclaration { $formStatement::form = $extDecl.form; }
 		)
+		fo = formOptions { options = $fo.options; }
 		(	formGroupObjectsList
 		|	formTreeGroupObjectList
 		|	formFiltersList
-		|	formPropertiesList
+		|	formPropertiesList[options]
 		|	formHintsList
 		|	formEventsList
 		|	filterGroupDeclaration
@@ -491,23 +497,16 @@ formExtIDDeclaration
 formDeclaration returns [ScriptingFormEntity form]
 @init {
 	ModalityType modalityType = null;
-	int autoRefresh = 0;
-	String image = null;
 	String title = null;
-	boolean localAsync = false;
 	DebugInfo.DebugPoint point = getCurrentDebugPoint();
 }
 @after {
 	if (inMainParseState()) {
-		$form = self.createScriptedForm($formNameCaption.name, $formNameCaption.caption, point, image, modalityType, autoRefresh, localAsync);
+		$form = self.createScriptedForm($formNameCaption.name, $formNameCaption.caption, point, modalityType);
 	}
 }
 	:	'FORM' 
 		formNameCaption=simpleNameWithCaption
-		(	('IMAGE' img=stringLiteral { image = $img.val; })
-		|	('AUTOREFRESH' refresh=intLiteral { autoRefresh = $refresh.val; })
-		|	('LOCALASYNC' { localAsync = true; })
-		)*
 	;
 
 
@@ -519,6 +518,25 @@ extendingFormDeclaration returns [ScriptingFormEntity form]
 }
 	:	'EXTEND' 'FORM' formName=compoundID
 	;
+	
+formOptions returns [FormOptions options = null]
+@init {
+    String image = null;
+    Integer autoRefresh = null;
+    Boolean localAsync = null;
+    FormPropertyOptions propertyOptions = null;
+}
+@after {
+    if (image != null || autoRefresh != null || localAsync != null || propertyOptions != null) {
+        $options = new FormOptions(image, autoRefresh, localAsync, propertyOptions); 
+    }
+}
+    :   (	('IMAGE' img=stringLiteral { image = $img.val; })
+        |	('AUTOREFRESH' refresh=intLiteral { autoRefresh = $refresh.val; })
+        |	('LOCALASYNC' { localAsync = true; })
+        )* 
+        opts = formPropertyOptionsList { propertyOptions = $opts.options; }
+    ;
 
 formGroupObjectsList
 @init {
@@ -760,7 +778,7 @@ formObjectDeclaration returns [String name, String className, LocalizedString ca
 		)*
 	; 
 	
-formPropertiesList
+formPropertiesList[FormOptions formOptions]
 @init {
 	List<? extends AbstractFormActionOrPropertyUsage> properties = new ArrayList<>();
 	List<String> aliases = new ArrayList<>();
@@ -771,7 +789,7 @@ formPropertiesList
 }
 @after {
 	if (inMainParseState()) {
-		$formStatement::form.addScriptedPropertyDraws(properties, aliases, captions, commonOptions, options, self.getVersion(), points);
+		$formStatement::form.addScriptedPropertyDraws(properties, aliases, captions, $formOptions, commonOptions, options, self.getVersion(), points);
 	}
 }
 	:	'PROPERTIES' '(' objects=idList ')' opts=formPropertyOptionsList list=formPropertyUList[$objects.ids]

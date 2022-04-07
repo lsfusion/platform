@@ -330,15 +330,28 @@ public class ScriptingFormEntity {
         return null; 
     }
 
-    public void addScriptedPropertyDraws(List<? extends ScriptingLogicsModule.AbstractFormActionOrPropertyUsage> properties, List<String> aliases, List<LocalizedString> captions, FormPropertyOptions commonOptions, List<FormPropertyOptions> options, Version version, List<DebugInfo.DebugPoint> points) throws ScriptingErrorLog.SemanticErrorException {
+    public void setFormOptions(FormOptions formOptions, Version version) {
+        form.setOptions(formOptions, version);
+    }
+    
+    public void addScriptedPropertyDraws(List<? extends ScriptingLogicsModule.AbstractFormActionOrPropertyUsage> properties, 
+                                         List<String> aliases, List<LocalizedString> captions, FormOptions formOptions, 
+                                         FormPropertyOptions commonOptions, List<FormPropertyOptions> options, Version version, 
+                                         List<DebugInfo.DebugPoint> points) throws ScriptingErrorLog.SemanticErrorException {
         boolean reverse = commonOptions.getInsertType() == FIRST || commonOptions.getNeighbourPropertyDraw() != null && commonOptions.getInsertType() == AFTER;
+
+        FormPropertyOptions globalAndCommonOptions = form.getGlobalPropertyOptions(version);
+        if (formOptions != null && formOptions.getPropertyOptions() != null) {
+            globalAndCommonOptions = globalAndCommonOptions.overrideWith(formOptions.getPropertyOptions());
+        }
+        globalAndCommonOptions = globalAndCommonOptions.overrideWith(commonOptions);
         
         for (int i = reverse ? properties.size() - 1 : 0; (reverse ? i >= 0 : i < properties.size()); i = reverse ? i - 1 : i + 1) {
             ScriptingLogicsModule.AbstractFormActionOrPropertyUsage pDrawUsage = properties.get(i);
             String alias = aliases.get(i);
             LocalizedString caption = captions.get(i);
 
-            FormPropertyOptions propertyOptions = commonOptions.overrideWith(options.get(i));
+            FormPropertyOptions propertyOptions = globalAndCommonOptions.overrideWith(options.get(i));
 
             FormSessionScope scope = propertyOptions.getFormSessionScope();
             
@@ -821,14 +834,6 @@ public class ScriptingFormEntity {
         if (modalityType != null) {
             form.modalityType = modalityType;
         }
-    }
-
-    public void setAutoRefresh(int autoRefresh) {
-        form.autoRefresh = autoRefresh;
-    }
-
-    public void setLocalAsync(boolean localAsync) {
-        form.localAsync = localAsync;
     }
 
     private CustomClass findCustomClassForFormSetup(String className) throws ScriptingErrorLog.SemanticErrorException {

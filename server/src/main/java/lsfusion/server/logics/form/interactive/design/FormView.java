@@ -1,15 +1,12 @@
 package lsfusion.server.logics.form.interactive.design;
 
-import lsfusion.base.Pair;
 import lsfusion.base.col.MapFact;
-import lsfusion.base.col.SetFact;
 import lsfusion.base.col.heavy.concurrent.weak.ConcurrentIdentityWeakHashSet;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MOrderExclMap;
-import lsfusion.base.col.interfaces.mutable.MOrderSet;
 import lsfusion.base.identity.DefaultIDGenerator;
 import lsfusion.base.identity.IDGenerator;
 import lsfusion.base.identity.IdentityObject;
@@ -52,10 +49,8 @@ import java.util.List;
 import java.util.*;
 
 import static java.util.Collections.synchronizedMap;
-import static lsfusion.base.BaseUtils.nvl;
 import static lsfusion.server.logics.LogicsModule.InsertType.AFTER;
 import static lsfusion.server.logics.form.interactive.design.object.GroupObjectContainerSet.*;
-import static lsfusion.server.logics.form.struct.property.PropertyDrawExtraType.CAPTION;
 
 public class FormView extends IdentityObject implements ServerCustomSerializable {
 
@@ -714,7 +709,7 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         pool.writeString(outStream, canonicalName);
         pool.writeString(outStream, creationPath);
         pool.writeInt(outStream, overridePageWidth);
-        outStream.writeInt(autoRefresh);
+        outStream.writeInt(entity.getAutoRefresh());
     }
 
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {

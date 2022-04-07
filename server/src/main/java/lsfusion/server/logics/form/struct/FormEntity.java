@@ -27,6 +27,8 @@ import lsfusion.server.base.version.interfaces.*;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.ScriptParsingException;
 import lsfusion.server.language.action.LA;
+import lsfusion.server.language.form.FormOptions;
+import lsfusion.server.language.form.FormPropertyOptions;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.language.property.oraction.LAP;
 import lsfusion.server.logics.BaseLogicsModule;
@@ -116,8 +118,14 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     private LocalizedString caption;
     private DebugInfo.DebugPoint debugPoint; 
 
-    private String defaultImagePath;
-    
+    private NFOrderSet<FormOptions> options = NFFact.orderSet(true);
+    private Iterable<FormOptions> getNFOptionsIt(Version version) { 
+        return options.getNFIt(version);
+    }
+    public ImOrderSet<FormOptions> getOptionsList() {
+        return options.getOrderSet();
+    }
+
     public NFMapList<Object, ActionObjectEntity<?>> eventActions = NFFact.mapList();
     public ImMap<Object, ImList<ActionObjectEntity<?>>> getEventActions() {
         return eventActions.getOrderMap();
@@ -253,18 +261,14 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     }
 
     public ModalityType modalityType = ModalityType.DOCKED;
-    public int autoRefresh = 0;
-    public boolean localAsync = false;
 
     public PropertyObjectEntity<?> reportPathProp;
 
-    public FormEntity(String canonicalName, DebugInfo.DebugPoint debugPoint, LocalizedString caption, String imagePath, Version version) {
+    public FormEntity(String canonicalName, DebugInfo.DebugPoint debugPoint, LocalizedString caption, Version version) {
         this.ID = BaseLogicsModule.generateStaticNewID();
         this.caption = caption;
         this.canonicalName = canonicalName;
         this.debugPoint = debugPoint;
-        
-        this.defaultImagePath = imagePath;
         
         logger.debug("Initializing form " + ThreadLocalContext.localize(caption) + "...");
 
@@ -315,6 +319,52 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
     private static LP externalShowIf = FormToolbarAction.createIfProperty(new Property[]{FormEntity.isExternal}, new boolean[]{false});
 
+    public void setOptions(FormOptions options, Version version) {
+        if (options != null) {
+            this.options.add(options, version);
+        }
+    }
+
+    public FormPropertyOptions getGlobalPropertyOptions(Version version) {
+        FormPropertyOptions options = new FormPropertyOptions();
+        for (FormOptions opts : getNFOptionsIt(version)) {
+            if (opts.getPropertyOptions() != null) {
+                options = options.overrideWith(opts.getPropertyOptions());
+            }
+        }
+        return options;
+    }
+
+    @IdentityLazy
+    public int getAutoRefresh() {
+        for (FormOptions opts : getOptionsList().reverseOrder()) {
+            if (opts.getAutoRefresh() != null) {
+                return opts.getAutoRefresh();
+            }
+        }
+        return 0;
+    }
+
+    @IdentityLazy
+    public boolean isLocalAsync() {
+        for (FormOptions opts : getOptionsList().reverseOrder()) {
+            if (opts.getLocalAsync() != null) {
+                return opts.getLocalAsync();
+            }
+        }
+        return false;    
+    }
+
+    @IdentityLazy
+    public String getDefaultImagePath() {
+        for (FormOptions opts : getOptionsList().reverseOrder()) {
+            if (opts.getImage() != null) {
+                return opts.getImage();
+            }
+        }
+        return null;
+    }
+    
     public void addFixedFilter(FilterEntity filter, Version version) {
         fixedFilters.add(filter, version);
     }
@@ -1182,6 +1232,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
             }
         }
 
+        options.finalizeChanges();
         groups.finalizeChanges();
         treeGroups.finalizeChanges();
         propertyDraws.finalizeChanges();
@@ -1255,10 +1306,6 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
     public boolean needsToBeSynchronized() {
         return isNamed();
-    }
-
-    public String getDefaultImagePath() {
-        return defaultImagePath;
     }
 
     // сохраняет нижние компоненты
