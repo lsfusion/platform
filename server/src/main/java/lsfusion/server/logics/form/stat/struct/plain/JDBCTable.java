@@ -28,6 +28,7 @@ import lsfusion.server.logics.classes.data.time.DateClass;
 import lsfusion.server.logics.classes.data.time.DateTimeClass;
 import lsfusion.server.logics.classes.data.time.TimeClass;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
+import org.postgresql.util.PGobject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
@@ -116,7 +117,7 @@ public class JDBCTable {
             statement.setObject(num, value, sqlType);
         }
         public Object read(Object value) {
-            return value;
+            return value instanceof PGobject ? ((PGobject) value).getValue() : value;
         }
     }
 
