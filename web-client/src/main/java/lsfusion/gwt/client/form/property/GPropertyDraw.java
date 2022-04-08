@@ -136,7 +136,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
             if(!(action instanceof QuickAccessAction))
                 return false;
 
-            return index == ((QuickAccessAction) action).index;
+            return isHover() == action.isHover() && index == ((QuickAccessAction) action).index;
         }
 
         public QuickAccessAction(String action, int index, boolean hover) {
