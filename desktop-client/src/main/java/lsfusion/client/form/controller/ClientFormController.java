@@ -963,7 +963,7 @@ public class ClientFormController implements AsyncListener {
     private byte[] getFullCurrentKey(ClientGroupObjectValue columnKey) {
         List<ClientGroupObjectValue> values = new ArrayList<>();
         for (GridController group : controllers.values())
-            values.add(group.getCurrentObject());
+            values.add(group.getCurrentKey());
 
         for (TreeGroupController tree : treeControllers.values()) {
             ClientGroupObjectValue currentPath = tree.getCurrentPath();
@@ -995,7 +995,7 @@ public class ClientFormController implements AsyncListener {
 
                 ClientGroupObjectValue propertyKey;
                 if (controller != null && property.isList) {
-                    ClientGroupObjectValue currentObject = controller.getCurrentObject();
+                    ClientGroupObjectValue currentObject = controller.getCurrentKey();
                     if(currentObject.isEmpty())
                         return;
                     propertyKey = new ClientGroupObjectValue(currentObject, columnKey);
@@ -1040,7 +1040,7 @@ public class ClientFormController implements AsyncListener {
             pushAsyncResult = new ClientPushAsyncAdd(ID);
             value = new ClientGroupObjectValue(object, new ClientCustomObjectValue(ID, null));
         } else {
-            value = controller.getCurrentObject();
+            value = controller.getCurrentKey();
             if(value.isEmpty())
                 return;
             pushAsyncResult = null;
@@ -1069,7 +1069,7 @@ public class ClientFormController implements AsyncListener {
     public ClientGroupObjectValue getFullCurrentKey() {
         List<ClientGroupObjectValue> values = new ArrayList<>();
         for (GridController group : controllers.values())
-            values.add(group.getCurrentObject());
+            values.add(group.getCurrentKey());
 
         for (TreeGroupController tree : treeControllers.values()) {
             ClientGroupObjectValue currentPath = tree.getCurrentPath();

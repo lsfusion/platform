@@ -39,6 +39,7 @@ public interface ClientTableView {
 
     // GETTERS
     int getCurrentRow();
+    ClientGroupObjectValue getCurrentKey();
     ClientGroupObjectValue getCurrentObject();
     ClientPropertyDraw getCurrentProperty(); // calculate sum / filtering default value
     ClientGroupObjectValue getCurrentColumn(); // calculate sum / filtering default value

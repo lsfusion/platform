@@ -354,8 +354,12 @@ public class GridController extends AbstractTableController {
         updateTable(null);
     }
 
-    public ClientGroupObjectValue getCurrentObject() {
-        return table != null && table.getCurrentObject() != null ? table.getCurrentObject() : ClientGroupObjectValue.EMPTY;
+    public ClientGroupObjectValue getCurrentKey() {
+        ClientGroupObjectValue result = null;
+        if (isList()) {
+            result = table.getCurrentKey();
+        }
+        return result == null ? ClientGroupObjectValue.EMPTY : result;
     }
     
     public int getCurrentRow() {

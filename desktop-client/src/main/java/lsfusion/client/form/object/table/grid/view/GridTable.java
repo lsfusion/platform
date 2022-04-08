@@ -8,7 +8,6 @@ import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.classes.data.ClientRichTextClass;
-import lsfusion.client.classes.data.ClientTextClass;
 import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.form.ClientForm;
 import lsfusion.client.form.controller.ClientFormController;
@@ -38,8 +37,6 @@ import lsfusion.interop.form.order.user.Order;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.plaf.TableHeaderUI;
 import javax.swing.plaf.basic.BasicTableHeaderUI;
 import javax.swing.table.*;
@@ -775,6 +772,10 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
     private void setCurrentObject(ClientGroupObjectValue value) {
         assert value == null || rowKeys.isEmpty() || rowKeys.contains(value);
         currentObject = value;
+    }
+
+    public ClientGroupObjectValue getCurrentKey() {
+        return getSelectedObject();
     }
 
     public ClientGroupObjectValue getCurrentObject() {
