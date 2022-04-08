@@ -1069,6 +1069,7 @@ public class GwtClientUtils {
     public static native void setOnClick(Element element, Runnable run)/*-{
         element.onmousedown = function(event) {
             event.stopPropagation();
+            event.preventDefault();
             run.@Runnable::run()();
         }
     }-*/;
