@@ -12,6 +12,11 @@ import lsfusion.server.logics.property.oraction.PropertyInterface;
 // domain logic (action) level (with mapping and no objects)
 public abstract class AsyncMapEventExec<T extends PropertyInterface> {
 
+    // hack - in theory push results should be mixed on the client
+    public boolean needOwnPushResult() {
+        return false;
+    }
+
     public abstract AsyncMapEventExec<T> newSession();
 
     public abstract <P extends PropertyInterface> AsyncMapEventExec<P> map(ImRevMap<T, P> mapping);

@@ -244,6 +244,11 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
 
     public Pair<GGroupObjectValue, Object> setLoadingValueAt(GGroupObjectValue fullCurrentKey, Object value) {
         GGroupObjectValue propertyColumnKey = property.filterColumnKeys(fullCurrentKey);
-        return new Pair<>(propertyColumnKey, renderers.get(propertyColumnKey).setLoadingValue(value));
+        if(propertyColumnKey == null)
+            return null;
+        PanelRenderer panelRenderer = renderers.get(propertyColumnKey);
+        if(panelRenderer == null)
+            return null;
+        return new Pair<>(propertyColumnKey, panelRenderer.setLoadingValue(value));
     }
 }

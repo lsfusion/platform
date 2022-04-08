@@ -1,9 +1,6 @@
 package lsfusion.gwt.client.form.object;
 
-import lsfusion.gwt.client.base.jsni.NativeHashMap;
-import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.base.jsni.NativeStringMap;
-import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -152,17 +149,19 @@ public class GGroupObjectValue implements Serializable {
         }
     }
 
-    // assert that the keys contain all the groups
-    public GGroupObjectValue filterIncl(List<GGroupObject> groups) {
-        if(size == 0)
-            return this;
-
+    // returns null, if there is an object that does not have value
+    public GGroupObjectValue filter(List<GGroupObject> groups) {
         if(groups.isEmpty())
             return GGroupObjectValue.EMPTY;
 
+        if(size == 0)
+            return null;
+
         if(size == 1) {
-            assert groups.size() == 1 && groups.get(0).objects.get(0).ID == singleKey;
-            return this;
+            List<GObject> singleGroup;
+            if(groups.size() == 1 && (singleGroup = groups.get(0).objects).size() == 1 && singleGroup.get(0).ID == singleKey)
+                return this;
+            return null;
         }
 
         int filteredSize = 0;
@@ -172,6 +171,7 @@ public class GGroupObjectValue implements Serializable {
             for(GObject object : group.objects)
                 objects.put(String.valueOf(object.ID), true);
         }
+
         int f = 0;
         int[] filteredKeys = new int[filteredSize];
         Serializable[] filteredValues = new Serializable[filteredSize];
@@ -183,6 +183,10 @@ public class GGroupObjectValue implements Serializable {
                 filteredValues[f++] = values[i];
             }
         }
+
+        if(f < filteredSize) // there are some objects missing
+            return null;
+
         return new GGroupObjectValue(filteredSize, filteredKeys, filteredValues);
     }
 }

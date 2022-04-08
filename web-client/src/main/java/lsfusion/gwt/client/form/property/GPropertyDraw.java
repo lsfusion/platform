@@ -108,7 +108,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     }
 
     public GGroupObjectValue filterColumnKeys(GGroupObjectValue fullCurrentKey) {
-        return fullCurrentKey.filterIncl(columnGroupObjects != null ? columnGroupObjects : Collections.emptyList());
+        return fullCurrentKey.filter(columnGroupObjects != null ? columnGroupObjects : Collections.emptyList());
     }
 
     public static class QuickAccessAction implements CellRenderer.ToolbarAction {

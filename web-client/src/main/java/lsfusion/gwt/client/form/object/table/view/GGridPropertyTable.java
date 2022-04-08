@@ -462,6 +462,9 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     }
 
     protected Pair<GGroupObjectValue, Object> setLoadingValueAt(GPropertyDraw property, GGroupObjectValue propertyRowKey, int columnIndex, GGroupObjectValue propertyColumnKey, Object value) {
+        if(propertyRowKey == null)
+            return null;
+
         if(columnIndex < 0)
             return null;
 

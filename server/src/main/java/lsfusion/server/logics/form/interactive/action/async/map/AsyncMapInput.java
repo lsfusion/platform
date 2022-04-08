@@ -81,4 +81,9 @@ public class AsyncMapInput<T extends PropertyInterface> extends AsyncMapFormExec
     public int getMergeOptimisticPriority() {
         return 1;
     }
+
+    @Override
+    public boolean needOwnPushResult() {
+        return true; // we have to send input value
+    }
 }

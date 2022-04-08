@@ -904,6 +904,8 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
     public Pair<GGroupObjectValue, Object> setLoadingValueAt(GPropertyDraw property, GGroupObjectValue fullCurrentKey, Object value) {
         GGroupObjectValue propertyColumnKey = property.filterColumnKeys(fullCurrentKey);
+        if(propertyColumnKey == null)
+            return null;
         return setLoadingValueAt(property, groupObject.filterRowKeys(fullCurrentKey), getGridColumnIndex(property, propertyColumnKey), propertyColumnKey, value);
     }
 

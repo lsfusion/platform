@@ -154,6 +154,6 @@ public class GGroupObject implements Serializable, HasNativeSID {
     }
 
     public GGroupObjectValue filterRowKeys(GGroupObjectValue fullCurrentKey) {
-        return fullCurrentKey.filterIncl(Collections.singletonList(this));
+        return fullCurrentKey.filter(Collections.singletonList(this));
     }
 }

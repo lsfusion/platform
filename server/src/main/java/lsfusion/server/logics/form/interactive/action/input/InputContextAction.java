@@ -55,7 +55,7 @@ public class InputContextAction<P extends PropertyInterface, V extends PropertyI
 
     public AsyncMapEventExec<V> getAsyncEventExec() {
         AsyncMapEventExec<P> asyncEventExec = action.getAsyncEventExec(false);
-        if(asyncEventExec != null)
+        if(asyncEventExec != null && !asyncEventExec.needOwnPushResult())
             return asyncEventExec.mapInner(mapValues);
         return null;
     }

@@ -50,6 +50,6 @@ public class GTreeGroup extends GComponent {
     }
 
     public GGroupObjectValue filterRowKeys(GGroupObject groupObject, GGroupObjectValue fullCurrentKey) {
-        return fullCurrentKey.filterIncl(groups.subList(0, groups.indexOf(groupObject) + 1));
+        return fullCurrentKey.filter(groups.subList(0, groups.indexOf(groupObject) + 1));
     }
 }

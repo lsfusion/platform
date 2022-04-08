@@ -71,4 +71,9 @@ public class AsyncMapAdd<T extends PropertyInterface> extends AsyncMapFormExec<T
         AsyncMapAdd<T> asyncInput = (AsyncMapAdd<T>) input;
         return new AsyncMapAdd<>(ClassFormSelector.merge(customClass, asyncInput.customClass));
     }
+
+    @Override
+    public boolean needOwnPushResult() {
+        return true; // if add we need to send new ID
+    }
 }
