@@ -915,7 +915,7 @@ public class GFormController implements EditManager {
         GPropertyDraw property = editContext.getProperty();
         Serializable value = (Serializable) property.parsePaste(sValue, property.getExternalChangeType());
 
-        changeProperty(editContext, new GUserInputResult(value));
+        changeProperty(editContext, value);
     }
 
     public void changePageSizeAfterUnlock(final GGroupObject groupObject, final int pageSize) {
@@ -962,12 +962,13 @@ public class GFormController implements EditManager {
             });
         } else {
             String actionSID;
+            lsfusion.gwt.client.base.Result<Integer> contextAction = new lsfusion.gwt.client.base.Result<>();
             if(isBinding) {
                 if(GKeyStroke.isKeyEvent(event)) // we don't want to set focus on mouse binding (it's pretty unexpected behaviour)
                     editContext.trySetFocus(); // we want element to be focused on key binding (if it's possible)
                 actionSID = CHANGE;
             } else {
-                actionSID = property.getEventSID(event);
+                actionSID = property.getEventSID(event, contextAction);
                 if(actionSID == null)
                     return;
             }
@@ -980,7 +981,10 @@ public class GFormController implements EditManager {
 
             handler.consume();
 
-            executePropertyEventAction(editContext, actionSID, event);
+            if(contextAction.result != null)
+                executeContextAction(event, editContext, contextAction.result);
+            else
+                executePropertyEventAction(editContext, actionSID, event);
         }
     }
 
@@ -1072,19 +1076,18 @@ public class GFormController implements EditManager {
 
     public void asyncChange(Event event, EditContext editContext, String actionSID, GAsyncInput asyncChange, Consumer<Long> onExec) {
         GInputList inputList = asyncChange.inputList;
-        edit(asyncChange.changeType, event, false, null, inputList, (value, onRequestExec) -> {
-            asyncChange(event, editContext, inputList, value, actionSID, false, requestIndex -> {
+        edit(asyncChange.changeType, event, false, null, inputList, (value, onRequestExec) ->
+            executePropertyEventAction(event, editContext, inputList, value, actionSID, false, requestIndex -> {
                 onExec.accept(requestIndex); // setLoading
 
                 // doing that after to set the last value (onExec recursively can also set value)
                 onRequestExec.accept(requestIndex); // pendingChangeProperty
-            });
-        }, cancelReason -> {}, editContext, actionSID, asyncChange.customEditFunction);
+        }), cancelReason -> {}, editContext, actionSID, asyncChange.customEditFunction);
     }
 
     private final static GAsyncNoWaitExec asyncExec = new GAsyncNoWaitExec();
 
-    private void asyncChange(Event event, EditContext editContext, GInputList inputList, GUserInputResult value, String actionSID, boolean externalChange, Consumer<Long> onExec) {
+    private void executePropertyEventAction(Event event, EditContext editContext, GInputList inputList, GUserInputResult value, String actionSID, boolean externalChange, Consumer<Long> onExec) {
         Integer contextAction = value.getContextAction();
         executePropertyEventAction(contextAction != null ? inputList.actions[contextAction].asyncExec : asyncExec,
                 event, editContext, editContext, actionSID, new GPushAsyncInput(value), externalChange, onExec);
@@ -1144,32 +1147,46 @@ public class GFormController implements EditManager {
         return fullCurrentKey.toGroupObjectValue();
     }
 
-    // for custom renderer, paste, quick access
-    public void changeProperty(ExecuteEditContext editContext, GUserInputResult result) {
-        GPropertyDraw property = editContext.getProperty();
-        lsfusion.gwt.client.base.Result<Object> oldValue = setLocalValue(editContext, property.getExternalChangeType(), result);
+    // for custom renderer, paste
+    public void changeProperty(ExecuteEditContext editContext, Object value) {
+        lsfusion.gwt.client.base.Result<Object> oldValue = setLocalValue(editContext, editContext.getProperty().getExternalChangeType(), value);
+        executePropertyEventAction(null, editContext, new GUserInputResult(value), requestIndex -> {
+            setRemoteValue(editContext, oldValue, value, requestIndex);
+        });
+    }
 
-        asyncChange(null, editContext, property.getInputList(), result, CHANGE, true, requestIndex -> {
-            setRemoteValue(editContext, oldValue, result, requestIndex);
+    // for quick access actions (in toolbar)
+    public void executeContextAction(ExecuteEditContext editContext, int contextAction) {
+        executeContextAction(null, editContext, contextAction);
+    }
+    // for quick access actions (in toolbar and keypress)
+    public void executeContextAction(Event editEvent, ExecuteEditContext editContext, int contextAction) {
+        executePropertyEventAction(editEvent, editContext, new GUserInputResult(null, contextAction), requestIndex -> {});
+    }
+
+    // for custom renderer, paste, quick access actions (in toolbar and keypress)
+    private void executePropertyEventAction(Event event, ExecuteEditContext editContext, GUserInputResult value, Consumer<Long> onExec) {
+        executePropertyEventAction(event, editContext, editContext.getProperty().getInputList(), value, CHANGE, true, requestIndex -> {
+            onExec.accept(requestIndex);
 
             setLoading(editContext, requestIndex);
         });
     }
 
-    public lsfusion.gwt.client.base.Result<Object> setLocalValue(EditContext editContext, GType type, GUserInputResult result) {
+    public lsfusion.gwt.client.base.Result<Object> setLocalValue(EditContext editContext, GType type, Object result) {
         if(editContext.canUseChangeValueForRendering(type)) {
             Object oldValue = editContext.getValue();
 
-            editContext.setValue(result.getValue());
+            editContext.setValue(result);
 
             return new lsfusion.gwt.client.base.Result<>(oldValue);
         }
         return null;
     }
 
-    public void setRemoteValue(EditContext editContext, lsfusion.gwt.client.base.Result<Object> oldValue, GUserInputResult result, long requestIndex) {
+    public void setRemoteValue(EditContext editContext, lsfusion.gwt.client.base.Result<Object> oldValue, Object result, long requestIndex) {
         if(oldValue != null)
-            pendingChangeProperty(editContext.getProperty(), editContext.getFullKey(), result.getValue(), oldValue.result, requestIndex);
+            pendingChangeProperty(editContext.getProperty(), editContext.getFullKey(), (Serializable) result, oldValue.result, requestIndex);
     }
 
     public void pendingChangeProperty(GPropertyDraw property, GGroupObjectValue fullKey, Serializable value, Object oldValue, long changeRequestIndex) {
@@ -2036,8 +2053,8 @@ public class GFormController implements EditManager {
         assert type != null;
         lsfusion.gwt.client.base.Result<lsfusion.gwt.client.base.Result<Object>> oldValue = new lsfusion.gwt.client.base.Result<>();
         edit(type, event, hasOldValue, setOldValue, inputList, // actually it's assumed that actionAsyncs is used only here, in all subsequent calls it should not be referenced
-                (inputResult, commitReason) -> oldValue.set(setLocalValue(editContext, type, inputResult)),
-                (inputResult, commitReason) -> afterCommit.accept(inputResult, requestIndex -> setRemoteValue(editContext, oldValue.result, inputResult, requestIndex)),
+                (inputResult, commitReason) -> oldValue.set(setLocalValue(editContext, type, inputResult.getValue())),
+                (inputResult, commitReason) -> afterCommit.accept(inputResult, requestIndex -> setRemoteValue(editContext, oldValue.result, inputResult.getValue(), requestIndex)),
                 cancel, editContext, actionSID, customChangeFunction);
     }
 

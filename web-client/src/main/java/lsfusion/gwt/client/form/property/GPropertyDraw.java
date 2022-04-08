@@ -6,6 +6,7 @@ import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.ImageDescription;
 import lsfusion.gwt.client.base.ImageHolder;
+import lsfusion.gwt.client.base.Result;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
@@ -23,6 +24,7 @@ import lsfusion.gwt.client.form.design.GFontMetrics;
 import lsfusion.gwt.client.form.design.view.flex.LinearCaptionContainer;
 import lsfusion.gwt.client.form.event.GInputBindingEvent;
 import lsfusion.gwt.client.form.event.GKeyInputEvent;
+import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
@@ -32,7 +34,6 @@ import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.classes.view.FormatCellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.CustomCellRenderer;
-import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 import lsfusion.gwt.client.form.property.panel.view.ActionOrPropertyValueController;
 import lsfusion.gwt.client.form.property.panel.view.PanelRenderer;
@@ -48,8 +49,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.google.gwt.dom.client.BrowserEvents.KEYDOWN;
 import static lsfusion.gwt.client.base.EscapeUtils.escapeLineBreakHTML;
 import static lsfusion.gwt.client.base.GwtClientUtils.createTooltipHorizontalSeparator;
+import static lsfusion.gwt.client.form.event.GKeyStroke.getKeyStroke;
+import static lsfusion.gwt.client.form.property.cell.GEditBindingMap.CHANGE;
 
 public class GPropertyDraw extends GComponent implements GPropertyReader, Serializable {
     public int ID;
@@ -127,8 +131,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         }
 
         @Override
-        public void onClick(UpdateContext updateContext, Object value) {
-            updateContext.changeProperty(new GUserInputResult(value, index));
+        public void onClick(UpdateContext updateContext) {
+            updateContext.executeContextAction(index);
         }
 
         @Override
@@ -331,20 +335,31 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public boolean hasFooter;
 
     // eventually gets to PropertyDrawEntity.getEventAction (which is symmetrical to this)
-    public String getEventSID(Event editEvent) {
-        String actionSID = null;
+    public String getEventSID(Event editEvent, Result<Integer> contextAction) {
         if (editBindingMap != null) { // property bindings
-            actionSID = editBindingMap.getEventSID(editEvent);
+            String actionSID = editBindingMap.getEventSID(editEvent);
+            if(actionSID != null)
+                return actionSID;
         }
-        // not sure that it should be done like this since enter is used as a tab
-//        if (actionSID == null && baseType instanceof GActionType && GKeyStroke.isEnterKeyEvent(editEvent)) {
-//            return GEditBindingMap.CHANGE;
-//        }
-        if (actionSID == null) {
-            GType changeType = getChangeType();
-            actionSID = GEditBindingMap.getDefaultEventSID(editEvent, changeType == null ? null : changeType.getEditEventFilter(), hasEditObjectAction, hasUserChangeAction());
+
+        GInputList inputList;
+        if (KEYDOWN.equals(editEvent.getType()) && (inputList = getInputList()) != null) {
+            GKeyStroke keyStroke = null;
+            for (int i = 0; i < inputList.actions.length; i++) {
+                GInputListAction action = inputList.actions[i];
+                if (action.keyStroke != null) {
+                    if (keyStroke == null)
+                        keyStroke = getKeyStroke(editEvent);
+                    if (keyStroke.equals(action.keyStroke)) {
+                        contextAction.set(i);
+                        return CHANGE;
+                    }
+                }
+            }
         }
-        return actionSID;
+
+        GType changeType = getChangeType();
+        return GEditBindingMap.getDefaultEventSID(editEvent, changeType == null ? null : changeType.getEditEventFilter(), hasEditObjectAction, hasUserChangeAction());
     }
     public boolean isFilterChange(Event editEvent) {
         return GEditBindingMap.isDefaultFilterChange(editEvent, baseType.getEditEventFilter());

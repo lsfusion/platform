@@ -2,7 +2,8 @@ package lsfusion.gwt.client.form.property.cell.view;
 
 public interface UpdateContext {
     
-    void changeProperty(GUserInputResult result);
+    default void changeProperty(Object result) {}
+    default void executeContextAction(int action) {}
 
     default boolean isPropertyReadOnly() { return true; }
 

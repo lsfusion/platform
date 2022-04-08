@@ -1143,9 +1143,6 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
             public boolean globalCaptionIsDrawn() {
                 return true;
             }
-            @Override
-            public void changeProperty(GUserInputResult result) {
-            }
 
             @Override
             public Object getValue() {

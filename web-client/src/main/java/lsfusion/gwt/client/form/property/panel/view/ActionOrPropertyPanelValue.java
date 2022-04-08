@@ -8,7 +8,6 @@ import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.controller.ExecuteEditContext;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
-import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
 import lsfusion.gwt.client.view.MainFrame;
 
 import static lsfusion.gwt.client.base.view.ColorUtils.getDisplayColor;
@@ -128,7 +127,12 @@ public class ActionOrPropertyPanelValue extends ActionOrPropertyValue implements
     }
 
     @Override
-    public void changeProperty(GUserInputResult result) {
+    public void changeProperty(Object result) {
         form.changeProperty(this, result);
+    }
+
+    @Override
+    public void executeContextAction(int action) {
+        form.executeContextAction( this, action);
     }
 }

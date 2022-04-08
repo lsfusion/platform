@@ -47,10 +47,6 @@ public class GGridPropertyTableFooter extends Header<String> implements RenderCo
     }
 
     @Override
-    public void changeProperty(GUserInputResult result) {
-    }
-
-    @Override
     public Object getValue() {
         return value;
     }

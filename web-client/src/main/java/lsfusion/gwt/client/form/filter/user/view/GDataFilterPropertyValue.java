@@ -7,7 +7,6 @@ import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
-import lsfusion.gwt.client.form.property.async.GAsyncExec;
 import lsfusion.gwt.client.form.property.async.GInputList;
 import lsfusion.gwt.client.form.property.async.GInputListAction;
 import lsfusion.gwt.client.form.property.cell.classes.controller.suggest.GCompletionType;
@@ -117,8 +116,13 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
     }
 
     @Override
-    public void changeProperty(GUserInputResult result) {
-        updateAndCommit(result.getValue());
+    public void changeProperty(Object result) {
+        updateAndCommit(result);
+    }
+
+    @Override
+    public void executeContextAction(int action) {
+        throw new UnsupportedOperationException();
     }
 
     private void updateAndCommit(Object value) {
@@ -151,8 +155,8 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
         }
 
         @Override
-        public void onClick(UpdateContext updateContext, Object value) {
-            updateContext.changeProperty(new GUserInputResult(null, null));
+        public void onClick(UpdateContext updateContext) {
+            updateContext.changeProperty(null);
         }
 
         @Override

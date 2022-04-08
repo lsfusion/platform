@@ -14,6 +14,7 @@ import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.identity.IdentityObject;
+import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.PropertyEditType;
 import lsfusion.interop.form.property.PropertyGroupType;
@@ -406,7 +407,10 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     private ImRevMap<P, ObjectEntity> getEditMapping() {
         return propertyObject.mapping;
     }     
-    
+
+    public Iterable<String> getAllEventActions() {
+        return BaseUtils.mergeIterables(BaseUtils.mergeIterables(ServerResponse.events, getContextMenuBindings().keySet()), getKeyBindings().valueIt());
+    }
     public OrderedMap<String, LocalizedString> getContextMenuBindings() {
         ImOrderMap<String, LocalizedString> propertyContextMenuBindings = getEventProperty().getContextMenuBindings(); 
         if (propertyContextMenuBindings.isEmpty()) {

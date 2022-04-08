@@ -1,11 +1,14 @@
 package lsfusion.gwt.client.form.property.async;
 
+import lsfusion.gwt.client.form.event.GKeyStroke;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 
 public class GInputListAction implements Serializable {
     public String action;
     public GAsyncEventExec asyncExec;
+    public GKeyStroke keyStroke;
     public ArrayList<GQuickAccess> quickAccessList;
 
     @SuppressWarnings("unused")

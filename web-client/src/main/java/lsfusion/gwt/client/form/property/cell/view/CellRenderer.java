@@ -183,7 +183,7 @@ public abstract class CellRenderer<T> {
         }
 
         if(needToRenderToolbarContent())
-            renderToolbarContent(element, updateContext, renderedState, value, background, cleared);
+            renderToolbarContent(element, updateContext, renderedState, background, cleared);
     }
 
     // in theory in most case we can get previous state without storing it in Element, but for now it's the easiest way
@@ -228,14 +228,14 @@ public abstract class CellRenderer<T> {
         boolean isHover();
         String getImage();
 
-        void onClick(UpdateContext updateContext, Object value);
+        void onClick(UpdateContext updateContext);
 
         boolean matches(ToolbarAction action);
     }
 
     public final static GPropertyDraw.QuickAccessAction[] noToolbarActions = new GPropertyDraw.QuickAccessAction[0];
     // cleared - cleared with setInnerText / setInnerHTML
-    protected void renderToolbarContent(Element element, UpdateContext updateContext, RenderedState renderedState, Object value, String background, boolean cleared) {
+    protected void renderToolbarContent(Element element, UpdateContext updateContext, RenderedState renderedState, String background, boolean cleared) {
         boolean loading = updateContext.isLoading() && !renderedLoadingContent(updateContext);
         ToolbarAction[] toolbarActions = updateContext.getToolbarActions();
 
@@ -296,7 +296,7 @@ public abstract class CellRenderer<T> {
                     }
                     GwtClientUtils.setThemeImage(toolbarAction.getImage() + ".png", actionImgElement::setSrc);
 
-                    GwtClientUtils.setOnClick(actionDivElement, () -> toolbarAction.onClick(updateContext, value));
+                    GwtClientUtils.setOnClick(actionDivElement, () -> toolbarAction.onClick(updateContext));
 
                     addToToolbar(toolbarElement, start, actionDivElement);
                 }

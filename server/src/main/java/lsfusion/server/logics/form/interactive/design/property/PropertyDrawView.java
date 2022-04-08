@@ -225,7 +225,7 @@ public class PropertyDrawView extends BaseComponentView {
         Map<String, AsyncEventExec> asyncExecMap = new HashMap<>();
         Boolean sync = getSync();
         if(sync == null || !sync) { // if WAIT we don't want any asyncs
-            for (String actionId : ServerResponse.events) {
+            for (String actionId : entity.getAllEventActions()) {
                 AsyncEventExec asyncEventExec = entity.getAsyncEventExec(context.entity, context.securityPolicy, actionId, false);
                 if (asyncEventExec == null && (sync != null || !defaultSync)) // explicit NOWAIT or not default sync
                     asyncEventExec = AsyncNoWaitExec.instance;

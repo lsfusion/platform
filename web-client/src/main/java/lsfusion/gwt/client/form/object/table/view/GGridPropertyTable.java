@@ -26,7 +26,6 @@ import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController
 import lsfusion.gwt.client.form.order.user.GGridSortableHeaderManager;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
-import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTable;
@@ -615,8 +614,13 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     public UpdateContext getUpdateContext(Cell cell, TableCellElement cellElement, GPropertyDraw property, GridPropertyColumn column) {
         return new UpdateContext() {
             @Override
-            public void changeProperty(GUserInputResult result) {
+            public void changeProperty(Object result) {
                 form.changeProperty(getEditContext(cell, cellElement), result);
+            }
+
+            @Override
+            public void executeContextAction(int action) {
+                form.executeContextAction(getEditContext(cell, cellElement), action);
             }
 
             @Override
