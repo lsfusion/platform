@@ -101,6 +101,10 @@
     margin: 1px 2px;
 }
 
+.property-toolbar-loading {
+    padding: 2px;
+}
+
 .property-toolbar-item {
     /*overflow: hidden;*/
     padding: 2px;
@@ -114,7 +118,7 @@
 }
 
 .property-toolbar-item:hover {
-    background-color: var(--button-hover-background-color);
+    border: 1px solid var(--component-hover-border-color);
 }
 
 .dataGridHeaderCell-caption {

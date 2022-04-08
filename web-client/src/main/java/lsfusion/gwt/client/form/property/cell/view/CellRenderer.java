@@ -275,6 +275,7 @@ public abstract class CellRenderer<T> {
             if(loading) {
                 ImageElement loadingImage = Document.get().createImageElement();
                 GwtClientUtils.setThemeImage(ICON_LOADING, loadingImage::setSrc);
+                loadingImage.addClassName("property-toolbar-loading");
 
                 addToToolbar(toolbarElement, start, loadingImage);
             }
