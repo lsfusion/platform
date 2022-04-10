@@ -1,6 +1,8 @@
 package lsfusion.gwt.client.form.filter.user.view;
 
+import com.google.gwt.dom.client.ImageElement;
 import com.google.gwt.user.client.Event;
+import lsfusion.gwt.client.base.Result;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.form.controller.GFormController;
@@ -90,9 +92,13 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
 
     @Override
     protected void onEditEvent(EventHandler handler) {
-        if(property.isFilterChange(handler.event)) {
+        Result<Boolean> contextAction = new Result<>();
+        if(property.isFilterChange(handler.event, contextAction)) {
             handler.consume();
-            startEditing(handler.event);
+            if(contextAction.result != null) // assert that reset is called
+                updateAndCommit(null);
+            else
+                startEditing(handler.event);
         }
     }
     
@@ -155,8 +161,9 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
         }
 
         @Override
-        public void onClick(UpdateContext updateContext) {
-            updateContext.changeProperty(null);
+        public void setOnPressed(ImageElement actionImgElement, UpdateContext updateContext) {
+            setToolbarAction(actionImgElement, true);
+//            setToolbarAction(actionImgElement, () -> updateContext.changeProperty(null));
         }
 
         @Override

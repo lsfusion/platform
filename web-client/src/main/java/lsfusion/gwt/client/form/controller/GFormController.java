@@ -2287,7 +2287,8 @@ public class GFormController implements EditManager {
         if(handler.consumed)
             return;
 
-        if(GMouseStroke.isChangeEvent(handler.event) && GwtClientUtils.getFocusedChild(focusElement) == null) // need to check that focus is not on the grid, otherwise when editing for example embedded form, any click will cause moving focus to grid, i.e. stopping the editing
+        if(GMouseStroke.isChangeEvent(handler.event) &&
+                GwtClientUtils.getFocusedChild(focusElement) == null) // need to check that focus is not on the grid, otherwise when editing for example embedded form, any click will cause moving focus to grid, i.e. stopping the editing
             focusElement.focus(); // it should be done on CLICK, but also on MOUSEDOWN, since we want to focus even if mousedown is later consumed
 
         /*if(!previewLoadingManagerSinkEvents(handler.event)) {

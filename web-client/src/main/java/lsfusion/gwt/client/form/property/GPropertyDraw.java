@@ -1,12 +1,10 @@
 package lsfusion.gwt.client.form.property;
 
+import com.google.gwt.dom.client.ImageElement;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.ClientMessages;
-import lsfusion.gwt.client.base.GwtSharedUtils;
-import lsfusion.gwt.client.base.ImageDescription;
-import lsfusion.gwt.client.base.ImageHolder;
-import lsfusion.gwt.client.base.Result;
+import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
@@ -131,8 +129,9 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         }
 
         @Override
-        public void onClick(UpdateContext updateContext) {
-            updateContext.executeContextAction(index);
+        public void setOnPressed(ImageElement actionImgElement, UpdateContext updateContext) {
+            setToolbarAction(actionImgElement, index);
+//            setToolbarAction(actionImgElement, () -> updateContext.executeContextAction(index));
         }
 
         @Override
@@ -359,10 +358,10 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         }
 
         GType changeType = getChangeType();
-        return GEditBindingMap.getDefaultEventSID(editEvent, changeType == null ? null : changeType.getEditEventFilter(), hasEditObjectAction, hasUserChangeAction());
+        return GEditBindingMap.getDefaultEventSID(editEvent, contextAction, changeType == null ? null : changeType.getEditEventFilter(), hasEditObjectAction, hasUserChangeAction());
     }
-    public boolean isFilterChange(Event editEvent) {
-        return GEditBindingMap.isDefaultFilterChange(editEvent, baseType.getEditEventFilter());
+    public boolean isFilterChange(Event editEvent, Result<Boolean> contextAction) {
+        return GEditBindingMap.isDefaultFilterChange(editEvent, contextAction, baseType.getEditEventFilter());
     }
 
     public GPropertyDraw(){}

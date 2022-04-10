@@ -1066,11 +1066,9 @@ public class GwtClientUtils {
         console.error(error);
     }-*/;
 
-    public static native void setOnClick(Element element, Runnable run)/*-{
+    public static native void setOnMouseDown(Element element, Consumer<NativeEvent> run)/*-{
         element.onmousedown = function(event) {
-            event.stopPropagation();
-            event.preventDefault();
-            run.@Runnable::run()();
+            run.@Consumer::accept(*)(event);
         }
     }-*/;
 }

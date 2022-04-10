@@ -2,6 +2,7 @@ package lsfusion.gwt.client.form.property.table.view;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.TableCellElement;
+import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.base.view.grid.GridStyle;
@@ -9,13 +10,14 @@ import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.event.GBindingMode;
+import lsfusion.gwt.client.form.event.GMouseStroke;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.object.table.view.GridDataRecord;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.controller.ExecuteEditContext;
-import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 
@@ -46,11 +48,13 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
     public abstract GGridPropertyTable<T>.GridPropertyColumn getGridColumn(int column);
 
     @Override
-    public boolean isChangeOnSingleClick(Cell cell, boolean rowChanged) {
+    public boolean isChangeOnSingleClick(Cell cell, Event event, boolean rowChanged) {
         GPropertyDraw property = getProperty(cell);
         if(property != null && property.changeOnSingleClick != null)
             return property.changeOnSingleClick;
-        return super.isChangeOnSingleClick(cell, rowChanged) || (!rowChanged && GFormController.isLinkEditMode() && property != null && property.hasEditObjectAction);
+        return super.isChangeOnSingleClick(cell, event, rowChanged) ||
+                (!rowChanged && GFormController.isLinkEditMode() && property != null && property.hasEditObjectAction) ||
+                (GMouseStroke.isChangeEvent(event) && GEditBindingMap.getToolbarAction(event) != null);
     }
 
     public abstract GGroupObjectValue getColumnKey(Cell editCell);

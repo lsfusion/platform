@@ -26,7 +26,6 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Result;
 import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
-import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.event.GMouseStroke;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
@@ -830,7 +829,7 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
     public boolean isFocusable(Cell cell) {
         return cell.getColumn().isFocusable();
     }
-    public boolean isChangeOnSingleClick(Cell cell, boolean rowChanged) {
+    public boolean isChangeOnSingleClick(Cell cell, Event event, boolean rowChanged) {
         return !isFocusable(cell);
     }
 

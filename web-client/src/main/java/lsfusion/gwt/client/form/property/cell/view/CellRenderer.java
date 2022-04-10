@@ -6,6 +6,7 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 
 public abstract class CellRenderer<T> {
 
@@ -228,9 +229,27 @@ public abstract class CellRenderer<T> {
         boolean isHover();
         String getImage();
 
-        void onClick(UpdateContext updateContext);
-
         boolean matches(ToolbarAction action);
+
+        // there are to ways of working with toolbar actions
+        // 1 is setting some mark for the target element (s) and then checking it in regular event handler (this  is more flexible, for example in editOnSingleClick scenario, however needs some assertions)
+        // 2 setting onMouseDown and stopping propagation (this way the row change won't be handled, when using ALL, and maybe some mor things)
+        default void setToolbarAction(ImageElement actionImgElement, Object value) {
+            // we're setting TOOLBAR_ACTION for all containers to avoid recursive run in getToolbarAction (optimization)
+            actionImgElement.setPropertyObject(GEditBindingMap.TOOLBAR_ACTION, value);
+            Element parentElement = actionImgElement.getParentElement();
+            parentElement.setPropertyObject(GEditBindingMap.TOOLBAR_ACTION, value);
+        }
+        default void setToolbarAction(ImageElement actionImgElement, Runnable run) {
+            // it has to be mouse down, since all other handlers use mousedown
+            GwtClientUtils.setOnMouseDown(actionImgElement.getParentElement(), nativeEvent -> {
+                nativeEvent.stopPropagation(); // need to stop, otherwise editing will be started
+                nativeEvent.preventDefault(); // preventing default stops button from focusing (this way we make this button unfocusable, which is important since onClick will lead to rerender, removing component and in this case focus will go south)
+                run.run();
+            });
+        }
+
+        void setOnPressed(ImageElement actionImgElement, UpdateContext updateContext);
     }
 
     public final static GPropertyDraw.QuickAccessAction[] noToolbarActions = new GPropertyDraw.QuickAccessAction[0];
@@ -286,6 +305,7 @@ public abstract class CellRenderer<T> {
 
                 int hoverCount = 0;
                 for (ToolbarAction toolbarAction : toolbarActions) {
+                    // there is an assertion that the DOM structure will be exactly like that in setOnPressed / for optimization reasons
                     DivElement actionDivElement = Document.get().createDivElement();
                     ImageElement actionImgElement = Document.get().createImageElement();
                     actionDivElement.appendChild(actionImgElement);
@@ -296,7 +316,7 @@ public abstract class CellRenderer<T> {
                     }
                     GwtClientUtils.setThemeImage(toolbarAction.getImage() + ".png", actionImgElement::setSrc);
 
-                    GwtClientUtils.setOnClick(actionDivElement, () -> toolbarAction.onClick(updateContext));
+                    toolbarAction.setOnPressed(actionImgElement, updateContext);
 
                     addToToolbar(toolbarElement, start, actionDivElement);
                 }
