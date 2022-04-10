@@ -113,6 +113,14 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         return fullCurrentKey.filter(columnGroupObjects != null ? columnGroupObjects : Collections.emptyList());
     }
 
+    public Boolean loadingReplaceImage;
+    public boolean isLoadingReplaceImage() {
+        if(loadingReplaceImage != null)
+            return loadingReplaceImage;
+
+        return !hasDynamicImage(); // move to server afterwards
+    }
+
     public static class QuickAccessAction implements CellRenderer.ToolbarAction {
         public final String action;
         public final int index;

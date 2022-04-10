@@ -129,7 +129,7 @@ public class ActionCellRenderer extends CellRenderer {
 
     @Override
     protected boolean renderedLoadingContent(UpdateContext updateContext) {
-        return hasImage(updateContext);
+        return hasImage(updateContext) && property.isLoadingReplaceImage();
     }
 
     @Override
@@ -142,7 +142,7 @@ public class ActionCellRenderer extends CellRenderer {
             boolean absolute = true;
 
             Object image;
-            if(updateContext.isLoading()) {
+            if(updateContext.isLoading() && property.isLoadingReplaceImage()) {
                 imagePath = ICON_LOADING;
                 absolute = false;
             } else if(property.hasDynamicImage()) {
