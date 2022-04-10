@@ -2819,7 +2819,7 @@ public class Settings implements Cloneable {
         this.disableCombineFilters = disableCombineFilters;
     }
 
-    private boolean useGroupFiltersInAsyncFilterCompletion = false;
+    private boolean useGroupFiltersInAsyncFilterCompletion = true;
 
     public boolean isUseGroupFiltersInAsyncFilterCompletion() {
         return useGroupFiltersInAsyncFilterCompletion;
