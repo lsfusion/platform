@@ -42,6 +42,8 @@ import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.ObjectClass;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
+import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapChange;
+import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapInput;
 import lsfusion.server.logics.form.interactive.action.change.CheckCanBeChangedAction;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.action.input.PushRequestAction;
@@ -891,7 +893,16 @@ public class PropertyFact {
         ChangeClassAction<W, L> action = new ChangeClassAction<>(cls, forceDialog, innerInterfaces, mapInterfaces, changeInterface, whereProp, baseClass);
         return action.getMapImplement();
     }
-    
+
+    public static <X extends PropertyInterface, T extends PropertyInterface> void setResetAsync(Action<X> action, AsyncMapChange<T, X> asyncResetExec) {
+        action.setForceAsyncEventExec(asyncExec -> {
+            if(asyncExec instanceof AsyncMapInput) {
+                asyncExec = ((AsyncMapInput<X>) asyncExec).override("reset", asyncResetExec);
+            }
+            return asyncExec;
+        });
+    }
+
     public static <L extends PropertyInterface, P extends PropertyInterface, W extends PropertyInterface> ActionMapImplement<?, L> createRequestAction(ImSet<L> innerInterfaces, ActionMapImplement<?, L> requestAction, ActionMapImplement<?, L> doAction, ActionMapImplement<?, L> elseAction) {
         ImOrderSet<L> listInterfaces = innerInterfaces.toOrderSet();
         RequestAction setAction = new RequestAction(LocalizedString.NONAME, listInterfaces, requestAction, doAction, elseAction);

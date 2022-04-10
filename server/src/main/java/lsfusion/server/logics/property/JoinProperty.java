@@ -23,10 +23,7 @@ import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
 import lsfusion.server.logics.property.classes.data.AndFormulaProperty;
 import lsfusion.server.logics.property.classes.data.CompareFormulaProperty;
 import lsfusion.server.logics.property.classes.data.NotFormulaProperty;
-import lsfusion.server.logics.property.classes.infer.ClassType;
-import lsfusion.server.logics.property.classes.infer.ExClassSet;
-import lsfusion.server.logics.property.classes.infer.InferType;
-import lsfusion.server.logics.property.classes.infer.Inferred;
+import lsfusion.server.logics.property.classes.infer.*;
 import lsfusion.server.logics.property.data.DataProperty;
 import lsfusion.server.logics.property.implement.PropertyImplement;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
@@ -66,8 +63,25 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
         return isIdentity(this.interfaces, implement);
     }
 
+    @Override
+    public boolean isChangedWhen(boolean toNull, PropertyInterfaceImplement<JoinProperty.Interface> changeProperty) {
+        if(isIdentity) {
+            ImRevMap<T, Interface> joinMapping = BaseUtils.immutableCast(implement.mapping.toRevExclMap());
+            return implement.property.isChangedWhen(toNull, changeProperty.map(joinMapping.reverse()));
+        }
+
+        if(toNull && implement.property.isNotNull(AlgType.actionType))
+            for(PropertyInterfaceImplement<Interface> mapImpl : implement.mapping.valueIt()) {
+                if(mapImpl.getInterfaces().containsAll(changeProperty.getInterfaces()) &&
+                    mapImpl.mapChangedWhen(toNull, changeProperty))
+                    return true;
+            }
+
+        return super.isChangedWhen(toNull, changeProperty);
+    }
+
     public <X extends PropertyInterface> PropertyMapImplement<?, X> getIdentityImplement(ImRevMap<Interface, X> mapping) {
-        if(isIdentity()) {
+        if(isIdentity) {
             ImRevMap<T, Interface> joinMapping = BaseUtils.immutableCast(implement.mapping.toRevExclMap());
             return implement.property.getIdentityImplement(joinMapping.join(mapping));
         }

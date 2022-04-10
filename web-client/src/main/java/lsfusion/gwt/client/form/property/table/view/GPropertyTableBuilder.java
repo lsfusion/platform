@@ -8,14 +8,13 @@ import lsfusion.gwt.client.base.view.grid.Column;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.base.view.grid.GridStyle;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
-import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.table.grid.view.GPivot;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.function.BiPredicate;
 
 /**
  * Based on lsfusion.gwt.client.base.view.grid.DefaultDataGridBuilder
@@ -145,14 +144,16 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
 
             renderTD(td, false);
 
-            renderCell(td, new Cell(rowIndex, columnIndex, column, rowValue), column);
+            Cell cell = new Cell(rowIndex, columnIndex, column, rowValue);
 
-            updateTD(rowIndex, rowValue, td, columnIndex);
+            renderCell(td, cell, column);
+
+            updateCell(td, cell, column);
         }
     }
 
     @Override
-    protected void updateRowImpl(int rowIndex, T rowValue, int[] columnsToRedraw, TableRowElement tr) {
+    public void updateRow(int rowIndex, T rowValue, int[] columnsToRedraw, TableRowElement tr, BiPredicate<Column<T, ?>, Cell> filter) {
         int columnCount = cellTable.getColumnCount();
 
         assert columnCount == tr.getCells().getLength();
@@ -164,7 +165,7 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
                 TableCellElement td = tr.getFirstChild().cast();
                 int columnIndex = 0;
                 while (true) {
-                    updateCellImpl(rowIndex, rowValue, td, columnIndex);
+                    updateCellImpl(rowIndex, rowValue, td, columnIndex, filter);
                     if(++columnIndex >= columnCount)
                         break;
                     td = td.getNextSibling().cast();
@@ -174,29 +175,20 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
             NodeList<TableCellElement> cells = tr.getCells();
             for (int columnIndex : columnsToRedraw) {
                 TableCellElement td = cells.getItem(columnIndex);
-                updateCellImpl(rowIndex, rowValue, td, columnIndex);
+                updateCellImpl(rowIndex, rowValue, td, columnIndex, filter);
             }
         }
     }
 
-    private void updateCellImpl(int rowIndex, T rowValue, TableCellElement td, int columnIndex) {
+    private void updateCellImpl(int rowIndex, T rowValue, TableCellElement td, int columnIndex, BiPredicate<Column<T, ?>, Cell> filter) {
         Column<T, ?> column = cellTable.getColumn(columnIndex);
 
-        updateCell(td, new Cell(rowIndex, columnIndex, column, rowValue), column);
+        Cell cell = new Cell(rowIndex, columnIndex, column, rowValue);
 
-        updateTD(rowIndex, rowValue, td, columnIndex);
-    }
+        if(filter != null && !filter.test(column, cell))
+            return;
 
-    // need this for mixing color
-    public static String BKCOLOR = "lsfusion-bkcolor";
-
-    protected void updateTD(int rowIndex, T rowValue, TableCellElement td, int columnIndex) {
-        String backgroundColor = getBackground(rowValue, columnIndex);
-        td.setPropertyString(BKCOLOR, backgroundColor);
-        GFormController.setBackgroundColor(td, backgroundColor, true);
-
-        String foregroundColor = getForeground(rowValue, columnIndex);
-        GFormController.setForegroundColor(td, foregroundColor, true);
+        updateCell(td, cell, column);
     }
 
     @Override
@@ -244,8 +236,5 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
         }
         td.getStyle().setHeight(height, Style.Unit.PX);
     }
-
-    public abstract String getBackground(T rowValue, int column);
-    public abstract String getForeground(T rowValue, int column);
 }
 

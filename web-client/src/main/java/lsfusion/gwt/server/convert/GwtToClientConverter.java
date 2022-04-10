@@ -4,7 +4,7 @@ import com.google.common.base.Throwables;
 import lsfusion.client.form.object.ClientCustomObjectValue;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.property.async.ClientPushAsyncAdd;
-import lsfusion.client.form.property.async.ClientPushAsyncChange;
+import lsfusion.client.form.property.async.ClientPushAsyncInput;
 import lsfusion.gwt.client.action.GExternalHttpResponse;
 import lsfusion.gwt.client.form.GUpdateMode;
 import lsfusion.gwt.client.form.design.GFont;
@@ -17,7 +17,7 @@ import lsfusion.gwt.client.form.object.table.grid.view.GListViewType;
 import lsfusion.gwt.client.form.property.GClassViewType;
 import lsfusion.gwt.client.form.property.GPropertyGroupType;
 import lsfusion.gwt.client.form.property.async.GPushAsyncAdd;
-import lsfusion.gwt.client.form.property.async.GPushAsyncChange;
+import lsfusion.gwt.client.form.property.async.GPushAsyncInput;
 import lsfusion.gwt.client.form.property.cell.classes.*;
 import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
 import lsfusion.gwt.server.FileUtils;
@@ -138,9 +138,9 @@ public class GwtToClientConverter extends ObjectConverter {
     public byte[] convertPushSyncAdd(GPushAsyncAdd pushAsyncChange) {
         return new ClientPushAsyncAdd(pushAsyncChange.ID).serialize();
     }
-    @Converter(from = GPushAsyncChange.class)
-    public byte[] convertPushAsyncChange(GPushAsyncChange pushAsync) {
-        return new ClientPushAsyncChange(convertOrCast(pushAsync.result)).serialize();
+    @Converter(from = GPushAsyncInput.class)
+    public byte[] convertPushAsyncChange(GPushAsyncInput pushAsync) {
+        return new ClientPushAsyncInput(convertOrCast(pushAsync.result)).serialize();
     }
 
     @Converter(from = GExternalHttpResponse.class)

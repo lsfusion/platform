@@ -262,6 +262,12 @@ public class GwtClientUtils {
         return strut;
     }
 
+    public static Widget createVerticalStretchSeparator() {
+        SimplePanel separator = new SimplePanel();
+        separator.addStyleName("verticalStretchSeparator");
+        return separator;
+    }
+
     public static Widget createVerticalSeparator(int height) {
         SimplePanel separator = new SimplePanel();
         separator.setHeight(height + "px");
@@ -309,7 +315,7 @@ public class GwtClientUtils {
         return el == rootElement;
     }
 
-    public static void setupEdgeParent(Element child, boolean horz, boolean start) {
+    public static void setupEdgeCenteredParent(Element child, boolean horz, boolean start) {
         Element parentElement = child.getParentElement();
         setupFillParentElement(parentElement);
 
@@ -331,6 +337,31 @@ public class GwtClientUtils {
 
             childStyle.setLeft(50, Style.Unit.PCT);
             childStyle.setProperty("transform", "translateX(-50%)");
+        }
+    }
+
+    public static void setupEdgeStretchParent(Element child, boolean horz, boolean start) {
+        Element parentElement = child.getParentElement();
+        setupFillParentElement(parentElement);
+
+        Style childStyle = child.getStyle();
+        childStyle.setPosition(Style.Position.ABSOLUTE);
+        if(horz) {
+            if(start)
+                childStyle.setLeft(0, Style.Unit.PX);
+            else
+                childStyle.setRight(0, Style.Unit.PX);
+
+            childStyle.setTop(0, Style.Unit.PX);
+            childStyle.setBottom(0, Style.Unit.PX);
+        } else {
+            if(start)
+                childStyle.setTop(0, Style.Unit.PX);
+            else
+                childStyle.setBottom(0, Style.Unit.PX);
+
+            childStyle.setLeft(0, Style.Unit.PX);
+            childStyle.setRight(0, Style.Unit.PX);
         }
     }
 
@@ -909,6 +940,8 @@ public class GwtClientUtils {
     public static boolean nullEquals(Object obj1, Object obj2) {
         if (obj1 == null)
             return obj2 == null;
+        if (obj1 == obj2)
+            return true;
         return obj1.equals(obj2);
     }
 
@@ -1049,5 +1082,11 @@ public class GwtClientUtils {
 
     public static native void consoleError(String error)/*-{
         console.error(error);
+    }-*/;
+
+    public static native void setOnMouseDown(Element element, Consumer<NativeEvent> run)/*-{
+        element.onmousedown = function(event) {
+            run.@Consumer::accept(*)(event);
+        }
     }-*/;
 }

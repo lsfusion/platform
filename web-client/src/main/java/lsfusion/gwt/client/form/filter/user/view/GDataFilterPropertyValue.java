@@ -1,17 +1,22 @@
 package lsfusion.gwt.client.form.filter.user.view;
 
+import com.google.gwt.dom.client.ImageElement;
 import com.google.gwt.user.client.Event;
+import lsfusion.gwt.client.base.Result;
 import lsfusion.gwt.client.base.view.EventHandler;
+import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
-import lsfusion.gwt.client.form.property.async.GAsyncExec;
 import lsfusion.gwt.client.form.property.async.GInputList;
+import lsfusion.gwt.client.form.property.async.GInputListAction;
 import lsfusion.gwt.client.form.property.cell.classes.controller.suggest.GCompletionType;
 import lsfusion.gwt.client.form.property.cell.controller.CancelReason;
 import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
+import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
+import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 import lsfusion.gwt.client.form.property.panel.view.ActionOrPropertyValue;
 import lsfusion.gwt.client.form.property.panel.view.ActionOrPropertyValueController;
 import lsfusion.interop.action.ServerResponse;
@@ -36,6 +41,7 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
 
             @Override
             public void setLoading(GGroupObjectValue columnKey, Object value) {
+                throw new UnsupportedOperationException();
             }
         });
         this.afterCommit = afterCommit;
@@ -46,15 +52,22 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
         finalizeInit();
     }
 
+    public void updateValue(Object value) {
+        update(value, loading, null, null, null, false);
+    }
+
+    public void updateLoading(boolean loading) {
+        update(value, loading, null, null, null, false);
+    }
+
     @Override
     public void pasteValue(String stringValue) {
         Object objValue = null;
         try {
             objValue = property.baseType.parseString(stringValue, property.pattern);
         } catch (ParseException ignored) {}
-        update(objValue);
 
-        afterCommit.accept(objValue);
+        updateAndCommit(objValue);
     }
 
     @Override
@@ -79,9 +92,13 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
 
     @Override
     protected void onEditEvent(EventHandler handler) {
-        if(property.isFilterChange(handler.event)) {
+        Result<Boolean> contextAction = new Result<>();
+        if(property.isFilterChange(handler.event, contextAction)) {
             handler.consume();
-            startEditing(handler.event);
+            if(contextAction.result != null) // assert that reset is called
+                updateAndCommit(null);
+            else
+                startEditing(handler.event);
         }
     }
     
@@ -105,16 +122,18 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
     }
 
     @Override
-    public Consumer<Object> getCustomRendererValueChangeConsumer() {
-        return value -> {
-            update(value);
-            afterCommit.accept(value);
-        };
+    public void changeProperty(Object result) {
+        updateAndCommit(result);
     }
 
     @Override
-    public boolean isPropertyReadOnly() {
-        return false;
+    public void executeContextAction(int action) {
+        throw new UnsupportedOperationException();
+    }
+
+    private void updateAndCommit(Object value) {
+        updateValue(value);
+        afterCommit.accept(value);
     }
 
     public void setApplied(boolean applied) {
@@ -126,8 +145,41 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
     }
 
     public void changeInputList(GCompare compare) {
-        inputList = new GInputList(new String[0],
-                new GAsyncExec[0],
+        inputList = new GInputList(new GInputListAction[0],
                 compare == GCompare.EQUALS || compare == GCompare.NOT_EQUALS ? GCompletionType.SEMI_STRICT : GCompletionType.NON_STRICT);
+    }
+
+    private static final CellRenderer.ToolbarAction dropAction = new CellRenderer.ToolbarAction() {
+        @Override
+        public boolean isHover() {
+            return true;
+        }
+
+        @Override
+        public String getImage() {
+            return "reset";
+        }
+
+        @Override
+        public void setOnPressed(ImageElement actionImgElement, UpdateContext updateContext) {
+            setToolbarAction(actionImgElement, true);
+//            setToolbarAction(actionImgElement, () -> updateContext.changeProperty(null));
+        }
+
+        @Override
+        public boolean matches(CellRenderer.ToolbarAction action) {
+            return false;
+        }
+    };
+    private static final CellRenderer.ToolbarAction[] filterActions = new CellRenderer.ToolbarAction[] {dropAction};
+
+    @Override
+    public CellRenderer.ToolbarAction[] getToolbarActions() {
+        return filterActions;
+    }
+
+    @Override
+    public boolean canUseChangeValueForRendering(GType type) {
+        return true;
     }
 }

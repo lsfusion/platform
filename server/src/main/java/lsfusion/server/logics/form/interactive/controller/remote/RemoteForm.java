@@ -1105,7 +1105,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         if(propertyDraw.isProperty()) {
             asyncResult = asyncEventExec -> {
                 try {
-                    return asyncEventExec instanceof AsyncChange ? new PushAsyncChange(ObjectValue.getValue(((AsyncChange) asyncEventExec).changeType.parseJSON(value), ((AsyncChange) asyncEventExec).changeType)) : null;
+                    return asyncEventExec instanceof AsyncInput ? new PushAsyncInput(ObjectValue.getValue(((AsyncInput) asyncEventExec).changeType.parseJSON(value), ((AsyncInput) asyncEventExec).changeType)) : null;
                 } catch (ParseException e) {
                     throw Throwables.propagate(e);
                 }

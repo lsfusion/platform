@@ -111,7 +111,7 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
     public void addEnterBinding(Widget widget) {
         addBinding(new GKeyInputEvent(new GKeyStroke(KeyCodes.KEY_ENTER)),
                 new GBindingEnv(null, null, null, null, null, null, GBindingMode.ONLY, null),
-                event -> processBinding(event, () -> applyFilters(true)),
+                event -> processBinding(event, () -> applyFilters(true, null)),
                 widget);
     }
 
@@ -232,13 +232,11 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
 
     @Override
     public void removeCondition(GPropertyFilter condition) {
-        conditionViews.remove(condition);
-
-        removeConditionView(condition);
+        removeConditionViewInner(condition);
 
         updateConditionsLastState();
 
-        applyFilters(true);
+        applyFilters(true, null);
     }
 
     public void resetAllConditions() {
@@ -246,15 +244,23 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
     }
 
     public void resetAllConditions(boolean focusFirstComponent) {
+        ArrayList<GFilterConditionView> changed = new ArrayList<>();
         for (GPropertyFilter filter : new LinkedHashMap<>(conditionViews).keySet()) {
             if (filter.isFixed()) {
-                conditionViews.get(filter).clearValueView();
+                GFilterConditionView filterView = conditionViews.get(filter);
+                if(filterView.clearValueView())
+                    changed.add(filterView);
             } else {
-                removeConditionView(filter);
-                conditionViews.remove(filter);
+                removeConditionViewInner(filter);
             }
         }
-        applyFilters(new ArrayList<>(), focusFirstComponent);
+        applyFilters(new ArrayList<>(), changed, focusFirstComponent);
+    }
+
+    private void removeConditionViewInner(GPropertyFilter filter) {
+        removeConditionView(filter);
+        GFilterConditionView filterView = conditionViews.remove(filter);
+        filterView.isRemoved = true;
     }
 
     private void updateConditionsLastState() {
@@ -265,7 +271,7 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
         }
     }
 
-    public void applyFilters(boolean focusFirstComponent) {
+    public void applyFilters(boolean focusFirstComponent, GFilterConditionView changedView) {
         ArrayList<GPropertyFilter> result = new ArrayList<>();
         for (Map.Entry<GPropertyFilter, GFilterConditionView> entry : conditionViews.entrySet()) {
             GFilterConditionView conditionView = entry.getValue();
@@ -277,7 +283,10 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
             }
             conditionView.isConfirmed = true;
         }
-        applyFilters(result, focusFirstComponent);
+        ArrayList<GFilterConditionView> changed = new ArrayList<>();
+        if(changedView != null)
+            changed.add(changedView);
+        applyFilters(result, changed, focusFirstComponent);
     }
 
     public void update() {
@@ -330,6 +339,6 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
         return !conditionViews.isEmpty();
     }
 
-    public abstract void applyFilters(ArrayList<GPropertyFilter> conditions, boolean focusFirstComponent);
+    public abstract void applyFilters(ArrayList<GPropertyFilter> conditions, ArrayList<GFilterConditionView> changed, boolean focusFirstComponent);
     public abstract void addBinding(GInputEvent event, GBindingEnv env, GFormController.BindingExec pressed, Widget component);
 }

@@ -107,8 +107,16 @@ public class GridDataRecord {
         rowBackground = newRowBackground == null ? null : newRowBackground.toString();
     }
 
+    public String getRowBackground() {
+        return rowBackground;
+    }
+
     public void setRowForeground(Object newRowForeground) {
         rowForeground = newRowForeground == null ? null : newRowForeground.toString();
+    }
+
+    public String getRowForeground() {
+        return rowForeground;
     }
 
     public GGroupObjectValue getKey() {

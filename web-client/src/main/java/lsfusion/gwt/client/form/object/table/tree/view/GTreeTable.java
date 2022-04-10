@@ -11,6 +11,7 @@ import lsfusion.gwt.client.base.jsni.JSNIHelper;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.base.view.EventHandler;
+import lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder;
 import lsfusion.gwt.client.base.view.grid.Column;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
@@ -22,11 +23,13 @@ import lsfusion.gwt.client.form.event.GMouseStroke;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController;
+import lsfusion.gwt.client.form.object.table.grid.view.GGridTable;
 import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
 import lsfusion.gwt.client.form.object.table.tree.controller.GTreeGroupController;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTableFooter;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTableHeader;
+import lsfusion.gwt.client.form.object.table.view.GridDataRecord;
 import lsfusion.gwt.client.form.order.user.GGridSortableHeaderManager;
 import lsfusion.gwt.client.form.order.user.GOrder;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -367,7 +370,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         }
 
         @Override
-        public void renderAndUpdateDom(Cell cell, TableCellElement cellElement) {
+        public void renderDom(Cell cell, TableCellElement cellElement) {
             GTreeTable.renderExpandDom(cellElement, getTreeValue(cell));
         }
 
@@ -390,6 +393,9 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
                 updateIndentElement(img, treeValue, i);
             }
+
+            GTreeGridRecord rowValue = (GTreeGridRecord) cell.getRow();
+            AbstractDataGridBuilder.updateColors(cellElement, DataGrid.getSelectedCellBackground(isSelectedRow(cell), isFocusedColumn(cell), rowValue.getRowBackground()), rowValue.getRowForeground(), true);
         }
 
         @Override
@@ -429,6 +435,16 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         @Override
         protected Object getImage(GPropertyDraw property, GTreeGridRecord record) {
             return record.getImage(property);
+        }
+
+        @Override
+        protected String getBackground(GPropertyDraw property, GTreeGridRecord record) {
+            return record.getBackground(property);
+        }
+
+        @Override
+        protected String getForeground(GPropertyDraw property, GTreeGridRecord record) {
+            return record.getForeground(property);
         }
 
         // in tree property might change
@@ -687,9 +703,8 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
                         }
                     }
 
-                    String columnSID = getColumnSID(i);
-                    record.setBackground(columnSID, background == null ? readerProperty.background : background);
-                    record.setForeground(columnSID, foreground == null ? readerProperty.foreground : foreground);
+                    record.setBackground(readerProperty, background == null ? readerProperty.background : background);
+                    record.setForeground(readerProperty, foreground == null ? readerProperty.foreground : foreground);
                     if (readerProperty.hasDynamicImage()) {
                         NativeHashMap<GGroupObjectValue, Object> actionImages = cellImages.get(readerProperty);
                         record.setImage(readerProperty, actionImages == null ? null : actionImages.get(key));
@@ -831,16 +846,6 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         return new ArrayList<>();
     }
 
-    public String getColumnSID(int column) {
-        return "" + column;
-    }
-
-    @Override
-    public GPropertyDraw getProperty(int row, int column) {
-        GTreeGridRecord rowValue = getRowValue(row);
-        return rowValue == null ? null : tree.getProperty(rowValue.getGroup(), column);
-    }
-
     @Override
     public GPropertyDraw getProperty(Cell cell) {
         GTreeGridRecord rowValue = getTreeGridRow(cell);
@@ -879,7 +884,16 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         GPropertyDraw property = getProperty(cell);
         // assert property is not null since we want get here if property is null
 
+        setValueAt(property, rowRecord, value);
+    }
+
+    public Pair<GGroupObjectValue, Object> setLoadingValueAt(GPropertyDraw property, GGroupObjectValue fullCurrentKey, Object value) {
+        return setLoadingValueAt(property, treeGroup.filterRowKeys(property.groupObject, fullCurrentKey), tree.getPropertyIndex(property), GGroupObjectValue.EMPTY, value);
+    }
+
+    private void setValueAt(GPropertyDraw property, GTreeGridRecord rowRecord, Object value) {
         rowRecord.setValue(property, value);
+
         tree.values.get(property).put(rowRecord.getKey(), value);
     }
 
@@ -889,6 +903,10 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         GPropertyDraw property = getProperty(cell);
         // assert property is not null since we want get here if property is null
 
+        setLoadingAt(property, rowRecord);
+    }
+
+    private void setLoadingAt(GPropertyDraw property, GTreeGridRecord rowRecord) {
         rowRecord.setLoading(property, true);
         NativeHashMap<GGroupObjectValue, Object> loadingMap = tree.loadings.get(property);
         if(loadingMap == null) {

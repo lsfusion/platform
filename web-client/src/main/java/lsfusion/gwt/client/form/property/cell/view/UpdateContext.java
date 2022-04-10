@@ -1,18 +1,26 @@
 package lsfusion.gwt.client.form.property.cell.view;
 
-import java.util.function.Consumer;
-
 public interface UpdateContext {
     
-    Consumer<Object> getCustomRendererValueChangeConsumer();
-    
-    boolean isPropertyReadOnly();
+    default void changeProperty(Object result) {}
+    default void executeContextAction(int action) {}
+
+    default boolean isPropertyReadOnly() { return true; }
 
     boolean globalCaptionIsDrawn();
 
     Object getValue();
 
-    boolean isLoading();
+    default boolean isLoading() { return false; }
 
-    Object getImage();
+    default Object getImage() { return null; }
+
+    boolean isSelectedRow();
+    default boolean isSelectedLink() { return isSelectedRow(); }
+
+    default CellRenderer.ToolbarAction[] getToolbarActions() { return CellRenderer.noToolbarActions; } ;
+
+    default String getBackground() { return null; }
+
+    default String getForeground() { return null; }
 }

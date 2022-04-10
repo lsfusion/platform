@@ -20,6 +20,7 @@ import lsfusion.gwt.client.form.event.GInputEvent;
 import lsfusion.gwt.client.form.filter.user.GFilter;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.filter.user.controller.GFilterController;
+import lsfusion.gwt.client.form.filter.user.view.GFilterConditionView;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.GObject;
@@ -185,8 +186,12 @@ public abstract class GAbstractTableController extends GPropertyController imple
     public void initFilters() {
         filter = new GFilterController(this, getFilters(), getFormLayout().getContainerView(getFiltersContainer()) != null) {
             @Override
-            public void applyFilters(ArrayList<GPropertyFilter> conditions, boolean focusFirstComponent) {
-                changeFilter(conditions);
+            public void applyFilters(ArrayList<GPropertyFilter> conditions, ArrayList<GFilterConditionView> changed, boolean focusFirstComponent) {
+                long requestIndex = changeFilter(conditions);
+
+                for(GFilterConditionView filterView : changed)
+                    formController.setLoading(filterView, requestIndex);
+
                 if (focusFirstComponent) {
                     Scheduler.get().scheduleDeferred(() -> focusFirstWidget());
                 }
@@ -244,7 +249,7 @@ public abstract class GAbstractTableController extends GPropertyController imple
         }
     }
 
-    protected abstract void changeFilter(ArrayList<GPropertyFilter> conditions);
+    protected abstract long changeFilter(ArrayList<GPropertyFilter> conditions);
     // eventually is called either on form opening / form tab selection / filter dialog close
     public abstract boolean focusFirstWidget();
     public abstract GComponent getGridComponent();

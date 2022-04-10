@@ -12,6 +12,7 @@ import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
 import java.util.ArrayList;
+import java.util.Optional;
 
 import static lsfusion.gwt.client.base.GwtSharedUtils.nullEquals;
 
@@ -67,12 +68,8 @@ public abstract class PanelRenderer {
         return getSizedWidget().widget;
     }
 
-    public void updateValue(Object value, boolean loading, Object image) {
-        this.value.update(value, loading, image);
-    }
-
-    public void setReadOnly(boolean readOnly) {
-        value.setReadOnly(readOnly);
+    public void update(Object value, boolean loading, Object image, Object background, Object foreground, boolean readOnly) {
+        this.value.update(value, loading, image, background, foreground, readOnly);
     }
 
     private String caption;
@@ -92,29 +89,15 @@ public abstract class PanelRenderer {
 
     protected abstract void setLabelText(String text);
 
-    private Object background;
-    public void updateCellBackgroundValue(Object value) {
-        if (!nullEquals(background, value)) {
-            background = value;
-
-            this.value.setBackground(value != null ? value.toString() : null);
-        }
-    }
-
     public void onBinding(Event event) {
         value.onBinding(event);
     }
 
-    private Object foreground;
-    public void updateCellForegroundValue(Object value) {
-        if (!nullEquals(foreground, value)) {
-            foreground = value;
-
-            this.value.setForeground(value != null ? value.toString() : null);
-        }
-    }
-
     public void focus() {
         value.setFocus(true);
+    }
+
+    public Object setLoadingValue(Object value) {
+        return this.value.setLoadingValue(value);
     }
 }

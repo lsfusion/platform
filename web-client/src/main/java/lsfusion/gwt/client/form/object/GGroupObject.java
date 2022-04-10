@@ -9,19 +9,12 @@ import lsfusion.gwt.client.form.object.table.grid.GGrid;
 import lsfusion.gwt.client.form.object.table.grid.view.GListViewType;
 import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTableHeader;
-import lsfusion.gwt.client.form.property.GClassViewType;
-import lsfusion.gwt.client.form.property.GPivotOptions;
-import lsfusion.gwt.client.form.property.GRowBackgroundReader;
-import lsfusion.gwt.client.form.property.GRowForegroundReader;
+import lsfusion.gwt.client.form.property.*;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-import static java.lang.Math.pow;
-import static java.lang.Math.round;
+import static java.lang.Math.*;
 
 public class GGroupObject implements Serializable, HasNativeSID {
     public List<GObject> objects = new ArrayList<>();
@@ -158,5 +151,9 @@ public class GGroupObject implements Serializable, HasNativeSID {
         }
 
         return result;
+    }
+
+    public GGroupObjectValue filterRowKeys(GGroupObjectValue fullCurrentKey) {
+        return fullCurrentKey.filter(Collections.singletonList(this));
     }
 }

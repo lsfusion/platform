@@ -187,7 +187,6 @@ input[type=checkbox]:focus {
 
 .ResizableWindow {
     position: absolute;
-    background-color: var(--background-color); /* prevent transparency */
     border: 1px solid var(--dialog-outer-border-color);
 }
 
@@ -280,8 +279,19 @@ input[type=checkbox]:focus {
     margin: var(--border-padding);
 }
 
-.panelRendererValueBoxed {
+.property-toolbar-on-hover .hide {
+    display: none;
+}
+
+.property-toolbar-on-hover:hover .hide {
+    display: flex;
+}
+
+.panelRendererValueBoxed, .panelRendererValueBoxed .background-inherit {
     background: var(--component-background-color);
+}
+
+.panelRendererValueBoxed {
     border: 1px solid var(--component-border-color); /* should correspond to the result in ActionOrPropertyValue.setBaseSize */
 }
 
@@ -306,7 +316,8 @@ button {
 .panelRendererValueEdited {
 }
 
-.panelRendererValueFocused.panelRendererValueBoxed:not(.panelRendererValueEdited), button:focus {
+.panelRendererValueFocused.panelRendererValueBoxed:not(.panelRendererValueEdited),
+.panelRendererValueFocused.panelRendererValueBoxed:not(.panelRendererValueEdited) .background-inherit, button:focus {
     background-color: var(--selection-color);
 }
 
@@ -318,7 +329,7 @@ button {
     border: 1px solid var(--component-hover-border-color);
 }
 
-.panelRendererValueBinding {
+.panelRendererValueBinding, .panelRendererValueBinding .background-inherit {
     background-color: var(--button-active-background-color);
 }
 
@@ -481,7 +492,6 @@ button {
 /* mimicry of propertyPanelRendererValue / panelRendererValue, CELL_HORIZONTAL_PADDING (textbasedCellRenderer) */
 .userFilterSelector {
     cursor : default;
-    background: var(--component-background-color);
     border: 1px solid var(--component-border-color);
     margin: var(--border-padding);
     border-radius: var(--textfield-border-radius);
@@ -494,6 +504,14 @@ button {
     align-items : center;
 }
 
+.userFilterSelector, .userFilterSelector .background-inherit {
+    background-color: var(--component-background-color);
+}
+
+.userFilerValueCellApplied, .userFilerValueCellApplied .background-inherit {
+    background-color: var(--selection-color);
+}
+
 .userFilterNegationCheckBox input {
     margin-left: 3px;
 }
@@ -502,9 +520,6 @@ button {
     margin: 0 7px 0 12px;
 }
 
-.userFilerValueCellApplied {
-    background-color: var(--selection-color);
-}
 
 .gwt-ProgressBar-shell {
     border: 1px solid var(--component-border-color);
@@ -747,11 +762,12 @@ button {
     margin: var(--border-padding);
 }
 
+.gridContainerPanelBoxed, .gridContainerPanelBoxed .background-inherit {
+    background: var(--component-background-color);
+}
 .gridContainerPanelBoxed {
     border: 1px solid var(--component-border-color);
     border-radius: var(--table-border-radius);
-
-    background: var(--component-background-color);
 }
 
 .gridContainerPanelFocused {
@@ -855,6 +871,12 @@ button {
 
 .imageButtonWithoutCaption {
     padding: 1px;
+}
+
+.verticalStretchSeparator {
+    border-left: 1px solid var(--panel-border-color);
+    margin: 3px 2px;
+    align-self: stretch;
 }
 
 .verticalSeparator {

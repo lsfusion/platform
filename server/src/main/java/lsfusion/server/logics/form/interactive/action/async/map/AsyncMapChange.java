@@ -1,79 +1,120 @@
 package lsfusion.server.logics.form.interactive.action.async.map;
 
+import lsfusion.base.BaseUtils;
+import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
-import lsfusion.server.language.property.LP;
-import lsfusion.server.logics.classes.data.DataClass;
+import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.logics.form.interactive.action.async.AsyncChange;
 import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
-import lsfusion.server.logics.form.interactive.action.async.InputList;
-import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
+import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
+import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
+import lsfusion.server.physics.dev.i18n.LocalizedString;
 
-public class AsyncMapChange<T extends PropertyInterface> extends AsyncMapInputExec<T> {
+import java.io.Serializable;
 
-    public final DataClass type;
+public class AsyncMapChange<X extends PropertyInterface, T extends PropertyInterface> extends AsyncMapFormExec<T> {
 
-    public final InputListEntity<?, T> list;
+    public final ObjectEntity object;
+    public final PropertyMapImplement<X, T> property;
 
-    public final InputList inputList;
+    public final T valueInterface;
+    public final Object value;
 
-    public final LP targetProp;
+    public AsyncMapChange(PropertyMapImplement<X, T> property, ObjectEntity object, Object value, T valueInterface) {
+        this.property = property;
+        this.object = object;
+        assert object == null || property == null;
 
-    public final String customEditorFunction;
-
-    public AsyncMapChange(DataClass type, InputListEntity<?, T> list, InputList inputList, LP targetProp, String customEditorFunction) {
-        this.type = type;
-        this.list = list;
-        this.inputList = inputList;
-        this.targetProp = targetProp;
-        this.customEditorFunction = customEditorFunction;
-    }
-
-    private <P extends PropertyInterface> AsyncMapChange<P> override(InputListEntity<?, P> list) {
-        return new AsyncMapChange<P>(type, list, inputList, targetProp, customEditorFunction);
-    }
-
-    public AsyncMapChange<T> newSession() {
-        return override(list != null ? list.newSession() : null);
-    }
-
-    @Override
-    public <P extends PropertyInterface> AsyncMapInputExec<P> map(ImRevMap<T, P> mapping) {
-        return override(list != null ? list.map(mapping) : null);
-    }
-
-    @Override
-    public <P extends PropertyInterface> AsyncMapInputExec<P> mapInner(ImRevMap<T, P> mapping) {
-        return override(list != null ? list.mapInner(mapping) : null);
-    }
-
-    @Override
-    public <P extends PropertyInterface> AsyncMapInputExec<P> mapJoin(ImMap<T, PropertyInterfaceImplement<P>> mapping) {
-        return override(list != null ? list.mapJoin(mapping) : null);
+        this.value = value;
+        this.valueInterface = valueInterface;
+        assert valueInterface == null || value == null;
     }
 
     @Override
     public AsyncEventExec map(ImRevMap<T, ObjectEntity> mapObjects, FormEntity form, GroupObjectEntity toDraw) {
-        return new AsyncChange(type, targetProp, list != null ? inputList : null, customEditorFunction);
+        if(valueInterface != null)
+            return null;
+
+        ImList<PropertyDrawEntity> changedProps = form.findChangedProperties(object != null ? object : property.mapEntityObjects(mapObjects), value == null);
+        if(changedProps != null)
+            return new AsyncChange(changedProps, value instanceof LocalizedString ? ThreadLocalContext.localize((LocalizedString) value) : (Serializable) value);
+
+        return null;
     }
 
     @Override
-    public AsyncMapEventExec<T> merge(AsyncMapEventExec<T> input) {
-        if(!(input instanceof AsyncMapChange))
-            return null;
-
-        AsyncMapChange<T> dataInput = ((AsyncMapChange<T>)input);
-        if(list != null || dataInput.list != null) // later it maybe makes sense to "or" this lists
-            return null;
-
-        DataClass compatibleType = ((DataClass<?>)type).getCompatible(dataInput.type, true);
-        if(compatibleType != null && targetProp.property.equals(dataInput.targetProp.property))
-            return new AsyncMapChange<>(compatibleType, null, null, targetProp, customEditorFunction);
+    public AsyncMapEventExec<T> newSession() {
         return null;
+    }
+
+    @Override
+    public <P extends PropertyInterface> AsyncMapEventExec<P> map(ImRevMap<T, P> mapping) {
+        PropertyMapImplement<X, P> mappedProperty = null;
+        if(object == null) {
+            mappedProperty = property.map(mapping);
+            if(mappedProperty == null)
+                return null;
+        }
+
+        if (valueInterface != null)
+            return new AsyncMapChange<>(mappedProperty, object, null, mapping.get(valueInterface));
+        else
+            return new AsyncMapChange<>(mappedProperty, object, value, null);
+    }
+
+    @Override
+    public <P extends PropertyInterface> AsyncMapEventExec<P> mapInner(ImRevMap<T, P> mapping) {
+        PropertyMapImplement<X, P> mappedProperty = null;
+        if(object == null) {
+            mappedProperty = property.mapInner(mapping);
+            if(mappedProperty == null)
+                return null;
+        }
+
+        if(valueInterface != null) {
+            P mappedValueInterface = mapping.get(valueInterface);
+            if(mappedValueInterface != null)
+                return new AsyncMapChange<>(mappedProperty, object, null, mappedValueInterface);
+        } else
+            return new AsyncMapChange<>(mappedProperty, object, value, null);
+        return null;
+    }
+
+    @Override
+    public <P extends PropertyInterface> AsyncMapEventExec<P> mapJoin(ImMap<T, PropertyInterfaceImplement<P>> mapping) {
+        PropertyMapImplement<X, P> mappedProperty = null;
+        if(object == null) {
+            mappedProperty = property.mapJoin(mapping);
+            if(mappedProperty == null)
+                return null;
+        }
+
+        if(valueInterface != null) {
+            PropertyInterfaceImplement<P> mappedValueInterface = mapping.get(valueInterface);
+            if(mappedValueInterface != null)
+                return mappedValueInterface.mapAsyncChange(mappedProperty, object);
+        } else
+            return new AsyncMapChange<>(mappedProperty, object, value, null);
+        return null;
+    }
+
+    @Override
+    public AsyncMapEventExec<T> merge(AsyncMapEventExec<T> exec) {
+        if(!(exec instanceof AsyncMapChange))
+            return null;
+
+        AsyncMapChange<?, T> change = (AsyncMapChange<?, T>) exec;
+        if(!(BaseUtils.nullEquals(object, change.object) &&
+                (property == null ? change.property == null : change.property != null && property.equalsMap(change.property)) && // nullEquals
+                BaseUtils.hashEquals(value, change.value))) // later it maybe makes sense to "or" this lists
+            return null;
+
+        return this;
     }
 }

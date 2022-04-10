@@ -57,6 +57,7 @@ import lsfusion.gwt.client.form.filter.GRegularFilter;
 import lsfusion.gwt.client.form.filter.GRegularFilterGroup;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilterDTO;
+import lsfusion.gwt.client.form.filter.user.view.GFilterConditionView;
 import lsfusion.gwt.client.form.object.*;
 import lsfusion.gwt.client.form.object.panel.controller.GPanelController;
 import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController;
@@ -78,7 +79,6 @@ import lsfusion.gwt.client.form.property.async.*;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.classes.controller.CustomReplaceCellEditor;
 import lsfusion.gwt.client.form.property.cell.classes.controller.RequestCellEditor;
-import lsfusion.gwt.client.form.property.cell.classes.view.ActionCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.*;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
@@ -143,7 +143,8 @@ public class GFormController implements EditManager {
     private final LinkedHashMap<Long, ModifyObject> pendingModifyObjectRequests = new LinkedHashMap<>();
     private final NativeSIDMap<GGroupObject, Long> pendingChangeCurrentObjectsRequests = new NativeSIDMap<>();
     private final NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Change>> pendingChangePropertyRequests = new NativeSIDMap<>(); // assert that should contain columnKeys + list keys if property is in list
-    private final NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Long>> pendingLoadingRequests = new NativeSIDMap<>(); // assert that should contain columnKeys + list keys if property is in list
+    private final NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Long>> pendingLoadingPropertyRequests = new NativeSIDMap<>(); // assert that should contain columnKeys + list keys if property is in list
+    private final NativeSIDMap<GFilterConditionView, Long> pendingLoadingFilterRequests = new NativeSIDMap<>();
 
     private boolean hasColumnGroupObjects;
 
@@ -624,23 +625,27 @@ public class GFormController implements EditManager {
         if (hasColumnGroupObjects) // optimization
             fc.gridObjects.foreachEntry((key, value) -> currentGridObjects.put(key, value));
 
-        modifyFormChangesWithModifyObjectAsyncs(changesDTO.requestIndex, fc);
+        int requestIndex = changesDTO.requestIndex;
 
-        modifyFormChangesWithChangeCurrentObjectAsyncs(changesDTO.requestIndex, fc);
+        modifyFormChangesWithModifyObjectAsyncs(requestIndex, fc);
 
-        modifyFormChangesWithChangePropertyAsyncs(changesDTO.requestIndex, fc);
+        modifyFormChangesWithChangeCurrentObjectAsyncs(requestIndex, fc);
 
-        modifyFormChangesWithLoadingAsyncs(changesDTO.requestIndex, fc);
+        modifyFormChangesWithChangePropertyAsyncs(requestIndex, fc);
+
+        modifyFormChangesWithLoadingPropertyAsyncs(requestIndex, fc);
+
+        applyLoadingFilterAsyncs(requestIndex, fc);
 
         applyKeyChanges(fc);
 
         applyPropertyChanges(fc);
 
-        update(fc, changesDTO.requestIndex);
+        update(fc, requestIndex);
 
         expandCollapseContainers(fc);
 
-        formLayout.update(changesDTO.requestIndex);
+        formLayout.update(requestIndex);
 
         activateElements(fc);
 
@@ -778,20 +783,18 @@ public class GFormController implements EditManager {
         pendingChangePropertyRequests.foreachEntry((property, values) -> {
             final NativeHashMap<GGroupObjectValue, Object> propertyValues = fc.properties.get(property);
             if (propertyValues != null) {
-                values.foreachEntry((group, change) -> {
-                    if (change.canUseNewValueForRendering) {
-                        propertyValues.put(group, change.newValue);
-                    }
+                values.foreachEntry((key, change) -> {
+                    propertyValues.put(key, change.newValue);
                 });
             }
         });
     }
 
-    private void modifyFormChangesWithLoadingAsyncs(final int currentDispatchingRequestIndex, final GFormChanges fc) {
-        pendingLoadingRequests.foreachEntry((property, values) -> values.foreachEntry((keys, requestIndex) -> {
+    private void modifyFormChangesWithLoadingPropertyAsyncs(final int currentDispatchingRequestIndex, final GFormChanges fc) {
+        pendingLoadingPropertyRequests.foreachEntry((property, values) -> values.foreachEntry((keys, requestIndex) -> {
             if (requestIndex <= currentDispatchingRequestIndex) {
 
-                removeFromDoubleMap(pendingLoadingRequests, property, keys);
+                removeFromDoubleMap(pendingLoadingPropertyRequests, property, keys);
 
                 if(getPropertyController(property).isPropertyShown(property) && !fc.dropProperties.contains(property)) {
                     NativeHashMap<GGroupObjectValue, Object> propertyLoadings = fc.properties.get(property.loadingReader);
@@ -803,6 +806,18 @@ public class GFormController implements EditManager {
                 }
             }
         }));
+    }
+
+    private void applyLoadingFilterAsyncs(final int currentDispatchingRequestIndex, final GFormChanges fc) {
+        pendingLoadingFilterRequests.foreachEntry((filter, requestIndex) -> {
+            if (requestIndex <= currentDispatchingRequestIndex) {
+
+                pendingLoadingFilterRequests.remove(filter);
+
+                if(!filter.isRemoved)
+                    filter.updateLoading(false);
+            }
+        });
     }
 
     public GAbstractTableController getGroupObjectController(GGroupObject group) {
@@ -896,18 +911,11 @@ public class GFormController implements EditManager {
         syncResponseDispatch(new PasteExternalTable(propertyIdList, columnKeys, values));
     }
 
-    public void pasteValue(EditContext editContext, String sValue) {
+    public void pasteValue(ExecuteEditContext editContext, String sValue) {
         GPropertyDraw property = editContext.getProperty();
-        GType pasteType = property.getExternalChangeType();
-        Serializable value = (Serializable) property.parsePaste(sValue, pasteType);
+        Serializable value = (Serializable) property.parsePaste(sValue, property.getExternalChangeType());
 
-        long requestIndex = changeProperty(editContext, value);
-
-        // maybe later need to be moved inside
-        setLoading(editContext, requestIndex);
-
-        if(property.canUseChangeValueForRendering(pasteType))
-            updateValue(editContext, value);
+        changeProperty(editContext, value);
     }
 
     public void changePageSizeAfterUnlock(final GGroupObject groupObject, final int pageSize) {
@@ -954,59 +962,75 @@ public class GFormController implements EditManager {
             });
         } else {
             String actionSID;
+            lsfusion.gwt.client.base.Result<Integer> contextAction = new lsfusion.gwt.client.base.Result<>();
             if(isBinding) {
                 if(GKeyStroke.isKeyEvent(event)) // we don't want to set focus on mouse binding (it's pretty unexpected behaviour)
                     editContext.trySetFocus(); // we want element to be focused on key binding (if it's possible)
                 actionSID = CHANGE;
             } else {
-                actionSID = property.getEventSID(event);
+                actionSID = property.getEventSID(event, contextAction);
                 if(actionSID == null)
                     return;
             }
 
             // hasChangeAction check is important for quickfilter not to consume event (however with propertyReadOnly, checkCanBeChanged there will be still some problems)
-            if (isChangeEvent(actionSID) &&
-                    (editContext.isReadOnly() || !property.hasUserChangeAction())) // we're ignoring change if we use CUSTOM render function without CUSTOM CHANGE set
+            if (isChangeEvent(actionSID) && (editContext.isReadOnly() || !property.hasUserChangeAction()))
                 return;
             if(GEditBindingMap.EDIT_OBJECT.equals(actionSID) && !property.hasEditObjectAction)
                 return;
 
             handler.consume();
 
-            executePropertyEventAction(editContext, actionSID, event);
+            if(contextAction.result != null)
+                executeContextAction(event, editContext, contextAction.result);
+            else
+                executePropertyEventAction(editContext, actionSID, event);
         }
     }
 
-    public void executePropertyEventAction(EditContext editContext, String actionSID, Event event) {
+    public void executePropertyEventAction(ExecuteEditContext editContext, String actionSID, Event event) {
         GPropertyDraw property = editContext.getProperty();
-        GAsyncEventExec asyncEventExec = property.getAsyncEventExec(actionSID);
-
-        if (asyncEventExec != null) {
-            Consumer<Long> onExec = requestIndex -> setLoading(editContext, requestIndex);
-            if (isChangeEvent(actionSID) && property.askConfirm) {
-                blockingConfirm("lsFusion", property.askConfirmMessage, false, chosenOption -> {
-                    if (chosenOption == DialogBoxHelper.OptionType.YES) {
-                        asyncEventExec.exec(this, event, editContext, actionSID, onExec);
-                    }
-                });
-            } else {
-                asyncEventExec.exec(this, event, editContext, actionSID, onExec);
-            }
-            return;
+        if (isChangeEvent(actionSID) && property.askConfirm) {
+            blockingConfirm("lsFusion", property.askConfirmMessage, false, chosenOption -> {
+                if (chosenOption == DialogBoxHelper.OptionType.YES)
+                    executePropertyEventActionConfirmed(editContext, actionSID, event);
+            });
         }
-
-        syncExecutePropertyEventAction(editContext, actionSID, event);
+        executePropertyEventActionConfirmed(editContext, actionSID, event);
     }
 
-    public long asyncExecutePropertyEventAction(String actionSID, EditContext editContext, Event editEvent, GPushAsyncResult pushAsyncResult) {
-        return asyncExecutePropertyEventAction(actionSID, editContext, editEvent, new GPropertyDraw[] {editContext.getProperty()}, new boolean[]{false}, new GGroupObjectValue[] {editContext.getColumnKey()}, new GPushAsyncResult[]{pushAsyncResult});
+    public void executePropertyEventActionConfirmed(ExecuteEditContext editContext, String actionSID, Event event) {
+        executePropertyEventAction(event, editContext, editContext, actionSID, requestIndex -> setLoading(editContext, requestIndex));
     }
+
+    public void executePropertyEventAction(Event event, EditContext editContext, ExecContext execContext, String actionSID, Consumer<Long> onExec) {
+        executePropertyEventAction(execContext.getProperty().getAsyncEventExec(actionSID), event, editContext, execContext, actionSID, null, false, onExec);
+    }
+
+    private void executePropertyEventAction(GAsyncEventExec asyncEventExec, Event event, EditContext editContext, ExecContext execContext, String actionSID, GPushAsyncInput pushAsyncResult, boolean externalChange, Consumer<Long> onExec) {
+        if (asyncEventExec != null)
+            asyncEventExec.exec(this, event, editContext, execContext, actionSID, pushAsyncResult, externalChange, onExec);
+        else
+            syncExecutePropertyEventAction(editContext, event, execContext.getProperty(), execContext.getFullKey(), pushAsyncResult, actionSID, onExec);
+    }
+
+    public void asyncExecutePropertyEventAction(String actionSID, EditContext editContext, ExecContext execContext, Event editEvent, GPushAsyncResult pushAsyncResult, boolean externaChange, Consumer<Long> onRequestExec, Consumer<Long> onExec) {
+        long requestIndex = asyncExecutePropertyEventAction(actionSID, editContext, editEvent, new GPropertyDraw[]{execContext.getProperty()}, new boolean[]{externaChange}, new GGroupObjectValue[]{execContext.getFullKey()}, new GPushAsyncResult[]{pushAsyncResult});
+
+        onExec.accept(requestIndex);
+
+        // should be after because for example onExec can setRemoteValue, but onRequestExec also does that and should have higher priority
+        onRequestExec.accept(requestIndex);
+    }
+
+    public void syncExecutePropertyEventAction(EditContext editContext, Event editEvent, GPropertyDraw property, GGroupObjectValue fullKey, GPushAsyncInput pushAsyncResult, String actionSID, Consumer<Long> onExec) {
+        long requestIndex = executePropertyEventAction(actionSID, true, editContext, editEvent, new GPropertyDraw[]{property}, new boolean[]{false}, new GGroupObjectValue[]{fullKey}, new GPushAsyncResult[] {pushAsyncResult});
+
+        onExec.accept(requestIndex);
+    }
+
     public long asyncExecutePropertyEventAction(String actionSID, EditContext editContext, Event editEvent, GPropertyDraw[] properties, boolean[] externalChanges, GGroupObjectValue[] fullKeys, GPushAsyncResult[] pushAsyncResults) {
         return executePropertyEventAction(actionSID, false, editContext, editEvent, properties, externalChanges, fullKeys, pushAsyncResults);
-    }
-
-    public long syncExecutePropertyEventAction(EditContext editContext, Event editEvent, GPropertyDraw property, GGroupObjectValue columnKey, String actionSID) {
-        return executePropertyEventAction(actionSID, true, editContext, editEvent, new GPropertyDraw[]{property}, new boolean[]{false}, new GGroupObjectValue[]{columnKey}, new GPushAsyncResult[] {null});
     }
 
     private long executePropertyEventAction(String actionSID, boolean sync, EditContext editContext, Event editEvent, GPropertyDraw[] properties, boolean[] externalChanges, GGroupObjectValue[] fullKeys, GPushAsyncResult[] pushAsyncResults) {
@@ -1050,42 +1074,33 @@ public class GFormController implements EditManager {
         return syncDispatch(action, new ServerResponseCallback());
     }
 
-    public void syncExecutePropertyEventAction(EditContext editContext, String actionSID, Event event) {
-        syncExecutePropertyEventAction(editContext, event, editContext.getProperty(), editContext.getColumnKey(), actionSID);
+    public void asyncChange(Event event, EditContext editContext, String actionSID, GAsyncInput asyncChange, Consumer<Long> onExec) {
+        GInputList inputList = asyncChange.inputList;
+        edit(asyncChange.changeType, event, false, null, inputList, (value, onRequestExec) ->
+            executePropertyEventAction(event, editContext, inputList, value, actionSID, false, requestIndex -> {
+                onExec.accept(requestIndex); // setLoading
+
+                // doing that after to set the last value (onExec recursively can also set value)
+                onRequestExec.accept(requestIndex); // pendingChangeProperty
+        }), cancelReason -> {}, editContext, actionSID, asyncChange.customEditFunction);
     }
 
-    public void asyncChange(Event event, EditContext editContext, String actionSID, GAsyncChange asyncChange, Consumer<Long> onExec) {
-        edit(asyncChange.changeType, event, false, null, asyncChange.inputList, (value, requestIndex) -> {
-            onExec.accept(requestIndex);
+    private final static GAsyncNoWaitExec asyncExec = new GAsyncNoWaitExec();
 
-            // it seems that it's better to do everything after commit to avoid potential problems with focus, etc.
-            Integer contextAction = value.getContextAction();
-            if (contextAction != null/* && requestIndex.result >= 0*/) {
-                GAsyncExec actionAsync = asyncChange.inputList.actionAsyncs[contextAction];
-                if (actionAsync != null) actionAsync.exec(getAsyncFormController(requestIndex), formsController, event, editContext, GFormController.this);
-            }
-        }, cancelReason -> {}, editContext, actionSID, null, asyncChange.customEditFunction);
+    private void executePropertyEventAction(Event event, EditContext editContext, GInputList inputList, GUserInputResult value, String actionSID, boolean externalChange, Consumer<Long> onExec) {
+        Integer contextAction = value.getContextAction();
+        executePropertyEventAction(contextAction != null ? inputList.actions[contextAction].asyncExec : asyncExec,
+                event, editContext, editContext, actionSID, new GPushAsyncInput(value), externalChange, onExec);
     }
 
-    public void asyncOpenForm(GAsyncOpenForm asyncOpenForm, EditContext editContext, Event editEvent, String actionSID, Consumer<Long> onExec) {
-        // here it's tricky, since for EMBEDDED type editing will be started, this will block dispatching (see RemoteDispatchAsync), so we have to force this dispatching (just like getAsyncValues)
-        long requestIndex = asyncExecutePropertyEventAction(actionSID, editContext, editEvent, null);
-        formsController.asyncOpenForm(getAsyncFormController(requestIndex), asyncOpenForm, editEvent, editContext, this);
-        onExec.accept(requestIndex);
+    public void asyncOpenForm(GAsyncOpenForm asyncOpenForm, EditContext editContext, ExecContext execContext, Event editEvent, String actionSID, GPushAsyncInput pushAsyncResult, boolean externalChange, Consumer<Long> onExec) {
+        asyncExecutePropertyEventAction(actionSID, editContext, execContext, editEvent, pushAsyncResult, externalChange, requestIndex -> {
+            formsController.asyncOpenForm(getAsyncFormController(requestIndex), asyncOpenForm, editEvent, editContext, execContext, this);
+        }, onExec);
     }
 
     public GAsyncFormController getAsyncFormController(long requestIndex) {
         return actionDispatcher.getAsyncFormController(requestIndex);
-    }
-
-    public long changeEditPropertyValue(EditContext editContext, Event editEvent, String actionSID, GType changeType, GUserInputResult result, Long changeRequestIndex) {
-        assert changeType != null;
-        long requestIndex = changeProperty(editContext, editEvent, changeType, actionSID, result, changeRequestIndex);
-
-        if(editContext.getProperty().canUseChangeValueForRendering(changeType)) // changing model, to rerender new value after finishEditing
-            editContext.setValue(result.getValue());
-
-        return requestIndex;
     }
 
     public void continueServerInvocation(long requestIndex, Object[] actionResults, int continueIndex, RequestAsyncCallback<ServerResponseResult> callback) {
@@ -1108,69 +1123,88 @@ public class GFormController implements EditManager {
         return dispatcher.syncExecute(action, callback, continueInvocation);
     }
 
-    public GGroupObjectValue getFullCurrentKey(GPropertyDraw property, GGroupObjectValue propertyKey) {
+    public GGroupObjectValue getFullCurrentKey(GPropertyDraw property, GGroupObjectValue fullKey) {
         DeferredRunner.get().commitDelayedGroupObjectChange(property.groupObject);
 
-        GGroupObjectValueBuilder fullKey = new GGroupObjectValueBuilder();
+        GGroupObjectValueBuilder fullCurrentKey = new GGroupObjectValueBuilder();
 
         // there was a check that if groupObject is list, then currentKey should not be empty, but I'm not sure what for this check was needed
 //        property.groupObject isList isEmpty() ??
 
         for (GGridController group : controllers.values()) {
-            fullKey.putAll(group.getCurrentKey());
+            fullCurrentKey.putAll(group.getCurrentKey());
         }
 
         for (GTreeGroupController tree : treeControllers.values()) {
             GGroupObjectValue currentPath = tree.getCurrentKey();
             if (currentPath != null) {
-                fullKey.putAll(currentPath);
+                fullCurrentKey.putAll(currentPath);
             }
         }
 
-        fullKey.putAll(propertyKey);
+        fullCurrentKey.putAll(fullKey);
 
-        return fullKey.toGroupObjectValue();
+        return fullCurrentKey.toGroupObjectValue();
     }
 
-    // for custom renderer and paste
-    public long changeProperty(EditContext editContext, Object value) {
-        return changeProperty(editContext, null, GPropertyDraw.externalChangeTypeUsage, GEditBindingMap.CHANGE, new GUserInputResult(value), null);
+    // for custom renderer, paste
+    public void changeProperty(ExecuteEditContext editContext, Object value) {
+        lsfusion.gwt.client.base.Result<Object> oldValue = setLocalValue(editContext, editContext.getProperty().getExternalChangeType(), value);
+        executePropertyEventAction(null, editContext, new GUserInputResult(value), requestIndex -> {
+            setRemoteValue(editContext, oldValue, value, requestIndex);
+        });
     }
 
-    public long changeProperty(EditContext editContext, Event editEvent, GType changeType, String actionSID, GUserInputResult result, Long changeRequestIndex) {
-        GPropertyDraw property = editContext.getProperty();
-        GGroupObjectValue rowKey = property.isList ? editContext.getRowKey() : GGroupObjectValue.EMPTY; // because for example in custom renderer editContext can be not the currentKey
-        return changeProperties(actionSID, editContext, editEvent, new GPropertyDraw[]{property}, new GType[]{changeType}, new GGroupObjectValue[] {rowKey}, new GGroupObjectValue[]{editContext.getColumnKey()}, new GUserInputResult[]{result}, new Object[]{editContext.getValue()}, changeRequestIndex);
+    // for quick access actions (in toolbar)
+    public void executeContextAction(ExecuteEditContext editContext, int contextAction) {
+        executeContextAction(null, editContext, contextAction);
+    }
+    // for quick access actions (in toolbar and keypress)
+    public void executeContextAction(Event editEvent, ExecuteEditContext editContext, int contextAction) {
+        executePropertyEventAction(editEvent, editContext, new GUserInputResult(null, contextAction), requestIndex -> {});
     }
 
-    public long changeProperties(String actionSID, EditContext editContext, Event editEvent, GPropertyDraw[] properties, GType[] changeTypes, GGroupObjectValue[] rowKeys, GGroupObjectValue[] columnKeys, GUserInputResult[] values, Object[] oldValues, Long changeRequestIndex) {
-        int length = properties.length;
-        GGroupObjectValue[] fullKeys = new GGroupObjectValue[length];
-        boolean[] externalChanges = new boolean[length];
-        GPushAsyncResult[] pushAsyncResults = new GPushAsyncResult[length];
-        for (int i = 0; i < length; i++) {
-            fullKeys[i] = GGroupObjectValue.getFullKey(rowKeys[i], columnKeys[i]);
-            externalChanges[i] = changeTypes[i] == null;
-            pushAsyncResults[i] = new GPushAsyncChange(values[i]);
+    // for custom renderer, paste, quick access actions (in toolbar and keypress)
+    private void executePropertyEventAction(Event event, ExecuteEditContext editContext, GUserInputResult value, Consumer<Long> onExec) {
+        executePropertyEventAction(event, editContext, editContext.getProperty().getInputList(), value, CHANGE, true, requestIndex -> {
+            onExec.accept(requestIndex);
+
+            setLoading(editContext, requestIndex);
+        });
+    }
+
+    public lsfusion.gwt.client.base.Result<Object> setLocalValue(EditContext editContext, GType type, Object result) {
+        if(editContext.canUseChangeValueForRendering(type)) {
+            Object oldValue = editContext.getValue();
+
+            editContext.setValue(result);
+
+            return new lsfusion.gwt.client.base.Result<>(oldValue);
         }
-
-        if(changeRequestIndex == null)
-            changeRequestIndex = asyncExecutePropertyEventAction(actionSID, editContext, editEvent, properties, externalChanges, fullKeys, pushAsyncResults);
-
-        for (int i = 0; i < length; i++) {
-            GPropertyDraw property = properties[i];
-            GType changeType = changeTypes[i];
-            if(changeType == null) {
-                assert actionSID.equals(CHANGE);
-                changeType = property.getExternalChangeType();
-            }
-            putToDoubleNativeMap(pendingChangePropertyRequests, property, fullKeys[i], new Change(changeRequestIndex, values[i].getValue(), oldValues[i], property.canUseChangeValueForRendering(changeType)));
-        }
-
-        return changeRequestIndex;
+        return null;
     }
 
-    public void asyncAddRemove(EditContext editContext, Event editEvent, String actionSID, GAsyncAddRemove asyncAddRemove, Consumer<Long> onExec) {
+    public void setRemoteValue(EditContext editContext, lsfusion.gwt.client.base.Result<Object> oldValue, Object result, long requestIndex) {
+        if(oldValue != null)
+            pendingChangeProperty(editContext.getProperty(), editContext.getFullKey(), (Serializable) result, oldValue.result, requestIndex);
+    }
+
+    public void pendingChangeProperty(GPropertyDraw property, GGroupObjectValue fullKey, Serializable value, Object oldValue, long changeRequestIndex) {
+        putToDoubleNativeMap(pendingChangePropertyRequests, property, fullKey, new Change(changeRequestIndex, value, oldValue));
+    }
+
+    public void asyncNoWait(EditContext editContext, ExecContext execContext, Event editEvent, String actionSID, GAsyncNoWaitExec asyncNoWait, GPushAsyncInput pushAsyncResult, boolean externalChange, Consumer<Long> onExec) {
+        asyncExecutePropertyEventAction(actionSID, editContext, execContext, editEvent, pushAsyncResult, externalChange, requestIndex -> {}, onExec);
+    }
+
+    public void asyncChange(EditContext editContext, ExecContext execContext, Event editEvent, String actionSID, GAsyncChange asyncChange, GPushAsyncInput pushAsyncResult, boolean externalChange, Consumer<Long> onExec) {
+        asyncExecutePropertyEventAction(actionSID, editContext, execContext, editEvent, pushAsyncResult, externalChange, requestIndex -> {
+            for (int propertyID : asyncChange.propertyIDs)
+                setLoadingValueAt(propertyID, editContext.getFullKey(), asyncChange.value, requestIndex);
+        }, onExec);
+    }
+
+    public void asyncAddRemove(EditContext editContext, ExecContext execContext, Event editEvent, String actionSID, GAsyncAddRemove asyncAddRemove, GPushAsyncInput pushAsyncResult, boolean externalChange, Consumer<Long> onExec) {
         final GObject object = form.getObject(asyncAddRemove.object);
         final boolean add = asyncAddRemove.add;
 
@@ -1182,7 +1216,7 @@ public class GFormController implements EditManager {
             MainFrame.logicsDispatchAsync.execute(new GenerateID(), new PriorityErrorHandlingCallback<GenerateIDResult>() {
                 @Override
                 public void onSuccess(GenerateIDResult result) {
-                    executeModifyObject(editContext, editEvent, actionSID, object, add, new GPushAsyncAdd(result.ID), new GGroupObjectValue(object.ID, new GCustomObjectValue(result.ID, null)), position, onExec);
+                    asyncAddRemove(editContext, execContext, editEvent, actionSID, object, add, new GPushAsyncAdd(result.ID), new GGroupObjectValue(object.ID, new GCustomObjectValue(result.ID, null)), position, externalChange, onExec);
                 }
             });
         } else {
@@ -1191,19 +1225,17 @@ public class GFormController implements EditManager {
             final GGroupObjectValue value = controllers.get(object.groupObject).getCurrentKey();
             if(value.isEmpty())
                 return;
-            executeModifyObject(editContext, editEvent, actionSID, object, add, null, value, position, onExec);
+            asyncAddRemove(editContext, execContext, editEvent, actionSID, object, add, pushAsyncResult, value, position, externalChange, onExec);
         }
     }
 
-    private void executeModifyObject(EditContext editContext, Event editEvent, String actionSID, GObject object, boolean add, GPushAsyncResult pushAsyncResult, GGroupObjectValue value, int position, Consumer<Long> onExec) {
-        long requestIndex = asyncExecutePropertyEventAction(actionSID, editContext, editEvent, pushAsyncResult);
+    private void asyncAddRemove(EditContext editContext, ExecContext execContext, Event editEvent, String actionSID, GObject object, boolean add, GPushAsyncResult pushAsyncResult, GGroupObjectValue value, int position, boolean externalChange, Consumer<Long> onExec) {
+        asyncExecutePropertyEventAction(actionSID, editContext, execContext, editEvent, pushAsyncResult, externalChange, requestIndex -> {
+            pendingChangeCurrentObjectsRequests.put(object.groupObject, requestIndex);
+            pendingModifyObjectRequests.put(requestIndex, new ModifyObject(object, add, value, position));
 
-        pendingChangeCurrentObjectsRequests.put(object.groupObject, requestIndex);
-        pendingModifyObjectRequests.put(requestIndex, new ModifyObject(object, add, value, position));
-
-        controllers.get(object.groupObject).modifyGroupObject(value, add, -1);
-
-        onExec.accept(requestIndex);
+            controllers.get(object.groupObject).modifyGroupObject(value, add, -1);
+        }, onExec);
     }
 
     public void changePropertyOrder(GPropertyDraw property, GGroupObjectValue columnKey, GOrder modiType) {
@@ -1268,12 +1300,12 @@ public class GFormController implements EditManager {
         syncResponseDispatch(new SetRegularFilter(filterGroup.ID, (filter == null) ? -1 : filter.ID));
     }
 
-    public void changeFilter(GGroupObject groupObject, ArrayList<GPropertyFilter> conditions) {
+    public long changeFilter(GGroupObject groupObject, ArrayList<GPropertyFilter> conditions) {
         currentFilters.put(groupObject, conditions);
-        applyCurrentFilters();
+        return applyCurrentFilters();
     }
 
-    public void changeFilter(GTreeGroup treeGroup, ArrayList<GPropertyFilter> conditions) {
+    public long changeFilter(GTreeGroup treeGroup, ArrayList<GPropertyFilter> conditions) {
         Map<GGroupObject, ArrayList<GPropertyFilter>> filters = GwtSharedUtils.groupList(new GwtSharedUtils.Group<GGroupObject, GPropertyFilter>() {
             public GGroupObject group(GPropertyFilter key) {
                 return key.groupObject;
@@ -1288,13 +1320,13 @@ public class GFormController implements EditManager {
             currentFilters.put(group, groupFilters);
         }
 
-        applyCurrentFilters();
+        return applyCurrentFilters();
     }
 
-    private void applyCurrentFilters() {
+    private long applyCurrentFilters() {
         ArrayList<GPropertyFilterDTO> filters = new ArrayList<>();
         currentFilters.foreachValue(groupFilters -> groupFilters.stream().map(GPropertyFilter::getFilterDTO).collect(Collectors.toCollection(() -> filters)));
-        asyncResponseDispatch(new SetUserFilters(filters));
+        return asyncResponseDispatch(new SetUserFilters(filters));
     }
 
     public void setViewFilters(ArrayList<GPropertyFilter> conditions, int pageSize) {
@@ -1315,6 +1347,17 @@ public class GFormController implements EditManager {
 
     public void focusProperty(GPropertyDraw propertyDraw) {
         getPropertyController(propertyDraw).focusProperty(propertyDraw);
+    }
+
+    public void setLoadingValueAt(int propertyID, GGroupObjectValue fullKey, Serializable value, long requestIndex) {
+        GPropertyDraw property = getProperty(propertyID);
+        GGroupObjectValue fullCurrentKey = getFullCurrentKey(property, fullKey);
+        Pair<GGroupObjectValue, Object> propertyCell = getPropertyController(property).setLoadingValueAt(property, fullCurrentKey, value);
+
+        if(propertyCell != null) {
+            pendingChangeProperty(property, propertyCell.first, value, propertyCell.second, requestIndex);
+            pendingLoadingProperty(property, propertyCell.first, requestIndex);
+        }
     }
 
     private Map<Integer, Integer> getTabMap(TabbedContainerView containerView, GContainer component) {
@@ -1577,13 +1620,11 @@ public class GFormController implements EditManager {
         public final long requestIndex;
         public final Object newValue;
         public final Object oldValue;
-        public final boolean canUseNewValueForRendering;
 
-        private Change(long requestIndex, Object newValue, Object oldValue, boolean canUseNewValueForRendering) {
+        private Change(long requestIndex, Object newValue, Object oldValue) {
             this.requestIndex = requestIndex;
             this.newValue = newValue;
             this.oldValue = oldValue;
-            this.canUseNewValueForRendering = canUseNewValueForRendering;
         }
     }
 
@@ -2008,23 +2049,12 @@ public class GFormController implements EditManager {
             getPessimisticValues(property.ID, currentKey, actionSID, value, editIndex, fCallback);
     }
 
-    public void edit(GType type, Event event, boolean hasOldValue, Object oldValue, GInputList inputList, BiConsumer<GUserInputResult, Long> afterCommit, Consumer<CancelReason> cancel, EditContext editContext, String actionSID, Long dispatchingIndex, String customChangeFunction) {
-        lsfusion.gwt.client.base.Result<Long> requestIndex = new lsfusion.gwt.client.base.Result<>();
-        edit(type, event, hasOldValue, oldValue, inputList, // actually it's assumed that actionAsyncs is used only here, in all subsequent calls it should not be referenced
-                (inputResult, commitReason) -> {
-                    requestIndex.set(changeEditPropertyValue(editContext, event, actionSID, type, inputResult, dispatchingIndex)); // actually ServerResponse.INPUT shouldn't be passed inside changeEditPropertyValue but it's needed only if dispatchingIndex is null
-                },
-                (inputResult, commitReason) -> {
-                    afterCommit.accept(inputResult, requestIndex.result);
-
-//                    // it seems that it's better to do everything after commit to avoid potential problems with focus, etc.
-//                    Integer contextAction = value.getContextAction();
-//                    if(contextAction != null/* && requestIndex.result >= 0*/) {
-//                        GAsyncExec actionAsync = inputList.actionAsyncs[contextAction];
-//                        if(actionAsync != null)
-//                            actionAsync.exec(getAsyncFormController(requestIndex.result), formsController);
-//                    }
-                },
+    public void edit(GType type, Event event, boolean hasOldValue, Object setOldValue, GInputList inputList, BiConsumer<GUserInputResult, Consumer<Long>> afterCommit, Consumer<CancelReason> cancel, EditContext editContext, String actionSID, String customChangeFunction) {
+        assert type != null;
+        lsfusion.gwt.client.base.Result<lsfusion.gwt.client.base.Result<Object>> oldValue = new lsfusion.gwt.client.base.Result<>();
+        edit(type, event, hasOldValue, setOldValue, inputList, // actually it's assumed that actionAsyncs is used only here, in all subsequent calls it should not be referenced
+                (inputResult, commitReason) -> oldValue.set(setLocalValue(editContext, type, inputResult.getValue())),
+                (inputResult, commitReason) -> afterCommit.accept(inputResult, requestIndex -> setRemoteValue(editContext, oldValue.result, inputResult.getValue(), requestIndex)),
                 cancel, editContext, actionSID, customChangeFunction);
     }
 
@@ -2101,6 +2131,8 @@ public class GFormController implements EditManager {
         BiConsumer<GUserInputResult, CommitReason> editAfterCommit = this.editAfterCommit;
         this.editAfterCommit = null; // it seems this is needed because after commit another editing can be started
         editAfterCommit.accept(result, commitReason);
+
+        onEditingFinished();
     }
 
     @Override
@@ -2109,6 +2141,13 @@ public class GFormController implements EditManager {
 
         editCancel.accept(cancelReason);
         editCancel = null;
+
+        onEditingFinished();
+    }
+
+    // we have to do it after "after commit" is called because there can be for example applyRemoteChanges, and pendingChangeProperty not yet called (so there will be previous value set)
+    private void onEditingFinished() {
+        dispatcher.onEditingFinished();
     }
 
     private void finishEditing(boolean blurred, boolean cancel) {
@@ -2153,8 +2192,6 @@ public class GFormController implements EditManager {
         }
 
         update(editContext);
-
-        dispatcher.onEditingFinished();
     }
 
     public void render(EditContext editContext) {
@@ -2170,7 +2207,7 @@ public class GFormController implements EditManager {
     }
 
     // setting loading
-    public void setLoading(EditContext editContext, long requestIndex) {
+    public void setLoading(ExecuteEditContext editContext, long requestIndex) {
         // actually this part we can do before sending request
         editContext.setLoading();
 
@@ -2181,10 +2218,23 @@ public class GFormController implements EditManager {
         GPropertyDraw property = editContext.getProperty();
         GGroupObjectValue rowKey = property.isList ? editContext.getRowKey() : GGroupObjectValue.EMPTY; // because for example in custom renderer editContext can be not the currentKey
 
-        putToDoubleNativeMap(pendingLoadingRequests, property, GGroupObjectValue.getFullKey(rowKey, editContext.getColumnKey()), requestIndex);
+        pendingLoadingProperty(property, GGroupObjectValue.getFullKey(rowKey, editContext.getColumnKey()), requestIndex);
+    }
+
+    private void pendingLoadingProperty(GPropertyDraw property, GGroupObjectValue fullKey, long requestIndex) {
+        putToDoubleNativeMap(pendingLoadingPropertyRequests, property, fullKey, requestIndex);
+    }
+
+    public void setLoading(GFilterConditionView filterView, long requestIndex) {
+
+        // RERENDER IF NEEDED : we have the previous state
+
+        filterView.updateLoading(true);
+
+        pendingLoadingFilterRequests.put(filterView, requestIndex);
     }
     // "external" update - paste + server update edit value
-    public void updateValue(EditContext editContext, Object value) {
+    public void setValue(EditContext editContext, Object value) {
         editContext.setValue(value);
 
         update(editContext);
@@ -2201,10 +2251,6 @@ public class GFormController implements EditManager {
 
     public boolean isEdited(Element element) {
         return editContext != null && editContext.getEditElement() == element;
-    }
-
-    public static void setBackgroundColor(Element element, String color) {
-        setBackgroundColor(element, color, false);
     }
 
     public static void setBackgroundColor(Element element, String color, boolean themeConvert) {
@@ -2241,7 +2287,8 @@ public class GFormController implements EditManager {
         if(handler.consumed)
             return;
 
-        if(GMouseStroke.isChangeEvent(handler.event) && GwtClientUtils.getFocusedChild(focusElement) == null) // need to check that focus is not on the grid, otherwise when editing for example embedded form, any click will cause moving focus to grid, i.e. stopping the editing
+        if(GMouseStroke.isChangeEvent(handler.event) &&
+                GwtClientUtils.getFocusedChild(focusElement) == null) // need to check that focus is not on the grid, otherwise when editing for example embedded form, any click will cause moving focus to grid, i.e. stopping the editing
             focusElement.focus(); // it should be done on CLICK, but also on MOUSEDOWN, since we want to focus even if mousedown is later consumed
 
         /*if(!previewLoadingManagerSinkEvents(handler.event)) {

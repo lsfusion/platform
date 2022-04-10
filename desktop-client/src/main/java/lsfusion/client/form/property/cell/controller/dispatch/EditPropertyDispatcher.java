@@ -98,7 +98,7 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
         }
     }
 
-    public boolean asyncChange(ClientPropertyDraw property, ClientGroupObjectValue columnKey, String actionSID, ClientAsyncChange asyncChange) throws IOException {
+    public boolean asyncChange(ClientPropertyDraw property, ClientGroupObjectValue columnKey, String actionSID, ClientAsyncInput asyncChange) throws IOException {
         this.editColumnKey = columnKey;
         this.simpleChangeProperty = property;
         this.actionSID = actionSID;

@@ -32,6 +32,7 @@ import lsfusion.gwt.client.form.object.table.view.GridDataRecord;
 import lsfusion.gwt.client.form.order.user.GGridSortableHeaderManager;
 import lsfusion.gwt.client.form.order.user.GOrder;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 
 import java.util.*;
 
@@ -329,7 +330,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     }
 
     public boolean containsProperty(GPropertyDraw property) {
-        return getPropertyIndex(property, null) >= 0;
+        return getGridColumn(property, null) != null;
     }
 
     public List<GPropertyDraw> getOrderedVisibleProperties(List<GPropertyDraw> propertiesList) {
@@ -532,9 +533,9 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     public Object getSelectedValue(GPropertyDraw property, GGroupObjectValue columnKey) {
         GridDataRecord selectedRecord = getSelectedRowValue();
         if (selectedRecord != null) {
-            int column = getPropertyIndex(property, columnKey);
-            if(column >= 0)
-                return getGridColumn(column).getValue(selectedRecord);
+            GridColumn column = getGridColumn(property, columnKey);
+            if(column != null)
+                return column.getValue(selectedRecord);
         }
 
         return null;
@@ -608,7 +609,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     }
 
     public void onBinding(GPropertyDraw property, Event event) {
-        int column = getPropertyIndex(property, null);
+        int column = getGridColumnIndex(property, null);
         if(column >= 0 && getSelectedRow() >= 0)
             onEditEvent(new EventHandler(event), true, getSelectedCell(column), getSelectedElement(column));
     }
@@ -674,21 +675,11 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         return getGridColumn(column).property;
     }
 
-    @Override
-    public GPropertyDraw getProperty(int row, int column) {
-        return getProperty(column);
-    }
-
     public GPropertyDraw getProperty(Cell cell) {
         return getGridColumn(cell).property;
     }
 
-    @Override
-    public String getColumnSID(int column) {
-        return ((GridColumn) getColumn(column)).columnSID;
-    }
-
-    public int getPropertyIndex(GPropertyDraw property, GGroupObjectValue columnKey) {
+    public int getGridColumnIndex(GPropertyDraw property, GGroupObjectValue columnKey) {
         for(int i=0,size=getColumnCount();i<size;i++) {
             GridColumn gridColumn = getGridColumn(i);
             if (property == gridColumn.property && (columnKey == null || columnKey.equals(gridColumn.columnKey))) {
@@ -696,6 +687,16 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
             }
         }
         return -1;
+    }
+
+    public GridColumn getGridColumn(GPropertyDraw property, GGroupObjectValue columnKey) {
+        for(int i=0,size=getColumnCount();i<size;i++) {
+            GridColumn gridColumn = getGridColumn(i);
+            if (property == gridColumn.property && (columnKey == null || columnKey.equals(gridColumn.columnKey))) {
+                return gridColumn;
+            }
+        }
+        return null;
     }
 
     public void modifyGroupObject(GGroupObjectValue rowKey, boolean add, int position) {
@@ -736,9 +737,9 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     }
 
     private HashMap<GPropertyDraw, GGroupObjectValue> getMinColumnKey(GPropertyDraw property) {
-        int ind = getPropertyIndex(property, null);
+        GridColumn column = getGridColumn(property, null);
         HashMap<GPropertyDraw, GGroupObjectValue> key = new HashMap<>();
-        key.put(property, ind == -1 ? GGroupObjectValue.EMPTY : getColumnKey(ind));
+        key.put(property, column == null ? GGroupObjectValue.EMPTY : column.columnKey);
         return key;
     }
 
@@ -885,7 +886,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     }
 
     public void focusProperty(GPropertyDraw propertyDraw) {
-        int ind = getPropertyIndex(propertyDraw, null);
+        int ind = getGridColumnIndex(propertyDraw, null);
         if (ind != -1) {
             changeSelectedColumn(ind);
         }
@@ -893,12 +894,19 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
     // editing set value (in EditContext), changes model and value itself
     public void setValueAt(Cell cell, Object value) {
-        GridDataRecord rowRecord = getGridRow(cell);
-        GridColumn column = getGridColumn(cell);
+        GridColumn gridColumn = getGridColumn(cell);
+        GridDataRecord gridRow = getGridRow(cell);
 
-        column.setValue(rowRecord, value); // updating inner model
+        gridColumn.setValue(gridRow, value); // updating inner model
 
-        values.get(column.property).put(rowRecord.getKey(), value); // updating outer model - controller
+        values.get(gridColumn.property).put(gridRow.getKey(), value); // updating outer model - controller
+    }
+
+    public Pair<GGroupObjectValue, Object> setLoadingValueAt(GPropertyDraw property, GGroupObjectValue fullCurrentKey, Object value) {
+        GGroupObjectValue propertyColumnKey = property.filterColumnKeys(fullCurrentKey);
+        if(propertyColumnKey == null)
+            return null;
+        return setLoadingValueAt(property, groupObject.filterRowKeys(fullCurrentKey), getGridColumnIndex(property, propertyColumnKey), propertyColumnKey, value);
     }
 
     @Override
@@ -1178,6 +1186,14 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         @Override
         protected Object getImage(GPropertyDraw property, GridDataRecord record) {
             return record.getImage(columnSID);
+        }
+        @Override
+        protected String getBackground(GPropertyDraw property, GridDataRecord record) {
+            return record.getBackground(columnSID);
+        }
+        @Override
+        protected String getForeground(GPropertyDraw property, GridDataRecord record) {
+            return record.getForeground(columnSID);
         }
     }
 

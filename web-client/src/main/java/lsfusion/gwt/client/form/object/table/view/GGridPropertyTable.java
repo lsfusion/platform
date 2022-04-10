@@ -25,6 +25,7 @@ import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController;
 import lsfusion.gwt.client.form.order.user.GGridSortableHeaderManager;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTable;
@@ -32,7 +33,6 @@ import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
 
 import static java.lang.Math.max;
 import static lsfusion.gwt.client.form.event.GKeyStroke.*;
@@ -295,8 +295,6 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     public abstract void quickFilter(Event event, GPropertyDraw filterProperty, GGroupObjectValue columnKey);
     public abstract GAbstractTableController getGroupController();
 
-    public abstract String getColumnSID(int column);
-
     public void runGroupReport() {
         form.runGroupReport(groupObject.ID);
     }
@@ -462,6 +460,32 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         }
     }
 
+    protected Pair<GGroupObjectValue, Object> setLoadingValueAt(GPropertyDraw property, GGroupObjectValue propertyRowKey, int columnIndex, GGroupObjectValue propertyColumnKey, Object value) {
+        if(propertyRowKey == null)
+            return null;
+
+        if(columnIndex < 0)
+            return null;
+
+        int rowIndex = getRowByKeyOptimistic(propertyRowKey);
+        if(rowIndex < 0)
+            return null;
+
+        GridPropertyColumn column = getGridColumn(columnIndex);
+        T rowRecord = getRowValue(rowIndex);
+        Cell cell = new Cell(rowIndex, columnIndex, column, rowRecord);
+
+        Object oldValue = column.getValue(property, rowRecord);
+
+        setLoadingAt(cell);
+        setValueAt(cell, value);
+
+        TableCellElement element = getElement(cell);
+        form.update(property, element, getUpdateContext(cell, element, property, column));
+
+        return new Pair<>(GGroupObjectValue.getFullKey(propertyRowKey, propertyColumnKey), oldValue);
+    }
+
     public Pair<lsfusion.gwt.client.form.view.Column, String> getSelectedColumn(GPropertyDraw property, GGroupObjectValue columnKey) {
         return new Pair<>(new lsfusion.gwt.client.form.view.Column(property, columnKey), getPropertyCaption(property, columnKey));
     }
@@ -506,7 +530,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
 
     public <C> void onBrowserEvent(Cell cell, Event event, Column<T, C> column, TableCellElement parent) {
         form.onPropertyBrowserEvent(new EventHandler(event), parent, getTableDataFocusElement(),
-                handler -> selectionHandler.onCellBefore(handler, cell, rowChanged -> isChangeOnSingleClick(cell, (Boolean) rowChanged)),
+                handler -> selectionHandler.onCellBefore(handler, cell, rowChanged -> isChangeOnSingleClick(cell, event, (Boolean) rowChanged)),
                 handler -> column.onEditEvent(handler, cell, parent),
                 handler -> selectionHandler.onCellAfter(handler, cell),
                 handler -> CopyPasteUtils.putIntoClipboard(parent), handler -> CopyPasteUtils.getFromClipboard(handler, line -> pasteData(cell, parent, GwtClientUtils.getClipboardTable(line))),
@@ -529,22 +553,12 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         protected abstract Object getValue(GPropertyDraw property, T record);
         protected abstract boolean isLoading(GPropertyDraw property, T record);
         protected abstract Object getImage(GPropertyDraw property, T record);
+        protected abstract String getBackground(GPropertyDraw property, T record);
+        protected abstract String getForeground(GPropertyDraw property, T record);
 
         @Override
         public void onEditEvent(EventHandler handler, Cell editCell, TableCellElement editCellParent) {
             GGridPropertyTable.this.onEditEvent(handler, false, editCell, editCellParent);
-        }
-
-        @Override
-        public void renderAndUpdateDom(Cell cell, TableCellElement cellElement) {
-            renderDom(cell, cellElement);
-
-            updateDom(cell, cellElement);
-
-            if(isSticky()) {
-                //class dataGridStickyCell is also used in DataGrid isStickyCell()
-                cellElement.addClassName("dataGridStickyCell");
-            }
         }
 
         public void renderDom(Cell cell, TableCellElement cellElement) {
@@ -577,11 +591,6 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     protected RenderContext getRenderContext(Cell cell, TableCellElement cellElement, GPropertyDraw property, GridPropertyColumn column) {
         return new RenderContext() {
             @Override
-            public boolean isAlwaysSelected() {
-                return false;
-            }
-
-            @Override
             public boolean globalCaptionIsDrawn() {
                 return GGridPropertyTable.this.globalCaptionIsDrawn();
             }
@@ -605,8 +614,13 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     public UpdateContext getUpdateContext(Cell cell, TableCellElement cellElement, GPropertyDraw property, GridPropertyColumn column) {
         return new UpdateContext() {
             @Override
-            public Consumer<Object> getCustomRendererValueChangeConsumer() {
-                return value -> form.changeProperty(getEditContext(cell, cellElement), value);
+            public void changeProperty(Object result) {
+                form.changeProperty(getEditContext(cell, cellElement), result);
+            }
+
+            @Override
+            public void executeContextAction(int action) {
+                form.executeContextAction(getEditContext(cell, cellElement), action);
             }
 
             @Override
@@ -630,8 +644,32 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
             }
 
             @Override
+            public boolean isSelectedRow() {
+                return GGridPropertyTable.this.isSelectedRow(cell);
+            }
+
+            public boolean isFocusedColumn() {
+                return GGridPropertyTable.this.isFocusedColumn(cell);
+            }
+
+            @Override
             public Object getImage() {
                 return column.getImage(property, (T) cell.getRow());
+            }
+
+            @Override
+            public CellRenderer.ToolbarAction[] getToolbarActions() {
+                return isPropertyReadOnly() ? UpdateContext.super.getToolbarActions() : property.getQuickAccessActions(isSelectedRow(), isFocusedColumn());
+            }
+
+            @Override
+            public String getBackground() {
+                return DataGrid.getSelectedCellBackground(isSelectedRow(), isFocusedColumn(), column.getBackground(property, (T) cell.getRow()));
+            }
+
+            @Override
+            public String getForeground() {
+                return column.getForeground(property, (T) cell.getRow());
             }
         };
     }

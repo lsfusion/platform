@@ -14,12 +14,17 @@ import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 
+import java.util.Optional;
+
 // property value renderer with editing
 public abstract class ActionOrPropertyValue extends FocusWidget implements EditContext, RenderContext, UpdateContext {
 
-    private Object value;
-    private boolean loading;
+    protected Object value;
+    protected boolean loading;
     private Object image;
+    private Object background;
+    private Object foreground;
+    protected boolean readOnly;
 
     public Object getValue() {
         return value;
@@ -33,20 +38,33 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
     }
 
     @Override
-    public void setLoading() {
-        this.loading = true;
-
-        controller.setLoading(columnKey, true);
-    }
-
-    @Override
     public boolean isLoading() {
         return loading;
     }
 
     @Override
+    public boolean isSelectedRow() {
+        return true;
+    }
+
+    @Override
     public Object getImage() {
         return image;
+    }
+
+    @Override
+    public boolean isPropertyReadOnly() {
+        return readOnly;
+    }
+
+    @Override
+    public String getBackground() {
+        return background != null ? background.toString() : null;
+    }
+
+    @Override
+    public String getForeground() {
+        return foreground != null ? foreground.toString() : null;
     }
 
     protected GPropertyDraw property;
@@ -177,14 +195,15 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
         form.propagateFocusEvent(event);
     }
 
-    private boolean isFocused;
+    protected boolean isFocused;
     protected void onFocus(EventHandler handler) {
         if(isFocused)
             return;
         DataGrid.sinkPasteEvent(getFocusElement());
-        isFocused = true;
 
+        isFocused = true;
         borderWidget.addStyleName("panelRendererValueFocused");
+        update();
     }
 
     protected void onBlur(EventHandler handler) {
@@ -195,6 +214,7 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
         //assert isFocused;
         isFocused = false;
         borderWidget.removeStyleName("panelRendererValueFocused");
+        update();
     }
 
     public boolean isEditing;
@@ -232,11 +252,6 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
     }
 
     @Override
-    public boolean isAlwaysSelected() {
-        return true;
-    }
-
-    @Override
     public boolean globalCaptionIsDrawn() {
         return globalCaptionIsDrawn;
     }
@@ -252,19 +267,22 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
 
     public abstract void pasteValue(final String value);
 
-    public void update(Object value) {
-        update(value, false, null);
-    }
-
     private void render() {
         this.form.render(this.property, getRenderElement(), this);
     }
 
-    public void update(Object value, boolean loading, Object image) {
+    public void update(Object value, boolean loading, Object image, Object background, Object foreground, boolean readOnly) {
         this.value = value;
         this.loading = loading;
         this.image = image;
+        this.background = background;
+        this.foreground = foreground;
+        this.readOnly = readOnly;
 
+        update();
+    }
+
+    protected void update() {
         // RERENDER IF NEEDED : we have the previous state
 
         form.update(property, getRenderElement(), this);

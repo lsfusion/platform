@@ -31,9 +31,17 @@ body {
     margin: 10px;
     border: 0px;
     padding: 0px;
-    background: var(--background-color);
     direction: ltr;
 }
+
+/* this is is a hack class, when we want to inherit background-color but not the immediate parent, but the first non-transparent parent */
+.background-inherit {
+}
+
+body, body .background-inherit {
+    background-color: var(--background-color);
+}
+
 a, a:visited {
     color: var(--focus-color);
     text-decoration:none;
@@ -91,11 +99,11 @@ button {
     color: var(--text-color);
 }
 
-.gwt-Button:hover, button:hover {
+.gwt-Button:hover, .gwt-Button:hover .background-inherit, button:hover {
     background-color: var(--button-hover-background-color);
 }
 
-.gwt-Button:active, button:active { /* should come after ':hover' and ':focus' */
+.gwt-Button:active, .gwt-Button:active .background-inherit, button:active { /* should come after ':hover' and ':focus' */
     background-color: var(--button-active-background-color);
 }
 .gwt-Button-disabled, button[disabled] {

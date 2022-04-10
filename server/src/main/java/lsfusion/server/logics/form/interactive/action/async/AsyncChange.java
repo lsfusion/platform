@@ -1,48 +1,33 @@
 package lsfusion.server.logics.form.interactive.action.async;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.server.data.type.TypeSerializer;
-import lsfusion.server.language.property.LP;
-import lsfusion.server.logics.classes.data.DataClass;
-import lsfusion.server.logics.form.interactive.action.input.InputResult;
+import lsfusion.base.col.interfaces.immutable.ImList;
+import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 
-import java.io.*;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.Serializable;
 
-public class AsyncChange extends AsyncInputExec {
-    public DataClass changeType;
-    public LP targetProp;
+public class AsyncChange extends AsyncFormExec {
+    public ImList<PropertyDrawEntity> properties;
 
-    public InputList inputList;
+    public Serializable value;
 
-    public AsyncChange(DataClass changeType, LP targetProp, InputList inputList, String customEditorFunction) {
-        this.changeType = changeType;
-        this.targetProp = targetProp;
-        this.inputList = inputList;
-        this.customEditorFunction = customEditorFunction;
+    public AsyncChange(ImList<PropertyDrawEntity> properties, Serializable value) {
+        this.properties = properties;
+        this.value = value;
+    }
+
+    @Override
+    public void serialize(DataOutputStream outStream) throws IOException {
+        outStream.writeInt(properties.size());
+        for(PropertyDrawEntity property : properties)
+            outStream.writeInt(property.getID());
+        BaseUtils.serializeObject(outStream, value);
     }
 
     @Override
     public byte getTypeId() {
-        return 2;
-    }
-
-    @Override
-    public void serialize(DataOutputStream dataOutputStream) throws IOException {
-        super.serialize(dataOutputStream);
-
-        TypeSerializer.serializeType(dataOutputStream, changeType);
-        dataOutputStream.writeBoolean(inputList != null);
-        if(inputList != null)
-            AsyncSerializer.serializeInputList(inputList, dataOutputStream);
-
-        dataOutputStream.writeBoolean(customEditorFunction != null);
-        if (customEditorFunction != null)
-            dataOutputStream.writeUTF(customEditorFunction);
-    }
-
-    // should correspond ClientPushAsyncChange.serialize
-    @Override
-    public PushAsyncResult deserializePush(DataInputStream inStream) throws IOException {
-        return new PushAsyncChange(InputResult.get(BaseUtils.readObject(inStream), changeType));
+        return 5;
     }
 }

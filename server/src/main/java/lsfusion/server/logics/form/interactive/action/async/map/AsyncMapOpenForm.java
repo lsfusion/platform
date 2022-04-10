@@ -125,4 +125,9 @@ public class AsyncMapOpenForm<T extends PropertyInterface> extends AsyncMapExec<
         
         return new AsyncMapOpenForm<>(mergedForm, forbidDuplicate || asyncOpenForm.forbidDuplicate, modal || asyncOpenForm.modal, type.getType() <= asyncOpenForm.type.getType() ? type : asyncOpenForm.type, mergedClass, BaseUtils.nullEquals(propertyInterface, asyncOpenForm.propertyInterface) ? propertyInterface : null);
     }
+
+    @Override
+    public int getMergeOptimisticPriority() {
+        return 1;
+    }
 }

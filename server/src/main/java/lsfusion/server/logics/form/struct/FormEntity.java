@@ -6,10 +6,7 @@ import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
-import lsfusion.base.col.interfaces.mutable.LongMutable;
-import lsfusion.base.col.interfaces.mutable.MCol;
-import lsfusion.base.col.interfaces.mutable.MExclSet;
-import lsfusion.base.col.interfaces.mutable.MSet;
+import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterRevValueMap;
 import lsfusion.base.comb.Subsets;
@@ -63,6 +60,7 @@ import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyClas
 import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyObjectEntity;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.data.SessionDataProperty;
+import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.implement.PropertyRevImplement;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -573,6 +571,26 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
     public ImOrderSet<PropertyDrawEntity> getStaticPropertyDrawsList() {
         return ((ImOrderSet<PropertyDrawEntity>)getPropertyDrawsList()).filterOrder(element -> element.isProperty() && element.getIntegrationSID() != null && element != logMessagePropertyDraw);
+    }
+
+    // assumes that there is an equals check for a PropertyObjectEntity
+    @IdentityLazy
+    public <X extends PropertyInterface, T extends PropertyInterface> ImList<PropertyDrawEntity> findChangedProperties(OrderEntity<?> changeProp, boolean toNull) {
+        MList<PropertyDrawEntity> mProps = null;
+        for(PropertyDrawEntity property : getPropertyDrawsList()) {
+            PropertyObjectEntity<T> valueProperty;
+            if(property.isProperty() &&
+                (valueProperty = property.getValueProperty()).mapping.valuesSet().containsAll(changeProp.getObjects()) &&
+                (!(changeProp instanceof PropertyMapImplement) || Property.depends(valueProperty.property, ((PropertyMapImplement<?, ?>) changeProp).property)) && // optimization
+                valueProperty.property.isChangedWhen(toNull, changeProp.getImplement(valueProperty.mapping.reverse()))) {
+                if(mProps == null)
+                    mProps = ListFact.mList();
+                mProps.add(property);
+            }
+        }
+        if(mProps != null)
+            return mProps.immutableList();
+        return null;
     }
 
     public static class PropMetaExternal {
@@ -1531,7 +1549,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
     public void proceedAllEventActions(BiConsumer<ActionObjectEntity<?>, PropertyDrawEntity<?>> consumer) {
         for(PropertyDrawEntity<?> propertyDraw : getPropertyDrawsIt()) {
-            for(String changeEvent : BaseUtils.mergeIterables(ServerResponse.events, propertyDraw.getContextMenuBindings().keySet())) {
+            for(String changeEvent : propertyDraw.getAllEventActions()) {
                 ActionObjectEntity<?> editAction = propertyDraw.getEventAction(changeEvent, this);
                 if (editAction != null)
                     consumer.accept(editAction, changeEvent.equals(CHANGE) && !propertyDraw.isProperty() ? propertyDraw : null);

@@ -26,10 +26,17 @@ public class CustomCellRenderer extends CellRenderer<Object> {
     }-*/;
 
     @Override
-    public void renderDynamicContent(Element element, Object value, boolean loading, UpdateContext updateContext) {
+    public boolean renderDynamicContent(Element element, Object value, boolean loading, UpdateContext updateContext) {
         setRendererValue(customRenderer, element,
-                getController(updateContext.getCustomRendererValueChangeConsumer(), updateContext.isPropertyReadOnly()),
+                getController(valueTo -> updateContext.changeProperty(valueTo), updateContext.isPropertyReadOnly()),
                 GSimpleStateTableView.convertValue(property, value));
+
+        return false;
+    }
+
+    @Override
+    protected boolean needToRenderToolbarContent() {
+        return false;
     }
 
     protected native void setRendererValue(JavaScriptObject customRenderer, Element element, JavaScriptObject controller, JavaScriptObject value)/*-{

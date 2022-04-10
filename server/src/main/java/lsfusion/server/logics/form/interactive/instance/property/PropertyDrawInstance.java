@@ -14,7 +14,7 @@ import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.sql.lambda.SQLCallable;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.ObjectValue;
-import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapChange;
+import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapInput;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
 import lsfusion.server.logics.form.interactive.action.input.InputValueList;
@@ -91,7 +91,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
             asyncMode = needObjects ? AsyncMode.OBJECTS : AsyncMode.VALUES;
         } else {
             ActionObjectEntity<P> eventAction = (ActionObjectEntity<P>) this.entity.getEventAction(actionSID, formInstance.entity);
-            AsyncMapChange<P> asyncExec = (AsyncMapChange<P>) eventAction.property.getAsyncEventExec(this.entity.optimisticAsync);
+            AsyncMapInput<P> asyncExec = (AsyncMapInput<P>) eventAction.property.getAsyncEventExec(this.entity.optimisticAsync);
             InputListEntity<X, P> listEntity = (InputListEntity<X, P>) asyncExec.list;
             list = listEntity.map(formInstance.instanceFactory.getInstanceMap(eventAction.mapping).mapValues(BaseUtils.<Function<ObjectInstance, ObjectValue>>immutableCast(valuesGetter)));
             mapObjects = null;

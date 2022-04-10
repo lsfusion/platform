@@ -34,7 +34,9 @@ import lsfusion.gwt.client.form.property.GPivotOptions;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.GPropertyGroupType;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
+import lsfusion.gwt.client.form.property.cell.controller.ExecContext;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
+import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
@@ -1141,15 +1143,6 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
             public boolean globalCaptionIsDrawn() {
                 return true;
             }
-            @Override
-            public Consumer<Object> getCustomRendererValueChangeConsumer() {
-                return null;
-            }
-
-            @Override
-            public boolean isPropertyReadOnly() {
-                return true;
-            }
 
             @Override
             public Object getValue() {
@@ -1157,21 +1150,16 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
             }
 
             @Override
-            public boolean isLoading() {
+            public boolean isSelectedRow() {
                 return false;
             }
 
             @Override
-            public Object getImage() {
-                return null;
+            public boolean isSelectedLink() {
+                return true;
             }
         };
         GPropertyTableBuilder.renderAndUpdate(property, th, this, updateContext);
-    }
-
-    @Override
-    public boolean isAlwaysSelected() {
-        return true;
     }
 
     @Override
@@ -1942,7 +1930,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
                 filters.addAll(getFilters(config.getArrayString("cols"), colKeyValues));
 
                 config.getArrayString("rows").push(caption);
-                grid.filter.applyFilters(filters, false);
+                grid.filter.applyFilters(filters, new ArrayList<>(), false);
 //                updateView(true, null);
             });
             menuBar.addItem(menuItem);
@@ -1996,8 +1984,20 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         }
     }
 
-    private long executePropertyEditAction(Column column, Integer rowIndex) {
-        return form.syncExecutePropertyEventAction(null, null, column.property, keys.get(rowIndex), GEditBindingMap.EDIT_OBJECT);
+    private void executePropertyEditAction(Column column, Integer rowIndex) {
+        GPropertyDraw property = column.property;
+        GGroupObjectValue fullKey = GGroupObjectValue.getFullKey(keys.get(rowIndex), column.columnKey);
+        form.executePropertyEventAction(null, null, new ExecContext() {
+            @Override
+            public GPropertyDraw getProperty() {
+                return property;
+            }
+
+            @Override
+            public GGroupObjectValue getFullKey() {
+                return fullKey;
+            }
+        }, GEditBindingMap.EDIT_OBJECT, requestIndex -> {});
     }
 
     private Integer getRowIndex(JsArrayMixed keyValues, boolean cols) {

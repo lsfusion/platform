@@ -18,7 +18,7 @@ import lsfusion.client.form.design.view.flex.LinearCaptionContainer;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.object.table.controller.TableController;
-import lsfusion.client.form.property.async.ClientAsyncChange;
+import lsfusion.client.form.property.async.ClientAsyncInput;
 import lsfusion.client.form.property.async.ClientAsyncEventExec;
 import lsfusion.client.form.property.async.ClientAsyncSerializer;
 import lsfusion.client.form.property.async.ClientInputList;
@@ -653,13 +653,13 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     public ClientType getChangeType() {
         ClientAsyncEventExec asyncExec = asyncExecMap.get(ServerResponse.CHANGE);
-        ClientAsyncChange changeType = asyncExec instanceof ClientAsyncChange ? (ClientAsyncChange) asyncExec : null;
+        ClientAsyncInput changeType = asyncExec instanceof ClientAsyncInput ? (ClientAsyncInput) asyncExec : null;
         return changeType != null ? changeType.changeType : null;
     }
 
     public ClientInputList getInputList() {
         ClientAsyncEventExec asyncExec = asyncExecMap.get(ServerResponse.CHANGE);
-        ClientAsyncChange changeType = asyncExec instanceof ClientAsyncChange ? (ClientAsyncChange) asyncExec : null;
+        ClientAsyncInput changeType = asyncExec instanceof ClientAsyncInput ? (ClientAsyncInput) asyncExec : null;
         return changeType != null ? changeType.inputList : null;
     }
 

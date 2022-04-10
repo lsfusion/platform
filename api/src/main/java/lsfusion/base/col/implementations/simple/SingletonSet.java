@@ -400,6 +400,12 @@ public class SingletonSet<K> implements ImSet<K>, ImList<K>, ImOrderSet<K> {
         return ListFact.EMPTY();
     }
 
+    @Override
+    public ImList<K> replace(int i, K element) {
+        assert i == 0;
+        return ListFact.singleton(element);
+    }
+
     public <V> ImList<V> mapList(ImMap<? extends K, ? extends V> imMap) {
         return ListFact.singleton(((ImMap<K, V>)imMap).get(key));
     }

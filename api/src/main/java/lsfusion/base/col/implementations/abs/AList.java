@@ -139,6 +139,13 @@ public abstract class AList<K> extends AColObject implements ImList<K> {
         return mResult.immutableList();
     }
 
+    public ImList<K> replace(int i, K element) {
+        MList<K> mResult = ListFact.mList(size());
+        for(int j=0,size=size();j<size;j++)
+            mResult.add(j == i ? element : get(j));
+        return mResult.immutableList();
+    }
+
     public List<K> toJavaList() {
         List<K> result = new ArrayList<>();
         for(K element : this)

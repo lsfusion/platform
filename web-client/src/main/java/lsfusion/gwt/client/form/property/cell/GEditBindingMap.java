@@ -1,7 +1,9 @@
 package lsfusion.gwt.client.form.property.cell;
 
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.user.client.Event;
+import lsfusion.gwt.client.base.Result;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.event.GMouseStroke;
 
@@ -54,20 +56,31 @@ public class GEditBindingMap implements Serializable {
         }
         return null;
     }
-    public static String getDefaultEventSID(Event event, EditEventFilter editEventFilter, boolean hasEditObjectAction, boolean hasChangeAction) {
+
+    public static final String TOOLBAR_ACTION = "toolbarAction";
+    public static String getDefaultEventSID(Event event, Result<Integer> contextAction, EditEventFilter editEventFilter, boolean hasEditObjectAction, boolean hasChangeAction) {
         if (isEditObjectEvent(event, hasEditObjectAction, hasChangeAction)) // has to be before isChangeEvent, since also handles MOUSE CHANGE event
             return EDIT_OBJECT;
-        if (GMouseStroke.isChangeEvent(event))
+        if (GMouseStroke.isChangeEvent(event)) {
+            contextAction.set((Integer) getToolbarAction(event));
             return CHANGE;
+        }
         if (isGroupChangeKeyEvent(event))
             return GROUP_CHANGE;
         if (isCharModifyKeyEvent(event, editEventFilter) || isDropEvent(event))
             return CHANGE;
         return null;
     }
-    public static boolean isDefaultFilterChange(Event event, EditEventFilter editEventFilter) {
-        if (GMouseStroke.isChangeEvent(event))
+
+    public static Object getToolbarAction(Event event) {
+        return event.getEventTarget().<Element>cast().getPropertyObject(TOOLBAR_ACTION);
+    }
+
+    public static boolean isDefaultFilterChange(Event event, Result<Boolean> contextAction, EditEventFilter editEventFilter) {
+        if (GMouseStroke.isChangeEvent(event)) {
+            contextAction.set((Boolean) getToolbarAction(event));
             return true;
+        }
         if (isCharModifyKeyEvent(event, editEventFilter))
             return true;
         return false;

@@ -3,7 +3,10 @@ package lsfusion.gwt.client.form.property.cell.view;
 import com.google.gwt.dom.client.*;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder;
+import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 
 public abstract class CellRenderer<T> {
 
@@ -49,12 +52,7 @@ public abstract class CellRenderer<T> {
     // and with TextBasedCellEditor.renderStaticContent
     public void render(Element element, RenderContext renderContext) {
         Style.TextAlign horzTextAlignment = getHorzTextAlignment();
-
         String vertAlignment = getDefaultVertAlignment();
-
-        if (renderContext.isAlwaysSelected())
-            renderEditSelected(element, property);
-
         if(GwtClientUtils.isTDorTH(element)) {
             assert isSimpleText(renderContext);
             renderSimpleStatic(element, horzTextAlignment, vertAlignment);
@@ -103,9 +101,6 @@ public abstract class CellRenderer<T> {
     public void clearRender(Element element, RenderContext renderContext) {
         GwtClientUtils.removeAllChildren(element);
 
-        if(renderContext.isAlwaysSelected())
-            clearEditSelected(element, property);
-
         if(GwtClientUtils.isTDorTH(element)) { // optimization
             assert isSimpleText(renderContext);
             clearRenderSimpleStatic(element);
@@ -113,6 +108,18 @@ public abstract class CellRenderer<T> {
             clearRenderFlexStatic(element);
 
         clearRenderContent(element, renderContext);
+
+        AbstractDataGridBuilder.clearColors(element);
+
+        clearEditSelected(element, property);
+
+        if(needToRenderToolbarContent()) {
+            RenderedState renderedState = (RenderedState) element.getPropertyObject(RENDERED);
+            if(renderedState.toolbar != null) {
+                clearRenderToolbarContent(element);
+            }
+        }
+        element.setPropertyObject(RENDERED, null);
     }
     private static void clearRenderSimpleStatic(Element element) {
 //        if(staticHeight != null)
@@ -126,53 +133,223 @@ public abstract class CellRenderer<T> {
         element.getStyle().clearProperty("justifyContent");
     }
 
-    private static final String MOREASYNC = "more-async";
+    protected boolean renderedLoadingContent(UpdateContext updateContext) {
+        return false;
+    }
+
+    protected boolean needToRenderToolbarContent() {
+        return true;
+    }
+
+    // in theory in most case we can get previous state without storing it in Element, but for now it's the easiest way
+    private static class RenderedState {
+        public Object value;
+        public boolean loading;
+
+        public ToolbarState toolbar;
+    }
+    private boolean equalsDynamicState(RenderedState state, Object value, boolean isLoading) {
+        return GwtClientUtils.nullEquals(state.value, value) && state.loading == isLoading;
+    }
+
+    private static final String RENDERED = "rendered";
 
     public void update(Element element, UpdateContext updateContext) {
-        renderDynamicContent(element, updateContext.getValue(), updateContext.isLoading(), updateContext);
-    }
+        String background = updateContext.getBackground();
+        AbstractDataGridBuilder.updateColors(element, background, updateContext.getForeground(), true);
 
-    // cleared - cleared with setInnerText / setInnerHTML
-    protected void renderLoadingContent(Element element, boolean loading, boolean cleared) {
-        ImageElement loadingImage = (ImageElement) element.getPropertyObject(MOREASYNC);
-        if ((loadingImage != null) == loading) { // already rendered
-            if(!(cleared && loading)) // if cleared we still need to rerender the image
-                return;
+        boolean selected = updateContext.isSelectedLink();
+        if(selected)
+            renderEditSelected(element, property);
+        else
+            clearEditSelected(element, property);
+
+        Object value = updateContext.getValue();
+        boolean loading = updateContext.isLoading() && renderedLoadingContent(updateContext);
+
+        RenderedState renderedState = (RenderedState) element.getPropertyObject(RENDERED);
+        boolean isNew = false;
+        if(renderedState == null) {
+            renderedState = new RenderedState();
+            element.setPropertyObject(RENDERED, renderedState);
+
+            isNew = true;
+        }
+        boolean cleared = false;
+        if(isNew || !equalsDynamicState(renderedState, value, loading)) {
+            cleared = renderDynamicContent(element, value, loading, updateContext);
+
+            renderedState.value = value;
+            renderedState.loading = loading;
         }
 
-        if (loading) {
-            loadingImage = Document.get().createImageElement();
-            loadingImage.addClassName("wrap-img-paddings"); // setting paddings
-            GwtClientUtils.setThemeImage(ICON_LOADING, loadingImage::setSrc);
+        if(needToRenderToolbarContent())
+            renderToolbarContent(element, updateContext, renderedState, background, cleared);
+    }
 
-            Style.TextAlign horzTextAlignment = getHorzTextAlignment();
-            if(horzTextAlignment.equals(Style.TextAlign.CENTER)) {
-                element.insertFirst(loadingImage); // just adding first assuming that it will be centered by the element parent
-            } else {
-                element.appendChild(loadingImage);
-                GwtClientUtils.setupEdgeParent(loadingImage, true, horzTextAlignment.equals(Style.TextAlign.RIGHT));
+    // in theory in most case we can get previous state without storing it in Element, but for now it's the easiest way
+    private static class ToolbarState {
+        public final boolean loading;
+        public final ToolbarAction[] toolbarActions;
+
+        public final String background;
+
+        public Element element;
+
+        public ToolbarState(boolean loading, ToolbarAction[] toolbarActions, String background) {
+            this.loading = loading;
+            this.toolbarActions = toolbarActions;
+
+            this.background = background;
+        }
+    }
+
+    private boolean equalsState(ToolbarState stateA, ToolbarState stateB) {
+        if(stateA == null)
+            return stateB == null;
+        if(stateB == null)
+            return false;
+
+        if(!(stateA.loading == stateB.loading && GwtClientUtils.nullEquals(stateA.background, stateB.background)))
+            return false;
+
+        if(stateA.toolbarActions != stateB.toolbarActions) {
+            if (stateA.toolbarActions.length != stateB.toolbarActions.length)
+                return false;
+            for(int i = 0; i<stateA.toolbarActions.length; i++)
+                if(!stateA.toolbarActions[i].matches(stateB.toolbarActions[i]))
+                    return false;
+        }
+
+        return true;
+    }
+
+    public interface ToolbarAction {
+
+        boolean isHover();
+        String getImage();
+
+        boolean matches(ToolbarAction action);
+
+        // there are to ways of working with toolbar actions
+        // 1 is setting some mark for the target element (s) and then checking it in regular event handler (this  is more flexible, for example in editOnSingleClick scenario, however needs some assertions)
+        // 2 setting onMouseDown and stopping propagation (this way the row change won't be handled, when using ALL, and maybe some mor things)
+        default void setToolbarAction(ImageElement actionImgElement, Object value) {
+            // we're setting TOOLBAR_ACTION for all containers to avoid recursive run in getToolbarAction (optimization)
+            actionImgElement.setPropertyObject(GEditBindingMap.TOOLBAR_ACTION, value);
+            Element parentElement = actionImgElement.getParentElement();
+            parentElement.setPropertyObject(GEditBindingMap.TOOLBAR_ACTION, value);
+        }
+        default void setToolbarAction(ImageElement actionImgElement, Runnable run) {
+            // it has to be mouse down, since all other handlers use mousedown
+            GwtClientUtils.setOnMouseDown(actionImgElement.getParentElement(), nativeEvent -> {
+                nativeEvent.stopPropagation(); // need to stop, otherwise editing will be started
+                nativeEvent.preventDefault(); // preventing default stops button from focusing (this way we make this button unfocusable, which is important since onClick will lead to rerender, removing component and in this case focus will go south)
+                run.run();
+            });
+        }
+
+        void setOnPressed(ImageElement actionImgElement, UpdateContext updateContext);
+    }
+
+    public final static GPropertyDraw.QuickAccessAction[] noToolbarActions = new GPropertyDraw.QuickAccessAction[0];
+    // cleared - cleared with setInnerText / setInnerHTML
+    protected void renderToolbarContent(Element element, UpdateContext updateContext, RenderedState renderedState, String background, boolean cleared) {
+        boolean loading = updateContext.isLoading() && !renderedLoadingContent(updateContext);
+        ToolbarAction[] toolbarActions = updateContext.getToolbarActions();
+
+        boolean needToolbar = loading || toolbarActions.length > 0;
+
+        ToolbarState toolbarState = needToolbar ? new ToolbarState(loading, toolbarActions, background) : null;
+        ToolbarState prevState = renderedState.toolbar;
+        if (equalsState(toolbarState, prevState)) { // already rendered
+            if(!(cleared && needToolbar)) // if cleared we still need to rerender the toolbar
+                return;
+
+            toolbarState = prevState; // to keep toolbar element
+        } else {
+            if(prevState != null && toolbarState != null)
+                toolbarState.element = prevState.element;
+
+            renderedState.toolbar = toolbarState;
+        }
+
+        if(needToolbar) {
+            Element toolbarElement = cleared ? null : toolbarState.element;
+            boolean start = !getHorzTextAlignment().equals(Style.TextAlign.LEFT);
+            if(toolbarElement == null) {
+                toolbarElement = Document.get().createDivElement();
+                toolbarElement.addClassName("property-toolbar");
+                toolbarElement.addClassName("background-inherit");
+                element.appendChild(toolbarElement);
+                GwtClientUtils.setupEdgeStretchParent(toolbarElement, true, start);
+
+                toolbarState.element = toolbarElement;
+            } else
+                GwtClientUtils.removeAllChildren(toolbarElement);
+
+            // we cannot inherit parent background, since it's set for element (so we can't use background-inherit technique)
+            GFormController.setBackgroundColor(toolbarElement, background, true);
+
+            if(loading) {
+                ImageElement loadingImage = Document.get().createImageElement();
+                GwtClientUtils.setThemeImage(ICON_LOADING, loadingImage::setSrc);
+                loadingImage.addClassName("property-toolbar-loading");
+
+                addToToolbar(toolbarElement, start, loadingImage);
             }
 
-            element.setPropertyObject(MOREASYNC, loadingImage);
+            if (toolbarActions.length > 0) {
+                Element verticalSeparator = GwtClientUtils.createVerticalStretchSeparator().getElement();
+                addToToolbar(toolbarElement, start, verticalSeparator);
+
+                int hoverCount = 0;
+                for (ToolbarAction toolbarAction : toolbarActions) {
+                    // there is an assertion that the DOM structure will be exactly like that in setOnPressed / for optimization reasons
+                    DivElement actionDivElement = Document.get().createDivElement();
+                    ImageElement actionImgElement = Document.get().createImageElement();
+                    actionDivElement.appendChild(actionImgElement);
+                    actionDivElement.addClassName("property-toolbar-item"); // setting paddings
+                    if (toolbarAction.isHover()) {
+                        actionDivElement.addClassName("hide");
+                        hoverCount++;
+                    }
+                    GwtClientUtils.setThemeImage(toolbarAction.getImage() + ".png", actionImgElement::setSrc);
+
+                    toolbarAction.setOnPressed(actionImgElement, updateContext);
+
+                    addToToolbar(toolbarElement, start, actionDivElement);
+                }
+
+                if (hoverCount > 0) {
+                    element.addClassName("property-toolbar-on-hover");
+                }
+                if (hoverCount == toolbarActions.length) {
+                    verticalSeparator.addClassName("hide");
+                }
+            }
         } else {
             if (!cleared)
-                element.removeChild(loadingImage);
+                element.removeChild(prevState.element);
 
-            GwtClientUtils.clearFillParentElement(element);
-            element.setPropertyObject(MOREASYNC, null);
+            clearRenderToolbarContent(element);
         }
     }
 
-    protected void clearRenderLoadingContent(Element element, RenderContext renderContext) {
-        ImageElement loadingImage = (ImageElement) element.getPropertyObject(MOREASYNC);
-        if(loadingImage != null) {
-            GwtClientUtils.clearFillParentElement(element);
-            element.setPropertyObject(MOREASYNC, null);
-        }
+    private void addToToolbar(Element toolbarElement, boolean start, Element element) {
+        if(start)
+            toolbarElement.insertFirst(element);
+        else
+            toolbarElement.appendChild(element);
+    }
+
+    protected void clearRenderToolbarContent(Element element) {
+        GwtClientUtils.clearFillParentElement(element);
+        element.removeClassName("property-toolbar-on-hover");
     }
 
     public abstract void renderStaticContent(Element element, RenderContext renderContext);
-    public abstract void renderDynamicContent(Element element, Object value, boolean loading, UpdateContext updateContext);
+    public abstract boolean renderDynamicContent(Element element, Object value, boolean loading, UpdateContext updateContext);
     public abstract void clearRenderContent(Element element, RenderContext renderContext);
 
     public int getWidthPadding() {

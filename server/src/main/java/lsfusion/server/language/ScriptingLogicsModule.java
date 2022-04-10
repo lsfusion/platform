@@ -8,7 +8,6 @@ import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.heavy.OrderedMap;
-import lsfusion.base.col.implementations.simple.SingletonSet;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.file.IOUtils;
@@ -83,6 +82,7 @@ import lsfusion.server.logics.event.PrevScope;
 import lsfusion.server.logics.event.SessionEnvEvent;
 import lsfusion.server.logics.form.interactive.ManageSessionType;
 import lsfusion.server.logics.form.interactive.UpdateType;
+import lsfusion.server.logics.form.interactive.action.async.QuickAccess;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.action.expand.ExpandCollapseContainerAction;
 import lsfusion.server.logics.form.interactive.action.expand.ExpandCollapseType;
@@ -98,7 +98,6 @@ import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
 import lsfusion.server.logics.form.open.MappedForm;
 import lsfusion.server.logics.form.open.ObjectSelector;
 import lsfusion.server.logics.form.stat.struct.FormIntegrationType;
-import lsfusion.server.logics.form.stat.struct.hierarchy.*;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.filter.CCCContextFilterEntity;
 import lsfusion.server.logics.form.struct.filter.ContextFilterEntity;
@@ -172,8 +171,6 @@ import java.util.*;
 import java.util.function.IntFunction;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
@@ -2212,7 +2209,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
     private ScriptingLogicsModule.ILEWithParams getContextListEntity(int contextSize, ScriptingLogicsModule.LPWithParams list, ScriptingLogicsModule.LPWithParams where,
-                                                                     List<String> actionImages, List<LAWithParams> actions) {
+                                                                     List<String> actionImages, List<List<QuickAccess>> quickAccesses, List<LAWithParams> actions) {
         if(list == null) // optimization
             return new ILEWithParams(SetFact.EMPTYORDER(), SetFact.EMPTYORDER(), null, null, ListFact.EMPTY());
 
@@ -2238,23 +2235,13 @@ public class ScriptingLogicsModule extends LogicsModule {
                 ListFact.fromJavaList(actionImages).mapListValues((i, actionImage) -> {
                     LAWithParams action = actions.get(i);
                     return(splitAPParams(action, contextSize, usedInterfaces, value -> 0, (property, mapValues, mapExternal) ->
-                            new InputContextAction(actionImage, action.getLP().action, mapValues)));
+                            new InputContextAction(actionImage, ListFact.fromJavaList(quickAccesses.get(i)), action.getLP().action, mapValues)));
                 }));
-    }
-
-    private ContextInput getInputDoContextInput(LAWithParams doAction) {
-        // this targetProp will be used in doAction
-        return new ContextInput() {
-            @Override
-            public boolean isNotNull() {
-                return false;
-            }
-        };
     }
 
     public LAWithParams addScriptedInputAProp(ValueClass requestValueClass, LPWithParams oldValue, NamedPropertyUsage targetProp, LAWithParams doAction, LAWithParams elseAction,
                                               List<TypedParameter> oldContext, List<TypedParameter> newContext, boolean assign, boolean constraintFilter, LPWithParams changeProp,
-                                              LPWithParams listProp, LPWithParams whereProp, List<String> actionImages, List<LAWithParams> actions,
+                                              LPWithParams listProp, LPWithParams whereProp, List<String> actionImages, List<List<QuickAccess>> quickAccesses, List<LAWithParams> actions,
                                               DebugInfo.DebugPoint assignDebugPoint, FormSessionScope listScope, String customEditorFunction) throws ScriptingErrorLog.SemanticErrorException {
         if(listScope == null)
             listScope = FormSessionScope.OLDSESSION;
@@ -2268,7 +2255,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         if(assign && doAction == null) // we will need to add change props, temporary will make this action empty to avoid extra null checks 
             doAction = new LAWithParams(baseLM.getEmpty(), new ArrayList<Integer>());
 
-        ContextInput contextInput = getInputDoContextInput(doAction);
+        boolean notNull = false;
 
         LA action;
         ImOrderSet<Integer> usedParams;
@@ -2281,18 +2268,18 @@ public class ScriptingLogicsModule extends LogicsModule {
             
             CFEWithParams<ClassFormSelector.VirtualObject> contextEntities = getContextFilterAndListEntities(oldContext.size(), SetFact.singletonOrder(classForm.virtualObject),
                     whereProp != null ? ListFact.singleton(whereProp) : ListFact.EMPTY(), listProp, cccfs);
-            usedParams = contextEntities.usedParams;            
-            
-            action = addDialogInputAProp(classForm, tprop, classForm.virtualObject, oldValue != null, contextEntities.orderInterfaces, listScope, contextEntities.list, contextEntities.filters, customEditorFunction, contextInput);
+            usedParams = contextEntities.usedParams;
+
+            action = addDialogInputAProp(classForm, tprop, classForm.virtualObject, oldValue != null, contextEntities.orderInterfaces, listScope, contextEntities.list, contextEntities.filters, customEditorFunction, notNull);
         } else {
             // optimization. we don't use files on client side (see also DefaultChangeAction.executeCustom())
             if (oldValue != null && requestValueClass instanceof FileClass)
                 oldValue = null;
 
-            ILEWithParams contextEntity = getContextListEntity(oldContext.size(), listProp, whereProp, actionImages, actions);
+            ILEWithParams contextEntity = getContextListEntity(oldContext.size(), listProp, whereProp, actionImages, quickAccesses, actions);
             usedParams = contextEntity.usedParams;
 
-            action = addInputAProp(requestValueClass, tprop, oldValue != null, contextEntity.orderInterfaces, contextEntity.list, listScope, contextEntity.where, contextEntity.contextActions, customEditorFunction, contextInput);
+            action = addInputAProp(requestValueClass, tprop, oldValue != null, contextEntity.orderInterfaces, contextEntity.list, listScope, contextEntity.where, contextEntity.contextActions, customEditorFunction, notNull);
         }
         
         List<LPWithParams> mapping = new ArrayList<>();
@@ -3555,14 +3542,12 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         boolean syncType = doAction != null || elseAction != null; // optimization
 
-        ContextInput contextInput = getInputDoContextInput(doAction);
-
         LA action = addDialogInputAProp(mapped.form, objects, mNulls.immutableList(),
                                  inputObjects, inputProps, inputNulls, scope, contextEntities.list,
                                  manageSession, noCancel,
                                  contextEntities.orderInterfaces, contextEntities.filters,
                                  syncType, windowType, checkOnOk,
-                                 readonly, null, contextInput);
+                                 readonly, null, false);
 
         for (int usedParam : contextEntities.usedParams) {
             mapping.add(new LPWithParams(usedParam));

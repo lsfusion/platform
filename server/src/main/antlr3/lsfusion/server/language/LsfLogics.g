@@ -56,6 +56,8 @@ grammar LsfLogics;
     import lsfusion.server.logics.event.SystemEvent;
     import lsfusion.server.logics.form.interactive.ManageSessionType;
     import lsfusion.server.logics.form.interactive.UpdateType;
+    import lsfusion.server.logics.form.interactive.action.async.QuickAccess;
+    import lsfusion.server.logics.form.interactive.action.async.QuickAccessMode;
     import lsfusion.server.logics.form.interactive.action.expand.ExpandCollapseType;
     import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
     import lsfusion.server.logics.form.interactive.design.ComponentView;
@@ -3890,13 +3892,14 @@ inputActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams ac
     LPWithParams whereProp = null;
 
     List<String> actionImages = new ArrayList<>();
+    List<List<QuickAccess>> quickAccesses = new ArrayList<>();
     List<LAWithParams> actions = new ArrayList<>();
     String customEditorFunction = null;
 }
 @after {
 	if (inMainParseState()) {
 		$action = self.addScriptedInputAProp($in.valueClass, $in.initValue, outProp, $dDB.action, $dDB.elseAction, context, newContext,
-		 assign, constraintFilter, changeProp, listProp, whereProp, actionImages, actions, assignDebugPoint, $fs.result, customEditorFunction);
+		 assign, constraintFilter, changeProp, listProp, whereProp, actionImages, quickAccesses, actions, assignDebugPoint, $fs.result, customEditorFunction);
 	}
 }
 	:	'INPUT'
@@ -3921,16 +3924,26 @@ inputActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams ac
         ('CUSTOM' editFun=stringLiteral {customEditorFunction = $editFun.val;})?
 	    ('LIST' listExpr=propertyExpression[newListContext, listDynamic] { listProp = $listExpr.property; })?
         ('WHERE' whereExpr=propertyExpression[newListContext, listDynamic] { whereProp = $whereExpr.property; })?
-        (acts = contextActions[newContext] { actionImages = $acts.actionImages; actions = $acts.actions; })?
+        (acts = contextActions[newContext] { actionImages = $acts.actionImages; quickAccesses = $acts.quickAccesses; actions = $acts.actions; })?
         fs=formSessionScopeClause?
 		('TO' pUsage=propertyUsage { outProp = $pUsage.propUsage; } )?
         dDB=doInputBody[context, newContext]
 	;
 
-contextActions[List<TypedParameter> context] returns [List<String> actionImages = new ArrayList<>(), List<LAWithParams> actions = new ArrayList<>()]
+contextActions[List<TypedParameter> context] returns [List<String> actionImages = new ArrayList<>(), List<List<QuickAccess>> quickAccesses = new ArrayList<>(), List<LAWithParams> actions = new ArrayList<>()]
 	:
-	'ACTIONS' image=stringLiteral actDB=listActionDefinitionBody[context, true] { $actionImages.add($image.val); $actions.add($actDB.action); }
-	(',' nextImage=stringLiteral nextActDB=listActionDefinitionBody[context, true] { $actionImages.add($nextImage.val); $actions.add($nextActDB.action); })*
+	'ACTIONS' image=stringLiteral { $actionImages.add($image.val); } (toolbar=contextActionToolbar { $quickAccesses.add($toolbar.quickAccessList); })? actDB=listActionDefinitionBody[context, true] { $actions.add($actDB.action); }
+	(',' nextImage=stringLiteral { $actionImages.add($nextImage.val); } (nextToolbar=contextActionToolbar { $quickAccesses.add($nextToolbar.quickAccessList); })? nextActDB=listActionDefinitionBody[context, true] { $actions.add($nextActDB.action); })*
+	;
+
+contextActionToolbar returns [List<QuickAccess> quickAccessList = new ArrayList<>()]
+	:
+	'TOOLBAR' (quickAccess { quickAccessList.add(new QuickAccess($quickAccess.mode, $quickAccess.hover)); })*
+	;
+
+quickAccess returns [QuickAccessMode mode, Boolean hover = false]
+	:
+	('ALL' { $mode = QuickAccessMode.ALL; } | 'SELECTED' { $mode = QuickAccessMode.SELECTED; } | 'FOCUSED' { $mode = QuickAccessMode.FOCUSED; }) ('HOVER' { $hover = true; })?
 	;
 
 mappedInput[List<TypedParameter> context] returns [ValueClass valueClass, LPWithParams initValue = null]

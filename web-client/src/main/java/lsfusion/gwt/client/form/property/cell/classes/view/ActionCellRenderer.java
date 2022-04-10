@@ -93,11 +93,8 @@ public class ActionCellRenderer extends CellRenderer {
         element.getStyle().clearPadding();
         element.setPropertyObject(TEXT, null);
 
-        if(!hasImage(renderContext)) {
+        if(!hasImage(renderContext))
             clearBasedTextFonts(property, element.getStyle(), renderContext);
-
-            clearRenderLoadingContent(element, renderContext);
-        }
 
         element.removeClassName("gwt-Button-disabled");
     }
@@ -131,7 +128,12 @@ public class ActionCellRenderer extends CellRenderer {
     }
 
     @Override
-    public void renderDynamicContent(Element element, Object value, boolean loading, UpdateContext updateContext) {
+    protected boolean renderedLoadingContent(UpdateContext updateContext) {
+        return hasImage(updateContext) && property.isLoadingReplaceImage();
+    }
+
+    @Override
+    public boolean renderDynamicContent(Element element, Object value, boolean loading, UpdateContext updateContext) {
         boolean enabled = !property.isReadOnly() && (value != null) && (Boolean) value;
 
         // we have it here and not in renderStaticContent because of using enabled
@@ -140,7 +142,7 @@ public class ActionCellRenderer extends CellRenderer {
             boolean absolute = true;
 
             Object image;
-            if(loading) {
+            if(updateContext.isLoading() && property.isLoadingReplaceImage()) {
                 imagePath = ICON_LOADING;
                 absolute = false;
             } else if(property.hasDynamicImage()) {
@@ -165,13 +167,14 @@ public class ActionCellRenderer extends CellRenderer {
             if(property.drawAsync) {
                 element.setPropertyObject(ASYNCIMAGE, imagePath);
             }
-        } else
-            renderLoadingContent(element, loading, false);
+        }
 
         if(!enabled)
             element.addClassName("gwt-Button-disabled");
         else
             element.removeClassName("gwt-Button-disabled");
+
+        return false;
     }
 
     @Override

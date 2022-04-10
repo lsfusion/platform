@@ -25,8 +25,12 @@ import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.async.GPushAsyncInput;
+import lsfusion.gwt.client.form.property.async.GPushAsyncResult;
+import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.classes.GDateDTO;
 import lsfusion.gwt.client.form.property.cell.classes.GDateTimeDTO;
+import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
 import lsfusion.gwt.client.form.view.Column;
 import lsfusion.gwt.client.view.StyleDefaults;
 import lsfusion.interop.action.ServerResponse;
@@ -246,24 +250,34 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         }
     }
 
-    protected void changeProperty(String property, JavaScriptObject object, Serializable newValue) {
-        changeProperties(new String[]{property}, new JavaScriptObject[]{object}, new Serializable[]{newValue});
+    protected void changeProperty(String column, JavaScriptObject object, Serializable newValue) {
+        changeProperties(new String[]{column}, new JavaScriptObject[]{object}, new Serializable[]{newValue});
     }
 
-    protected void changeProperties(String[] properties, JavaScriptObject[] objects, Serializable[] newValues) {
-        int length = properties.length;
-        GPropertyDraw[] gProperties = new GPropertyDraw[length];
-        GGroupObjectValue[] columnKeys = new GGroupObjectValue[length];
-        GGroupObjectValue[] rowKeys = new GGroupObjectValue[length];
+    protected void changeProperties(String[] columns, JavaScriptObject[] objects, Serializable[] newValues) {
+        int length = columns.length;
+        GPropertyDraw[] properties = new GPropertyDraw[length];
+        GGroupObjectValue[] fullKeys = new GGroupObjectValue[length];
+        boolean[] externalChanges = new boolean[length];
+        GPushAsyncResult[] pushAsyncResults = new GPushAsyncResult[length];
 
         for (int i = 0; i < length; i++) {
-            Column column = columnMap.get(properties[i]);
-            gProperties[i] = column.property;
-            columnKeys[i] = column.columnKey;
-            rowKeys[i] = getChangeKey(objects[i]);
+            Column column = columnMap.get(columns[i]);
+            properties[i] = column.property;
+            fullKeys[i] = GGroupObjectValue.getFullKey(getChangeKey(objects[i]), column.columnKey);
+            externalChanges[i] = true;
+            pushAsyncResults[i] = new GPushAsyncInput(new GUserInputResult(newValues[i]));
         }
 
-        changeProperties(gProperties, rowKeys, columnKeys, newValues);
+        long changeRequestIndex = form.asyncExecutePropertyEventAction(GEditBindingMap.CHANGE, null, null, properties, externalChanges, fullKeys, pushAsyncResults);
+
+        for (int i = 0; i < length; i++) {
+            GPropertyDraw property = properties[i];
+            if(property.canUseChangeValueForRendering(property.getExternalChangeType())) { // or use the old value instead of the new value in that case
+                GGroupObjectValue fullKey = fullKeys[i];
+                form.pendingChangeProperty(property, fullKey, newValues[i], getValue(property, fullKey), changeRequestIndex);
+            }
+        }
     }
 
     protected boolean isReadOnly(String property, GGroupObjectValue object) {

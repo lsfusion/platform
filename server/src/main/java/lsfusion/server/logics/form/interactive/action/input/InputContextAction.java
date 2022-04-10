@@ -1,6 +1,7 @@
 package lsfusion.server.logics.form.interactive.action.input;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
@@ -10,21 +11,26 @@ import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.interactive.action.async.AsyncExec;
+import lsfusion.server.logics.form.interactive.action.async.QuickAccess;
+import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
 import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 import java.sql.SQLException;
+import java.util.List;
 
 public class InputContextAction<P extends PropertyInterface, V extends PropertyInterface> {
 
     public final String image;
+    public final ImList<QuickAccess> quickAccessList;
     
     public final Action<P> action;
 
     public final ImRevMap<P, V> mapValues; // external context
 
-    public InputContextAction(String image, Action<P> action, ImRevMap<P, V> mapValues) {
+    public InputContextAction(String image, ImList<QuickAccess> quickAccessList, Action<P> action, ImRevMap<P, V> mapValues) {
         this.image = image;
+        this.quickAccessList = quickAccessList;
         this.action = action;
 
         this.mapValues = mapValues;
@@ -44,11 +50,14 @@ public class InputContextAction<P extends PropertyInterface, V extends PropertyI
     }
 
     public <C extends PropertyInterface> InputContextAction<P, C> map(ImRevMap<V, C> map) {
-        return new InputContextAction<P, C>(image, action, mapValues.join(map));
+        return new InputContextAction<P, C>(image, quickAccessList, action, mapValues.join(map));
     }
 
-    public AsyncExec getAsyncExec() {
-        return action.getAsyncExec();
+    public AsyncMapEventExec<V> getAsyncEventExec() {
+        AsyncMapEventExec<P> asyncEventExec = action.getAsyncEventExec(false);
+        if(asyncEventExec != null && !asyncEventExec.needOwnPushResult())
+            return asyncEventExec.mapInner(mapValues);
+        return null;
     }
 
     public void execute(ExecutionContext<V> context, ObjectValue userValue) throws SQLException, SQLHandledException {

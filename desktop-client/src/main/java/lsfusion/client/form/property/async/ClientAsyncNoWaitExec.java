@@ -7,10 +7,14 @@ import lsfusion.client.form.property.cell.controller.dispatch.EditPropertyDispat
 
 import java.io.IOException;
 
-public class ClientAsyncNoWaitExec extends ClientAsyncEventExec{
+public class ClientAsyncNoWaitExec extends ClientAsyncExec{
     @Override
     public boolean exec(ClientFormController form, EditPropertyDispatcher dispatcher, ClientPropertyDraw property, ClientGroupObjectValue columnKey, String actionSID) throws IOException {
         return false;
+    }
+
+    @Override
+    public void exec(long requestIndex) {
     }
 
     @Override

@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.form.object.panel.controller;
 
 import com.google.gwt.dom.client.Element;
+import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.form.controller.GFormController;
@@ -160,6 +161,11 @@ public class GPanelController extends GPropertyController {
         }
 
         return false;
+    }
+
+    @Override
+    public Pair<GGroupObjectValue, Object> setLoadingValueAt(GPropertyDraw property, GGroupObjectValue fullCurrentKey, Object value) {
+        return propertyControllers.get(property).setLoadingValueAt(fullCurrentKey, value);
     }
 
     @Override

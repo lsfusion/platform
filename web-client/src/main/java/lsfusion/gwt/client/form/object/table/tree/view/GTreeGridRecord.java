@@ -51,6 +51,18 @@ public class GTreeGridRecord extends GridDataRecord {
     public Object getImage(GPropertyDraw property) {
         return getAttribute(property.sID + "_image");
     }
+    public void setBackground(GPropertyDraw property, Object background) {
+        setAttribute(property.sID + "_background", background != null ? background.toString() : null);
+    }
+    public String getBackground(GPropertyDraw property) {
+        return (String) getAttribute(property.sID + "_background");
+    }
+    public void setForeground(GPropertyDraw property, Object foreground) {
+        setAttribute(property.sID + "_foreground", foreground != null ? foreground.toString() : null);
+    }
+    public String getForeground(GPropertyDraw property) {
+        return (String) getAttribute(property.sID + "_foreground");
+    }
 
     public GGroupObject getGroup() {
         return group;

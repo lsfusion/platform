@@ -222,8 +222,11 @@ a.fc-daygrid-day-number, a.fc-daygrid-day-number:hover {
     color: var(--text-color);
 }
 
-.tippy-box {
+.tippy-box,
+.tippy-box .background-inherit { /* here it would be better to add background-inherit style to the tippy-box elements, but it is in an external library */
     background-color: var(--background-color);
+}
+.tippy-box {
     border: 1px solid var(--dialog-outer-border-color);
     border-radius: var(--panel-border-radius);
     color: var(--text-color);

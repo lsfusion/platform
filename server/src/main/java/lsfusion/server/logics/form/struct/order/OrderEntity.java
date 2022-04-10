@@ -24,4 +24,6 @@ public interface OrderEntity<T extends OrderInstance> extends Instantiable<T>, C
     <T extends PropertyInterface> PropertyInterfaceImplement<T> getImplement(ImRevMap<ObjectEntity, T> mapObjects);
 
     Expr getEntityExpr(ImMap<ObjectEntity, ? extends Expr> mapExprs, Modifier modifier) throws SQLException, SQLHandledException;
+
+    ImSet<ObjectEntity> getObjects();
 }

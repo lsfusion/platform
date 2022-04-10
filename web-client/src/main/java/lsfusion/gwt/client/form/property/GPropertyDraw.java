@@ -1,11 +1,10 @@
 package lsfusion.gwt.client.form.property;
 
+import com.google.gwt.dom.client.ImageElement;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.ClientMessages;
-import lsfusion.gwt.client.base.GwtSharedUtils;
-import lsfusion.gwt.client.base.ImageDescription;
-import lsfusion.gwt.client.base.ImageHolder;
+import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
@@ -23,16 +22,17 @@ import lsfusion.gwt.client.form.design.GFontMetrics;
 import lsfusion.gwt.client.form.design.view.flex.LinearCaptionContainer;
 import lsfusion.gwt.client.form.event.GInputBindingEvent;
 import lsfusion.gwt.client.form.event.GKeyInputEvent;
+import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
-import lsfusion.gwt.client.form.property.async.GAsyncChange;
-import lsfusion.gwt.client.form.property.async.GAsyncEventExec;
+import lsfusion.gwt.client.form.property.async.*;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.classes.view.FormatCellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.CustomCellRenderer;
+import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 import lsfusion.gwt.client.form.property.panel.view.ActionOrPropertyValueController;
 import lsfusion.gwt.client.form.property.panel.view.PanelRenderer;
 import lsfusion.gwt.client.view.MainFrame;
@@ -42,11 +42,16 @@ import lsfusion.interop.action.ServerResponse;
 import java.io.Serializable;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
+import static com.google.gwt.dom.client.BrowserEvents.KEYDOWN;
 import static lsfusion.gwt.client.base.EscapeUtils.escapeLineBreakHTML;
 import static lsfusion.gwt.client.base.GwtClientUtils.createTooltipHorizontalSeparator;
+import static lsfusion.gwt.client.form.event.GKeyStroke.getKeyStroke;
+import static lsfusion.gwt.client.form.property.cell.GEditBindingMap.CHANGE;
 
 public class GPropertyDraw extends GComponent implements GPropertyReader, Serializable {
     public int ID;
@@ -86,8 +91,6 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public GType externalChangeType;
     public Map<String, GAsyncEventExec> asyncExecMap;
 
-    // custom renderers, simple state views, paste
-    public static final GType externalChangeTypeUsage = null;
     public GType getExternalChangeType() {
         return externalChangeType;
     }
@@ -98,7 +101,129 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
     public GType getChangeType() {
         GAsyncEventExec asyncExec = getAsyncEventExec(ServerResponse.CHANGE);
-        return asyncExec instanceof GAsyncChange ? ((GAsyncChange) asyncExec).changeType : null;
+        return asyncExec instanceof GAsyncInput ? ((GAsyncInput) asyncExec).changeType : null;
+    }
+
+    public GInputList getInputList() {
+        GAsyncEventExec asyncExec = getAsyncEventExec(ServerResponse.CHANGE);
+        return asyncExec instanceof GAsyncInput ? ((GAsyncInput) asyncExec).inputList : null;
+    }
+
+    public GGroupObjectValue filterColumnKeys(GGroupObjectValue fullCurrentKey) {
+        return fullCurrentKey.filter(columnGroupObjects != null ? columnGroupObjects : Collections.emptyList());
+    }
+
+    public Boolean loadingReplaceImage;
+    public boolean isLoadingReplaceImage() {
+        if(loadingReplaceImage != null)
+            return loadingReplaceImage;
+
+        return !hasDynamicImage(); // move to server afterwards
+    }
+
+    public static class QuickAccessAction implements CellRenderer.ToolbarAction {
+        public final String action;
+        public final int index;
+        public final boolean hover;
+
+        @Override
+        public boolean isHover() {
+            return hover;
+        }
+
+        @Override
+        public String getImage() {
+            return action;
+        }
+
+        @Override
+        public void setOnPressed(ImageElement actionImgElement, UpdateContext updateContext) {
+            setToolbarAction(actionImgElement, index);
+//            setToolbarAction(actionImgElement, () -> updateContext.executeContextAction(index));
+        }
+
+        @Override
+        public boolean matches(CellRenderer.ToolbarAction action) {
+            if(!(action instanceof QuickAccessAction))
+                return false;
+
+            return isHover() == action.isHover() && index == ((QuickAccessAction) action).index;
+        }
+
+        public QuickAccessAction(String action, int index, boolean hover) {
+            this.action = action;
+            this.index = index;
+            this.hover = hover;
+        }
+    }
+
+    private transient QuickAccessAction[] quickAccessSelectedFocusedActions;
+    private transient QuickAccessAction[] quickAccessSelectedActions;
+    private transient QuickAccessAction[] quickAccessActions;
+    // manual caching
+    public QuickAccessAction[] getQuickAccessActions(boolean isSelected, boolean isFocused) {
+        if(isSelected) {
+            if(isFocused) {
+                if (quickAccessSelectedFocusedActions == null) {
+                    quickAccessSelectedFocusedActions = calculateQuickAccessActions(true, true);
+                }
+                return quickAccessSelectedFocusedActions;
+            }
+            if (quickAccessSelectedActions == null) {
+                quickAccessSelectedActions = calculateQuickAccessActions(true, false);
+            }
+            return quickAccessSelectedActions;
+        }
+
+        if(quickAccessActions == null) {
+            quickAccessActions = calculateQuickAccessActions(false, false);
+        }
+        return quickAccessActions;
+    }
+
+    private QuickAccessAction[] calculateQuickAccessActions(boolean isSelected, boolean isFocused) {
+        GInputList inputList = getInputList();
+
+        List<QuickAccessAction> actions = new ArrayList<>();
+        if(inputList != null) {
+            for (int i = 0; i < inputList.actions.length; i++) {
+                List<GQuickAccess> quickAccessList = inputList.actions[i].quickAccessList;
+
+                boolean enable = false;
+                boolean hover = true;
+                for (GQuickAccess quickAccess : quickAccessList) {
+                    switch (quickAccess.mode) {
+                        case ALL:
+                            enable = true;
+                            if (!quickAccess.hover) {
+                                hover = false;
+                            }
+                            break;
+                        case SELECTED:
+                            if (isSelected) {
+                                enable = true;
+                                if (!quickAccess.hover) {
+                                    hover = false;
+                                }
+                            }
+                            break;
+                        case FOCUSED:
+                            if (isSelected && isFocused) {
+                                enable = true;
+                                if (!quickAccess.hover) {
+                                    hover = false;
+                                }
+                            }
+                    }
+                }
+
+                GInputListAction action = inputList.actions[i];
+                if (enable) {
+                    actions.add(new QuickAccessAction(action.action, i, hover));
+                }
+            }
+        }
+        return actions.toArray(new QuickAccessAction[0]);
     }
 
     public GAsyncEventExec getAsyncEventExec(String actionSID) {
@@ -217,23 +342,34 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public boolean hasFooter;
 
     // eventually gets to PropertyDrawEntity.getEventAction (which is symmetrical to this)
-    public String getEventSID(Event editEvent) {
-        String actionSID = null;
+    public String getEventSID(Event editEvent, Result<Integer> contextAction) {
         if (editBindingMap != null) { // property bindings
-            actionSID = editBindingMap.getEventSID(editEvent);
+            String actionSID = editBindingMap.getEventSID(editEvent);
+            if(actionSID != null)
+                return actionSID;
         }
-        // not sure that it should be done like this since enter is used as a tab
-//        if (actionSID == null && baseType instanceof GActionType && GKeyStroke.isEnterKeyEvent(editEvent)) {
-//            return GEditBindingMap.CHANGE;
-//        }
-        if (actionSID == null) {
-            GType changeType = getChangeType();
-            actionSID = GEditBindingMap.getDefaultEventSID(editEvent, changeType == null ? null : changeType.getEditEventFilter(), hasEditObjectAction, hasUserChangeAction());
+
+        GInputList inputList;
+        if (KEYDOWN.equals(editEvent.getType()) && (inputList = getInputList()) != null) {
+            GKeyStroke keyStroke = null;
+            for (int i = 0; i < inputList.actions.length; i++) {
+                GInputListAction action = inputList.actions[i];
+                if (action.keyStroke != null) {
+                    if (keyStroke == null)
+                        keyStroke = getKeyStroke(editEvent);
+                    if (keyStroke.equals(action.keyStroke)) {
+                        contextAction.set(i);
+                        return CHANGE;
+                    }
+                }
+            }
         }
-        return actionSID;
+
+        GType changeType = getChangeType();
+        return GEditBindingMap.getDefaultEventSID(editEvent, contextAction, changeType == null ? null : changeType.getEditEventFilter(), hasEditObjectAction, hasUserChangeAction());
     }
-    public boolean isFilterChange(Event editEvent) {
-        return GEditBindingMap.isDefaultFilterChange(editEvent, baseType.getEditEventFilter());
+    public boolean isFilterChange(Event editEvent, Result<Boolean> contextAction) {
+        return GEditBindingMap.isDefaultFilterChange(editEvent, contextAction, baseType.getEditEventFilter());
     }
 
     public GPropertyDraw(){}

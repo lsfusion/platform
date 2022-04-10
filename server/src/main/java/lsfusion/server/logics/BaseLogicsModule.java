@@ -21,13 +21,13 @@ import lsfusion.server.data.expr.formula.*;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.sql.lambda.SQLCallable;
 import lsfusion.server.data.type.Type;
-import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.language.action.LA;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
+import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.changed.IncrementType;
 import lsfusion.server.logics.classes.StaticClass;
 import lsfusion.server.logics.classes.ValueClass;
@@ -41,6 +41,7 @@ import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.constraint.PropertyFormEntity;
 import lsfusion.server.logics.event.PrevScope;
+import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapChange;
 import lsfusion.server.logics.form.interactive.action.change.ActionObjectSelector;
 import lsfusion.server.logics.form.interactive.action.change.FormAddObjectAction;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
@@ -50,7 +51,6 @@ import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
-import lsfusion.server.logics.form.interactive.action.async.AsyncChange;
 import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.logics.navigator.window.AbstractWindow;
 import lsfusion.server.logics.navigator.window.NavigatorWindow;
@@ -880,7 +880,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     }
 
     private LA addObjInputAProp(DataClass dataClass, LP targetProp, ObjectEntity objectEntity) {
-        return addInputAProp(dataClass, targetProp, false, SetFact.EMPTYORDER(), null, null, null, ListFact.EMPTY(), null, objectEntity.getContextInput());
+        return addInputAProp(dataClass, targetProp, false, SetFact.EMPTYORDER(), null, null, null, ListFact.EMPTY(), null, false);
     }
 
     @Override
@@ -905,7 +905,11 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
             LA<?> input = addObjInputAProp(dataClass, targetProp, obj);
 
-            onChange = PropertyFact.createRequestAction(SetFact.<ClassPropertyInterface>EMPTY(), input.getImplement(), obj.getSeekPanelAction(this, targetProp), null).mapObjects(MapFact.EMPTYREV());
+            ActionMapImplement<?, ClassPropertyInterface> request = PropertyFact.createRequestAction(SetFact.<ClassPropertyInterface>EMPTY(), input.getImplement(), obj.getSeekPanelAction(this, targetProp), null);
+
+            PropertyFact.setResetAsync(request.action, new AsyncMapChange<>(null, obj, null, null));
+
+            onChange = request.mapObjects(MapFact.EMPTYREV());
         }
         return new Pair<>(value, onChange);
     }
@@ -929,10 +933,14 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
             LA<?> input = addObjInputAProp(dataClass, targetProp, objectFrom);
 
-            onChange = PropertyFact.createRequestAction(SetFact.<ClassPropertyInterface>EMPTY(), input.getImplement(),
+            ActionMapImplement<?, ClassPropertyInterface> request = PropertyFact.createRequestAction(SetFact.<ClassPropertyInterface>EMPTY(), input.getImplement(),
                     PropertyFact.createListAction(SetFact.<ClassPropertyInterface>EMPTY(),
                             objectFrom.getSeekPanelAction(this, addJProp(fromIntervalProperty, targetProp)),
-                            objectTo.getSeekPanelAction(this, addJProp(toIntervalProperty, targetProp))), null).mapObjects(MapFact.EMPTYREV());
+                            objectTo.getSeekPanelAction(this, addJProp(toIntervalProperty, targetProp))), null);
+
+            PropertyFact.setResetAsync(request.action, new AsyncMapChange<>(null, objectFrom, null, null));
+
+            onChange = request.mapObjects(MapFact.EMPTYREV());
         }
 
         return new Pair<>(value, onChange);
@@ -1058,15 +1066,6 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
     public boolean isRequestCanceled(ExecutionEnvironment env) throws SQLException, SQLHandledException {
         return getRequestCanceledProperty().read(env) != null;
-    }
-
-    public <R> R pushRequestedValue(Object value, AsyncChange asyncChange, ExecutionEnvironment env, SQLCallable<R> callable) throws SQLException, SQLHandledException {
-        if(asyncChange != null) {
-            dropRequestCanceled(env);
-            asyncChange.targetProp.change(DataObject.getValue(value, asyncChange.changeType), env);
-            return pushRequest(env, callable);
-        } else
-            return callable.call();
     }
 
     @Deprecated

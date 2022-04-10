@@ -17,8 +17,11 @@ package lsfusion.gwt.client.base.view.grid;
 
 import com.google.gwt.dom.client.*;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
+import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 
 import java.util.List;
+import java.util.function.BiPredicate;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.removeAllChildren;
 
@@ -126,18 +129,17 @@ public abstract class AbstractDataGridBuilder<T> {
 
     /**
      * Build zero or more table rows for the specified row value.
-     *
      * @param rowIndex the absolute row index
      * @param rowValue    the value for the row to render
      * @param columnsToRedraw
      * @param tr
      */
-    private void updateRow(int rowIndex, T rowValue, int[] columnsToRedraw, TableRowElement tr) {
+    public void updateRow(int rowIndex, T rowValue, int[] columnsToRedraw, TableRowElement tr) {
         setRowValueIndex(tr, rowIndex);
-        updateRowImpl(rowIndex, rowValue, columnsToRedraw, tr);
+        updateRow(rowIndex, rowValue, columnsToRedraw, tr, null);
     }
 
-    protected abstract void updateRowImpl(int rowIndex, T rowValue, int[] columnsToRedraw, TableRowElement rowElement);
+    public abstract void updateRow(int rowIndex, T rowValue, int[] columnsToRedraw, TableRowElement rowElement, BiPredicate<Column<T, ?>, Cell> filter);
 
     public void updateRowStickyLeft(TableSectionElement tbodyElement, List<Integer> stickyColumns, List<Integer> stickyLefts) {
         int rowCount = tbodyElement.getChildCount();
@@ -153,7 +155,14 @@ public abstract class AbstractDataGridBuilder<T> {
 
     protected final <C> void renderCell(TableCellElement td, Cell cell, Column<T, C> column) {
         td.setPropertyObject(COLUMN_ATTRIBUTE, column);
-        column.renderAndUpdateDom(cell, td);
+        column.renderDom(cell, td);
+
+        if(column.isSticky()) {
+            //class dataGridStickyCell is also used in DataGrid isStickyCell()
+            td.addClassName("dataGridStickyCell");
+            td.addClassName("background-inherit");
+            td.getStyle().setProperty("position", "sticky"); // we need to add it explicitly since it is used in setupFillParent
+        }
     }
 
     public final Column<T, ?> getColumn(Element elem) {
@@ -162,5 +171,15 @@ public abstract class AbstractDataGridBuilder<T> {
 
     protected final <C> void updateCell(TableCellElement cellParent, Cell cell, Column<T, C> column) {
         column.updateDom(cell, cellParent);
+    }
+
+    public static void updateColors(Element element, String backgroundColor, String foregroundColor, boolean themeConvert) {
+        GFormController.setBackgroundColor(element, backgroundColor, themeConvert);
+        GFormController.setForegroundColor(element, foregroundColor, themeConvert);
+    }
+
+    public static void clearColors(Element element) {
+        GFormController.setBackgroundColor(element, null, false);
+        GFormController.setForegroundColor(element, null, false);
     }
 }

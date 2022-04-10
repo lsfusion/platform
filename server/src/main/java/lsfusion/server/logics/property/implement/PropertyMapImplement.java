@@ -25,6 +25,7 @@ import lsfusion.server.logics.action.session.changed.OldProperty;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
 import lsfusion.server.logics.event.PrevScope;
+import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapChange;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
@@ -40,7 +41,9 @@ import lsfusion.server.logics.property.classes.infer.*;
 import lsfusion.server.logics.property.data.DataProperty;
 import lsfusion.server.logics.property.oraction.ActionOrPropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
+import lsfusion.server.logics.property.value.StaticValueProperty;
 
+import java.io.Serializable;
 import java.sql.SQLException;
 
 public class PropertyMapImplement<P extends PropertyInterface, T extends PropertyInterface> extends PropertyRevImplement<P, T> implements PropertyInterfaceImplement<T> {
@@ -265,6 +268,39 @@ public class PropertyMapImplement<P extends PropertyInterface, T extends Propert
 
     public PropertyMapImplement<?, T> mapClassProperty() {
         return property.getClassProperty().mapPropertyImplement(mapping);
+    }
+
+    @Override
+    public boolean mapChangedWhen(boolean toNull, PropertyInterfaceImplement<T> changeProperty) {
+         return property.isChangedWhen(toNull, changeProperty.map(mapping.reverse()));
+    }
+
+    @Override
+    public <X extends PropertyInterface> AsyncMapChange<X, T> mapAsyncChange(PropertyMapImplement<X, T> writeTo, ObjectEntity object) {
+        if(property instanceof StaticValueProperty)
+            return new AsyncMapChange<>(writeTo, object, ((StaticValueProperty) property).getStaticValue(), null);
+        return null;
+    }
+
+    public <C extends PropertyInterface> PropertyMapImplement<P, C> mapInner(ImRevMap<T, C> map) {
+        // here it's not evident if we should consider the case like FOR f=g(a) DO INPUT ... LIST x(d) IF g(d) = f as a simple input
+        // we won't since we don't do that in FilterEntity, ContextFilterEntity.getInputListEntity
+        ImRevMap<P, C> joinMapValues = mapping.innerJoin(map);
+        if(joinMapValues.size() != mapping.size())
+            return null;
+        return new PropertyMapImplement<>(property, joinMapValues);
+    }
+
+    public <C extends PropertyInterface> PropertyMapImplement<P, C> mapJoin(ImMap<T, PropertyInterfaceImplement<C>> map) {
+        ImMap<P, PropertyInterfaceImplement<C>> joinMapValues = mapping.innerJoin(map);
+        if(joinMapValues.size() != mapping.size())
+            return null;
+
+        ImRevMap<P, C> revJoinMapValues = PropertyInterface.getIdentityMap(joinMapValues);
+        if(revJoinMapValues == null)
+            return null;
+
+        return new PropertyMapImplement<>(property, revJoinMapValues);
     }
 
     // временно

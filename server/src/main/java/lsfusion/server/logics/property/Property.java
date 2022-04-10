@@ -83,6 +83,7 @@ import lsfusion.server.logics.classes.user.set.OrClassSet;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.classes.user.set.ResolveUpClassSet;
 import lsfusion.server.logics.event.*;
+import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapChange;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
@@ -556,6 +557,13 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         if(inferred == null)
             return MapFact.EMPTY();
         return ExClassSet.fromExValue(inferred).removeNulls();
+    }
+
+    public boolean isChangedWhen(boolean toNull, PropertyInterfaceImplement<T> changeProperty) {
+        if(toNull && changeProperty instanceof PropertyInterface && isNotNull(AlgType.actionType))
+            return true;
+
+        return getImplement().equalsMap(changeProperty);
     }
 
     public static class VirtualTable<P extends PropertyInterface> extends NamedTable {
@@ -1640,12 +1648,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         LP targetProp = lm.getRequestedValueProperty(valueClass);
 
         // target prop will be used to change this property
-        LogicsModule.ContextInput contextInput = new LogicsModule.ContextInput() {
-            @Override
-            public boolean isNotNull() {
-                return Property.this.isNotNull();
-            }
-        };
+        boolean notNull = Property.this.isNotNull();
 
         ActionMapImplement<?, T> action;
         if(valueClass instanceof CustomClass) {
@@ -1656,19 +1659,27 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
             ImOrderSet<T> orderInterfaces = lp.listInterfaces; // actually we don't need all interfaces in dialog input action itself (only used one in checkfilters), but for now it doesn't matter
 
             // selectors could be used, but since this method is used after logics initialization, getting form, check properties here is more effective
-            LA<?> inputAction = lm.addDialogInputAProp((CustomClass) valueClass, targetProp, BaseUtils.nvl(defaultChangeEventScope, PropertyDrawEntity.DEFAULT_CUSTOMCHANGE_EVENTSCOPE), orderInterfaces, list, MapFact.EMPTYREV(), objectEntity -> getCheckFilters(objectEntity), customChangeFunction, contextInput);
+            LA<?> inputAction = lm.addDialogInputAProp((CustomClass) valueClass, targetProp, BaseUtils.nvl(defaultChangeEventScope, PropertyDrawEntity.DEFAULT_CUSTOMCHANGE_EVENTSCOPE), orderInterfaces, list, MapFact.EMPTYREV(), objectEntity -> getCheckFilters(objectEntity), customChangeFunction, notNull);
 
             action = ((LA<?>) lm.addJoinAProp(inputAction, BaseUtils.add(directLI(lp), getUParams(orderInterfaces.size())))).getImplement(orderInterfaces);
         } else {
             // INPUT valueCLass
             action = lm.addInputAProp((DataClass) valueClass, targetProp, false, SetFact.EMPTYORDER(),
-                    isDefaultWYSInput(valueClass) ? new InputListEntity<>(this, MapFact.EMPTYREV()) : null, BaseUtils.nvl(defaultChangeEventScope, PropertyDrawEntity.DEFAULT_DATACHANGE_EVENTSCOPE), null, ListFact.EMPTY(), customChangeFunction, contextInput).getImplement();
+                    isDefaultWYSInput(valueClass) ? new InputListEntity<>(this, MapFact.EMPTYREV()) : null, BaseUtils.nvl(defaultChangeEventScope, PropertyDrawEntity.DEFAULT_DATACHANGE_EVENTSCOPE), null, ListFact.EMPTY(), customChangeFunction, notNull).getImplement();
         }
 
-        return PropertyFact.createRequestAction(interfaces,
-                            // adaptive canBeChanged, to provide better ergonomics for abstracts
-                            PropertyFact.createListAction(interfaces, PropertyFact.createCheckCanBeChangedAction(interfaces, getImplement()), action),
-                                PropertyFact.createSetAction(interfaces, getImplement(), targetProp.getImplement()), null); // INPUT scripted input generates FOR, but now it's not important
+        ActionMapImplement<?, T> result = PropertyFact.createRequestAction(interfaces,
+                // adaptive canBeChanged, to provide better ergonomics for abstracts
+                PropertyFact.createListAction(interfaces, PropertyFact.createCheckCanBeChangedAction(interfaces, getImplement()), action),
+                PropertyFact.createSetAction(interfaces, getImplement(), targetProp.getImplement()), null);// INPUT scripted input generates FOR, but now it's not important
+
+        setResetAsync(result);
+
+        return result;
+    }
+
+    private <X extends PropertyInterface> void setResetAsync(ActionMapImplement<X, T> action) {
+        PropertyFact.setResetAsync(action.action, new AsyncMapChange<>(new PropertyMapImplement<>(this, action.mapping.reverse()), null, null, null));
     }
 
     public boolean setNotNull;

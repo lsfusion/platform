@@ -17,7 +17,7 @@ import lsfusion.server.data.type.TypeSerializer;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.data.integral.IntegerClass;
-import lsfusion.server.logics.form.interactive.action.async.AsyncChange;
+import lsfusion.server.logics.form.interactive.action.async.AsyncInput;
 import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
 import lsfusion.server.logics.form.interactive.action.async.AsyncNoWaitExec;
 import lsfusion.server.logics.form.interactive.action.async.AsyncSerializer;
@@ -183,7 +183,7 @@ public class PropertyDrawView extends BaseComponentView {
     // for that purpose we have to send to client that type to do parsing, rendering, etc.
     public Type getExternalChangeType(ServerContext context) {
         AsyncEventExec asyncEventExec = entity.getAsyncEventExec(context.entity, context.securityPolicy, CHANGE, true);
-        return asyncEventExec instanceof AsyncChange ? ((AsyncChange) asyncEventExec).changeType : null;
+        return asyncEventExec instanceof AsyncInput ? ((AsyncInput) asyncEventExec).changeType : null;
     }
 
     @Override
@@ -219,18 +219,18 @@ public class PropertyDrawView extends BaseComponentView {
         return super.isDefaultAlignShrink(formEntity, explicit);
     }
 
+    public static final boolean defaultSync = true;
+
     public Map<String, AsyncEventExec> getAsyncEventExec(ServerContext context) {
         Map<String, AsyncEventExec> asyncExecMap = new HashMap<>();
-        for (String actionId : ServerResponse.events) {
-            AsyncEventExec asyncEventExec = entity.getAsyncEventExec(context.entity, context.securityPolicy, actionId, false);
-            Boolean sync = getSync();
-            boolean wait = sync != null && sync;
-            boolean nowait = sync != null && !sync;
-            if (nowait && asyncEventExec == null) {
-                asyncEventExec = new AsyncNoWaitExec();
-            }
-            if (!wait && asyncEventExec != null) {
-                asyncExecMap.put(actionId, asyncEventExec);
+        Boolean sync = getSync();
+        if(sync == null || !sync) { // if WAIT we don't want any asyncs
+            for (String actionId : entity.getAllEventActions()) {
+                AsyncEventExec asyncEventExec = entity.getAsyncEventExec(context.entity, context.securityPolicy, actionId, false);
+                if (asyncEventExec == null && (sync != null || !defaultSync)) // explicit NOWAIT or not default sync
+                    asyncEventExec = AsyncNoWaitExec.instance;
+                if (asyncEventExec != null)
+                    asyncExecMap.put(actionId, asyncEventExec);
             }
         }
         return asyncExecMap;

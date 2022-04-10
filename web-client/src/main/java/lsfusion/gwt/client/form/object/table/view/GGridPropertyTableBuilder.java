@@ -9,17 +9,5 @@ public class GGridPropertyTableBuilder<T extends GridDataRecord> extends GProper
     public GGridPropertyTableBuilder(GGridPropertyTable table) {
         super(table);
     }
-
-    private String getColumnSID(int column) {
-        return ((GGridPropertyTable) cellTable).getColumnSID(column);
-    }
-
-    public String getBackground(T rowValue, int column) {
-        return rowValue.getBackground(getColumnSID(column));
-    }
-
-    public String getForeground(T rowValue, int column) {
-        return rowValue.getForeground(getColumnSID(column));
-    }
 }
 

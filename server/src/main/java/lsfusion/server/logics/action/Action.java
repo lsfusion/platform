@@ -503,16 +503,17 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
     }
 
     @Override
+    @IdentityStrongLazy
     public ActionMapImplement<?, P> getDefaultEventAction(String eventActionSID, FormSessionScope defaultChangeEventScope, ImList<Property> viewProperties, String customChangeFunction) {
         if(eventActionSID.equals(ServerResponse.EDIT_OBJECT))
             return null;
         return PropertyFact.createSessionScopeAction(BaseUtils.nvl(defaultChangeEventScope, PropertyDrawEntity.DEFAULT_ACTION_EVENTSCOPE), interfaces, getImplement(), SetFact.EMPTY());
     }
 
-    private AsyncMapEventExec<P> forceAsyncEventExec;
+    private Function<AsyncMapEventExec<P>, AsyncMapEventExec<P>> forceAsyncEventExec;
 
-    public void setSimpleDelete() {
-        this.forceAsyncEventExec = new AsyncMapRemove<>(interfaces.single());
+    public void setForceAsyncEventExec(Function<AsyncMapEventExec<P>, AsyncMapEventExec<P>> forceAsyncEventExec) {
+        this.forceAsyncEventExec = forceAsyncEventExec;
     }
 
     public AsyncMapEventExec<P> getAsyncEventExec(boolean optimistic) {
@@ -520,10 +521,12 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
     }
     @IdentityInstanceLazy
     public AsyncMapEventExec<P> getAsyncEventExec(boolean optimistic, boolean recursive) {
-        if(forceAsyncEventExec != null)
-            return forceAsyncEventExec;
+        AsyncMapEventExec<P> result = calculateAsyncEventExec(optimistic, recursive);
 
-        return calculateAsyncEventExec(optimistic, recursive);
+        if(forceAsyncEventExec != null)
+            result = forceAsyncEventExec.apply(result);
+
+        return result;
     }
     protected AsyncMapEventExec<P> calculateAsyncEventExec(boolean optimistic, boolean recursive) {
         return null;
@@ -550,9 +553,16 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
                         asyncExec = asyncActionExec;
                     } else {
                         if(asyncActionExec != AsyncMapExec.RECURSIVE()) {
-                            asyncExec = asyncExec.merge(asyncActionExec);
-                            if (asyncExec == null)
-                                return null;
+                            AsyncMapEventExec<X> mergedAsyncActionExec = asyncExec.merge(asyncActionExec);
+                            if (mergedAsyncActionExec == null) {
+                                if(!flowOptimistic)
+                                    return null;
+
+                                // we want interactive actions (like opening forms) have higher priority
+                                if(asyncActionExec.getMergeOptimisticPriority() > asyncExec.getMergeOptimisticPriority())
+                                    asyncExec = asyncActionExec;
+                            } else
+                                asyncExec = mergedAsyncActionExec;
                         }
                     }
                 } else
@@ -566,11 +576,9 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
         return asyncExec;
     }
 
-    // for navigator / input
-    public AsyncExec getAsyncExec() {
-        AsyncMapEventExec<?> asyncExec = getAsyncEventExec(false);
+    public static <P extends PropertyInterface> AsyncExec getAsyncExec(AsyncMapEventExec<P> asyncExec) {
         if(asyncExec instanceof AsyncMapExec)
-            return ((AsyncMapExec<?>) asyncExec).map();
+            return ((AsyncMapExec<P>) asyncExec).map();
         return null;
     }
 
