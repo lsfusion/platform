@@ -335,10 +335,11 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }*/
     
 
-    private void commitTransaction() throws SQLException {
-        endTransaction();
-        lastAttemptCountMap = keepLastAttemptCountMap ? sql.getAttemptCountMap() : null;
-        sql.commitTransaction(getOwner());
+    private void commitTransaction() throws SQLException, SQLHandledException {
+        sql.commitTransaction(getOwner(), () -> { // we want to do this after commit (because it can throw serializable exception), but before ending transaction (because we use private connection, and attermpCountMap)
+            endTransaction();
+            lastAttemptCountMap = keepLastAttemptCountMap ? sql.getAttemptCountMap() : null;
+        });
     }
 
     public boolean hasChanges() {
@@ -2198,10 +2199,12 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
         ImSet<CustomClass> removedClasses = this.mRemovedClasses.immutable(); // сбросятся в endTransaction
         registerClassRemove.removed(removedClasses, Long.MAX_VALUE); // надо так как между commit'ом и регистрацией изменения может начаться новая транзакция и update conflict'а не будет, поэтому временно включим режим будущего
-        
-        commitTransaction();
 
-        registerClassRemove.removed(removedClasses, getTimestamp());
+        try {
+            commitTransaction();
+        } finally {
+            registerClassRemove.removed(removedClasses, getTimestamp());
+        }
 
         registerClassRemove.checked(checkedTimestamp);
 
