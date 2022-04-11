@@ -101,23 +101,29 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
                 startEditing(handler.event);
         }
     }
-    
+
+    private Object getValue(GUserInputResult result) {
+        if(result.getContextAction() != null) // assert that reset is called
+            return null;
+        return result.getValue();
+    }
+
     protected void startEditing(Event event) {
         form.edit(property.baseType,
                 event,
                 false,
                 null,
                 inputList,
-                (result, commitReason) -> setValue(result.getValue()),
-                (result, commitReason) -> acceptCommit(result, commitReason.equals(CommitReason.ENTERPRESSED)),
+                (result, commitReason) -> setValue(getValue(result)),
+                (result, commitReason) -> acceptCommit(getValue(result), commitReason.equals(CommitReason.ENTERPRESSED)),
                 onCancel,
                 this,
                 ServerResponse.VALUES, null);
     }
-    
-    private void acceptCommit(GUserInputResult result, boolean enterPressed) {
+
+    private void acceptCommit(Object result, boolean enterPressed) {
         this.enterPressed = enterPressed;
-        afterCommit.accept(result.getValue());
+        afterCommit.accept(result);
         this.enterPressed = false;
     }
 
@@ -145,7 +151,7 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
     }
 
     public void changeInputList(GCompare compare) {
-        inputList = new GInputList(new GInputListAction[0],
+        inputList = new GInputList(new GInputListAction[]{new GInputListAction("reset", null, null)},
                 compare == GCompare.EQUALS || compare == GCompare.NOT_EQUALS ? GCompletionType.SEMI_STRICT : GCompletionType.NON_STRICT);
     }
 
