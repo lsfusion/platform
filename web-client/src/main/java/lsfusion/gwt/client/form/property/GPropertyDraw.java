@@ -349,6 +349,17 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
                 return actionSID;
         }
 
+        Integer keyStrokeIndex = getKeyStrokeIndex(editEvent);
+        if(keyStrokeIndex != null) {
+            contextAction.set(keyStrokeIndex);
+            return CHANGE;
+        }
+
+        GType changeType = getChangeType();
+        return GEditBindingMap.getDefaultEventSID(editEvent, contextAction, changeType == null ? null : changeType.getEditEventFilter(), hasEditObjectAction, hasUserChangeAction());
+    }
+
+    public Integer getKeyStrokeIndex(Event editEvent) {
         GInputList inputList;
         if (KEYDOWN.equals(editEvent.getType()) && (inputList = getInputList()) != null) {
             GKeyStroke keyStroke = null;
@@ -358,16 +369,14 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
                     if (keyStroke == null)
                         keyStroke = getKeyStroke(editEvent);
                     if (keyStroke.equals(action.keyStroke)) {
-                        contextAction.set(i);
-                        return CHANGE;
+                        return i;
                     }
                 }
             }
         }
-
-        GType changeType = getChangeType();
-        return GEditBindingMap.getDefaultEventSID(editEvent, contextAction, changeType == null ? null : changeType.getEditEventFilter(), hasEditObjectAction, hasUserChangeAction());
+        return null;
     }
+
     public boolean isFilterChange(Event editEvent, Result<Boolean> contextAction) {
         return GEditBindingMap.isDefaultFilterChange(editEvent, contextAction, baseType.getEditEventFilter());
     }

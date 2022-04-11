@@ -3933,11 +3933,16 @@ inputActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams ac
 
 contextActions[List<TypedParameter> context] returns [List<String> actionImages = new ArrayList<>(), List<String> keyPresses = new ArrayList<>(), List<List<QuickAccess>> quickAccesses = new ArrayList<>(), List<LAWithParams> actions = new ArrayList<>()]
 	:
-	'ACTIONS' image=stringLiteral { $actionImages.add($image.val); } ('KEYPRESS' keyPress=stringLiteral { $keyPresses.add($keyPress.val); } )?
+	'ACTIONS' image=stringLiteral { $actionImages.add($image.val); } (kp = keyPressLiteral { $keyPresses.add($kp.keyPress); } )?
 	          (toolbar=contextActionToolbar { $quickAccesses.add($toolbar.quickAccessList); })? actDB=listActionDefinitionBody[context, true] { $actions.add($actDB.action); }
-	(',' nextImage=stringLiteral { $actionImages.add($nextImage.val); } ('KEYPRESS' nextKeyPress=stringLiteral { $keyPresses.add($nextKeyPress.val); } )?
+	(',' nextImage=stringLiteral { $actionImages.add($nextImage.val); } (nextKp = keyPressLiteral { $keyPresses.add($nextKp.keyPress); } )?
 	          (nextToolbar=contextActionToolbar { $quickAccesses.add($nextToolbar.quickAccessList); })? nextActDB=listActionDefinitionBody[context, true] { $actions.add($nextActDB.action); })*
 	;
+
+keyPressLiteral returns[String keyPress]
+    :
+    'KEYPRESS' kp=stringLiteral { keyPress = $kp.val; }
+    ;
 
 contextActionToolbar returns [List<QuickAccess> quickAccessList = new ArrayList<>()]
 	:

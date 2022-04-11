@@ -2305,7 +2305,7 @@ public class GFormController implements EditManager {
         if(handler.consumed)
             return;
 
-        if (!isPropertyEditing || isQuickAccessEditing(handler.event)) { // if editor did not consume event, we don't want it to be handled by "renderer" since it doesn't exist
+        if (!isPropertyEditing) { // if editor did not consume event, we don't want it to be handled by "renderer" since it doesn't exist
             if (GKeyStroke.isCopyToClipboardEvent(handler.event)) {
                 onCut.accept(handler);
             } else if (GKeyStroke.isPasteFromClipboardEvent(handler.event)) {
@@ -2332,10 +2332,5 @@ public class GFormController implements EditManager {
     
     public void resetWindowsLayout() {
         formsController.resetWindowsLayout();
-    }
-
-    private boolean isQuickAccessEditing(Event event) {
-        GPropertyDraw property = editContext != null ? editContext.getProperty() : null;
-        return property != null && property.getEventSID(event, new lsfusion.gwt.client.base.Result<>()) != null;
     }
 }

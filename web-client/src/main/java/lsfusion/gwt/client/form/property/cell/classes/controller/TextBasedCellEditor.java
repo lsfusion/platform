@@ -113,11 +113,17 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
                 isCorrect = false; // this thing is needed to disable inputting incorrect symbols
 
             handler.consume(isCorrect, false);
-        } if (BLUR.equals(type)) {
+        } else if (BLUR.equals(type)) {
             //restore focus and ignore blur if refresh button pressed
             if(hasList && suggestBox.display.isRefreshButtonPressed()) {
                 suggestBox.display.setRefreshButtonPressed(false);
                 suggestBox.setFocus(true);
+                return;
+            }
+        } else {
+            Integer keyStrokeIndex = property.getKeyStrokeIndex(event);
+            if(keyStrokeIndex != null) {
+                validateAndCommit(suggestBox.getElement(), keyStrokeIndex, true, CommitReason.OTHER);
                 return;
             }
         }

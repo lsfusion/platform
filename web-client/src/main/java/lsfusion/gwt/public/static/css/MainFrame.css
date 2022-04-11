@@ -285,13 +285,14 @@ input[type=checkbox]:focus {
 
 .property-toolbar-on-hover:hover .hide {
     display: flex;
-    animation-name: enableOpacity;
+    position:relative;
+    animation-name: moveFromRight;
     animation-duration: 1s;
 }
 
-@keyframes enableOpacity {
-    from { opacity: 0; }
-    to { opacity: 1; }
+@keyframes moveFromRight {
+    from { left: 60px; }
+    to   { left: 0px; }
 }
 
 .panelRendererValueBoxed, .panelRendererValueBoxed .background-inherit {
