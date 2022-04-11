@@ -424,6 +424,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
     public final static int UPDATED_FORCE = (1 << 9);
     public final static int UPDATED_FILTERPROP = (1 << 10);
+    public final static int UPDATED_ORDERPROP = (1 << 11);
 
     public int updated = UPDATED_ORDER | UPDATED_FILTER;
 
@@ -892,6 +893,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     private boolean pendingUpdateFilters;
     private boolean pendingUpdateObject;
     private boolean pendingUpdateFilterProp;
+    private boolean pendingUpdateOrderProp;
     private boolean pendingUpdatePageSize;
 
     public final Set<PropertyReaderInstance> pendingUpdateProps = new HashSet<>();
@@ -928,13 +930,20 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
                     updated = updated | UPDATED_FILTERPROP;
                     return;
                 }
+                if(propType.equals(GroupObjectProp.ORDER) &&
+                    !entity.isOrderExplicitlyUsed &&
+                    (hidden.test(this) || isPending())) {
+                    updated = updated | UPDATED_ORDERPROP;
+                    return;
+                }
             }
             
             final ImRevMap<ObjectInstance, KeyExpr> mapKeys = getMapKeys();
             PropertyChange<ClassPropertyInterface> change;
+            ImRevMap<ClassPropertyInterface, KeyExpr> mappedKeys = mappedProp.mapping.join(mapKeys);
             switch (propType) {
                 case FILTER:
-                    change = new PropertyChange<>(mappedProp.mapping.join(mapKeys), ValueExpr.TRUE, getWhere(mapKeys, modifier, reallyChanged, mUsedProps));
+                    change = new PropertyChange<>(mappedKeys, ValueExpr.TRUE, getWhere(mapKeys, modifier, reallyChanged, mUsedProps));
                     break;
                 case ORDER:
                     if(orders.isEmpty())
@@ -942,11 +951,13 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
                     else {
                         final MSet<Property> fmUsedProps = mUsedProps;
                         ImOrderMap<Expr, Boolean> orderExprs = orders.mapOrderKeysEx((ThrowingFunction<OrderInstance, Expr, SQLException, SQLHandledException>) value -> value.getExpr(mapKeys, modifier, reallyChanged, fmUsedProps));
-                        OrderClass orderClass = OrderClass.get(orders.keyOrderSet().mapListValues(new Function<OrderInstance, Type>() {
-                            public Type apply(OrderInstance value) {
-                                return value.getType();
-                            }}), orderExprs.valuesList());
-                        change = new PropertyChange<>(mappedProp.mapping.join(mapKeys), FormulaUnionExpr.create(orderClass, orderExprs.keyOrderSet()));
+                        Expr orderExpr;
+                        if(orderExprs.size() == 1 && orderExprs.singleValue().equals(false)) // optimization
+                            orderExpr = orderExprs.singleKey();
+                        else
+                            orderExpr = FormulaUnionExpr.create(OrderClass.get(orders.keyOrderSet().mapListValues(OrderInstance::getType),
+                                                                    orderExprs.valuesList()), orderExprs.keyOrderSet());
+                        change = new PropertyChange<>(mappedKeys, orderExpr);
                     }
                     break;
                 default:
@@ -1020,7 +1031,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
                 }
 
         if(updateOrders)
-            updateOrderProperty(modifier, environmentIncrement, changedProps, reallyChanged);
+            updateOrderProperty(true, modifier, environmentIncrement, changedProps, reallyChanged);
 
         boolean updateKeys = updateFilters || updateOrders || (setGroupMode == null && userSeeks != null);
 
@@ -1082,22 +1093,25 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
         boolean updateObject = (updated & UPDATED_OBJECT) != 0;
         boolean updateFilterProp = updateFilters || (updated & UPDATED_FILTERPROP) != 0;
+        boolean updateOrderProp = updateOrders || (updated & UPDATED_ORDERPROP) != 0;
 
         if(toRefresh())
             result.updateStateObjects.add(this, isPending());
         if(!hidden && toUpdate()) {
-            updateKeys |= pendingUpdateKeys; updateObjects |= pendingUpdateObjects; updateObject |= pendingUpdateObject; updateFilterProp |= pendingUpdateFilterProp; updatePageSize |= pendingUpdatePageSize; updateFilters |= pendingUpdateFilters;
+            updateKeys |= pendingUpdateKeys; updateObjects |= pendingUpdateObjects; updateObject |= pendingUpdateObject; updateFilterProp |= pendingUpdateFilterProp; updateOrderProp |= pendingUpdateOrderProp; updatePageSize |= pendingUpdatePageSize; updateFilters |= pendingUpdateFilters;
             checkPending(result, () -> { pendingUpdateKeys = false; pendingUpdateScroll = false; } );
-            pendingUpdateObjects = false; pendingUpdateObject = false; pendingUpdateFilterProp = false; pendingUpdatePageSize = false; pendingUpdateFilters = false;
+            pendingUpdateObjects = false; pendingUpdateObject = false; pendingUpdateFilterProp = false; pendingUpdateOrderProp = false; pendingUpdatePageSize = false; pendingUpdateFilters = false;
         } else {
             boolean finalUpdateKeys = updateKeys; boolean changedScroll = !isInTree() && (updateObject || updatePageSize);
             checkPending(result, () -> { pendingUpdateKeys |= finalUpdateKeys; if(changedScroll) pendingUpdateScroll = updateScroll() != null; });
-            pendingUpdateObjects |= updateObjects; pendingUpdateObject |= updateObject; pendingUpdateFilterProp |= updateFilterProp; pendingUpdatePageSize |= updatePageSize; pendingUpdateFilters |= updateFilters;
+            pendingUpdateObjects |= updateObjects; pendingUpdateObject |= updateObject; pendingUpdateFilterProp |= updateFilterProp; pendingUpdateOrderProp |= updateOrderProp; pendingUpdatePageSize |= updatePageSize; pendingUpdateFilters |= updateFilters;
             return null;
         }
 
         if(updateFilterProp)
             updateFilterProperty(false, modifier, environmentIncrement, changedProps, reallyChanged);
+        if(updateOrderProp)
+            updateOrderProperty(false, modifier, environmentIncrement, changedProps, reallyChanged);
 
         ImMap<ObjectInstance, DataObject> currentObject = getGroupObjectValue();
         SeekObjects seeks = null;
@@ -1309,8 +1323,9 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         execEnv.change(viewProperty.property, change);
     }
 
-    public void updateOrderProperty(FormInstance.FormModifier modifier, IncrementChangeProps environmentIncrement, Result<ChangedData> changedProps, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
-        modifier.updateEnvironmentIncrementProp(new Pair<>(this, GroupObjectProp.ORDER), environmentIncrement, changedProps, reallyChanged, true, true);
+    public void updateOrderProperty(boolean isOrderExplicitlyUsed, FormInstance.FormModifier modifier, IncrementChangeProps environmentIncrement, Result<ChangedData> changedProps, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
+        if (entity.isOrderExplicitlyUsed == isOrderExplicitlyUsed)
+            modifier.updateEnvironmentIncrementProp(new Pair<>(this, GroupObjectProp.ORDER), environmentIncrement, changedProps, reallyChanged, true, true);
     }
 
     public void updateFilterProperty(boolean isFilterExplicitlyUsed, FormInstance.FormModifier modifier, IncrementChangeProps environmentIncrement, Result<ChangedData> changedProps, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {

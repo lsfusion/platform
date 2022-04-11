@@ -68,6 +68,7 @@ import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.Settings;
+import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.dev.debug.*;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
@@ -599,9 +600,11 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
                         mapObjects(notUsedInterfaces.addRevExcl(context.join(mapping))).getGroupChange(entity);
         }
 
-        return getGroupChange(entity.getProperty(GroupObjectProp.FILTER).mapPropertyImplement(mapping.reverse())).mapObjects(mapping);
+        ImRevMap<ObjectEntity, P> reversedMapping = mapping.reverse();
+        return getGroupChange(entity.getProperty(GroupObjectProp.FILTER).mapPropertyImplement(reversedMapping),
+                              entity.getProperty(GroupObjectProp.ORDER).mapPropertyImplement(reversedMapping)).mapObjects(mapping);
     }
-    public <G extends PropertyInterface> ActionMapImplement<?, P> getGroupChange(PropertyMapImplement<G, P> groupFilter) {
+    public <G extends PropertyInterface> ActionMapImplement<?, P> getGroupChange(PropertyMapImplement<G, P> groupFilter, PropertyMapImplement<G, P> groupOrder) {
 
 //        lm.addGroupObjectProp();
         MList<ActionMapImplement<?, P>> mList = ListFact.mList();
@@ -611,14 +614,22 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
 
         // executing action for other objects
         ImRevMap<P, PropertyInterface> context = interfaces.mapRevValues((Supplier<PropertyInterface>) PropertyInterface::new);
-        ImRevMap<P, PropertyInterface> iterate = groupFilter.mapping.valuesSet().mapRevValues((Supplier<PropertyInterface>) PropertyInterface::new);        
+        ImSet<P> iterateGroup = groupFilter.mapping.valuesSet();
+        boolean ordersNotNull = false;
+        ImSet<P> iterateOrder;
+        if(!iterateGroup.containsAll((iterateOrder = groupOrder.mapping.valuesSet()))) {
+            ServerLoggers.assertLog(false, "SHOULD NOT BE");
+            iterateGroup = iterateGroup.merge(iterateOrder);
+            ordersNotNull = true;
+        }
+        ImRevMap<P, PropertyInterface> iterate = iterateGroup.mapRevValues((Supplier<PropertyInterface>) PropertyInterface::new);
         ImOrderSet<P> orderedSet = iterate.keys().toOrderSet();
 
         mList.add(PropertyFact.createPushRequestAction(interfaces, // PUSH REQUEST
                         PropertyFact.createForAction(context.valuesSet().addExcl(iterate.valuesSet()), context.valuesSet(), // FOR
                                 PropertyFact.createAndNot(groupFilter.map(iterate), // group() AND NOT current objects
                                         PropertyFact.createCompareInterface(orderedSet.mapOrder(context), orderedSet.mapOrder(iterate), Compare.EQUALS)),
-                                MapFact.EMPTYORDER(), false, 
+                                MapFact.singletonOrder(groupOrder.map(iterate), false), ordersNotNull,
                                 getImplement().map(context.removeRev(iterate.keys()).addRevExcl(iterate)), // DO changeAction 
                       null, false, SetFact.EMPTY(), false).map(context.reverse())));
         

@@ -185,6 +185,7 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
     public PropertyObjectEntity<?> propertyForeground;
 
     public boolean isFilterExplicitlyUsed; // optimization hack - there are a lot of FILTER usages by group change, but group change needs FILTER only when group (grid) is visible and refreshed, so we do filter update only if the latter condition is matched
+    public boolean isOrderExplicitlyUsed; // optimization hack - there are a lot of ORDER usages by group change, but group change needs ORDER only when group (grid) is visible and refreshed, so we do filter update only if the latter condition is matched
 
     private boolean finalizedProps = false;
     private Object props = MapFact.mExclMap();
