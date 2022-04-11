@@ -60,8 +60,11 @@ public class DateCellEditor extends TextBasedCellEditor {
 
     @Override
     public void commit(Element parent, CommitReason commitReason) {
-        if (!popup.isShowing() || commitReason == CommitReason.ENTERPRESSED)
+        if (popup.isShowing() && commitReason == CommitReason.BLURRED) {
+            //do nothing because when popup is opened we don't need to commit
+        } else {
             super.commit(parent, commitReason);
+        }
     }
 
     @Override
@@ -88,6 +91,7 @@ public class DateCellEditor extends TextBasedCellEditor {
             datePicker.setValue(new Date());
         }
         editBox = getInputElement(parent);
+        popup.addAutoHidePartner(editBox);
         editBox.setValue(
                 input != null ? input : formatToString(oldDate != null ? oldDate : new Date())
         );
@@ -106,7 +110,7 @@ public class DateCellEditor extends TextBasedCellEditor {
     }
 
     protected void onDateChanged(ValueChangeEvent<Date> event, Element parent) {
-        commitValue(parent, GDateDTO.fromDate(event.getValue()));
+        editBox.setValue(formatToString(event.getValue()));
     }
 
     protected void onCommitEvent(DomEvent event, Element parent, CommitReason commitReason) {
