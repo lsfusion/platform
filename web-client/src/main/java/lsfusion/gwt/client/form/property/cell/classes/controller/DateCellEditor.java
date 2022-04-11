@@ -1,57 +1,45 @@
 package lsfusion.gwt.client.form.property.cell.classes.controller;
 
+import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.EventTarget;
+import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.event.dom.client.*;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.datepicker.client.*;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
+import lsfusion.gwt.client.base.view.EventHandler;
+import lsfusion.gwt.client.base.view.PopupDialogPanel;
 import lsfusion.gwt.client.base.view.ResizableVerticalPanel;
 import lsfusion.gwt.client.classes.data.GDateType;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.classes.GDateDTO;
+import lsfusion.gwt.client.form.property.cell.controller.CancelReason;
 import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
-import lsfusion.gwt.client.view.StyleDefaults;
 
 import java.text.ParseException;
 import java.util.Date;
 
-public class DateCellEditor extends PopupValueCellEditor {
+public class DateCellEditor extends TextBasedCellEditor {
 
     private static final DateTimeFormat format = GwtSharedUtils.getDefaultDateFormat(true);
 
     protected GDatePicker datePicker;
-    protected TextBox editBox;
+    protected InputElement editBox;
+    private final PopupDialogPanel popup = new PopupDialogPanel();
 
     public DateCellEditor(EditManager editManager, GPropertyDraw property) {
         super(editManager, property);
     }
 
-    @Override
-    protected Widget createPopupComponent(Element parent, Object oldValue) {
+    protected Widget createPopupComponent(Element parent) {
         ResizableVerticalPanel panel = new ResizableVerticalPanel();
-
-        editBox = new TextBox();
-        editBox.addStyleName("dateTimeEditorBox");
-        editBox.setHeight(StyleDefaults.VALUE_HEIGHT_STRING);
-        panel.add(editBox);
-        editBox.addKeyPressHandler(new KeyPressHandler() {
-            @Override
-            public void onKeyPress(KeyPressEvent event) {
-                if (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_ENTER) {
-                    onCommitEvent(event, parent, CommitReason.ENTERPRESSED);
-                }
-            }
-        });
-
-
         datePicker = new GDatePicker();
         panel.add(datePicker);
         datePicker.addValueChangeHandler(event -> onDateChanged(event, parent));
@@ -64,9 +52,26 @@ public class DateCellEditor extends PopupValueCellEditor {
                 }
             }
         }, DoubleClickEvent.getType());
-
-
         return panel;
+    }
+
+    @Override
+    public void onBrowserEvent(Element parent, EventHandler handler) {
+        if (handler.event.getType().equals(BrowserEvents.KEYDOWN) && handler.event.getKeyCode() == KeyCodes.KEY_ENTER)
+            popup.hide();
+        super.onBrowserEvent(parent, handler);
+    }
+
+    @Override
+    public void cancel(Element parent, CancelReason cancelReason) {
+        popup.hide();
+        super.cancel(parent, cancelReason);
+    }
+
+    @Override
+    public void commit(Element parent, CommitReason commitReason) {
+        if (!popup.isShowing() || commitReason == CommitReason.ENTERPRESSED)
+            super.commit(parent, commitReason);
     }
 
     @Override
@@ -84,6 +89,7 @@ public class DateCellEditor extends PopupValueCellEditor {
         Date oldDate = valueAsDate(oldValue);
 
         super.start(event, parent, oldDate);
+        GwtClientUtils.showPopupInWindow(popup, createPopupComponent(parent), parent.getAbsoluteLeft(), parent.getAbsoluteBottom());
 
         if (oldDate != null) {
             datePicker.setValue(oldDate);
@@ -91,16 +97,14 @@ public class DateCellEditor extends PopupValueCellEditor {
         } else {
             datePicker.setValue(new Date());
         }
+        editBox = getInputElement(parent);
         editBox.setValue(
                 input != null ? input : formatToString(oldDate != null ? oldDate : new Date())
         );
 
-        editBox.getElement().focus();
-        if (selectAll) {
-            editBox.setSelectionRange(0, editBox.getValue().length());
-        } else {
-            editBox.setSelectionRange(editBox.getValue().length(), 0);
-        }
+        editBox.focus();
+        if (selectAll)
+            editBox.select();
     }
 
     protected String formatToString(Date date) {
@@ -108,13 +112,11 @@ public class DateCellEditor extends PopupValueCellEditor {
     }
 
     protected Date valueAsDate(Object value) {
-        if (value instanceof GDateDTO) {
-            return ((GDateDTO) value).toDate();
-        }
-        return null;
+        return value instanceof GDateDTO ? ((GDateDTO) value).toDate() : null;
     }
 
     protected void onDateChanged(ValueChangeEvent<Date> event, Element parent) {
+        popup.hide();
         commitValue(parent, GDateDTO.fromDate(event.getValue()));
     }
 

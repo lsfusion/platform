@@ -39,7 +39,7 @@ public class DateTimeCellEditor extends DateCellEditor {
         value.setMinutes(0);
         value.setSeconds(0);
         editBox.setValue(format.format(value));
-        editBox.getElement().focus();
+        editBox.focus();
     }
 
     protected Object parseString(String value) throws ParseException {
