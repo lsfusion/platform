@@ -7,6 +7,8 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.MOrderExclMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImOrderValueMap;
 
+import java.util.stream.IntStream;
+
 public class StoredArOrderMap<K, V> extends AMWrapOrderMap<K, V, StoredArMap<K, V>> {
     public StoredArOrderMap(StoredArMap<K, V> wrapMap) {
         super(wrapMap);
@@ -30,11 +32,14 @@ public class StoredArOrderMap<K, V> extends AMWrapOrderMap<K, V, StoredArMap<K, 
     }
 
     public <M> ImOrderValueMap<K, M> mapItOrderValues() {
-        return new StoredArOrderMap<K, M>(this);
+        return new StoredArOrderMap<>(this);
     }
 
     public ImOrderMap<K, V> immutableOrder() {
-        throw new UnsupportedOperationException();
+        int[] order = new int[wrapMap.size()];
+        StoredArIndexedMap<K, V> indexedMap = wrapMap.toStoredArIndexedMap(order);
+        Integer[] objectOrder = IntStream.of(order).boxed().toArray(Integer[]::new);
+        return new StoredArOrderIndexedMap<>(indexedMap, new StoredArray<>(objectOrder, StoredArraySerializer.getInstance()));
     }
 
     @Override

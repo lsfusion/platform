@@ -6,6 +6,7 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.implementations.abs.AMRevMap;
 import lsfusion.base.col.implementations.order.ArOrderMap;
 import lsfusion.base.col.implementations.stored.StoredArMap;
+import lsfusion.base.col.implementations.stored.StoredArray;
 import lsfusion.base.col.implementations.stored.StoredArraySerializer;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.AddValue;
@@ -39,22 +40,19 @@ public class ArMap<K, V> extends AMRevMap<K, V> {
     }
 
     public ArMap(ArMap<K, V> map, boolean clone) {
+        this(map, null);
         assert clone;
-        if (needSwitchToStored(map)) {
-            switchToStored(mapSize(), map.keys, map.values);
-        } else {
-            size = map.size;
-            this.keys = map.keys.clone();
-            this.values = map.values.clone();
-        }
     }
 
     public ArMap(ArMap<K, V> map, AddValue<K, V> addValue) {
         super(addValue);
-
-        size = map.size;
-        this.keys = map.keys.clone();
-        this.values = map.values.clone();
+        if (needSwitchToStored(map)) {
+            switchToStored(mapSize(), map.keys, map.values);
+        } else if (!map.isStored()) {
+            cloneKeysAndValues(map);
+        } else {
+            switchToStored(new StoredArMap<>(map.stored(), true));
+        }
     }
 
     public ArMap(int size, AddValue<K, V> addValue) {
@@ -66,21 +64,41 @@ public class ArMap<K, V> extends AMRevMap<K, V> {
 
     // на ValueMap
     public ArMap(int size, Object[] keys) {
+        setSizeAndKeys(size, keys);
+    }
+
+    public ArMap(ArMap<K, ?> map) {
+        if (!map.isStored()) {
+            setSizeAndKeys(map.size, map.keys);
+        } else {
+            StoredArMap<K, V> storedMap = new StoredArMap<>(map.stored().getStoredKeys());
+            switchToStored(storedMap);
+        }
+    }
+
+    public ArMap(ArSet<K> set) {
+        if (!set.isStored()) {
+            setSizeAndKeys(set.size(), set.getArray());
+        } else {
+            switchToStored(new StoredArMap<>(set.stored()));
+        }
+    }
+
+    private void setSizeAndKeys(int size, Object[] keys) {
         this.size = size;
         this.keys = keys;
         this.values = new Object[size];
     }
-    public ArMap(ArMap<K, ?> map) {
-        this(map.size, map.keys);
+
+    private void cloneKeysAndValues(ArMap<K, V> map) {
+        this.size = map.size;
+        this.keys = map.keys.clone();
+        this.values = map.values.clone();
     }
-    public ArMap(ArSet<K> set) {
-        if (!set.isStored()) {
-            this.size = set.size();
-            this.keys = set.getArray();
-            this.values = new Object[size];
-        } else {
-            throw new UnsupportedOperationException();
-        }
+
+    public ArMap(StoredArray<K> keys, StoredArray<V> values) {
+        StoredArMap<K, V> storedMap = new StoredArMap<>(keys, values);
+        switchToStored(storedMap);
     }
 
     public int size() {
@@ -116,27 +134,15 @@ public class ArMap<K, V> extends AMRevMap<K, V> {
     }
 
     public <M> ImValueMap<K, M> mapItValues() {
-        if (!isStored()) {
-            return new ArMap<>(this);
-        } else {
-            return stored().mapItValues();
-        }
+        return new ArMap<>(this);
     }
 
     public <M> ImRevValueMap<K, M> mapItRevValues() {
-        if (!isStored()) {
-            return new ArMap<>(this);
-        } else {
-            return stored().mapItRevValues();
-        }
+        return new ArMap<>(this);
     }
 
     protected MExclMap<K, V> copy() {
-        if (!isStored()) {
-            return new ArMap<>(this, true);
-        } else {
-            return stored().copy();
-        }
+        return new ArMap<>(this, true);
     }
 
     private void resize(int length) {
@@ -179,27 +185,49 @@ public class ArMap<K, V> extends AMRevMap<K, V> {
     }
 
     public ImMap<K, V> immutable() {
+        ImMap<K, V> simple = simpleImmutable();
+        if (simple != null)
+            return simple;
         if (!isStored()) {
-            ImMap<K, V> simple = simpleImmutable();
-            if (simple != null)
-                return simple;
-
             if (needSwitchToStored(this)) {
-                switchToStored(size, keys, values);
-                return stored().immutable();
+                sortInplace();
+                return new ArIndexedMap<>(
+                        new StoredArray<>((K[]) keys, StoredArraySerializer.getInstance()),
+                        new StoredArray<>((V[]) values, StoredArraySerializer.getInstance())
+                );
             }
-            
+
             if (keys.length > size * SetFact.factorNotResize)
                 resize(size);
 
             if (size < SetFact.useArrayMax)
                 return this;
+        }
+        return toArIndexedMap();
+    }
 
-            // упорядочиваем Set
-            ArSet.sortArray(size, keys, values);
+    public ArIndexedMap<K, V> toArIndexedMap() {
+        return toArIndexedMap(null);
+    }
+
+    public ArIndexedMap<K, V> toArIndexedMap(int[] order) {
+        sortInplace(order);
+        if (!isStored()) {
             return new ArIndexedMap<>(size, keys, values);
         } else {
-            return stored().immutable();
+            return new ArIndexedMap<>(stored().getStoredKeys(), stored().getStoredValues());
+        }
+    }
+
+    public void sortInplace() {
+        sortInplace(null);
+    }
+
+    public void sortInplace(int[] order) {
+        if (!isStored()) {
+            ArSet.sortArray(size, keys, values, order);
+        } else {
+            stored().getStoredKeys().sort(stored().getStoredValues(), order);
         }
     }
 
@@ -214,11 +242,7 @@ public class ArMap<K, V> extends AMRevMap<K, V> {
 
     @Override
     public ImOrderMap<K, V> toOrderMap() {
-        if (!isStored()) {
-            return new ArOrderMap<>(this);
-        } else {
-            return stored().toOrderMap();
-        }
+        return new ArOrderMap<>(this);
     }
 
     @Override
@@ -339,7 +363,11 @@ public class ArMap<K, V> extends AMRevMap<K, V> {
     }
 
     public Object[] getKeys() {
-        return keys;
+        if (!isStored()) {
+            return keys;
+        } else {
+            throw new UnsupportedOperationException();
+        }
     }
 
     public void setKeys(Object[] keys) {
@@ -347,7 +375,11 @@ public class ArMap<K, V> extends AMRevMap<K, V> {
     }
 
     public Object[] getValues() {
-        return values;
+        if (!isStored()) {
+            return values;
+        } else {
+            throw new UnsupportedOperationException();
+        }
     }
 
     public void setValues(Object[] values) {
@@ -372,7 +404,7 @@ public class ArMap<K, V> extends AMRevMap<K, V> {
         return size == STORED_FLAG;
     }
 
-    private StoredArMap<K, V> stored() {
+    public StoredArMap<K, V> stored() {
         return (StoredArMap<K, V>) keys[0];
     }
 
@@ -392,10 +424,14 @@ public class ArMap<K, V> extends AMRevMap<K, V> {
         try {
             StoredArMap<K, V> storedMap =
                     new StoredArMap<>(StoredArraySerializer.getInstance(), size, (K[]) keys, (V[]) values, getAddValue());
-            this.keys = new Object[]{storedMap};
-            this.size = STORED_FLAG;
+            switchToStored(storedMap);
         } catch (RuntimeException e) {
             e.printStackTrace();
         }
+    }
+
+    private void switchToStored(StoredArMap<K, V> storedMap) {
+        this.keys = new Object[]{storedMap};
+        this.size = STORED_FLAG;
     }
 }

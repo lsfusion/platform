@@ -31,7 +31,7 @@ public class StoredArOrderIndexedSet<K> extends AMOrderSet<K> {
     }
 
     public K get(int i) {
-        return arSet.get(order.get(i));
+        return arSet.get(index(i));
     }
 
     public boolean add(K key) {
@@ -49,7 +49,7 @@ public class StoredArOrderIndexedSet<K> extends AMOrderSet<K> {
         private StoredArIndexedMap<K, V> result = new StoredArIndexedMap<>(arSet);
 
         public void mapValue(int i, V value) {
-            result.mapValue(order.get(i), value);
+            result.mapValue(index(i), value);
         }
 
         public ImRevMap<K, V> immutableValueRev() {
@@ -57,17 +57,22 @@ public class StoredArOrderIndexedSet<K> extends AMOrderSet<K> {
         }
 
         public V getMapValue(int i) {
-            return result.getMapValue(order.get(i));
+            return result.getMapValue(index(i));
         }
 
         public K getMapKey(int i) {
-            return result.getMapKey(order.get(i));
+            return result.getMapKey(index(i));
         }
 
         public int mapSize() {
             return result.mapSize();
         }
     }
+
+    private int index(int i) {
+        return (order == null ? i : order.get(i));
+    }
+
     public <M> ImRevValueMap<K, M> mapItOrderRevValues() {
         return new RevMap<>();
     }

@@ -5,6 +5,8 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImOrderValueMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImRevValueMap;
 
+import java.util.stream.IntStream;
+
 public class StoredArOrderSet<K> extends AMWrapOrderSet<K, StoredArSet<K>> {
     public StoredArOrderSet(StoredArSet<K> wrapSet) {
         super(wrapSet);
@@ -19,14 +21,10 @@ public class StoredArOrderSet<K> extends AMWrapOrderSet<K, StoredArSet<K>> {
     }
 
     public ImOrderSet<K> immutableOrder() {
-//        if(wrapSet.size() == 0)
-//            return SetFact.EMPTYORDER();
-//        if(wrapSet.size() == 1)
-//            return SetFact.singletonOrder(single());
-//
-//        if(wrapSet.size() < SetFact.useArrayMax)
-//            return this;
-//
-        throw new UnsupportedOperationException();
+        // todo [dale]: improve this method
+        int[] order = new int[wrapSet.size()];
+        StoredArIndexedSet<K> indexedSet = wrapSet.toStoredArIndexedSet(order);
+        Integer[] objectOrder = IntStream.of(order).boxed().toArray(Integer[]::new);
+        return new StoredArOrderIndexedSet<>(indexedSet, new StoredArray<>(objectOrder, StoredArraySerializer.getInstance()));
     }
 }

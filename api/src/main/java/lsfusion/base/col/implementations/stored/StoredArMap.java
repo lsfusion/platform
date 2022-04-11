@@ -10,8 +10,8 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.ImRevValueMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 
 public class StoredArMap<K, V> extends AMRevMap<K, V> {
-    private StoredArray<K> keys;
-    private StoredArray<V> values;
+    private final StoredArray<K> keys;
+    private final StoredArray<V> values;
     
     public StoredArMap(StoredArraySerializer serializer, AddValue<K, V> addValue) {
         super(addValue);
@@ -60,7 +60,7 @@ public class StoredArMap<K, V> extends AMRevMap<K, V> {
     }
     
     public StoredArMap(StoredArSet<K> set) {
-        this(set.array);
+        this(set.getStoredArray());
     }
 
 
@@ -77,6 +77,14 @@ public class StoredArMap<K, V> extends AMRevMap<K, V> {
     @Override
     public V getValue(int i) {
         return values.get(i);
+    }
+
+    public StoredArray<K> getStoredKeys() {
+        return keys;
+    }
+
+    public StoredArray<V> getStoredValues() {
+        return values;
     }
 
     @Override
@@ -124,7 +132,15 @@ public class StoredArMap<K, V> extends AMRevMap<K, V> {
 
     @Override
     public ImMap<K, V> immutable() {
-        keys.sort(values);
+        return toStoredArIndexedMap();
+    }
+
+    public StoredArIndexedMap<K, V> toStoredArIndexedMap() {
+        return toStoredArIndexedMap(null);
+    }
+
+    public StoredArIndexedMap<K, V> toStoredArIndexedMap(int[] order) {
+        keys.sort(values, order);
         return new StoredArIndexedMap<>(keys, values);
     }
 

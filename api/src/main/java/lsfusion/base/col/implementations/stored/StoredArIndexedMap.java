@@ -17,8 +17,8 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 
 public class StoredArIndexedMap<K, V> extends AMRevMap<K, V> {
 
-    public StoredArray<K> keys;
-    public StoredArray<V> values;
+    private final StoredArray<K> keys;
+    private final StoredArray<V> values;
 
     public StoredArIndexedMap(StoredArraySerializer serializer, int size, K[] keys, V[] values, AddValue<K, V> addValue) {
         super(addValue);
@@ -58,8 +58,9 @@ public class StoredArIndexedMap<K, V> extends AMRevMap<K, V> {
     public StoredArIndexedMap(StoredArIndexedMap<K, ?> map) {
         this(map.keys.getSerializer(), map.keys);
     }
+
     public StoredArIndexedMap(StoredArIndexedSet<K> set) {
-        this(set.array.getSerializer(), set.array);
+        this(set.getStoredArray().getSerializer(), set.getStoredArray());
     }
 
     public int size() {
@@ -414,9 +415,7 @@ public class StoredArIndexedMap<K, V> extends AMRevMap<K, V> {
 
     @Override
     public ImOrderMap<K, V> toOrderMap() {
-        // todo [dale]: 
-        throw new UnsupportedOperationException();
-//        return new StoredArOrderIndexedMap<>(this, ArSet.genOrder(size()));
+        return new StoredArOrderIndexedMap<>(this, null);
     }
 
     @Override
@@ -510,5 +509,13 @@ public class StoredArIndexedMap<K, V> extends AMRevMap<K, V> {
             return twins((StoredArray<K>) smap.keys, (StoredArray<V>) smap.values);
         } 
         return super.twins(map);
+    }
+
+    public StoredArray<K> getStoredKeys() {
+        return keys;
+    }
+
+    public StoredArray<V> getStoredValues() {
+        return values;
     }
 }

@@ -54,14 +54,9 @@ public class ArOrderSet<K> extends AMWrapOrderSet<K, ArSet<K>> {
         if(wrapSet.size() < SetFact.useArrayMax)
             return this;
 
-        if (!wrapSet.isStored()) {
-            // упорядочиваем Set
-            int[] order = new int[wrapSet.size()];
-            ArSet.sortArray(wrapSet.size(), wrapSet.getArray(), order);
-            return new ArOrderIndexedSet<>(new ArIndexedSet<>(wrapSet.size(), wrapSet.getArray()), order);
-        } else {
-            throw new UnsupportedOperationException();
-        }
+        int[] order = new int[wrapSet.size()];
+        ArIndexedSet<K> indexedSet = wrapSet.toArIndexedSet(order);
+        return new ArOrderIndexedSet<>(indexedSet, order);
     }
 
     public static void serialize(Object o, StoredArraySerializer serializer, ByteArrayOutputStream outStream) {

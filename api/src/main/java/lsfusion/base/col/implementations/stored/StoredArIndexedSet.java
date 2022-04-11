@@ -9,7 +9,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 
 public class StoredArIndexedSet<K> extends AMSet<K> {
 
-    public StoredArray<K> array;
+    private StoredArray<K> array;
     
     public StoredArIndexedSet(StoredArray<K> array) {
         this.array = array;
@@ -85,8 +85,10 @@ public class StoredArIndexedSet<K> extends AMSet<K> {
     }
 
     public ImOrderSet<K> toOrderSet() {
-        // todo [dale]:
-        throw new UnsupportedOperationException();
-//        return new StoredArOrderIndexedSet<>(this, ArSet.genOrder(size));
+        return new StoredArOrderIndexedSet<>(this, null);
+    }
+
+    public StoredArray<K> getStoredArray() {
+        return array;
     }
 }

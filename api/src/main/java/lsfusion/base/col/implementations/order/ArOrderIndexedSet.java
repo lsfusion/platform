@@ -89,7 +89,7 @@ public class ArOrderIndexedSet<K> extends AMOrderSet<K> {
         if(arSet.size()==1)
             return SetFact.singletonOrder(single());
 
-        if(arSet.size() < SetFact.useArrayMax) {
+        if(!arSet.isStored() && arSet.size() < SetFact.useArrayMax) {
             Object[] orderArray = new Object[arSet.size()];
             for(int i=0;i<arSet.size();i++)
                 orderArray[i] = get(i);

@@ -8,7 +8,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.ImRevValueMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 
 public class StoredArSet<K> extends AMSet<K> {
-    StoredArray<K> array;
+    private final StoredArray<K> array;
 
     public StoredArSet(StoredArraySerializer serializer, int size, K[] array) {
         this.array = new StoredArray<>(array, size, serializer, null);
@@ -38,6 +38,10 @@ public class StoredArSet<K> extends AMSet<K> {
     @Override
     public K get(int i) {
         return array.get(i);
+    }
+
+    public StoredArray<K> getStoredArray() {
+        return array;
     }
 
     @Override
@@ -73,8 +77,16 @@ public class StoredArSet<K> extends AMSet<K> {
 
     @Override
     public ImSet<K> immutable() {
-        array.sort();
-        return new StoredArIndexedSet<K>(array);
+        return toStoredArIndexedSet();
+    }
+
+    public StoredArIndexedSet<K> toStoredArIndexedSet() {
+        return toStoredArIndexedSet(null);
+    }
+
+    public StoredArIndexedSet<K> toStoredArIndexedSet(int[] order) {
+        array.sort(order);
+        return new StoredArIndexedSet<>(array);
     }
 
     @Override

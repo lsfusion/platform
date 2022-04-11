@@ -6,6 +6,7 @@ import lsfusion.base.col.implementations.abs.AMRevMap;
 import lsfusion.base.col.implementations.abs.AMSet;
 import lsfusion.base.col.implementations.order.ArOrderSet;
 import lsfusion.base.col.implementations.stored.StoredArSet;
+import lsfusion.base.col.implementations.stored.StoredArray;
 import lsfusion.base.col.implementations.stored.StoredArraySerializer;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
@@ -46,8 +47,13 @@ public class ArSet<K> extends AMSet<K> {
                 array = set.array.clone();
             }
         } else {
-            throw new UnsupportedOperationException();
+            StoredArSet<K> storedSet = new StoredArSet<>(set.stored());
+            switchToStored(storedSet);
         }
+    }
+
+    public ArSet(StoredArray<K> array) {
+        switchToStored(new StoredArSet<>(array));
     }
 
     public int size() {
@@ -67,19 +73,11 @@ public class ArSet<K> extends AMSet<K> {
     }
 
     public <M> ImValueMap<K, M> mapItValues() {
-        if (!isStored()) {
-            return new ArMap<>(this);
-        } else {
-            return stored().mapItValues();
-        }
+        return new ArMap<>(this);
     }
 
     public <M> ImRevValueMap<K, M> mapItRevValues() {
-        if (!isStored()) {
-            return new ArMap<>(this);
-        } else {
-            return stored().mapItRevValues();
-        }
+        return new ArMap<>(this);
     }
 
     @Override
@@ -107,11 +105,7 @@ public class ArSet<K> extends AMSet<K> {
     }
 
     public ImSet<K> immutableCopy() {
-        if (!isStored()) {
-            return new ArSet<>(this);
-        } else {
-            return stored().immutableCopy();
-        }
+        return new ArSet<>(this);
     }
 
     /*
@@ -131,7 +125,19 @@ public class ArSet<K> extends AMSet<K> {
         System.arraycopy(array, 0, newArray, 0, size);
         array = newArray;
     }
-    
+
+    public void sortInplace() {
+        sortInplace(null);
+    }
+
+    public void sortInplace(int[] order) {
+        if (!isStored()) {
+            sortArray(size, array, order);
+        } else {
+            stored().getStoredArray().sort(order);
+        }
+    }
+
     public static void sortArray(int size, Object[] array) {
         sortArray(size, array, (int[])null);
     }
@@ -299,32 +305,46 @@ public class ArSet<K> extends AMSet<K> {
     }
 
     public ImSet<K> immutable() {
-        if(size==0)
-            return SetFact.EMPTY();
-        if(size==1)
-            return SetFact.singleton(single());
+        if (!isStored()) {
+            if (size == 0)
+                return SetFact.EMPTY();
+            if (size == 1)
+                return SetFact.singleton(single());
 
-        if(array.length > size * SetFact.factorNotResize) {
-            Object[] newArray = new Object[size];
-            System.arraycopy(array, 0, newArray, 0, size);
-            array = newArray;
+            if (needSwitchToStored(this)) {
+                sortInplace();
+                return new ArIndexedSet<>(new StoredArray<>((K[]) array, StoredArraySerializer.getInstance()));
+            }
+
+            if (array.length > size * SetFact.factorNotResize) {
+                Object[] newArray = new Object[size];
+                System.arraycopy(array, 0, newArray, 0, size);
+                array = newArray;
+            }
+
+            if (size < SetFact.useArrayMax) {
+                return this;
+            }
         }
+        return toArIndexedSet();
+    }
 
-        if(size < SetFact.useArrayMax)
-            return this;
+    public ArIndexedSet<K> toArIndexedSet() {
+        return toArIndexedSet(null);
+    }
 
-        // упорядочиваем Set
-        sortArray(size, array);
-        return new ArIndexedSet<>(size, array);
+    public ArIndexedSet<K> toArIndexedSet(int[] order) {
+        sortInplace(order);
+        if (!isStored()) {
+            return new ArIndexedSet<>(size, array);
+        } else {
+            return new ArIndexedSet<>(stored().getStoredArray());
+        }
     }
 
     @Override
     public AMRevMap<K, K> toMap() {
-        if (!isStored()) {
-            return new ArMap<>(size, array, array);
-        } else {
-            return stored().toMap();
-        }
+        return new ArMap<>(this);
     }
 
     @Override
@@ -334,15 +354,15 @@ public class ArSet<K> extends AMSet<K> {
 
     @Override
     public ImOrderSet<K> toOrderSet() {
-        if (!isStored()) {
-            return new ArOrderSet<>(this);
-        } else {
-            return stored().toOrderSet();
-        }
+        return new ArOrderSet<>(this);
     }
 
     public Object[] getArray() {
-        return array;
+        if (!isStored()) {
+            return array;
+        } else {
+            throw new UnsupportedOperationException();
+        }
     }
 
     public void setArray(Object[] array) {
@@ -365,7 +385,7 @@ public class ArSet<K> extends AMSet<K> {
         return size == STORED_FLAG;
     }
 
-    private StoredArSet<K> stored() {
+    StoredArSet<K> stored() {
         return (StoredArSet<K>) array[0];
     }
 
@@ -382,6 +402,10 @@ public class ArSet<K> extends AMSet<K> {
 
     private void switchToStored(int size, Object[] array) {
         StoredArSet<K> storedSet = new StoredArSet<>(StoredArraySerializer.getInstance(), size, (K[]) array);
+        switchToStored(storedSet);
+    }
+
+    private void switchToStored(StoredArSet<K> storedSet) {
         this.array = new Object[]{storedSet};
         this.size = STORED_FLAG;
     }

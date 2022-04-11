@@ -100,12 +100,12 @@ public class ArOrderIndexedMap<K, V> extends AMOrderMap<K, V> {
     }
 
     public ImOrderMap<K, V> immutableOrder() {
-        if(arMap.size()==0)
+        if (arMap.size()==0)
             return MapFact.EMPTYORDER();
-        if(arMap.size()==1)
+        if (arMap.size()==1)
             return MapFact.singletonOrder(singleKey(), singleValue());
 
-        if(arMap.size() < SetFact.useArrayMax) {
+        if (!arMap.isStored() && arMap.size() < SetFact.useArrayMax) {
             Object[] keys = new Object[arMap.size()];
             Object[] values = new Object[arMap.size()];
             for(int i=0;i<arMap.size();i++) {

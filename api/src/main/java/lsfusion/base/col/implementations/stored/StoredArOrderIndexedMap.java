@@ -50,11 +50,11 @@ public class StoredArOrderIndexedMap<K, V> extends AMOrderMap<K, V> {
     }
 
     public V getValue(int i) {
-        return arMap.getValue(order.get(i));
+        return arMap.getValue(index(i));
     }
 
     public K getKey(int i) {
-        return arMap.getKey(order.get(i));
+        return arMap.getKey(index(i));
     }
 
     public int size() {
@@ -70,7 +70,7 @@ public class StoredArOrderIndexedMap<K, V> extends AMOrderMap<K, V> {
     }
 
     public void mapValue(int i, V value) {
-        arMap.mapValue(order.get(i), value);
+        arMap.mapValue(index(i), value);
     }
 
     public <M> ImOrderValueMap<K, M> mapItOrderValues() {
@@ -83,7 +83,10 @@ public class StoredArOrderIndexedMap<K, V> extends AMOrderMap<K, V> {
 
     @Override
     public ImOrderSet<K> keyOrderSet() {
-        return new StoredArOrderIndexedSet<>(new StoredArIndexedSet<>(arMap.keys), order);
+        return new StoredArOrderIndexedSet<>(new StoredArIndexedSet<>(arMap.getStoredKeys()), order);
     }
-    
+
+    private int index(int i) {
+        return (order == null ? i : order.get(i));
+    }
 }

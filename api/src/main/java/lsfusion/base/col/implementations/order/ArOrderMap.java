@@ -2,10 +2,7 @@ package lsfusion.base.col.implementations.order;
 
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
-import lsfusion.base.col.implementations.ArCol;
-import lsfusion.base.col.implementations.ArIndexedMap;
-import lsfusion.base.col.implementations.ArMap;
-import lsfusion.base.col.implementations.ArSet;
+import lsfusion.base.col.implementations.*;
 import lsfusion.base.col.implementations.abs.AMWrapOrderMap;
 import lsfusion.base.col.implementations.stored.StoredArraySerializer;
 import lsfusion.base.col.interfaces.immutable.ImList;
@@ -76,14 +73,10 @@ public class ArOrderMap<K, V> extends AMWrapOrderMap<K, V, ArMap<K, V>> {
         if(wrapMap.size() < SetFact.useArrayMax)
             return this;
 
-        if (!wrapMap.isStored()) {
-            // упорядочиваем Set
-            int[] order = new int[wrapMap.size()];
-            ArSet.sortArray(wrapMap.size(), wrapMap.getKeys(), wrapMap.getValues(), order);
-            return new ArOrderIndexedMap<>(new ArIndexedMap<>(wrapMap.size(), wrapMap.getKeys(), wrapMap.getValues()), order);
-        } else {
-            throw new UnsupportedOperationException();
-        }
+        // упорядочиваем Set
+        int[] order = new int[wrapMap.size()];
+        ArIndexedMap<K, V> indexedMap = wrapMap.toArIndexedMap(order);
+        return new ArOrderIndexedMap<>(indexedMap, order);
     }
 
     @Override
@@ -91,7 +84,7 @@ public class ArOrderMap<K, V> extends AMWrapOrderMap<K, V, ArMap<K, V>> {
         if (!wrapMap.isStored()) {
             return new ArOrderSet<>(new ArSet<>(wrapMap.size(), wrapMap.getKeys()));
         } else {
-            throw new UnsupportedOperationException();
+            return new ArOrderSet<>(new ArSet<>(wrapMap.stored().getStoredKeys()));
         }
     }
 
@@ -100,7 +93,8 @@ public class ArOrderMap<K, V> extends AMWrapOrderMap<K, V, ArMap<K, V>> {
         if (!wrapMap.isStored()) {
             return new ArList<>(new ArCol<>(wrapMap.size(), wrapMap.getValues()));
         } else {
-            throw new UnsupportedOperationException();  
+            // todo [dale]: set instead of list?
+            return new ArOrderSet<>(new ArSet<>(wrapMap.stored().getStoredValues()));
         }
     }
 

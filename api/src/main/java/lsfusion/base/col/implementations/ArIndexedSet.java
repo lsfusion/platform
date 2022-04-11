@@ -39,16 +39,17 @@ public class ArIndexedSet<K> extends AMSet<K> {
     public ArIndexedSet(ArIndexedSet<K> set) {
         if (needSwitchToStored(set)) {
             switchToStored(set.size, set.array);
-        } else {
+        } else if (!set.isStored()) {
             size = set.size;
             array = set.array.clone();
+        } else {
+            StoredArIndexedSet<K> storedSet = new StoredArIndexedSet<>(set.stored().getStoredArray());
+            switchToStored(storedSet);
         }
     }
 
     public ArIndexedSet(StoredArray<K> keys) {
-        StoredArIndexedSet<K> storedSet = new StoredArIndexedSet<>(keys);
-        this.array = new Object[]{storedSet};
-        this.size = STORED_FLAG;
+        switchToStored(new StoredArIndexedSet<>(keys));
     }
     
     public int size() {
@@ -76,19 +77,11 @@ public class ArIndexedSet<K> extends AMSet<K> {
     }
 
     public <M> ImValueMap<K, M> mapItValues() {
-        if (!isStored()) {
-            return new ArIndexedMap<>(this);
-        } else {
-            return stored().mapItValues();
-        }
+        return new ArIndexedMap<>(this);
     }
 
     public <M> ImRevValueMap<K, M> mapItRevValues() {
-        if (!isStored()) {
-            return new ArIndexedMap<>(this);
-        } else {
-            return stored().mapItRevValues();
-        }
+        return new ArIndexedMap<>(this);
     }
 
     @Override
@@ -125,46 +118,29 @@ public class ArIndexedSet<K> extends AMSet<K> {
     }
 
     public ImSet<K> immutable() {
-        if (!isStored()) {
-            if (size == 0)
-                return SetFact.EMPTY();
-            if (size == 1)
-                return SetFact.singleton(single());
-            
-            if (needSwitchToStored(this)) {
-                switchToStored(size, array);
-                return stored().immutable();
-            }
-            
-            if (array.length > size * SetFact.factorNotResize) {
-                Object[] newArray = new Object[size];
-                System.arraycopy(array, 0, newArray, 0, size);
-                array = newArray;
-            }
+        if (size() == 0)
+            return SetFact.EMPTY();
+        if (size() == 1)
+            return SetFact.singleton(single());
 
-            if (size < SetFact.useArrayMax)
-                return new ArSet<>(size, array);
-
-            return this;
-        } else {
+        if (needSwitchToStored(this)) {
+            switchToStored(size, array);
             return stored().immutable();
         }
+
+        shrink();
+        if (!isStored() && size < SetFact.useArrayMax) {
+            return new ArSet<>(size, array);
+        }
+        return this;
     }
 
     public ImSet<K> immutableCopy() {
-        if (!isStored()) {
-            return new ArIndexedSet<>(this);
-        } else {
-            return stored().immutableCopy();
-        }
+        return new ArIndexedSet<>(this);
     }
 
     public ArIndexedMap<K, K> toMap() {
-        if (!isStored()) {
-            return new ArIndexedMap<>(size, array, array);
-        } else {
-            throw new UnsupportedOperationException(); 
-        }
+        return new ArIndexedMap<>(this);
     }
 
     public ImRevMap<K, K> toRevMap() {
@@ -172,11 +148,7 @@ public class ArIndexedSet<K> extends AMSet<K> {
     }
 
     public ImOrderSet<K> toOrderSet() {
-        if (!isStored()) {
-            return new ArOrderIndexedSet<>(this, ArSet.genOrder(size));
-        } else {
-            return stored().toOrderSet();
-        }
+        return new ArOrderIndexedSet<>(this, ArSet.genOrder(size()));
     }
 
     public void shrink() {
@@ -203,7 +175,7 @@ public class ArIndexedSet<K> extends AMSet<K> {
         return size == STORED_FLAG;
     }
     
-    private StoredArIndexedSet<K> stored() {
+    public StoredArIndexedSet<K> stored() {
         return (StoredArIndexedSet<K>) array[0];
     }
 
@@ -220,6 +192,10 @@ public class ArIndexedSet<K> extends AMSet<K> {
     
     private void switchToStored(int size, Object[] array) {
         StoredArIndexedSet<K> storedSet = new StoredArIndexedSet<>(StoredArraySerializer.getInstance(), (K[]) array, size);
+        switchToStored(storedSet);
+    }
+
+    private void switchToStored(StoredArIndexedSet<K> storedSet) {
         this.array = new Object[]{storedSet};
         this.size = STORED_FLAG;
     }
