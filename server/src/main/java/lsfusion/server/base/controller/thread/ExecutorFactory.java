@@ -61,9 +61,11 @@ public class ExecutorFactory {
         return threadFactory;
     }
 
-    // here we'll manage context manually (since we don't create this scheduled threadService
-    public static ScheduledExecutorService createCloseScheduledThreadService(Integer threads) {
-        return Executors.newScheduledThreadPool(threads);
+    // here we'll manage context manually (since we don't create this scheduled threadService)
+    // actually we don't want to have limited pool of processes, but there no such ScheduledExecutorServices
+    // so we'll use available process for approximate scaling (the other option is to use Timer/runLater but this will lead to a threads bloating)
+    public static ScheduledExecutorService createCloseScheduledThreadService() {
+        return Executors.newScheduledThreadPool(Runtime.getRuntime().availableProcessors() * 2);
     }
 
     public static ScheduledExecutorService createMonitorScheduledThreadService(Integer threads, final MonitorServer monitorServer) {

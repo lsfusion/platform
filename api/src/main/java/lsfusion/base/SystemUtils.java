@@ -542,22 +542,13 @@ public class SystemUtils {
         Long freeMemory = Runtime.getRuntime().freeMemory() / 1024 / 1024;
         Long maxMemory = Runtime.getRuntime().maxMemory() / 1024 / 1024;
         Long totalMemory = Runtime.getRuntime().totalMemory() / 1024 / 1024;
-        Integer processors = getAvailableProcessors();
+        Integer processors = Runtime.getRuntime().availableProcessors();
         return "Processors: " + processors + "\n" +
                 "Free Memory: " + freeMemory + " MB\n" +
                 "Total Memory: " + totalMemory + " MB\n" +
                 "Max Memory: " + maxMemory + " MB";
     }
     
-    private static int availableProcessors = -1;
-    
-    public static int getAvailableProcessors() {
-        if (availableProcessors == -1) {
-            availableProcessors = Runtime.getRuntime().availableProcessors();
-        }
-        return availableProcessors;
-    }
-
     public static String getRevision(boolean inDevMode) {
         if (!inDevMode) {
             try {
