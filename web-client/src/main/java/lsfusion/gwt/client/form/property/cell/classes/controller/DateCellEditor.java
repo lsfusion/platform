@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.form.property.cell.classes.controller;
 
-import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.dom.client.InputElement;
@@ -12,16 +11,15 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.datepicker.client.*;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
-import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.PopupDialogPanel;
 import lsfusion.gwt.client.base.view.ResizableVerticalPanel;
 import lsfusion.gwt.client.classes.data.GDateType;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.classes.GDateDTO;
-import lsfusion.gwt.client.form.property.cell.controller.CancelReason;
 import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
+import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 
 import java.text.ParseException;
 import java.util.Date;
@@ -56,16 +54,8 @@ public class DateCellEditor extends TextBasedCellEditor {
     }
 
     @Override
-    public void onBrowserEvent(Element parent, EventHandler handler) {
-        if (handler.event.getType().equals(BrowserEvents.KEYDOWN) && handler.event.getKeyCode() == KeyCodes.KEY_ENTER)
-            popup.hide();
-        super.onBrowserEvent(parent, handler);
-    }
-
-    @Override
-    public void cancel(Element parent, CancelReason cancelReason) {
+    public void clearRender(Element cellParent, RenderContext renderContext, boolean cancel) {
         popup.hide();
-        super.cancel(parent, cancelReason);
     }
 
     @Override
@@ -116,7 +106,6 @@ public class DateCellEditor extends TextBasedCellEditor {
     }
 
     protected void onDateChanged(ValueChangeEvent<Date> event, Element parent) {
-        popup.hide();
         commitValue(parent, GDateDTO.fromDate(event.getValue()));
     }
 
