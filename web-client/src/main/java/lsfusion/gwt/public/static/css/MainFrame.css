@@ -285,6 +285,13 @@ input[type=checkbox]:focus {
 
 .property-toolbar-on-hover:hover .hide {
     display: flex;
+    animation-name: enableOpacity;
+    animation-duration: 1s;
+}
+
+@keyframes enableOpacity {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 .panelRendererValueBoxed, .panelRendererValueBoxed .background-inherit {
