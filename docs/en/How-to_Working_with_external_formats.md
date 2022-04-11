@@ -1,6 +1,5 @@
 ---
 title: 'How-to: Working with external formats'
-sidebar_label: Overview
 ---
 
 ### How to read these sections

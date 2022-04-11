@@ -1,6 +1,5 @@
 ---
 title: 'How-to: Access to internal systems'
-sidebar_label: Overview
 ---
 
 ### How to read these sections

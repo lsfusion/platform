@@ -1,6 +1,5 @@
 ---
 title: 'ACTION statement'
-sidebar_label: Overview
 ---
 
 The `ACTION` statement creates an [action](Actions.md).

@@ -1,6 +1,5 @@
 ---
 title: 'Автоматическая установка'
-sidebar_label: Обзор
 ---
 
 ### [Разработка](Development_auto.md)

@@ -1,6 +1,5 @@
 ---
 title: 'Системные параметры'
-sidebar_label: Обзор
 ---
 
 ### [Параметры запуска](Launch_parameters.md)

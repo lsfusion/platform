@@ -1,6 +1,5 @@
 ---
 title: 'Language'
-sidebar_label: Overview
 ---
 
 *lsFusion* is a programming language that describes lsFusion [modules](Modules.md).

@@ -1,6 +1,5 @@
 ---
 title: 'How-to: Imperative logic'
-sidebar_label: Overview
 ---
 
 ### How to read these sections

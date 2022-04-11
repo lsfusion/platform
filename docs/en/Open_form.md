@@ -1,6 +1,5 @@
 ---
 title: 'Open form'
-sidebar_label: Overview
 ---
 
 The *open form* operator creates an [action](Actions.md) that opens the specified [form](Forms.md).

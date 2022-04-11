@@ -1,6 +1,5 @@
 ---
 title: 'Обращение к внутренней системе (INTERNAL, FORMULA)'
-sidebar_label: Обзор
 ---
 
 ### Java-взаимодействие {#javato}
