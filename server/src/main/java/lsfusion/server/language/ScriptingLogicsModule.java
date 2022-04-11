@@ -2209,7 +2209,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
     private ScriptingLogicsModule.ILEWithParams getContextListEntity(int contextSize, ScriptingLogicsModule.LPWithParams list, ScriptingLogicsModule.LPWithParams where,
-                                                                     List<String> actionImages, List<List<QuickAccess>> quickAccesses, List<LAWithParams> actions) {
+                                                                     List<String> actionImages, List<String> keyStrokes, List<List<QuickAccess>> quickAccesses, List<LAWithParams> actions) {
         if(list == null) // optimization
             return new ILEWithParams(SetFact.EMPTYORDER(), SetFact.EMPTYORDER(), null, null, ListFact.EMPTY());
 
@@ -2235,13 +2235,13 @@ public class ScriptingLogicsModule extends LogicsModule {
                 ListFact.fromJavaList(actionImages).mapListValues((i, actionImage) -> {
                     LAWithParams action = actions.get(i);
                     return(splitAPParams(action, contextSize, usedInterfaces, value -> 0, (property, mapValues, mapExternal) ->
-                            new InputContextAction(actionImage, ListFact.fromJavaList(quickAccesses.get(i)), action.getLP().action, mapValues)));
+                            new InputContextAction(actionImage, keyStrokes.get(i), ListFact.fromJavaList(quickAccesses.get(i)), action.getLP().action, mapValues)));
                 }));
     }
 
     public LAWithParams addScriptedInputAProp(ValueClass requestValueClass, LPWithParams oldValue, NamedPropertyUsage targetProp, LAWithParams doAction, LAWithParams elseAction,
                                               List<TypedParameter> oldContext, List<TypedParameter> newContext, boolean assign, boolean constraintFilter, LPWithParams changeProp,
-                                              LPWithParams listProp, LPWithParams whereProp, List<String> actionImages, List<List<QuickAccess>> quickAccesses, List<LAWithParams> actions,
+                                              LPWithParams listProp, LPWithParams whereProp, List<String> actionImages, List<String> keyStrokes, List<List<QuickAccess>> quickAccesses, List<LAWithParams> actions,
                                               DebugInfo.DebugPoint assignDebugPoint, FormSessionScope listScope, String customEditorFunction) throws ScriptingErrorLog.SemanticErrorException {
         if(listScope == null)
             listScope = FormSessionScope.OLDSESSION;
@@ -2276,7 +2276,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             if (oldValue != null && requestValueClass instanceof FileClass)
                 oldValue = null;
 
-            ILEWithParams contextEntity = getContextListEntity(oldContext.size(), listProp, whereProp, actionImages, quickAccesses, actions);
+            ILEWithParams contextEntity = getContextListEntity(oldContext.size(), listProp, whereProp, actionImages, keyStrokes, quickAccesses, actions);
             usedParams = contextEntity.usedParams;
 
             action = addInputAProp(requestValueClass, tprop, oldValue != null, contextEntity.orderInterfaces, contextEntity.list, listScope, contextEntity.where, contextEntity.contextActions, customEditorFunction, notNull);
