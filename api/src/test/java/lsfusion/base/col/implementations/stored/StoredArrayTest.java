@@ -60,7 +60,7 @@ public class StoredArrayTest {
     public void createWithArrayAndSize() {
         StoredClass[] array = StoredTestDataGenerators.simpleArray();
         final int size = 4;
-        StoredArray<StoredClass> stored = new StoredArray<>(array, size, serializer, null);
+        StoredArray<StoredClass> stored = new StoredArray<>(size, array, serializer, null);
         assertEquals(size, stored.size());
         for (int i = 0; i < size; ++i) {
             assertEquals(array[i], stored.get(i));

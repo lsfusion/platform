@@ -638,7 +638,7 @@ public class ArIndexedMap<K, V> extends AMRevMap<K, V> {
         try {
             AddValue<K, V> addValue = (data instanceof AddValue ? (AddValue<K, V>) data : null);
             StoredArIndexedMap<K, V> storedMap =
-                    new StoredArIndexedMap<>(StoredArraySerializer.getInstance(), size, (K[]) keys, (V[]) values, addValue);
+                    new StoredArIndexedMap<>(size, (K[]) keys, (V[]) values, StoredArraySerializer.getInstance(), addValue);
             switchToStored(storedMap);
         } catch (RuntimeException e) {
             e.printStackTrace();

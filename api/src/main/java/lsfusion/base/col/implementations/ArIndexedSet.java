@@ -192,7 +192,7 @@ public class ArIndexedSet<K> extends AMSet<K> {
     
     private void switchToStored(int size, Object[] array) {
         try {
-            StoredArIndexedSet<K> storedSet = new StoredArIndexedSet<>(StoredArraySerializer.getInstance(), (K[]) array, size);
+            StoredArIndexedSet<K> storedSet = new StoredArIndexedSet<>(size, (K[]) array, StoredArraySerializer.getInstance());
             switchToStored(storedSet);
         } catch (RuntimeException e) {
             e.printStackTrace();

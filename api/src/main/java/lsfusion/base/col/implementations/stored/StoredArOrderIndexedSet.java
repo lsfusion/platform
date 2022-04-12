@@ -13,7 +13,7 @@ public class StoredArOrderIndexedSet<K> extends AMOrderSet<K> {
     public StoredArray<Integer> order;
 
     public StoredArOrderIndexedSet(StoredArraySerializer serializer, int size) {
-        arSet = new StoredArIndexedSet<>(serializer, size);
+        arSet = new StoredArIndexedSet<>(size, serializer);
         order = new StoredArray<>(size, serializer);
     }
 

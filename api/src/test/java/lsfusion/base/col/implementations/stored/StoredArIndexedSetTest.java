@@ -10,7 +10,7 @@ public class StoredArIndexedSetTest {
     @Test
     public void createWithArray() {
         StoredClass[] arr = sortedArray();
-        StoredArIndexedSet<StoredClass> result = new StoredArIndexedSet<>(StoredArrayTest.serializer, arr);
+        StoredArIndexedSet<StoredClass> result = new StoredArIndexedSet<>(arr, StoredArrayTest.serializer);
         assertEquals(arr.length, result.size());
         for (int i = 0; i < arr.length; ++i) {
             assertEquals(arr[i], result.get(i)); 

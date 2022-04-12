@@ -13,7 +13,7 @@ public class StoredArMapTest {
         StoredClass[] keysArray = simpleArray();
         StoredClass[] valuesArray = simpleArray();
         StoredArMap<StoredClass, StoredClass> map =
-                new StoredArMap<>(StoredArrayTest.serializer, keysArray.length, keysArray, valuesArray);
+                new StoredArMap<>(keysArray.length, keysArray, valuesArray, StoredArrayTest.serializer);
         checkEquality(map, keysArray, valuesArray);
     }
 
@@ -22,7 +22,7 @@ public class StoredArMapTest {
         StoredClass[] keysArray = simpleArray();
         String[] valuesArray = stringArray();
         StoredArMap<StoredClass, String> map =
-                new StoredArMap<>(StoredArrayTest.serializer, keysArray.length, keysArray, valuesArray);
+                new StoredArMap<>(keysArray.length, keysArray, valuesArray, StoredArrayTest.serializer);
         checkEquality(map, keysArray, valuesArray);
     }
     
@@ -57,7 +57,7 @@ public class StoredArMapTest {
         int n = keys.length;
         String[] values = stringArray();
         StoredArMap<StoredClass, String> map =
-                new StoredArMap<>(StoredArrayTest.serializer, n, keys, values);
+                new StoredArMap<>(n, keys, values, StoredArrayTest.serializer);
         for (int i = 0; i < n; ++i) {
             map.mapValue(i, values[n - i - 1]);
         }
@@ -72,7 +72,7 @@ public class StoredArMapTest {
         StoredClass[] keys = simpleArray();
         StoredClass[] values = simpleArray();
         StoredArMap<StoredClass, StoredClass> map =
-                new StoredArMap<>(StoredArrayTest.serializer, keys.length, keys, values);
+                new StoredArMap<>(keys.length, keys, values, StoredArrayTest.serializer);
         for (int i = 0; i < keys.length; ++i) {
             assertEquals(values[i], map.getObject(keys[i]));
         }

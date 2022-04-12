@@ -11,7 +11,7 @@ public class StoredArSetTest {
     @Test
     public void createWithArray() {
         StoredClass[] arr = simpleArray();
-        StoredArSet<StoredClass> set = new StoredArSet<>(StoredArrayTest.serializer, arr);
+        StoredArSet<StoredClass> set = new StoredArSet<>(arr, StoredArrayTest.serializer);
         checkEquality(set, arr);
     }
 
@@ -48,7 +48,7 @@ public class StoredArSetTest {
     @Test
     public void exclAdd() {
         StoredClass[] arr = simpleArray();
-        StoredArSet<StoredClass> set = new StoredArSet<>(StoredArrayTest.serializer, 0);
+        StoredArSet<StoredClass> set = new StoredArSet<>(0, StoredArrayTest.serializer);
         for (StoredClass obj : arr) {
             set.exclAdd(obj);
         }
@@ -58,14 +58,14 @@ public class StoredArSetTest {
     @Test
     public void largeCreateRead() {
         StoredClass[] arr = largeSimpleArray();
-        StoredArSet<StoredClass> set = new StoredArSet<>(StoredArrayTest.serializer, arr.length, arr);
+        StoredArSet<StoredClass> set = new StoredArSet<>(arr.length, arr, StoredArrayTest.serializer);
         checkEquality(set, arr);
     }
 
     @Test
     public void largeWriteRead() {
         StoredClass[] arr = largeSimpleArray();
-        StoredArSet<StoredClass> set = new StoredArSet<>(StoredArrayTest.serializer, 0);
+        StoredArSet<StoredClass> set = new StoredArSet<>(0, StoredArrayTest.serializer);
         for (StoredClass obj : arr) {
             set.exclAdd(obj);
         }

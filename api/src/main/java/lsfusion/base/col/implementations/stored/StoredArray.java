@@ -42,11 +42,11 @@ public class StoredArray<T> {
         }
     }
 
-    public StoredArray(T[] array, int size, StoredArraySerializer serializer, StoredArrayFileManager fileManager) {
+    public StoredArray(int size, T[] array, StoredArraySerializer serializer, StoredArrayFileManager fileManager) {
         try {
             this.serializer = serializer;
             this.fileManager = (fileManager == null ? new StoredArrayFileManagerImpl() : fileManager);
-            createInitialState(array, size);
+            createInitialState(size, array);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -221,10 +221,10 @@ public class StoredArray<T> {
     }
     
     private void createInitialState(T[] array) throws IOException {
-        createInitialState(array, array.length);
+        createInitialState(array.length, array);
     }
 
-    private void createInitialState(T[] array, int size) throws IOException {
+    private void createInitialState(int size, T[] array) throws IOException {
         openFiles();
         for (int i = 0; i < size; ++i) {
             appendElement(array[i]);

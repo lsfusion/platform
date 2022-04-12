@@ -20,15 +20,15 @@ public class StoredArIndexedMap<K, V> extends AMRevMap<K, V> {
     private final StoredArray<K> keys;
     private final StoredArray<V> values;
 
-    public StoredArIndexedMap(StoredArraySerializer serializer, int size, K[] keys, V[] values, AddValue<K, V> addValue) {
+    public StoredArIndexedMap(int size, K[] keys, V[] values, StoredArraySerializer serializer, AddValue<K, V> addValue) {
         super(addValue);
-        this.keys = new StoredArray<>(keys, size, serializer, null);
-        this.values = new StoredArray<>(values, size, serializer, null);
+        this.keys = new StoredArray<>(size, keys, serializer, null);
+        this.values = new StoredArray<>(size, values, serializer, null);
         assert keys.length == values.length;
     }
 
-    public StoredArIndexedMap(StoredArraySerializer serializer, int size, K[] keys, V[] values) {
-        this(serializer, size, keys, values, null);
+    public StoredArIndexedMap(int size, K[] keys, V[] values, StoredArraySerializer serializer) {
+        this(size, keys, values, serializer, null);
     }
 
     public StoredArIndexedMap(StoredArray<K> keys, StoredArray<V> values) {
@@ -50,17 +50,17 @@ public class StoredArIndexedMap<K, V> extends AMRevMap<K, V> {
         this.values = new StoredArray<>(map.values);
     }
     
-    private StoredArIndexedMap(StoredArraySerializer serializer, StoredArray<K> keys) {
+    private StoredArIndexedMap(StoredArray<K> keys, StoredArraySerializer serializer) {
         this.keys = keys;
         this.values = new StoredArray<>(keys.size(), serializer);
     }
 
     public StoredArIndexedMap(StoredArIndexedMap<K, ?> map) {
-        this(map.keys.getSerializer(), map.keys);
+        this(map.keys, map.keys.getSerializer());
     }
 
     public StoredArIndexedMap(StoredArIndexedSet<K> set) {
-        this(set.getStoredArray().getSerializer(), set.getStoredArray());
+        this(set.getStoredArray(), set.getStoredArray().getSerializer());
     }
 
     public int size() {
