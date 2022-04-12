@@ -177,10 +177,12 @@ public abstract class CellRenderer<T> {
         }
         boolean cleared = false;
         if(isNew || !equalsDynamicState(renderedState, value, loading)) {
-            cleared = renderDynamicContent(element, value, loading, updateContext);
-
+            // there might be stack overflow, if this is done after renderDynamicContent, and this is a custom cell render, which calls changeProperty in its update method
+            // setting value earlier breaks the recursion
             renderedState.value = value;
             renderedState.loading = loading;
+
+            cleared = renderDynamicContent(element, value, loading, updateContext);
         }
 
         if(needToRenderToolbarContent())
