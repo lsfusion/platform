@@ -279,7 +279,7 @@ public abstract class CellRenderer<T> {
             boolean start = !getHorzTextAlignment().equals(Style.TextAlign.LEFT);
             if(toolbarElement == null) {
                 toolbarElement = Document.get().createDivElement();
-                toolbarElement.addClassName("property-toolbar");
+                toolbarElement.addClassName(start ? "property-toolbar-start" : "property-toolbar-end");
                 toolbarElement.addClassName("background-inherit");
                 element.appendChild(toolbarElement);
                 GwtClientUtils.setupEdgeStretchParent(toolbarElement, true, start);
@@ -301,20 +301,9 @@ public abstract class CellRenderer<T> {
 
             if (toolbarActions.length > 0) {
                 Element propertyToolbarItemGroup = null;
-
-                boolean allHover = true;
-                for (ToolbarAction toolbarAction : toolbarActions) {
-                    if(!toolbarAction.isHover()) {
-                        allHover = false;
-                        break;
-                    }
-                }
-
                 Element verticalSeparator = GwtClientUtils.createVerticalStretchSeparator().getElement();
-                if(allHover) {
-                    propertyToolbarItemGroup = createPropertyToolbarItemGroup();
-                    addToToolbar(toolbarElement, start, propertyToolbarItemGroup);
-
+                if(allHover(toolbarActions)) {
+                    propertyToolbarItemGroup = addPropertyToolbarItemGroup(toolbarElement, start);
                     addToToolbar(propertyToolbarItemGroup, start, verticalSeparator);
                 } else {
                     addToToolbar(toolbarElement, start, verticalSeparator);
@@ -333,8 +322,7 @@ public abstract class CellRenderer<T> {
 
                     if (toolbarAction.isHover()) {
                         if(propertyToolbarItemGroup == null) {
-                            propertyToolbarItemGroup = createPropertyToolbarItemGroup();
-                            addToToolbar(toolbarElement, start, propertyToolbarItemGroup);
+                            propertyToolbarItemGroup = addPropertyToolbarItemGroup(toolbarElement, start);
                         }
                         addToToolbar(propertyToolbarItemGroup, start, actionDivElement);
 
@@ -357,10 +345,22 @@ public abstract class CellRenderer<T> {
         }
     }
 
-    private Element createPropertyToolbarItemGroup() {
+    private boolean allHover(ToolbarAction[] toolbarActions) {
+        for (ToolbarAction toolbarAction : toolbarActions) {
+            if (!toolbarAction.isHover()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private Element addPropertyToolbarItemGroup(Element toolbarElement, boolean start) {
         Element propertyToolbarItemGroup = Document.get().createDivElement();
         propertyToolbarItemGroup.addClassName("property-toolbar-item-group");
         propertyToolbarItemGroup.addClassName("hide");
+
+        addToToolbar(toolbarElement, start, propertyToolbarItemGroup);
+
         return propertyToolbarItemGroup;
     }
 
